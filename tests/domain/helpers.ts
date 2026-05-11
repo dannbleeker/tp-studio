@@ -1,7 +1,16 @@
-import type { DiagramType, Edge, Entity, EntityType, TPDocument } from '@/domain/types';
+import type {
+  DiagramType,
+  DocumentId,
+  Edge,
+  EdgeId,
+  Entity,
+  EntityId,
+  EntityType,
+  TPDocument,
+} from '@/domain/types';
 
 let counter = 0;
-const nextId = (prefix: string): string => `${prefix}-${++counter}`;
+const nextId = <T extends string>(prefix: string): T => `${prefix}-${++counter}` as T;
 
 export const resetIds = (): void => {
   counter = 0;
@@ -10,7 +19,7 @@ export const resetIds = (): void => {
 export const makeEntity = (overrides: Partial<Entity> = {}): Entity => {
   const now = 1_700_000_000_000;
   return {
-    id: nextId('e'),
+    id: nextId<EntityId>('e'),
     type: 'effect' satisfies EntityType,
     title: 'Default title',
     createdAt: now,
@@ -20,11 +29,11 @@ export const makeEntity = (overrides: Partial<Entity> = {}): Entity => {
 };
 
 export const makeEdge = (
-  sourceId: string,
-  targetId: string,
+  sourceId: EntityId,
+  targetId: EntityId,
   overrides: Partial<Edge> = {}
 ): Edge => ({
-  id: nextId('edge'),
+  id: nextId<EdgeId>('edge'),
   sourceId,
   targetId,
   kind: 'sufficiency',
@@ -39,7 +48,7 @@ export const makeDoc = (
 ): TPDocument => {
   const now = 1_700_000_000_000;
   return {
-    id: 'doc-1',
+    id: 'doc-1' as DocumentId,
     diagramType,
     title: 'Test document',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),

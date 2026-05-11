@@ -1,4 +1,5 @@
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { layoutFingerprint } from '@/domain/fingerprint';
 import { computeLayout } from '@/domain/layout';
 import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
@@ -11,15 +12,26 @@ export type GraphView = {
   edges: TPEdge[];
 };
 
-export const useGraphView = (doc: TPDocument): GraphView =>
-  useMemo(() => {
+export const useGraphView = (doc: TPDocument): GraphView => {
+  // Layout is the expensive part (dagre). It depends only on entity IDs and
+  // edge endpoints / AND grouping — not titles or types. Memoize against a
+  // structural fingerprint so title edits don't re-run dagre.
+  const fp = layoutFingerprint(doc);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: doc is read through `fp` deliberately so title edits don't re-run dagre.
+  const positions = useMemo(() => {
     const entityList = Object.values(doc.entities);
     const edgeList = Object.values(doc.edges);
-
-    const positions = computeLayout(
+    return computeLayout(
       entityList.map((e) => ({ id: e.id, width: NODE_WIDTH, height: NODE_MIN_HEIGHT })),
       edgeList.map((e) => ({ sourceId: e.sourceId, targetId: e.targetId }))
     );
+  }, [fp]);
+
+  // The view derivation is cheap. It does need `doc` directly so the node
+  // `data.entity` updates when titles change.
+  return useMemo(() => {
+    const entityList = Object.values(doc.entities);
+    const edgeList = Object.values(doc.edges);
 
     const nodes: TPNode[] = entityList.map((entity) => ({
       id: entity.id,
@@ -41,4 +53,5 @@ export const useGraphView = (doc: TPDocument): GraphView =>
     }));
 
     return { nodes, edges };
-  }, [doc]);
+  }, [doc, positions]);
+};

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "preinstall": "node ./scripts/check-node-version.cjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
@@ -11,6 +12,9 @@
     "test:watch": "vitest",
     "lint": "biome check src tests",
     "format": "biome format --write src tests"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "@xyflow/react": "^12.10.2",

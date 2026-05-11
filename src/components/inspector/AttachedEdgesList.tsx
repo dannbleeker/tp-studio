@@ -1,3 +1,4 @@
+import type { EntityId } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { ArrowUpRight } from 'lucide-react';
 import { Field } from './Field';
@@ -7,7 +8,8 @@ export function AttachedEdgesList({ assumptionId }: { assumptionId: string }) {
   const entities = useDocumentStore((s) => s.doc.entities);
   const select = useDocumentStore((s) => s.select);
 
-  const attached = Object.values(edges).filter((e) => e.assumptionIds?.includes(assumptionId));
+  const branded = assumptionId as EntityId;
+  const attached = Object.values(edges).filter((e) => e.assumptionIds?.includes(branded));
 
   return (
     <Field label={`Attached to (${attached.length})`}>

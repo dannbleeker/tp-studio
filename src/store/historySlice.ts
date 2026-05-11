@@ -1,6 +1,6 @@
 import { COALESCE_WINDOW_MS, HISTORY_LIMIT } from '@/domain/constants';
-import { saveToLocalStorage } from '@/domain/persistence';
 import type { TPDocument } from '@/domain/types';
+import { persistDebounced } from '@/services/persistDebounced';
 import type { StateCreator } from 'zustand';
 import type { RootStore } from './types';
 
@@ -51,7 +51,7 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     const { past, doc, future } = get();
     const last = past[past.length - 1];
     if (!last) return;
-    saveToLocalStorage(last.doc);
+    persistDebounced(last.doc);
     set({
       doc: last.doc,
       past: past.slice(0, -1),
@@ -64,7 +64,7 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     const { future, doc, past } = get();
     const next = future[future.length - 1];
     if (!next) return;
-    saveToLocalStorage(next.doc);
+    persistDebounced(next.doc);
     set({
       doc: next.doc,
       future: future.slice(0, -1),

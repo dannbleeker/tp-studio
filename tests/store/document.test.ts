@@ -1,3 +1,4 @@
+import { flushPersist } from '@/services/persistDebounced';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -144,8 +145,9 @@ describe('undo / redo', () => {
 });
 
 describe('persistence side-effect', () => {
-  it('writes to localStorage on every mutation', () => {
+  it('writes to localStorage after flushing the debounce queue', () => {
     addNode('Persisted');
+    flushPersist();
     const raw = localStorage.getItem('tp-studio:active-document:v1');
     expect(raw).not.toBeNull();
   });

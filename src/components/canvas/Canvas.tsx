@@ -13,6 +13,7 @@ import {
   ReactFlowProvider,
 } from '@xyflow/react';
 import { useCallback, useEffect } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { TPEdge } from './TPEdge';
 import { TPNode } from './TPNode';
 import { useGraphView } from './useGraphView';
@@ -22,12 +23,17 @@ const edgeTypes = { tp: TPEdge };
 
 function CanvasInner() {
   const doc = useDocumentStore((s) => s.doc);
-  const connect = useDocumentStore((s) => s.connect);
-  const select = useDocumentStore((s) => s.select);
-  const deleteEntity = useDocumentStore((s) => s.deleteEntity);
-  const deleteEdge = useDocumentStore((s) => s.deleteEdge);
-  const addEntity = useDocumentStore((s) => s.addEntity);
-  const openContextMenu = useDocumentStore((s) => s.openContextMenu);
+  const { connect, select, deleteEntity, deleteEdge, addEntity, openContextMenu } =
+    useDocumentStore(
+      useShallow((s) => ({
+        connect: s.connect,
+        select: s.select,
+        deleteEntity: s.deleteEntity,
+        deleteEdge: s.deleteEdge,
+        addEntity: s.addEntity,
+        openContextMenu: s.openContextMenu,
+      }))
+    );
 
   const { nodes, edges } = useGraphView(doc);
 

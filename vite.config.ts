@@ -21,6 +21,20 @@ export default defineConfig({
       plugins: [tailwindcss(tailwindConfig), autoprefixer()],
     },
   },
+  build: {
+    // Split heavy vendor libs into their own chunks so a feature commit
+    // only invalidates one chunk's cache, and html-to-image (only used by
+    // the PNG exporter) ships as a separate chunk that loads on demand.
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          flow: ['@xyflow/react', 'dagre'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: false,

@@ -1,3 +1,5 @@
+import { cancelPendingPersist } from '@/services/persistDebounced';
+import { setStorageErrorListener } from '@/services/storage';
 import { create } from 'zustand';
 import { createDocumentSlice, documentDefaults } from './documentSlice';
 import { createHistorySlice, historyDefaults } from './historySlice';
@@ -20,6 +22,12 @@ export const useDocumentStore = create<RootStore>()((...a) => ({
   ...createHistorySlice(...a),
 }));
 
+// Surface storage failures (quota exceeded, disabled, private-mode quirks)
+// to the user via a toast. The in-memory doc keeps working.
+setStorageErrorListener((err) => {
+  useDocumentStore.getState().showToast('error', `Couldn't save to this browser: ${err.message}`);
+});
+
 /**
  * Test-only helper. Clears localStorage, then merges in each slice's
  * data-only defaults so all subscribers see a clean root state. Actions
@@ -29,6 +37,7 @@ export const useDocumentStore = create<RootStore>()((...a) => ({
  * `*Defaults()` factory; tests don't need to know about the new field.
  */
 export const resetStoreForTest = (): void => {
+  cancelPendingPersist();
   if (typeof globalThis.localStorage !== 'undefined') {
     globalThis.localStorage.clear();
   }

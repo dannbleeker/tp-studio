@@ -3,9 +3,15 @@ import { exportToJSON, importFromJSON } from '@/domain/persistence';
 import { SURFACE_DARK, SURFACE_LIGHT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
 import { type Node, getNodesBounds, getViewportForBounds } from '@xyflow/react';
-import { toPng } from 'html-to-image';
 
-const slug = (s: string): string =>
+/**
+ * Slugify a document title for filename use. Lowercase, non-alphanumeric
+ * runs collapse to hyphens, leading/trailing hyphens are trimmed, the
+ * result is capped at 60 chars, and an empty result falls back to "untitled".
+ *
+ * Exported for direct test coverage of the edge cases.
+ */
+export const slug = (s: string): string =>
   s
     .trim()
     .toLowerCase()
@@ -45,6 +51,10 @@ export const exportPNG = async (doc: TPDocument, nodes: Node[]): Promise<void> =
   }
   const flowEl = document.querySelector('.react-flow__viewport') as HTMLElement | null;
   if (!flowEl) return;
+
+  // html-to-image is only used by this one path; load it on demand so it
+  // doesn't bloat the initial bundle for users who never export.
+  const { toPng } = await import('html-to-image');
 
   const bounds = getNodesBounds(nodes);
   const width = bounds.width + PNG_PADDING * 2;

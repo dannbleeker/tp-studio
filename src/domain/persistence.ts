@@ -1,36 +1,77 @@
 import { STORAGE_KEYS, readString, removeKey, writeString } from '@/services/storage';
-import type { DiagramType, Edge, Entity, TPDocument } from './types';
+import {
+  isDiagramType,
+  isEdgeKind,
+  isEntityType,
+  isObject,
+  isStringArray,
+  isTrueMap,
+} from './guards';
+import type { DocumentId, Edge, EdgeId, Entity, EntityId, TPDocument } from './types';
 
 /** Re-exported for tests and any consumer that needs the literal key. */
 export const STORAGE_KEY = STORAGE_KEYS.doc;
 
-const isObject = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
+const invalid = (label: string, why: string): Error =>
+  new Error(`Invalid document: ${label} ${why}.`);
 
-const isDiagramType = (v: unknown): v is DiagramType => v === 'crt' || v === 'frt';
+const validateEntity = (v: unknown, label: string): Entity => {
+  if (!isObject(v)) throw invalid(label, 'must be an object');
+  if (typeof v.id !== 'string') throw invalid(label, 'has no id');
+  if (!isEntityType(v.type)) throw invalid(label, `has invalid type "${String(v.type)}"`);
+  if (typeof v.title !== 'string') throw invalid(label, 'has non-string title');
+  if (typeof v.createdAt !== 'number') throw invalid(label, 'has non-number createdAt');
+  if (typeof v.updatedAt !== 'number') throw invalid(label, 'has non-number updatedAt');
+  if (v.description !== undefined && typeof v.description !== 'string') {
+    throw invalid(label, 'has non-string description');
+  }
+  if (v.confidence !== undefined && typeof v.confidence !== 'number') {
+    throw invalid(label, 'has non-number confidence');
+  }
+  return {
+    id: v.id as EntityId,
+    type: v.type,
+    title: v.title,
+    createdAt: v.createdAt,
+    updatedAt: v.updatedAt,
+    ...(typeof v.description === 'string' ? { description: v.description } : {}),
+    ...(typeof v.confidence === 'number' ? { confidence: v.confidence } : {}),
+  };
+};
 
-const isEntity = (v: unknown): v is Entity =>
-  isObject(v) &&
-  typeof v.id === 'string' &&
-  typeof v.type === 'string' &&
-  typeof v.title === 'string';
-
-const isEdge = (v: unknown): v is Edge =>
-  isObject(v) &&
-  typeof v.id === 'string' &&
-  typeof v.sourceId === 'string' &&
-  typeof v.targetId === 'string';
+const validateEdge = (v: unknown, label: string): Edge => {
+  if (!isObject(v)) throw invalid(label, 'must be an object');
+  if (typeof v.id !== 'string') throw invalid(label, 'has no id');
+  if (typeof v.sourceId !== 'string') throw invalid(label, 'has non-string sourceId');
+  if (typeof v.targetId !== 'string') throw invalid(label, 'has non-string targetId');
+  if (!isEdgeKind(v.kind)) throw invalid(label, `has invalid kind "${String(v.kind)}"`);
+  if (v.andGroupId !== undefined && typeof v.andGroupId !== 'string') {
+    throw invalid(label, 'has non-string andGroupId');
+  }
+  if (v.assumptionIds !== undefined && !isStringArray(v.assumptionIds)) {
+    throw invalid(label, 'has non-string-array assumptionIds');
+  }
+  return {
+    id: v.id as EdgeId,
+    sourceId: v.sourceId as EntityId,
+    targetId: v.targetId as EntityId,
+    kind: v.kind,
+    ...(typeof v.andGroupId === 'string' ? { andGroupId: v.andGroupId } : {}),
+    ...(isStringArray(v.assumptionIds) ? { assumptionIds: v.assumptionIds as EntityId[] } : {}),
+  };
+};
 
 const validateRecord = <T>(
   raw: unknown,
-  guard: (v: unknown) => v is T,
+  validator: (v: unknown, label: string) => T,
   label: string
 ): Record<string, T> => {
-  if (!isObject(raw)) throw new Error(`Invalid document: ${label} must be an object.`);
+  if (!isObject(raw)) throw invalid(label, 'must be an object');
+  const out: Record<string, T> = {};
   for (const [k, v] of Object.entries(raw)) {
-    if (!guard(v)) throw new Error(`Invalid document: ${label}["${k}"] is malformed.`);
+    out[k] = validator(v, `${label}["${k}"]`);
   }
-  return raw as Record<string, T>;
+  return out;
 };
 
 export const exportToJSON = (doc: TPDocument): string => JSON.stringify(doc, null, 2);
@@ -50,13 +91,19 @@ export const importFromJSON = (raw: string): TPDocument => {
   if (!isDiagramType(parsed.diagramType)) {
     throw new Error('Invalid document: bad diagramType.');
   }
-  const entities = validateRecord(parsed.entities, isEntity, 'entities');
-  const edges = validateRecord(parsed.edges, isEdge, 'edges');
-  const resolvedWarnings = isObject(parsed.resolvedWarnings)
-    ? (parsed.resolvedWarnings as Record<string, true>)
-    : {};
+  const entities = validateRecord(parsed.entities, validateEntity, 'entities');
+  const edges = validateRecord(parsed.edges, validateEdge, 'edges');
+
+  let resolvedWarnings: Record<string, true> = {};
+  if (parsed.resolvedWarnings !== undefined) {
+    if (!isTrueMap(parsed.resolvedWarnings)) {
+      throw new Error('Invalid document: resolvedWarnings must map strings to literal true.');
+    }
+    resolvedWarnings = parsed.resolvedWarnings;
+  }
+
   return {
-    id: parsed.id,
+    id: parsed.id as DocumentId,
     title: typeof parsed.title === 'string' ? parsed.title : 'Untitled',
     diagramType: parsed.diagramType,
     entities,

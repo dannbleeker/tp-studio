@@ -2,8 +2,10 @@ import { SIBLING_Y_TOLERANCE_PX } from '@/domain/constants';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
+import { flushPersist } from '@/services/persistDebounced';
 import { useDocumentStore } from '@/store';
 import { useEffect } from 'react';
+import { useShallow } from 'zustand/shallow';
 
 const isEditableTarget = (target: EventTarget | null): boolean => {
   const el = target as HTMLElement | null;
@@ -13,17 +15,36 @@ const isEditableTarget = (target: EventTarget | null): boolean => {
 };
 
 export function useGlobalKeyboard() {
-  const togglePalette = useDocumentStore((s) => s.togglePalette);
-  const closePalette = useDocumentStore((s) => s.closePalette);
-  const closeHelp = useDocumentStore((s) => s.closeHelp);
-  const undo = useDocumentStore((s) => s.undo);
-  const redo = useDocumentStore((s) => s.redo);
-  const select = useDocumentStore((s) => s.select);
-  const addEntity = useDocumentStore((s) => s.addEntity);
-  const connect = useDocumentStore((s) => s.connect);
-  const beginEditing = useDocumentStore((s) => s.beginEditing);
-  const deleteEdge = useDocumentStore((s) => s.deleteEdge);
-  const showToast = useDocumentStore((s) => s.showToast);
+  // One shallow-equal selector for all the actions we bind. Zustand actions
+  // are stable references, so this effectively runs once and stops re-rendering
+  // this hook on every store mutation.
+  const {
+    togglePalette,
+    closePalette,
+    closeHelp,
+    undo,
+    redo,
+    select,
+    addEntity,
+    connect,
+    beginEditing,
+    deleteEdge,
+    showToast,
+  } = useDocumentStore(
+    useShallow((s) => ({
+      togglePalette: s.togglePalette,
+      closePalette: s.closePalette,
+      closeHelp: s.closeHelp,
+      undo: s.undo,
+      redo: s.redo,
+      select: s.select,
+      addEntity: s.addEntity,
+      connect: s.connect,
+      beginEditing: s.beginEditing,
+      deleteEdge: s.deleteEdge,
+      showToast: s.showToast,
+    }))
+  );
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -37,9 +58,10 @@ export function useGlobalKeyboard() {
         return;
       }
 
-      // Cmd/Ctrl+S — surface save toast (data persists automatically on every mutation)
+      // Cmd/Ctrl+S — flush any debounced write synchronously, then toast.
       if (cmdOrCtrl && e.key.toLowerCase() === 's') {
         e.preventDefault();
+        flushPersist();
         showToast('success', 'Saved to this browser.');
         return;
       }

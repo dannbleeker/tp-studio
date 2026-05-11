@@ -1,3 +1,21 @@
+// --- Branded ID types ---
+// Pure phantom branding: at runtime these are plain strings. The brand exists
+// to let TypeScript catch "I accidentally passed an edge id where an entity
+// id was expected" at compile time. Records remain keyed by plain `string`
+// so that Object.keys() and external string IDs from React Flow / file
+// pickers don't need casts on the way in — values produced by our factory
+// functions narrow on the way out.
+
+declare const ENTITY_ID_BRAND: unique symbol;
+declare const EDGE_ID_BRAND: unique symbol;
+declare const DOCUMENT_ID_BRAND: unique symbol;
+
+export type EntityId = string & { readonly [ENTITY_ID_BRAND]: true };
+export type EdgeId = string & { readonly [EDGE_ID_BRAND]: true };
+export type DocumentId = string & { readonly [DOCUMENT_ID_BRAND]: true };
+
+// --- Domain types ---
+
 export type EntityType =
   | 'ude'
   | 'effect'
@@ -7,7 +25,7 @@ export type EntityType =
   | 'assumption';
 
 export type Entity = {
-  id: string;
+  id: EntityId;
   type: EntityType;
   title: string;
   description?: string;
@@ -19,12 +37,12 @@ export type Entity = {
 export type EdgeKind = 'sufficiency';
 
 export type Edge = {
-  id: string;
-  sourceId: string;
-  targetId: string;
+  id: EdgeId;
+  sourceId: EntityId;
+  targetId: EntityId;
   kind: EdgeKind;
   andGroupId?: string;
-  assumptionIds?: string[];
+  assumptionIds?: EntityId[];
 };
 
 export type DiagramType = 'crt' | 'frt';
@@ -50,7 +68,7 @@ export type Warning = {
 };
 
 export type TPDocument = {
-  id: string;
+  id: DocumentId;
   diagramType: DiagramType;
   title: string;
   entities: Record<string, Entity>;

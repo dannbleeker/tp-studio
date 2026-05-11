@@ -1,16 +1,16 @@
 import { nanoid } from 'nanoid';
-import type { Edge, Entity, EntityType, TPDocument } from './types';
+import type { DocumentId, Edge, EdgeId, Entity, EntityId, EntityType, TPDocument } from './types';
 
 const buildEntity = (type: EntityType, title: string, t: number): Entity => ({
-  id: nanoid(),
+  id: nanoid() as EntityId,
   type,
   title,
   createdAt: t,
   updatedAt: t,
 });
 
-const buildEdge = (sourceId: string, targetId: string, andGroupId?: string): Edge => ({
-  id: nanoid(),
+const buildEdge = (sourceId: EntityId, targetId: EntityId, andGroupId?: string): Edge => ({
+  id: nanoid() as EdgeId,
   sourceId,
   targetId,
   kind: 'sufficiency',
@@ -40,7 +40,7 @@ export const buildExampleCRT = (): TPDocument => {
   ];
 
   return {
-    id: nanoid(),
+    id: nanoid() as DocumentId,
     diagramType: 'crt',
     title: 'Customer-satisfaction CRT (example)',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
@@ -72,7 +72,7 @@ export const buildExampleFRT = (): TPDocument => {
   ];
 
   return {
-    id: nanoid(),
+    id: nanoid() as DocumentId,
     diagramType: 'frt',
     title: 'Customer-satisfaction FRT (example)',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),

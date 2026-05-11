@@ -1,6 +1,8 @@
-// Single seam over window.localStorage. Feature-detects once and exposes
-// typed read/write helpers. Tests can swap this module via vi.mock if needed,
-// and all storage keys live here so renaming is a one-file change.
+// Single seam over window.localStorage. Feature-detects once, exposes typed
+// read/write helpers, and centralizes the storage-key list so renaming is a
+// one-file change. Failed writes (most often QuotaExceededError) are caught
+// and reported via the onStorageError listener; tests can swap behaviour via
+// vi.mock if needed.
 
 export const STORAGE_KEYS = {
   /** Active document, written on every mutation. */
@@ -11,19 +13,57 @@ export const STORAGE_KEYS = {
 
 const hasLocalStorage = (): boolean => typeof globalThis.localStorage !== 'undefined';
 
+type ErrorListener = (err: Error) => void;
+let onError: ErrorListener | null = null;
+
+/**
+ * Register a listener for storage errors (typically QuotaExceededError).
+ * Returns an unsubscribe function. Only one listener is supported at a time —
+ * call sites are layered (store boot wires it once), not many-to-many.
+ */
+export const setStorageErrorListener = (listener: ErrorListener | null): (() => void) => {
+  onError = listener;
+  return () => {
+    if (onError === listener) onError = null;
+  };
+};
+
+const reportError = (err: unknown): void => {
+  const wrapped = err instanceof Error ? err : new Error(String(err));
+  if (onError) {
+    onError(wrapped);
+  } else {
+    // eslint-disable-next-line no-console
+    console.warn('[storage] write failed:', wrapped.message);
+  }
+};
+
 export const readString = (key: string): string | null => {
   if (!hasLocalStorage()) return null;
-  return globalThis.localStorage.getItem(key);
+  try {
+    return globalThis.localStorage.getItem(key);
+  } catch (err) {
+    reportError(err);
+    return null;
+  }
 };
 
 export const writeString = (key: string, value: string): void => {
   if (!hasLocalStorage()) return;
-  globalThis.localStorage.setItem(key, value);
+  try {
+    globalThis.localStorage.setItem(key, value);
+  } catch (err) {
+    reportError(err);
+  }
 };
 
 export const removeKey = (key: string): void => {
   if (!hasLocalStorage()) return;
-  globalThis.localStorage.removeItem(key);
+  try {
+    globalThis.localStorage.removeItem(key);
+  } catch (err) {
+    reportError(err);
+  }
 };
 
 export const readJSON = <T>(key: string): T | null => {

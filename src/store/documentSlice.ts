@@ -1,7 +1,16 @@
 import { createDocument, createEdge, createEntity } from '@/domain/factory';
 import { hasEdge, removeEntityFromEdges } from '@/domain/graph';
-import { loadFromLocalStorage, saveToLocalStorage } from '@/domain/persistence';
-import type { DiagramType, Edge, Entity, EntityType, TPDocument } from '@/domain/types';
+import { loadFromLocalStorage } from '@/domain/persistence';
+import type {
+  DiagramType,
+  Edge,
+  EdgeId,
+  Entity,
+  EntityId,
+  EntityType,
+  TPDocument,
+} from '@/domain/types';
+import { flushPersist, persistDebounced } from '@/services/persistDebounced';
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import { pushHistoryEntry } from './historySlice';
@@ -54,7 +63,7 @@ export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice>
     const prev = get().doc;
     const next = mutator(prev);
     if (next === prev) return;
-    saveToLocalStorage(next);
+    persistDebounced(next);
     set({
       doc: next,
       past: pushHistoryEntry(get().past, {
@@ -71,7 +80,9 @@ export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice>
 
     setDocument: (doc) => {
       const prev = get().doc;
-      saveToLocalStorage(doc);
+      // Document swap is explicit user intent — persist synchronously.
+      persistDebounced(doc);
+      flushPersist();
       set({
         doc,
         selection: { kind: 'none' },
@@ -84,7 +95,8 @@ export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice>
     newDocument: (diagramType) => {
       const prev = get().doc;
       const doc = createDocument(diagramType);
-      saveToLocalStorage(doc);
+      persistDebounced(doc);
+      flushPersist();
       set({
         doc,
         selection: { kind: 'none' },
@@ -116,7 +128,7 @@ export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice>
         (prev) => {
           const current = prev.entities[id];
           if (!current) return prev;
-          const next: Entity = { ...current, ...patch, id, updatedAt: Date.now() };
+          const next: Entity = { ...current, ...patch, id: id as EntityId, updatedAt: Date.now() };
           return touch({ ...prev, entities: { ...prev.entities, [id]: next } });
         },
         { coalesceKey: `entity:${id}:${patchKeys}` }
@@ -150,7 +162,7 @@ export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice>
       applyDocChange((prev) => {
         const current = prev.edges[id];
         if (!current) return prev;
-        const next: Edge = { ...current, ...patch, id };
+        const next: Edge = { ...current, ...patch, id: id as EdgeId };
         return touch({ ...prev, edges: { ...prev.edges, [id]: next } });
       });
     },
@@ -229,9 +241,10 @@ export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice>
         const edge = prev.edges[edgeId];
         const assumption = prev.entities[assumptionId];
         if (!edge || !assumption) return prev;
+        const branded = assumptionId as EntityId;
         const current = edge.assumptionIds ?? [];
-        if (current.includes(assumptionId)) return prev;
-        const nextEdge: Edge = { ...edge, assumptionIds: [...current, assumptionId] };
+        if (current.includes(branded)) return prev;
+        const nextEdge: Edge = { ...edge, assumptionIds: [...current, branded] };
         return touch({ ...prev, edges: { ...prev.edges, [edgeId]: nextEdge } });
       });
     },
@@ -239,8 +252,9 @@ export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice>
     detachAssumption: (edgeId, assumptionId) => {
       applyDocChange((prev) => {
         const edge = prev.edges[edgeId];
-        if (!edge?.assumptionIds?.includes(assumptionId)) return prev;
-        const filtered = edge.assumptionIds.filter((a) => a !== assumptionId);
+        const branded = assumptionId as EntityId;
+        if (!edge?.assumptionIds?.includes(branded)) return prev;
+        const filtered = edge.assumptionIds.filter((a) => a !== branded);
         const nextEdge: Edge = {
           ...edge,
           assumptionIds: filtered.length ? filtered : undefined,
