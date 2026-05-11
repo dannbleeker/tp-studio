@@ -62,6 +62,10 @@ type DocumentActions = {
   groupAsAnd: (edgeIds: string[]) => { ok: true; groupId: string } | { ok: false; reason: string };
   ungroupAnd: (edgeIds: string[]) => void;
 
+  addAssumptionToEdge: (edgeId: string, title?: string) => Entity | null;
+  attachAssumption: (edgeId: string, assumptionId: string) => void;
+  detachAssumption: (edgeId: string, assumptionId: string) => void;
+
   select: (sel: Selection) => void;
   beginEditing: (id: string) => void;
   endEditing: () => void;
@@ -216,10 +220,22 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
       applyDocChange((prev) => {
         if (!prev.entities[id]) return prev;
         const { [id]: _removed, ...rest } = prev.entities;
-        const edges = Object.fromEntries(
+        // Drop edges that connect to the deleted entity structurally.
+        const survivingEdges = Object.fromEntries(
           Object.entries(prev.edges).filter(([, e]) => e.sourceId !== id && e.targetId !== id)
         );
-        return touch({ ...prev, entities: rest, edges });
+        // Also strip the id from any edge's assumptionIds — handles deletion of an
+        // assumption entity. We strip even when the deleted entity is structural
+        // (defensive: a stale id couldn't survive an export/import cycle anyway).
+        const cleanedEdges = Object.fromEntries(
+          Object.entries(survivingEdges).map(([eid, e]) => {
+            if (!e.assumptionIds?.includes(id)) return [eid, e];
+            const filtered = e.assumptionIds.filter((a) => a !== id);
+            const next: Edge = { ...e, assumptionIds: filtered.length ? filtered : undefined };
+            return [eid, next];
+          })
+        );
+        return touch({ ...prev, entities: rest, edges: cleanedEdges });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });
     },
@@ -276,6 +292,49 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
         return touch({ ...prev, edges: nextEdges });
       });
       return { ok: true, groupId };
+    },
+
+    addAssumptionToEdge: (edgeId, title) => {
+      const edge = get().doc.edges[edgeId];
+      if (!edge) return null;
+      const entity = createEntity({ type: 'assumption', title });
+      applyDocChange((prev) => {
+        const e = prev.edges[edgeId];
+        if (!e) return prev;
+        const current = e.assumptionIds ?? [];
+        const nextEdge: Edge = { ...e, assumptionIds: [...current, entity.id] };
+        return touch({
+          ...prev,
+          entities: { ...prev.entities, [entity.id]: entity },
+          edges: { ...prev.edges, [edgeId]: nextEdge },
+        });
+      });
+      return entity;
+    },
+
+    attachAssumption: (edgeId, assumptionId) => {
+      applyDocChange((prev) => {
+        const edge = prev.edges[edgeId];
+        const assumption = prev.entities[assumptionId];
+        if (!edge || !assumption) return prev;
+        const current = edge.assumptionIds ?? [];
+        if (current.includes(assumptionId)) return prev;
+        const nextEdge: Edge = { ...edge, assumptionIds: [...current, assumptionId] };
+        return touch({ ...prev, edges: { ...prev.edges, [edgeId]: nextEdge } });
+      });
+    },
+
+    detachAssumption: (edgeId, assumptionId) => {
+      applyDocChange((prev) => {
+        const edge = prev.edges[edgeId];
+        if (!edge?.assumptionIds?.includes(assumptionId)) return prev;
+        const filtered = edge.assumptionIds.filter((a) => a !== assumptionId);
+        const nextEdge: Edge = {
+          ...edge,
+          assumptionIds: filtered.length ? filtered : undefined,
+        };
+        return touch({ ...prev, edges: { ...prev.edges, [edgeId]: nextEdge } });
+      });
     },
 
     ungroupAnd: (edgeIds) => {

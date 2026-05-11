@@ -1,7 +1,8 @@
 import clsx from 'clsx';
-import { Trash2, X } from 'lucide-react';
-import { useMemo } from 'react';
+import { ArrowUpRight, Plus, Trash2, X } from 'lucide-react';
+import { useEffect, useMemo, useRef } from 'react';
 import { ENTITY_TYPE_META, PALETTE_BY_DIAGRAM } from '../../domain/entityTypeMeta';
+import type { Entity } from '../../domain/types';
 import { validate } from '../../domain/validators';
 import { confirmAndDeleteEntity } from '../../services/confirmations';
 import { useDocumentStore } from '../../store';
@@ -129,6 +130,8 @@ function EntityInspector({
         />
       </Field>
 
+      {entity.type === 'assumption' && <AttachedEdgesList assumptionId={entityId} />}
+
       <WarningsList warnings={warnings} />
 
       <button
@@ -140,6 +143,45 @@ function EntityInspector({
         Delete entity
       </button>
     </div>
+  );
+}
+
+function AttachedEdgesList({ assumptionId }: { assumptionId: string }) {
+  const edges = useDocumentStore((s) => s.doc.edges);
+  const entities = useDocumentStore((s) => s.doc.entities);
+  const select = useDocumentStore((s) => s.select);
+
+  const attached = Object.values(edges).filter((e) => e.assumptionIds?.includes(assumptionId));
+
+  return (
+    <Field label={`Attached to (${attached.length})`}>
+      {attached.length === 0 ? (
+        <p className="text-xs italic text-neutral-400">Not attached to any edge.</p>
+      ) : (
+        <ul className="flex flex-col gap-1.5">
+          {attached.map((edge) => {
+            const source = entities[edge.sourceId];
+            const target = entities[edge.targetId];
+            return (
+              <li key={edge.id}>
+                <button
+                  type="button"
+                  onClick={() => select({ kind: 'edge', id: edge.id })}
+                  className="group flex w-full items-center justify-between gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-left text-xs text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                >
+                  <span className="truncate">
+                    {source?.title || 'Untitled'}
+                    <span className="mx-1 text-neutral-400">→</span>
+                    {target?.title || 'Untitled'}
+                  </span>
+                  <ArrowUpRight className="h-3 w-3 shrink-0 opacity-60 transition group-hover:opacity-100" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Field>
   );
 }
 
@@ -155,8 +197,13 @@ function EdgeInspector({
   const target = useDocumentStore((s) => (edge ? s.doc.entities[edge.targetId] : undefined));
   const deleteEdge = useDocumentStore((s) => s.deleteEdge);
   const ungroupAnd = useDocumentStore((s) => s.ungroupAnd);
+  const entities = useDocumentStore((s) => s.doc.entities);
 
   if (!edge) return null;
+
+  const assumptions = (edge.assumptionIds ?? [])
+    .map((id) => entities[id])
+    .filter((e): e is Entity => e?.type === 'assumption');
 
   return (
     <div className="flex flex-col gap-4">
@@ -190,6 +237,8 @@ function EdgeInspector({
         </Field>
       )}
 
+      <EdgeAssumptions edgeId={edgeId} assumptions={assumptions} />
+
       <WarningsList warnings={warnings} />
 
       <button
@@ -201,6 +250,99 @@ function EdgeInspector({
         Delete edge
       </button>
     </div>
+  );
+}
+
+function EdgeAssumptions({
+  edgeId,
+  assumptions,
+}: {
+  edgeId: string;
+  assumptions: Entity[];
+}) {
+  const addAssumptionToEdge = useDocumentStore((s) => s.addAssumptionToEdge);
+  const lastAddedRef = useRef<string | null>(null);
+
+  const handleAdd = () => {
+    const created = addAssumptionToEdge(edgeId);
+    if (created) lastAddedRef.current = created.id;
+  };
+
+  return (
+    <Field label={`Assumptions (${assumptions.length})`}>
+      {assumptions.length > 0 && (
+        <ul className="flex flex-col gap-1.5">
+          {assumptions.map((a) => (
+            <AssumptionRow
+              key={a.id}
+              edgeId={edgeId}
+              assumption={a}
+              autoFocus={a.id === lastAddedRef.current}
+            />
+          ))}
+        </ul>
+      )}
+      <button
+        type="button"
+        onClick={handleAdd}
+        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-violet-200 bg-violet-50 px-2 py-1.5 text-xs font-medium text-violet-700 transition hover:bg-violet-100 dark:border-violet-900/40 dark:bg-violet-950/40 dark:text-violet-300"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        New assumption
+      </button>
+    </Field>
+  );
+}
+
+function AssumptionRow({
+  edgeId,
+  assumption,
+  autoFocus,
+}: {
+  edgeId: string;
+  assumption: Entity;
+  autoFocus: boolean;
+}) {
+  const updateEntity = useDocumentStore((s) => s.updateEntity);
+  const detachAssumption = useDocumentStore((s) => s.detachAssumption);
+  const select = useDocumentStore((s) => s.select);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (autoFocus) {
+      inputRef.current?.focus();
+    }
+  }, [autoFocus]);
+
+  return (
+    <li className="flex items-center gap-1 rounded-md border border-violet-200 bg-violet-50/40 px-1 py-1 dark:border-violet-900/40 dark:bg-violet-950/20">
+      <input
+        ref={inputRef}
+        data-assumption-id={assumption.id}
+        value={assumption.title}
+        placeholder="State the assumption…"
+        onChange={(e) => updateEntity(assumption.id, { title: e.target.value })}
+        className="flex-1 bg-transparent px-1 py-0.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 dark:text-neutral-200"
+      />
+      <button
+        type="button"
+        onClick={() => select({ kind: 'entity', id: assumption.id })}
+        className="rounded p-1 text-neutral-500 transition hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900/40 dark:hover:text-violet-300"
+        title="Open assumption"
+        aria-label="Open assumption"
+      >
+        <ArrowUpRight className="h-3 w-3" />
+      </button>
+      <button
+        type="button"
+        onClick={() => detachAssumption(edgeId, assumption.id)}
+        className="rounded p-1 text-neutral-500 transition hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+        title="Detach from this edge"
+        aria-label="Detach from this edge"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </li>
   );
 }
 

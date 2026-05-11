@@ -166,3 +166,73 @@ describe('persistence side-effect', () => {
     expect(raw).not.toBeNull();
   });
 });
+
+describe('assumptions on edges', () => {
+  it('addAssumptionToEdge creates an assumption entity and attaches it', () => {
+    const a = addNode('Cause');
+    const b = addNode('Effect');
+    const e = connect(a.id, b.id);
+    if (!e) throw new Error('edge not created');
+    const assumption = useDocumentStore.getState().addAssumptionToEdge(e.id);
+    expect(assumption).not.toBeNull();
+    if (!assumption) return;
+    const doc = useDocumentStore.getState().doc;
+    expect(doc.entities[assumption.id].type).toBe('assumption');
+    expect(doc.edges[e.id].assumptionIds).toEqual([assumption.id]);
+  });
+
+  it('addAssumptionToEdge returns null for an unknown edge', () => {
+    const result = useDocumentStore.getState().addAssumptionToEdge('does-not-exist');
+    expect(result).toBeNull();
+  });
+
+  it('attachAssumption is idempotent', () => {
+    const a = addNode('Cause');
+    const b = addNode('Effect');
+    const e = connect(a.id, b.id);
+    if (!e) throw new Error('edge not created');
+    const assumption = useDocumentStore.getState().addAssumptionToEdge(e.id);
+    if (!assumption) throw new Error('assumption not created');
+    useDocumentStore.getState().attachAssumption(e.id, assumption.id);
+    useDocumentStore.getState().attachAssumption(e.id, assumption.id);
+    const ids = useDocumentStore.getState().doc.edges[e.id].assumptionIds;
+    expect(ids).toEqual([assumption.id]);
+  });
+
+  it('detachAssumption removes the id and clears the field when empty', () => {
+    const a = addNode('Cause');
+    const b = addNode('Effect');
+    const e = connect(a.id, b.id);
+    if (!e) throw new Error('edge not created');
+    const assumption = useDocumentStore.getState().addAssumptionToEdge(e.id);
+    if (!assumption) throw new Error('assumption not created');
+    useDocumentStore.getState().detachAssumption(e.id, assumption.id);
+    const edge = useDocumentStore.getState().doc.edges[e.id];
+    expect(edge.assumptionIds).toBeUndefined();
+    // entity itself still exists
+    expect(useDocumentStore.getState().doc.entities[assumption.id]).toBeDefined();
+  });
+
+  it('deleting an assumption entity scrubs its id from every edge', () => {
+    const a = addNode('Cause');
+    const b = addNode('Effect');
+    const c = addNode('Other Cause');
+    const d = addNode('Other Effect');
+    const e1 = connect(a.id, b.id);
+    const e2 = connect(c.id, d.id);
+    if (!e1 || !e2) throw new Error('edges not created');
+    const assumption = useDocumentStore.getState().addAssumptionToEdge(e1.id);
+    if (!assumption) throw new Error('assumption not created');
+    useDocumentStore.getState().attachAssumption(e2.id, assumption.id);
+    // sanity
+    expect(useDocumentStore.getState().doc.edges[e1.id].assumptionIds).toContain(assumption.id);
+    expect(useDocumentStore.getState().doc.edges[e2.id].assumptionIds).toContain(assumption.id);
+
+    useDocumentStore.getState().deleteEntity(assumption.id);
+
+    const doc = useDocumentStore.getState().doc;
+    expect(doc.entities[assumption.id]).toBeUndefined();
+    expect(doc.edges[e1.id].assumptionIds).toBeUndefined();
+    expect(doc.edges[e2.id].assumptionIds).toBeUndefined();
+  });
+});
