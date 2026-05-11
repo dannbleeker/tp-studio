@@ -1,1 +1,6 @@
-export { useDocumentStore, type DocumentStore, type Selection } from './document';
+export {
+  useDocumentStore,
+  type DocumentStore,
+  type Selection,
+  type Theme,
+} from './document';

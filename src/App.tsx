@@ -1,4 +1,9 @@
 import { Canvas } from './components/canvas/Canvas';
+import { CommandPalette } from './components/command-palette/CommandPalette';
+import { Inspector } from './components/inspector/Inspector';
+import { TopBar } from './components/toolbar/TopBar';
+import { useGlobalKeyboard } from './hooks/useGlobalKeyboard';
+import { useThemeClass } from './hooks/useThemeClass';
 import { useDocumentStore } from './store';
 
 function TitleBadge() {
@@ -22,10 +27,16 @@ function TitleBadge() {
 }
 
 export function App() {
+  useThemeClass();
+  useGlobalKeyboard();
+
   return (
     <main className="relative h-full w-full">
       <TitleBadge />
+      <TopBar />
       <Canvas />
+      <Inspector />
+      <CommandPalette />
     </main>
   );
 }
