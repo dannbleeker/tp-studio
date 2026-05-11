@@ -2,9 +2,10 @@
 
 A parking lot. Nothing here is required for v1; everything is honest about what's deferred.
 
-The [Flying Logic feature catalog](#flying-logic-feature-catalog-fl-) below lists candidate
-features lifted from the Flying Logic 4 user guide, each with a stable `FL-*` ID so we can
-say "let's do FL-NA1 and FL-SE2 next iteration" without ambiguity.
+The [Flying Logic feature catalog](#flying-logic-feature-catalog-fl-) below organizes
+candidate features into 13 named bundles with stable `FL-*` IDs so we can say
+"let's do Bundle 1 + FL-EX1 next iteration" without ambiguity. Reasoning / confidence,
+project management, and scripting are out of scope and not catalogued.
 
 ## Recommended priorities for the next session
 
@@ -101,173 +102,169 @@ Domain-first remains the right discipline: anything new that the data model need
 
 ## Flying Logic feature catalog (FL-*)
 
-Generated from a feature comparison against the [Flying Logic 4 user guide](https://docs.flyinglogic.com/print.html). Each row has a stable ID so we can pick items by reference. "Effort" is a rough class (small / medium / large) — actual estimates depend on what's already in place.
+Candidate features lifted from the [Flying Logic 4 user guide](https://docs.flyinglogic.com/print.html), each with a stable `FL-*` ID so we can pick items by reference in a future session.
 
-### Diagram types
+**Out of scope, will not build:**
+- Reasoning / confidence layer (entity spinners, propagation, numeric operators) — was Bundle G
+- Project management (Task / Resource entities, MS Project import/export)
+- Scripting (embedded interpreter)
 
-| ID | Feature | Effort | Notes |
-| --- | --- | --- | --- |
-| `FL-DT1` | Evaporating Cloud diagram | Large | TOC core — brief said data model accommodates it but no UI |
-| `FL-DT2` | Prerequisite Tree | Large | Brief: deferred |
-| `FL-DT3` | Transition Tree | Large | Brief: deferred |
-| `FL-DT4` | Strategy & Tactics Tree | Large | Not in brief |
-| `FL-DT5` | Generic / free-form logic diagram (no TOC constraints) | Medium | Not in brief |
+Effort classes are rough (small / medium / large); actuals depend on what's already in place.
 
-### Entity types & model
+## Bundles
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-ET1` | **Goal** entity type | Small |
-| `FL-ET2` | **Necessary Condition** entity type (Evaporating Cloud needs this) | Small |
-| `FL-ET3` | Action / Task entity types (project-mgmt mode) | Medium |
-| `FL-ET4` | Resource entity type | Medium |
-| `FL-ET5` | Knowledge / Proposition entity types (evidence-based analysis) | Medium |
-| `FL-ET6` | Critical Success Factor entity type | Small |
-| `FL-ET7` | **Note** entity (free annotation, not part of causal graph) | Small |
-| `FL-ET8` | **Custom user-defined entity classes** (name + color + icon) | Medium |
-| `FL-ET9` | Per-class symbol / icon (built-in or uploaded SVG/PNG) | Medium |
+Bundles are independently-shippable units, roughly sized for one iteration each. Mix IDs across bundles freely.
 
-### Edges & operators
+### Bundle 1 — Navigation & Search
+Make the tool usable on graphs of 20+ entities. **Medium total effort.**
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-ED1` | **Edge weights** (positive / negative / zero correlation) | Medium |
-| `FL-ED2` | **Necessity edges** in addition to sufficiency (Evaporating Cloud needs these) | Medium |
-| `FL-ED3` | **XOR** operator on AND groups | Small |
-| `FL-ED4` | Explicit **OR** operator (today's two-incoming-edges is implicit OR) | Small |
-| `FL-ED5` | Numeric operators: Sum, Product, Min, Max, Average, Negate, Complement, Distributor | Large |
-| `FL-ED6` | **Back edges** (cyclic loops, drawn thicker, ignored by reasoning) | Medium |
-| `FL-ED7` | **Edge annotations** (text mid-edge, distinct from assumption entities) | Small |
-| `FL-ED8` | **Edge reversal** command (swap head/tail) | Small |
+| ID | Feature |
+| --- | --- |
+| `FL-NA1` | **Find / search** (regex, case-sensitive, whole-word) |
+| `FL-NA2` | **Minimap** with current-viewport indicator |
+| `FL-DI1` | Explicit **zoom controls** (25-400%, `<` `>` shortcuts, Alt+scroll) |
+| `FL-SE4` | **Select Path Between** two selected entities |
+| `FL-SE5` | Select all **Successors / Predecessors** |
 
-### Layout
+### Bundle 2 — Multi-select & Bulk Editing
+Faster manipulation of many entities at once. **Medium.**
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-LA1` | Multiple **layout directions**: BT / TB / LR / RL / radial inner-out / radial outer-in | Small |
-| `FL-LA2` | **Bias** control (start vs. end preference) | Small |
-| `FL-LA3` | **Compactness** slider | Small |
-| `FL-LA4` | **Incremental layout** (preserve relative positions across cycles) | Medium |
-| `FL-LA5` | **Manual node positioning** (drag, override auto-layout per-node) | Medium |
+| ID | Feature |
+| --- | --- |
+| `FL-SE1` | **Multi-select entities** with Shift+click (today only edges multi-select) |
+| `FL-SE2` | **Marquee** (rubber-band) selection |
+| `FL-SE3` | **Cut / copy / paste** within and between documents |
+| `FL-SE6` | **Element swapping** (swap two entities; edges/attributes preserved) |
+| `FL-SE7` | **Alt+click** an unselected entity to connect from current selection |
 
-### Confidence / reasoning layer
+### Bundle 3 — Quick Capture
+High leverage for first-time users. **Small-medium.**
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-RE1` | **Confidence spinners** on entities (0-1.0 belief). Field exists in schema; no UI yet | Large |
-| `FL-RE2` | Calculated confidence propagation through edges + operators (driver vs driven) | Large |
-| `FL-RE3` | Keyboard shortcuts (1-9, T, F, U) for confidence | Small (after RE1) |
-| `FL-RE4` | Fuzzy boolean vs floating-point modes | Medium |
-| `FL-RE5` | Display modes for confidence: shaded, numeric, symbol | Small |
+| ID | Feature |
+| --- | --- |
+| `FL-QC1` | **Quick Capture** — press `E`, paste a bulleted list, get one entity per line |
+| `FL-QC2` | **Bulk import** entities from CSV or markdown list |
 
-### Selection & editing
+### Bundle 4 — Layout Controls
+More control over how dagre lays out the diagram. **Medium.**
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-SE1` | **Multi-select entities** with Shift+click (today only edges multi-select) | Small |
-| `FL-SE2` | **Marquee selection** (rubber-band rectangle) | Medium |
-| `FL-SE3` | **Cut / copy / paste** within and between documents | Medium |
-| `FL-SE4` | **Select Path Between** two selected entities | Medium |
-| `FL-SE5` | Select all Successors / Predecessors | Small |
-| `FL-SE6` | **Element swapping** (swap two entities; edges/attributes preserved) | Medium |
-| `FL-SE7` | Alt+click an unselected entity to connect from current selection | Small |
+| ID | Feature |
+| --- | --- |
+| `FL-LA1` | Multiple **layout directions**: BT / TB / LR / RL / radial inner-out / radial outer-in |
+| `FL-LA2` | **Bias** control (start vs. end preference) |
+| `FL-LA3` | **Compactness** slider |
+| `FL-LA4` | **Incremental layout** (preserve relative positions across cycles) |
+| `FL-LA5` | **Manual node positioning** (drag to override auto-layout per-node) |
+| `FL-IN1` | **Layout Inspector** panel exposing the above |
 
-### Display & navigation
+### Bundle 5 — Export Pack
+**Medium.** PDF is the heaviest single item.
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-DI1` | Explicit zoom controls (25-400%, `<` `>` shortcuts, Alt+scroll) | Small |
-| `FL-DI2` | **Browse Lock** toggle — read-only viewing mode | Small |
-| `FL-DI3` | **Zoom-up annotation** — hover at low zoom to see full content | Medium |
-| `FL-DI4` | Annotation numbers (flow-order indicator on each entity) | Small |
-| `FL-DI5` | Visible entity IDs as a layer toggle | Small |
-| `FL-NA1` | **Find / Search** (regex, case-sensitive, whole-word) | Medium |
-| `FL-NA2` | **Minimap** with current-viewport indicator | Small |
+| ID | Feature |
+| --- | --- |
+| `FL-EX1` | **PDF** export |
+| `FL-EX2` | **JPEG** export |
+| `FL-EX3` | **SVG** export (scalable, print-quality) |
+| `FL-EX4` | **OPML** outline export |
+| `FL-EX5` | **CSV** export of entities + edges |
+| `FL-EX6` | **Annotations-only** export (numbered list, separate document) |
+| `FL-EX7` | **Print** with header / footer / metadata (`@media print` + dialog) |
 
-### Groups
+### Bundle 6 — Rich Annotations & Text
+Open up what can live in / on entities. **Medium-large.**
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-GR1` | **Groups** — shaded enclosures with title and color, containing N entities | Large |
-| `FL-GR2` | Nested group hierarchy | Large |
-| `FL-GR3` | Collapse / expand groups | Medium |
-| `FL-GR4` | **Hoist** into group (view contents as whole canvas, breadcrumb to unhoist) | Medium |
-| `FL-GR5` | Promote children when a group is deleted | Small |
+| ID | Feature |
+| --- | --- |
+| `FL-AN1` | **Multi-line titles** (Alt+Enter) — partial today via textarea |
+| `FL-AN2` | **Rich entity annotations** beyond `description` field |
+| `FL-AN3` / `FL-ED7` | **Edge annotations** (text on edges, distinct from assumption entities) |
+| `FL-AN4` | **Styled text** in titles/descriptions (bold, italic, lists) |
+| `FL-AN5` | **Hyperlinks** — URLs and cross-references |
+| `FL-CA1` | **User-Defined Attributes** — custom name-value pairs per entity (String/Int/Real/Boolean) |
 
-### Annotations & text
+### Bundle 7 — Custom Entity Classes
+Make the entity model user-extensible. **Medium.**
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-AN1` | Multi-line entity titles (Alt+Enter to add line) — partial today via textarea | Small |
-| `FL-AN2` | **Rich entity annotations** beyond `description` field | Medium |
-| `FL-AN3` | **Edge annotations** (text on edges, distinct from assumption entities) | Small |
-| `FL-AN4` | **Styled text** in titles/descriptions (bold, italic, lists) | Medium |
-| `FL-AN5` | **Hyperlinks** — URLs and cross-references | Medium |
-| `FL-CA1` | **User-Defined Attributes** — custom name-value pairs per entity (String/Int/Real/Boolean) | Medium |
+| ID | Feature |
+| --- | --- |
+| `FL-ET6` | **Critical Success Factor** entity type |
+| `FL-ET7` | **Note** entity (free annotation, not part of causal graph) |
+| `FL-ET8` | **Custom user-defined entity classes** (name + color + icon) |
+| `FL-ET9` | Per-class **symbol / icon** (built-in or uploaded SVG/PNG) |
+| `FL-IN3` | **Domain Inspector** — manage entity classes / custom domains |
+| `FL-IN5` | **Element Inspector** with tabs per element type |
 
-### Export / file
+### Bundle 8 — Structural Edge Operators
+Edges that carry more meaning than "sufficient cause" — purely structural, no reasoning. **Medium.**
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-EX1` | **PDF** export | Medium |
-| `FL-EX2` | **JPEG** export | Small |
-| `FL-EX3` | **SVG** export (scalable, print-quality) | Small |
-| `FL-EX4` | **OPML** outline export | Small |
-| `FL-EX5` | CSV export of entities + edges | Small |
-| `FL-EX6` | Annotations-only export (numbered list, separate document) | Medium |
-| `FL-EX7` | **Print** with header/footer/metadata (`@media print` + dialog) | Small |
-| `FL-EX8` | **Multi-document tabs** in one window | Large |
-| `FL-EX9` | **Auto-recovery on crash** (partial today — autosave to one slot) | Medium |
+| ID | Feature |
+| --- | --- |
+| `FL-ED1` | **Edge weights** (positive / negative / zero correlation, as metadata) |
+| `FL-ED3` | **XOR** groups (mutual-exclusion constraint on a set of incoming edges) |
+| `FL-ED4` | Explicit **OR** groups (today's two-incoming-edges is implicit OR) |
+| `FL-ED6` | **Back edges** (cyclic loops drawn thicker) |
+| `FL-ED8` | **Edge reversal** command (swap head/tail) |
 
-### Inspectors / panels
+### Bundle 9 — Evaporating Cloud (second TOC tree)
+Highest-leverage brief-deferred TOC feature. **Large.**
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-IN1` | **Layout Inspector** — orientation, bias, compactness sliders | Small |
-| `FL-IN2` | **Document Inspector** — metadata, print layout | Small |
-| `FL-IN3` | **Domain Inspector** — manage entity classes / custom domains | Medium |
-| `FL-IN4` | **Operators Inspector** — default operator picker for junctors/entities | Medium |
-| `FL-IN5` | **Element Inspector** with tabs per element type | Medium |
+| ID | Feature |
+| --- | --- |
+| `FL-DT1` | **Evaporating Cloud** diagram type |
+| `FL-ET1` | **Goal** entity type |
+| `FL-ET2` | **Necessary Condition** entity type |
+| `FL-ED2` | **Necessity edges** (in addition to sufficiency) |
 
-### Quick capture & bulk
+### Bundle 10 — Other TOC Tree Types
+**Very large.** Effectively four sub-bundles — ship one tree per iteration.
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-QC1` | **Quick Capture** — press `E`, paste a bulleted list, get one entity per line | Medium |
-| `FL-QC2` | Bulk-import entities from CSV or markdown list | Small |
+| ID | Feature |
+| --- | --- |
+| `FL-DT2` | **Prerequisite Tree** (Obstacle / Intermediate Objective entities) |
+| `FL-DT3` | **Transition Tree** (Need / Expectation / Reality / Action entities) |
+| `FL-DT4` | **Strategy & Tactics Tree** (multi-tier goal decomposition) |
+| `FL-DT5` | Generic / **free-form** diagram (no TOC constraints) |
 
-### Theming / preferences
+### Bundle 11 — Groups
+Shaded enclosures for organizing large diagrams. **Large.**
 
-| ID | Feature | Effort |
-| --- | --- | --- |
-| `FL-TO1` | More **theme variants** (Light, Dark, Rust, Coal, Navy, Ayu) | Small |
-| `FL-TO2` | Animation speed preference | Small |
-| `FL-TO3` | Default orientation preference for new documents | Small |
-| `FL-TO4` | Edge color palette preference | Small |
+| ID | Feature |
+| --- | --- |
+| `FL-GR1` | **Groups** — shaded enclosures with title and color, containing N entities |
+| `FL-GR2` | **Nested** group hierarchy |
+| `FL-GR3` | **Collapse / expand** groups |
+| `FL-GR4` | **Hoist** into a group (view contents as whole canvas, breadcrumb to unhoist) |
+| `FL-GR5` | **Promote children** when a group is deleted |
 
-### Collaboration & scripting
+### Bundle 12 — Multi-document & Sharing
+**Large.** Current store is single-doc; tabs is the gating piece.
 
-| ID | Feature | Effort | Brief status |
-| --- | --- | --- | --- |
-| `FL-CO1` | **Reader Mode** — read-only share-link / share-file mode | Medium | Adjacent to brief's "no auth" rule |
-| `FL-CO2` | Cross-document hyperlinks | Medium | Depends on `FL-EX8` |
-| `FL-SC1` | Scripting interpreter (embedded JS sandbox) | Very large | Not in brief |
+| ID | Feature |
+| --- | --- |
+| `FL-EX8` | **Multi-document tabs** in one window |
+| `FL-EX9` | **Auto-recovery on crash** (partial today — autosave to one slot only) |
+| `FL-CO1` | **Reader Mode** — read-only share-link / share-file |
+| `FL-CO2` | **Cross-document hyperlinks** |
 
-### Project management
+### Bundle 13 — Polish & Preferences
+Small, independently-shippable items. **Small-medium aggregate.**
 
-| ID | Feature | Effort | Brief status |
-| --- | --- | --- | --- |
-| `FL-PM1` | Project management mode with Task / Resource entities | Large | Brief: out of scope |
-| `FL-PM2` | MS Project (.MPP) import/export | Large | Brief: out of scope |
+| ID | Feature |
+| --- | --- |
+| `FL-DI2` | **Browse Lock** toggle — read-only viewing mode |
+| `FL-DI3` | **Zoom-up annotation** — hover at low zoom for full content |
+| `FL-DI4` | **Annotation numbers** (flow-order indicator on each entity) |
+| `FL-DI5` | Visible **Entity IDs** as a toggle-able layer |
+| `FL-IN2` | **Document Inspector** — metadata, print layout |
+| `FL-TO1` | More **theme variants** (Rust, Coal, Navy, Ayu) |
+| `FL-TO2` | **Animation speed** preference |
+| `FL-TO3` | **Default orientation** preference for new documents |
+| `FL-TO4` | **Edge color** palette preference |
 
-## Suggested next-iteration bundles
+## Reasonable iteration sizes
 
-Coherent sets that play well together. Pick a bundle or mix IDs freely.
+- **Smallest meaningful iteration:** Bundle 1, or Bundle 3, or Bundle 13. Roughly a day each.
+- **A solid week:** Bundle 1 + 2 + 3 together, or Bundle 4 + 5.
+- **A new chapter:** Bundle 9 (Evaporating Cloud) on its own — adds enough new domain to feel like a v1.1.
 
-- **Bundle A — "Bigger graphs":** `FL-NA1`, `FL-SE1`, `FL-SE2`, `FL-NA2`, `FL-DI1`. Makes the tool usable for 20+ node diagrams.
-- **Bundle B — "Second TOC tree":** `FL-DT1` (Evaporating Cloud) with `FL-ET1`, `FL-ET2`, `FL-ED2`. Highest-leverage brief-deferred item.
-- **Bundle C — "Layout control":** `FL-LA1`, `FL-LA2`, `FL-LA3`, `FL-LA5`, `FL-IN1`.
-- **Bundle D — "Pro export":** `FL-EX1`, `FL-EX3`, `FL-EX7`, `FL-EX4`.
-- **Bundle E — "Quick capture":** `FL-QC1` + `FL-QC2`. Single-feature bundle, high leverage for first-time users.
-- **Bundle F — "Groups":** `FL-GR1`-`FL-GR5`. Big schema addition; useful for large diagrams.
-- **Bundle G — "Reasoning layer":** `FL-RE1`-`FL-RE5` + `FL-ED5`. Brief puts Bayesian propagation out of scope; the simpler fuzzy-AND/OR variant Flying Logic itself uses is in scope-ish.
+Domain-first remains the right discipline for any of these: changes to the data model land in `src/domain/` first, with tests, before any UI work.
