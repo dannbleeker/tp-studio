@@ -37,6 +37,7 @@ type DocumentState = {
   selection: Selection;
   editingEntityId: string | null;
   paletteOpen: boolean;
+  paletteInitialQuery: string;
   helpOpen: boolean;
   theme: Theme;
   contextMenu: ContextMenuState;
@@ -69,6 +70,7 @@ type DocumentActions = {
   unresolveWarning: (warningId: string) => void;
 
   openPalette: () => void;
+  openPaletteWithQuery: (query: string) => void;
   closePalette: () => void;
   togglePalette: () => void;
 
@@ -146,6 +148,7 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
     selection: { kind: 'none' },
     editingEntityId: null,
     paletteOpen: false,
+    paletteInitialQuery: '',
     helpOpen: false,
     theme: initialTheme,
     contextMenu: { open: false },
@@ -312,9 +315,10 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
       });
     },
 
-    openPalette: () => set({ paletteOpen: true }),
+    openPalette: () => set({ paletteOpen: true, paletteInitialQuery: '' }),
+    openPaletteWithQuery: (query) => set({ paletteOpen: true, paletteInitialQuery: query }),
     closePalette: () => set({ paletteOpen: false }),
-    togglePalette: () => set({ paletteOpen: !get().paletteOpen }),
+    togglePalette: () => set({ paletteOpen: !get().paletteOpen, paletteInitialQuery: '' }),
 
     openHelp: () => set({ helpOpen: true }),
     closeHelp: () => set({ helpOpen: false }),

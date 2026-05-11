@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { defaultEntityType } from '../domain/entityTypeMeta';
 import { getCanvasNodes } from '../services/canvasRef';
+import { confirmAndDeleteEntity } from '../services/confirmations';
 import { useDocumentStore } from '../store';
 
 const isEditableTarget = (target: EventTarget | null): boolean => {
@@ -20,7 +21,6 @@ export function useGlobalKeyboard() {
   const addEntity = useDocumentStore((s) => s.addEntity);
   const connect = useDocumentStore((s) => s.connect);
   const beginEditing = useDocumentStore((s) => s.beginEditing);
-  const deleteEntity = useDocumentStore((s) => s.deleteEntity);
   const deleteEdge = useDocumentStore((s) => s.deleteEdge);
   const showToast = useDocumentStore((s) => s.showToast);
 
@@ -40,6 +40,13 @@ export function useGlobalKeyboard() {
       if (cmdOrCtrl && e.key.toLowerCase() === 's') {
         e.preventDefault();
         showToast('success', 'Saved to this browser.');
+        return;
+      }
+
+      // Cmd/Ctrl+E — open the palette pre-filtered to Export commands.
+      if (cmdOrCtrl && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        useDocumentStore.getState().openPaletteWithQuery('Export');
         return;
       }
 
@@ -83,7 +90,7 @@ export function useGlobalKeyboard() {
       if ((e.key === 'Delete' || e.key === 'Backspace') && !inField) {
         if (selection.kind === 'entity') {
           e.preventDefault();
-          deleteEntity(selection.id);
+          confirmAndDeleteEntity(selection.id);
           return;
         }
         if (selection.kind === 'edge') {
@@ -164,7 +171,6 @@ export function useGlobalKeyboard() {
     addEntity,
     connect,
     beginEditing,
-    deleteEntity,
     deleteEdge,
     showToast,
   ]);

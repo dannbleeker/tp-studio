@@ -20,6 +20,7 @@ const score = (cmd: Command, query: string): number => {
 
 export function CommandPalette() {
   const open = useDocumentStore((s) => s.paletteOpen);
+  const initialQuery = useDocumentStore((s) => s.paletteInitialQuery);
   const close = useDocumentStore((s) => s.closePalette);
   const store = useDocumentStore;
 
@@ -37,14 +38,14 @@ export function CommandPalette() {
 
   useEffect(() => {
     if (open) {
-      setQuery('');
+      setQuery(initialQuery);
       setActiveIndex(0);
       // Focus on next tick after the dialog renders
       const t = setTimeout(() => inputRef.current?.focus(), 0);
       return () => clearTimeout(t);
     }
     return undefined;
-  }, [open]);
+  }, [open, initialQuery]);
 
   useEffect(() => {
     if (activeIndex >= filtered.length) setActiveIndex(0);

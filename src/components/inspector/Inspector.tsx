@@ -3,6 +3,7 @@ import { Trash2, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { ENTITY_TYPE_META, PALETTE_BY_DIAGRAM } from '../../domain/entityTypeMeta';
 import { validate } from '../../domain/validators';
+import { confirmAndDeleteEntity } from '../../services/confirmations';
 import { useDocumentStore } from '../../store';
 import { WarningsList } from './WarningsList';
 
@@ -72,7 +73,6 @@ function EntityInspector({
   const entity = useDocumentStore((s) => s.doc.entities[entityId]);
   const diagramType = useDocumentStore((s) => s.doc.diagramType);
   const updateEntity = useDocumentStore((s) => s.updateEntity);
-  const deleteEntity = useDocumentStore((s) => s.deleteEntity);
 
   if (!entity) return null;
 
@@ -133,7 +133,7 @@ function EntityInspector({
 
       <button
         type="button"
-        onClick={() => deleteEntity(entityId)}
+        onClick={() => confirmAndDeleteEntity(entityId)}
         className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-300"
       >
         <Trash2 className="h-3.5 w-3.5" />

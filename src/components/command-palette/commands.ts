@@ -1,3 +1,5 @@
+import { buildExampleCRT, buildExampleFRT } from '../../domain/examples';
+import { validate } from '../../domain/validators';
 import { getCanvasNodes, getSelectedEdges } from '../../services/canvasRef';
 import { exportJSON, exportPNG, pickJSON } from '../../services/exporters';
 import type { DocumentStore } from '../../store';
@@ -22,6 +24,24 @@ export const COMMANDS: Command[] = [
     label: 'New Future Reality Tree',
     group: 'Document',
     run: (s) => s.newDocument('frt'),
+  },
+  {
+    id: 'load-example-crt',
+    label: 'Load example Current Reality Tree',
+    group: 'Document',
+    run: (s) => {
+      s.setDocument(buildExampleCRT());
+      s.showToast('info', 'Loaded example CRT.');
+    },
+  },
+  {
+    id: 'load-example-frt',
+    label: 'Load example Future Reality Tree',
+    group: 'Document',
+    run: (s) => {
+      s.setDocument(buildExampleFRT());
+      s.showToast('info', 'Loaded example FRT.');
+    },
   },
   {
     id: 'import-json',
@@ -81,6 +101,24 @@ export const COMMANDS: Command[] = [
     label: 'Show keyboard shortcuts',
     group: 'Help',
     run: (s) => s.openHelp(),
+  },
+  {
+    id: 'run-validation',
+    label: 'Run validation',
+    group: 'Tools',
+    run: (s) => {
+      const warnings = validate(s.doc);
+      const open = warnings.filter((w) => !w.resolved).length;
+      const resolved = warnings.filter((w) => w.resolved).length;
+      if (warnings.length === 0) {
+        s.showToast('success', 'No CLR concerns to surface.');
+      } else if (open === 0) {
+        s.showToast('success', `All ${resolved} CLR concern${resolved === 1 ? '' : 's'} resolved.`);
+      } else {
+        const suffix = resolved > 0 ? `, ${resolved} resolved` : '';
+        s.showToast('info', `${open} open CLR concern${open === 1 ? '' : 's'}${suffix}.`);
+      }
+    },
   },
   {
     id: 'undo',

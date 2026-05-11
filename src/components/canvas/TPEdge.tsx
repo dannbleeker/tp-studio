@@ -31,6 +31,22 @@ export function TPEdge(props: EdgeProps) {
           ...props.style,
         }}
       />
+      {/*
+        AND junction marker. Every AND-grouped edge renders a small dot just
+        before its target endpoint. Because all siblings in the group share the
+        same target handle position, their dots stack and read as one visual
+        junction where the causes converge.
+      */}
+      {isAnd && (
+        <circle
+          cx={props.targetX}
+          cy={props.targetY + 10}
+          r={3.5}
+          fill="#8b5cf6"
+          stroke="white"
+          strokeWidth={1}
+        />
+      )}
       {isAnd && (
         <EdgeLabelRenderer>
           <div

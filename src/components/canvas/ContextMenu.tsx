@@ -4,6 +4,7 @@ import {
   PALETTE_BY_DIAGRAM,
   defaultEntityType,
 } from '../../domain/entityTypeMeta';
+import { confirmAndDeleteEntity } from '../../services/confirmations';
 import { useDocumentStore } from '../../store';
 
 type MenuItem =
@@ -16,7 +17,6 @@ export function ContextMenu() {
   const close = useDocumentStore((s) => s.closeContextMenu);
   const addEntity = useDocumentStore((s) => s.addEntity);
   const connect = useDocumentStore((s) => s.connect);
-  const deleteEntity = useDocumentStore((s) => s.deleteEntity);
   const deleteEdge = useDocumentStore((s) => s.deleteEdge);
   const beginEditing = useDocumentStore((s) => s.beginEditing);
   const updateEntity = useDocumentStore((s) => s.updateEntity);
@@ -85,7 +85,7 @@ export function ContextMenu() {
           kind: 'action',
           label: 'Delete entity',
           destructive: true,
-          run: () => deleteEntity(id),
+          run: () => confirmAndDeleteEntity(id),
         },
       ];
     }
