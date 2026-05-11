@@ -2,6 +2,10 @@
 
 A parking lot. Nothing here is required for v1; everything is honest about what's deferred.
 
+> **Iteration 2 is approved and spec'd.** See [docs/iteration-2-prd.md](docs/iteration-2-prd.md) for the
+> full requirement document. Bundles in scope: **1, 2, 3, 5, 6, 11, 13**, plus every item from this
+> file's "Recommended priorities" and "Polish ideas" sections (minus anything reasoning-related).
+
 The [Flying Logic feature catalog](#flying-logic-feature-catalog-fl-) below organizes
 candidate features into 13 named bundles with stable `FL-*` IDs so we can say
 "let's do Bundle 1 + FL-EX1 next iteration" without ambiguity. Reasoning / confidence,
