@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 6 — Iteration 2, Phase 0: Foundations
+
+Tooling and infrastructure that catches regressions throughout the rest of the iteration. No user-visible changes; the canvas is unchanged.
+
+- **F0.1 GitHub Actions CI** ([.github/workflows/ci.yml](.github/workflows/ci.yml)) — runs lint + type-check + Vitest + build on every push and pull request. Concurrency group cancels stale runs.
+- **F0.2 Pre-commit hook** via `simple-git-hooks` + `lint-staged`. Biome runs on staged files; failing files block the commit. Installs on `pnpm install` via the `postinstall` script.
+- **F0.3 Conventional-commits commit-msg hook** ([scripts/check-commit-msg.cjs](scripts/check-commit-msg.cjs)) — rejects messages that don't follow `type(scope)?: subject` with one of 11 allowed types. Merge / revert / fixup messages are skipped.
+- **F0.4 `.editorconfig`** — UTF-8, LF, 2-space indent, trim trailing whitespace, insert final newline. Markdown opts out of trim (preserves trailing-space line breaks).
+- **F0.6 Schema migration framework** ([src/domain/migrations.ts](src/domain/migrations.ts)) — forward-only migration loop with a `MIGRATIONS` registry and a `CURRENT_SCHEMA_VERSION` constant. `importFromJSON` walks documents forward to current before validating. Registry is empty today; Phases 1, 3, 6 will register migrations as they add schema fields. 5 new vitest cases.
+
+F0.5 Storybook is deferred to a separate turn (Windows AppLocker risk on `npx storybook init`).
+
+**Tests: 87 → 94.** TypeScript + Biome clean.
+
 ## Session 5 — Documentation pass
 
 - Expanded [README.md](README.md) with quick start, performance hooks, type-safety hooks, storage seam, and a CLR rules table.

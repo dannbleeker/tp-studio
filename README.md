@@ -27,6 +27,13 @@ Open http://localhost:5173. The first time you start, the app shows an empty CRT
 | `pnpm lint`         | Biome lint                                |
 | `pnpm format`       | Biome format (write)                      |
 
+Two git hooks land via `simple-git-hooks` on `pnpm install`:
+
+- **`pre-commit`** runs Biome (lint + format) on staged files via `lint-staged`. Failing files block the commit.
+- **`commit-msg`** validates the message follows [Conventional Commits](https://www.conventionalcommits.org/) — allowed types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`, `style`, `revert`.
+
+A GitHub Actions workflow at [.github/workflows/ci.yml](.github/workflows/ci.yml) runs lint + type-check + tests + build on every push and pull request.
+
 ## Architecture
 
 Four layers, with imports allowed only top-down:
@@ -68,6 +75,7 @@ The combined root and the `resetStoreForTest` helper live in [`src/store/index.t
 - **`noUncheckedIndexedAccess`** + **`noImplicitReturns`** are on in `tsconfig`.
 - **Brand types** ([src/domain/types.ts](src/domain/types.ts)) — `EntityId` / `EdgeId` / `DocumentId` are phantom-branded strings. `Entity.id`, `Edge.sourceId`, `Edge.assumptionIds` etc. are typed; the factory casts at the boundary. Plain `string` is still accepted for external IDs coming from React Flow / file pickers.
 - **Strict JSON import validation** ([src/domain/persistence.ts](src/domain/persistence.ts)) checks every field shape before construction. Malformed user-supplied JSON throws a descriptive error rather than crashing the canvas later.
+- **Forward-only schema migrations** ([src/domain/migrations.ts](src/domain/migrations.ts)) — `importFromJSON` walks the parsed document through registered migrations to reach `CURRENT_SCHEMA_VERSION` before validation. Today the registry is empty; future schema bumps register one migration each.
 
 ### Storage seam
 

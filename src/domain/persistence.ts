@@ -7,6 +7,7 @@ import {
   isStringArray,
   isTrueMap,
 } from './guards';
+import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from './migrations';
 import type { DocumentId, Edge, EdgeId, Entity, EntityId, TPDocument } from './types';
 
 /** Re-exported for tests and any consumer that needs the literal key. */
@@ -83,8 +84,12 @@ export const importFromJSON = (raw: string): TPDocument => {
   } catch (err) {
     throw new Error(`Invalid document: not valid JSON (${(err as Error).message}).`);
   }
+  // Run forward migrations before validation so downstream guards can assume
+  // the document is at CURRENT_SCHEMA_VERSION. Today the registry is empty;
+  // this is the plumbing for future versions.
+  parsed = migrateToCurrent(parsed);
   if (!isObject(parsed)) throw new Error('Invalid document: not an object.');
-  if (parsed.schemaVersion !== 1) {
+  if (parsed.schemaVersion !== CURRENT_SCHEMA_VERSION) {
     throw new Error(`Unsupported schemaVersion: ${String(parsed.schemaVersion)}`);
   }
   if (typeof parsed.id !== 'string') throw new Error('Invalid document: missing id.');

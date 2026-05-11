@@ -35,9 +35,9 @@ describe('exportToJSON / importFromJSON', () => {
     expect(() => importFromJSON('not json')).toThrow(/not valid JSON/);
   });
 
-  it('throws on unsupported schemaVersion', () => {
+  it('throws when schemaVersion is newer than the app supports', () => {
     const bad = JSON.stringify({ ...sampleDoc(), schemaVersion: 99 });
-    expect(() => importFromJSON(bad)).toThrow(/Unsupported schemaVersion/);
+    expect(() => importFromJSON(bad)).toThrow(/newer than this app supports/);
   });
 
   it('throws on bad diagramType', () => {
