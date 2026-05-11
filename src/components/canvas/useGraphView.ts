@@ -1,9 +1,9 @@
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { computeLayout } from '@/domain/layout';
+import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
+import type { TPDocument } from '@/domain/types';
 import { MarkerType } from '@xyflow/react';
 import { useMemo } from 'react';
-import { NODE_MIN_HEIGHT, NODE_WIDTH } from '../../domain/constants';
-import { computeLayout } from '../../domain/layout';
-import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '../../domain/tokens';
-import type { TPDocument } from '../../domain/types';
 import type { TPEdge, TPNode } from './flow-types';
 
 export type GraphView = {

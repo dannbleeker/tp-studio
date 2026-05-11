@@ -1,8 +1,8 @@
-import { buildExampleCRT, buildExampleFRT } from '../../domain/examples';
-import { validate } from '../../domain/validators';
-import { getCanvasNodes, getSelectedEdges } from '../../services/canvasRef';
-import { exportJSON, exportPNG, pickJSON } from '../../services/exporters';
-import type { DocumentStore } from '../../store';
+import { buildExampleCRT, buildExampleFRT } from '@/domain/examples';
+import { validate } from '@/domain/validators';
+import { getCanvasNodes, getSelectedEdges } from '@/services/canvasRef';
+import { exportJSON, exportPNG, pickJSON } from '@/services/exporters';
+import type { DocumentStore } from '@/store';
 
 export type Command = {
   id: string;

@@ -32,18 +32,21 @@ const levenshtein = (a: string, b: string): number => {
   const bl = b.length;
   if (al === 0) return bl;
   if (bl === 0) return al;
-  const prev: number[] = new Array(bl + 1);
-  const curr: number[] = new Array(bl + 1);
+  // Non-null assertions are safe here: every read index is bounded by the
+  // surrounding loops (0..bl inclusive on prev/curr, and the init loop has
+  // already filled prev[0..bl]).
+  const prev = new Uint32Array(bl + 1);
+  const curr = new Uint32Array(bl + 1);
   for (let j = 0; j <= bl; j++) prev[j] = j;
   for (let i = 1; i <= al; i++) {
     curr[0] = i;
     for (let j = 1; j <= bl; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+      curr[j] = Math.min(curr[j - 1]! + 1, prev[j]! + 1, prev[j - 1]! + cost);
     }
-    for (let j = 0; j <= bl; j++) prev[j] = curr[j];
+    for (let j = 0; j <= bl; j++) prev[j] = curr[j]!;
   }
-  return prev[bl];
+  return prev[bl]!;
 };
 
 const similarity = (a: string, b: string): number => {
@@ -121,18 +124,16 @@ const causeSufficiencyRule = (doc: TPDocument): Warning[] => {
   const out: Warning[] = [];
   for (const e of structuralEntities(doc)) {
     const incoming = incomingEdges(doc, e.id);
-    if (incoming.length === 1) {
-      const single = incoming[0];
-      if (!single.andGroupId) {
-        out.push(
-          makeWarning(
-            doc,
-            'cause-sufficiency',
-            { kind: 'edge', id: single.id },
-            'Is this cause alone enough? Consider grouping with another as an AND.'
-          )
-        );
-      }
+    const single = incoming[0];
+    if (incoming.length === 1 && single && !single.andGroupId) {
+      out.push(
+        makeWarning(
+          doc,
+          'cause-sufficiency',
+          { kind: 'edge', id: single.id },
+          'Is this cause alone enough? Consider grouping with another as an AND.'
+        )
+      );
     }
   }
   return out;
@@ -206,8 +207,9 @@ const tautologyRule = (doc: TPDocument): Warning[] => {
   const out: Warning[] = [];
   for (const e of structuralEntities(doc)) {
     const outgoing = outgoingEdges(doc, e.id);
-    if (outgoing.length !== 1) continue;
-    const child = doc.entities[outgoing[0].targetId];
+    const sole = outgoing[0];
+    if (outgoing.length !== 1 || !sole) continue;
+    const child = doc.entities[sole.targetId];
     if (!child) continue;
     if (similarity(e.title, child.title) >= SIMILARITY_THRESHOLD) {
       out.push(

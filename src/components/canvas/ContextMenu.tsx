@@ -1,12 +1,9 @@
+import { ENTITY_TYPE_META, PALETTE_BY_DIAGRAM, defaultEntityType } from '@/domain/entityTypeMeta';
+import { useOutsideAndEscape } from '@/hooks/useOutsideAndEscape';
+import { useEntity } from '@/hooks/useSelected';
+import { confirmAndDeleteEntity } from '@/services/confirmations';
+import { useDocumentStore } from '@/store';
 import { useRef } from 'react';
-import {
-  ENTITY_TYPE_META,
-  PALETTE_BY_DIAGRAM,
-  defaultEntityType,
-} from '../../domain/entityTypeMeta';
-import { useOutsideAndEscape } from '../../hooks/useOutsideAndEscape';
-import { confirmAndDeleteEntity } from '../../services/confirmations';
-import { useDocumentStore } from '../../store';
 
 type MenuItem =
   | { kind: 'action'; label: string; destructive?: boolean; run: () => void }
@@ -22,9 +19,7 @@ export function ContextMenu() {
   const beginEditing = useDocumentStore((s) => s.beginEditing);
   const updateEntity = useDocumentStore((s) => s.updateEntity);
   const diagramType = useDocumentStore((s) => s.doc.diagramType);
-  const entity = useDocumentStore((s) =>
-    menu.open && menu.target.kind === 'entity' ? s.doc.entities[menu.target.id] : undefined
-  );
+  const entity = useEntity(menu.open && menu.target.kind === 'entity' ? menu.target.id : undefined);
 
   const ref = useRef<HTMLDivElement | null>(null);
   useOutsideAndEscape(ref, close, menu.open);

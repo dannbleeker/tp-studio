@@ -1,6 +1,7 @@
+import type { Entity, Warning } from '@/domain/types';
+import { useEdge, useEntity } from '@/hooks/useSelected';
+import { useDocumentStore } from '@/store';
 import { Trash2 } from 'lucide-react';
-import type { Entity, Warning } from '../../domain/types';
-import { useDocumentStore } from '../../store';
 import { Button } from '../ui/Button';
 import { EdgeAssumptions } from './EdgeAssumptions';
 import { Field } from './Field';
@@ -13,9 +14,9 @@ export function EdgeInspector({
   edgeId: string;
   warnings: Warning[];
 }) {
-  const edge = useDocumentStore((s) => s.doc.edges[edgeId]);
-  const source = useDocumentStore((s) => (edge ? s.doc.entities[edge.sourceId] : undefined));
-  const target = useDocumentStore((s) => (edge ? s.doc.entities[edge.targetId] : undefined));
+  const edge = useEdge(edgeId);
+  const source = useEntity(edge?.sourceId);
+  const target = useEntity(edge?.targetId);
   const deleteEdge = useDocumentStore((s) => s.deleteEdge);
   const ungroupAnd = useDocumentStore((s) => s.ungroupAnd);
   const entities = useDocumentStore((s) => s.doc.entities);

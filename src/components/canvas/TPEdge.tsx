@@ -1,5 +1,5 @@
+import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
 import { BaseEdge, EdgeLabelRenderer, type EdgeProps, getBezierPath } from '@xyflow/react';
-import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '../../domain/tokens';
 import type { TPEdge as TPEdgeType } from './flow-types';
 
 export function TPEdge(props: EdgeProps<TPEdgeType>) {

@@ -1,8 +1,8 @@
+import { COALESCE_WINDOW_MS, HISTORY_LIMIT } from '@/domain/constants';
+import { saveToLocalStorage } from '@/domain/persistence';
+import type { TPDocument } from '@/domain/types';
 import type { StateCreator } from 'zustand';
-import { COALESCE_WINDOW_MS, HISTORY_LIMIT } from '../domain/constants';
-import { saveToLocalStorage } from '../domain/persistence';
-import type { TPDocument } from '../domain/types';
-import type { RootStore } from './index';
+import type { RootStore } from './types';
 
 export type HistoryEntry = {
   doc: TPDocument;
@@ -35,14 +35,22 @@ export const pushHistoryEntry = (past: HistoryEntry[], entry: HistoryEntry): His
   return [...past, entry].slice(-HISTORY_LIMIT);
 };
 
+/**
+ * Data-only defaults for this slice. Used by resetStoreForTest.
+ */
+export const historyDefaults = (): Pick<HistorySlice, 'past' | 'future'> => ({
+  past: [],
+  future: [],
+});
+
 export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> = (set, get) => ({
   past: [],
   future: [],
 
   undo: () => {
     const { past, doc, future } = get();
-    if (past.length === 0) return;
     const last = past[past.length - 1];
+    if (!last) return;
     saveToLocalStorage(last.doc);
     set({
       doc: last.doc,
@@ -54,8 +62,8 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
 
   redo: () => {
     const { future, doc, past } = get();
-    if (future.length === 0) return;
     const next = future[future.length - 1];
+    if (!next) return;
     saveToLocalStorage(next.doc);
     set({
       doc: next.doc,

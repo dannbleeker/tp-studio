@@ -1,5 +1,5 @@
+import { computeLayout } from '@/domain/layout';
 import { describe, expect, it } from 'vitest';
-import { computeLayout } from '../../src/domain/layout';
 
 const box = (id: string) => ({ id, width: 200, height: 80 });
 
@@ -11,8 +11,8 @@ describe('computeLayout', () => {
   it('positions a single node deterministically', () => {
     const result = computeLayout([box('a')], []);
     expect(result.a).toBeDefined();
-    expect(typeof result.a.x).toBe('number');
-    expect(typeof result.a.y).toBe('number');
+    expect(typeof result.a!.x).toBe('number');
+    expect(typeof result.a!.y).toBe('number');
   });
 
   it('lays out cause below effect with default BT direction', () => {
@@ -21,7 +21,7 @@ describe('computeLayout', () => {
       [{ sourceId: 'cause', targetId: 'effect' }]
     );
     // BT: bottom-to-top → cause (source) sits lower (greater y) than effect (target).
-    expect(result.cause.y).toBeGreaterThan(result.effect.y);
+    expect(result.cause!.y).toBeGreaterThan(result.effect!.y);
   });
 
   it('respects an alternate direction', () => {
@@ -29,7 +29,7 @@ describe('computeLayout', () => {
       direction: 'LR',
     });
     // LR: source on the left → a.x < b.x
-    expect(result.a.x).toBeLessThan(result.b.x);
+    expect(result.a!.x).toBeLessThan(result.b!.x);
   });
 
   it('ignores edges that reference unknown nodes', () => {

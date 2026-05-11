@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import {
   STORAGE_KEY,
   clearLocalStorage,
@@ -6,7 +5,8 @@ import {
   importFromJSON,
   loadFromLocalStorage,
   saveToLocalStorage,
-} from '../../src/domain/persistence';
+} from '@/domain/persistence';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(() => {

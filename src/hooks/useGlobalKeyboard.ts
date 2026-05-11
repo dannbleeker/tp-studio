@@ -1,9 +1,9 @@
+import { SIBLING_Y_TOLERANCE_PX } from '@/domain/constants';
+import { defaultEntityType } from '@/domain/entityTypeMeta';
+import { getCanvasNodes } from '@/services/canvasRef';
+import { confirmAndDeleteEntity } from '@/services/confirmations';
+import { useDocumentStore } from '@/store';
 import { useEffect } from 'react';
-import { SIBLING_Y_TOLERANCE_PX } from '../domain/constants';
-import { defaultEntityType } from '../domain/entityTypeMeta';
-import { getCanvasNodes } from '../services/canvasRef';
-import { confirmAndDeleteEntity } from '../services/confirmations';
-import { useDocumentStore } from '../store';
 
 const isEditableTarget = (target: EventTarget | null): boolean => {
   const el = target as HTMLElement | null;

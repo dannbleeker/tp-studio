@@ -1,7 +1,7 @@
+import type { Warning } from '@/domain/types';
+import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import type { Warning } from '../../domain/types';
-import { useDocumentStore } from '../../store';
 
 export function WarningsList({ warnings }: { warnings: Warning[] }) {
   const resolveWarning = useDocumentStore((s) => s.resolveWarning);

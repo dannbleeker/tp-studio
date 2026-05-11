@@ -1,5 +1,5 @@
+import { useDocumentStore } from '@/store';
 import { HelpCircle, Moon, Search, Sun } from 'lucide-react';
-import { useDocumentStore } from '../../store';
 import { Button } from '../ui/Button';
 
 export function TopBar() {

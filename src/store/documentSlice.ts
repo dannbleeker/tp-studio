@@ -1,11 +1,11 @@
+import { createDocument, createEdge, createEntity } from '@/domain/factory';
+import { hasEdge, removeEntityFromEdges } from '@/domain/graph';
+import { loadFromLocalStorage, saveToLocalStorage } from '@/domain/persistence';
+import type { DiagramType, Edge, Entity, EntityType, TPDocument } from '@/domain/types';
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
-import { createDocument, createEdge, createEntity } from '../domain/factory';
-import { hasEdge, removeEntityFromEdges } from '../domain/graph';
-import { loadFromLocalStorage, saveToLocalStorage } from '../domain/persistence';
-import type { DiagramType, Edge, Entity, EntityType, TPDocument } from '../domain/types';
 import { pushHistoryEntry } from './historySlice';
-import type { RootStore } from './index';
+import type { RootStore } from './types';
 
 export type DocumentSlice = {
   doc: TPDocument;
@@ -35,6 +35,14 @@ export type DocumentSlice = {
 const touch = (doc: TPDocument): TPDocument => ({ ...doc, updatedAt: Date.now() });
 
 const initialDoc = loadFromLocalStorage() ?? createDocument('crt');
+
+/**
+ * Data-only defaults for this slice. Used by resetStoreForTest in tests so
+ * a new slice field doesn't require updating every test's setup.
+ */
+export const documentDefaults = (): Pick<DocumentSlice, 'doc'> => ({
+  doc: createDocument('crt'),
+});
 
 export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice> = (set, get) => {
   // Internal helper: wraps a mutator with persistence + history-push + future-clear.
@@ -162,10 +170,10 @@ export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice>
       }
       const { doc } = get();
       const edges = edgeIds.map((id) => doc.edges[id]).filter((e): e is Edge => Boolean(e));
-      if (edges.length !== edgeIds.length) {
+      if (edges.length !== edgeIds.length || edges.length === 0) {
         return { ok: false, reason: 'One or more selected edges no longer exist.' };
       }
-      const targetId = edges[0].targetId;
+      const targetId = edges[0]!.targetId;
       if (!edges.every((e) => e.targetId === targetId)) {
         return { ok: false, reason: 'AND-grouped edges must share the same target.' };
       }

@@ -1,8 +1,8 @@
+import { validate } from '@/domain/validators';
+import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { useMemo } from 'react';
-import { validate } from '../../domain/validators';
-import { useDocumentStore } from '../../store';
 import { Button } from '../ui/Button';
 import { EdgeInspector } from './EdgeInspector';
 import { EntityInspector } from './EntityInspector';

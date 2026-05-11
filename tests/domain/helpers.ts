@@ -1,4 +1,4 @@
-import type { DiagramType, Edge, Entity, EntityType, TPDocument } from '../../src/domain/types';
+import type { DiagramType, Edge, Entity, EntityType, TPDocument } from '@/domain/types';
 
 let counter = 0;
 const nextId = (prefix: string): string => `${prefix}-${++counter}`;

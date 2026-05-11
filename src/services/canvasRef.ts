@@ -1,23 +1,20 @@
-import type { Edge, Node, ReactFlowInstance } from '@xyflow/react';
+import type { TPEdge, TPNode } from '@/components/canvas/flow-types';
+import type { ReactFlowInstance } from '@xyflow/react';
 
-// Stored as the most permissive instance type — concrete instances narrow at the call site.
-// biome-ignore lint/suspicious/noExplicitAny: tracking a single shared instance across node-data types
-type AnyFlow = ReactFlowInstance<any, any>;
+// The active React Flow instance, parameterized with our concrete node and
+// edge types. Set on RF onInit, cleared on canvas unmount. Lets command-palette
+// actions and exporters reach into the live canvas from outside React.
+type TPFlow = ReactFlowInstance<TPNode, TPEdge>;
 
-let cached: AnyFlow | null = null;
+let cached: TPFlow | null = null;
 
-export const setCanvasInstance = (instance: AnyFlow | null): void => {
+export const setCanvasInstance = (instance: TPFlow | null): void => {
   cached = instance;
 };
 
-export const getCanvasInstance = (): AnyFlow | null => cached;
+export const getCanvasInstance = (): TPFlow | null => cached;
 
-export const getCanvasNodes = (): Node[] => {
-  if (!cached) return [];
-  return cached.getNodes() as Node[];
-};
+export const getCanvasNodes = (): TPNode[] => cached?.getNodes() ?? [];
 
-export const getSelectedEdges = (): Edge[] => {
-  if (!cached) return [];
-  return (cached.getEdges() as Edge[]).filter((e) => e.selected === true);
-};
+export const getSelectedEdges = (): TPEdge[] =>
+  cached?.getEdges().filter((e) => e.selected === true) ?? [];

@@ -1,23 +1,7 @@
+import { resetStoreForTest, useDocumentStore } from '@/store';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createDocument } from '../../src/domain/factory';
-import { useDocumentStore } from '../../src/store';
 
-const reset = () => {
-  localStorage.clear();
-  useDocumentStore.setState({
-    doc: createDocument('crt'),
-    selection: { kind: 'none' },
-    editingEntityId: null,
-    paletteOpen: false,
-    helpOpen: false,
-    contextMenu: { open: false },
-    toasts: [],
-    past: [],
-    future: [],
-  });
-};
-
-beforeEach(reset);
+beforeEach(resetStoreForTest);
 
 const addNode = (title = 'Node') =>
   useDocumentStore.getState().addEntity({ type: 'effect', title });
@@ -58,8 +42,8 @@ describe('groupAsAnd', () => {
     expect(result.ok).toBe(true);
     const groupId = result.ok ? result.groupId : '';
     const doc = useDocumentStore.getState().doc;
-    expect(doc.edges[e1.id].andGroupId).toBe(groupId);
-    expect(doc.edges[e2.id].andGroupId).toBe(groupId);
+    expect(doc.edges[e1.id]!.andGroupId).toBe(groupId);
+    expect(doc.edges[e2.id]!.andGroupId).toBe(groupId);
   });
 
   it('reuses an existing group id when extending a group', () => {
@@ -79,7 +63,7 @@ describe('groupAsAnd', () => {
     if (!second.ok) return;
     expect(second.groupId).toBe(groupId);
     const doc = useDocumentStore.getState().doc;
-    expect(doc.edges[e3.id].andGroupId).toBe(groupId);
+    expect(doc.edges[e3.id]!.andGroupId).toBe(groupId);
   });
 });
 
@@ -94,8 +78,8 @@ describe('ungroupAnd', () => {
     useDocumentStore.getState().groupAsAnd([e1.id, e2.id]);
     useDocumentStore.getState().ungroupAnd([e1.id, e2.id]);
     const doc = useDocumentStore.getState().doc;
-    expect(doc.edges[e1.id].andGroupId).toBeUndefined();
-    expect(doc.edges[e2.id].andGroupId).toBeUndefined();
+    expect(doc.edges[e1.id]!.andGroupId).toBeUndefined();
+    expect(doc.edges[e2.id]!.andGroupId).toBeUndefined();
   });
 
   it('is a no-op for edges that have no group', () => {
@@ -141,7 +125,7 @@ describe('undo / redo', () => {
     expect(pastAfter - pastBefore).toBe(1);
     // One undo restores the pre-typing title.
     useDocumentStore.getState().undo();
-    expect(useDocumentStore.getState().doc.entities[e.id].title).toBe('Initial');
+    expect(useDocumentStore.getState().doc.entities[e.id]!.title).toBe('Initial');
   });
 
   it('does not coalesce updates to different fields', () => {
@@ -177,8 +161,8 @@ describe('assumptions on edges', () => {
     expect(assumption).not.toBeNull();
     if (!assumption) return;
     const doc = useDocumentStore.getState().doc;
-    expect(doc.entities[assumption.id].type).toBe('assumption');
-    expect(doc.edges[e.id].assumptionIds).toEqual([assumption.id]);
+    expect(doc.entities[assumption.id]!.type).toBe('assumption');
+    expect(doc.edges[e.id]!.assumptionIds).toEqual([assumption.id]);
   });
 
   it('addAssumptionToEdge returns null for an unknown edge', () => {
@@ -195,7 +179,7 @@ describe('assumptions on edges', () => {
     if (!assumption) throw new Error('assumption not created');
     useDocumentStore.getState().attachAssumption(e.id, assumption.id);
     useDocumentStore.getState().attachAssumption(e.id, assumption.id);
-    const ids = useDocumentStore.getState().doc.edges[e.id].assumptionIds;
+    const ids = useDocumentStore.getState().doc.edges[e.id]!.assumptionIds;
     expect(ids).toEqual([assumption.id]);
   });
 
@@ -208,7 +192,7 @@ describe('assumptions on edges', () => {
     if (!assumption) throw new Error('assumption not created');
     useDocumentStore.getState().detachAssumption(e.id, assumption.id);
     const edge = useDocumentStore.getState().doc.edges[e.id];
-    expect(edge.assumptionIds).toBeUndefined();
+    expect(edge!.assumptionIds).toBeUndefined();
     // entity itself still exists
     expect(useDocumentStore.getState().doc.entities[assumption.id]).toBeDefined();
   });
@@ -225,14 +209,14 @@ describe('assumptions on edges', () => {
     if (!assumption) throw new Error('assumption not created');
     useDocumentStore.getState().attachAssumption(e2.id, assumption.id);
     // sanity
-    expect(useDocumentStore.getState().doc.edges[e1.id].assumptionIds).toContain(assumption.id);
-    expect(useDocumentStore.getState().doc.edges[e2.id].assumptionIds).toContain(assumption.id);
+    expect(useDocumentStore.getState().doc.edges[e1.id]!.assumptionIds).toContain(assumption.id);
+    expect(useDocumentStore.getState().doc.edges[e2.id]!.assumptionIds).toContain(assumption.id);
 
     useDocumentStore.getState().deleteEntity(assumption.id);
 
     const doc = useDocumentStore.getState().doc;
     expect(doc.entities[assumption.id]).toBeUndefined();
-    expect(doc.edges[e1.id].assumptionIds).toBeUndefined();
-    expect(doc.edges[e2.id].assumptionIds).toBeUndefined();
+    expect(doc.edges[e1.id]!.assumptionIds).toBeUndefined();
+    expect(doc.edges[e2.id]!.assumptionIds).toBeUndefined();
   });
 });

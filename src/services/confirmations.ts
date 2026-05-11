@@ -1,5 +1,5 @@
-import { connectionCount } from '../domain/graph';
-import { useDocumentStore } from '../store';
+import { connectionCount } from '@/domain/graph';
+import { useDocumentStore } from '@/store';
 
 export const confirmAndDeleteEntity = (id: string): void => {
   const { doc, deleteEntity } = useDocumentStore.getState();

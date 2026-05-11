@@ -1,6 +1,6 @@
+import { useOutsideAndEscape } from '@/hooks/useOutsideAndEscape';
 import clsx from 'clsx';
 import { type ReactNode, useRef } from 'react';
-import { useOutsideAndEscape } from '../../hooks/useOutsideAndEscape';
 
 export type ModalProps = {
   open: boolean;

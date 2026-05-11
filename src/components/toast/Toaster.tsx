@@ -1,6 +1,6 @@
+import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
-import { useDocumentStore } from '../../store';
 
 const ICONS = {
   info: Info,

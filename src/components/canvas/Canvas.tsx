@@ -1,3 +1,7 @@
+import { defaultEntityType } from '@/domain/entityTypeMeta';
+import { GRID_DOT } from '@/domain/tokens';
+import { setCanvasInstance } from '@/services/canvasRef';
+import { useDocumentStore } from '@/store';
 import {
   Background,
   BackgroundVariant,
@@ -9,10 +13,6 @@ import {
   ReactFlowProvider,
 } from '@xyflow/react';
 import { useCallback, useEffect } from 'react';
-import { defaultEntityType } from '../../domain/entityTypeMeta';
-import { GRID_DOT } from '../../domain/tokens';
-import { setCanvasInstance } from '../../services/canvasRef';
-import { useDocumentStore } from '../../store';
 import { TPEdge } from './TPEdge';
 import { TPNode } from './TPNode';
 import { useGraphView } from './useGraphView';

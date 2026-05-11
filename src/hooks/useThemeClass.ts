@@ -1,5 +1,5 @@
+import { useDocumentStore } from '@/store';
 import { useEffect } from 'react';
-import { useDocumentStore } from '../store';
 
 export function useThemeClass() {
   const theme = useDocumentStore((s) => s.theme);

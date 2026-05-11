@@ -1,5 +1,5 @@
+import { useDocumentStore } from '@/store';
 import { X } from 'lucide-react';
-import { useDocumentStore } from '../../store';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 

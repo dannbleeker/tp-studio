@@ -1,7 +1,7 @@
+import type { Entity } from '@/domain/types';
+import { useDocumentStore } from '@/store';
 import { ArrowUpRight, Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import type { Entity } from '../../domain/types';
-import { useDocumentStore } from '../../store';
 import { Button } from '../ui/Button';
 import { Field } from './Field';
 

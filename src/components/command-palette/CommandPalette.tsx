@@ -1,6 +1,6 @@
+import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useDocumentStore } from '../../store';
 import { Modal } from '../ui/Modal';
 import { COMMANDS, type Command } from './commands';
 

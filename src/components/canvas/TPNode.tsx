@@ -1,9 +1,9 @@
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
+import { useDocumentStore } from '@/store';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import clsx from 'clsx';
 import { useEffect, useRef } from 'react';
-import { NODE_MIN_HEIGHT, NODE_WIDTH } from '../../domain/constants';
-import { ENTITY_TYPE_META } from '../../domain/entityTypeMeta';
-import { useDocumentStore } from '../../store';
 import type { TPNode as TPNodeType } from './flow-types';
 
 export function TPNode({ data, selected }: NodeProps<TPNodeType>) {

@@ -1,9 +1,9 @@
+import { PNG_PADDING, PNG_PIXEL_RATIO } from '@/domain/constants';
+import { exportToJSON, importFromJSON } from '@/domain/persistence';
+import { SURFACE_DARK, SURFACE_LIGHT } from '@/domain/tokens';
+import type { TPDocument } from '@/domain/types';
 import { type Node, getNodesBounds, getViewportForBounds } from '@xyflow/react';
 import { toPng } from 'html-to-image';
-import { PNG_PADDING, PNG_PIXEL_RATIO } from '../domain/constants';
-import { exportToJSON, importFromJSON } from '../domain/persistence';
-import { SURFACE_DARK, SURFACE_LIGHT } from '../domain/tokens';
-import type { TPDocument } from '../domain/types';
 
 const slug = (s: string): string =>
   s

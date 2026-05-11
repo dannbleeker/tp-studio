@@ -1,9 +1,10 @@
+import { ENTITY_TYPE_META, PALETTE_BY_DIAGRAM } from '@/domain/entityTypeMeta';
+import type { Warning } from '@/domain/types';
+import { useEntity } from '@/hooks/useSelected';
+import { confirmAndDeleteEntity } from '@/services/confirmations';
+import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { Trash2 } from 'lucide-react';
-import { ENTITY_TYPE_META, PALETTE_BY_DIAGRAM } from '../../domain/entityTypeMeta';
-import type { Warning } from '../../domain/types';
-import { confirmAndDeleteEntity } from '../../services/confirmations';
-import { useDocumentStore } from '../../store';
 import { Button } from '../ui/Button';
 import { AttachedEdgesList } from './AttachedEdgesList';
 import { Field } from './Field';
@@ -16,7 +17,7 @@ export function EntityInspector({
   entityId: string;
   warnings: Warning[];
 }) {
-  const entity = useDocumentStore((s) => s.doc.entities[entityId]);
+  const entity = useEntity(entityId);
   const diagramType = useDocumentStore((s) => s.doc.diagramType);
   const updateEntity = useDocumentStore((s) => s.updateEntity);
 

@@ -1,5 +1,5 @@
+import { useDocumentStore } from '@/store';
 import { ArrowUpRight } from 'lucide-react';
-import { useDocumentStore } from '../../store';
 import { Field } from './Field';
 
 export function AttachedEdgesList({ assumptionId }: { assumptionId: string }) {

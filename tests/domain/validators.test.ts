@@ -1,5 +1,5 @@
+import { validate } from '@/domain/validators';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { validate } from '../../src/domain/validators';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(() => {
@@ -68,7 +68,7 @@ describe('CLR: causality existence', () => {
     const warnings = validate(makeDoc([a, b], [e]));
     const causality = warnings.filter((w) => w.ruleId === 'causality-existence');
     expect(causality.length).toBe(1);
-    expect(causality[0].resolved).toBe(false);
+    expect(causality[0]!.resolved).toBe(false);
   });
 
   it('marks the warning resolved when user has dismissed it', () => {

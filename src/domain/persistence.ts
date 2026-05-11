@@ -1,6 +1,8 @@
+import { STORAGE_KEYS, readString, removeKey, writeString } from '@/services/storage';
 import type { DiagramType, Edge, Entity, TPDocument } from './types';
 
-export const STORAGE_KEY = 'tp-studio:active-document:v1';
+/** Re-exported for tests and any consumer that needs the literal key. */
+export const STORAGE_KEY = STORAGE_KEYS.doc;
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -66,16 +68,12 @@ export const importFromJSON = (raw: string): TPDocument => {
   };
 };
 
-const hasLocalStorage = (): boolean => typeof globalThis.localStorage !== 'undefined';
-
 export const saveToLocalStorage = (doc: TPDocument): void => {
-  if (!hasLocalStorage()) return;
-  globalThis.localStorage.setItem(STORAGE_KEY, exportToJSON(doc));
+  writeString(STORAGE_KEYS.doc, exportToJSON(doc));
 };
 
 export const loadFromLocalStorage = (): TPDocument | null => {
-  if (!hasLocalStorage()) return null;
-  const raw = globalThis.localStorage.getItem(STORAGE_KEY);
+  const raw = readString(STORAGE_KEYS.doc);
   if (raw === null) return null;
   try {
     return importFromJSON(raw);
@@ -85,6 +83,5 @@ export const loadFromLocalStorage = (): TPDocument | null => {
 };
 
 export const clearLocalStorage = (): void => {
-  if (!hasLocalStorage()) return;
-  globalThis.localStorage.removeItem(STORAGE_KEY);
+  removeKey(STORAGE_KEYS.doc);
 };
