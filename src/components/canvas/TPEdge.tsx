@@ -1,10 +1,8 @@
 import { BaseEdge, EdgeLabelRenderer, type EdgeProps, getBezierPath } from '@xyflow/react';
+import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '../../domain/tokens';
+import type { TPEdge as TPEdgeType } from './flow-types';
 
-export type TPEdgeData = {
-  andGroupId?: string;
-};
-
-export function TPEdge(props: EdgeProps) {
+export function TPEdge(props: EdgeProps<TPEdgeType>) {
   const [path, labelX, labelY] = getBezierPath({
     sourceX: props.sourceX,
     sourceY: props.sourceY,
@@ -14,10 +12,13 @@ export function TPEdge(props: EdgeProps) {
     targetPosition: props.targetPosition,
   });
 
-  const data = props.data as TPEdgeData | undefined;
-  const isAnd = Boolean(data?.andGroupId);
+  const isAnd = Boolean(props.data?.andGroupId);
 
-  const stroke = props.selected ? '#6366f1' : isAnd ? '#8b5cf6' : '#a3a3a3';
+  const stroke = props.selected
+    ? EDGE_STROKE_SELECTED
+    : isAnd
+      ? EDGE_STROKE_AND
+      : EDGE_STROKE_DEFAULT;
 
   return (
     <>
@@ -42,7 +43,7 @@ export function TPEdge(props: EdgeProps) {
           cx={props.targetX}
           cy={props.targetY + 10}
           r={3.5}
-          fill="#8b5cf6"
+          fill={EDGE_STROKE_AND}
           stroke="white"
           strokeWidth={1}
         />

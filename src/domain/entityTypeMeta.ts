@@ -1,3 +1,4 @@
+import { ENTITY_STRIPE_COLOR } from './tokens';
 import type { DiagramType, EntityType } from './types';
 
 export type EntityTypeMeta = {
@@ -7,18 +8,24 @@ export type EntityTypeMeta = {
   shortcut?: string;
 };
 
-export const ENTITY_TYPE_META: Record<EntityType, EntityTypeMeta> = {
-  ude: { type: 'ude', label: 'Undesirable Effect', stripeColor: '#ef4444' },
-  effect: { type: 'effect', label: 'Effect', stripeColor: '#737373' },
-  rootCause: { type: 'rootCause', label: 'Root Cause', stripeColor: '#d97706' },
-  injection: { type: 'injection', label: 'Injection', stripeColor: '#059669' },
-  desiredEffect: {
-    type: 'desiredEffect',
-    label: 'Desired Effect',
-    stripeColor: '#6366f1',
-  },
-  assumption: { type: 'assumption', label: 'Assumption', stripeColor: '#8b5cf6' },
+const LABELS: Record<EntityType, string> = {
+  ude: 'Undesirable Effect',
+  effect: 'Effect',
+  rootCause: 'Root Cause',
+  injection: 'Injection',
+  desiredEffect: 'Desired Effect',
+  assumption: 'Assumption',
 };
+
+export const ENTITY_TYPE_META: Record<EntityType, EntityTypeMeta> = (
+  Object.keys(LABELS) as EntityType[]
+).reduce(
+  (acc, type) => {
+    acc[type] = { type, label: LABELS[type], stripeColor: ENTITY_STRIPE_COLOR[type] };
+    return acc;
+  },
+  {} as Record<EntityType, EntityTypeMeta>
+);
 
 export const PALETTE_BY_DIAGRAM: Record<DiagramType, EntityType[]> = {
   crt: ['ude', 'effect', 'rootCause', 'assumption'],

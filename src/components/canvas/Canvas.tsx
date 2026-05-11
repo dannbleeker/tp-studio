@@ -10,6 +10,7 @@ import {
 } from '@xyflow/react';
 import { useCallback, useEffect } from 'react';
 import { defaultEntityType } from '../../domain/entityTypeMeta';
+import { GRID_DOT } from '../../domain/tokens';
 import { setCanvasInstance } from '../../services/canvasRef';
 import { useDocumentStore } from '../../store';
 import { TPEdge } from './TPEdge';
@@ -105,7 +106,7 @@ function CanvasInner() {
         fitView
         fitViewOptions={{ padding: 0.4, maxZoom: 1.2 }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color="#d4d4d4" />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color={GRID_DOT} />
         <Controls
           position="bottom-center"
           showInteractive={false}

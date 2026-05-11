@@ -1,6 +1,8 @@
 import { type Node, getNodesBounds, getViewportForBounds } from '@xyflow/react';
 import { toPng } from 'html-to-image';
+import { PNG_PADDING, PNG_PIXEL_RATIO } from '../domain/constants';
 import { exportToJSON, importFromJSON } from '../domain/persistence';
+import { SURFACE_DARK, SURFACE_LIGHT } from '../domain/tokens';
 import type { TPDocument } from '../domain/types';
 
 const slug = (s: string): string =>
@@ -44,19 +46,17 @@ export const exportPNG = async (doc: TPDocument, nodes: Node[]): Promise<void> =
   const flowEl = document.querySelector('.react-flow__viewport') as HTMLElement | null;
   if (!flowEl) return;
 
-  const PIXEL_RATIO = 2;
-  const PADDING = 32;
   const bounds = getNodesBounds(nodes);
-  const width = bounds.width + PADDING * 2;
-  const height = bounds.height + PADDING * 2;
-  const viewport = getViewportForBounds(bounds, width, height, 0.5, 2, PADDING);
+  const width = bounds.width + PNG_PADDING * 2;
+  const height = bounds.height + PNG_PADDING * 2;
+  const viewport = getViewportForBounds(bounds, width, height, 0.5, 2, PNG_PADDING);
 
   const isDark = document.documentElement.classList.contains('dark');
-  const bg = isDark ? '#0a0a0a' : '#ffffff';
+  const bg = isDark ? SURFACE_DARK : SURFACE_LIGHT;
 
   const dataUrl = await toPng(flowEl, {
     backgroundColor: bg,
-    pixelRatio: PIXEL_RATIO,
+    pixelRatio: PNG_PIXEL_RATIO,
     width,
     height,
     style: {

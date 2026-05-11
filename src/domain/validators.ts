@@ -1,12 +1,6 @@
-import type {
-  ClrRuleId,
-  Edge,
-  Entity,
-  EntityType,
-  TPDocument,
-  Warning,
-  WarningTarget,
-} from './types';
+import { CLARITY_WORD_LIMIT, DISCONNECTED_GRAPH_FLOOR, SIMILARITY_THRESHOLD } from './constants';
+import { incomingEdges, isAssumption, outgoingEdges, structuralEntities } from './graph';
+import type { ClrRuleId, EntityType, TPDocument, Warning, WarningTarget } from './types';
 
 const warningId = (ruleId: ClrRuleId, target: WarningTarget): string =>
   `${ruleId}:${target.kind}:${target.id}`;
@@ -33,17 +27,6 @@ const countWords = (s: string): number => {
   return trimmed.split(/\s+/).length;
 };
 
-const incomingEdges = (doc: TPDocument, entityId: string): Edge[] =>
-  Object.values(doc.edges).filter((e) => e.targetId === entityId);
-
-const outgoingEdges = (doc: TPDocument, entityId: string): Edge[] =>
-  Object.values(doc.edges).filter((e) => e.sourceId === entityId);
-
-const isAssumption = (entity: Entity): boolean => entity.type === 'assumption';
-
-const structuralEntities = (doc: TPDocument): Entity[] =>
-  Object.values(doc.entities).filter((e) => !isAssumption(e));
-
 const levenshtein = (a: string, b: string): number => {
   const al = a.length;
   const bl = b.length;
@@ -68,10 +51,6 @@ const similarity = (a: string, b: string): number => {
   if (max === 0) return 1;
   return 1 - levenshtein(a.toLowerCase(), b.toLowerCase()) / max;
 };
-
-const SIMILARITY_THRESHOLD = 0.85;
-const CLARITY_WORD_LIMIT = 25;
-const DISCONNECTED_GRAPH_FLOOR = 3;
 
 const clarityRule = (doc: TPDocument): Warning[] => {
   const out: Warning[] = [];

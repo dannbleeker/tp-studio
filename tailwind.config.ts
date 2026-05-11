@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Config } from 'tailwindcss';
+import { ENTITY_STRIPE_COLOR } from './src/domain/tokens';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -26,14 +27,7 @@ const config: Config = {
         edge: ['11px', { lineHeight: '1.2' }],
       },
       colors: {
-        entity: {
-          ude: '#ef4444',
-          effect: '#737373',
-          rootCause: '#d97706',
-          injection: '#059669',
-          desiredEffect: '#6366f1',
-          assumption: '#8b5cf6',
-        },
+        entity: ENTITY_STRIPE_COLOR,
       },
     },
   },

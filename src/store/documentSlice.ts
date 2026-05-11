@@ -1,52 +1,14 @@
 import { nanoid } from 'nanoid';
-import { create } from 'zustand';
+import type { StateCreator } from 'zustand';
 import { createDocument, createEdge, createEntity } from '../domain/factory';
+import { hasEdge, removeEntityFromEdges } from '../domain/graph';
 import { loadFromLocalStorage, saveToLocalStorage } from '../domain/persistence';
 import type { DiagramType, Edge, Entity, EntityType, TPDocument } from '../domain/types';
+import { pushHistoryEntry } from './historySlice';
+import type { RootStore } from './index';
 
-export type Selection =
-  | { kind: 'entity'; id: string }
-  | { kind: 'edge'; id: string }
-  | { kind: 'none' };
-
-export type Theme = 'light' | 'dark';
-
-export type ContextMenuTarget =
-  | { kind: 'entity'; id: string }
-  | { kind: 'edge'; id: string }
-  | { kind: 'pane' };
-
-export type ContextMenuState =
-  | { open: true; x: number; y: number; target: ContextMenuTarget }
-  | { open: false };
-
-export type ToastKind = 'info' | 'success' | 'error';
-export type Toast = { id: number; kind: ToastKind; message: string };
-
-type HistoryEntry = {
+export type DocumentSlice = {
   doc: TPDocument;
-  coalesceKey?: string;
-  t: number;
-};
-
-const HISTORY_LIMIT = 100;
-const COALESCE_WINDOW_MS = 1000;
-
-type DocumentState = {
-  doc: TPDocument;
-  selection: Selection;
-  editingEntityId: string | null;
-  paletteOpen: boolean;
-  paletteInitialQuery: string;
-  helpOpen: boolean;
-  theme: Theme;
-  contextMenu: ContextMenuState;
-  toasts: Toast[];
-  past: HistoryEntry[];
-  future: HistoryEntry[];
-};
-
-type DocumentActions = {
   setDocument: (doc: TPDocument) => void;
   newDocument: (diagramType: DiagramType) => void;
   setTitle: (title: string) => void;
@@ -66,68 +28,17 @@ type DocumentActions = {
   attachAssumption: (edgeId: string, assumptionId: string) => void;
   detachAssumption: (edgeId: string, assumptionId: string) => void;
 
-  select: (sel: Selection) => void;
-  beginEditing: (id: string) => void;
-  endEditing: () => void;
-
   resolveWarning: (warningId: string) => void;
   unresolveWarning: (warningId: string) => void;
-
-  openPalette: () => void;
-  openPaletteWithQuery: (query: string) => void;
-  closePalette: () => void;
-  togglePalette: () => void;
-
-  openHelp: () => void;
-  closeHelp: () => void;
-
-  openContextMenu: (target: ContextMenuTarget, x: number, y: number) => void;
-  closeContextMenu: () => void;
-
-  showToast: (kind: ToastKind, message: string) => void;
-  dismissToast: (id: number) => void;
-
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
-
-  undo: () => void;
-  redo: () => void;
 };
-
-export type DocumentStore = DocumentState & DocumentActions;
 
 const touch = (doc: TPDocument): TPDocument => ({ ...doc, updatedAt: Date.now() });
 
-const edgeExists = (doc: TPDocument, sourceId: string, targetId: string): boolean =>
-  Object.values(doc.edges).some((e) => e.sourceId === sourceId && e.targetId === targetId);
-
-const persist = (doc: TPDocument): void => {
-  saveToLocalStorage(doc);
-};
-
-const STORAGE_THEME_KEY = 'tp-studio:theme';
-
 const initialDoc = loadFromLocalStorage() ?? createDocument('crt');
-const initialTheme: Theme =
-  typeof globalThis.localStorage !== 'undefined'
-    ? globalThis.localStorage.getItem(STORAGE_THEME_KEY) === 'dark'
-      ? 'dark'
-      : 'light'
-    : 'light';
 
-const pushHistory = (past: HistoryEntry[], entry: HistoryEntry): HistoryEntry[] => {
-  const last = past[past.length - 1];
-  if (
-    entry.coalesceKey &&
-    last?.coalesceKey === entry.coalesceKey &&
-    entry.t - last.t < COALESCE_WINDOW_MS
-  ) {
-    return past;
-  }
-  return [...past, entry].slice(-HISTORY_LIMIT);
-};
-
-export const useDocumentStore = create<DocumentStore>((set, get) => {
+export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice> = (set, get) => {
+  // Internal helper: wraps a mutator with persistence + history-push + future-clear.
+  // Bails out if the mutator returns the same reference (no-op).
   const applyDocChange = (
     mutator: (prev: TPDocument) => TPDocument,
     opts: { coalesceKey?: string } = {}
@@ -135,10 +46,10 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
     const prev = get().doc;
     const next = mutator(prev);
     if (next === prev) return;
-    persist(next);
+    saveToLocalStorage(next);
     set({
       doc: next,
-      past: pushHistory(get().past, {
+      past: pushHistoryEntry(get().past, {
         doc: prev,
         coalesceKey: opts.coalesceKey,
         t: Date.now(),
@@ -149,25 +60,15 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
 
   return {
     doc: initialDoc,
-    selection: { kind: 'none' },
-    editingEntityId: null,
-    paletteOpen: false,
-    paletteInitialQuery: '',
-    helpOpen: false,
-    theme: initialTheme,
-    contextMenu: { open: false },
-    toasts: [],
-    past: [],
-    future: [],
 
     setDocument: (doc) => {
       const prev = get().doc;
-      persist(doc);
+      saveToLocalStorage(doc);
       set({
         doc,
         selection: { kind: 'none' },
         editingEntityId: null,
-        past: pushHistory(get().past, { doc: prev, t: Date.now() }),
+        past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
         future: [],
       });
     },
@@ -175,20 +76,18 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
     newDocument: (diagramType) => {
       const prev = get().doc;
       const doc = createDocument(diagramType);
-      persist(doc);
+      saveToLocalStorage(doc);
       set({
         doc,
         selection: { kind: 'none' },
         editingEntityId: null,
-        past: pushHistory(get().past, { doc: prev, t: Date.now() }),
+        past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
         future: [],
       });
     },
 
     setTitle: (title) => {
-      applyDocChange((prev) => touch({ ...prev, title }), {
-        coalesceKey: 'doc-title',
-      });
+      applyDocChange((prev) => touch({ ...prev, title }), { coalesceKey: 'doc-title' });
     },
 
     addEntity: ({ type, title, startEditing }) => {
@@ -220,22 +119,11 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
       applyDocChange((prev) => {
         if (!prev.entities[id]) return prev;
         const { [id]: _removed, ...rest } = prev.entities;
-        // Drop edges that connect to the deleted entity structurally.
-        const survivingEdges = Object.fromEntries(
-          Object.entries(prev.edges).filter(([, e]) => e.sourceId !== id && e.targetId !== id)
-        );
-        // Also strip the id from any edge's assumptionIds — handles deletion of an
-        // assumption entity. We strip even when the deleted entity is structural
-        // (defensive: a stale id couldn't survive an export/import cycle anyway).
-        const cleanedEdges = Object.fromEntries(
-          Object.entries(survivingEdges).map(([eid, e]) => {
-            if (!e.assumptionIds?.includes(id)) return [eid, e];
-            const filtered = e.assumptionIds.filter((a) => a !== id);
-            const next: Edge = { ...e, assumptionIds: filtered.length ? filtered : undefined };
-            return [eid, next];
-          })
-        );
-        return touch({ ...prev, entities: rest, edges: cleanedEdges });
+        return touch({
+          ...prev,
+          entities: rest,
+          edges: removeEntityFromEdges(prev, id),
+        });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });
     },
@@ -244,7 +132,7 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
       if (sourceId === targetId) return null;
       const { doc } = get();
       if (!doc.entities[sourceId] || !doc.entities[targetId]) return null;
-      if (edgeExists(doc, sourceId, targetId)) return null;
+      if (hasEdge(doc, sourceId, targetId)) return null;
       const edge = createEdge({ sourceId, targetId });
       applyDocChange((prev) => touch({ ...prev, edges: { ...prev.edges, [edge.id]: edge } }));
       return edge;
@@ -294,6 +182,22 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
       return { ok: true, groupId };
     },
 
+    ungroupAnd: (edgeIds) => {
+      applyDocChange((prev) => {
+        const nextEdges = { ...prev.edges };
+        let changed = false;
+        for (const id of edgeIds) {
+          const e = nextEdges[id];
+          if (e?.andGroupId) {
+            const { andGroupId: _, ...rest } = e;
+            nextEdges[id] = rest;
+            changed = true;
+          }
+        }
+        return changed ? touch({ ...prev, edges: nextEdges }) : prev;
+      });
+    },
+
     addAssumptionToEdge: (edgeId, title) => {
       const edge = get().doc.edges[edgeId];
       if (!edge) return null;
@@ -337,26 +241,6 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
       });
     },
 
-    ungroupAnd: (edgeIds) => {
-      applyDocChange((prev) => {
-        const nextEdges = { ...prev.edges };
-        let changed = false;
-        for (const id of edgeIds) {
-          const e = nextEdges[id];
-          if (e?.andGroupId) {
-            const { andGroupId: _, ...rest } = e;
-            nextEdges[id] = rest;
-            changed = true;
-          }
-        }
-        return changed ? touch({ ...prev, edges: nextEdges }) : prev;
-      });
-    },
-
-    select: (selection) => set({ selection }),
-    beginEditing: (id) => set({ editingEntityId: id, selection: { kind: 'entity', id } }),
-    endEditing: () => set({ editingEntityId: null }),
-
     resolveWarning: (warningId) => {
       applyDocChange((prev) =>
         touch({
@@ -373,65 +257,5 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
         return touch({ ...prev, resolvedWarnings: rest });
       });
     },
-
-    openPalette: () => set({ paletteOpen: true, paletteInitialQuery: '' }),
-    openPaletteWithQuery: (query) => set({ paletteOpen: true, paletteInitialQuery: query }),
-    closePalette: () => set({ paletteOpen: false }),
-    togglePalette: () => set({ paletteOpen: !get().paletteOpen, paletteInitialQuery: '' }),
-
-    openHelp: () => set({ helpOpen: true }),
-    closeHelp: () => set({ helpOpen: false }),
-
-    openContextMenu: (target, x, y) => set({ contextMenu: { open: true, target, x, y } }),
-    closeContextMenu: () => set({ contextMenu: { open: false } }),
-
-    showToast: (kind, message) => {
-      const id = Date.now() + Math.floor(Math.random() * 1000);
-      set({ toasts: [...get().toasts, { id, kind, message }] });
-      setTimeout(() => {
-        set({ toasts: get().toasts.filter((t) => t.id !== id) });
-      }, 2200);
-    },
-    dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
-
-    setTheme: (theme) => {
-      if (typeof globalThis.localStorage !== 'undefined') {
-        globalThis.localStorage.setItem(STORAGE_THEME_KEY, theme);
-      }
-      set({ theme });
-    },
-    toggleTheme: () => {
-      const next: Theme = get().theme === 'dark' ? 'light' : 'dark';
-      if (typeof globalThis.localStorage !== 'undefined') {
-        globalThis.localStorage.setItem(STORAGE_THEME_KEY, next);
-      }
-      set({ theme: next });
-    },
-
-    undo: () => {
-      const { past, doc, future } = get();
-      if (past.length === 0) return;
-      const last = past[past.length - 1];
-      persist(last.doc);
-      set({
-        doc: last.doc,
-        past: past.slice(0, -1),
-        future: [...future, { doc, t: Date.now() }],
-        editingEntityId: null,
-      });
-    },
-
-    redo: () => {
-      const { future, doc, past } = get();
-      if (future.length === 0) return;
-      const next = future[future.length - 1];
-      persist(next.doc);
-      set({
-        doc: next.doc,
-        future: future.slice(0, -1),
-        past: [...past, { doc, t: Date.now() }],
-        editingEntityId: null,
-      });
-    },
   };
-});
+};

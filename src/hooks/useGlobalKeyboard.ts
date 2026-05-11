@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { SIBLING_Y_TOLERANCE_PX } from '../domain/constants';
 import { defaultEntityType } from '../domain/entityTypeMeta';
 import { getCanvasNodes } from '../services/canvasRef';
 import { confirmAndDeleteEntity } from '../services/confirmations';
@@ -135,12 +136,11 @@ export function useGlobalKeyboard() {
           const rfNodes = getCanvasNodes();
           const current = rfNodes.find((n) => n.id === selection.id);
           if (current) {
-            const rowThreshold = 60; // px tolerance for "same rank"
             const direction = e.key === 'ArrowRight' ? 1 : -1;
             const candidates = rfNodes.filter(
               (n) =>
                 n.id !== current.id &&
-                Math.abs(n.position.y - current.position.y) <= rowThreshold &&
+                Math.abs(n.position.y - current.position.y) <= SIBLING_Y_TOLERANCE_PX &&
                 Math.sign(n.position.x - current.position.x) === direction
             );
             candidates.sort(

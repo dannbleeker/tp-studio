@@ -1,12 +1,14 @@
-import { MarkerType, type Edge as RFEdge, type Node as RFNode } from '@xyflow/react';
+import { MarkerType } from '@xyflow/react';
 import { useMemo } from 'react';
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '../../domain/constants';
 import { computeLayout } from '../../domain/layout';
+import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '../../domain/tokens';
 import type { TPDocument } from '../../domain/types';
-import { NODE_MIN_HEIGHT, NODE_WIDTH, type TPNodeData } from './TPNode';
+import type { TPEdge, TPNode } from './flow-types';
 
 export type GraphView = {
-  nodes: RFNode<TPNodeData>[];
-  edges: RFEdge[];
+  nodes: TPNode[];
+  edges: TPEdge[];
 };
 
 export const useGraphView = (doc: TPDocument): GraphView =>
@@ -19,14 +21,14 @@ export const useGraphView = (doc: TPDocument): GraphView =>
       edgeList.map((e) => ({ sourceId: e.sourceId, targetId: e.targetId }))
     );
 
-    const nodes: RFNode<TPNodeData>[] = entityList.map((entity) => ({
+    const nodes: TPNode[] = entityList.map((entity) => ({
       id: entity.id,
       type: 'tp',
       position: positions[entity.id] ?? { x: 0, y: 0 },
       data: { entity },
     }));
 
-    const edges: RFEdge[] = edgeList.map((edge) => ({
+    const edges: TPEdge[] = edgeList.map((edge) => ({
       id: edge.id,
       source: edge.sourceId,
       target: edge.targetId,
@@ -34,7 +36,7 @@ export const useGraphView = (doc: TPDocument): GraphView =>
       data: { andGroupId: edge.andGroupId },
       markerEnd: {
         type: MarkerType.ArrowClosed,
-        color: edge.andGroupId ? '#8b5cf6' : '#737373',
+        color: edge.andGroupId ? EDGE_MARKER_AND : EDGE_MARKER_DEFAULT,
       },
     }));
 

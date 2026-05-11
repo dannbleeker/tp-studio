@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import {
   ENTITY_TYPE_META,
   PALETTE_BY_DIAGRAM,
   defaultEntityType,
 } from '../../domain/entityTypeMeta';
+import { useOutsideAndEscape } from '../../hooks/useOutsideAndEscape';
 import { confirmAndDeleteEntity } from '../../services/confirmations';
 import { useDocumentStore } from '../../store';
 
@@ -26,22 +27,7 @@ export function ContextMenu() {
   );
 
   const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!menu.open) return undefined;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) close();
-    };
-    const keyHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
-    };
-    window.addEventListener('mousedown', handler);
-    window.addEventListener('keydown', keyHandler);
-    return () => {
-      window.removeEventListener('mousedown', handler);
-      window.removeEventListener('keydown', keyHandler);
-    };
-  }, [menu.open, close]);
+  useOutsideAndEscape(ref, close, menu.open);
 
   if (!menu.open) return null;
 

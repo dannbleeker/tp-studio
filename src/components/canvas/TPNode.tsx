@@ -1,19 +1,13 @@
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import clsx from 'clsx';
 import { useEffect, useRef } from 'react';
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '../../domain/constants';
 import { ENTITY_TYPE_META } from '../../domain/entityTypeMeta';
-import type { Entity } from '../../domain/types';
 import { useDocumentStore } from '../../store';
+import type { TPNode as TPNodeType } from './flow-types';
 
-export const NODE_WIDTH = 220;
-export const NODE_MIN_HEIGHT = 72;
-
-export type TPNodeData = {
-  entity: Entity;
-};
-
-export function TPNode({ data, selected }: NodeProps) {
-  const { entity } = data as TPNodeData;
+export function TPNode({ data, selected }: NodeProps<TPNodeType>) {
+  const { entity } = data;
   const meta = ENTITY_TYPE_META[entity.type];
   const isEditing = useDocumentStore((s) => s.editingEntityId === entity.id);
   const updateEntity = useDocumentStore((s) => s.updateEntity);

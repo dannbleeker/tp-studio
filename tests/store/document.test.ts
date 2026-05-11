@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDocument } from '../../src/domain/factory';
-import { useDocumentStore } from '../../src/store/document';
+import { useDocumentStore } from '../../src/store';
 
 const reset = () => {
   localStorage.clear();

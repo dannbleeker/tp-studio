@@ -1,4 +1,5 @@
 import dagre from 'dagre';
+import { LAYOUT_NODE_SEPARATION, LAYOUT_RANK_SEPARATION } from './constants';
 
 export type NodeBox = {
   id: string;
@@ -25,8 +26,8 @@ export type LayoutOptions = {
 };
 
 const DEFAULT_OPTIONS: Required<LayoutOptions> = {
-  rankSep: 80,
-  nodeSep: 40,
+  rankSep: LAYOUT_RANK_SEPARATION,
+  nodeSep: LAYOUT_NODE_SEPARATION,
   direction: 'BT',
 };
 

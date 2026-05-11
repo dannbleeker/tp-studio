@@ -1,3 +1,4 @@
+import { connectionCount } from '../domain/graph';
 import { useDocumentStore } from '../store';
 
 export const confirmAndDeleteEntity = (id: string): void => {
@@ -5,10 +6,7 @@ export const confirmAndDeleteEntity = (id: string): void => {
   const entity = doc.entities[id];
   if (!entity) return;
 
-  const incoming = Object.values(doc.edges).filter((e) => e.targetId === id).length;
-  const outgoing = Object.values(doc.edges).filter((e) => e.sourceId === id).length;
-  const connections = incoming + outgoing;
-
+  const connections = connectionCount(doc, id);
   if (connections > 0) {
     const title = entity.title.trim() || 'this entity';
     const plural = connections === 1 ? '' : 's';
