@@ -20,6 +20,9 @@ export type ContextMenuState =
   | { open: true; x: number; y: number; target: ContextMenuTarget }
   | { open: false };
 
+export type ToastKind = 'info' | 'success' | 'error';
+export type Toast = { id: number; kind: ToastKind; message: string };
+
 type HistoryEntry = {
   doc: TPDocument;
   coalesceKey?: string;
@@ -34,8 +37,10 @@ type DocumentState = {
   selection: Selection;
   editingEntityId: string | null;
   paletteOpen: boolean;
+  helpOpen: boolean;
   theme: Theme;
   contextMenu: ContextMenuState;
+  toasts: Toast[];
   past: HistoryEntry[];
   future: HistoryEntry[];
 };
@@ -67,8 +72,14 @@ type DocumentActions = {
   closePalette: () => void;
   togglePalette: () => void;
 
+  openHelp: () => void;
+  closeHelp: () => void;
+
   openContextMenu: (target: ContextMenuTarget, x: number, y: number) => void;
   closeContextMenu: () => void;
+
+  showToast: (kind: ToastKind, message: string) => void;
+  dismissToast: (id: number) => void;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -135,8 +146,10 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
     selection: { kind: 'none' },
     editingEntityId: null,
     paletteOpen: false,
+    helpOpen: false,
     theme: initialTheme,
     contextMenu: { open: false },
+    toasts: [],
     past: [],
     future: [],
 
@@ -303,8 +316,20 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
     closePalette: () => set({ paletteOpen: false }),
     togglePalette: () => set({ paletteOpen: !get().paletteOpen }),
 
+    openHelp: () => set({ helpOpen: true }),
+    closeHelp: () => set({ helpOpen: false }),
+
     openContextMenu: (target, x, y) => set({ contextMenu: { open: true, target, x, y } }),
     closeContextMenu: () => set({ contextMenu: { open: false } }),
+
+    showToast: (kind, message) => {
+      const id = Date.now() + Math.floor(Math.random() * 1000);
+      set({ toasts: [...get().toasts, { id, kind, message }] });
+      setTimeout(() => {
+        set({ toasts: get().toasts.filter((t) => t.id !== id) });
+      }, 2200);
+    },
+    dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
 
     setTheme: (theme) => {
       if (typeof globalThis.localStorage !== 'undefined') {

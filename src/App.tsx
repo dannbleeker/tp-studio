@@ -1,7 +1,9 @@
 import { Canvas } from './components/canvas/Canvas';
 import { ContextMenu } from './components/canvas/ContextMenu';
 import { CommandPalette } from './components/command-palette/CommandPalette';
+import { HelpDialog } from './components/help/HelpDialog';
 import { Inspector } from './components/inspector/Inspector';
+import { Toaster } from './components/toast/Toaster';
 import { TopBar } from './components/toolbar/TopBar';
 import { useGlobalKeyboard } from './hooks/useGlobalKeyboard';
 import { useThemeClass } from './hooks/useThemeClass';
@@ -39,6 +41,8 @@ export function App() {
       <Inspector />
       <CommandPalette />
       <ContextMenu />
+      <HelpDialog />
+      <Toaster />
     </main>
   );
 }

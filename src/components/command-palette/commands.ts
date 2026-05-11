@@ -77,6 +77,12 @@ export const COMMANDS: Command[] = [
     run: (s) => s.toggleTheme(),
   },
   {
+    id: 'help',
+    label: 'Show keyboard shortcuts',
+    group: 'Help',
+    run: (s) => s.openHelp(),
+  },
+  {
     id: 'undo',
     label: 'Undo',
     group: 'Tools',

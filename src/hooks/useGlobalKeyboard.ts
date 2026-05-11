@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { defaultEntityType } from '../domain/entityTypeMeta';
+import { getCanvasNodes } from '../services/canvasRef';
 import { useDocumentStore } from '../store';
 
 const isEditableTarget = (target: EventTarget | null): boolean => {
@@ -12,6 +13,7 @@ const isEditableTarget = (target: EventTarget | null): boolean => {
 export function useGlobalKeyboard() {
   const togglePalette = useDocumentStore((s) => s.togglePalette);
   const closePalette = useDocumentStore((s) => s.closePalette);
+  const closeHelp = useDocumentStore((s) => s.closeHelp);
   const undo = useDocumentStore((s) => s.undo);
   const redo = useDocumentStore((s) => s.redo);
   const select = useDocumentStore((s) => s.select);
@@ -20,6 +22,7 @@ export function useGlobalKeyboard() {
   const beginEditing = useDocumentStore((s) => s.beginEditing);
   const deleteEntity = useDocumentStore((s) => s.deleteEntity);
   const deleteEdge = useDocumentStore((s) => s.deleteEdge);
+  const showToast = useDocumentStore((s) => s.showToast);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -33,9 +36,20 @@ export function useGlobalKeyboard() {
         return;
       }
 
-      // Escape — close palette / deselect
+      // Cmd/Ctrl+S — surface save toast (data persists automatically on every mutation)
+      if (cmdOrCtrl && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        showToast('success', 'Saved to this browser.');
+        return;
+      }
+
+      // Escape — close help / palette / deselect
       if (e.key === 'Escape') {
         const state = useDocumentStore.getState();
+        if (state.helpOpen) {
+          closeHelp();
+          return;
+        }
         if (state.paletteOpen) {
           closePalette();
           return;
@@ -99,16 +113,38 @@ export function useGlobalKeyboard() {
       // Layout is bottom-up: effects are visually above causes.
       // ArrowUp → effect (target of an outgoing edge).
       // ArrowDown → cause (source of an incoming edge).
+      // ArrowLeft / ArrowRight → sibling at the same rank (using live RF positions).
       if (!inField && selection.kind === 'entity') {
         const edges = Object.values(doc.edges);
         let nextId: string | undefined;
+
         if (e.key === 'ArrowUp') {
           const out = edges.find((edge) => edge.sourceId === selection.id);
           if (out) nextId = out.targetId;
         } else if (e.key === 'ArrowDown') {
           const inc = edges.find((edge) => edge.targetId === selection.id);
           if (inc) nextId = inc.sourceId;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          const rfNodes = getCanvasNodes();
+          const current = rfNodes.find((n) => n.id === selection.id);
+          if (current) {
+            const rowThreshold = 60; // px tolerance for "same rank"
+            const direction = e.key === 'ArrowRight' ? 1 : -1;
+            const candidates = rfNodes.filter(
+              (n) =>
+                n.id !== current.id &&
+                Math.abs(n.position.y - current.position.y) <= rowThreshold &&
+                Math.sign(n.position.x - current.position.x) === direction
+            );
+            candidates.sort(
+              (a, b) =>
+                Math.abs(a.position.x - current.position.x) -
+                Math.abs(b.position.x - current.position.x)
+            );
+            nextId = candidates[0]?.id;
+          }
         }
+
         if (nextId) {
           e.preventDefault();
           select({ kind: 'entity', id: nextId });
@@ -121,6 +157,7 @@ export function useGlobalKeyboard() {
   }, [
     togglePalette,
     closePalette,
+    closeHelp,
     undo,
     redo,
     select,
@@ -129,5 +166,6 @@ export function useGlobalKeyboard() {
     beginEditing,
     deleteEntity,
     deleteEdge,
+    showToast,
   ]);
 }
