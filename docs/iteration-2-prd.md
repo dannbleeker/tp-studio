@@ -519,7 +519,7 @@ Foundations that catch regressions throughout the iteration. Land before any fea
 **What:** The `description` field is now interpreted as markdown. Rendered with a subset: bold, italic, lists, links, headings, inline code, paragraphs.
 
 **Spec:**
-- Add `marked` (or `markdown-it`) as a runtime dep. Sanitize the output with `dompurify` to prevent XSS.
+- Add `micromark` (with `micromark-extension-gfm` if list/link parity matters) as a runtime dep. Smaller and tree-shakeable compared to `marked` — ~14 kB vs ~30 kB. Sanitize the output with `dompurify` (~12 kB) to prevent XSS.
 - Inspector renders the description in a small markdown preview below the edit textarea. Toggle between "edit" and "preview."
 - Markdown renderer lives in `src/services/markdown.ts`: `renderMarkdown(src: string) → SafeHtml`.
 
@@ -666,7 +666,7 @@ Update docs in the same commit as code where possible. Treat doc drift as a regr
 
 - **Bundle 11 (Groups) is the largest schema change** in the project's history. The `parent` group-node pattern in React Flow has some quirks — early prototype recommended in Phase 3 day 1.
 - **Conventional commits hook** may friction-burn against my LF/CRLF habit on Windows. May need a `.gitattributes` to settle this.
-- **`marked` + `dompurify`** add ~30 kB combined to the bundle. Mitigation: dynamic-import the markdown renderer the way `html-to-image` is dynamic-imported today.
+- **`micromark` + `dompurify`** add ~26 kB combined to the bundle. Mitigation: dynamic-import the markdown renderer the way `html-to-image` is dynamic-imported today.
 - **Schema migrations are forward-only.** Old `v1` JSON imported into a `v2`-aware app gets `annotationNumber`s assigned on import; no rollback path. Document this clearly.
 - **The `selection` shape change in Phase 2** ripples through `useSelectedEntity` / `useSelectedEdge` etc. Plan a back-compat layer or a clean swap (preferred — single commit covering all consumers).
 
