@@ -1,0 +1,116 @@
+import {
+  Background,
+  BackgroundVariant,
+  type Connection,
+  Controls,
+  type EdgeChange,
+  type NodeChange,
+  ReactFlow,
+  ReactFlowProvider,
+} from '@xyflow/react';
+import { useCallback } from 'react';
+import { defaultEntityType } from '../../domain/entityTypeMeta';
+import { useDocumentStore } from '../../store';
+import { TPEdge } from './TPEdge';
+import { TPNode } from './TPNode';
+import { useGraphView } from './useGraphView';
+
+const nodeTypes = { tp: TPNode };
+const edgeTypes = { tp: TPEdge };
+
+function CanvasInner() {
+  const doc = useDocumentStore((s) => s.doc);
+  const connect = useDocumentStore((s) => s.connect);
+  const select = useDocumentStore((s) => s.select);
+  const deleteEntity = useDocumentStore((s) => s.deleteEntity);
+  const deleteEdge = useDocumentStore((s) => s.deleteEdge);
+  const addEntity = useDocumentStore((s) => s.addEntity);
+
+  const { nodes, edges } = useGraphView(doc);
+
+  const onConnect = useCallback(
+    (c: Connection) => {
+      if (c.source && c.target) connect(c.source, c.target);
+    },
+    [connect]
+  );
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      for (const change of changes) {
+        if (change.type === 'remove') deleteEntity(change.id);
+      }
+    },
+    [deleteEntity]
+  );
+
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      for (const change of changes) {
+        if (change.type === 'remove') deleteEdge(change.id);
+      }
+    },
+    [deleteEdge]
+  );
+
+  const isEmpty = nodes.length === 0;
+
+  return (
+    <div
+      className="h-full w-full"
+      onDoubleClick={(e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('.react-flow__node') || target.closest('.react-flow__edge')) {
+          return;
+        }
+        addEntity({ type: defaultEntityType(doc.diagramType), startEditing: true });
+      }}
+    >
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        onConnect={onConnect}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={(_e, n) => select({ kind: 'entity', id: n.id })}
+        onEdgeClick={(_e, ed) => select({ kind: 'edge', id: ed.id })}
+        onPaneClick={() => select({ kind: 'none' })}
+        nodesDraggable={false}
+        proOptions={{ hideAttribution: true }}
+        fitView
+        fitViewOptions={{ padding: 0.4, maxZoom: 1.2 }}
+      >
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color="#d4d4d4" />
+        <Controls
+          position="bottom-center"
+          showInteractive={false}
+          className="!rounded-lg !border !border-neutral-200 !bg-white !shadow-sm dark:!border-neutral-800 dark:!bg-neutral-900"
+        />
+      </ReactFlow>
+      {isEmpty && <EmptyHint />}
+    </div>
+  );
+}
+
+function EmptyHint() {
+  return (
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+      <div className="rounded-xl border border-neutral-200 bg-white/80 px-6 py-5 text-center shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/80">
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">Empty diagram</p>
+        <p className="mt-1 text-ui text-neutral-500 dark:text-neutral-400">
+          Double-click anywhere to add your first entity.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function Canvas() {
+  return (
+    <ReactFlowProvider>
+      <CanvasInner />
+    </ReactFlowProvider>
+  );
+}
