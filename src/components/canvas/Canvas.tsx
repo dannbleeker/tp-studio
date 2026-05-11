@@ -8,8 +8,9 @@ import {
   ReactFlow,
   ReactFlowProvider,
 } from '@xyflow/react';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { defaultEntityType } from '../../domain/entityTypeMeta';
+import { setCanvasInstance } from '../../services/canvasRef';
 import { useDocumentStore } from '../../store';
 import { TPEdge } from './TPEdge';
 import { TPNode } from './TPNode';
@@ -27,6 +28,10 @@ function CanvasInner() {
   const addEntity = useDocumentStore((s) => s.addEntity);
 
   const { nodes, edges } = useGraphView(doc);
+
+  useEffect(() => {
+    return () => setCanvasInstance(null);
+  }, []);
 
   const onConnect = useCallback(
     (c: Connection) => {
@@ -71,6 +76,7 @@ function CanvasInner() {
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        onInit={(instance) => setCanvasInstance(instance)}
         onConnect={onConnect}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}

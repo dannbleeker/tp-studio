@@ -1,11 +1,13 @@
+import { getCanvasNodes } from '../../services/canvasRef';
+import { exportJSON, exportPNG, pickJSON } from '../../services/exporters';
 import type { DocumentStore } from '../../store';
 
 export type Command = {
   id: string;
   label: string;
-  group: 'Document' | 'View' | 'Help' | 'Tools';
+  group: 'Document' | 'View' | 'Help' | 'Tools' | 'Export';
   shortcut?: string;
-  run: (store: DocumentStore) => void;
+  run: (store: DocumentStore) => void | Promise<void>;
 };
 
 export const COMMANDS: Command[] = [
@@ -20,6 +22,30 @@ export const COMMANDS: Command[] = [
     label: 'New Future Reality Tree',
     group: 'Document',
     run: (s) => s.newDocument('frt'),
+  },
+  {
+    id: 'import-json',
+    label: 'Import from JSON…',
+    group: 'Document',
+    run: async (s) => {
+      const doc = await pickJSON();
+      if (doc) s.setDocument(doc);
+    },
+  },
+  {
+    id: 'export-json',
+    label: 'Export as JSON',
+    group: 'Export',
+    run: (s) => exportJSON(s.doc),
+  },
+  {
+    id: 'export-png',
+    label: 'Export as PNG (2×)',
+    group: 'Export',
+    run: async (s) => {
+      const nodes = getCanvasNodes();
+      await exportPNG(s.doc, nodes);
+    },
   },
   {
     id: 'toggle-theme',
