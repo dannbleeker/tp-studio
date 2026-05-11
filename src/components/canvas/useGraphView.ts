@@ -31,7 +31,11 @@ export const useGraphView = (doc: TPDocument): GraphView =>
       source: edge.sourceId,
       target: edge.targetId,
       type: 'tp',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#737373' },
+      data: { andGroupId: edge.andGroupId },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: edge.andGroupId ? '#8b5cf6' : '#737373',
+      },
     }));
 
     return { nodes, edges };

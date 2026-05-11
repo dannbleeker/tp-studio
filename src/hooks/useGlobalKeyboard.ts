@@ -92,6 +92,27 @@ export function useGlobalKeyboard() {
           // create child: selected -> new
           connect(selection.id, newEntity.id);
         }
+        return;
+      }
+
+      // Arrow-key navigation among connected entities.
+      // Layout is bottom-up: effects are visually above causes.
+      // ArrowUp → effect (target of an outgoing edge).
+      // ArrowDown → cause (source of an incoming edge).
+      if (!inField && selection.kind === 'entity') {
+        const edges = Object.values(doc.edges);
+        let nextId: string | undefined;
+        if (e.key === 'ArrowUp') {
+          const out = edges.find((edge) => edge.sourceId === selection.id);
+          if (out) nextId = out.targetId;
+        } else if (e.key === 'ArrowDown') {
+          const inc = edges.find((edge) => edge.targetId === selection.id);
+          if (inc) nextId = inc.sourceId;
+        }
+        if (nextId) {
+          e.preventDefault();
+          select({ kind: 'entity', id: nextId });
+        }
       }
     };
 

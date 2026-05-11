@@ -1,4 +1,5 @@
 import { Canvas } from './components/canvas/Canvas';
+import { ContextMenu } from './components/canvas/ContextMenu';
 import { CommandPalette } from './components/command-palette/CommandPalette';
 import { Inspector } from './components/inspector/Inspector';
 import { TopBar } from './components/toolbar/TopBar';
@@ -31,12 +32,13 @@ export function App() {
   useGlobalKeyboard();
 
   return (
-    <main className="relative h-full w-full">
+    <main className="relative h-screen w-screen overflow-hidden">
       <TitleBadge />
       <TopBar />
       <Canvas />
       <Inspector />
       <CommandPalette />
+      <ContextMenu />
     </main>
   );
 }

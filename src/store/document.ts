@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { createDocument, createEdge, createEntity } from '../domain/factory';
 import { loadFromLocalStorage, saveToLocalStorage } from '../domain/persistence';
@@ -9,6 +10,15 @@ export type Selection =
   | { kind: 'none' };
 
 export type Theme = 'light' | 'dark';
+
+export type ContextMenuTarget =
+  | { kind: 'entity'; id: string }
+  | { kind: 'edge'; id: string }
+  | { kind: 'pane' };
+
+export type ContextMenuState =
+  | { open: true; x: number; y: number; target: ContextMenuTarget }
+  | { open: false };
 
 type HistoryEntry = {
   doc: TPDocument;
@@ -25,6 +35,7 @@ type DocumentState = {
   editingEntityId: string | null;
   paletteOpen: boolean;
   theme: Theme;
+  contextMenu: ContextMenuState;
   past: HistoryEntry[];
   future: HistoryEntry[];
 };
@@ -42,6 +53,9 @@ type DocumentActions = {
   updateEdge: (id: string, patch: Partial<Omit<Edge, 'id'>>) => void;
   deleteEdge: (id: string) => void;
 
+  groupAsAnd: (edgeIds: string[]) => { ok: true; groupId: string } | { ok: false; reason: string };
+  ungroupAnd: (edgeIds: string[]) => void;
+
   select: (sel: Selection) => void;
   beginEditing: (id: string) => void;
   endEditing: () => void;
@@ -52,6 +66,9 @@ type DocumentActions = {
   openPalette: () => void;
   closePalette: () => void;
   togglePalette: () => void;
+
+  openContextMenu: (target: ContextMenuTarget, x: number, y: number) => void;
+  closeContextMenu: () => void;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -119,6 +136,7 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
     editingEntityId: null,
     paletteOpen: false,
     theme: initialTheme,
+    contextMenu: { open: false },
     past: [],
     future: [],
 
@@ -218,6 +236,48 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
       set({ selection: { kind: 'none' } });
     },
 
+    groupAsAnd: (edgeIds) => {
+      if (edgeIds.length < 2) {
+        return { ok: false, reason: 'Select at least two edges to group as AND.' };
+      }
+      const { doc } = get();
+      const edges = edgeIds.map((id) => doc.edges[id]).filter((e): e is Edge => Boolean(e));
+      if (edges.length !== edgeIds.length) {
+        return { ok: false, reason: 'One or more selected edges no longer exist.' };
+      }
+      const targetId = edges[0].targetId;
+      if (!edges.every((e) => e.targetId === targetId)) {
+        return { ok: false, reason: 'AND-grouped edges must share the same target.' };
+      }
+      const existingGroup = edges.find((e) => e.andGroupId)?.andGroupId;
+      const groupId = existingGroup ?? nanoid(8);
+      applyDocChange((prev) => {
+        const nextEdges = { ...prev.edges };
+        for (const id of edgeIds) {
+          const e = nextEdges[id];
+          if (e) nextEdges[id] = { ...e, andGroupId: groupId };
+        }
+        return touch({ ...prev, edges: nextEdges });
+      });
+      return { ok: true, groupId };
+    },
+
+    ungroupAnd: (edgeIds) => {
+      applyDocChange((prev) => {
+        const nextEdges = { ...prev.edges };
+        let changed = false;
+        for (const id of edgeIds) {
+          const e = nextEdges[id];
+          if (e?.andGroupId) {
+            const { andGroupId: _, ...rest } = e;
+            nextEdges[id] = rest;
+            changed = true;
+          }
+        }
+        return changed ? touch({ ...prev, edges: nextEdges }) : prev;
+      });
+    },
+
     select: (selection) => set({ selection }),
     beginEditing: (id) => set({ editingEntityId: id, selection: { kind: 'entity', id } }),
     endEditing: () => set({ editingEntityId: null }),
@@ -242,6 +302,9 @@ export const useDocumentStore = create<DocumentStore>((set, get) => {
     openPalette: () => set({ paletteOpen: true }),
     closePalette: () => set({ paletteOpen: false }),
     togglePalette: () => set({ paletteOpen: !get().paletteOpen }),
+
+    openContextMenu: (target, x, y) => set({ contextMenu: { open: true, target, x, y } }),
+    closeContextMenu: () => set({ contextMenu: { open: false } }),
 
     setTheme: (theme) => {
       if (typeof globalThis.localStorage !== 'undefined') {

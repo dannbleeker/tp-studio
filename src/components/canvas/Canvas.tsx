@@ -26,6 +26,7 @@ function CanvasInner() {
   const deleteEntity = useDocumentStore((s) => s.deleteEntity);
   const deleteEdge = useDocumentStore((s) => s.deleteEdge);
   const addEntity = useDocumentStore((s) => s.addEntity);
+  const openContextMenu = useDocumentStore((s) => s.openContextMenu);
 
   const { nodes, edges } = useGraphView(doc);
 
@@ -83,7 +84,23 @@ function CanvasInner() {
         onNodeClick={(_e, n) => select({ kind: 'entity', id: n.id })}
         onEdgeClick={(_e, ed) => select({ kind: 'edge', id: ed.id })}
         onPaneClick={() => select({ kind: 'none' })}
+        onNodeContextMenu={(e, n) => {
+          e.preventDefault();
+          select({ kind: 'entity', id: n.id });
+          openContextMenu({ kind: 'entity', id: n.id }, e.clientX, e.clientY);
+        }}
+        onEdgeContextMenu={(e, ed) => {
+          e.preventDefault();
+          select({ kind: 'edge', id: ed.id });
+          openContextMenu({ kind: 'edge', id: ed.id }, e.clientX, e.clientY);
+        }}
+        onPaneContextMenu={(e) => {
+          e.preventDefault();
+          openContextMenu({ kind: 'pane' }, e.clientX, e.clientY);
+        }}
+        multiSelectionKeyCode="Shift"
         nodesDraggable={false}
+        zoomOnDoubleClick={false}
         proOptions={{ hideAttribution: true }}
         fitView
         fitViewOptions={{ padding: 0.4, maxZoom: 1.2 }}

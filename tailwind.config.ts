@@ -1,7 +1,11 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Config } from 'tailwindcss';
 
+const here = path.dirname(fileURLToPath(import.meta.url));
+
 const config: Config = {
-  content: ['./index.html', './src/**/*.{ts,tsx}'],
+  content: [path.join(here, 'index.html'), path.join(here, 'src/**/*.{ts,tsx}')],
   darkMode: 'class',
   theme: {
     extend: {

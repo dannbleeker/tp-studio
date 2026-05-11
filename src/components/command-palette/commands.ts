@@ -1,11 +1,11 @@
-import { getCanvasNodes } from '../../services/canvasRef';
+import { getCanvasNodes, getSelectedEdges } from '../../services/canvasRef';
 import { exportJSON, exportPNG, pickJSON } from '../../services/exporters';
 import type { DocumentStore } from '../../store';
 
 export type Command = {
   id: string;
   label: string;
-  group: 'Document' | 'View' | 'Help' | 'Tools' | 'Export';
+  group: 'Document' | 'View' | 'Help' | 'Tools' | 'Export' | 'Edges';
   shortcut?: string;
   run: (store: DocumentStore) => void | Promise<void>;
 };
@@ -45,6 +45,29 @@ export const COMMANDS: Command[] = [
     run: async (s) => {
       const nodes = getCanvasNodes();
       await exportPNG(s.doc, nodes);
+    },
+  },
+  {
+    id: 'group-and',
+    label: 'Group selected edges as AND',
+    group: 'Edges',
+    run: (s) => {
+      const ids = getSelectedEdges().map((e) => e.id);
+      const result = s.groupAsAnd(ids);
+      if (!result.ok) window.alert(result.reason);
+    },
+  },
+  {
+    id: 'ungroup-and',
+    label: 'Ungroup selected AND edges',
+    group: 'Edges',
+    run: (s) => {
+      const ids = getSelectedEdges().map((e) => e.id);
+      if (ids.length === 0) {
+        window.alert('Select one or more AND-grouped edges first.');
+        return;
+      }
+      s.ungroupAnd(ids);
     },
   },
   {

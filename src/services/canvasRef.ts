@@ -1,4 +1,4 @@
-import type { Node, ReactFlowInstance } from '@xyflow/react';
+import type { Edge, Node, ReactFlowInstance } from '@xyflow/react';
 
 // Stored as the most permissive instance type — concrete instances narrow at the call site.
 // biome-ignore lint/suspicious/noExplicitAny: tracking a single shared instance across node-data types
@@ -15,4 +15,9 @@ export const getCanvasInstance = (): AnyFlow | null => cached;
 export const getCanvasNodes = (): Node[] => {
   if (!cached) return [];
   return cached.getNodes() as Node[];
+};
+
+export const getSelectedEdges = (): Edge[] => {
+  if (!cached) return [];
+  return (cached.getEdges() as Edge[]).filter((e) => e.selected === true);
 };

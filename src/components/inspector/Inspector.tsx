@@ -154,6 +154,7 @@ function EdgeInspector({
   const source = useDocumentStore((s) => (edge ? s.doc.entities[edge.sourceId] : undefined));
   const target = useDocumentStore((s) => (edge ? s.doc.entities[edge.targetId] : undefined));
   const deleteEdge = useDocumentStore((s) => s.deleteEdge);
+  const ungroupAnd = useDocumentStore((s) => s.ungroupAnd);
 
   if (!edge) return null;
 
@@ -174,9 +175,18 @@ function EdgeInspector({
       </Field>
       {edge.andGroupId && (
         <Field label="AND group">
-          <p className="font-mono text-xs text-neutral-600 dark:text-neutral-300">
-            {edge.andGroupId}
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="font-mono text-xs text-neutral-600 dark:text-neutral-300">
+              {edge.andGroupId}
+            </p>
+            <button
+              type="button"
+              onClick={() => ungroupAnd([edgeId])}
+              className="rounded border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700 transition hover:bg-violet-100 dark:border-violet-900/40 dark:bg-violet-950/40 dark:text-violet-300"
+            >
+              Ungroup
+            </button>
+          </div>
         </Field>
       )}
 

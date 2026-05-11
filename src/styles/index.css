@@ -33,3 +33,16 @@ body {
 .react-flow__background {
   --xy-background-color-default: transparent;
 }
+
+/* Animate auto-layout repositioning. The transform on a React Flow
+ * node reflects only its position prop; the viewport (pan/zoom)
+ * transforms a different element, so this does not affect panning. */
+.react-flow__node {
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Disable the transition during interactive dragging if we ever
+ * enable it. Without this, dragged nodes would lag visibly. */
+.react-flow__node.dragging {
+  transition: none;
+}
