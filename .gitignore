@@ -1,6 +1,11 @@
 node_modules
 dist
 coverage
+# Transient stdout/stderr dumps from manual `vitest` / `tsc` runs (we
+# captured these to a file during early sessions to work around
+# Windows PowerShell quirks; they're never part of the build).
+vitest-output.txt
+tsc-output.txt
 # Playwright e2e — `playwright-report` is the HTML report from the last
 # run; `test-results` carries screenshots / videos / traces from failures.
 playwright-report
