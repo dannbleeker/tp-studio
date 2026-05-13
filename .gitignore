@@ -1,6 +1,10 @@
 node_modules
 dist
 coverage
+# Playwright e2e — `playwright-report` is the HTML report from the last
+# run; `test-results` carries screenshots / videos / traces from failures.
+playwright-report
+test-results
 .DS_Store
 *.log
 .vite
@@ -8,3 +12,13 @@ coverage
 .env.local
 .idea
 .vscode
+
+# TypeScript build artifacts. The root tsconfig has `noEmit: true`, but
+# `tsc -b` walks project references and the referenced `tsconfig.node.json`
+# (composite: true) can incidentally emit alongside `src/` TS sources when
+# invoked from this directory. Keep the source tree clean.
+*.tsbuildinfo
+src/**/*.d.ts
+!src/vite-env.d.ts
+src/domain/types.js
+src/domain/tokens.js

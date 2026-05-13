@@ -1,15 +1,21 @@
 import type { EntityId } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { ArrowUpRight } from 'lucide-react';
+import { useMemo } from 'react';
 import { Field } from './Field';
 
 export function AttachedEdgesList({ assumptionId }: { assumptionId: string }) {
   const edges = useDocumentStore((s) => s.doc.edges);
   const entities = useDocumentStore((s) => s.doc.entities);
-  const select = useDocumentStore((s) => s.select);
+  const selectEdge = useDocumentStore((s) => s.selectEdge);
 
-  const branded = assumptionId as EntityId;
-  const attached = Object.values(edges).filter((e) => e.assumptionIds?.includes(branded));
+  // Filter the edge list once per (edges, assumptionId) pair instead of on
+  // every render. The component re-renders whenever `doc.edges` changes,
+  // but the filter result is unchanged when an unrelated edge mutates.
+  const attached = useMemo(() => {
+    const branded = assumptionId as EntityId;
+    return Object.values(edges).filter((e) => e.assumptionIds?.includes(branded));
+  }, [edges, assumptionId]);
 
   return (
     <Field label={`Attached to (${attached.length})`}>
@@ -24,7 +30,7 @@ export function AttachedEdgesList({ assumptionId }: { assumptionId: string }) {
               <li key={edge.id}>
                 <button
                   type="button"
-                  onClick={() => select({ kind: 'edge', id: edge.id })}
+                  onClick={() => selectEdge(edge.id)}
                   className="group flex w-full items-center justify-between gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-left text-xs text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
                 >
                   <span className="truncate">

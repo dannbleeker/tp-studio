@@ -167,6 +167,34 @@ describe('CLR: predicted-effect existence', () => {
   });
 });
 
+describe('CLR: per-diagram dispatch', () => {
+  it('applies structural rules (clarity, entity-existence) to PRT', () => {
+    const e = makeEntity({ type: 'obstacle', title: 'Is the team blocked?' });
+    const warnings = validate(makeDoc([e], [], 'prt'));
+    expect(hasRule(warnings, 'clarity')).toBe(true);
+  });
+
+  it('applies structural rules (clarity, entity-existence) to TT', () => {
+    const e = makeEntity({ type: 'action', title: '   ' });
+    const warnings = validate(makeDoc([e], [], 'tt'));
+    expect(hasRule(warnings, 'entity-existence')).toBe(true);
+  });
+
+  it('does not apply CRT/FRT-only rules to PRT (no cause-effect-reversal)', () => {
+    const a = makeEntity({ type: 'intermediateObjective', title: 'IO' });
+    const b = makeEntity({ type: 'rootCause', title: 'RC' });
+    const e = makeEdge(a.id, b.id);
+    const warnings = validate(makeDoc([a, b], [e], 'prt'));
+    expect(hasRule(warnings, 'cause-effect-reversal')).toBe(false);
+  });
+
+  it('does not apply CRT/FRT-only rules to TT (no additional-cause)', () => {
+    const de = makeEntity({ type: 'desiredEffect', title: 'Outcome reached' });
+    const warnings = validate(makeDoc([de], [], 'tt'));
+    expect(hasRule(warnings, 'additional-cause')).toBe(false);
+  });
+});
+
 describe('CLR: tautology', () => {
   it('warns when an entity title is nearly identical to its only child', () => {
     const a = makeEntity({ title: 'Sales are declining' });
@@ -182,5 +210,91 @@ describe('CLR: tautology', () => {
     const e = makeEdge(a.id, b.id);
     const warnings = validate(makeDoc([a, b], [e]));
     expect(hasRule(warnings, 'tautology')).toBe(false);
+  });
+});
+
+describe('CLR: indirect-effect (Block C / E2)', () => {
+  it('warns when an entity has 3+ direct incoming causes', () => {
+    const target = makeEntity({ title: 'Effect' });
+    const a = makeEntity({ title: 'Cause A' });
+    const b = makeEntity({ title: 'Cause B' });
+    const c = makeEntity({ title: 'Cause C' });
+    const edges = [makeEdge(a.id, target.id), makeEdge(b.id, target.id), makeEdge(c.id, target.id)];
+    const warnings = validate(makeDoc([target, a, b, c], edges));
+    const indirect = warnings.filter((w) => w.ruleId === 'indirect-effect');
+    expect(indirect).toHaveLength(1);
+    expect(indirect[0]?.target.id).toBe(target.id);
+  });
+
+  it('does not warn at 2 incoming edges (common, intentional shape)', () => {
+    const target = makeEntity({ title: 'Effect' });
+    const a = makeEntity({ title: 'Cause A' });
+    const b = makeEntity({ title: 'Cause B' });
+    const edges = [makeEdge(a.id, target.id), makeEdge(b.id, target.id)];
+    const warnings = validate(makeDoc([target, a, b], edges));
+    expect(hasRule(warnings, 'indirect-effect')).toBe(false);
+  });
+
+  it('exempts AND-grouped edges from the count', () => {
+    const target = makeEntity({ title: 'Effect' });
+    const a = makeEntity({ title: 'Cause A' });
+    const b = makeEntity({ title: 'Cause B' });
+    const c = makeEntity({ title: 'Cause C' });
+    const groupId = 'and-1';
+    const edges = [
+      makeEdge(a.id, target.id, { andGroupId: groupId }),
+      makeEdge(b.id, target.id, { andGroupId: groupId }),
+      makeEdge(c.id, target.id, { andGroupId: groupId }),
+    ];
+    // All three are AND-grouped, so ungrouped count is 0; rule should stay silent.
+    const warnings = validate(makeDoc([target, a, b, c], edges));
+    expect(hasRule(warnings, 'indirect-effect')).toBe(false);
+  });
+});
+
+describe('CLR: cycle (Block C / E3)', () => {
+  it('warns when a 2-node cycle exists, targeting the closing edge', () => {
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const ab = makeEdge(a.id, b.id);
+    const ba = makeEdge(b.id, a.id);
+    const warnings = validate(makeDoc([a, b], [ab, ba]));
+    const cycles = warnings.filter((w) => w.ruleId === 'cycle');
+    expect(cycles).toHaveLength(1);
+    expect(cycles[0]?.target.kind).toBe('edge');
+    expect(cycles[0]?.message).toMatch(/reversed/);
+  });
+
+  it('warns on a 3-node cycle with a length-aware message', () => {
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const c = makeEntity({ title: 'C' });
+    const edges = [makeEdge(a.id, b.id), makeEdge(b.id, c.id), makeEdge(c.id, a.id)];
+    const warnings = validate(makeDoc([a, b, c], edges));
+    const cycles = warnings.filter((w) => w.ruleId === 'cycle');
+    expect(cycles).toHaveLength(1);
+    expect(cycles[0]?.message).toMatch(/3 entities/);
+  });
+
+  it('does not warn on an acyclic graph', () => {
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const c = makeEntity({ title: 'C' });
+    const edges = [makeEdge(a.id, b.id), makeEdge(b.id, c.id)];
+    const warnings = validate(makeDoc([a, b, c], edges));
+    expect(hasRule(warnings, 'cycle')).toBe(false);
+  });
+});
+
+describe('warning tier stamping (Block C / E5)', () => {
+  it('every warning carries a tier', () => {
+    const a = makeEntity({ title: 'Sales declined this quarter.' });
+    const b = makeEntity({ title: '   ' }); // entity-existence fires
+    const edges = [makeEdge(a.id, b.id)]; // causality-existence fires
+    const warnings = validate(makeDoc([a, b], edges));
+    expect(warnings.length).toBeGreaterThan(0);
+    for (const w of warnings) {
+      expect(['clarity', 'existence', 'sufficiency']).toContain(w.tier);
+    }
   });
 });

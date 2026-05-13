@@ -1,19 +1,92 @@
-import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
-import { ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
+import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT, ZOOM_UP_THRESHOLD } from '@/domain/constants';
+import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
+import { ST_FACET_KEYS, isStNodeFormat } from '@/domain/graph';
+import { HANDLE_ORIENTATION, LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
+import { useZoomLevel } from '@/hooks/useZoomLevel';
+import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
-import { Handle, type NodeProps, Position } from '@xyflow/react';
+import { Handle, type NodeProps, NodeToolbar, Position } from '@xyflow/react';
 import clsx from 'clsx';
-import { useEffect, useRef } from 'react';
+import { Pin } from 'lucide-react';
+import { memo, useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 import type { TPNode as TPNodeType } from './flow-types';
 
-export function TPNode({ data, selected }: NodeProps<TPNodeType>) {
-  const { entity } = data;
-  const meta = ENTITY_TYPE_META[entity.type];
-  const isEditing = useDocumentStore((s) => s.editingEntityId === entity.id);
-  const updateEntity = useDocumentStore((s) => s.updateEntity);
-  const endEditing = useDocumentStore((s) => s.endEditing);
-  const beginEditing = useDocumentStore((s) => s.beginEditing);
+// B5 — zoom-up annotation threshold lives in `@/domain/constants` so UI/UX
+// tweaks happen in one place alongside the other canvas tunables.
+
+function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
+  const { entity, hiddenDescendantCount, udeReachCount, rootCauseReachCount, diffStatus } = data;
+  // One shallow-equal selector — the previous 7 individual `useDocumentStore`
+  // calls each registered their own subscription that fired on every store
+  // change. The `editingEntityId === entity.id` derived boolean stays
+  // primitive, so React only re-renders when it actually flips.
+  const {
+    isEditing,
+    updateEntity,
+    endEditing,
+    beginEditing,
+    toggleEntityCollapsed,
+    showAnnotationNumbers,
+    showEntityIds,
+    showReachBadges,
+    showReverseReachBadges,
+    diagramType,
+    customEntityClasses,
+  } = useDocumentStore(
+    useShallow((s) => ({
+      isEditing: s.editingEntityId === entity.id,
+      updateEntity: s.updateEntity,
+      endEditing: s.endEditing,
+      beginEditing: s.beginEditing,
+      toggleEntityCollapsed: s.toggleEntityCollapsed,
+      showAnnotationNumbers: s.showAnnotationNumbers,
+      showEntityIds: s.showEntityIds,
+      showReachBadges: s.showReachBadges,
+      showReverseReachBadges: s.showReverseReachBadges,
+      diagramType: s.doc.diagramType,
+      customEntityClasses: s.doc.customEntityClasses,
+    }))
+  );
+  // B10 — resolve through the doc-aware lookup so custom entity
+  // classes pick up their label / colour / icon. Built-ins resolve
+  // identically to the previous direct `ENTITY_TYPE_META[type]` lookup.
+  const meta = resolveEntityTypeMeta(entity.type, customEntityClasses);
+  // FL-ET7: Notes sit outside the causal graph. We hide the React Flow
+  // handles so the user can't drag a connection into / out of a note,
+  // and we tint the body yellow so the card reads as a sticky annotation
+  // rather than a TOC-typed entity.
+  const isNoteEntity = entity.type === 'note';
+  // Session 76: first-class S&T 5-facet rendering. An injection with
+  // any of the four reserved facet attributes renders as a multi-row
+  // card; everything else uses the standard one-line layout.
+  const isStFormat = isStNodeFormat(entity);
+  const stStrategy = entity.attributes?.[ST_FACET_KEYS.strategy];
+  const stNa = entity.attributes?.[ST_FACET_KEYS.necessaryAssumption];
+  const stPa = entity.attributes?.[ST_FACET_KEYS.parallelAssumption];
+  const stSa = entity.attributes?.[ST_FACET_KEYS.sufficiencyAssumption];
+  const stStrategyText = stStrategy?.kind === 'string' ? stStrategy.value : undefined;
+  const stNaText = stNa?.kind === 'string' ? stNa.value : undefined;
+  const stPaText = stPa?.kind === 'string' ? stPa.value : undefined;
+  const stSaText = stSa?.kind === 'string' ? stSa.value : undefined;
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const isCollapsed = entity.collapsed === true;
+
+  // B5: hover state + live zoom. When the user is zoomed out far enough
+  // that the in-node title is hard to read, hovering or selecting the
+  // node surfaces a larger overlay card. We only subscribe to zoom here
+  // (one subscription per visible node) because the overlay's mount /
+  // unmount is the only thing that depends on zoom — the node body itself
+  // doesn't care.
+  const [isHovered, setIsHovered] = useState(false);
+  const zoom = useZoomLevel();
+  const showZoomUp = zoom < ZOOM_UP_THRESHOLD && (selected || isHovered);
+  // Handle orientation is per-diagram-type — vertical for the auto-layout
+  // trees (edges flow up via `BT` dagre), horizontal for Evaporating Cloud
+  // (edges flow right-to-left across the hand-positioned 5-box layout).
+  const isHorizontal = HANDLE_ORIENTATION[diagramType] === 'horizontal';
+  const targetPosition = isHorizontal ? Position.Right : Position.Bottom;
+  const sourcePosition = isHorizontal ? Position.Left : Position.Top;
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -24,31 +97,125 @@ export function TPNode({ data, selected }: NodeProps<TPNodeType>) {
 
   return (
     <div
+      data-component="tp-node"
       className={clsx(
-        'group relative flex items-stretch rounded-lg bg-white shadow-sm',
-        'border border-neutral-200',
-        'dark:border-neutral-800 dark:bg-neutral-900',
-        selected && 'ring-2 ring-indigo-500/60 ring-offset-1'
+        'group relative flex items-stretch rounded-lg shadow-sm',
+        'border',
+        // FL-ET7: post-it tint for note entities; subtler card chrome for
+        // everything else so a Note reads as annotation, not causality.
+        isNoteEntity
+          ? 'border-yellow-300 bg-yellow-50 dark:border-yellow-700/50 dark:bg-yellow-950/30'
+          : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900',
+        selected && 'ring-2 ring-indigo-500/60 ring-offset-1',
+        // H2 visual-diff tints. `'added'` greens the card so the user can
+        // scan for "what's new since the snapshot." `'changed'` ambers
+        // entities whose content drifted. Removed entities (only in the
+        // snapshot, not the live doc) are handled by a separate "ghost"
+        // overlay surfaced in the compare banner.
+        diffStatus === 'added' &&
+          'ring-2 ring-emerald-400/70 ring-offset-1 dark:ring-emerald-500/70',
+        diffStatus === 'changed' && 'ring-2 ring-amber-400/70 ring-offset-1 dark:ring-amber-500/70'
       )}
-      style={{ width: NODE_WIDTH, minHeight: NODE_MIN_HEIGHT }}
+      style={{ width: NODE_WIDTH, minHeight: isStFormat ? ST_NODE_HEIGHT : NODE_MIN_HEIGHT }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onDoubleClick={(e) => {
         e.stopPropagation();
-        if (!isEditing) beginEditing(entity.id);
+        if (isEditing) return;
+        if (!guardWriteOrToast()) return;
+        beginEditing(entity.id);
       }}
+      // FL-AN1: full multi-line title shown as a native tooltip on hover.
+      // Browsers handle newlines inside the title attribute themselves.
+      title={!isEditing && entity.title ? entity.title : undefined}
     >
-      <Handle
-        type="target"
+      {/*
+        B5: zoom-up overlay. `NodeToolbar` renders in screen coordinates
+        regardless of canvas zoom, so the card stays readable when the
+        underlying node body has shrunk past legibility. We show it only
+        when (zoom is low) AND (the user is interacting with this node) —
+        always-on at low zoom would clutter the canvas.
+      */}
+      <NodeToolbar
+        isVisible={showZoomUp && !isEditing}
         position={Position.Top}
-        className="!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900"
-      />
+        offset={12}
+        className="pointer-events-none"
+      >
+        <div
+          data-component="zoom-up-card"
+          className="pointer-events-auto max-w-sm rounded-lg border border-neutral-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95"
+        >
+          <span className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+            <meta.icon
+              className="h-3 w-3 shrink-0"
+              style={{ color: meta.stripeColor }}
+              aria-hidden
+            />
+            <span>{meta.label}</span>
+          </span>
+          <p className="mt-0.5 whitespace-pre-line text-sm font-medium text-neutral-900 dark:text-neutral-100">
+            {entity.title || <span className="italic text-neutral-400">Untitled entity</span>}
+          </p>
+          {entity.description && (
+            <p className="mt-1 line-clamp-4 whitespace-pre-line text-xs text-neutral-600 dark:text-neutral-300">
+              {entity.description}
+            </p>
+          )}
+        </div>
+      </NodeToolbar>
+      {!isNoteEntity && (
+        <Handle
+          type="target"
+          position={targetPosition}
+          className="!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900"
+        />
+      )}
       <div
         className="w-1.5 shrink-0 rounded-l-lg"
         style={{ backgroundColor: meta.stripeColor }}
         aria-hidden
       />
       <div className="flex flex-1 flex-col gap-1 px-3 py-2.5">
-        <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-          {meta.label}
+        <span className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+          {/* B3: per-type icon. Stripe colour duplicated on the icon so the
+              two visual cues read together rather than competing. `aria-hidden`
+              because the label text already announces the type. */}
+          <meta.icon className="h-3 w-3 shrink-0" style={{ color: meta.stripeColor }} aria-hidden />
+          <span>{meta.label}</span>
+          {/*
+            Span-of-control (TOC-reading): single-letter pill after the
+            type label. Color encodes the level: emerald for control
+            (act-on-it), amber for influence (affect-it), neutral for
+            external (observe-only). Unset entities show nothing.
+          */}
+          {entity.spanOfControl === 'control' && (
+            <span
+              className="ml-1 rounded bg-emerald-100 px-1 text-[9px] font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
+              title="Span of control: I can act on this directly"
+              aria-label="Span of control: control"
+            >
+              C
+            </span>
+          )}
+          {entity.spanOfControl === 'influence' && (
+            <span
+              className="ml-1 rounded bg-amber-100 px-1 text-[9px] font-bold text-amber-800 dark:bg-amber-900/50 dark:text-amber-200"
+              title="Span of control: I can influence this indirectly"
+              aria-label="Span of control: influence"
+            >
+              I
+            </span>
+          )}
+          {entity.spanOfControl === 'external' && (
+            <span
+              className="ml-1 rounded bg-neutral-200 px-1 text-[9px] font-bold text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200"
+              title="Span of control: external — outside my control"
+              aria-label="Span of control: external"
+            >
+              E
+            </span>
+          )}
         </span>
         {isEditing ? (
           <textarea
@@ -56,14 +223,25 @@ export function TPNode({ data, selected }: NodeProps<TPNodeType>) {
             className="resize-none border-none bg-transparent p-0 text-node leading-snug text-neutral-900 outline-none placeholder:text-neutral-400 dark:text-neutral-100"
             rows={2}
             defaultValue={entity.title}
-            placeholder="State the effect…"
+            placeholder={isNoteEntity ? 'Type a note…' : 'State the effect…'}
             onBlur={(e) => {
               const next = e.currentTarget.value.trim();
               if (next !== entity.title) updateEntity(entity.id, { title: next });
               endEditing();
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === 'Enter' && e.altKey) {
+                // FL-AN1: Alt+Enter inserts a newline at the caret. Default
+                // textarea behavior would do this for plain Enter, but we
+                // commit on plain Enter — so wire it up explicitly.
+                e.preventDefault();
+                const t = e.currentTarget;
+                const { selectionStart, selectionEnd, value } = t;
+                const next = `${value.slice(0, selectionStart)}\n${value.slice(selectionEnd)}`;
+                t.value = next;
+                const caret = selectionStart + 1;
+                t.setSelectionRange(caret, caret);
+              } else if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 e.currentTarget.blur();
               } else if (e.key === 'Escape') {
@@ -75,18 +253,196 @@ export function TPNode({ data, selected }: NodeProps<TPNodeType>) {
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <span className="text-node leading-snug text-neutral-900 dark:text-neutral-100">
-            {entity.title || (
-              <span className="italic text-neutral-400">Untitled — double-click to edit</span>
+          <span
+            className={clsx(
+              'line-clamp-2 whitespace-pre-line leading-snug text-neutral-900 dark:text-neutral-100',
+              // F3: per-entity title size. Default ('md') falls back to the
+              // app-wide `text-node` token; sm/lg shrink or grow from there.
+              entity.titleSize === 'sm' && 'text-xs',
+              entity.titleSize === 'lg' && 'text-base',
+              (!entity.titleSize || entity.titleSize === 'md') && 'text-node'
             )}
+          >
+            {entity.unspecified === true && (
+              // Deliberate placeholder — render a help-circle glyph + italic
+              // hint so the slot reads "yes, something belongs here, the
+              // user just hasn't said what yet."
+              <span className="mr-1 inline-flex items-baseline gap-1 italic text-neutral-500 dark:text-neutral-400">
+                <span aria-hidden>?</span>
+                {!entity.title && <span>Unspecified — fill in later</span>}
+              </span>
+            )}
+            {entity.title ||
+              (entity.unspecified === true ? null : (
+                <span className="italic text-neutral-400">Untitled — double-click to edit</span>
+              ))}
+          </span>
+        )}
+        {/*
+          Session 76: first-class S&T 5-facet rows. The entity title (= the
+          tactic) renders above; below it we lay out the four other facets
+          as labeled rows. Each row truncates to one line so the card's
+          height stays predictable for dagre. Empty facets render an
+          italic placeholder so the user sees the structural slot.
+        */}
+        {isStFormat && !isEditing && (
+          <div className="mt-1 flex flex-col gap-0.5 text-[10px] leading-tight text-neutral-700 dark:text-neutral-300">
+            <StFacetRow label="NA" value={stNaText} />
+            <StFacetRow label="Strategy" value={stStrategyText} accent />
+            <StFacetRow label="PA" value={stPaText} />
+            <StFacetRow label="SA" value={stSaText} />
+          </div>
+        )}
+        {showEntityIds && !isEditing && (
+          <span
+            className="truncate font-mono text-[10px] text-neutral-400 dark:text-neutral-500"
+            title={entity.id}
+          >
+            {entity.id}
           </span>
         )}
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900"
-      />
+      {showAnnotationNumbers && (
+        <span
+          className="pointer-events-none absolute -right-1.5 -top-1.5 rounded-full border border-neutral-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-neutral-600 shadow-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+          aria-label={`Annotation number ${entity.annotationNumber}`}
+        >
+          #{entity.annotationNumber}
+        </span>
+      )}
+      {typeof entity.ordering === 'number' && (
+        <span
+          className="pointer-events-none absolute -left-1.5 -top-1.5 rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] font-semibold text-cyan-800 shadow-sm dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200"
+          aria-label={`Step ${entity.ordering}`}
+        >
+          Step {entity.ordering}
+        </span>
+      )}
+      {/*
+        LA5 (Session 63): pin indicator. Surfaces only on auto-layout
+        diagrams when this entity has been pinned by a drag — manual-
+        layout diagrams (EC) always read entity.position, so the icon
+        there would be meaningless ("they're all pinned, all the time").
+        Position: bottom-right corner, distinct from the bottom-left
+        reach badge and the top-corner ordering / annotation badges.
+      */}
+      {entity.position && LAYOUT_STRATEGY[diagramType] !== 'manual' && (
+        <span
+          className="pointer-events-none absolute -right-1.5 -bottom-1.5 rounded-full border border-violet-300 bg-violet-50 p-0.5 text-violet-700 shadow-sm dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200"
+          aria-label="Pinned position"
+          title="Pinned position — right-click → Unpin to let auto-layout reclaim it"
+        >
+          <Pin className="h-2.5 w-2.5" />
+        </span>
+      )}
+      {showReachBadges && typeof udeReachCount === 'number' && udeReachCount > 0 && (
+        // Cheap continuous version of the Core Driver finder — the higher
+        // this number on a root cause, the stronger the Core Driver
+        // candidate. Rendered bottom-left so it doesn't collide with the
+        // top-left step badge or the top-right annotation/ID stack.
+        <span
+          className="pointer-events-none absolute -bottom-2 -left-1.5 rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 shadow-sm dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
+          aria-label={`Reaches ${udeReachCount} undesirable effect${udeReachCount === 1 ? '' : 's'}`}
+          title={`Reaches ${udeReachCount} UDE${udeReachCount === 1 ? '' : 's'}`}
+        >
+          →{udeReachCount} UDE{udeReachCount === 1 ? '' : 's'}
+        </span>
+      )}
+      {showReverseReachBadges &&
+        typeof rootCauseReachCount === 'number' &&
+        rootCauseReachCount > 0 && (
+          // E2: reverse-reach badge. Sky-blue palette so the two
+          // counters don't collide visually — amber for "→N UDEs"
+          // forward, sky for "←N roots" backward. Bottom-right so it
+          // doesn't fight the forward badge for screen real estate.
+          <span
+            className="pointer-events-none absolute -bottom-2 -right-1.5 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-800 shadow-sm dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200"
+            aria-label={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
+            title={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
+          >
+            ←{rootCauseReachCount} root{rootCauseReachCount === 1 ? '' : 's'}
+          </span>
+        )}
+      {isCollapsed && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!guardWriteOrToast()) return;
+            toggleEntityCollapsed(entity.id);
+          }}
+          className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-neutral-200 bg-white px-2 py-0.5 text-[10px] font-medium text-neutral-600 shadow-sm transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          aria-label={
+            hiddenDescendantCount
+              ? `Expand ${hiddenDescendantCount} hidden descendant${hiddenDescendantCount === 1 ? '' : 's'}`
+              : 'Expand downstream'
+          }
+          title={
+            hiddenDescendantCount ? `Expand (${hiddenDescendantCount} hidden)` : 'Expand downstream'
+          }
+        >
+          <span aria-hidden>▸</span>
+          {hiddenDescendantCount ? <span>+{hiddenDescendantCount}</span> : null}
+        </button>
+      )}
+      {!isNoteEntity && (
+        <Handle
+          type="source"
+          position={sourcePosition}
+          className="!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900"
+        />
+      )}
     </div>
   );
 }
+
+/**
+ * Session 76 — one row of the first-class S&T 5-facet card. Renders the
+ * facet's label (uppercased, small caps) above its value. `accent`
+ * highlights the Strategy row (the parent objective the tactic serves)
+ * so it stands out from the three assumption rows.
+ */
+function StFacetRow({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string | undefined;
+  accent?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline gap-1">
+      <span
+        className={clsx(
+          'shrink-0 font-semibold uppercase tracking-wide',
+          accent ? 'text-indigo-700 dark:text-indigo-300' : 'text-neutral-500 dark:text-neutral-400'
+        )}
+        style={{ width: 48 }}
+      >
+        {label}
+      </span>
+      <span
+        className={clsx(
+          'flex-1 truncate',
+          value ? '' : 'italic text-neutral-400 dark:text-neutral-500'
+        )}
+        title={value}
+      >
+        {value || '(unset)'}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * `React.memo` so a store mutation that doesn't touch THIS node's data
+ * doesn't trigger a re-render. React Flow re-derives `data` per render
+ * but the immutable-update model in the store means an unchanged
+ * entity's `data.entity` reference IS stable across mutations to other
+ * entities. The shallow-equal default comparison on NodeProps catches
+ * the unchanged case; React Flow passes a fresh props object so we'd
+ * lose without `memo`. Saves 50× re-renders on a 50-node graph.
+ */
+export const TPNode = memo(TPNodeImpl);
+TPNode.displayName = 'TPNode';

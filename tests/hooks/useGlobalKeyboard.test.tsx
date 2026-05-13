@@ -16,11 +16,8 @@ const dispatchKey = (init: KeyboardEventInit & { key: string }) =>
 const addNode = (title = 'Node') =>
   useDocumentStore.getState().addEntity({ type: 'effect', title });
 
-const originalConfirm = globalThis.confirm;
-
 beforeEach(() => {
   resetStoreForTest();
-  globalThis.confirm = () => true;
 });
 
 afterEach(() => {
@@ -28,8 +25,29 @@ afterEach(() => {
   // disabled, so unmount manually to keep keyboard listeners from stacking
   // across tests.
   cleanup();
-  globalThis.confirm = originalConfirm;
 });
+
+// Resolve any open in-app confirm with `answer`. The Delete key path
+// goes through `confirmAndDeleteSelection` which now uses the store's
+// async `confirm()` action; tests poll for the open dialog and settle
+// it. Mirrors the helper in `tests/services/confirmations.test.ts`.
+const settleNextConfirm = (answer: boolean): Promise<void> =>
+  new Promise<void>((resolve, reject) => {
+    const start = Date.now();
+    const tick = () => {
+      if (useDocumentStore.getState().confirmDialog) {
+        useDocumentStore.getState().resolveConfirm(answer);
+        resolve();
+        return;
+      }
+      if (Date.now() - start > 1000) {
+        reject(new Error('Timeout waiting for ConfirmDialog to open'));
+        return;
+      }
+      setTimeout(tick, 5);
+    };
+    tick();
+  });
 
 describe('useGlobalKeyboard', () => {
   it('Cmd+K toggles the command palette', () => {
@@ -60,8 +78,8 @@ describe('useGlobalKeyboard', () => {
   it('Escape deselects when nothing else is open', () => {
     render(<Harness />);
     const e = addNode('A');
-    useDocumentStore.getState().select({ kind: 'entity', id: e.id });
-    expect(useDocumentStore.getState().selection.kind).toBe('entity');
+    useDocumentStore.getState().selectEntity(e.id);
+    expect(useDocumentStore.getState().selection.kind).toBe('entities');
     dispatchKey({ key: 'Escape' });
     expect(useDocumentStore.getState().selection.kind).toBe('none');
   });
@@ -69,11 +87,11 @@ describe('useGlobalKeyboard', () => {
   it('Escape closes the help dialog before deselecting', () => {
     render(<Harness />);
     const e = addNode('A');
-    useDocumentStore.getState().select({ kind: 'entity', id: e.id });
+    useDocumentStore.getState().selectEntity(e.id);
     useDocumentStore.getState().openHelp();
     dispatchKey({ key: 'Escape' });
     expect(useDocumentStore.getState().helpOpen).toBe(false);
-    expect(useDocumentStore.getState().selection.kind).toBe('entity');
+    expect(useDocumentStore.getState().selection.kind).toBe('entities');
   });
 
   it('Cmd+Z undoes the last mutation', () => {
@@ -94,7 +112,7 @@ describe('useGlobalKeyboard', () => {
   it('Tab on a selected entity creates a child and connects it', () => {
     render(<Harness />);
     const parent = addNode('Parent');
-    useDocumentStore.getState().select({ kind: 'entity', id: parent.id });
+    useDocumentStore.getState().selectEntity(parent.id);
     dispatchKey({ key: 'Tab' });
     const doc = useDocumentStore.getState().doc;
     const edges = Object.values(doc.edges);
@@ -105,20 +123,23 @@ describe('useGlobalKeyboard', () => {
   it('Shift+Tab creates a parent (new -> selected) edge', () => {
     render(<Harness />);
     const child = addNode('Child');
-    useDocumentStore.getState().select({ kind: 'entity', id: child.id });
+    useDocumentStore.getState().selectEntity(child.id);
     dispatchKey({ key: 'Tab', shiftKey: true });
     const edges = Object.values(useDocumentStore.getState().doc.edges);
     expect(edges).toHaveLength(1);
     expect(edges[0]!.targetId).toBe(child.id);
   });
 
-  it('Delete on a selected entity deletes after confirm', () => {
+  it('Delete on a selected entity deletes after confirm', async () => {
     render(<Harness />);
     const a = addNode('A');
     const b = addNode('B');
     useDocumentStore.getState().connect(a.id, b.id);
-    useDocumentStore.getState().select({ kind: 'entity', id: a.id });
+    useDocumentStore.getState().selectEntity(a.id);
     dispatchKey({ key: 'Delete' });
+    // The keystroke opens an async confirm; resolve it positively and
+    // then wait one tick so the deletion side-effect lands.
+    await settleNextConfirm(true);
     expect(useDocumentStore.getState().doc.entities[a.id]).toBeUndefined();
   });
 

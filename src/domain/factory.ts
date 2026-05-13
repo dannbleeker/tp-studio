@@ -1,48 +1,149 @@
-import { nanoid } from 'nanoid';
+import { DIAGRAM_TYPE_LABEL } from './entityTypeMeta';
+import { newDocumentId, newEdgeId, newEntityId, newGroupId } from './ids';
 import type {
   DiagramType,
-  DocumentId,
   Edge,
-  EdgeId,
   Entity,
   EntityId,
   EntityType,
+  Group,
+  GroupColor,
   TPDocument,
 } from './types';
 
-// nanoid returns plain `string`; cast at the factory boundary so callers
-// receive a branded id without sprinkling assertions throughout the codebase.
-const newEntityId = (): EntityId => nanoid() as EntityId;
-const newEdgeId = (): EdgeId => nanoid() as EdgeId;
-const newDocumentId = (): DocumentId => nanoid() as DocumentId;
-
 const titleForDiagram = (diagramType: DiagramType): string =>
-  diagramType === 'crt' ? 'Untitled CRT' : 'Untitled FRT';
+  `Untitled ${DIAGRAM_TYPE_LABEL[diagramType]}`;
+
+/**
+ * The mutable part of a freshly created document — entities, edges, and the
+ * annotation counter. Every other field on `TPDocument` (id, title, type,
+ * timestamps, resolvedWarnings, groups, schemaVersion) is mechanical and
+ * lives inside `createDocument` itself.
+ */
+type DocSeed = Pick<TPDocument, 'entities' | 'edges' | 'nextAnnotationNumber'>;
+
+const emptySeed = (): DocSeed => ({ entities: {}, edges: {}, nextAnnotationNumber: 1 });
+
+/**
+ * Canonical 5-box Evaporating Cloud layout (mirrored in examples.ts for the
+ * example builder). Goal on the left, two needs stacked centrally, two wants
+ * stacked on the right. These coordinates are the EC diagnostic — dagre is
+ * disabled for this diagram (LAYOUT_STRATEGY.ec === 'manual').
+ */
+const EC_POSITIONS = {
+  a: { x: 100, y: 250 },
+  b: { x: 450, y: 100 },
+  c: { x: 450, y: 400 },
+  d: { x: 800, y: 100 },
+  dPrime: { x: 800, y: 400 },
+} as const;
+
+/**
+ * Seed a blank Evaporating Cloud with the 5 boxes pre-positioned and the
+ * 4 sufficiency edges (D→B, D′→C, B→A, C→A) already wired. Box titles are
+ * empty placeholders — the user fills them in. Without the seed, the
+ * diagnostic structure would be invisible on a fresh canvas.
+ */
+const seedEC = (now: number): DocSeed => {
+  const ids = {
+    a: newEntityId(),
+    b: newEntityId(),
+    c: newEntityId(),
+    d: newEntityId(),
+    dPrime: newEntityId(),
+  };
+  const mkEntity = (
+    id: EntityId,
+    type: Entity['type'],
+    n: number,
+    pos: { x: number; y: number }
+  ): Entity => ({
+    id,
+    type,
+    title: '',
+    annotationNumber: n,
+    createdAt: now,
+    updatedAt: now,
+    position: pos,
+  });
+  const mkEdge = (sourceId: EntityId, targetId: EntityId): Edge => ({
+    id: newEdgeId(),
+    sourceId,
+    targetId,
+    kind: 'sufficiency',
+  });
+  const entities: Entity[] = [
+    mkEntity(ids.a, 'goal', 1, EC_POSITIONS.a),
+    mkEntity(ids.b, 'need', 2, EC_POSITIONS.b),
+    mkEntity(ids.c, 'need', 3, EC_POSITIONS.c),
+    mkEntity(ids.d, 'want', 4, EC_POSITIONS.d),
+    mkEntity(ids.dPrime, 'want', 5, EC_POSITIONS.dPrime),
+  ];
+  const edges: Edge[] = [
+    mkEdge(ids.d, ids.b),
+    mkEdge(ids.dPrime, ids.c),
+    mkEdge(ids.b, ids.a),
+    mkEdge(ids.c, ids.a),
+  ];
+  return {
+    entities: Object.fromEntries(entities.map((e) => [e.id, e])),
+    edges: Object.fromEntries(edges.map((e) => [e.id, e])),
+    nextAnnotationNumber: 6,
+  };
+};
+
+/**
+ * Per-diagram-type initial-content factory. CRT/FRT/PRT/TT all start blank;
+ * Evaporating Cloud pre-seeds five boxes at canonical coordinates via
+ * `seedEC` above. The `now` argument is the document-level timestamp so
+ * all seeded entities share `createdAt` / `updatedAt`.
+ *
+ * The `Record<DiagramType, _>` shape forces a new diagram type to declare
+ * its seed — a missing entry surfaces as a compile error rather than a
+ * silently-blank canvas for a diagram that's supposed to ship populated.
+ */
+export const INITIAL_DOC_BY_DIAGRAM: Record<DiagramType, (now: number) => DocSeed> = {
+  crt: () => emptySeed(),
+  frt: () => emptySeed(),
+  prt: () => emptySeed(),
+  tt: () => emptySeed(),
+  ec: seedEC,
+  // FL-DT4 + FL-DT5: both start empty. S&T users build the tree
+  // top-down from a single apex goal; freeform users have no canonical
+  // starting shape. Pre-seeding either would be a guess.
+  st: () => emptySeed(),
+  freeform: () => emptySeed(),
+};
 
 export const createDocument = (diagramType: DiagramType): TPDocument => {
   const now = Date.now();
+  const seed = INITIAL_DOC_BY_DIAGRAM[diagramType](now);
   return {
     id: newDocumentId(),
     diagramType,
     title: titleForDiagram(diagramType),
-    entities: {},
-    edges: {},
+    entities: seed.entities,
+    edges: seed.edges,
+    groups: {},
     resolvedWarnings: {},
+    nextAnnotationNumber: seed.nextAnnotationNumber,
     createdAt: now,
     updatedAt: now,
-    schemaVersion: 1,
+    schemaVersion: 6,
   };
 };
 
 export const createEntity = (params: {
   type: EntityType;
   title?: string;
+  annotationNumber: number;
 }): Entity => {
   const now = Date.now();
   return {
     id: newEntityId(),
     type: params.type,
     title: params.title ?? '',
+    annotationNumber: params.annotationNumber,
     createdAt: now,
     updatedAt: now,
   };
@@ -59,3 +160,20 @@ export const createEdge = (params: {
   kind: 'sufficiency',
   ...(params.andGroupId ? { andGroupId: params.andGroupId } : {}),
 });
+
+export const createGroup = (params: {
+  title?: string;
+  color?: GroupColor;
+  memberIds?: string[];
+}): Group => {
+  const now = Date.now();
+  return {
+    id: newGroupId(),
+    title: params.title ?? 'New group',
+    color: params.color ?? 'indigo',
+    memberIds: params.memberIds ?? [],
+    collapsed: false,
+    createdAt: now,
+    updatedAt: now,
+  };
+};

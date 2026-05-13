@@ -1,0 +1,141 @@
+/*
+ * Print stylesheet (FL-EX1 / FL-EX7).
+ *
+ * Goals:
+ *   - Hide chrome: toolbar, inspector, palette, modals, breadcrumb, tooltips.
+ *   - Expand the canvas to fill the page, no scrollbars.
+ *   - Force a light color scheme so the printed page is readable on white paper
+ *     regardless of the current theme.
+ *   - Add a header (document title + optional author) at the top of the first
+ *     page and a small footer with the date.
+ */
+
+@media print {
+  @page {
+    margin: 0.75in;
+    /* Modern browsers auto-paginate; we just need the margin. */
+  }
+
+  /* Force light theme tokens regardless of the .dark / .theme-hc class on
+     <html>. Print is white paper, ink-on-paper rules win. */
+  html,
+  body,
+  .dark body,
+  .theme-hc body,
+  #root {
+    background: #ffffff !important;
+    color: #171717 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  main {
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
+  /* Hide every floating affordance. Everything below is "chrome, not content."
+     Most components carry a `data-component` hook for stable matching; the
+     React Flow internals + ARIA roles cover what we don't author. The bare
+     `dialog` selector catches modals built on the native `<dialog>` element
+     (which has implicit role="dialog" but CSS attribute selectors only
+     match explicit attributes — so `[role="dialog"]` alone misses them). */
+  dialog,
+  .react-flow__controls,
+  .react-flow__minimap,
+  .react-flow__attribution,
+  .react-flow__background,
+  .inspector-aside,
+  .revision-panel,
+  [role="dialog"],
+  [role="menu"],
+  [role="alertdialog"],
+  [data-component="top-bar"],
+  [data-component="breadcrumb"],
+  [data-component="toaster"],
+  [data-component="search-panel"],
+  [data-component="empty-hint"],
+  [data-component="first-entity-tip"],
+  [data-component="zoom-percent"] {
+    display: none !important;
+  }
+
+  /* Hide the on-canvas title editor in print — the `<PrintHeader>` block
+     above renders the title as a proper H1 instead. */
+  [data-component="title-badge"] {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+
+  /* Expand React Flow's container. The viewport's transform is locked at
+     export-time by `fitView`; we lean on the browser to draw what's there. */
+  .react-flow,
+  .react-flow__renderer,
+  .react-flow__viewport {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
+
+  /* Print-only header block (document title + author + description). The
+     element is hidden in normal view; the `display: block` above flips it on. */
+  .print-only {
+    display: none;
+    margin-bottom: 0.5in;
+  }
+  .print-only h1 {
+    font-size: 20pt;
+    font-weight: 600;
+    margin: 0 0 0.1in 0;
+  }
+  .print-only .print-author {
+    font-size: 11pt;
+    color: #525252;
+    margin-bottom: 0.1in;
+  }
+  .print-only .print-description {
+    font-size: 11pt;
+    color: #404040;
+  }
+
+  /* Page footer — print date. Modern browsers' running-header support is
+     uneven, so we settle for a single block at the bottom of the document. */
+  .print-footer {
+    display: block !important;
+    margin-top: 0.3in;
+    font-size: 9pt;
+    color: #737373;
+  }
+
+  /* Remove animations so frames don't tear when the printer captures. */
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* F6: ink-saver mode. Active when the user has the Settings toggle ON
+     (the body class is set by useThemeClass). Strips the colored stripe on
+     each entity and drops group background tints so the printer doesn't
+     dump a wall of ink. Entity types stay distinguishable via their text
+     label (UDE / EFFECT / ROOT CAUSE / …) which always reads in print. */
+  .print-ink-saver .react-flow__node-tp [style*="background-color"] {
+    background-color: transparent !important;
+    border-right: 1px solid #525252 !important;
+  }
+  .print-ink-saver .react-flow__node-tpGroup > div,
+  .print-ink-saver .react-flow__node-tpCollapsedGroup {
+    background-color: transparent !important;
+  }
+}
+
+/* Hidden in normal view; the @media print block above turns these on. */
+.print-only,
+.print-footer {
+  display: none;
+}

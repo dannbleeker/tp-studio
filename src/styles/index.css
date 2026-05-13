@@ -1,4 +1,5 @@
 @import "@xyflow/react/dist/style.css";
+@import "./print.css";
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +7,9 @@
 
 :root {
   color-scheme: light dark;
+  /* Multiplier consumed by every transition-duration. Updated by useThemeClass
+   * from the user's `animationSpeed` preference. */
+  --anim-speed: 1;
 }
 
 html,
@@ -29,6 +33,58 @@ body {
   color: #f5f5f5;
 }
 
+/* High-contrast layer: pure black background, pure white text, thicker
+ * focus rings. Layers on top of .dark — applied together. */
+.theme-hc body {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.theme-hc :focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* FL-TO1 (Session 61): four named dark variants. Each layers on top of
+ * `.dark` and only changes the body background + a focus-ring accent so
+ * the rest of the Tailwind dark-mode palette stays familiar. */
+
+/* Rust — warm dark with deep ember / brown tones. */
+.theme-rust body {
+  background-color: #1c1410;
+  color: #f5e6d3;
+}
+.theme-rust :focus-visible {
+  outline-color: #ea580c;
+}
+
+/* Coal — near-black with subtle blue tint, less contrast than HC. */
+.theme-coal body {
+  background-color: #0c0d10;
+  color: #d4d6db;
+}
+.theme-coal :focus-visible {
+  outline-color: #94a3b8;
+}
+
+/* Navy — deep blue dark mode, easy on the eyes for long sessions. */
+.theme-navy body {
+  background-color: #0a1628;
+  color: #dbe7f3;
+}
+.theme-navy :focus-visible {
+  outline-color: #38bdf8;
+}
+
+/* Ayu — popular editor theme: warm dark with golden accents. */
+.theme-ayu body {
+  background-color: #0f1419;
+  color: #e6e1cf;
+}
+.theme-ayu :focus-visible {
+  outline-color: #ffb454;
+}
+
 /* React Flow dot-grid background tweak — subtler than default */
 .react-flow__background {
   --xy-background-color-default: transparent;
@@ -36,13 +92,167 @@ body {
 
 /* Animate auto-layout repositioning. The transform on a React Flow
  * node reflects only its position prop; the viewport (pan/zoom)
- * transforms a different element, so this does not affect panning. */
+ * transforms a different element, so this does not affect panning.
+ * Duration scaled by --anim-speed so the user's pref applies.
+ *
+ * F2: also fade opacity so newly-added nodes/edges materialize gently
+ * rather than popping. The keyframe runs once on mount because the
+ * `.react-flow__node` and `.react-flow__edge` wrappers are created
+ * fresh whenever an entity/edge enters the document. */
 .react-flow__node {
-  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform calc(300ms * var(--anim-speed)) cubic-bezier(0.22, 1, 0.36, 1), opacity
+    calc(180ms * var(--anim-speed)) ease-out;
+  animation: tp-fade-in calc(220ms * var(--anim-speed)) ease-out;
+}
+
+.react-flow__edge {
+  animation: tp-fade-in calc(220ms * var(--anim-speed)) ease-out;
+}
+
+/* E2: hover state for edges. Thickens the stroke and a subtle opacity bump
+ * so the cursor reads as "this is interactive" before clicking. Targets
+ * the path that React Flow renders the visible edge with — not the wider
+ * invisible `interactionWidth` halo, so the hit area stays generous while
+ * the visual response is constrained to the stroke itself. */
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 2.75;
+  transition: stroke-width calc(120ms * var(--anim-speed)) ease-out;
+}
+
+@keyframes tp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* F4: showcase / dim mode applied to nodes + edges that don't match an active
+ * search query. Translucent rather than hidden — the surrounding causal
+ * context stays visible so hits read in their actual place in the tree. */
+.react-flow__node.tp-dimmed,
+.react-flow__edge.tp-dimmed {
+  opacity: 0.18;
+  transition: opacity calc(180ms * var(--anim-speed)) ease-out;
 }
 
 /* Disable the transition during interactive dragging if we ever
  * enable it. Without this, dragged nodes would lag visibly. */
 .react-flow__node.dragging {
   transition: none;
+}
+
+/* Inspector slide-in. The aside already uses transform: translate-x-full
+ * when closed; this adds a smooth transform transition scaled by --anim-speed. */
+.inspector-aside {
+  transition: transform calc(220ms * var(--anim-speed)) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Lightweight prose styles for rendered markdown previews. Mirrors a small
+ * subset of @tailwindcss/typography — keeps the bundle slim. */
+.prose-tp p {
+  margin: 0 0 0.5rem 0;
+}
+.prose-tp p:last-child {
+  margin-bottom: 0;
+}
+.prose-tp h1,
+.prose-tp h2,
+.prose-tp h3,
+.prose-tp h4 {
+  font-weight: 600;
+  margin: 0.75rem 0 0.25rem;
+  line-height: 1.25;
+}
+.prose-tp h1 {
+  font-size: 1rem;
+}
+.prose-tp h2 {
+  font-size: 0.95rem;
+}
+.prose-tp h3,
+.prose-tp h4 {
+  font-size: 0.875rem;
+}
+.prose-tp strong {
+  font-weight: 600;
+}
+.prose-tp em {
+  font-style: italic;
+}
+.prose-tp code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  background: rgba(115, 115, 115, 0.12);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+.prose-tp pre {
+  background: rgba(115, 115, 115, 0.12);
+  padding: 0.5rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.8em;
+  margin: 0 0 0.5rem 0;
+}
+.prose-tp pre code {
+  background: transparent;
+  padding: 0;
+}
+.prose-tp blockquote {
+  border-left: 3px solid #d4d4d4;
+  margin: 0 0 0.5rem 0;
+  padding-left: 0.75rem;
+  color: #525252;
+}
+.dark .prose-tp blockquote {
+  border-left-color: #525252;
+  color: #a3a3a3;
+}
+.prose-tp ul,
+.prose-tp ol {
+  margin: 0 0 0.5rem 0;
+  padding-left: 1.25rem;
+}
+.prose-tp li {
+  margin: 0.1rem 0;
+}
+.prose-tp a {
+  color: #6366f1; /* indigo-500 */
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.prose-tp a[data-entity-ref] {
+  text-decoration: none;
+  background: rgba(99, 102, 241, 0.12);
+  padding: 0.05em 0.35em;
+  border-radius: 3px;
+}
+.prose-tp a[data-entity-ref]:hover {
+  background: rgba(99, 102, 241, 0.22);
+}
+.prose-tp table {
+  border-collapse: collapse;
+  font-size: 0.85em;
+  margin: 0 0 0.5rem 0;
+}
+.prose-tp th,
+.prose-tp td {
+  border: 1px solid #e5e5e5;
+  padding: 0.2rem 0.4rem;
+  text-align: left;
+}
+.dark .prose-tp th,
+.dark .prose-tp td {
+  border-color: #404040;
+}
+.prose-tp hr {
+  border: 0;
+  border-top: 1px solid #e5e5e5;
+  margin: 0.75rem 0;
+}
+.dark .prose-tp hr {
+  border-top-color: #404040;
 }

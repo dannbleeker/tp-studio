@@ -1,0 +1,139 @@
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { rootCauseReachCounts, udeReachCounts } from '@/domain/coreDriver';
+import { descendantIds } from '@/domain/groups';
+import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisions';
+import type { TPDocument } from '@/domain/types';
+import { Z } from '@/domain/zLayers';
+import { useMemo } from 'react';
+import type { AnyTPNode, TPCollapsedGroupNode, TPGroupNode, TPNode } from './flow-types';
+import {
+  COLLAPSED_HEIGHT,
+  COLLAPSED_WIDTH,
+  GROUP_PADDING,
+  GROUP_TITLE_TOP,
+} from './graphViewConstants';
+import type { GraphPositions } from './useGraphPositions';
+import type { GraphProjection } from './useGraphProjection';
+
+/**
+ * Stage 3a of the graph-view pipeline: emit the React Flow `nodes` array
+ * (three kinds — group rectangles, entity nodes, collapsed-root cards).
+ *
+ * Splitting node and edge emission (Session 39, #9 from the next-batch
+ * top-10) tightens each useMemo's dependency surface. Nodes depend on
+ * `(doc, projection, positions)` because their coordinates and group-rect
+ * bounds both come from `positions`. Edges have NO positional dependency
+ * (their geometry is computed at render time by React Flow's bezier
+ * routing), so they can stay memoized across drag-to-reposition events
+ * on manual-layout diagrams. Previously the combined emission re-ran the
+ * edge bucket-aggregation pass every time a position changed.
+ */
+export const useGraphNodeEmission = (
+  doc: TPDocument,
+  projection: GraphProjection,
+  positions: GraphPositions,
+  compareDiff: DetailedRevisionDiff | null = null
+): AnyTPNode[] => {
+  return useMemo(() => {
+    const {
+      proj,
+      visibleEntityIds,
+      visibleCollapsedRoots,
+      hoistVisibleGroups,
+      hiddenCountByCollapser,
+    } = projection;
+
+    // Pre-compute UDE reach counts once per doc change — used for the
+    // optional reach badge. Empty for diagrams without UDEs.
+    const reachCounts = udeReachCounts(doc);
+    // E2: reverse reach (root-cause count). Empty for diagrams without
+    // `rootCause` entities (PRT / TT / EC).
+    const reverseReachCounts = rootCauseReachCounts(doc);
+
+    const nodes: AnyTPNode[] = [];
+
+    // Group rectangles: only for groups that are NOT collapsed, NOT inside
+    // a collapsed parent, AND inside the hoisted scope.
+    for (const group of Object.values(doc.groups)) {
+      if (group.collapsed) continue;
+      if (!hoistVisibleGroups.has(group.id)) continue;
+      if (proj.groupToCollapsedRoot.has(group.id)) continue;
+      // Members visible enough to bound: direct entity members visible AND
+      // (recursively) nested non-collapsed groups' positions can be approximated
+      // by the union of their own entity positions. For simplicity we just
+      // use direct entity members and direct collapsed-root members.
+      const memberPositions: { x: number; y: number; w: number; h: number }[] = [];
+      for (const id of group.memberIds) {
+        const p = positions[id];
+        if (!p) continue;
+        if (visibleEntityIds.has(id)) {
+          memberPositions.push({ x: p.x, y: p.y, w: NODE_WIDTH, h: NODE_MIN_HEIGHT });
+        } else if (visibleCollapsedRoots.includes(id)) {
+          memberPositions.push({ x: p.x, y: p.y, w: COLLAPSED_WIDTH, h: COLLAPSED_HEIGHT });
+        }
+      }
+      if (memberPositions.length === 0) continue;
+      const minX = Math.min(...memberPositions.map((m) => m.x)) - GROUP_PADDING;
+      const minY = Math.min(...memberPositions.map((m) => m.y)) - GROUP_PADDING - GROUP_TITLE_TOP;
+      const maxX = Math.max(...memberPositions.map((m) => m.x + m.w)) + GROUP_PADDING;
+      const maxY = Math.max(...memberPositions.map((m) => m.y + m.h)) + GROUP_PADDING;
+      const node: TPGroupNode = {
+        id: group.id,
+        type: 'tpGroup',
+        position: { x: minX, y: minY },
+        data: { group, width: maxX - minX, height: maxY - minY },
+        selectable: true,
+        draggable: false,
+        zIndex: Z.below,
+      };
+      nodes.push(node);
+    }
+
+    // Entity nodes
+    for (const id of visibleEntityIds) {
+      const entity = doc.entities[id];
+      if (!entity) continue;
+      const hidden = hiddenCountByCollapser.get(entity.id);
+      const reach = reachCounts.get(entity.id);
+      const reverseReach = reverseReachCounts.get(entity.id);
+      // H2: resolve diff status against the compare revision when active.
+      // 'removed' entities live only in the snapshot, so we skip stamping
+      // here — the dialog/overlay surfaces them separately.
+      const diffStatus = compareDiff
+        ? (() => {
+            const s = entityStatusFromDiff(compareDiff, entity.id);
+            return s === 'unchanged' ? undefined : s === 'removed' ? undefined : s;
+          })()
+        : undefined;
+      const node: TPNode = {
+        id: entity.id,
+        type: 'tp',
+        position: positions[entity.id] ?? { x: 0, y: 0 },
+        data: {
+          entity,
+          ...(hidden && hidden > 0 ? { hiddenDescendantCount: hidden } : {}),
+          ...(reach && reach > 0 ? { udeReachCount: reach } : {}),
+          ...(reverseReach && reverseReach > 0 ? { rootCauseReachCount: reverseReach } : {}),
+          ...(diffStatus ? { diffStatus } : {}),
+        },
+      };
+      nodes.push(node);
+    }
+
+    // Collapsed-root cards
+    for (const groupId of visibleCollapsedRoots) {
+      const group = doc.groups[groupId];
+      if (!group) continue;
+      const memberCount = [...descendantIds(doc, groupId)].filter((m) => doc.entities[m]).length;
+      const node: TPCollapsedGroupNode = {
+        id: group.id,
+        type: 'tpCollapsedGroup',
+        position: positions[groupId] ?? { x: 0, y: 0 },
+        data: { group, memberCount, width: COLLAPSED_WIDTH, height: COLLAPSED_HEIGHT },
+      };
+      nodes.push(node);
+    }
+
+    return nodes;
+  }, [doc, projection, positions, compareDiff]);
+};

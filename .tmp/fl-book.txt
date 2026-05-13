@@ -1,0 +1,1953 @@
+THINKING WITH
+
+FLYING
+LOGIC
+
+Wolf McNally
+Documentation © 2020 Arciem LLC
+Version 3.1 -- July 2020
+
+This work is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Unported License.
+Arciem LLC
+FlyingLogic.com
+CONTENTS
+
+INTRODUCTION 3
+
+    About This Book 4
+    Keys to Great Thinking5
+
+          Logic and Emotion 5
+          Communication and Criticism6
+          Argument and Honor 6
+          Control and Influence 7
+          Optimization and Suboptimization 7
+          Tools and Expectations8
+
+THE THEORY OF CONSTRAINTS THINKING PROCESSES  9
+
+    Overview of the Theory of Constraints10
+          The Goal 10
+          The Constraint10
+          The Five Focusing Steps11
+
+    The Categories of Legitimate Reservation14
+          Clarity  14
+          Entity Existence 16
+          Causality Existence  16
+          Insufficient Cause 17
+          Additional Cause 18
+          Predicted Effect 18
+          Tautology 18
+
+    Current Reality Tree 20
+    Evaporating Cloud -- Conflict Resolution 28
+    Future Reality Tree 34
+    Prerequisite Tree 42
+    Transition Tree 47
+    Strategy & Tactics Tree 53
+
+OTHER TECHNIQUES 57
+
+    Evidence-Based Analysis 58
+    Concept Maps61
+part I
+
+INTRODUCTION
+ABOUT THIS BOOK
+
+    Flying Logic is software that helps people   with Flying Logic is the road map you will fol-
+think better. This book, Thinking with Flying    low to get you where you want to go.
+Logic, introduces the core techniques that
+Flying Logic was designed to support. Even           However, Thinking with Flying Logic is not
+if you don't use Flying Logic, I hope you will   an exhaustive tutorial on the techniques it
+find it a concise and useful introduction to     discusses; in fact it barely scratches the sur-
+some powerful ways you can improve your          face. In particular, the Theory of Constraints
+business and personal life.                      (TOC) and the TOC Thinking Processes that
+                                                 inspired the creation of Flying Logic are sup-
+    Thinking with Flying Logic is companion to   ported by a wealth of literature, books, papers,
+two other documents: Welcome to Flying Logic     web sites, courses, conferences, consultants,
+explains why Flying Logic exists, and the Fly-   trainers, academics, implementors, studies,
+ing Logic User's Guide explains the details of   and success stories. I believe that Flying Log-
+operating it. To use a travel analogy, Welcome   ic is a much-needed piece of the puzzle, and I
+to Flying Logic hopefully got you interested     urge anyone who reads this book to seek out
+in taking a trip, the Flying Logic User's Guide  these other great resources as well.
+taught you how to drive the car, and Thinking
+
+T HI N K IN G W IT H F LY IN G LO G IC           4
+KEYS TO GREAT THINKING
+
+    Most of this book is spent on the step-by-      rally the happiest and most productive when
+step instructions for working with each of the      our emotional hearts and logical minds work
+techniques it presents. But in this introduc-       together in concert.
+tion I want to briefly touch on some ideas, at-
+titudes, and behaviors that I have found cre-           Some people resist "being logical" on the
+ate a mind set conducive to effective thinking      grounds that they "just know how they feel"
+and communication: these are the ultimate           on a given subject. But when we experience
+keys to effectively using Flying Logic.             strong emotions or gut instincts, it is import-
+                                                    ant to recognize that there are always under-
+LOGIC AND EMOTION                                   lying causes for those feelings. If we merely
+                                                    acknowledge the resulting feelings, and re-
+    Logic is popularly seen as a cold, complex      sist a deeper understanding of the causes, we
+topic; on par with higher mathematics and           create a disconnect between the rational and
+invoking images of nerdy professors, science        emotive parts of our minds. This disconnect
+fiction computers and emotionless aliens.           results in cognitive dissonance, which is stress
+But the fact remains that we all think, and we      resulting from attempting to believe con-
+all use logic with more or less skill.              flicting things or behave in conflicting ways.
+                                                    Cognitive dissonance is a two-edged sword:
+    What is not widely understood is that log-      on the one hand it can help motivate us to
+ic is simply the rules for thinking. Just as it is  change our beliefs for the better (that is, to
+possible (though perilous) to drive a car with-     better reflect reality) while on the other hand
+out knowing the rules of the road, it is possi-     it can also lead us to manufacture rationaliza-
+ble to think without understanding the rules        tions for the way we feel that don't reflect re-
+of logic. These rules are extremely powerful,       ality. While both actions quell the discomfort
+and fortunately quite simple. But it is unfor-      of cognitive dissonance in the short term,
+tunate that as children we are rarely taught        rationalizing ultimately leads us deeper into
+to use them as naturally as we learn to read        trouble by putting us further and further out
+and write. And far from turning us into dis-        of sync with reality.
+passionate machines, we humans are natu-
+                                                        Attempting to act on feelings alone has
+                                                    another drawback: such actions leave us vul-
+
+T HI N K IN G W IT H F LY IN G LO G IC              5
+Keys to Great Thinking
+
+nerable to unintended consequences that our            In The Godfather Part II, Michael Corle-
+rational minds could have helped us predict        one says, "Keep your friends close, but your
+and avoid. Of course, it works the other way       enemies closer." Ironically, the most fruit-
+too: if we try to be "purely rational," yet ig-    ful criticism often comes from people who
+nore strong feelings by discounting their caus-    actively disagree with us. Abraham Lincoln,
+es, we are also going to create dissonance.        arguably the greatest United States President,
+                                                   is renowned for having chosen prominent
+    The solution is to get in the habit of bring-  members of his cabinet from those who most
+ing the causes (or reasons) that underlie our      vehemently opposed his policies. Whether or
+emotions and instincts to the surface. In do-      not we ultimately agree with our critics, they
+ing so, we validate our emotions, and can          can often teach us a great deal. The key is to
+then integrate them into effective plans.          allow our view of the world to change as we
+                                                   learn.
+    The good news is that thinking is a learn-
+able skill that improves with practice, and        ARGUMENT AND HONOR
+that doing so does not diminish, but rather
+complements the value of emotions.
+
+COMMUNICATION AND                                      When we think of an argument, many of
+CRITICISM                                          us envision scowls, angry gesticulation, and
+                                                   yelling. We imagine petty name-calling, a
+    We can rarely accomplish anything of sig-      parade of unforgiven grievances, and other
+nificance alone: we rely on other people for       emotional power plays. Most importantly, we
+many kinds of contributions, and since no          imagine arguing to get our way: to show that
+one is an island, we must communicate effec-       we are right and others are wrong. But such an
+tively with others: to gain an understanding       interaction is not an argument, it is a fight. In
+of their needs, benefit from their experience      a fight there may be winners, but there will
+and wisdom, and negotiate their cooperation.       certainly be losers, and injuries for all.
+
+    Often, we are too close to a situation to          A real argument is a shared search for truth.
+understand it well; we are embroiled in the        In an honorable argument people can still be
+situational details and "can't see the forest      passionate, but they follow the rules of log-
+for the trees." When we think we understand        ic just as drivers follow the rules of the road.
+a situation well, when we think we already         And even though people approach a situa-
+know the all the options and the right an-         tion from different perspectives and with
+swers, this is when inviting others to eval-       different preconceptions, the positions they
+uate and criticize our plans can be the most       take should be seen as suggestions that are
+valuable. Doing so lets "light and air" into       ultimately intended as win-win, even if they
+our minds and helps us rid ourselves of ways       initially fall far short. Indeed, even such flat
+of thinking that have become stale and un-         statements as, "We'll get along fine as soon
+productive.
+
+T HI N K IN G W IT H F LY IN G LO G IC             6
+Keys to Great Thinking
+
+as you learn to do things my way," hint at a           Our sphere of influence is always much
+common objective: getting along.                   larger than our span of control, and is prob-
+                                                   ably larger than we think. Most gratifyingly:
+    When argument is viewed as a shared            causing positive changes within your sphere
+search for truth, it becomes possible to see       of influence has the desirable effect of ex-
+adapting one's position to new information         panding it.
+and ideas not as weak or wishy-washy, but as
+a challenge to which only a mature, strong,        OPTIMIZATION AND
+and honorable person can rise. More prag-          SUBOPTIMIZATION
+matically, all sides can begin to look forward
+to not merely getting their way, but getting           When we reward people for improvements
+something better in the form of a win-win          entirely within their span of control, what is the
+solution.                                          natural reaction? An example of this might be
+                                                   basing manager performance reviews solely
+CONTROL AND INFLUENCE                              on efficiency within their departments. The
+                                                   natural reaction is, of course, for them to nar-
+    When considering how to cause change,          row their span of control as much as possible,
+we can imagine ourselves standing at the           to define its boundaries as sharply as possible
+center of a circle. The things we can reach out    from other parts of the system, and to focus
+and touch directly define our span of control. If  entirely on efficiency within their particular
+all the changes we wish to make are entirely       component (division, department, cubicle,
+within our span of control, we have the power      etc.) This behavior results in suboptimization,
+to simply go ahead and make them.                  which is maximizing or fine-tuning a part
+                                                   of the system without considering the (often
+    Usually, however, things are not so sim-       detrimental) effects of doing so on the entire
+ple. In our mental image, the things we con-       system.
+trol are just what lies within arm's reach; our
+span of control is always quite small. But just        On the other hand, what happens when we
+beyond our span of control lies the start of       reward people for improvements within their
+our sphere of influence. Although we may not       entire sphere of influence? In this case, their
+be able to reach out and touch these things        desire becomes to extend their sphere of in-
+directly, we can still cause change by coop-       fluence outwards as far as possible. As men-
+erating with others. For example, a business       tioned previously, acting in one's sphere of
+may control its manufacturing processes,           influence requires coordination and cooper-
+while it can only influence its suppliers and      ation with others, which in turn encourages
+customers.                                         an awareness of the system as a whole. The
+                                                   end result is optimization, where people or-
+    The farther away objects are, the less in-     chestrate their efforts together, toward the
+fluence we wield, until we reach a point where     fulfillment of the system's goal.
+we have no significant influence. This marks
+the end of our sphere of influence.
+
+T HI N K IN G W IT H F LY IN G LO G IC             7
+Keys to Great Thinking
+
+    Optimization is the outcome of systems       es. But do we really do less work now that we
+thinking (looking at a system not as merely a    have automobiles, telephones, and comput-
+collection of parts but as a unified whole) ap-  ers? Arguably, in our world of accelerating
+plied to the goal of process improvement.        change, we often do more. So it is important
+                                                 to have a pragmatic understanding that the
+TOOLS AND EXPECTATIONS                           net result of new tools is not to reduce labor,
+                                                 but to raise expectations.
+    People have invented many useful tools
+that help us perceive the world accurately, ar-      Just as spreadsheets were a boon to ac-
+range our knowledge, think about it logically,   counting and financial planning but did not
+develop plans, and communicate effectively.      make accountants obsolete, I hope that Fly-
+Despite having these tools, we must still do     ing Logic will be of significant help to sys-
+the hard work of thinking, and also the hard     tems thinkers and people with a passion for
+work of implementing our plans. When new         making the world and its systems better. Even
+tools (such as Flying Logic) are introduced,     more, it is my hope that Flying Logic will help
+they are often touted as labor-saving devic-     get more people involved in these vital topics.
+
+                                                                                           -- Wolf McNally
+
+T HI N K IN G W IT H F LY IN G LO G IC           8
+part II
+
+THE THEORY
+OF CONSTRAINTS
+THINKING
+PROCESSES
+OVERVIEW OF THE THEORY
+OF CONSTRAINTS
+
+THE GOAL                                         key constraints. The purpose of the TOC then,
+                                                 is to give individuals and organizations the
+    The Theory of Constraints (TOC) is an over-  tools they need to manage their constraints
+all management philosophy originally de-         in the most effective manner possible.
+veloped by Eliyahu M. Goldratt and first pop-
+ularized in his bestselling business novel           Originally applied to industrial manu-
+The Goal. He started with the idea that all re-  facturing lines, TOC principles have been
+al-world systems; whether personal, inter-       successfully adapted for areas as diverse as
+personal, or organizational have a primary       supply chain, finance, project management,
+purpose, or goal. The rate at which the sys-     health care, military planning, software en-
+tem accomplishes its goal is called through-     gineering, and strategy.
+put.
+                                                     TOC claims that a real-world system with
+THE CONSTRAINT                                   more than three constraints is extremely un-
+                                                 likely, and in fact usually only one constraint
+    From the idea of throughput, it is easy to   is key. Counterintuitively, this is because the
+see that systems must also have at least one     more complex a system becomes, the more
+constraint: something that limits the sys-       interrelationships are necessary among its
+tem's throughput, which can be likened to        parts, which results in fewer overall degrees
+a chain's weakest link. If a system had ab-      of freedom.
+solutely no constraints, it would be capable
+of infinite throughput. But though infinite          A major implication of this is that man-
+throughput is impossible, amazing through-       aging a complex system or organization can
+put gains are possible through the careful       be made both simpler and more effective
+identification and management of a system's      by providing managers with few, specific,
+                                                 yet highly influential areas on which to fo-
+                                                 cus: maximizing performance in the areas of
+                                                 key constraints, or elevating the constraint
+                                                 (making it less constraining.)
+
+T HI N K IN G W IT H F LY IN G LO G IC           10
+Overview of the Theory of Constraints
+
+    The TOC was originally applied to man-                  on what it can do that adds the most
+ufacturing operations, where the constraint                 value to the entire system?
+was usually a physical constraint: some sort
+of machine or process that formed a bottle-          3. Subordinate all other processes to
+neck in the production line. These sort of con-
+straints are fairly easy to locate. But in the re-          the decisions made in Step 2. How
+al-world situations where these constraints                 can we align all processes so they give
+were broken (i.e. elevated to the point where               the constraining resource everything it
+they were no longer the constraint) it was                  needs?
+discovered that the constraints could take
+on another character: the policy constraint.         4. Elevate the constraint. If managing the
+These are the "ways things have always been
+done" that ultimately serve to restrict the                 constraining resource more efficiently
+system's throughput, and they are usually                   does not give us all the improvement we
+due to some form of suboptimization: tuning                 need, then how can we acquire more of
+part of a system without regard to the bene-                the resource?
+fit of the whole. Policy constraints are often
+more difficult to identify and more difficult        5. Avoid inertia. Has the constraint moved
+to manage than a simple machine or physical
+process, and more powerful tools were in-                   to some other resource as a result of the
+vented to do just that.                                     previous steps? If so, don't allow inertia
+                                                            itself to become the constraint: go back to
+THE FIVE FOCUSING STEPS                                     step 1.
+
+    To identify and manage constraints of all           It is possible that, after iterating through
+kinds, the developers of TOC defined the Five       the Five Focusing Steps a few times, that
+Focusing Steps, which describe a process of         the constraint on the system's throughput
+ongoing improvement. (Step Zero was later           moves entirely out of the system itself, and
+added for additional clarity.)                      into the system's environment. An example
+                                                    of this would be when a manufacturer has
+ 0. Articulate the goal of the system. How          more capacity than demand for its products.
+                                                    In this case, further improvement may still
+        do we measure the system's success?         be possible, but doing so requires expand-
+                                                    ing the concept of the "system" to include its
+ 1. Identify the constraint. What is the            customers, the economy, and other factors
+                                                    that were originally just givens of the sys-
+        resource limiting the system from           tem's environment.
+        attaining more of its goal?
+                                                    THE THINKING PROCESSES
+ 2. Exploit the constraint to its fullest.
+                                                        The Thinking Processes emerged as TOC
+        How can we keep the constraining            practitioners worked with organizations that
+        resource as busy as possible, exclusively   needed to identify their core constraints and
+                                                    how to manage or elevate them. They need-
+
+T HI N K IN G W IT H F LY IN G LO G IC              11
+                      Overview of the Theory of Constraints
+
+ed the answers to three deceptively simple THE THINKING PROCESS
+
+questions:                                                        TOOLS
+
+ ∑ What to change?                                                    From the basic Thinking Processes devel-
+ ∑ To what to change?                                             oped several techniques called the Thinking
+ ∑ How to cause the change?                                       Process Tools designed to answer the three
+                                                                  questions. The tools provide the ability to de-
+    The Thinking Processes are based on the                       velop a complete picture of a system's core
+scientific method, to which is added a sim-                       constraints and how to manage them.
+ple visual language, the Thinking Process
+Diagrams, that are used for describing and                            The last of these tools, the Strategy &
+reasoning about situations, arguments, and                        Tactics Tree, is used in large organizations
+plans using the language of Cause and Effect.                     where it is necessary to create major changes
+There are two basic kinds of reasoning: Suf-                      in a short period of time. However, the other
+ficient Cause and Necessary Condition.                            five tools are applicable to systems of any size
+                                                                  from individuals, to families, to business-
+                                A sufficient cause for an effect  es small and large. Like a physical tool kit,
+                                                                  you can choose to use individual tools: just
+                         A necessary condition for an effect      the right tool for the job at hand. Or, you can
+                                                                  do a larger project where most or all of the
+                                                                  tools may be required. When all of the tools
+                                                                  are used, the "finished result" of one tool
+                                                                  can easily be used as part of the "raw mate-
+                                                                  rials" for the next tool. Since improvement is
+                                                                  a continuous process, you can use each tool
+                                                                  over and over again on every pass through
+                                                                  the Five Focusing Steps.
+
+TOOL                  THINKING PROCESS                            STARTING POINT            END RESULT
+                      Sufficient Cause
+Current Reality Tree                                              A set of undesirable      The core cause of the
+(CRT)                 Necessary Condition                         symptoms                  symptoms (constraint)
+
+Evaporating Cloud                                                 A perceived conflict      Possible win-win
+                                                                  underlying a constraint   solutions
+
+Future Reality Tree (FRT) Sufficient Cause                        A proposed solution       Necessary changes that
+                                                                                            implement the solution
+                                                                                            and avoid new problems
+
+Prerequisite Tree (PTR) Necessary Condition                       Major objectives and the  Milestones that
+                                                                  obstacles to overcoming   overcome all obstacles
+                                                                  them
+
+T HI N K IN G W IT H F LY IN G LO G IC                                                                              12
+                         Overview of the Theory of Constraints
+
+TOOL                     THINKING PROCESS     STARTING POINT           END RESULT
+Transition Tree (TRT)    Sufficient Cause     A set of goals
+                                                                       Detailed actions to
+Strategy & Tactics Tree  Necessary Condition  The highest-level goals  achieve the goals
+(S&T)                                         of a system
+                                                                       A multi-tiered set of
+                                                                       implementation steps
+
+                                              THE MEASUREMENT
+                                              OF SUCCESS
+
+                                                  The last piece of the improvement puzzle
+                                              is feedback. There needs to be an unambigu-
+                                              ous way to measure improvements brought
+                                              about through the implemented changes. For
+                                              traditional business, Dr. Goldratt developed
+                                              three non-traditional measurements that be-
+                                              gan with the overriding concept of the sys-
+                                              tem's goal: Throughput (T), Inventory (I),
+                                              and Operating Expense (OE). It is outside the
+                                              scope of this book to discuss these in detail,
+                                              but readers are directed to the TOC body of
+                                              knowledge for discussions of these measures
+                                              and how they have been adapted for many
+                                              different endeavors.
+
+T HI N K IN G W IT H F LY IN G LO G IC                                                        13
+THE CATEGORIES OF
+LEGITIMATE RESERVATION
+
+    We all want our ideas and plans to make       because anyone who writes or reads logi-
+sense. But how do we know that we are making      cal statements is always allowed to express
+sense? What do we even mean by that? When         them. And they are Reservations because they
+we use the Thinking Process Tools, we are         highlight parts of the diagram that are not
+building a model of the way part of the world     completely convincing. Since these reserva-
+works, and in this context our model makes        tions are always legitimate, they can be raised,
+sense if it in does in fact portray a picture of  explored, understood, and accepted without
+the world that is pertinent and accurate.         anyone feeling like they're having their toes
+                                                  stepped on. They help everyone keep their
+    To be pertinent, our model must be of that    emotional distance and stay reasonable.
+part of the world (our system) that we actual-
+ly care about in other words our model must           When you start to work with Thinking
+have the proper scope. It must not be too de-     Process diagrams, you should deliberately
+tailed in areas that don't significantly affect   consider the Categories of Legitimate Res-
+the outcome, nor too general, glossing over       ervation one by one for each part of your di-
+areas where important details lie. To en-         agram. But as you gain experience you will
+sure pertinence, the people who are the main      find you begin to apply them quickly and ha-
+stakeholders in the outcome of the plan must      bitually.
+have influence over it.
+                                                  CLARITY
+    To be accurate, the cause-and-effect rela-
+tionships that we model must indeed hold in           If you are creating a Thinking Process di-
+real life. The Categories of Legitimate Reser-    agram by yourself, you probably have a good
+vation (CLR) are ways to verify the accuracy      idea of what you mean. However, you will
+of a Thinking Process Diagram. They are used      also probably need to share your plan with
+to catch common pitfalls in our own thinking      someone else sooner or later, and you need to
+and the thinking of others. They are called the
+Categories because they are well-defined and
+of limited number. They are called Legitimate
+
+T HI N K IN G W IT H F LY IN G LO G IC            14
+The Categories of Legitimate Reservation
+
+apply the Clarity reservation as the last step     principles. This idea should probably be ex-
+before you do. Ask yourself:                       pressed as three separate entities, each relat-
+                                                   ed to the next by a causal connection:
+ ∑ Is the meaning of each part of my
+
+        diagram clear?
+
+ ∑ Is the meaning of my diagram as a
+
+        whole clear?
+
+    Similarly, when someone presents you               The causal connections between the enti-
+with a Thinking Process diagram you have           ties must also be clear, with each step from
+never seen before, you should apply the Clar-      entity to entity having a natural and obvious
+ity reservation first by asking yourself:          flow for any stakeholder who reads the di-
+                                                   agram. Reading from one entity to another
+ ∑ Does this diagram really convey what            via an edge (also called an arrow) will follow
+                                                   one of two patterns, or Thinking Processes.
+        the person presenting it intends?          Which Thinking Process is used depends on
+                                                   what kind of diagram you are working with;
+    In Thinking Process diagrams, causes and       but within a single diagram, the meaning of
+effects are all represented by entities: rectan-   the edges does not change.
+gles that contain brief statements that are, or
+could be, true about reality. Flying Logic enti-    ∑ Sufficient Cause Thinking: "If A
+ties also have a colored bar at the top that des-
+ignates the entity's class: the kind of role the           then B." or "A is sufficient to cause B."
+entity plays in the diagram of which it is part.
+                                                       This pattern expresses the idea that the
+                                           Class   existence of A is, by itself, enough to cause
+                                           Title   the existence of B. Sufficient Cause Thinking
+                                                   is used by the Current Reality Tree, Future
+    To satisfy the clarity reservation, the title  Reality Tree, and Transition Tree.
+of an entity must be:
+                                                                              "is sufficient
+                                                                                to cause"
+
+ ∑ complete, unambiguous, and                      ∑ Necessary Condition Thinking:
+
+        grammatically correct,                           "If not A then not B." or "A is necessary
+
+ ∑ in the present-tense, and                             to obtain B."
+ ∑ simple in that it contains a single idea
+
+        with no compound statements.
+
+    "Bumped and glass fell and broke," is an
+example of a statement that violates all three
+
+T HI N K IN G W IT H F LY IN G LO G IC             15
+                           The Categories of Legitimate Reservation
+
+    These patterns express that A must exist      CAUSALITY EXISTENCE
+for B to exist, but may not be sufficient by it-
+self. Necessary Condition Thinking is used by         This reservation asks, "Does A really cause
+the Evaporating Cloud and Prerequisite Tree.      B?" Often we associate two ideas because they
+                                                  are correlated, that is, they are often found in
+                            "is necessary         proximity to each other. However, to actual-
+                              to obtain"          ly say that one thing causes another requires
+                                                  much stronger evidence.
+
+Notice that in both illustrations, the edge                          ?
+
+(arrow) looks exactly the same although the
+
+meaning is different. How you read an edge
+
+depends on which Thinking Process was used
+
+to construct the diagram.
+
+ENTITY EXISTENCE                                  CAUSE-EFFECT REVERSAL
+
+    This reservation asks whether an entity in        A special case of the Causality Existence
+the diagram is true now. In a Current Reali-      reservation is Cause-Effect Reversal. In this
+ty Tree, for instance, every entity in it should  case, we question whether the edge is pointed
+describe something that is true now. A Future     in the right direction.
+Reality Tree or Transition Tree, however, can
+contain a mix of entities that are either true              ?
+now, or would be expected to become true
+under certain conditions. This reservation is
+a warning to "check the facts" before making
+an untrue assertion about reality.
+
+                           ?
+
+T HI N K IN G W IT H F LY IN G LO G IC                                  16
+The Categories of Legitimate Reservation
+
+INDIRECT EFFECTS                                  INSUFFICIENT CAUSE
+
+    Other times, an entity is an indirect effect      This reservation asks, "Is A, all by itself,
+of a cause, but important necessary steps are     sufficient to cause B? What else might also be
+missing.                                          necessary?" Usually a combination of factors
+                                                  outside our control ("Preconditions") and
+          ?                                       factors that we influence or control ("Ac-
+                                                  tions") must combine to create a particular
+                                                  effect. In diagrams based on Sufficient Cause
+                                                  Thinking, this is modeled using a junctor
+                                                  that contains the AND operator. Junctors are
+                                                  easily created by dragging from an entity to
+                                                  an existing edge.
+
+BACK EDGES                                                                                                       Junctor
+
+    In cases where it seems ambiguous as to             ?
+which entity is the cause and which is the
+effect, it may be a good place to look for a          When looking for insufficient causes, we
+self-reinforcing loop. Flying Logic can mod-      should also keep in mind that a list of caus-
+el self-reinforcing loops using back edges.       es can also be too sufficient, or in other words,
+A back edge is added whenever you attempt         include causes that are actually not required
+to create a new edges that indirectly makes       to produce the effect. So we should also ask,
+an effect to be its own cause. Back edges are     "Have we listed anything as necessary that
+drawn thicker than regular edges.                 really isn't?"
+
+              ?
+
+                                                                      ?
+
+T HI N K IN G W IT H F LY IN G LO G IC                                17
+   The Categories of Legitimate Reservation
+
+ADDITIONAL CAUSE                                     Usually a cause is responsible for more
+                                                 than one effect, and this reservation asks, "If
+    Once we have identified one sufficient       A is true, what other effects in addition to B
+cause for an effect, we are often tempted to     would we expect to see?"
+move on, and in doing so we may overlook
+other causes that may either be independent-                     ?
+ly causing the effect, or mutually intensifying
+it. This reservation asks, "Have we identi-
+fied every cause of A? What else could also be
+causing A?"
+
+                                                 If the additional predicted effects are also
+
+                                                 observed, then we can be more confident in
+
+                                                 the causality we initially identified. But if the
+
+?                                                predicted effects are not observed, then we
+                                                 may be well advised to look for additional
+
+                                                 causes.
+
+PREDICTED EFFECT
+
+    How can we increase our certainty that a     TAUTOLOGY
+cause we have identified is really the cause
+of the effects we are inclined to believe? For       People sometimes don't examine their
+example, let's say I come from a walk and        beliefs very closely, and will, when asked for
+discover my wallet missing. One of the first     a cause, often re-state the cause using differ-
+things that might pass though my mind is         ent words. Even though you will almost never
+that my house has been robbed. But has it        encounter tautology (also called circular rea-
+been robbed?                                     soning or begging the question) in a Thinking
+                                                 Process diagram, you will encounter it in ca-
+              ?                                  sual conversation. Some examples:
+
+T HI N K IN G W IT H F LY IN G LO G IC                    18
+                                        The Categories of Legitimate Reservation
+
+∑ "You can't give me a C for this course,
+
+      I'm an A student!"
+
+∑ "My homework is boring because it's
+
+      so tedious."
+
+∑ "Mayor Green is the most successful
+
+      mayor ever because he's the best
+
+      mayor in our history."
+
+∑ "The defendant shows no remorse, and
+
+      this fact should strengthen your resolve
+      to find him guilty!"
+
+T HI N K IN G W IT H F LY IN G LO G IC                                            19
+CURRENT REALITY TREE
+
+    When a non-trivial system (a for-profit          The Current Reality Tree (CRT) is a tool for
+business, a non-profit organization, a de-       discovering the system's core driver, which
+partment, or a personal relationship to name     is also known as the constraint. The constraint
+a few examples) needs improvement, it is of-     is the cause that is most common to the most
+ten not clear what to change, even to people     severe symptoms the system is experiencing,
+who have a great deal of experience with the     and thus the constraint must be managed
+system's workings. This is because systems       most carefully in order to most dramatically
+contain many cause-effect relationships          improve throughput. By focusing on the con-
+that interrelate in complex ways, and un-        straint, you will realize the most "bang for
+derstanding the system sufficiently to decide    your buck."
+what to change is often even more problem-
+atic because the people with experience often    FLYING LOGIC SETUP
+have only a narrow view of the parts of the
+system they interact with.                           A CRT is based on Sufficient Cause Think-
+                                                 ing, and this is how Flying Logic documents
+    The Theory of Constraints (TOC) is based     are set up when first created, so you do not
+on the idea that all systems have a goal,        need to do anything special with the Opera-
+or reason for existence. The rate at which       tors popup menus to start creating your CRT.
+a system can achieve its goal is called its      Most CRTs are drawn with root causes at the
+throughput. The TOC also says that all sys-      bottom and the symptoms at the top, so you
+tems have core drivers, which can be physical    may want to use the Orientation popup menu
+constraints, policy constraints, market con-     to change the orientation of your document
+straints, or some combination of those, that     to Bottom to Top.
+have a major impact on the entire system and
+that ultimately (albeit indirectly) govern the
+system's throughput. Ironically, the more
+complex the system, the fewer core drivers
+it is likely to have, due to the greater number
+of interdependent cause-effect relationships
+such systems contain.
+
+T HI N K IN G W IT H F LY IN G LO G IC           20
+                                        Current Reality Tree
+
+                                                    Spend the time necessary to reach a clear,
+                                                written understanding with other stakehol
+                                                ders:
+
+    CRTs are created using the entity classes   ∑ What is your system's goal?
+in the built-in Effects-Based Planning do-      ∑ What are the necessary conditions for
+main, and primarily use the following class-
+es: Un-Desirable Effect, Precondition, and            knowing the goal is being achieved?
+Intermediate Effect. CRTs are most often
+used to pinpoint problems, but can also be      ∑ What measures do you use to use
+used to identify core strengths, in which case
+the Desirable Effect class can also be used.          to know how well the necessary
+
+                                                      conditions of the goal are being met?
+
+                                                ∑ Where do the boundaries of your
+
+                                                      system lie?
+
+                                                ∑ What greater system is your system a
+
+                                                      part of?
+
+                                                ∑ What systems does your system
+
+                                                      interact with?
+
+                                                ∑ What are your system's inputs and
+
+                                                      outputs?
+
+                                                STEP 2: LIST THE SYMPTOMS
+
+STEP 1: UNDERSTAND THE                              Presumably, you are doing your analysis
+SCOPE                                           because you believe the system would ben-
+                                                efit from improvement, and because you see
+    Before you can document how your sys-       evidence of this potential benefit in vari-
+tem works and where its problems lie, you       ous problems or symptoms of trouble. Such
+need to make sure you have a clear under-       symptoms could be low profits, low custom-
+standing of what you mean when you talk         er satisfaction, or lots of arguments among
+about your system. In other words: what are     family members. These symptoms are known
+you analyzing?                                  in TOC as Un-Desirable Effects or simply
+                                                UDEs.
+
+                                                    Usually there are between 5 and 10 UDEs
+                                                that are causing the most difficulty in the
+                                                system, and it is these UDEs that should be
+                                                added first. Give each UDE a simple, pres-
+                                                ent-tense title that is intended to be clear
+                                                to any stakeholder, and make sure that the
+                                                UDEs you choose at this stage are uncontro-
+
+T HI N K IN G W IT H F LY IN G LO G IC                                     21
+                                        Current Reality Tree
+
+versial as to their actual existence. In oth-
+er words, any stakeholder who looks at this
+list should have no difficulty agreeing, "Yes,
+these are some of the most serious problems
+we have."
+
+STEP 3: CONNECT THE                                     Other times you will notice that an effect
+SYMPTOMS                                            has more than one independent cause, as is
+                                                    the case with B, above. When a Flying Logic
+    Undesirable Effects are often contribute        document is set up for Sufficient Cause Think-
+to other problems. As you study your list of        ing, more than one arrow entering an entity
+UDEs, you will notice that some are probably        denotes more than one sufficient, independent
+direct or indirect causes of others already in      cause. This is also called an OR relationship.
+your list. If this is the case, then connect these
+entities with edges (arrows) from the causes            Often, a single cause is necessary, but not
+to the effects. Don't be too concerned at this      sufficient by itself to cause an effect. This is
+stage if the causes are not directly responsible    denoted by an AND junctor, which is created
+for the effects: as you grow the tree, you will     by dragging from the cause entity to an ex-
+add other entities that complete the picture.       isting edge.
+
+                                                    STEP 4: APPLY THE
+                                                    CATEGORIES OF LEGITIMATE
+                                                    RESERVATION
+
+    Sometimes you will notice that a single             The diagram as it stands is probably only
+cause contributes to more than one effect, as       an extremely rough picture of your system.
+is the case with D, below.                          By applying the Categories of Legitimate Res-
+                                                    ervation, you now add additional entities and
+                                                    causal relationships that create a true picture
+                                                    of the situation. In particular, look to add ad-
+                                                    ditional causes for the effects you have iden-
+
+T HI N K IN G W IT H F LY IN G LO G IC                                        22
+                                        Current Reality Tree
+
+tified, and identify insufficient causes and add  even change the class of an existing entity
+their necessary conditions. Also review your      if, for instance, an entity that you originally
+diagram for clarity, and step through it using    added as an UDE now appears more neutral
+Flying Logic's confidence spinners. You can       in context.
+
+    Use these guidelines to help you choose             influence, then use the Precondition
+what class of entity to add:
+                                                        class. Preconditions should never have
+ ∑ If an entity is undesirable on its
+                                                        predecessors, and should always have
+        face-- in other words, if the system
+        would definitely be better off without          at least one successor.
+        it-- then use the Un-Desirable Effect
+        class. UDEs can have predecessors,        ∑ If the entity is neither negative
+        successors, or both, but should always
+        have at least one causal connection             or positive, but exists because of
+        into a completed diagram.
+                                                        something within your control, then
+ ∑ If the entity is neither negative nor
+                                                        use the Action class. Actions are always
+        positive, but exists merely due to the
+        larger context in which the system              causes and never effects, so they will
+        must operate and is something
+        over which you have no significant              have successors but no predecessors.
+
+                                                  ∑ If the entity is neither negative nor
+
+                                                        positive, but it exists as a consequence
+
+                                                        of other causes in the diagram, use
+
+                                                        the Intermediate Effect entity class.
+
+                                                        In a completed CRT, Intermediate
+
+T HI N K IN G W IT H F LY IN G LO G IC                        23
+                                        Current Reality Tree
+
+        Effects should always end up with both  deeper causes for the effects in your diagram,
+        predecessors and successors.            looking in particular to add causes that tie
+                                                two or more clusters together. Of the causes
+STEP 5: CONTINUE ADDING                         that are currently at the root of your diagram,
+UNDERLYING CAUSES                               keep asking yourself, "Why is this happen-
+                                                ing?" and make your answer take the form of
+    At this stage, you may have several un-     additional entities and the edges that connect
+connected, or loosely connected clusters        them. Alternate between adding underlying
+of entities. In this step, search for and add   causes and applying the Categories of Legiti-
+                                                mate Reservation from the previous step.
+
+T HI N K IN G W IT H F LY IN G LO G IC                        24
+                                        Current Reality Tree
+
+STEP 6: CONSIDER NEGATIVE                             Normally, all edges in a Flying Logic doc-
+REINFORCING LOOPS                                 ument "flow" from the start of the document
+                                                  (the root causes) to the end (final effects.)
+    Although it is uncommon, sometimes the        When you attempt to add an edge that would
+presences of an UDE at a higher level in your     create a loop (that is, an effect indirectly be-
+system actually aggravates UDEs at a lower        coming its own cause) Flying Logic creates a
+level. Since this situation is so serious, it is  special back edge that denotes a casual loop.
+important that you note it in your diagram as     Back edges are thicker than regular edges.
+a causal loop, also known as a vicious circle.
+
+Back
+Edge
+
+T HI N K IN G W IT H F LY IN G LO G IC                        25
+                                        Current Reality Tree
+
+    Back edges differ from regular edges in      ageable, you should remove these clusters
+two ways: They do not have edge weights,         from view by either
+and they do not participate in the flow of con-
+fidence values through the documents. They        ∑ Deleting them,
+can, however, be annotated like other edges.      ∑ Using Cut and Paste to move them to a
+
+STEP 7: IDENTIFY ROOT                                    different document, or
+CAUSES
+                                                  ∑ Placing them into a group which is
+
+                                                         then collapsed.
+
+    As your CRT becomes more complete, you       STEP 9: IDENTIFY THE CORE
+will notice that one group of causes lie at its  DRIVER
+"root." That is, they have successors but no
+predecessors. Some of these causes will be           If you have constructed your CRT rigor-
+Preconditions and others may be UDEs, and        ously observing the rules of cause and effect,
+they won't necessarily appear at the bottom      you will agree that eliminating a root cause
+of the diagram. In the illustration above there  will also cause a chain reaction of other prob-
+are nine root causes.                            lems being eliminated. If this doesn't appear
+                                                 to be the case, go back and make sure that
+    The purpose of this step is to make sure     at each step in the diagram, you have iden-
+you have built down your tree to the point       tified and added all the necessary and suffi-
+where you have uncovered the deepest causes      cient causes of your UDEs (Step 4), and that
+over which you have some control or influence.   you have built the tree down as far as possible
+Preconditions are by definition out of our       to root causes that you control or influence
+control, but you should question whether the     (Step 5.)
+preconditions at the root of your CRT aren't
+really Intermediate Effects with other under-        The time has come to identify the single
+lying causes. Also question whether the UDEs     cause that has the most influence over the
+at the root of the tree don't have additional    most critical UDEs in your CRT. This single
+underlying causes that you also control. The     cause is the Core Driver (also call the con-
+idea is to "uproot" problems at their deepest    straint, or the bottleneck): the cause that must
+possible level.                                  be managed or eliminated in order to break
+                                                 through the boundaries that hold your sys-
+STEP 8: TRIM THE TREE                            tem back.
+
+    At times you may discover that parts of          Although your CRT may contain sever-
+the tree you have built have little or no con-   al root causes, all of which may eventually
+nection, as successors or predecessors, to the   need attention, you can find the Core Driver
+UDEs you care about. To keep the tree man-       by judging several factors for each root cause:
+
+                                                  ∑ How many UDEs they indirectly cause,
+
+T HI N K IN G W IT H F LY IN G LO G IC                        26
+                                        Current Reality Tree
+
+ ∑ How severe are the UDEs they                  causes are, although you will still need take
+                                                 the severity of the UDEs into account.
+        indirectly cause, and
+                                                     In the illustration below, entity G has been
+ ∑ How much control or influence you             selected along with its successors, which
+                                                 makes it obvious that it contributes in some
+        have over them.                          way to every UDE in the diagram. Since all of
+                                                 the causes in the diagram are at least within
+    To aid in your analysis, you can select one  our influence, we conclude that G is our Core
+of your root causes and select Edit‹Select       Driver: it is the constraint on which we must
+Successors. Alernatively, you can select one     focus.
+of your effects and select Edit‹Select Pre-
+decessors. Use this technique to quickly get
+an idea of how influential each of your root
+
+T HI N K IN G W IT H F LY IN G LO G IC                        27
+EVAPORATING CLOUD --
+CONFLICT RESOLUTION
+
+    Arguments. Fights. Politics. Enemies.          dren fighting over a toy: in this case they both
+Compromise. Loss.                                  want to possess the same limited resource.
+                                                   However, they are motivated by underlying
+    We have all encountered conflict, and          needs, which may not be the same for each of
+most of us try to avoid it whenever possible.      them: one child may feel the need to assert
+Conflict is seen as unhealthy and unpleasant       their ownership of the toy, while the other
+to the point that many people will attempt         child may feel the need to incorporate the toy
+to ignore it even after realizing that doing so    into their play. Furthermore, the children are
+may actually be contributing to a worsening        united in a common objective: to get along and
+situation. Or both sides treat the conflict as a   have fun. To achieve this common objective,
+zero-sum game: "Either I go, or he goes!" Or       satisfying both children's needs is necessary.
+perhaps worse, both sides compromise: they         Notice that as we have passed beyond the
+"split the baby" and nobody goes away hap-         boundary of the apparent conflict presented
+py.                                                by their wants, a recognition of their needs
+                                                   and common objective begins opening the
+    It turns out there are better ways to resolve  door to creative solutions that may leave ev-
+conflicts: ways that result in the creation of     eryone happier than they thought possible.
+solutions that completely satisfy everyone
+involved. From one remarkable perspective,             When the connection is made that conflict
+it is even possible to entertain the idea that     stems not from some kind of pathology, but
+conflicts don't actually exist except at the su-   from legitimate needs and common objectives,
+perficial level of our positions: what we say we   it becomes obvious that the best approach is
+want.                                              not avoidance but prompt communication
+                                                   and the creation of options for mutual gain.
+    When two wants appear to be mutually
+exclusive, we say there is a conflict. The way         Often, after producing a Current Reality
+forward is to recognize that our wants (also       Tree (CRT), it is possible to recast the Core
+called positions) are motivated by underly-        Driver as a Core Conflict, containing two mu-
+ing needs (also called requirements.) For ex-      tually exclusive positions. So whenever we
+ample, the two wants could result from chil-
+
+T HI N K IN G W IT H F LY IN G LO G IC             28
+Evaporating Cloud -- Conflict Resolution
+
+find ourselves faced with conflicting wants,         left: so you will want to set the Orientation
+which often happens as the result of creating        popup menu to Right to Left.
+a CRT, but even more frequently just hap-
+pens on its own, the Evaporating Cloud is the
+tool to use. (It is so-called due to its ability to
+"evaporate" conflict. It is also known as the
+Conflict Resolution Diagram.)
+
+FLYING LOGIC SETUP
+
+    Since the basic form of a Cloud is always            Clouds are created using the entity class-
+the same, the easiest way to start a Cloud is        es in the built-in Conflict Resolution domain,
+to select the File‹Open Examples... com-             and use the following classes: Want, Need,
+mand and open the included template file             Common Objective, Conflict, and Solution.
+Cloud.logic-t template located in the Docu-
+ments/Conflict Resolution folder. Template               If you're using the template mentioned
+files open as new, untitled documents to             above, then the diagram is already drawn
+which you can make changes and save with-            for you; you only need fill in the text. But the
+out fear of accidentally changing the tem-           steps below assume you are drawing a cloud
+plate file itself.                                   from scratch.
+
+    The following paragraphs describe how to         STEP 1: IDENTIFY THE WANTS
+set up a Cloud document from scratch. You
+can skip to the next section if you are using            Create two Wants entities and give them
+the template.                                        titles that succinctly summarize each of the
+
+    A Cloud is based on Necessary Condition
+Thinking. Since Flying logic documents are
+set up for Sufficient Cause Thinking by de-
+fault you will want to set the Operator popup
+menus as follows:
+
+ ∑ Entity Operator: Fuzzy And (AND)
+ ∑ Default Junctor Operator: Fuzzy Or
+
+        (OR)
+
+    Clouds are read from left-to-right, start-
+ing at the Common Objective. However, this
+means the flow of the edges (arrows) must be
+towards the Common Objective or right-to-
+
+T HI N K IN G W IT H F LY IN G LO G IC               29
+                                         Evaporating Cloud -- Conflict Resolution
+
+conflicting positions. Traditionally the two
+Wants are called D and D' ("D Prime").
+
+STEP 2: IDENTIFY THE                               STEP 3: IDENTIFY THE
+CONFLICT                                           UNDERLYING NEEDS
+
+    Create a single Conflict entity and make           Create two Needs entities, each one a suc-
+it a predecessor of each of the two Wants. If      cessor to one of the Wants entities. The pur-
+you're using the right-to-left orientation         pose of a position is to fulfill an underlying
+typical of Clouds, the Conflict entity will be to  need. Give each need a title that summarizes
+the right of the Wants.                            the immediate need that its side in the con-
+                                                   flict is trying to fulfill by asserting its posi-
+    Give the Conflict entity a title that sum-     tion (the Want.)
+marizes why the Wants conflict.
+                                                       The difference between a Need and a Want
+                                                   is simple: fulfillment of Needs are conditions
+                                                   considered necessary to fulfilling the overall
+                                                   objective, while Wants are particular actions
+                                                   chosen to fulfill the needs.
+
+    Finally, right-click (Mac or Windows)          STEP 4: IDENTIFY THE
+or control-click (Mac) one of the two edges        COMMON OBJECTIVE
+leading from the Conflict entity and select Set
+Selected Edge Weights: Negative in the pop-            Create a single Common Objective entity,
+up menu that appears. This causes the edge         and make it a successor of both needs. In a
+you negated to turn red. By doing this, our        left-to-right orientation, the Common Ob-
+model accurately reflects the mutually-ex-         jective will be the left-most entity in your di-
+clusive nature of the two wants. To see this,      agram.
+click the Show Confidence Spinners switch
+in the toolbar, then adjust the spinner on the         If the two sides in the conflict have no
+Conflict entity from its maximum (True) to is      common objective, then there isn't really any
+minimum (False). You will see how the spin-
+ners on the Wants entities cannot both be true
+at the same time, due to the negated edge.
+
+T HI N K IN G W IT H F LY IN G LO G IC                                             30
+Evaporating Cloud -- Conflict Resolution
+
+conflict because the two sides could simply       see that by changing the value of the Con-
+go their separate ways: they have no reason       flict entity's spinner, one Want or the other
+to cooperate. Thus, in every situation iden-      can be satisfied (by becoming True), and yet
+tified as a conflict, there is always a com-      the Common Objective can never become
+mon objective. The Needs identified in the        True. In other words, as long as the conflict
+previous step are both considered necessary       exists, the Common Objective cannot be
+to achieving the common objective. In other       achieved.
+words, both sides of the conflict would agree
+that unless their needs are met, the common           Now read and revise the diagram for clar-
+objective cannot be met.                          ity and accuracy. Clouds are read from left to
+                                                  right, against the flow of the edges, using the
+    The Common Objective is also usually at a     pattern:
+"higher level" than the Wants or the Needs.
+In the case of the children fighting over a toy,   ∑ "In order to satisfy the need we must
+the Common Objective might be for them to
+"get along and have fun." Notice that this                obtain our want."
+Common Objective doesn't mention the spe-
+cific toy that is the subject of the conflict,
+even though the Wants and Needs may all
+mention it.
+
+STEP 5: ENSURE CLARITY BY                             This is the basic pattern of Necessary Con-
+READING THE DIAGRAM                               dition Thinking. This pattern applies to all the
+                                                  edges except the two coming from the Con-
+                                                  flict entity. Once we have completed this step,
+                                                  we fix or clarify the wording.
+
+    Now that the diagram is complete, show        STEP 6: IDENTIFY AND
+the Confidence Spinners, and note that there      VALIDATE ASSUMPTIONS
+is only one driver: the Conflict entity. This is
+the only entity that has no predecessors. If          In the pattern from the previous step,
+you have set up the document operators and        there are two blanks for needs and wants. In
+negated one of the edges coming out of the        this step we add a third blank:
+Conflict entity as described above, you will
+
+T HI N K IN G W IT H F LY IN G LO G IC            31
+Evaporating Cloud -- Conflict Resolution
+
+ ∑ "In order to satisfy the need we               inated the necessary condition relationship
+                                                  between two of the entities. If we have inva-
+        must obtain our want because of our       lided all the assumptions on the Conflict en-
+        assumptions."                             tity, then we have eliminated the perception
+                                                  of conflict itself. In either of these cases, the
+    Our assumptions are why we must ob-           Cloud has "evaporated" and we have discov-
+tain our want, and finding erroneous as-          ered there is, in reality, no conflict.
+sumptions is the key to breaking the con-
+flict. Assumptions "hide" underneath the              If the cloud is still intact, then we have at
+WantNeed edges, and the NeedsCommon               least one valid assumption in the five loca-
+Objective edges. There are also assumptions       tions. The final step is to construct solutions
+that underlie the Conflict entity itself: why we  (also called injections) that let us "break" one
+believe we can't have both Wants simultane-       or more of the edges in the Cloud. A solution
+ously.                                            is an "option for mutual gain," and the most
+                                                  constructive place in the cloud to find cre-
+    As you surface these assumptions, use         ative solutions is in the edges that connect
+Flying Logic's annotation feature to add text     the Wants to the Needs, by asking questions
+to each of the four dependency edges and the      of this pattern:
+Conflict entity. Take as much space as you
+need to describe each assumption, and begin        ∑ "How can we satisfy Need without
+each assumption with "...because".
+                                                          obtaining Want?"
+
+                                                   ∑ "How can we accomplish Common
+
+                                                          Objective without satisfying Need?"
+
+                                                   ∑ "How can we obtain both First Want
+
+                                                          and Second Want?"
+
+    Sometimes there will be a single assump-          Remember that solutions that you come
+tion under each edge, but often there will be     up with at this stage should not be considered
+several. Assumptions can be either valid or       final unless the situation you are analyzing is
+invalid. Invalid assumptions are often used to    rather simple; this tool is for brainstorming
+link needs to wants, but here you must criti-     a new set of options. You can use a Future Re-
+cally evaluate each of the assumptions to de-     ality Tree to solidify the ideas you generate at
+termine their validity. Invalid assumptions       this stage. Also, avoid the temptation to look
+can be eliminated, leaving just the valid ones.   for a single "panacea" solution; you will of-
+                                                  ten need two or more injections to implement
+STEP 7: PROPOSE SOLUTIONS                         a truly win-win solution.
+
+    If we manage to invalidate all the assump-        To inject a solution into the diagram, first
+tions on any of our edges, then we have elim-     select the edge where you want the solution
+                                                  to appear then either:
+
+T HI N K IN G W IT H F LY IN G LO G IC            32
+          Evaporating Cloud -- Conflict Resolution
+
+∑ Double-click the Solution entity in the       An OR junctor will be inserted into the
+
+      class list in the sidebar.                edge, and the new Solution entity will be add-
+                                                ed as a predecessor. Give the new Entity a title
+∑ Right-click (Mac or Windows) or
+
+control-click (Mac) the edge and select that summarizes the solution.
+
+New Entity ‹ Conflict Resolution ‹
+
+Solution from the popup menu that
+
+appears.
+
+    More solutions can be added to the same     points of control for every solution you have
+edge by selecting just the junctor, then using  added, and that it is now possible to make the
+the same command from the popup menu.           Common Objective True, even if both Wants
+                                                (the original positions) are not obtained.
+    By displaying the Confidence Spinners,
+you will see that you now have additional
+
+T HI N K IN G W IT H F LY IN G LO G IC                                 33
+FUTURE REALITY TREE
+
+    Perhaps you have a system you want to            The FRT is easiest-understood by con-
+improve, and you've done a Current Reality       trasting it with the Current Reality Tree
+Tree to identify What needs to change. Perhaps   (CRT):
+you've also done one or more Clouds to create
+some potential win-win solutions, in other        ∑ To build a CRT, start with a set of
+words What to change to. But...
+                                                         Un-Desirable Effects (UDEs), and
+ ∑ How can you be confident which of                     build down to the Core Driver, from
+                                                         which we invent Solutions (also called
+        those ideas will work?                           injections.)
+
+ ∑ How do you pick one idea over                  ∑ To build a FRT, start with a potential
+
+        another?                                         Solution (injection), and build upwards
+                                                         to a set of Desirable Effects (DEs).
+ ∑ How do you know something
+                                                     FRTs can be built not only from a pre-
+        important hasn't been ignored or         viously-conceived Solution, but also from
+        overlooked?                              other parts of previously-created CRTs and
+                                                 Clouds.
+ ∑ What are the solution's strengths, and
+                                                 FLYING LOGIC SETUP
+        how can they be maximized?
+                                                     An FRT is based on Sufficient Cause Think-
+ ∑ How can you be confident the                  ing, and this is how Flying Logic documents
+                                                 are set up when first created, so you do not
+        "solution" won't have unanticipated      need to do anything special with the Opera-
+        effects that leave you in a situation    tors popup menus to start creating your FRT.
+        that's worse than before?                Most FRTs are drawn with one or more pro-
+                                                 posed Solutions at the bottom and the De-
+ ∑ Are a potential solution's shortcomings       sired Effects at the top, so you may want to
+
+        something we can live with, something
+        we can fix after the fact, or something
+        we should avoid at all costs?
+
+    It is the job of the Future Reality Tree
+(FRT) to help you answer these questions.
+
+T HI N K IN G W IT H F LY IN G LO G IC           34
+                                        Future Reality Tree
+
+use the Orientation popup menu to change          the Copy and Paste commands to easily add
+the orientation of your document to Bottom        these entities to your FRT document.
+to Top.
+                                                      Also create one or more Desirable Effect
+                                                  entities that summarize the outcome you are
+                                                  working towards.
+
+                                                      You may wish to temporarily group these
+                                                  two sets of entities to keep them separate; the
+                                                  purpose of the FRT is to fill in the "middle".
+
+    FRTs are created using the entity classes in  STEP 2: ADD OTHER ELEMENTS
+the built-in Effects-Based Planning domain,       ALREADY DEVELOPED
+and primarily use the following classes: De-
+sirable Effect, Un-Desirable Effect, Precon-          If you have already created a CRT, look
+dition, Intermediate Effect, and Action. If       for Precondition entities (statements about
+starting with solutions created from a Cloud,     existing reality) that may be needed in your
+then FRTs will also often use the Solution        FRT. You can use the Copy and Paste com-
+class from the Conflict Resolution domain.        mands to easily transfer them from your CRT
+                                                  to your FRT.
+STEP 1: STATE THE PROPOSED
+SOLUTION AND DESIRED                                  If you are working from an existing Cloud,
+EFFECTS                                           also copy over the Common Objective and any
+                                                  of the Needs entities that the proposed Solu-
+                                                  tions are intended to satisfy.
+
+                                                      You may wish to group the entities you've
+                                                  added in this step, as they represent entities
+                                                  that will end up in the "middle" of your FRT.
+
+    Create one or more Solution entities to
+identify the set of injections you plan to im-
+plement. These injections may come from a
+Cloud you've already created, and you can use
+
+T HI N K IN G W IT H F LY IN G LO G IC                       35
+                                                            Future Reality Tree
+
+STEP 3: FILL IN THE GAPS
+
+    Starting with your Solution entities, add
+entities that represent the direct, inevitable
+consequences of those injections being put
+into place. Use Un-Desirable Effect entities
+for negative consequences, Desirable Effect
+entities for positive consequences, and In-
+termediate Effect entities for neutral conse-
+quences.
+
+                                                                            Continue advancing from the effects
+                                                                       you've identified to additional effects, eval-
+                                                                       uating whether the subsequent effects are
+                                                                       bringing you closer to any of your Desirable
+                                                                       Effects, or the Common Objective or Needs
+                                                                       entities you may have added from your Cloud.
+                                                                       If they do not, continue adding and evaluat-
+                                                                       ing effects you may not have previously con-
+                                                                       sidered.
+
+    Use the Categories of Legitimate Reser-          If your progress slows down or stops, then
+vation, to check your causal connections. If     consider additional Action entities you might
+the consequences you add are not sufficient      add. These Actions are also injections, but to
+by themselves, then make sure you add any        differentiate these injections from those that
+Precondition entities, or tie in any other en-   are part of your original solution, use the Ac-
+tities that express the other necessary condi-   tion entity class instead of the Solution entity
+tions (AND relationships) needed to produce      class you started with.
+the predicted result. Feel free to move objects
+between groups or ungroup the entities when
+the edges start to give your document struc-
+ture.
+
+T HI N K IN G W IT H F LY IN G LO G IC           36
+                                        Future Reality Tree
+
+STEP 4: READ AND VERIFY                               When two or more arrows enter an AND
+THE TREE                                          junctor, then we have multiple necessary con-
+                                                  ditions:
+    Once you have made connections to all
+of your Desirable Effects, re-read the entire      ∑ If cause E and cause F then effect G.
+diagram. Remember that FRTs are created
+using Sufficient Cause thinking, so the basic         Pay careful attention to the Categories
+pattern you will use when reading is:             of Legitimate Reservation. Make sure every
+                                                  statement in your entities and those implied
+ ∑ If cause A then effect B.                      by the causal relationships are clear and log-
+                                                  ical.
+    When two or more arrows enter an enti-
+ty, we have multiple sufficient conditions, also      When reading through the diagram, it is
+called an OR relationship:                        also a good idea to display the Confidence
+                                                  Spinners and use them as an aid to checking
+ ∑ If cause B or cause C then effect D.           your logic.
+
+                                                   1. Display the Confidence Spinners
+
+                                                          by clicking the Confidence button
+
+T HI N K IN G W IT H F LY IN G LO G IC                       37
+                                        Future Reality Tree
+
+      in the toolbar or selecting the           6. Continue step-by-step through the
+      View‹Confidence command
+                                                       diagram, telling yourself the "story"
+2. Set every spinner to indeterminate by               of the diagram as you set each Action
+                                                       to True when it becomes eligible, until
+      using the Entity‹Reset Confidence                your Desirable Effects also become
+      command.                                         True. Correct any errors you discover
+                                                       in your logic along the way.
+3. Because Preconditions are supposed
+                                               STEP 5: BUILD IN POSITIVE
+      to be facts about the world, set each    REINFORCING LOOPS
+      Precondition entity's confidence value
+      to True.                                     Recall that when building a Current Re-
+                                               ality Tree, occasionally there are Un-Desir-
+4. Notice that your Solution by itself is      able effects that are so severe that they "feed
+                                               back" on others and create negative rein-
+      sufficient to cause additional effects,  forcing loops. When creating a FRT, you want
+      so set its confidence value to True and  to look for opportunities to do the opposite:
+      notice how those effects become true.    build in positive reinforcing loops. If you can
+                                               do so, you are more likely to create a solution
+5. Notice that some of your Actions are        that is self-sustaining.
+
+      "paired up" by AND junctors with             Look for Desirable Effects that may inten-
+      other entities that are now True. These  sify effects lower in the tree that lead back
+      Actions are eligible for execution,      to one or more Desirable Effects. If you find
+      while other Actions that are paired up   such cases, annotate them using Back Edges.
+      with any entities that are not already   Pay close attention to where you might need
+      True are ineligible for execution: they  to add additional Actions in order to create
+      must wait until the other necessary      sufficient cause for a positive reinforcing
+      conditions become True.                  loop's existence.
+
+            Eligible
+            Actions
+
+Ineligible
+  Action
+
+T HI N K IN G W IT H F LY IN G LO G IC                       38
+                                        Future Reality Tree
+
+STEP 6: SEEK AND ADDRESS                           Once you have done that, look for the ear-
+NEGATIVE BRANCHES                              liest places in the causal chain where UDEs
+                                               start to appear. These "turning points" are
+    This is a critical step. Whether or not    the start of Negative Branches. It is critical
+you've already added some Un-Desirable Ef-     that you deal with Negative Branches in or-
+fects to your FRT, now is the time to go back  der to avoid creating worse problems than
+over it and carefully search for other UDEs    those you set out to cure.
+that are consequences of any of the entities
+we have added.
+
+T HI N K IN G W IT H F LY IN G LO G IC                       39
+                                        Future Reality Tree
+
+    There are two approaches to addressing      stage of Intermediate Effects that are on
+Negative Branches: Reactive and Proactive.      the path to the final Desirable Effects, with-
+                                                out causing the UDEs. This is also known as
+    In the Reactive approach, UDEs are al-      "trimming the Negative Branch."
+lowed (perhaps even expected) to occur, but
+are deemed unavoidable. New Action en-              In the illustration below, we deal with
+tities (injections) are then paired with the    one Negative Branch proactively by discard-
+UDEs (along with other entities as necessary)   ing one of our original Solution entities B and
+to cause additional effects that mitigate the   devising an alternate course of action Y. The
+UDEs. These additional effects are hopefully    other negative branch is handled reactively by
+Desirable Effects, but can also be neutral In-  devising a new Action AA that mitigates the
+termediate Effects.                             UDE S if and when it occurs.
+
+    In the Proactive approach, alternative
+injections are created that achieve the next
+
+                                                             Reactive Solution
+
+Proactive Solution
+
+T HI N K IN G W IT H F LY IN G LO G IC                                          40
+                                        Future Reality Tree
+
+    Once a better path has been created, it is a  construct a FRT with their suggestion as the
+good idea to keep a record of the entities that   initial injection at the root, and with the De-
+participated in the Negative Branch by keep-      sirable Effects predicted by the suggester and
+ing them in collapsed groups, instead of de-      the UDEs you foresee as the final outcome.
+leting them.                                      Once you have this FRT, you can discuss it in
+                                                  detail with the suggester. If you or they can
+    When someone brings you a well-in-            develop injections that address the UDEs,
+tentioned proposal that you have concerns         then you are likely to have a proposal you can
+about, it is good practice to ask for some time   approve.
+to think about it, then take their proposal and
+
+T HI N K IN G W IT H F LY IN G LO G IC                       41
+PREREQUISITE TREE
+
+    Perhaps you've gotten a picture of your        ∑ Entity Operator: Fuzzy And (AND)
+Core Drivers using a Current Reality Tree          ∑ Default Junctor Operator: Fuzzy Or
+(CRT). You may have used a Cloud to come
+up with some promising solutions and used a               (OR)
+Future Reality Tree (FRT) to develop a solu-
+tion you think will work. But unless your sit-        PRTs are usually read from top-to-bot-
+uation is quite simple, you're not done yet.      tom, starting at the Objective(s). However,
+One of the most overlooked aspects of plan-       this means the flow of the edges (arrows)
+ning lies in determining the things we need       must be towards the Objective(s) or bottom-
+but don't have yet: these are the obstacles that  to-top: so you will want to set the Orientation
+lie in our path. And as we develop ways to        popup menu to Bottom to Top.
+overcome these obstacles, further obstacles
+will often become visible. The Prerequisite
+Tree (PRT) is a tool that helps us to identi-
+fy and see beyond every obstacle, and make
+sure that every necessary activity is included
+in our plan.
+
+FLYING LOGIC SETUP
+
+    A PRT is based on Necessary Condition             PRTs are created using the entity classes
+Thinking. Since Flying logic documents are        in the built-in Prerequisite Tree domain, and
+set up for Sufficient Cause thinking by de-       use the following classes: Objective, Over-
+fault you will want to set the Operator popup     come, and Milestone.
+menus as follows:
+
+T HI N K IN G W IT H F LY IN G LO G IC            42
+                                        Prerequisite Tree
+
+    If you have already constructed PRTs in      easy to think of False meaning, "We
+the past, the choice of Overcome instead of      have not yet overcome this," (the
+Obstacle as an entity class name may seem        obstacle exists) and True as meaning,
+a little strange at first. We use the two terms  "We have overcome this" (the obstacle
+somewhat interchangeably, but the name           no longer exists.) Thus, if every entity
+Overcome was chosen for three reasons:           in our PRT does not have a Confidence
+                                                 of True, it is easy to see at a glance
+                                                 what we still need to accomplish.
+
+∑ First, the choice of Overcome makes the
+
+tree more natural to read. For example,
+
+this simple sequence can be read, "In            ∑ Third, there is a positive connotation
+order to obtain A, it is necessary to
+
+overcome B. In order to overcome B, it           to calling these entities Overcome. The
+
+is necessary to obtain C."                       name helps convey the idea that all
+
+                                                 obstacles contain the seeds of their
+
+                                                 downfall, and focuses the planner on
+
+                                                 the obstacle not as something that
+
+∑ Second, when using the Confidence              exists to thwart them, but rather as
+                                                 something that exists to be thwarted.
+
+Spinners to step through the logic
+
+of the tree, we use True to indicate
+
+that the statement in the title of the           STEP 1: IDENTIFY THE
+entity exists or otherwise pertains to           OBJECTIVE
+
+reality, and False to indicate that it
+
+does not pertain. If we used the class           Create an Objective entity and give it a
+
+name Obstacle, then a True confidence title that uses simple, present-tense word-
+
+value would indicate the existence of            ing. Usually PRTs will have a single Objec-
+
+the obstacle. However, what we want              tive entity that defines the outcome that you
+
+to express is the exact opposite: when are working to achieve, although they can
+
+all the necessary conditions are met,            contain more than one Objective if they are
+
+we want a confidence value of True to closely related. Often the wording of the Ob-
+
+indicate that the obstacle no longer             jective will be drawn from an injection (Solu-
+
+exists: it has been overcome. So when            tion entity or Action entity) you used in cre-
+
+dealing with Overcome entities, it is            ating a Future Reality Tree.
+
+T HI N K IN G W IT H F LY IN G LO G IC                                                  43
+                                        Prerequisite Tree
+
+STEP 2: IDENTIFY SOME                             Milestone entities that will negate the obsta-
+OBSTACLES TO OVERCOME                             cles. It is useful to remember that you don't
+                                                  need to completely destroy an obstacle to get
+    Something stands in the way of achieving      past it: you can (figuratively) go around it,
+your Objective, or you probably would have        over it, or under it; the point is to be creative.
+done it already. Create a set of Overcome en-
+tities that represent the nonexistent necessary    ∑ Often there will be a single Milestone
+conditions for achieving your Objective. The
+point here is not to list everything you will             matched with each Overcome. (M is
+need to do to achieve your Objectives, but to             necessary to overcome G.)
+identify the things you still lack. Connect each
+Overcome entity as a predecessor of your Ob-       ∑ Some of the Milestones you identify
+jective.
+                                                          may Overcome more than one
+STEP 3: BRAINSTORM                                        obstacle. (J is necessary to overcome D
+MILESTONES                                                and E.)
+
+                                                   ∑ Other times, your brainstorming will
+
+                                                          come up with two or more alternatives
+                                                          that may be able to Overcome an
+                                                          obstacle. You use OR junctors to model
+                                                          this. Junctors are easily created by
+                                                          dragging from an existing entity to
+                                                          a line. (Either H or I are necessary to
+                                                          overcome C.)
+
+                                                   ∑ And sometimes, more than one
+
+                                                          Milestone will need to be achieved in
+                                                          order to Overcome an obstacle. (K and
+                                                          L are necessary to overcome F.)
+
+    Consider each of the Overcome entities
+you have added and brainstorm one or more
+
+T HI N K IN G W IT H F LY IN G LO G IC                     44
+                                        Prerequisite Tree
+
+STEP 4: CONTINUE TO DEEPEN                               As you deepen the tree, the Milestones you
+THE TREE                                             add will start to have a smaller, more trac-
+                                                     table character. At some point you will add
+    Now consider each of the Milestones you          Milestones for which you are unable to find
+added in the last step. What obstacles to im-        any significant obstacles to their implemen-
+plementing them present themselves? Lack             tation. These Milestones are the roots of your
+of knowledge? Lack of manpower? Lack of              PRT, and represent the accomplishments that
+money? Creating a PRT is focused on find-            must be tackled first. Of course, there may be
+ing those Necessary Conditions that you cur-         many actual Actions that are required to im-
+rently lack; this is all an obstacle really is. For  plement a Milestone, and this is the subject
+each such obstacle you identify, create a new        of the Transition Tree discussed in the next
+Overcome entity and connect it as a prede-           chapter. But for now, it is sufficient to iden-
+cessor to the appropriate Milestone. For each        tify Milestones that entail no significant ob-
+of these new Overcome entities, devise Mile-         stacles.
+stones that address them, and so on.
+
+T HI N K IN G W IT H F LY IN G LO G IC                     45
+                                        Prerequisite Tree
+
+STEP 5: READ AND VERIFY                          STEP 6: TRIM AND FINALIZE
+THE TREE                                         THE TREE
+
+    Once you feel that your tree is well-con-        Once you have verified that your PRT is
+nected from its simplest Milestones all the      logically sound, it may contain one or more
+way through to the ultimate Objective, it is     alternate Milestones (connected by OR rela-
+time to carefully read the tree for clarity and  tionships) that you can now choose among.
+completeness. Since PRTs are constructed         Trim the rejected alternatives either by de-
+using Necessary Condition thinking, the tree     leting them or placing them within collapsed
+is read against the flow of the edges starting   groups.
+with the Objective. Each step of the tree is
+read with one of the following patterns:
+
+∑ In order to obtain A it is necessary that
+
+      we overcome B.
+
+∑ In order to overcome B it is necessary
+
+      that we obtain C.
+
+    Make sure that you apply the Categories of
+
+Legitimate Reservation as you read through
+
+the tree. Ask yourself questions such as:
+
+ ∑ Do we really need to overcome this
+
+        obstacle?
+
+ ∑ Is there a way to avoid having to
+
+        overcome this obstacle?
+
+ ∑ Does the milestone really overcome
+
+        the obstacle?
+
+ ∑ Are there any other milestones
+
+        required to overcome the obstacle?
+
+ ∑ Are there any other milestones that
+
+        are also sufficient to overcome the
+
+        obstacle?
+
+    It is also a good idea to use Flying Log-
+ic's Confidence Spinners at this stage to go
+through your diagram step by step with the
+flow of the edges from the root Milestones all
+the way to the Objective.
+
+T HI N K IN G W IT H F LY IN G LO G IC                                      46
+TRANSITION TREE
+
+    Once you have identified the obstacles        a TRT depending on what the "situation on
+that stand in the way of achieving your goal      the ground" looks like. This makes the TRT
+and developed milestones that will over-          an ideal tool for creating plans that involve a
+come them, you need an execution plan: a          significant degree of risk.
+set of actions that combine step-by-step to
+bring your system inexorably closer to its        FLYING LOGIC SETUP
+goal. Others who read your plan (and ideally
+participated in its creation) should be able to       A TRT is based on Sufficient Cause Think-
+clearly see how every action, and particular-     ing, and this is how Flying Logic documents
+ly the actions in which they play a role con-     are set up when first created, so you do not
+tribute to the benefit of the entire system.      need to do anything special with the Opera-
+This is the key to creating buy in: a shared      tors popup menus to start creating your TRT.
+vision that yields enthusiastic cooperation.      TRTs often flow upwards, with the Goal at
+The Transition Tree (TRT) is an effective tool    the top. So you may want to use the Orienta-
+for creating an execution plan that creates a     tion popup menu to change the orientation of
+transition from the current reality to a future   your document to Bottom to Top.
+reality.
+
+    Although a Transition Tree is related to the
+more traditional PERT diagram used in Proj-
+ect Management in that they both contain a
+set of sequenced actions, one of their main
+distinctions is the TRT's inclusion of Precon-
+ditions (assumptions about reality) paired
+with each action. This means that TRTs can
+contain numerous contingency plans that are
+triggered by the Preconditions that pertain
+at the time the plan is executed. Essentially,
+as execution of the plan proceeds, numer-
+ous different PERT charts can "fall out" of
+
+T HI N K IN G W IT H F LY IN G LO G IC            47
+                                        Transition Tree
+
+    TRTs are created using the entity classes      STEP 2: IDENTIFY
+in the built-in Effects-Based Planning do-         INTERMEDIATE EFFECTS
+main, and primarily use the following class-
+es: Goal, Precondition, Intermediate Effect,           If you have already done a Prerequisite
+and Action. You can also use Desirable Effect      Tree, you have a set of Milestone entities
+entities to highlight other positive benefits of   that you can copy directly into your Tran-
+your plan, and Un-Desirable Effect entities if     sition Tree document. It's important to re-
+your sequence of actions causes unavoidable        alize, however, that while the Milestones in
+UDEs that further part of the execution plan       a PRT are all necessary, they probably aren't
+must address.                                      sufficient. The PRT is used for identifying
+                                                   and overcoming the things you don't have yet,
+STEP 1: IDENTIFY THE GOAL                          while the TRT is used for identifying every-
+                                                   thing you need to do, and the order in which
+    A TRT often contains a single Goal enti-       you need to do them.
+ty, but can contain more than one if they are
+reasonably related. You can start a TRT with           If you are not copying Milestone Entities
+an intuitive pre-conception of what your           from a PRT, you may want to create a number
+Goal should be, or you can start with your         of Intermediate Effect entities that represent
+Goal taken from one of the injections taken        states you know will need to achieve along
+from a Future Reality Tree, or an Objective        the way to your goal, and link them with edg-
+taken from a Prerequisite Tree. In any case,       es to their order is more or less defined. It
+the Goal entity should have as its title a clear,  is not necessary to be absolutely rigorous at
+present-tense statement of the desired real-       this stage; defining the exact causal sequence
+ity.                                               is the focus of the following steps.
+
+                                                   STEP 3: DEFINE A COMPLETE
+                                                   STEP
+
+                                                       A step of your execution plan requires
+                                                   three things:
+
+T HI N K IN G W IT H F LY IN G LO G IC                   48
+                                        Transition Tree
+
+ ∑ The outcome you want to achieve.                STEP 4: CONTINUE BUILDING
+                                                   THE TREE
+        This is either an Intermediate Effect,
+        a Milestone copied from a PRT, or the          Each of the intermediate effects in your
+        Goal of your TRT.                          TRT must similarly be characterized as com-
+                                                   plete steps: outcome of actions and current
+ ∑ A statement of current reality. This            realities. Often these steps will form a linear
+                                                   sequence, but other times they will diverge
+        is either a Precondition entity, which     into parallel sequences, or have more com-
+        represents an aspect of reality that       plex dependencies.
+        is out of your control an which must
+        therefore be taken as a given, or an
+        Intermediate Effect or Milestone that
+        was the outcome of a previous step.
+
+ ∑ An Action. To be well-defined, an
+
+        Action must be something within
+        your control or influence, with clear
+        criteria for determining that it has been
+        carried out successfully, and must be
+        something that can be assigned to a
+        resource with the responsibility and
+        power to carry it out.
+
+    The current reality and action must logi-
+cally combine as the necessary and sufficient
+causes of achieve the outcome.
+
+    If in reading your step, the action is not
+sufficient to produce the outcome, then it
+needs to be broken down into one or more
+sufficient sub-steps.
+
+T HI N K IN G W IT H F LY IN G LO G IC                   49
+                                        Transition Tree
+
+STEP 5: SEEK AND ADDRESS                           On the other hand, sometimes it is im-
+NEGATIVE BRANCHES                              possible to avoid risk. Risk manifests as the
+                                               failure of Preconditions (assumptions about
+    This is similar to the step of the same    reality) to be True when it comes time to ex-
+name in the description of the Future Reali-   ecute the actions that depend on them. De-
+ty Tree (FRT). In fact, a TRT can be thought   pending on the nature of the environment
+of as a kind of FRT where instead of starting  in which the plan is executed, exactly which
+with an injection and ending up with the con-  Preconditions may not hold true at the time
+sequences, you start with a desired conse-     the plan is executed can be very difficult to
+quence (the Goal) and work backwards to the    predict, and if you create a plan with a rigid
+injections that will achieve it.               picture of reality, you are likely to be disap-
+                                               pointed when reality fails to conform. Thus,
+    If you are working from a FRT you creat-   to the degree that your plan involves risks, it
+ed previously, then your actions may already   is critically important that you identify the
+be designed to avoid the Un-Desirable Effects  UDEs that can result from the failure of Pre-
+(UDEs) that are the hallmarks of negative      conditions, and develop alternative courses
+branches.                                      of action that either mitigate those UDEs (the
+
+T HI N K IN G W IT H F LY IN G LO G IC                   50
+                                                               Transition Tree
+
+reactive approach) or avert them (the proac-
+tive approach.)
+
+    If a plan terminates with any un-ad-
+dressed UDEs, it is incomplete.
+
+Incomplete Plan
+
+                                                                                Complete Plan -- Proactive Avoidance
+
+    A complete plan will terminate only with                        Finally, what happens if all the conditions
+Goals or Desirable Effects.                                     determined to be necessary and sufficient for
+                                                                a particular effect are present, but when the
+                          Complete Plan -- Reactive Mitigation  plan is executed the effect turns out to be ab-
+                                                                sent? What if some other UDE we didn't an-
+                                                                ticipate manifests? More importantly, how
+                                                                can we reduce the chances of this nightmare
+                                                                from occurring?
+
+                                                                    This is the case of unforeseen uncertain-
+                                                                ty (also called unknown-unknowns): things
+                                                                that have not been and could not have been
+                                                                imagined or anticipated. In this case there can
+                                                                be no pre-determined contingency plan, but
+                                                                there are some things we can do to prepare:
+
+                                                                 ∑ If possible, try several approaches in
+
+                                                                        parallel and ultimately commit to the
+                                                                        one that works the best.
+
+                                                                 ∑ Avoid hubris: nurture an
+
+                                                                        organizational culture of humility
+                                                                        and resist being blinded by your own
+                                                                        expertise.
+
+                                                                 ∑ Be flexible and willing to adapt the
+
+                                                                        plan to a changing situation.
+
+T HI N K IN G W IT H F LY IN G LO G IC                                                                                51
+                                                               Transition Tree
+
+ ∑ Give heed to hunches and concerns of
+
+        experienced stakeholders, even if those
+        reservations are not (for the moment)
+        clearly articulated.
+
+    For the last case, even inarticulate res-
+ervations can be added to a TRT as unspeci-
+fied Preconditions, and removed later if they
+fail to materialize. Don't add unknown-un-
+knowns at every possible place, only where a
+strong-but-inspecific reservation has been
+expressed. Unknown-unknowns can also be
+added as part of assessment when planned
+effects fail to materialize as a plan is execut-
+ed.
+
+Unexpected  Unexpected
+   Failure       UDE
+
+                                    Unknown-
+                                     Unknown
+
+STEP 6: READ AND VERIFY
+THE TREE
+
+    This is similar to the step of the same
+name in the description of the Future Reality
+Tree (FRT). If you have included contingency
+plans, then step through the pertinent parts
+of your tree more than once, each time set-
+ting up your Preconditions to trigger the dif-
+ferent paths through your tree.
+
+T HI N K IN G W IT H F LY IN G LO G IC                                          52
+STRATEGY & TACTICS TREE
+
+    The latest addition to the TOC-TP applica-  to set the Orientation popup menu to Bottom
+tion tools, the Strategy and Tactics Tree (S&T  to Top.
+Tree) is used to move from the highest-lev-
+el organizational goals to a comprehensive,
+multi-tiered, fully-justified set of imple-
+mentation steps. It is used to implement a
+wide-ranging improvement throughout a
+larger organization by making it clear what
+role every part of the organization plays.
+
+FLYING LOGIC SETUP
+
+    An S&T Tree is based on Necessary Condi-        S&T Trees are created using the entity
+tion Thinking. Since Flying logic documents     classes in the provided domain file Strategy
+are set up for Sufficient Cause thinking by     & Tactics Tree.logic-d you can open by se-
+default you will want to set the Operator pop-  lecting File ‹ Open Example... and then Do-
+up menus as follows:                            mains/Strategy & Tactics Tree folder. When
+                                                you open this you will offered the opportu-
+ ∑ Entity Operator: Fuzzy And (AND)             nity to either open it as a new, black Flying
+ ∑ Default Junctor Operator: Fuzzy Or           Logic document or import it into your cur-
+                                                rently open document.
+        (OR)
+
+    S&T Trees are usually read from top-to-
+bottom, starting at the highest-level Strate-
+gy. However, this means the flow of the edges
+(arrows) must be towards the highest-level
+Strategy or bottom-to-top: so you will want
+
+T HI N K IN G W IT H F LY IN G LO G IC          53
+Strategy & Tactics Tree
+
+                   egy. Therefore, each Strategy always has ex-
+                   actly one Tactic below it, but tactics may have
+                   either zero, or two or more sub-Strategies.
+
+STRUCTURE OF THE S&T TREE
+
+    The S&T Tree is based on the idea that            If a Strategy has more than one possible
+Strategy and Tactics are complementary            Tactic that can accomplish it, then this can be
+concepts used to describe a tree-like hier-       added as an OR relationship.
+archy of action, with each Step (node) of the
+tree justifying its existence with a strategy: a
+description of why the node exists. The high-
+est-level strategy corresponds to the sys-
+tem's goal.
+
+    Each Strategy is supported by a single
+Tactic entity that describes how the strategy
+will be implemented. The bottom of a com-
+plete S&T tree will always be a layer of Tac-
+tics: the most fundamental actions that sup-
+port the strategies.
+
+    If more than one Tactic is necessary to           For a given Strategy, we need to do more
+implement a Strategy, a Tactic may be broken      than provide a Tactic for accomplishing it, we
+down into two or more sub-Tactics, but each       also need to justify that Tactic as both nec-
+one must first be justified by its own Strat-     essary and sufficient to accomplish its par-
+                                                  ent strategy. So we create a Necessary entity
+                                                  and a Sufficient entity and make each one a
+                                                  sibling of each Tactic entity. The title given
+                                                  to each entity should do exactly as the class
+                                                  name suggests: describe why the Tactic must
+                                                  be implemented to accomplish the strate-
+
+T HI N K IN G W IT H F LY IN G LO G IC            54
+Strategy & Tactics Tree
+
+gy (Necessary), along with why that Tactic           Since S&T Trees can grow quite large, it
+absolutely will work (Sufficient). If there are  is useful to use Flying Logic's grouping fea-
+numerous justifications for why a Tactic is      ture to manage the diagram. One approach is
+Necessary or Sufficient, then additional Nec-    to group all a Strategy's supporting entities
+essary or Sufficient entities can be added, or   and use a junctor to combine their edges with
+they can be enumerated in the entity's textu-    an AND junctor so only a single edge emerges
+al annotations.                                  from the group.
+
+    One more entity class, the Parallel ("par-       Groups can, in turn, be used to group en-
+allel assumption") class is used to proac-       tire Steps, including the Strategy entity, the
+tively answer objections that neither directly   Tactic entity, and the sub-group containing
+address the Necessity or Sufficiency of the      the Necessary, Sufficient, and Parallel (NSP)
+Tactic, such as:                                 entities. Using this technique, you can ar-
+                                                 range a very large S&T Tree to make it easy
+ ∑ The Strategy already exists: no action        to "drill down" to the level of detail you need.
+                                                 Take these ideas as suggestions, and feel free
+        need be taken to implement it.           to develop your own techniques for manag-
+                                                 ing large Flying Logic diagrams.
+ ∑ It is not possible to implement the
+
+        Tactic.
+
+    Taken together, all five kinds of entities
+constitute a Step.
+
+T HI N K IN G W IT H F LY IN G LO G IC           55
+Strategy & Tactics Tree
+
+T HI N K IN G W IT H F LY IN G LO G IC  56
+part III
+
+OTHER
+TECHNIQUES
+EVIDENCE-BASED ANALYSIS
+
+    This category of entity classes is suited to  Setup for Belief Network
+an environment when a more probabilistic
+mode of analysis is desired. One real-world
+scenario where Evidence-Based Analysis is
+useful is in Competitor Analysis. Usually an
+analysis is designed and then carried out over
+a period of time. During such time, Proposi-
+tions may be discovered to hold, which may
+trigger further actions by the agency con-
+ducting the analysis.
+
+FLYING LOGIC SETUP                                Setup for Probabilistic
+
+    There are two styles of Evidence-Based        PROPOSITION
+Analysis: belief-network and probabilistic.
+If the belief-network style is used, the Flying       Propositions (also known as requirements)
+Logic document is set up with Proportional        are questions for which the analysis is in-
+() for both the entity operator and default       tended to discover the most likely answers.
+junctor operator. If the probabilistic style is   Propositions take the form of a statement
+chosen, the document is typically set up with     that has some probability of being true. De-
+Sum Probabilities () as the entity operator       termining whether the probability of the
+and Product (◊) as the default junctor op-        Propositions exceeds determined thresh-
+erator. This setup is analogous to the use of     olds is a primary purpose of Evidence-Based
+Fuzzy Or (OR) and Fuzzy And (AND) in Suffi-       Analysis. Propositions are analogous to goals
+cient Cause Thinking.                             in Effects-Based Planning, and thus are ter-
+                                                  minal, i.e., they are always successors and
+                                                  never predecessors.
+
+T HI N K IN G W IT H F LY IN G LO G IC                                      58
+           Evidence-Based Analysis
+
+                               for recognizing that the Proposition holds
+                               (i.e., that the requirement has been met.)
+
+INDICATOR
+
+    Indicators are potential causes for Prop-        Each indicator in turn may have a set of
+ositions or other Indicators, and can be con-    more specific indicators which feed into it
+sidered analogous to Intermediate Effects        and form a "sub-template" for recognizing
+in Effects-Based Planning. Another way of        that the indicator in question probably holds.
+thinking of Indicators is as inferred evidence.  Indicators are usually both successors and
+Each Proposition typically has a set of Indi-    predecessors.
+cators that feed into it, each of which is con-
+sidered to be a possible cause of the Proposi-
+tion, and which together form a "template"
+
+    In a complex analysis, individual analysts   EVENT
+can be assigned responsibility for certain in-
+dicators, which places them in a supervisory         Events represent direct evidence which
+role over all indicators that are predecessors   becomes known throughout the life cycle of
+of the indicators for which they are directly    the analysis. In the intelligence communi-
+responsible.                                     ty for example, Events may be derived from
+                                                 Signals Intelligence (SIGINT), Human Intelli-
+
+T HI N K IN G W IT H F LY IN G LO G IC           59
+Evidence-Based Analysis
+
+gence (HUMINT), or Open Source Intelligence     EDGE WEIGHTS
+(OSINT).
+                                                    Edge weights in the model are assigned
+    Events are always predecessors and are      based on the positive (or negative) correlation
+never successors. They are assigned a Con-      between each entity and its successors.
+fidence value based on their reliability (or
+probability.)
+
+KNOWLEDGE
+
+    Knowledge represents pertinent facts
+known to be true about the situation under
+analysis. Knowledge can be built into the
+analysis before events are received, or can be
+added to the analysis in response to events as
+they occur. Knowledge entities are combined
+with Events to provide context and semantics
+either supporting or refuting the various in-
+dicators into which they feed.
+
+    Like Events, Knowledge entities are pre-
+decessors and not successors. They are as-
+signed Confidence values based on their reli-
+ability (or probability.)
+
+T HI N K IN G W IT H F LY IN G LO G IC          60
+CONCEPT MAPS
+
+    Concept Maps are used to visualize and      their entity titles, and the words "Concept"
+capture or convey a quick understanding of a    and "Relation" are never spoken.
+web of related concepts.
+                                                    Concepts Maps start with one or more
+FLYING LOGIC SETUP                              main concepts at the root, and relations are
+                                                used between concepts to connect in sup-
+    Concept Maps are created using the entity   porting concepts. The main rule when build-
+classes in the provided domain file Concept     ing Concepts Maps is that each ConceptRe-
+Map.logic-d in the Examples/Concept Maps        lationConcept step should be readable as a
+folder. You can either import this domain into  complete sentence. Additional relevant con-
+an existing document with the Entity‹Im-        cepts can be added in any order, and connect-
+port Domain command, or open it with the        ed in as many places as they are used.
+File‹Open command, in which case it acts
+like a template document and opens a new,
+untitled document with the Concept Map do-
+main already imported and ready for use.
+
+STRUCTURE OF CONCEPT
+MAPS
+
+    Concept maps use two entity classes, Con-
+cept (∑) and Relation (). Symbols were used
+for the entity class names instead of words
+because Concept Maps are read entirely from
+
+T HI N K IN G W IT H F LY IN G LO G IC          61
+                                        Concept Maps
+
+T HI N K IN G W IT H F LY IN G LO G IC                62
+

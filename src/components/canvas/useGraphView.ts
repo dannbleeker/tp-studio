@@ -1,57 +1,44 @@
-import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
-import { layoutFingerprint } from '@/domain/fingerprint';
-import { computeLayout } from '@/domain/layout';
-import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
-import { MarkerType } from '@xyflow/react';
-import { useMemo } from 'react';
-import type { TPEdge, TPNode } from './flow-types';
+import { useCompareDiff } from '@/hooks/useCompareDiff';
+import type { AnyTPNode, TPEdge } from './flow-types';
+import { useGraphEmission } from './useGraphEmission';
+import { useGraphPositions } from './useGraphPositions';
+import { useGraphProjection } from './useGraphProjection';
 
 export type GraphView = {
-  nodes: TPNode[];
+  nodes: AnyTPNode[];
   edges: TPEdge[];
 };
 
+/**
+ * Derive the React Flow node/edge view from the current doc, honoring the
+ * UI's collapse state (per-group and per-entity) and hoist state (single
+ * hoisted group).
+ *
+ * The transform proceeds in three composed stages. Each stage is a separate
+ * hook in its own file; this file is just the composition so a consumer
+ * (`Canvas.tsx`) gets the unified `{ nodes, edges }` it expects.
+ *
+ *   1. {@link useGraphProjection} — compute the visible-entity set and the
+ *      `remap` callback that resolves cross-collapse-boundary endpoints to
+ *      their collapsed-root stand-ins.
+ *   2. {@link useGraphPositions} — run dagre (or radial, or read-stored)
+ *      over the projected set. Memoized on the layout fingerprint so
+ *      title-only edits don't churn the layout.
+ *   3. {@link useGraphEmission} — emit RF nodes (entities, collapsed-roots,
+ *      group rects) and edges (bucket-aggregated, AND-aware).
+ *
+ * Splitting the original ~330-line monolith into these three hooks keeps
+ * each stage testable in isolation and makes it obvious which stage owns
+ * which behavior — invaluable when (for example) adding a new node kind
+ * (just emission) versus changing what's visible (just projection).
+ */
 export const useGraphView = (doc: TPDocument): GraphView => {
-  // Layout is the expensive part (dagre). It depends only on entity IDs and
-  // edge endpoints / AND grouping — not titles or types. Memoize against a
-  // structural fingerprint so title edits don't re-run dagre.
-  const fp = layoutFingerprint(doc);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: doc is read through `fp` deliberately so title edits don't re-run dagre.
-  const positions = useMemo(() => {
-    const entityList = Object.values(doc.entities);
-    const edgeList = Object.values(doc.edges);
-    return computeLayout(
-      entityList.map((e) => ({ id: e.id, width: NODE_WIDTH, height: NODE_MIN_HEIGHT })),
-      edgeList.map((e) => ({ sourceId: e.sourceId, targetId: e.targetId }))
-    );
-  }, [fp]);
-
-  // The view derivation is cheap. It does need `doc` directly so the node
-  // `data.entity` updates when titles change.
-  return useMemo(() => {
-    const entityList = Object.values(doc.entities);
-    const edgeList = Object.values(doc.edges);
-
-    const nodes: TPNode[] = entityList.map((entity) => ({
-      id: entity.id,
-      type: 'tp',
-      position: positions[entity.id] ?? { x: 0, y: 0 },
-      data: { entity },
-    }));
-
-    const edges: TPEdge[] = edgeList.map((edge) => ({
-      id: edge.id,
-      source: edge.sourceId,
-      target: edge.targetId,
-      type: 'tp',
-      data: { andGroupId: edge.andGroupId },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: edge.andGroupId ? EDGE_MARKER_AND : EDGE_MARKER_DEFAULT,
-      },
-    }));
-
-    return { nodes, edges };
-  }, [doc, positions]);
+  const projection = useGraphProjection(doc);
+  const positions = useGraphPositions(doc, projection);
+  // H2: when a compare revision is active, fetch the detailed diff so
+  // emission can stamp `diffStatus` on each node. Returns null in normal
+  // viewing mode — no diff overhead when not comparing.
+  const compareDiff = useCompareDiff();
+  return useGraphEmission(doc, projection, positions, compareDiff);
 };

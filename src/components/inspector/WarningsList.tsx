@@ -1,7 +1,32 @@
-import type { Warning } from '@/domain/types';
+import type { ClrTier, Warning } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+
+/**
+ * Three-level CLR taxonomy (Block C / E5). Inspector renders warnings
+ * grouped under these headers — clarity-of-statement issues first,
+ * structural-existence issues second, sufficiency-of-cause issues third.
+ * Matches how TOC practitioners walk a tree during a CLR review session.
+ *
+ * Each tier carries a short one-line description shown next to the
+ * header, so even a fresh user sees what kind of issue they're looking
+ * at without needing the docs.
+ */
+const TIER_ORDER: ClrTier[] = ['clarity', 'existence', 'sufficiency'];
+const TIER_META: Record<ClrTier, { label: string; hint: string }> = {
+  clarity: { label: 'Clarity', hint: 'Is the statement well-formed?' },
+  existence: { label: 'Existence', hint: 'Does the structure make sense?' },
+  sufficiency: { label: 'Sufficiency', hint: 'Is the cause enough on its own?' },
+};
+
+/** Stable sort: open warnings first, then resolved, preserving input order within each. */
+const orderByResolution = (ws: Warning[]): Warning[] => {
+  const open: Warning[] = [];
+  const resolved: Warning[] = [];
+  for (const w of ws) (w.resolved ? resolved : open).push(w);
+  return [...open, ...resolved];
+};
 
 export function WarningsList({ warnings }: { warnings: Warning[] }) {
   const resolveWarning = useDocumentStore((s) => s.resolveWarning);
@@ -15,46 +40,68 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
     );
   }
 
-  const open = warnings.filter((w) => !w.resolved);
-  const resolved = warnings.filter((w) => w.resolved);
+  // Group the (already-filtered) selection warnings by tier. Tiers with
+  // zero warnings drop out of the rendered sections — no empty headers.
+  const byTier: Record<ClrTier, Warning[]> = { clarity: [], existence: [], sufficiency: [] };
+  for (const w of warnings) byTier[w.tier].push(w);
+
+  const totalOpen = warnings.filter((w) => !w.resolved).length;
+  const totalResolved = warnings.filter((w) => w.resolved).length;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-        CLR ({open.length} open{resolved.length > 0 ? `, ${resolved.length} resolved` : ''})
+        CLR ({totalOpen} open{totalResolved > 0 ? `, ${totalResolved} resolved` : ''})
       </span>
-      <ul className="flex flex-col gap-1.5">
-        {[...open, ...resolved].map((w) => (
-          <li
-            key={w.id}
-            className={clsx(
-              'group flex items-start gap-2 rounded-md border px-2.5 py-2 text-xs transition',
-              w.resolved
-                ? 'border-neutral-200 bg-neutral-50 text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500'
-                : 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200'
-            )}
-          >
-            {w.resolved ? (
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 translate-y-0.5" />
-            ) : (
-              <AlertCircle className="h-3.5 w-3.5 shrink-0 translate-y-0.5" />
-            )}
-            <div className="flex-1">
-              <p className={clsx(w.resolved && 'line-through decoration-neutral-400')}>
-                {w.message}
-              </p>
-              <p className="mt-0.5 text-[10px] uppercase tracking-wider opacity-60">{w.ruleId}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => (w.resolved ? unresolveWarning(w.id) : resolveWarning(w.id))}
-              className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-neutral-600 opacity-0 transition hover:bg-white/60 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
-            >
-              {w.resolved ? 'Reopen' : 'Resolve'}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {TIER_ORDER.map((tier) => {
+        const tierWarnings = byTier[tier];
+        if (tierWarnings.length === 0) return null;
+        const tierMeta = TIER_META[tier];
+        return (
+          <section key={tier} className="flex flex-col gap-1.5">
+            <span className="flex items-baseline gap-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              <span>{tierMeta.label}</span>
+              <span className="font-normal normal-case tracking-normal text-neutral-400 dark:text-neutral-500">
+                {tierMeta.hint}
+              </span>
+            </span>
+            <ul className="flex flex-col gap-1.5">
+              {orderByResolution(tierWarnings).map((w) => (
+                <li
+                  key={w.id}
+                  className={clsx(
+                    'group flex items-start gap-2 rounded-md border px-2.5 py-2 text-xs transition',
+                    w.resolved
+                      ? 'border-neutral-200 bg-neutral-50 text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500'
+                      : 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200'
+                  )}
+                >
+                  {w.resolved ? (
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 translate-y-0.5" />
+                  ) : (
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0 translate-y-0.5" />
+                  )}
+                  <div className="flex-1">
+                    <p className={clsx(w.resolved && 'line-through decoration-neutral-400')}>
+                      {w.message}
+                    </p>
+                    <p className="mt-0.5 text-[10px] uppercase tracking-wider opacity-60">
+                      {w.ruleId}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => (w.resolved ? unresolveWarning(w.id) : resolveWarning(w.id))}
+                    className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-neutral-600 opacity-0 transition hover:bg-white/60 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
+                  >
+                    {w.resolved ? 'Reopen' : 'Resolve'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
     </div>
   );
 }

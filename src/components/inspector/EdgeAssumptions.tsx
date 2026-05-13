@@ -13,10 +13,17 @@ export function EdgeAssumptions({
   assumptions: Entity[];
 }) {
   const addAssumptionToEdge = useDocumentStore((s) => s.addAssumptionToEdge);
+  const locked = useDocumentStore((s) => s.browseLocked);
+  const diagramType = useDocumentStore((s) => s.doc.diagramType);
   const lastAddedRef = useRef<string | null>(null);
 
   const handleAdd = () => {
-    const created = addAssumptionToEdge(edgeId);
+    // TOC-reading prompt: on Evaporating Cloud edges the book recommends
+    // every assumption start with "…because" so the canonical reading
+    // ("we must obtain Want because of Assumption") falls out for free.
+    // Pre-populate the title with the prefix so the user types the rest.
+    const seedTitle = diagramType === 'ec' ? '…because ' : undefined;
+    const created = addAssumptionToEdge(edgeId, seedTitle);
     if (created) lastAddedRef.current = created.id;
   };
 
@@ -34,7 +41,7 @@ export function EdgeAssumptions({
           ))}
         </ul>
       )}
-      <Button variant="softViolet" size="md" onClick={handleAdd}>
+      <Button variant="softViolet" size="md" onClick={handleAdd} disabled={locked}>
         <Plus className="h-3.5 w-3.5" />
         New assumption
       </Button>
@@ -53,12 +60,19 @@ function AssumptionRow({
 }) {
   const updateEntity = useDocumentStore((s) => s.updateEntity);
   const detachAssumption = useDocumentStore((s) => s.detachAssumption);
-  const select = useDocumentStore((s) => s.select);
+  const selectEntity = useDocumentStore((s) => s.selectEntity);
+  const locked = useDocumentStore((s) => s.browseLocked);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (autoFocus) {
-      inputRef.current?.focus();
+      const input = inputRef.current;
+      if (!input) return;
+      input.focus();
+      // Move the caret to the end of any seed text (e.g. the EC "…because "
+      // prefix) so the user types where they expect rather than at index 0.
+      const end = input.value.length;
+      input.setSelectionRange(end, end);
     }
   }, [autoFocus]);
 
@@ -70,11 +84,12 @@ function AssumptionRow({
         value={assumption.title}
         placeholder="State the assumption…"
         onChange={(e) => updateEntity(assumption.id, { title: e.target.value })}
-        className="flex-1 bg-transparent px-1 py-0.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 dark:text-neutral-200"
+        disabled={locked}
+        className="flex-1 bg-transparent px-1 py-0.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
       />
       <button
         type="button"
-        onClick={() => select({ kind: 'entity', id: assumption.id })}
+        onClick={() => selectEntity(assumption.id)}
         className="rounded p-1 text-neutral-500 transition hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900/40 dark:hover:text-violet-300"
         title="Open assumption"
         aria-label="Open assumption"
@@ -84,7 +99,8 @@ function AssumptionRow({
       <button
         type="button"
         onClick={() => detachAssumption(edgeId, assumption.id)}
-        className="rounded p-1 text-neutral-500 transition hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+        disabled={locked}
+        className="rounded p-1 text-neutral-500 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950/40 dark:hover:text-red-300"
         title="Detach from this edge"
         aria-label="Detach from this edge"
       >

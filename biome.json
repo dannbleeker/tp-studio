@@ -1,7 +1,17 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "organizeImports": { "enabled": true },
-  "files": { "ignore": ["node_modules", "dist", "coverage"] },
+  "files": {
+    "ignore": [
+      "node_modules",
+      "dist",
+      "coverage",
+      "src/**/*.d.ts",
+      "!src/vite-env.d.ts",
+      "src/domain/types.js",
+      "src/domain/tokens.js"
+    ]
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",

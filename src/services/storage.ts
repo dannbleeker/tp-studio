@@ -4,11 +4,31 @@
 // and reported via the onStorageError listener; tests can swap behaviour via
 // vi.mock if needed.
 
+import { log } from './logger';
+
 export const STORAGE_KEYS = {
-  /** Active document, written on every mutation. */
+  /** Active document, written on every mutation (debounced). */
   doc: 'tp-studio:active-document:v1',
-  /** UI theme — 'light' or 'dark'. */
+  /** Live draft — written synchronously on EVERY mutation so a tab crash
+   *  mid-typing doesn't lose the last 200 ms of edits. On boot, if this key
+   *  is present and newer than `doc`, the doc is restored from the live
+   *  draft. The committed doc remains the canonical artifact for export. */
+  docLive: 'tp-studio:active-document-live:v1',
+  /** FL-EX9: previous committed doc, written BEFORE each new committed
+   *  write. If the main slot is ever corrupted (mid-write tab kill,
+   *  external storage tampering, partial quota failure), the backup gives
+   *  us one last good snapshot to fall back to on boot. Updated lazily on
+   *  every successful save; never points at junk because the copy happens
+   *  before the new write is attempted. */
+  docBackup: 'tp-studio:active-document-backup:v1',
+  /** UI theme — 'light' | 'dark' | 'highContrast'. */
   theme: 'tp-studio:theme',
+  /** User-pickable preferences from the Settings dialog. JSON-encoded. */
+  prefs: 'tp-studio:prefs:v1',
+  /** H1 revision history. JSON-encoded `Record<docId, Revision[]>` keyed by
+   *  document id. Capped to `REVISIONS_PER_DOC_CAP` per doc; oldest dropped
+   *  on overflow. */
+  revisions: 'tp-studio:revisions:v1',
 } as const;
 
 const hasLocalStorage = (): boolean => typeof globalThis.localStorage !== 'undefined';
@@ -33,8 +53,7 @@ const reportError = (err: unknown): void => {
   if (onError) {
     onError(wrapped);
   } else {
-    // eslint-disable-next-line no-console
-    console.warn('[storage] write failed:', wrapped.message);
+    log.warn('[storage] write failed:', wrapped.message);
   }
 };
 

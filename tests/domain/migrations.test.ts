@@ -6,16 +6,68 @@ import {
 } from '@/domain/migrations';
 import { describe, expect, it } from 'vitest';
 
-const passthroughDoc = { schemaVersion: 1, foo: 'bar' };
-
 describe('migrateToCurrent', () => {
-  it('returns a CURRENT_SCHEMA_VERSION document unchanged in shape', () => {
-    expect(migrateToCurrent(passthroughDoc)).toEqual(passthroughDoc);
+  it('returns a CURRENT_SCHEMA_VERSION document untouched in shape', () => {
+    const doc = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      foo: 'bar',
+      entities: {},
+      nextAnnotationNumber: 1,
+    };
+    expect(migrateToCurrent(doc)).toEqual(doc);
   });
 
-  it('treats a missing schemaVersion as 1 (current)', () => {
-    const doc = { foo: 'bar' };
-    expect(migrateToCurrent(doc)).toEqual(doc);
+  it('migrates a v1 document forward to current, assigning annotation numbers', () => {
+    const v1Doc = {
+      schemaVersion: 1,
+      entities: {
+        a: { id: 'a', type: 'effect', title: 'A', createdAt: 1, updatedAt: 1 },
+        b: { id: 'b', type: 'effect', title: 'B', createdAt: 2, updatedAt: 2 },
+      },
+    };
+    const result = migrateToCurrent(v1Doc) as {
+      schemaVersion: number;
+      entities: Record<string, { annotationNumber: number }>;
+      nextAnnotationNumber: number;
+    };
+    expect(result.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    // Sorted by createdAt asc, then id asc — so `a` gets 1, `b` gets 2.
+    expect(result.entities.a!.annotationNumber).toBe(1);
+    expect(result.entities.b!.annotationNumber).toBe(2);
+    expect(result.nextAnnotationNumber).toBe(3);
+  });
+
+  it('migrates a v2 document forward to current, adding an empty groups map', () => {
+    const v2Doc = {
+      schemaVersion: 2,
+      entities: { a: { id: 'a', type: 'effect', title: 'A', annotationNumber: 1 } },
+      nextAnnotationNumber: 2,
+    };
+    const result = migrateToCurrent(v2Doc) as { schemaVersion: number; groups: unknown };
+    expect(result.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    expect(result.groups).toEqual({});
+  });
+
+  it('migrates a v3 document forward to current, leaving groups untouched', () => {
+    const v3Doc = {
+      schemaVersion: 3,
+      entities: {},
+      groups: {
+        G1: {
+          id: 'G1',
+          title: 'Existing',
+          color: 'amber',
+          memberIds: [],
+          collapsed: false,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      nextAnnotationNumber: 1,
+    };
+    const result = migrateToCurrent(v3Doc) as { schemaVersion: number; groups: unknown };
+    expect(result.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    expect(result.groups).toEqual(v3Doc.groups);
   });
 
   it('rejects a document with a schemaVersion newer than the app supports', () => {

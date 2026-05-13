@@ -1,0 +1,9 @@
+{
+  "comment": "Per-chunk gzip-size ceilings in bytes. CI runs scripts/check-bundle-size.mjs after `vite build` and fails the build if any chunk exceeds its budget by >10% (the slop in `slopPercent`). Budgets are sized 5–10% above the current measured chunks so non-trivial growth is what triggers the alert, not noise from a dependency point-update. Update the numbers here when a deliberate feature lands that grows a chunk — the diff in this file is what reviewers see.",
+  "slopPercent": 10,
+  "chunks": {
+    "flow": 140000,
+    "index": 100000,
+    "icons": 12500
+  }
+}

@@ -38,7 +38,7 @@ if (!pattern.test(firstLine)) {
   console.error('    fix: handle empty selection in confirmAndDeleteEntity');
   console.error('    docs(prd): switch markdown lib to micromark');
   console.error('');
-  console.error('  Your message: "' + firstLine + '"');
+  console.error(`  Your message: "${firstLine}"`);
   console.error('');
   process.exit(1);
 }

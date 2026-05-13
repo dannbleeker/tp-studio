@@ -16,17 +16,23 @@ export const useEdge = (id: string | undefined): Edge | undefined =>
   useDocumentStore((s) => (id ? s.doc.edges[id] : undefined));
 
 /**
- * The currently-selected entity, or undefined when the selection is an edge,
- * nothing, or a stale id.
+ * The single currently-selected entity, or undefined when there's no entity
+ * selection, more than one entity selected, an edge selection, or a stale id.
  */
 export const useSelectedEntity = (): Entity | undefined =>
-  useDocumentStore((s) =>
-    s.selection.kind === 'entity' ? s.doc.entities[s.selection.id] : undefined
-  );
+  useDocumentStore((s) => {
+    if (s.selection.kind !== 'entities' || s.selection.ids.length !== 1) return undefined;
+    const id = s.selection.ids[0];
+    return id ? s.doc.entities[id] : undefined;
+  });
 
 /**
- * The currently-selected edge, or undefined when the selection is an entity,
- * nothing, or a stale id.
+ * The single currently-selected edge, with the same single-selection semantics
+ * as `useSelectedEntity`.
  */
 export const useSelectedEdge = (): Edge | undefined =>
-  useDocumentStore((s) => (s.selection.kind === 'edge' ? s.doc.edges[s.selection.id] : undefined));
+  useDocumentStore((s) => {
+    if (s.selection.kind !== 'edges' || s.selection.ids.length !== 1) return undefined;
+    const id = s.selection.ids[0];
+    return id ? s.doc.edges[id] : undefined;
+  });

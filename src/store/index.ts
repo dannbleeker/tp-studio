@@ -3,13 +3,19 @@ import { setStorageErrorListener } from '@/services/storage';
 import { create } from 'zustand';
 import { createDocumentSlice, documentDefaults } from './documentSlice';
 import { createHistorySlice, historyDefaults } from './historySlice';
+import { createRevisionsSlice, revisionsDefaults } from './revisionsSlice';
 import type { RootStore } from './types';
 import { createUISlice, uiDefaults } from './uiSlice';
 
 export type { DocumentStore, RootStore } from './types';
 export type {
+  AnimationSpeed,
+  CausalityLabel,
   ContextMenuState,
   ContextMenuTarget,
+  DefaultLayoutDirection,
+  EdgePalette,
+  LayoutMode,
   Selection,
   Theme,
   Toast,
@@ -20,7 +26,14 @@ export const useDocumentStore = create<RootStore>()((...a) => ({
   ...createDocumentSlice(...a),
   ...createUISlice(...a),
   ...createHistorySlice(...a),
+  ...createRevisionsSlice(...a),
 }));
+
+// H1 — populate the revisions panel with the boot doc's history. The
+// revisions slice can't do this from its own creator because `get().doc`
+// resolves against the not-yet-final composed state; once the store is
+// built, the action is safe to call.
+useDocumentStore.getState().reloadRevisionsForActiveDoc();
 
 // Surface storage failures (quota exceeded, disabled, private-mode quirks)
 // to the user via a toast. The in-memory doc keeps working.
@@ -45,5 +58,6 @@ export const resetStoreForTest = (): void => {
     ...documentDefaults(),
     ...uiDefaults(),
     ...historyDefaults(),
+    ...revisionsDefaults(),
   });
 };

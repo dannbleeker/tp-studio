@@ -19,10 +19,122 @@ export type Migration = {
 };
 
 /** Bump this constant when a new migration is registered. */
-export const CURRENT_SCHEMA_VERSION: SchemaVersion = 1;
+export const CURRENT_SCHEMA_VERSION: SchemaVersion = 6;
+
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/**
+ * v1 → v2: introduce stable per-document annotation numbers and the
+ * `nextAnnotationNumber` counter. Walks entities in (createdAt asc, id asc)
+ * order and numbers them 1..N. Older docs predate the field; new docs
+ * created post-v2 carry it from the start. Also adds the optional
+ * `author` / `description` fields on the document (no defaults required).
+ */
+const v1ToV2: Migration = {
+  fromVersion: 1,
+  toVersion: 2,
+  description: 'Assign Entity.annotationNumber, add TPDocument.nextAnnotationNumber.',
+  migrate: (raw) => {
+    if (!isPlainObject(raw)) return raw;
+    const entitiesRaw = isPlainObject(raw.entities) ? raw.entities : {};
+    const entries = Object.entries(entitiesRaw).filter(
+      (entry): entry is [string, Record<string, unknown>] => isPlainObject(entry[1])
+    );
+    // Order numbers by createdAt then id so the assignment is deterministic
+    // for any given input doc.
+    entries.sort(([aId, a], [bId, b]) => {
+      const aCreated = typeof a.createdAt === 'number' ? a.createdAt : 0;
+      const bCreated = typeof b.createdAt === 'number' ? b.createdAt : 0;
+      if (aCreated !== bCreated) return aCreated - bCreated;
+      return aId < bId ? -1 : aId > bId ? 1 : 0;
+    });
+    const nextEntities: Record<string, Record<string, unknown>> = {};
+    let n = 0;
+    for (const [id, entity] of entries) {
+      n += 1;
+      nextEntities[id] = { ...entity, annotationNumber: n };
+    }
+    return {
+      ...raw,
+      entities: nextEntities,
+      nextAnnotationNumber: n + 1,
+      schemaVersion: 2,
+    };
+  },
+};
+
+/**
+ * v2 → v3: introduce the Group system. Adds an empty `groups: {}` map; no
+ * existing entity / edge data needs to change. Future docs that contain
+ * groups will round-trip through this migration unchanged when re-loaded.
+ */
+const v2ToV3: Migration = {
+  fromVersion: 2,
+  toVersion: 3,
+  description: 'Add TPDocument.groups (empty map).',
+  migrate: (raw) => {
+    if (!isPlainObject(raw)) return raw;
+    return {
+      ...raw,
+      groups: isPlainObject(raw.groups) ? raw.groups : {},
+      schemaVersion: 3,
+    };
+  },
+};
+
+/**
+ * v3 → v4: introduce optional `Edge.label`. No edges need to change shape;
+ * the migration is purely a schema-version bump so future readers know how
+ * to interpret the field.
+ */
+const v3ToV4: Migration = {
+  fromVersion: 3,
+  toVersion: 4,
+  description: 'Allow Edge.label (no data shape change).',
+  migrate: (raw) => {
+    if (!isPlainObject(raw)) return raw;
+    return { ...raw, schemaVersion: 4 };
+  },
+};
+
+/**
+ * v4 → v5: introduce optional `Entity.attestation` (Bucket E source /
+ * evidence citation) and optional `TPDocument.layoutConfig` (Bundle 4
+ * per-doc dagre knobs). Like v3→v4, both are purely additive optional
+ * fields — no existing data shape changes. The migration is a version
+ * bump so future readers know which fields they can expect.
+ */
+const v4ToV5: Migration = {
+  fromVersion: 4,
+  toVersion: 5,
+  description: 'Allow Entity.attestation and TPDocument.layoutConfig (no data shape change).',
+  migrate: (raw) => {
+    if (!isPlainObject(raw)) return raw;
+    return { ...raw, schemaVersion: 5 };
+  },
+};
+
+/**
+ * v5 → v6: introduce optional `Entity.attributes` (B7 — user-defined
+ * attributes) and optional `TPDocument.customEntityClasses` (B10 —
+ * user-defined entity classes). Both are purely additive optional
+ * fields — no existing data shape changes. Docs that don't use them
+ * round-trip unchanged.
+ */
+const v5ToV6: Migration = {
+  fromVersion: 5,
+  toVersion: 6,
+  description:
+    'Allow Entity.attributes (B7) and TPDocument.customEntityClasses (B10) — no data change.',
+  migrate: (raw) => {
+    if (!isPlainObject(raw)) return raw;
+    return { ...raw, schemaVersion: 6 };
+  },
+};
 
 /** Production migration registry. Populated in version order. */
-export const MIGRATIONS: readonly Migration[] = [];
+export const MIGRATIONS: readonly Migration[] = [v1ToV2, v2ToV3, v3ToV4, v4ToV5, v5ToV6];
 
 const readVersion = (doc: RawDocument): SchemaVersion => {
   if (typeof doc === 'object' && doc !== null && !Array.isArray(doc)) {

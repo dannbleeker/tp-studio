@@ -11,8 +11,13 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "coverage:pin": "node ./scripts/pin-coverage-thresholds.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "lint": "biome check src tests",
-    "format": "biome format --write src tests"
+    "format": "biome format --write src tests",
+    "check:bundle-size": "node ./scripts/check-bundle-size.mjs"
   },
   "simple-git-hooks": {
     "pre-commit": "node ./node_modules/lint-staged/bin/lint-staged.js",
@@ -27,14 +32,18 @@
     ]
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "pnpm": "^11.0.0"
   },
   "dependencies": {
     "@xyflow/react": "^12.10.2",
     "clsx": "^2.1.1",
     "dagre": "^0.8.5",
+    "dompurify": "^3.4.2",
     "html-to-image": "^1.11.13",
     "lucide-react": "^1.14.0",
+    "micromark": "^4.0.2",
+    "micromark-extension-gfm": "^3.0.0",
     "nanoid": "^5.0.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -43,10 +52,12 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@testing-library/react": "^16.0.1",
+    "@playwright/test": "^1.48.0",
     "@types/dagre": "^0.7.54",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
+    "@vitest/coverage-v8": "^2.1.4",
     "autoprefixer": "^10.5.0",
     "jsdom": "^25.0.1",
     "lint-staged": "^17.0.4",

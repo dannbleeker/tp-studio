@@ -60,6 +60,28 @@ describe('exportToJSON / importFromJSON', () => {
     const restored = importFromJSON(JSON.stringify(stripped));
     expect(restored.resolvedWarnings).toEqual({});
   });
+
+  it('round-trips Entity.position when set', () => {
+    const a = makeEntity({ type: 'rootCause', position: { x: 120, y: 240 } });
+    const b = makeEntity({ type: 'ude' });
+    const doc = makeDoc([a, b], [makeEdge(a.id, b.id)], 'crt');
+    const restored = importFromJSON(exportToJSON(doc));
+    expect(restored.entities[a.id]?.position).toEqual({ x: 120, y: 240 });
+    expect(restored.entities[b.id]?.position).toBeUndefined();
+  });
+
+  it('rejects malformed Entity.position', () => {
+    const doc = sampleDoc();
+    const firstId = Object.keys(doc.entities)[0]!;
+    const broken = {
+      ...doc,
+      entities: {
+        ...doc.entities,
+        [firstId]: { ...doc.entities[firstId], position: { x: 1 } },
+      },
+    };
+    expect(() => importFromJSON(JSON.stringify(broken))).toThrow(/position/);
+  });
 });
 
 describe('localStorage round-trip', () => {
