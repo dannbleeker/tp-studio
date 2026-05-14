@@ -73,13 +73,16 @@ describe('isEntityType', () => {
 });
 
 describe('isEdgeKind', () => {
-  it('accepts the single canonical edge kind', () => {
+  it('accepts both canonical edge kinds (sufficiency + necessity)', () => {
+    // Session 77 split: pre-v7 only `'sufficiency'` was valid; v7 promoted
+    // the EC + Goal Tree edges to `'necessity'`.
     expect(isEdgeKind('sufficiency')).toBe(true);
+    expect(isEdgeKind('necessity')).toBe(true);
   });
   it('rejects anything else', () => {
-    expect(isEdgeKind('necessity')).toBe(false);
     expect(isEdgeKind('')).toBe(false);
     expect(isEdgeKind(null)).toBe(false);
+    expect(isEdgeKind('whatever')).toBe(false);
   });
 });
 

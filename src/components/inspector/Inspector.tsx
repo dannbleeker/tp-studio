@@ -6,12 +6,16 @@ import { useSelectionShape } from '@/hooks/useSelectionShape';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '../ui/Button';
 import { EdgeInspector } from './EdgeInspector';
 import { EntityInspector } from './EntityInspector';
 import { GroupInspector } from './GroupInspector';
+import { InjectionWorkbench } from './InjectionWorkbench';
 import { MultiInspector } from './MultiInspector';
+import { VerbalisationStrip } from './VerbalisationStrip';
+
+type ECTab = 'inspector' | 'verbalisation' | 'injections';
 
 const EMPTY: Warning[] = [];
 
@@ -19,6 +23,11 @@ export function Inspector() {
   const doc = useDocumentStore((s) => s.doc);
   const clearSelection = useDocumentStore((s) => s.clearSelection);
   const { selection, open, singleId, isSingleGroup, isMulti, headerLabel } = useSelectionShape();
+  // Session 77 — EC-only tab bar. The "Inspector" tab is the existing
+  // selection-driven content; the two others are doc-level (always
+  // visible on any selection so the user can swap views freely).
+  const [ecTab, setECTab] = useState<ECTab>('inspector');
+  const isEC = doc.diagramType === 'ec';
 
   // Run CLR rules only when something validation-relevant changes (titles,
   // types, edges, resolutions). Pure UI churn doesn't trigger re-validation.
@@ -98,19 +107,59 @@ export function Inspector() {
               <X className="h-4 w-4" />
             </Button>
           </header>
+          {isEC && (
+            <div
+              role="tablist"
+              aria-label="Evaporating Cloud inspector views"
+              className="flex border-b border-neutral-200 px-2 dark:border-neutral-800"
+            >
+              {(
+                [
+                  { id: 'inspector' as const, label: 'Inspector' },
+                  { id: 'verbalisation' as const, label: 'Verbalisation' },
+                  { id: 'injections' as const, label: 'Injections' },
+                ] satisfies { id: ECTab; label: string }[]
+              ).map((tab) => {
+                const active = ecTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setECTab(tab.id)}
+                    className={clsx(
+                      'flex-1 px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition',
+                      active
+                        ? 'border-b-2 border-indigo-500 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300'
+                        : 'border-b-2 border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto p-4">
-            {isMulti && selection.kind === 'entities' && (
-              <MultiInspector kind="entities" ids={selection.ids} />
-            )}
-            {isMulti && selection.kind === 'edges' && (
-              <MultiInspector kind="edges" ids={selection.ids} />
-            )}
-            {isSingleGroup && singleId && <GroupInspector groupId={singleId} />}
-            {selection.kind === 'entities' && singleId && !isSingleGroup && (
-              <EntityInspector entityId={singleId} warnings={selectionWarnings} />
-            )}
-            {selection.kind === 'edges' && singleId && (
-              <EdgeInspector edgeId={singleId} warnings={selectionWarnings} />
+            {isEC && ecTab === 'verbalisation' && <VerbalisationStrip compact={false} />}
+            {isEC && ecTab === 'injections' && <InjectionWorkbench />}
+            {(!isEC || ecTab === 'inspector') && (
+              <>
+                {isMulti && selection.kind === 'entities' && (
+                  <MultiInspector kind="entities" ids={selection.ids} />
+                )}
+                {isMulti && selection.kind === 'edges' && (
+                  <MultiInspector kind="edges" ids={selection.ids} />
+                )}
+                {isSingleGroup && singleId && <GroupInspector groupId={singleId} />}
+                {selection.kind === 'entities' && singleId && !isSingleGroup && (
+                  <EntityInspector entityId={singleId} warnings={selectionWarnings} />
+                )}
+                {selection.kind === 'edges' && singleId && (
+                  <EdgeInspector edgeId={singleId} warnings={selectionWarnings} />
+                )}
+              </>
             )}
           </div>
         </div>

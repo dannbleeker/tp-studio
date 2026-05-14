@@ -99,6 +99,18 @@ export function useGlobalShortcuts() {
         return;
       }
 
+      // reg: toggle-inspector
+      // Cmd/Ctrl+\ — close the inspector (brief §9). Inspector is
+      // selection-driven; this shortcut clears the selection, which
+      // slides the panel off-screen. Reopening it means clicking an
+      // entity or edge again. No-op when nothing is selected — the
+      // ergonomic loss (vs. a forced-show flag) is small.
+      if (cmdOrCtrl && e.key === '\\') {
+        e.preventDefault();
+        clearSelection();
+        return;
+      }
+
       // reg: quick-capture
       // E (bare) — Quick Capture (FL-QC1). Skip when typing or modifier'd.
       if (!cmdOrCtrl && !e.shiftKey && !e.altKey && !inField && e.key.toLowerCase() === 'e') {

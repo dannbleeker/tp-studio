@@ -20,6 +20,8 @@ export type DialogsSlice = {
   toasts: Toast[];
   /** FL-QC1 Quick Capture dialog. */
   quickCaptureOpen: boolean;
+  /** Session 77 / brief §10 — print preview modal. */
+  printOpen: boolean;
   /** H1 — revision-history panel visibility. */
   historyPanelOpen: boolean;
   /** H2 — when set, the canvas is in visual-diff mode and entities/edges
@@ -68,6 +70,10 @@ export type DialogsSlice = {
   openQuickCapture: () => void;
   closeQuickCapture: () => void;
 
+  /** Session 77 / brief §10 — print preview modal. */
+  openPrintPreview: () => void;
+  closePrintPreview: () => void;
+
   openHistoryPanel: () => void;
   closeHistoryPanel: () => void;
   toggleHistoryPanel: () => void;
@@ -103,6 +109,7 @@ export type DialogsDataKeys =
   | 'contextMenu'
   | 'toasts'
   | 'quickCaptureOpen'
+  | 'printOpen'
   | 'historyPanelOpen'
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
@@ -117,6 +124,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   contextMenu: { open: false },
   toasts: [],
   quickCaptureOpen: false,
+  printOpen: false,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -132,6 +140,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   contextMenu: { open: false },
   toasts: [],
   quickCaptureOpen: false,
+  printOpen: false,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -171,6 +180,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openQuickCapture: () => set({ quickCaptureOpen: true }),
   closeQuickCapture: () => set({ quickCaptureOpen: false }),
+
+  openPrintPreview: () => set({ printOpen: true }),
+  closePrintPreview: () => set({ printOpen: false }),
 
   // History panel and Inspector share the right-edge slot — opening
   // history clears any selection so the Inspector doesn't visually race

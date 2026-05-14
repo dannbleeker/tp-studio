@@ -72,6 +72,27 @@ export function useSelectionShortcuts() {
           ? { kind: selection.kind, id: selection.ids[0]! }
           : undefined;
 
+      // reg: add-assumption-on-edge
+      // A (bare) — when an edge is selected and nothing is in edit mode,
+      // add a fresh assumption to that edge and focus the new row in the
+      // AssumptionWell (the inspector handles the focus via `lastAddedRef`).
+      // Brief §9: "A (on selected edge) → add assumption". For EC diagrams
+      // the assumption seeds with the canonical "…because " prefix.
+      if (
+        !cmdOrCtrl &&
+        !e.shiftKey &&
+        !e.altKey &&
+        !inField &&
+        e.key.toLowerCase() === 'a' &&
+        single?.kind === 'edges'
+      ) {
+        e.preventDefault();
+        if (!guardWriteOrToast()) return;
+        const seedTitle = doc.diagramType === 'ec' ? '…because ' : undefined;
+        useDocumentStore.getState().addAssumptionToEdge(single.id, seedTitle);
+        return;
+      }
+
       // reg: rename / hoist-group
       if (e.key === 'Enter' && !inField && single?.kind === 'entities') {
         // Group → hoist; entity → begin-editing. Distinguish by id lookup.

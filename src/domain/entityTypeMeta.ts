@@ -220,6 +220,11 @@ export const PALETTE_BY_DIAGRAM: Record<DiagramType, EntityType[]> = {
   // sticky annotation, assumption as a side-claim). Custom entity classes
   // appended by `paletteForDoc` give the user their own typology.
   freeform: ['effect', 'assumption', ...UNIVERSAL_ANNOTATION_CLASSES],
+  // Session 77 / brief §5 — Goal Tree. Three-layer necessity tree using
+  // the existing Goal Tree entity types. Goal at apex, CSFs below,
+  // Necessary Conditions nested under CSFs; assumptions can sit on any
+  // edge, notes float free.
+  goalTree: ['goal', 'criticalSuccessFactor', 'necessaryCondition', 'assumption', 'note'],
 };
 
 /**
@@ -235,6 +240,7 @@ export const DIAGRAM_TYPE_LABEL: Record<DiagramType, string> = {
   ec: 'Evaporating Cloud',
   st: 'Strategy & Tactics Tree',
   freeform: 'Freeform Diagram',
+  goalTree: 'Goal Tree',
 };
 
 /**
@@ -263,6 +269,9 @@ const DEFAULT_ENTITY_TYPE_BY_DIAGRAM: Record<DiagramType, EntityType> = {
   // FL-DT5: neutral default. The user can re-type to a custom class via
   // the inspector if they've defined one for this doc.
   freeform: 'effect',
+  // Goal Tree: the most likely intent on an empty-canvas double-click
+  // is to add a Necessary Condition under an existing CSF or NC.
+  goalTree: 'necessaryCondition',
 };
 
 export const defaultEntityType = (diagramType: DiagramType): EntityType =>

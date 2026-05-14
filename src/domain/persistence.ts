@@ -3,6 +3,7 @@ import { STORAGE_KEYS, readString, removeKey, writeString } from '@/services/sto
 import { isDiagramType, isObject, isTrueMap } from './guards';
 import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from './migrations';
 import {
+  validateAssumption,
   validateCustomEntityClasses,
   validateEdge,
   validateEntity,
@@ -75,6 +76,12 @@ export const importFromJSON = (raw: string): TPDocument => {
   const systemScope = validateSystemScope(parsed.systemScope);
   const methodChecklist = validateMethodChecklist(parsed.methodChecklist);
   const customEntityClasses = validateCustomEntityClasses(parsed.customEntityClasses);
+  // Session 77: first-class Assumption records. The map is optional —
+  // pre-migration docs (or docs with no assumptions) ship without it.
+  const assumptions =
+    parsed.assumptions !== undefined
+      ? validateRecord(parsed.assumptions, validateAssumption, 'assumptions')
+      : undefined;
 
   return {
     id: parsed.id as DocumentId,
@@ -91,9 +98,10 @@ export const importFromJSON = (raw: string): TPDocument => {
     ...(systemScope ? { systemScope } : {}),
     ...(methodChecklist ? { methodChecklist } : {}),
     ...(customEntityClasses ? { customEntityClasses } : {}),
+    ...(assumptions && Object.keys(assumptions).length > 0 ? { assumptions } : {}),
     createdAt: typeof parsed.createdAt === 'number' ? parsed.createdAt : Date.now(),
     updatedAt: typeof parsed.updatedAt === 'number' ? parsed.updatedAt : Date.now(),
-    schemaVersion: 6,
+    schemaVersion: 7,
   };
 };
 

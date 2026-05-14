@@ -3,6 +3,7 @@ import { buildExampleCRT } from './crt';
 import { buildExampleEC } from './ec';
 import { buildExampleFreeform } from './freeform';
 import { buildExampleFRT } from './frt';
+import { buildExampleGoalTree } from './goalTree';
 import { buildExamplePRT } from './prt';
 import { buildExampleST } from './st';
 import { buildExampleTT } from './tt';
@@ -28,4 +29,5 @@ export const EXAMPLE_BY_DIAGRAM: Record<DiagramType, () => TPDocument> = {
   ec: buildExampleEC,
   st: buildExampleST,
   freeform: buildExampleFreeform,
+  goalTree: buildExampleGoalTree,
 };

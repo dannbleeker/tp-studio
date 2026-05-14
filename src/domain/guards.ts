@@ -12,6 +12,8 @@ const DIAGRAM_TYPES: ReadonlySet<DiagramType> = new Set<DiagramType>([
   // Bundle 10:
   'st', // Strategy & Tactics Tree (FL-DT4)
   'freeform', // Free-form diagram (FL-DT5)
+  // Session 77 (brief §5):
+  'goalTree',
 ]);
 export const isDiagramType = (v: unknown): v is DiagramType =>
   typeof v === 'string' && DIAGRAM_TYPES.has(v as DiagramType);
@@ -39,7 +41,7 @@ const ENTITY_TYPES: ReadonlySet<EntityType> = new Set<EntityType>([
 export const isEntityType = (v: unknown): v is EntityType =>
   typeof v === 'string' && ENTITY_TYPES.has(v as EntityType);
 
-const EDGE_KINDS: ReadonlySet<EdgeKind> = new Set<EdgeKind>(['sufficiency']);
+const EDGE_KINDS: ReadonlySet<EdgeKind> = new Set<EdgeKind>(['sufficiency', 'necessity']);
 export const isEdgeKind = (v: unknown): v is EdgeKind =>
   typeof v === 'string' && EDGE_KINDS.has(v as EdgeKind);
 

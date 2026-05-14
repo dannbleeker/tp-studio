@@ -253,6 +253,35 @@ const ST: MethodStep[] = [
 // add one without a schema change.
 const FREEFORM: MethodStep[] = [];
 
+// Session 77 / brief §5 — Goal Tree (Dettmer's IO Map).
+const GOAL_TREE: MethodStep[] = [
+  {
+    id: 'goalTree.goal',
+    label: 'State the Goal',
+    hint: "One sentence. What is the system's purpose? Frame it as the positive end-state, not a problem.",
+  },
+  {
+    id: 'goalTree.csfs',
+    label: 'List 3–5 Critical Success Factors',
+    hint: 'The few high-level objectives that, together, achieve the Goal. Each must be necessary.',
+  },
+  {
+    id: 'goalTree.ncs',
+    label: 'For each CSF, identify Necessary Conditions',
+    hint: 'What MUST be in place for this CSF? Read each edge as "in order to {CSF}, we must {NC}."',
+  },
+  {
+    id: 'goalTree.verify',
+    label: 'Test necessity at every layer',
+    hint: "If a parent could still be achieved without a child, that child isn't necessary — restructure.",
+  },
+  {
+    id: 'goalTree.gaps',
+    label: 'Look for missing conditions',
+    hint: "Conjoin all children of a parent. If the conjunction doesn't guarantee the parent, you're missing one.",
+  },
+];
+
 /**
  * Per-diagram-type canonical step list. Adding a new diagram type makes
  * TypeScript fail at compile time until a matching entry lands here — same
@@ -266,6 +295,7 @@ export const METHOD_BY_DIAGRAM: Record<DiagramType, MethodStep[]> = {
   ec: EC,
   st: ST,
   freeform: FREEFORM,
+  goalTree: GOAL_TREE,
 };
 
 /**

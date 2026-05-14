@@ -56,7 +56,8 @@ const seedEC = (now: number): DocSeed => {
     id: EntityId,
     type: Entity['type'],
     n: number,
-    pos: { x: number; y: number }
+    pos: { x: number; y: number },
+    slot: 'a' | 'b' | 'c' | 'd' | 'dPrime'
   ): Entity => ({
     id,
     type,
@@ -65,19 +66,21 @@ const seedEC = (now: number): DocSeed => {
     createdAt: now,
     updatedAt: now,
     position: pos,
+    ecSlot: slot,
   });
+  // Session 77: EC edges are necessity-typed ("in order to A, we must B").
   const mkEdge = (sourceId: EntityId, targetId: EntityId): Edge => ({
     id: newEdgeId(),
     sourceId,
     targetId,
-    kind: 'sufficiency',
+    kind: 'necessity',
   });
   const entities: Entity[] = [
-    mkEntity(ids.a, 'goal', 1, EC_POSITIONS.a),
-    mkEntity(ids.b, 'need', 2, EC_POSITIONS.b),
-    mkEntity(ids.c, 'need', 3, EC_POSITIONS.c),
-    mkEntity(ids.d, 'want', 4, EC_POSITIONS.d),
-    mkEntity(ids.dPrime, 'want', 5, EC_POSITIONS.dPrime),
+    mkEntity(ids.a, 'goal', 1, EC_POSITIONS.a, 'a'),
+    mkEntity(ids.b, 'need', 2, EC_POSITIONS.b, 'b'),
+    mkEntity(ids.c, 'need', 3, EC_POSITIONS.c, 'c'),
+    mkEntity(ids.d, 'want', 4, EC_POSITIONS.d, 'd'),
+    mkEntity(ids.dPrime, 'want', 5, EC_POSITIONS.dPrime, 'dPrime'),
   ];
   const edges: Edge[] = [
     mkEdge(ids.d, ids.b),
@@ -113,6 +116,10 @@ export const INITIAL_DOC_BY_DIAGRAM: Record<DiagramType, (now: number) => DocSee
   // starting shape. Pre-seeding either would be a guess.
   st: () => emptySeed(),
   freeform: () => emptySeed(),
+  // Session 77 / brief §5 — Goal Tree starts empty; the guided wizard
+  // (Goal → CSFs → NCs) populates it. A seed-with-empty-Goal might
+  // feel friendlier, but the wizard is the canonical entry path.
+  goalTree: () => emptySeed(),
 };
 
 export const createDocument = (diagramType: DiagramType): TPDocument => {
@@ -129,7 +136,7 @@ export const createDocument = (diagramType: DiagramType): TPDocument => {
     nextAnnotationNumber: seed.nextAnnotationNumber,
     createdAt: now,
     updatedAt: now,
-    schemaVersion: 6,
+    schemaVersion: 7,
   };
 };
 

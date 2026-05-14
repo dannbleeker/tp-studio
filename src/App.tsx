@@ -4,6 +4,7 @@ import { CompareBanner } from './components/canvas/CompareBanner';
 import { ContextMenu } from './components/canvas/ContextMenu';
 import { CommandPalette } from './components/command-palette/CommandPalette';
 import { Inspector } from './components/inspector/Inspector';
+import { PrintAppendix } from './components/print/PrintAppendix';
 import { Toaster } from './components/toast/Toaster';
 import { TitleBadge } from './components/toolbar/TitleBadge';
 import { TopBar } from './components/toolbar/TopBar';
@@ -49,6 +50,11 @@ const WalkthroughOverlay = lazy(() =>
 const SideBySideDialog = lazy(() =>
   import('./components/history/SideBySideDialog').then((m) => ({
     default: m.SideBySideDialog,
+  }))
+);
+const PrintPreviewDialog = lazy(() =>
+  import('./components/print/PrintPreviewDialog').then((m) => ({
+    default: m.PrintPreviewDialog,
   }))
 );
 
@@ -185,9 +191,13 @@ export function App() {
         <ErrorBoundary label="Side-by-side compare">
           <SideBySideDialog />
         </ErrorBoundary>
+        <ErrorBoundary label="Print preview">
+          <PrintPreviewDialog />
+        </ErrorBoundary>
       </Suspense>
       <ConfirmDialog />
       <Toaster />
+      <PrintAppendix />
       <PrintFooter />
     </main>
   );

@@ -3,6 +3,7 @@ import { useEdge, useEntity } from '@/hooks/useSelected';
 import { useDocumentStore } from '@/store';
 import { Lightbulb, Trash2 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { AssumptionWell } from './AssumptionWell';
 import { AttributesSection } from './AttributesSection';
 import { EdgeAssumptions } from './EdgeAssumptions';
 import { Field } from './Field';
@@ -224,7 +225,11 @@ export function EdgeInspector({
         />
       )}
 
-      <EdgeAssumptions edgeId={edgeId} assumptions={assumptions} />
+      {diagramType === 'ec' ? (
+        <AssumptionWell edgeId={edgeId} assumptions={assumptions} />
+      ) : (
+        <EdgeAssumptions edgeId={edgeId} assumptions={assumptions} />
+      )}
 
       <AttributesSection
         attributes={edge.attributes}

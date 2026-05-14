@@ -156,6 +156,13 @@ export type Entity = {
    *  diagram type. The user clears the flag once they've articulated the
    *  thing the placeholder stood for. */
   unspecified?: boolean;
+  /** Session 77 / brief §4 — explicit Evaporating Cloud slot binding.
+   *  Only set on EC entities; identifies which of the canonical five
+   *  boxes this entity inhabits. Previously EC slots were encoded
+   *  implicitly via seeded coordinates — explicit slot makes EC
+   *  semantics portable (e.g. a renderer or exporter can ask "which
+   *  one is the objective?" without coordinate inspection). */
+  ecSlot?: 'a' | 'b' | 'c' | 'd' | 'dPrime';
   /** B7 — user-defined attributes. Keyed by user-chosen name (max one
    *  per key), valued by a tagged AttrValue. Surfaces in the
    *  EntityInspector as a key/value editor. Use for ad-hoc metadata
@@ -169,7 +176,21 @@ export type Entity = {
   updatedAt: number;
 };
 
-export type EdgeKind = 'sufficiency';
+/**
+ * Edge logical semantics. Session 77 split — until now every edge was
+ * implicitly `'sufficiency'` and the diagram type chose the reading word
+ * ("because" vs. "in order to"). The brief's v1 model promotes the
+ * distinction to a stored field so EC + Goal Tree edges are explicitly
+ * necessity-typed regardless of how a reader interprets them.
+ *
+ *   - `'sufficiency'` — "X exists, therefore Y exists." CRT/FRT/TT edges.
+ *   - `'necessity'` — "In order to X, Y must hold." EC + Goal Tree edges.
+ *
+ * Old saved documents have `Edge.kind === 'sufficiency'` everywhere; the
+ * v6→v7 migration looks at the document's diagram type and upgrades EC +
+ * Goal Tree edges to `'necessity'`.
+ */
+export type EdgeKind = 'sufficiency' | 'necessity';
 
 /**
  * Bundle 8 / FL-ED1 — edge polarity. Tags an edge as a positive
@@ -247,12 +268,72 @@ export type Edge = {
   attributes?: Record<string, AttrValue>;
 };
 
+/**
+ * Session 77 / brief §4 — first-class Assumption record.
+ *
+ * Pre-v7, assumptions were `Entity` records with `type: 'assumption'`
+ * referenced from `Edge.assumptionIds`. That model worked but couldn't
+ * carry per-assumption status or link assumptions to the injections
+ * that challenge them. v7 promotes Assumption to its own record type
+ * keyed by id with:
+ *
+ *   - `status: 'unexamined' | 'valid' | 'invalid' | 'challengeable'` —
+ *     the lifecycle chip surfaced in the AssumptionWell inspector.
+ *   - `injectionIds?: EntityId[]` — many-to-many link to injection
+ *     entities that would invalidate this assumption. Marking an
+ *     injection "implemented" (on the entity itself) highlights every
+ *     assumption it challenges + the corresponding edge in green.
+ *   - `resolved?: boolean` — suppresses the missing-assumption prompt
+ *     on the parent edge without deleting the assumption record.
+ *
+ * The `Entity` model's `assumption` type stays around as a back-compat
+ * shim: pre-v7 docs migrate by emptying the Entity-side assumptions and
+ * creating equivalent Assumption records here.
+ */
+export type AssumptionStatus = 'unexamined' | 'valid' | 'invalid' | 'challengeable';
+
+/**
+ * Assumption IDs share the string space with the assumption-Entity
+ * records that shadow them during the v6→v7 migration. Plain `string`
+ * rather than a brand — matches the brief's `id: string` shape and
+ * lets `doc.assumptions[entityId]` work transparently while both
+ * representations coexist.
+ */
+export type Assumption = {
+  id: string;
+  /** The edge this assumption sits behind. The edge's
+   *  `assumptionIds: EntityId[]` carries the reverse index; IDs in
+   *  that list dereference into `doc.assumptions` for status + into
+   *  `doc.entities` for the legacy text. */
+  edgeId: string;
+  text: string;
+  status: AssumptionStatus;
+  /** Many-to-many to injection entities. Marking an injection
+   *  "implemented" (via an attribute on the entity) highlights every
+   *  assumption that references it + the corresponding edge in green. */
+  injectionIds?: EntityId[];
+  /** Suppresses the "missing assumption on edge X" CLR prompt. The
+   *  assumption record stays — the user is just saying "I've
+   *  considered this, move on." */
+  resolved?: boolean;
+  /** v1.5 hook: AI-suggested assumptions set `source: 'ai'`. */
+  source?: 'user' | 'ai';
+  createdAt: number;
+  updatedAt: number;
+};
+
 export type DiagramType =
   | 'crt'
   | 'frt'
   | 'prt'
   | 'tt'
   | 'ec'
+  // Session 77 / brief §5 — Goal Tree (Dettmer's Intermediate Objectives
+  // Map). Three-layer necessity-logic tree: Goal at top, 3-5 Critical
+  // Success Factors below, Necessary Conditions nested under those.
+  // Edges read "in order to {parent}, we must {child}". Uses existing
+  // `goal` / `criticalSuccessFactor` / `necessaryCondition` entity types.
+  | 'goalTree'
   // Bundle 10 / FL-DT4 — Goldratt's Strategy & Tactics Tree. A hierarchical
   // goal-decomposition tree: each level pairs a Strategy ("what we want at
   // this layer") with a Tactic ("how we achieve it"), broken down recursively
@@ -289,7 +370,11 @@ export type ClrRuleId =
   | 'external-root-cause'
   // S&T-specific (Session 76, Bundle 10 follow-up): a tactic without
   // explicit Necessary / Parallel / Sufficiency assumption facets.
-  | 'st-tactic-assumptions';
+  | 'st-tactic-assumptions'
+  // EC-specific (Session 77, brief §6): the 5-rule structural +
+  // completeness check (empty A, B≡C, B/C only feed A, D/D′ only feed
+  // their need, missing assumption per arrow, missing injection).
+  | 'ec-completeness';
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each
@@ -456,7 +541,18 @@ export type TPDocument = {
    *  classes" — the doc uses only the 14 built-in entity types. See
    *  {@link CustomEntityClass}. */
   customEntityClasses?: Record<string, CustomEntityClass>;
+  /** Session 77 / brief §4 — first-class Assumption records. Each
+   *  Assumption has its own status, can link to multiple injections,
+   *  and persists a per-assumption `resolved` flag separate from the
+   *  document-wide `resolvedWarnings` map. Older docs (pre-v7) modeled
+   *  assumptions as `Entity` records with `type: 'assumption'` referenced
+   *  from `Edge.assumptionIds`; the migration moves them into this map
+   *  with `status: 'unexamined'` and preserves the edge↔assumption link.
+   *
+   *  See {@link Assumption}. Empty / missing means "no assumptions" and
+   *  the field is omitted from JSON on persist. */
+  assumptions?: Record<string, Assumption>;
   createdAt: number;
   updatedAt: number;
-  schemaVersion: 6;
+  schemaVersion: 7;
 };

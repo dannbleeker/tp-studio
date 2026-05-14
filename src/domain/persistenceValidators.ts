@@ -1,5 +1,7 @@
 import { isEdgeKind, isEntityType, isObject, isStringArray } from './guards';
 import type {
+  Assumption,
+  AssumptionStatus,
   AttrValue,
   CustomEntityClass,
   Edge,
@@ -151,6 +153,11 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   ) {
     throw invalid(label, `has invalid spanOfControl "${String(v.spanOfControl)}"`);
   }
+  // Session 77: optional ecSlot binding.
+  const validEcSlots = ['a', 'b', 'c', 'd', 'dPrime'] as const;
+  if (v.ecSlot !== undefined && !(validEcSlots as readonly unknown[]).includes(v.ecSlot)) {
+    throw invalid(label, `has invalid ecSlot "${String(v.ecSlot)}"`);
+  }
   const attributes = validateAttributes(v.attributes, `${label}.attributes`);
   return {
     id: v.id as EntityId,
@@ -172,6 +179,9 @@ export const validateEntity = (v: unknown, label: string): Entity => {
     v.spanOfControl === 'influence' ||
     v.spanOfControl === 'external'
       ? { spanOfControl: v.spanOfControl }
+      : {}),
+    ...((validEcSlots as readonly unknown[]).includes(v.ecSlot)
+      ? { ecSlot: v.ecSlot as (typeof validEcSlots)[number] }
       : {}),
     ...(attributes ? { attributes } : {}),
   };
@@ -244,6 +254,55 @@ export const validateEdge = (v: unknown, label: string): Edge => {
     ...(v.isBackEdge === true ? { isBackEdge: true as const } : {}),
     ...(v.isMutualExclusion === true ? { isMutualExclusion: true as const } : {}),
     ...(edgeAttributes ? { attributes: edgeAttributes } : {}),
+  };
+};
+
+/**
+ * Session 77 — Assumption record validator. Strict: status must be one
+ * of the four canonical values; unknown values throw rather than fall
+ * back, so we catch corrupt imports early. `injectionIds` may be
+ * absent / empty / a string array of entity ids.
+ */
+const ASSUMPTION_STATUSES: readonly AssumptionStatus[] = [
+  'unexamined',
+  'valid',
+  'invalid',
+  'challengeable',
+];
+const isAssumptionStatus = (v: unknown): v is AssumptionStatus =>
+  typeof v === 'string' && (ASSUMPTION_STATUSES as readonly string[]).includes(v);
+
+export const validateAssumption = (v: unknown, label: string): Assumption => {
+  if (!isObject(v)) throw invalid(label, 'must be an object');
+  if (typeof v.id !== 'string') throw invalid(label, 'has no id');
+  if (typeof v.edgeId !== 'string') throw invalid(label, 'has no edgeId');
+  if (typeof v.text !== 'string') throw invalid(label, 'has non-string text');
+  if (!isAssumptionStatus(v.status)) {
+    throw invalid(label, `has invalid status "${String(v.status)}"`);
+  }
+  if (v.injectionIds !== undefined && !isStringArray(v.injectionIds)) {
+    throw invalid(label, 'has non-string-array injectionIds');
+  }
+  if (v.resolved !== undefined && typeof v.resolved !== 'boolean') {
+    throw invalid(label, 'has non-boolean resolved');
+  }
+  if (v.source !== undefined && v.source !== 'user' && v.source !== 'ai') {
+    throw invalid(label, `has invalid source "${String(v.source)}"`);
+  }
+  if (typeof v.createdAt !== 'number') throw invalid(label, 'has non-number createdAt');
+  if (typeof v.updatedAt !== 'number') throw invalid(label, 'has non-number updatedAt');
+  return {
+    id: v.id,
+    edgeId: v.edgeId,
+    text: v.text,
+    status: v.status,
+    ...(isStringArray(v.injectionIds) && v.injectionIds.length > 0
+      ? { injectionIds: v.injectionIds as EntityId[] }
+      : {}),
+    ...(v.resolved === true ? { resolved: true as const } : {}),
+    ...(v.source === 'user' || v.source === 'ai' ? { source: v.source } : {}),
+    createdAt: v.createdAt,
+    updatedAt: v.updatedAt,
   };
 };
 

@@ -127,7 +127,19 @@ The canvas re-flows automatically after each change, with a 300 ms ease-out anim
 
 **Tagging a back-edge (acknowledged loop).** Sometimes a causal loop is *the point* — a vicious circle in a CRT, a positive reinforcing loop in an FRT. Right-click the loop-closing edge → **Tag as back-edge** (or use the **Back-edge** checkbox in the Edge Inspector). The edge renders with a thicker dashed stroke and a `↻` glyph; the cycle CLR rule stops flagging that cycle as a defect. You can untag any time from the same menu / checkbox.
 
-**Marking the conflict on an Evaporating Cloud.** An EC's diagnostic depends on its two Wants being mutually exclusive. Draw an edge between the two `want` entities (start a drag from one Want's handle, release on the other), select it, and tick the **Mutual exclusion (EC)** checkbox in the Edge Inspector. The edge renders red with a ⊥ glyph, and the `ec-missing-conflict` CLR rule stops firing. The checkbox only appears in the inspector when both endpoints are Wants.
+**Marking the conflict on an Evaporating Cloud.** An EC's diagnostic depends on its two Wants being mutually exclusive. Draw an edge between the two `want` entities (start a drag from one Want's handle, release on the other), select it, and tick the **Mutual exclusion (EC)** checkbox in the Edge Inspector. The edge renders red with a ⚡ lightning-bolt glyph, and the `ec-missing-conflict` CLR rule stops firing. The checkbox only appears in the inspector when both endpoints are Wants.
+
+**EC inspector tabs (Session 77).** When the open document is an Evaporating Cloud, the right inspector grows a three-tab bar at the top:
+
+- **Inspector** — the standard entity / edge inspector for whatever you've selected.
+- **Verbalisation** — the full read-aloud form of the cloud ("In order to achieve {A}, we must {B}, because {assumption-count}…"). Each "{assumption-count}" anchor is clickable and jumps to the corresponding edge's Assumption Well.
+- **Injections** — every `injection` entity in the doc with its linked assumptions. Use **+ link assumption** to wire an injection to the assumptions it would invalidate, then tick **Implemented** when you ship the change — the corresponding arrows go green.
+
+**Assumption status chips.** On an EC edge, every assumption row has a small status chip (U / V / I / C) you click to cycle the status: **U**nexamined → **V**alid → **I**nvalid (often the breakthrough — usually means the arrow is broken) → **C**hallengeable (lights up the Injection Workbench). The chip is the most compact way to track the lifecycle of every "we're assuming X" claim.
+
+**Press `A` on a selected edge** to add a new assumption directly without opening the inspector — same as clicking **+ New assumption**. On EC edges the new row is pre-seeded with `"…because "` so the canonical "we must obtain Want because of Assumption" reading falls out for free.
+
+**Verbalisation strip across the top.** When you open an EC document, a thin italic strip at the top of the canvas reads the cloud's verbal form continuously. Edit any of the 5 slot titles and the strip updates live; click an assumption-count chip in the strip to jump straight to that edge's Assumption Well.
 
 **Starting a Negative Branch from a UDE (FRT).** Right-click any entity in an FRT → **Start Negative Branch from this entity** (or use the palette command). Creates a new "Negative Branch" group (rose) rooted at that entity. The book's framing: when an FRT injection produces an unintended UDE, capture the branch leading to it and decide whether to mitigate the negative (add a corrective Action) or replace the injection. Add the causal chain leading to the UDE inside the group.
 
@@ -387,6 +399,8 @@ The mechanics are identical to CRT — only the entity palette and convention di
 
 An Evaporating Cloud (EC) surfaces a *conflict* between two strategies that both pursue the same underlying goal. The classic 5-box arrangement carries the diagnostic meaning — this is the only diagram type in TP Studio that's **hand-positioned** rather than auto-laid-out.
 
+EC documents have a dedicated three-tab inspector and a top-of-canvas **verbalisation strip** that reads the cloud aloud in canonical book-form.
+
 - Start one with `Cmd/Ctrl+K` → **New Evaporating Cloud** (or load the example via **Load example Evaporating Cloud**). A blank EC arrives with all 5 boxes pre-positioned in the canonical layout — you fill in the titles, you don't have to recreate the structure.
 - The five boxes (reading right-to-left):
   - **Goal** (sky stripe, far left) — the common objective both parties share.
@@ -447,6 +461,16 @@ A **Freeform Diagram** is the non-TOC mode: no built-in type pattern matching, n
 **Auto-recovery.** Alongside the debounced "committed" save, a *live draft* is written synchronously on every keystroke under a separate storage key. If the browser is killed or your machine crashes before the debounce flushes, reopening the tab brings back whatever you'd typed up to the last keystroke — not just the last debounced save. A third *backup* slot holds the previous-save snapshot, so if the main slot is ever corrupted (mid-write crash, external tampering), you fall back to the prior good save instead of starting over. The recovery is silent on the happy path; if a backup or live-draft fallback fires, you'll see an info toast telling you the previous session ended unexpectedly.
 
 **Share a read-only link.** `Cmd/Ctrl+K` → **Copy read-only share link** generates a fully self-contained URL — your document is gzipped + base64-encoded into the URL's `#!share=` fragment, then copied to your clipboard. No server, no upload, no account. Paste it in an email / chat / issue tracker; when the receiver opens it, the diagram loads with Browse Lock auto-engaged so they can read and explore without accidentally editing. The receiver can toggle Browse Lock off any time to make their own working copy (the original autosaved doc is preserved as a revision they can roll back to). Soft size warning above ~4 KB: very large diagrams may get truncated by some chat clients, in which case fall back to JSON export. Share-links require a recent browser (`CompressionStream` API — Chrome 80+, Firefox 113+, Safari 16.4+).
+
+**Self-contained HTML viewer (Session 77).** `Cmd/Ctrl+K` → **Export as self-contained HTML viewer** writes a single `.html` file with all CSS / JS inlined and the source JSON embedded. The receiver opens it in any browser; the file works offline, behind firewalls, and on shared file drives. The view renders the doc title, entities, EC verbalisation (where applicable), assumptions with status chips, and injections — read-only. No network calls. Best for sending a colleague a snapshot they can open without installing anything.
+
+**Print preview (Session 77).** `Cmd/Ctrl+K` → **Print / Save as PDF…** opens a print preview modal where you pick:
+
+- **Mode**: Standard (default browser print), Workshop (high-contrast, large font, group rectangles bordered), Ink-saving (group shading removed, edges thinned, blacks softened).
+- **Annotation appendix** (checkbox): when on, the printed output includes a numbered list of every entity's description + every edge note + every assumption-with-status as an appendix after the diagram.
+- **Header / footer templates**: free text with merge fields `{title}` / `{date}` / `{author}` / `{diagramType}`. The rendered values get a thin band at the top + bottom of every printed page.
+
+Click **Open print dialog** to hand off to the browser's print/Save-as-PDF flow with the chosen mode applied. (A future iteration will add a true vector-PDF pipeline via `react-to-pdf`; the current flow uses the browser's print engine.)
 
 **Export as JSON.** `Cmd/Ctrl+K` → **Export as JSON** downloads `<your-title>.tps.json`. The format is human-readable, version-stamped, and round-trip stable.
 

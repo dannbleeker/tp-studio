@@ -25,6 +25,7 @@ export {
   exportAnnotationsMd,
   exportAnnotationsTxt,
   exportCSV,
+  exportHTMLViewer,
   exportJSON,
   pickJSON,
 } from './text';

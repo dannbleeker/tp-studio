@@ -6,6 +6,7 @@ import {
   exportCSV,
   exportDOT,
   exportFlyingLogic,
+  exportHTMLViewer,
   exportJPEG,
   exportJSON,
   exportMermaid,
@@ -31,6 +32,15 @@ export const exportCommands: Command[] = [
     label: 'Export as JSON',
     group: 'Export',
     run: (s) => exportJSON(s.doc),
+  },
+  {
+    // Session 77 / brief §11 — self-contained HTML viewer. One file,
+    // no network, opens in any browser; carries the diagram + verbal
+    // form + assumptions read-only and embeds the JSON for round-trip.
+    id: 'export-html-viewer',
+    label: 'Export as self-contained HTML viewer',
+    group: 'Export',
+    run: (s) => exportHTMLViewer(s.doc),
   },
   {
     id: 'export-png',
@@ -161,11 +171,11 @@ export const exportCommands: Command[] = [
     id: 'print',
     label: 'Print / Save as PDF…',
     group: 'Export',
-    run: () => {
-      // window.print is async per the spec; the dialog opens and the user
-      // chooses Save as PDF / a real printer. The print.css media block
-      // does the actual layout work.
-      window.print();
+    run: (s) => {
+      // Session 77 / brief §10 — open the print preview modal so the
+      // user can pick mode + appendix + header/footer before handing
+      // off to the browser's print dialog.
+      s.openPrintPreview();
     },
   },
 ];

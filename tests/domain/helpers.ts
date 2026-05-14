@@ -64,6 +64,6 @@ export const makeDoc = (
     nextAnnotationNumber: maxAnnotation + 1,
     createdAt: now,
     updatedAt: now,
-    schemaVersion: 6,
+    schemaVersion: 7,
   };
 };

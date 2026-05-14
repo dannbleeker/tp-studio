@@ -1,6 +1,14 @@
 import { createEntity } from '@/domain/factory';
 import { removeEntityFromEdges } from '@/domain/graph';
-import type { AttrValue, Edge, Entity, EntityId, EntityType } from '@/domain/types';
+import type {
+  Assumption,
+  AssumptionStatus,
+  AttrValue,
+  Edge,
+  Entity,
+  EntityId,
+  EntityType,
+} from '@/domain/types';
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
 import { entityPatch, makeApplyDocChange, scrubFromGroups, touch } from './docMutate';
@@ -33,6 +41,23 @@ export type EntitiesSlice = {
   addAssumptionToEdge: (edgeId: string, title?: string) => Entity | null;
   attachAssumption: (edgeId: string, assumptionId: string) => void;
   detachAssumption: (edgeId: string, assumptionId: string) => void;
+
+  /** Session 77 — set the status chip on an Assumption record.
+   *  History-coalesces when the status is unchanged. */
+  setAssumptionStatus: (assumptionId: string, status: AssumptionStatus) => void;
+  /** Session 77 — rewrite the assumption text. Dual-writes the new
+   *  text to the legacy assumption-Entity's `title` so existing UI
+   *  paths (TPNode rendering, sketchpad-style lists) stay in sync. */
+  setAssumptionText: (assumptionId: string, text: string) => void;
+  /** Session 77 — mark an assumption as "considered, move on" without
+   *  deleting the record. Suppresses missing-assumption nudges on
+   *  the parent edge. */
+  setAssumptionResolved: (assumptionId: string, resolved: boolean) => void;
+  /** Session 77 — many-to-many link from an assumption to an
+   *  injection entity (the change that would invalidate it). No-op if
+   *  the link already exists. */
+  linkInjectionToAssumption: (assumptionId: string, injectionId: string) => void;
+  unlinkInjectionFromAssumption: (assumptionId: string, injectionId: string) => void;
 
   /** B7 — set (or replace) a single attribute on an entity. The
    *  `value` is fully typed so the discriminator + value-shape match;
@@ -201,15 +226,30 @@ export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice>
       if (!edge) return null;
       const annotationNumber = get().doc.nextAnnotationNumber;
       const entity = createEntity({ type: 'assumption', title, annotationNumber });
+      // Session 77: also mint a first-class Assumption record so the
+      // EC AssumptionWell has a status chip + injection link from day
+      // one. Shares the same id as the assumption-Entity (overlapping
+      // ID space; see migration v6→v7 for the rationale).
+      const now = Date.now();
+      const assumption: Assumption = {
+        id: entity.id as string,
+        edgeId,
+        text: title ?? '',
+        status: 'unexamined',
+        createdAt: now,
+        updatedAt: now,
+      };
       applyDocChange((prev) => {
         const e = prev.edges[edgeId];
         if (!e) return prev;
         const current = e.assumptionIds ?? [];
         const nextEdge: Edge = { ...e, assumptionIds: [...current, entity.id] };
+        const nextAssumptions = { ...(prev.assumptions ?? {}), [assumption.id]: assumption };
         return touch({
           ...prev,
           entities: { ...prev.entities, [entity.id]: entity },
           edges: { ...prev.edges, [edgeId]: nextEdge },
+          assumptions: nextAssumptions,
           nextAnnotationNumber: annotationNumber + 1,
         });
       });
@@ -240,6 +280,95 @@ export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice>
           assumptionIds: filtered.length ? filtered : undefined,
         };
         return touch({ ...prev, edges: { ...prev.edges, [edgeId]: nextEdge } });
+      });
+    },
+
+    // ── Session 77: Assumption record actions ───────────────────────
+    setAssumptionStatus: (assumptionId, status) => {
+      applyDocChange((prev) => {
+        const cur = prev.assumptions?.[assumptionId];
+        if (!cur || cur.status === status) return prev;
+        const next: Assumption = { ...cur, status, updatedAt: Date.now() };
+        return touch({
+          ...prev,
+          assumptions: { ...(prev.assumptions ?? {}), [assumptionId]: next },
+        });
+      });
+    },
+
+    setAssumptionText: (assumptionId, text) => {
+      applyDocChange(
+        (prev) => {
+          const cur = prev.assumptions?.[assumptionId];
+          if (!cur || cur.text === text) return prev;
+          const next: Assumption = { ...cur, text, updatedAt: Date.now() };
+          const nextAssumptions = { ...(prev.assumptions ?? {}), [assumptionId]: next };
+          // Dual-write: keep the legacy assumption-Entity's `title` in
+          // sync so any UI path that reads it (TPNode, lists) stays
+          // current.
+          const ent = prev.entities[assumptionId];
+          const nextEntities =
+            ent && ent.type === 'assumption' && ent.title !== text
+              ? { ...prev.entities, [assumptionId]: { ...ent, title: text, updatedAt: Date.now() } }
+              : prev.entities;
+          return touch({ ...prev, entities: nextEntities, assumptions: nextAssumptions });
+        },
+        { coalesceKey: `assumption-text:${assumptionId}` }
+      );
+    },
+
+    setAssumptionResolved: (assumptionId, resolved) => {
+      applyDocChange((prev) => {
+        const cur = prev.assumptions?.[assumptionId];
+        if (!cur) return prev;
+        const wasResolved = cur.resolved === true;
+        if (wasResolved === resolved) return prev;
+        const { resolved: _drop, ...rest } = cur;
+        const next: Assumption = resolved
+          ? { ...rest, resolved: true, updatedAt: Date.now() }
+          : { ...rest, updatedAt: Date.now() };
+        return touch({
+          ...prev,
+          assumptions: { ...(prev.assumptions ?? {}), [assumptionId]: next },
+        });
+      });
+    },
+
+    linkInjectionToAssumption: (assumptionId, injectionId) => {
+      applyDocChange((prev) => {
+        const cur = prev.assumptions?.[assumptionId];
+        if (!cur) return prev;
+        const list = cur.injectionIds ?? [];
+        const branded = injectionId as EntityId;
+        if (list.includes(branded)) return prev;
+        const next: Assumption = {
+          ...cur,
+          injectionIds: [...list, branded],
+          updatedAt: Date.now(),
+        };
+        return touch({
+          ...prev,
+          assumptions: { ...(prev.assumptions ?? {}), [assumptionId]: next },
+        });
+      });
+    },
+
+    unlinkInjectionFromAssumption: (assumptionId, injectionId) => {
+      applyDocChange((prev) => {
+        const cur = prev.assumptions?.[assumptionId];
+        if (!cur?.injectionIds) return prev;
+        const branded = injectionId as EntityId;
+        if (!cur.injectionIds.includes(branded)) return prev;
+        const filtered = cur.injectionIds.filter((id) => id !== branded);
+        const next: Assumption = {
+          ...cur,
+          injectionIds: filtered.length > 0 ? filtered : undefined,
+          updatedAt: Date.now(),
+        };
+        return touch({
+          ...prev,
+          assumptions: { ...(prev.assumptions ?? {}), [assumptionId]: next },
+        });
       });
     },
 

@@ -178,20 +178,24 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         </EdgeLabelRenderer>
       )}
       {isMutex && (
-        // ⊥ glyph + red border calls out the mutual-exclusion link between
-        // two EC Wants. The red stroke on the edge body already carries
-        // most of the signal; the glyph is the keyboard/screen-reader
-        // accessible label.
+        // Session 77 / brief §6: lightning-bolt visual for the EC
+        // conflict between D and D′. The previous ⊥ glyph reads as
+        // "orthogonal" rather than "conflict"; ⚡ matches the book's
+        // diagrammatic convention and the brief's spec literally.
+        // Background is red for keyboard-/screen-reader accessibility;
+        // the canvas-edge red stroke is the primary visual.
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded-full border border-red-400 bg-red-50 px-1.5 text-[10px] font-semibold text-red-700 shadow-sm dark:border-red-700 dark:bg-red-950 dark:text-red-200"
+            className="nodrag nopan pointer-events-none absolute flex select-none items-center justify-center rounded-full border border-red-400 bg-red-50 px-1.5 text-[12px] font-bold leading-none text-red-700 shadow-sm dark:border-red-700 dark:bg-red-950 dark:text-red-200"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY - 14}px)`,
+              minWidth: 18,
+              minHeight: 18,
             }}
             title="Mutually exclusive — these two Wants conflict"
-            aria-label="Mutually exclusive Wants"
+            aria-label="Mutually exclusive Wants — lightning-bolt conflict"
           >
-            ⊥
+            <span aria-hidden>⚡</span>
           </div>
         </EdgeLabelRenderer>
       )}

@@ -134,6 +134,21 @@ export const SHORTCUTS: Shortcut[] = [
     group: 'global',
     bindsAt: 'hook',
   },
+  // Session 77 / brief §9.
+  {
+    id: 'toggle-inspector',
+    keys: `${M}+\\`,
+    label: 'Close inspector',
+    group: 'global',
+    bindsAt: 'hook',
+  },
+  {
+    id: 'add-assumption-on-edge',
+    keys: 'A',
+    label: 'Add assumption on selected edge',
+    group: 'global',
+    bindsAt: 'hook',
+  },
   {
     id: 'escape',
     keys: 'Esc',

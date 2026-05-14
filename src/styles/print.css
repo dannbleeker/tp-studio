@@ -132,6 +132,71 @@
   .print-ink-saver .react-flow__node-tpCollapsedGroup {
     background-color: transparent !important;
   }
+
+  /* Session 77 / brief §10 — print modes from the print-preview dialog.
+     The dialog sets one of these body classes before triggering
+     `window.print()`. Each tunes the visual treatment for its scenario. */
+
+  /* Ink-saving — colour-strip + thinner edges + softened blacks. */
+  body.print-mode-inksaving .react-flow__node-tp [style*="background-color"] {
+    background-color: transparent !important;
+    border-right: 1px solid #737373 !important;
+  }
+  body.print-mode-inksaving .react-flow__node-tpGroup > div,
+  body.print-mode-inksaving .react-flow__node-tpCollapsedGroup {
+    background-color: transparent !important;
+  }
+  body.print-mode-inksaving .react-flow__edge-path {
+    stroke: #525252 !important;
+    stroke-width: 0.75 !important;
+  }
+  body.print-mode-inksaving {
+    color: #404040 !important;
+  }
+
+  /* Workshop — large font, thick edges, prominent group rectangles. */
+  body.print-mode-workshop .react-flow__node-tp,
+  body.print-mode-workshop .react-flow__node-tp > div {
+    font-size: 14pt !important;
+  }
+  body.print-mode-workshop .react-flow__edge-path {
+    stroke-width: 2 !important;
+  }
+  body.print-mode-workshop .react-flow__node-tpGroup > div {
+    border: 2px solid #404040 !important;
+  }
+
+  /* Header / footer bands resolved from the body data-attributes. */
+  body[data-print-header]::before {
+    content: attr(data-print-header);
+    display: block;
+    font-size: 10pt;
+    color: #525252;
+    border-bottom: 1px solid #d4d4d4;
+    padding-bottom: 4pt;
+    margin-bottom: 12pt;
+  }
+  body[data-print-footer]::after {
+    content: attr(data-print-footer);
+    display: block;
+    font-size: 9pt;
+    color: #737373;
+    border-top: 1px solid #d4d4d4;
+    padding-top: 4pt;
+    margin-top: 16pt;
+    text-align: center;
+  }
+
+  /* Annotation appendix. Hidden by default; visible when the body
+     carries `print-include-appendix`. The DOM is rendered by the
+     PrintAppendix component below in App.tsx. */
+  [data-component="print-appendix"] {
+    display: none !important;
+  }
+  body.print-include-appendix [data-component="print-appendix"] {
+    display: block !important;
+    page-break-before: always;
+  }
 }
 
 /* Hidden in normal view; the @media print block above turns these on. */

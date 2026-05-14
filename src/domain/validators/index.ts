@@ -6,6 +6,7 @@ import { causeSufficiencyRule } from './causeSufficiency';
 import { clarityRule } from './clarity';
 import { completeStepRule } from './completeStep';
 import { cycleRule } from './cycle';
+import { ecCompletenessRule } from './ecCompleteness';
 import { ecMissingConflictRule } from './ecMissingConflict';
 import { entityExistenceRule } from './entityExistence';
 import { externalRootCauseRule } from './externalRootCause';
@@ -82,7 +83,16 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
   // such an edge, an EC is structurally incomplete. The "both wants point
   // at the objective via their needs" rule remains parked — verifiable but
   // less informative than the missing-conflict check.
-  ec: [...STRUCTURAL_RULES, tieredRule('existence', 'ec-missing-conflict', ecMissingConflictRule)],
+  ec: [
+    ...STRUCTURAL_RULES,
+    tieredRule('existence', 'ec-missing-conflict', ecMissingConflictRule),
+    // Session 77 / brief §6 — 5-rule structural + completeness check.
+    // Tier `existence` because most sub-warnings are about the
+    // diagnostic being structurally well-formed; the soft "missing
+    // assumption / injection" ones live in the same rule so users see
+    // them next to the structural ones in the EC inspector.
+    tieredRule('existence', 'ec-completeness', ecCompletenessRule),
+  ],
   // FL-DT4 — Strategy & Tactics Tree. Structural rules plus the
   // discipline rule: every tactic should declare three assumption
   // facets (NA, PA, SA). Tier `clarity` — the prescription is a nudge,
@@ -98,6 +108,13 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
   // the structural rules — entity-existence, causality-existence,
   // clarity, tautology, cycle, indirect-effect — apply.
   freeform: STRUCTURAL_RULES,
+  // Session 77 / brief §5 — Goal Tree. Structural rules apply (titles
+  // need content; necessity edges still need endpoints; tautology still
+  // matters). The single-goal constraint + 3-5-CSF nudge are enforced
+  // separately in the Goal Tree creation flow + store actions, not as
+  // CLR rules — they're hard constraints rather than per-entity soft
+  // warnings.
+  goalTree: STRUCTURAL_RULES,
 };
 
 /**

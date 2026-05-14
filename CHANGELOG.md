@@ -2,6 +2,75 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 77 — Brief v3 alignment: Assumption records, EC workbench, Goal Tree, verbalisation, HTML viewer, print pipeline
+
+The big v3-brief alignment session. End state: tsc clean, Biome clean, **877 tests passing** (was 863; +14 across 2 new test files), build green, bundle within ceiling. Schema bumped v6 → v7 with a non-trivial migration; the entity-type renaming proposed by the brief was deliberately NOT applied (the user said "keep what we have").
+
+### Themes shipped
+
+**1. Schema foundation — v6 → v7 migration**
+- New `Assumption` record type with `status: 'unexamined' | 'valid' | 'invalid' | 'challengeable'`, `injectionIds`, `resolved`, `source`, `createdAt`/`updatedAt`. Lives in a new `Document.assumptions` map keyed by id.
+- `Edge.kind` widened from `'sufficiency'` to `'sufficiency' | 'necessity'`. EC + Goal Tree edges are necessity-typed.
+- New `Entity.ecSlot: 'a' | 'b' | 'c' | 'd' | 'dPrime'` for explicit EC slot binding (was: implicit via coordinates).
+- New `'goalTree'` diagram type alongside the existing 7 — uses existing `goal` / `criticalSuccessFactor` / `necessaryCondition` types, TB layout, 5-step method checklist.
+- `v6ToV7` migration: walks EC docs, derives `ecSlot` from canonical seed coordinates, retypes EC edges to `'necessity'`, mints an `Assumption` record per assumption-Entity with `status: 'unexamined'` + reverse-walked `edgeId`.
+- `CURRENT_SCHEMA_VERSION` bumped to `7`. `factory.ts`, all `examples/*.ts`, `persistence.ts`, `spawnEC.ts`, `tests/domain/helpers.ts` updated. New `validateAssumption` in `persistenceValidators.ts`.
+
+**2. Verbalisation generator (`domain/verbalisation.ts`)**
+- Pure module producing the EC verbal form as a list of `VerbalisationToken`s (text / slot / assumptionAnchor). Renders the canonical 5-sentence form from brief §6, with `[click for assumptions]` anchors carrying `edgeId` + assumption count. Placeholder copy for unfilled slots so the verbal form is legible during the wizard's progressive fill.
+- 7 tests in `tests/domain/verbalisation.test.ts` cover the happy path, empty slots, anchor count, plain-text flattener.
+
+**3. EC inspector components**
+- `AssumptionWell` (new) — drop-in replacement for `EdgeAssumptions` on EC docs. Renders each assumption with a clickable status chip (U/V/I/C four-way cycle). Mounts the chip + text input + open-entity link + detach button per row.
+- `InjectionWorkbench` (new) — separate inspector tab listing every injection entity with its linked assumptions. "Mark implemented" toggle (sets `attributes.implemented`), link/unlink to assumptions via picker.
+- `VerbalisationStrip` (new) — renders the verbalisation tokens with click-through anchors. Mounted both as a top-of-canvas overlay on EC docs and as a tab in the EC inspector.
+- Inspector tab bar gating on `diagramType === 'ec'` — three tabs (Inspector / Verbalisation / Injections); non-EC docs render the original single-pane inspector unchanged.
+
+**4. EC validation rules (brief §6)**
+- New `ec-completeness` rule (ClrRuleId `'ec-completeness'`) covering:
+  - Rule 1: A non-empty
+  - Rule 2: B + C distinct, each only feeding A
+  - Rule 3: D only feeds B; D′ only feeds C
+  - Rule 4: ≥1 assumption per of the 5 canonical arrows
+  - Rule 5: ≥1 injection exists
+- Each sub-issue surfaces as its own warning with its own resolve-toggle target.
+
+**5. Lightning-bolt EC mutex visual (brief §6 + §18)**
+- Edge mutex glyph changed from `⊥` to `⚡` to match the book's "lightning between conflicting wants" convention.
+
+**6. Keyboard shortcuts (brief §9)**
+- `Cmd/Ctrl+\` — close inspector (clears selection).
+- `A` (on selected edge) — add assumption. For EC edges, seeds the text with `"…because "`.
+- Both registered in `SHORTCUTS` so the help dialog + `shortcutRegistry.test.ts` see them.
+
+**7. Self-contained HTML viewer (`domain/htmlExport.ts`)**
+- Pure generator producing a single `.html` file: inline CSS, no network calls, embedded JSON payload (base64) for future round-trip. Renders entity titles + types + EC verbalisation + assumption list (with status chips).
+- New palette command **Export as self-contained HTML viewer**. Wired via `services/exporters/text.ts` (`exportHTMLViewer`).
+- 5 tests in `tests/domain/htmlExport.test.ts` cover the round-trip + XSS-escape contract.
+
+**8. Print pipeline (brief §10)**
+- New `PrintPreviewDialog` modal (`Cmd/Ctrl+P` palette → "Print / Save as PDF…"): mode picker (Standard / Workshop / Ink-saving), include-annotation-appendix toggle, custom header + footer templates with `{title}` / `{date}` / `{author}` / `{diagramType}` merge fields.
+- New `PrintAppendix` always-mounted component that renders the entity descriptions + edge notes + assumption list. Gated on `body.print-include-appendix` so it only shows in the printed output when the user opts in.
+- `print.css` extended with:
+  - `body.print-mode-inksaving` / `body.print-mode-workshop` / `body.print-mode-standard` variants
+  - `body[data-print-header]::before` / `body[data-print-footer]::after` for the merge-field banners
+  - `body.print-include-appendix [data-component="print-appendix"]` gating
+- The brief calls for true vector PDF via `react-to-pdf`; that piece is deferred (network install) — browser print-to-PDF carries us until the dep lands.
+
+### Notes / deferred
+
+- **EC guided creation wizard (4.1)** is deferred. The existing 5-box pre-seed already gives users a working EC; the wizard's progressive prompts are incremental UX rather than load-bearing functionality.
+- **Vector PDF via `react-to-pdf`** is deferred until we have a confirmed install path. The print preview modal + body-mode classes + appendix are forward-compatible — when the dep lands, the modal's "Open print dialog" button switches to the PDF pipeline.
+- **Entity-type rename to brief's `gt*` / `ec*` names** was rejected at the user's explicit direction ("keep what we have"). Current names (`goal`, `criticalSuccessFactor`, `need`, `want`, etc.) stay.
+
+### Verification
+
+- `tsc --noEmit` → exit 0
+- `biome check` → 324 files, no errors (after fixing a noArrayIndexKey + a useSemanticElements lint that landed with the new components)
+- `vitest run` → **108 files, 877 tests passing** (up from 863)
+- `vite build` → 9.57 s
+- `check:bundle-size` → all chunks within ceiling
+
 ## Session 76 — Parked-item sweep: 6 polish items + 1 reconciliation pass
 
 Knocking through items from the "parked with a documented reason" list. Six focused changes plus a backlog audit. Schema is unchanged (every feature lands as additive metadata or pure UI / rendering).
