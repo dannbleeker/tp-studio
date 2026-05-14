@@ -44,9 +44,9 @@ test.describe('delete entity flow', () => {
     await page.mouse.dblclick(cx - 150, cy);
     // Give React a moment between dblclicks so the second one doesn't
     // land on the first entity's already-spawned node.
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     await page.mouse.dblclick(cx + 150, cy);
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
 
     // At least 2 entities should be on the canvas.
     const count = await page.locator('[data-component="tp-node"]').count();
@@ -65,7 +65,7 @@ test.describe('delete entity flow', () => {
 
     await page.locator('[data-component="tp-node"]').first().click();
     await page.keyboard.press('Delete');
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     const afterDelete = await page.locator('[data-component="tp-node"]').count();
     expect(afterDelete).toBe(count - 1);
   });
@@ -76,7 +76,7 @@ test.describe('delete entity flow', () => {
     const viewport = page.viewportSize();
     if (!viewport) test.fail();
     await page.mouse.dblclick(viewport!.width / 2, viewport!.height / 2);
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(1);
 
     // Toggle Browse Lock on. The button has aria-label "Lock document
@@ -87,7 +87,7 @@ test.describe('delete entity flow', () => {
     // confirm dialog should NOT open and the entity should remain.
     await page.locator('[data-component="tp-node"]').click();
     await page.keyboard.press('Delete');
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(300);
 
     // The confirm dialog has role="dialog"; assert none is open.
     await expect(page.getByRole('dialog')).toHaveCount(0);

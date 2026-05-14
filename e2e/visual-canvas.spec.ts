@@ -26,6 +26,15 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('canvas visual regression', () => {
+  // Visual snapshots require a committed baseline `.png` per platform.
+  // No baselines are pinned for the Linux CI runner yet — first CI run
+  // would record one AND fail the test (Playwright's default behaviour).
+  // Skip on CI until we either:
+  //   - Generate baselines via a dedicated warmup workflow + commit them,
+  //   - Or move to a managed visual-regression service (Percy / Chromatic).
+  // Tests stay runnable locally for the development inner loop.
+  test.skip(!!process.env.CI, 'No CI-platform snapshot baseline committed yet');
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());

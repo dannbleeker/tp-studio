@@ -36,9 +36,12 @@ test.describe('TP Studio smoke', () => {
     // Ctrl+K works as a substitute for Cmd+K on non-Mac CI runners; the
     // app binding listens to either modifier.
     await page.keyboard.press('Control+K');
-    await expect(page.getByPlaceholder(/search/i)).toBeVisible();
+    // Placeholder is "Type a command…" — match by partial regex so a
+    // future copy tweak doesn't silently break the selector. (Previous
+    // version of the test looked for /search/i which never matched.)
+    await expect(page.getByPlaceholder(/command/i)).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(page.getByPlaceholder(/search/i)).not.toBeVisible();
+    await expect(page.getByPlaceholder(/command/i)).not.toBeVisible();
   });
 
   test('canvas double-click creates a new entity (preserves across reload)', async ({ page }) => {

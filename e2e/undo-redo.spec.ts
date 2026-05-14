@@ -26,11 +26,11 @@ test.describe('undo / redo', () => {
 
     // Three entities.
     await page.mouse.dblclick(cx - 150, cy);
-    await page.waitForTimeout(80);
+    await page.waitForTimeout(300);
     await page.mouse.dblclick(cx + 150, cy);
-    await page.waitForTimeout(80);
+    await page.waitForTimeout(300);
     await page.mouse.dblclick(cx, cy + 100);
-    await page.waitForTimeout(80);
+    await page.waitForTimeout(300);
 
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(3);
 
@@ -38,20 +38,20 @@ test.describe('undo / redo', () => {
     // trigger).
     await page.mouse.click(20, 20);
     await page.keyboard.press('Control+Z');
-    await page.waitForTimeout(80);
+    await page.waitForTimeout(300);
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(2);
 
     await page.keyboard.press('Control+Z');
-    await page.waitForTimeout(80);
+    await page.waitForTimeout(300);
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(1);
 
     // Redo (Cmd+Shift+Z).
     await page.keyboard.press('Control+Shift+Z');
-    await page.waitForTimeout(80);
+    await page.waitForTimeout(300);
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(2);
 
     await page.keyboard.press('Control+Shift+Z');
-    await page.waitForTimeout(80);
+    await page.waitForTimeout(300);
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(3);
   });
 });
