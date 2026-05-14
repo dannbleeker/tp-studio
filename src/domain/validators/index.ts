@@ -127,8 +127,25 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
  * registered tier onto every warning before returning. WarningsList
  * (Block C / E5) reads `w.tier` to group rendered warnings.
  */
-export const validate = (doc: TPDocument): Warning[] =>
-  RULES_BY_DIAGRAM[doc.diagramType].flatMap((r) => r.fn(doc).map((w) => ({ ...w, tier: r.tier })));
+// Session 85 (#8) — per-doc-reference memo. `validate(doc)` runs every
+// registered CLR rule's `fn(doc)` flatmap; with 20+ rules registered
+// per diagram type, that's a real cost on each call. WeakMap keyed by
+// doc reference means a cache hit ≡ "doc unchanged since last validate
+// call" — same semantics as the existing call-site `useFingerprintMemo`
+// gates, but transparent to every caller. The remaining
+// `useFingerprintMemo` wrappers stay (they save the React render-cycle
+// cost of producing a fresh array reference); this layer saves the
+// downstream re-computation.
+const validateCache = new WeakMap<TPDocument, Warning[]>();
+export const validate = (doc: TPDocument): Warning[] => {
+  const cached = validateCache.get(doc);
+  if (cached) return cached;
+  const result = RULES_BY_DIAGRAM[doc.diagramType].flatMap((r) =>
+    r.fn(doc).map((w) => ({ ...w, tier: r.tier }))
+  );
+  validateCache.set(doc, result);
+  return result;
+};
 
 /**
  * `validate()` grouped by tier. Tiers with no warnings keep an empty
