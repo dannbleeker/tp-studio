@@ -108,6 +108,7 @@ export const pasteClipboard = (): PasteResult => {
 export const __clearClipboardForTest = (): void => {
   buffer = null;
 };
-
-/** Test seam — peek at the current buffer without mutating it. */
-export const __getClipboardForTest = (): ClipboardPayload | null => buffer;
+// Session 86 (#5) — dropped the dead `__getClipboardForTest` peek helper.
+// No test ever called it (the live clipboard tests assert via the public
+// `pasteAtOffset` / `cut` round-trip instead). Reintroduce as a typed seam
+// if a future test truly needs to inspect the buffer without consuming it.

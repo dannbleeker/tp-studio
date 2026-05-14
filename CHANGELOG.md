@@ -2,6 +2,23 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 86 — Focused 1-hour code-optimization pass
+
+Time-boxed cleanup pass against the menu in `NEXT_STEPS.md`. Three items picked (#3, #5, #6); two shipped real changes, one was an audit-only "verified, no action needed".
+
+**#6 — `as any` / `as unknown as` cast sweep.** `src/domain/entityTypeMeta.ts:424` carried a stale `type: typeId as unknown as EntityType` cast in the unknown-type graceful-degradation branch of `resolveEntityTypeMeta`. Session 85 (Batch D) widened `EntityTypeMeta.type` from `EntityType` to `EntityType | string` precisely to eliminate casts like this one — but the unknown branch wasn't refactored at the time. Dropped the cast; the literal `typeId: string` now flows through directly. Searched the rest of `src/` for `as any` / `as unknown as` — every remaining match is in a comment explaining a previously-removed cast, not a live escape.
+
+**#5 — Drop unused exports.** Grep-based audit across `src/services/` and `src/domain/` (Group Policy blocks `npx ts-prune`; the manual `grep ^export` + cross-reference route was faster than installing a tool for one pass anyway). Two real dead exports removed:
+
+- `effectiveBuiltinType` in `src/domain/entityTypeMeta.ts` — added speculatively "for validators / exporters", but `isOfBuiltin` (the predicate form immediately below it) is what actually got wired up everywhere. Zero callers across `src/` and `tests/`. The predicate stays; the redundant value-returning variant is gone.
+- `__getClipboardForTest` in `src/services/clipboard.ts` — paired with `__clearClipboardForTest` as a test seam, but no test ever called it. The clipboard tests exercise the public `pasteAtOffset` / `cut` round-trip instead. Companion `__clearClipboardForTest` stays — it has live callers.
+
+The Batch F (`requireEntity` / `requireEdge` / `getEdge`) and Batch H (`isSufficiencyEdge` / `isNecessityEdge`) helpers also show as currently-uncalled, but they landed today as intentional scaffolding for future migrations of `Object.values(...).find(...)` and `if (!entity) return;` patterns. Audit notes them as "watch list" — if they're still uncalled a month from now, that's a real signal; today they're freshly-laid track.
+
+**#3 — Hot-path `useMemo` / `useShallow` audit on canvas hooks.** Reviewed `useGraphView` and its three composed hooks (`useGraphProjection`, `useGraphPositions`, `useGraphEmission`) plus `useGraphNodeEmission` / `useGraphEdgeEmission` for selectors returning new references per render (which would defeat the memo). Every `useDocumentStore` selector in the pipeline reads either a primitive scalar (`hoistedGroupId`, `layoutMode`, `compareRevisionId`) or a stable doc/array slice — no inline `() => ({ ...s.foo })` factory selectors that would churn. `useCompareDiff` memos on `[compareRevisionId, revisions, liveDoc]` (all stable identities). The Session 81 + Session 85 work on this pipeline holds up: no rewrites needed. Documented here so a future audit can skip re-walking the same ground.
+
+End state: tsc clean, Biome clean, 1000 tests passing, build green (flow chunk 102.86 KB gz, identical to the post-Session-81 baseline).
+
 ## Session 85 — 20 under-the-hood improvements (10 batches, 8 shipped + 12 items evaluated-and-skipped)
 
 A two-phase under-the-hood pass. Planned as a list of 20 maintainability / perf / test-coverage items, organized into 10 batches (A-J). Of the 20, **8 batches shipped real changes** and **2 batches were evaluated and consciously skipped** (the planned items turned out to be either already done or net-negative once benchmarked). Honest pruning is part of the story — half a dozen items inside the shipped batches got the same treatment.

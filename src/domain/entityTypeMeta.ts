@@ -420,8 +420,13 @@ export const resolveEntityTypeMeta = (
     };
   }
   // 3. Unknown — graceful degradation.
+  // Session 86 (#6) — no cast needed: `EntityTypeMeta.type` was widened to
+  // `EntityType | string` in Session 85, so an unknown `typeId` flows through
+  // directly. Previously this line carried `as unknown as EntityType`, a stale
+  // type-system escape kept for backwards compatibility with the narrower
+  // pre-S85 shape.
   return {
-    type: typeId as unknown as EntityType,
+    type: typeId,
     label: typeId,
     stripeColor: DEFAULT_CUSTOM_STRIPE,
     icon: HelpCircle,
@@ -448,25 +453,6 @@ export const paletteForDoc = (doc: TPDocument): string[] => {
     ? Object.keys(doc.customEntityClasses).sort((a, b) => a.localeCompare(b))
     : [];
   return [...builtins, ...custom];
-};
-
-/**
- * For validators / exporters that need to know "what built-in does
- * this custom class behave as?" — returns the `supersetOf` field, or
- * the type itself when it's already a built-in.
- *
- * Used by validators to decide whether a CLR rule applies (e.g. the
- * "effect" rules apply to a custom class with `supersetOf: 'effect'`),
- * and by foreign-format exporters (Mermaid / DOT / Flying Logic) to
- * substitute a known type when emitting `class` declarations.
- */
-export const effectiveBuiltinType = (
-  typeId: string,
-  customClasses?: Record<string, CustomEntityClass>
-): EntityType | undefined => {
-  if (typeId in ENTITY_TYPE_META) return typeId as EntityType;
-  const custom = customClasses?.[typeId];
-  return custom?.supersetOf;
 };
 
 /**
