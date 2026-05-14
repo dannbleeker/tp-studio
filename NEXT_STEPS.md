@@ -235,6 +235,11 @@ These come straight from the brief's "Out of scope — do not build" list:
 
 When and if any of these enters scope, the domain layer should be able to absorb most of the additional concepts without breaking. The data model is wide enough.
 
+## Placeholders (need fleshing out before they can be picked up)
+
+- **Look at UI.** Open-ended UX review pass. Trigger when someone has fresh eyes on the app — walk every primary surface (canvas, inspector, top-bar, command palette, settings, print dialog, templates picker, creation wizard) and capture concrete UX nits in a follow-up backlog entry. No scope until that walkthrough happens.
+- **Validate EC against document.** Add a CLR validation path that compares an Evaporating Cloud's structural shape against a reference description (e.g. the EC verbalisation text the user authored, or an attached source-of-truth doc). Open questions before scoping: what's "the document" — markdown? An external file reference? The EC's own verbalisation? What constitutes a mismatch — missing slot text? Edges that the verbalisation doesn't justify? Needs a 15-minute design conversation before estimating.
+
 ## Focused 1-hour code-optimization pass
 
 A time-boxed cleanup pass — pick whichever items fit a one-hour budget, ship in one commit. Goal is "leave the codebase a little tighter" not "rewrite the world." Concrete candidates, roughly ordered by leverage:
