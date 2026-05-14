@@ -144,11 +144,14 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   // wraps to 5+ lines on a typical EC. Default collapsed, expand per
   // user intent.
   verbalisationStripCollapsed: true,
-  // Session 88 (V2) — outer chrome defaults to expanded so the user
-  // sees the reading instructions / verbalisation strips on first
-  // load. Once the user collapses the combined surface, that choice
-  // sticks across reloads (persisted via prefs).
-  ecChromeCollapsed: false,
+  // Session 89 EC chrome cleanup — default flipped to `true`
+  // (hidden). V2's expanded-by-default rendered three rows of chrome
+  // on first load (label row + reading instructions + collapsed
+  // verbalisation chip), eating ~120 px of vertical canvas. The
+  // cleanest first-load experience hides the meta-instruction strips
+  // entirely; users opt in via the palette command "Show EC reading
+  // guide" when they want them.
+  ecChromeCollapsed: true,
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (

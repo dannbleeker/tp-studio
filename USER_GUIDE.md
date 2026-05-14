@@ -412,13 +412,13 @@ EC documents have a dedicated three-tab inspector and a top-of-canvas **verbalis
 - **Drag any box to reposition it.** Positions persist to local storage and survive reload. Auto-layout is disabled for EC; the geometry IS the diagnostic.
 - The palette also surfaces Assumption (violet) for edge side-attachments. CLR rules apply structurally (clarity, entity-existence, causality-existence, tautology); EC-specific rules ("are the two wants genuinely in conflict?") are parked for now.
 
-### EC canvas chrome (Session 87)
+### EC canvas chrome (Session 87, refined Session 89)
 
-EC documents carry three workshop-oriented artifacts above the canvas, each surfacing something the BESTSELLER workshop PPT keeps prominently visible:
+EC documents carry three workshop-oriented artifacts above the canvas, each surfacing something the BESTSELLER workshop PPT keeps prominently visible. **The reading guide is hidden by default since Session 89** — toggle it on via the palette command **Toggle EC reading guide** when you want workshop-style prompts visible above the canvas:
 
-- **Reading-instruction strip** — pinned across the top. A compact "Read every arrow: 1) In order to… 2) we must… 3) because…" reminder of the canonical 3-step reading pattern. Click the × to dismiss for the rest of the session. Not persisted — fresh load brings it back.
-- **Verbalisation strip** — sits directly below the reading instructions. Reads the active cloud aloud in canonical prose, with click-through chips for each arrow's assumption count.
-- **Injections (N) chip** — top-right corner. Live count of injection entities on the doc; click to jump the inspector to its **Injections** tab. Visible even when N = 0 so the affordance is discoverable; brightens (emerald) when injections exist.
+- **Reading-instruction strip** — when shown, pinned across the top. A compact "Read every arrow: 1) In order to… 2) we must… 3) because…" reminder of the canonical 3-step reading pattern. Click the × to dismiss for the rest of the session.
+- **Verbalisation strip** — when shown, sits directly below the reading instructions. Reads the active cloud aloud in canonical prose, with click-through chips for each arrow's assumption count.
+- **Injections (N) chip** — top-right corner, just below the toolbar (Session 89 moved it down to clear the toolbar buttons). Live count of injection entities on the doc; click to jump the inspector to its **Injections** tab. Visible even when N = 0 so the affordance is discoverable; brightens (emerald) when injections exist.
 
 ### Per-slot guiding questions (Session 87)
 
@@ -508,6 +508,8 @@ A **Freeform Diagram** is the non-TOC mode: no built-in type pattern matching, n
 ## Saving, exporting, and sharing
 
 **Autosave.** Every change is queued for write to your browser's local storage 200 ms after typing stops. `Cmd/Ctrl+S` forces an immediate flush and shows a confirmation toast. Closing the tab also forces a flush.
+
+**Stale example titles.** Documents loaded before Session 87 (which dropped the `(example)` suffix from example titles) keep their original title in your localStorage — the title is part of the saved document, not derived from the example template. If you reopen an old auto-saved example you'll still see e.g. `"Customer-satisfaction Current Reality Tree (example)"`. Either edit the title manually or re-load the example via the command palette to get the fresh title.
 
 **Auto-recovery.** Alongside the debounced "committed" save, a *live draft* is written synchronously on every keystroke under a separate storage key. If the browser is killed or your machine crashes before the debounce flushes, reopening the tab brings back whatever you'd typed up to the last keystroke — not just the last debounced save. A third *backup* slot holds the previous-save snapshot, so if the main slot is ever corrupted (mid-write crash, external tampering), you fall back to the prior good save instead of starting over. The recovery is silent on the happy path; if a backup or live-draft fallback fires, you'll see an info toast telling you the previous session ended unexpectedly.
 

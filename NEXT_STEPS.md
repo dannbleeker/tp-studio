@@ -239,17 +239,9 @@ When and if any of these enters scope, the domain layer should be able to absorb
 - ~~**Look at UI.**~~ ✅ **Walkthroughs done (Session 87).** Static review of all 8 primary surfaces produced 40 triaged findings — see [docs/ui-review-session-87.md](docs/ui-review-session-87.md). Visual walkthrough via Claude Preview against the live app produced one bug fix + 10 additional visual-only nits — see [docs/ui-review-session-87-visual.md](docs/ui-review-session-87-visual.md). Top-priority follow-ups are backlog items below.
 - ~~**Make the tool installable.**~~ ✅ **Done (Session 89).** TP Studio is now a PWA served at <https://tp-studio.struktureretsundfornuft.dk/> with offline support, an explicit-refresh update toast, and a palette-driven Install command. Auto-deploys to GitHub Pages on every push to `main`. Scoping doc: [docs/distribution-pwa-scoping.md](docs/distribution-pwa-scoping.md); changelog entry: Session 89.
 
-## EC canvas chrome cleanup (Session 89 visual review)
+## ~~EC canvas chrome cleanup (Session 89 visual review)~~ ✅ Done (Session 89)
 
-Visible issues with the combined EC chrome wrapper introduced in Session 88's V2. Dann screenshotted three vertically-stacked rows of chrome where the spec called for one collapsible surface, plus a top-right injection chip overlapping the TopBar buttons. Fix as one bundled commit; reuses the existing `ecChromeCollapsed` infrastructure — this is a visual cleanup pass, not a re-design.
-
-- **`"EC CHROME"` outer label** — V2's wrapper renders a literal `EC CHROME` uppercase text row above the reading-instructions strip. The label isn't useful (the strip below it is self-labelled "READ EVERY ARROW", and the collapsed verbalisation chip below that says "EC reading · …"). **Recommendation:** drop the outer label row entirely; move the collapse chevron to the right edge of the existing READ EVERY ARROW strip so one chevron controls both inner strips together.
-- **Injection-chip vs. TopBar collision** — At sm+ the "Injections (N)" chip sits at `top-2 right-4`, overlapping the lock / history / help / theme icons. Move the injection chip down (`top-12 right-4`) so it sits just below the TopBar, OR fold the injection count into the combined EC chrome row so all EC meta-controls live in one place.
-- **Three rows of chrome instead of one** — Original V2 intent was *one* collapsible surface, default-collapsed, summarizing both reading instructions and verbalisation. As shipped, the surface is *expanded* by default AND adds an outer label, so the EC canvas now starts with three rows of chrome eating ~120 px of vertical space. Flip the `ecChromeCollapsed` default to `true` so first-load is one summary line.
-- **TitleBadge truncates long titles without ellipsis** — pre-existing; visible because the new EC chrome layout doesn't give the title much horizontal room. Add `text-ellipsis overflow-hidden whitespace-nowrap` to the title input or bump the `max-w` cap.
-- **Stale-localStorage example titles still show "(example)" suffix** — Session 87 (V1) dropped the suffix from new example loads, but docs already saved in localStorage retain the old title. Not a bug per se; document the behaviour in USER_GUIDE so users who see stale titles know to expect them on docs created before Session 87.
-
-Effort: S–M. One commit; existing V2 / `ecChromeCollapsed` infrastructure stays.
+Shipped. The V2 wrapper's "EC CHROME" label row is gone; `ecChromeCollapsed` default flipped to `true` (hidden by default) so the EC canvas starts clean; users opt into the reading guide via the palette command **Toggle EC reading guide**. Injection chip moved below the TopBar at all viewport sizes. TitleBadge gained `text-ellipsis` for long titles. USER_GUIDE documents the stale-localStorage example-title behaviour.
 
 ## ~~🔴 HOTFIX — example EC loader missing v7 schema fields~~ ✅ Done (commit `35466ad`)
 

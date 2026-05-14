@@ -103,10 +103,12 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // (including `undefined` on a first-run install) keeps the
     // collapsed default.
     verbalisationStripCollapsed: raw?.verbalisationStripCollapsed !== false,
-    // Session 88 (V2) — combined EC chrome collapse state. Default
-    // expanded so first-run users see the reading instructions +
-    // verbalisation strips; user's manual collapse choice persists.
-    ecChromeCollapsed: raw?.ecChromeCollapsed === true,
+    // Session 89 EC chrome cleanup — default flipped to `true`
+    // (hidden). Same `!== false` semantics as the other "hidden by
+    // default" flags: any non-`false` value (including `undefined` on
+    // first-run) keeps the chrome hidden. Users opt in via the palette
+    // command "Show EC reading guide."
+    ecChromeCollapsed: raw?.ecChromeCollapsed !== false,
   };
 };
 

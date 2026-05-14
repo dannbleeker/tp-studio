@@ -12,7 +12,6 @@ import {
   ReactFlow,
   ReactFlowProvider,
 } from '@xyflow/react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
@@ -92,11 +91,16 @@ function CanvasInner() {
   const isEmpty = nodes.length === 0;
   const locked = useDocumentStore((s) => s.browseLocked);
   const showMinimap = useDocumentStore((s) => s.showMinimap);
-  // Session 88 (V2) — combined EC chrome wrapper. One chevron at
-  // the top swaps the surface between expanded (both strips render
-  // normally) and collapsed (a single summary line).
+  // Session 88 (V2) — combined EC chrome wrapper. Session 89 visual
+  // review found V2 had added a literal "EC CHROME" label row above
+  // the two inner strips, *increasing* vertical chrome rather than
+  // reducing it. Cleanup: the outer label row is gone; the chrome flag
+  // simply gates whether ECReadingInstructions + VerbalisationStrip
+  // render at all on EC docs. Re-show via the palette command "Show
+  // EC reading guide" (or the inverse "Hide EC reading guide" when
+  // currently shown). Default is `true` (hidden) so first-load is the
+  // cleanest possible canvas.
   const ecChromeCollapsed = useDocumentStore((s) => s.ecChromeCollapsed);
-  const setECChromeCollapsed = useDocumentStore((s) => s.setECChromeCollapsed);
 
   return (
     <div
@@ -301,56 +305,29 @@ function CanvasInner() {
             conditional in this JSX is purely for the wrapper class. */}
         {doc.diagramType === 'ec' && (
           <>
-            {/* Session 87 (V10) — drop the EC canvas chrome BELOW the
-                TopBar at xs (< 640 px). Pre-fix, the reading-
-                instructions strip and the injection chip both sat at
-                top-2 (y≈8 px) while the TopBar buttons sit at top-4
-                with ~28-px height (y≈16-44), producing a visible
-                overlap that obscured the kebab / Commands buttons at
-                the new xs (480 px) breakpoint. At sm+ the canvas is
-                wide enough that the strip's `max-w-3xl` keeps it
-                clear of the top-right toolbar. */}
-            <div className="pointer-events-none absolute top-14 right-0 left-0 z-10 flex flex-col items-stretch gap-1 px-4 sm:top-2">
-              {/* Session 88 (V2) — combined EC chrome wrapper. One
-                  chevron at the top toggles the entire surface; in
-                  collapsed mode the user sees a single summary line
-                  rather than two stacked strips. Per-strip dismiss /
-                  collapse controls still work when expanded. */}
-              <div className="pointer-events-auto mx-auto flex w-full max-w-3xl items-center justify-between gap-2 rounded-md border border-neutral-200 bg-white/90 px-3 py-1 text-[10px] text-neutral-500 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90 dark:text-neutral-400">
-                <span className="select-none font-semibold uppercase tracking-wider">
-                  EC chrome
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setECChromeCollapsed(!ecChromeCollapsed)}
-                  aria-label={
-                    ecChromeCollapsed
-                      ? 'Expand EC reading instructions and verbalisation'
-                      : 'Collapse EC reading instructions and verbalisation'
-                  }
-                  aria-expanded={!ecChromeCollapsed}
-                  className="rounded p-0.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-                  title={ecChromeCollapsed ? 'Expand' : 'Collapse'}
-                >
-                  {ecChromeCollapsed ? (
-                    <ChevronDown className="h-3 w-3" />
-                  ) : (
-                    <ChevronUp className="h-3 w-3" />
-                  )}
-                </button>
+            {/* Session 89 EC chrome cleanup — the outer V2 wrapper +
+                "EC CHROME" label row is gone. When the reading guide
+                is shown, the two inner strips render directly (each
+                with its own dismiss / collapse). When hidden (default),
+                the canvas reclaims all vertical chrome — re-show via
+                the palette command. Positioning rationale below kept
+                from Session 87 (V10): at xs (< 640 px) the strip drops
+                below the TopBar; at sm+ it sits in the top band. */}
+            {!ecChromeCollapsed && (
+              <div className="pointer-events-none absolute top-14 right-0 left-0 z-10 flex flex-col items-stretch gap-1 px-4 sm:top-2">
+                <div className="pointer-events-auto">
+                  <ECReadingInstructions />
+                </div>
+                <div className="pointer-events-auto w-full">
+                  <VerbalisationStrip />
+                </div>
               </div>
-              {!ecChromeCollapsed && (
-                <>
-                  <div className="pointer-events-auto">
-                    <ECReadingInstructions />
-                  </div>
-                  <div className="pointer-events-auto w-full">
-                    <VerbalisationStrip />
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="pointer-events-none absolute top-14 right-4 z-10 flex justify-end sm:top-2">
+            )}
+            {/* Session 89 cleanup — injection chip now anchored BELOW
+                the TopBar at all viewport sizes (was sharing the
+                top-right band with the TopBar buttons at sm+, which
+                obscured the chip behind lock / history / help). */}
+            <div className="pointer-events-none absolute top-14 right-4 z-10 flex justify-end">
               <ECInjectionChip />
             </div>
           </>

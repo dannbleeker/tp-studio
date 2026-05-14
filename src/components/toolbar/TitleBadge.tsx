@@ -35,7 +35,13 @@ export function TitleBadge() {
         // Padding tightens on the smallest viewports so a long title still
         // fits the available space without pushing the Info button out of
         // the page.
-        className="pointer-events-auto min-w-0 max-w-[60ch] flex-shrink rounded-md bg-transparent px-1.5 py-1 font-medium text-neutral-900 text-sm outline-none transition focus:bg-white focus:shadow-sm disabled:opacity-60 sm:px-2 dark:text-neutral-100 dark:focus:bg-neutral-900"
+        // Session 89 EC chrome cleanup — added `text-ellipsis
+        // overflow-hidden` so an over-cap title shows a "…" tail
+        // instead of being silently clipped. Without ellipsis a long
+        // title looked truncated-with-no-signal at the start (the
+        // input scrolls horizontally on focus); with `truncate`-style
+        // overflow the end of the field reads as "this continues."
+        className="pointer-events-auto min-w-0 max-w-[60ch] flex-shrink overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-transparent px-1.5 py-1 font-medium text-neutral-900 text-sm outline-none transition focus:bg-white focus:shadow-sm disabled:opacity-60 sm:px-2 dark:text-neutral-100 dark:focus:bg-neutral-900"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         size={Math.max(Math.min(title.length, 50), 6)}

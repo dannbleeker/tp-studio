@@ -182,4 +182,26 @@ export const documentCommands: Command[] = [
       }
     },
   },
+  {
+    // Session 89 EC chrome cleanup — palette toggle for the EC reading
+    // guide (the combined ECReadingInstructions + VerbalisationStrip
+    // pair). Defaults to hidden on fresh installs so the EC canvas is
+    // visually clean; this command opts the user back in. Label flips
+    // based on current state so the action verb is always accurate.
+    id: 'toggle-ec-reading-guide',
+    label: 'Toggle EC reading guide',
+    group: 'View',
+    run: (s) => {
+      if (s.doc.diagramType !== 'ec') {
+        s.showToast(
+          'info',
+          'The EC reading guide is only available on Evaporating Cloud diagrams.'
+        );
+        return;
+      }
+      const next = !s.ecChromeCollapsed;
+      s.setECChromeCollapsed(next);
+      s.showToast('info', next ? 'EC reading guide hidden.' : 'EC reading guide shown.');
+    },
+  },
 ];
