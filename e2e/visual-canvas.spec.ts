@@ -63,15 +63,25 @@ test.describe('canvas visual regression', () => {
     if (!viewport) test.fail();
     const cx = viewport!.width / 2;
     const cy = viewport!.height / 2;
-    await page.mouse.dblclick(cx - 150, cy);
-    await page.waitForTimeout(80);
-    await page.mouse.dblclick(cx + 150, cy);
-    await page.waitForTimeout(80);
-    await page.mouse.dblclick(cx, cy + 100);
-    // Allow dagre to finish laying out.
-    await page.waitForTimeout(200);
+    const nodes = page.locator('[data-component="tp-node"]');
 
-    await expect(page.locator('[data-component="tp-node"]')).toHaveCount(3);
+    // Each dblclick is followed by a `toHaveCount` poll for the
+    // expected node count, NOT a fixed sleep. Earlier versions used
+    // 80-ms `waitForTimeout` waits which flaked on the slower CI
+    // runner — the 3rd dblclick sometimes landed before React Flow
+    // had reflowed and didn't register, leaving only 2 nodes when
+    // the snapshot compared. Polling is self-pacing and the
+    // baselines we regenerated continue to apply (visual output is
+    // identical once all 3 nodes are committed).
+    await page.mouse.dblclick(cx - 150, cy);
+    await expect(nodes).toHaveCount(1);
+    await page.mouse.dblclick(cx + 150, cy);
+    await expect(nodes).toHaveCount(2);
+    await page.mouse.dblclick(cx, cy + 100);
+    await expect(nodes).toHaveCount(3);
+    // Settle dagre + commit any pending position writes before the
+    // screenshot is taken.
+    await page.waitForTimeout(200);
     await expect(page).toHaveScreenshot('canvas-three-entities.png', {
       maxDiffPixelRatio: 0.02,
       mask: [page.locator('[data-component="toaster"]')],
