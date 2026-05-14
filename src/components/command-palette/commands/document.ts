@@ -37,6 +37,19 @@ export const documentCommands: Command[] = [
     run: (s) => s.openDiagramPicker('new'),
   }),
   withWriteGuard({
+    // FL-EX8 — open the diagram-type picker in **tab** mode: instead
+    // of replacing the current doc, the picker spins up a new tab
+    // alongside the existing one. The picker dispatches through
+    // `openNewTab(type)` rather than `newDocument(type)`. Visible in
+    // the palette so the multi-tab feature is discoverable; the
+    // diagram-type picker dialog reads `diagramPickerOpen` to know
+    // which dispatcher to call.
+    id: 'new-tab',
+    label: 'New tab…',
+    group: 'File',
+    run: (s) => s.openDiagramPicker('tab'),
+  }),
+  withWriteGuard({
     id: 'load-example',
     label: 'Load example…',
     group: 'File',

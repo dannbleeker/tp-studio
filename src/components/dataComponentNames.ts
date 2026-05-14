@@ -30,6 +30,10 @@ export const DataComponent = {
    *  compare). Tests target this to verify the strip renders nothing
    *  when no secondary state is active. */
   StatusStrip: 'status-strip',
+  /** FL-EX8 — multi-doc tab bar. Hidden when only one tab exists so
+   *  single-doc users see the UI exactly as before. Tests target
+   *  this to assert presence / absence of the bar by tab count. */
+  TabBar: 'tab-bar',
 } as const;
 
 export type DataComponentName = (typeof DataComponent)[keyof typeof DataComponent];

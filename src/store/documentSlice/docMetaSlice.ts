@@ -125,6 +125,33 @@ export const docMetaDefaults = (): Pick<DocMetaSlice, 'doc'> => ({
   doc: createDocument('crt'),
 });
 
+/**
+ * FL-EX8 — sync the active workspace tab's `id` + `title` with the new
+ * doc. Called by `setDocument` / `newDocument` so the tab bar reflects
+ * loaded / imported / freshly-created docs without a separate
+ * caller-side update. A no-op when the workspace hasn't been
+ * initialized yet (no tabs).
+ */
+const syncActiveTabToDoc = (
+  get: () => RootStore,
+  set: (s: Partial<RootStore>) => void,
+  newDoc: TPDocument
+): void => {
+  const ws = get().workspace;
+  if (!ws || ws.tabs.length === 0) return;
+  const activeIdx = ws.tabs.findIndex((t) => t.id === ws.activeTabId);
+  if (activeIdx === -1) return;
+  const nextTabs = ws.tabs.slice();
+  nextTabs[activeIdx] = { id: newDoc.id, title: newDoc.title };
+  set({
+    workspace: {
+      ...ws,
+      tabs: nextTabs,
+      activeTabId: newDoc.id,
+    },
+  });
+};
+
 export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> = (set, get) => {
   const applyDocChange = makeApplyDocChange(get, set);
 
@@ -150,6 +177,8 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
         future: [],
       });
+      // FL-EX8 — keep the active tab in sync with the swapped doc.
+      syncActiveTabToDoc(get, set, doc);
       // Refresh the revisions panel view: it's keyed by the active doc id,
       // and that just changed.
       get().reloadRevisionsForActiveDoc();
@@ -177,6 +206,8 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
         future: [],
       });
+      // FL-EX8 — keep the active tab in sync with the new doc.
+      syncActiveTabToDoc(get, set, doc);
       get().reloadRevisionsForActiveDoc();
       // Session 78: open the creation wizard panel when the diagram
       // type has one AND the user hasn't turned it off. Goal Tree +
@@ -194,6 +225,9 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
 
     setTitle: (title) => {
       applyDocChange((prev) => touch({ ...prev, title }), { coalesceKey: 'doc-title' });
+      // FL-EX8 — push the new title into the active tab's cached
+      // title so the tab bar reflects rename-in-place.
+      get().syncActiveTabTitle();
     },
 
     setDocumentMeta: (patch) => {

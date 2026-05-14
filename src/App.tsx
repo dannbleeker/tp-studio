@@ -9,6 +9,7 @@ import { TitleBadge } from './components/toolbar/TitleBadge';
 import { TopBar } from './components/toolbar/TopBar';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { TabBar } from './components/workspace/TabBar';
 import { useGlobalKeyboard } from './hooks/useGlobalKeyboard';
 import { useThemeClass } from './hooks/useThemeClass';
 import { clearShareHash, parseShareHash } from './services/shareLink';
@@ -191,6 +192,7 @@ export function App() {
     <main className="relative h-screen w-screen overflow-hidden">
       <PrintHeader />
       <TitleBadge />
+      <TabBar />
       <TopBar />
       <Canvas />
       <CompareBanner />

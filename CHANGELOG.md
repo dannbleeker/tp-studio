@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## FL-EX8 (preview branch) — Multi-document workspace v0
+
+> **Branch:** `feature/multi-doc-workspace` — NOT yet on `main`. The feature ships behind no flag; it just appears when the user opens a second tab via the **New tab…** palette command. If the v0 UX doesn't feel right, the branch reverts cleanly.
+
+The 64-row-palette-killing pickers shipped in Session 90 left exactly one large feature on the backlog: the multi-document workspace. This branch is the first cut. **1103 tests passing** (was 1089; +14 across slice unit tests + tab bar rendering tests).
+
+**Design choice: keep `state.doc` as the active doc.** Refactoring every `state.doc.*` reader to `state.docs[state.activeDocId].*` would be a hundreds-of-call-sites change with high regression risk. Instead the **active tab's doc still lives in `state.doc`** — every existing reader works unchanged. Inactive tabs' docs are archived in a new `workspace.inactiveDocs` map, swapped in / out on `switchTab`. Per-tab undo stacks travel the same way through `workspace.inactiveHistory` so Ctrl+Z stays per-tab.
+
+**New slice — `src/store/workspaceSlice.ts`.** Holds `tabs: { id, title }[]`, `activeTabId`, `inactiveDocs`, `inactiveHistory`. Actions: `openNewTab(diagramType)` (creates a fresh doc, archives the current one, switches), `switchTab(id)` (save-current → load-target dance), `closeTab(id)` (drops the archive; if active, picks the tab to the right as the fallback active; floored at one tab — we never let the user close their last doc), `syncActiveTabTitle()` (called by `setTitle` so the tab chip retitles live as the user types).
+
+**Doc-meta bridge.** `docMetaSlice` now calls a `syncActiveTabToDoc` helper after `setDocument` / `newDocument` so the active tab's `id` + `title` track the loaded doc. `setTitle` calls `syncActiveTabTitle`. All other doc-mutating paths flow through `applyDocChange`, which doesn't change `doc.id` / `doc.title` — so no other call-site needs updating.
+
+**New component — `<TabBar>` at `src/components/workspace/TabBar.tsx`.** Renders a chip per tab at `top-12 left-4` (just below the TitleBadge), with click-to-switch + an X-button per chip. **Hidden when `tabs.length === 1`** — single-doc users see zero change in the chrome. The TitleBadge always shows the active tab's title; the tab bar is purely a switcher.
+
+**Palette command — `New tab…`** (`File` group). Opens the existing diagram-type picker in a new `'tab'` mode. `DiagramTypePickerDialog` grew the third branch: on card click, dispatches `openNewTab(type)` instead of `newDocument(type)` / `setDocument(example)`. Success toast says "Opened *X* in a new tab" — no Undo because the user can close the new tab via the tab bar's X.
+
+**Persistence: v0 is in-memory only.** Per-tab localStorage persistence is a bigger project (each tab needs its own STORAGE_KEY, the boot flow needs to load N docs, the live-draft / backup scheme needs per-tab indexing). The active tab's doc continues to round-trip through `persistDebounced` exactly as before — so single-tab users have zero behavioral change, and on reload a multi-tab session collapses back to the last-active single doc. Clearly disclosed in the `New tab…` picker's subtitle: "Tabs are session-only in this preview — a refresh returns to the single-doc view."
+
+**Tests.**
+| # | File | Coverage |
+|---|------|----------|
+| 1 | `tests/store/workspaceSlice.test.ts` | Boot single-tab state; `openNewTab` archival; `switchTab` round-trip; `closeTab` active vs. inactive; last-tab close-refusal; `setTitle` tab-sync; `setDocument` tab-retitle; per-tab undo isolation (9 tests). |
+| 2 | `tests/components/TabBar.test.tsx` | Invisible at tab count 1; visible at 2+; click-to-switch; X-to-close; active-doc title reflected in chip (5 tests). |
+
+End state on the branch: tsc clean, Biome clean, 1103 tests passing. The branch is reachable from `git checkout feature/multi-doc-workspace`; merging into main is gated on Dann's evaluation of the v0 UX.
+
 ## Session 91 — Toast dwell-time grading + prominent CTA
 
 Small-ideas bundle. Two related toast pipeline upgrades. **1089 tests passing** (was 1086; +3 around the new duration / prominent-action paths).

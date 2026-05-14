@@ -85,6 +85,7 @@ export function DiagramTypePickerDialog() {
   const close = useDocumentStore((s) => s.closeDiagramPicker);
   const newDocument = useDocumentStore((s) => s.newDocument);
   const setDocument = useDocumentStore((s) => s.setDocument);
+  const openNewTab = useDocumentStore((s) => s.openNewTab);
   const showToast = useDocumentStore((s) => s.showToast);
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -110,30 +111,42 @@ export function DiagramTypePickerDialog() {
     const previousDoc = useDocumentStore.getState().doc;
     if (mode === 'new') {
       newDocument(type);
-    } else {
-      setDocument(EXAMPLE_BY_DIAGRAM[type]());
-    }
-    fitViewAfterLoad();
-    showToast(
-      'success',
-      mode === 'new'
-        ? `New ${DIAGRAM_TYPE_LABEL[type]} created.`
-        : `Loaded example ${DIAGRAM_TYPE_LABEL[type]}.`,
-      {
+      fitViewAfterLoad();
+      showToast('success', `New ${DIAGRAM_TYPE_LABEL[type]} created.`, {
         action: {
           label: 'Undo',
           run: () => setDocument(previousDoc),
         },
-      }
-    );
+      });
+    } else if (mode === 'tab') {
+      // FL-EX8 — open the new diagram in its own workspace tab,
+      // leaving the existing doc behind in its own tab. No Undo
+      // affordance here: the user can close the new tab via the
+      // tab bar's X if they change their mind.
+      openNewTab(type);
+      fitViewAfterLoad();
+      showToast('success', `Opened ${DIAGRAM_TYPE_LABEL[type]} in a new tab.`);
+    } else {
+      setDocument(EXAMPLE_BY_DIAGRAM[type]());
+      fitViewAfterLoad();
+      showToast('success', `Loaded example ${DIAGRAM_TYPE_LABEL[type]}.`, {
+        action: {
+          label: 'Undo',
+          run: () => setDocument(previousDoc),
+        },
+      });
+    }
     close();
   };
 
-  const title = mode === 'new' ? 'New diagram' : 'Load example diagram';
+  const title =
+    mode === 'new' ? 'New diagram' : mode === 'tab' ? 'New tab' : 'Load example diagram';
   const subtitle =
     mode === 'new'
       ? 'Pick a diagram type to start fresh. Existing doc is preserved on Undo from the success toast.'
-      : 'Pick a diagram type and we load a worked example so you can see the shape before building your own.';
+      : mode === 'tab'
+        ? 'Pick a diagram type. The new diagram opens in its own tab; your current doc stays open. Tabs are session-only in this preview — a refresh returns to the single-doc view.'
+        : 'Pick a diagram type and we load a worked example so you can see the shape before building your own.';
 
   return (
     <dialog
@@ -170,7 +183,7 @@ export function DiagramTypePickerDialog() {
                 <button
                   type="button"
                   onClick={() => handlePick(card.type)}
-                  aria-label={`${mode === 'new' ? 'New' : 'Load example'}: ${label}`}
+                  aria-label={`${mode === 'new' ? 'New' : mode === 'tab' ? 'Open in new tab' : 'Load example'}: ${label}`}
                   className={clsx(
                     'group flex w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
                     'hover:border-indigo-400 hover:bg-indigo-50/40 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300',

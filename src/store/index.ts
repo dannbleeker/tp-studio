@@ -6,6 +6,7 @@ import { createHistorySlice, historyDefaults } from './historySlice';
 import { createRevisionsSlice, revisionsDefaults } from './revisionsSlice';
 import type { RootStore } from './types';
 import { createUISlice, uiDefaults } from './uiSlice';
+import { createWorkspaceSlice } from './workspaceSlice';
 
 export type { DocumentStore, RootStore } from './types';
 export type {
@@ -27,7 +28,24 @@ export const useDocumentStore = create<RootStore>()((...a) => ({
   ...createUISlice(...a),
   ...createHistorySlice(...a),
   ...createRevisionsSlice(...a),
+  ...createWorkspaceSlice(...a),
 }));
+
+// FL-EX8 — seed the workspace from whatever boot doc the
+// docMetaSlice loaded from localStorage. We do this after `create()`
+// because the workspace slice's defaults are a placeholder; the real
+// initial workspace mirrors the active doc.
+{
+  const boot = useDocumentStore.getState().doc;
+  useDocumentStore.setState({
+    workspace: {
+      tabs: [{ id: boot.id, title: boot.title }],
+      activeTabId: boot.id,
+      inactiveDocs: {},
+      inactiveHistory: {},
+    },
+  });
+}
 
 // H1 — populate the revisions panel with the boot doc's history. The
 // revisions slice can't do this from its own creator because `get().doc`
@@ -54,10 +72,20 @@ export const resetStoreForTest = (): void => {
   if (typeof globalThis.localStorage !== 'undefined') {
     globalThis.localStorage.clear();
   }
+  const docDefaults = documentDefaults();
   useDocumentStore.setState({
-    ...documentDefaults(),
+    ...docDefaults,
     ...uiDefaults(),
     ...historyDefaults(),
     ...revisionsDefaults(),
+    // FL-EX8 — keep the workspace's first tab in sync with the
+    // fresh test doc's id rather than the standalone `workspaceDefaults()`
+    // (which would create its own doc and end up with a mismatched tab id).
+    workspace: {
+      tabs: [{ id: docDefaults.doc.id, title: docDefaults.doc.title }],
+      activeTabId: docDefaults.doc.id,
+      inactiveDocs: {},
+      inactiveHistory: {},
+    },
   });
 };

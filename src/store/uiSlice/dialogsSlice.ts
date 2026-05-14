@@ -24,11 +24,12 @@ export type DialogsSlice = {
   printOpen: boolean;
   /** Session 79 / brief §12 — templates picker dialog. */
   templatePickerOpen: boolean;
-  /** Session 90 — diagram-type picker. Tri-state: `null` (closed), or
-   *  the mode (`'new'` = create blank, `'example'` = load example).
-   *  Replaces the 14 per-diagram-type palette commands with one
-   *  picker per mode. */
-  diagramPickerOpen: 'new' | 'example' | null;
+  /** Session 90 — diagram-type picker. Multi-state: `null` (closed), or
+   *  the mode (`'new'` = create blank, `'example'` = load example,
+   *  `'tab'` = open in new workspace tab). Replaces the 14
+   *  per-diagram-type palette commands with one picker per mode.
+   *  FL-EX8 added the `'tab'` mode for multi-doc workspace. */
+  diagramPickerOpen: 'new' | 'example' | 'tab' | null;
   /** Session 90 — single Export… picker. Replaces the ~17 individual
    *  export-format palette commands with one dialog grouped by
    *  category (Images / Documents / Data / Text / Share). */
@@ -133,8 +134,9 @@ export type DialogsSlice = {
 
   /** Session 90 — diagram-type picker (replaces the 14 per-diagram
    *  palette commands). Mode determines the action on card click:
-   *  `'new'` → `newDocument(type)`; `'example'` → `setDocument(buildExample(type))`. */
-  openDiagramPicker: (mode: 'new' | 'example') => void;
+   *  `'new'` → `newDocument(type)`; `'example'` → `setDocument(buildExample(type))`;
+   *  `'tab'` → `openNewTab(type)` (FL-EX8 — multi-doc workspace). */
+  openDiagramPicker: (mode: 'new' | 'example' | 'tab') => void;
   closeDiagramPicker: () => void;
 
   /** Session 90 — single Export… picker (replaces ~17 export commands). */
