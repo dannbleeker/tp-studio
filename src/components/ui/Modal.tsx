@@ -42,7 +42,11 @@ export function Modal({
         'fixed inset-0 z-50 flex justify-center bg-neutral-900/30 px-4 backdrop-blur-sm',
         align === 'top' ? 'items-start pt-[15vh]' : 'items-center'
       )}
-      aria-hidden="true"
+      // No `aria-hidden` on the backdrop — propagates to descendants and
+      // hides the `<dialog>` inside it from the accessibility tree (and
+      // from Playwright's `getByRole('dialog')`). `aria-modal="true"` on
+      // the dialog itself is the right way to mark surrounding content
+      // inert for assistive tech.
     >
       <dialog
         ref={dialogRef}
