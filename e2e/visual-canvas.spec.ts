@@ -31,12 +31,13 @@ test.describe('canvas visual regression', () => {
   // To refresh them when an intentional visual change lands (theme,
   // typography, node styling), trigger the manual
   // `Update visual snapshots` workflow — it runs Playwright with
-  // `--update-snapshots`, pushes the new PNGs to the
-  // `chore/update-visual-snapshots` branch, and (once the
-  // "Allow GitHub Actions to create / approve pull requests" toggle is
-  // enabled in repo settings) opens a PR. Until that toggle is on, the
-  // PR step fails but the branch push still succeeds — pull the PNGs
-  // manually and commit them on main.
+  // `--update-snapshots`, pushes the new PNGs to
+  // `chore/update-visual-snapshots`, and opens a PR with the
+  // regenerated baselines. Review the visual diff in the PR before
+  // merging; each changed PNG is a rendering difference you're
+  // accepting as canonical. When the regenerated baselines are
+  // byte-identical to what's on `main`, the action correctly skips PR
+  // creation and deletes the stale branch — no spam.
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
