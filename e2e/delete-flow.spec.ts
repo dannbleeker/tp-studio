@@ -69,12 +69,17 @@ test.describe('delete entity flow', () => {
       { timeout: 5000 }
     );
 
-    // Press Delete. The handler in `useSelectionShortcuts` is attached
-    // to `window` and reads the selection from the store directly, so
-    // no specific focus is needed. We deliberately do NOT click the
-    // canvas first — a click on empty canvas would deselect what we
-    // just selected.
-    await page.keyboard.press('Delete');
+    // Synthesise the Delete keydown directly on `window` instead of
+    // going through `page.keyboard.press('Delete')`. Playwright's
+    // `keyboard.press` routes the event through the currently-focused
+    // element; if anything on the page (e.g. the title textbox)
+    // happened to take focus during boot, the shortcut hook's
+    // `isEditableTarget(e.target)` guard bails out and the dialog
+    // never opens. Dispatching on `window` guarantees `target ===
+    // Window` and the guard passes.
+    await page.evaluate(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
+    });
 
     // ConfirmDialog renders inside a `Modal` (a native `<dialog open>`).
     // The Modal wraps the dialog in an `aria-hidden="true"` backdrop
