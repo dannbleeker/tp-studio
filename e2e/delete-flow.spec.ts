@@ -28,21 +28,18 @@ test.describe('delete entity flow', () => {
   });
 
   test('shows the in-app ConfirmDialog when deleting a connected entity', async ({ page }) => {
-    // Seed two entities + connect them + select the first one, all via
-    // the test hook. Going through `selectEntity` directly is more
-    // reliable than `page.locator(...).click()` — React Flow propagates
-    // selection through its `onSelectionChange` callback to the store
-    // asynchronously, so a `.click()` followed immediately by `Delete`
-    // races and the delete handler can see an empty selection. Setting
-    // the selection on the store before pressing Delete sidesteps that
-    // race.
+    // Seed two entities + an edge between them via the test hook. We
+    // deliberately do NOT call `selectEntity` here — React Flow drives
+    // its own selection state and, on mount with no react-flow-selected
+    // nodes, fires `onSelectionChange({ nodes: [], edges: [] })` which
+    // our Canvas mirrors into the store as `clearSelection()`. That
+    // wipes any programmatic selection set before the canvas finishes
+    // mounting. The robust gesture is to click the rendered node so
+    // React Flow selects it, then wait for the store to reflect that
+    // selection.
     const ids = await page.evaluate(() => {
       const created = window.__TP_TEST__!.seed({ titles: ['cause', 'effect'] });
       const edgeId = window.__TP_TEST__!.connect(created[0]!, created[1]!);
-      const store = window.__TP_TEST__!.store as {
-        getState: () => { selectEntity: (id: string) => void };
-      };
-      store.getState().selectEntity(created[0]!);
       return { created, edgeId };
     });
     expect(ids.created).toHaveLength(2);
@@ -52,31 +49,27 @@ test.describe('delete entity flow', () => {
     expect(ids.edgeId).not.toBeNull();
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(2);
 
-    // Wait for the store to reflect the expected state before pressing
-    // Delete. Self-documents the precondition + gives a clearer signal
-    // when something below is wrong than a downstream visibility check.
+    // Click the first node — React Flow's plain-click path goes through
+    // its own selection model and then mirrors back to the store via
+    // `onSelectionChange` (see Canvas.tsx:138). Wait for that mirror to
+    // land before pressing Delete so the keyboard handler sees a real
+    // selection.
+    await page.locator('[data-component="tp-node"]').first().click();
     await page.waitForFunction(
       () => {
-        // biome-ignore lint/suspicious/noExplicitAny: store shape is internal — we only need a couple of fields here, type-checking it adds noise without value.
+        // biome-ignore lint/suspicious/noExplicitAny: store shape is internal — we only need a couple of fields here.
         const state = window.__TP_TEST__!.store.getState() as any;
-        return (
-          Object.keys(state.doc.entities).length === 2 &&
-          Object.keys(state.doc.edges).length === 1 &&
-          state.selection.kind === 'entities' &&
-          state.selection.ids.length === 1
-        );
+        return state.selection.kind === 'entities' && state.selection.ids.length === 1;
       },
       { timeout: 5000 }
     );
 
     // Synthesise the Delete keydown directly on `window` instead of
-    // going through `page.keyboard.press('Delete')`. Playwright's
-    // `keyboard.press` routes the event through the currently-focused
-    // element; if anything on the page (e.g. the title textbox)
-    // happened to take focus during boot, the shortcut hook's
-    // `isEditableTarget(e.target)` guard bails out and the dialog
-    // never opens. Dispatching on `window` guarantees `target ===
-    // Window` and the guard passes.
+    // going through `page.keyboard.press('Delete')`. The latter routes
+    // through the focused element; if React Flow's click moved focus
+    // to a node element, the shortcut hook's `isEditableTarget` guard
+    // still passes (a `<div>` isn't editable), but dispatching on
+    // `window` keeps the test deterministic regardless of focus.
     await page.evaluate(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
     });
