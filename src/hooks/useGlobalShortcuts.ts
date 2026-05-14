@@ -172,13 +172,54 @@ export function useGlobalShortcuts() {
       }
 
       // reg: escape
-      // Escape — close settings / help / palette / deselect. Cascades through
-      // dismissable UI state in z-index-priority order so each press peels
-      // back one layer.
+      // Escape — single source of truth for "what does Esc close right now."
+      // Cascades through dismissable UI state in z-index priority order
+      // (topmost-visible first) so each press peels back exactly one layer.
+      //
+      // Session 92 — bigger asks #23 ("Esc handling consistency"). The
+      // cascade was previously missing the picker dialogs (template /
+      // diagram-type / export) and the print-preview / compare modes
+      // shipped after the original list was authored. Each had its own
+      // `useEscapeKey` call inside the dialog component, which still
+      // works but means the global cascade silently fell through those
+      // states. Pulling them into this single ordered list makes it
+      // possible to reason about Esc priority from one place, and gives
+      // the user a deterministic sequence when multiple surfaces are
+      // open.
+      //
+      // Priority order (topmost first):
+      //   confirmDialog (synchronously blocking) →
+      //   quickCapture → diagramPicker → exportPicker → templatePicker →
+      //   printPreview → docSettings → settings → search → help →
+      //   palette → sideBySide compare → visual-diff compare → history →
+      //   editing (let the textarea cancel its own edit) → hoist →
+      //   clearSelection.
       if (e.key === 'Escape') {
         const state = useDocumentStore.getState();
+        // Synchronous confirm-dialog: resolve as 'cancel' so the
+        // Promise the caller is awaiting settles, then return.
+        if (state.confirmDialog !== null) {
+          state.resolveConfirm(false);
+          return;
+        }
         if (state.quickCaptureOpen) {
           state.closeQuickCapture();
+          return;
+        }
+        if (state.diagramPickerOpen !== null) {
+          state.closeDiagramPicker();
+          return;
+        }
+        if (state.exportPickerOpen) {
+          state.closeExportPicker();
+          return;
+        }
+        if (state.templatePickerOpen) {
+          state.closeTemplatePicker();
+          return;
+        }
+        if (state.printOpen) {
+          state.closePrintPreview();
           return;
         }
         if (state.docSettingsOpen) {
@@ -199,6 +240,14 @@ export function useGlobalShortcuts() {
         }
         if (state.paletteOpen) {
           closePalette();
+          return;
+        }
+        if (state.sideBySideRevisionId !== null) {
+          state.closeSideBySide();
+          return;
+        }
+        if (state.compareRevisionId !== null) {
+          state.closeCompare();
           return;
         }
         if (state.historyPanelOpen) {

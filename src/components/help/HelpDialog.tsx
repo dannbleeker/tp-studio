@@ -12,6 +12,46 @@ import { Modal } from '../ui/Modal';
  */
 const GROUP_ORDER: ShortcutGroup[] = ['global', 'entity', 'group', 'canvas'];
 
+/**
+ * Session 92 (UI bigger asks #27 + #28) — pointer-gesture affordances.
+ *
+ * The shortcut registry only carries keyboard bindings, but TP Studio
+ * has several pointer-based affordances that are useful but hidden
+ * (no menu entry, no toolbar button). The FirstEntityTip surfaces
+ * these on first use, but auto-hides past 2 entities; the Help
+ * dialog is the durable surface — always reachable via `?` /
+ * palette / kebab, never auto-hidden.
+ *
+ * Keeping the list inline (not in the registry) because the registry's
+ * `keys` field assumes a keyboard binding; gestures don't have one.
+ */
+const GESTURES: { label: string; gesture: string }[] = [
+  {
+    label: 'Marquee-select multiple entities',
+    gesture: 'Drag on empty canvas',
+  },
+  {
+    label: 'Splice an entity into an edge',
+    gesture: 'Alt + drag entity onto edge',
+  },
+  {
+    label: 'Connect two entities',
+    gesture: 'Drag from one handle to another',
+  },
+  {
+    label: 'Alt-click target to connect from selection',
+    gesture: 'Alt + click target',
+  },
+  {
+    label: 'Pin an entity (manual positioning)',
+    gesture: 'Drag the entity card',
+  },
+  {
+    label: 'Rename an entity',
+    gesture: 'Double-click the entity',
+  },
+];
+
 export function HelpDialog() {
   const open = useDocumentStore((s) => s.helpOpen);
   const close = useDocumentStore((s) => s.closeHelp);
@@ -53,6 +93,26 @@ export function HelpDialog() {
             </section>
           );
         })}
+        {/* Session 92 — pointer-gesture affordances. See the GESTURES
+            const above for rationale. Rendered after the keyboard
+            sections so users who came for keys see those first. */}
+        <section>
+          <h3 className="mb-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
+            Mouse & touch gestures
+          </h3>
+          <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-sm">
+            {GESTURES.map((g) => (
+              <div key={g.label} className="contents">
+                <dt className="text-neutral-700 dark:text-neutral-200">{g.label}</dt>
+                <dd>
+                  <span className="rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[11px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
+                    {g.gesture}
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       </div>
     </Modal>
   );

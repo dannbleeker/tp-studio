@@ -94,6 +94,61 @@ describe('useGlobalKeyboard', () => {
     expect(useDocumentStore.getState().selection.kind).toBe('entities');
   });
 
+  // Session 92 (bigger asks #23) — pin the cascade order. The cascade
+  // walks topmost-visible UI first; opening multiple dismissable
+  // surfaces and pressing Esc N times should peel them back in
+  // priority order. Picks four representative surfaces along the
+  // priority chain to confirm the order without enumerating all 14
+  // layers (the implementation comment in `useGlobalShortcuts.ts`
+  // carries the canonical ordering — this test guards against
+  // regression on the *direction* of the cascade, not the exact
+  // surface set).
+  it('Escape cascade peels surfaces in priority order (picker → settings → help → selection)', () => {
+    render(<Harness />);
+    const e = addNode('A');
+    const state = useDocumentStore.getState();
+    state.selectEntity(e.id);
+    state.openHelp();
+    state.openSettings();
+    state.openDiagramPicker('new');
+    // After 4 opens we have: picker > settings > help > selection.
+    dispatchKey({ key: 'Escape' });
+    expect(useDocumentStore.getState().diagramPickerOpen).toBe(null);
+    expect(useDocumentStore.getState().settingsOpen).toBe(true);
+    dispatchKey({ key: 'Escape' });
+    expect(useDocumentStore.getState().settingsOpen).toBe(false);
+    expect(useDocumentStore.getState().helpOpen).toBe(true);
+    dispatchKey({ key: 'Escape' });
+    expect(useDocumentStore.getState().helpOpen).toBe(false);
+    expect(useDocumentStore.getState().selection.kind).toBe('entities');
+    dispatchKey({ key: 'Escape' });
+    expect(useDocumentStore.getState().selection.kind).toBe('none');
+  });
+
+  it('Escape closes a top-priority picker before a lower-priority dialog', () => {
+    // Open settings + export picker — the picker should close first.
+    render(<Harness />);
+    const state = useDocumentStore.getState();
+    state.openSettings();
+    state.openExportPicker();
+    dispatchKey({ key: 'Escape' });
+    expect(useDocumentStore.getState().exportPickerOpen).toBe(false);
+    expect(useDocumentStore.getState().settingsOpen).toBe(true);
+  });
+
+  it('Escape resolves an open confirm dialog as cancel', () => {
+    render(<Harness />);
+    // Open a confirm. It returns a Promise<boolean> that resolves
+    // when the user picks an answer; Esc resolves with false.
+    const pending = useDocumentStore.getState().confirm('Delete?', {});
+    expect(useDocumentStore.getState().confirmDialog).not.toBeNull();
+    dispatchKey({ key: 'Escape' });
+    expect(useDocumentStore.getState().confirmDialog).toBeNull();
+    return pending.then((result) => {
+      expect(result).toBe(false);
+    });
+  });
+
   it('Cmd+Z undoes the last mutation', () => {
     render(<Harness />);
     const e = addNode('A');

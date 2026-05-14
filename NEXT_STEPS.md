@@ -247,12 +247,12 @@ Shipped. The V2 wrapper's "EC CHROME" label row is gone; `ecChromeCollapsed` def
 
 Was the Session 87 hotfix. Shipped — example EC now has correct `ecSlot` bindings, necessity edges, and D↔D′ mutex edge. Stale stale-comment cleanup per memory rule.
 
-## ~~UI tidy batch (Session 87 review — 14 quick wins)~~ Mostly done (Session 87 — 12 of 14)
+## ~~UI tidy batch (Session 87 review — 14 quick wins)~~ ✅ Complete (Session 87 — 12; Session 92 — final 2)
 
-Session 87 commit `8898128` shipped 12 of the original 14 items: S2, S3, S4, S5, S6, S7, S8, V1, V3, V4, V6, V10. Two remain open:
+Session 87 commit `8898128` shipped 12 of the original 14 items: S2, S3, S4, S5, S6, S7, S8, V1, V3, V4, V6, V10. Session 92 closed the final two:
 
-- **(S1) Browse-Lock icon** — pick one icon and toggle via the color variant, not via icon swap (today's `Lock` ↔ `Unlock` swap fights the state-color swap). Also confirmed visually in V7. **Open.**
-- **(S9) Toaster vs. React Flow Controls collision** — bump Toaster to `bottom-20` or move Controls. **Open.**
+- ~~**(S1) Browse-Lock icon**~~ ✅ **Done (Session 92).** `TopBar` now renders the `Lock` icon at all times; state is carried by the color variant (`softViolet` ↔ `softNeutral`). The previous Lock↔Unlock icon swap competed with the color-variant swap; one signal per state reads cleaner. `Unlock` import dropped.
+- ~~**(S9) Toaster vs. React Flow Controls collision**~~ ✅ **Done (Session 92).** Bumped the centered Toaster from `bottom-6` (24 px) to `bottom-20` (80 px) so wide-text toasts on narrow viewports clear the React Flow Controls + MiniMap stack at bottom-left.
 
 Originals (kept for reference):
 
@@ -286,19 +286,19 @@ S–M effort, low ambiguity. Pick what aligns with current work. **Session 88 sh
 - ~~**Templates picker JSX thumbnails** (item #22)~~ ✅ **Done (Session 88).** `templateThumbnailSvg` got a JSX sibling `<TemplateThumbnail>` that returns a React element tree; the picker mounts it directly (no `dangerouslySetInnerHTML`). The string emitter stays around for the legacy `tests/templates/templates.test.ts` assertion.
 - ~~**Templates picker — Undo toast** (item #14)~~ ✅ **Done (Session 88).** Loading a template now captures the prior doc and surfaces an "Undo" action button on the success toast. Extended `Toast` with optional `action: { label, run }`; `showToast` grew a 3rd-arg `options` parameter.
 - ~~**Combine reading-instructions + verbalisation strips** (V2)~~ ✅ **Done (Session 88).** Canvas EC chrome (reading-instructions + verbalisation) now wraps in a single collapsible container with one chevron. New `ecChromeCollapsed` persisted flag (default expanded). The per-strip dismiss / collapse controls still work — the new layer is the outer surface.
-- **First-Entity Tip — add rename + delete hints** (item #19, S) — not picked up; future session.
+- ~~**First-Entity Tip — add rename + delete hints**~~ ✅ **Done (Session 92).** Added a third affordance line to `FirstEntityTip`: "Double-click an entity to rename · Delete / Backspace removes the selection." Pairs with the Session 87 marquee + alt-splice line. Tip still auto-hides past 2 entities — first-time-only.
 
-## UI bigger asks (Session 87 review — 7 items needing design conversation)
+## ~~UI bigger asks (Session 87 review — 7 items needing design conversation)~~ ✅ Complete (Session 87 + Session 92)
 
-M+ effort, may need a Dann decision before picking up. **Session 87 shipped #24 (StatusStrip) + #25 (Settings tabs); 5 remain open.**
+Session 87 shipped #24 (StatusStrip) + #25 (Settings tabs); Session 92 closed the remaining five. All seven items now done.
 
-- **Esc handling consistency** across modal/panel layers (item #23). Most cross-cutting; doing it well unblocks others.
+- ~~**Esc handling consistency** (item #23)~~ ✅ **Done (Session 92).** Consolidated the global Esc cascade in `useGlobalShortcuts`. Pulled `templatePickerOpen` / `diagramPickerOpen` / `exportPickerOpen` / `printOpen` / `compareRevisionId` / `sideBySideRevisionId` / `confirmDialog` into one priority-ordered chain. Inline comment documents the canonical order. New tests pin cascade priority (picker → settings → help → selection peels back in order) and the confirm-dialog Promise resolution path.
 - ~~**Global status indicator** (item #24)~~ ✅ **Done (Session 87).** New `StatusStrip` component (data-component `status-strip`) shows a chip per active secondary mode (lock / hoist / history / wizard / search / compare). Hidden when no secondary state is active.
 - ~~**Settings dialog → tabs** (item #25)~~ ✅ **Done (Session 87).** SettingsDialog split into tabs; the longest section now caps at ~7 controls. Session 88 audit-clean note confirmed anchor-nav inside a single tab isn't warranted yet.
-- **Visible Undo affordance** (item #26).
-- **Alt-drag-to-splice discoverability** (item #27).
-- **Marquee selection discoverability** (item #28).
-- **Browse Lock toast dedup** (item #29) — verify the dedupe key handles cascades.
+- ~~**Visible Undo affordance** (item #26)~~ ✅ **Done (Session 87 + Session 92).** TopBar grew Undo/Redo icon buttons in Session 87 (`sm+`); Session 92 added matching KebabMenu entries so the affordance is reachable at every viewport. KebabMenu auto-focus + arrow-key walk now skip disabled items.
+- ~~**Alt-drag-to-splice discoverability** (item #27)~~ ✅ **Done (Session 92).** Added a "Mouse & touch gestures" section to `HelpDialog` listing six pointer affordances. The FirstEntityTip surfaces them on first use (Session 87); the Help dialog is the durable always-reachable surface.
+- ~~**Marquee selection discoverability** (item #28)~~ ✅ **Done (Session 92).** Same gesture list in HelpDialog; FirstEntityTip already mentions "Drag on empty canvas to marquee-select" for first-time users.
+- ~~**Browse Lock toast dedup** (item #29)~~ ✅ **Done (Session 87, verified Session 92).** `tests/services/browseLock.test.ts` already pins the dedup behavior — 5 rapid `guardWriteOrToast` calls collapse to 1 visible toast. The test was named `dedupes cascading lock-toast attempts to a single visible toast (S29)` in Session 87; Session 92 backlog reconciliation confirmed the test exists and the dedup works.
 
 EC-specific findings (items #30-34) are parked until the EC PPT comparison agent ships and the surfaces stabilize; cross-cutting tech-debt items (#35-40) belong in a future focused-1-hour pass.
 

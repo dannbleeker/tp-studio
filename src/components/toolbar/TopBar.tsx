@@ -11,7 +11,6 @@ import {
   Search,
   Sun,
   Undo2,
-  Unlock,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { KebabMenu } from './KebabMenu';
@@ -107,6 +106,13 @@ export function TopBar() {
       >
         <Redo2 className="h-3.5 w-3.5" />
       </Button>
+      {/* Session 92 UI tidy S1 — single icon (Lock) at all times; the
+          state is carried by the color variant alone. The previous
+          Lock ↔ Unlock icon swap competed visually with the violet ↔
+          neutral background swap — two signals for one piece of state
+          made the toggle harder to scan, especially mid-glance. The
+          padlock metaphor reads the same regardless of state; users
+          look at the chip color to know if the lock is engaged. */}
       <Button
         variant={browseLocked ? 'softViolet' : 'softNeutral'}
         size="icon"
@@ -116,7 +122,7 @@ export function TopBar() {
         title={browseLocked ? 'Browse Lock on — click to unlock' : 'Lock for read-only browsing'}
         aria-pressed={browseLocked}
       >
-        {browseLocked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+        <Lock className="h-3.5 w-3.5" />
       </Button>
       {/* F5 layout-mode picker. Session 87 UX fix #3 — was a single
           icon-toggle that swapped Orbit ↔ Network on click; replaced

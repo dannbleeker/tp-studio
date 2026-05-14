@@ -126,12 +126,18 @@ describe('KebabMenu', () => {
     expect(container.querySelectorAll('[role="menuitem"]').length).toBe(0);
   });
 
-  it('focuses the first menuitem on open', () => {
+  it('focuses the first enabled menuitem on open', () => {
+    // Session 92 — the kebab gained disabled Undo/Redo rows at the top
+    // (mirroring the TopBar's always-visible-but-greyed Undo/Redo).
+    // Disabled buttons can't accept focus, so the auto-focus pattern
+    // picks the first focusable item rather than items[0] verbatim.
     const { container } = render(<KebabMenu />);
     openMenu(container);
     const items = Array.from(container.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
     expect(items.length).toBeGreaterThan(0);
-    expect(document.activeElement).toBe(items[0]);
+    const firstEnabled = items.find((el) => !el.disabled);
+    expect(firstEnabled).toBeTruthy();
+    expect(document.activeElement).toBe(firstEnabled);
   });
 
   it('reflects the doc-type change while open: layout item disappears when switching to EC', () => {
@@ -156,28 +162,33 @@ describe('KebabMenu', () => {
     expect(labels.some((t) => t.includes('Flow layout'))).toBe(false);
   });
 
-  it('ArrowDown / ArrowUp cycle focus between menuitems', () => {
+  it('ArrowDown / ArrowUp cycle focus between enabled menuitems', () => {
+    // Session 92 — the kebab now skips disabled items (Undo/Redo when
+    // there's no history). The cycle walks the enabled subset only,
+    // so the test asserts on that subset rather than the full list.
     const { container } = render(<KebabMenu />);
     openMenu(container);
     const items = Array.from(container.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
+    const enabled = items.filter((el) => !el.disabled);
     const menu = container.querySelector('[role="menu"]') as HTMLElement;
     expect(menu).toBeTruthy();
-    expect(document.activeElement).toBe(items[0]);
+    expect(enabled.length).toBeGreaterThan(1);
+    expect(document.activeElement).toBe(enabled[0]);
 
     act(() => {
       fireEvent.keyDown(menu, { key: 'ArrowDown' });
     });
-    expect(document.activeElement).toBe(items[1]);
+    expect(document.activeElement).toBe(enabled[1]);
 
     act(() => {
       fireEvent.keyDown(menu, { key: 'ArrowUp' });
     });
-    expect(document.activeElement).toBe(items[0]);
+    expect(document.activeElement).toBe(enabled[0]);
 
-    // Wrap-around: ArrowUp from first goes to last.
+    // Wrap-around: ArrowUp from first goes to last enabled.
     act(() => {
       fireEvent.keyDown(menu, { key: 'ArrowUp' });
     });
-    expect(document.activeElement).toBe(items[items.length - 1]);
+    expect(document.activeElement).toBe(enabled[enabled.length - 1]);
   });
 });

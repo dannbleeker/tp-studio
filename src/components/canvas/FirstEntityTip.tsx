@@ -62,6 +62,25 @@ export function FirstEntityTip() {
             </kbd>{' '}
             while dragging an entity onto an edge to splice it in.
           </p>
+          {/* Session 92 UI polish #19 — rename + delete were
+              discoverable only via the right-click menu before; this
+              line surfaces them at the top-of-mind tip layer for
+              first-time users. Both bindings are independent of any
+              palette command — pure muscle-memory affordances. */}
+          <p className="text-neutral-500 dark:text-neutral-400">
+            <strong className="font-medium text-neutral-600 dark:text-neutral-300">
+              Double-click
+            </strong>{' '}
+            an entity to rename ·{' '}
+            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+              Delete
+            </kbd>{' '}
+            or{' '}
+            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+              Backspace
+            </kbd>{' '}
+            removes the selection.
+          </p>
         </div>
         <button
           type="button"

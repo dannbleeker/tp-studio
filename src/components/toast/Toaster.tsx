@@ -33,7 +33,14 @@ export function Toaster() {
   return (
     <div
       data-component="toaster"
-      className="-translate-x-1/2 pointer-events-none fixed bottom-6 left-1/2 z-40 flex flex-col items-center gap-2"
+      // Session 92 UI tidy S9 — bumped from `bottom-6` (24 px) to
+      // `bottom-20` (80 px) so the centered toast layer clears the
+      // React Flow Controls bar at bottom-left. Session 87 already
+      // moved Controls out of bottom-center, but on narrow viewports
+      // a wide-text toast still overlapped the Controls / MiniMap
+      // stack. 80 px = ~32 px Controls height + ~32 px MiniMap
+      // height + breathing room.
+      className="-translate-x-1/2 pointer-events-none fixed bottom-20 left-1/2 z-40 flex flex-col items-center gap-2"
     >
       {toasts.map((t) => {
         const Icon = ICONS[t.kind];

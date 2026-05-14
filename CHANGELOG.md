@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 92 — Backlog finish: 4 UI items + Esc cascade consolidation + 2 stale-marks
+
+Tidies up the remaining UI tidy / polish / bigger-asks items from the Session 87 review queue. **1092 tests passing** (was 1089; +3 Esc cascade tests).
+
+**S1 — Browse-Lock single-icon toggle.** `TopBar` previously swapped between `Lock` and `Unlock` icons depending on `browseLocked`. The icon swap competed with the color-variant swap (violet vs. neutral background) — two signals for one piece of state. The padlock metaphor reads the same regardless of lock state; users look at the chip color to know if the lock is engaged. Now: `Lock` icon always, color carries the state. `Unlock` import dropped.
+
+**S9 — Toaster vs. Controls bottom-edge collision.** Bumped the centered toast layer from `bottom-6` (24 px) to `bottom-20` (80 px) so wide-text toasts on narrow viewports clear the React Flow Controls + MiniMap stack at bottom-left. Session 87 already moved Controls out of bottom-center; this closes the remaining overlap on phone-narrow widths.
+
+**First-Entity Tip — rename + delete hints.** Added a third line of affordance copy to `FirstEntityTip`: "Double-click an entity to rename · Delete / Backspace removes the selection." Pairs with the existing marquee + alt-splice line that Session 87 added. The tip still auto-hides past 2 entities, so it's first-time-only.
+
+**#26 — Visible Undo/Redo in the KebabMenu.** Session 87's TopBar Undo/Redo buttons cover `sm+`; the kebab (`< sm`, phone-narrow) had no surface for them. Added two new menuitems at the top of the kebab list. Disabled state mirrors the TopBar buttons (`!canUndo` / `!canRedo` reads `past.length` / `future.length`). KebabMenu's auto-focus now picks the first **enabled** item (disabled buttons can't accept focus); ArrowUp/Down/Home/End also walk the enabled subset only. Two KebabMenu tests updated to match the new semantics.
+
+**#27 + #28 — Pointer-gesture affordances in the HelpDialog.** The shortcut registry only carries keyboard bindings; gestures like marquee-select and Alt+drag splice had no durable discoverability surface (the FirstEntityTip auto-hides). Added a new "Mouse & touch gestures" section to `HelpDialog` listing six pointer affordances: marquee-select, alt-drag splice, drag-to-connect, alt-click-to-connect, drag-to-pin, double-click rename. Inline list (`GESTURES` const), not in the registry — the registry's `keys` field assumes a keyboard binding.
+
+**#29 — Browse Lock toast dedup verification.** Already covered by `tests/services/browseLock.test.ts` (Session 87 test `dedupes cascading lock-toast attempts to a single visible toast (S29)`). Backlog entry was stale; reconciled in NEXT_STEPS.
+
+**#23 — Esc cascade consolidation + cascade-order tests.** The global Esc cascade in `useGlobalShortcuts` was the single source of truth for "what does Esc close right now," but had drifted behind the dialog surfaces shipped after the original cascade landed — `templatePickerOpen`, `diagramPickerOpen`, `exportPickerOpen`, `printOpen`, `compareRevisionId`, `sideBySideRevisionId`, and `confirmDialog` each had their own `useEscapeKey` / `useOutsideAndEscape` call locally, which still worked but meant the global cascade silently fell through those states. Pulled all dismissable surfaces into one ordered priority chain. Documented the order inline. New tests: cascade order (open picker → settings → help → selection, four Esc presses peel them back in that order), top-priority picker beats lower-priority dialog (export picker closes before settings), Esc on an open confirm dialog resolves the Promise with `false`.
+
+End state: tsc clean, Biome clean, 1092 tests passing.
+
 ## Session 91 — Toast dwell-time grading + prominent CTA
 
 Small-ideas bundle. Two related toast pipeline upgrades. **1089 tests passing** (was 1086; +3 around the new duration / prominent-action paths).
