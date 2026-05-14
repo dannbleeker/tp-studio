@@ -54,32 +54,30 @@ describe('TopBar', () => {
     expect(unlockBtn.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('Layout-mode toggle flips between flow and radial', () => {
+  it('Layout-mode dropdown flips between flow and radial', () => {
     const { container } = render(<TopBar />);
-    // Default doc is a CRT (auto-layout), so the toggle is visible. From flow
-    // the destination is radial.
-    const toRadial = container.querySelector(
-      'button[aria-label="Switch to radial layout"]'
-    ) as HTMLButtonElement;
-    expect(toRadial).toBeTruthy();
-    expect(toRadial.getAttribute('aria-pressed')).toBe('false');
-    click(toRadial);
+    // Default doc is a CRT (auto-layout), so the dropdown is visible.
+    // Session 87 UX fix #3 reshaped the layout-mode control from an
+    // icon-toggle button into an explicit two-option <select>.
+    const select = container.querySelector('select[aria-label="Layout mode"]') as HTMLSelectElement;
+    expect(select).toBeTruthy();
+    expect(select.value).toBe('flow');
+    // Drive the change via the native event the select element fires;
+    // <option> elements aren't independently clickable in jsdom.
+    act(() => {
+      select.value = 'radial';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
     expect(useDocumentStore.getState().layoutMode).toBe('radial');
-    const toFlow = container.querySelector(
-      'button[aria-label="Switch to flow layout"]'
-    ) as HTMLButtonElement;
-    expect(toFlow).toBeTruthy();
-    expect(toFlow.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('hides the layout-mode toggle for manual-layout diagrams (EC)', () => {
+  it('hides the layout-mode dropdown for manual-layout diagrams (EC)', () => {
     // EC is the only manual-layout diagram today. Swapping documents flips
-    // the diagram type; the toggle disappears because the EC geometry IS
+    // the diagram type; the dropdown disappears because the EC geometry IS
     // the diagnostic — flipping to radial would erase the conflict.
     act(() => useDocumentStore.getState().newDocument('ec'));
     const { container } = render(<TopBar />);
-    expect(container.querySelector('button[aria-label="Switch to radial layout"]')).toBeNull();
-    expect(container.querySelector('button[aria-label="Switch to flow layout"]')).toBeNull();
+    expect(container.querySelector('select[aria-label="Layout mode"]')).toBeNull();
   });
 
   it('Help button opens the help dialog', () => {

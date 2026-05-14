@@ -74,25 +74,34 @@ export function TopBar() {
       >
         {browseLocked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
       </Button>
-      {/* F5 layout-mode toggle. Icon shows the destination: Orbit when
-          currently flow (click → radial), Network when currently radial
-          (click → flow). Hidden for manual-layout diagrams. */}
+      {/* F5 layout-mode picker. Session 87 UX fix #3 — was a single
+          icon-toggle that swapped Orbit ↔ Network on click; replaced
+          with an explicit two-option dropdown so the available modes
+          are discoverable without trial-and-error. Hidden for
+          manual-layout diagrams (EC) where layout mode is meaningless.
+          The icon to the left of the select stays as a state-glance
+          cue; the select itself is the canonical control. */}
       {showLayoutToggle && (
-        <Button
-          variant="softNeutral"
-          size="icon"
-          onClick={() => setLayoutMode(layoutMode === 'flow' ? 'radial' : 'flow')}
-          className="pointer-events-auto hidden md:inline-flex"
-          aria-label={layoutMode === 'flow' ? 'Switch to radial layout' : 'Switch to flow layout'}
-          title={layoutMode === 'flow' ? 'Radial layout' : 'Flow layout'}
-          aria-pressed={layoutMode === 'radial'}
+        <label
+          className="pointer-events-auto hidden h-7 items-center gap-1 rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-medium text-xs text-neutral-700 transition hover:bg-neutral-100 md:inline-flex dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900"
+          title="Layout mode"
         >
           {layoutMode === 'flow' ? (
-            <Orbit className="h-3.5 w-3.5" />
+            <Network className="h-3.5 w-3.5" aria-hidden />
           ) : (
-            <Network className="h-3.5 w-3.5" />
+            <Orbit className="h-3.5 w-3.5" aria-hidden />
           )}
-        </Button>
+          <span className="sr-only">Layout mode</span>
+          <select
+            value={layoutMode}
+            onChange={(e) => setLayoutMode(e.target.value as 'flow' | 'radial')}
+            aria-label="Layout mode"
+            className="cursor-pointer border-none bg-transparent pr-0 font-medium text-xs text-neutral-700 outline-none dark:text-neutral-200"
+          >
+            <option value="flow">Flow</option>
+            <option value="radial">Radial</option>
+          </select>
+        </label>
       )}
       {/* H1 history panel toggle. Visible at sm+ (like Help / Theme); the
           palette command "Open history…" still reaches it on phone-narrow.

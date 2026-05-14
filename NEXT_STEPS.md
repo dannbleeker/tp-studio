@@ -171,6 +171,8 @@ The user picked buckets **A / F / H** out of the 16-bucket catalogue. After Tier
 
 **Radial layout polish** ✅ shipped Session 76. Subtree-weighted angular allocation: each center claims an arc of `2π` proportional to its subtree size; each child gets a sub-arc proportional to its own subtree size. Children stay angularly close to their parent; sibling branches don't fight for the same arc.
 
+**Radial edge routing — avoid crossing node bounding boxes** (Session 87 deferred). The current `radialLayout` algorithm produces positions only; edge rendering falls back to React Flow's default bezier between source/target handles. With nodes arranged on concentric rings, sibling/cousin edges often pass directly through other entity boxes — readable on small graphs, increasingly cluttered as the tree grows. Two implementation paths considered: **(a)** custom React-Flow edge type that runs Bezier-around-obstacle (cheaper, ~80% of real cases handled, ~2-4 hours); **(b)** full A* / orthogonal routing (overkill for the use case, much higher complexity). Recommendation: **(a)**. Pairs naturally with any future layout-quality work on the radial mode. Effort: L. Dann deferred this item from Session 87's UX-feedback Phase 4 — picked up when the cost/benefit lines up.
+
 ## Tier 4 — Versioning, branching, what-if
 
 - ~~**H1 Revision history.**~~ ✅ **Done (Session 41).** Per-document snapshots in localStorage (capped 50 per doc), one-click restore with safety-snapshot, label/rename, auto-snapshot on document swap, slide-in panel with diff-vs-live summary, palette commands + TopBar toggle + Esc-cascade integration. 26 new tests across domain / store / component.
