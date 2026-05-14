@@ -49,7 +49,7 @@ describe('buildTemplate', () => {
     it(`inflates ${spec.id} into a valid Document`, () => {
       const doc = buildTemplate(spec);
       expect(doc.diagramType).toBe(spec.diagramType);
-      expect(doc.schemaVersion).toBe(7);
+      expect(doc.schemaVersion).toBe(8);
       expect(Object.keys(doc.entities)).toHaveLength(spec.entities.length);
       expect(Object.keys(doc.edges)).toHaveLength(spec.edges.length);
       // Annotation numbers should be 1..N exactly.

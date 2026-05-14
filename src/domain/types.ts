@@ -582,7 +582,17 @@ export type TPDocument = {
    *  See {@link Assumption}. Empty / missing means "no assumptions" and
    *  the field is omitted from JSON on persist. */
   assumptions?: Record<string, Assumption>;
+  /** Session 87 / EC PPT comparison item #4 — verbal-style toggle.
+   *  Defaults to `'neutral'` (the existing "In order to A, we must B"
+   *  reading). When `'twoSided'`, the verbalisation strip swaps the
+   *  neutral "we" pronouns for the explicit two-party framing the
+   *  BESTSELLER workshop PPT uses — "they want to" on the D-side and
+   *  "I want to" on the D′-side — so the conflict reads as a
+   *  negotiation. Only meaningful on EC docs; ignored on other
+   *  diagram types. Stored on the doc so the choice persists across
+   *  reloads. */
+  ecVerbalStyle?: 'neutral' | 'twoSided';
   createdAt: number;
   updatedAt: number;
-  schemaVersion: 7;
+  schemaVersion: 8;
 };

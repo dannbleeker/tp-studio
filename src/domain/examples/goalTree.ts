@@ -65,6 +65,6 @@ export const buildExampleGoalTree = (): TPDocument => {
     nextAnnotationNumber: 9,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 7,
+    schemaVersion: 8,
   };
 };

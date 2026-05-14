@@ -81,10 +81,12 @@ export function DocumentInspector() {
     edgeCount,
     systemScope,
     methodChecklist,
+    ecVerbalStyle,
     setTitle,
     setMeta,
     setSystemScope,
     setMethodStep,
+    setECVerbalStyle,
   } = useDocumentStore(
     useShallow((s) => ({
       title: s.doc.title,
@@ -95,10 +97,12 @@ export function DocumentInspector() {
       edgeCount: Object.keys(s.doc.edges).length,
       systemScope: s.doc.systemScope ?? EMPTY_SCOPE,
       methodChecklist: s.doc.methodChecklist ?? EMPTY_CHECKLIST,
+      ecVerbalStyle: s.doc.ecVerbalStyle ?? 'neutral',
       setTitle: s.setTitle,
       setMeta: s.setDocumentMeta,
       setSystemScope: s.setSystemScope,
       setMethodStep: s.setMethodStep,
+      setECVerbalStyle: s.setECVerbalStyle,
     }))
   );
 
@@ -217,6 +221,42 @@ export function DocumentInspector() {
             />
           </div>
         </details>
+
+        {diagramType === 'ec' && (
+          <Field label="EC verbal style">
+            <div className="grid grid-cols-2 gap-1.5 text-xs">
+              {(
+                [
+                  { id: 'neutral' as const, label: 'Neutral ("we must")' },
+                  { id: 'twoSided' as const, label: 'Two-sided ("I" vs "they")' },
+                ] satisfies { id: 'neutral' | 'twoSided'; label: string }[]
+              ).map((opt) => {
+                const active = ecVerbalStyle === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    data-testid={`ec-verbal-style-${opt.id}`}
+                    disabled={locked}
+                    onClick={() => setECVerbalStyle(opt.id)}
+                    className={`rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                      active
+                        ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
+                        : 'border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+              Switches the verbalisation strip between the workshop-default neutral voice ("In order
+              to A, we must B") and the BESTSELLER PPT's two-party framing ("they want to" / "I want
+              to") that surfaces the felt negotiation.
+            </p>
+          </Field>
+        )}
 
         <CustomEntityClassesSection />
 

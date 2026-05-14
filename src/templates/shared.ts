@@ -15,7 +15,7 @@ import type {
  * Each template module declares its entities + edges as plain
  * literals; this shared layer turns those into a fully-typed
  * `TPDocument` with stable ids, valid `annotationNumber`s, a
- * `schemaVersion: 7` stamp, and matching `assumptions` map (empty
+ * `schemaVersion: 8` stamp, and matching `assumptions` map (empty
  * for now — templates ship without first-class assumption records,
  * the user can add them after loading).
  *
@@ -137,6 +137,6 @@ export const buildTemplate = (spec: TemplateSpec): TPDocument => {
     nextAnnotationNumber: spec.entities.length + 1,
     createdAt: now,
     updatedAt: now,
-    schemaVersion: 7,
+    schemaVersion: 8,
   };
 };

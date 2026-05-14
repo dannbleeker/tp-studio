@@ -144,7 +144,7 @@ const docArb = fc
           nextAnnotationNumber: maxAnnotation + 1,
           createdAt: 1_700_000_000_000,
           updatedAt: 1_700_000_000_000,
-          schemaVersion: 7,
+          schemaVersion: 8,
         };
       });
   });

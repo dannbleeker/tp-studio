@@ -56,6 +56,6 @@ export const buildExampleST = (): TPDocument => {
     nextAnnotationNumber: 7,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 7,
+    schemaVersion: 8,
   };
 };

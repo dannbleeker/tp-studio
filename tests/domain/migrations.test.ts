@@ -75,6 +75,31 @@ describe('migrateToCurrent', () => {
       /newer than this app supports/
     );
   });
+
+  // Session 87 / EC PPT comparison item #4 — v7→v8 migration for the
+  // additive `ecVerbalStyle` field. Purely a schema-version bump; no
+  // existing data shape changes, so v7 docs without the field stay
+  // unchanged but stamp at v8 on the way out.
+  it('migrates a v7 document forward to v8 without changing any other field', () => {
+    const v7Doc = {
+      schemaVersion: 7,
+      diagramType: 'ec',
+      entities: { a: { id: 'a', type: 'goal', title: 'A', annotationNumber: 1, ecSlot: 'a' } },
+      edges: {},
+      groups: {},
+      nextAnnotationNumber: 2,
+    };
+    const result = migrateToCurrent(v7Doc) as {
+      schemaVersion: number;
+      ecVerbalStyle?: string;
+      entities: Record<string, unknown>;
+    };
+    expect(result.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    // Field stays undefined (verbalisation layer interprets as 'neutral').
+    expect(result.ecVerbalStyle).toBeUndefined();
+    // Everything else round-trips untouched.
+    expect(result.entities).toEqual(v7Doc.entities);
+  });
 });
 
 describe('applyMigrations', () => {

@@ -1,3 +1,4 @@
+import { type ECSlot, EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL } from '@/domain/ecGuiding';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { ST_FACET_KEYS } from '@/domain/graph';
 import type { EntityType, Warning } from '@/domain/types';
@@ -32,8 +33,27 @@ export function EntityInspector({
   // B10: palette merges built-ins with the doc's custom entity classes.
   const availableTypes = paletteForDoc(doc);
 
+  // Session 87 / EC PPT comparison item #2 — re-surface the wizard's
+  // per-slot guiding question whenever an EC slot entity is selected,
+  // so the prompt stays available after the wizard closes.
+  const ecSlot: ECSlot | undefined = entity.ecSlot;
+  const showGuidingQuestion = doc.diagramType === 'ec' && ecSlot !== undefined;
+
   return (
     <div className="flex flex-col gap-4">
+      {showGuidingQuestion && ecSlot && (
+        <aside
+          aria-label={`Guiding question for slot ${ecSlot.toUpperCase()}`}
+          data-component="ec-guiding-question"
+          className="rounded-md border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-[12px] text-indigo-900 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-100"
+        >
+          <p className="mb-1 font-semibold text-[10px] text-indigo-700 uppercase tracking-wider dark:text-indigo-300">
+            {EC_SLOT_LABEL[ecSlot]}
+          </p>
+          <p className="italic leading-snug">{EC_SLOT_GUIDING_QUESTIONS[ecSlot]}</p>
+        </aside>
+      )}
+
       <Field label="Title">
         <textarea
           className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"

@@ -68,6 +68,16 @@ export type DocMetaSlice = {
   setMethodStep: (stepId: string, done: boolean) => void;
 
   /**
+   * Session 87 / EC PPT comparison item #4 — set the EC verbal style
+   * on the active document. Passing `'neutral'` (the implicit default)
+   * clears the field rather than persisting a redundant value, so a
+   * doc that hasn't touched the toggle round-trips through JSON
+   * unchanged. Coalesces under `doc-ec-verbal` so a rapid toggle
+   * sequence collapses to a single undo step.
+   */
+  setECVerbalStyle: (style: 'neutral' | 'twoSided') => void;
+
+  /**
    * B10 — add or replace a custom entity class on the active doc. The
    * `id` field on the class is the map key; passing an existing id
    * overwrites that class (label / color / supersetOf update in place).
@@ -292,6 +302,23 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
           return touch({ ...prev, systemScope: next });
         },
         { coalesceKey: `doc-scope:${keys}` }
+      );
+    },
+
+    setECVerbalStyle: (style) => {
+      applyDocChange(
+        (prev) => {
+          // Treat 'neutral' as the implicit default — drop the field
+          // rather than persisting it.
+          if (style === 'neutral') {
+            if (prev.ecVerbalStyle === undefined) return prev;
+            const { ecVerbalStyle: _drop, ...rest } = prev;
+            return touch(rest as TPDocument);
+          }
+          if (prev.ecVerbalStyle === style) return prev;
+          return touch({ ...prev, ecVerbalStyle: style });
+        },
+        { coalesceKey: 'doc-ec-verbal' }
       );
     },
 

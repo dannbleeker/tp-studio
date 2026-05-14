@@ -6,6 +6,24 @@ import { ChevronUp, Sparkles, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 /**
+ * Session 87 / EC PPT comparison item #3 — Reverse-direction (D-first)
+ * elicitation framing. The canonical BESTSELLER workshop PPT walks
+ * practitioners D → D′ → C → B → A (start from the felt conflict, work
+ * up to the shared objective). The default A-first walk is more
+ * structurally correct; D-first is closer to how a real practitioner
+ * *experiences* the conflict.
+ *
+ * Implemented as a per-wizard-panel toggle that flips the EC step
+ * order. The store state still tracks `step` as a 0-based index; the
+ * `EC_SLOTS_BY_ORDER` map decides which slot that index addresses.
+ */
+type WizardOrder = 'aFirst' | 'dFirst';
+const EC_SLOTS_BY_ORDER: Record<WizardOrder, Array<'a' | 'b' | 'c' | 'd' | 'dPrime'>> = {
+  aFirst: ['a', 'b', 'c', 'd', 'dPrime'],
+  dFirst: ['d', 'dPrime', 'c', 'b', 'a'],
+};
+
+/**
  * Session 78 / brief §5 + §6 — Creation Wizard Panel.
  *
  * Floating top-left panel that walks a first-time user through the
@@ -62,28 +80,35 @@ const GOAL_TREE_STEPS: StepDef[] = [
   },
 ];
 
-const EC_STEPS: StepDef[] = [
-  {
+/**
+ * EC wizard prompts keyed by slot. The order is decided at render time
+ * by `EC_SLOTS_BY_ORDER` so the same definitions back both the A-first
+ * and D-first walks.
+ */
+const EC_STEP_BY_SLOT: Record<'a' | 'b' | 'c' | 'd' | 'dPrime', StepDef> = {
+  a: {
     prompt: 'What is the shared objective (A) both sides agree on?',
     placeholder: 'e.g. "Run a sustainable business"',
   },
-  {
+  b: {
     prompt: 'Need B — what does the first side need to support A?',
     placeholder: 'e.g. "Hit quarterly revenue targets"',
   },
-  {
+  c: {
     prompt: 'Need C — what does the other side need to support A?',
     placeholder: 'e.g. "Sustain product quality"',
   },
-  {
+  d: {
     prompt: "Want D — the first side's prerequisite (will conflict with D′).",
     placeholder: 'e.g. "Ship every feature on the roadmap"',
   },
-  {
+  dPrime: {
     prompt: "Want D′ — the other side's prerequisite (conflicts with D).",
     placeholder: 'e.g. "Cut the roadmap to half and harden the core"',
   },
-];
+};
+const EC_STEPS: StepDef[] = EC_SLOTS_BY_ORDER.aFirst.map((slot) => EC_STEP_BY_SLOT[slot]);
+const EC_STEPS_D_FIRST: StepDef[] = EC_SLOTS_BY_ORDER.dFirst.map((slot) => EC_STEP_BY_SLOT[slot]);
 
 export function CreationWizardPanel() {
   const state = useDocumentStore((s) => s.creationWizard);
@@ -106,8 +131,13 @@ export function CreationWizardPanel() {
   // typed answer to a stray Escape press.
   const [escArmed, setEscArmed] = useState(false);
   const [skipNoticeOn, setSkipNoticeOn] = useState(false);
+  // Session 87 — EC PPT item #3. Per-wizard-session toggle between the
+  // canonical A-first walk and the PPT's D-first ("start from the
+  // felt conflict") walk. Local to the panel rather than persisted —
+  // the user picks per session; defaults to A-first.
+  const [wizardOrder, setWizardOrder] = useState<WizardOrder>('aFirst');
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
-  const stepKey = state ? `${state.kind}-${state.step}` : null;
+  const stepKey = state ? `${state.kind}-${state.step}-${wizardOrder}` : null;
 
   // Reset draft + refocus on every step change (including re-opens via
   // the palette command "Reopen creation wizard"). Depends on stepKey
@@ -137,7 +167,8 @@ export function CreationWizardPanel() {
 
   if (!state) return null;
   const kind = state.kind;
-  const steps = kind === 'goalTree' ? GOAL_TREE_STEPS : EC_STEPS;
+  const steps =
+    kind === 'goalTree' ? GOAL_TREE_STEPS : wizardOrder === 'dFirst' ? EC_STEPS_D_FIRST : EC_STEPS;
   const step = state.step;
   const isFinalStep = step >= steps.length - 1;
   const isDone = step >= steps.length;
@@ -163,9 +194,9 @@ export function CreationWizardPanel() {
     if (kind === 'ec') {
       // EC slot map. The 5 entities are already pre-seeded with
       // `ecSlot` bindings — find the matching one and update its
-      // title.
-      const slotForStep: Array<'a' | 'b' | 'c' | 'd' | 'dPrime'> = ['a', 'b', 'c', 'd', 'dPrime'];
-      const targetSlot = slotForStep[step];
+      // title. Session 87: the slot at step N depends on the chosen
+      // wizard order (A-first vs. D-first).
+      const targetSlot = EC_SLOTS_BY_ORDER[wizardOrder][step];
       if (!targetSlot) return;
       const target = Object.values(entities).find((e) => e.ecSlot === targetSlot);
       if (target) {
@@ -283,6 +314,52 @@ export function CreationWizardPanel() {
           </button>
         </div>
       </header>
+
+      {/* Session 87 / EC PPT item #3 — wizard direction toggle. Only
+          visible on EC wizards; flips between the structural A-first
+          walk and the practitioner-experiential D-first walk. The
+          toggle resets the step to 0 so the prompt at index 0 lines
+          up with the new lead slot. */}
+      {kind === 'ec' && (
+        <div
+          data-component="ec-wizard-order"
+          aria-label="Wizard walk order"
+          className="flex gap-1 text-[10px]"
+        >
+          {(
+            [
+              { id: 'aFirst' as const, label: 'A → D′ (top-down)' },
+              { id: 'dFirst' as const, label: 'D → A (from the conflict)' },
+            ] satisfies { id: WizardOrder; label: string }[]
+          ).map((opt) => {
+            const active = wizardOrder === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => {
+                  if (wizardOrder === opt.id) return;
+                  setWizardOrder(opt.id);
+                  // We don't rewind `state.step` — the user keeps their
+                  // place and the prompt at that index simply reflects
+                  // the new order. Fine for a single-action-per-step
+                  // wizard; any missed slot can be filled directly on
+                  // the canvas later.
+                }}
+                className={clsx(
+                  'flex-1 rounded border px-1.5 py-0.5 font-medium transition',
+                  active
+                    ? 'border-indigo-400 bg-indigo-100 text-indigo-800 dark:border-indigo-500 dark:bg-indigo-900 dark:text-indigo-200'
+                    : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800'
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Per-step progress indicator. A series of dots; current one
           highlighted. Lightweight, no library. */}

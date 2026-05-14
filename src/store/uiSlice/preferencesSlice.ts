@@ -39,6 +39,12 @@ export type PreferencesSlice = {
   /** First-run UI tip about Tab / drag / Cmd-K. Not part of `StoredPrefs`
    *  — it's a session flag that resets across `resetStoreForTest`. */
   emptyStateTipDismissed: boolean;
+  /** Session 87 — EC PPT comparison item #1. Dismissal flag for the
+   *  reading-instruction strip rendered above the EC canvas. Session-
+   *  scoped (not persisted) so users see the meta-instruction "1) In
+   *  order to / 2) we must / 3) because" the first time on a new EC,
+   *  but a single dismissal hides it for the rest of the session. */
+  ecReadingInstructionsDismissed: boolean;
   /** Session 78 / brief §5 + §6 — show the creation-wizard panel on
    *  new Goal Tree documents. Default true so first-time users get
    *  the guided flow; user can flip it off in Settings → Behavior or
@@ -64,6 +70,9 @@ export type PreferencesSlice = {
   setCausalityLabel: (label: CausalityLabel) => void;
   setDefaultLayoutDirection: (direction: DefaultLayoutDirection) => void;
   dismissEmptyStateTip: () => void;
+  /** Session 87 — dismiss the EC reading-instruction strip for the
+   *  remainder of this session. */
+  dismissECReadingInstructions: () => void;
   /** Session 78 — toggle the per-diagram creation-wizard preference.
    *  Persists to localStorage so the choice survives reloads. */
   setShowGoalTreeWizard: (show: boolean) => void;
@@ -85,6 +94,7 @@ export type PreferencesDataKeys =
   | 'causalityLabel'
   | 'defaultLayoutDirection'
   | 'emptyStateTipDismissed'
+  | 'ecReadingInstructionsDismissed'
   | 'showGoalTreeWizard'
   | 'showECWizard';
 
@@ -108,6 +118,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   causalityLabel: 'none',
   defaultLayoutDirection: 'auto',
   emptyStateTipDismissed: false,
+  ecReadingInstructionsDismissed: false,
   showGoalTreeWizard: true,
   showECWizard: true,
 });
@@ -152,6 +163,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     causalityLabel: initialPrefs.causalityLabel,
     defaultLayoutDirection: initialPrefs.defaultLayoutDirection,
     emptyStateTipDismissed: false,
+    ecReadingInstructionsDismissed: false,
     showGoalTreeWizard: initialPrefs.showGoalTreeWizard,
     showECWizard: initialPrefs.showECWizard,
 
@@ -215,6 +227,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       persistPrefs();
     },
     dismissEmptyStateTip: () => set({ emptyStateTipDismissed: true }),
+    dismissECReadingInstructions: () => set({ ecReadingInstructionsDismissed: true }),
 
     setShowGoalTreeWizard: (show) => {
       set({ showGoalTreeWizard: show });

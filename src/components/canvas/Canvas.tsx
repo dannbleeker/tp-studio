@@ -17,6 +17,8 @@ import { useShallow } from 'zustand/shallow';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
 import { Breadcrumb } from './Breadcrumb';
 import { CreationWizardPanel } from './CreationWizardPanel';
+import { ECInjectionChip } from './ECInjectionChip';
+import { ECReadingInstructions } from './ECReadingInstructions';
 import { EmptyHint } from './EmptyHint';
 import { FirstEntityTip } from './FirstEntityTip';
 import { JunctorOverlay } from './JunctorOverlay';
@@ -257,15 +259,25 @@ function CanvasInner() {
         <ZoomPercent />
         <JunctorOverlay />
         {/* Session 77: EC verbalisation strip overlays the canvas top
-            edge on EC docs only. The component itself no-ops on
-            non-EC diagrams, so the conditional in this JSX is purely
-            for the wrapper class. */}
+            edge on EC docs only. Session 87: stacked under the new
+            ECReadingInstructions strip (PPT comparison item #1) and
+            paired with the top-right ECInjectionChip (item #7). The
+            child components are themselves EC-gated, so the
+            conditional in this JSX is purely for the wrapper class. */}
         {doc.diagramType === 'ec' && (
-          <div className="pointer-events-none absolute top-2 right-0 left-0 z-10 flex justify-center px-4">
-            <div className="pointer-events-auto w-full">
-              <VerbalisationStrip />
+          <>
+            <div className="pointer-events-none absolute top-2 right-0 left-0 z-10 flex flex-col items-stretch gap-2 px-4">
+              <div className="pointer-events-auto">
+                <ECReadingInstructions />
+              </div>
+              <div className="pointer-events-auto w-full">
+                <VerbalisationStrip />
+              </div>
             </div>
-          </div>
+            <div className="pointer-events-none absolute top-2 right-4 z-10 flex justify-end">
+              <ECInjectionChip />
+            </div>
+          </>
         )}
       </ReactFlow>
       <Breadcrumb />

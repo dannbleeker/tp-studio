@@ -110,4 +110,34 @@ describe('EntityInspector', () => {
     act(() => fireEvent.change(ta, { target: { value: '' } }));
     expect(useDocumentStore.getState().doc.entities[e.id]?.attestation).toBeUndefined();
   });
+
+  // Session 87 / EC PPT comparison item #2 — per-slot guiding question.
+  it('shows the slot-specific guiding question when an EC slot entity is selected', () => {
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    const aSlot = Object.values(useDocumentStore.getState().doc.entities).find(
+      (e) => e.ecSlot === 'a'
+    );
+    expect(aSlot).toBeTruthy();
+    const { container } = render(<EntityInspector entityId={aSlot!.id} warnings={[]} />);
+    const aside = container.querySelector('[data-component="ec-guiding-question"]');
+    expect(aside).toBeTruthy();
+    expect(aside?.textContent).toMatch(/common objective/i);
+  });
+
+  it("D′ slot shows the 'What is the action I want to do?' prompt", () => {
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    const dPrimeSlot = Object.values(useDocumentStore.getState().doc.entities).find(
+      (e) => e.ecSlot === 'dPrime'
+    );
+    expect(dPrimeSlot).toBeTruthy();
+    const { container } = render(<EntityInspector entityId={dPrimeSlot!.id} warnings={[]} />);
+    const aside = container.querySelector('[data-component="ec-guiding-question"]');
+    expect(aside?.textContent).toMatch(/action I want to do/);
+  });
+
+  it('does NOT show the guiding-question aside on a non-EC entity', () => {
+    const e = seedEntity('A');
+    const { container } = render(<EntityInspector entityId={e.id} warnings={[]} />);
+    expect(container.querySelector('[data-component="ec-guiding-question"]')).toBeNull();
+  });
 });

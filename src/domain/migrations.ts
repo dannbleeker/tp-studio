@@ -19,7 +19,7 @@ export type Migration = {
 };
 
 /** Bump this constant when a new migration is registered. */
-export const CURRENT_SCHEMA_VERSION: SchemaVersion = 7;
+export const CURRENT_SCHEMA_VERSION: SchemaVersion = 8;
 
 const isPlainObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -246,8 +246,33 @@ const v6ToV7: Migration = {
   },
 };
 
+/**
+ * v7 → v8: introduce optional `TPDocument.ecVerbalStyle` (Session 87 /
+ * EC PPT comparison item #4 — two-sided "I want / they want" framing).
+ * Purely additive optional field — no existing data shape changes. Docs
+ * that don't carry the field default to `'neutral'` at the
+ * verbalisation layer, matching the v7 behavior.
+ */
+const v7ToV8: Migration = {
+  fromVersion: 7,
+  toVersion: 8,
+  description: 'Allow TPDocument.ecVerbalStyle (Session 87) — no data shape change.',
+  migrate: (raw) => {
+    if (!isPlainObject(raw)) return raw;
+    return { ...raw, schemaVersion: 8 };
+  },
+};
+
 /** Production migration registry. Populated in version order. */
-export const MIGRATIONS: readonly Migration[] = [v1ToV2, v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7];
+export const MIGRATIONS: readonly Migration[] = [
+  v1ToV2,
+  v2ToV3,
+  v3ToV4,
+  v4ToV5,
+  v5ToV6,
+  v6ToV7,
+  v7ToV8,
+];
 
 const readVersion = (doc: RawDocument): SchemaVersion => {
   if (typeof doc === 'object' && doc !== null && !Array.isArray(doc)) {

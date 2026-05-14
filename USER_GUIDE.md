@@ -412,6 +412,35 @@ EC documents have a dedicated three-tab inspector and a top-of-canvas **verbalis
 - **Drag any box to reposition it.** Positions persist to local storage and survive reload. Auto-layout is disabled for EC; the geometry IS the diagnostic.
 - The palette also surfaces Assumption (violet) for edge side-attachments. CLR rules apply structurally (clarity, entity-existence, causality-existence, tautology); EC-specific rules ("are the two wants genuinely in conflict?") are parked for now.
 
+### EC canvas chrome (Session 87)
+
+EC documents carry three workshop-oriented artifacts above the canvas, each surfacing something the BESTSELLER workshop PPT keeps prominently visible:
+
+- **Reading-instruction strip** — pinned across the top. A compact "Read every arrow: 1) In order to… 2) we must… 3) because…" reminder of the canonical 3-step reading pattern. Click the × to dismiss for the rest of the session. Not persisted — fresh load brings it back.
+- **Verbalisation strip** — sits directly below the reading instructions. Reads the active cloud aloud in canonical prose, with click-through chips for each arrow's assumption count.
+- **Injections (N) chip** — top-right corner. Live count of injection entities on the doc; click to jump the inspector to its **Injections** tab. Visible even when N = 0 so the affordance is discoverable; brightens (emerald) when injections exist.
+
+### Per-slot guiding questions (Session 87)
+
+Select any of the five EC slot entities (A, B, C, D, or D′) and the **EntityInspector** surfaces the canonical guiding question for that slot above the Title field — the same question the wizard prompts with, kept available for re-reading after the wizard closes.
+
+### Verbal style: neutral vs. two-sided (Session 87)
+
+Open **Document settings** (the doc-title menu, or palette command "Document settings") on an EC document to see the **EC verbal style** toggle:
+
+- **Neutral** (default) — the workshop voice: "In order to A, we must B."
+- **Two-sided** — the explicit negotiation framing the BESTSELLER PPT uses: "they want to" on the D side, "I want to" on the D′ side. Surfaces the felt conflict between two parties.
+
+The toggle persists on the document (round-trips through save/load) and updates the verbalisation strip live.
+
+### Reverse-direction wizard walk (Session 87)
+
+When the EC creation wizard is open, look at the top of the panel for the **A → D′ / D → A** toggle. The default walks the structural top-down order (A → B → C → D → D′). The D-first option flips to the PPT's "start from the felt conflict" order (D → D′ → C → B → A) — closer to how practitioners actually experience a conflict. Either order leaves the canvas in a useful state at every step.
+
+### Clickable assumption badge on each arrow (Session 87)
+
+Every edge that carries assumptions now shows a small violet "A" / "A_N_" pill mid-edge. Click it to select the edge AND open the EC inspector on its Assumption Well — no second click needed.
+
 ## Transition Trees
 
 A Transition Tree is a sequenced injection plan — the chain of actions that move you from current reality to a desired effect. Each action carries an explicit step number so the order stays legible after rearranging.

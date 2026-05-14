@@ -82,6 +82,13 @@ export const importFromJSON = (raw: string): TPDocument => {
     parsed.assumptions !== undefined
       ? validateRecord(parsed.assumptions, validateAssumption, 'assumptions')
       : undefined;
+  // Session 87: EC verbal-style toggle. Soft validation — unrecognized
+  // values fall back to `undefined` (interpreted as `'neutral'` at the
+  // verbalisation layer) so a corrupt import still loads.
+  const ecVerbalStyle: 'neutral' | 'twoSided' | undefined =
+    parsed.ecVerbalStyle === 'neutral' || parsed.ecVerbalStyle === 'twoSided'
+      ? parsed.ecVerbalStyle
+      : undefined;
 
   return {
     id: parsed.id as DocumentId,
@@ -103,9 +110,10 @@ export const importFromJSON = (raw: string): TPDocument => {
     ...(methodChecklist ? { methodChecklist } : {}),
     ...(customEntityClasses ? { customEntityClasses } : {}),
     ...(assumptions && Object.keys(assumptions).length > 0 ? { assumptions } : {}),
+    ...(ecVerbalStyle ? { ecVerbalStyle } : {}),
     createdAt: typeof parsed.createdAt === 'number' ? parsed.createdAt : Date.now(),
     updatedAt: typeof parsed.updatedAt === 'number' ? parsed.updatedAt : Date.now(),
-    schemaVersion: 7,
+    schemaVersion: 8,
   };
 };
 

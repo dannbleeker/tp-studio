@@ -158,4 +158,45 @@ describe('verbaliseEC', () => {
     expect(text).toContain('the second need');
     expect(text).toContain('the first want');
   });
+
+  // Session 87 / EC PPT comparison item #4 — two-sided verbal style.
+  describe('ecVerbalStyle', () => {
+    it("renders 'we must' on neutral (default) mode", () => {
+      const { doc } = buildEC();
+      const text = verbalisedECText(doc);
+      expect(text).toContain('we must');
+      expect(text).not.toContain('they want to');
+      expect(text).not.toContain('I want to');
+    });
+
+    it("swaps in 'they want to' / 'I want to' on twoSided mode", () => {
+      const { doc } = buildEC();
+      const twoSidedDoc = { ...doc, ecVerbalStyle: 'twoSided' as const };
+      const text = verbalisedECText(twoSidedDoc);
+      expect(text).toContain('they want to');
+      expect(text).toContain('I want to');
+      // The B↔A and C↔A arrows describe "what each side must do for
+      // the shared objective" — they swap to "they must" / "I must
+      // also" in twoSided mode.
+      expect(text).toContain('they must');
+      expect(text).toContain('I must also');
+    });
+
+    it('explicit neutral matches the default behaviour token-for-token', () => {
+      const { doc } = buildEC();
+      const defaultDoc = doc;
+      const explicitDoc = { ...doc, ecVerbalStyle: 'neutral' as const };
+      expect(verbalisedECText(explicitDoc)).toBe(verbalisedECText(defaultDoc));
+    });
+
+    it('preserves assumption-anchor token positions when the style flips', () => {
+      const { doc } = buildEC({ mutexDtoDPrime: true });
+      const neutralAnchors = verbaliseEC(doc).filter((t) => t.kind === 'assumptionAnchor');
+      const twoSidedAnchors = verbaliseEC({
+        ...doc,
+        ecVerbalStyle: 'twoSided',
+      }).filter((t) => t.kind === 'assumptionAnchor');
+      expect(twoSidedAnchors).toHaveLength(neutralAnchors.length);
+    });
+  });
 });

@@ -36,6 +36,13 @@ export type DialogsSlice = {
     step: number;
     minimised: boolean;
   };
+  /** Session 87 — EC PPT comparison items #1+#7. The active tab on the
+   *  EC inspector's 3-tab bar. Lives on the store so canvas chrome
+   *  (the new injection chip) can request "open injections" from
+   *  outside the Inspector component. Defaults to `'inspector'`; reset
+   *  to default on `clearSelection`-equivalent operations is the
+   *  Inspector's job, not the store's. */
+  ecInspectorTab: 'inspector' | 'verbalisation' | 'injections';
   /** H1 — revision-history panel visibility. */
   historyPanelOpen: boolean;
   /** H2 — when set, the canvas is in visual-diff mode and entities/edges
@@ -102,6 +109,20 @@ export type DialogsSlice = {
   closeCreationWizard: () => void;
   toggleCreationWizardMinimised: () => void;
 
+  /** Session 87 — set the active EC inspector tab. Used by the
+   *  Inspector itself (tab clicks) AND by the canvas-side injection
+   *  chip and assumption badges (`requestECInjectionsView`,
+   *  `requestECInspectorView`). */
+  setECInspectorTab: (tab: 'inspector' | 'verbalisation' | 'injections') => void;
+  /** Session 87 — flip the EC inspector to its Injections tab. The
+   *  injection chip on the canvas calls this on click; the chip is
+   *  visible regardless of selection so it deliberately does NOT
+   *  change `selection` here — the Inspector decides what to render
+   *  on the active tab based on selection. The Inspector's Injections
+   *  tab is selection-independent (it's the doc-level injection
+   *  workbench), so the chip just nudges the tab. */
+  requestECInjectionsView: () => void;
+
   openHistoryPanel: () => void;
   closeHistoryPanel: () => void;
   toggleHistoryPanel: () => void;
@@ -140,6 +161,7 @@ export type DialogsDataKeys =
   | 'printOpen'
   | 'templatePickerOpen'
   | 'creationWizard'
+  | 'ecInspectorTab'
   | 'historyPanelOpen'
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
@@ -157,6 +179,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   printOpen: false,
   templatePickerOpen: false,
   creationWizard: null,
+  ecInspectorTab: 'inspector',
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -175,6 +198,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   printOpen: false,
   templatePickerOpen: false,
   creationWizard: null,
+  ecInspectorTab: 'inspector',
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -233,6 +257,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
     if (!cur) return;
     set({ creationWizard: { ...cur, minimised: !cur.minimised } });
   },
+
+  setECInspectorTab: (tab) => set({ ecInspectorTab: tab }),
+  requestECInjectionsView: () => set({ ecInspectorTab: 'injections' }),
 
   // History panel and Inspector share the right-edge slot — opening
   // history clears any selection so the Inspector doesn't visually race

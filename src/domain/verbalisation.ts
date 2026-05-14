@@ -105,6 +105,62 @@ const findArrow = (
   return null;
 };
 
+/**
+ * Session 87 / EC PPT comparison item #4 — verbal-style modulator.
+ *
+ * `'neutral'` (the v7 default) reads each prerequisite arrow as "we
+ * must X" — a single-perspective workshop voice. `'twoSided'` mirrors
+ * the BESTSELLER workshop PPT's explicit two-party framing:
+ *
+ *   - D-side prerequisites read "they want to" / "they need" (the
+ *     "other side" facing the conflict);
+ *   - D′-side prerequisites read "I want to" / "I need" (the user's
+ *     own side);
+ *   - both sides converge on the shared A objective with "we" again
+ *     since that's the shared goal both parties agree on.
+ *
+ * Pure helper: the function takes the active doc style, never reaches
+ * into store state, so verbalisation stays trivially testable.
+ */
+const wordingForStyle = (
+  style: 'neutral' | 'twoSided'
+): {
+  inOrderToA: string;
+  inOrderToBC: string;
+  weMustB: string;
+  weMustAlsoC: string;
+  inOrderToB: string;
+  weMustD: string;
+  inOrderToC: string;
+  weMustDPrime: string;
+} => {
+  if (style === 'twoSided') {
+    return {
+      inOrderToA: 'In order to achieve ',
+      // The two needs (B + C) belong to each party respectively. The PPT
+      // frames B as the OTHER side's need (satisfied by D) and C as MY
+      // side's need (satisfied by D′).
+      inOrderToBC: 'In order to achieve ',
+      weMustB: ', they must ',
+      weMustAlsoC: ', I must also ',
+      inOrderToB: 'In order to ',
+      weMustD: ', they want to ',
+      inOrderToC: 'In order to ',
+      weMustDPrime: ', I want to ',
+    };
+  }
+  return {
+    inOrderToA: 'In order to achieve ',
+    inOrderToBC: 'In order to achieve ',
+    weMustB: ', we must ',
+    weMustAlsoC: ', we must also ',
+    inOrderToB: 'In order to ',
+    weMustD: ', we must ',
+    inOrderToC: 'In order to ',
+    weMustDPrime: ', we must ',
+  };
+};
+
 /** Generate the structured verbalisation for an EC document. Returns
  *  an empty array for non-EC docs. */
 export const verbaliseEC = (doc: TPDocument): VerbalisationToken[] => {
@@ -115,6 +171,7 @@ export const verbaliseEC = (doc: TPDocument): VerbalisationToken[] => {
   const c = slotText(slots.c, 'c');
   const d = slotText(slots.d, 'd');
   const dPrime = slotText(slots.dPrime, 'dPrime');
+  const w = wordingForStyle(doc.ecVerbalStyle ?? 'neutral');
 
   // Arrow lookups — directed except the D↔D′ mutex, which we treat as
   // bidirectional and require the `isMutualExclusion` flag.
@@ -137,27 +194,27 @@ export const verbaliseEC = (doc: TPDocument): VerbalisationToken[] => {
       : { kind: 'assumptionAnchor', edgeId: '', assumptionCount: 0 };
   };
 
-  push({ kind: 'text', text: 'In order to achieve ' });
+  push({ kind: 'text', text: w.inOrderToA });
   push({ kind: 'slot', slot: 'a', entityId: slots.a?.id, text: a });
-  push({ kind: 'text', text: ', we must ' });
+  push({ kind: 'text', text: w.weMustB });
   push({ kind: 'slot', slot: 'b', entityId: slots.b?.id, text: b });
   push({ kind: 'text', text: ', because ' });
   push(arrow('bToA'));
-  push({ kind: 'text', text: '. In order to ' });
+  push({ kind: 'text', text: `. ${w.inOrderToB.trimStart()}` });
   push({ kind: 'slot', slot: 'b', entityId: slots.b?.id, text: b });
-  push({ kind: 'text', text: ', we must ' });
+  push({ kind: 'text', text: w.weMustD });
   push({ kind: 'slot', slot: 'd', entityId: slots.d?.id, text: d });
   push({ kind: 'text', text: ', because ' });
   push(arrow('dToB'));
-  push({ kind: 'text', text: '. In order to achieve ' });
+  push({ kind: 'text', text: `. ${w.inOrderToBC.trimStart()}` });
   push({ kind: 'slot', slot: 'a', entityId: slots.a?.id, text: a });
-  push({ kind: 'text', text: ', we must also ' });
+  push({ kind: 'text', text: w.weMustAlsoC });
   push({ kind: 'slot', slot: 'c', entityId: slots.c?.id, text: c });
   push({ kind: 'text', text: ', because ' });
   push(arrow('cToA'));
-  push({ kind: 'text', text: '. In order to ' });
+  push({ kind: 'text', text: `. ${w.inOrderToC.trimStart()}` });
   push({ kind: 'slot', slot: 'c', entityId: slots.c?.id, text: c });
-  push({ kind: 'text', text: ', we must ' });
+  push({ kind: 'text', text: w.weMustDPrime });
   push({ kind: 'slot', slot: 'dPrime', entityId: slots.dPrime?.id, text: dPrime });
   push({ kind: 'text', text: ', because ' });
   push(arrow('dPrimeToC'));

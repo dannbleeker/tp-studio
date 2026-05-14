@@ -6,7 +6,7 @@ import { useSelectionShape } from '@/hooks/useSelectionShape';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Button } from '../ui/Button';
 import { EdgeInspector } from './EdgeInspector';
 import { EntityInspector } from './EntityInspector';
@@ -26,7 +26,11 @@ export function Inspector() {
   // Session 77 — EC-only tab bar. The "Inspector" tab is the existing
   // selection-driven content; the two others are doc-level (always
   // visible on any selection so the user can swap views freely).
-  const [ecTab, setECTab] = useState<ECTab>('inspector');
+  // Session 87 — tab state lifted to the store so canvas-side chrome
+  // (the new injection chip + assumption badges) can request a tab
+  // from outside this component.
+  const ecTab = useDocumentStore((s) => s.ecInspectorTab);
+  const setECTab = useDocumentStore((s) => s.setECInspectorTab);
   const isEC = doc.diagramType === 'ec';
 
   // Run CLR rules only when something validation-relevant changes (titles,

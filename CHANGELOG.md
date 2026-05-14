@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 87 — EC PPT comparison (6 of 7 items shipped; #5 deferred)
+
+Six small upgrades surfaced by comparing TP Studio's Evaporating Cloud against the canonical BESTSELLER workshop PPT template (`TEMPLATE evaporating cloud.pptx`). Item #5 ("one-page workshop-handout EC export") deferred — large enough to warrant its own scoping conversation.
+
+**#1 — Numbered reading-instruction chips on the EC canvas.** New `src/components/canvas/ECReadingInstructions.tsx`: a dismissible top-of-canvas strip that surfaces the "1) In order to / 2) we must / 3) because" meta-reading the PPT prints prominently. EC-only; sits above the existing VerbalisationStrip. Session-scoped dismissal via the new `ecReadingInstructionsDismissed` flag on the preferences slice (resets across `resetStoreForTest`).
+
+**#2 — Per-slot guiding questions visible after the wizard closes.** New `src/domain/ecGuiding.ts` exports `EC_SLOT_GUIDING_QUESTIONS` and `EC_SLOT_LABEL` — the canonical question table from the PPT, keyed by ECSlot. EntityInspector re-surfaces the slot-specific question whenever an EC slot entity is selected, so the wizard's once-only prompt stays available for editing.
+
+**#3 — Reverse-direction (D-first) wizard mode.** CreationWizardPanel now carries a per-wizard toggle between the canonical A-first walk (A → B → C → D → D′) and the PPT's D-first walk (D → D′ → C → B → A — "start from the felt conflict"). Default stays A-first. Two-button toggle visible only on the EC wizard; flipping it changes which slot step 0 commits to. Existing wizard tests still pass; new component tests cover both walks.
+
+**#4 — Two-sided "I vs they" verbal framing — schema v7 → v8.** New optional `TPDocument.ecVerbalStyle: 'neutral' | 'twoSided'` field (default neutral; `'neutral'` clears the field rather than persisting). `verbaliseEC` swaps "we must" → "they want to" / "I want to" on the D and D′ sides respectively when twoSided is active, matching the PPT's explicit negotiation framing. Doc-level toggle lives in DocumentInspector under the EC section. v7→v8 migration is a pure schema-version bump (additive optional field, no data shape change). `setECVerbalStyle` store action with coalescing under `doc-ec-verbal`.
+
+**#6 — Per-edge assumption badge sourced from BOTH backings.** TPEdge's existing "A" pill on the canvas now unions both legacy `Edge.assumptionIds` and the v7 `doc.assumptions` map keyed by `edgeId` (mirrors the verbalisation generator's same union). The badge is now a real clickable button — clicking it selects the edge AND sets the EC inspector tab to `'inspector'` so the AssumptionWell is visible without a second click.
+
+**#7 — Injection-summary chip on the EC canvas.** New `src/components/canvas/ECInjectionChip.tsx`: a small "Injections (N)" chip anchored top-right of the canvas on EC docs (zero-state included for discoverability). Clicking it sets `ecInspectorTab = 'injections'` via the new `requestECInjectionsView` store action. The EC inspector's tab state is lifted to the store (was local component state) so canvas chrome can request a tab from outside the Inspector.
+
+**Item #5 deliberately deferred.** "One-page workshop-handout EC export" is the biggest single-feature ask of the comparison; it remains in `NEXT_STEPS.md` unchanged. Worth a separate scoping pass before picking up.
+
+End state: tsc clean, Biome clean, **1040 tests passing** (was 1000; +40 across `ecGuiding`, `ecPPTComparison` store, `ECReadingInstructions`, `ECInjectionChip`, `TPEdgeAssumptionBadge`, `CreationWizardPanelECOrder` + extensions to `verbalisation`, `migrations`, `EntityInspector`), build green (flow chunk 102.86 KB gz unchanged), schema bumped 7 → 8.
+
 ## Session 86 — Focused 1-hour code-optimization pass
 
 Time-boxed cleanup pass against the menu in `NEXT_STEPS.md`. Three items picked (#3, #5, #6); two shipped real changes, one was an audit-only "verified, no action needed".

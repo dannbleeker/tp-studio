@@ -73,9 +73,26 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // for THIS edge. All three selectors return primitives, so they only fire
   // a render when the actual value changes — not on every doc edit.
   const edgeLabel = useDocumentStore((s) => s.doc.edges[props.id]?.label);
-  const assumptionCount = useDocumentStore(
-    (s) => s.doc.edges[props.id]?.assumptionIds?.length ?? 0
-  );
+  // Session 87 / EC PPT comparison item #6 — combine BOTH legacy
+  // `Edge.assumptionIds` and the v7 first-class `doc.assumptions` map
+  // keyed by edgeId. The two should normally agree post-migration; we
+  // union to be safe (matches `verbalisation.ts → findArrow`).
+  const assumptionCount = useDocumentStore((s) => {
+    const legacy = s.doc.edges[props.id]?.assumptionIds?.length ?? 0;
+    let fromMap = 0;
+    if (s.doc.assumptions) {
+      for (const a of Object.values(s.doc.assumptions)) {
+        if (a.edgeId === props.id) fromMap += 1;
+      }
+    }
+    return Math.max(legacy, fromMap);
+  });
+  // Session 87 — wire the assumption pill to be clickable: jumps the
+  // inspector to this edge's AssumptionWell (selects the edge AND
+  // forces the EC inspector to the Inspector tab so the well is
+  // visible immediately).
+  const selectEdge = useDocumentStore((s) => s.selectEdge);
+  const setECInspectorTab = useDocumentStore((s) => s.setECInspectorTab);
   const isBackEdge = useDocumentStore((s) => s.doc.edges[props.id]?.isBackEdge === true);
   const isMutex = useDocumentStore((s) => s.doc.edges[props.id]?.isMutualExclusion === true);
   const weight = useDocumentStore((s) => s.doc.edges[props.id]?.weight);
@@ -244,18 +261,34 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         reveals the exact count — useful for edges where the inspector
         isn't open. Violet matches the assumption entity stripe so the
         visual language is consistent across the canvas.
+
+        Session 87 / EC PPT comparison item #6: the pill is now a real
+        button. Clicking it selects the edge AND forces the EC
+        inspector to its Inspector tab, so the AssumptionWell is
+        visible without a second click. The hit target sits above
+        nodrag/nopan so React Flow's pan/zoom doesn't swallow the
+        click.
       */}
       {assumptionCount > 0 && (
         <EdgeLabelRenderer>
-          <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded-full bg-violet-500 px-1.5 font-semibold text-[10px] text-white uppercase tracking-wider shadow-sm"
+          <button
+            type="button"
+            data-component="edge-assumption-badge"
+            data-edge-id={props.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              selectEdge(props.id);
+              setECInspectorTab('inspector');
+            }}
+            className="nodrag nopan pointer-events-auto absolute cursor-pointer select-none rounded-full bg-violet-500 px-1.5 font-semibold text-[10px] text-white uppercase tracking-wider shadow-sm transition hover:bg-violet-600 focus:outline-none focus:ring-2 focus:ring-violet-300"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX - 16}px, ${labelY - 14}px)`,
             }}
-            title={`${assumptionCount} assumption${assumptionCount === 1 ? '' : 's'} on this edge`}
+            title={`${assumptionCount} assumption${assumptionCount === 1 ? '' : 's'} on this edge — click to open`}
+            aria-label={`${assumptionCount} assumption${assumptionCount === 1 ? '' : 's'} on this edge. Open the Assumption Well.`}
           >
             A{assumptionCount > 1 ? assumptionCount : ''}
-          </div>
+          </button>
         </EdgeLabelRenderer>
       )}
       {/*
