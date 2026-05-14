@@ -2,6 +2,40 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 85 — 20 under-the-hood improvements (10 batches, 8 shipped + 12 items evaluated-and-skipped)
+
+A two-phase under-the-hood pass. Planned as a list of 20 maintainability / perf / test-coverage items, organized into 10 batches (A-J). Of the 20, **8 batches shipped real changes** and **2 batches were evaluated and consciously skipped** (the planned items turned out to be either already done or net-negative once benchmarked). Honest pruning is part of the story — half a dozen items inside the shipped batches got the same treatment.
+
+End state: tsc clean, Biome clean, **1003 tests passing** (was 992; +11 across two new property-based / hook-coverage files), build green, all budgeted chunks within ceiling.
+
+### Phase 1 (Batches A-D) — CI structure + memoization + property tests + brand-ID cleanup
+
+**Batch A — CI + tooling lockdown.** Split the monolithic `Lint + types + tests + build` CI job into 3 parallel jobs (Lint+types, Tests+build+bundle, Playwright e2e). Tightened `.npmrc` with pnpm 10.x build-script policy (`engine-strict=true`, `manage-package-manager-versions=true`). Added Biome `useSortedClasses` nursery rule at `info` level for Tailwind class ordering; ran `biome check --write --unsafe` to apply the auto-sort (47 files re-formatted mechanically).
+
+**Batch B — `structuralEntities` per-doc memo (#6).** `src/domain/graph.ts` now caches `Object.values(doc.entities).filter(!isNonCausal)` in a WeakMap keyed by doc reference. Same WeakMap pattern reused later in Batch E. Cache hit ≡ "doc unchanged since last call" — same semantics as the existing `useFingerprintMemo` gates at call sites, but transparent to every caller.
+
+**Batch C — Property-based migration coverage (#13).** New `tests/domain/migrationsProperty.test.ts` adds 3 fast-check properties × 100 runs: importFromJSON survives the strict validator on arbitrary v1 docs; `migrateToCurrent` is idempotent at the current version; future-version docs are rejected. Generators mirror the EntityType union exactly — fast-check found a typo'd type name in the first generator immediately (`undesirableEffect` doesn't exist; the union uses `ude`). `fast-check ^3.23.2` added as devDep.
+
+**Batch D — Brand-ID consolidation (#1).** New `Selection` variant `{ kind: 'groups'; ids: GroupId[] }` so group cards can be selected with proper `GroupId` branding instead of `as unknown as EntityId` casts. `TPGroupNode` now calls `selectGroup(group.id)` directly. Widened `EntityTypeMeta.type` from `EntityType` to `EntityType | string` to eliminate casts on custom classes. `useSelectionShape` reports `isSingleGroup = selection.kind === 'groups'`.
+
+### Phase 2 (Batches E-J) — validator cache, helpers, edge predicates, test breadth, dev overlay
+
+**Batch E — `validate(doc)` per-doc memo (#8).** Same WeakMap-by-doc-reference pattern as Batch B, applied to the CLR validator registry's main entry point in `src/domain/validators/index.ts`. 16 rules × per-render call frequency adds up; `useFingerprintMemo` already guards the React render-cycle cost, but the downstream re-computation cost is what this saves. `#7` (per-rule reach maps) evaluated and confirmed already memoized once per emission — no action needed.
+
+**Batch F — `requireEntity` / `requireEdge` / `getEdge` helpers (#2).** `src/domain/graph.ts` grew three throw-or-return helpers for the "I know this id exists" call sites that previously did `doc.entities[id]!` (non-null assertion) or `doc.entities[id] ?? throw …` (boilerplate). `getEntity` already existed; `getEdge` is the matching read-only variant. `#4` (validator error paths) + `#5` (Object.values strict) evaluated and confirmed already well-pathed — no concrete bug cluster to motivate the change.
+
+**Batch G — Bundle-size sweep (evaluated, no commit).** Three items evaluated and consciously skipped: `#10` lucide subpaths (icons chunk already 11.74 KB gz / 44 icons — near the raw floor; subpath imports save ~0.5 KB at most), `#11` hand-rolled SVG serializer (~6 KB gz savings versus 200+ lines of custom code to write and test), `#12` dompurify lazy (already its own chunk `purify.es-*.js` at 8.77 KB gz, loaded only with the inspector). Honest pruning — no commit landed for this batch.
+
+**Batch H — `Edge.kind` predicates (#3, light variant).** Added `isSufficiencyEdge` / `isNecessityEdge` user-defined type guards in `src/domain/graph.ts`. The full discriminated-union version of `Edge.kind` was evaluated and rejected: it touches 50+ files for what amounts to slightly narrower types at the cost of widespread churn. The predicate helpers give callers the same narrowing where they need it, without the blast radius.
+
+**Batch I — Property-based CLR totality + cold-path canvas hook coverage (#14, #16).** Two new test files. `tests/domain/validatorsProperty.test.ts` generates arbitrary `TPDocument`s across all 8 diagram types and asserts three properties × 100-200 runs each: `validate(doc)` never throws and returns well-formed Warning[], every warning targets an entity/edge that actually exists in the doc, and `validateTiered` partitions exactly the same warnings as `validate`. Covers all 16 rules transitively in one property — a rule that crashes on an unusual graph would have surfaced as a blank Inspector and a logged error; now it surfaces in CI with a shrunk repro. `tests/components/canvas/useGraphPositions.test.tsx` pins the cold-load contract: EC docs return synchronous positions on the manual branch, CRT docs return empty positions on first render and populated positions after `waitFor` observes the dagre dynamic import resolving. `#15` (Storybook visual regression) evaluated and skipped — would need Chromatic or test-runner + Playwright + image-diff infra, and the 6 small stories already have matching component tests.
+
+**Batch J — `vite-plugin-checker` dev overlay (#18).** Added as a devDep and wired into the dev server's plugin list. Runs `tsc --noEmit` and `biome check` in a worker alongside Vite, surfacing type and lint errors as a browser overlay the moment they're introduced — without it, type errors only surface at `pnpm build` time (or when the IDE's tsserver catches up, which can lag). Scoped to `command === 'serve'`; `pnpm build` already runs `tsc --noEmit` explicitly before `vite build`, so the build path is untouched.
+
+### Why this entry mixes "shipped" with "evaluated and skipped"
+
+Half the value of an under-the-hood pass is the audit: discovering an item is already done (Batch E's #7, Batch F's #4/#5), or that the apparent win is smaller than the cost (Batch G entirely, Batch I's #15), is just as legitimate an outcome as a code change. Documenting both lets future audits skip re-evaluating the same ground.
+
 ## Session 83 — Parked-items sweep: nudge, mobile, layout-memo, drag-splice, visual baselines
 
 Picks off seven items in one pass — three that the previous backlog flagged as parked behind UX/risk concerns plus four that turned out either stale or low-risk. Two were no-ops (the migrations stub had already shipped six versions ago; one component-test gap closed but the Canvas one stays parked for the same React-Flow-in-jsdom reason). Plus an honest backlog placeholder for "Look at UI" + "Validate EC against document".
