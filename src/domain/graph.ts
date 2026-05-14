@@ -34,8 +34,22 @@ export const isNote = (entity: Entity): boolean => entity.type === 'note';
  */
 export const isNonCausal = (entity: Entity): boolean => isAssumption(entity) || isNote(entity);
 
-export const structuralEntities = (doc: TPDocument): Entity[] =>
-  Object.values(doc.entities).filter((e) => !isNonCausal(e));
+// Session 85 — per-doc-reference memo. `structuralEntities` is called
+// from 44+ sites (validators, exporters, emission, inspector, layout,
+// CoreDriver, htmlExport, dotExport, edgeReading, …) — typically
+// several times per render. Keyed by the doc REFERENCE because
+// `applyDocChange` returns a new reference on every mutation, so a
+// cache hit means "doc unchanged since last call" — same semantics as
+// the layout fingerprint, just for the structural-filter answer.
+// WeakMap so old doc references GC normally.
+const structuralEntitiesCache = new WeakMap<TPDocument, Entity[]>();
+export const structuralEntities = (doc: TPDocument): Entity[] => {
+  const cached = structuralEntitiesCache.get(doc);
+  if (cached) return cached;
+  const result = Object.values(doc.entities).filter((e) => !isNonCausal(e));
+  structuralEntitiesCache.set(doc, result);
+  return result;
+};
 
 /**
  * Session 76 — reserved attribute keys recognized by the first-class
