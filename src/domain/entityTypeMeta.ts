@@ -74,7 +74,14 @@ import { ENTITY_STRIPE_COLOR } from './tokens';
 import type { CustomEntityClass, DiagramType, EntityType, TPDocument } from './types';
 
 export type EntityTypeMeta = {
-  type: EntityType;
+  // Session 85 (#1) — widened from `EntityType` to `EntityType | string`
+  // so custom-class meta (whose id is a user-defined string outside the
+  // built-in union) doesn't need the `as unknown as EntityType` cast.
+  // Most consumers only ever read `meta.type` as a string (display label,
+  // serialization, css class key) — narrowing to the union was decorative.
+  // Cases that need to discriminate built-in vs custom use the runtime
+  // check `type in ENTITY_TYPE_META`.
+  type: EntityType | string;
   label: string;
   stripeColor: string;
   shortcut?: string;
@@ -406,7 +413,7 @@ export const resolveEntityTypeMeta = (
       // We use the typeId as the "type" — downstream consumers treat
       // it as opaque (display only). Cast through `unknown` because
       // TS doesn't know the custom id isn't in the EntityType union.
-      type: typeId as unknown as EntityType,
+      type: typeId,
       label: custom.label,
       stripeColor: custom.color ?? DEFAULT_CUSTOM_STRIPE,
       icon,

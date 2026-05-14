@@ -40,7 +40,11 @@ describe('useSelectionShape', () => {
     const e = seedEntity('A');
     const g = useDocumentStore.getState().createGroupFromSelection([e.id], { title: 'G' });
     if (!g) throw new Error('group not created');
-    act(() => useDocumentStore.getState().selectEntity(g.id));
+    // Session 85 (#1) — `selectGroup` brands the id correctly into the
+    // new `Selection` `groups` variant. Previously this test went through
+    // `selectEntity(g.id)` and relied on `useSelectionShape` detecting
+    // group-ness via a `groups[id]` lookup.
+    act(() => useDocumentStore.getState().selectGroup(g.id));
     const { result } = renderHook(() => useSelectionShape());
     expect(result.current.isSingleGroup).toBe(true);
     expect(result.current.headerLabel).toBe('Group');

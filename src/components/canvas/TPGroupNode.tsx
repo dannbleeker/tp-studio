@@ -1,5 +1,4 @@
 import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
-import type { EntityId } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import type { NodeProps } from '@xyflow/react';
 import clsx from 'clsx';
@@ -14,7 +13,7 @@ import type { TPGroupNode as TPGroupNodeType } from './flow-types';
 export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
   const { group, width, height } = data;
   const colors = GROUP_COLOR_CLASSES[group.color];
-  const select = useDocumentStore((s) => s.select);
+  const selectGroup = useDocumentStore((s) => s.selectGroup);
 
   return (
     <div
@@ -34,12 +33,10 @@ export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
         )}
         onClick={(e) => {
           e.stopPropagation();
-          // Groups are selected through the `entities` bucket — the
-          // Inspector reads `doc.groups[id]` when the id matches a
-          // group rather than an entity. The brand cast acknowledges
-          // this shared bucket; a future Selection model with a
-          // distinct `groups` kind would remove the cast.
-          select({ kind: 'entities', ids: [group.id as unknown as EntityId] });
+          // Session 85 (#1) — `Selection` has a dedicated `groups`
+          // variant now. `selectGroup` brands the id correctly; no
+          // `as unknown as EntityId` cast needed.
+          selectGroup(group.id);
         }}
       >
         {group.title || 'Untitled group'}

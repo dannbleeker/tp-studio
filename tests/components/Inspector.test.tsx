@@ -47,7 +47,10 @@ describe('Inspector', () => {
       .getState()
       .createGroupFromSelection([a.id], { title: 'My Group', color: 'amber' });
     if (!g) throw new Error('group not created');
-    act(() => useDocumentStore.getState().selectEntity(g.id));
+    // Session 85 (#1) — `selectGroup` brands the id correctly into
+    // the new `Selection` `groups` variant; previously this used
+    // `selectEntity(g.id)` and relied on cross-detection.
+    act(() => useDocumentStore.getState().selectGroup(g.id));
     const { container, getByText } = render(<Inspector />);
     expect(getByText('Group')).toBeTruthy();
     // Group rename input is pre-filled.

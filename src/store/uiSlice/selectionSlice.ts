@@ -1,4 +1,4 @@
-import type { EdgeId, EntityId } from '@/domain/types';
+import type { EdgeId, EntityId, GroupId } from '@/domain/types';
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
 import type { Selection } from './types';
@@ -22,6 +22,11 @@ export type SelectionSlice = {
   select: (sel: Selection) => void;
   selectEntity: (id: string) => void;
   selectEdge: (id: string) => void;
+  /** Session 85 (#1) — branded group selection. Previously groups were
+   *  shoehorned into the `entities` variant via an `as unknown as EntityId`
+   *  cast at every call site. The dedicated `groups` variant + this
+   *  action let callers stay honest about what's selected. */
+  selectGroup: (id: string) => void;
   selectEntities: (ids: string[]) => void;
   selectEdges: (ids: string[]) => void;
   toggleEntitySelection: (id: string) => void;
@@ -61,6 +66,7 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   // correct branded types downstream.
   selectEntity: (id) => set({ selection: { kind: 'entities', ids: [id as EntityId] } }),
   selectEdge: (id) => set({ selection: { kind: 'edges', ids: [id as EdgeId] } }),
+  selectGroup: (id) => set({ selection: { kind: 'groups', ids: [id as GroupId] } }),
   selectEntities: (ids) =>
     set({
       selection: ids.length ? { kind: 'entities', ids: ids as EntityId[] } : { kind: 'none' },

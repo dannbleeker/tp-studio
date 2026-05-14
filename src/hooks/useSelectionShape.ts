@@ -33,21 +33,23 @@ export type SelectionShape = {
 
 export const useSelectionShape = (): SelectionShape => {
   const selection = useDocumentStore((s) => s.selection);
-  const groups = useDocumentStore((s) => s.doc.groups);
 
   const open = selection.kind !== 'none';
   const singleId =
-    (selection.kind === 'entities' || selection.kind === 'edges') && selection.ids.length === 1
-      ? selection.ids[0]
-      : undefined;
-  const isSingleGroup = selection.kind === 'entities' && !!singleId && Boolean(groups[singleId]);
+    selection.kind !== 'none' && selection.ids.length === 1 ? selection.ids[0] : undefined;
+  // Session 85 (#1) — `selection.kind === 'groups'` is the truth now.
+  // The previous "isSingleGroup = entities kind + groups[id] exists"
+  // detection was a workaround for the missing variant.
+  const isSingleGroup = selection.kind === 'groups' && !!singleId;
   const isMulti = selection.kind !== 'none' && !singleId;
 
   const headerLabel = isMulti
     ? selection.kind === 'entities'
       ? `${selection.ids.length} entities`
-      : `${selection.ids.length} edges`
-    : isSingleGroup
+      : selection.kind === 'edges'
+        ? `${selection.ids.length} edges`
+        : `${selection.ids.length} groups`
+    : selection.kind === 'groups'
       ? 'Group'
       : selection.kind === 'entities'
         ? 'Entity'

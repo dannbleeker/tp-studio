@@ -5,17 +5,22 @@
  * through `@/store/uiSlice` for backward compatibility.
  */
 
-import type { EdgeId, EntityId } from '@/domain/types';
+import type { EdgeId, EntityId, GroupId } from '@/domain/types';
 
 /**
- * Multi-selection model. `entities` and `edges` hold ordered, de-duplicated
- * id lists. Mixed entity+edge selection is intentionally not supported — the
- * UI flips between them so the inspector has one render path.
+ * Multi-selection model. Each variant holds ordered, de-duplicated id
+ * lists of one kind — mixed selections aren't supported because the
+ * inspector has one render path per kind.
+ *
+ * Session 85 (#1) added the `groups` variant so group cards can be
+ * selected with proper `GroupId` branding instead of pretending to be
+ * entities via an `as unknown as EntityId` cast.
  */
 export type Selection =
   | { kind: 'none' }
   | { kind: 'entities'; ids: EntityId[] }
-  | { kind: 'edges'; ids: EdgeId[] };
+  | { kind: 'edges'; ids: EdgeId[] }
+  | { kind: 'groups'; ids: GroupId[] };
 
 /**
  * App-wide visual theme. `'light'` and `'dark'` are the canonical pair;
