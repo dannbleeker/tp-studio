@@ -30,6 +30,11 @@ export type DocMetaSlice = {
   newDocument: (diagramType: DiagramType) => void;
   setTitle: (title: string) => void;
   setDocumentMeta: (patch: { author?: string; description?: string }) => void;
+  /** Session 83 — flip the per-doc System Scope nudge flag without
+   *  pushing a history entry. Used by `systemScopeNudge` after the
+   *  toast fires so the nudge doesn't re-show on subsequent doc
+   *  swaps. */
+  markSystemScopeNudgeShown: () => void;
 
   resolveWarning: (warningId: string) => void;
   unresolveWarning: (warningId: string) => void;
@@ -184,6 +189,18 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
     setDocumentMeta: (patch) => {
       const keys = Object.keys(patch).sort().join(',');
       applyDocChange((prev) => touch({ ...prev, ...patch }), { coalesceKey: `doc-meta:${keys}` });
+    },
+
+    markSystemScopeNudgeShown: () => {
+      // Bypass `applyDocChange` deliberately — this flag flip isn't
+      // an undoable user action, so pushing a history entry would be
+      // noise (Cmd+Z would "un-show" a toast that's already gone).
+      // Persist directly so the flag survives the next reload.
+      const prev = get().doc;
+      if (prev.systemScopeNudgeShown) return;
+      const next = touch({ ...prev, systemScopeNudgeShown: true });
+      persistDebounced(next);
+      set({ doc: next });
     },
 
     resolveWarning: (warningId) => {

@@ -2,6 +2,62 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 83 — Parked-items sweep: nudge, mobile, layout-memo, drag-splice, visual baselines
+
+Picks off seven items in one pass — three that the previous backlog flagged as parked behind UX/risk concerns plus four that turned out either stale or low-risk. Two were no-ops (the migrations stub had already shipped six versions ago; one component-test gap closed but the Canvas one stays parked for the same React-Flow-in-jsdom reason). Plus an honest backlog placeholder for "Look at UI" + "Validate EC against document".
+
+End state: tsc clean, Biome clean, **992 tests passing** (was 954; +38), build green, all budgeted chunks within ceiling.
+
+### CRT System Scope nudge (`src/services/systemScopeNudge.ts`)
+
+Once-per-doc soft toast on CRT load when the System Scope (Step 0) is empty. Previously rejected as intrusive, this implementation flips a `doc.systemScopeNudgeShown` boolean on first surface so the toast never re-fires for the same doc. Wired via a `useDocumentStore.subscribe` watcher installed from `main.tsx`. New per-doc field validated by `persistenceValidators`. Toast text points the user at the Document Inspector's System Scope section (Session 56) rather than spelling out all seven Step-0 questions inline.
+
+### Mobile / narrow-viewport pass
+
+- New `xs:` breakpoint at 480 px in `tailwind.config.ts` — sits between Tailwind's defaults (`<sm` 640 px → `xs` 480 px → very narrow 320–479 px).
+- `TitleBadge`: tighter `gap` + `px-1.5` at the smallest breakpoint so a long title still fits between the left margin and the toolbar. Info button hidden below `xs:` — Document Inspector reachable via palette ("Document details" command) when the icon is suppressed.
+
+### Migrations stub — was already done
+
+Backlog item 4 ("Backward-incompatible migrations stub") flagged `schemaVersion: 1` as a literal. The current state: `src/domain/migrations.ts` with `CURRENT_SCHEMA_VERSION = 7` and six registered migrations (v1 → v7), exercised by `tests/domain/migrations*.test.ts`. `importFromJSON` calls `migrateToCurrent` before validation. NEXT_STEPS entry marked complete; no code change needed.
+
+### Toaster component test (`tests/components/Toaster.test.tsx`)
+
+Six tests — empty queue renders null, per-kind rendering, dedup, manual dismiss via the X button, auto-dismiss after the configured timeout (via `vi.useFakeTimers`). Closes one of the three component-test gaps. TPNode + TPEdge tests already existed (landed alongside the canvas hook split); only the Canvas-shell test stays parked for the same React-Flow-in-jsdom reason as before — the dblclick contract is covered by `e2e/smoke.spec.ts`.
+
+### FL-LA4 — Incremental layout via per-component memoization
+
+Real incremental dagre would need a different layout engine; pragmatic alternative: split the graph into weakly-connected components and run dagre per component, caching results.
+
+- New helpers in `src/domain/layout.ts`: `splitIntoComponents`, `clearLayoutCacheForTests`, plus internal `layoutOneComponent`, `componentCacheKey`, packing logic.
+- Module-level LRU cache (`COMPONENT_CACHE_CAP = 64`) keyed by `(component-hash, options-hash)`. Cache hits return cached positions; misses run dagre once and store the result.
+- Components packed vertically below each other with an 80 px gap. Stable ordering: largest component first.
+- Wins on docs with multiple disconnected subgraphs (Archive groups, Notes, stray new entities mid-edit). Single-component docs see negligible change — same dagre output, no cache contention.
+- Tests: 8 in `tests/domain/layoutComponents.test.ts` covering split correctness, single/multi-component layout, repeat-call cache hit, structural-change cache invalidation.
+
+### Drag-to-splice entity into edge
+
+Alt+drag an entity onto an edge body → splice. Previously parked behind a UX-design question; landed with explicit Alt-modifier requirement so the destructive gesture stays opt-in.
+
+- New store action `spliceEntityIntoEdge(entityId, edgeId)`. Cuts the entity's prior incoming/outgoing edges, replaces the target edge with two new edges through the entity. Mirrors `spliceEdge`'s asymmetric metadata distribution (downstream half inherits label / assumptions / isBackEdge; upstream stays clean). Tests: 5 in `tests/domain/spliceEntityIntoEdge.test.ts` covering happy path, metadata preservation, validation rejects (entity is endpoint / entity missing / edge missing).
+- New pure module `src/domain/dragSplice.ts` with `pointToSegmentDistanceSq` + `findSpliceTargetEdge` for the hit-test geometry. 9 tests in `tests/domain/dragSplice.test.ts` covering on-segment, perpendicular, endpoint-clamp, degenerate-segment, dragged-entity-skip, missing-position-skip cases.
+- Canvas wires `onNodeDragStop` — checks `event.altKey`, computes drop position from React Flow's `node.measured` dimensions, runs the hit-test against current entity positions, calls `spliceEntityIntoEdge` on match. Toasts a success / "already endpoints that edge" hint on completion. Without Alt the drop falls through to React Flow's normal drag-to-pin gesture (LA5 from Session 63 — no behaviour change).
+
+### Visual snapshot baselines — now committed
+
+Triggered the manual `update-visual-snapshots` workflow. The Playwright `--update-snapshots` run pushed two PNGs to `chore/update-visual-snapshots`:
+
+- `e2e/visual-canvas.spec.ts-snapshots/canvas-empty-chromium-linux.png` (25 KB)
+- `e2e/visual-canvas.spec.ts-snapshots/canvas-three-entities-chromium-linux.png` (30 KB)
+
+The auto-PR step failed because "Allow GitHub Actions to create / approve pull requests" wasn't enabled on the repo — manually pulled the baselines onto `main` instead. Tests are unskipped on CI; the visual-regression gate is live going forward. Future refresh: enable the repo setting OR keep the manual-cherry-pick step.
+
+### Backlog placeholders
+
+Added two open-ended items to `NEXT_STEPS.md`'s "Placeholders" section:
+- **Look at UI** — open-ended UX review pass; needs a fresh-eyes walkthrough to scope.
+- **Validate EC against document** — CLR rule comparing an EC's structural shape against a reference text; needs a 15-minute design conversation on what "the document" actually means.
+
 ## Session 81 — Parked-extras sweep: lazy dagre, S&T inline edit, EC wizard polish, Storybook
 
 Closes four "extras" items from the post-v3 backlog in one pass. All four had been parked for legitimate reasons (visible UX cost, library risk, install bloat); the user requested doing them anyway. The wins are small individually but compound — eager-bundle size drops, S&T users get a faster edit gesture, EC wizard handles real keyboard mishaps, and primitives now have a visual playground.

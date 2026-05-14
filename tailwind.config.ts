@@ -10,6 +10,13 @@ const config: Config = {
   darkMode: 'class',
   theme: {
     extend: {
+      // Session 83 — mobile pass. Tailwind's default `sm:` is 640 px, but
+      // narrow phones (320–479 px) need their own breakpoint to hide
+      // non-essential controls. `xs:` sits at 480 px — common entry-point
+      // for portrait phones.
+      screens: {
+        xs: '480px',
+      },
       fontFamily: {
         sans: [
           'Inter',

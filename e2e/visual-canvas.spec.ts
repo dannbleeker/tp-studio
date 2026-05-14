@@ -26,18 +26,17 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('canvas visual regression', () => {
-  // Visual snapshots require a committed baseline `.png` for each
-  // platform Playwright runs on. The repo carries Linux baselines under
-  // `e2e/visual-canvas.spec.ts-snapshots/` once the manual
-  // `Update visual snapshots` workflow has been triggered. The
-  // workflow sets `REFRESH_VISUAL_SNAPSHOTS=1` so these tests run
-  // (with `--update-snapshots`) in that workflow's run; regular CI
-  // runs skip them when the env var is unset to avoid baseline-mismatch
-  // flakes pre-refresh.
-  test.skip(
-    !!process.env.CI && !process.env.REFRESH_VISUAL_SNAPSHOTS,
-    'Visual baselines refresh via the `Update visual snapshots` workflow'
-  );
+  // Linux baselines committed in
+  // `e2e/visual-canvas.spec.ts-snapshots/canvas-{empty,three-entities}-chromium-linux.png`.
+  // To refresh them when an intentional visual change lands (theme,
+  // typography, node styling), trigger the manual
+  // `Update visual snapshots` workflow — it runs Playwright with
+  // `--update-snapshots`, pushes the new PNGs to the
+  // `chore/update-visual-snapshots` branch, and (once the
+  // "Allow GitHub Actions to create / approve pull requests" toggle is
+  // enabled in repo settings) opens a PR. Until that toggle is on, the
+  // PR step fails but the branch push still succeeds — pull the PNGs
+  // manually and commit them on main.
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');

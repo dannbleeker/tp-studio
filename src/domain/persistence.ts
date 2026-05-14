@@ -96,6 +96,10 @@ export const importFromJSON = (raw: string): TPDocument => {
     ...(typeof parsed.description === 'string' ? { description: parsed.description } : {}),
     ...(layoutConfig ? { layoutConfig } : {}),
     ...(systemScope ? { systemScope } : {}),
+    // Session 83 — boolean flag set once the one-time CRT System Scope
+    // nudge toast has fired. Persisted so the nudge doesn't re-show
+    // for the same doc after a reload / JSON round-trip / share-link.
+    ...(parsed.systemScopeNudgeShown === true ? { systemScopeNudgeShown: true } : {}),
     ...(methodChecklist ? { methodChecklist } : {}),
     ...(customEntityClasses ? { customEntityClasses } : {}),
     ...(assumptions && Object.keys(assumptions).length > 0 ? { assumptions } : {}),

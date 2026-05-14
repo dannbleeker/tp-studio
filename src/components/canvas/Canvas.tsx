@@ -1,3 +1,4 @@
+import { findSpliceTargetEdge } from '@/domain/dragSplice';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { GRID_DOT } from '@/domain/tokens';
 import { guardWriteOrToast } from '@/services/browseLock';
@@ -51,6 +52,8 @@ function CanvasInner() {
     addEntity,
     openContextMenu,
     closeHistoryPanel,
+    spliceEntityIntoEdge,
+    showToast,
   } = useDocumentStore(
     useShallow((s) => ({
       connect: s.connect,
@@ -62,6 +65,8 @@ function CanvasInner() {
       addEntity: s.addEntity,
       openContextMenu: s.openContextMenu,
       closeHistoryPanel: s.closeHistoryPanel,
+      spliceEntityIntoEdge: s.spliceEntityIntoEdge,
+      showToast: s.showToast,
     }))
   );
 
@@ -112,6 +117,45 @@ function CanvasInner() {
         onConnectEnd={onConnectEnd}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeDragStop={(e, draggedNode) => {
+          // Session 83 — Alt+drag-to-splice. With the Alt modifier held
+          // on drop, check whether the dragged entity landed close to
+          // the centerline of an existing edge; if so, splice the
+          // entity into that edge (drops the entity's prior connections
+          // and rewires through it). Without Alt, this is the normal
+          // drag-to-pin gesture and we leave React Flow's onNodesChange
+          // to handle the position persist.
+          if (!e.altKey) return;
+          if (!guardWriteOrToast()) return;
+          const dragged = doc.entities[draggedNode.id];
+          if (!dragged) return;
+          const entityPositions: Record<string, { x: number; y: number }> = {};
+          for (const n of nodes) {
+            const cx = n.position.x + (n.measured?.width ?? 0) / 2;
+            const cy = n.position.y + (n.measured?.height ?? 0) / 2;
+            entityPositions[n.id] = { x: cx, y: cy };
+          }
+          // Use the dragged node's centre (its new dropped position) as
+          // the hit-test probe. Tolerance is roughly half a standard
+          // node width — generous enough to forgive aim, tight enough
+          // to avoid accidental splices on dense graphs.
+          const dropX = draggedNode.position.x + (draggedNode.measured?.width ?? 200) / 2;
+          const dropY = draggedNode.position.y + (draggedNode.measured?.height ?? 60) / 2;
+          const hit = findSpliceTargetEdge({
+            point: { x: dropX, y: dropY },
+            draggedEntityId: draggedNode.id,
+            edges: Object.values(doc.edges),
+            entityPositions,
+            tolerance: 40,
+          });
+          if (!hit) return;
+          const ok = spliceEntityIntoEdge(draggedNode.id, hit.edgeId);
+          if (ok) {
+            showToast('success', 'Entity spliced into edge.');
+          } else {
+            showToast('info', 'Splice rejected — entity already endpoints that edge.');
+          }
+        }}
         // TOC-reading direct-manipulation: track hovered edge during a
         // connection drag so `onConnectEnd` can detect "released on an
         // edge body" and AND-group the new edge with the existing one.

@@ -555,6 +555,11 @@ export type TPDocument = {
   layoutConfig?: LayoutConfig;
   /** Book-derived "Step 0" capture. See {@link SystemScope}. */
   systemScope?: SystemScope;
+  /** Session 83 — set once the System Scope nudge toast has been
+   *  surfaced for this doc on CRT load. Prevents the toast from re-
+   *  firing every doc swap. Setting it `true` is the implicit dismissal;
+   *  the flag is documented in user-facing copy via the toast itself. */
+  systemScopeNudgeShown?: boolean;
   /** Book-derived method checklist. Maps step ids (e.g. `'crt.scope'`) to
    *  the boolean "user has checked this step off" state. Step catalogs per
    *  diagram type live in `domain/methodChecklist.ts` — the canonical set

@@ -201,23 +201,17 @@ Brief said "responsive down to 1024 px is enough." Below that, the 320-px inspec
 
 ### 3. Component-level interaction tests — ✅ mostly done
 
-Inspector / ContextMenu / CommandPalette landed earlier; **Session 34** added TopBar, SettingsDialog, HelpDialog, EntityInspector, EdgeInspector (33 more tests). **Session 35** added shortcut-registry + linkage tests (10 more). The canvas / inspector / settings surface is now component-tested. Remaining gaps where a render-driven test would still pay off:
+Inspector / ContextMenu / CommandPalette landed earlier; **Session 34** added TopBar, SettingsDialog, HelpDialog, EntityInspector, EdgeInspector (33 more tests). **Session 35** added shortcut-registry + linkage tests (10 more). TPNode + TPEdge tests landed alongside the canvas hook split. **Session 83** added the Toaster test (6 tests — auto-dismiss timing via fake timers, manual dismiss, dedup, rendering per kind).
 
-- Canvas itself (React Flow shell + double-click + selection wiring) — pulling `<ReactFlow>` into jsdom is fiddly, so this is parked behind a "shouldn't break the suite" cost/benefit.
-- TPNode + TPEdge — visual / handle / hover affordances. Same React-Flow-in-jsdom caveat.
-- Toaster — auto-dismiss timing + manual dismiss.
+Remaining gap:
 
-(Two pre-existing failures previously flagged here — CommandPalette subsequence scorer false positive + radialLayout apex-at-center premise — were fixed in **Session 37**. The suite is now fully green.)
+- **Canvas itself** (React Flow shell + double-click + selection wiring) — pulling `<ReactFlow>` into jsdom still hits the same fiddliness; the dblclick contract is covered by the `e2e/smoke.spec.ts:47 canvas double-click creates a new entity` Playwright test which runs on CI. Parked.
 
-### 4. Backward-incompatible migrations stub
+(Two pre-existing failures previously flagged here — CommandPalette subsequence scorer false positive + radialLayout apex-at-center premise — were fixed in **Session 37**. The suite is fully green.)
 
-`schemaVersion: 1` is currently a literal. Bumping to `2` requires:
+### 4. Backward-incompatible migrations stub — ✅ Done (long since)
 
-- A migration table mapping versions to transform functions.
-- The `importFromJSON` validator becomes a dispatcher that picks the right validator for the incoming version, then runs migrations forward to current.
-- A test fixture per version.
-
-Pre-stub the migration interface now; it's much cheaper than retrofitting once a v2 schema lands.
+Backlog entry was stale — the framework is in `src/domain/migrations.ts` with `CURRENT_SCHEMA_VERSION = 7` and six registered migrations (v1 → v7). `importFromJSON` calls `migrateToCurrent` before its strict shape check, so downstream guards assume the target version. Covered by `tests/domain/migrations.test.ts` + `tests/domain/migrationsRoundTrip.test.ts`. The schema has bumped through six versions over the project's life — every backward-incompatible change has used this framework.
 
 ## Brief items intentionally out of scope
 

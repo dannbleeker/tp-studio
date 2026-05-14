@@ -68,6 +68,13 @@ export type EdgesSlice = {
    *  if you want." Returns the new entity (with `editingEntityId` set on
    *  it) or null when the edge / endpoints can't be resolved. */
   spliceEdge: (edgeId: string) => Entity | null;
+  /** Session 83 — splice an EXISTING entity into an edge. Drops the
+   *  entity's own incoming/outgoing edges, replaces the target edge with
+   *  (edge.source → entity) + (entity → edge.target). Returns `false`
+   *  when the entity / edge don't exist, when the entity is already an
+   *  endpoint of the edge, or when the resulting wiring would be a
+   *  self-loop. Tests live in `tests/domain/spliceEntityIntoEdge.test.ts`. */
+  spliceEntityIntoEdge: (entityId: string, edgeId: string) => boolean;
 
   /** TOC-reading direct-manipulation: add a co-cause to an existing edge's
    *  target by AND-grouping a new `source → target` edge with the
@@ -317,6 +324,57 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
         editingEntityId: newEntity.id,
       });
       return newEntity;
+    },
+
+    spliceEntityIntoEdge: (entityId, edgeId) => {
+      const { doc } = get();
+      const entity = doc.entities[entityId];
+      const edge = doc.edges[edgeId];
+      if (!entity || !edge) return false;
+      // Reject splicing the entity into an edge it already belongs to —
+      // would either reduce to a no-op or create a self-loop (e.g.
+      // entity A on edge A→B: source half would be A→A).
+      if (edge.sourceId === entityId || edge.targetId === entityId) return false;
+      // Reject if removing the entity's existing edges + adding the
+      // splice halves would still leave a self-loop (source === target
+      // already on this edge — shouldn't happen, defense in depth).
+      if (edge.sourceId === edge.targetId) return false;
+
+      // Drop every edge that touches this entity — its old wiring is
+      // about to be replaced by the splice halves. Note: this is
+      // destructive; the caller's UI surface should make the gesture
+      // intentional (e.g. Alt-modifier on drag).
+      const remainingEdges: typeof doc.edges = {};
+      for (const [id, e] of Object.entries(doc.edges)) {
+        if (id === edgeId) continue;
+        if (e.sourceId === entityId || e.targetId === entityId) continue;
+        remainingEdges[id] = e;
+      }
+      // Upstream half: edge.source → entity. Clean — no inherited
+      // metadata (label, assumptions, back-edge stay on the downstream
+      // half, matching `spliceEdge`'s asymmetric distribution).
+      const upstream = createEdge({ sourceId: edge.sourceId, targetId: entityId });
+      const downstreamBase = createEdge({ sourceId: entityId, targetId: edge.targetId });
+      const downstream: Edge = {
+        ...downstreamBase,
+        ...(edge.label ? { label: edge.label } : {}),
+        ...(edge.assumptionIds && edge.assumptionIds.length > 0
+          ? { assumptionIds: edge.assumptionIds }
+          : {}),
+        ...(edge.isBackEdge === true ? { isBackEdge: true as const } : {}),
+      };
+      applyDocChange((prev) => {
+        if (!prev.entities[entityId] || !prev.edges[edgeId]) return prev;
+        return touch({
+          ...prev,
+          edges: {
+            ...remainingEdges,
+            [upstream.id]: upstream,
+            [downstream.id]: downstream,
+          },
+        });
+      });
+      return true;
     },
 
     // ── B1: user-defined attributes on edges ────────────────────────
