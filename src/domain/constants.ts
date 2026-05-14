@@ -43,7 +43,33 @@ export const PNG_PIXEL_RATIO = 2;
 export const PNG_PADDING = 32;
 
 // --- Toast ---
-export const TOAST_AUTO_DISMISS_MS = 2200;
+/**
+ * Session 91 — per-kind auto-dismiss defaults.
+ *
+ * The previous single 2200 ms value treated all toasts equally and was
+ * the source of two ongoing UX complaints:
+ *   - **info** toasts (especially the PWA "New version available")
+ *     were dismissed before users finished reading them.
+ *   - **error** toasts vanished too quickly to act on; a user who
+ *     glanced away during an import would miss the line number.
+ *
+ * The new defaults grade by urgency: success (acknowledgement) stays
+ * short, info (announcement) gets longer, error (actionable) is longest.
+ *
+ * Individual call-sites can override via `showToast(kind, message, {
+ * durationMs })` — used by the PWA update toast which wants more dwell
+ * time than even the new info default.
+ *
+ * `TOAST_AUTO_DISMISS_MS` is kept as a back-compat alias for callers
+ * that don't pass a kind-specific override; it points at the info
+ * default since that's the most-common channel.
+ */
+export const TOAST_AUTO_DISMISS_MS_BY_KIND = {
+  info: 6000,
+  success: 4000,
+  error: 10000,
+} as const;
+export const TOAST_AUTO_DISMISS_MS = TOAST_AUTO_DISMISS_MS_BY_KIND.info;
 
 // --- Stacking order (z-index scale) ---
 // Canonical layering table lives in `@/domain/zLayers` (named `Z`, with a

@@ -32,13 +32,20 @@ export const initPwaUpdateToast = (): void => {
 
   const updateSW = registerSW({
     onNeedRefresh: () => {
+      // Session 91 — bump dwell well past the info default so the
+      // user has time to read + decide before the affordance vanishes.
+      // The Refresh button is also rendered with `prominent: true`
+      // styling (filled, not outline) since the call-to-action is the
+      // whole point of this toast.
       useDocumentStore.getState().showToast('info', 'New version of TP Studio is available.', {
         action: {
           label: 'Refresh now',
           run: () => {
             void updateSW(true);
           },
+          prominent: true,
         },
+        durationMs: 15000,
       });
     },
     onOfflineReady: () => {

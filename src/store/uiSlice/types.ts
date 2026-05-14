@@ -79,7 +79,10 @@ export type ToastKind = 'info' | 'success' | 'error';
  *  button; the toast then auto-dismisses. Kept structural — the button
  *  is intentionally generic so other call-sites can reuse it without
  *  re-plumbing the toast pipeline. */
-export type ToastAction = { label: string; run: () => void };
+/** Optional visual emphasis on the action button. `prominent: true`
+ *  renders the button as a filled call-to-action (e.g. PWA "Refresh now")
+ *  rather than the default subtle outline. */
+export type ToastAction = { label: string; run: () => void; prominent?: boolean };
 export type Toast = {
   id: string;
   kind: ToastKind;

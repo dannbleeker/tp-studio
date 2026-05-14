@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 91 — Toast dwell-time grading + prominent CTA
+
+Small-ideas bundle. Two related toast pipeline upgrades. **1089 tests passing** (was 1086; +3 around the new duration / prominent-action paths).
+
+**Per-kind auto-dismiss defaults.** The previous single `TOAST_AUTO_DISMISS_MS = 2200` treated every toast equally and was the source of two complaints: PWA "New version available" disappeared before the user could read it; CSV import errors vanished before the line-number hint could be acted on. Replaced with `TOAST_AUTO_DISMISS_MS_BY_KIND = { info: 6000, success: 4000, error: 10000 }` graded by urgency — success (acknowledgement) short, info (announcement) medium, error (actionable) long. `TOAST_AUTO_DISMISS_MS` kept as a back-compat alias pointing at the info default.
+
+**Per-call `durationMs` override.** `showToast(kind, message, options)` grew an optional `durationMs` field on the options bag. Used by `pwaUpdate.ts` to dwell the "New version available" toast at 15 s — well past the info default, since the user often needs a moment to save canvas state before refreshing.
+
+**Prominent action button.** `ToastAction` grew an optional `prominent?: boolean` flag. The Toaster renders prominent buttons as a filled indigo CTA (white text, shadow, focus ring) instead of the default subtle outline-on-current-color. The PWA refresh toast sets `prominent: true` so the "Refresh now" button visually anchors the toast — the only one the user almost always wants to click. Non-prominent action buttons (e.g. Undo on template load) keep the existing subtle styling so they stay informational rather than commanding.
+
+**Tests.** Three new cases in `tests/components/Toaster.test.tsx`: per-kind threshold grading (asserts success drops off before info drops off before error), `durationMs` override (15 s outlasts the info default), and prominent action button (indigo background class signal). Uses `vi.useFakeTimers()` + `vi.advanceTimersByTime` reading the threshold constants from the module so future tweaks to the per-kind values don't require updating the assertions.
+
+End state: tsc clean, Biome clean, 1089 tests passing.
+
 ## Session 89 — PWA + custom-domain distribution
 
 TP Studio is now a Progressive Web App served at <https://tp-studio.struktureretsundfornuft.dk/>. Anyone with the URL can use it; the repo went public earlier in the session; search engines stay out via `robots.txt` + `<meta name="robots" content="noindex, nofollow">`. **1086 tests passing** (was 1078; +8 across `pwaUpdate` and `pwaInstall`).

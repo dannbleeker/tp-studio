@@ -1,4 +1,4 @@
-import { TOAST_AUTO_DISMISS_MS } from '@/domain/constants';
+import { TOAST_AUTO_DISMISS_MS_BY_KIND } from '@/domain/constants';
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
@@ -106,8 +106,18 @@ export type DialogsSlice = {
    *  button on the toast. Existing two-arg callers continue to work
    *  unchanged; new call-sites pass `{ action: { label, run } }` to
    *  surface an affordance the user can click before the auto-dismiss
-   *  fires. */
-  showToast: (kind: ToastKind, message: string, options?: { action?: ToastAction }) => void;
+   *  fires.
+   *
+   *  Session 91 — optional `durationMs` overrides the per-kind default
+   *  in `TOAST_AUTO_DISMISS_MS_BY_KIND`. The PWA "New version available"
+   *  toast uses this to dwell longer than even the info default since
+   *  the user often needs a moment to save their canvas state before
+   *  refreshing. Omit for the per-kind default. */
+  showToast: (
+    kind: ToastKind,
+    message: string,
+    options?: { action?: ToastAction; durationMs?: number }
+  ) => void;
   dismissToast: (id: string) => void;
 
   openQuickCapture: () => void;
@@ -279,9 +289,13 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
       ? { id, kind, message, action: options.action }
       : { id, kind, message };
     set({ toasts: [...existing, toast] });
+    // Session 91 — per-kind defaults grade by urgency (success short,
+    // info medium, error long); per-call `durationMs` overrides for
+    // edge cases like the PWA refresh toast.
+    const duration = options?.durationMs ?? TOAST_AUTO_DISMISS_MS_BY_KIND[kind];
     setTimeout(() => {
       set({ toasts: get().toasts.filter((t) => t.id !== id) });
-    }, TOAST_AUTO_DISMISS_MS);
+    }, duration);
   },
   dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
 
