@@ -235,6 +235,20 @@ These come straight from the brief's "Out of scope — do not build" list:
 
 When and if any of these enters scope, the domain layer should be able to absorb most of the additional concepts without breaking. The data model is wide enough.
 
+## Focused 1-hour code-optimization pass
+
+A time-boxed cleanup pass — pick whichever items fit a one-hour budget, ship in one commit. Goal is "leave the codebase a little tighter" not "rewrite the world." Concrete candidates, roughly ordered by leverage:
+
+- **Audit `biome-ignore` comments.** `grep -rn "biome-ignore" src tests | wc -l` is the count today. Each one is an admission of "I couldn't satisfy the rule" — some are legitimate (e.g. `dangerouslySetInnerHTML` on trusted SVG payloads, `any` on the test-hook window cast), but a 1-hour scan often finds 2–5 that can be fixed properly. Removing them tightens the lint surface for free.
+- **Trim `console.*` calls outside `services/logger.ts`.** Session 68 routed production logging through `log.{info,warn,error}`. Any `console.log` in `src/` that slipped in since is a regression; a quick `grep -rn "console\." src --include='*.ts' --include='*.tsx'` finds them all.
+- **Hot-path `useMemo` / `useShallow` audit on canvas hooks.** `useGraphView` composes three hooks (`useGraphProjection`, `useGraphPositions`, `useGraphEmission`). Each subscribes to the store with `useShallow`; verify no selector returns a new reference per render (which would defeat the memo). `tests/hooks/useFingerprintMemo.test.tsx` is the existing pattern.
+- **Bundle-size second pass on lazy chunks.** Session 81 dropped flow chunk 134 → 103 KB gzip. The next likely wins: `flow-*.js` may still carry `dompurify` (used only by markdown rendering — currently 8.8 KB gzip, lazy already), or `lucide-react` icons could be tree-shaken further. Run `pnpm build` + inspect `vite-bundle-visualizer` if installed.
+- **Drop unused exports.** `npx ts-prune` (one-shot — no install). Anything reported with `(used in module)` is fine; bare-named exports unused anywhere can be either deleted or marked internal.
+- **`as any` / `as unknown as` cast sweep.** `grep -rn "as any\|as unknown as" src` — each is a type-system escape. Some are unavoidable (e.g. zustand store narrowing at the test-hook boundary), but a 1-hour pass usually finds 1–3 that can become a real type.
+- **Dead-code on the new Session-82 surface.** `src/services/testHook.ts` carries a `connect` method whose return value is the edge id — but only `delete-flow.spec.ts` uses the hook, and only via `seed` + `confirmAndDeleteEntity`. Confirm `connect` + the type narrowing in `seed` aren't dead weight.
+
+Trigger: when a future session has a 1-hour window between bigger features. Pick 2–4 items, time-box strictly, ship one commit. Don't gold-plate — the budget is the discipline.
+
 ## Polish ideas (small but visible)
 
 - ~~**Animated inspector slide-in.**~~ ✅ **Done (Session 42).** `transition-transform duration-200 ease-out` on both the Inspector and the H1 RevisionPanel — opening, closing, and swapping between the two reads as motion now rather than a snap.
