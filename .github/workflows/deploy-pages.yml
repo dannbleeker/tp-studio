@@ -1,0 +1,74 @@
+name: Deploy to GitHub Pages
+
+# Session 89 — auto-deploy TP Studio to GitHub Pages on every push to
+# `main`. The job builds the SPA, uploads the `dist/` directory as a
+# Pages artifact, and the second job picks it up and ships it to the
+# Pages environment. The custom domain (`tp-studio.struktureretsundfornuft.dk`)
+# is bound via `public/CNAME` which Vite copies into `dist/` at build
+# time. Manual triggering is enabled (`workflow_dispatch`) for quick
+# re-deploys without committing.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Pages only allows one active deployment at a time. `cancel-in-progress:
+# false` means a fast follow-up push waits for the prior deploy rather
+# than aborting it — safer for an environment that's serving live
+# traffic.
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build dist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        # No `version:` — reads `packageManager` from package.json,
+        # keeping CI in lockstep with developers' local pnpm.
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

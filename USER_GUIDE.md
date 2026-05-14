@@ -625,6 +625,18 @@ While locked:
 
 Read-only operations still work: panning, zooming, selection, the help dialog, validation, and JSON / PNG export.
 
+## Using TP Studio offline
+
+TP Studio is a Progressive Web App: after the first time you open it on a network, the browser quietly caches every asset (HTML, JS, CSS, icons, fonts) via a service worker. From that point on the app loads without a network round-trip — works on a plane, on a hotel Wi-Fi captive portal, behind a corporate firewall that blocks the host, or while your VPN reconnects.
+
+Your documents live in the browser's `localStorage`, exactly where they were before the PWA went live, so offline-mode is purely about loading the app shell. Saving, importing, exporting — anything that touches the canvas — works the same on or off network.
+
+**Install as a desktop / mobile app.** Chrome and Edge offer an Install affordance after a couple of visits — look for an Install icon in the address bar, or open the command palette (`Cmd/Ctrl+K`) and pick **Install TP Studio…**. Installing strips the browser chrome (no address bar, no tab strip) and gives you a launcher-icon entry on macOS / Windows / Linux / Android. Uninstall via the normal OS-app uninstall path.
+
+**Updates.** A toast appears in the corner whenever a new build is available — click **Refresh now** to drop the old cache and reload, or dismiss and the next natural reload picks up the change anyway. The update flow is explicit (not silent) so you never lose mid-edit state to an unexpected reload.
+
+iOS Safari has weaker PWA support; Install adds the icon to the home screen but offline support and update prompts are best-effort. macOS / Windows / Android Chrome and Edge are the supported install targets today.
+
 ## Document details
 
 The small info icon to the right of the document title (or palette → **Document details…**) opens a dialog where you can set the document's title, an optional author, and a free-form description (goal, scope, audience). It also shows a small count of entities and edges. The author and description fields are saved as part of the JSON export.

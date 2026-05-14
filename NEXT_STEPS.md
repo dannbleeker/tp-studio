@@ -237,7 +237,7 @@ When and if any of these enters scope, the domain layer should be able to absorb
 ## Placeholders (need fleshing out before they can be picked up)
 
 - ~~**Look at UI.**~~ ✅ **Walkthroughs done (Session 87).** Static review of all 8 primary surfaces produced 40 triaged findings — see [docs/ui-review-session-87.md](docs/ui-review-session-87.md). Visual walkthrough via Claude Preview against the live app produced one bug fix + 10 additional visual-only nits — see [docs/ui-review-session-87-visual.md](docs/ui-review-session-87-visual.md). Top-priority follow-ups are backlog items below.
-- **Make the tool installable.** Currently TP Studio runs via `pnpm dev` + a local browser. Open questions before scoping: what shape is the install target — PWA (`manifest.json` + service-worker for offline use, "Install" prompt in Chrome/Edge), Electron desktop app, packaged static dist served from a one-click installer, or something else? Who's the audience — Dann only, or others at BESTSELLER? Does it need auto-update, or is "rebuild + redistribute" fine? Needs a 15-minute scoping conversation.
+- ~~**Make the tool installable.**~~ ✅ **Done (Session 89).** TP Studio is now a PWA served at <https://tp-studio.struktureretsundfornuft.dk/> with offline support, an explicit-refresh update toast, and a palette-driven Install command. Auto-deploys to GitHub Pages on every push to `main`. Scoping doc: [docs/distribution-pwa-scoping.md](docs/distribution-pwa-scoping.md); changelog entry: Session 89.
 
 ## 🔴 HOTFIX — example EC loader missing v7 schema fields
 

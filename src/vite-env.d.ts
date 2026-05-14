@@ -1,4 +1,12 @@
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
+
+// Session 89 — the `virtual:pwa-register` module is generated at
+// build time by `vite-plugin-pwa`; the second triple-slash above
+// pulls in its `.d.ts` so callers (`src/services/pwaUpdate.ts` and
+// the matching test) type-check cleanly. Vitest aliases the same
+// import to a local stub via `vite.config.ts` when `VITEST` is set,
+// keeping the runtime side of the contract honest.
 
 // Session 84 (optimization pass) — type the Playwright test hook on
 // `window` so `src/services/testHook.ts` doesn't need an `as any`

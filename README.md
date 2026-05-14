@@ -2,6 +2,8 @@
 
 A focused, modern alternative to Flying Logic for **Theory of Constraints Thinking Process** diagrams. Build sufficiency-logic graphs (Current Reality Trees, Future Reality Trees, Prerequisite Trees, Transition Trees, Evaporating Clouds), let the tool auto-layout (or hand-position for EC), and surface Categories of Legitimate Reservation (CLR) as soft warnings.
 
+**Live demo:** <https://tp-studio.struktureretsundfornuft.dk/> — installs as a desktop / mobile PWA, works fully offline after first visit. Chrome and Edge will offer an Install prompt after a couple of visits; or open the command palette (`Ctrl/Cmd+K`) and pick **Install TP Studio…** to install on demand.
+
 For end users — see [USER_GUIDE.md](USER_GUIDE.md). For what's planned next — see [NEXT_STEPS.md](NEXT_STEPS.md). For the change history — see [CHANGELOG.md](CHANGELOG.md).
 
 ## Quick start
