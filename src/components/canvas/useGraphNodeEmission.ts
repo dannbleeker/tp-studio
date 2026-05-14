@@ -77,11 +77,18 @@ export const useGraphNodeEmission = (
       const minY = Math.min(...memberPositions.map((m) => m.y)) - GROUP_PADDING - GROUP_TITLE_TOP;
       const maxX = Math.max(...memberPositions.map((m) => m.x + m.w)) + GROUP_PADDING;
       const maxY = Math.max(...memberPositions.map((m) => m.y + m.h)) + GROUP_PADDING;
+      const groupW = maxX - minX;
+      const groupH = maxY - minY;
       const node: TPGroupNode = {
         id: group.id,
         type: 'tpGroup',
         position: { x: minX, y: minY },
-        data: { group, width: maxX - minX, height: maxY - minY },
+        // Top-level width/height for MiniMap thumbnail computation; the
+        // group's actual visible bounds are still driven by data.{width,
+        // height} via the TPGroupNode renderer.
+        width: groupW,
+        height: groupH,
+        data: { group, width: groupW, height: groupH },
         selectable: true,
         draggable: false,
         zIndex: Z.below,
@@ -109,6 +116,17 @@ export const useGraphNodeEmission = (
         id: entity.id,
         type: 'tp',
         position: positions[entity.id] ?? { x: 0, y: 0 },
+        // Explicit width / height so React Flow's MiniMap can compute
+        // node thumbnails before the live DOM has been measured (Session
+        // 87 UX fix #1 follow-up: pre-fix the MiniMap rendered as an
+        // empty grey rectangle because `nodesDraggable={false}` keeps
+        // React Flow's internal measurement state at 0×0 for static
+        // nodes). The actual rendered size still comes from the CSS
+        // box in TPNode, so this is purely a measurement hint for the
+        // MiniMap; downstream consumers that need real measurements
+        // (e.g. the splice-target hit test) still read the live DOM.
+        width: NODE_WIDTH,
+        height: NODE_MIN_HEIGHT,
         data: {
           entity,
           ...(hidden && hidden > 0 ? { hiddenDescendantCount: hidden } : {}),
@@ -129,6 +147,9 @@ export const useGraphNodeEmission = (
         id: group.id,
         type: 'tpCollapsedGroup',
         position: positions[groupId] ?? { x: 0, y: 0 },
+        // Same measurement-hint rationale as the TPNode branch above.
+        width: COLLAPSED_WIDTH,
+        height: COLLAPSED_HEIGHT,
         data: { group, memberCount, width: COLLAPSED_WIDTH, height: COLLAPSED_HEIGHT },
       };
       nodes.push(node);

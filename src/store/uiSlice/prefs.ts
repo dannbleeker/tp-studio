@@ -97,6 +97,12 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // the toggles for explicit control.
     showGoalTreeWizard: raw?.showGoalTreeWizard !== false,
     showECWizard: raw?.showECWizard !== false,
+    // Session 87 — collapsed by default so the EC canvas reclaims
+    // ~150 px of vertical chrome; user expands per-session via the
+    // strip's chevron. `!== false` semantics: any non-`false` value
+    // (including `undefined` on a first-run install) keeps the
+    // collapsed default.
+    verbalisationStripCollapsed: raw?.verbalisationStripCollapsed !== false,
   };
 };
 

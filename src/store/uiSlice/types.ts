@@ -123,4 +123,8 @@ export type StoredPrefs = {
    *  Settings → Behavior. */
   showGoalTreeWizard?: boolean;
   showECWizard?: boolean;
+  /** Session 87 — EC verbalisation strip collapse state. Default
+   *  `true` (collapsed) so the canvas reclaims vertical space on EC
+   *  docs; user expands per-session via the strip's chevron. */
+  verbalisationStripCollapsed?: boolean;
 };

@@ -54,6 +54,11 @@ export type PreferencesSlice = {
    *  the Goal Tree flag so a user can keep the EC wizard on while
    *  dismissing the Goal Tree one. */
   showECWizard: boolean;
+  /** Session 87 — collapse the EC verbalisation strip above the
+   *  canvas to a one-line summary by default. Default true so the
+   *  canvas reclaims ~150 px of vertical chrome; user expands per-
+   *  session via a chevron on the strip. Persisted across reloads. */
+  verbalisationStripCollapsed: boolean;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -77,6 +82,9 @@ export type PreferencesSlice = {
    *  Persists to localStorage so the choice survives reloads. */
   setShowGoalTreeWizard: (show: boolean) => void;
   setShowECWizard: (show: boolean) => void;
+  /** Session 87 — toggle the EC verbalisation-strip collapse flag.
+   *  Persisted across reloads. */
+  setVerbalisationStripCollapsed: (collapsed: boolean) => void;
 };
 
 export type PreferencesDataKeys =
@@ -96,7 +104,8 @@ export type PreferencesDataKeys =
   | 'emptyStateTipDismissed'
   | 'ecReadingInstructionsDismissed'
   | 'showGoalTreeWizard'
-  | 'showECWizard';
+  | 'showECWizard'
+  | 'verbalisationStripCollapsed';
 
 /**
  * Data-only defaults used by `resetStoreForTest`. The theme + persisted
@@ -121,6 +130,11 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   ecReadingInstructionsDismissed: false,
   showGoalTreeWizard: true,
   showECWizard: true,
+  // Collapsed by default — Dann's Session 87 UX feedback: the full
+  // chained verbalisation paragraph eats ~150 px of canvas chrome and
+  // wraps to 5+ lines on a typical EC. Default collapsed, expand per
+  // user intent.
+  verbalisationStripCollapsed: true,
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (
@@ -145,6 +159,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       defaultLayoutDirection: s.defaultLayoutDirection,
       showGoalTreeWizard: s.showGoalTreeWizard,
       showECWizard: s.showECWizard,
+      verbalisationStripCollapsed: s.verbalisationStripCollapsed,
     });
   };
 
@@ -166,6 +181,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     ecReadingInstructionsDismissed: false,
     showGoalTreeWizard: initialPrefs.showGoalTreeWizard,
     showECWizard: initialPrefs.showECWizard,
+    verbalisationStripCollapsed: initialPrefs.verbalisationStripCollapsed,
 
     setTheme: (theme) => {
       writeTheme(theme);
@@ -235,6 +251,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setShowECWizard: (show) => {
       set({ showECWizard: show });
+      persistPrefs();
+    },
+    setVerbalisationStripCollapsed: (collapsed) => {
+      set({ verbalisationStripCollapsed: collapsed });
       persistPrefs();
     },
   };

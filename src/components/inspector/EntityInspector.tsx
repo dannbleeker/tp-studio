@@ -7,6 +7,7 @@ import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
 import { Button } from '../ui/Button';
 import { AttachedEdgesList } from './AttachedEdgesList';
 import { EntityAttributesSection } from './AttributesSection';
@@ -22,22 +23,40 @@ export function EntityInspector({
   warnings: Warning[];
 }) {
   const entity = useEntity(entityId);
-  const doc = useDocumentStore((s) => s.doc);
+  // Session 87 — narrow store subscriptions to only the fields the
+  // inspector actually consumes. Pre-fix, this component subscribed to
+  // the entire `doc` object, which re-rendered EntityInspector on every
+  // mutation (title edit, edge drag, anywhere in the doc). Now we
+  // subscribe to the two doc fields that drive the palette:
+  // `diagramType` (filters which entity types appear) and
+  // `customEntityClasses` (B10 user-defined classes layered onto the
+  // built-in palette). The rest of the doc state doesn't influence this
+  // component's render output.
+  const diagramType = useDocumentStore((s) => s.doc.diagramType);
+  const customEntityClasses = useDocumentStore((s) => s.doc.customEntityClasses);
   const updateEntity = useDocumentStore((s) => s.updateEntity);
   const setEntityAttribute = useDocumentStore((s) => s.setEntityAttribute);
   const removeEntityAttribute = useDocumentStore((s) => s.removeEntityAttribute);
   const locked = useDocumentStore((s) => s.browseLocked);
 
-  if (!entity) return null;
+  // Memoize the palette derivation — `paletteForDoc` walks the doc's
+  // custom classes and merges with the built-in list. Cheap, but
+  // re-running it on every render added measurable cost to the
+  // selection-to-inspector-visible window. `paletteForDoc` accepts a
+  // structural Pick of the two fields so we don't have to lift the
+  // whole doc into scope just to call it.
+  const availableTypes = useMemo(
+    () => paletteForDoc({ diagramType, customEntityClasses }),
+    [diagramType, customEntityClasses]
+  );
 
-  // B10: palette merges built-ins with the doc's custom entity classes.
-  const availableTypes = paletteForDoc(doc);
+  if (!entity) return null;
 
   // Session 87 / EC PPT comparison item #2 — re-surface the wizard's
   // per-slot guiding question whenever an EC slot entity is selected,
   // so the prompt stays available after the wizard closes.
   const ecSlot: ECSlot | undefined = entity.ecSlot;
-  const showGuidingQuestion = doc.diagramType === 'ec' && ecSlot !== undefined;
+  const showGuidingQuestion = diagramType === 'ec' && ecSlot !== undefined;
 
   return (
     <div className="flex flex-col gap-4">
@@ -67,7 +86,7 @@ export function EntityInspector({
       <Field label="Type">
         <div className="grid grid-cols-2 gap-1.5">
           {availableTypes.map((type) => {
-            const meta = resolveEntityTypeMeta(type, doc.customEntityClasses);
+            const meta = resolveEntityTypeMeta(type, customEntityClasses);
             const selected = entity.type === type;
             return (
               <button
@@ -233,7 +252,7 @@ export function EntityInspector({
 
       {entity.type === 'assumption' && <AttachedEdgesList assumptionId={entityId} />}
 
-      {doc.diagramType === 'st' && entity.type === 'injection' && (
+      {diagramType === 'st' && entity.type === 'injection' && (
         <StFacetsSection
           entity={entity}
           locked={locked}

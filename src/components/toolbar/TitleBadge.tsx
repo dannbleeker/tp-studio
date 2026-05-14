@@ -41,10 +41,11 @@ export function TitleBadge() {
         size={Math.max(Math.min(title.length, 50), 6)}
         disabled={locked}
       />
-      <span
-        className="hidden truncate rounded-full bg-neutral-200/70 px-2 py-0.5 font-medium text-[10px] text-neutral-600 sm:inline-block dark:bg-neutral-800 dark:text-neutral-300"
-        title={DIAGRAM_TYPE_LABEL[diagramType]}
-      >
+      {/* Session 87 — `title` attr removed: the visible text inside the
+          badge IS the label, so a hover tooltip with the same string
+          was redundant and (worse) drew on top of the EC reading-
+          instructions strip when the user hovered. */}
+      <span className="hidden truncate rounded-full bg-neutral-200/70 px-2 py-0.5 font-medium text-[10px] text-neutral-600 sm:inline-block dark:bg-neutral-800 dark:text-neutral-300">
         {DIAGRAM_TYPE_LABEL[diagramType]}
       </span>
       <button

@@ -447,7 +447,9 @@ export const entityMeta = (typeId: string, doc?: TPDocument): EntityTypeMeta =>
  * canvas double-click default. Built-ins come first (matching their
  * historical order); custom classes append.
  */
-export const paletteForDoc = (doc: TPDocument): string[] => {
+export const paletteForDoc = (
+  doc: Pick<TPDocument, 'diagramType' | 'customEntityClasses'>
+): string[] => {
   const builtins = PALETTE_BY_DIAGRAM[doc.diagramType] as string[];
   const custom = doc.customEntityClasses
     ? Object.keys(doc.customEntityClasses).sort((a, b) => a.localeCompare(b))

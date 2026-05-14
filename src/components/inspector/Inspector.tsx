@@ -84,11 +84,14 @@ export function Inspector() {
           'inspector-aside absolute top-0 right-0 z-20 h-full w-[min(85vw,320px)] transform md:w-[320px]',
           'border-neutral-200 border-l bg-white/95 backdrop-blur',
           'dark:border-neutral-800 dark:bg-neutral-950/95',
-          // 200 ms slide-in / slide-out so the panel doesn't snap. `ease-out`
-          // feels right for entering (decelerates into position); the same
-          // curve plays in reverse on close (accelerating off-screen),
-          // which reads as natural to most users.
-          'transition-transform duration-200 ease-out',
+          // 120 ms slide-in / slide-out so the panel doesn't snap.
+          // `ease-out` feels right for entering (decelerates into
+          // position); the same curve plays in reverse on close
+          // (accelerating off-screen). Session 87 — shortened from 200
+          // ms to 120 ms after Dann reported perceived selection lag;
+          // the briefer transition keeps the motion cue but trims a
+          // visible chunk of "did my click register?" time.
+          'transition-transform duration-[120ms] ease-out',
           open ? 'translate-x-0' : 'translate-x-full'
         )}
         aria-hidden={!open}
