@@ -75,24 +75,24 @@ export const buildExampleTT = (): TPDocument => {
   const entities = [p1, a1, a2, a3, a4, a5, o1, o2, o3, o4, p5, de];
   const edges: Edge[] = [
     // Step 1: p1 + a1 → o1
-    buildEdge(p1.id, o1.id, g('s1')),
-    buildEdge(a1.id, o1.id, g('s1')),
+    buildEdge(p1.id, o1.id, { andGroupId: g('s1') }),
+    buildEdge(a1.id, o1.id, { andGroupId: g('s1') }),
     // Step 2: o1 + a2 → o2 (the previous outcome becomes the precondition)
-    buildEdge(o1.id, o2.id, g('s2')),
-    buildEdge(a2.id, o2.id, g('s2')),
+    buildEdge(o1.id, o2.id, { andGroupId: g('s2') }),
+    buildEdge(a2.id, o2.id, { andGroupId: g('s2') }),
     // Step 3: o2 + a3 → o3
-    buildEdge(o2.id, o3.id, g('s3')),
-    buildEdge(a3.id, o3.id, g('s3')),
+    buildEdge(o2.id, o3.id, { andGroupId: g('s3') }),
+    buildEdge(a3.id, o3.id, { andGroupId: g('s3') }),
     // Step 4: o3 + a4 → o4
-    buildEdge(o3.id, o4.id, g('s4')),
-    buildEdge(a4.id, o4.id, g('s4')),
+    buildEdge(o3.id, o4.id, { andGroupId: g('s4') }),
+    buildEdge(a4.id, o4.id, { andGroupId: g('s4') }),
     // Step 5: p5 (unspecified) + a5 → desiredEffect
-    buildEdge(p5.id, de.id, g('s5')),
-    buildEdge(a5.id, de.id, g('s5')),
+    buildEdge(p5.id, de.id, { andGroupId: g('s5') }),
+    buildEdge(a5.id, de.id, { andGroupId: g('s5') }),
     // Bridge: o4 also feeds the final desired effect — without the team
     // using the rubric, the metrics review can't measure the right thing.
     // Joined into step 5's AND so all three combine into the final outcome.
-    buildEdge(o4.id, de.id, g('s5')),
+    buildEdge(o4.id, de.id, { andGroupId: g('s5') }),
   ];
 
   return {

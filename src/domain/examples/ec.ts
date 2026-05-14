@@ -22,30 +22,46 @@ export const buildExampleEC = (): TPDocument => {
   // Classic work/life teaching example. Read right-to-left: each want
   // satisfies a need, each need supports the common goal — yet the wants
   // conflict (one says "leave at 5", the other says "stay late").
+  //
+  // Session 87 hotfix: ecSlot bindings + necessity-typed edges + the
+  // explicit D↔D′ mutex arrow are required for the verbalisation strip
+  // to interpolate real titles (rather than "the common objective"
+  // placeholders), for the EntityInspector's per-slot guiding questions
+  // to surface, and for `ec-completeness` / `ec-missing-conflict` CLR
+  // rules to evaluate correctly. Without them the example looked
+  // structurally broken once the Session 87 EC PPT chrome shipped.
   const a = buildEntity('goal', 'Be present for my family AND deliver at work', t, 1, {
     position: EC_POSITIONS.a,
+    ecSlot: 'a',
   });
   const b = buildEntity('need', 'Spend evening time with my family', t, 2, {
     position: EC_POSITIONS.b,
+    ecSlot: 'b',
   });
   const c = buildEntity('need', 'Hit my quarterly performance targets', t, 3, {
     position: EC_POSITIONS.c,
+    ecSlot: 'c',
   });
   const d = buildEntity('want', 'Leave the office at 5pm every day', t, 4, {
     position: EC_POSITIONS.d,
+    ecSlot: 'd',
   });
   const dPrime = buildEntity('want', 'Stay late to finish the feature on time', t, 5, {
     position: EC_POSITIONS.dPrime,
+    ecSlot: 'dPrime',
   });
 
   const entities = [a, b, c, d, dPrime];
   const edges: Edge[] = [
-    // Wants → Needs they satisfy
-    buildEdge(d.id, b.id),
-    buildEdge(dPrime.id, c.id),
-    // Needs → Common goal they support
-    buildEdge(b.id, a.id),
-    buildEdge(c.id, a.id),
+    // Wants → Needs they satisfy.
+    buildEdge(d.id, b.id, { kind: 'necessity' }),
+    buildEdge(dPrime.id, c.id, { kind: 'necessity' }),
+    // Needs → Common goal they support.
+    buildEdge(b.id, a.id, { kind: 'necessity' }),
+    buildEdge(c.id, a.id, { kind: 'necessity' }),
+    // D ↔ D′ conflict — the canonical EC has 5 arrows, not 4. Without
+    // this edge the `ec-missing-conflict` CLR rule fires permanently.
+    buildEdge(d.id, dPrime.id, { kind: 'necessity', isMutualExclusion: true }),
   ];
 
   return {

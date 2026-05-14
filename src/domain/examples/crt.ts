@@ -24,8 +24,8 @@ export const buildExampleCRT = (): TPDocument => {
   const entities = [rcManual, rcUnderstaffed, rcBug, effMistakes, effSlow, ude];
   const andGroupId = nanoid(8);
   const edges: Edge[] = [
-    buildEdge(rcManual.id, effMistakes.id, andGroupId),
-    buildEdge(rcBug.id, effMistakes.id, andGroupId),
+    buildEdge(rcManual.id, effMistakes.id, { andGroupId }),
+    buildEdge(rcBug.id, effMistakes.id, { andGroupId }),
     buildEdge(rcUnderstaffed.id, effSlow.id),
     buildEdge(effMistakes.id, ude.id),
     buildEdge(effSlow.id, ude.id),

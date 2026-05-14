@@ -44,14 +44,17 @@ export const buildExampleGoalTree = (): TPDocument => {
 
   const entities = [goal, csf1, csf2, csf3, nc1, nc2, nc3, nc4];
   // Necessity edges read child → parent ("in order to {parent} we must {child}").
+  // Session 87 hotfix: switched from the `{ ...buildEdge(…), kind: 'necessity' }`
+  // spread-override pattern to `buildEdge(…, { kind: 'necessity' })` now that the
+  // shared builder accepts a typed opts bag. Same output shape, less noise.
   const edges: Edge[] = [
-    { ...buildEdge(csf1.id, goal.id), kind: 'necessity' as const },
-    { ...buildEdge(csf2.id, goal.id), kind: 'necessity' as const },
-    { ...buildEdge(csf3.id, goal.id), kind: 'necessity' as const },
-    { ...buildEdge(nc1.id, csf1.id), kind: 'necessity' as const },
-    { ...buildEdge(nc2.id, csf1.id), kind: 'necessity' as const },
-    { ...buildEdge(nc3.id, csf2.id), kind: 'necessity' as const },
-    { ...buildEdge(nc4.id, csf3.id), kind: 'necessity' as const },
+    buildEdge(csf1.id, goal.id, { kind: 'necessity' }),
+    buildEdge(csf2.id, goal.id, { kind: 'necessity' }),
+    buildEdge(csf3.id, goal.id, { kind: 'necessity' }),
+    buildEdge(nc1.id, csf1.id, { kind: 'necessity' }),
+    buildEdge(nc2.id, csf1.id, { kind: 'necessity' }),
+    buildEdge(nc3.id, csf2.id, { kind: 'necessity' }),
+    buildEdge(nc4.id, csf3.id, { kind: 'necessity' }),
   ];
 
   return {
