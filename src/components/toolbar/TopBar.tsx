@@ -1,6 +1,18 @@
 import { SHORTCUT_BY_ID, shortcutToAria } from '@/domain/shortcuts';
 import { useDocumentStore } from '@/store';
-import { HelpCircle, History, Lock, Moon, Network, Orbit, Search, Sun, Unlock } from 'lucide-react';
+import {
+  HelpCircle,
+  History,
+  Lock,
+  Moon,
+  Network,
+  Orbit,
+  Redo2,
+  Search,
+  Sun,
+  Undo2,
+  Unlock,
+} from 'lucide-react';
 import { Button } from '../ui/Button';
 import { KebabMenu } from './KebabMenu';
 import { useToolbarActions } from './useToolbarActions';
@@ -15,10 +27,14 @@ export function TopBar() {
     layoutMode,
     historyPanelOpen,
     showLayoutToggle,
+    canUndo,
+    canRedo,
     toggleTheme,
     openHelp,
     toggleHistoryPanel,
     setLayoutMode,
+    undo,
+    redo,
   } = useToolbarActions();
   // The remaining three are TopBar-specific (KebabMenu doesn't surface
   // them) so they stay as individual selectors.
@@ -62,6 +78,34 @@ export function TopBar() {
         <kbd className="ml-1 rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900">
           {cmdKey}+K
         </kbd>
+      </Button>
+      {/* Session 87 (S26) — Undo / Redo affordances. Cmd+Z / Cmd+Shift+Z
+          already work via the global shortcut registry; these buttons
+          surface the same actions visually so users who don't know
+          the keyboard shortcut can still reach them. Disabled state
+          reads `past.length` / `future.length` from the history slice.
+          sm+ only — kebab handles narrower viewports. */}
+      <Button
+        variant="softNeutral"
+        size="icon"
+        onClick={undo}
+        disabled={!canUndo}
+        className="pointer-events-auto hidden sm:inline-flex"
+        aria-label="Undo"
+        title={canUndo ? `Undo  ${cmdKey}+Z` : 'Nothing to undo'}
+      >
+        <Undo2 className="h-3.5 w-3.5" />
+      </Button>
+      <Button
+        variant="softNeutral"
+        size="icon"
+        onClick={redo}
+        disabled={!canRedo}
+        className="pointer-events-auto hidden sm:inline-flex"
+        aria-label="Redo"
+        title={canRedo ? `Redo  ${cmdKey}+Shift+Z` : 'Nothing to redo'}
+      >
+        <Redo2 className="h-3.5 w-3.5" />
       </Button>
       <Button
         variant={browseLocked ? 'softViolet' : 'softNeutral'}

@@ -20,6 +20,18 @@ const open = (): void => {
   act(() => useDocumentStore.getState().openSettings());
 };
 
+/**
+ * Session 87 (S25) — Settings is now tabbed. Tests that interact with
+ * a control in a non-default tab must first switch to the right tab.
+ */
+const selectTab = (container: HTMLElement, tabName: string): void => {
+  const tab = Array.from(container.querySelectorAll('[role="tab"]')).find(
+    (t) => t.textContent?.trim() === tabName
+  ) as HTMLButtonElement | undefined;
+  if (!tab) throw new Error(`No tab "${tabName}"`);
+  act(() => fireEvent.click(tab));
+};
+
 const clickByText = (container: HTMLElement, text: string): void => {
   const btn = Array.from(container.querySelectorAll('button')).find((b) =>
     b.textContent?.trim().startsWith(text)
@@ -80,6 +92,7 @@ describe('SettingsDialog', () => {
   it('clicking the Fast animation speed updates store.animationSpeed', () => {
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Behavior');
     expect(useDocumentStore.getState().animationSpeed).toBe('default');
     clickByText(container, 'Fast');
     expect(useDocumentStore.getState().animationSpeed).toBe('fast');
@@ -88,6 +101,7 @@ describe('SettingsDialog', () => {
   it('Browse Lock toggle flips store.browseLocked', () => {
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Behavior');
     const cb = checkboxByLabel(container, 'Browse Lock');
     expect(cb.checked).toBe(false);
     act(() => fireEvent.click(cb));
@@ -97,6 +111,7 @@ describe('SettingsDialog', () => {
   it('Show minimap toggle flips store.showMinimap', () => {
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Display');
     // Defaults to true so the first click should turn it off.
     expect(useDocumentStore.getState().showMinimap).toBe(true);
     const cb = checkboxByLabel(container, 'Show minimap');
@@ -108,6 +123,7 @@ describe('SettingsDialog', () => {
   it('Show annotation numbers toggle flips store.showAnnotationNumbers', () => {
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Display');
     const cb = checkboxByLabel(container, 'Show annotation numbers');
     expect(cb.checked).toBe(false);
     act(() => fireEvent.click(cb));
@@ -117,6 +133,7 @@ describe('SettingsDialog', () => {
   it('clicking a Causality reading option updates store.causalityLabel', () => {
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Display');
     expect(useDocumentStore.getState().causalityLabel).toBe('none');
     clickByText(container, 'Because');
     expect(useDocumentStore.getState().causalityLabel).toBe('because');
@@ -127,6 +144,7 @@ describe('SettingsDialog', () => {
   it('Layout Direction radio writes doc.layoutConfig.direction (Block A)', () => {
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Layout');
     expect(useDocumentStore.getState().doc.layoutConfig).toBeUndefined();
     // FL-TO3 (Session 61) added another "Top → Bottom" option for the
     // per-app default-direction preference — disambiguate by data attribute.
@@ -145,6 +163,7 @@ describe('SettingsDialog', () => {
     act(() => useDocumentStore.getState().setLayoutConfig({ align: 'UL' }));
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Layout');
     expect(useDocumentStore.getState().doc.layoutConfig?.align).toBe('UL');
     // …then click the Bias-group "Auto" specifically. The Causality
     // reading + default-direction groups also offer "Auto" now, so
@@ -160,6 +179,7 @@ describe('SettingsDialog', () => {
   it('Layout Compactness slider scales nodesep + ranksep (Block A)', () => {
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Layout');
     const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
     expect(slider).toBeTruthy();
     // The slider starts at 50 (defaults). Drag to 100 — should produce
@@ -174,6 +194,7 @@ describe('SettingsDialog', () => {
     act(() => useDocumentStore.getState().setLayoutConfig({ direction: 'LR', nodesep: 60 }));
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Layout');
     const resetBtn = container.querySelector(
       'button[aria-label="Reset layout to defaults"]'
     ) as HTMLButtonElement | null;
@@ -186,6 +207,7 @@ describe('SettingsDialog', () => {
     act(() => useDocumentStore.getState().newDocument('ec'));
     open();
     const { container } = render(<SettingsDialog />);
+    selectTab(container, 'Layout');
     expect(container.textContent).toContain('hand-positioned layout');
     // Direction radio should be absent for manual-layout diagrams.
     const dirRadio = Array.from(container.querySelectorAll('button[data-radio-name]')).filter(

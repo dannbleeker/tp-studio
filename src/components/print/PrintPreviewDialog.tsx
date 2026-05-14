@@ -1,5 +1,6 @@
 import { structuralEntities } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { log } from '@/services/logger';
@@ -119,18 +120,9 @@ export function PrintPreviewDialog() {
   }, [hasSelection, selectionOnly]);
 
   // Esc closes (in addition to the X button and the focus trap's
-  // tab cycling).
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        close();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, close]);
+  // tab cycling). Session 87 (S23) — migrated to the shared
+  // `useEscapeKey` hook for consistent Esc handling across dialogs.
+  useEscapeKey(open, close);
 
   // Keep the body-mode class in sync with the chosen mode while the
   // dialog is open. The classes only affect `@media print` rules, so

@@ -22,6 +22,7 @@ import { ECReadingInstructions } from './ECReadingInstructions';
 import { EmptyHint } from './EmptyHint';
 import { FirstEntityTip } from './FirstEntityTip';
 import { JunctorOverlay } from './JunctorOverlay';
+import { StatusStrip } from './StatusStrip';
 import { TPCollapsedGroupNode } from './TPCollapsedGroupNode';
 import { TPEdge } from './TPEdge';
 import { TPGroupNode } from './TPGroupNode';
@@ -320,6 +321,7 @@ function CanvasInner() {
       <Breadcrumb />
       {isEmpty && <EmptyHint />}
       {!isEmpty && <FirstEntityTip />}
+      <StatusStrip />
       {/* Session 78 — Goal Tree / EC creation wizard panel. The
           component returns null when no wizard is active, so the
           unconditional mount is safe; renders top-left over the

@@ -25,6 +25,11 @@ export const DataComponent = {
   /** Canvas entity card. Stamped on the TPNode root for e2e / visual
    *  regression selectors that need to count or screenshot entities. */
   TPNode: 'tp-node',
+  /** Session 87 (S24) — global status strip. Shows a chip per
+   *  active secondary mode (lock / hoist / history / wizard / search /
+   *  compare). Tests target this to verify the strip renders nothing
+   *  when no secondary state is active. */
+  StatusStrip: 'status-strip',
 } as const;
 
 export type DataComponentName = (typeof DataComponent)[keyof typeof DataComponent];

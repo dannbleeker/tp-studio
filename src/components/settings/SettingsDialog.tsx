@@ -12,9 +12,22 @@ import type {
   Theme,
 } from '@/store';
 import { useDocumentStore } from '@/store';
+import clsx from 'clsx';
 import { RotateCcw, X } from 'lucide-react';
+import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { RadioGroup, Section, Slider, Toggle } from './formPrimitives';
+
+/** Session 87 (S25) — Settings is now tabbed. Single-scroll layout
+ *  grew past ~15 controls; jumping to a setting required scanning
+ *  the whole dialog. Four tabs match the existing section titles. */
+type SettingsTab = 'appearance' | 'behavior' | 'display' | 'layout';
+const TABS: { id: SettingsTab; label: string }[] = [
+  { id: 'appearance', label: 'Appearance' },
+  { id: 'behavior', label: 'Behavior' },
+  { id: 'display', label: 'Display' },
+  { id: 'layout', label: 'Layout' },
+];
 
 type ThemeOption = { id: Theme; label: string; hint?: string };
 const THEME_OPTIONS: ThemeOption[] = [
@@ -206,6 +219,8 @@ export function SettingsDialog() {
   const biasValue: BiasId = layoutConfig?.align ?? 'auto';
   const compactnessSlider = compactnessToSlider(layoutConfig);
 
+  const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
+
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="settings-title">
       <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
@@ -220,162 +235,200 @@ export function SettingsDialog() {
         </Button>
       </header>
 
-      <div className="max-h-[70vh] space-y-6 overflow-y-auto px-4 py-4">
-        <Section title="Appearance">
-          <Field label="Theme">
-            <RadioGroup name="theme" value={theme} onChange={setTheme} options={THEME_OPTIONS} />
-          </Field>
-          <Field label="Edge colors">
-            <RadioGroup
-              name="edgePalette"
-              value={edgePalette}
-              onChange={setEdgePalette}
-              options={PALETTE_OPTIONS}
-            />
-          </Field>
-        </Section>
+      {/* Session 87 (S25) — tab bar replacing the single-scroll
+          layout. ARIA tablist semantics so screen readers announce
+          the tab transitions. */}
+      <div
+        role="tablist"
+        aria-label="Settings sections"
+        className="flex border-neutral-200 border-b px-2 dark:border-neutral-800"
+      >
+        {TABS.map((t) => {
+          const active = activeTab === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setActiveTab(t.id)}
+              className={clsx(
+                'flex-1 px-2 py-2 font-semibold text-[11px] uppercase tracking-wide transition',
+                active
+                  ? 'border-indigo-500 border-b-2 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300'
+                  : 'border-transparent border-b-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
+              )}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
 
-        <Section title="Behavior">
-          <Field label="Animation speed">
-            <RadioGroup
-              name="animationSpeed"
-              value={animationSpeed}
-              onChange={setAnimationSpeed}
-              options={SPEED_OPTIONS}
+      <div className="max-h-[70vh] space-y-6 overflow-y-auto px-4 py-4">
+        {activeTab === 'appearance' && (
+          <Section title="Appearance">
+            <Field label="Theme">
+              <RadioGroup name="theme" value={theme} onChange={setTheme} options={THEME_OPTIONS} />
+            </Field>
+            <Field label="Edge colors">
+              <RadioGroup
+                name="edgePalette"
+                value={edgePalette}
+                onChange={setEdgePalette}
+                options={PALETTE_OPTIONS}
+              />
+            </Field>
+          </Section>
+        )}
+
+        {activeTab === 'behavior' && (
+          <Section title="Behavior">
+            <Field label="Animation speed">
+              <RadioGroup
+                name="animationSpeed"
+                value={animationSpeed}
+                onChange={setAnimationSpeed}
+                options={SPEED_OPTIONS}
+              />
+            </Field>
+            <Toggle
+              label="Browse Lock"
+              hint="Read-only mode — disables editing across the canvas, inspector, and shortcuts"
+              checked={browseLocked}
+              onChange={setBrowseLocked}
             />
-          </Field>
-          <Toggle
-            label="Browse Lock"
-            hint="Read-only mode — disables editing across the canvas, inspector, and shortcuts"
-            checked={browseLocked}
-            onChange={setBrowseLocked}
-          />
-          {/* Session 87 (S5) — the two wizard toggles were standalone
+            {/* Session 87 (S5) — the two wizard toggles were standalone
               items in the Behavior section, reading as two unrelated
               prefs. Grouped under a shared "Creation wizards" sub-
               heading so the relationship is visible at a glance. Both
               flags persist independently — power users keep the
               per-diagram override. */}
-          <div className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/50 px-2.5 py-2 dark:border-neutral-800 dark:bg-neutral-900/50">
-            <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-              Creation wizards
-            </span>
-            <Toggle
-              label="Goal Tree"
-              hint="Open the guided 5-step panel when you create a new Goal Tree. Off = empty canvas, you build manually."
-              checked={showGoalTreeWizard}
-              onChange={setShowGoalTreeWizard}
-            />
-            <Toggle
-              label="Evaporating Cloud"
-              hint="Open the guided 5-step panel when you create a new EC. Off = the 5 pre-seeded boxes appear ready to edit."
-              checked={showECWizard}
-              onChange={setShowECWizard}
-            />
-          </div>
-        </Section>
-
-        <Section title="Display">
-          <Toggle
-            label="Show annotation numbers"
-            hint="A small #N badge on each entity"
-            checked={showAnnotationNumbers}
-            onChange={setShowAnnotationNumbers}
-          />
-          <Toggle
-            label="Show entity IDs"
-            hint="Mono-font caption below each title"
-            checked={showEntityIds}
-            onChange={setShowEntityIds}
-          />
-          <Toggle
-            label="Show UDE-reach badge"
-            hint="On each entity, a bottom-left pill counting how many UDEs it transitively reaches (the Core Driver signal). Hidden on diagrams without UDEs."
-            checked={showReachBadges}
-            onChange={setShowReachBadges}
-          />
-          <Toggle
-            label="Show root-cause-reach badge"
-            hint="On each entity, a bottom-right pill counting how many root causes transitively feed it. Useful on Goal Trees / FRTs where multiple injections converge. Hidden on diagrams without root causes."
-            checked={showReverseReachBadges}
-            onChange={setShowReverseReachBadges}
-          />
-          <Toggle
-            label="Show minimap"
-            hint="Bottom-left thumbnail of the whole diagram"
-            checked={showMinimap}
-            onChange={setShowMinimap}
-          />
-          <Toggle
-            label="Ink-saving print mode"
-            hint="When on, Print / Save as PDF drops colour fills (only the entity-type label is colorized)"
-            checked={printInkSaver}
-            onChange={setPrintInkSaver}
-          />
-          <Field label="Causality reading">
-            <RadioGroup
-              name="causalityLabel"
-              value={causalityLabel}
-              onChange={setCausalityLabel}
-              options={CAUSALITY_OPTIONS}
-            />
-          </Field>
-          <Field label="Default direction for new documents">
-            <RadioGroup
-              name="defaultLayoutDirection"
-              value={defaultLayoutDirection}
-              onChange={setDefaultLayoutDirection}
-              options={DEFAULT_DIRECTION_OPTIONS}
-            />
-          </Field>
-        </Section>
-
-        <Section title="Layout">
-          {layoutKnobsEnabled ? (
-            <>
-              <Field label="Direction">
-                <RadioGroup
-                  name="layoutDirection"
-                  value={directionValue}
-                  onChange={(id) => setLayoutConfig({ direction: id })}
-                  options={DIRECTION_OPTIONS}
-                />
-              </Field>
-              <Slider
-                label="Compactness"
-                hint="Tighten or loosen the spacing dagre uses between entities. 50 is the app default."
-                value={compactnessSlider}
-                onChange={(v) => setLayoutConfig(sliderToCompactness(v))}
+            <div className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/50 px-2.5 py-2 dark:border-neutral-800 dark:bg-neutral-900/50">
+              <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
+                Creation wizards
+              </span>
+              <Toggle
+                label="Goal Tree"
+                hint="Open the guided 5-step panel when you create a new Goal Tree. Off = empty canvas, you build manually."
+                checked={showGoalTreeWizard}
+                onChange={setShowGoalTreeWizard}
               />
-              <Field label="Bias">
-                <RadioGroup
-                  name="layoutBias"
-                  value={biasValue}
-                  onChange={(id) => setLayoutConfig({ align: id === 'auto' ? undefined : id })}
-                  options={BIAS_OPTIONS}
+              <Toggle
+                label="Evaporating Cloud"
+                hint="Open the guided 5-step panel when you create a new EC. Off = the 5 pre-seeded boxes appear ready to edit."
+                checked={showECWizard}
+                onChange={setShowECWizard}
+              />
+            </div>
+          </Section>
+        )}
+
+        {activeTab === 'display' && (
+          <Section title="Display">
+            <Toggle
+              label="Show annotation numbers"
+              hint="A small #N badge on each entity"
+              checked={showAnnotationNumbers}
+              onChange={setShowAnnotationNumbers}
+            />
+            <Toggle
+              label="Show entity IDs"
+              hint="Mono-font caption below each title"
+              checked={showEntityIds}
+              onChange={setShowEntityIds}
+            />
+            <Toggle
+              label="Show UDE-reach badge"
+              hint="On each entity, a bottom-left pill counting how many UDEs it transitively reaches (the Core Driver signal). Hidden on diagrams without UDEs."
+              checked={showReachBadges}
+              onChange={setShowReachBadges}
+            />
+            <Toggle
+              label="Show root-cause-reach badge"
+              hint="On each entity, a bottom-right pill counting how many root causes transitively feed it. Useful on Goal Trees / FRTs where multiple injections converge. Hidden on diagrams without root causes."
+              checked={showReverseReachBadges}
+              onChange={setShowReverseReachBadges}
+            />
+            <Toggle
+              label="Show minimap"
+              hint="Bottom-left thumbnail of the whole diagram"
+              checked={showMinimap}
+              onChange={setShowMinimap}
+            />
+            <Toggle
+              label="Ink-saving print mode"
+              hint="When on, Print / Save as PDF drops colour fills (only the entity-type label is colorized)"
+              checked={printInkSaver}
+              onChange={setPrintInkSaver}
+            />
+            <Field label="Causality reading">
+              <RadioGroup
+                name="causalityLabel"
+                value={causalityLabel}
+                onChange={setCausalityLabel}
+                options={CAUSALITY_OPTIONS}
+              />
+            </Field>
+            <Field label="Default direction for new documents">
+              <RadioGroup
+                name="defaultLayoutDirection"
+                value={defaultLayoutDirection}
+                onChange={setDefaultLayoutDirection}
+                options={DEFAULT_DIRECTION_OPTIONS}
+              />
+            </Field>
+          </Section>
+        )}
+
+        {activeTab === 'layout' && (
+          <Section title="Layout">
+            {layoutKnobsEnabled ? (
+              <>
+                <Field label="Direction">
+                  <RadioGroup
+                    name="layoutDirection"
+                    value={directionValue}
+                    onChange={(id) => setLayoutConfig({ direction: id })}
+                    options={DIRECTION_OPTIONS}
+                  />
+                </Field>
+                <Slider
+                  label="Compactness"
+                  hint="Tighten or loosen the spacing dagre uses between entities. 50 is the app default."
+                  value={compactnessSlider}
+                  onChange={(v) => setLayoutConfig(sliderToCompactness(v))}
                 />
-              </Field>
-              {hasLayoutOverride(layoutConfig) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setLayoutConfig(undefined)}
-                  className="self-start"
-                  aria-label="Reset layout to defaults"
-                >
-                  <RotateCcw className="h-3 w-3" />
-                  <span>Reset to defaults</span>
-                </Button>
-              )}
-            </>
-          ) : (
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              This diagram uses hand-positioned layout — drag entities directly on the canvas to
-              reposition them. The Direction / Compactness / Bias knobs only apply to auto-layout
-              diagrams (CRT, FRT, PRT, TT).
-            </p>
-          )}
-        </Section>
+                <Field label="Bias">
+                  <RadioGroup
+                    name="layoutBias"
+                    value={biasValue}
+                    onChange={(id) => setLayoutConfig({ align: id === 'auto' ? undefined : id })}
+                    options={BIAS_OPTIONS}
+                  />
+                </Field>
+                {hasLayoutOverride(layoutConfig) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setLayoutConfig(undefined)}
+                    className="self-start"
+                    aria-label="Reset layout to defaults"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    <span>Reset to defaults</span>
+                  </Button>
+                )}
+              </>
+            ) : (
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                This diagram uses hand-positioned layout — drag entities directly on the canvas to
+                reposition them. The Direction / Compactness / Bias knobs only apply to auto-layout
+                diagrams (CRT, FRT, PRT, TT).
+              </p>
+            )}
+          </Section>
+        )}
       </div>
     </Modal>
   );

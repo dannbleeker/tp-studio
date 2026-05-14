@@ -31,7 +31,7 @@ export function FirstEntityTip() {
       className="-translate-x-1/2 pointer-events-none absolute bottom-24 left-1/2 z-10"
     >
       <div className="pointer-events-auto flex items-start gap-3 rounded-xl border border-neutral-200 bg-white/95 px-4 py-3 text-xs shadow-md backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95">
-        <div className="flex flex-col gap-1 text-neutral-700 dark:text-neutral-200">
+        <div className="flex flex-col gap-1.5 text-neutral-700 dark:text-neutral-200">
           <p className="font-medium">Next steps</p>
           <p className="text-neutral-500 dark:text-neutral-400">
             <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
@@ -46,6 +46,21 @@ export function FirstEntityTip() {
               K
             </kbd>{' '}
             opens commands.
+          </p>
+          {/* Session 87 (S27 + S28) — surface two hidden gestures: the
+              left-drag marquee selection (works on empty canvas
+              regions) and the Alt+drag splice (drop an entity onto
+              an edge to insert it inline). Both are useful but
+              undiscoverable without a hint. */}
+          <p className="text-neutral-500 dark:text-neutral-400">
+            <strong className="font-medium text-neutral-600 dark:text-neutral-300">
+              Drag on empty canvas
+            </strong>{' '}
+            to marquee-select · hold{' '}
+            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+              Alt
+            </kbd>{' '}
+            while dragging an entity onto an edge to splice it in.
           </p>
         </div>
         <button

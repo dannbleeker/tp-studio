@@ -1,11 +1,12 @@
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useDocumentStore } from '@/store';
 import { TEMPLATE_SPECS, buildTemplate } from '@/templates';
 import { templateThumbnailSvg } from '@/templates/thumbnail';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { Button } from '../ui/Button';
 
 /**
@@ -41,18 +42,9 @@ export function TemplatePickerDialog() {
 
   useFocusTrap(dialogRef, open);
 
-  // Esc closes.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        close();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, close]);
+  // Esc closes. Session 87 (S23) — migrated to the shared
+  // `useEscapeKey` hook for consistent Esc handling across dialogs.
+  useEscapeKey(open, close);
 
   if (!open) return null;
 

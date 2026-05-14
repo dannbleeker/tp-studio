@@ -23,11 +23,18 @@ export type ToolbarActions = {
   layoutMode: ReturnType<typeof useDocumentStore.getState>['layoutMode'];
   historyPanelOpen: boolean;
   showLayoutToggle: boolean;
+  /** Session 87 (S26) — Undo/Redo affordances on the toolbar. The
+   *  flags drive `disabled` state on the buttons; pre-fix Cmd+Z
+   *  worked but had no visible control surface. */
+  canUndo: boolean;
+  canRedo: boolean;
   // Actions.
   toggleTheme: () => void;
   openHelp: () => void;
   toggleHistoryPanel: () => void;
   setLayoutMode: (mode: 'flow' | 'radial') => void;
+  undo: () => void;
+  redo: () => void;
 };
 
 export const useToolbarActions = (): ToolbarActions =>
@@ -37,9 +44,13 @@ export const useToolbarActions = (): ToolbarActions =>
       layoutMode: s.layoutMode,
       historyPanelOpen: s.historyPanelOpen,
       showLayoutToggle: LAYOUT_STRATEGY[s.doc.diagramType] === 'auto',
+      canUndo: s.past.length > 0,
+      canRedo: s.future.length > 0,
       toggleTheme: s.toggleTheme,
       openHelp: s.openHelp,
       toggleHistoryPanel: s.toggleHistoryPanel,
       setLayoutMode: s.setLayoutMode,
+      undo: s.undo,
+      redo: s.redo,
     }))
   );
