@@ -1,5 +1,6 @@
 import { redactDocument } from '@/domain/redact';
 import { getCanvasNodes } from '@/services/canvasRef';
+import { exportECWorkshopSheet } from '@/services/ecWorkshopExport';
 import {
   exportAnnotationsMd,
   exportAnnotationsTxt,
@@ -21,6 +22,28 @@ import { SHARE_LINK_SOFT_WARN_BYTES, generateShareLink } from '@/services/shareL
 import type { Command } from './types';
 
 export const exportCommands: Command[] = [
+  {
+    // Session 87 / EC PPT comparison item #5 — one-page workshop-
+    // handout EC export. Lays the doc out at canonical PPT-style
+    // coordinates (5 boxes / 5 arrows / 4 Assumption placeholders /
+    // 1 Injection(s) box / guiding-questions reference table) on an
+    // A4 landscape sheet. Independent of the live canvas pan/zoom
+    // state; the deliverable is a printable workshop artifact, not
+    // a snapshot of the current viewport. Only meaningful on EC
+    // docs — non-EC docs get a friendly toast.
+    id: 'export-ec-workshop-sheet',
+    label: 'Export EC as workshop sheet (PDF)',
+    group: 'Export',
+    run: async (s) => {
+      if (s.doc.diagramType !== 'ec') {
+        s.showToast('info', 'Workshop sheet is only available on Evaporating Cloud diagrams.');
+        return;
+      }
+      const ok = await exportECWorkshopSheet(s.doc);
+      if (ok) s.showToast('success', 'EC workshop sheet saved.');
+      else s.showToast('error', 'Workshop sheet export failed.');
+    },
+  },
   {
     id: 'export-flying-logic',
     label: 'Export as Flying Logic file',
