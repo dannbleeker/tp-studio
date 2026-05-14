@@ -29,7 +29,7 @@ export const buildExampleFRT = (): TPDocument => {
   return {
     id: newDocumentId(),
     diagramType: 'frt',
-    title: 'Customer-satisfaction Future Reality Tree (example)',
+    title: 'Customer-satisfaction Future Reality Tree',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},

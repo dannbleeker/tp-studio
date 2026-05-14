@@ -20,6 +20,16 @@ export function PrintAppendix() {
   return (
     <aside
       data-component="print-appendix"
+      // Session 87 (V6) — `aria-hidden="true"` outside print mode.
+      // The element is `display: block` in the DOM (so print.css can
+      // make it visible via `@media print`), but screen readers
+      // would otherwise be directed to "Annotation appendix" + an
+      // ordered list during normal browsing — a region the user
+      // can't see on screen. Hiding it from the a11y tree mirrors
+      // its visual hidden state. (No need to flip the attr inside
+      // a print event handler — printing is a one-shot synchronous
+      // browser dialog, not a normal-mode read.)
+      aria-hidden="true"
       style={{
         padding: '24pt 0',
         fontFamily: 'inherit',

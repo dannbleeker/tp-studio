@@ -76,18 +76,17 @@ const clearBodyPrintMode = (): void => {
 
 const resolveMergeFields = (template: string, doc: TPDocument): string => {
   const date = new Date().toISOString().slice(0, 10);
-  return (
-    template
-      .replace(/\{title\}/g, doc.title || 'Untitled')
-      .replace(/\{date\}/g, date)
-      .replace(/\{author\}/g, doc.author ?? '')
-      .replace(/\{diagramType\}/g, doc.diagramType)
-      // pageNumber / pageCount aren't trivially injectable from app
-      // JS — browsers control running headers. Leave them as-is so the
-      // user understands the merge happened.
-      .replace(/\{pageNumber\}/g, '')
-      .replace(/\{pageCount\}/g, '')
-  );
+  // Session 87 (S2) — `{pageNumber}` / `{pageCount}` removed from the
+  // resolver. Pre-fix, they silently stripped to empty (browsers
+  // control running headers, not app JS) but the help text claimed
+  // they worked, so a user typing them saw the literal placeholder
+  // vanish without explanation. The help-text row also no longer
+  // lists them.
+  return template
+    .replace(/\{title\}/g, doc.title || 'Untitled')
+    .replace(/\{date\}/g, date)
+    .replace(/\{author\}/g, doc.author ?? '')
+    .replace(/\{diagramType\}/g, doc.diagramType);
 };
 
 export function PrintPreviewDialog() {
@@ -307,7 +306,15 @@ export function PrintPreviewDialog() {
           </label>
 
           <label className="flex flex-col gap-1 text-xs">
-            <span className="text-neutral-600 dark:text-neutral-300">Footer template</span>
+            {/* Session 87 (S7) — surfaced the merge-field row above the
+                input, matching the Header field's pattern. Same fields
+                apply to both header and footer; documenting once at
+                the header and leaving the footer label bare misled
+                users into thinking footer had a different set. */}
+            <span className="text-neutral-600 dark:text-neutral-300">
+              Footer template — merge fields: <code>{'{title}'}</code> <code>{'{date}'}</code>{' '}
+              <code>{'{author}'}</code> <code>{'{diagramType}'}</code>
+            </span>
             <input
               type="text"
               value={footerTemplate}

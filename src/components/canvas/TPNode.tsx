@@ -146,7 +146,12 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           data-component="zoom-up-card"
           className="pointer-events-auto max-w-sm rounded-lg border border-neutral-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95"
         >
-          <span className="flex items-center gap-1 font-medium text-[10px] text-neutral-500 uppercase tracking-wide dark:text-neutral-400">
+          {/* Session 87 (V4) — entity-type label bumped from
+              text-[10px] tracking-wide to text-[11px] tracking-
+              [0.06em]. At default Fit View zoom the previous size was
+              ~6 px on screen and hard to scan; the bump improves
+              legibility without changing layout. */}
+          <span className="flex items-center gap-1 font-medium text-[11px] text-neutral-500 uppercase tracking-[0.06em] dark:text-neutral-400">
             <meta.icon
               className="h-3 w-3 shrink-0"
               style={{ color: meta.stripeColor }}
@@ -177,7 +182,9 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         aria-hidden
       />
       <div className="flex flex-1 flex-col gap-1 px-3 py-2.5">
-        <span className="flex items-center gap-1 font-medium text-[10px] text-neutral-500 uppercase tracking-wide dark:text-neutral-400">
+        {/* Session 87 (V4) — see comment on the zoom-up card variant
+            above; same legibility bump for the main card label. */}
+        <span className="flex items-center gap-1 font-medium text-[11px] text-neutral-500 uppercase tracking-[0.06em] dark:text-neutral-400">
           {/* B3: per-type icon. Stripe colour duplicated on the icon so the
               two visual cues read together rather than competing. `aria-hidden`
               because the label text already announces the type. */}

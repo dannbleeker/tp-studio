@@ -18,6 +18,13 @@ export const isBrowseLocked = (): boolean => useDocumentStore.getState().browseL
 export const guardWriteOrToast = (): boolean => {
   const state = useDocumentStore.getState();
   if (!state.browseLocked) return true;
-  state.showToast('info', 'Browse Lock is on — unlock to make changes.');
+  // Session 87 (S8) — spell out where to disable it. Pre-fix the
+  // toast said "unlock to make changes" without telling the user
+  // which control unlocks. Now points at the two entry paths: the
+  // lock icon in the top-right toolbar OR Settings → Behavior.
+  state.showToast(
+    'info',
+    'Browse Lock is on — click the lock icon in the top-right or open Settings → Behavior to unlock.'
+  );
   return false;
 };

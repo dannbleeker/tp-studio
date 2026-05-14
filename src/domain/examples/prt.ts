@@ -50,7 +50,7 @@ export const buildExamplePRT = (): TPDocument => {
   return {
     id: newDocumentId(),
     diagramType: 'prt',
-    title: 'Product-launch Prerequisite Tree (example)',
+    title: 'Product-launch Prerequisite Tree',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},

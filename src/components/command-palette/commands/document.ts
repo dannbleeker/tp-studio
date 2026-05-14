@@ -1,9 +1,31 @@
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
 import type { DiagramType } from '@/domain/types';
+import { getCanvasInstance } from '@/services/canvasRef';
 import { applyCsvRows, parseEntitiesCsv, pickCsvFile } from '@/services/csvImport';
 import { pickFlyingLogic, pickJSON, pickMermaid } from '@/services/exporters';
 import { type Command, withWriteGuard } from './types';
+
+/**
+ * Session 87 (V3) — auto-fit-view after a doc load. Examples use
+ * canonical seed coordinates (Goal at x=100, Wants at x=800 on EC)
+ * that overflow narrower viewports; without fit-view, the user lands
+ * on a panned-off canvas and has to manually press the Fit button to
+ * see the loaded diagram. Two animation-frame ticks let React Flow
+ * reconcile the new node set and finalize layout positions before
+ * the fit-to-bounds calculation runs.
+ *
+ * Pulled into a helper because the four load paths (example /
+ * JSON / Flying Logic / Mermaid) all want the same behaviour.
+ */
+const fitViewAfterLoad = (): void => {
+  if (typeof window === 'undefined') return;
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      getCanvasInstance()?.fitView({ padding: 0.4, maxZoom: 1.2 });
+    });
+  });
+};
 
 /**
  * Per-diagram-type "New …" and "Load example …" command pairs, generated
@@ -30,6 +52,7 @@ const diagramCommands = (Object.keys(EXAMPLE_BY_DIAGRAM) as DiagramType[]).flatM
         run: (s) => {
           s.setDocument(EXAMPLE_BY_DIAGRAM[type]());
           s.showToast('info', `Loaded example ${type.toUpperCase()}.`);
+          fitViewAfterLoad();
         },
       }),
     ];
@@ -44,7 +67,10 @@ export const documentCommands: Command[] = [
     group: 'File',
     run: async (s) => {
       const doc = await pickJSON();
-      if (doc) s.setDocument(doc);
+      if (doc) {
+        s.setDocument(doc);
+        fitViewAfterLoad();
+      }
     },
   }),
   withWriteGuard({
@@ -56,6 +82,7 @@ export const documentCommands: Command[] = [
       if (doc) {
         s.setDocument(doc);
         s.showToast('success', `Opened ${doc.title}.`);
+        fitViewAfterLoad();
       }
     },
   }),
@@ -72,6 +99,7 @@ export const documentCommands: Command[] = [
           'success',
           `Imported ${Object.keys(doc.entities).length} entities from Mermaid.`
         );
+        fitViewAfterLoad();
       }
     },
   }),

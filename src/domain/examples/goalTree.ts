@@ -60,7 +60,7 @@ export const buildExampleGoalTree = (): TPDocument => {
   return {
     id: newDocumentId(),
     diagramType: 'goalTree',
-    title: 'Customer-first Goal Tree (example)',
+    title: 'Customer-first Goal Tree',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},

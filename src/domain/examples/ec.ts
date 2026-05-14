@@ -67,7 +67,7 @@ export const buildExampleEC = (): TPDocument => {
   return {
     id: newDocumentId(),
     diagramType: 'ec',
-    title: 'Work / family balance Evaporating Cloud (example)',
+    title: 'Work / family balance Evaporating Cloud',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},

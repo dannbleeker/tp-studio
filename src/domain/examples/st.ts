@@ -48,7 +48,7 @@ export const buildExampleST = (): TPDocument => {
   return {
     id: newDocumentId(),
     diagramType: 'st',
-    title: 'Annual-plan growth Strategy & Tactics Tree (example)',
+    title: 'Annual-plan growth Strategy & Tactics Tree',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},

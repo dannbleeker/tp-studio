@@ -27,10 +27,14 @@ const THEME_OPTIONS: ThemeOption[] = [
   { id: 'ayu', label: 'Ayu', hint: 'Warm dark, golden accents' },
 ];
 
-const SPEED_OPTIONS: { id: AnimationSpeed; label: string }[] = [
-  { id: 'instant', label: 'Instant' },
+const SPEED_OPTIONS: { id: AnimationSpeed; label: string; hint?: string }[] = [
+  { id: 'instant', label: 'Instant', hint: 'No animation' },
   { id: 'slow', label: 'Slow' },
-  { id: 'default', label: 'Default' },
+  // Session 87 (S6) — was "Default" with no explanation. Renamed to
+  // "Normal" with a hint that it's the 1× baseline; the actual ms
+  // varies per component (the Inspector slide is 120 ms at Normal,
+  // other transitions vary). "Slow" / "Fast" multiply this baseline.
+  { id: 'default', label: 'Normal', hint: '1× baseline speed' },
   { id: 'fast', label: 'Fast' },
 ];
 
@@ -246,18 +250,29 @@ export function SettingsDialog() {
             checked={browseLocked}
             onChange={setBrowseLocked}
           />
-          <Toggle
-            label="Show Goal Tree creation wizard"
-            hint="Open the guided 5-step panel when you create a new Goal Tree. Off = empty canvas, you build manually."
-            checked={showGoalTreeWizard}
-            onChange={setShowGoalTreeWizard}
-          />
-          <Toggle
-            label="Show Evaporating Cloud creation wizard"
-            hint="Open the guided 5-step panel when you create a new EC. Off = the 5 pre-seeded boxes appear ready to edit."
-            checked={showECWizard}
-            onChange={setShowECWizard}
-          />
+          {/* Session 87 (S5) — the two wizard toggles were standalone
+              items in the Behavior section, reading as two unrelated
+              prefs. Grouped under a shared "Creation wizards" sub-
+              heading so the relationship is visible at a glance. Both
+              flags persist independently — power users keep the
+              per-diagram override. */}
+          <div className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/50 px-2.5 py-2 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
+              Creation wizards
+            </span>
+            <Toggle
+              label="Goal Tree"
+              hint="Open the guided 5-step panel when you create a new Goal Tree. Off = empty canvas, you build manually."
+              checked={showGoalTreeWizard}
+              onChange={setShowGoalTreeWizard}
+            />
+            <Toggle
+              label="Evaporating Cloud"
+              hint="Open the guided 5-step panel when you create a new EC. Off = the 5 pre-seeded boxes appear ready to edit."
+              checked={showECWizard}
+              onChange={setShowECWizard}
+            />
+          </div>
         </Section>
 
         <Section title="Display">

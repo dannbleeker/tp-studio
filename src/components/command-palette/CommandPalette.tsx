@@ -159,8 +159,14 @@ export function CommandPalette() {
               let flatIdx = 0;
               return sections.map((section) => (
                 <Fragment key={section.group}>
+                  {/* Session 87 (S4) — `aria-hidden` removed so screen
+                      readers announce category transitions when the
+                      user walks the unfiltered palette. `role="presentation"`
+                      keeps the header out of the listitem-count for
+                      assistive tech without hiding it from the
+                      accessibility tree entirely. */}
                   <li
-                    aria-hidden="true"
+                    role="presentation"
                     className="select-none px-4 pt-3 pb-1 font-semibold text-[10px] text-neutral-400 uppercase tracking-wider dark:text-neutral-500"
                   >
                     {section.group}

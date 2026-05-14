@@ -98,7 +98,7 @@ export const buildExampleTT = (): TPDocument => {
   return {
     id: newDocumentId(),
     diagramType: 'tt',
-    title: 'Support-triage Transition Tree (example)',
+    title: 'Support-triage Transition Tree',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},

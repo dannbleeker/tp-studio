@@ -34,7 +34,7 @@ export const buildExampleCRT = (): TPDocument => {
   return {
     id: newDocumentId(),
     diagramType: 'crt',
-    title: 'Customer-satisfaction Current Reality Tree (example)',
+    title: 'Customer-satisfaction Current Reality Tree',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},

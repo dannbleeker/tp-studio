@@ -72,12 +72,12 @@ describe('CommandPalette', () => {
   it('renders section headers in canonical order when no query is active', () => {
     // The palette groups commands by `cmd.group` and emits a section header
     // before each non-empty group, in a fixed File / Edit / View / Review /
-    // Export / Help order. Headers are <li aria-hidden> rows with no <button>
-    // inside — querySelectorAll('li[aria-hidden]') is the cleanest way to
-    // grab them.
+    // Export / Help order. Headers are <li role="presentation"> rows with no
+    // <button> inside — Session 87 (S4) swapped them from `aria-hidden` to
+    // `role="presentation"` so screen readers announce category transitions.
     open();
     const { container } = render(<CommandPalette />);
-    const headers = Array.from(container.querySelectorAll('li[aria-hidden="true"]')).map(
+    const headers = Array.from(container.querySelectorAll('li[role="presentation"]')).map(
       (n) => n.textContent ?? ''
     );
     // Every value in `headers` must come from the canonical order. The

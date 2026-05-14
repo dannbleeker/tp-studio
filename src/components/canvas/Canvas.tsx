@@ -294,7 +294,16 @@ function CanvasInner() {
             conditional in this JSX is purely for the wrapper class. */}
         {doc.diagramType === 'ec' && (
           <>
-            <div className="pointer-events-none absolute top-2 right-0 left-0 z-10 flex flex-col items-stretch gap-2 px-4">
+            {/* Session 87 (V10) — drop the EC canvas chrome BELOW the
+                TopBar at xs (< 640 px). Pre-fix, the reading-
+                instructions strip and the injection chip both sat at
+                top-2 (y≈8 px) while the TopBar buttons sit at top-4
+                with ~28-px height (y≈16-44), producing a visible
+                overlap that obscured the kebab / Commands buttons at
+                the new xs (480 px) breakpoint. At sm+ the canvas is
+                wide enough that the strip's `max-w-3xl` keeps it
+                clear of the top-right toolbar. */}
+            <div className="pointer-events-none absolute top-14 right-0 left-0 z-10 flex flex-col items-stretch gap-2 px-4 sm:top-2">
               <div className="pointer-events-auto">
                 <ECReadingInstructions />
               </div>
@@ -302,7 +311,7 @@ function CanvasInner() {
                 <VerbalisationStrip />
               </div>
             </div>
-            <div className="pointer-events-none absolute top-2 right-4 z-10 flex justify-end">
+            <div className="pointer-events-none absolute top-14 right-4 z-10 flex justify-end sm:top-2">
               <ECInjectionChip />
             </div>
           </>

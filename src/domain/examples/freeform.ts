@@ -36,7 +36,7 @@ export const buildExampleFreeform = (): TPDocument => {
   return {
     id: newDocumentId(),
     diagramType: 'freeform',
-    title: 'Retention argument (example freeform diagram)',
+    title: 'Retention argument',
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},
