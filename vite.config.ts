@@ -5,12 +5,35 @@ import react from '@vitejs/plugin-react';
 import autoprefixer from 'autoprefixer';
 import tailwindcss from 'tailwindcss';
 import { defineConfig } from 'vite';
+import checker from 'vite-plugin-checker';
 import tailwindConfig from './tailwind.config';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ command }) => ({
+  // Session 85 / #18 — vite-plugin-checker runs `tsc --noEmit` (and
+  // Biome lint) in a worker alongside the dev server and surfaces
+  // errors as a browser overlay. Without it, type errors are only
+  // caught at `pnpm build` time (or by the editor's own tsserver,
+  // which can lag). Dev-only — `pnpm build` already runs `tsc
+  // --noEmit` ahead of `vite build`, so adding the checker plugin
+  // there would just duplicate the work. The `command === 'serve'`
+  // guard keeps the build step's plugin list untouched.
+  plugins: [
+    react(),
+    ...(command === 'serve'
+      ? [
+          checker({
+            typescript: true,
+            biome: { command: 'check', flags: '' },
+            // Overlay defaults to on; setting it explicit makes the
+            // intent obvious and pins the contract if future plugin
+            // versions flip the default.
+            overlay: { initialIsOpen: false },
+          }),
+        ]
+      : []),
+  ],
   resolve: {
     alias: {
       '@': path.join(here, 'src'),
@@ -92,4 +115,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
