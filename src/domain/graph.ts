@@ -29,6 +29,38 @@ export const requireEdge = (doc: TPDocument, id: string): Edge => {
   return edge;
 };
 
+/**
+ * Session 85 (#3, light) — kind predicates for Edge.
+ *
+ * The Edge type is a flat record with `kind: 'sufficiency' | 'necessity'`
+ * plus optional fields that are semantically scoped to one kind or the
+ * other:
+ *
+ *  - Sufficiency-only: `andGroupId`, `orGroupId`, `xorGroupId`,
+ *    `weight`, `assumptionIds`, `isBackEdge`. Junctor groups + polarity
+ *    + back-edge tagging are CRT/FRT/TT concepts; necessity edges
+ *    (EC, Goal Tree) don't carry them.
+ *  - Necessity-only: `isMutualExclusion`. EC-specific — the diagnostic
+ *    *depends* on two Wants being mutually exclusive.
+ *  - Common: `label`, `description`, `attributes`.
+ *
+ * A full discriminated union (`type Edge = SufficiencyEdge |
+ * NecessityEdge`) would let TypeScript narrow each access site, but
+ * the refactor touches 50+ files (validators, inspector, junctor
+ * overlay, exporters, migrations, mutations). For now, these
+ * predicates let callers narrow when they care about the distinction:
+ *
+ *     if (isSufficiencyEdge(edge)) {
+ *       // edge.kind === 'sufficiency'; sufficiency-only fields are
+ *       // semantically meaningful here.
+ *     }
+ */
+export const isSufficiencyEdge = (edge: Edge): edge is Edge & { kind: 'sufficiency' } =>
+  edge.kind === 'sufficiency';
+
+export const isNecessityEdge = (edge: Edge): edge is Edge & { kind: 'necessity' } =>
+  edge.kind === 'necessity';
+
 export const incomingEdges = (doc: TPDocument, entityId: string): Edge[] =>
   Object.values(doc.edges).filter((e) => e.targetId === entityId);
 
