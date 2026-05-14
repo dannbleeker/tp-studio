@@ -1,5 +1,10 @@
+# pnpm 11.0.9 writes this file during install to ask which dependencies
+# may run lifecycle build scripts. Approved entries live in
+# `package.json#pnpm.onlyBuiltDependencies`; explicitly-denied entries
+# (we acknowledge the script and refuse to run it) live in
+# `package.json#pnpm.ignoredBuiltDependencies`. This file then needs
+# only the catch-all that says "everything else is denied" — pnpm
+# accepts `false` here as the explicit no-op decision and stops
+# emitting `ERR_PNPM_IGNORED_BUILDS`.
 allowBuilds:
-  '@biomejs/biome': set this to true or false
-  core-js: set this to true or false
-  esbuild: set this to true or false
-  simple-git-hooks: set this to true or false
+  core-js: false
