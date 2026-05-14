@@ -234,22 +234,31 @@ When and if any of these enters scope, the domain layer should be able to absorb
 
 ## Placeholders (need fleshing out before they can be picked up)
 
-- ~~**Look at UI.**~~ ✅ **Walkthrough done (Session 87).** Static review of all 8 primary surfaces + cross-cutting primitives produced 40 triaged findings — see [docs/ui-review-session-87.md](docs/ui-review-session-87.md). Top-priority follow-ups are now backlog items below; the full list lives in the doc. A visual walkthrough will follow once the EC PPT comparison agent lands.
+- ~~**Look at UI.**~~ ✅ **Walkthroughs done (Session 87).** Static review of all 8 primary surfaces produced 40 triaged findings — see [docs/ui-review-session-87.md](docs/ui-review-session-87.md). Visual walkthrough via Claude Preview against the live app produced one bug fix + 10 additional visual-only nits — see [docs/ui-review-session-87-visual.md](docs/ui-review-session-87-visual.md). Top-priority follow-ups are backlog items below.
 - **Make the tool installable.** Currently TP Studio runs via `pnpm dev` + a local browser. Open questions before scoping: what shape is the install target — PWA (`manifest.json` + service-worker for offline use, "Install" prompt in Chrome/Edge), Electron desktop app, packaged static dist served from a one-click installer, or something else? Who's the audience — Dann only, or others at BESTSELLER? Does it need auto-update, or is "rebuild + redistribute" fine? Needs a 15-minute scoping conversation.
 
-## UI tidy batch (Session 87 review — 9 quick wins)
+## 🔴 HOTFIX — example EC loader missing v7 schema fields
 
-Bundled from the static UI review at `docs/ui-review-session-87.md`. Each is S-effort, no design ambiguity; ship together as one "UI tidy" commit (~2 hours total). Numbered to match the source doc.
+Bug surfaced by the Session 87 visual walkthrough — see [docs/ui-review-session-87-visual.md](docs/ui-review-session-87-visual.md) for full repro + fix sketch. `src/domain/examples/ec.ts` doesn't set `ecSlot` on the 5 entities, doesn't set `kind: 'necessity'` on the 4 edges, and doesn't create a D↔D′ mutex edge. Result: loading the example EC shows a broken verbalisation (placeholders instead of titles), no per-slot guiding questions in the inspector, and the `ec-completeness` + `ec-missing-conflict` CLR rules fire 6+ false-positive warnings. **The Session 87 EC PPT comparison features all look unimplemented when a first-time user evaluates them via the example.** Highest-leverage single fix. Effort: S (~30 min code + test + commit).
 
-1. **Browse-Lock icon** — pick one icon and toggle via the color variant, not via icon swap (today's `Lock` ↔ `Unlock` swap fights the state-color swap).
-2. **Print dialog `{pageNumber}` / `{pageCount}`** — currently listed in help but resolve to empty; either drop them or annotate "(filled by browser)".
-3. **EmptyHint** — add palette + templates entry paths alongside the existing double-click hint.
-4. **CommandPalette section headers** — drop `aria-hidden` so screen readers announce category transitions.
-5. **Creation wizard toggles** — collapse two Settings toggles into one "Show creation wizards" with optional per-diagram override.
-6. **Animation speed "Default" label** — rename to "Normal" or add a "(200 ms)" hint.
-7. **PrintPreviewDialog footer-template help row** — list merge fields above the input, same as the Header field.
-8. **Browse Lock toast wording** — explain where to disable it ("Settings → Behavior or the top-bar lock icon").
-9. **Toaster vs. React Flow Controls collision** — bump Toaster to `bottom-20` or move Controls.
+## UI tidy batch (Session 87 review — 14 quick wins)
+
+Bundled from both UI reviews (static + visual). Each is S-effort, no design ambiguity; ship together as one "UI tidy" commit. Numbered to match the source docs (S## = static review item, V# = visual review item).
+
+1. **(S1) Browse-Lock icon** — pick one icon and toggle via the color variant, not via icon swap (today's `Lock` ↔ `Unlock` swap fights the state-color swap). Also confirmed visually in V7.
+2. **(S2) Print dialog `{pageNumber}` / `{pageCount}`** — currently listed in help but resolve to empty; either drop them or annotate "(filled by browser)".
+3. **(S3) EmptyHint** — add palette + templates entry paths alongside the existing double-click hint.
+4. **(S4) CommandPalette section headers** — drop `aria-hidden` so screen readers announce category transitions.
+5. **(S5) Creation wizard toggles** — collapse two Settings toggles into one "Show creation wizards" with optional per-diagram override.
+6. **(S6) Animation speed "Default" label** — rename to "Normal" or add a "(200 ms)" hint.
+7. **(S7) PrintPreviewDialog footer-template help row** — list merge fields above the input, same as the Header field.
+8. **(S8) Browse Lock toast wording** — explain where to disable it ("Settings → Behavior or the top-bar lock icon").
+9. **(S9) Toaster vs. React Flow Controls collision** — bump Toaster to `bottom-20` or move Controls.
+10. **(V1) Drop "(example)" suffix from example doc titles** — verbose; the diagram-type badge already says the type. Applies to every `src/domain/examples/*.ts` title.
+11. **(V3) Fit View on example load** — examples use canonical seed coordinates that overflow narrower viewports; auto-fitting after `setDocument(buildExampleX())` keeps everything in view.
+12. **(V4) Entity-type label legibility** — at default Fit View zoom on busy diagrams, the uppercase type label (`EFFECT`, `GOAL`, etc.) is ~6 px tall. Bump font-size or letter-spacing.
+13. **(V6) Annotation appendix in a11y tree** — `<aside>` is `display: visible` when not printing; screen readers can hit it unexpectedly. Add `aria-hidden="true"` outside of `body.print-include-appendix` mode.
+14. **(V10) Verify TopBar at 480 px (`xs:` breakpoint)** — static review covered ≥640 px; the new `xs` breakpoint added Session 83 deserves a check.
 
 ## UI polish queue (Session 87 review — 13 individual fixes)
 
