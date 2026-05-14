@@ -234,8 +234,49 @@ When and if any of these enters scope, the domain layer should be able to absorb
 
 ## Placeholders (need fleshing out before they can be picked up)
 
-- **Look at UI.** Open-ended UX review pass. Trigger when someone has fresh eyes on the app — walk every primary surface (canvas, inspector, top-bar, command palette, settings, print dialog, templates picker, creation wizard) and capture concrete UX nits in a follow-up backlog entry. No scope until that walkthrough happens.
+- ~~**Look at UI.**~~ ✅ **Walkthrough done (Session 87).** Static review of all 8 primary surfaces + cross-cutting primitives produced 40 triaged findings — see [docs/ui-review-session-87.md](docs/ui-review-session-87.md). Top-priority follow-ups are now backlog items below; the full list lives in the doc. A visual walkthrough will follow once the EC PPT comparison agent lands.
 - **Make the tool installable.** Currently TP Studio runs via `pnpm dev` + a local browser. Open questions before scoping: what shape is the install target — PWA (`manifest.json` + service-worker for offline use, "Install" prompt in Chrome/Edge), Electron desktop app, packaged static dist served from a one-click installer, or something else? Who's the audience — Dann only, or others at BESTSELLER? Does it need auto-update, or is "rebuild + redistribute" fine? Needs a 15-minute scoping conversation.
+
+## UI tidy batch (Session 87 review — 9 quick wins)
+
+Bundled from the static UI review at `docs/ui-review-session-87.md`. Each is S-effort, no design ambiguity; ship together as one "UI tidy" commit (~2 hours total). Numbered to match the source doc.
+
+1. **Browse-Lock icon** — pick one icon and toggle via the color variant, not via icon swap (today's `Lock` ↔ `Unlock` swap fights the state-color swap).
+2. **Print dialog `{pageNumber}` / `{pageCount}`** — currently listed in help but resolve to empty; either drop them or annotate "(filled by browser)".
+3. **EmptyHint** — add palette + templates entry paths alongside the existing double-click hint.
+4. **CommandPalette section headers** — drop `aria-hidden` so screen readers announce category transitions.
+5. **Creation wizard toggles** — collapse two Settings toggles into one "Show creation wizards" with optional per-diagram override.
+6. **Animation speed "Default" label** — rename to "Normal" or add a "(200 ms)" hint.
+7. **PrintPreviewDialog footer-template help row** — list merge fields above the input, same as the Header field.
+8. **Browse Lock toast wording** — explain where to disable it ("Settings → Behavior or the top-bar lock icon").
+9. **Toaster vs. React Flow Controls collision** — bump Toaster to `bottom-20` or move Controls.
+
+## UI polish queue (Session 87 review — 13 individual fixes)
+
+S–M effort, low ambiguity. Pick what aligns with current work. Highlights (full list in the review doc):
+
+- **Settings dialog TOC / section anchors** (item #10, S) — left-rail or sticky-header quick-nav.
+- **Theme picker as a swatch grid** (item #11, M) — replace the 7-option radio with visual swatches.
+- **Long-form layout-direction labels** (item #12, S) — "Bottom → Top" primary, "BT" secondary.
+- **Command palette icons + recent section** (items #16 + #17, M each).
+- **Context menu keyboard navigation** (item #15, M) — arrow keys + Enter + Esc.
+- **Print mode visual previews** (item #20, M) — inline thumbnail per mode.
+- **Creation wizard drag-to-reposition** (item #18, M).
+- **First-Entity Tip — add rename + delete hints** (item #19, S).
+
+## UI bigger asks (Session 87 review — 7 items needing design conversation)
+
+M+ effort, may need a Dann decision before picking up:
+
+- **Esc handling consistency** across modal/panel layers (item #23). Most cross-cutting; doing it well unblocks others.
+- **Global status indicator** (item #24) — single bar showing lock / hoist / history / wizard / search state.
+- **Settings dialog → tabs** (item #25) — inevitable as the dialog grows.
+- **Visible Undo affordance** (item #26).
+- **Alt-drag-to-splice discoverability** (item #27).
+- **Marquee selection discoverability** (item #28).
+- **Browse Lock toast dedup** (item #29) — verify the dedupe key handles cascades.
+
+EC-specific findings (items #30-34) are parked until the EC PPT comparison agent ships and the surfaces stabilize; cross-cutting tech-debt items (#35-40) belong in a future focused-1-hour pass.
 
 ## EC PPT comparison
 
