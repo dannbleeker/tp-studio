@@ -36,7 +36,7 @@ export function InjectionWorkbench() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-neutral-600 dark:text-neutral-300">
+        <p className="text-neutral-600 text-xs dark:text-neutral-300">
           Each injection challenges one or more assumptions. Mark an injection implemented when
           you've shipped the change — the linked assumptions evaporate.
         </p>
@@ -51,7 +51,7 @@ export function InjectionWorkbench() {
         New injection
       </Button>
       {injections.length === 0 && (
-        <p className="text-[11px] italic text-neutral-500 dark:text-neutral-400">
+        <p className="text-[11px] text-neutral-500 italic dark:text-neutral-400">
           No injections yet. Add one above or right-click the canvas to seed one.
         </p>
       )}
@@ -113,7 +113,7 @@ function InjectionRow({
           onChange={(e) => updateEntity(injection.id, { title: e.target.value })}
           disabled={locked}
           placeholder="Injection title…"
-          className="flex-1 bg-transparent px-1 py-0.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
+          className="flex-1 bg-transparent px-1 py-0.5 text-neutral-800 text-xs outline-none placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
         />
         <button
           type="button"
@@ -151,7 +151,7 @@ function InjectionRow({
               className="flex items-center gap-1 text-[11px] text-neutral-700 dark:text-neutral-300"
             >
               <span className="flex-1 truncate" title={a.text}>
-                — {a.text || <span className="italic text-neutral-400">(empty)</span>}
+                — {a.text || <span className="text-neutral-400 italic">(empty)</span>}
               </span>
               <button
                 type="button"
@@ -171,7 +171,7 @@ function InjectionRow({
         <div className="flex flex-col gap-0.5 rounded border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-900">
           <p className="px-1 text-[10px] text-neutral-500 dark:text-neutral-400">Link to:</p>
           {unlinkedAssumptions.length === 0 && (
-            <p className="px-1 text-[11px] italic text-neutral-500 dark:text-neutral-400">
+            <p className="px-1 text-[11px] text-neutral-500 italic dark:text-neutral-400">
               No more assumptions to link.
             </p>
           )}
@@ -185,7 +185,7 @@ function InjectionRow({
                     setPicking(false);
                   }}
                   aria-label={`Link assumption: ${a.text || 'empty'}`}
-                  className="w-full rounded px-1 py-0.5 text-left text-[11px] text-neutral-700 transition hover:bg-emerald-100 hover:text-emerald-700 focus:bg-emerald-100 focus:outline-none dark:text-neutral-300 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300 dark:focus:bg-emerald-950/40"
+                  className="w-full rounded px-1 py-0.5 text-left text-[11px] text-neutral-700 transition hover:bg-emerald-100 hover:text-emerald-700 focus:bg-emerald-100 focus:outline-none dark:text-neutral-300 dark:focus:bg-emerald-950/40 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
                 >
                   {a.text || <span className="italic">(empty)</span>}
                 </button>
@@ -205,7 +205,7 @@ function InjectionRow({
           type="button"
           onClick={() => setPicking(true)}
           disabled={locked}
-          className="self-start rounded px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
+          className="self-start rounded px-1 py-0.5 font-semibold text-[10px] text-emerald-700 uppercase tracking-wide transition hover:bg-emerald-100 disabled:opacity-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
         >
           + link assumption
         </button>

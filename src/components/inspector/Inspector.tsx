@@ -77,8 +77,8 @@ export function Inspector() {
           // The inspector takes its full 320 px from md upward. On narrower
           // viewports it caps at 85 vw so a phone-sized canvas still has room
           // to breathe behind it; the slide-off when closed is unchanged.
-          'inspector-aside absolute right-0 top-0 z-20 h-full w-[min(85vw,320px)] transform md:w-[320px]',
-          'border-l border-neutral-200 bg-white/95 backdrop-blur',
+          'inspector-aside absolute top-0 right-0 z-20 h-full w-[min(85vw,320px)] transform md:w-[320px]',
+          'border-neutral-200 border-l bg-white/95 backdrop-blur',
           'dark:border-neutral-800 dark:bg-neutral-950/95',
           // 200 ms slide-in / slide-out so the panel doesn't snap. `ease-out`
           // feels right for entering (decelerates into position); the same
@@ -94,8 +94,8 @@ export function Inspector() {
         {...({ inert: !open ? '' : undefined } as Record<string, string | undefined>)}
       >
         <div className="flex h-full flex-col">
-          <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
+            <span className="font-semibold text-[11px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
               {headerLabel}
             </span>
             <Button
@@ -111,7 +111,7 @@ export function Inspector() {
             <div
               role="tablist"
               aria-label="Evaporating Cloud inspector views"
-              className="flex border-b border-neutral-200 px-2 dark:border-neutral-800"
+              className="flex border-neutral-200 border-b px-2 dark:border-neutral-800"
             >
               {(
                 [
@@ -129,10 +129,10 @@ export function Inspector() {
                     aria-selected={active}
                     onClick={() => setECTab(tab.id)}
                     className={clsx(
-                      'flex-1 px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition',
+                      'flex-1 px-2 py-1.5 font-semibold text-[11px] uppercase tracking-wide transition',
                       active
-                        ? 'border-b-2 border-indigo-500 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300'
-                        : 'border-b-2 border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
+                        ? 'border-indigo-500 border-b-2 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300'
+                        : 'border-transparent border-b-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
                     )}
                   >
                     {tab.label}

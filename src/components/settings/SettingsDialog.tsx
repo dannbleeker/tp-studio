@@ -204,10 +204,10 @@ export function SettingsDialog() {
 
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="settings-title">
-      <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+      <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
         <h2
           id="settings-title"
-          className="text-sm font-semibold text-neutral-900 dark:text-neutral-100"
+          className="font-semibold text-neutral-900 text-sm dark:text-neutral-100"
         >
           Settings
         </h2>

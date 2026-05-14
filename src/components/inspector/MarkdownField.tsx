@@ -52,7 +52,7 @@ export function MarkdownField({
     >
       {effectiveMode === 'edit' ? (
         <textarea
-          className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 font-mono text-xs leading-relaxed text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+          className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 font-mono text-neutral-900 text-xs leading-relaxed outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           rows={rows}
           placeholder={placeholder}
           value={value}
@@ -83,7 +83,7 @@ function ModeButton({
       onClick={onClick}
       aria-pressed={active}
       className={clsx(
-        'flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider transition',
+        'flex items-center gap-1 rounded px-1.5 py-0.5 font-medium text-[10px] uppercase tracking-wider transition',
         active
           ? 'bg-white text-neutral-700 shadow-sm dark:bg-neutral-800 dark:text-neutral-100'
           : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'

@@ -100,9 +100,9 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="max-w-md rounded-xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
           <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
             <AlertTriangle className="h-5 w-5" />
-            <h1 className="text-sm font-semibold">Something went wrong</h1>
+            <h1 className="font-semibold text-sm">Something went wrong</h1>
           </div>
-          <p className="mt-3 text-sm text-neutral-700 dark:text-neutral-200">
+          <p className="mt-3 text-neutral-700 text-sm dark:text-neutral-200">
             Your document is autosaved — reloading should bring it back intact.
           </p>
           {error.message && (

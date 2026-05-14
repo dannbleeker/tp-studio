@@ -18,10 +18,10 @@ export function HelpDialog() {
 
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="help-title">
-      <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+      <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
         <h2
           id="help-title"
-          className="text-sm font-semibold text-neutral-900 dark:text-neutral-100"
+          className="font-semibold text-neutral-900 text-sm dark:text-neutral-100"
         >
           Keyboard shortcuts
         </h2>
@@ -35,7 +35,7 @@ export function HelpDialog() {
           if (rows.length === 0) return null;
           return (
             <section key={group}>
-              <h3 className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              <h3 className="mb-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
                 {SHORTCUT_GROUP_TITLE[group]}
               </h3>
               <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-sm">

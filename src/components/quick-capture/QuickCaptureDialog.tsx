@@ -59,8 +59,8 @@ export function QuickCaptureDialog() {
 
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-3xl" labelledBy="qc-title">
-      <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-        <h2 id="qc-title" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+      <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
+        <h2 id="qc-title" className="font-semibold text-neutral-900 text-sm dark:text-neutral-100">
           Quick Capture
         </h2>
         <Button variant="ghost" size="icon" onClick={close} aria-label="Close quick capture">
@@ -71,7 +71,7 @@ export function QuickCaptureDialog() {
       <div className="grid grid-cols-1 gap-4 px-4 py-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label
-            className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+            className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400"
             htmlFor="qc-textarea"
           >
             Paste a bulleted, indented list
@@ -91,7 +91,7 @@ export function QuickCaptureDialog() {
             placeholder={
               'Customer satisfaction is declining\n  Order entry is manual\n  Warehouse is understaffed\n    Hard to find qualified pickers'
             }
-            className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 font-mono text-xs leading-relaxed text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+            className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 font-mono text-neutral-900 text-xs leading-relaxed outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           />
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
             Indent with 2 spaces or a tab. Bullets (<code>-</code>, <code>*</code>, <code>•</code>,{' '}
@@ -109,12 +109,12 @@ export function QuickCaptureDialog() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
             Preview ({parsed.total} {parsed.total === 1 ? 'entity' : 'entities'})
           </span>
           <div className="min-h-[14rem] flex-1 overflow-auto rounded-md border border-neutral-200 bg-neutral-50 p-2 text-xs dark:border-neutral-800 dark:bg-neutral-900">
             {parsed.total === 0 ? (
-              <p className="italic text-neutral-400">Nothing to preview yet.</p>
+              <p className="text-neutral-400 italic">Nothing to preview yet.</p>
             ) : (
               <ul className="flex flex-col gap-0.5">
                 {parsed.roots.map((node, i) => (
@@ -126,7 +126,7 @@ export function QuickCaptureDialog() {
         </div>
       </div>
 
-      <footer className="flex items-center justify-end gap-2 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800">
+      <footer className="flex items-center justify-end gap-2 border-neutral-200 border-t px-4 py-3 dark:border-neutral-800">
         <span className="mr-auto text-[11px] text-neutral-500 dark:text-neutral-400">
           <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
             {typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)

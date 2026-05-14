@@ -36,7 +36,7 @@ export function EntityInspector({
     <div className="flex flex-col gap-4">
       <Field label="Title">
         <textarea
-          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           rows={3}
           value={entity.title}
           onChange={(e) => updateEntity(entityId, { title: e.target.value })}
@@ -120,7 +120,7 @@ export function EntityInspector({
             min={1}
             step={1}
             inputMode="numeric"
-            className="w-24 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+            className="w-24 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
             value={entity.ordering ?? ''}
             placeholder="—"
             disabled={locked}
@@ -145,7 +145,7 @@ export function EntityInspector({
           // interview date, internal report). The field's purpose is
           // *visible provenance*, not searchable metadata; the inspector is
           // the only consumer today.
-          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-700 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
           rows={2}
           value={entity.attestation ?? ''}
           placeholder="Source or evidence — URL, document, interview, etc. Optional."
@@ -155,7 +155,7 @@ export function EntityInspector({
       </Field>
 
       <Field label="Unspecified placeholder">
-        <label className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-300">
+        <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
           <input
             type="checkbox"
             className="mt-0.5"
@@ -306,7 +306,7 @@ function StFacetsSection({
                   if (next === '') onClear(row.key);
                   else onSet(row.key, next);
                 }}
-                className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+                className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
               />
             </label>
           );

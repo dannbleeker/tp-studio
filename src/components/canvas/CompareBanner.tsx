@@ -51,8 +51,8 @@ export function CompareBanner() {
   const changedCount = diff.entitiesChanged.size + diff.edgesChanged.size;
 
   return (
-    <div className="absolute left-1/2 top-12 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-indigo-300 bg-indigo-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur dark:border-indigo-700 dark:bg-indigo-950/90">
-      <span className="font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+    <div className="-translate-x-1/2 absolute top-12 left-1/2 z-30 flex items-center gap-3 rounded-full border border-indigo-300 bg-indigo-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur dark:border-indigo-700 dark:bg-indigo-950/90">
+      <span className="font-semibold text-indigo-700 uppercase tracking-wider dark:text-indigo-300">
         Visual diff
       </span>
       <span className="text-neutral-700 dark:text-neutral-200">vs. {revLabel || 'snapshot'}</span>

@@ -47,7 +47,7 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
 
   if (warnings.length === 0) {
     return (
-      <div className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-xs text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
+      <div className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-emerald-700 text-xs dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
         No CLR concerns.
       </div>
     );
@@ -63,7 +63,7 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+      <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
         CLR ({totalOpen} open{totalResolved > 0 ? `, ${totalResolved} resolved` : ''})
       </span>
       {TIER_ORDER.map((tier) => {
@@ -72,9 +72,9 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
         const tierMeta = TIER_META[tier];
         return (
           <section key={tier} className="flex flex-col gap-1.5">
-            <span className="flex items-baseline gap-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+            <span className="flex items-baseline gap-2 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
               <span>{tierMeta.label}</span>
-              <span className="font-normal normal-case tracking-normal text-neutral-400 dark:text-neutral-500">
+              <span className="font-normal text-neutral-400 normal-case tracking-normal dark:text-neutral-500">
                 {tierMeta.hint}
               </span>
             </span>
@@ -106,7 +106,7 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
                         type="button"
                         onClick={() => runAction(w)}
                         aria-label={`${w.action.label} (one-click remedy)`}
-                        className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900 transition hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
+                        className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 font-semibold text-[10px] text-amber-900 transition hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
                       >
                         <Wand2 className="h-3 w-3" aria-hidden />
                         {w.action.label}
@@ -121,7 +121,7 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
                         ? `Reopen warning: ${w.message}`
                         : `Mark warning resolved: ${w.message}`
                     }
-                    className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-neutral-600 opacity-0 transition hover:bg-white/60 focus:opacity-100 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
+                    className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-neutral-600 opacity-0 transition hover:bg-white/60 focus:opacity-100 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
                   >
                     {w.resolved ? 'Reopen' : 'Resolve'}
                   </button>

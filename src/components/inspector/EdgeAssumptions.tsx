@@ -85,7 +85,7 @@ function AssumptionRow({
         placeholder="State the assumption…"
         onChange={(e) => updateEntity(assumption.id, { title: e.target.value })}
         disabled={locked}
-        className="flex-1 bg-transparent px-1 py-0.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
+        className="flex-1 bg-transparent px-1 py-0.5 text-neutral-800 text-xs outline-none placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
       />
       <button
         type="button"

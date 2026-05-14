@@ -50,7 +50,7 @@ export function GroupInspector({ groupId }: { groupId: string }) {
           value={group.title}
           onChange={(e) => renameGroup(groupId, e.target.value)}
           disabled={locked}
-          className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+          className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
         />
       </Field>
 
@@ -111,7 +111,7 @@ export function GroupInspector({ groupId }: { groupId: string }) {
                 'h-6 w-6 rounded-full transition disabled:cursor-not-allowed disabled:opacity-50',
                 GROUP_COLOR_CLASSES[c].swatch,
                 group.color === c
-                  ? 'ring-2 ring-offset-2 ring-neutral-900 dark:ring-neutral-100'
+                  ? 'ring-2 ring-neutral-900 ring-offset-2 dark:ring-neutral-100'
                   : 'hover:scale-110'
               )}
             />
@@ -120,7 +120,7 @@ export function GroupInspector({ groupId }: { groupId: string }) {
       </Field>
 
       <Field label="Members">
-        <p className="text-xs text-neutral-600 dark:text-neutral-300">
+        <p className="text-neutral-600 text-xs dark:text-neutral-300">
           {memberCount} {memberCount === 1 ? 'item' : 'items'} in this group.
         </p>
       </Field>
@@ -128,7 +128,7 @@ export function GroupInspector({ groupId }: { groupId: string }) {
       {nestCandidates.length > 0 && (
         <Field label="Nest into parent group">
           <select
-            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
             value=""
             disabled={locked}
             aria-label="Nest this group inside another group"

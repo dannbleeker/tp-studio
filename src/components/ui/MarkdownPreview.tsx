@@ -11,7 +11,7 @@ export function MarkdownPreview({ source }: { source: string }) {
   const html = useMemo(() => renderMarkdown(source), [source]);
 
   if (!source.trim()) {
-    return <p className="text-xs italic text-neutral-400">No description.</p>;
+    return <p className="text-neutral-400 text-xs italic">No description.</p>;
   }
 
   // Click + keyboard delegator for internal entity references. Anchors
@@ -38,7 +38,7 @@ export function MarkdownPreview({ source }: { source: string }) {
         if (e.key !== 'Enter' && e.key !== ' ') return;
         if (handle(e.target)) e.preventDefault();
       }}
-      className="prose-tp text-sm leading-relaxed text-neutral-800 dark:text-neutral-200"
+      className="prose-tp text-neutral-800 text-sm leading-relaxed dark:text-neutral-200"
     />
   );
 }

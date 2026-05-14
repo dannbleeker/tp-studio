@@ -28,7 +28,7 @@ export function FirstEntityTip() {
       // Sits ABOVE the bottom-center Controls bar (zoom +/-/fit), not on top
       // of it. `bottom-24` clears the ~80 px Controls stack with room for a
       // shadow.
-      className="pointer-events-none absolute bottom-24 left-1/2 z-10 -translate-x-1/2"
+      className="-translate-x-1/2 pointer-events-none absolute bottom-24 left-1/2 z-10"
     >
       <div className="pointer-events-auto flex items-start gap-3 rounded-xl border border-neutral-200 bg-white/95 px-4 py-3 text-xs shadow-md backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95">
         <div className="flex flex-col gap-1 text-neutral-700 dark:text-neutral-200">

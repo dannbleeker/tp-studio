@@ -25,7 +25,7 @@ export function Toaster() {
   return (
     <div
       data-component="toaster"
-      className="pointer-events-none fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center gap-2"
+      className="-translate-x-1/2 pointer-events-none fixed bottom-6 left-1/2 z-40 flex flex-col items-center gap-2"
     >
       {toasts.map((t) => {
         const Icon = ICONS[t.kind];

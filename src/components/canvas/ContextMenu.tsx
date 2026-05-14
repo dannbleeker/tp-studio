@@ -467,7 +467,7 @@ export function ContextMenu() {
           return (
             <div
               key={stableKey}
-              className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+              className="px-3 pt-1.5 pb-1 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400"
             >
               {item.label}
             </div>
@@ -485,8 +485,8 @@ export function ContextMenu() {
             }}
             className={
               item.destructive
-                ? 'flex w-full items-center justify-between px-3 py-1.5 text-left text-sm text-red-700 transition hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/30'
-                : 'flex w-full items-center justify-between px-3 py-1.5 text-left text-sm text-neutral-700 transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-900'
+                ? 'flex w-full items-center justify-between px-3 py-1.5 text-left text-red-700 text-sm transition hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/30'
+                : 'flex w-full items-center justify-between px-3 py-1.5 text-left text-neutral-700 text-sm transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-900'
             }
           >
             {item.label}

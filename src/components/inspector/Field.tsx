@@ -4,11 +4,11 @@ export function Field({ label, children }: { label: ReactNode; children: ReactNo
   return (
     <div className="flex flex-col gap-1.5">
       {typeof label === 'string' ? (
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+        <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
           {label}
         </span>
       ) : (
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+        <div className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
           {label}
         </div>
       )}

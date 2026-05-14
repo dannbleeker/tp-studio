@@ -173,12 +173,12 @@ function AttributeRow({
   return (
     <div className="flex items-center gap-1.5 rounded-md border border-neutral-200 px-2 py-1 dark:border-neutral-800">
       <span
-        className="min-w-0 flex-shrink truncate text-[11px] font-mono text-neutral-600 dark:text-neutral-400"
+        className="min-w-0 flex-shrink truncate font-mono text-[11px] text-neutral-600 dark:text-neutral-400"
         title={attrKey}
       >
         {attrKey}
       </span>
-      <span className="text-[9px] uppercase tracking-wider text-neutral-400">{value.kind}</span>
+      <span className="text-[9px] text-neutral-400 uppercase tracking-wider">{value.kind}</span>
       <AttributeValueInput value={value} locked={locked} onChange={onChange} />
       <button
         type="button"
@@ -250,7 +250,7 @@ function AttributeValueInput({
   return (
     <input
       type="checkbox"
-      className="ml-auto mr-1 h-4 w-4 cursor-pointer accent-indigo-500"
+      className="mr-1 ml-auto h-4 w-4 cursor-pointer accent-indigo-500"
       checked={value.value}
       disabled={locked}
       onChange={(e) => onChange({ kind: 'bool', value: e.target.checked })}

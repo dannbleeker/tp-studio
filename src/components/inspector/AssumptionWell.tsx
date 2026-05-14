@@ -130,7 +130,7 @@ function AssumptionRow({
         title={`Status: ${STATUS_LABEL[status]} (click to cycle to ${STATUS_LABEL[nextStatus(status)]})`}
         aria-label={`Assumption status: ${STATUS_LABEL[status]}. Press to cycle to ${STATUS_LABEL[nextStatus(status)]}.`}
         className={clsx(
-          'shrink-0 rounded border px-1 py-0 text-[9px] font-bold uppercase tracking-wide transition focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
+          'shrink-0 rounded border px-1 py-0 font-bold text-[9px] uppercase tracking-wide transition focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
           STATUS_CHIP_CLASS[status]
         )}
       >
@@ -143,7 +143,7 @@ function AssumptionRow({
         placeholder="State the assumption…"
         onChange={(e) => setAssumptionText(assumption.id, e.target.value)}
         disabled={locked}
-        className="flex-1 bg-transparent px-1 py-0.5 text-xs text-neutral-800 outline-none placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
+        className="flex-1 bg-transparent px-1 py-0.5 text-neutral-800 text-xs outline-none placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
       />
       <button
         type="button"

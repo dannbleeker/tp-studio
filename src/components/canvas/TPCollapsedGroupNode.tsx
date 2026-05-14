@@ -45,7 +45,7 @@ export function TPCollapsedGroupNode({ data, selected }: NodeProps<TPCollapsedGr
       />
       <ChevronRight className={clsx('mb-1 h-3.5 w-3.5', colors.text)} />
       <span
-        className={clsx('line-clamp-2 text-sm font-semibold uppercase tracking-wide', colors.text)}
+        className={clsx('line-clamp-2 font-semibold text-sm uppercase tracking-wide', colors.text)}
       >
         {group.title || 'Untitled group'}
       </span>

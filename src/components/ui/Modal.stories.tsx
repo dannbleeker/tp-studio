@@ -31,10 +31,10 @@ const Demo = ({ align }: { align?: 'center' | 'top' }) => {
       </Button>
       <Modal open={open} onDismiss={() => setOpen(false)} align={align}>
         <div className="flex flex-col gap-3 p-5">
-          <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+          <h2 className="font-semibold text-neutral-900 text-sm dark:text-neutral-100">
             Confirm destructive action
           </h2>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400">
+          <p className="text-neutral-600 text-xs dark:text-neutral-400">
             This is a demonstration modal. Click outside, press Esc, or use the buttons below to
             dismiss.
           </p>

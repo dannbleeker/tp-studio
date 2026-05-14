@@ -40,7 +40,7 @@ function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-neutral-700 dark:text-neutral-200">
+      <p className="text-neutral-700 text-sm dark:text-neutral-200">
         {present.length} entities selected.{' '}
         <span className="text-neutral-500 dark:text-neutral-400">
           {allSameType && sharedType
@@ -186,7 +186,7 @@ function RenumberControl({
           step={1}
           inputMode="numeric"
           aria-label="Renumber starting at"
-          className="w-20 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+          className="w-20 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           value={startAt}
           disabled={locked}
           onChange={(e) => {
@@ -241,7 +241,7 @@ function EdgesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-neutral-700 dark:text-neutral-200">
+      <p className="text-neutral-700 text-sm dark:text-neutral-200">
         {present.length} edges selected.{' '}
         <span className="text-neutral-500 dark:text-neutral-400">{allTypeLabel}</span>
       </p>

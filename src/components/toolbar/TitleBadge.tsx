@@ -27,7 +27,7 @@ export function TitleBadge() {
       //   <sm  (TopBar ~120 px, icon-only Commands + Lock + Kebab)
       //   sm   (TopBar ~150 px, full Commands + Lock + History + Help + Theme)
       //   md+  (TopBar ~280 px, full Commands + Lock + Layout + History + Help + Theme)
-      className="pointer-events-none absolute left-4 top-4 z-10 flex max-w-[calc(100%-7rem)] items-center gap-1.5 xs:max-w-[calc(100%-9rem)] sm:max-w-[calc(100%-12rem)] sm:gap-2 md:max-w-[calc(100%-20rem)]"
+      className="pointer-events-none absolute top-4 left-4 z-10 flex max-w-[calc(100%-7rem)] xs:max-w-[calc(100%-9rem)] items-center gap-1.5 sm:max-w-[calc(100%-12rem)] sm:gap-2 md:max-w-[calc(100%-20rem)]"
     >
       <input
         // The width follows the title text so the badge sits close to it, but
@@ -35,14 +35,14 @@ export function TitleBadge() {
         // Padding tightens on the smallest viewports so a long title still
         // fits the available space without pushing the Info button out of
         // the page.
-        className="pointer-events-auto min-w-0 max-w-[60ch] flex-shrink rounded-md bg-transparent px-1.5 py-1 text-sm font-medium text-neutral-900 outline-none transition focus:bg-white focus:shadow-sm disabled:opacity-60 sm:px-2 dark:text-neutral-100 dark:focus:bg-neutral-900"
+        className="pointer-events-auto min-w-0 max-w-[60ch] flex-shrink rounded-md bg-transparent px-1.5 py-1 font-medium text-neutral-900 text-sm outline-none transition focus:bg-white focus:shadow-sm disabled:opacity-60 sm:px-2 dark:text-neutral-100 dark:focus:bg-neutral-900"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         size={Math.max(Math.min(title.length, 50), 6)}
         disabled={locked}
       />
       <span
-        className="hidden truncate rounded-full bg-neutral-200/70 px-2 py-0.5 text-[10px] font-medium text-neutral-600 sm:inline-block dark:bg-neutral-800 dark:text-neutral-300"
+        className="hidden truncate rounded-full bg-neutral-200/70 px-2 py-0.5 font-medium text-[10px] text-neutral-600 sm:inline-block dark:bg-neutral-800 dark:text-neutral-300"
         title={DIAGRAM_TYPE_LABEL[diagramType]}
       >
         {DIAGRAM_TYPE_LABEL[diagramType]}
@@ -54,7 +54,7 @@ export function TitleBadge() {
         // matters and the Document Inspector stays reachable via the
         // palette ("Document details" command). At xs+ the icon-only
         // button surfaces alongside the title.
-        className="pointer-events-auto hidden rounded p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 xs:inline-flex dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+        className="pointer-events-auto xs:inline-flex hidden rounded p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
         title="Document details"
         aria-label="Document details"
       >

@@ -59,8 +59,8 @@ export function RevisionPanel() {
       className={clsx(
         // Mirrors the Inspector's geometry so the two panels feel like
         // alternates of one slot rather than competing UI.
-        'revision-panel absolute right-0 top-0 z-20 h-full w-[min(85vw,320px)] transform md:w-[320px]',
-        'border-l border-neutral-200 bg-white/95 backdrop-blur',
+        'revision-panel absolute top-0 right-0 z-20 h-full w-[min(85vw,320px)] transform md:w-[320px]',
+        'border-neutral-200 border-l bg-white/95 backdrop-blur',
         'dark:border-neutral-800 dark:bg-neutral-950/95',
         // Match the Inspector's slide animation (200 ms, ease-out) so when
         // history closes and an Inspector opens — or vice versa — the
@@ -74,8 +74,8 @@ export function RevisionPanel() {
       {...({ inert: !open ? '' : undefined } as Record<string, string | undefined>)}
     >
       <div className="flex h-full flex-col">
-        <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-          <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+        <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
+          <span className="flex items-center gap-2 font-semibold text-[11px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
             <History className="h-3.5 w-3.5" /> History
           </span>
           <Button variant="ghost" size="icon" onClick={close} aria-label="Close history">
@@ -83,7 +83,7 @@ export function RevisionPanel() {
           </Button>
         </header>
 
-        <div className="border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+        <div className="border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
           <Button
             variant="softViolet"
             onClick={() => {
@@ -105,7 +105,7 @@ export function RevisionPanel() {
 
         <div className="flex-1 overflow-y-auto">
           {revisions.length === 0 ? (
-            <p className="px-4 py-6 text-center text-xs text-neutral-500 dark:text-neutral-400">
+            <p className="px-4 py-6 text-center text-neutral-500 text-xs dark:text-neutral-400">
               No snapshots yet. Press{' '}
               <kbd className="rounded border border-neutral-200 px-1 dark:border-neutral-800">
                 Snapshot now
@@ -203,10 +203,10 @@ function RevisionList({
     <div className="flex flex-col">
       {entries.map(([branchName, group]) => (
         <section key={branchName}>
-          <h3 className="sticky top-0 z-10 flex items-center gap-1 border-b border-neutral-200 bg-neutral-50/95 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-400">
+          <h3 className="sticky top-0 z-10 flex items-center gap-1 border-neutral-200 border-b bg-neutral-50/95 px-4 py-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-400">
             <GitBranch className="h-3 w-3" />
             {branchName}
-            <span className="ml-1 font-normal normal-case tracking-normal text-neutral-400">
+            <span className="ml-1 font-normal text-neutral-400 normal-case tracking-normal">
               {group.length} snapshot{group.length === 1 ? '' : 's'}
             </span>
           </h3>

@@ -35,6 +35,15 @@
       "suspicious": { "noExplicitAny": "error" },
       "style": {
         "noNonNullAssertion": "off"
+      },
+      "nursery": {
+        "useSortedClasses": {
+          "level": "info",
+          "options": {
+            "attributes": ["className"],
+            "functions": ["clsx", "cn", "twMerge"]
+          }
+        }
       }
     }
   }

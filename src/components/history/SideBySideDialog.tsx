@@ -89,8 +89,8 @@ export function SideBySideDialog() {
       className="fixed inset-0 z-50 m-0 flex h-screen max-h-screen w-screen max-w-none flex-col bg-black/40 p-0 backdrop-blur-sm"
     >
       <div className="flex flex-1 flex-col bg-white shadow-2xl dark:bg-neutral-950">
-        <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-          <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+        <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
+          <h2 className="font-semibold text-neutral-900 text-sm dark:text-neutral-100">
             Side-by-side: {revLabel}{' '}
             <span className="ml-2 font-normal text-neutral-500 dark:text-neutral-400">
               vs. live
@@ -163,7 +163,7 @@ function Panel({
 
   return (
     <div className="relative flex-1 overflow-auto">
-      <div className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-50/95 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-400">
+      <div className="sticky top-0 z-10 border-neutral-200 border-b bg-neutral-50/95 px-3 py-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-400">
         {label}
       </div>
       <div
@@ -269,10 +269,10 @@ function EntityCard({
         aria-hidden
       />
       <div className="flex flex-1 flex-col gap-1 px-3 py-2">
-        <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+        <span className="font-medium text-[10px] text-neutral-500 uppercase tracking-wide dark:text-neutral-400">
           {meta.label}
           {status !== 'unchanged' && (
-            <span className="ml-2 rounded px-1 text-[9px] font-bold uppercase">
+            <span className="ml-2 rounded px-1 font-bold text-[9px] uppercase">
               {status === 'added' && (
                 <span className="text-emerald-700 dark:text-emerald-300">added</span>
               )}
@@ -286,9 +286,9 @@ function EntityCard({
           )}
         </span>
         <span
-          className={`line-clamp-2 text-sm leading-snug text-neutral-900 dark:text-neutral-100 ${status === 'removed' ? 'line-through' : ''}`}
+          className={`line-clamp-2 text-neutral-900 text-sm leading-snug dark:text-neutral-100 ${status === 'removed' ? 'line-through' : ''}`}
         >
-          {entity.title || <span className="italic text-neutral-400">Untitled</span>}
+          {entity.title || <span className="text-neutral-400 italic">Untitled</span>}
         </span>
       </div>
     </div>

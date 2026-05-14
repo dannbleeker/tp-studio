@@ -28,7 +28,7 @@ export function Breadcrumb() {
   return (
     <div
       data-component="breadcrumb"
-      className="pointer-events-auto absolute left-1/2 top-4 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full border border-neutral-200 bg-white/95 px-3 py-1 text-xs shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95"
+      className="-translate-x-1/2 pointer-events-auto absolute top-4 left-1/2 z-10 flex items-center gap-1 rounded-full border border-neutral-200 bg-white/95 px-3 py-1 text-xs shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95"
     >
       <button
         type="button"

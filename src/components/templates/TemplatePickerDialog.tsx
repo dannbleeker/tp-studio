@@ -79,10 +79,10 @@ export function TemplatePickerDialog() {
       >
         <header className="flex items-center justify-between">
           <div>
-            <h2 id="template-picker-title" className="text-base font-semibold">
+            <h2 id="template-picker-title" className="font-semibold text-base">
               New document from template
             </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            <p className="text-neutral-500 text-xs dark:text-neutral-400">
               Click a card to start a fresh document pre-populated with the template's entities.
             </p>
           </div>
@@ -108,7 +108,7 @@ export function TemplatePickerDialog() {
                   className={clsx(
                     'group flex w-full flex-col gap-2 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
                     'hover:border-indigo-400 hover:bg-indigo-50/40 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300',
-                    'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40 dark:focus:ring-indigo-600'
+                    'dark:border-neutral-800 dark:bg-neutral-900 dark:focus:ring-indigo-600 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
                   )}
                 >
                   <div
@@ -122,7 +122,7 @@ export function TemplatePickerDialog() {
                     dangerouslySetInnerHTML={{ __html: templateThumbnailSvg(spec) }}
                   />
                   <div className="flex items-center gap-1.5">
-                    <span className="rounded bg-indigo-100 px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wide text-indigo-700 dark:bg-indigo-950 dark:text-indigo-200">
+                    <span className="rounded bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">
                       {typeLabel}
                     </span>
                     <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
@@ -130,10 +130,10 @@ export function TemplatePickerDialog() {
                       {edgeCount === 1 ? '' : 's'}
                     </span>
                   </div>
-                  <h3 className="text-sm font-medium leading-tight text-neutral-900 dark:text-neutral-100">
+                  <h3 className="font-medium text-neutral-900 text-sm leading-tight dark:text-neutral-100">
                     {spec.title}
                   </h3>
-                  <p className="line-clamp-3 text-xs text-neutral-600 dark:text-neutral-400">
+                  <p className="line-clamp-3 text-neutral-600 text-xs dark:text-neutral-400">
                     {spec.description}
                   </p>
                 </button>

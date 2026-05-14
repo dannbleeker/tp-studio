@@ -51,7 +51,7 @@ export function ConfirmDialog() {
       widthClass="max-w-sm"
     >
       <div className="flex flex-col gap-4 p-5">
-        <p id={titleId} className="text-sm text-neutral-900 dark:text-neutral-100">
+        <p id={titleId} className="text-neutral-900 text-sm dark:text-neutral-100">
           {message}
         </p>
         <div className="flex justify-end gap-2">

@@ -166,7 +166,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         // edge body itself remains the click target.
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded-full border border-amber-300 bg-amber-50 px-1.5 text-[10px] font-semibold text-amber-800 shadow-sm dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
+            className="nodrag nopan pointer-events-none absolute select-none rounded-full border border-amber-300 bg-amber-50 px-1.5 font-semibold text-[10px] text-amber-800 shadow-sm dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX + 16}px, ${labelY - 14}px)`,
             }}
@@ -186,7 +186,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         // the canvas-edge red stroke is the primary visual.
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan pointer-events-none absolute flex select-none items-center justify-center rounded-full border border-red-400 bg-red-50 px-1.5 text-[12px] font-bold leading-none text-red-700 shadow-sm dark:border-red-700 dark:bg-red-950 dark:text-red-200"
+            className="nodrag nopan pointer-events-none absolute flex select-none items-center justify-center rounded-full border border-red-400 bg-red-50 px-1.5 font-bold text-[12px] text-red-700 leading-none shadow-sm dark:border-red-700 dark:bg-red-950 dark:text-red-200"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY - 14}px)`,
               minWidth: 18,
@@ -208,8 +208,8 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           <div
             className={
               weight === 'negative'
-                ? 'nodrag nopan pointer-events-none absolute select-none rounded-full border border-rose-400 bg-rose-50 px-1.5 text-[10px] font-semibold text-rose-700 shadow-sm dark:border-rose-700 dark:bg-rose-950 dark:text-rose-200'
-                : 'nodrag nopan pointer-events-none absolute select-none rounded-full border border-neutral-300 bg-neutral-50 px-1.5 text-[10px] font-semibold text-neutral-700 shadow-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300'
+                ? 'nodrag nopan pointer-events-none absolute select-none rounded-full border border-rose-400 bg-rose-50 px-1.5 font-semibold text-[10px] text-rose-700 shadow-sm dark:border-rose-700 dark:bg-rose-950 dark:text-rose-200'
+                : 'nodrag nopan pointer-events-none absolute select-none rounded-full border border-neutral-300 bg-neutral-50 px-1.5 font-semibold text-[10px] text-neutral-700 shadow-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300'
             }
             style={{
               transform: `translate(-50%, -50%) translate(${labelX + 32}px, ${labelY - 14}px)`,
@@ -228,7 +228,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       {aggregateCount > 1 && (
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded-full bg-neutral-700 px-1.5 text-[10px] font-semibold text-white shadow-sm dark:bg-neutral-200 dark:text-neutral-800"
+            className="nodrag nopan pointer-events-none absolute select-none rounded-full bg-neutral-700 px-1.5 font-semibold text-[10px] text-white shadow-sm dark:bg-neutral-200 dark:text-neutral-800"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             }}
@@ -248,7 +248,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       {assumptionCount > 0 && (
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded-full bg-violet-500 px-1.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm"
+            className="nodrag nopan pointer-events-none absolute select-none rounded-full bg-violet-500 px-1.5 font-semibold text-[10px] text-white uppercase tracking-wider shadow-sm"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX - 16}px, ${labelY - 14}px)`,
             }}
@@ -310,7 +310,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       {fallbackLabel && (
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded px-1 py-px text-[10px] italic text-neutral-400 dark:text-neutral-500"
+            className="nodrag nopan pointer-events-none absolute select-none rounded px-1 py-px text-[10px] text-neutral-400 italic dark:text-neutral-500"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             }}

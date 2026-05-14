@@ -16,7 +16,7 @@ import type { ReactNode } from 'react';
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+      <h3 className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
         {title}
       </h3>
       <div className="flex flex-col gap-3">{children}</div>
@@ -85,7 +85,7 @@ export function Slider({
   return (
     <label className="flex flex-col gap-1">
       <span className="flex items-center justify-between">
-        <span className="text-sm text-neutral-800 dark:text-neutral-200">{label}</span>
+        <span className="text-neutral-800 text-sm dark:text-neutral-200">{label}</span>
         <span className="font-mono text-[11px] text-neutral-500 dark:text-neutral-400">
           {value}
         </span>
@@ -118,7 +118,7 @@ export function Toggle({
   return (
     <label className="flex cursor-pointer items-start justify-between gap-3">
       <span className="flex flex-col">
-        <span className="text-sm text-neutral-800 dark:text-neutral-200">{label}</span>
+        <span className="text-neutral-800 text-sm dark:text-neutral-200">{label}</span>
         {hint && <span className="text-[11px] text-neutral-500 dark:text-neutral-400">{hint}</span>}
       </span>
       <input

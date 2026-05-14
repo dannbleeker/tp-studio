@@ -20,7 +20,7 @@ export function AttachedEdgesList({ assumptionId }: { assumptionId: string }) {
   return (
     <Field label={`Attached to (${attached.length})`}>
       {attached.length === 0 ? (
-        <p className="text-xs italic text-neutral-400">Not attached to any edge.</p>
+        <p className="text-neutral-400 text-xs italic">Not attached to any edge.</p>
       ) : (
         <ul className="flex flex-col gap-1.5">
           {attached.map((edge) => {
@@ -31,7 +31,7 @@ export function AttachedEdgesList({ assumptionId }: { assumptionId: string }) {
                 <button
                   type="button"
                   onClick={() => selectEdge(edge.id)}
-                  className="group flex w-full items-center justify-between gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-left text-xs text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                  className="group flex w-full items-center justify-between gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-left text-neutral-700 text-xs transition hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
                 >
                   <span className="truncate">
                     {source?.title || 'Untitled'}

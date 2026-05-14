@@ -80,12 +80,12 @@ export function RevisionRow({
               placeholder="Label this snapshot…"
               // biome-ignore lint/a11y/noAutofocus: opt-in inline rename — the user just clicked the pencil and expects to type immediately.
               autoFocus
-              className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+              className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
             />
           ) : (
-            <p className="truncate text-sm font-medium text-neutral-800 dark:text-neutral-200">
+            <p className="truncate font-medium text-neutral-800 text-sm dark:text-neutral-200">
               {revision.label ?? (
-                <span className="italic text-neutral-500">Unlabelled snapshot</span>
+                <span className="text-neutral-500 italic">Unlabelled snapshot</span>
               )}
             </p>
           )}

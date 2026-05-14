@@ -107,10 +107,10 @@ export function DocumentInspector() {
 
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="doc-inspector-title">
-      <header className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+      <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
         <h2
           id="doc-inspector-title"
-          className="text-sm font-semibold text-neutral-900 dark:text-neutral-100"
+          className="font-semibold text-neutral-900 text-sm dark:text-neutral-100"
         >
           Document
         </h2>
@@ -126,7 +126,7 @@ export function DocumentInspector() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={locked}
-            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           />
         </Field>
 
@@ -137,7 +137,7 @@ export function DocumentInspector() {
             placeholder="Optional"
             onChange={(e) => setMeta({ author: e.target.value })}
             disabled={locked}
-            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           />
         </Field>
 
@@ -162,14 +162,14 @@ export function DocumentInspector() {
           // an extra click.
           {...(Object.keys(systemScope).length > 0 ? { open: true } : {})}
         >
-          <summary className="cursor-pointer select-none px-3 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-300">
+          <summary className="cursor-pointer select-none px-3 py-2 font-semibold text-neutral-600 text-xs uppercase tracking-wider dark:text-neutral-300">
             System Scope
-            <span className="ml-2 font-normal normal-case tracking-normal text-neutral-400">
+            <span className="ml-2 font-normal text-neutral-400 normal-case tracking-normal">
               {Object.keys(systemScope).length}/{SYSTEM_SCOPE_FIELDS.length} answered
             </span>
           </summary>
-          <div className="space-y-3 border-t border-neutral-200 px-3 py-3 dark:border-neutral-800">
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <div className="space-y-3 border-neutral-200 border-t px-3 py-3 dark:border-neutral-800">
+            <p className="text-neutral-500 text-xs dark:text-neutral-400">
               CRT Step 1 — answer these before drawing entities. The discipline pays back as the
               tree grows.
             </p>
@@ -181,7 +181,7 @@ export function DocumentInspector() {
                   placeholder={placeholder}
                   onChange={(e) => setSystemScope({ [key]: e.target.value })}
                   disabled={locked}
-                  className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-700 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+                  className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
                 />
               </Field>
             ))}
@@ -198,14 +198,14 @@ export function DocumentInspector() {
           className="rounded-md border border-neutral-200 dark:border-neutral-800"
           {...(doneCount > 0 ? { open: true } : {})}
         >
-          <summary className="cursor-pointer select-none px-3 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-300">
+          <summary className="cursor-pointer select-none px-3 py-2 font-semibold text-neutral-600 text-xs uppercase tracking-wider dark:text-neutral-300">
             Method checklist
-            <span className="ml-2 font-normal normal-case tracking-normal text-neutral-400">
+            <span className="ml-2 font-normal text-neutral-400 normal-case tracking-normal">
               {doneCount}/{steps.length} steps — {DIAGRAM_TYPE_LABEL[diagramType]}
             </span>
           </summary>
-          <div className="space-y-2 border-t border-neutral-200 px-3 py-3 dark:border-neutral-800">
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <div className="space-y-2 border-neutral-200 border-t px-3 py-3 dark:border-neutral-800">
+            <p className="text-neutral-500 text-xs dark:text-neutral-400">
               The canonical recipe for this diagram type. Each step is roughly one focused work
               session.
             </p>
@@ -272,7 +272,7 @@ function MethodChecklist({
                 {idx + 1}. {step.label}
               </span>
               {step.hint && (
-                <span className="mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400">
+                <span className="mt-0.5 block text-neutral-500 text-xs dark:text-neutral-400">
                   {step.hint}
                 </span>
               )}
@@ -295,10 +295,10 @@ function Stat({
 }) {
   return (
     <div className={center ? 'flex flex-col items-center gap-0.5' : 'flex flex-col gap-0.5'}>
-      <dt className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+      <dt className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
         {label}
       </dt>
-      <dd className="text-sm text-neutral-800 dark:text-neutral-100">{value}</dd>
+      <dd className="text-neutral-800 text-sm dark:text-neutral-100">{value}</dd>
     </div>
   );
 }

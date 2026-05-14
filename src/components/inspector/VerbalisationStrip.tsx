@@ -32,8 +32,8 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
       className={clsx(
         'flex items-start gap-2',
         compact
-          ? 'mx-auto max-w-3xl rounded-md border border-neutral-200 bg-white/95 px-3 py-2 text-[12px] italic leading-snug text-neutral-700 shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95 dark:text-neutral-300'
-          : 'rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm leading-relaxed text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200'
+          ? 'mx-auto max-w-3xl rounded-md border border-neutral-200 bg-white/95 px-3 py-2 text-[12px] text-neutral-700 italic leading-snug shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95 dark:text-neutral-300'
+          : 'rounded-md border border-neutral-200 bg-white px-3 py-3 text-neutral-800 text-sm leading-relaxed dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200'
       )}
       data-component="verbalisation-strip"
     >
@@ -61,7 +61,7 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
             return (
               <span
                 key={key}
-                className="font-semibold not-italic text-neutral-900 dark:text-neutral-100"
+                className="font-semibold text-neutral-900 not-italic dark:text-neutral-100"
               >
                 {tok.text}
               </span>
@@ -85,7 +85,7 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
               disabled={!tok.edgeId}
               aria-label={ariaLabel}
               className={clsx(
-                'mx-0.5 inline rounded border px-1 py-0 text-[10px] font-semibold not-italic transition focus:outline-none focus:ring-2 focus:ring-violet-400',
+                'mx-0.5 inline rounded border px-1 py-0 font-semibold text-[10px] not-italic transition focus:outline-none focus:ring-2 focus:ring-violet-400',
                 tok.assumptionCount > 0
                   ? 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-300 dark:hover:bg-violet-900'
                   : 'border-neutral-300 bg-neutral-50 text-neutral-500 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800',

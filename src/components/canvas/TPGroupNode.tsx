@@ -29,7 +29,7 @@ export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
       <button
         type="button"
         className={clsx(
-          'pointer-events-auto absolute -top-2.5 left-3 cursor-pointer rounded-md bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide shadow-sm dark:bg-neutral-950',
+          '-top-2.5 pointer-events-auto absolute left-3 cursor-pointer rounded-md bg-white px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide shadow-sm dark:bg-neutral-950',
           colors.text
         )}
         onClick={(e) => {

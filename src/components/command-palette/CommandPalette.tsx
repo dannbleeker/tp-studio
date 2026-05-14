@@ -142,11 +142,11 @@ export function CommandPalette() {
           }
         }}
         placeholder="Type a command…"
-        className="w-full border-b border-neutral-200 bg-transparent px-4 py-3 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 dark:border-neutral-800 dark:text-neutral-100"
+        className="w-full border-neutral-200 border-b bg-transparent px-4 py-3 text-neutral-900 text-sm outline-none placeholder:text-neutral-400 dark:border-neutral-800 dark:text-neutral-100"
       />
       <ul className="max-h-[60vh] overflow-y-auto py-1.5">
         {filtered.length === 0 && (
-          <li className="px-4 py-3 text-sm text-neutral-500">No matches.</li>
+          <li className="px-4 py-3 text-neutral-500 text-sm">No matches.</li>
         )}
         {sections === null
           ? // Filtered view: flat, sorted by score.
@@ -161,7 +161,7 @@ export function CommandPalette() {
                 <Fragment key={section.group}>
                   <li
                     aria-hidden="true"
-                    className="select-none px-4 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500"
+                    className="select-none px-4 pt-3 pb-1 font-semibold text-[10px] text-neutral-400 uppercase tracking-wider dark:text-neutral-500"
                   >
                     {section.group}
                   </li>

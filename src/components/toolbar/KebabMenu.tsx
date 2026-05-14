@@ -118,7 +118,7 @@ export function KebabMenu() {
           role="menu"
           aria-label="More actions"
           onKeyDown={onMenuKeyDown}
-          className="absolute right-0 top-full z-30 mt-1 w-48 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
+          className="absolute top-full right-0 z-30 mt-1 w-48 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
         >
           {showLayoutToggle && (
             <button

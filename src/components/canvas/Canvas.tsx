@@ -261,7 +261,7 @@ function CanvasInner() {
             non-EC diagrams, so the conditional in this JSX is purely
             for the wrapper class. */}
         {doc.diagramType === 'ec' && (
-          <div className="pointer-events-none absolute left-0 right-0 top-2 z-10 flex justify-center px-4">
+          <div className="pointer-events-none absolute top-2 right-0 left-0 z-10 flex justify-center px-4">
             <div className="pointer-events-auto w-full">
               <VerbalisationStrip />
             </div>

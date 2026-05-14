@@ -54,17 +54,17 @@ export function EdgeInspector({
   return (
     <div className="flex flex-col gap-4">
       <Field label="Cause">
-        <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
-          {source?.title || <span className="italic text-neutral-400">Untitled</span>}
+        <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-neutral-700 text-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
+          {source?.title || <span className="text-neutral-400 italic">Untitled</span>}
         </p>
       </Field>
       <Field label="Effect">
-        <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
-          {target?.title || <span className="italic text-neutral-400">Untitled</span>}
+        <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-neutral-700 text-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
+          {target?.title || <span className="text-neutral-400 italic">Untitled</span>}
         </p>
       </Field>
       <Field label="Kind">
-        <p className="text-xs uppercase tracking-wider text-neutral-500">{edge.kind}</p>
+        <p className="text-neutral-500 text-xs uppercase tracking-wider">{edge.kind}</p>
       </Field>
       <Field label="Label">
         <input
@@ -73,7 +73,7 @@ export function EdgeInspector({
           placeholder="Optional mid-edge label"
           onChange={(e) => updateEdge(edgeId, { label: e.target.value || undefined })}
           disabled={locked}
-          className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+          className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
         />
       </Field>
 
@@ -87,7 +87,7 @@ export function EdgeInspector({
       {edge.andGroupId && (
         <Field label="AND group">
           <div className="flex items-center justify-between gap-2">
-            <p className="font-mono text-xs text-neutral-600 dark:text-neutral-300">
+            <p className="font-mono text-neutral-600 text-xs dark:text-neutral-300">
               {edge.andGroupId}
             </p>
             <Button
@@ -104,7 +104,7 @@ export function EdgeInspector({
       {edge.orGroupId && (
         <Field label="OR group">
           <div className="flex items-center justify-between gap-2">
-            <p className="font-mono text-xs text-neutral-600 dark:text-neutral-300">
+            <p className="font-mono text-neutral-600 text-xs dark:text-neutral-300">
               {edge.orGroupId}
             </p>
             <Button
@@ -121,7 +121,7 @@ export function EdgeInspector({
       {edge.xorGroupId && (
         <Field label="XOR group">
           <div className="flex items-center justify-between gap-2">
-            <p className="font-mono text-xs text-neutral-600 dark:text-neutral-300">
+            <p className="font-mono text-neutral-600 text-xs dark:text-neutral-300">
               {edge.xorGroupId}
             </p>
             <Button
@@ -165,7 +165,7 @@ export function EdgeInspector({
       </Field>
 
       <Field label="Back-edge">
-        <label className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-300">
+        <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
           <input
             type="checkbox"
             className="mt-0.5"
@@ -185,7 +185,7 @@ export function EdgeInspector({
 
       {source?.type === 'want' && target?.type === 'want' && (
         <Field label="Mutual exclusion (EC)">
-          <label className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-300">
+          <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
             <input
               type="checkbox"
               className="mt-0.5"
@@ -302,7 +302,7 @@ function EcBrainstormPrompt({
   return (
     <Field label="Brainstorm prompt">
       <div className="flex flex-col gap-2 rounded-md border border-amber-200 bg-amber-50/60 p-2 dark:border-amber-900/60 dark:bg-amber-950/30">
-        <p className="text-xs leading-snug text-amber-900 dark:text-amber-100">{question}</p>
+        <p className="text-amber-900 text-xs leading-snug dark:text-amber-100">{question}</p>
         <Button
           variant="softViolet"
           size="sm"

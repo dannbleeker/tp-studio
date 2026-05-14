@@ -35,7 +35,7 @@ export function TopBar() {
   const paletteAria = shortcutToAria(SHORTCUT_BY_ID.palette?.keys ?? '');
 
   return (
-    <div data-component="top-bar" className="absolute right-4 top-4 z-10 flex items-center gap-2">
+    <div data-component="top-bar" className="absolute top-4 right-4 z-10 flex items-center gap-2">
       {/* Below sm we collapse the Commands button to an icon to free up
           horizontal space; above sm, the full text + kbd hint shows. The
           full label is always reachable via the title tooltip. */}

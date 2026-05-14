@@ -11,9 +11,16 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Session 85 — split the previous monolithic `check` job into three
+# parallel jobs so the fast feedback (lint + types in ~10s) surfaces
+# before contributors wait for the slow steps. Each job re-runs install
+# but the pnpm cache makes that ~5s after the first job warms it. The
+# trade is a small duplication of setup time for much faster signal on
+# the most-common kinds of failure (lint regressions, type errors).
+
 jobs:
-  check:
-    name: Lint + types + tests + build
+  lint-types:
+    name: Lint + types
     runs-on: ubuntu-latest
 
     steps:
@@ -22,9 +29,7 @@ jobs:
 
       - name: Set up pnpm
         # No `version:` — `pnpm/action-setup@v4` reads `packageManager` from
-        # package.json (currently `pnpm@11.0.9`). Pinning a different version
-        # here would silently use a different pnpm than developers run
-        # locally and could re-resolve the lockfile.
+        # package.json. Keeps the CI version in lockstep with developers.
         uses: pnpm/action-setup@v4
         with:
           run_install: false
@@ -42,14 +47,29 @@ jobs:
         run: pnpm lint
 
       - name: Type-check
-        # `tsc --noEmit` against the root tsconfig (which includes src + tests).
-        # We previously tried `tsc -b --noEmit` to also walk tsconfig.node.json
-        # (vite.config.ts + tailwind.config.ts), but the project-references
-        # setup is malformed — tsconfig.node.json doesn't list the transitive
-        # files it imports and TS6310 trips on parent-noEmit + child-emit
-        # mismatch. The two config files get type-checked by Vite at build
-        # time anyway; that's our real safety net.
         run: pnpm exec tsc --noEmit
+
+  tests-build:
+    name: Tests + build + bundle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Test
         run: pnpm test:coverage
@@ -77,9 +97,10 @@ jobs:
   e2e:
     name: Playwright e2e smoke tests
     runs-on: ubuntu-latest
-    # Run e2e in parallel with the main check job. They share a checkout
-    # but separate the slow browser-binary install + headless run from
-    # the type-check / unit-test path.
+    # Runs in parallel with lint-types and tests-build. The slow
+    # browser-binary install + headless test run is the longest CI step;
+    # keeping it on its own runner so failures here don't block the
+    # fast-feedback jobs from finishing.
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -13,7 +13,7 @@ export function ZoomPercent() {
   return (
     <div
       data-component="zoom-percent"
-      className="pointer-events-none absolute bottom-3 left-1/2 z-10 ml-28 hidden -translate-x-1/2 select-none rounded-md border border-neutral-200 bg-white/90 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600 shadow-sm sm:block dark:border-neutral-800 dark:bg-neutral-900/90 dark:text-neutral-300"
+      className="-translate-x-1/2 pointer-events-none absolute bottom-3 left-1/2 z-10 ml-28 hidden select-none rounded-md border border-neutral-200 bg-white/90 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600 shadow-sm sm:block dark:border-neutral-800 dark:bg-neutral-900/90 dark:text-neutral-300"
     >
       {pct}%
     </div>

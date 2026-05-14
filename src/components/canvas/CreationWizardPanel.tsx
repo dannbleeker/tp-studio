@@ -214,7 +214,7 @@ export function CreationWizardPanel() {
         type="button"
         onClick={toggleMinimised}
         data-component="creation-wizard-minimised"
-        className="absolute left-4 top-14 z-30 flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 shadow-md transition hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
+        className="absolute top-14 left-4 z-30 flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1.5 font-medium text-indigo-700 text-xs shadow-md transition hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
       >
         <Sparkles className="h-3 w-3" aria-hidden />
         Continue setup ›
@@ -228,15 +228,15 @@ export function CreationWizardPanel() {
     return (
       <div
         data-component="creation-wizard"
-        className="absolute left-4 top-14 z-30 flex w-[min(360px,90vw)] flex-col gap-2 rounded-lg border border-emerald-300 bg-white p-3 shadow-lg dark:border-emerald-700 dark:bg-neutral-900"
+        className="absolute top-14 left-4 z-30 flex w-[min(360px,90vw)] flex-col gap-2 rounded-lg border border-emerald-300 bg-white p-3 shadow-lg dark:border-emerald-700 dark:bg-neutral-900"
       >
-        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+        <p className="font-medium text-emerald-700 text-sm dark:text-emerald-300">
           ✓ Wizard complete — keep building from here.
         </p>
         <button
           type="button"
           onClick={close}
-          className="self-end rounded px-2 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          className="self-end rounded px-2 py-1 font-medium text-neutral-700 text-xs hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
         >
           Done
         </button>
@@ -248,13 +248,13 @@ export function CreationWizardPanel() {
     <section
       data-component="creation-wizard"
       aria-label={`${kind === 'goalTree' ? 'Goal Tree' : 'Evaporating Cloud'} creation wizard`}
-      className="absolute left-4 top-14 z-30 flex w-[min(380px,92vw)] flex-col gap-2 rounded-lg border border-indigo-200 bg-white p-3 shadow-lg dark:border-indigo-800 dark:bg-neutral-900"
+      className="absolute top-14 left-4 z-30 flex w-[min(380px,92vw)] flex-col gap-2 rounded-lg border border-indigo-200 bg-white p-3 shadow-lg dark:border-indigo-800 dark:bg-neutral-900"
     >
       <header className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
           <span
-            className="text-[11px] font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300"
+            className="font-semibold text-[11px] text-indigo-700 uppercase tracking-wide dark:text-indigo-300"
             aria-live="polite"
             aria-atomic="true"
           >
@@ -303,7 +303,7 @@ export function CreationWizardPanel() {
       </div>
 
       <label className="flex flex-col gap-1">
-        <span className="text-xs text-neutral-700 dark:text-neutral-200">{def.prompt}</span>
+        <span className="text-neutral-700 text-xs dark:text-neutral-200">{def.prompt}</span>
         <textarea
           ref={inputRef}
           value={draft}
@@ -326,9 +326,9 @@ export function CreationWizardPanel() {
               }
             }
           }}
-          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
         />
-        <p className="text-[10px] italic text-neutral-500 dark:text-neutral-400">
+        <p className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
           Enter to commit · Shift+Enter for a newline · Esc to dismiss
         </p>
       </label>
@@ -364,14 +364,14 @@ export function CreationWizardPanel() {
               advance();
             }
           }}
-          className="rounded px-2 py-1 text-xs font-medium text-neutral-600 transition hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+          className="rounded px-2 py-1 font-medium text-neutral-600 text-xs transition hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
         >
           Skip step
         </button>
         <button
           type="button"
           onClick={commit}
-          className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+          className="rounded-md bg-indigo-600 px-3 py-1.5 font-semibold text-white text-xs transition hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-400"
         >
           {isFinalStep ? 'Finish' : 'Next ›'}
         </button>

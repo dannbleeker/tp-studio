@@ -101,9 +101,9 @@ function WalkthroughOverlayBody() {
     >
       <div className="flex max-w-2xl flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-6 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900">
         <header className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <h2 className="font-semibold text-neutral-500 text-xs uppercase tracking-wider dark:text-neutral-400">
             {walkthrough.kind === 'read-through' ? 'Read-through' : 'CLR walkthrough'}
-            <span className="ml-2 font-normal normal-case tracking-normal text-neutral-400">
+            <span className="ml-2 font-normal text-neutral-400 normal-case tracking-normal">
               {position}
             </span>
           </h2>
@@ -136,7 +136,7 @@ function WalkthroughOverlayBody() {
           />
         )}
 
-        <footer className="flex items-center justify-between gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+        <footer className="flex items-center justify-between gap-3 border-neutral-200 border-t pt-4 dark:border-neutral-800">
           <Button
             variant="softNeutral"
             size="sm"
@@ -146,7 +146,7 @@ function WalkthroughOverlayBody() {
             <ArrowLeft className="h-3.5 w-3.5" />
             Back
           </Button>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+          <span className="text-neutral-500 text-xs dark:text-neutral-400">
             ← → arrows to navigate · Esc to close
           </span>
           <Button variant="softViolet" size="sm" onClick={walkthroughNext}>
@@ -162,14 +162,14 @@ function WalkthroughOverlayBody() {
     const edge = doc.edges[edgeId];
     if (!edge) {
       return (
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">Edge no longer exists.</p>
+        <p className="text-neutral-500 text-sm dark:text-neutral-400">Edge no longer exists.</p>
       );
     }
     const source = doc.entities[edge.sourceId];
     const target = doc.entities[edge.targetId];
     if (!source || !target) {
       return (
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="text-neutral-500 text-sm dark:text-neutral-400">
           Edge endpoints no longer exist.
         </p>
       );
@@ -178,11 +178,11 @@ function WalkthroughOverlayBody() {
     const sentence = renderEdgeSentence(source, target, connector);
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-2xl font-medium leading-snug text-neutral-900 dark:text-neutral-100">
+        <p className="font-medium text-2xl text-neutral-900 leading-snug dark:text-neutral-100">
           {sentence}
         </p>
         {edge.label && (
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="text-neutral-500 text-xs dark:text-neutral-400">
             Edge label: <span className="font-mono">{edge.label}</span>
           </p>
         )}
@@ -214,7 +214,7 @@ function ClrWalkthroughBody({
   const doc = useDocumentStore((s) => s.doc);
   if (!warning) {
     return (
-      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+      <p className="text-neutral-500 text-sm dark:text-neutral-400">
         Warning resolved or no longer applies.
       </p>
     );
@@ -237,11 +237,11 @@ function ClrWalkthroughBody({
 
   return (
     <div className="flex flex-col gap-3">
-      <span className="inline-flex w-fit items-center rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+      <span className="inline-flex w-fit items-center rounded-full bg-neutral-100 px-2 py-0.5 font-semibold text-[10px] text-neutral-700 uppercase tracking-wider dark:bg-neutral-800 dark:text-neutral-200">
         {warning.tier} · {warning.ruleId}
       </span>
-      <p className="text-xs text-neutral-500 dark:text-neutral-400">{targetLabel}</p>
-      <p className="text-base leading-snug text-neutral-900 dark:text-neutral-100">
+      <p className="text-neutral-500 text-xs dark:text-neutral-400">{targetLabel}</p>
+      <p className="text-base text-neutral-900 leading-snug dark:text-neutral-100">
         {warning.message}
       </p>
       <div className="flex flex-wrap gap-2">

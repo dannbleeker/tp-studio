@@ -123,7 +123,7 @@ export function SearchPanel() {
       data-component="search-panel"
       style={panelStyle}
       className={clsx(
-        'pointer-events-auto absolute top-16 z-20 flex -translate-x-1/2 flex-col rounded-xl border border-neutral-200 bg-white/95 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95',
+        '-translate-x-1/2 pointer-events-auto absolute top-16 z-20 flex flex-col rounded-xl border border-neutral-200 bg-white/95 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95',
         // Default geometry when nothing's selected: full-canvas centered.
         !inspectorOpen && 'left-1/2 w-[min(720px,90vw)]'
       )}
@@ -146,7 +146,7 @@ export function SearchPanel() {
           }}
           className="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900"
         />
-        <span className="min-w-[64px] text-xs tabular-nums text-neutral-500 dark:text-neutral-400">
+        <span className="min-w-[64px] text-neutral-500 text-xs tabular-nums dark:text-neutral-400">
           {count === 0 ? 'No matches' : `${safeIndex + 1} / ${count}`}
         </span>
         <div className="flex items-center gap-0.5">
@@ -197,7 +197,7 @@ export function SearchPanel() {
         </Button>
       </div>
       {count > 0 && (
-        <ul className="max-h-[40vh] overflow-y-auto border-t border-neutral-200 dark:border-neutral-800">
+        <ul className="max-h-[40vh] overflow-y-auto border-neutral-200 border-t dark:border-neutral-800">
           {matches.map((m, i) => (
             <li key={`${m.kind}-${m.id}-${m.field}`}>
               <button
@@ -210,7 +210,7 @@ export function SearchPanel() {
                     : 'border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-900'
                 )}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
                   {m.kind} · {m.field}
                 </span>
                 <span className="line-clamp-1 text-neutral-800 dark:text-neutral-200">
