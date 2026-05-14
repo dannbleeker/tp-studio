@@ -22,11 +22,14 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:4173',
-    trace: 'on-first-retry',
-    // Screenshots and video only on retry — keeps the test-results dir
-    // small on green runs.
+    // Capture trace + screenshot + video on the first failure so CI's
+    // uploaded `playwright-report/` artifact has enough evidence to
+    // debug a flake without re-running. Local dev keeps the lean
+    // defaults (retain only on retry) so the `test-results/` dir
+    // doesn't bloat between watch cycles.
+    trace: process.env.CI ? 'retain-on-failure' : 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: process.env.CI ? 'retain-on-failure' : 'on-first-retry',
   },
 
   // Only Chromium for now — adding Firefox/WebKit is cheap once a real

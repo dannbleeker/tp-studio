@@ -26,14 +26,18 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('canvas visual regression', () => {
-  // Visual snapshots require a committed baseline `.png` per platform.
-  // No baselines are pinned for the Linux CI runner yet — first CI run
-  // would record one AND fail the test (Playwright's default behaviour).
-  // Skip on CI until we either:
-  //   - Generate baselines via a dedicated warmup workflow + commit them,
-  //   - Or move to a managed visual-regression service (Percy / Chromatic).
-  // Tests stay runnable locally for the development inner loop.
-  test.skip(!!process.env.CI, 'No CI-platform snapshot baseline committed yet');
+  // Visual snapshots require a committed baseline `.png` for each
+  // platform Playwright runs on. The repo carries Linux baselines under
+  // `e2e/visual-canvas.spec.ts-snapshots/` once the manual
+  // `Update visual snapshots` workflow has been triggered. The
+  // workflow sets `REFRESH_VISUAL_SNAPSHOTS=1` so these tests run
+  // (with `--update-snapshots`) in that workflow's run; regular CI
+  // runs skip them when the env var is unset to avoid baseline-mismatch
+  // flakes pre-refresh.
+  test.skip(
+    !!process.env.CI && !process.env.REFRESH_VISUAL_SNAPSHOTS,
+    'Visual baselines refresh via the `Update visual snapshots` workflow'
+  );
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
