@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 88 — Code optimization sweep (1 win shipped; 6 evaluated audit-clean)
+
+Second commit of Session 88. Re-walked the 7-item Session 86 optimization menu; one real win shipped, the rest evaluated audit-clean. Per Dann's standing rule, the menu has been removed from `NEXT_STEPS.md` and replaced with a single line referencing this entry.
+
+**Real change — CommandPalette lazy-load.** `CommandPalette.tsx` was the last user-facing surface in `App.tsx` still imported eagerly. Its tree pulls in every command file (9 `*Commands` arrays totalling ~30 commands), the new `commandIcons.ts` map, the score function, and the per-command shortcut lookup — none of which is needed on first paint. Wrapped in `React.lazy` + the existing root `<Suspense fallback={null}>` block. Result: a new `CommandPalette-*.js` chunk at **22.22 KB gz**, the `index` chunk drops **116.6 → 98.0 KB gz** (-18.6 KB, -16%). Comfortably below the 112.3 KB budget after weeks of accretion. The palette is opened by Ctrl/Cmd+K — the lazy chunk has had several seconds to background-fetch by the time the user reaches for the shortcut.
+
+**Also dropped: unused `TEMPLATE_THUMBNAIL_VIEWBOX` export from `src/templates/thumbnail.tsx`** (introduced in Session 79 for an external sizing hook that never landed; zero callers).
+
+**Audit-clean items:**
+
+- **`biome-ignore` audit.** 9 remaining; all legitimate: native-`<dialog>` interference (WalkthroughOverlay × 2 + SideBySideDialog), DOMPurify-sanitized markdown (MarkdownPreview), opt-in autofocus (RevisionRow), useFingerprintMemo + useGraphPositions fingerprint contract, derived-`active` dep in SearchPanel. Batch 1's TemplatePickerDialog JSX refactor already removed one; the rest can't be removed without semantic loss.
+- **`console.*` outside `services/logger.ts`.** Already clean. The Session 68 audit closed this loop; every recent `log.warn` call site honours it.
+- **Hot-path `useMemo` / `useShallow` audit on canvas hooks.** Re-verified per Session 86; every selector in the `useGraphView` composition reads either a primitive scalar or a stable doc/array slice. No new factory selectors introduced since.
+- **`as any` / `as unknown as` cast sweep.** Re-verified per Session 86; every `as ` match in `src/` is now a *comment* documenting a previously-removed cast, not a live escape.
+- **Dead-code on Session-82 surface (testHook).** `testHook.connect` IS exercised by `e2e/delete-flow.spec.ts` (line 47). Keep.
+- **`requireEntity` / `requireEdge` / `isSufficiencyEdge` / `isNecessityEdge`.** Still uncalled in `src/`. Session 86 noted them as "watch list — if uncalled a month from now, that's a real signal." Two sessions later isn't quite that gap; revisit later.
+
+End state: tsc clean, Biome clean, **1078 tests passing**, build green (index 98.0 KB gz, flow 100.4 KB gz, both under budget).
+
 ## Session 88 — UI polish queue (10 of 11 items shipped; 2 audit-clean)
 
 Ten items from the UI polish queue (`docs/ui-review-session-87.md`) plus V2 from the inline UI-review section. Two evaluated as already-clean (S10 / S12) — both noted explicitly so a future session doesn't reopen the same audit. **1078 tests passing** (was 1057; +21 across `Toaster`, `ContextMenu`, `CommandPalette`, `recentCommands`, `creationWizard`, `ecChromeCollapsed`).

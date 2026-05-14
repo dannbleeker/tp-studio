@@ -2,7 +2,6 @@ import { Suspense, lazy, useEffect } from 'react';
 import { Canvas } from './components/canvas/Canvas';
 import { CompareBanner } from './components/canvas/CompareBanner';
 import { ContextMenu } from './components/canvas/ContextMenu';
-import { CommandPalette } from './components/command-palette/CommandPalette';
 import { Inspector } from './components/inspector/Inspector';
 import { PrintAppendix } from './components/print/PrintAppendix';
 import { Toaster } from './components/toast/Toaster';
@@ -60,6 +59,16 @@ const PrintPreviewDialog = lazy(() =>
 const TemplatePickerDialog = lazy(() =>
   import('./components/templates/TemplatePickerDialog').then((m) => ({
     default: m.TemplatePickerDialog,
+  }))
+);
+// Session 88 (Batch 2) — CommandPalette was eagerly imported; its tree
+// pulls in every command file (9 files of `*Commands` arrays) plus the
+// new icon map. None of that is needed on first paint — the palette
+// only renders when the user hits Cmd/Ctrl+K, by which point the
+// chunk has had several seconds to lazy-load in the background.
+const CommandPalette = lazy(() =>
+  import('./components/command-palette/CommandPalette').then((m) => ({
+    default: m.CommandPalette,
   }))
 );
 
@@ -177,9 +186,9 @@ export function App() {
       <ErrorBoundary label="Inspector">
         <Inspector />
       </ErrorBoundary>
-      <CommandPalette />
       <ContextMenu />
       <Suspense fallback={null}>
+        <CommandPalette />
         <HelpDialog />
         <ErrorBoundary label="Settings">
           <SettingsDialog />

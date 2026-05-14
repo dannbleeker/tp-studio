@@ -301,5 +301,3 @@ export const templateThumbnailSvg = (spec: TemplateSpec): string => {
   const body = `<rect width="${THUMB_W}" height="${THUMB_H}" fill="#fafafa" />${prims.map(primToSvgString).join('')}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${THUMB_W} ${THUMB_H}" preserveAspectRatio="xMidYMid meet" aria-label="${escapeAttr(spec.title)} thumbnail">${body}</svg>`;
 };
-
-export const TEMPLATE_THUMBNAIL_VIEWBOX = { width: THUMB_W, height: THUMB_H };

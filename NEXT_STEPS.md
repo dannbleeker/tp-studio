@@ -305,21 +305,7 @@ Gaps surfaced by comparing TP Studio's EC against the canonical BESTSELLER Power
 - ~~**Assumption bubbles drawn on the canvas, not buried in the inspector.**~~ ✅ **Done (Session 87)** *(badge only; mid-edge previews remain future work)*. TPEdge's existing "A" pill is now sourced from BOTH legacy `Edge.assumptionIds` and the v7 `doc.assumptions` map. The pill is now a real clickable button — selects the edge AND jumps the EC inspector to its Inspector tab so the AssumptionWell is visible without a second click.
 - ~~**Injection-summary visible on the EC canvas, not buried in the inspector.**~~ ✅ **Done (Session 87).** New `src/components/canvas/ECInjectionChip.tsx` — small "Injections (N)" chip anchored top-right of the EC canvas (zero-state included). Clicks set `ecInspectorTab = 'injections'` via the new `requestECInjectionsView` store action; the EC inspector's tab state is now in the store so canvas chrome can request a tab from outside the Inspector.
 
-## Focused 1-hour code-optimization pass
-
-Session 86 — picked #3 (canvas-hook memo audit, audit-only), #5 (dropped `effectiveBuiltinType` + `__getClipboardForTest`), #6 (dropped a stale `as unknown as EntityType` cast). Menu kept below for future sessions to reuse.
-
-A time-boxed cleanup pass — pick whichever items fit a one-hour budget, ship in one commit. Goal is "leave the codebase a little tighter" not "rewrite the world." Concrete candidates, roughly ordered by leverage:
-
-- **Audit `biome-ignore` comments.** `grep -rn "biome-ignore" src tests | wc -l` is the count today. Each one is an admission of "I couldn't satisfy the rule" — some are legitimate (e.g. `dangerouslySetInnerHTML` on trusted SVG payloads, `any` on the test-hook window cast), but a 1-hour scan often finds 2–5 that can be fixed properly. Removing them tightens the lint surface for free.
-- **Trim `console.*` calls outside `services/logger.ts`.** Session 68 routed production logging through `log.{info,warn,error}`. Any `console.log` in `src/` that slipped in since is a regression; a quick `grep -rn "console\." src --include='*.ts' --include='*.tsx'` finds them all.
-- **Hot-path `useMemo` / `useShallow` audit on canvas hooks.** `useGraphView` composes three hooks (`useGraphProjection`, `useGraphPositions`, `useGraphEmission`). Each subscribes to the store with `useShallow`; verify no selector returns a new reference per render (which would defeat the memo). `tests/hooks/useFingerprintMemo.test.tsx` is the existing pattern.
-- **Bundle-size second pass on lazy chunks.** Session 81 dropped flow chunk 134 → 103 KB gzip. The next likely wins: `flow-*.js` may still carry `dompurify` (used only by markdown rendering — currently 8.8 KB gzip, lazy already), or `lucide-react` icons could be tree-shaken further. Run `pnpm build` + inspect `vite-bundle-visualizer` if installed.
-- **Drop unused exports.** `npx ts-prune` (one-shot — no install). Anything reported with `(used in module)` is fine; bare-named exports unused anywhere can be either deleted or marked internal.
-- **`as any` / `as unknown as` cast sweep.** `grep -rn "as any\|as unknown as" src` — each is a type-system escape. Some are unavoidable (e.g. zustand store narrowing at the test-hook boundary), but a 1-hour pass usually finds 1–3 that can become a real type.
-- **Dead-code on the new Session-82 surface.** `src/services/testHook.ts` carries a `connect` method whose return value is the edge id — but only `delete-flow.spec.ts` uses the hook, and only via `seed` + `confirmAndDeleteEntity`. Confirm `connect` + the type narrowing in `seed` aren't dead weight.
-
-Trigger: when a future session has a 1-hour window between bigger features. Pick 2–4 items, time-box strictly, ship one commit. Don't gold-plate — the budget is the discipline.
+> **Recurring 1-hour code-optimization pass** — folded into Session 88's optimization sweep. The Session 86 menu (biome-ignore, console.*, hot-path memo, bundle, unused exports, casts, testHook dead-code) was re-evaluated in Session 88; one real win shipped (CommandPalette lazy-loaded → index chunk 116.6 → 98.0 KB gz), the rest evaluated audit-clean and noted in the Session 88 CHANGELOG entry. New backlog items can be added inline if discovered.
 
 ## Polish ideas (small but visible)
 
