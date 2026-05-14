@@ -45,6 +45,11 @@ export default defineConfig({
     environment: 'jsdom',
     globals: false,
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
+    // Session 84 — persist Vitest's transform cache across runs so the
+    // dev-loop `pnpm test:watch` and the explicit `pnpm test` skip
+    // recompiling unchanged files. ~50s cold run drops to ~5–10s warm.
+    // The cache dir is gitignored alongside `dist/` and `coverage/`.
+    cache: { dir: 'node_modules/.cache/vitest' },
     coverage: {
       // V8 is the bundled provider — no extra dep to install. JSON + text
       // covers both human reading and tooling consumers (codecov etc.).

@@ -233,6 +233,7 @@ When and if any of these enters scope, the domain layer should be able to absorb
 
 - **Look at UI.** Open-ended UX review pass. Trigger when someone has fresh eyes on the app — walk every primary surface (canvas, inspector, top-bar, command palette, settings, print dialog, templates picker, creation wizard) and capture concrete UX nits in a follow-up backlog entry. No scope until that walkthrough happens.
 - **Validate EC against document.** Add a CLR validation path that compares an Evaporating Cloud's structural shape against a reference description (e.g. the EC verbalisation text the user authored, or an attached source-of-truth doc). Open questions before scoping: what's "the document" — markdown? An external file reference? The EC's own verbalisation? What constitutes a mismatch — missing slot text? Edges that the verbalisation doesn't justify? Needs a 15-minute design conversation before estimating.
+- **Make the tool installable.** Currently TP Studio runs via `pnpm dev` + a local browser. Open questions before scoping: what shape is the install target — PWA (`manifest.json` + service-worker for offline use, "Install" prompt in Chrome/Edge), Electron desktop app, packaged static dist served from a one-click installer, or something else? Who's the audience — Dann only, or others at BESTSELLER? Does it need auto-update, or is "rebuild + redistribute" fine? Needs a 15-minute scoping conversation.
 
 ## Focused 1-hour code-optimization pass
 

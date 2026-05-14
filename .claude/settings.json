@@ -1,0 +1,29 @@
+{
+  "$schema": "https://claude.com/schemas/settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/pre-bash-gate.cjs",
+            "timeout": 60000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/post-bash-watch-ci.cjs",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
