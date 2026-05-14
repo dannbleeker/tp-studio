@@ -1,12 +1,12 @@
 import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT } from '@/domain/constants';
 import { layoutFingerprint } from '@/domain/fingerprint';
 import { isStNodeFormat, pinnedEntities } from '@/domain/graph';
-import { computeLayout, layoutConfigToOptions } from '@/domain/layout';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { radialLayout } from '@/domain/radialLayout';
 import type { TPDocument } from '@/domain/types';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useDocumentStore } from '@/store';
+import { useEffect, useState } from 'react';
 import { COLLAPSED_HEIGHT, COLLAPSED_WIDTH } from './graphViewConstants';
 import type { GraphProjection } from './useGraphProjection';
 
@@ -31,8 +31,94 @@ const layoutConfigKey = (cfg: TPDocument['layoutConfig']): string =>
  * the memo short-circuits and dagre doesn't re-run. Add/remove/connect ops
  * advance the fingerprint and the layout recomputes. Manual diagrams skip
  * layout entirely and read `Entity.position` directly.
+ *
+ * Session 81 — dagre is now lazy-loaded. `@/domain/layout` (which pulls
+ * in the dagre dependency, ~25 KB gzipped) is `await import()`-ed inside
+ * an effect rather than statically imported at module top. The first
+ * paint on a cold app load briefly shows an empty position map; once
+ * dagre arrives (resolved within one paint frame thanks to Vite's
+ * preload hints), the hook returns real positions. Manual-layout
+ * diagrams (Evaporating Cloud) stay fully synchronous because their
+ * positions come from `entity.position` and never need dagre.
  */
 export type GraphPositions = Record<string, { x: number; y: number }>;
+
+/**
+ * Module-level cache of the resolved layout module. Once loaded, every
+ * subsequent hook call gets the same instance immediately — no re-import
+ * round-trip. The first call kicks off the import and stores the promise
+ * so concurrent first-renders coalesce onto a single fetch.
+ */
+type LayoutModule = typeof import('@/domain/layout');
+let layoutModule: LayoutModule | null = null;
+let layoutModulePromise: Promise<LayoutModule> | null = null;
+const loadLayoutModule = (): Promise<LayoutModule> => {
+  if (layoutModule) return Promise.resolve(layoutModule);
+  if (!layoutModulePromise) {
+    layoutModulePromise = import('@/domain/layout').then((m) => {
+      layoutModule = m;
+      return m;
+    });
+  }
+  return layoutModulePromise;
+};
+
+/**
+ * Build the per-node + per-edge inputs the layout engine expects from
+ * the projected visible set. Pulled out of both the sync and async
+ * branches so the geometry stays in lockstep.
+ */
+const buildLayoutInputs = (
+  doc: TPDocument,
+  projection: GraphProjection
+): {
+  nodes: { id: string; width: number; height: number }[];
+  edges: { sourceId: string; targetId: string }[];
+} => {
+  const { visibleEntityIds, visibleCollapsedRoots, remap } = projection;
+  const nodes = [
+    ...[...visibleEntityIds].map((id) => {
+      const entity = doc.entities[id];
+      const height = entity && isStNodeFormat(entity) ? ST_NODE_HEIGHT : NODE_MIN_HEIGHT;
+      return { id, width: NODE_WIDTH, height };
+    }),
+    ...visibleCollapsedRoots.map((id) => ({
+      id,
+      width: COLLAPSED_WIDTH,
+      height: COLLAPSED_HEIGHT,
+    })),
+  ];
+  // Remap + dedupe edges. dagre dedups silently, but keeping the set
+  // we feed to the layout in sync with what we render avoids surprise
+  // discrepancies if the algorithm ever starts caring about edge
+  // multiplicity.
+  const seen = new Set<string>();
+  const edges: { sourceId: string; targetId: string }[] = [];
+  for (const e of Object.values(doc.edges)) {
+    const s = remap(e.sourceId);
+    const t = remap(e.targetId);
+    if (!s || !t || s === t) continue;
+    const k = `${s}->${t}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    edges.push({ sourceId: s, targetId: t });
+  }
+  return { nodes, edges };
+};
+
+/** Overlay LA5 pinned positions on top of an auto-layout result. */
+const overlayPinned = (
+  doc: TPDocument,
+  projection: GraphProjection,
+  base: GraphPositions
+): GraphPositions => {
+  const out: GraphPositions = { ...base };
+  for (const id of projection.visibleEntityIds) {
+    const e = doc.entities[id];
+    if (e?.position) out[id] = e.position;
+  }
+  return out;
+};
 
 export const useGraphPositions = (doc: TPDocument, projection: GraphProjection): GraphPositions => {
   // F5: alternate-view toggle. Manual-layout diagrams (EC) ignore it — their
@@ -54,18 +140,6 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
     .map((e) => `${e.id}:${e.position?.x},${e.position?.y}`)
     .sort()
     .join('|');
-  // Cache key matches the original monolithic `useGraphView` exactly to
-  // preserve behavior (and avoid spurious dagre re-runs on UI-only changes).
-  // `cfg` was added in Block A so a Settings tweak (direction / compactness /
-  // bias) re-runs dagre even when nothing structural changed.
-  // `p` (Session 63) is the LA5 pinned-positions hash.
-  // The fingerprint folds in everything that should re-run layout —
-  // structural doc state (`layoutFingerprint`), the hoist target, the
-  // visible-collapsed set, the layout config, the LA5 pin map, plus the
-  // local view-state (`strategy`, `layoutMode`) that the `useMemo` body
-  // closes over. Using `useFingerprintMemo` makes the contract explicit
-  // and removes the `useExhaustiveDependencies` ignore that previously
-  // covered all of this.
   const fp = `${layoutFingerprint(doc)}|h:${hoistedGroupId ?? ''}|c:${[
     ...projection.proj.collapsedRoots,
   ]
@@ -74,69 +148,57 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
       ','
     )}|ec:${[...projection.hiddenCountByCollapser.keys()].sort().join(',')}|cfg:${layoutConfigKey(doc.layoutConfig)}|p:${pinnedKey}|s:${strategy}|m:${layoutMode}`;
 
-  return useFingerprintMemo(() => {
-    const { visibleEntityIds, visibleCollapsedRoots, remap } = projection;
-    // Manual-layout diagrams (Evaporating Cloud will be the first): skip
-    // dagre, read each entity's stored `position`, fall back to {0,0} for
-    // entities that haven't been positioned yet. Collapsed-root cards aren't
-    // expected here today — manual diagrams don't have groups — but if they
-    // ever appear we treat them like any unpositioned entity.
-    if (strategy === 'manual') {
-      const out: GraphPositions = {};
-      for (const id of visibleEntityIds) {
-        const e = doc.entities[id];
-        out[id] = e?.position ?? { x: 0, y: 0 };
-      }
-      for (const id of visibleCollapsedRoots) out[id] = { x: 0, y: 0 };
-      return out;
-    }
-    const layoutNodes = [
-      ...[...visibleEntityIds].map((id) => {
-        // Session 76: S&T-format injections render as taller 5-facet
-        // cards. Pass the correct height to dagre so layout math accounts
-        // for the bigger box; the regular nodes stay at NODE_MIN_HEIGHT.
-        const entity = doc.entities[id];
-        const height = entity && isStNodeFormat(entity) ? ST_NODE_HEIGHT : NODE_MIN_HEIGHT;
-        return { id, width: NODE_WIDTH, height };
-      }),
-      ...visibleCollapsedRoots.map((id) => ({
-        id,
-        width: COLLAPSED_WIDTH,
-        height: COLLAPSED_HEIGHT,
-      })),
-    ];
-    // Remap + aggregate edges for layout (dagre dedups silently anyway, but
-    // aggregating here keeps `positions` consistent with what we render).
-    const seen = new Set<string>();
-    const layoutEdges: { sourceId: string; targetId: string }[] = [];
-    for (const e of Object.values(doc.edges)) {
-      const s = remap(e.sourceId);
-      const t = remap(e.targetId);
-      if (!s || !t || s === t) continue;
-      const k = `${s}->${t}`;
-      if (seen.has(k)) continue;
-      seen.add(k);
-      layoutEdges.push({ sourceId: s, targetId: t });
-    }
-    // Block A: thread the per-doc LayoutConfig through the dagre call.
-    // Radial layout ignores the config — `align` etc. aren't meaningful for
-    // a ring placement. The user's choice resurfaces when they toggle back
-    // to flow mode.
-    const auto =
-      layoutMode === 'radial'
-        ? radialLayout(layoutNodes, layoutEdges)
-        : computeLayout(layoutNodes, layoutEdges, layoutConfigToOptions(doc.layoutConfig));
-    // LA5: overlay pinned positions onto dagre's / radial's output. A user
-    // drag on an auto-layout diagram persists `entity.position`; we honor
-    // that as a fixed pin so dagre handles the unpinned majority while the
-    // user keeps coordinate control over the entities that matter. React
-    // Flow reroutes edges from the overridden node centers at render time,
-    // so no per-edge geometry recompute is needed here.
-    const out: GraphPositions = { ...auto };
-    for (const id of visibleEntityIds) {
+  // Manual-layout diagrams (Evaporating Cloud) skip the layout engine
+  // entirely: positions live on the entities themselves. Compute
+  // synchronously via useMemo so EC users never see an empty-position
+  // first paint.
+  const manualPositions = useFingerprintMemo(() => {
+    if (strategy !== 'manual') return null;
+    const out: GraphPositions = {};
+    for (const id of projection.visibleEntityIds) {
       const e = doc.entities[id];
-      if (e?.position) out[id] = e.position;
+      out[id] = e?.position ?? { x: 0, y: 0 };
     }
+    for (const id of projection.visibleCollapsedRoots) out[id] = { x: 0, y: 0 };
     return out;
-  }, fp);
+  }, `manual:${fp}`);
+
+  // Radial layout is a small hand-rolled algorithm (no dagre dep) so it
+  // can also run synchronously.
+  const radialPositions = useFingerprintMemo(() => {
+    if (strategy === 'manual' || layoutMode !== 'radial') return null;
+    const { nodes, edges } = buildLayoutInputs(doc, projection);
+    const auto = radialLayout(nodes, edges);
+    return overlayPinned(doc, projection, auto);
+  }, `radial:${fp}`);
+
+  // Dagre is heavy (~25 KB gzip). Lazy-load via `await import()` and
+  // cache the resolved module module-level so subsequent renders are
+  // effectively synchronous (a resolved Promise + setState round-trip).
+  const [dagreState, setDagreState] = useState<{ fp: string; data: GraphPositions }>({
+    fp: '',
+    data: {},
+  });
+  // biome-ignore lint/correctness/useExhaustiveDependencies: by design — we re-run when the structural fingerprint changes; doc/projection/layoutMode are closed-over and read at effect time. Listing them as deps would re-fire the layout on title-only edits, defeating the fingerprint gate.
+  useEffect(() => {
+    if (strategy === 'manual') return;
+    if (layoutMode === 'radial') return;
+    if (dagreState.fp === fp) return;
+    let cancelled = false;
+    void (async () => {
+      const mod = await loadLayoutModule();
+      if (cancelled) return;
+      const { nodes, edges } = buildLayoutInputs(doc, projection);
+      const auto = mod.computeLayout(nodes, edges, mod.layoutConfigToOptions(doc.layoutConfig));
+      if (cancelled) return;
+      setDagreState({ fp, data: overlayPinned(doc, projection, auto) });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fp]);
+
+  if (manualPositions) return manualPositions;
+  if (radialPositions) return radialPositions;
+  return dagreState.data;
 };

@@ -29,8 +29,14 @@ export default defineConfig({
       output: {
         manualChunks: {
           react: ['react', 'react-dom'],
-          flow: ['@xyflow/react', 'dagre'],
+          flow: ['@xyflow/react'],
           icons: ['lucide-react'],
+          // Session 81 — `dagre` removed from the `flow` chunk so it can
+          // be code-split. `useGraphPositions` now lazy-loads
+          // `@/domain/layout` via `await import()`, which lets Rollup
+          // place dagre in its own chunk that only loads when an
+          // auto-layout diagram (non-EC) is first laid out. ~25 KB gzip
+          // off the eager critical path.
         },
       },
     },

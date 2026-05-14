@@ -1,4 +1,5 @@
 import type { Entity } from '@/domain/types';
+import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { ChevronUp, Sparkles, X } from 'lucide-react';
@@ -99,14 +100,40 @@ export function CreationWizardPanel() {
   const updateEdge = useDocumentStore((s) => s.updateEdge);
 
   const [draft, setDraft] = useState('');
+  // Session 81 — "Esc-armed" pattern: a non-empty draft + Esc shows a
+  // hint instead of closing immediately. A second Esc within ~3s
+  // discards the draft and closes the wizard. Prevents losing a long
+  // typed answer to a stray Escape press.
+  const [escArmed, setEscArmed] = useState(false);
+  const [skipNoticeOn, setSkipNoticeOn] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const stepKey = state ? `${state.kind}-${state.step}` : null;
 
-  // Reset draft on step change. The previous answer is already in the
-  // doc, so an empty input prompts the next question cleanly.
+  // Reset draft + refocus on every step change (including re-opens via
+  // the palette command "Reopen creation wizard"). Depends on stepKey
+  // rather than `[]` so the effect actually runs when the user advances
+  // — the previous `[]` made it a mount-only effect that left stale
+  // state when the wizard cycled through steps in the same session.
   useEffect(() => {
+    if (!stepKey) return;
     setDraft('');
+    setEscArmed(false);
+    setSkipNoticeOn(false);
     inputRef.current?.focus();
-  }, []);
+  }, [stepKey]);
+
+  // Auto-disarm Esc + auto-hide the skip notice after ~2.5s so the
+  // hints don't linger forever.
+  useEffect(() => {
+    if (!escArmed) return;
+    const id = window.setTimeout(() => setEscArmed(false), 2500);
+    return () => window.clearTimeout(id);
+  }, [escArmed]);
+  useEffect(() => {
+    if (!skipNoticeOn) return;
+    const id = window.setTimeout(() => setSkipNoticeOn(false), 2500);
+    return () => window.clearTimeout(id);
+  }, [skipNoticeOn]);
 
   if (!state) return null;
   const kind = state.kind;
@@ -125,8 +152,12 @@ export function CreationWizardPanel() {
     const text = draft.trim();
     if (text.length === 0) {
       // Empty submit on the first step is a no-op; on later steps it
-      // means "skip this question" — still advance.
-      if (step > 0) advance();
+      // means "skip this question" — still advance, with a brief
+      // inline notice so the user knows the skip was intentional.
+      if (step > 0) {
+        setSkipNoticeOn(true);
+        advance();
+      }
       return;
     }
     if (kind === 'ec') {
@@ -137,7 +168,15 @@ export function CreationWizardPanel() {
       const targetSlot = slotForStep[step];
       if (!targetSlot) return;
       const target = Object.values(entities).find((e) => e.ecSlot === targetSlot);
-      if (target) updateEntity(target.id, { title: text });
+      if (target) {
+        updateEntity(target.id, { title: text });
+      } else {
+        // Pre-seed missing this slot — shouldn't happen for a doc
+        // created via `newDocument('ec')`, but a hand-edited /
+        // imported EC might be incomplete. Log so it shows up in
+        // diagnostics rather than vanishing silently.
+        log.warn('ec-wizard-missing-slot', { targetSlot, step });
+      }
     } else {
       // Goal Tree — step 0 creates the apex `goal`; steps 1-3 each
       // create a CSF connected to the goal (necessity edge); step 4
@@ -277,12 +316,41 @@ export function CreationWizardPanel() {
               commit();
             } else if (e.key === 'Escape') {
               e.preventDefault();
-              close();
+              // Non-empty draft + first Esc → arm the discard
+              // confirmation. Second Esc within 2.5s closes for real.
+              // Empty draft → just close.
+              if (draft.trim().length > 0 && !escArmed) {
+                setEscArmed(true);
+              } else {
+                close();
+              }
             }
           }}
           className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
         />
+        <p className="text-[10px] italic text-neutral-500 dark:text-neutral-400">
+          Enter to commit · Shift+Enter for a newline · Esc to dismiss
+        </p>
       </label>
+
+      {/* Esc-armed hint — surfaces briefly when the user hits Esc with
+          a non-empty draft. Second Esc within ~2.5s actually closes. */}
+      {escArmed && (
+        <output
+          aria-live="polite"
+          className="block rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
+        >
+          Press Esc again to discard this draft and close the wizard.
+        </output>
+      )}
+      {skipNoticeOn && (
+        <output
+          aria-live="polite"
+          className="block rounded border border-neutral-200 bg-neutral-50 px-2 py-1 text-[11px] text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400"
+        >
+          Step skipped — you can fill it in directly on the canvas later.
+        </output>
+      )}
 
       <div className="flex items-center justify-between gap-2">
         <button
@@ -291,7 +359,10 @@ export function CreationWizardPanel() {
             // "Skip step" — advance without committing the draft.
             setDraft('');
             if (isFinalStep) close();
-            else advance();
+            else {
+              setSkipNoticeOn(true);
+              advance();
+            }
           }}
           className="rounded px-2 py-1 text-xs font-medium text-neutral-600 transition hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
         >

@@ -1,7 +1,6 @@
 import { NODE_HALF_HEIGHT, NODE_HALF_WIDTH, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { structuralEntities } from '@/domain/graph';
-import { computeLayout, docToLayoutModel, layoutConfigToOptions } from '@/domain/layout';
 import {
   type DetailedRevisionDiff,
   type EntityDiffStatus,
@@ -11,7 +10,7 @@ import {
 import type { Entity, TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { X } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 // Outer padding around the laid-out content so cards near the edge don't
 // clip the panel's scroll container. Card dimensions themselves come from
@@ -131,20 +130,35 @@ function Panel({
   sideKind: 'prev' | 'next';
 }) {
   const entities = useMemo(() => structuralEntities(doc), [doc]);
-  const layout = useMemo(() => {
-    const opts = layoutConfigToOptions(doc.layoutConfig);
-    const { nodes, edges } = docToLayoutModel(doc);
-    const positions = computeLayout(nodes, edges, opts);
-    // Derive panel extent from the laid-out positions so the scroll
-    // container is exactly the size it needs to be — `computeLayout` no
-    // longer returns width/height itself.
-    let maxX = 0;
-    let maxY = 0;
-    for (const p of Object.values(positions)) {
-      if (p.x + NODE_WIDTH > maxX) maxX = p.x + NODE_WIDTH;
-      if (p.y + NODE_MIN_HEIGHT > maxY) maxY = p.y + NODE_MIN_HEIGHT;
-    }
-    return { positions, width: maxX, height: maxY };
+  // Session 81 — dagre is lazy-loaded; useGraphPositions and this panel
+  // share the same dynamically-imported `@/domain/layout` chunk. The
+  // initial render shows an empty panel for ~1 paint frame while the
+  // module loads; once it arrives, positions appear.
+  const [layout, setLayout] = useState<{
+    positions: Record<string, { x: number; y: number }>;
+    width: number;
+    height: number;
+  }>({ positions: {}, width: 0, height: 0 });
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const mod = await import('@/domain/layout');
+      if (cancelled) return;
+      const opts = mod.layoutConfigToOptions(doc.layoutConfig);
+      const { nodes, edges } = mod.docToLayoutModel(doc);
+      const positions = mod.computeLayout(nodes, edges, opts);
+      let maxX = 0;
+      let maxY = 0;
+      for (const p of Object.values(positions)) {
+        if (p.x + NODE_WIDTH > maxX) maxX = p.x + NODE_WIDTH;
+        if (p.y + NODE_MIN_HEIGHT > maxY) maxY = p.y + NODE_MIN_HEIGHT;
+      }
+      if (cancelled) return;
+      setLayout({ positions, width: maxX, height: maxY });
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [doc]);
 
   return (

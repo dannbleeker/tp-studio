@@ -440,10 +440,13 @@ When you open a new Goal Tree or Evaporating Cloud, a small **"Get started" pane
 
 The wizard is **never blocking**. You can:
 
-- **Skip step** to advance without filling that prompt.
+- **Skip step** to advance without filling that prompt. A small grey notice flashes for ~2.5s ("Step skipped — you can fill it in directly on the canvas later") so an accidental empty-Enter isn't silent.
 - **Minimise** (chevron-up) to collapse the panel to a "Continue setup ›" pill that sits in the same spot — click it to expand again.
-- **Dismiss** (X or Esc) to close the panel for this session; the entities you already created stay where they are.
+- **Dismiss** (X) to close the panel for this session.
+- **Esc** to dismiss. If you have **unsaved typed text** in the current step, the first Esc surfaces an amber band ("Press Esc again to discard this draft and close the wizard") — second Esc within ~2.5s closes for real. Empty drafts close on the first press.
 - Tick **"Don't show this on new {Goal Trees|Evaporating Clouds}"** to silence the wizard for all future new diagrams of that type. Re-enable in **Settings → Behavior** or via the palette command **Reopen creation wizard** to bring it back for the current doc.
+
+Keyboard hint shown below the textarea: **Enter to commit · Shift+Enter for a newline · Esc to dismiss**.
 
 Want to skip straight to the canvas without the wizard? Either click Dismiss once, or turn the toggle off in Settings → Behavior. Both diagram types start with the canonical structure ready to edit — Goal Tree's empty canvas with the entity palette tuned, EC's 5 pre-seeded boxes waiting for titles.
 
@@ -460,6 +463,7 @@ A **Strategy & Tactics (S&T) Tree** is Goldratt's later-work pattern for cascadi
 - Build top-down: place the apex strategy as a `goal`, place its tactic below as an `injection`, then attach `necessaryCondition` entities feeding the tactic for the assumption facets. Each tactic decomposes into the next layer down by becoming the parent of a child strategy.
 - The Document Inspector's Method checklist carries six S&T steps (apex strategy → tactic → NA → PA → SA → decompose) so you can tick off the discipline as you go.
 - **First-class 5-facet card.** Select any injection (tactic) on an S&T diagram; the inspector grows a new **S&T facets** section with four textareas — Strategy, Necessary Assumption, Parallel Assumption, Sufficiency Assumption. Filling any one of them flips the canvas card into a tall 5-row layout with the four facets stacked beneath the tactic title. The Strategy row gets an indigo accent so it stands out from the three assumption rows. Empty rows render as italic `(unset)` placeholders so the structural slot stays visible. This is the optional alternative to modeling each facet as its own entity — pick whichever style fits the level of detail you want.
+- **Inline canvas editing (Session 81).** You can now edit any of the four facet rows directly on the card without opening the inspector — **double-click** a row's value to swap it for a textarea, type, then Enter (or click outside) to commit. Esc cancels and reverts to the previous value. Shift+Enter inserts a newline. An empty input clears the facet entirely. Browse Lock blocks the edit gesture, same as for the title.
 - **CLR rules.** Structural set plus the S&T-specific **`st-tactic-assumptions`** rule: fires (clarity tier) on any tactic with fewer than three incoming `necessaryCondition` entities. The nudge prescribes Goldratt's three-facet pattern; resolve individual warnings if a tactic legitimately doesn't need all three.
 
 ## Freeform diagrams

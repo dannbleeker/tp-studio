@@ -17,7 +17,9 @@
     "test:e2e:ui": "playwright test --ui",
     "lint": "biome check src tests",
     "format": "biome format --write src tests",
-    "check:bundle-size": "node ./scripts/check-bundle-size.mjs"
+    "check:bundle-size": "node ./scripts/check-bundle-size.mjs",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "simple-git-hooks": {
     "pre-commit": "node ./node_modules/lint-staged/bin/lint-staged.js",
@@ -55,6 +57,8 @@
     "@biomejs/biome": "^1.9.4",
     "@testing-library/react": "^16.0.1",
     "@playwright/test": "^1.48.0",
+    "@storybook/react": "^8.4.7",
+    "@storybook/react-vite": "^8.4.7",
     "@types/dagre": "^0.7.54",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -65,6 +69,7 @@
     "lint-staged": "^17.0.4",
     "postcss": "^8.5.14",
     "simple-git-hooks": "^2.13.1",
+    "storybook": "^8.4.7",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",

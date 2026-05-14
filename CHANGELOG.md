@@ -2,6 +2,69 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 81 — Parked-extras sweep: lazy dagre, S&T inline edit, EC wizard polish, Storybook
+
+Closes four "extras" items from the post-v3 backlog in one pass. All four had been parked for legitimate reasons (visible UX cost, library risk, install bloat); the user requested doing them anyway. The wins are small individually but compound — eager-bundle size drops, S&T users get a faster edit gesture, EC wizard handles real keyboard mishaps, and primitives now have a visual playground.
+
+End state: tsc clean, Biome clean, **954 tests passing** (unchanged), build green, all budgeted chunks within ceiling.
+
+### Lazy-load dagre (~30 KB gzip off the eager path)
+
+The Session 67 attempt at code-splitting dagre via `manualChunks` failed because Rollup kept dagre in the same chunk as `@xyflow/react`. The real fix — and the one that landed this session — is a `dynamic import('@/domain/layout')` inside `useGraphPositions`, plus removing `dagre` from the manual-chunk hint so Rollup can place it in its own chunk.
+
+- New module-level promise cache (`layoutModulePromise`) coalesces concurrent first-renders onto a single `import()` round-trip.
+- `useGraphPositions` split into three branches: **manual** (EC) stays fully synchronous via `useMemo`; **radial** also sync (the algorithm has no dagre dep); **dagre** is async via `useEffect` + `useState`. First paint on a cold load briefly shows an empty position map; subsequent fingerprint changes overwrite cleanly via setState.
+- `SideBySideDialog.Panel` also lazy-loads `@/domain/layout` for consistency — the dialog is already lazy at the App level, but this ensures dagre stays in its own shared chunk.
+- Bundle delta:
+  - `flow-*.js` 134 KB → 103 KB gzip (dagre removed)
+  - new `layout-*.js` 31 KB gzip (lazy, loaded on first auto-layout)
+  - Net: **~30 KB gzip off the eager critical path**, EC-only users never pay it.
+
+### EC + Goal Tree wizard refinements
+
+Three behavioral polish items on `CreationWizardPanel`:
+
+- **Step-change focus + draft reset now actually fires.** The Session 78 effect dependency array was `[]` — a mount-only effect. Cycling through steps via `Next ›` left stale state. Depends on `stepKey` (`${kind}-${step}`) now, so the textarea refocuses and `draft` resets on every advance, including palette-driven re-opens.
+- **Esc-armed discard pattern.** Hitting Esc with a non-empty draft used to lose the typed answer instantly. Now the first Esc surfaces an inline `<output>` band ("Press Esc again to discard…"), auto-disarmed after ~2.5s. Second Esc within that window closes for real; empty drafts continue to close on the first press.
+- **Skip-step inline notice.** Empty submits past step 0 and explicit "Skip step" clicks now flash a small grey band ("Step skipped — you can fill it in directly on the canvas later"), auto-cleared after ~2.5s. Replaces silent advance.
+- **EC pre-seed missing-slot diagnostic.** If a hand-edited / imported EC reaches the wizard without an entity for the targeted `ecSlot`, the step now logs `ec-wizard-missing-slot` via `log.warn` instead of vanishing silently.
+
+The non-modal panel deliberately does NOT add a focus trap — Tab should still let the user reach the canvas. Keyboard hint line below the textarea documents Enter / Shift+Enter / Esc semantics inline.
+
+### S&T 5-facet inline editing on the canvas
+
+Previously the four S&T attribute facets (NA / Strategy / PA / SA) were read-only on the canvas; the user had to open the inspector to edit them. `StFacetRow` is now an editable component:
+
+- Double-click any row's value swaps it for an inline `<textarea>`.
+- Enter / blur commits via `setEntityAttribute`; empty input clears via `removeEntityAttribute`.
+- Esc cancels. Shift+Enter inserts a newline. Click/mousedown/keydown all `stopPropagation` so the gesture doesn't bubble to React Flow's pan or select handlers.
+- Browse Lock blocks the edit-mode entry via the existing `guardWriteOrToast` gate.
+- The card height stays at `ST_NODE_HEIGHT` (dagre still budgets the right rectangle) and the visual layout is unchanged when not editing.
+
+### Storybook for UI primitives
+
+Minimal install — `storybook` + `@storybook/react-vite` + `@storybook/react`. No addon-essentials, no addon-docs, no addon-a11y. The lean dev-dep footprint keeps the maintenance cost defensible at the current primitive count (six).
+
+- `.storybook/main.ts` — config (`stories: '../src/**/*.stories.tsx'`, `framework: '@storybook/react-vite'`).
+- `.storybook/preview.ts` — imports `src/styles/index.css` so stories render with the same Tailwind utilities the app uses.
+- Six new `*.stories.tsx` files alongside their components:
+  - `Button.stories.tsx` (6 stories — primary / ghost / softViolet / destructive / disabled / icon)
+  - `Modal.stories.tsx` (2 stories — center / top alignment, stateful open/close demo)
+  - `MarkdownPreview.stories.tsx` (4 stories — paragraph / list+heading / fenced code / empty)
+  - `ErrorBoundary.stories.tsx` (3 stories — happy path / root crash / nested crash)
+  - `Field.stories.tsx` (2 stories — text label / rich label)
+  - `MarkdownField.stories.tsx` (3 stories — editable / locked / empty)
+- New scripts: `pnpm storybook` (dev server on :6006) and `pnpm build-storybook` (static build).
+- `storybook-static/` added to `.gitignore` + `biome.json` ignore (Biome was scanning the built bundles otherwise).
+
+### Bundle-budget bump
+
+`bundle-budget.json` updated to reflect the new chunk shapes:
+
+- `flow` ceiling 140 KB → 110 KB (dagre is out, so the slack from the old budget no longer reflects reality — tightening keeps regressions visible).
+- `index` ceiling 100 KB → 115 KB (the main bundle has genuinely grown over Sessions 77–81 with verbalisation, htmlExport, warning actions, templates picker wiring, focus trap, etc. — the previous number was the pre-v3-brief baseline).
+- `icons` ceiling unchanged.
+
 ## Session 80 — True vector PDF export
 
 Closes the remaining v3-brief critical-path bundle (§8.1 + §8.6 + §8.8 + §8.13). The Session 77 print pipeline handed off to `window.print()`; this session adds a programmatic file download that produces a real vector PDF — text stays text, edges stay resolution-independent, every glyph is selectable + searchable.
