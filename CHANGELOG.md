@@ -2,6 +2,58 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 79 — Templates library, multi-goal soft warning, a11y pass, print-selection-only
+
+Picks off six items from the v3 backlog in one pass: the curated template library (§12), a soft dismissible CLR warning for Goal Trees with >1 goal (replacing the previous hard single-goal constraint), a one-click "Convert extras to CSFs" action attached to that warning, an accessibility audit on the five Session 77+78 components, and a "Print selection only" toggle in the print preview.
+
+End state: tsc clean, Biome clean, **941 tests passing** (was 891; +9 in `tests/domain/goalTreeMultipleGoals.test.ts`, +41 in `tests/templates/templates.test.ts`), build green, bundle within ceiling.
+
+### Soft multi-goal warning + one-click conversion
+
+- New CLR rule `goalTree-multiple-goals` (tier `clarity`) fires whenever a Goal Tree has more than one `goal` entity. The rule sorts goals by `annotationNumber` (per-doc monotonic counter — survives same-tick creations cleanly, unlike `createdAt`) and anchors the warning on the oldest goal so re-validation is stable.
+- Warnings now carry an optional `action?: { actionId, label }` payload. `WarningsList` renders that action as a one-click button next to the per-warning Resolve toggle.
+- New `WARNING_ACTIONS` registry in `src/services/warningActions.ts` dispatches the handler against the live store + document. First handler: `convert-extra-goals-to-csfs` — converts every `goal` entity except the oldest into a `criticalSuccessFactor`.
+- Previous hard single-goal refusal in `addEntity` is gone; users can now have multiple goal entities and either dismiss the warning or one-click-convert.
+- Drops backlog item 3.4 (CSF-count soft warning) entirely — too noisy for too little signal.
+
+### Templates library (§12)
+
+- `src/templates/` directory: shared `TemplateSpec` / `TemplateEntity` / `TemplateEdge` types, a `buildTemplate(spec)` inflator (assigns ids, positions, defaults edge.kind for goalTree/EC, applies `ecSlot` for EC slots), an `index.ts` exporting `TEMPLATE_SPECS`, and a framework-free SVG `templateThumbnailSvg(spec)` generator.
+- 10 curated specs, by diagram type:
+  - **Goal Trees (2)**: `Generic SaaS Goal Tree`, `Retail Operations Goal Tree`.
+  - **Evaporating Clouds (5)**: `Sales vs. Marketing`, `Speed vs. Quality`, `Build vs. Buy`, `Centralise vs. Decentralise`, `Maker vs. Manager`.
+  - **CRTs (3)**: `Retail Ops CRT`, `SaaS Engineering CRT`, `Personal Productivity CRT`.
+- Thumbnails render in the picker as tiny SVGs computed from the spec — no React Flow / dagre off-screen pass. EC thumbnails draw the canonical 5-box layout with the red dashed conflict line; tree thumbnails BFS levels from sinks and row them out bottom-up.
+- New `TemplatePickerDialog` (`src/components/templates/`) — semantic `<dialog open>` with `aria-modal`, focus trap via `useFocusTrap`, Esc closes. Grid of cards, each showing the thumbnail + diagram-type badge + entity/edge counts + title + description. Clicking a card runs `buildTemplate(spec)` → `setDocument(doc)` → toasts "Loaded template: X".
+- New `New from template…` palette command in the File group (`document.ts`).
+- Lazy-loaded under `ErrorBoundary` from `App.tsx`; isolated 6.5 KB gzipped chunk.
+
+### Accessibility audit (Session 77+78 components)
+
+- New shared `useFocusTrap(ref, active)` hook — Tab / Shift+Tab cycling inside the container, initial-focus on first focusable element, restoration of previously-focused element on close. Mirrors the WAI-ARIA Authoring Practices "dialog (modal)" pattern.
+- `PrintPreviewDialog`: wired up `useFocusTrap`, `aria-labelledby`, Esc handler. Selection-only checkbox is disabled with explanatory label when no selection.
+- `AssumptionWell`: status chip's `aria-label` now announces the next state ("Assumption status: X. Press to cycle to Y."), focus ring added.
+- `VerbalisationStrip`: meaningful `aria-label` on assumption-anchor buttons describes the edge + assumption count, focus ring added.
+- `CreationWizardPanel`: now a semantic `<section aria-label="…">`; step counter wrapped in `aria-live="polite" aria-atomic="true"` so screen readers announce transitions.
+- `InjectionWorkbench`: link-picker buttons live inside `<ul aria-label="Assumptions available to link">` with `<li>` per item, focus ring + per-button aria-labels added.
+
+### Print: "Selection only" toggle (§8.12)
+
+- New checkbox in the print preview modal — disabled until the user has a non-empty React Flow selection.
+- `setBodyPrintMode` toggles a `body.print-selection-only` class alongside the existing layout class.
+- `print.css` adds:
+  ```css
+  body.print-selection-only .react-flow__node:not(.selected),
+  body.print-selection-only .react-flow__edge:not(.selected) { visibility: hidden !important; }
+  ```
+  Uses `visibility: hidden` rather than `display: none` so canvas geometry is preserved during printing (no layout collapse, no edge re-routing).
+
+### Bundle impact
+
+- `TemplatePickerDialog-*.js`: 6.5 KB gzipped (lazy, unbudgeted).
+- `useFocusTrap-*.js`: 464 B gzipped (lazy, unbudgeted).
+- `index-*.js` (main): unchanged within slop.
+
 ## Session 78 — Goal Tree + EC creation wizards (dismissible "Get started" panel)
 
 Builds on Session 77's Goal Tree + EC plumbing. Adds the brief's guided creation flow (§5 + §6) as a **dismissible** panel rather than a blocking modal — first-time users get the canonical Goal → CSFs → NCs and A → B/C → D/D′ walkthrough; returning users can skip per-doc or silence the wizard entirely.

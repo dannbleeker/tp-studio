@@ -1,9 +1,10 @@
 import { structuralEntities } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { Printer, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../ui/Button';
 
 /**
@@ -45,12 +46,17 @@ const MODE_HINT: Record<PrintMode, string> = {
     "Group shading removed, edges thinner, blacks softened to grey. Saves toner when you're printing dozens of copies for a workshop handout.",
 };
 
-const setBodyPrintMode = (mode: PrintMode, includeAppendix: boolean): void => {
+const setBodyPrintMode = (
+  mode: PrintMode,
+  includeAppendix: boolean,
+  selectionOnly: boolean
+): void => {
   if (typeof document === 'undefined') return;
   const body = document.body;
   body.classList.remove('print-mode-standard', 'print-mode-workshop', 'print-mode-inksaving');
   body.classList.add(`print-mode-${mode}`);
   body.classList.toggle('print-include-appendix', includeAppendix);
+  body.classList.toggle('print-selection-only', selectionOnly);
 };
 
 const clearBodyPrintMode = (): void => {
@@ -60,7 +66,8 @@ const clearBodyPrintMode = (): void => {
     'print-mode-standard',
     'print-mode-workshop',
     'print-mode-inksaving',
-    'print-include-appendix'
+    'print-include-appendix',
+    'print-selection-only'
   );
 };
 
@@ -84,20 +91,51 @@ export function PrintPreviewDialog() {
   const open = useDocumentStore((s) => s.printOpen);
   const close = useDocumentStore((s) => s.closePrintPreview);
   const doc = useDocumentStore((s) => s.doc);
+  const selection = useDocumentStore((s) => s.selection);
 
   const [mode, setMode] = useState<PrintMode>('standard');
   const [includeAppendix, setIncludeAppendix] = useState(false);
+  // Session 79 / brief §10 — "Print selection only" toggle. Only
+  // surfaced when something is selected; otherwise the option is
+  // disabled with a hint.
+  const [selectionOnly, setSelectionOnly] = useState(false);
   const [headerTemplate, setHeaderTemplate] = useState('{title} · {diagramType}');
   const [footerTemplate, setFooterTemplate] = useState('Exported {date} · TP Studio');
+
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  useFocusTrap(dialogRef, open);
+
+  const hasSelection =
+    (selection.kind === 'entities' || selection.kind === 'edges') && selection.ids.length > 0;
+  // Reset the selection-only flag when the selection vanishes —
+  // printing "selection only" with no selection would print
+  // nothing.
+  useEffect(() => {
+    if (!hasSelection && selectionOnly) setSelectionOnly(false);
+  }, [hasSelection, selectionOnly]);
+
+  // Esc closes (in addition to the X button and the focus trap's
+  // tab cycling).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, close]);
 
   // Keep the body-mode class in sync with the chosen mode while the
   // dialog is open. The classes only affect `@media print` rules, so
   // the canvas behind the dialog isn't visually disturbed.
   useEffect(() => {
-    if (open) setBodyPrintMode(mode, includeAppendix);
+    if (open) setBodyPrintMode(mode, includeAppendix, selectionOnly);
     else clearBodyPrintMode();
     return clearBodyPrintMode;
-  }, [open, mode, includeAppendix]);
+  }, [open, mode, includeAppendix, selectionOnly]);
 
   // Stash the resolved header/footer text into `data-` attributes
   // print.css reads via `content: attr(...)`. Easier than injecting
@@ -130,11 +168,17 @@ export function PrintPreviewDialog() {
       open
       className="fixed inset-0 z-50 m-0 flex h-screen max-h-screen w-screen max-w-none items-center justify-center bg-black/40 p-0"
       aria-modal="true"
-      aria-label="Print preview"
+      aria-labelledby="print-preview-title"
     >
-      <div className="flex w-[min(640px,92vw)] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-xl dark:border-neutral-800 dark:bg-neutral-950">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="flex w-[min(640px,92vw)] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-xl outline-none dark:border-neutral-800 dark:bg-neutral-950"
+      >
         <header className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">Print / Save as PDF</h2>
+          <h2 id="print-preview-title" className="text-base font-semibold">
+            Print / Save as PDF
+          </h2>
           <Button variant="ghost" size="icon" onClick={close} aria-label="Close print preview">
             <X className="h-4 w-4" />
           </Button>
@@ -180,6 +224,24 @@ export function PrintPreviewDialog() {
                 ({annotationCount} entit{annotationCount === 1 ? 'y' : 'ies'} with descriptions)
               </span>{' '}
               — a numbered list of every entity's description rendered after the diagram.
+            </span>
+          </label>
+
+          <label className="flex items-start gap-2 text-xs">
+            <input
+              type="checkbox"
+              checked={selectionOnly}
+              onChange={(e) => setSelectionOnly(e.target.checked)}
+              disabled={!hasSelection}
+              className="mt-0.5 disabled:opacity-40"
+            />
+            <span className={hasSelection ? '' : 'opacity-60'}>
+              <b>Print selection only</b>{' '}
+              <span className="text-neutral-500 dark:text-neutral-400">
+                {hasSelection
+                  ? '— only the entities + edges currently selected on the canvas will print.'
+                  : '(select one or more entities / edges first to enable this)'}
+              </span>
             </span>
           </label>
 

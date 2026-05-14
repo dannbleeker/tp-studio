@@ -22,6 +22,8 @@ export type DialogsSlice = {
   quickCaptureOpen: boolean;
   /** Session 77 / brief §10 — print preview modal. */
   printOpen: boolean;
+  /** Session 79 / brief §12 — templates picker dialog. */
+  templatePickerOpen: boolean;
   /** Session 78 / brief §5 + §6 — creation-wizard panel for the
    *  diagram type the user just opened. `null` when closed; carries
    *  `step` (0-based) and `minimised` so the user can collapse the
@@ -86,6 +88,10 @@ export type DialogsSlice = {
   openPrintPreview: () => void;
   closePrintPreview: () => void;
 
+  /** Session 79 — templates picker. */
+  openTemplatePicker: () => void;
+  closeTemplatePicker: () => void;
+
   /** Session 78 — creation-wizard panel control. `openCreationWizard`
    *  resets the panel to step 0 on the given diagram type;
    *  `advanceCreationWizardStep` moves forward by one; `closeCreationWizard`
@@ -132,6 +138,7 @@ export type DialogsDataKeys =
   | 'toasts'
   | 'quickCaptureOpen'
   | 'printOpen'
+  | 'templatePickerOpen'
   | 'creationWizard'
   | 'historyPanelOpen'
   | 'compareRevisionId'
@@ -148,6 +155,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   toasts: [],
   quickCaptureOpen: false,
   printOpen: false,
+  templatePickerOpen: false,
   creationWizard: null,
   historyPanelOpen: false,
   compareRevisionId: null,
@@ -165,6 +173,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   toasts: [],
   quickCaptureOpen: false,
   printOpen: false,
+  templatePickerOpen: false,
   creationWizard: null,
   historyPanelOpen: false,
   compareRevisionId: null,
@@ -208,6 +217,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openPrintPreview: () => set({ printOpen: true }),
   closePrintPreview: () => set({ printOpen: false }),
+
+  openTemplatePicker: () => set({ templatePickerOpen: true }),
+  closeTemplatePicker: () => set({ templatePickerOpen: false }),
 
   openCreationWizard: (kind) => set({ creationWizard: { kind, step: 0, minimised: false } }),
   advanceCreationWizardStep: () => {

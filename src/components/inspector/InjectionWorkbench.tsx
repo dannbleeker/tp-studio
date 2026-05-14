@@ -175,19 +175,23 @@ function InjectionRow({
               No more assumptions to link.
             </p>
           )}
-          {unlinkedAssumptions.map((a) => (
-            <button
-              key={a.id}
-              type="button"
-              onClick={() => {
-                onLink(a.id);
-                setPicking(false);
-              }}
-              className="rounded px-1 py-0.5 text-left text-[11px] text-neutral-700 transition hover:bg-emerald-100 hover:text-emerald-700 dark:text-neutral-300 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
-            >
-              {a.text || <span className="italic">(empty)</span>}
-            </button>
-          ))}
+          <ul aria-label="Assumptions available to link" className="flex flex-col gap-0.5">
+            {unlinkedAssumptions.map((a) => (
+              <li key={a.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onLink(a.id);
+                    setPicking(false);
+                  }}
+                  aria-label={`Link assumption: ${a.text || 'empty'}`}
+                  className="w-full rounded px-1 py-0.5 text-left text-[11px] text-neutral-700 transition hover:bg-emerald-100 hover:text-emerald-700 focus:bg-emerald-100 focus:outline-none dark:text-neutral-300 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300 dark:focus:bg-emerald-950/40"
+                >
+                  {a.text || <span className="italic">(empty)</span>}
+                </button>
+              </li>
+            ))}
+          </ul>
           <button
             type="button"
             onClick={() => setPicking(false)}

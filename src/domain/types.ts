@@ -374,7 +374,13 @@ export type ClrRuleId =
   // EC-specific (Session 77, brief §6): the 5-rule structural +
   // completeness check (empty A, B≡C, B/C only feed A, D/D′ only feed
   // their need, missing assumption per arrow, missing injection).
-  | 'ec-completeness';
+  | 'ec-completeness'
+  // Goal Tree-specific (Session 79): more than one apex `goal` entity
+  // on a Goal Tree document. Soft warning — the user can dismiss it
+  // and continue, OR click the action button to convert extra goals
+  // into Critical Success Factors. Dettmer's pattern is single-apex
+  // but TP Studio doesn't enforce it as a hard constraint.
+  | 'goalTree-multiple-goals';
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each
@@ -385,6 +391,20 @@ export type ClrRuleId =
 export type ClrTier = 'clarity' | 'existence' | 'sufficiency';
 
 export type WarningTarget = { kind: 'entity'; id: string } | { kind: 'edge'; id: string };
+
+/**
+ * Session 79 — actionable warnings. Some CLR rules carry an
+ * optional one-click remedy ("Convert extras to CSFs", "Mark mutex
+ * edge", etc.) that lets the user fix the underlying issue without
+ * leaving the WarningsList. The action id resolves to a handler in
+ * `services/warningActions.ts`; the handler receives the live doc +
+ * warning and dispatches store mutations.
+ */
+export type WarningAction = {
+  /** Stable id resolved against the WARNING_ACTIONS registry at click time. */
+  actionId: string;
+  label: string;
+};
 
 export type Warning = {
   id: string;
@@ -397,6 +417,11 @@ export type Warning = {
    *  (the rule doesn't need to know its own tier — the composition layer
    *  is the source of truth). */
   tier: ClrTier;
+  /** Session 79 — optional one-click remedy. WarningsList renders a
+   *  small button next to the message; clicking dispatches the named
+   *  action. Missing on warnings that have no obvious one-click fix
+   *  (the bulk of CLR rules). */
+  action?: WarningAction;
 };
 
 /**

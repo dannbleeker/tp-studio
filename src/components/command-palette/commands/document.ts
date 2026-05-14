@@ -107,6 +107,15 @@ export const documentCommands: Command[] = [
       s.openQuickCapture();
     },
   }),
+  withWriteGuard({
+    // Session 79 / brief §12 — pick from the curated templates library.
+    id: 'new-from-template',
+    label: 'New from template…',
+    group: 'File',
+    run: (s) => {
+      s.openTemplatePicker();
+    },
+  }),
   {
     id: 'open-document-inspector',
     label: 'Document details…',

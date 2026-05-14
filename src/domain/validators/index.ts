@@ -10,6 +10,7 @@ import { ecCompletenessRule } from './ecCompleteness';
 import { ecMissingConflictRule } from './ecMissingConflict';
 import { entityExistenceRule } from './entityExistence';
 import { externalRootCauseRule } from './externalRootCause';
+import { goalTreeMultipleGoalsRule } from './goalTreeMultipleGoals';
 import { indirectEffectRule } from './indirectEffect';
 import { predictedEffectExistenceRule } from './predictedEffectExistence';
 import { type TieredRule, tieredRule } from './shared';
@@ -108,13 +109,15 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
   // the structural rules — entity-existence, causality-existence,
   // clarity, tautology, cycle, indirect-effect — apply.
   freeform: STRUCTURAL_RULES,
-  // Session 77 / brief §5 — Goal Tree. Structural rules apply (titles
-  // need content; necessity edges still need endpoints; tautology still
-  // matters). The single-goal constraint + 3-5-CSF nudge are enforced
-  // separately in the Goal Tree creation flow + store actions, not as
-  // CLR rules — they're hard constraints rather than per-entity soft
-  // warnings.
-  goalTree: STRUCTURAL_RULES,
+  // Session 77 / brief §5 — Goal Tree. Structural rules plus the
+  // Session 79 single-apex nudge. Tier `clarity` on the multi-goal
+  // rule — the diagram still works with multiple goals, the user
+  // is just out of Dettmer's pattern. The rule carries a one-click
+  // "Convert extras to CSFs" action via the WARNING_ACTIONS registry.
+  goalTree: [
+    ...STRUCTURAL_RULES,
+    tieredRule('clarity', 'goalTree-multiple-goals', goalTreeMultipleGoalsRule),
+  ],
 };
 
 /**

@@ -197,6 +197,18 @@
     display: block !important;
     page-break-before: always;
   }
+
+  /* Session 79 / brief §10 — print selection only. Sets `visibility: hidden`
+     on every node + edge that isn't part of the React Flow selection;
+     the selected items stay visible. `visibility: hidden` (rather than
+     `display: none`) preserves layout so the printed page renders the
+     selection in its canvas position rather than collapsing whitespace. */
+  body.print-selection-only .react-flow__node:not(.selected) {
+    visibility: hidden !important;
+  }
+  body.print-selection-only .react-flow__edge:not(.selected) {
+    visibility: hidden !important;
+  }
 }
 
 /* Hidden in normal view; the @media print block above turns these on. */

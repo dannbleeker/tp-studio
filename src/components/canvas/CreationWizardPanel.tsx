@@ -206,14 +206,19 @@ export function CreationWizardPanel() {
   }
 
   return (
-    <div
+    <section
       data-component="creation-wizard"
+      aria-label={`${kind === 'goalTree' ? 'Goal Tree' : 'Evaporating Cloud'} creation wizard`}
       className="absolute left-4 top-14 z-30 flex w-[min(380px,92vw)] flex-col gap-2 rounded-lg border border-indigo-200 bg-white p-3 shadow-lg dark:border-indigo-800 dark:bg-neutral-900"
     >
       <header className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
+          <span
+            className="text-[11px] font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             {kind === 'goalTree' ? 'Goal Tree setup' : 'Evaporating Cloud setup'} · step {step + 1}{' '}
             of {steps.length}
           </span>
@@ -309,6 +314,6 @@ export function CreationWizardPanel() {
         />
         Don't show this on new {kind === 'goalTree' ? 'Goal Trees' : 'Evaporating Clouds'}
       </label>
-    </div>
+    </section>
   );
 }

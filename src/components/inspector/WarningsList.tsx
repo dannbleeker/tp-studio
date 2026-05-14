@@ -1,7 +1,8 @@
 import type { ClrTier, Warning } from '@/domain/types';
+import { runWarningAction } from '@/services/warningActions';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Wand2 } from 'lucide-react';
 
 /**
  * Three-level CLR taxonomy (Block C / E5). Inspector renders warnings
@@ -31,6 +32,18 @@ const orderByResolution = (ws: Warning[]): Warning[] => {
 export function WarningsList({ warnings }: { warnings: Warning[] }) {
   const resolveWarning = useDocumentStore((s) => s.resolveWarning);
   const unresolveWarning = useDocumentStore((s) => s.unresolveWarning);
+  const showToast = useDocumentStore((s) => s.showToast);
+
+  const runAction = (w: Warning): void => {
+    if (!w.action) return;
+    const state = useDocumentStore.getState();
+    const ok = runWarningAction(state, state.doc, w);
+    if (ok) {
+      showToast('success', `Applied: ${w.action.label}`);
+    } else {
+      showToast('info', `No handler registered for "${w.action.actionId}".`);
+    }
+  };
 
   if (warnings.length === 0) {
     return (
@@ -88,11 +101,27 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
                     <p className="mt-0.5 text-[10px] uppercase tracking-wider opacity-60">
                       {w.ruleId}
                     </p>
+                    {w.action && !w.resolved && (
+                      <button
+                        type="button"
+                        onClick={() => runAction(w)}
+                        aria-label={`${w.action.label} (one-click remedy)`}
+                        className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900 transition hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
+                      >
+                        <Wand2 className="h-3 w-3" aria-hidden />
+                        {w.action.label}
+                      </button>
+                    )}
                   </div>
                   <button
                     type="button"
                     onClick={() => (w.resolved ? unresolveWarning(w.id) : resolveWarning(w.id))}
-                    className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-neutral-600 opacity-0 transition hover:bg-white/60 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
+                    aria-label={
+                      w.resolved
+                        ? `Reopen warning: ${w.message}`
+                        : `Mark warning resolved: ${w.message}`
+                    }
+                    className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-neutral-600 opacity-0 transition hover:bg-white/60 focus:opacity-100 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
                   >
                     {w.resolved ? 'Reopen' : 'Resolve'}
                   </button>

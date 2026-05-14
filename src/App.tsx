@@ -57,6 +57,11 @@ const PrintPreviewDialog = lazy(() =>
     default: m.PrintPreviewDialog,
   }))
 );
+const TemplatePickerDialog = lazy(() =>
+  import('./components/templates/TemplatePickerDialog').then((m) => ({
+    default: m.TemplatePickerDialog,
+  }))
+);
 
 /**
  * Print-only header. Hidden in normal view by the print.css `.print-only`
@@ -193,6 +198,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Print preview">
           <PrintPreviewDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Template picker">
+          <TemplatePickerDialog />
         </ErrorBoundary>
       </Suspense>
       <ConfirmDialog />

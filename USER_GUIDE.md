@@ -18,7 +18,9 @@ A practitioner's walkthrough. Assumes familiarity with the Thinking Process — 
 8. [The CLR panel](#the-clr-panel)
 9. [Future Reality Trees](#future-reality-trees)
 10. [Saving, exporting, and sharing](#saving-exporting-and-sharing)
-11. [Settings & themes](#settings--themes)
+11. [Templates library](#templates-library)
+12. [Multi-goal Goal Trees](#multi-goal-goal-trees)
+13. [Settings & themes](#settings--themes)
 12. [Browse Lock](#browse-lock)
 13. [Document details](#document-details)
 14. [Keyboard reference](#keyboard-reference)
@@ -480,10 +482,11 @@ A **Freeform Diagram** is the non-TOC mode: no built-in type pattern matching, n
 
 **Self-contained HTML viewer (Session 77).** `Cmd/Ctrl+K` → **Export as self-contained HTML viewer** writes a single `.html` file with all CSS / JS inlined and the source JSON embedded. The receiver opens it in any browser; the file works offline, behind firewalls, and on shared file drives. The view renders the doc title, entities, EC verbalisation (where applicable), assumptions with status chips, and injections — read-only. No network calls. Best for sending a colleague a snapshot they can open without installing anything.
 
-**Print preview (Session 77).** `Cmd/Ctrl+K` → **Print / Save as PDF…** opens a print preview modal where you pick:
+**Print preview (Session 77, extended Session 79).** `Cmd/Ctrl+K` → **Print / Save as PDF…** opens a print preview modal where you pick:
 
 - **Mode**: Standard (default browser print), Workshop (high-contrast, large font, group rectangles bordered), Ink-saving (group shading removed, edges thinned, blacks softened).
 - **Annotation appendix** (checkbox): when on, the printed output includes a numbered list of every entity's description + every edge note + every assumption-with-status as an appendix after the diagram.
+- **Selection only** (checkbox, Session 79): when on, only selected entities + edges appear in the print output. The rest of the canvas is hidden (via `visibility: hidden` so layout positions stay intact — no edges re-route). The checkbox is disabled with a hint when you don't have a non-empty selection.
 - **Header / footer templates**: free text with merge fields `{title}` / `{date}` / `{author}` / `{diagramType}`. The rendered values get a thin band at the top + bottom of every printed page.
 
 Click **Open print dialog** to hand off to the browser's print/Save-as-PDF flow with the chosen mode applied. (A future iteration will add a true vector-PDF pipeline via `react-to-pdf`; the current flow uses the browser's print engine.)
@@ -530,6 +533,26 @@ Both are one-way Markdown — paste them into a doc / wiki / chat. Pairs with th
 **Sharing.** Two practical paths today: send the `.tps.json` file (recipient runs **Import from JSON…**) or send the `.png`.
 
 If the browser's storage quota is exceeded — usually because of an exceptionally large document or browser-wide storage pressure — you'll get a destructive toast: `Couldn't save to this browser: ...`. The in-memory document keeps working; export to JSON to preserve it.
+
+## Templates library
+
+`Cmd/Ctrl+K` → **New from template…** opens a picker with 10 curated templates spanning the three v3-brief diagram types:
+
+- **Goal Trees (2)**: a generic SaaS-product Goal Tree (apex Goal + 3 CSFs + their NCs) and a Retail Operations Goal Tree tuned for store-level operations.
+- **Evaporating Clouds (5)**: Sales vs. Marketing, Speed vs. Quality, Build vs. Buy, Centralise vs. Decentralise, Maker vs. Manager schedules — the five most-recurring strategic conflicts in operations and product work.
+- **CRTs (3)**: a Retail Operations CRT, a SaaS Engineering CRT, and a Personal Productivity CRT. Each is a worked example with a half-dozen entities + edges showing the canonical UDE → cause cascade.
+
+Each card shows a tiny SVG thumbnail of the diagram's shape (EC cards draw the 5-box layout with the red conflict line; trees show levels bottom-up), the diagram-type badge, the entity + edge counts, and a one-line description. Clicking a card replaces the current document with a freshly-instantiated copy of the template — your previous work is overwritten, so save first if you want to keep it. The picker traps focus, dismisses on Escape, and is keyboard-navigable.
+
+Templates are starting points, not boilerplate — every entity is editable, deletable, and re-typable. Use them when you want to skip the "stare at a blank canvas" problem and start with the shape of the conversation.
+
+## Multi-goal Goal Trees
+
+Goal Trees are designed around a single apex Goal. The CLR engine flags any Goal Tree that has more than one `goal` entity with a soft **Multiple goals** warning, anchored on the oldest goal in the document. This is intentionally a soft warning, not a hard refusal — sometimes you genuinely need to capture two competing terminal objectives during a brainstorm.
+
+The warning carries a one-click **Convert extras to CSFs** action. Clicking it keeps the oldest goal as the apex and re-types every other goal in the document into a `criticalSuccessFactor`. The "oldest" sort uses each entity's `annotationNumber` (the per-document monotonic counter assigned at creation time), so the result is deterministic even when goals were created in the same second.
+
+If the second goal really is a peer to the first, dismiss the warning with **Resolve** — it stays dismissed across reloads (resolved warnings persist in the document), and re-fires only if you add yet another goal.
 
 ## Settings & themes
 

@@ -72,6 +72,9 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
             tok.assumptionCount > 0
               ? `${tok.assumptionCount} assumption${tok.assumptionCount === 1 ? '' : 's'}`
               : 'no assumptions yet';
+          const ariaLabel = tok.edgeId
+            ? `Open Assumption Well for this arrow. ${label}.`
+            : 'No edge wired yet — cannot open the Assumption Well.';
           return (
             <button
               key={key}
@@ -80,8 +83,9 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
                 if (tok.edgeId) selectEdge(tok.edgeId);
               }}
               disabled={!tok.edgeId}
+              aria-label={ariaLabel}
               className={clsx(
-                'mx-0.5 inline rounded border px-1 py-0 text-[10px] font-semibold not-italic transition',
+                'mx-0.5 inline rounded border px-1 py-0 text-[10px] font-semibold not-italic transition focus:outline-none focus:ring-2 focus:ring-violet-400',
                 tok.assumptionCount > 0
                   ? 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-300 dark:hover:bg-violet-900'
                   : 'border-neutral-300 bg-neutral-50 text-neutral-500 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800',

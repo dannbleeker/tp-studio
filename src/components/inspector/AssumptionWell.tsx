@@ -127,10 +127,10 @@ function AssumptionRow({
         type="button"
         onClick={() => setAssumptionStatus(assumption.id, nextStatus(status))}
         disabled={locked}
-        title={`Status: ${STATUS_LABEL[status]} (click to cycle)`}
-        aria-label={`Assumption status: ${STATUS_LABEL[status]} — click to cycle`}
+        title={`Status: ${STATUS_LABEL[status]} (click to cycle to ${STATUS_LABEL[nextStatus(status)]})`}
+        aria-label={`Assumption status: ${STATUS_LABEL[status]}. Press to cycle to ${STATUS_LABEL[nextStatus(status)]}.`}
         className={clsx(
-          'shrink-0 rounded border px-1 py-0 text-[9px] font-bold uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-50',
+          'shrink-0 rounded border px-1 py-0 text-[9px] font-bold uppercase tracking-wide transition focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
           STATUS_CHIP_CLASS[status]
         )}
       >
