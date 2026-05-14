@@ -122,7 +122,7 @@ describe('workspaceSlice', () => {
     const state = useDocumentStore.getState();
     const firstTabId = state.doc.id;
     // Push one history entry on the first tab by adding an entity.
-    state.addEntity({ type: 'cause', title: 'A' });
+    state.addEntity({ type: 'ude', title: 'A' });
     const firstTabPastLen = useDocumentStore.getState().past.length;
     expect(firstTabPastLen).toBeGreaterThan(0);
     // Open a new tab — first tab's past should be archived.
