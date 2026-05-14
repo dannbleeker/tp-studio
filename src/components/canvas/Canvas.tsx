@@ -222,8 +222,15 @@ function CanvasInner() {
           openContextMenu({ kind: 'pane' }, e.clientX, e.clientY);
         }}
         multiSelectionKeyCode="Shift"
-        selectionOnDrag
-        panOnDrag={[1, 2]}
+        // Session 87 UX fix #6 — lock-mode left-click pans the canvas.
+        // Outside lock, left-click drag stays a marquee selection
+        // (`selectionOnDrag`); middle/right drag is always pan. When
+        // locked, marquee selection is meaningless (the user can't
+        // edit anyway) so we hand left-click to the panner instead so
+        // the canvas stays navigable without reaching for a different
+        // mouse button.
+        selectionOnDrag={!locked}
+        panOnDrag={locked ? [0, 1, 2] : [1, 2]}
         nodesDraggable={false}
         nodesConnectable={!locked}
         zoomOnDoubleClick={false}
@@ -232,16 +239,25 @@ function CanvasInner() {
         fitViewOptions={{ padding: 0.4, maxZoom: 1.2 }}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color={GRID_DOT} />
+        {/* Session 87 UX fix #2 — Controls moved bottom-LEFT to sit
+            next to the MiniMap. Previously bottom-center collided
+            with the toast layer (`Toaster.tsx` is `bottom-6 left-1/2`)
+            and split navigation chrome across two corners of the
+            canvas. Dark-mode glyph color bumped to neutral-200 —
+            React Flow's built-in dark adaptation only colors the
+            chrome, not the icons themselves. */}
         <Controls
-          position="bottom-center"
+          position="bottom-left"
           showInteractive={false}
-          className="!rounded-lg !border !border-neutral-200 !bg-white !shadow-sm dark:!border-neutral-800 dark:!bg-neutral-900"
+          className="!rounded-lg !border !border-neutral-200 !bg-white !text-neutral-700 !shadow-sm dark:!border-neutral-800 dark:!bg-neutral-900 dark:!text-neutral-200"
         />
         {showMinimap && (
           <MiniMap
-            // Bottom-LEFT: the right edge is occupied by the Inspector whenever
-            // a user has a selection. Bottom-left keeps the thumbnail visible
-            // through every interaction.
+            // Bottom-LEFT (now sitting above the Controls, per Session
+            // 87 UX fix #2). The Inspector occupies the right edge
+            // whenever the user has a selection; keeping all
+            // navigation chrome on the left edge keeps the thumbnail
+            // and the controls reachable in the same hand motion.
             position="bottom-left"
             pannable
             zoomable
@@ -249,11 +265,23 @@ function CanvasInner() {
             // Hidden on phone-narrow viewports; the controls bar and zoom pct
             // are enough for navigation when there's no room for a thumbnail.
             className="!hidden sm:!block !rounded-lg !border !border-neutral-200 !bg-white/90 !shadow-sm dark:!border-neutral-800 dark:!bg-neutral-900/90"
-            maskColor="rgba(99, 102, 241, 0.08)"
+            // Session 87 UX fix #1 — the viewport rectangle was
+            // effectively invisible at 8% indigo. Bump opacity so the
+            // currently-visible window reads clearly on the thumbnail,
+            // and add a 1.5-px indigo stroke so the rectangle has a
+            // hard edge regardless of background.
+            maskColor="rgba(99, 102, 241, 0.18)"
+            maskStrokeColor="#6366f1"
+            maskStrokeWidth={1.5}
             nodeColor={(n) => {
               if (n.type === 'tpGroup' || n.type === 'tpCollapsedGroup') return '#a5b4fc';
               return '#737373';
             }}
+            // Border on each node thumbnail — without it, neutral-grey
+            // nodes blend into the off-white minimap background. The
+            // 1-px slate stroke gives every node a visible silhouette.
+            nodeStrokeColor="#525252"
+            nodeStrokeWidth={1}
           />
         )}
         <ZoomPercent />

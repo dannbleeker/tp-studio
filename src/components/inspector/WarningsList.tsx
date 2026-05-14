@@ -47,8 +47,11 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
 
   if (warnings.length === 0) {
     return (
-      <div className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-emerald-700 text-xs dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
-        No CLR concerns.
+      <div
+        className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-emerald-700 text-xs dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300"
+        title="Categories of Legitimate Reservation — the TOC framework for auditing causal claims (Goldratt). Three tiers: Clarity, Existence, Sufficiency."
+      >
+        No Categories of Legitimate Reservation concerns.
       </div>
     );
   }
@@ -63,8 +66,16 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-        CLR ({totalOpen} open{totalResolved > 0 ? `, ${totalResolved} resolved` : ''})
+      {/* Spelled out per Dann's Session-87 UX feedback — "CLR" alone is
+          opaque to anyone who hasn't read Goldratt. The `title` tooltip
+          carries the framework one-liner so the long-form heading
+          isn't just decorative. */}
+      <span
+        className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400"
+        title="Categories of Legitimate Reservation — the TOC framework for auditing causal claims (Goldratt). Three tiers: Clarity, Existence, Sufficiency."
+      >
+        Categories of Legitimate Reservation ({totalOpen} open
+        {totalResolved > 0 ? `, ${totalResolved} resolved` : ''})
       </span>
       {TIER_ORDER.map((tier) => {
         const tierWarnings = byTier[tier];

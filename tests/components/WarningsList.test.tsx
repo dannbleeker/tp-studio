@@ -26,7 +26,7 @@ const w = (id: string, ruleId: string, tier: 'clarity' | 'existence' | 'sufficie
 describe('WarningsList', () => {
   it('renders the empty-state when no warnings are present', () => {
     const { getByText } = render(<WarningsList warnings={[]} />);
-    expect(getByText('No CLR concerns.')).toBeTruthy();
+    expect(getByText('No Categories of Legitimate Reservation concerns.')).toBeTruthy();
   });
 
   it('renders tier section headers in canonical order', () => {
@@ -60,6 +60,8 @@ describe('WarningsList', () => {
       { ...w('2', 'tautology', 'clarity'), resolved: true },
     ];
     const { container } = render(<WarningsList warnings={warnings} />);
-    expect(container.textContent).toMatch(/CLR \(1 open, 1 resolved\)/);
+    expect(container.textContent).toMatch(
+      /Categories of Legitimate Reservation \(1 open, 1 resolved\)/
+    );
   });
 });

@@ -11,13 +11,23 @@ export const toolCommands: Command[] = [
       const warnings = validate(s.doc);
       const open = warnings.filter((w) => !w.resolved).length;
       const resolved = warnings.filter((w) => w.resolved).length;
+      // Session 87 UX fix #4 — spell out "Categories of Legitimate
+      // Reservation" once in the toast so a fresh user can see what
+      // the framework actually stands for. Subsequent references in
+      // the same toast use the short form to keep the toast scannable.
       if (warnings.length === 0) {
-        s.showToast('success', 'No CLR concerns to surface.');
+        s.showToast('success', 'No Categories of Legitimate Reservation concerns to surface.');
       } else if (open === 0) {
-        s.showToast('success', `All ${resolved} CLR concern${resolved === 1 ? '' : 's'} resolved.`);
+        s.showToast(
+          'success',
+          `All ${resolved} concern${resolved === 1 ? '' : 's'} resolved (Categories of Legitimate Reservation).`
+        );
       } else {
         const suffix = resolved > 0 ? `, ${resolved} resolved` : '';
-        s.showToast('info', `${open} open CLR concern${open === 1 ? '' : 's'}${suffix}.`);
+        s.showToast(
+          'info',
+          `${open} open concern${open === 1 ? '' : 's'}${suffix} (Categories of Legitimate Reservation).`
+        );
       }
     },
   },
