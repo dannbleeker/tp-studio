@@ -59,6 +59,11 @@ export interface PdfExportOptions {
   footer?: string;
 }
 
+/** Type predicate: narrows `Element` to `SVGSVGElement` when the tag is `svg`.
+ *  Avoids the `as unknown as SVGSVGElement` cast at the DOMParser boundary. */
+const isSvgRoot = (el: Element | null): el is SVGSVGElement =>
+  el !== null && el.tagName.toLowerCase() === 'svg';
+
 // Page geometry — millimetres, jspdf's default unit.
 const PAGE_DIMENSIONS_MM: Record<PdfPageSize, { width: number; height: number }> = {
   a4: { width: 210, height: 297 },
@@ -103,8 +108,13 @@ const captureCanvasSvg = async (nodes: Node[]): Promise<SVGSVGElement | null> =>
   });
   const svgMarkup = decodeSvgDataUrl(dataUrl);
   const parsed = new DOMParser().parseFromString(svgMarkup, 'image/svg+xml');
-  const svg = parsed.documentElement as unknown as SVGSVGElement;
-  if (!svg || svg.tagName.toLowerCase() !== 'svg') return null;
+  // DOMParser yields `Element` (or `HTMLElement` for HTML payloads);
+  // when fed `image/svg+xml` the root is an SVGSVGElement, but the
+  // type system can't express that without a runtime check. Type
+  // predicate keeps the narrowing honest — no `as unknown as` cast.
+  const root = parsed.documentElement;
+  if (!isSvgRoot(root)) return null;
+  const svg = root;
   // svg2pdf needs the element to be in the document so it can resolve
   // computed styles / namespaces. We attach it off-screen and the
   // caller is responsible for cleanup.

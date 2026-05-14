@@ -34,7 +34,7 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 > **Iteration-2 Bundles 11 + 13 complete (audited + sealed Session 61).** Bundle 11 (Groups advanced) had all five FL-GR items shipped logically; Session 61 added the missing UI surface for nesting (Group inspector "Nest into parent group" picker). Bundle 13 (Polish & Preferences) closed out with the FL-TO3 default-direction preference and FL-TO1's four named dark theme variants (Rust / Coal / Navy / Ayu). **All approved Iteration-2 bundles (1, 2, 3, 5, 6, 11, 13) are now complete.**
 
-> **Tier-4 versioning complete (Sessions 41 + 62).** H1 revision history (Session 41), plus H2 visual diff overlay, H4 side-by-side dialog, and H3 named branches (all Session 62) deliver the full revisioning surface. H5 (confidence-weighted what-if) remains parked behind the C bucket.
+> **Tier-4 versioning complete (Sessions 41 + 62).** H1 revision history (Session 41), plus H2 visual diff overlay, H4 side-by-side dialog, and H3 named branches (all Session 62) deliver the full revisioning surface. H5 (confidence-weighted what-if) → moved to won't-build in Session 84 (Bucket C was dropped; H5 has no signal to scale).
 
 > **LA5 complete (Session 63).** Per-entity pinned positions now work on every diagram type via the existing `Entity.position` field — no schema change. Drag-to-pin gesture, pin indicator on auto-layout diagrams, per-entity Unpin in the context menu, and a Reset-layout palette command to clear everything.
 
@@ -176,7 +176,7 @@ The user picked buckets **A / F / H** out of the 16-bucket catalogue. After Tier
 - ~~**H2 Visual diff.**~~ ✅ **Done (Session 62).** Compare-mode banner + per-entity ring tint (emerald=added, amber=changed) overlaid on the live canvas. `useCompareDiff` threads the diff through `useGraphView → useGraphEmission → useGraphNodeEmission`. Esc exits.
 - ~~**H3 Named branches.**~~ ✅ **Done (Session 62, MVP).** Revisions now carry an optional `branchName`; `parentRevisionId` wired on restore + branch. RevisionPanel groups by branch with sticky headers. "Branch from here" action prompts for a name. Subsequent snapshots after a restore still land in Main unless explicitly branched — the full multi-doc workspace upgrade is parked.
 
-H5 ("confidence-weighted what-if") is parked because it depends on C1 (per-entity confidence) and C2 (per-edge weight). The user excluded bucket C from this iteration; if confidence ever comes back, H5 unblocks.
+H5 ("confidence-weighted what-if") is **won't-build** as of Session 84 — see the "Brief items intentionally out of scope" section. Originally parked behind Bucket C (C1 per-entity confidence + C2 per-edge weight); Bucket C was excluded by user direction and the confidence field was removed from the schema in Session 71. With no signal to scale, H5 has nothing to compute on.
 
 The [Flying Logic feature catalog](#flying-logic-feature-catalog-fl-) below organizes
 candidate features into 13 named bundles with stable `FL-*` IDs so we can say
@@ -226,6 +226,7 @@ These come straight from the brief's "Out of scope — do not build" list:
 - Mobile-first design (responsive down to 1024 px is enough)
 - Print stylesheets
 - i18n (English only)
+- **H5 confidence-weighted what-if** (Session 84). Depended on Bucket C (`Entity.confidence` + `Edge.weight`); Bucket C was excluded by user direction in Iteration 2 and schema-confidence was dropped in Session 71. With no signal to scale, H5 has nothing to compute on. Dann explicitly moved it out of "parked" and into "won't build" in Session 84 — close the door, not just leave it on the table.
 
 When and if any of these enters scope, the domain layer should be able to absorb most of the additional concepts without breaking. The data model is wide enough.
 

@@ -17,10 +17,10 @@ type TpEntityType =
   | 'note';
 
 interface TpTestHook {
-  store: {
-    getState: () => unknown;
-    setState: (partial: unknown) => void;
-  };
+  // No `store` field — Session 84 audit dropped it as dead weight (no
+  // spec used the escape hatch). Each spec calls only the typed
+  // methods below; add a new method here when an existing spec needs
+  // one rather than re-introducing the generic escape.
   seed: (opts: {
     type?: TpEntityType;
     titles: string[];

@@ -25,8 +25,13 @@ import { useDocumentStore } from '@/store';
 type EntityType = Parameters<ReturnType<typeof useDocumentStore.getState>['addEntity']>[0]['type'];
 
 export interface TpTestHook {
-  /** Live zustand store; tests can call any action via `getState().X`. */
-  store: typeof useDocumentStore;
+  // Note: previously this interface also exposed the live `useDocumentStore`
+  // as a `store` field for tests that needed arbitrary actions. Session 84
+  // optimization-pass audit found no caller across the 5 specs in `e2e/` —
+  // every test went through `seed` / `connect` / `confirmAndDeleteEntity`
+  // instead. Dropped to shrink the surface; if a future test needs a new
+  // action, add it as a typed method on this interface (not a generic
+  // store escape hatch).
   /**
    * Reset the store + add N entities of the given type. Returns each
    * created entity's id so tests can reference them in subsequent
@@ -72,7 +77,6 @@ export const maybeInstallTestHook = (): void => {
   const params = new URLSearchParams(window.location.search);
   if (params.get('test') !== '1') return;
   const hook: TpTestHook = {
-    store: useDocumentStore,
     seed: ({ type = 'effect', titles, clear = true }) => {
       if (clear) {
         try {
@@ -101,6 +105,9 @@ export const maybeInstallTestHook = (): void => {
     },
     confirmAndDeleteEntity,
   };
-  // biome-ignore lint/suspicious/noExplicitAny: deliberate window-surface escape hatch for Playwright; the TpTestHook contract documents the shape and the opt-in URL flag keeps it out of normal users' way.
-  (window as any).__TP_TEST__ = hook;
+  // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an
+  // optional `TpTestHook` — no `as any` cast needed. The opt-in URL
+  // flag (?test=1) is what keeps the property out of normal users'
+  // way; the type lets src-side reads narrow it correctly.
+  window.__TP_TEST__ = hook;
 };
