@@ -83,8 +83,8 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 Captured here so a future session can pick them up without re-deriving scope:
 
 - ~~**LA5 — generalize manual positioning to all diagrams.**~~ ✅ **Done (Session 63).** Reused the existing `Entity.position` field as the pin signal — no schema change. `useGraphPositions` overlays pinned positions on top of dagre's output; `useGraphMutations` drops the strategy gate so drag-to-pin works everywhere. Visual indicator (pin glyph) on auto-layout diagrams; right-click → Unpin per entity; Palette → Reset layout unpins all.
-- **B7 — User-Defined Attributes per entity / edge.** Custom name/value pairs (String/Int/Real/Boolean) attached to any entity. Explicitly excluded from Iteration 2 (PRD section 1). Domain layer can absorb a `Record<string, AttrValue>` slot on Entity; Inspector grows a key/value editor. Pair naturally with B10 custom domains.
-- **B10 — Custom entity classes (define your own).** Tied to B7. Lets a user say "this domain has Cause / Effect / Evidence / Belief" with their own colours and icons. Bigger structural change to the type system.
+- ~~**B7 — User-Defined Attributes per entity / edge.**~~ ✅ **Done (Session 70).** `Entity.attributes?: Record<string, AttrValue>` (string/int/real/bool tagged-union); key/value editor in the EntityInspector below the warnings list. Session 71 added the symmetric `Edge.attributes`. See Bundle 7 + the Session 70/71 CHANGELOG entries.
+- ~~**B10 — Custom entity classes (define your own).**~~ ✅ **Done (Session 70).** `TPDocument.customEntityClasses?: Record<string, CustomEntityClass>` — per-doc user-defined types with custom label/color/`supersetOf`; manager UI in DocumentInspector; palette extension across EntityInspector / MultiInspector / ContextMenu; doc-aware `resolveEntityTypeMeta` lookup. Session 71 added per-class icon picker. See Bundle 7 + the Session 70/71 CHANGELOG entries.
 - ~~**N3 — Mermaid syntax IMPORT.**~~ ✅ **Done (Session 64).** Parser handles frontmatter title + `graph BT/TB/LR/RL`, bracketed nodes with `<br/>` + `&quot;` decoding, plain `-->` + thick `==>` (AND-grouped) edges, inline labels, `class id type_foo` type assignments. Subgraph blocks tolerated (contents parsed; grouping dropped). Round-trips cleanly with the Block-D export. Palette → "Import from Mermaid diagram…".
 - ~~**N5 — VGL declarative format export.**~~ ✅ **Done (Session 64).** VGL-flavored declarative format with `entity { … }` and `edge a -> b` blocks, plus `edge_and target:T { sources… }` for AND groups. Written as a `.vgl` file. No companion importer yet (one-way until usage warrants it). Palette → "Export as VGL (declarative)".
 
@@ -247,24 +247,29 @@ Shipped. The V2 wrapper's "EC CHROME" label row is gone; `ecChromeCollapsed` def
 
 Was the Session 87 hotfix. Shipped — example EC now has correct `ecSlot` bindings, necessity edges, and D↔D′ mutex edge. Stale stale-comment cleanup per memory rule.
 
-## UI tidy batch (Session 87 review — 14 quick wins)
+## ~~UI tidy batch (Session 87 review — 14 quick wins)~~ Mostly done (Session 87 — 12 of 14)
 
-Bundled from both UI reviews (static + visual). Each is S-effort, no design ambiguity; ship together as one "UI tidy" commit. Numbered to match the source docs (S## = static review item, V# = visual review item).
+Session 87 commit `8898128` shipped 12 of the original 14 items: S2, S3, S4, S5, S6, S7, S8, V1, V3, V4, V6, V10. Two remain open:
 
-1. **(S1) Browse-Lock icon** — pick one icon and toggle via the color variant, not via icon swap (today's `Lock` ↔ `Unlock` swap fights the state-color swap). Also confirmed visually in V7.
-2. **(S2) Print dialog `{pageNumber}` / `{pageCount}`** — currently listed in help but resolve to empty; either drop them or annotate "(filled by browser)".
-3. **(S3) EmptyHint** — add palette + templates entry paths alongside the existing double-click hint.
-4. **(S4) CommandPalette section headers** — drop `aria-hidden` so screen readers announce category transitions.
-5. **(S5) Creation wizard toggles** — collapse two Settings toggles into one "Show creation wizards" with optional per-diagram override.
-6. **(S6) Animation speed "Default" label** — rename to "Normal" or add a "(200 ms)" hint.
-7. **(S7) PrintPreviewDialog footer-template help row** — list merge fields above the input, same as the Header field.
-8. **(S8) Browse Lock toast wording** — explain where to disable it ("Settings → Behavior or the top-bar lock icon").
-9. **(S9) Toaster vs. React Flow Controls collision** — bump Toaster to `bottom-20` or move Controls.
-10. **(V1) Drop "(example)" suffix from example doc titles** — verbose; the diagram-type badge already says the type. Applies to every `src/domain/examples/*.ts` title.
-11. **(V3) Fit View on example load** — examples use canonical seed coordinates that overflow narrower viewports; auto-fitting after `setDocument(buildExampleX())` keeps everything in view.
-12. **(V4) Entity-type label legibility** — at default Fit View zoom on busy diagrams, the uppercase type label (`EFFECT`, `GOAL`, etc.) is ~6 px tall. Bump font-size or letter-spacing.
-13. **(V6) Annotation appendix in a11y tree** — `<aside>` is `display: visible` when not printing; screen readers can hit it unexpectedly. Add `aria-hidden="true"` outside of `body.print-include-appendix` mode.
-14. **(V10) Verify TopBar at 480 px (`xs:` breakpoint)** — static review covered ≥640 px; the new `xs` breakpoint added Session 83 deserves a check.
+- **(S1) Browse-Lock icon** — pick one icon and toggle via the color variant, not via icon swap (today's `Lock` ↔ `Unlock` swap fights the state-color swap). Also confirmed visually in V7. **Open.**
+- **(S9) Toaster vs. React Flow Controls collision** — bump Toaster to `bottom-20` or move Controls. **Open.**
+
+Originals (kept for reference):
+
+1. ~~(S1) Browse-Lock icon~~ — see above; **open**.
+2. ~~(S2) Print dialog `{pageNumber}` / `{pageCount}`~~ ✅ Shipped Session 87 — both placeholders dropped from the resolver since browsers (not app JS) control running headers.
+3. ~~(S3) EmptyHint~~ ✅ Shipped Session 87 — palette + templates entry paths added alongside the double-click hint.
+4. ~~(S4) CommandPalette section headers~~ ✅ Shipped Session 87 — `aria-hidden` swapped for `role="presentation"`.
+5. ~~(S5) Creation wizard toggles~~ ✅ Shipped Session 87 — Settings → Behavior groups the two flags under one "Creation wizards" sub-heading.
+6. ~~(S6) Animation speed "Default" label~~ ✅ Shipped Session 87 — renamed to "Normal" with "1× baseline" hint.
+7. ~~(S7) PrintPreviewDialog footer-template help row~~ ✅ Shipped Session 87 — merge-fields row mirrors the Header field.
+8. ~~(S8) Browse Lock toast wording~~ ✅ Shipped Session 87 — now points the user at Settings → Behavior / top-bar lock icon.
+9. ~~(S9) Toaster vs. React Flow Controls collision~~ — see above; **open**.
+10. ~~(V1) Drop "(example)" suffix from example doc titles~~ ✅ Shipped Session 87 — all 8 example titles trimmed.
+11. ~~(V3) Fit View on example load~~ ✅ Shipped Session 87 — four load paths auto-fit after `setDocument`.
+12. ~~(V4) Entity-type label legibility~~ ✅ Shipped Session 87 — bumped font-size + letter-spacing.
+13. ~~(V6) Annotation appendix in a11y tree~~ ✅ Shipped Session 87 — `aria-hidden="true"` outside print-include-appendix mode.
+14. ~~(V10) Verify TopBar at 480 px (`xs:` breakpoint)~~ ✅ Verified Session 87 — clean at `xs:`.
 
 ## UI polish queue (Session 87 review — 13 individual fixes)
 
@@ -285,11 +290,11 @@ S–M effort, low ambiguity. Pick what aligns with current work. **Session 88 sh
 
 ## UI bigger asks (Session 87 review — 7 items needing design conversation)
 
-M+ effort, may need a Dann decision before picking up:
+M+ effort, may need a Dann decision before picking up. **Session 87 shipped #24 (StatusStrip) + #25 (Settings tabs); 5 remain open.**
 
 - **Esc handling consistency** across modal/panel layers (item #23). Most cross-cutting; doing it well unblocks others.
-- **Global status indicator** (item #24) — single bar showing lock / hoist / history / wizard / search state.
-- **Settings dialog → tabs** (item #25) — inevitable as the dialog grows.
+- ~~**Global status indicator** (item #24)~~ ✅ **Done (Session 87).** New `StatusStrip` component (data-component `status-strip`) shows a chip per active secondary mode (lock / hoist / history / wizard / search / compare). Hidden when no secondary state is active.
+- ~~**Settings dialog → tabs** (item #25)~~ ✅ **Done (Session 87).** SettingsDialog split into tabs; the longest section now caps at ~7 controls. Session 88 audit-clean note confirmed anchor-nav inside a single tab isn't warranted yet.
 - **Visible Undo affordance** (item #26).
 - **Alt-drag-to-splice discoverability** (item #27).
 - **Marquee selection discoverability** (item #28).
@@ -299,13 +304,13 @@ EC-specific findings (items #30-34) are parked until the EC PPT comparison agent
 
 ## EC PPT comparison
 
-Gaps surfaced by comparing TP Studio's EC against the canonical BESTSELLER PowerPoint workshop template (`TEMPLATE evaporating cloud.pptx`). Each item is a small, focused upgrade; ranked by leverage. **Session 87 shipped 6 of 7; #5 deferred for separate scoping.**
+Gaps surfaced by comparing TP Studio's EC against the canonical BESTSELLER PowerPoint workshop template (`TEMPLATE evaporating cloud.pptx`). Each item is a small, focused upgrade; ranked by leverage. **All 7 items shipped (Session 87 + Session 88; #5 closed by commit `93c6366`).**
 
 - ~~**Numbered reading-instruction chips on the EC canvas.**~~ ✅ **Done (Session 87).** New `src/components/canvas/ECReadingInstructions.tsx` — dismissible top-of-canvas strip surfacing the "1) In order to / 2) we must / 3) because" meta-reading. EC-only; session-scoped dismissal flag `ecReadingInstructionsDismissed`. Stacked above the existing VerbalisationStrip.
 - ~~**Per-slot guiding questions visible after the wizard closes.**~~ ✅ **Done (Session 87).** New `src/domain/ecGuiding.ts` exposes `EC_SLOT_GUIDING_QUESTIONS` keyed by ECSlot. EntityInspector re-surfaces the slot-specific question whenever an EC slot entity is selected.
 - ~~**Reverse-direction (D-first) elicitation framing.**~~ ✅ **Done (Session 87).** CreationWizardPanel grew a per-wizard toggle between A-first (default) and D-first ("from the conflict") walks. The slot order flips via `EC_SLOTS_BY_ORDER`; existing wizard tests still pass, new tests cover both walks.
 - ~~**"Me vs. the other side" two-party verbal framing.**~~ ✅ **Done (Session 87).** Schema v7 → v8: new optional `TPDocument.ecVerbalStyle: 'neutral' | 'twoSided'`. `verbaliseEC` swaps "we must" → "they want to" / "I want to" on the D and D′ sides in twoSided mode. Toggle lives in DocumentInspector under the EC section. `setECVerbalStyle` store action with `doc-ec-verbal` coalescing.
-- **One-page workshop-handout EC export.** The PPT is a 16:9 fixed-layout page suited for printing — boxes, arrows, assumption fan-outs, guiding-question reference, all on one sheet. TP Studio's existing PDF / print exports faithfully render the interactive canvas but not a print-optimized one-page workshop sheet. Two implementation paths: (a) a new "EC Workshop Sheet" PDF layout that lays out the doc into PPT-style coordinates with the reference table baked in, or (b) generate a `.pptx` directly via a library like `pptxgenjs` so the user can hand-edit further in PowerPoint. Path (b) adds bundle weight but produces a more familiar deliverable. **Effort: M.** Biggest single-feature ask of the comparison — worth a separate scoping conversation before picking up. *(Deliberately deferred in Session 87.)*
+- ~~**One-page workshop-handout EC export.**~~ ✅ **Done (commit `93c6366`).** Shipped as a new "EC Workshop Sheet" PDF export — path (a) from the original two implementation paths. Lays out the EC doc into PPT-style coordinates with the guiding-question reference baked in. One sheet, vector PDF, print-optimized.
 - ~~**Assumption bubbles drawn on the canvas, not buried in the inspector.**~~ ✅ **Done (Session 87)** *(badge only; mid-edge previews remain future work)*. TPEdge's existing "A" pill is now sourced from BOTH legacy `Edge.assumptionIds` and the v7 `doc.assumptions` map. The pill is now a real clickable button — selects the edge AND jumps the EC inspector to its Inspector tab so the AssumptionWell is visible without a second click.
 - ~~**Injection-summary visible on the EC canvas, not buried in the inspector.**~~ ✅ **Done (Session 87).** New `src/components/canvas/ECInjectionChip.tsx` — small "Injections (N)" chip anchored top-right of the EC canvas (zero-state included). Clicks set `ecInspectorTab = 'injections'` via the new `requestECInjectionsView` store action; the EC inspector's tab state is now in the store so canvas chrome can request a tab from outside the Inspector.
 
@@ -454,15 +459,15 @@ ED1 / ED3 / ED4 shipped Session 73 on top of the generalized junctor infrastruct
 | ~~`FL-ED6`~~ | ✅ **Back edges** (shipped Session 55 — `Edge.isBackEdge`) |
 | ~~`FL-ED8`~~ | ✅ **Edge reversal** (shipped Session 19 — `reverseEdge` action) |
 
-### Bundle 9 — Evaporating Cloud (second TOC tree)
-Highest-leverage brief-deferred TOC feature. **Large.**
+### Bundle 9 — Evaporating Cloud (second TOC tree) ✅ Complete (Session 26 + Session 77 v7 schema upgrade)
+The full EC tree shipped Session 26 as Tier-2 item A1; Session 77's v7 schema added first-class `Assumption` records, explicit `Edge.kind: 'necessity'` discrimination, and `Entity.ecSlot` bindings. Backlog table hadn't been ✅-marked.
 
 | ID | Feature |
 | --- | --- |
-| `FL-DT1` | **Evaporating Cloud** diagram type |
-| `FL-ET1` | **Goal** entity type |
-| `FL-ET2` | **Necessary Condition** entity type |
-| `FL-ED2` | **Necessity edges** (in addition to sufficiency) |
+| ~~`FL-DT1`~~ | ✅ **Evaporating Cloud** diagram type (Session 26 — `diagramType: 'ec'`, hand-positioned 5-box layout) |
+| ~~`FL-ET1`~~ | ✅ **Goal** entity type (Session 26 — `'goal'` anchors the common objective; reused in Goal Tree) |
+| ~~`FL-ET2`~~ | ✅ **Necessary Condition** entity type (Session 26 — used as `'need'` in EC; Goal Tree adopted as `'necessaryCondition'`) |
+| ~~`FL-ED2`~~ | ✅ **Necessity edges** (Session 77 — `Edge.kind: 'sufficiency' \| 'necessity'` discrimination in v7 schema) |
 
 ### Bundle 10 — Other TOC Tree Types ✅ Complete (closed Session 75)
 DT2 + DT3 shipped earlier (Sessions 20 + 21); DT4 + DT5 shipped Session 75 as thin shells over the existing entity/edge model.
@@ -484,15 +489,15 @@ DT2 + DT3 shipped earlier (Sessions 20 + 21); DT4 + DT5 shipped Session 75 as th
 | ~~`FL-GR4`~~ | ✅ Hoist into a group (action + breadcrumb + inspector button) |
 | ~~`FL-GR5`~~ | ✅ Promote children when a group is deleted (`deleteGroup` flatmap path) |
 
-### Bundle 12 — Multi-document & Sharing (partial)
-EX9 + CO1 shipped Session 74; EX8 + CO2 remain.
+### Bundle 12 — Multi-document & Sharing ✅ Resolved (EX9 + CO1 shipped Session 74; EX8 + CO2 cancelled Session 91)
+EX9 + CO1 shipped Session 74; EX8 + CO2 explored on a preview branch in Session 91 and **cancelled by Dann** before merge. The branch is gone and not coming back — TP Studio stays single-document.
 
 | ID | Feature |
 | --- | --- |
-| `FL-EX8` | **Multi-document tabs** in one window — open. Large refactor: single-doc store → `docs: Record<DocId, TPDocument>` + `activeDocId`. |
+| `FL-EX8` | ❌ **Won't build (Session 91).** Multi-document tabs explored on `feature/multi-doc-workspace` (v0 with in-memory tabs, working tab bar, `New tab…` palette command, per-tab undo stacks). After previewing the v0 design Dann decided not to pursue. Branch deleted, PR closed. Re-opening would be a fresh design exercise. |
 | ~~`FL-EX9`~~ | ✅ **Auto-recovery on crash** (Session 74 — backup slot + 3-level fallback chain + recovery toast on boot) |
 | ~~`FL-CO1`~~ | ✅ **Reader Mode share-link** (Session 74 — gzip-base64 in `#!share=` URL fragment; auto-engages Browse Lock on the receiver side) |
-| `FL-CO2` | **Cross-document hyperlinks** — open. Depends on FL-EX8. |
+| `FL-CO2` | ❌ **Won't build (Session 91).** Cross-document hyperlinks depended on FL-EX8; with FL-EX8 cancelled this has no home. |
 
 ### Bundle 13 — Polish & Preferences ✅ Complete (audited + sealed Session 61)
 
