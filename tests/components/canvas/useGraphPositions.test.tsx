@@ -85,9 +85,20 @@ describe('useGraphPositions', () => {
     // already warmed the cache, the effect resolves in a single
     // microtask; if not, `waitFor` polls until it does. Either way, the
     // hook must eventually return both entity positions.
-    await waitFor(() => {
-      expect(Object.keys(result.current).sort()).toEqual([a.id, b.id].sort());
-    });
+    //
+    // Timeout bumped from the @testing-library default (1000 ms) to 5000
+    // ms. The lazy `import('@/domain/layout')` legitimately takes >1 s on
+    // a cold node-module cache when the full test suite is racing this
+    // file against ~130 others. Without the bump, the assertion would
+    // intermittently fire before the import resolved — that was the
+    // "passes in isolation, fails in the full suite" flake Session 89
+    // flagged for follow-up.
+    await waitFor(
+      () => {
+        expect(Object.keys(result.current).sort()).toEqual([a.id, b.id].sort());
+      },
+      { timeout: 5000 }
+    );
     expect(typeof result.current[a.id]!.x).toBe('number');
     expect(typeof result.current[b.id]!.y).toBe('number');
   });
