@@ -154,6 +154,10 @@ export function SettingsDialog() {
     setCausalityLabel,
     setDefaultLayoutDirection,
     setLayoutConfig,
+    showGoalTreeWizard,
+    showECWizard,
+    setShowGoalTreeWizard,
+    setShowECWizard,
   } = useDocumentStore(
     useShallow((s) => ({
       theme: s.theme,
@@ -183,6 +187,10 @@ export function SettingsDialog() {
       setCausalityLabel: s.setCausalityLabel,
       setDefaultLayoutDirection: s.setDefaultLayoutDirection,
       setLayoutConfig: s.setLayoutConfig,
+      showGoalTreeWizard: s.showGoalTreeWizard,
+      showECWizard: s.showECWizard,
+      setShowGoalTreeWizard: s.setShowGoalTreeWizard,
+      setShowECWizard: s.setShowECWizard,
     }))
   );
 
@@ -237,6 +245,18 @@ export function SettingsDialog() {
             hint="Read-only mode — disables editing across the canvas, inspector, and shortcuts"
             checked={browseLocked}
             onChange={setBrowseLocked}
+          />
+          <Toggle
+            label="Show Goal Tree creation wizard"
+            hint="Open the guided 5-step panel when you create a new Goal Tree. Off = empty canvas, you build manually."
+            checked={showGoalTreeWizard}
+            onChange={setShowGoalTreeWizard}
+          />
+          <Toggle
+            label="Show Evaporating Cloud creation wizard"
+            hint="Open the guided 5-step panel when you create a new EC. Off = the 5 pre-seeded boxes appear ready to edit."
+            checked={showECWizard}
+            onChange={setShowECWizard}
           />
         </Section>
 

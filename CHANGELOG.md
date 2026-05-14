@@ -2,6 +2,87 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 78 — Goal Tree + EC creation wizards (dismissible "Get started" panel)
+
+Builds on Session 77's Goal Tree + EC plumbing. Adds the brief's guided creation flow (§5 + §6) as a **dismissible** panel rather than a blocking modal — first-time users get the canonical Goal → CSFs → NCs and A → B/C → D/D′ walkthrough; returning users can skip per-doc or silence the wizard entirely.
+
+End state: tsc clean, Biome clean, **891 tests passing** (was 877; +14 in `tests/store/creationWizard.test.ts`), build green, bundle within ceiling.
+
+### `CreationWizardPanel` component
+
+Floating top-left panel that lives over the canvas (not a blocking modal). 5 steps per diagram:
+
+- **Goal Tree**: Goal → CSF 1 → CSF 2 → CSF 3 → first NC. Each `Next ›` creates the entity, connects it with a `necessity` edge to its parent (CSFs → Goal, first NC → first CSF), and advances the panel.
+- **EC**: A → B → C → D → D′. Each `Next ›` fills the corresponding `ecSlot` entity's title via `updateEntity` (the 5 boxes are already pre-seeded since Session 47).
+
+Controls:
+- `Next ›` / `Enter` — commits the draft and advances.
+- `Skip step` — advances without committing.
+- `Minimise` (chevron-up) — collapses to a small "Continue setup ›" pill anchored top-left.
+- `Dismiss` (X) or `Esc` — closes the panel this session; preference stays untouched.
+- **"Don't show this on new {Goal Trees|Evaporating Clouds}"** checkbox — flips the persisted preference so future `New X` commands skip the wizard.
+
+### Preferences
+
+Two new persisted booleans in `StoredPrefs`, both default `true`:
+
+- `showGoalTreeWizard`
+- `showECWizard`
+
+Wired through `preferencesSlice` (setters, defaults, persistence) and `prefs.ts` (deserialisation with sensible defaults for older saved-pref blobs).
+
+### UI state
+
+New `DialogsSlice.creationWizard: { kind, step, minimised } | null`. Four new actions:
+
+- `openCreationWizard(kind)` — resets to step 0.
+- `advanceCreationWizardStep()` — moves forward by 1.
+- `closeCreationWizard()` — clears the panel.
+- `toggleCreationWizardMinimised()` — collapse / expand.
+
+### `newDocument` integration
+
+`docMetaSlice.newDocument(diagramType)` now consults the preference and either:
+
+- Opens the wizard at step 0 (`goalTree` + `showGoalTreeWizard`, or `ec` + `showECWizard`).
+- Closes any previously-open wizard (e.g. user creates a CRT after starting an EC wizard).
+
+### Settings toggle
+
+Settings → Behavior gained two checkboxes:
+
+- **Show Goal Tree creation wizard** — toggles `showGoalTreeWizard`.
+- **Show Evaporating Cloud creation wizard** — toggles `showECWizard`.
+
+### Palette command
+
+New `Reopen creation wizard` in the Review group. Works only on Goal Tree + EC docs; toasts a friendly hint on other diagram types.
+
+### Tests
+
+`tests/store/creationWizard.test.ts` (14 tests):
+- newDocument opens the wizard per preference (goalTree, ec, off, non-wizardable).
+- Slice actions (advance, minimise, close, re-open resets).
+- Preference toggles silence + re-enable the wizard.
+- Cross-kind switch closes a stale wizard.
+
+### Verification
+
+- `tsc --noEmit` → exit 0
+- `biome check` → 326 files, no errors
+- `vitest run` → **109 files, 891 tests passing** (up from 877)
+- `vite build` → 9.83 s
+- `check:bundle-size` → all chunks within ceiling
+
+### Why "panel + Skip + remembered preference" instead of a blocking modal
+
+A modal-only wizard creates two problems:
+
+1. **Repeated-use friction.** A practitioner spinning up their 50th Goal Tree doesn't want a 5-step wall blocking the canvas every time.
+2. **Returning-user surprise.** The brief positions Goal Tree as the friendly first diagram for non-Jonahs, but it's also the kind of diagram a TOCICO Jonah cranks out routinely.
+
+Linear / Notion / Tldraw all converged on the same pattern for their first-run hints: present but never blocking; dismissible per-instance; silenceable in settings; reopenable on demand. This session adopts that pattern exactly.
+
 ## Session 77 — Brief v3 alignment: Assumption records, EC workbench, Goal Tree, verbalisation, HTML viewer, print pipeline
 
 The big v3-brief alignment session. End state: tsc clean, Biome clean, **877 tests passing** (was 863; +14 across 2 new test files), build green, bundle within ceiling. Schema bumped v6 → v7 with a non-trivial migration; the entity-type renaming proposed by the brief was deliberately NOT applied (the user said "keep what we have").

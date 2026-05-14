@@ -113,4 +113,9 @@ export type StoredPrefs = {
   causalityLabel?: CausalityLabel;
   /** FL-TO3: app-wide default layout direction for new documents. */
   defaultLayoutDirection?: DefaultLayoutDirection;
+  /** Session 78 — per-diagram creation-wizard preferences. Default
+   *  true for both; the user dismisses via the panel checkbox or
+   *  Settings → Behavior. */
+  showGoalTreeWizard?: boolean;
+  showECWizard?: boolean;
 };

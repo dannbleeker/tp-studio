@@ -163,6 +163,18 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         future: [],
       });
       get().reloadRevisionsForActiveDoc();
+      // Session 78: open the creation wizard panel when the diagram
+      // type has one AND the user hasn't turned it off. Goal Tree +
+      // EC are the two that have a wizard today.
+      if (diagramType === 'goalTree' && get().showGoalTreeWizard) {
+        get().openCreationWizard('goalTree');
+      } else if (diagramType === 'ec' && get().showECWizard) {
+        get().openCreationWizard('ec');
+      } else {
+        // Closing covers the case where a wizard from a previous doc
+        // was open; switching to a non-wizardable diagram clears it.
+        get().closeCreationWizard();
+      }
     },
 
     setTitle: (title) => {

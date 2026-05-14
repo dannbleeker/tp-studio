@@ -22,6 +22,18 @@ export type DialogsSlice = {
   quickCaptureOpen: boolean;
   /** Session 77 / brief §10 — print preview modal. */
   printOpen: boolean;
+  /** Session 78 / brief §5 + §6 — creation-wizard panel for the
+   *  diagram type the user just opened. `null` when closed; carries
+   *  `step` (0-based) and `minimised` so the user can collapse the
+   *  panel without dismissing it entirely. The wizard creates / fills
+   *  entities live as the user types, so dismissal at any step is
+   *  always safe — the canvas state already reflects whatever was
+   *  entered. */
+  creationWizard: null | {
+    kind: 'goalTree' | 'ec';
+    step: number;
+    minimised: boolean;
+  };
   /** H1 — revision-history panel visibility. */
   historyPanelOpen: boolean;
   /** H2 — when set, the canvas is in visual-diff mode and entities/edges
@@ -74,6 +86,16 @@ export type DialogsSlice = {
   openPrintPreview: () => void;
   closePrintPreview: () => void;
 
+  /** Session 78 — creation-wizard panel control. `openCreationWizard`
+   *  resets the panel to step 0 on the given diagram type;
+   *  `advanceCreationWizardStep` moves forward by one; `closeCreationWizard`
+   *  dismisses entirely; `toggleCreationWizardMinimised` collapses /
+   *  re-expands without losing state. */
+  openCreationWizard: (kind: 'goalTree' | 'ec') => void;
+  advanceCreationWizardStep: () => void;
+  closeCreationWizard: () => void;
+  toggleCreationWizardMinimised: () => void;
+
   openHistoryPanel: () => void;
   closeHistoryPanel: () => void;
   toggleHistoryPanel: () => void;
@@ -110,6 +132,7 @@ export type DialogsDataKeys =
   | 'toasts'
   | 'quickCaptureOpen'
   | 'printOpen'
+  | 'creationWizard'
   | 'historyPanelOpen'
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
@@ -125,6 +148,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   toasts: [],
   quickCaptureOpen: false,
   printOpen: false,
+  creationWizard: null,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -141,6 +165,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   toasts: [],
   quickCaptureOpen: false,
   printOpen: false,
+  creationWizard: null,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -183,6 +208,19 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openPrintPreview: () => set({ printOpen: true }),
   closePrintPreview: () => set({ printOpen: false }),
+
+  openCreationWizard: (kind) => set({ creationWizard: { kind, step: 0, minimised: false } }),
+  advanceCreationWizardStep: () => {
+    const cur = get().creationWizard;
+    if (!cur) return;
+    set({ creationWizard: { ...cur, step: cur.step + 1 } });
+  },
+  closeCreationWizard: () => set({ creationWizard: null }),
+  toggleCreationWizardMinimised: () => {
+    const cur = get().creationWizard;
+    if (!cur) return;
+    set({ creationWizard: { ...cur, minimised: !cur.minimised } });
+  },
 
   // History panel and Inspector share the right-edge slot — opening
   // history clears any selection so the Inspector doesn't visually race

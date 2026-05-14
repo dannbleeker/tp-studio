@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
 import { Breadcrumb } from './Breadcrumb';
+import { CreationWizardPanel } from './CreationWizardPanel';
 import { EmptyHint } from './EmptyHint';
 import { FirstEntityTip } from './FirstEntityTip';
 import { JunctorOverlay } from './JunctorOverlay';
@@ -226,6 +227,11 @@ function CanvasInner() {
       <Breadcrumb />
       {isEmpty && <EmptyHint />}
       {!isEmpty && <FirstEntityTip />}
+      {/* Session 78 — Goal Tree / EC creation wizard panel. The
+          component returns null when no wizard is active, so the
+          unconditional mount is safe; renders top-left over the
+          canvas otherwise. */}
+      <CreationWizardPanel />
     </div>
   );
 }

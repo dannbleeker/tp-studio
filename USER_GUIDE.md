@@ -429,6 +429,22 @@ A PRT (Prerequisite Tree) surfaces what's between you and a goal — the obstacl
 - The canvas mechanics are identical to CRT — drag-to-connect, `Tab` for child, right-click for actions. Layout is the same dagre flow; nothing about PRT requires hand-positioning.
 - No PRT-specific CLR rules yet. The CRT-only and FRT-only heuristics simply don't fire on a PRT.
 
+## Creation wizards (Goal Tree + EC)
+
+When you open a new Goal Tree or Evaporating Cloud, a small **"Get started" panel** appears at the top-left of the canvas and walks you through the canonical structure:
+
+- **Goal Tree**: 5 steps — the Goal, then 3 Critical Success Factors, then your first Necessary Condition. Each `Next ›` commits the entity to the canvas (auto-laid-out by dagre) and connects it to its parent with a necessity edge.
+- **Evaporating Cloud**: 5 steps — the shared objective A, then Need B, Need C, Want D, Want D′. Each `Next ›` fills the corresponding pre-seeded slot's title.
+
+The wizard is **never blocking**. You can:
+
+- **Skip step** to advance without filling that prompt.
+- **Minimise** (chevron-up) to collapse the panel to a "Continue setup ›" pill that sits in the same spot — click it to expand again.
+- **Dismiss** (X or Esc) to close the panel for this session; the entities you already created stay where they are.
+- Tick **"Don't show this on new {Goal Trees|Evaporating Clouds}"** to silence the wizard for all future new diagrams of that type. Re-enable in **Settings → Behavior** or via the palette command **Reopen creation wizard** to bring it back for the current doc.
+
+Want to skip straight to the canvas without the wizard? Either click Dismiss once, or turn the toggle off in Settings → Behavior. Both diagram types start with the canonical structure ready to edit — Goal Tree's empty canvas with the entity palette tuned, EC's 5 pre-seeded boxes waiting for titles.
+
 ## Strategy & Tactics Trees
 
 A **Strategy & Tactics (S&T) Tree** is Goldratt's later-work pattern for cascading strategies down into the tactics that implement them, each layer carrying its assumption set. The TP Studio implementation uses the existing TOC entity types as facet carriers — the new diagram type is a thin shell that tunes the palette and provides a method checklist.

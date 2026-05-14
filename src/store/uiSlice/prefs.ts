@@ -91,6 +91,12 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
       raw?.defaultLayoutDirection && VALID_DEFAULT_DIRECTIONS.has(raw.defaultLayoutDirection)
         ? raw.defaultLayoutDirection
         : 'auto',
+    // Session 78 — creation-wizard preferences. Default ON for both
+    // so first-time users get the guided flow; the panel itself
+    // carries a "Don't show this again" checkbox + Settings exposes
+    // the toggles for explicit control.
+    showGoalTreeWizard: raw?.showGoalTreeWizard !== false,
+    showECWizard: raw?.showECWizard !== false,
   };
 };
 

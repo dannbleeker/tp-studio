@@ -39,6 +39,15 @@ export type PreferencesSlice = {
   /** First-run UI tip about Tab / drag / Cmd-K. Not part of `StoredPrefs`
    *  — it's a session flag that resets across `resetStoreForTest`. */
   emptyStateTipDismissed: boolean;
+  /** Session 78 / brief §5 + §6 — show the creation-wizard panel on
+   *  new Goal Tree documents. Default true so first-time users get
+   *  the guided flow; user can flip it off in Settings → Behavior or
+   *  via the "Don't show this again" checkbox on the panel itself. */
+  showGoalTreeWizard: boolean;
+  /** Session 78 — same shape for Evaporating Cloud. Independent of
+   *  the Goal Tree flag so a user can keep the EC wizard on while
+   *  dismissing the Goal Tree one. */
+  showECWizard: boolean;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -55,6 +64,10 @@ export type PreferencesSlice = {
   setCausalityLabel: (label: CausalityLabel) => void;
   setDefaultLayoutDirection: (direction: DefaultLayoutDirection) => void;
   dismissEmptyStateTip: () => void;
+  /** Session 78 — toggle the per-diagram creation-wizard preference.
+   *  Persists to localStorage so the choice survives reloads. */
+  setShowGoalTreeWizard: (show: boolean) => void;
+  setShowECWizard: (show: boolean) => void;
 };
 
 export type PreferencesDataKeys =
@@ -71,7 +84,9 @@ export type PreferencesDataKeys =
   | 'layoutMode'
   | 'causalityLabel'
   | 'defaultLayoutDirection'
-  | 'emptyStateTipDismissed';
+  | 'emptyStateTipDismissed'
+  | 'showGoalTreeWizard'
+  | 'showECWizard';
 
 /**
  * Data-only defaults used by `resetStoreForTest`. The theme + persisted
@@ -93,6 +108,8 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   causalityLabel: 'none',
   defaultLayoutDirection: 'auto',
   emptyStateTipDismissed: false,
+  showGoalTreeWizard: true,
+  showECWizard: true,
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (
@@ -115,6 +132,8 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       layoutMode: s.layoutMode,
       causalityLabel: s.causalityLabel,
       defaultLayoutDirection: s.defaultLayoutDirection,
+      showGoalTreeWizard: s.showGoalTreeWizard,
+      showECWizard: s.showECWizard,
     });
   };
 
@@ -133,6 +152,8 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     causalityLabel: initialPrefs.causalityLabel,
     defaultLayoutDirection: initialPrefs.defaultLayoutDirection,
     emptyStateTipDismissed: false,
+    showGoalTreeWizard: initialPrefs.showGoalTreeWizard,
+    showECWizard: initialPrefs.showECWizard,
 
     setTheme: (theme) => {
       writeTheme(theme);
@@ -194,5 +215,14 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       persistPrefs();
     },
     dismissEmptyStateTip: () => set({ emptyStateTipDismissed: true }),
+
+    setShowGoalTreeWizard: (show) => {
+      set({ showGoalTreeWizard: show });
+      persistPrefs();
+    },
+    setShowECWizard: (show) => {
+      set({ showECWizard: show });
+      persistPrefs();
+    },
   };
 };
