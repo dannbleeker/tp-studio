@@ -3,6 +3,32 @@
 
 import type { Edge, Entity, EntityId, TPDocument } from './types';
 
+/**
+ * Session 85 (#2) — `requireEntity` / `requireEdge` companions to the
+ * existing `getEntity` (line below) and `doc.edges[id]` lookups. Throw
+ * on absence with a useful error rather than letting downstream code
+ * silently NPE or branch through an `if (!entity) return;` block.
+ *
+ * Use when the lookup is a runtime invariant: "the action was just
+ * dispatched with this id; if it's missing, the store is corrupted."
+ * For optional lookups (the entity might legitimately be absent —
+ * navigation, search, render skip), prefer the existing `getEntity`
+ * helper which returns `Entity | undefined`.
+ */
+export const requireEntity = (doc: TPDocument, id: string): Entity => {
+  const entity = doc.entities[id];
+  if (!entity) throw new Error(`requireEntity: no entity with id "${id}" in doc`);
+  return entity;
+};
+
+export const getEdge = (doc: TPDocument, id: string): Edge | undefined => doc.edges[id];
+
+export const requireEdge = (doc: TPDocument, id: string): Edge => {
+  const edge = doc.edges[id];
+  if (!edge) throw new Error(`requireEdge: no edge with id "${id}" in doc`);
+  return edge;
+};
+
 export const incomingEdges = (doc: TPDocument, entityId: string): Edge[] =>
   Object.values(doc.edges).filter((e) => e.targetId === entityId);
 
