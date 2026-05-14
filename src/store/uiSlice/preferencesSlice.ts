@@ -59,6 +59,12 @@ export type PreferencesSlice = {
    *  canvas reclaims ~150 px of vertical chrome; user expands per-
    *  session via a chevron on the strip. Persisted across reloads. */
   verbalisationStripCollapsed: boolean;
+  /** Session 88 (V2) — wraps the EC reading-instructions strip + the
+   *  verbalisation strip in a single collapsible surface. When
+   *  collapsed, both strips drop to one summary line; expanded, both
+   *  render in their normal form. Per-strip dismiss / collapse stays
+   *  available — this is the *outer* layer the user reaches first. */
+  ecChromeCollapsed: boolean;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -85,6 +91,8 @@ export type PreferencesSlice = {
   /** Session 87 — toggle the EC verbalisation-strip collapse flag.
    *  Persisted across reloads. */
   setVerbalisationStripCollapsed: (collapsed: boolean) => void;
+  /** Session 88 (V2) — toggle the combined EC chrome wrapper. */
+  setECChromeCollapsed: (collapsed: boolean) => void;
 };
 
 export type PreferencesDataKeys =
@@ -105,7 +113,8 @@ export type PreferencesDataKeys =
   | 'ecReadingInstructionsDismissed'
   | 'showGoalTreeWizard'
   | 'showECWizard'
-  | 'verbalisationStripCollapsed';
+  | 'verbalisationStripCollapsed'
+  | 'ecChromeCollapsed';
 
 /**
  * Data-only defaults used by `resetStoreForTest`. The theme + persisted
@@ -135,6 +144,11 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   // wraps to 5+ lines on a typical EC. Default collapsed, expand per
   // user intent.
   verbalisationStripCollapsed: true,
+  // Session 88 (V2) — outer chrome defaults to expanded so the user
+  // sees the reading instructions / verbalisation strips on first
+  // load. Once the user collapses the combined surface, that choice
+  // sticks across reloads (persisted via prefs).
+  ecChromeCollapsed: false,
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (
@@ -160,6 +174,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       showGoalTreeWizard: s.showGoalTreeWizard,
       showECWizard: s.showECWizard,
       verbalisationStripCollapsed: s.verbalisationStripCollapsed,
+      ecChromeCollapsed: s.ecChromeCollapsed,
     });
   };
 
@@ -182,6 +197,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     showGoalTreeWizard: initialPrefs.showGoalTreeWizard,
     showECWizard: initialPrefs.showECWizard,
     verbalisationStripCollapsed: initialPrefs.verbalisationStripCollapsed,
+    ecChromeCollapsed: initialPrefs.ecChromeCollapsed,
 
     setTheme: (theme) => {
       writeTheme(theme);
@@ -255,6 +271,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setVerbalisationStripCollapsed: (collapsed) => {
       set({ verbalisationStripCollapsed: collapsed });
+      persistPrefs();
+    },
+    setECChromeCollapsed: (collapsed) => {
+      set({ ecChromeCollapsed: collapsed });
       persistPrefs();
     },
   };

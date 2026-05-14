@@ -12,6 +12,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
 } from '@xyflow/react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
@@ -91,6 +92,11 @@ function CanvasInner() {
   const isEmpty = nodes.length === 0;
   const locked = useDocumentStore((s) => s.browseLocked);
   const showMinimap = useDocumentStore((s) => s.showMinimap);
+  // Session 88 (V2) — combined EC chrome wrapper. One chevron at
+  // the top swaps the surface between expanded (both strips render
+  // normally) and collapsed (a single summary line).
+  const ecChromeCollapsed = useDocumentStore((s) => s.ecChromeCollapsed);
+  const setECChromeCollapsed = useDocumentStore((s) => s.setECChromeCollapsed);
 
   return (
     <div
@@ -304,13 +310,45 @@ function CanvasInner() {
                 the new xs (480 px) breakpoint. At sm+ the canvas is
                 wide enough that the strip's `max-w-3xl` keeps it
                 clear of the top-right toolbar. */}
-            <div className="pointer-events-none absolute top-14 right-0 left-0 z-10 flex flex-col items-stretch gap-2 px-4 sm:top-2">
-              <div className="pointer-events-auto">
-                <ECReadingInstructions />
+            <div className="pointer-events-none absolute top-14 right-0 left-0 z-10 flex flex-col items-stretch gap-1 px-4 sm:top-2">
+              {/* Session 88 (V2) — combined EC chrome wrapper. One
+                  chevron at the top toggles the entire surface; in
+                  collapsed mode the user sees a single summary line
+                  rather than two stacked strips. Per-strip dismiss /
+                  collapse controls still work when expanded. */}
+              <div className="pointer-events-auto mx-auto flex w-full max-w-3xl items-center justify-between gap-2 rounded-md border border-neutral-200 bg-white/90 px-3 py-1 text-[10px] text-neutral-500 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90 dark:text-neutral-400">
+                <span className="select-none font-semibold uppercase tracking-wider">
+                  EC chrome
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setECChromeCollapsed(!ecChromeCollapsed)}
+                  aria-label={
+                    ecChromeCollapsed
+                      ? 'Expand EC reading instructions and verbalisation'
+                      : 'Collapse EC reading instructions and verbalisation'
+                  }
+                  aria-expanded={!ecChromeCollapsed}
+                  className="rounded p-0.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+                  title={ecChromeCollapsed ? 'Expand' : 'Collapse'}
+                >
+                  {ecChromeCollapsed ? (
+                    <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronUp className="h-3 w-3" />
+                  )}
+                </button>
               </div>
-              <div className="pointer-events-auto w-full">
-                <VerbalisationStrip />
-              </div>
+              {!ecChromeCollapsed && (
+                <>
+                  <div className="pointer-events-auto">
+                    <ECReadingInstructions />
+                  </div>
+                  <div className="pointer-events-auto w-full">
+                    <VerbalisationStrip />
+                  </div>
+                </>
+              )}
             </div>
             <div className="pointer-events-none absolute top-14 right-4 z-10 flex justify-end sm:top-2">
               <ECInjectionChip />

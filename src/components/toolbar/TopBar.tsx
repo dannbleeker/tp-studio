@@ -127,7 +127,7 @@ export function TopBar() {
           cue; the select itself is the canonical control. */}
       {showLayoutToggle && (
         <label
-          className="pointer-events-auto hidden h-7 items-center gap-1 rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-medium text-xs text-neutral-700 transition hover:bg-neutral-100 md:inline-flex dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900"
+          className="pointer-events-auto hidden h-7 items-center gap-1 rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-medium text-neutral-700 text-xs transition hover:bg-neutral-100 md:inline-flex dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900"
           title="Layout mode"
         >
           {layoutMode === 'flow' ? (
@@ -140,7 +140,7 @@ export function TopBar() {
             value={layoutMode}
             onChange={(e) => setLayoutMode(e.target.value as 'flow' | 'radial')}
             aria-label="Layout mode"
-            className="cursor-pointer border-none bg-transparent pr-0 font-medium text-xs text-neutral-700 outline-none dark:text-neutral-200"
+            className="cursor-pointer border-none bg-transparent pr-0 font-medium text-neutral-700 text-xs outline-none dark:text-neutral-200"
           >
             <option value="flow">Flow</option>
             <option value="radial">Radial</option>

@@ -73,7 +73,19 @@ export type ContextMenuState =
   | { open: false };
 
 export type ToastKind = 'info' | 'success' | 'error';
-export type Toast = { id: string; kind: ToastKind; message: string };
+/** Optional action button rendered on a toast. Session 88 (S14) added
+ *  to surface affordances like Undo on actions that overwrite the doc
+ *  (template load, large imports). `run` fires when the user clicks the
+ *  button; the toast then auto-dismisses. Kept structural — the button
+ *  is intentionally generic so other call-sites can reuse it without
+ *  re-plumbing the toast pipeline. */
+export type ToastAction = { label: string; run: () => void };
+export type Toast = {
+  id: string;
+  kind: ToastKind;
+  message: string;
+  action?: ToastAction;
+};
 
 export type SearchOptions = {
   regex: boolean;
@@ -127,4 +139,9 @@ export type StoredPrefs = {
    *  `true` (collapsed) so the canvas reclaims vertical space on EC
    *  docs; user expands per-session via the strip's chevron. */
   verbalisationStripCollapsed?: boolean;
+  /** Session 88 (V2) — combined EC chrome wrapper collapse state.
+   *  Default `false` (expanded) so first-time EC viewers see the
+   *  reading instructions + verbalisation strips; manual collapse
+   *  persists. */
+  ecChromeCollapsed?: boolean;
 };

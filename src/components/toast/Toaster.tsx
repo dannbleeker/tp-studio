@@ -16,6 +16,14 @@ const STYLES = {
     'border-red-200 bg-red-50 text-red-800 dark:border-red-900/40 dark:bg-red-950/60 dark:text-red-200',
 } as const;
 
+/**
+ * Session 88 (S14) — toasts can now carry an optional `action` button
+ * (e.g. Undo on template load). Clicking the action fires the stored
+ * callback and immediately dismisses the toast so the affordance
+ * doesn't linger after it's used. The button only renders when
+ * `toast.action` is set; existing toasts without an action render
+ * exactly as before.
+ */
 export function Toaster() {
   const toasts = useDocumentStore((s) => s.toasts);
   const dismiss = useDocumentStore((s) => s.dismissToast);
@@ -39,6 +47,18 @@ export function Toaster() {
           >
             <Icon className="h-4 w-4 shrink-0" />
             <span>{t.message}</span>
+            {t.action && (
+              <button
+                type="button"
+                onClick={() => {
+                  t.action?.run();
+                  dismiss(t.id);
+                }}
+                className="ml-1 rounded border border-current/30 px-2 py-0.5 font-semibold text-[11px] uppercase tracking-wide transition hover:bg-current/10"
+              >
+                {t.action.label}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => dismiss(t.id)}

@@ -8,7 +8,7 @@ import { useEntity } from '@/hooks/useSelected';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { confirmAndDeleteEntity, confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 type MenuItem =
@@ -94,6 +94,50 @@ export function ContextMenu() {
 
   const ref = useRef<HTMLDivElement | null>(null);
   useOutsideAndEscape(ref, close, menu.open);
+
+  // Session 88 (S15) — keyboard navigation. The menu used to mount
+  // role="menu" with no key handler; users could only click. Now:
+  //   ArrowDown / ArrowUp walk focusable menuitem rows (skipping
+  //     separators + headers — those aren't buttons in the DOM).
+  //   Home / End jump to first / last.
+  //   Enter activates the focused row (native button behaviour
+  //     handles space already; we don't fight it).
+  //   Escape is already handled by `useOutsideAndEscape` above.
+  // The handler attaches to the menu element so the menu has to be
+  // open (and the user must have focused it — happens automatically
+  // on the first ArrowDown / mouse hover that snaps focus, or
+  // explicit Tab). We auto-focus the first item on open below.
+  useEffect(() => {
+    if (!menu.open) return;
+    const node = ref.current;
+    if (!node) return;
+    // Focus the first menuitem on open so ArrowDown / ArrowUp work
+    // immediately without requiring Tab. Microtask delay so React
+    // mounts the menu children before we query for them.
+    queueMicrotask(() => {
+      const first = node.querySelector<HTMLButtonElement>('button[role="menuitem"]');
+      first?.focus();
+    });
+  }, [menu.open]);
+
+  const onMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const items = Array.from(
+      ref.current.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+    );
+    if (items.length === 0) return;
+    const active = document.activeElement;
+    const idx = items.findIndex((el) => el === active);
+    const focus = (i: number) => {
+      const n = ((i % items.length) + items.length) % items.length;
+      items[n]?.focus();
+      e.preventDefault();
+    };
+    if (e.key === 'ArrowDown') focus(idx + 1);
+    else if (e.key === 'ArrowUp') focus(idx - 1);
+    else if (e.key === 'Home') focus(0);
+    else if (e.key === 'End') focus(items.length - 1);
+  };
 
   if (!menu.open) return null;
 
@@ -452,6 +496,11 @@ export function ContextMenu() {
       className="fixed z-40 min-w-[180px] overflow-hidden rounded-md border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
       style={{ top: menu.y, left: menu.x }}
       role="menu"
+      // Session 88 (S15) — keyboard nav on the menu surface itself.
+      // tabIndex makes the container focusable so focus inside the
+      // menu doesn't escape on the first Tab.
+      tabIndex={-1}
+      onKeyDown={onMenuKeyDown}
     >
       {items.map((item, idx) => {
         const stableKey =

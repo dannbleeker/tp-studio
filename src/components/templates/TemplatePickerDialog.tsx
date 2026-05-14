@@ -3,7 +3,7 @@ import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useDocumentStore } from '@/store';
 import { TEMPLATE_SPECS, buildTemplate } from '@/templates';
-import { templateThumbnailSvg } from '@/templates/thumbnail';
+import { TemplateThumbnail } from '@/templates/thumbnail';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { useRef } from 'react';
@@ -48,12 +48,22 @@ export function TemplatePickerDialog() {
 
   if (!open) return null;
 
+  // Session 88 (S14) — capture the prior doc before swapping so the
+  // "Undo" affordance on the success toast can restore it. Cheap: the
+  // doc is a plain object and `setDocument` is the same path Ctrl+Z
+  // uses, so the restore is fully consistent with the history stack.
   const handlePick = (id: string): void => {
     const spec = TEMPLATE_SPECS.find((t) => t.id === id);
     if (!spec) return;
+    const previousDoc = useDocumentStore.getState().doc;
     const doc = buildTemplate(spec);
     setDocument(doc);
-    showToast('success', `Loaded template: ${spec.title}`);
+    showToast('success', `Loaded template: ${spec.title}`, {
+      action: {
+        label: 'Undo',
+        run: () => setDocument(previousDoc),
+      },
+    });
     close();
   };
 
@@ -103,16 +113,13 @@ export function TemplatePickerDialog() {
                     'dark:border-neutral-800 dark:bg-neutral-900 dark:focus:ring-indigo-600 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
                   )}
                 >
-                  <div
-                    className="overflow-hidden rounded border border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950"
-                    // The thumbnail SVG is built from a typed spec we
-                    // author ourselves — no user input flows into the
-                    // rendered SVG, so `dangerouslySetInnerHTML` is
-                    // safe here. The thumbnail builder HTML-escapes
-                    // the title before embedding it as an attribute.
-                    // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted SVG payload generated from curated TemplateSpec literals
-                    dangerouslySetInnerHTML={{ __html: templateThumbnailSvg(spec) }}
-                  />
+                  <div className="overflow-hidden rounded border border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950">
+                    {/* Session 88 (S22) — JSX thumbnail. Replaces
+                        the prior `dangerouslySetInnerHTML` SVG-string
+                        injection so the security ignore can go away
+                        while staying visually identical. */}
+                    <TemplateThumbnail spec={spec} />
+                  </div>
                   <div className="flex items-center gap-1.5">
                     <span className="rounded bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">
                       {typeLabel}

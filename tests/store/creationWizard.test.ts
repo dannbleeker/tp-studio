@@ -27,7 +27,17 @@ describe('Creation wizard — preference-driven open', () => {
     expect(s.showGoalTreeWizard).toBe(true);
     s.newDocument('goalTree');
     const after = useDocumentStore.getState();
-    expect(after.creationWizard).toEqual({ kind: 'goalTree', step: 0, minimised: false });
+    // Session 88 (S18) — the slice grew `x` / `y` fields for the
+    // drag-to-reposition affordance; both default to null on a fresh
+    // wizard (panel falls back to its `top-14 left-4` Tailwind
+    // anchor).
+    expect(after.creationWizard).toEqual({
+      kind: 'goalTree',
+      step: 0,
+      minimised: false,
+      x: null,
+      y: null,
+    });
   });
 
   it('opens the wizard on newDocument(ec) when showECWizard is true', () => {
@@ -35,7 +45,13 @@ describe('Creation wizard — preference-driven open', () => {
     expect(s.showECWizard).toBe(true);
     s.newDocument('ec');
     const after = useDocumentStore.getState();
-    expect(after.creationWizard).toEqual({ kind: 'ec', step: 0, minimised: false });
+    expect(after.creationWizard).toEqual({
+      kind: 'ec',
+      step: 0,
+      minimised: false,
+      x: null,
+      y: null,
+    });
   });
 
   it('does NOT open the wizard when the preference is off', () => {
@@ -109,7 +125,34 @@ describe('Creation wizard — slice actions', () => {
       kind: 'ec',
       step: 0,
       minimised: false,
+      x: null,
+      y: null,
     });
+  });
+});
+
+// Session 88 (S18) — drag-to-reposition slice actions.
+describe('Creation wizard — drag-to-reposition', () => {
+  it('defaults x / y to null on open (panel uses Tailwind anchor)', () => {
+    useDocumentStore.getState().openCreationWizard('goalTree');
+    const w = useDocumentStore.getState().creationWizard;
+    expect(w?.x).toBeNull();
+    expect(w?.y).toBeNull();
+  });
+
+  it('setCreationWizardPosition writes the new coordinates onto the slice', () => {
+    useDocumentStore.getState().openCreationWizard('ec');
+    useDocumentStore.getState().setCreationWizardPosition(200, 150);
+    const w = useDocumentStore.getState().creationWizard;
+    expect(w?.x).toBe(200);
+    expect(w?.y).toBe(150);
+  });
+
+  it('setCreationWizardPosition is a no-op when the wizard is closed', () => {
+    useDocumentStore.getState().closeCreationWizard();
+    expect(useDocumentStore.getState().creationWizard).toBeNull();
+    useDocumentStore.getState().setCreationWizardPosition(50, 50);
+    expect(useDocumentStore.getState().creationWizard).toBeNull();
   });
 });
 

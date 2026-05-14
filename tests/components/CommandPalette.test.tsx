@@ -1,9 +1,18 @@
 import { CommandPalette } from '@/components/command-palette/CommandPalette';
+import { __resetRecentCommandsForTest } from '@/services/recentCommands';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-beforeEach(resetStoreForTest);
+beforeEach(() => {
+  resetStoreForTest();
+  // Session 88 (S17) — the palette's Recent section reads from
+  // localStorage; clear so each test sees an empty recents list and
+  // the existing "section headers in canonical order" assertion
+  // (File / Edit / View / Review / Export / Help) doesn't see a
+  // leading "Recent" header from a prior test's command run.
+  __resetRecentCommandsForTest();
+});
 afterEach(cleanup);
 
 const open = () => act(() => useDocumentStore.getState().openPalette());
@@ -105,5 +114,63 @@ describe('CommandPalette', () => {
     act(() => fireEvent.change(container.querySelector('input')!, { target: { value: 'png' } }));
     const headers = container.querySelectorAll('li[aria-hidden="true"]');
     expect(headers.length).toBe(0);
+  });
+
+  // Session 88 (S17) — recent-commands section.
+  it('renders a Recent section when at least one command has been run', () => {
+    // Open + Enter on a known unique label so the command lands in recents.
+    open();
+    const { container, unmount } = render(<CommandPalette />);
+    act(() =>
+      fireEvent.change(container.querySelector('input')!, { target: { value: 'shortcuts' } })
+    );
+    act(() => fireEvent.keyDown(container.querySelector('input')!, { key: 'Enter' }));
+    unmount();
+    // Reopen — the just-run command should appear under a Recent header.
+    open();
+    const reopen = render(<CommandPalette />);
+    const headers = Array.from(reopen.container.querySelectorAll('li[role="presentation"]')).map(
+      (n) => n.textContent ?? ''
+    );
+    expect(headers[0]).toBe('Recent');
+  });
+
+  it('hides the Recent section when the user is filtering', () => {
+    // Pre-seed by running a command, then type a filter.
+    open();
+    const { container, unmount } = render(<CommandPalette />);
+    act(() =>
+      fireEvent.change(container.querySelector('input')!, { target: { value: 'shortcuts' } })
+    );
+    act(() => fireEvent.keyDown(container.querySelector('input')!, { key: 'Enter' }));
+    unmount();
+    open();
+    const reopen = render(<CommandPalette />);
+    // Type any query; the unfiltered (sectioned) view should disappear
+    // entirely, taking the Recent header with it.
+    act(() =>
+      fireEvent.change(reopen.container.querySelector('input')!, { target: { value: 'png' } })
+    );
+    const headers = Array.from(reopen.container.querySelectorAll('li[role="presentation"]')).map(
+      (n) => n.textContent ?? ''
+    );
+    expect(headers).not.toContain('Recent');
+  });
+
+  // Session 88 (S16) — palette command rows render their optional icon
+  // when the central commandIcons map provides one. We don't pin to a
+  // specific icon class; we just verify *some* svg renders for a row
+  // that has an icon mapped (e.g. "Open Help" → HelpCircle).
+  it('renders an icon for commands that have one in the icon map', () => {
+    open();
+    const { container } = render(<CommandPalette />);
+    // The Help command's id is `help`; its row will be the one whose
+    // button text contains "shortcuts" (from "Help / shortcuts…") or
+    // similar — we look up by text and check the button has an SVG.
+    const helpRow = Array.from(container.querySelectorAll('li button')).find((b) =>
+      /shortcuts/i.test(b.textContent ?? '')
+    ) as HTMLButtonElement | undefined;
+    expect(helpRow).toBeTruthy();
+    expect(helpRow?.querySelector('svg')).toBeTruthy();
   });
 });

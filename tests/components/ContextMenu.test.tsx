@@ -1,7 +1,7 @@
 import { ContextMenu } from '@/components/canvas/ContextMenu';
 import type { EntityId } from '@/domain/types';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 beforeEach(resetStoreForTest);
@@ -92,5 +92,66 @@ describe('ContextMenu', () => {
     openOnPane();
     const { container } = render(<ContextMenu />);
     expect(itemLabels(container)).toContain('New entity here');
+  });
+
+  // Session 88 (S15) — keyboard navigation. ArrowDown / ArrowUp walks
+  // focusable menuitems; Home / End jump to the bookends.
+  describe('keyboard navigation (Session 88 S15)', () => {
+    const setup = () => {
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      openOnEntity(a.id);
+      const result = render(<ContextMenu />);
+      const items = result.container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]');
+      if (items.length < 3) throw new Error('expected at least 3 menuitems');
+      return { ...result, items };
+    };
+
+    it('ArrowDown moves focus down the menu items', () => {
+      const { container, items } = setup();
+      const menu = container.querySelector('[role="menu"]') as HTMLDivElement;
+      // First item should be focused on open (auto-focus via queueMicrotask).
+      // Simulate the sequence the user would experience: send ArrowDown
+      // events to the focused element / menu and check focus progresses.
+      items[0]?.focus();
+      act(() => {
+        fireEvent.keyDown(menu, { key: 'ArrowDown' });
+      });
+      expect(document.activeElement).toBe(items[1]);
+      act(() => {
+        fireEvent.keyDown(menu, { key: 'ArrowDown' });
+      });
+      expect(document.activeElement).toBe(items[2]);
+    });
+
+    it('ArrowUp wraps from the first item to the last', () => {
+      const { container, items } = setup();
+      const menu = container.querySelector('[role="menu"]') as HTMLDivElement;
+      items[0]?.focus();
+      act(() => {
+        fireEvent.keyDown(menu, { key: 'ArrowUp' });
+      });
+      // Index wraps: 0 - 1 → length - 1
+      expect(document.activeElement).toBe(items[items.length - 1]);
+    });
+
+    it('End jumps to the last item', () => {
+      const { container, items } = setup();
+      const menu = container.querySelector('[role="menu"]') as HTMLDivElement;
+      items[0]?.focus();
+      act(() => {
+        fireEvent.keyDown(menu, { key: 'End' });
+      });
+      expect(document.activeElement).toBe(items[items.length - 1]);
+    });
+
+    it('Home jumps to the first item', () => {
+      const { container, items } = setup();
+      const menu = container.querySelector('[role="menu"]') as HTMLDivElement;
+      items[items.length - 1]?.focus();
+      act(() => {
+        fireEvent.keyDown(menu, { key: 'Home' });
+      });
+      expect(document.activeElement).toBe(items[0]);
+    });
   });
 });

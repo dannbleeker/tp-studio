@@ -50,6 +50,136 @@ const MODE_HINT: Record<PrintMode, string> = {
     "Group shading removed, edges thinner, blacks softened to grey. Saves toner when you're printing dozens of copies for a workshop handout.",
 };
 
+/**
+ * Session 88 (S20) — inline SVG thumbnails for each print mode.
+ * Tiny 60×40 previews that telegraph the visual treatment a mode
+ * applies: colourful entity stripes (standard), bigger high-
+ * contrast cards (workshop), greyscale with no fills (ink-saving).
+ *
+ * Pure presentational SVG — no layout calculation, no React Flow.
+ * Same colour tokens as the canvas tokens to keep the previews
+ * visually consistent with the live diagram.
+ */
+function ModeThumbnail({ mode }: { mode: PrintMode }) {
+  if (mode === 'standard') {
+    return (
+      <svg
+        viewBox="0 0 60 40"
+        role="img"
+        aria-label="Standard print preview"
+        className="h-8 w-12 shrink-0 rounded border border-neutral-200 dark:border-neutral-700"
+      >
+        <title>Standard print preview</title>
+        <rect width="60" height="40" fill="#ffffff" />
+        <rect x="6" y="6" width="20" height="10" rx="1.5" fill="#fef3c7" stroke="#d4d4d4" />
+        <rect x="6" y="6" width="2" height="10" fill="#f59e0b" />
+        <rect x="34" y="6" width="20" height="10" rx="1.5" fill="#dbeafe" stroke="#d4d4d4" />
+        <rect x="34" y="6" width="2" height="10" fill="#3b82f6" />
+        <rect x="20" y="22" width="20" height="10" rx="1.5" fill="#dcfce7" stroke="#d4d4d4" />
+        <rect x="20" y="22" width="2" height="10" fill="#10b981" />
+        <line x1="16" y1="16" x2="30" y2="22" stroke="#94a3b8" strokeWidth="1" />
+        <line x1="44" y1="16" x2="30" y2="22" stroke="#94a3b8" strokeWidth="1" />
+      </svg>
+    );
+  }
+  if (mode === 'workshop') {
+    return (
+      <svg
+        viewBox="0 0 60 40"
+        role="img"
+        aria-label="Workshop print preview"
+        className="h-8 w-12 shrink-0 rounded border border-neutral-200 dark:border-neutral-700"
+      >
+        <title>Workshop print preview</title>
+        <rect width="60" height="40" fill="#ffffff" />
+        {/* Larger high-contrast cards with bolder strokes */}
+        <rect
+          x="4"
+          y="6"
+          width="22"
+          height="12"
+          rx="1.5"
+          fill="#fef3c7"
+          stroke="#000000"
+          strokeWidth="1.2"
+        />
+        <rect x="4" y="6" width="3" height="12" fill="#000000" />
+        <rect
+          x="34"
+          y="6"
+          width="22"
+          height="12"
+          rx="1.5"
+          fill="#dbeafe"
+          stroke="#000000"
+          strokeWidth="1.2"
+        />
+        <rect x="34" y="6" width="3" height="12" fill="#000000" />
+        <rect
+          x="19"
+          y="22"
+          width="22"
+          height="12"
+          rx="1.5"
+          fill="#dcfce7"
+          stroke="#000000"
+          strokeWidth="1.2"
+        />
+        <rect x="19" y="22" width="3" height="12" fill="#000000" />
+        <line x1="15" y1="18" x2="30" y2="22" stroke="#000000" strokeWidth="1.2" />
+        <line x1="45" y1="18" x2="30" y2="22" stroke="#000000" strokeWidth="1.2" />
+      </svg>
+    );
+  }
+  // ink-saving — greyscale, no fills, thinner edges
+  return (
+    <svg
+      viewBox="0 0 60 40"
+      role="img"
+      aria-label="Ink-saving print preview"
+      className="h-8 w-12 shrink-0 rounded border border-neutral-200 dark:border-neutral-700"
+    >
+      <title>Ink-saving print preview</title>
+      <rect width="60" height="40" fill="#ffffff" />
+      <rect
+        x="6"
+        y="6"
+        width="20"
+        height="10"
+        rx="1.5"
+        fill="#ffffff"
+        stroke="#404040"
+        strokeWidth="0.6"
+      />
+      <rect x="6" y="6" width="2" height="10" fill="#737373" />
+      <rect
+        x="34"
+        y="6"
+        width="20"
+        height="10"
+        rx="1.5"
+        fill="#ffffff"
+        stroke="#404040"
+        strokeWidth="0.6"
+      />
+      <rect x="34" y="6" width="2" height="10" fill="#737373" />
+      <rect
+        x="20"
+        y="22"
+        width="20"
+        height="10"
+        rx="1.5"
+        fill="#ffffff"
+        stroke="#404040"
+        strokeWidth="0.6"
+      />
+      <rect x="20" y="22" width="2" height="10" fill="#737373" />
+      <line x1="16" y1="16" x2="30" y2="22" stroke="#a3a3a3" strokeWidth="0.5" />
+      <line x1="44" y1="16" x2="30" y2="22" stroke="#a3a3a3" strokeWidth="0.5" />
+    </svg>
+  );
+}
+
 const setBodyPrintMode = (
   mode: PrintMode,
   includeAppendix: boolean,
@@ -232,12 +362,17 @@ export function PrintPreviewDialog() {
                   type="button"
                   onClick={() => setMode(m)}
                   className={clsx(
-                    'rounded-md border px-3 py-2 text-left text-xs transition',
+                    'flex flex-col items-start gap-1.5 rounded-md border px-3 py-2 text-left text-xs transition',
                     mode === m
                       ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
                       : 'border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900'
                   )}
                 >
+                  {/* Session 88 (S20) — inline mode thumbnail. The
+                      previews telegraph each mode's visual style
+                      (colour stripes / bold high-contrast / no fills)
+                      before the user commits. */}
+                  <ModeThumbnail mode={m} />
                   <div className="font-medium">{MODE_LABEL[m]}</div>
                 </button>
               ))}

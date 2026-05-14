@@ -1,5 +1,6 @@
 import { guardWriteOrToast } from '@/services/browseLock';
 import type { DocumentStore } from '@/store';
+import type { LucideIcon } from 'lucide-react';
 
 /**
  * One command in the palette. `group` drives the section headers the
@@ -33,6 +34,11 @@ export type Command = {
   id: string;
   label: string;
   group: CommandGroup;
+  /** Session 88 (S16) — optional Lucide icon rendered at the left of
+   *  the command row. Improves scanability for icon-recognizers; the
+   *  field is optional so existing commands stay text-only without
+   *  needing per-entry edits. */
+  icon?: LucideIcon;
   run: (store: DocumentStore) => void | Promise<void>;
 };
 

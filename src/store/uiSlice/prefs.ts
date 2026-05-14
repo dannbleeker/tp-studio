@@ -103,6 +103,10 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // (including `undefined` on a first-run install) keeps the
     // collapsed default.
     verbalisationStripCollapsed: raw?.verbalisationStripCollapsed !== false,
+    // Session 88 (V2) — combined EC chrome collapse state. Default
+    // expanded so first-run users see the reading instructions +
+    // verbalisation strips; user's manual collapse choice persists.
+    ecChromeCollapsed: raw?.ecChromeCollapsed === true,
   };
 };
 

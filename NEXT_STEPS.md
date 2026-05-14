@@ -264,16 +264,20 @@ Bundled from both UI reviews (static + visual). Each is S-effort, no design ambi
 
 ## UI polish queue (Session 87 review — 13 individual fixes)
 
-S–M effort, low ambiguity. Pick what aligns with current work. Highlights (full list in the review doc):
+S–M effort, low ambiguity. Pick what aligns with current work. **Session 88 shipped 10 of the items below (#11 / #14 / #15 / #16 / #17 / #18 / #20 / #22 / V2); #10 and #12 evaluated as audit-clean.** Highlights:
 
-- **Settings dialog TOC / section anchors** (item #10, S) — left-rail or sticky-header quick-nav.
-- **Theme picker as a swatch grid** (item #11, M) — replace the 7-option radio with visual swatches.
-- **Long-form layout-direction labels** (item #12, S) — "Bottom → Top" primary, "BT" secondary.
-- **Command palette icons + recent section** (items #16 + #17, M each).
-- **Context menu keyboard navigation** (item #15, M) — arrow keys + Enter + Esc.
-- **Print mode visual previews** (item #20, M) — inline thumbnail per mode.
-- **Creation wizard drag-to-reposition** (item #18, M).
-- **First-Entity Tip — add rename + delete hints** (item #19, S).
+- ~~**Settings dialog TOC / section anchors**~~ ✅ **Audit-clean (Session 88).** The tab split from Session 87 (S25) already cuts the longest section to ~7 controls — anchor nav inside a single tab would be friction the user isn't asking for. Re-evaluate if a single tab grows past ~10 controls.
+- ~~**Theme picker as a swatch grid**~~ ✅ **Done (Session 88).** SettingsDialog → Appearance now renders the 7 themes as a 2-row × 4 grid of preview swatches (surface colour + accent stripe). The `Theme` union and `setTheme` action are unchanged; this is purely presentational.
+- ~~**Long-form layout-direction labels**~~ ✅ **Audit-clean (Session 88).** The labels were already long-form ("Bottom → Top"); the two-letter codes (BT/TB/LR/RL) only live in the `id` field. No change needed.
+- ~~**Command palette icons** (item #16)~~ ✅ **Done (Session 88).** New `src/components/command-palette/commandIcons.ts` maps high-traffic command ids to Lucide icons; CommandPalette renders them at the left of each row. Map-driven (not per-command annotation) so the visual identity is auditable in one place.
+- ~~**Command palette recent section** (item #17)~~ ✅ **Done (Session 88).** New `src/services/recentCommands.ts` persists the last 5 invoked commands to localStorage. Palette shows them under a sticky "Recent" header at the top of the unfiltered view; hidden when the user starts typing.
+- ~~**Context menu keyboard navigation** (item #15)~~ ✅ **Done (Session 88).** ArrowDown / ArrowUp walks menuitems (wraps); Home / End jumps to the bookends; Enter activates the focused row (native button); Esc was already handled by `useOutsideAndEscape`. First item auto-focuses on open.
+- ~~**Print mode visual previews** (item #20)~~ ✅ **Done (Session 88).** Each of the three print-mode buttons grew a 60×40 inline-SVG thumbnail telegraphing its visual treatment (colour stripes / bold high-contrast / no fills).
+- ~~**Creation wizard drag-to-reposition** (item #18)~~ ✅ **Done (Session 88).** The wizard header acts as a drag handle (pointerdown / pointermove / pointerup with `setPointerCapture`). New `x` / `y` fields on the `creationWizard` slice persist the position; clamp-to-viewport on read keeps the panel grabbable. `setCreationWizardPosition` slice action wires it.
+- ~~**Templates picker JSX thumbnails** (item #22)~~ ✅ **Done (Session 88).** `templateThumbnailSvg` got a JSX sibling `<TemplateThumbnail>` that returns a React element tree; the picker mounts it directly (no `dangerouslySetInnerHTML`). The string emitter stays around for the legacy `tests/templates/templates.test.ts` assertion.
+- ~~**Templates picker — Undo toast** (item #14)~~ ✅ **Done (Session 88).** Loading a template now captures the prior doc and surfaces an "Undo" action button on the success toast. Extended `Toast` with optional `action: { label, run }`; `showToast` grew a 3rd-arg `options` parameter.
+- ~~**Combine reading-instructions + verbalisation strips** (V2)~~ ✅ **Done (Session 88).** Canvas EC chrome (reading-instructions + verbalisation) now wraps in a single collapsible container with one chevron. New `ecChromeCollapsed` persisted flag (default expanded). The per-strip dismiss / collapse controls still work — the new layer is the outer surface.
+- **First-Entity Tip — add rename + delete hints** (item #19, S) — not picked up; future session.
 
 ## UI bigger asks (Session 87 review — 7 items needing design conversation)
 

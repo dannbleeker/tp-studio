@@ -2,7 +2,7 @@ import { TOAST_AUTO_DISMISS_MS } from '@/domain/constants';
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
-import type { ContextMenuState, ContextMenuTarget, Toast, ToastKind } from './types';
+import type { ContextMenuState, ContextMenuTarget, Toast, ToastAction, ToastKind } from './types';
 
 /**
  * Everything modal-ish: the command palette, help / settings / doc-settings
@@ -35,6 +35,14 @@ export type DialogsSlice = {
     kind: 'goalTree' | 'ec';
     step: number;
     minimised: boolean;
+    /** Session 88 (S18) — drag-to-reposition. `x` / `y` are the
+     *  upper-left corner of the panel in viewport pixels. `null`
+     *  on a fresh wizard so the panel falls back to its
+     *  `top-14 left-4` Tailwind default. Persisted on the slice
+     *  per-session — refreshing the page resets to the default
+     *  position (cheap; the wizard is per-doc-creation flow). */
+    x: number | null;
+    y: number | null;
   };
   /** Session 87 — EC PPT comparison items #1+#7. The active tab on the
    *  EC inspector's 3-tab bar. Lives on the store so canvas chrome
@@ -85,7 +93,12 @@ export type DialogsSlice = {
   openContextMenu: (target: ContextMenuTarget, x: number, y: number) => void;
   closeContextMenu: () => void;
 
-  showToast: (kind: ToastKind, message: string) => void;
+  /** Session 88 (S14) — the optional `action` renders an Undo-style
+   *  button on the toast. Existing two-arg callers continue to work
+   *  unchanged; new call-sites pass `{ action: { label, run } }` to
+   *  surface an affordance the user can click before the auto-dismiss
+   *  fires. */
+  showToast: (kind: ToastKind, message: string, options?: { action?: ToastAction }) => void;
   dismissToast: (id: string) => void;
 
   openQuickCapture: () => void;
@@ -108,6 +121,11 @@ export type DialogsSlice = {
   advanceCreationWizardStep: () => void;
   closeCreationWizard: () => void;
   toggleCreationWizardMinimised: () => void;
+  /** Session 88 (S18) — persist a new wizard panel position after a
+   *  drag. The values are clamped on read by the panel itself so a
+   *  stored position that's now off-viewport (e.g. after a window
+   *  resize) gets snapped back into view. */
+  setCreationWizardPosition: (x: number, y: number) => void;
 
   /** Session 87 — set the active EC inspector tab. Used by the
    *  Inspector itself (tab clicks) AND by the canvas-side injection
@@ -221,7 +239,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   openContextMenu: (target, x, y) => set({ contextMenu: { open: true, target, x, y } }),
   closeContextMenu: () => set({ contextMenu: { open: false } }),
 
-  showToast: (kind, message) => {
+  showToast: (kind, message, options) => {
     // Dedup: if the same (kind, message) is already on the queue, drop
     // this one. Several validators sometimes fire on a single edit and
     // would otherwise stack identical toasts on top of each other. The
@@ -229,7 +247,13 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
     const existing = get().toasts;
     if (existing.some((t) => t.kind === kind && t.message === message)) return;
     const id = nanoid(8);
-    set({ toasts: [...existing, { id, kind, message }] });
+    // Session 88 (S14) — action is optional; spread keeps the shape
+    // clean for the common two-arg call. The action's `run` is stored
+    // by reference; Toaster invokes it on click.
+    const toast: Toast = options?.action
+      ? { id, kind, message, action: options.action }
+      : { id, kind, message };
+    set({ toasts: [...existing, toast] });
     setTimeout(() => {
       set({ toasts: get().toasts.filter((t) => t.id !== id) });
     }, TOAST_AUTO_DISMISS_MS);
@@ -245,7 +269,8 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   openTemplatePicker: () => set({ templatePickerOpen: true }),
   closeTemplatePicker: () => set({ templatePickerOpen: false }),
 
-  openCreationWizard: (kind) => set({ creationWizard: { kind, step: 0, minimised: false } }),
+  openCreationWizard: (kind) =>
+    set({ creationWizard: { kind, step: 0, minimised: false, x: null, y: null } }),
   advanceCreationWizardStep: () => {
     const cur = get().creationWizard;
     if (!cur) return;
@@ -256,6 +281,11 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
     const cur = get().creationWizard;
     if (!cur) return;
     set({ creationWizard: { ...cur, minimised: !cur.minimised } });
+  },
+  setCreationWizardPosition: (x, y) => {
+    const cur = get().creationWizard;
+    if (!cur) return;
+    set({ creationWizard: { ...cur, x, y } });
   },
 
   setECInspectorTab: (tab) => set({ ecInspectorTab: tab }),

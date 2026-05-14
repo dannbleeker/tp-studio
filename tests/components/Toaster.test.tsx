@@ -70,4 +70,24 @@ describe('Toaster', () => {
     vi.advanceTimersByTime(60_000);
     expect(useDocumentStore.getState().toasts).toHaveLength(0);
   });
+
+  // Session 88 (S14) — toasts can carry an optional action button.
+  it('renders the action button when the toast carries one', () => {
+    useDocumentStore
+      .getState()
+      .showToast('success', 'Loaded template: X', { action: { label: 'Undo', run: () => {} } });
+    render(<Toaster />);
+    expect(screen.getByText('Undo')).toBeTruthy();
+  });
+
+  it('clicking the action button invokes run + dismisses the toast', () => {
+    const onUndo = vi.fn();
+    useDocumentStore
+      .getState()
+      .showToast('success', 'Loaded template: X', { action: { label: 'Undo', run: onUndo } });
+    render(<Toaster />);
+    fireEvent.click(screen.getByText('Undo'));
+    expect(onUndo).toHaveBeenCalledTimes(1);
+    expect(useDocumentStore.getState().toasts).toHaveLength(0);
+  });
 });
