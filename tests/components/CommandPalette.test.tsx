@@ -32,14 +32,21 @@ describe('CommandPalette', () => {
     const { container } = render(<CommandPalette />);
     const input = container.querySelector('input')!;
     act(() => {
-      fireEvent.change(input, { target: { value: 'png' } });
+      fireEvent.change(input, { target: { value: 'capture' } });
     });
     const labels = Array.from(container.querySelectorAll('li button')).map(
       (b) => b.textContent ?? ''
     );
-    expect(labels.some((l) => /PNG/i.test(l))).toBe(true);
-    // No SVG-only commands should be visible when the filter is "png".
-    expect(labels.every((l) => !/Export as SVG/.test(l))).toBe(true);
+    // Session 90 — the export-as-PNG / export-as-SVG individual commands
+    // were collapsed into a single `Export…` picker, so the old
+    // PNG/SVG-substring assertion no longer reflects the palette
+    // contract. We now filter on `capture` which uniquely matches
+    // "Quick Capture…" + "Capture snapshot" — both stable, both stay
+    // direct palette commands.
+    expect(labels.some((l) => /Capture/i.test(l))).toBe(true);
+    // None of the "Settings" or "Help" rows should be visible under
+    // this filter — proves the substring score actually filters.
+    expect(labels.every((l) => !/Settings/.test(l))).toBe(true);
   });
 
   it('honors paletteInitialQuery on open (e.g. Cmd+E → "Export")', () => {

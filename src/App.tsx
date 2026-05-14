@@ -61,6 +61,21 @@ const TemplatePickerDialog = lazy(() =>
     default: m.TemplatePickerDialog,
   }))
 );
+// Session 90 — diagram-type + export pickers replace 14 + 17 palette
+// commands respectively. Both are lazy because they only appear via
+// explicit palette commands; their dependency trees (entityTypeMeta,
+// EXAMPLE_BY_DIAGRAM, the full exporter list) shouldn't load on first
+// paint.
+const DiagramTypePickerDialog = lazy(() =>
+  import('./components/diagrams/DiagramTypePickerDialog').then((m) => ({
+    default: m.DiagramTypePickerDialog,
+  }))
+);
+const ExportPickerDialog = lazy(() =>
+  import('./components/export/ExportPickerDialog').then((m) => ({
+    default: m.ExportPickerDialog,
+  }))
+);
 // Session 88 (Batch 2) — CommandPalette was eagerly imported; its tree
 // pulls in every command file (9 files of `*Commands` arrays) plus the
 // new icon map. None of that is needed on first paint — the palette
@@ -210,6 +225,12 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Template picker">
           <TemplatePickerDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Diagram-type picker">
+          <DiagramTypePickerDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Export picker">
+          <ExportPickerDialog />
         </ErrorBoundary>
       </Suspense>
       <ConfirmDialog />

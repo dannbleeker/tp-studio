@@ -18,19 +18,15 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Copy,
   Download,
-  FileDown,
   FilePlus,
   FileUp,
   HelpCircle,
   History,
-  Image as ImageIcon,
   Layout,
-  Printer,
   Redo,
   Scissors,
   Search,
   Settings,
-  Share2,
   Sparkles,
   Undo,
   Upload,
@@ -39,6 +35,8 @@ import {
 
 export const COMMAND_ICON_BY_ID: Record<string, LucideIcon | undefined> = {
   // File / doc
+  'new-diagram': FilePlus,
+  'load-example': Sparkles,
   'open-quick-capture': Zap,
   'new-from-template': Sparkles,
   'import-json': FileUp,
@@ -46,7 +44,6 @@ export const COMMAND_ICON_BY_ID: Record<string, LucideIcon | undefined> = {
   'import-mermaid': FileUp,
   'import-csv': FileUp,
   'open-document-inspector': FilePlus,
-  'open-history-panel': History,
   'capture-snapshot': History,
   // Edit
   undo: Undo,
@@ -60,27 +57,9 @@ export const COMMAND_ICON_BY_ID: Record<string, LucideIcon | undefined> = {
   'reset-layout': Layout,
   // Help
   help: HelpCircle,
-  // Export — every flavour shares the same Download icon so the row
-  // groups visually without forcing per-format glyphs.
-  'export-json': Download,
-  'export-json-redacted': Download,
-  'export-flying-logic': Download,
-  'export-mermaid': Download,
-  'export-dot': Download,
-  'export-opml': Download,
-  'export-vgl': Download,
-  'export-reasoning-narrative': Download,
-  'export-reasoning-outline': Download,
-  'export-html-viewer': Download,
-  'export-csv': Download,
-  'export-annotations-md': Download,
-  'export-annotations-txt': Download,
-  'export-png': ImageIcon,
-  'export-jpeg': ImageIcon,
-  'export-svg': ImageIcon,
-  'export-ec-workshop-sheet': FileDown,
-  'copy-share-link': Share2,
-  print: Printer,
+  // Export — Session 90 funnels everything through one picker. The
+  // legacy per-format icons were retired with their commands.
+  'open-export-picker': Download,
   // Capture surface (kept open-ended for additions; the empty default
   // is intentional — unknown ids render text-only).
   'upload-file': Upload,

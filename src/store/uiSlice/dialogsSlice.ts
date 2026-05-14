@@ -24,6 +24,15 @@ export type DialogsSlice = {
   printOpen: boolean;
   /** Session 79 / brief §12 — templates picker dialog. */
   templatePickerOpen: boolean;
+  /** Session 90 — diagram-type picker. Tri-state: `null` (closed), or
+   *  the mode (`'new'` = create blank, `'example'` = load example).
+   *  Replaces the 14 per-diagram-type palette commands with one
+   *  picker per mode. */
+  diagramPickerOpen: 'new' | 'example' | null;
+  /** Session 90 — single Export… picker. Replaces the ~17 individual
+   *  export-format palette commands with one dialog grouped by
+   *  category (Images / Documents / Data / Text / Share). */
+  exportPickerOpen: boolean;
   /** Session 78 / brief §5 + §6 — creation-wizard panel for the
    *  diagram type the user just opened. `null` when closed; carries
    *  `step` (0-based) and `minimised` so the user can collapse the
@@ -112,6 +121,16 @@ export type DialogsSlice = {
   openTemplatePicker: () => void;
   closeTemplatePicker: () => void;
 
+  /** Session 90 — diagram-type picker (replaces the 14 per-diagram
+   *  palette commands). Mode determines the action on card click:
+   *  `'new'` → `newDocument(type)`; `'example'` → `setDocument(buildExample(type))`. */
+  openDiagramPicker: (mode: 'new' | 'example') => void;
+  closeDiagramPicker: () => void;
+
+  /** Session 90 — single Export… picker (replaces ~17 export commands). */
+  openExportPicker: () => void;
+  closeExportPicker: () => void;
+
   /** Session 78 — creation-wizard panel control. `openCreationWizard`
    *  resets the panel to step 0 on the given diagram type;
    *  `advanceCreationWizardStep` moves forward by one; `closeCreationWizard`
@@ -178,6 +197,8 @@ export type DialogsDataKeys =
   | 'quickCaptureOpen'
   | 'printOpen'
   | 'templatePickerOpen'
+  | 'diagramPickerOpen'
+  | 'exportPickerOpen'
   | 'creationWizard'
   | 'ecInspectorTab'
   | 'historyPanelOpen'
@@ -196,6 +217,8 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   quickCaptureOpen: false,
   printOpen: false,
   templatePickerOpen: false,
+  diagramPickerOpen: null,
+  exportPickerOpen: false,
   creationWizard: null,
   ecInspectorTab: 'inspector',
   historyPanelOpen: false,
@@ -215,6 +238,8 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   quickCaptureOpen: false,
   printOpen: false,
   templatePickerOpen: false,
+  diagramPickerOpen: null,
+  exportPickerOpen: false,
   creationWizard: null,
   ecInspectorTab: 'inspector',
   historyPanelOpen: false,
@@ -268,6 +293,12 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openTemplatePicker: () => set({ templatePickerOpen: true }),
   closeTemplatePicker: () => set({ templatePickerOpen: false }),
+
+  openDiagramPicker: (mode) => set({ diagramPickerOpen: mode }),
+  closeDiagramPicker: () => set({ diagramPickerOpen: null }),
+
+  openExportPicker: () => set({ exportPickerOpen: true }),
+  closeExportPicker: () => set({ exportPickerOpen: false }),
 
   openCreationWizard: (kind) =>
     set({ creationWizard: { kind, step: 0, minimised: false, x: null, y: null } }),

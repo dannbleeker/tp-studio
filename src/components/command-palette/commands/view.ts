@@ -2,31 +2,16 @@ import { pinnedEntities } from '@/domain/graph';
 import { type Command, withWriteGuard } from './types';
 
 export const viewCommands: Command[] = [
-  // Theme, Settings, Browse Lock toggle are all view-state changes that
-  // don't mutate the doc — they stay unguarded so the user can flip them
-  // even while Browse Lock is on (and especially so they can turn the
-  // lock back off).
-  {
-    id: 'toggle-theme',
-    label: 'Toggle dark mode',
-    group: 'View',
-    run: (s) => s.toggleTheme(),
-  },
+  // Session 90 — `Toggle dark mode` and `Toggle Browse Lock` removed
+  // from the palette: both are reachable as dedicated TopBar buttons
+  // (`Theme` / `Lock`) on sm+ and via the KebabMenu on xs. Duplicate
+  // entries in the palette were just visual noise. Settings stays
+  // here — it's an open-modal action, not a state flip.
   {
     id: 'open-settings',
     label: 'Settings…',
     group: 'View',
     run: (s) => s.openSettings(),
-  },
-  {
-    id: 'toggle-browse-lock',
-    label: 'Toggle Browse Lock',
-    group: 'View',
-    run: (s) => {
-      const next = !s.browseLocked;
-      s.setBrowseLocked(next);
-      s.showToast('info', next ? 'Browse Lock on.' : 'Browse Lock off.');
-    },
   },
   withWriteGuard({
     // LA5 (Session 63): clear every pinned position so auto-layout

@@ -1,6 +1,3 @@
-import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
-import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
-import type { DiagramType } from '@/domain/types';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { applyCsvRows, parseEntitiesCsv, pickCsvFile } from '@/services/csvImport';
 import { pickFlyingLogic, pickJSON, pickMermaid } from '@/services/exporters';
@@ -15,8 +12,9 @@ import { type Command, withWriteGuard } from './types';
  * reconcile the new node set and finalize layout positions before
  * the fit-to-bounds calculation runs.
  *
- * Pulled into a helper because the four load paths (example /
- * JSON / Flying Logic / Mermaid) all want the same behaviour.
+ * Pulled into a helper because the import paths all want the same
+ * behaviour. The diagram-type picker (Session 90) calls fitView
+ * inline so this stays scoped to the import-from-X commands here.
  */
 const fitViewAfterLoad = (): void => {
   if (typeof window === 'undefined') return;
@@ -27,40 +25,23 @@ const fitViewAfterLoad = (): void => {
   });
 };
 
-/**
- * Per-diagram-type "New …" and "Load example …" command pairs, generated
- * from {@link EXAMPLE_BY_DIAGRAM} so a new diagram type gets its pair the
- * moment it's added to the registry — no need to append matching blocks
- * here.
- */
-const diagramCommands = (Object.keys(EXAMPLE_BY_DIAGRAM) as DiagramType[]).flatMap<Command>(
-  (type) => {
-    const label = DIAGRAM_TYPE_LABEL[type];
-    return [
-      withWriteGuard({
-        id: `new-${type}`,
-        label: `New ${label}`,
-        group: 'File',
-        run: (s) => {
-          s.newDocument(type);
-        },
-      }),
-      withWriteGuard({
-        id: `load-example-${type}`,
-        label: `Load example ${label}`,
-        group: 'File',
-        run: (s) => {
-          s.setDocument(EXAMPLE_BY_DIAGRAM[type]());
-          s.showToast('info', `Loaded example ${type.toUpperCase()}.`);
-          fitViewAfterLoad();
-        },
-      }),
-    ];
-  }
-);
-
 export const documentCommands: Command[] = [
-  ...diagramCommands,
+  // Session 90 — replaces the 14 per-diagram `New X` + `Load example X`
+  // palette rows with two picker-fronted commands. The picker shows
+  // all 7 diagram types as cards with "use this when…" cues, fanning
+  // out the choice without dominating the unfiltered palette.
+  withWriteGuard({
+    id: 'new-diagram',
+    label: 'New diagram…',
+    group: 'File',
+    run: (s) => s.openDiagramPicker('new'),
+  }),
+  withWriteGuard({
+    id: 'load-example',
+    label: 'Load example…',
+    group: 'File',
+    run: (s) => s.openDiagramPicker('example'),
+  }),
   withWriteGuard({
     id: 'import-json',
     label: 'Import from JSON…',
@@ -145,17 +126,17 @@ export const documentCommands: Command[] = [
     },
   }),
   {
+    // Session 90 — `Document details…` kept in the palette by Dann's
+    // explicit direction (the TitleBadge Info button is small + only
+    // appears at xs+; palette stays as the keyboard-driven route).
     id: 'open-document-inspector',
     label: 'Document details…',
     group: 'Review',
     run: (s) => s.openDocSettings(),
   },
-  {
-    id: 'open-history-panel',
-    label: 'Open history…',
-    group: 'Review',
-    run: (s) => s.openHistoryPanel(),
-  },
+  // Session 90 — `Open history…` removed from the palette: it's
+  // already reachable via the History icon-button in the TopBar (sm+)
+  // and the KebabMenu (xs). Duplicate entry was just visual noise.
   {
     id: 'capture-snapshot',
     label: 'Capture snapshot',
