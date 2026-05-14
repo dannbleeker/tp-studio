@@ -22,6 +22,26 @@ export type ModalProps = {
  * The inner `<dialog open>` element gives us native aria-modal semantics
  * and satisfies Biome's a11y/useSemanticElements rule. We render manually
  * (no .showModal()) because we control visibility through React state.
+ *
+ * Session 93 — width-class convention reference (#38).
+ *
+ * Existing dialogs / picker surfaces use a tiered widthClass:
+ *
+ *   - `max-w-md` (~448 px) — confirm dialogs, narrow info dialogs
+ *     (ConfirmDialog). Single column of text + 2 buttons fits.
+ *   - `max-w-lg` (~512 px) — the **CommandPalette**. One input + a
+ *     scrollable list of one-line rows.
+ *   - `max-w-2xl` (~672 px) — the **HelpDialog** (keyboard shortcuts
+ *     + gestures). Two-column grid of label + key.
+ *   - Pickers / large dialogs that don't use `Modal`: DiagramType,
+ *     Export, Templates, PrintPreview each render their own
+ *     `<dialog>` at `w-[min(960px,94vw)]` (or similar) because
+ *     they're card-grids that want viewport-clamping rather than
+ *     a fixed max. Future consolidation: pull these into a
+ *     `LargeDialog` shell with an explicit `size: 'card-grid'` prop.
+ *
+ * When adding a new modal: pick the smallest width that fits without
+ * forcing horizontal scrolling, and pass it via `widthClass`.
  */
 export function Modal({
   open,

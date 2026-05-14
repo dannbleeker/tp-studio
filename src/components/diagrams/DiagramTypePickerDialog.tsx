@@ -9,6 +9,7 @@ import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { useRef } from 'react';
 import { Button } from '../ui/Button';
+import { CARD_FOCUS } from '../ui/focusClasses';
 
 /**
  * Session 90 — DiagramTypePicker.
@@ -173,8 +174,9 @@ export function DiagramTypePickerDialog() {
                   aria-label={`${mode === 'new' ? 'New' : 'Load example'}: ${label}`}
                   className={clsx(
                     'group flex w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
-                    'hover:border-indigo-400 hover:bg-indigo-50/40 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300',
-                    'dark:border-neutral-800 dark:bg-neutral-900 dark:focus:ring-indigo-600 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
+                    'hover:border-indigo-400 hover:bg-indigo-50/40',
+                    CARD_FOCUS,
+                    'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
                   )}
                 >
                   <span className="rounded bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">

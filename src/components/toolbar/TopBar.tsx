@@ -16,6 +16,25 @@ import { Button } from '../ui/Button';
 import { KebabMenu } from './KebabMenu';
 import { useToolbarActions } from './useToolbarActions';
 
+/**
+ * Session 93 — Tailwind breakpoint reference for this codebase.
+ *
+ * Standard Tailwind breakpoints (min-width):
+ *   - `xs:`  480 px — custom breakpoint added Session 83. Used by
+ *     TitleBadge to keep the Info button visible at phone-narrow.
+ *   - `sm:`  640 px — default Tailwind. Most TopBar features unhide
+ *     here (Commands kbd hint, Undo/Redo, History, Help, Theme).
+ *     Below `sm` they collapse into the KebabMenu.
+ *   - `md:`  768 px — default Tailwind. Inspector becomes pinned
+ *     (vs. modal-style overlay below). Layout-mode select unhides.
+ *   - `lg:`  1024 px — default Tailwind. Currently unused; the
+ *     brief said "responsive down to 1024 px is enough," so this
+ *     is the lower bound, not a hide-threshold.
+ *
+ * Picking which breakpoint to hide a feature at: ask "is this
+ * feature reachable via another surface (palette, kebab) at smaller
+ * widths?" If yes, hide at `sm`. If no, keep visible across widths.
+ */
 export function TopBar() {
   // Subscriptions shared with the `<sm`-only KebabMenu (theme, layout
   // mode, history, help, layout-toggle visibility) live in the shared hook

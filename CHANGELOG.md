@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 93 — Backlog tail: EC slot indicator + tech-debt convention pass
+
+Closes EC PPT comparison items #30-34 and the tech-debt items #35-40 from the Session 87 UI review. **1097 tests passing** (was 1092; +5 for ECSlotIndicator).
+
+**EC PPT comparison items re-evaluated.** With EC PPT comparison work now shipped, these items were re-triaged:
+- **#30 (EC tab bar overcrowding)** — moot. Inspector still has the original 3 tabs (Inspector / Verbalisation / Injections); no 4th was added.
+- **#31 (verbalisation strip eats vertical space)** — already shipped (Session 88's combined `ecChromeCollapsed` wrapper + Session 89's default-collapsed flip).
+- **#32 (EC wizard slot indicator)** — new this session. New `ECSlotIndicator` component renders a 120×60 inline SVG of the canonical 5-box EC layout with the current step's target slot highlighted in indigo. Coordinates mirror the seed positions from `domain/examples/ec.ts` (A left-center, B top, C bottom, D top-right, D′ bottom-right) with the conflict-cone edges drawn as light lines so the shape reads as the recognized 5-box tree. Mounted inside `CreationWizardPanel` for EC wizards only; reads `EC_SLOTS_BY_ORDER[wizardOrder][step]` so it tracks both A-first and D-first walks. +5 unit tests.
+- **#33 (EC mutex ⚡ vs hand-drawn lightning)** — confirmed won't-build per Dann's earlier decision.
+- **#34 (Assumption Well + Injection Workbench behind tabs)** — already shipped (Session 87 — canvas-side assumption badge + injection chip).
+
+**Tech-debt items #35-40 triaged.** Three items addressed via lightweight documentation/convention work; three deferred with rationale.
+
+- **#36 (focus-ring patterns)** — new `src/components/ui/focusClasses.ts` exposes three named constants matching the existing tiered patterns: `INPUT_FOCUS` (subtle ring-1 for fields), `CARD_FOCUS` (ring-2 for clickable cards), `EC_BADGE_FOCUS` (violet ring for EC-themed badges). Adopted `CARD_FOCUS` in `DiagramTypePickerDialog` and `ExportPickerDialog` as exemplars; widening the rollout to all 15+ inputs is mechanical and can ride future edits.
+- **#37 (Tailwind breakpoint usage)** — JSDoc-style header comment on `TopBar` documents the four breakpoints (`xs` 480 / `sm` 640 / `md` 768 / `lg` 1024) and the rule of thumb ("can the user reach this via palette or kebab at smaller widths?").
+- **#38 (dialog width inconsistency)** — JSDoc comment on the `Modal` primitive documents the width-class tier: `max-w-md` for confirms, `max-w-lg` for the palette, `max-w-2xl` for keyboard-heavy dialogs, and the card-grid pickers' viewport-clamped pattern. New modal authors pick the smallest fitting width and pass via `widthClass`.
+- **#35 (LAYER_OFFSETS magic numbers)** — parked-with-rationale. M effort touching every absolute-positioned component; magic numbers aren't actively causing bugs and the existing `Z` z-index module is the only multi-component spacing system worth centralizing. Revisit if a viewport-restructure forces multi-file edits.
+- **#39 (useFocusTrap adoption audit)** — parked-with-rationale. Reviewed: every modal-style component except the CreationWizardPanel uses focus trapping. The wizard intentionally doesn't because it's a non-modal panel that the user is expected to dismiss + return to the canvas mid-flow. No fix needed.
+- **#40 (visual regression coverage for dialogs)** — parked-with-rationale. Storybook visual-snapshot infra was previously rejected (Session 81); Playwright already covers the canvas visual snapshot (`e2e/visual-canvas.spec.ts`). Adding dialog-snapshot specs is a separate infra project, not a 1-hour pass.
+
+End state: tsc clean, Biome clean, 1097 tests passing. The Session 87 UI review queue is now fully closed.
+
 ## Session 92 — Backlog finish: 4 UI items + Esc cascade consolidation + 2 stale-marks
 
 Tidies up the remaining UI tidy / polish / bigger-asks items from the Session 87 review queue. **1092 tests passing** (was 1089; +3 Esc cascade tests).

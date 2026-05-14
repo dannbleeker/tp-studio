@@ -4,6 +4,7 @@ import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { ChevronUp, GripVertical, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ECSlotIndicator } from './ECSlotIndicator';
 
 /**
  * Session 87 / EC PPT comparison item #3 — Reverse-direction (D-first)
@@ -469,6 +470,19 @@ export function CreationWizardPanel() {
         ))}
       </div>
 
+      {/* Session 93 / EC PPT comparison #32 — visual slot indicator.
+          The prompt text mentions the slot letter ("Need B"); the
+          indicator shows WHICH of the canonical 5-box positions
+          that letter is, so a first-time EC user can map the
+          question onto the geometry. Pairs with the per-slot
+          guiding questions (Session 87) and the EC reading guide
+          (Session 88) — three different surfaces reinforcing the
+          same conceptual shape. */}
+      {kind === 'ec' && (
+        <div className="flex justify-center text-indigo-600 dark:text-indigo-300">
+          <ECSlotIndicator targetSlot={EC_SLOTS_BY_ORDER[wizardOrder][step] ?? null} />
+        </div>
+      )}
       <label className="flex flex-col gap-1">
         <span className="text-neutral-700 text-xs dark:text-neutral-200">{def.prompt}</span>
         <textarea

@@ -300,7 +300,9 @@ Session 87 shipped #24 (StatusStrip) + #25 (Settings tabs); Session 92 closed th
 - ~~**Marquee selection discoverability** (item #28)~~ ✅ **Done (Session 92).** Same gesture list in HelpDialog; FirstEntityTip already mentions "Drag on empty canvas to marquee-select" for first-time users.
 - ~~**Browse Lock toast dedup** (item #29)~~ ✅ **Done (Session 87, verified Session 92).** `tests/services/browseLock.test.ts` already pins the dedup behavior — 5 rapid `guardWriteOrToast` calls collapse to 1 visible toast. The test was named `dedupes cascading lock-toast attempts to a single visible toast (S29)` in Session 87; Session 92 backlog reconciliation confirmed the test exists and the dedup works.
 
-EC-specific findings (items #30-34) are parked until the EC PPT comparison agent ships and the surfaces stabilize; cross-cutting tech-debt items (#35-40) belong in a future focused-1-hour pass.
+~~EC-specific findings (items #30-34) are parked until the EC PPT comparison agent ships and the surfaces stabilize~~ ✅ **All triaged in Session 93.** Inspector tab bar stayed at 3 (#30 moot); verbalisation strip collapse shipped Session 88 (#31); ECSlotIndicator built this session (#32); mutex visual won't-build per Dann (#33); assumption + injection canvas affordances shipped Session 87 (#34).
+
+~~cross-cutting tech-debt items (#35-40) belong in a future focused-1-hour pass~~ ✅ **Triaged in Session 93.** Three closed via lightweight documentation/convention: focus-ring constants (`focusClasses.ts`, #36); breakpoint convention comment on TopBar (#37); Modal width-class JSDoc (#38). Three parked-with-rationale: #35 magic-number spacing (no active bug; M effort touching too many files); #39 focus-trap audit (only non-modal CreationWizardPanel lacks it, intentionally); #40 dialog visual-regression (separate infra project).
 
 ## EC PPT comparison
 
