@@ -1,3 +1,4 @@
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import { BaseEdge, EdgeLabelRenderer, type EdgeProps, getBezierPath } from '@xyflow/react';
@@ -60,7 +61,10 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     ? props.targetY + JUNCTOR_EDGE_TERMINAL_OFFSET_Y
     : props.targetY;
 
-  const [path, labelX, labelY] = getBezierPath({
+  // Default bezier — what React Flow's source/target handle positions
+  // produce. The mutex special-case below overrides this when both
+  // endpoints resolve to vertically-stacked entity positions.
+  const [bezierPath, bezierLabelX, bezierLabelY] = getBezierPath({
     sourceX: props.sourceX,
     sourceY: props.sourceY,
     targetX: props.targetX,
@@ -95,6 +99,69 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const setECInspectorTab = useDocumentStore((s) => s.setECInspectorTab);
   const isBackEdge = useDocumentStore((s) => s.doc.edges[props.id]?.isBackEdge === true);
   const isMutex = useDocumentStore((s) => s.doc.edges[props.id]?.isMutualExclusion === true);
+  // Session 87 UX fix #5 — for the EC D↔D′ mutex edge, the default
+  // Left/Right handle layout on EC entities sends the bezier looping
+  // around the diagram (D's left side → D′'s right side, with both
+  // wants stacked vertically). Pull the two entities' raw positions
+  // from the store and draw a straight line from bottom-of-upper to
+  // top-of-lower instead. Robust to user-dragged repositioning: the
+  // "upper" / "lower" call is made by current y rather than by ecSlot
+  // assignment, so the cleaner routing follows the visual layout even
+  // when the user has dragged D and D′ around.
+  //
+  // Selectors return primitives — composing them into the object
+  // shape happens in component scope, which avoids zustand's
+  // identity-comparison infinite-render trap for selectors that emit
+  // fresh objects per render.
+  const mutexSrcX = useDocumentStore((s) =>
+    isMutex ? s.doc.entities[s.doc.edges[props.id]?.sourceId ?? '']?.position?.x : undefined
+  );
+  const mutexSrcY = useDocumentStore((s) =>
+    isMutex ? s.doc.entities[s.doc.edges[props.id]?.sourceId ?? '']?.position?.y : undefined
+  );
+  const mutexTgtX = useDocumentStore((s) =>
+    isMutex ? s.doc.entities[s.doc.edges[props.id]?.targetId ?? '']?.position?.x : undefined
+  );
+  const mutexTgtY = useDocumentStore((s) =>
+    isMutex ? s.doc.entities[s.doc.edges[props.id]?.targetId ?? '']?.position?.y : undefined
+  );
+  const mutexEndpoints =
+    isMutex &&
+    typeof mutexSrcX === 'number' &&
+    typeof mutexSrcY === 'number' &&
+    typeof mutexTgtX === 'number' &&
+    typeof mutexTgtY === 'number'
+      ? { srcPos: { x: mutexSrcX, y: mutexSrcY }, tgtPos: { x: mutexTgtX, y: mutexTgtY } }
+      : null;
+
+  // Mutex override (Session 87 UX fix #5). Uses raw entity positions
+  // to draw a clean vertical line between the bottom of the topmost
+  // want and the top of the bottommost want. Skipped if endpoints
+  // aren't resolvable or if the two entities aren't actually stacked
+  // (horizontal layout would look worse with a forced straight line).
+  const mutexPath = (() => {
+    if (!isMutex || !mutexEndpoints) return null;
+    const { srcPos, tgtPos } = mutexEndpoints;
+    const verticalGap = Math.abs(srcPos.y - tgtPos.y);
+    const horizontalGap = Math.abs(srcPos.x - tgtPos.x);
+    if (verticalGap <= NODE_MIN_HEIGHT) return null;
+    if (horizontalGap > NODE_WIDTH * 1.5) return null;
+    const upper = srcPos.y <= tgtPos.y ? srcPos : tgtPos;
+    const lower = srcPos.y <= tgtPos.y ? tgtPos : srcPos;
+    const x1 = upper.x + NODE_WIDTH / 2;
+    const y1 = upper.y + NODE_MIN_HEIGHT;
+    const x2 = lower.x + NODE_WIDTH / 2;
+    const y2 = lower.y;
+    return {
+      path: `M ${x1},${y1} L ${x2},${y2}`,
+      labelX: (x1 + x2) / 2,
+      labelY: (y1 + y2) / 2,
+    };
+  })();
+  const path = mutexPath?.path ?? bezierPath;
+  const labelX = mutexPath?.labelX ?? bezierLabelX;
+  const labelY = mutexPath?.labelY ?? bezierLabelY;
+
   const weight = useDocumentStore((s) => s.doc.edges[props.id]?.weight);
   const hasDescription = useDocumentStore((s) => {
     const desc = s.doc.edges[props.id]?.description;
@@ -166,7 +233,11 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       <BaseEdge
         id={props.id}
         path={path}
-        markerEnd={props.markerEnd}
+        // Mutex edges are bidirectional conflicts, not directional
+        // causes — suppress React Flow's arrowhead marker so the line
+        // reads as a symmetric connector. The ⚡ label-glyph stays as
+        // the carrier of intent.
+        markerEnd={isMutex ? undefined : props.markerEnd}
         interactionWidth={EDGE_INTERACTION_WIDTH}
         style={{
           stroke,
