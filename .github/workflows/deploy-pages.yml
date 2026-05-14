@@ -10,7 +10,13 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    # FL-EX8 preview — the multi-doc workspace v0 lives on
+    # `feature/multi-doc-workspace`. Listing it here makes pushes to
+    # that branch publish to the live URL so Dann can evaluate the
+    # feature without a local dev setup. Pushing main re-publishes the
+    # single-doc build and the preview is gone. Concurrency below
+    # serializes the two branches' deploys.
+    branches: [main, feature/multi-doc-workspace]
   workflow_dispatch:
 
 permissions:
