@@ -27,6 +27,7 @@ interface TpTestHook {
     clear?: boolean;
   }) => string[];
   connect: (sourceId: string, targetId: string) => string | null;
+  confirmAndDeleteEntity: (id: string) => Promise<void>;
 }
 
 declare global {

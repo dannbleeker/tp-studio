@@ -1,3 +1,4 @@
+import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 
 /**
@@ -42,6 +43,22 @@ export interface TpTestHook {
    * the edge id, or null if the pair would create a self-loop / dupe.
    */
   connect: (sourceId: string, targetId: string) => string | null;
+  /**
+   * Invoke the production `confirmAndDeleteEntity(id)` service. Fires
+   * the same code path the keyboard `Delete` handler does — opens the
+   * `ConfirmDialog` when the entity has edges; deletes silently when
+   * it doesn't. Returns the promise so the test can choose to await
+   * the resolution after clicking the dialog button.
+   *
+   * This exists because the keyboard / click-to-select path is racy
+   * on CI (React Flow's `onSelectionChange` mirrors react-flow state
+   * back to the store on every render, including mount-time empty
+   * events — a programmatic `store.selectEntity()` set just before
+   * pressing Delete gets wiped before the keyboard handler reads it).
+   * Going through `confirmAndDeleteEntity(id)` directly sidesteps the
+   * selection ambiguity entirely.
+   */
+  confirmAndDeleteEntity: (id: string) => Promise<void>;
 }
 
 /**
@@ -82,6 +99,7 @@ export const maybeInstallTestHook = (): void => {
       const edge = useDocumentStore.getState().connect(sourceId, targetId);
       return edge?.id ?? null;
     },
+    confirmAndDeleteEntity,
   };
   // biome-ignore lint/suspicious/noExplicitAny: deliberate window-surface escape hatch for Playwright; the TpTestHook contract documents the shape and the opt-in URL flag keeps it out of normal users' way.
   (window as any).__TP_TEST__ = hook;

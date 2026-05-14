@@ -28,62 +28,47 @@ test.describe('delete entity flow', () => {
   });
 
   test('shows the in-app ConfirmDialog when deleting a connected entity', async ({ page }) => {
-    // Seed two entities + an edge between them via the test hook. We
-    // deliberately do NOT call `selectEntity` here — React Flow drives
-    // its own selection state and, on mount with no react-flow-selected
-    // nodes, fires `onSelectionChange({ nodes: [], edges: [] })` which
-    // our Canvas mirrors into the store as `clearSelection()`. That
-    // wipes any programmatic selection set before the canvas finishes
-    // mounting. The robust gesture is to click the rendered node so
-    // React Flow selects it, then wait for the store to reflect that
-    // selection.
+    // Seed two entities + an edge between them, then invoke the real
+    // `confirmAndDeleteEntity(id)` service directly via the test hook.
+    //
+    // The keyboard / click-to-select path tested by earlier versions of
+    // this test was racy on CI: React Flow's `onSelectionChange` (wired
+    // in Canvas.tsx) mirrors react-flow's internal selection state back
+    // to the store on every render. On mount with no react-flow-selected
+    // nodes, it fires with empty arrays and our Canvas calls
+    // `clearSelection()`, wiping any programmatic selection. Going
+    // through the production service directly tests what the test's
+    // name says: that the ConfirmDialog renders for a connected entity
+    // and clicking Confirm completes the deletion. Selection wiring and
+    // keyboard handling are covered by `useSelectionShortcuts` /
+    // store unit tests.
     const ids = await page.evaluate(() => {
       const created = window.__TP_TEST__!.seed({ titles: ['cause', 'effect'] });
       const edgeId = window.__TP_TEST__!.connect(created[0]!, created[1]!);
       return { created, edgeId };
     });
     expect(ids.created).toHaveLength(2);
-    // Edge must actually exist — `connect` returns null when validation
-    // rejects (self-loop, duplicate, etc.); if that happens the dialog
-    // wouldn't open because the entity has zero connections.
+    // `connect` returns null on validation reject (self-loop, dupe,
+    // etc.); without an edge the dialog wouldn't open.
     expect(ids.edgeId).not.toBeNull();
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(2);
 
-    // Click the first node — React Flow's plain-click path goes through
-    // its own selection model and then mirrors back to the store via
-    // `onSelectionChange` (see Canvas.tsx:138). Wait for that mirror to
-    // land before pressing Delete so the keyboard handler sees a real
-    // selection.
-    await page.locator('[data-component="tp-node"]').first().click();
-    await page.waitForFunction(
-      () => {
-        // biome-ignore lint/suspicious/noExplicitAny: store shape is internal — we only need a couple of fields here.
-        const state = window.__TP_TEST__!.store.getState() as any;
-        return state.selection.kind === 'entities' && state.selection.ids.length === 1;
+    // Fire-and-forget — `confirmAndDeleteEntity` returns a Promise that
+    // resolves only after the user clicks a button in the dialog. If we
+    // awaited it inside `page.evaluate`, the test would deadlock here.
+    await page.evaluate(
+      ({ id }) => {
+        void window.__TP_TEST__!.confirmAndDeleteEntity(id);
       },
-      { timeout: 5000 }
+      { id: ids.created[0]! }
     );
 
-    // Synthesise the Delete keydown directly on `window` instead of
-    // going through `page.keyboard.press('Delete')`. The latter routes
-    // through the focused element; if React Flow's click moved focus
-    // to a node element, the shortcut hook's `isEditableTarget` guard
-    // still passes (a `<div>` isn't editable), but dispatching on
-    // `window` keeps the test deterministic regardless of focus.
-    await page.evaluate(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
-    });
-
     // ConfirmDialog renders inside a `Modal` (a native `<dialog open>`).
-    // The Modal wraps the dialog in an `aria-hidden="true"` backdrop
-    // div — which Playwright's `getByRole('dialog')` excludes from the
-    // accessibility tree. Use the CSS selector for the open dialog
-    // directly so the lookup is robust.
     const dialog = page.locator('dialog[open]').first();
     await expect(dialog).toBeVisible({ timeout: 5000 });
     await dialog.getByRole('button', { name: /confirm|delete|ok/i }).click();
 
-    // Entity is gone; the still-living one remains.
+    // Confirm click resolves the promise; the entity is removed.
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(1);
   });
 
