@@ -41,12 +41,14 @@
     "dagre": "^0.8.5",
     "dompurify": "^3.4.2",
     "html-to-image": "^1.11.13",
+    "jspdf": "^2.5.2",
     "lucide-react": "^1.14.0",
     "micromark": "^4.0.2",
     "micromark-extension-gfm": "^3.0.0",
     "nanoid": "^5.0.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "svg2pdf.js": "^2.5.0",
     "zustand": "^5.0.13"
   },
   "devDependencies": {

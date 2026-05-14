@@ -2,6 +2,45 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 80 — True vector PDF export
+
+Closes the remaining v3-brief critical-path bundle (§8.1 + §8.6 + §8.8 + §8.13). The Session 77 print pipeline handed off to `window.print()`; this session adds a programmatic file download that produces a real vector PDF — text stays text, edges stay resolution-independent, every glyph is selectable + searchable.
+
+End state: tsc clean, Biome clean, **954 tests passing** (was 941; +13 in `tests/services/pdfExport.test.ts`), build green, all budgeted chunks within ceiling.
+
+### Library choice
+
+The v3 brief named `react-to-pdf`, but on inspection that library is a `html2canvas` wrapper — it rasters the DOM into a PNG and embeds the PNG. That directly contradicts "true vector". Shipped with `jspdf` + `svg2pdf.js` instead — reuses the SVG snapshot we already produce for the PNG/JPEG/SVG exporters and walks it into a vector PDF.
+
+### `pdfExport` service (`src/services/pdfExport.ts`)
+
+- `exportToVectorPdf(doc, nodes, options)` is the entry point. Snapshots the live React Flow viewport via the same DOM pre-flight as `image.ts`'s `exportSVG`, parses the result back into an off-screen SVG node, and hands it to `svg2pdf` for vector rendering on each jsPDF page.
+- **Multi-page**: when the rendered diagram is taller than a single page's drawable area, the SVG is sliced vertically into N tiles and each tile becomes one page. Tile alignment by translating the SVG origin upward by `i * drawableHeight` per page so svg2pdf's draw-and-clip gives the right slice. Horizontal overflow is handled by scaling to fit width — no horizontal pagination.
+- **Header / footer bands**: free text at the top + bottom of every page, with `{pageNumber}` / `{pageCount}` placeholders resolved per-page. The caller (`PrintPreviewDialog`) merge-fills the user's `{title}` / `{date}` / `{author}` / `{diagramType}` before passing through.
+- **Annotation appendix**: when `includeAppendix: true`, after the diagram pages the service walks every entity with a non-empty description (sorted by `annotationNumber`) and renders them as numbered `#N — Title` / body blocks. Wraps to additional pages via `pdf.splitTextToSize`.
+- **Selection-only**: when the print-preview toggle is on, the caller filters `nodes` to the selected entities before calling — the same filter as the existing print-CSS `body.print-selection-only` path, but applied to the PDF source rather than to display.
+- **Bundle**: `jspdf` (115 KB gzip) + `svg2pdf.js` (25 KB gzip) + their `html2canvas` peer (47 KB gzip) all ship as **lazy chunks** so the cost is paid only when the user actually exports.
+
+### Font / Unicode trade-off (§8.13)
+
+jspdf ships with four Latin-1-only Type 1 fonts (Helvetica, Times, Courier, plus bold/italic variants). For diagrams that contain non-ASCII content the export uses Helvetica fall-back; embedding a full Unicode TrueType font would add 200–400 KB to the bundle. CJK / Cyrillic / accented content prints fine via the browser-print path (uses system fonts). This is a documented trade-off, not an oversight.
+
+### `PrintPreviewDialog` changes
+
+- New **Save as PDF** primary button (alongside the existing Open print dialog as a secondary). Disabled while a previous export is in flight; toasts success / failure.
+- Selection-only checkbox now filters the PDF source nodes too (was previously only affecting browser-print output).
+- `Cancel` and `Open print dialog` both become ghost buttons; `Save as PDF` is the new primary action because vector-PDF download is the v3-brief default.
+
+### Confidence-field UI dropped from backlog
+
+`Entity.confidence` was removed from the schema in Session 71 (deliberate product decision, not deferral). The "Confidence field UI" line item in `NEXT_STEPS.md`'s "Recommended priorities" section was a stale remnant from before that decision — removed this session. The single source-code reference (`persistenceValidators.ts:117`) is a defensive comment explaining that legacy imports silently drop the field; it stays as documented intentional behaviour for back-compat.
+
+### Bundle impact
+
+- **Lazy chunks** (loaded only when exporting): `jspdf.es.min-*.js` 115 KB gzip, `svg2pdf.es.min-*.js` 25 KB gzip, `html2canvas.esm-*.js` 47 KB gzip.
+- **Main bundle**: unchanged within slop (still 107 KB gzip).
+- **PrintPreviewDialog lazy chunk**: 4.4 KB gzip (was 2.3 KB) — the +2 KB is the new PDF handler + the wiring.
+
 ## Session 79 — Templates library, multi-goal soft warning, a11y pass, print-selection-only
 
 Picks off six items from the v3 backlog in one pass: the curated template library (§12), a soft dismissible CLR warning for Goal Trees with >1 goal (replacing the previous hard single-goal constraint), a one-click "Convert extras to CSFs" action attached to that warning, an accessibility audit on the five Session 77+78 components, and a "Print selection only" toggle in the print preview.

@@ -1,9 +1,12 @@
 import { structuralEntities } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { getCanvasNodes } from '@/services/canvasRef';
+import { log } from '@/services/logger';
+import { exportToVectorPdf } from '@/services/pdfExport';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
-import { Printer, X } from 'lucide-react';
+import { FileDown, Printer, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../ui/Button';
 
@@ -92,9 +95,11 @@ export function PrintPreviewDialog() {
   const close = useDocumentStore((s) => s.closePrintPreview);
   const doc = useDocumentStore((s) => s.doc);
   const selection = useDocumentStore((s) => s.selection);
+  const showToast = useDocumentStore((s) => s.showToast);
 
   const [mode, setMode] = useState<PrintMode>('standard');
   const [includeAppendix, setIncludeAppendix] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
   // Session 79 / brief §10 — "Print selection only" toggle. Only
   // surfaced when something is selected; otherwise the option is
   // disabled with a hint.
@@ -159,6 +164,46 @@ export function PrintPreviewDialog() {
     // closing it after the call is correct.
     window.print();
     close();
+  };
+
+  // Session 80 / brief §8.1 + §8.6 + §8.8 — true vector PDF download.
+  // Captures the live canvas as SVG, hands it to jspdf + svg2pdf, and
+  // triggers a file download. Multi-page when the diagram exceeds one
+  // page-height; appendix appended afterward when the toggle is on.
+  const handleVectorPdf = async (): Promise<void> => {
+    if (pdfBusy) return;
+    setPdfBusy(true);
+    try {
+      const nodes = getCanvasNodes();
+      // For "selection only", filter nodes to those whose id is in the
+      // current selection — same semantics as the print-selection-only
+      // body class but applied to the PDF source instead of CSS.
+      const filtered =
+        selectionOnly && hasSelection && selection.kind === 'entities'
+          ? nodes.filter((n) => selection.ids.includes(n.id as never))
+          : nodes;
+      const ok = await exportToVectorPdf(doc, filtered, {
+        pageSize: 'a4',
+        mode,
+        includeAppendix,
+        header: resolveMergeFields(headerTemplate, doc),
+        footer: resolveMergeFields(footerTemplate, doc),
+      });
+      if (!ok) {
+        showToast('info', 'Nothing to export — add some entities first.');
+        return;
+      }
+      showToast('success', 'Vector PDF saved.');
+      close();
+    } catch (err) {
+      log.error('vector-pdf-export-failed', err);
+      showToast(
+        'error',
+        `PDF export failed: ${err instanceof Error ? err.message : 'unknown error'}`
+      );
+    } finally {
+      setPdfBusy(false);
+    }
   };
 
   const annotationCount = structuralEntities(doc).filter((e) => e.description).length;
@@ -275,13 +320,22 @@ export function PrintPreviewDialog() {
           </label>
         </div>
 
-        <footer className="flex justify-end gap-2">
+        <footer className="flex flex-wrap justify-end gap-2">
           <Button variant="ghost" onClick={close}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handlePrint}>
+          <Button variant="ghost" onClick={handlePrint}>
             <Printer className="h-3.5 w-3.5" />
             Open print dialog
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleVectorPdf}
+            disabled={pdfBusy}
+            aria-label="Save as vector PDF"
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            {pdfBusy ? 'Saving…' : 'Save as PDF'}
           </Button>
         </footer>
       </div>

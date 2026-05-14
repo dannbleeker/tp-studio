@@ -482,14 +482,17 @@ A **Freeform Diagram** is the non-TOC mode: no built-in type pattern matching, n
 
 **Self-contained HTML viewer (Session 77).** `Cmd/Ctrl+K` → **Export as self-contained HTML viewer** writes a single `.html` file with all CSS / JS inlined and the source JSON embedded. The receiver opens it in any browser; the file works offline, behind firewalls, and on shared file drives. The view renders the doc title, entities, EC verbalisation (where applicable), assumptions with status chips, and injections — read-only. No network calls. Best for sending a colleague a snapshot they can open without installing anything.
 
-**Print preview (Session 77, extended Session 79).** `Cmd/Ctrl+K` → **Print / Save as PDF…** opens a print preview modal where you pick:
+**Print preview (Session 77, extended Sessions 79 + 80).** `Cmd/Ctrl+K` → **Print / Save as PDF…** opens a print preview modal where you pick:
 
-- **Mode**: Standard (default browser print), Workshop (high-contrast, large font, group rectangles bordered), Ink-saving (group shading removed, edges thinned, blacks softened).
-- **Annotation appendix** (checkbox): when on, the printed output includes a numbered list of every entity's description + every edge note + every assumption-with-status as an appendix after the diagram.
-- **Selection only** (checkbox, Session 79): when on, only selected entities + edges appear in the print output. The rest of the canvas is hidden (via `visibility: hidden` so layout positions stay intact — no edges re-route). The checkbox is disabled with a hint when you don't have a non-empty selection.
-- **Header / footer templates**: free text with merge fields `{title}` / `{date}` / `{author}` / `{diagramType}`. The rendered values get a thin band at the top + bottom of every printed page.
+- **Mode**: Standard, Workshop (high-contrast, large font, group rectangles bordered), Ink-saving (group shading removed, edges thinned, blacks softened).
+- **Annotation appendix** (checkbox): when on, the output includes a numbered list of every entity's description as an appendix after the diagram.
+- **Selection only** (checkbox, Session 79): when on, only selected entities + edges appear in the output. The rest of the canvas is hidden (via `visibility: hidden` for browser-print so layout positions stay intact, or by filtering the source node list for the vector PDF). Disabled when there's no selection.
+- **Header / footer templates**: free text with merge fields `{title}` / `{date}` / `{author}` / `{diagramType}`. The PDF path also resolves `{pageNumber}` / `{pageCount}` per page; browser-print leaves them blank and relies on the browser's running headers.
 
-Click **Open print dialog** to hand off to the browser's print/Save-as-PDF flow with the chosen mode applied. (A future iteration will add a true vector-PDF pipeline via `react-to-pdf`; the current flow uses the browser's print engine.)
+Two export paths:
+
+- **Save as PDF** (primary, Session 80) downloads a true **vector PDF** built with `jspdf` + `svg2pdf.js`. Text stays text (selectable + searchable), strokes stay resolution-independent, multi-page when the diagram exceeds one page-height (sliced vertically, scaled to page-width). The annotation appendix is paginated automatically. **Font note**: the embedded fall-back is Helvetica (Latin-1 only). Diagrams containing CJK / Cyrillic / accented characters should use the browser-print path below for accurate glyph rendering.
+- **Open print dialog** hands off to the browser's print / Save-as-PDF flow with the chosen mode applied. Use this when you need system-font Unicode coverage or want to print to a real printer rather than a PDF.
 
 **Export as JSON.** `Cmd/Ctrl+K` → **Export as JSON** downloads `<your-title>.tps.json`. The format is human-readable, version-stamped, and round-trip stable.
 
