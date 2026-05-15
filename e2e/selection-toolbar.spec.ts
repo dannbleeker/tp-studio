@@ -25,67 +25,53 @@ test.describe('SelectionToolbar e2e', () => {
     await page.reload();
   });
 
-  test('appears on selection and disappears when nothing is selected', async ({ page }) => {
+  /**
+   * Helper: spawn one entity via dblclick and leave it selected,
+   * but not in editing mode. dblclick-create sets editingEntityId,
+   * which hides the toolbar by design; pressing Escape commits and
+   * leaves the entity selected so the toolbar can appear.
+   */
+  const spawnSelectedEntity = async (page: import('@playwright/test').Page) => {
+    const viewport = page.viewportSize();
+    if (!viewport) throw new Error('viewport not available');
+    await page.mouse.dblclick(viewport.width / 2, viewport.height / 2);
+    await page.waitForSelector('[data-component="tp-node"]');
+    // Escape leaves editing mode but keeps the entity selected.
+    await page.keyboard.press('Escape');
+  };
+
+  test('appears on selection and shows the expected verbs', async ({ page }) => {
     // No selection — toolbar absent.
     await expect(page.locator('[data-component="selection-toolbar"]')).toHaveCount(0);
 
-    // Spawn one entity via dblclick (canvas center). The entity is
-    // created in editing mode + selected.
-    const viewport = page.viewportSize();
-    if (!viewport) test.fail();
-    await page.mouse.dblclick(viewport!.width / 2, viewport!.height / 2);
-
-    // Wait for the entity to land + the inline title editor to open
-    // (editingEntityId !== null). Editing mode HIDES the toolbar by
-    // design — so press Escape to commit / leave the editor before
-    // asserting toolbar visibility.
-    await page.waitForSelector('[data-component="tp-node"]');
-    await page.keyboard.press('Escape');
-
-    // Now click the node to ensure it's selected (Escape may have
-    // cleared selection depending on whether editing was active).
-    const node = page.locator('[data-component="tp-node"]').first();
-    await node.click();
+    await spawnSelectedEntity(page);
 
     // Toolbar should appear above the selection.
-    await expect(page.locator('[data-component="selection-toolbar"]')).toBeVisible();
+    const toolbar = page.locator('[data-component="selection-toolbar"]');
+    await expect(toolbar).toBeVisible();
 
     // Verify the expected verbs are present for a single-entity
     // selection: Add child, Add parent, Delete.
-    const toolbar = page.locator('[data-component="selection-toolbar"]');
     await expect(toolbar.getByRole('button', { name: /^add child$/i })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: /^add parent$/i })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: /^delete$/i })).toBeVisible();
   });
 
   test('clicking the Add child verb creates a second entity', async ({ page }) => {
-    const viewport = page.viewportSize();
-    if (!viewport) test.fail();
-    await page.mouse.dblclick(viewport!.width / 2, viewport!.height / 2);
-    await page.waitForSelector('[data-component="tp-node"]');
-    await page.keyboard.press('Escape');
-    await page.locator('[data-component="tp-node"]').first().click();
-    await expect(page.locator('[data-component="selection-toolbar"]')).toBeVisible();
+    await spawnSelectedEntity(page);
+    const toolbar = page.locator('[data-component="selection-toolbar"]');
+    await expect(toolbar).toBeVisible();
 
-    // Click Add child verb. New entity should land and open in
-    // editing mode (we leave the editor by pressing Escape so the
-    // count assertion runs against the post-editor DOM).
-    await page
-      .locator('[data-component="selection-toolbar"]')
-      .getByRole('button', { name: /^add child$/i })
-      .click();
+    // Click Add child verb. New entity lands in editing mode; Escape
+    // leaves the editor so the count assertion sees the post-editor
+    // DOM.
+    await toolbar.getByRole('button', { name: /^add child$/i }).click();
     await page.keyboard.press('Escape');
-
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(2);
   });
 
   test('hides when the command palette is open', async ({ page }) => {
-    const viewport = page.viewportSize();
-    if (!viewport) test.fail();
-    await page.mouse.dblclick(viewport!.width / 2, viewport!.height / 2);
-    await page.waitForSelector('[data-component="tp-node"]');
-    await page.keyboard.press('Escape');
-    await page.locator('[data-component="tp-node"]').first().click();
+    await spawnSelectedEntity(page);
     await expect(page.locator('[data-component="selection-toolbar"]')).toBeVisible();
 
     // Open the palette — toolbar should disappear.

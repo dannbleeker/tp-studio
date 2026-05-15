@@ -1,4 +1,5 @@
 import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/flow-types';
+import { useDocumentStore } from '@/store';
 import { type ReactFlowInstance, getNodesBounds } from '@xyflow/react';
 
 // The active React Flow instance, parameterized with our concrete node and
@@ -38,25 +39,56 @@ export const getSelectedEdges = (): TPEdge[] =>
  *
  * The caller decides what to do with `null` (typically: hide the
  * overlay).
+ *
+ * **Selection source.** We read the selection ids from the zustand
+ * store (the canonical source), not React Flow's `n.selected` flag.
+ * React Flow's flag sync trails our store by one tick because we
+ * push `selected: boolean` onto each node in `useGraphView`, then
+ * RF reconciles, then a Playwright `expect(...).toBeVisible()` may
+ * race with that reconciliation. Reading from the store eliminates
+ * the lag — the toolbar's effect already runs when our store's
+ * `selection` changes, so the rect is computed against the same
+ * source the visibility check already used.
  */
 export const getSelectionViewportRect = (): DOMRect | null => {
   if (!cached) return null;
+  const state = useDocumentStore.getState();
+  const sel = state.selection;
   const allNodes = cached.getNodes();
-  const selected = allNodes.filter((n) => n.selected === true);
-  if (selected.length === 0) {
-    // Edge-only selection — derive from the edge's endpoint nodes.
-    const selectedEdges = cached.getEdges().filter((e) => e.selected === true);
-    if (selectedEdges.length === 0) return null;
+  const nodeById = new Map(allNodes.map((n) => [n.id, n]));
+
+  if (sel.kind === 'entities' && sel.ids.length > 0) {
+    const nodes = sel.ids
+      .map((id) => nodeById.get(id))
+      .filter((n): n is NonNullable<typeof n> => Boolean(n));
+    if (nodes.length === 0) return null;
+    return flowBoundsToViewportRect(getNodesBounds(nodes));
+  }
+
+  if (sel.kind === 'groups' && sel.ids.length > 0) {
+    const nodes = sel.ids
+      .map((id) => nodeById.get(id))
+      .filter((n): n is NonNullable<typeof n> => Boolean(n));
+    if (nodes.length === 0) return null;
+    return flowBoundsToViewportRect(getNodesBounds(nodes));
+  }
+
+  if (sel.kind === 'edges' && sel.ids.length > 0) {
+    // Edge selection — derive from the edge's endpoint nodes.
     const endpointIds = new Set<string>();
-    for (const e of selectedEdges) {
-      endpointIds.add(e.source);
-      endpointIds.add(e.target);
+    for (const edgeId of sel.ids) {
+      const edge = state.doc.edges[edgeId];
+      if (edge) {
+        endpointIds.add(edge.sourceId);
+        endpointIds.add(edge.targetId);
+      }
     }
     const endpoints = allNodes.filter((n) => endpointIds.has(n.id));
     if (endpoints.length === 0) return null;
     return flowBoundsToViewportRect(getNodesBounds(endpoints));
   }
-  return flowBoundsToViewportRect(getNodesBounds(selected));
+
+  return null;
 };
 
 /**
