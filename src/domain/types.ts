@@ -1,4 +1,37 @@
-// --- Branded ID types ---
+/**
+ * Domain types for TP Studio.
+ *
+ * Session 94 (Top-30 #3, pragmatic) — this file grew to ~600 lines
+ * mixing five cohesive concerns. A physical split (`idTypes.ts`,
+ * `entityTypes.ts`, `edgeTypes.ts`, `docTypes.ts`) was evaluated and
+ * deferred: ~90 files import from `@/domain/types` and the migration
+ * cost outweighs the marginal payoff (the TS server handles the
+ * 600-line surface fine; the bundle is unaffected since types are
+ * erased at build time). The cognitive-clarity win is captured here
+ * via explicit section banners that the reader can grep / jump to.
+ *
+ * If a future need forces a split (e.g. branded-id types getting
+ * imported by a non-domain module that doesn't want the rest of the
+ * surface), reach for the barrel-re-export pattern:
+ *   1. Move the section into `idTypes.ts`, etc.
+ *   2. `types.ts` keeps re-exporting them as before.
+ *   3. New code can `import { EntityId } from '@/domain/idTypes'`
+ *      while existing imports keep working unchanged.
+ *
+ * SECTIONS (in this order):
+ *   1. Brand helper + branded ID types         (~lines  1- 20)
+ *   2. Entity model: EntityType, Entity, attrs (~lines  21-180)
+ *   3. Edge model: EdgeKind, EdgeWeight, Edge  (~lines 181-270)
+ *   4. Assumption model                         (~lines 271-325)
+ *   5. Diagram types + CLR warning model        (~lines 325-430)
+ *   6. Group model                              (~lines 430-470)
+ *   7. Custom entity classes                    (~lines 470-515)
+ *   8. Document-level: LayoutConfig, scope, TPDocument (~lines 515-end)
+ */
+
+// =====================================================================
+// SECTION 1 — Branded ID types
+// =====================================================================
 // Pure phantom branding: at runtime these are plain strings. The brand exists
 // to let TypeScript catch "I accidentally passed an edge id where an entity
 // id was expected" at compile time. Records remain keyed by plain `string`
@@ -18,7 +51,9 @@ export type EdgeId = Brand<string, 'EdgeId'>;
 export type DocumentId = Brand<string, 'DocumentId'>;
 export type GroupId = Brand<string, 'GroupId'>;
 
-// --- Domain types ---
+// =====================================================================
+// SECTION 2 — Entity model: type union, span-of-control, attributes, Entity
+// =====================================================================
 
 export type EntityType =
   | 'ude'
@@ -190,6 +225,10 @@ export type Entity = {
  * v6→v7 migration looks at the document's diagram type and upgrades EC +
  * Goal Tree edges to `'necessity'`.
  */
+// =====================================================================
+// SECTION 3 — Edge model: kind, weight, Edge record
+// =====================================================================
+
 export type EdgeKind = 'sufficiency' | 'necessity';
 
 /**
@@ -290,6 +329,10 @@ export type Edge = {
  * shim: pre-v7 docs migrate by emptying the Entity-side assumptions and
  * creating equivalent Assumption records here.
  */
+// =====================================================================
+// SECTION 4 — Assumption model: status, Assumption record
+// =====================================================================
+
 export type AssumptionStatus = 'unexamined' | 'valid' | 'invalid' | 'challengeable';
 
 /**
@@ -321,6 +364,10 @@ export type Assumption = {
   createdAt: number;
   updatedAt: number;
 };
+
+// =====================================================================
+// SECTION 5 — Diagram types + CLR warning model
+// =====================================================================
 
 export type DiagramType =
   | 'crt'
@@ -428,6 +475,10 @@ export type Warning = {
  * Group palette tones. Fixed set so theme/dark/highContrast can pre-map.
  * No freeform color picker yet.
  */
+// =====================================================================
+// SECTION 6 — Group model: color palette, Group record
+// =====================================================================
+
 export type GroupColor = 'slate' | 'indigo' | 'emerald' | 'amber' | 'rose' | 'violet';
 
 /**
@@ -466,6 +517,10 @@ export type Group = {
  * decorative typology (e.g. "Evidence" entities you draw but don't
  * cause-check).
  */
+// =====================================================================
+// SECTION 7 — Custom entity classes (B10)
+// =====================================================================
+
 export type CustomEntityClass = {
   /** User-chosen slug; the entity-class id. Lowercased, [a-z0-9-]+,
    *  may not collide with a built-in EntityType id. */
@@ -512,6 +567,10 @@ export type CustomEntityClass = {
  * Tree and a CRT in the same workspace want different orientations. The
  * field is optional — undefined falls back to per-diagram-type defaults.
  */
+// =====================================================================
+// SECTION 8 — Document-level: LayoutConfig, SystemScope, TPDocument
+// =====================================================================
+
 export type LayoutConfig = {
   direction?: 'BT' | 'TB' | 'LR' | 'RL';
   nodesep?: number;

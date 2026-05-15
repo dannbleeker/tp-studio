@@ -51,3 +51,40 @@ export const Z = {
 } as const;
 
 export type ZTier = keyof typeof Z;
+
+/**
+ * Session 94 (Top-30 #18) — Y-axis offset reference table.
+ *
+ * The y-axis (top/bottom) is the OTHER stacking dimension. Inline
+ * Tailwind classes like `top-4`, `top-14`, `bottom-20` are scattered
+ * across the chrome components; this table documents what lives at
+ * each vertical position so a future viewport-restructure can audit
+ * in one place. The classes themselves stay inline (Tailwind tooling
+ * has best support for literal class names) — this is a navigation
+ * reference, not a runtime constants module.
+ *
+ * Top of viewport, descending:
+ *
+ *   `top-4`   (16 px)  — TitleBadge (top-left), TopBar (top-right).
+ *                        Primary app chrome. Always visible.
+ *   `top-12`  (48 px)  — Multi-doc tab bar was here in the cancelled
+ *                        FL-EX8 preview; currently unused. Reserved
+ *                        for a future "second row" of chrome.
+ *   `top-14`  (56 px)  — CreationWizardPanel default (`top-14 left-4`).
+ *                        Also CompareBanner (when in diff-mode).
+ *                        Injection chip on EC canvas.
+ *
+ * Bottom of viewport, ascending:
+ *
+ *   `bottom-2` (8 px)   — React Flow `<Controls>` + `<MiniMap>` at
+ *                        bottom-left (React Flow's own positioning).
+ *   `bottom-20` (80 px) — Toaster (centered). Bumped from `bottom-6`
+ *                        in Session 92 so wide toasts on narrow
+ *                        viewports don't overlap the Controls stack.
+ *   `bottom-24` (96 px) — FirstEntityTip. Sits above the Toaster's
+ *                        usual zone since it shows on a new doc
+ *                        where toasts are rare.
+ *
+ * Rule of thumb: prefer existing offsets. If a new overlay needs a
+ * different y-position, update this table first.
+ */

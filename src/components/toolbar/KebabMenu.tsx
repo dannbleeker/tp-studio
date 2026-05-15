@@ -1,3 +1,4 @@
+import { useAutoFocusFirstEnabled } from '@/hooks/useAutoFocusFirstEnabled';
 import { useOutsideAndEscape } from '@/hooks/useOutsideAndEscape';
 import {
   HelpCircle,
@@ -58,17 +59,14 @@ export function KebabMenu() {
   // When the menu opens, focus the first ENABLED item so a keyboard user
   // lands inside the menu instead of staying on the trigger. Disabled
   // items (e.g. Undo when there's nothing to undo) can't accept focus
-  // and would otherwise leave the trigger as activeElement. When the
-  // menu closes, restore focus to the trigger so Tab continues from
-  // where the user was. Matches the WAI-ARIA menu pattern.
+  // and would otherwise leave the trigger as activeElement.
+  // Session 94 (Top-30 #16) — extracted to a shared hook so future
+  // surfaces inherit the disabled-skip behaviour.
+  useAutoFocusFirstEnabled(menuRef, open, '[role="menuitem"]');
+  // When the menu closes, restore focus to the trigger so Tab continues
+  // from where the user was. Matches the WAI-ARIA menu pattern.
   useEffect(() => {
-    if (open) {
-      const items = menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]');
-      const firstEnabled = items ? Array.from(items).find((el) => !el.disabled) : undefined;
-      firstEnabled?.focus();
-    } else {
-      triggerRef.current?.focus({ preventScroll: true });
-    }
+    if (!open) triggerRef.current?.focus({ preventScroll: true });
   }, [open]);
 
   const close = () => setOpen(false);
