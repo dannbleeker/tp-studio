@@ -2,6 +2,7 @@ import { PNG_PADDING } from '@/domain/constants';
 import { structuralEntities } from '@/domain/graph';
 import { SURFACE_DARK, SURFACE_LIGHT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
+import { loadJsPdf } from '@/services/exporters/pdfShared';
 import { slug, triggerDownload } from '@/services/exporters/shared';
 import { type Node, getNodesBounds, getViewportForBounds } from '@xyflow/react';
 
@@ -357,7 +358,9 @@ export const exportToVectorPdf = async (
     );
     // jspdf needs to be imported lazily — the entire pdf bundle is
     // ~150 KB gzipped and we don't want it on the critical path.
-    const { jsPDF } = await import('jspdf');
+    // Session 94 (Top-30 #4) — routed through `loadJsPdf` so the
+    // dynamic-import sits in one shared module.
+    const jsPDF = await loadJsPdf();
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',

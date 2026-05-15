@@ -15,25 +15,24 @@
  * drawn as light lines so the EC shape reads as the recognized
  * 5-box arrow tree, not just five disconnected rectangles.
  */
-import type { ECSlot } from '@/domain/ecGuiding';
+import { ALL_EC_SLOTS, type ECSlot, EC_SLOT_GLYPH } from '@/domain/ecGuiding';
 import clsx from 'clsx';
 
-type SlotGeom = { x: number; y: number; label: string };
+type SlotGeom = { x: number; y: number };
 
 // 120×60 viewBox. Box width 26, height 12. Layout mirrors the
 // canonical seed coordinates from `EC_POSITIONS` in
 // `domain/examples/ec.ts`. The slot letter sits centered inside.
+// Glyph (A / B / C / D / D′) comes from the shared EC_SLOT_GLYPH map.
 const BOX_W = 26;
 const BOX_H = 12;
 const SLOTS: Record<ECSlot, SlotGeom> = {
-  a: { x: 6, y: 24, label: 'A' },
-  b: { x: 47, y: 4, label: 'B' },
-  c: { x: 47, y: 44, label: 'C' },
-  d: { x: 88, y: 4, label: 'D' },
-  dPrime: { x: 88, y: 44, label: 'D′' },
+  a: { x: 6, y: 24 },
+  b: { x: 47, y: 4 },
+  c: { x: 47, y: 44 },
+  d: { x: 88, y: 4 },
+  dPrime: { x: 88, y: 44 },
 };
-
-const ALL_SLOTS = ['a', 'b', 'c', 'd', 'dPrime'] as const;
 
 export function ECSlotIndicator({
   targetSlot,
@@ -49,12 +48,12 @@ export function ECSlotIndicator({
       role="img"
       aria-label={
         targetSlot
-          ? `Evaporating Cloud shape — current step targets slot ${SLOTS[targetSlot].label}`
+          ? `Evaporating Cloud shape — current step targets slot ${EC_SLOT_GLYPH[targetSlot]}`
           : 'Evaporating Cloud 5-box shape'
       }
     >
       <title>
-        {targetSlot ? `Step targets slot ${SLOTS[targetSlot].label}` : 'Evaporating Cloud shape'}
+        {targetSlot ? `Step targets slot ${EC_SLOT_GLYPH[targetSlot]}` : 'Evaporating Cloud shape'}
       </title>
       {/* Edges: A→B, A→C, B↔D (mutex), C→D′. Light strokes so the
           highlighted box dominates the visual read. */}
@@ -105,7 +104,7 @@ export function ECSlotIndicator({
         strokeWidth="0.8"
         strokeDasharray="2 1.5"
       />
-      {ALL_SLOTS.map((slot) => {
+      {ALL_EC_SLOTS.map((slot) => {
         const geom = SLOTS[slot];
         const active = slot === targetSlot;
         return (
@@ -134,7 +133,7 @@ export function ECSlotIndicator({
                 active ? 'fill-white' : 'fill-neutral-500 dark:fill-neutral-400'
               )}
             >
-              {geom.label}
+              {EC_SLOT_GLYPH[slot]}
             </text>
           </g>
         );

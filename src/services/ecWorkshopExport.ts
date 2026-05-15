@@ -1,5 +1,11 @@
-import { type ECSlot, EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL } from '@/domain/ecGuiding';
+import {
+  ALL_EC_SLOTS,
+  type ECSlot,
+  EC_SLOT_GUIDING_QUESTIONS,
+  EC_SLOT_LABEL,
+} from '@/domain/ecGuiding';
 import type { Entity, TPDocument } from '@/domain/types';
+import { loadJsPdf } from '@/services/exporters/pdfShared';
 import { slug, triggerDownload } from '@/services/exporters/shared';
 
 /**
@@ -116,7 +122,9 @@ export const exportECWorkshopSheet = async (doc: TPDocument): Promise<boolean> =
   const slots = slotEntities(doc);
 
   // Lazy-load jspdf — keeps the eager path tiny (jspdf is ~115 KB gz).
-  const { jsPDF } = await import('jspdf');
+  // Session 94 (Top-30 #4) — routed through `loadJsPdf` so the
+  // dynamic-import sits in one shared module.
+  const jsPDF = await loadJsPdf();
   const pdf = new jsPDF({
     orientation: 'landscape',
     unit: 'mm',
@@ -194,7 +202,7 @@ export const exportECWorkshopSheet = async (doc: TPDocument): Promise<boolean> =
     const wrapped = pdf.splitTextToSize(escapeForPdf(title || '(untitled)'), BOX_W_MM - 6);
     pdf.text(wrapped, pos.x + 4, pos.y + 11);
   };
-  for (const slot of ['a', 'b', 'c', 'd', 'dPrime'] as ECSlot[]) drawSlotBox(slot);
+  for (const slot of ALL_EC_SLOTS) drawSlotBox(slot);
 
   // ── 5 arrows ───────────────────────────────────────────────────
   const drawArrow = (

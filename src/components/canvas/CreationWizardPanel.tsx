@@ -1,3 +1,4 @@
+import { type ECSlot, EC_SLOTS_BY_ORDER, type WizardOrder } from '@/domain/ecGuiding';
 import type { Entity } from '@/domain/types';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
@@ -18,12 +19,12 @@ import { ECSlotIndicator } from './ECSlotIndicator';
  * Implemented as a per-wizard-panel toggle that flips the EC step
  * order. The store state still tracks `step` as a 0-based index; the
  * `EC_SLOTS_BY_ORDER` map decides which slot that index addresses.
+ *
+ * Session 94 (Top-30 #17) — `WizardOrder` + `EC_SLOTS_BY_ORDER` moved
+ * to `@/domain/ecGuiding` so the slot identity has a single source
+ * across the canvas, the inspector, the wizard, and the workshop-
+ * sheet PDF.
  */
-type WizardOrder = 'aFirst' | 'dFirst';
-const EC_SLOTS_BY_ORDER: Record<WizardOrder, Array<'a' | 'b' | 'c' | 'd' | 'dPrime'>> = {
-  aFirst: ['a', 'b', 'c', 'd', 'dPrime'],
-  dFirst: ['d', 'dPrime', 'c', 'b', 'a'],
-};
 
 /**
  * Session 78 / brief §5 + §6 — Creation Wizard Panel.
@@ -87,7 +88,7 @@ const GOAL_TREE_STEPS: StepDef[] = [
  * by `EC_SLOTS_BY_ORDER` so the same definitions back both the A-first
  * and D-first walks.
  */
-const EC_STEP_BY_SLOT: Record<'a' | 'b' | 'c' | 'd' | 'dPrime', StepDef> = {
+const EC_STEP_BY_SLOT: Record<ECSlot, StepDef> = {
   a: {
     prompt: 'What is the shared objective (A) both sides agree on?',
     placeholder: 'e.g. "Run a sustainable business"',
