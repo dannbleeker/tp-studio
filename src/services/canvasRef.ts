@@ -1,6 +1,6 @@
 import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/flow-types';
 import { useDocumentStore } from '@/store';
-import { type ReactFlowInstance, getNodesBounds } from '@xyflow/react';
+import type { ReactFlowInstance } from '@xyflow/react';
 
 // The active React Flow instance, parameterized with our concrete node and
 // edge types. Set on RF onInit, cleared on canvas unmount. Lets command-palette
@@ -25,56 +25,59 @@ export const getSelectedEdges = (): TPEdge[] =>
 /**
  * Session 95 — viewport-coords bounding rect of the current selection.
  *
- * Used by the new SelectionToolbar to anchor itself above whatever
- * the user has selected. Returns the union bounding box of the
- * selected entity nodes (group + edge selections fall back to the
- * group / edge endpoints) in CSS viewport coordinates — the toolbar
- * lives outside React Flow's coordinate space, so we have to convert.
+ * Used by the SelectionToolbar to anchor itself above whatever the
+ * user has selected. Returns the union bounding box of the selected
+ * entity nodes (group / edge selections fall back to the group / edge
+ * endpoints) in CSS viewport coordinates.
+ *
+ * **DOM-first.** Phase 2's first attempt computed coords by feeding
+ * React Flow's `getNodesBounds()` into `flowToScreenPosition()`. That
+ * path turned out to race in Playwright on a fresh canvas — the RF
+ * viewport transform wasn't fully measured by the time the toolbar
+ * tried to position itself, so `flowToScreenPosition` returned NaN-ish
+ * values and the toolbar effectively rendered off-screen.
+ *
+ * The DOM is the source of truth for "where is this element on
+ * screen." Each TPNode carries `data-component="tp-node"` and a
+ * `data-id={entity.id}` attribute (already used by the e2e splice
+ * tests), so we can `querySelector` the selected nodes and union
+ * their `getBoundingClientRect()` directly. No transform math
+ * required, no race against React Flow's measure pass.
  *
  * Returns `null` when:
  *   - the React Flow instance hasn't initialised yet
  *   - nothing is selected
- *   - the selection has no resolvable geometry (e.g. an edge whose
- *     endpoints don't exist in the node graph — defensive)
+ *   - the selected elements aren't yet in the DOM (one render tick
+ *     after the selection lands — the toolbar's effect retries)
  *
- * The caller decides what to do with `null` (typically: hide the
- * overlay).
- *
- * **Selection source.** We read the selection ids from the zustand
- * store (the canonical source), not React Flow's `n.selected` flag.
- * React Flow's flag sync trails our store by one tick because we
- * push `selected: boolean` onto each node in `useGraphView`, then
- * RF reconciles, then a Playwright `expect(...).toBeVisible()` may
- * race with that reconciliation. Reading from the store eliminates
- * the lag — the toolbar's effect already runs when our store's
- * `selection` changes, so the rect is computed against the same
- * source the visibility check already used.
+ * **Selection source.** Reads `selection.ids` from the zustand store
+ * (canonical source), not React Flow's `n.selected` flag (one tick
+ * behind our store as the prop reconciles).
  */
 export const getSelectionViewportRect = (): DOMRect | null => {
+  if (typeof document === 'undefined') return null;
   if (!cached) return null;
   const state = useDocumentStore.getState();
   const sel = state.selection;
-  const allNodes = cached.getNodes();
-  const nodeById = new Map(allNodes.map((n) => [n.id, n]));
+  const ids = collectSelectionEntityIds(state, sel);
+  if (ids.length === 0) return null;
+  return unionRectsByEntityIds(ids);
+};
 
-  if (sel.kind === 'entities' && sel.ids.length > 0) {
-    const nodes = sel.ids
-      .map((id) => nodeById.get(id))
-      .filter((n): n is NonNullable<typeof n> => Boolean(n));
-    if (nodes.length === 0) return null;
-    return flowBoundsToViewportRect(getNodesBounds(nodes));
-  }
-
-  if (sel.kind === 'groups' && sel.ids.length > 0) {
-    const nodes = sel.ids
-      .map((id) => nodeById.get(id))
-      .filter((n): n is NonNullable<typeof n> => Boolean(n));
-    if (nodes.length === 0) return null;
-    return flowBoundsToViewportRect(getNodesBounds(nodes));
-  }
-
-  if (sel.kind === 'edges' && sel.ids.length > 0) {
-    // Edge selection — derive from the edge's endpoint nodes.
+/**
+ * Map a Selection union into the entity ids the toolbar wants to
+ * anchor on:
+ *   - entities: the entity ids themselves
+ *   - groups: the group's id (group nodes carry the same id)
+ *   - edges: the endpoint entity ids (we anchor across the edge)
+ */
+const collectSelectionEntityIds = (
+  state: ReturnType<typeof useDocumentStore.getState>,
+  sel: ReturnType<typeof useDocumentStore.getState>['selection']
+): string[] => {
+  if (sel.kind === 'entities') return [...sel.ids];
+  if (sel.kind === 'groups') return [...sel.ids];
+  if (sel.kind === 'edges') {
     const endpointIds = new Set<string>();
     for (const edgeId of sel.ids) {
       const edge = state.doc.edges[edgeId];
@@ -83,36 +86,37 @@ export const getSelectionViewportRect = (): DOMRect | null => {
         endpointIds.add(edge.targetId);
       }
     }
-    const endpoints = allNodes.filter((n) => endpointIds.has(n.id));
-    if (endpoints.length === 0) return null;
-    return flowBoundsToViewportRect(getNodesBounds(endpoints));
+    return Array.from(endpointIds);
   }
-
-  return null;
+  return [];
 };
 
 /**
- * Convert a React Flow bounding box (flow-coordinate space) into a
- * DOMRect in CSS viewport space, taking the current pan + zoom into
- * account. Kept here next to `getSelectionViewportRect` so the
- * conversion math is shared if any future overlay needs the same.
- *
- * React Flow exposes the conversion via `flowToScreenPosition` which
- * lives on the same `ReactFlowInstance`. We resolve top-left and
- * bottom-right separately and rebuild the DOMRect from those — width
- * + height fall out of the math.
+ * Look up the DOM nodes that represent the given entity ids and
+ * return their union bounding rect. React Flow renders each TPNode
+ * inside a `.react-flow__node[data-id]` wrapper; we target the
+ * wrapper since it holds the canonical screen geometry.
  */
-const flowBoundsToViewportRect = (bounds: {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}): DOMRect | null => {
-  if (!cached) return null;
-  const tl = cached.flowToScreenPosition({ x: bounds.x, y: bounds.y });
-  const br = cached.flowToScreenPosition({
-    x: bounds.x + bounds.width,
-    y: bounds.y + bounds.height,
-  });
-  return new DOMRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+const unionRectsByEntityIds = (entityIds: string[]): DOMRect | null => {
+  const rects: DOMRect[] = [];
+  for (const id of entityIds) {
+    // Quote the id for CSS — entity ids are nanoid-style URL-safe,
+    // but defensive quoting is cheap insurance against any future
+    // id scheme that includes punctuation.
+    const escaped = id.replace(/"/g, '\\"');
+    const el = document.querySelector(`.react-flow__node[data-id="${escaped}"]`);
+    if (el) rects.push((el as HTMLElement).getBoundingClientRect());
+  }
+  if (rects.length === 0) return null;
+  let left = Number.POSITIVE_INFINITY;
+  let top = Number.POSITIVE_INFINITY;
+  let right = Number.NEGATIVE_INFINITY;
+  let bottom = Number.NEGATIVE_INFINITY;
+  for (const r of rects) {
+    if (r.left < left) left = r.left;
+    if (r.top < top) top = r.top;
+    if (r.right > right) right = r.right;
+    if (r.bottom > bottom) bottom = r.bottom;
+  }
+  return new DOMRect(left, top, right - left, bottom - top);
 };
