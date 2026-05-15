@@ -64,6 +64,14 @@ export interface TpTestHook {
    * selection ambiguity entirely.
    */
   confirmAndDeleteEntity: (id: string) => Promise<void>;
+  /**
+   * Session 95 — expose the current selection so the SelectionToolbar
+   * e2e can wait for React Flow's onSelectionChange to have written
+   * through to our store before asserting on the toolbar's
+   * appearance. Returning the raw discriminated union is cheaper
+   * than a per-shape accessor and matches the store's shape exactly.
+   */
+  getSelection: () => ReturnType<typeof useDocumentStore.getState>['selection'];
 }
 
 /**
@@ -104,6 +112,7 @@ export const maybeInstallTestHook = (): void => {
       return edge?.id ?? null;
     },
     confirmAndDeleteEntity,
+    getSelection: () => useDocumentStore.getState().selection,
   };
   // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an
   // optional `TpTestHook` — no `as any` cast needed. The opt-in URL

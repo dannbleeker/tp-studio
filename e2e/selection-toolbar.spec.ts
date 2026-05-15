@@ -58,8 +58,15 @@ test.describe('SelectionToolbar e2e', () => {
 
     await seedAndSelectOne(page);
 
+    // Wait for the store-level selection to land (proves the click
+    // actually drove selectEntity via React Flow's onSelectionChange).
+    await page.waitForFunction(() => {
+      const sel = window.__TP_TEST__!.getSelection();
+      return sel.kind === 'entities' && sel.ids.length === 1;
+    });
+
     const toolbar = page.locator('[data-component="selection-toolbar"]');
-    await expect(toolbar).toBeVisible();
+    await expect(toolbar).toHaveCount(1);
     await expect(toolbar.getByRole('button', { name: /^add child$/i })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: /^add parent$/i })).toBeVisible();
     await expect(toolbar.getByRole('button', { name: /^delete$/i })).toBeVisible();
@@ -67,8 +74,12 @@ test.describe('SelectionToolbar e2e', () => {
 
   test('clicking the Add child verb creates a second entity', async ({ page }) => {
     await seedAndSelectOne(page);
+    await page.waitForFunction(() => {
+      const sel = window.__TP_TEST__!.getSelection();
+      return sel.kind === 'entities' && sel.ids.length === 1;
+    });
     const toolbar = page.locator('[data-component="selection-toolbar"]');
-    await expect(toolbar).toBeVisible();
+    await expect(toolbar).toHaveCount(1);
 
     // Click Add child verb. New entity lands in editing mode; Escape
     // leaves the editor so the count assertion sees the post-editor
@@ -80,7 +91,11 @@ test.describe('SelectionToolbar e2e', () => {
 
   test('hides when the command palette is open', async ({ page }) => {
     await seedAndSelectOne(page);
-    await expect(page.locator('[data-component="selection-toolbar"]')).toBeVisible();
+    await page.waitForFunction(() => {
+      const sel = window.__TP_TEST__!.getSelection();
+      return sel.kind === 'entities' && sel.ids.length === 1;
+    });
+    await expect(page.locator('[data-component="selection-toolbar"]')).toHaveCount(1);
 
     // Open the palette — toolbar should disappear.
     await page.keyboard.press('Control+K');
@@ -89,6 +104,6 @@ test.describe('SelectionToolbar e2e', () => {
 
     // Close the palette — toolbar reappears.
     await page.keyboard.press('Escape');
-    await expect(page.locator('[data-component="selection-toolbar"]')).toBeVisible();
+    await expect(page.locator('[data-component="selection-toolbar"]')).toHaveCount(1);
   });
 });
