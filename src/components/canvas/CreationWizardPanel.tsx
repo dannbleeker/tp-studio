@@ -4,6 +4,7 @@ import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { ChevronUp, GripVertical, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { ECSlotIndicator } from './ECSlotIndicator';
 
 /**
@@ -112,19 +113,42 @@ const EC_STEPS: StepDef[] = EC_SLOTS_BY_ORDER.aFirst.map((slot) => EC_STEP_BY_SL
 const EC_STEPS_D_FIRST: StepDef[] = EC_SLOTS_BY_ORDER.dFirst.map((slot) => EC_STEP_BY_SLOT[slot]);
 
 export function CreationWizardPanel() {
-  const state = useDocumentStore((s) => s.creationWizard);
-  const advance = useDocumentStore((s) => s.advanceCreationWizardStep);
-  const close = useDocumentStore((s) => s.closeCreationWizard);
-  const toggleMinimised = useDocumentStore((s) => s.toggleCreationWizardMinimised);
-  const setPosition = useDocumentStore((s) => s.setCreationWizardPosition);
-  const setShowGoalTreeWizard = useDocumentStore((s) => s.setShowGoalTreeWizard);
-  const setShowECWizard = useDocumentStore((s) => s.setShowECWizard);
-
-  const entities = useDocumentStore((s) => s.doc.entities);
-  const addEntity = useDocumentStore((s) => s.addEntity);
-  const updateEntity = useDocumentStore((s) => s.updateEntity);
-  const connect = useDocumentStore((s) => s.connect);
-  const updateEdge = useDocumentStore((s) => s.updateEdge);
+  // Session 94 (Top-30 #2) — consolidated 12 individual subscriptions
+  // into one `useShallow` selector. Each individual `useDocumentStore`
+  // re-fired on any store mutation, including unrelated entity title
+  // edits, causing the wizard panel + its effects to re-run more often
+  // than needed. The shallow-equal selector now batches reads so the
+  // component only re-renders when a member of the returned record
+  // actually changes.
+  const {
+    state,
+    advance,
+    close,
+    toggleMinimised,
+    setPosition,
+    setShowGoalTreeWizard,
+    setShowECWizard,
+    entities,
+    addEntity,
+    updateEntity,
+    connect,
+    updateEdge,
+  } = useDocumentStore(
+    useShallow((s) => ({
+      state: s.creationWizard,
+      advance: s.advanceCreationWizardStep,
+      close: s.closeCreationWizard,
+      toggleMinimised: s.toggleCreationWizardMinimised,
+      setPosition: s.setCreationWizardPosition,
+      setShowGoalTreeWizard: s.setShowGoalTreeWizard,
+      setShowECWizard: s.setShowECWizard,
+      entities: s.doc.entities,
+      addEntity: s.addEntity,
+      updateEntity: s.updateEntity,
+      connect: s.connect,
+      updateEdge: s.updateEdge,
+    }))
+  );
 
   const [draft, setDraft] = useState('');
   // Session 81 — "Esc-armed" pattern: a non-empty draft + Esc shows a

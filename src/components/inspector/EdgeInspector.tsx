@@ -2,6 +2,7 @@ import type { EdgeWeight, Entity, Warning } from '@/domain/types';
 import { useEdge, useEntity } from '@/hooks/useSelected';
 import { useDocumentStore } from '@/store';
 import { Lightbulb, Trash2 } from 'lucide-react';
+import { useShallow } from 'zustand/shallow';
 import { Button } from '../ui/Button';
 import { AssumptionWell } from './AssumptionWell';
 import { AttributesSection } from './AttributesSection';
@@ -32,18 +33,38 @@ export function EdgeInspector({
   const edge = useEdge(edgeId);
   const source = useEntity(edge?.sourceId);
   const target = useEntity(edge?.targetId);
-  const deleteEdge = useDocumentStore((s) => s.deleteEdge);
-  const ungroupAnd = useDocumentStore((s) => s.ungroupAnd);
-  const ungroupOr = useDocumentStore((s) => s.ungroupOr);
-  const ungroupXor = useDocumentStore((s) => s.ungroupXor);
-  const setEdgeWeight = useDocumentStore((s) => s.setEdgeWeight);
-  const updateEdge = useDocumentStore((s) => s.updateEdge);
-  const addAssumptionToEdge = useDocumentStore((s) => s.addAssumptionToEdge);
-  const setEdgeAttribute = useDocumentStore((s) => s.setEdgeAttribute);
-  const removeEdgeAttribute = useDocumentStore((s) => s.removeEdgeAttribute);
-  const entities = useDocumentStore((s) => s.doc.entities);
-  const diagramType = useDocumentStore((s) => s.doc.diagramType);
-  const locked = useDocumentStore((s) => s.browseLocked);
+  // Session 94 (Top-30 #2) — consolidated 12 individual subscriptions
+  // into one `useShallow` selector so the inspector doesn't re-render
+  // on unrelated store mutations.
+  const {
+    deleteEdge,
+    ungroupAnd,
+    ungroupOr,
+    ungroupXor,
+    setEdgeWeight,
+    updateEdge,
+    addAssumptionToEdge,
+    setEdgeAttribute,
+    removeEdgeAttribute,
+    entities,
+    diagramType,
+    locked,
+  } = useDocumentStore(
+    useShallow((s) => ({
+      deleteEdge: s.deleteEdge,
+      ungroupAnd: s.ungroupAnd,
+      ungroupOr: s.ungroupOr,
+      ungroupXor: s.ungroupXor,
+      setEdgeWeight: s.setEdgeWeight,
+      updateEdge: s.updateEdge,
+      addAssumptionToEdge: s.addAssumptionToEdge,
+      setEdgeAttribute: s.setEdgeAttribute,
+      removeEdgeAttribute: s.removeEdgeAttribute,
+      entities: s.doc.entities,
+      diagramType: s.doc.diagramType,
+      locked: s.browseLocked,
+    }))
+  );
 
   if (!edge) return null;
 

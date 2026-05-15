@@ -3,6 +3,7 @@ import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/do
 import { useDocumentStore } from '@/store';
 import { BaseEdge, EdgeLabelRenderer, type EdgeProps, getBezierPath } from '@xyflow/react';
 import { memo } from 'react';
+import { useShallow } from 'zustand/shallow';
 import type { TPEdge as TPEdgeType } from './flow-types';
 
 /** E5: maximum characters shown inline on an edge label before truncating
@@ -109,29 +110,31 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // assignment, so the cleaner routing follows the visual layout even
   // when the user has dragged D and D′ around.
   //
-  // Selectors return primitives — composing them into the object
-  // shape happens in component scope, which avoids zustand's
-  // identity-comparison infinite-render trap for selectors that emit
-  // fresh objects per render.
-  const mutexSrcX = useDocumentStore((s) =>
-    isMutex ? s.doc.entities[s.doc.edges[props.id]?.sourceId ?? '']?.position?.x : undefined
-  );
-  const mutexSrcY = useDocumentStore((s) =>
-    isMutex ? s.doc.entities[s.doc.edges[props.id]?.sourceId ?? '']?.position?.y : undefined
-  );
-  const mutexTgtX = useDocumentStore((s) =>
-    isMutex ? s.doc.entities[s.doc.edges[props.id]?.targetId ?? '']?.position?.x : undefined
-  );
-  const mutexTgtY = useDocumentStore((s) =>
-    isMutex ? s.doc.entities[s.doc.edges[props.id]?.targetId ?? '']?.position?.y : undefined
+  // Session 94 (Top-30 #2) — collapsed 4 separate primitive selectors
+  // into one `useShallow` returning a flat record. Nested objects
+  // would break shallow equality (each render emits fresh inner
+  // `srcPos` / `tgtPos` references), so the selector returns 4
+  // primitives at the top level and the component composes them.
+  const mutexCoords = useDocumentStore(
+    useShallow((s): { srcX?: number; srcY?: number; tgtX?: number; tgtY?: number } => {
+      if (!isMutex) return {};
+      const edge = s.doc.edges[props.id];
+      if (!edge) return {};
+      const src = s.doc.entities[edge.sourceId]?.position;
+      const tgt = s.doc.entities[edge.targetId]?.position;
+      return { srcX: src?.x, srcY: src?.y, tgtX: tgt?.x, tgtY: tgt?.y };
+    })
   );
   const mutexEndpoints =
     isMutex &&
-    typeof mutexSrcX === 'number' &&
-    typeof mutexSrcY === 'number' &&
-    typeof mutexTgtX === 'number' &&
-    typeof mutexTgtY === 'number'
-      ? { srcPos: { x: mutexSrcX, y: mutexSrcY }, tgtPos: { x: mutexTgtX, y: mutexTgtY } }
+    typeof mutexCoords.srcX === 'number' &&
+    typeof mutexCoords.srcY === 'number' &&
+    typeof mutexCoords.tgtX === 'number' &&
+    typeof mutexCoords.tgtY === 'number'
+      ? {
+          srcPos: { x: mutexCoords.srcX, y: mutexCoords.srcY },
+          tgtPos: { x: mutexCoords.tgtX, y: mutexCoords.tgtY },
+        }
       : null;
 
   // Mutex override (Session 87 UX fix #5). Uses raw entity positions
