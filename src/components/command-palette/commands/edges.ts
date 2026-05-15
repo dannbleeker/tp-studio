@@ -1,3 +1,4 @@
+import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { getSelectedEdges } from '@/services/canvasRef';
 import { type Command, withWriteGuard } from './types';
 
@@ -93,6 +94,36 @@ export const edgeCommands: Command[] = [
         return;
       }
       s.ungroupXor(ids);
+    },
+  }),
+  // Session 95 — surfaced for parity with the new SelectionToolbar's
+  // "Splice" verb. Pre-existed as a ContextMenu-only action; now
+  // reachable via Cmd+K too.
+  withWriteGuard({
+    id: 'splice-into-edge',
+    label: 'Splice entity into selected edge',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'edges' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single edge to splice into.');
+        return;
+      }
+      const edgeId = sel.ids[0]!;
+      const edge = s.doc.edges[edgeId];
+      if (!edge) return;
+      const fresh = s.addEntity({
+        type: defaultEntityType(s.doc.diagramType),
+        startEditing: true,
+      });
+      const ok = s.spliceEntityIntoEdge(fresh.id, edgeId);
+      if (!ok) {
+        // Roll back: spliceEntityIntoEdge returns false on self-loop
+        // or unknown edge — neither possible here, but defensive
+        // cleanup keeps state tidy in the failure mode.
+        s.deleteEntity(fresh.id);
+        s.showToast('error', 'Could not splice into this edge.');
+      }
     },
   }),
 ];

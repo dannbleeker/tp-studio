@@ -65,6 +65,12 @@ export type PreferencesSlice = {
    *  render in their normal form. Per-strip dismiss / collapse stays
    *  available — this is the *outer* layer the user reaches first. */
   ecChromeCollapsed: boolean;
+  /** Session 95 — show the floating SelectionToolbar above the
+   *  current selection. Defaults to `true`; user can opt out via
+   *  Settings → Behavior. Mirrors the StatusStrip chip pattern
+   *  (small floating chrome that's easy to dismiss for users who
+   *  prefer keyboard-only flow). */
+  showSelectionToolbar: boolean;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -93,6 +99,8 @@ export type PreferencesSlice = {
   setVerbalisationStripCollapsed: (collapsed: boolean) => void;
   /** Session 88 (V2) — toggle the combined EC chrome wrapper. */
   setECChromeCollapsed: (collapsed: boolean) => void;
+  /** Session 95 — toggle the floating SelectionToolbar. */
+  setShowSelectionToolbar: (show: boolean) => void;
 };
 
 export type PreferencesDataKeys =
@@ -114,7 +122,8 @@ export type PreferencesDataKeys =
   | 'showGoalTreeWizard'
   | 'showECWizard'
   | 'verbalisationStripCollapsed'
-  | 'ecChromeCollapsed';
+  | 'ecChromeCollapsed'
+  | 'showSelectionToolbar';
 
 /**
  * Data-only defaults used by `resetStoreForTest`. The theme + persisted
@@ -152,6 +161,10 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   // entirely; users opt in via the palette command "Show EC reading
   // guide" when they want them.
   ecChromeCollapsed: true,
+  // Session 95 — default ON. The toolbar surfaces 3-5 verbs per
+  // selection above the selected element; users who prefer
+  // keyboard-only flow can disable in Settings → Behavior.
+  showSelectionToolbar: true,
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (
@@ -178,6 +191,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       showECWizard: s.showECWizard,
       verbalisationStripCollapsed: s.verbalisationStripCollapsed,
       ecChromeCollapsed: s.ecChromeCollapsed,
+      showSelectionToolbar: s.showSelectionToolbar,
     });
   };
 
@@ -201,6 +215,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     showECWizard: initialPrefs.showECWizard,
     verbalisationStripCollapsed: initialPrefs.verbalisationStripCollapsed,
     ecChromeCollapsed: initialPrefs.ecChromeCollapsed,
+    showSelectionToolbar: initialPrefs.showSelectionToolbar,
 
     setTheme: (theme) => {
       writeTheme(theme);
@@ -278,6 +293,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setECChromeCollapsed: (collapsed) => {
       set({ ecChromeCollapsed: collapsed });
+      persistPrefs();
+    },
+    setShowSelectionToolbar: (show) => {
+      set({ showSelectionToolbar: show });
       persistPrefs();
     },
   };

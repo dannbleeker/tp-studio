@@ -1,6 +1,8 @@
+import { COMMANDS } from '@/components/command-palette/commands';
 import { defaultEntityType, paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { presetByTitle } from '@/domain/groupPresets';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
+import { type Branch, type Verb, verbsForBranch } from '@/domain/selectionVerbs';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import type { EntityType } from '@/domain/types';
 import { useOutsideAndEscape } from '@/hooks/useOutsideAndEscape';
@@ -16,6 +18,47 @@ type MenuItem =
   | { kind: 'separator' }
   | { kind: 'header'; label: string };
 
+/**
+ * Session 95 — bridge a selection-verb registry entry into a
+ * ContextMenu row. For verbs that name a palette command, we run the
+ * palette command's canonical handler so menu + Cmd+K + toolbar
+ * dispatch through the same code path. Verbs that carry their own
+ * inline `run` (no palette command yet) fall through to that closure.
+ *
+ * Scope: the registry covers the *stable verb subset* — the leading
+ * non-destructive verbs that a branch always offers. Destructive
+ * deletes and dynamic per-doc sections (Convert-to, Pin/Unpin,
+ * Spawn-EC, NBR, back-edge toggle) stay inline below; their labels
+ * and conditions are richer than the registry's `state -> Verb[]`
+ * model accommodates.
+ */
+const toMenuItem = (verb: Verb): MenuItem => {
+  const command = verb.paletteCommandId
+    ? COMMANDS.find((c) => c.id === verb.paletteCommandId)
+    : undefined;
+  const run = command
+    ? () => {
+        void command.run(useDocumentStore.getState());
+      }
+    : verb.run
+      ? () => {
+          void verb.run?.(useDocumentStore.getState());
+        }
+      : () => {};
+  return { kind: 'action', label: verb.label, destructive: verb.destructive, run };
+};
+
+/**
+ * Non-destructive leading verbs for a branch. The menu keeps its own
+ * destructive-delete row inline because the labels differ from the
+ * registry's defaults (e.g. "Delete entity" vs "Delete") and the
+ * trailing separator before delete is part of the menu's UX rhythm.
+ */
+const leadingVerbItems = (branch: Branch): MenuItem[] => {
+  const verbs = verbsForBranch(branch, useDocumentStore.getState()).filter((v) => !v.destructive);
+  return verbs.map(toMenuItem);
+};
+
 export function ContextMenu() {
   // Shallow-equal selector. The contract:
   //
@@ -23,34 +66,35 @@ export function ContextMenu() {
   //     - menu (context-menu open/closed + target)
   //     - selection
   //     - diagramType
-  //     - edges (used to find the splice target)
+  //     - edges (used to detect grouping + back-edge state on the
+  //       right-clicked edge, and to compute `hasDownstream` for a
+  //       single-entity right-click)
   //
   //   actions (stable refs across renders — listed for readability):
-  //     - close, addEntity, connect, beginEditing, updateEntity,
-  //       groupAsAnd, ungroupAnd, reverseEdge, spliceEdge,
+  //     - close, addEntity, beginEditing, updateEntity,
+  //       ungroupAnd, ungroupOr, ungroupXor,
   //       toggleEntityCollapsed, swapEntities, showToast, setDocument,
   //       setEntityPosition, createGroupFromSelection
+  //
+  // Session 95 — connect / groupAsAnd / groupAsOr / groupAsXor /
+  // reverseEdge / spliceEdge dropped out of this selector when the
+  // leading verb block of each branch moved to the selection-verb
+  // registry. Their palette commands now drive those verbs.
   //
   // useShallow's shallow-equality on the resulting object means only a
   // change to one of the state fields triggers a re-render — action
   // refs being stable lets the bundle stay in one selector instead of
-  // splintering into 17 individual subscriptions.
+  // splintering into individual subscriptions.
   const {
     menu,
     close,
     selection,
     addEntity,
-    connect,
     beginEditing,
     updateEntity,
-    groupAsAnd,
     ungroupAnd,
-    groupAsOr,
     ungroupOr,
-    groupAsXor,
     ungroupXor,
-    reverseEdge,
-    spliceEdge,
     toggleEntityCollapsed,
     swapEntities,
     showToast,
@@ -66,17 +110,11 @@ export function ContextMenu() {
       close: s.closeContextMenu,
       selection: s.selection,
       addEntity: s.addEntity,
-      connect: s.connect,
       beginEditing: s.beginEditing,
       updateEntity: s.updateEntity,
-      groupAsAnd: s.groupAsAnd,
       ungroupAnd: s.ungroupAnd,
-      groupAsOr: s.groupAsOr,
       ungroupOr: s.ungroupOr,
-      groupAsXor: s.groupAsXor,
       ungroupXor: s.ungroupXor,
-      reverseEdge: s.reverseEdge,
-      spliceEdge: s.spliceEdge,
       toggleEntityCollapsed: s.toggleEntityCollapsed,
       swapEntities: s.swapEntities,
       showToast: s.showToast,
@@ -168,68 +206,12 @@ export function ContextMenu() {
     // ── BRANCH 1: multi-edge selection ────────────────────────────────
     if (isMultiEdges && selection.kind === 'edges') {
       const ids = selection.ids;
-      const anyAndGrouped = ids.some((id) => edges[id]?.andGroupId);
-      const anyOrGrouped = ids.some((id) => edges[id]?.orGroupId);
-      const anyXorGrouped = ids.some((id) => edges[id]?.xorGroupId);
-      const result: MenuItem[] = [
-        {
-          kind: 'action',
-          label: 'Group as AND',
-          run: () => {
-            const r = groupAsAnd(ids);
-            if (!r.ok) showToast('error', r.reason);
-            else showToast('success', 'AND-grouped.');
-          },
-        },
-        {
-          kind: 'action',
-          label: 'Group as OR',
-          run: () => {
-            const r = groupAsOr(ids);
-            if (!r.ok) showToast('error', r.reason);
-            else showToast('success', 'OR-grouped.');
-          },
-        },
-        {
-          kind: 'action',
-          label: 'Group as XOR',
-          run: () => {
-            const r = groupAsXor(ids);
-            if (!r.ok) showToast('error', r.reason);
-            else showToast('success', 'XOR-grouped.');
-          },
-        },
-      ];
-      if (anyAndGrouped) {
-        result.push({
-          kind: 'action',
-          label: 'Ungroup AND',
-          run: () => {
-            ungroupAnd(ids);
-            showToast('info', 'Ungrouped.');
-          },
-        });
-      }
-      if (anyOrGrouped) {
-        result.push({
-          kind: 'action',
-          label: 'Ungroup OR',
-          run: () => {
-            ungroupOr(ids);
-            showToast('info', 'Ungrouped.');
-          },
-        });
-      }
-      if (anyXorGrouped) {
-        result.push({
-          kind: 'action',
-          label: 'Ungroup XOR',
-          run: () => {
-            ungroupXor(ids);
-            showToast('info', 'Ungrouped.');
-          },
-        });
-      }
+      // Leading verbs (Group AND/OR/XOR + optional Ungroup AND/OR/XOR)
+      // come from the selection-verb registry so the menu, the
+      // SelectionToolbar, and the palette dispatch through one source
+      // of truth. Trailing destructive Delete stays inline because the
+      // separator-before-delete is part of the menu's UX rhythm.
+      const result: MenuItem[] = leadingVerbItems({ kind: 'multi-edges', ids: [...ids] });
       result.push({ kind: 'separator' });
       result.push({
         kind: 'action',
@@ -280,31 +262,13 @@ export function ContextMenu() {
       const id = menu.target.id;
       const convertOptions = paletteForDoc(docForPalette).filter((t) => t !== entity.type);
       const hasDownstream = Object.values(edges).some((e) => e?.sourceId === id);
-      const result: MenuItem[] = [
-        {
-          kind: 'action',
-          label: 'Add child',
-          run: () => {
-            const e = addEntity({
-              type: defaultEntityType(diagramType),
-              startEditing: true,
-            });
-            connect(id, e.id);
-          },
-        },
-        {
-          kind: 'action',
-          label: 'Add parent',
-          run: () => {
-            const e = addEntity({
-              type: defaultEntityType(diagramType),
-              startEditing: true,
-            });
-            connect(e.id, id);
-          },
-        },
-        { kind: 'action', label: 'Rename', run: () => beginEditing(id) },
-      ];
+      // Leading non-destructive verbs (Add child, Add parent) come
+      // from the selection-verb registry. Rename + the rest of the
+      // single-entity menu (Convert-to, Pin/Unpin, Spawn-EC, NBR,
+      // Delete) stay inline — they're either dynamic per-doc or carry
+      // labels that diverge from the registry's defaults.
+      const result: MenuItem[] = leadingVerbItems({ kind: 'single-entity', id });
+      result.push({ kind: 'action', label: 'Rename', run: () => beginEditing(id) });
       if (entity.collapsed || hasDownstream) {
         result.push({
           kind: 'action',
@@ -393,35 +357,11 @@ export function ContextMenu() {
     if (menu.target.kind === 'edge') {
       const id = menu.target.id;
       const edge = edges[id];
-      const result: MenuItem[] = [];
-      result.push({
-        kind: 'action',
-        label: 'Reverse direction',
-        run: () => {
-          if (!edge) return;
-          reverseEdge(id);
-          const after = useDocumentStore.getState().doc.edges[id];
-          if (after && (after.sourceId !== edge.sourceId || after.targetId !== edge.targetId)) {
-            showToast('success', 'Edge reversed.');
-          } else {
-            showToast('info', 'Cannot reverse — the opposite-direction edge already exists.');
-          }
-        },
-      });
-      // Splice: insert a fresh entity in the middle of this edge. Pairs
-      // naturally with Reverse direction as the two direct-manipulation
-      // edge operations.
-      result.push({
-        kind: 'action',
-        label: 'Splice entity into this edge',
-        run: () => {
-          const created = spliceEdge(id);
-          if (!created) showToast('error', 'Could not splice — edge or endpoints missing.');
-          else if (edge?.andGroupId) {
-            showToast('info', 'Spliced. AND grouping on the original edge was dropped.');
-          }
-        },
-      });
+      // Leading non-destructive verbs (Reverse direction, Splice) come
+      // from the selection-verb registry. Per-edge ungroup actions,
+      // back-edge tag toggle, and the destructive Delete stay inline —
+      // they branch on this specific edge's state.
+      const result: MenuItem[] = leadingVerbItems({ kind: 'single-edge', id });
       if (edge?.andGroupId || edge?.orGroupId || edge?.xorGroupId) {
         result.push({ kind: 'separator' });
         if (edge.andGroupId) {

@@ -1,5 +1,7 @@
+import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { validate } from '@/domain/validators';
 import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboard';
+import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { type Command, withWriteGuard } from './types';
 
 export const toolCommands: Command[] = [
@@ -43,6 +45,56 @@ export const toolCommands: Command[] = [
       }
       s.swapEntities(sel.ids[0], sel.ids[1]);
       s.showToast('success', 'Swapped entities.');
+    },
+  }),
+  // Session 95 — surfaced for SelectionToolbar parity. The Tab /
+  // Shift+Tab keyboard shortcuts have always done this; making it a
+  // palette command means the new toolbar can route through the
+  // same handler and the Help dialog can document it once.
+  withWriteGuard({
+    id: 'add-successor',
+    label: 'Add child of selected entity',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity first.');
+        return;
+      }
+      const parentId = sel.ids[0]!;
+      const fresh = s.addEntity({
+        type: defaultEntityType(s.doc.diagramType),
+        startEditing: true,
+      });
+      s.connect(parentId, fresh.id);
+    },
+  }),
+  withWriteGuard({
+    id: 'add-predecessor',
+    label: 'Add parent of selected entity',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity first.');
+        return;
+      }
+      const childId = sel.ids[0]!;
+      const fresh = s.addEntity({
+        type: defaultEntityType(s.doc.diagramType),
+        startEditing: true,
+      });
+      s.connect(fresh.id, childId);
+    },
+  }),
+  // Session 95 — palette entry for the Delete-key behaviour. Routes
+  // through the same confirmation flow the keyboard shortcut uses.
+  withWriteGuard({
+    id: 'confirm-delete-selection',
+    label: 'Delete selection',
+    group: 'Edit',
+    run: () => {
+      void confirmAndDeleteSelection();
     },
   }),
   // Copy is intentionally NOT guarded — reading the selection into the

@@ -147,4 +147,8 @@ export type StoredPrefs = {
    *  reading instructions + verbalisation strips; manual collapse
    *  persists. */
   ecChromeCollapsed?: boolean;
+  /** Session 95 — show the floating SelectionToolbar above the
+   *  current selection. Default `true`; opt-out via Settings →
+   *  Behavior. */
+  showSelectionToolbar?: boolean;
 };

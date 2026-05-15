@@ -109,6 +109,10 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // first-run) keeps the chrome hidden. Users opt in via the palette
     // command "Show EC reading guide."
     ecChromeCollapsed: raw?.ecChromeCollapsed !== false,
+    // Session 95 — default ON. `!== false` semantics: any non-`false`
+    // value (including `undefined` for first-run users) keeps the
+    // toolbar visible. Users disable via Settings → Behavior.
+    showSelectionToolbar: raw?.showSelectionToolbar !== false,
   };
 };
 

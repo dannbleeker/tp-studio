@@ -220,6 +220,8 @@ export function SettingsDialog() {
     showECWizard,
     setShowGoalTreeWizard,
     setShowECWizard,
+    showSelectionToolbar,
+    setShowSelectionToolbar,
   } = useDocumentStore(
     useShallow((s) => ({
       theme: s.theme,
@@ -253,6 +255,8 @@ export function SettingsDialog() {
       showECWizard: s.showECWizard,
       setShowGoalTreeWizard: s.setShowGoalTreeWizard,
       setShowECWizard: s.setShowECWizard,
+      showSelectionToolbar: s.showSelectionToolbar,
+      setShowSelectionToolbar: s.setShowSelectionToolbar,
     }))
   );
 
@@ -411,6 +415,17 @@ export function SettingsDialog() {
                 onChange={setShowECWizard}
               />
             </div>
+            {/* Session 95 — SelectionToolbar toggle. Default ON; the
+                toolbar is the primary surface for per-selection verbs
+                (Add child / Reverse / Group). Disabling keeps the
+                palette + context menu as the only access surfaces —
+                useful for keyboard-purist users. */}
+            <Toggle
+              label="Selection toolbar"
+              hint="Show a small floating toolbar above the selected entity / edge with the top 3-5 verbs scoped to its kind. Off = palette + context menu only."
+              checked={showSelectionToolbar}
+              onChange={setShowSelectionToolbar}
+            />
           </Section>
         )}
 
