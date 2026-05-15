@@ -149,6 +149,24 @@ The canvas re-flows automatically after each change, with a 300 ms ease-out anim
 
 **Span of control / sphere of influence.** Each entity has an optional 3-value flag in the inspector: **Control** (I can act on this directly), **Influence** (I can affect it indirectly), or **External** (I can only observe it). When set, the node shows a small letter pill — green `C`, amber `I`, neutral `E`. The book's intro and CRT Step 7 ask "have you built down to causes you actually control or influence?" — a root cause flagged External in a CRT fires a soft CLR nudge prompting you to keep digging. FRT injections and other entity types are exempt (the warning would be noise on them).
 
+## Selection toolbar
+
+When you select something on the canvas — an entity, an edge, a group, or multiple entities/edges via marquee or shift-click — a small floating toolbar appears above the selection with 3–5 verbs scoped to its kind. The toolbar bridges the gap between *"I know which node I mean"* (you've selected it) and *"I know which verb I want"* (you click the button). The same actions live in Cmd+K and the right-click menu; the toolbar just brings them within arm's reach.
+
+**Per-selection verb list:**
+
+- **Single entity** — Add child · Add parent · Delete
+- **Single edge** — Reverse direction · Splice · Delete
+- **Single group** — Toggle collapsed · Unhoist
+- **Multiple entities** — Group · *Swap* (when exactly 2 selected) · Delete N
+- **Multiple edges** — Group as AND / OR / XOR · Ungroup AND / OR / XOR (when applicable) · Delete N
+
+Each button's tooltip shows the equivalent keyboard shortcut, so the toolbar doubles as a discovery surface for the keyboard bindings. Clicking a button runs the same palette command Cmd+K would — Browse Lock guards apply, undo history records as normal.
+
+**When the toolbar hides itself:** while you're typing into an entity title (so it doesn't compete with the editor for clicks), while the command palette or any modal is open (those layers take precedence), while you're dragging a node or panning the canvas (would otherwise jitter), and when nothing is selected.
+
+**Disabling the toolbar.** Some users prefer keyboard-only flow with no floating chrome. Settings → Behavior → **Selection toolbar** turns it off; the palette and the right-click menu cover every verb the toolbar surfaces. The toggle persists across reloads.
+
 ## Working with multiple entities
 
 Selecting more than one thing turns the right Inspector into a **bulk-actions** panel.

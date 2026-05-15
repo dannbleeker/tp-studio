@@ -30,6 +30,12 @@ export const DataComponent = {
    *  compare). Tests target this to verify the strip renders nothing
    *  when no secondary state is active. */
   StatusStrip: 'status-strip',
+  /** Session 95 — selection-anchored toolbar. Floats above the
+   *  current selection's bounding rect with 3-5 verbs scoped to the
+   *  selection kind. Hidden when nothing is selected, when the
+   *  palette / a modal is open, when the user is dragging or
+   *  editing, or when the toolbar is disabled in Settings. */
+  SelectionToolbar: 'selection-toolbar',
 } as const;
 
 export type DataComponentName = (typeof DataComponent)[keyof typeof DataComponent];

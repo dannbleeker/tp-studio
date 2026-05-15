@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { Canvas } from './components/canvas/Canvas';
 import { CompareBanner } from './components/canvas/CompareBanner';
 import { ContextMenu } from './components/canvas/ContextMenu';
+import { SelectionToolbar } from './components/canvas/SelectionToolbar';
 import { Inspector } from './components/inspector/Inspector';
 import { PrintAppendix } from './components/print/PrintAppendix';
 import { Toaster } from './components/toast/Toaster';
@@ -200,6 +201,16 @@ export function App() {
           all of <App /> still catches anything that escapes a panel. */}
       <ErrorBoundary label="Inspector">
         <Inspector />
+      </ErrorBoundary>
+      {/* Session 95 — selection-anchored floating toolbar.
+          Mounts between Inspector and ContextMenu so the toolbar's
+          fixed-position bar can sit above the canvas without being
+          hidden by the inspector's sliding aside, and the
+          ContextMenu (right-click) still takes precedence on
+          z-stack. ErrorBoundary scopes any crash so the canvas
+          stays usable. */}
+      <ErrorBoundary label="Selection toolbar">
+        <SelectionToolbar />
       </ErrorBoundary>
       <ContextMenu />
       <Suspense fallback={null}>

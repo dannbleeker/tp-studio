@@ -2,6 +2,42 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 95 — Selection-anchored toolbar
+
+The UI-pattern research from Session 94 recommended adding a single new affordance to TP Studio: a floating contextual toolbar anchored above the current selection, bridging the gap between "I know which node I mean" and "I know which verb I want." This session ships it across two phases. **1117 tests passing** (was 1097 at start of Session 95; +12 selectionVerbs registry tests + 8 SelectionToolbar component tests). 3 new Playwright e2e specs cover the on-canvas user journey.
+
+**Phase 1 — prep (commit `adc95b9`).** Built shared infrastructure first so the toolbar and ContextMenu don't diverge on per-selection verb logic:
+
+- New **`src/domain/selectionVerbs.ts`** — single source of truth. Exports a `Branch` discriminated union over selection shapes (`none / pane / single-entity / single-edge / single-group / multi-entities / multi-edges`), `branchFor(selection, contextTarget?)` to derive the branch, and `verbsForBranch(branch, state)` returning ordered `Verb[]`. Each verb references a palette command id where one exists; toolbar-only verbs carry inline `run` closures.
+- **4 new palette commands for parity** — every toolbar verb has a Cmd+K home: `add-successor` (Tab equivalent), `add-predecessor` (Shift+Tab), `splice-into-edge` (was ContextMenu-only), `confirm-delete-selection` (wraps the Delete-key flow).
+- **ContextMenu partial migration** — branches 1/3/4 (multi-edges, single-entity, single-edge) consume the registry for their stable leading verb block; dynamic per-doc sections (Convert-to type list, Pin/Unpin, Spawn-EC, Negative Branch) stay inline. 10/10 ContextMenu tests still pass.
+- New **`getSelectionViewportRect()`** in `services/canvasRef.ts` — returns the union bbox of the current selection in CSS viewport coordinates so the toolbar can anchor via `position: fixed` without depending on canvas-chrome layout.
+- New **`useCanvasInteractionState()` hook** — aggregates `{ isEditing, isPaletteOpen, isModalOpen, isDragging }` into one `useShallow`-comparing subscription. Combines our zustand-side flags with React Flow's own drag state. Future overlays inherit the same visibility logic for free.
+- New **`showSelectionToolbar` preference**, default ON. `!== false` semantics for first-run users — opt-out, not opt-in. Settings → Behavior toggle persists across reloads.
+
+**Phase 2 — toolbar component (this commit).**
+
+- New **`src/components/canvas/SelectionToolbar.tsx`**. Renders 3-5 verb chips above the selection bbox; positioning via `position: fixed` + `top/left` computed each render from `getSelectionViewportRect()`. Anchored above by default; flips below when the selection sits near the viewport top. Re-positions on viewport transform (pan/zoom) and on selection-shape change.
+- Visibility: hidden when `showSelectionToolbar === false`, when the branch is `none`/`pane`, when the verb list is empty, or when `isEditing || isPaletteOpen || isModalOpen || isDragging`. Wrapped in an `ErrorBoundary` so a future regression in the positioning math can't break the canvas.
+- Each verb button shows its icon (when registered in `commandIcons.ts`) plus the verb's `shortLabel ?? label`. Tooltip carries the keyboard shortcut from `paletteKbdForCommand` so the toolbar doubles as a kbd-discovery surface. Destructive verbs (Delete) render with rose styling.
+- Click handler routes through `command.run(state)` for palette-backed verbs (so Browse Lock guards + history apply correctly) and inline `run` for registry-only verbs.
+
+**Tests.**
+| File | Coverage |
+|---|---|
+| `tests/domain/selectionVerbs.test.ts` (Phase 1) | 12 cases: branchFor across every selection shape; verbsForBranch per branch; conditional verbs (Swap on exactly 2 entities, Ungroup-X only when group exists); palette-command-id integrity (every reference resolves to a real command). |
+| `tests/components/SelectionToolbar.test.tsx` (Phase 2) | 8 cases: hidden states (none / palette open / modal open / toolbar disabled), renders correct verbs per selection kind, click dispatches the palette command, tooltip carries the kbd shortcut. |
+| `e2e/selection-toolbar.spec.ts` (Phase 2) | 3 Playwright cases: appears on selection + disappears when cleared, clicking Add child creates a second entity, hides while Cmd+K palette is open and reappears after Esc. |
+
+**Docs.** USER_GUIDE.md grew a new **Selection toolbar** section between *Connecting causes to effects* and *Working with multiple entities* — per-selection verb list, hide rules, the Settings opt-out.
+
+**Design choices documented** (all in commit messages + source comments):
+- **Partial ContextMenu migration, not full.** The IIFE has rich conditional structure (Convert-to type loop, Pin/Unpin only when pinned, Spawn-EC only on CRT) that doesn't fit a `state → Verb[]` registry naturally. Forcing a full migration would warp the registry into a runtime DSL. Stable verbs are shared; dynamic verbs stay inline. Documented in `selectionVerbs.ts` header.
+- **Branch.kind `'pane'` returns empty verbs.** Pane verbs (Paste, Add entity at cursor) are context-menu specific; the toolbar should stay hidden on right-click-pane. Returning `[]` keeps that contract without a separate flag.
+- **TPEdge mutex coords pattern** (Session 94 #2) was the cautionary tale that informed the registry shape: the verb-list result must be primitive-stable for `useShallow` to work. The branch object is small enough that a fresh-each-render reference doesn't matter, but verbsForBranch is called inside a `useMemo` over `[branch, edges]` to keep referential stability.
+
+End state: tsc clean, Biome clean, 1117 tests passing, 3 new e2e specs. Live at <https://tp-studio.struktureretsundfornuft.dk/>.
+
 ## Session 94 — Top-30 refactoring sweep
 
 Acted on the Top-30 refactoring list produced from a cross-codebase audit. **18 items shipped across 5 commits**, **4 evaluated-and-respected** (in-source rationale already rejected the change), **8 evaluated-and-deferred** with documented reasons. **1097 tests passing** end-to-end; no behavioral changes.
