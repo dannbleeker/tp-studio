@@ -2,6 +2,52 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 94 — Top-30 refactoring sweep
+
+Acted on the Top-30 refactoring list produced from a cross-codebase audit. **18 items shipped across 5 commits**, **4 evaluated-and-respected** (in-source rationale already rejected the change), **8 evaluated-and-deferred** with documented reasons. **1097 tests passing** end-to-end; no behavioral changes.
+
+**Commit map:**
+- `22f0150` — #1 + #6 LargeDialog shell + migrate 4 picker dialogs
+- `cfa5c34` — #2 useShallow consolidation in CreationWizardPanel + EdgeInspector + TPEdge
+- `17217f5` — #5 + #10 (skip) + #26 TextInput/TextArea primitives + print thumbnail tokens
+- `eaf434d` — #4 + #17 pdfShared module + canonical EC slot data
+- `5ced1d2` — #3 banners + #16 useAutoFocusFirstEnabled + #18 layer offset doc + #20 seedDoc helpers + #28 redundant Esc audit + #30 useStoreSlice wrapper
+
+**Shipped highlights:**
+
+- **#1 LargeDialog primitive.** Four picker dialogs (DiagramType / Export / Print / Template) each had ~25 lines of identical scaffolding — raw `<dialog>`, focus trap, Esc handling, header chrome. Extracted to `src/components/ui/LargeDialog.tsx`; ~100 LOC of duplication removed.
+- **#2 useShallow consolidation.** CreationWizardPanel (12→1 selectors), EdgeInspector (12→1), TPEdge mutex-coords (4→1). Fewer re-renders on unrelated store mutations. The TPEdge fix is subtle: nested objects break shallow equality, so the selector returns 4 flat primitives and the component composes them.
+- **#5 TextInput / TextArea primitives.** New form components in `formPrimitives.tsx` consuming the `INPUT_FOCUS` constant from Session 93. Migrated 4 inspectors (EntityInspector, EdgeInspector, GroupInspector, MultiInspector); the 60-char `"w-full rounded-md border ..."` className is now in one place.
+- **#4 pdfShared module.** Both PDF exporters (canvas vector, EC workshop sheet) now go through a single `loadJsPdf()` lazy-import + share canonical `PAGE_DIMENSIONS_MM`. Bundle splitter consistently emits one jspdf chunk.
+- **#17 Canonical EC slot data.** `ALL_EC_SLOTS`, `EC_SLOT_GLYPH`, `WizardOrder`, `EC_SLOTS_BY_ORDER` all moved to `@/domain/ecGuiding`. The inline `'a' | 'b' | 'c' | 'd' | 'dPrime'` unions and the local `ALL_SLOTS` const collapsed into one source.
+- **#3 types.ts banners (pragmatic).** Physical split deferred — 90+ files import from `@/domain/types`; the migration cost outweighs the TS-server payoff. Added 8 section banners + a top-of-file TOC. Barrel-re-export pattern documented for future splits.
+- **#16 useAutoFocusFirstEnabled hook.** Standardises the "find first focusable child" pattern. KebabMenu migrated as canonical example; ContextMenu / ConfirmDialog keep their inline implementations (selector quirks).
+- **#18 Y-axis offset table.** Added to `domain/zLayers.ts`. Reference for `top-4` / `top-14` / `bottom-20` / `bottom-24` classnames scattered across chrome.
+- **#20 seedDoc helpers.** Three new graph-shape fixture builders: `seedDiverging`, `seedCycle`, `seedForest`. Available for radial-layout / validator / flyingLogic tests.
+- **#26 Print thumbnail tokens.** 18 inline hex literals consolidated into `STANDARD_FILLS` / `WORKSHOP_FILLS` / `INKSAVING_FILLS` constants.
+- **#28 redundant local Esc audit.** Confirmed clean — only LargeDialog uses `useEscapeKey`; the picker dialogs delegate. Redundancy with the global cascade is intentional (belt + braces; both close idempotently).
+- **#30 useStoreSlice wrapper.** Shorthand for `useDocumentStore(useShallow(...))`. Available for new code; existing call sites stay (per-site win is small).
+
+**Evaluated-and-respected** (in-source rationale already rejected the change — the audit didn't see the existing comment):
+
+- **#7 ContextMenu builder extraction** — the IIFE carries an explicit comment: "splitting into per-branch helpers would mean passing ~17 store actions plus doc-shaped state per call — the indirection cost outweighs the line-count win."
+- **#8 SettingsDialog tabs declarative** — the tab bar IS already declarative (TABS array + map). Each tab's CONTENT has bespoke ARIA / state — forcing a common shape would obscure each section's unique controls.
+- **#10 EC wizard order toggle to RadioGroup** — the existing inline-row 2-button layout is intentional UX; RadioGroup's 2-column grid would crowd the wizard panel.
+- **#11 CSV schema alignment** — the export-superset / import-subset asymmetry is documented intent in `csvExport.ts`; the importer accepts a subset for the round-trip and ignores extra columns by design.
+
+**Evaluated-and-deferred** (low payoff relative to remaining work):
+
+- **#9 INPUT_FOCUS sweep across all 15+ input sites** — partial migration shipped via #5 (4 inspectors). Full sweep is mechanical; ride future edits.
+- **#13 Lazy-load entityTypeMeta extras** — bundle effect uncertain (the icon imports already get tree-shaken if unused). Revisit with measured profile data.
+- **#15 EXPORT_CATEGORIES move to domain** — the 180-line const lives inside ExportPickerDialog; physically moving doesn't change behavior. Reduces ExportPickerDialog from 330 LOC; pure organization.
+- **#19 Tests to screen.\* API** — 22 file mechanical migration. Toaster.test.tsx is the only one currently using `screen`; ride future edits.
+- **#21 document.test.ts split** — 5-file mechanical split. Existing 392-line file isn't actively painful.
+- **#22 / #23 / #24 / #25 coverage gap fills (pdfExport, ecWorkshopExport, CreationWizardPanel, snapshot tests)** — substantial new-test writing, separate session work.
+- **#27 CommandPalette test custom setup** — recent-commands localStorage clear is a known one-off, not pattern-breaking.
+- **#29 EntityForm spec-driven inspector** — premature abstraction; ride future feature growth.
+
+End state: tsc clean, Biome clean, 1097 tests passing, bundle unchanged in shape, no behavioural regressions. The refactor audit's working list is now exhausted — anything left is either in-source-rejected, mechanically tractable but low-impact, or premature.
+
 ## Session 93 — Backlog tail: EC slot indicator + tech-debt convention pass
 
 Closes EC PPT comparison items #30-34 and the tech-debt items #35-40 from the Session 87 UI review. **1097 tests passing** (was 1092; +5 for ECSlotIndicator).
