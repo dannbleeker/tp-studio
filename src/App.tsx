@@ -1,3 +1,4 @@
+import { ReactFlowProvider } from '@xyflow/react';
 import { Suspense, lazy, useEffect } from 'react';
 import { Canvas } from './components/canvas/Canvas';
 import { CompareBanner } from './components/canvas/CompareBanner';
@@ -193,7 +194,21 @@ export function App() {
       <PrintHeader />
       <TitleBadge />
       <TopBar />
-      <Canvas />
+      {/* Session 95 — `ReactFlowProvider` hoisted here (was inside
+          `<Canvas />` until Phase 2) so the SelectionToolbar and any
+          future canvas-aware overlay can read React Flow's state via
+          `useRFStore` from outside the Canvas component. */}
+      <ReactFlowProvider>
+        <Canvas />
+        {/* Session 95 — selection-anchored floating toolbar.
+            Mounted inside the provider but outside Canvas's render
+            tree so it doesn't get re-mounted on Canvas re-renders.
+            ErrorBoundary scopes any crash so the canvas stays
+            usable. */}
+        <ErrorBoundary label="Selection toolbar">
+          <SelectionToolbar />
+        </ErrorBoundary>
+      </ReactFlowProvider>
       <CompareBanner />
       {/* Nested ErrorBoundaries scope a crash to a single panel — the
           canvas stays usable if (say) the Inspector blows up on a bad
@@ -201,16 +216,6 @@ export function App() {
           all of <App /> still catches anything that escapes a panel. */}
       <ErrorBoundary label="Inspector">
         <Inspector />
-      </ErrorBoundary>
-      {/* Session 95 — selection-anchored floating toolbar.
-          Mounts between Inspector and ContextMenu so the toolbar's
-          fixed-position bar can sit above the canvas without being
-          hidden by the inspector's sliding aside, and the
-          ContextMenu (right-click) still takes precedence on
-          z-stack. ErrorBoundary scopes any crash so the canvas
-          stays usable. */}
-      <ErrorBoundary label="Selection toolbar">
-        <SelectionToolbar />
       </ErrorBoundary>
       <ContextMenu />
       <Suspense fallback={null}>

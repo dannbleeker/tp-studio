@@ -4,14 +4,7 @@ import { GRID_DOT } from '@/domain/tokens';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
-import {
-  Background,
-  BackgroundVariant,
-  Controls,
-  MiniMap,
-  ReactFlow,
-  ReactFlowProvider,
-} from '@xyflow/react';
+import { Background, BackgroundVariant, Controls, MiniMap, ReactFlow } from '@xyflow/react';
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
@@ -346,10 +339,13 @@ function CanvasInner() {
   );
 }
 
+/**
+ * Session 95 — `<ReactFlowProvider>` hoisted out of `<Canvas />`
+ * into `App.tsx` so the selection-anchored toolbar (and any future
+ * canvas-aware overlay mounted alongside it) can read React Flow's
+ * state via `useRFStore`. Canvas itself doesn't need to wrap the
+ * provider anymore — the provider is the App's responsibility now.
+ */
 export function Canvas() {
-  return (
-    <ReactFlowProvider>
-      <CanvasInner />
-    </ReactFlowProvider>
-  );
+  return <CanvasInner />;
 }
