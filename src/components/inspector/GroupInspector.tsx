@@ -1,4 +1,6 @@
+import { TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
+import { INPUT_FOCUS } from '@/components/ui/focusClasses';
 import { GROUP_COLORS_ORDER, GROUP_COLOR_CLASSES } from '@/domain/groupColors';
 import { GROUP_PRESETS } from '@/domain/groupPresets';
 import { wouldCreateCycle } from '@/domain/groups';
@@ -45,12 +47,10 @@ export function GroupInspector({ groupId }: { groupId: string }) {
   return (
     <div className="flex flex-col gap-4">
       <Field label="Title">
-        <input
-          type="text"
+        <TextInput
           value={group.title}
-          onChange={(e) => renameGroup(groupId, e.target.value)}
+          onChange={(next) => renameGroup(groupId, next)}
           disabled={locked}
-          className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
         />
       </Field>
 
@@ -128,7 +128,10 @@ export function GroupInspector({ groupId }: { groupId: string }) {
       {nestCandidates.length > 0 && (
         <Field label="Nest into parent group">
           <select
-            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+            className={clsx(
+              'w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100',
+              INPUT_FOCUS
+            )}
             value=""
             disabled={locked}
             aria-label="Nest this group inside another group"

@@ -3,6 +3,7 @@ import { useEdge, useEntity } from '@/hooks/useSelected';
 import { useDocumentStore } from '@/store';
 import { Lightbulb, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
+import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { AssumptionWell } from './AssumptionWell';
 import { AttributesSection } from './AttributesSection';
@@ -88,13 +89,11 @@ export function EdgeInspector({
         <p className="text-neutral-500 text-xs uppercase tracking-wider">{edge.kind}</p>
       </Field>
       <Field label="Label">
-        <input
-          type="text"
+        <TextInput
           value={edge.label ?? ''}
           placeholder="Optional mid-edge label"
-          onChange={(e) => updateEdge(edgeId, { label: e.target.value || undefined })}
+          onChange={(next) => updateEdge(edgeId, { label: next || undefined })}
           disabled={locked}
-          className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
         />
       </Field>
 

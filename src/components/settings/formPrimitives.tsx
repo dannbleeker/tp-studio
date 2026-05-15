@@ -1,5 +1,6 @@
 import clsx from 'clsx';
-import type { ReactNode } from 'react';
+import type { ChangeEventHandler, ReactNode } from 'react';
+import { INPUT_FOCUS } from '../ui/focusClasses';
 
 /**
  * Settings-dialog form primitives. Extracted from `SettingsDialog.tsx` so
@@ -128,5 +129,103 @@ export function Toggle({
         onChange={(e) => onChange(e.target.checked)}
       />
     </label>
+  );
+}
+
+/**
+ * Session 94 (Top-30 #5) — shared base classes for form fields.
+ *
+ * The same 60-char className string was duplicated across 12+ inspector
+ * + history + print files. Pulled here so the input/textarea/select
+ * elements use one source of truth for border / padding / focus-ring.
+ * `INPUT_FOCUS` carries the focus styling (Session 93 #36 constant).
+ *
+ * Components that need a non-default shape (e.g. inline assumption
+ * editor in TPNode) can still compose this with extra classes, but
+ * the canonical shape is here.
+ */
+const FIELD_BASE =
+  'w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100';
+
+export type TextInputProps = {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  /** Accept the raw `aria-label` when the field isn't visibly labelled
+   *  by a sibling `<label>`. Inspectors that wrap with `<Field>` don't
+   *  need to set this. */
+  ariaLabel?: string;
+  type?: 'text' | 'number' | 'search' | 'url' | 'email';
+  /** Optional id — when the host `<label htmlFor>` references this. */
+  id?: string;
+};
+
+export function TextInput({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  className,
+  ariaLabel,
+  type = 'text',
+  id,
+}: TextInputProps) {
+  return (
+    <input
+      id={id}
+      type={type}
+      value={value}
+      placeholder={placeholder}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      onChange={(e) => onChange(e.target.value)}
+      className={clsx(FIELD_BASE, INPUT_FOCUS, className)}
+    />
+  );
+}
+
+export type TextAreaProps = {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  ariaLabel?: string;
+  id?: string;
+  rows?: number;
+  /** When true, vertical resize is allowed; otherwise the textarea
+   *  is fixed at the row count. Defaults to false (matches inspector
+   *  convention of letting the row count drive the height). */
+  resizable?: boolean;
+  /** Optional raw onChange (rare — most callers want the `string`
+   *  variant). When supplied, replaces the default value-passing. */
+  onChangeRaw?: ChangeEventHandler<HTMLTextAreaElement>;
+};
+
+export function TextArea({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  className,
+  ariaLabel,
+  id,
+  rows = 2,
+  resizable = false,
+  onChangeRaw,
+}: TextAreaProps) {
+  return (
+    <textarea
+      id={id}
+      value={value}
+      placeholder={placeholder}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      rows={rows}
+      onChange={onChangeRaw ?? ((e) => onChange(e.target.value))}
+      className={clsx(FIELD_BASE, INPUT_FOCUS, resizable ? 'resize-y' : 'resize-none', className)}
+    />
   );
 }

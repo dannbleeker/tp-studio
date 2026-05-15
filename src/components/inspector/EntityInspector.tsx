@@ -8,6 +8,7 @@ import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
+import { TextArea, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { AttachedEdgesList } from './AttachedEdgesList';
 import { EntityAttributesSection } from './AttributesSection';
@@ -74,11 +75,10 @@ export function EntityInspector({
       )}
 
       <Field label="Title">
-        <textarea
-          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
-          rows={3}
+        <TextArea
           value={entity.title}
-          onChange={(e) => updateEntity(entityId, { title: e.target.value })}
+          onChange={(next) => updateEntity(entityId, { title: next })}
+          rows={3}
           disabled={locked}
         />
       </Field>
@@ -154,17 +154,13 @@ export function EntityInspector({
 
       {entity.type === 'action' && (
         <Field label="Step #">
-          <input
+          <TextInput
             type="number"
-            min={1}
-            step={1}
-            inputMode="numeric"
-            className="w-24 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
-            value={entity.ordering ?? ''}
+            className="w-24"
+            value={entity.ordering?.toString() ?? ''}
             placeholder="—"
             disabled={locked}
-            onChange={(e) => {
-              const raw = e.target.value;
+            onChange={(raw) => {
               if (raw === '') {
                 updateEntity(entityId, { ordering: undefined });
                 return;
@@ -177,18 +173,17 @@ export function EntityInspector({
       )}
 
       <Field label="Attestation">
-        <textarea
-          // E6: optional source / evidence citation for the entity — "where
-          // did this come from?" Free text rather than a structured field
-          // because real sources don't fit one shape (URL, doc page, person,
-          // interview date, internal report). The field's purpose is
-          // *visible provenance*, not searchable metadata; the inspector is
-          // the only consumer today.
-          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+        {/* E6: optional source / evidence citation for the entity — "where
+            did this come from?" Free text rather than a structured field
+            because real sources don't fit one shape (URL, doc page, person,
+            interview date, internal report). The field's purpose is
+            *visible provenance*, not searchable metadata; the inspector is
+            the only consumer today. */}
+        <TextArea
           rows={2}
           value={entity.attestation ?? ''}
           placeholder="Source or evidence — URL, document, interview, etc. Optional."
-          onChange={(e) => updateEntity(entityId, { attestation: e.target.value || undefined })}
+          onChange={(next) => updateEntity(entityId, { attestation: next || undefined })}
           disabled={locked}
         />
       </Field>
@@ -332,22 +327,25 @@ function StFacetsSection({
         </p>
         {rows.map((row) => {
           const value = readFacet(row.key);
+          const fieldId = `st-facet-${row.key}`;
           return (
-            <label key={row.key} className="flex flex-col gap-0.5 text-xs">
-              <span className="text-neutral-600 dark:text-neutral-300">{row.label}</span>
-              <textarea
+            <div key={row.key} className="flex flex-col gap-0.5 text-xs">
+              <label htmlFor={fieldId} className="text-neutral-600 dark:text-neutral-300">
+                {row.label}
+              </label>
+              <TextArea
+                id={fieldId}
                 value={value}
                 rows={2}
                 placeholder={row.placeholder}
                 disabled={locked}
-                onChange={(e) => {
-                  const next = e.target.value;
+                onChange={(next) => {
                   if (next === '') onClear(row.key);
                   else onSet(row.key, next);
                 }}
-                className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+                className="text-xs"
               />
-            </label>
+            </div>
           );
         })}
       </div>

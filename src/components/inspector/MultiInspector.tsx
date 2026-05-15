@@ -6,6 +6,7 @@ import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { ArrowLeftRight, ListOrdered, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { Field } from './Field';
 
@@ -180,18 +181,15 @@ function RenumberControl({
   return (
     <Field label="Renumber as steps">
       <div className="flex items-center gap-2">
-        <input
+        <TextInput
           type="number"
-          min={1}
-          step={1}
-          inputMode="numeric"
-          aria-label="Renumber starting at"
-          className="w-20 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
-          value={startAt}
+          ariaLabel="Renumber starting at"
+          className="w-20"
+          value={String(startAt)}
           disabled={locked}
-          onChange={(e) => {
-            const raw = Number.parseInt(e.target.value, 10);
-            setStartAt(Number.isFinite(raw) && raw > 0 ? raw : 1);
+          onChange={(raw) => {
+            const n = Number.parseInt(raw, 10);
+            setStartAt(Number.isFinite(n) && n > 0 ? n : 1);
           }}
         />
         <Button
