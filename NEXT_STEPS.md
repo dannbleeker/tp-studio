@@ -78,6 +78,34 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 > **Mobile / narrow-viewport pass complete (Session 65).** A new `KebabMenu` component lives at the right edge of the TopBar with `sm:hidden`, surfacing the four buttons (Layout Mode, History, Help, Theme) that the existing responsive classes hide below `sm` (640 px). Items auto-close the menu after activation; Escape and outside-click also dismiss. TitleBadge's narrow-viewport `max-w-` bumped from `100%-7rem` to `100%-9rem` to leave room for the extra icon. The Inspector and RevisionPanel already overlaid with tap-to-dismiss backdrops below `md:`, so no changes needed there. 8 new tests in `tests/components/KebabMenu.test.tsx` (628 total, all green). **The remaining backlog is the structural-extensibility tier**: **B7 + B10** (user-defined attributes + custom entity classes) and the parked **confidence-field UI**.
 
+## Selection-anchored contextual toolbar (Session 94 UI research)
+
+The Top-30 refactor sweep (Session 94) included a parallel UI-pattern research pass — Office ribbon, MindManager, Figma UI3, Miro, Excalidraw, tldraw, Lucidchart, draw.io. Modern canvas-dominated tools have converged on a **floating contextual toolbar anchored above the current selection** as the bridge between "I know which node I mean" and "I know which verb I want." Today that's two clicks in TP Studio (select → reach for palette or inspector); the contextual toolbar would collapse it to one.
+
+Crucially: **this is additive, not a chrome overhaul.** The Cmd+K palette + slide-in Inspector + 8-icon TopBar trio stays — they cover discoverability, properties, and orientation respectively. The toolbar adds the missing per-selection verb surface.
+
+**Concrete spec:**
+- New `<SelectionToolbar>` overlay anchored via React Flow's `useStore` to the selection-bounding-rect's viewport coords. Hides while dragging, while a text field is being edited, or while the palette is open.
+- Per-entity-type verb registry — re-uses existing palette command IDs so a click teaches the keyboard shortcut and the palette use reinforces the toolbar layout.
+- Initial verb scopes:
+  - **CRT / FRT entity:** `Add cause` · `Add effect` · `Mark as UDE` · `Mark as root cause` · `Delete`
+  - **EC slot entity:** `Add prerequisite` · `Add assumption` · `Challenge` · `Delete`
+  - **Goal Tree CSF:** `Add NC` · `Promote to Goal` · `Delete`
+  - **Edge selected:** `Reverse` · `Add assumption` · `Set polarity` · `Splice` · `Delete`
+  - **Multi-selection:** `Group as AND` · `Group as OR` · `Swap entities` · `Delete N`
+- Visual: same indigo accent + chip size as the existing `StatusStrip` chips. Use the `CARD_FOCUS` constant from Session 93.
+
+**Validation path before full build:** prototype the toolbar for **just the CRT entity case** (5 verbs, anchored to the selection in viewport space) and use it for an hour of real diagramming. If it replaces one Cmd+K cycle per minute, ship across every selection kind. If not, the prototype is throwaway and the existing UI is untouched.
+
+**Effort:** M–L (~1 week of focused work).
+
+**Explicit anti-recommendations from the same research:**
+- **Don't add a top ribbon.** Microsoft has been retreating since 2018; Figma moved its toolbar to bottom-center in UI3; the ribbon's strengths (discoverability across hundreds of commands) are already covered by Cmd+K, and its costs (33% of vertical space, narrow-viewport breakage, a11y debt) are real.
+- **Don't add a bottom-left command toolbar** — redundant with Cmd+K, adds permanent chrome for no leverage.
+- **Don't add a per-diagram-type quick-add panel** — the palette already filters by diagramType-relevant commands.
+
+Source synthesis lives in CHANGELOG Session 94 commit `56c553d`; full research briefs in this session's transcript.
+
 ## Deferred from the Bundle 4 + B + E + N plan (Session 46)
 
 Captured here so a future session can pick them up without re-deriving scope:
