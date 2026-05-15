@@ -1,14 +1,10 @@
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
 import type { DiagramType } from '@/domain/types';
-import { useEscapeKey } from '@/hooks/useEscapeKey';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
-import { X } from 'lucide-react';
-import { useRef } from 'react';
-import { Button } from '../ui/Button';
+import { LargeDialog } from '../ui/LargeDialog';
 import { CARD_FOCUS } from '../ui/focusClasses';
 
 /**
@@ -87,12 +83,8 @@ export function DiagramTypePickerDialog() {
   const newDocument = useDocumentStore((s) => s.newDocument);
   const setDocument = useDocumentStore((s) => s.setDocument);
   const showToast = useDocumentStore((s) => s.showToast);
-  const dialogRef = useRef<HTMLDivElement | null>(null);
 
   const open = mode !== null;
-  useFocusTrap(dialogRef, open);
-  useEscapeKey(open, close);
-
   if (!open) return null;
 
   // After the diagram lands, fit-view via two animation frames so React
@@ -137,63 +129,46 @@ export function DiagramTypePickerDialog() {
       : 'Pick a diagram type and we load a worked example so you can see the shape before building your own.';
 
   return (
-    <dialog
-      open
-      className="fixed inset-0 z-50 m-0 flex h-screen max-h-screen w-screen max-w-none items-center justify-center bg-black/40 p-0"
-      aria-modal="true"
-      aria-labelledby="diagram-picker-title"
+    <LargeDialog
+      open={open}
+      onClose={close}
+      title={title}
+      subtitle={subtitle}
+      closeAriaLabel="Close diagram picker"
     >
-      <div
-        ref={dialogRef}
-        tabIndex={-1}
-        className="flex max-h-[88vh] w-[min(960px,94vw)] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-xl outline-none dark:border-neutral-800 dark:bg-neutral-950"
+      <ul
+        className="grid grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3"
+        aria-label="Diagram types"
       >
-        <header className="flex items-center justify-between">
-          <div>
-            <h2 id="diagram-picker-title" className="font-semibold text-base">
-              {title}
-            </h2>
-            <p className="text-neutral-500 text-xs dark:text-neutral-400">{subtitle}</p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={close} aria-label="Close diagram picker">
-            <X className="h-4 w-4" />
-          </Button>
-        </header>
-
-        <ul
-          className="grid grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3"
-          aria-label="Diagram types"
-        >
-          {DIAGRAM_CARDS.map((card) => {
-            const label = DIAGRAM_TYPE_LABEL[card.type];
-            return (
-              <li key={card.type}>
-                <button
-                  type="button"
-                  onClick={() => handlePick(card.type)}
-                  aria-label={`${mode === 'new' ? 'New' : 'Load example'}: ${label}`}
-                  className={clsx(
-                    'group flex w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
-                    'hover:border-indigo-400 hover:bg-indigo-50/40',
-                    CARD_FOCUS,
-                    'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
-                  )}
-                >
-                  <span className="rounded bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">
-                    {card.short}
-                  </span>
-                  <h3 className="font-medium text-neutral-900 text-sm leading-tight dark:text-neutral-100">
-                    {label}
-                  </h3>
-                  <p className="text-neutral-600 text-xs leading-snug dark:text-neutral-400">
-                    {card.use}
-                  </p>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </dialog>
+        {DIAGRAM_CARDS.map((card) => {
+          const label = DIAGRAM_TYPE_LABEL[card.type];
+          return (
+            <li key={card.type}>
+              <button
+                type="button"
+                onClick={() => handlePick(card.type)}
+                aria-label={`${mode === 'new' ? 'New' : 'Load example'}: ${label}`}
+                className={clsx(
+                  'group flex w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
+                  'hover:border-indigo-400 hover:bg-indigo-50/40',
+                  CARD_FOCUS,
+                  'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
+                )}
+              >
+                <span className="rounded bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">
+                  {card.short}
+                </span>
+                <h3 className="font-medium text-neutral-900 text-sm leading-tight dark:text-neutral-100">
+                  {label}
+                </h3>
+                <p className="text-neutral-600 text-xs leading-snug dark:text-neutral-400">
+                  {card.use}
+                </p>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </LargeDialog>
   );
 }

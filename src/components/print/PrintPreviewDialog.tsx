@@ -1,15 +1,14 @@
 import { structuralEntities } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
-import { useEscapeKey } from '@/hooks/useEscapeKey';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { log } from '@/services/logger';
 import { exportToVectorPdf } from '@/services/pdfExport';
 import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
-import { FileDown, Printer, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { FileDown, Printer } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/Button';
+import { LargeDialog } from '../ui/LargeDialog';
 
 /**
  * Session 77 / brief §10 — Print preview dialog.
@@ -237,9 +236,6 @@ export function PrintPreviewDialog() {
   const [headerTemplate, setHeaderTemplate] = useState('{title} · {diagramType}');
   const [footerTemplate, setFooterTemplate] = useState('Exported {date} · TP Studio');
 
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-  useFocusTrap(dialogRef, open);
-
   const hasSelection =
     (selection.kind === 'entities' || selection.kind === 'edges') && selection.ids.length > 0;
   // Reset the selection-only flag when the selection vanishes —
@@ -248,11 +244,6 @@ export function PrintPreviewDialog() {
   useEffect(() => {
     if (!hasSelection && selectionOnly) setSelectionOnly(false);
   }, [hasSelection, selectionOnly]);
-
-  // Esc closes (in addition to the X button and the focus trap's
-  // tab cycling). Session 87 (S23) — migrated to the shared
-  // `useEscapeKey` hook for consistent Esc handling across dialogs.
-  useEscapeKey(open, close);
 
   // Keep the body-mode class in sync with the chosen mode while the
   // dialog is open. The classes only affect `@media print` rules, so
@@ -330,149 +321,135 @@ export function PrintPreviewDialog() {
   const annotationCount = structuralEntities(doc).filter((e) => e.description).length;
 
   return (
-    <dialog
-      open
-      className="fixed inset-0 z-50 m-0 flex h-screen max-h-screen w-screen max-w-none items-center justify-center bg-black/40 p-0"
-      aria-modal="true"
-      aria-labelledby="print-preview-title"
+    <LargeDialog
+      open={open}
+      onClose={close}
+      title="Print / Save as PDF"
+      closeAriaLabel="Close print preview"
+      widthClass="w-[min(640px,92vw)]"
     >
-      <div
-        ref={dialogRef}
-        tabIndex={-1}
-        className="flex w-[min(640px,92vw)] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-xl outline-none dark:border-neutral-800 dark:bg-neutral-950"
-      >
-        <header className="flex items-center justify-between">
-          <h2 id="print-preview-title" className="font-semibold text-base">
-            Print / Save as PDF
-          </h2>
-          <Button variant="ghost" size="icon" onClick={close} aria-label="Close print preview">
-            <X className="h-4 w-4" />
-          </Button>
-        </header>
-
-        <div className="flex flex-col gap-3">
-          <fieldset className="flex flex-col gap-2 text-sm">
-            <legend className="font-semibold text-[11px] text-neutral-500 uppercase tracking-wide dark:text-neutral-400">
-              Mode
-            </legend>
-            <div className="grid grid-cols-3 gap-2">
-              {(['standard', 'workshop', 'inksaving'] satisfies PrintMode[]).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMode(m)}
-                  className={clsx(
-                    'flex flex-col items-start gap-1.5 rounded-md border px-3 py-2 text-left text-xs transition',
-                    mode === m
-                      ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
-                      : 'border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900'
-                  )}
-                >
-                  {/* Session 88 (S20) — inline mode thumbnail. The
+      <div className="flex flex-col gap-3">
+        <fieldset className="flex flex-col gap-2 text-sm">
+          <legend className="font-semibold text-[11px] text-neutral-500 uppercase tracking-wide dark:text-neutral-400">
+            Mode
+          </legend>
+          <div className="grid grid-cols-3 gap-2">
+            {(['standard', 'workshop', 'inksaving'] satisfies PrintMode[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                className={clsx(
+                  'flex flex-col items-start gap-1.5 rounded-md border px-3 py-2 text-left text-xs transition',
+                  mode === m
+                    ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
+                    : 'border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900'
+                )}
+              >
+                {/* Session 88 (S20) — inline mode thumbnail. The
                       previews telegraph each mode's visual style
                       (colour stripes / bold high-contrast / no fills)
                       before the user commits. */}
-                  <ModeThumbnail mode={m} />
-                  <div className="font-medium">{MODE_LABEL[m]}</div>
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-neutral-500 italic dark:text-neutral-400">
-              {MODE_HINT[mode]}
-            </p>
-          </fieldset>
+                <ModeThumbnail mode={m} />
+                <div className="font-medium">{MODE_LABEL[m]}</div>
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-neutral-500 italic dark:text-neutral-400">
+            {MODE_HINT[mode]}
+          </p>
+        </fieldset>
 
-          <label className="flex items-start gap-2 text-xs">
-            <input
-              type="checkbox"
-              checked={includeAppendix}
-              onChange={(e) => setIncludeAppendix(e.target.checked)}
-              className="mt-0.5"
-            />
-            <span>
-              Include <b>annotation appendix</b>{' '}
-              <span className="text-neutral-500 dark:text-neutral-400">
-                ({annotationCount} entit{annotationCount === 1 ? 'y' : 'ies'} with descriptions)
-              </span>{' '}
-              — a numbered list of every entity's description rendered after the diagram.
-            </span>
-          </label>
+        <label className="flex items-start gap-2 text-xs">
+          <input
+            type="checkbox"
+            checked={includeAppendix}
+            onChange={(e) => setIncludeAppendix(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            Include <b>annotation appendix</b>{' '}
+            <span className="text-neutral-500 dark:text-neutral-400">
+              ({annotationCount} entit{annotationCount === 1 ? 'y' : 'ies'} with descriptions)
+            </span>{' '}
+            — a numbered list of every entity's description rendered after the diagram.
+          </span>
+        </label>
 
-          <label className="flex items-start gap-2 text-xs">
-            <input
-              type="checkbox"
-              checked={selectionOnly}
-              onChange={(e) => setSelectionOnly(e.target.checked)}
-              disabled={!hasSelection}
-              className="mt-0.5 disabled:opacity-40"
-            />
-            <span className={hasSelection ? '' : 'opacity-60'}>
-              <b>Print selection only</b>{' '}
-              <span className="text-neutral-500 dark:text-neutral-400">
-                {hasSelection
-                  ? '— only the entities + edges currently selected on the canvas will print.'
-                  : '(select one or more entities / edges first to enable this)'}
-              </span>
+        <label className="flex items-start gap-2 text-xs">
+          <input
+            type="checkbox"
+            checked={selectionOnly}
+            onChange={(e) => setSelectionOnly(e.target.checked)}
+            disabled={!hasSelection}
+            className="mt-0.5 disabled:opacity-40"
+          />
+          <span className={hasSelection ? '' : 'opacity-60'}>
+            <b>Print selection only</b>{' '}
+            <span className="text-neutral-500 dark:text-neutral-400">
+              {hasSelection
+                ? '— only the entities + edges currently selected on the canvas will print.'
+                : '(select one or more entities / edges first to enable this)'}
             </span>
-          </label>
+          </span>
+        </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="text-neutral-600 dark:text-neutral-300">
-              Header template — merge fields: <code>{'{title}'}</code> <code>{'{date}'}</code>{' '}
-              <code>{'{author}'}</code> <code>{'{diagramType}'}</code>
-            </span>
-            <input
-              type="text"
-              value={headerTemplate}
-              onChange={(e) => setHeaderTemplate(e.target.value)}
-              className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
-            />
-            <span className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
-              Preview: {resolveMergeFields(headerTemplate, doc) || '(empty)'}
-            </span>
-          </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-neutral-600 dark:text-neutral-300">
+            Header template — merge fields: <code>{'{title}'}</code> <code>{'{date}'}</code>{' '}
+            <code>{'{author}'}</code> <code>{'{diagramType}'}</code>
+          </span>
+          <input
+            type="text"
+            value={headerTemplate}
+            onChange={(e) => setHeaderTemplate(e.target.value)}
+            className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
+          />
+          <span className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
+            Preview: {resolveMergeFields(headerTemplate, doc) || '(empty)'}
+          </span>
+        </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            {/* Session 87 (S7) — surfaced the merge-field row above the
+        <label className="flex flex-col gap-1 text-xs">
+          {/* Session 87 (S7) — surfaced the merge-field row above the
                 input, matching the Header field's pattern. Same fields
                 apply to both header and footer; documenting once at
                 the header and leaving the footer label bare misled
                 users into thinking footer had a different set. */}
-            <span className="text-neutral-600 dark:text-neutral-300">
-              Footer template — merge fields: <code>{'{title}'}</code> <code>{'{date}'}</code>{' '}
-              <code>{'{author}'}</code> <code>{'{diagramType}'}</code>
-            </span>
-            <input
-              type="text"
-              value={footerTemplate}
-              onChange={(e) => setFooterTemplate(e.target.value)}
-              className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
-            />
-            <span className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
-              Preview: {resolveMergeFields(footerTemplate, doc) || '(empty)'}
-            </span>
-          </label>
-        </div>
-
-        <footer className="flex flex-wrap justify-end gap-2">
-          <Button variant="ghost" onClick={close}>
-            Cancel
-          </Button>
-          <Button variant="ghost" onClick={handlePrint}>
-            <Printer className="h-3.5 w-3.5" />
-            Open print dialog
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleVectorPdf}
-            disabled={pdfBusy}
-            aria-label="Save as vector PDF"
-          >
-            <FileDown className="h-3.5 w-3.5" />
-            {pdfBusy ? 'Saving…' : 'Save as PDF'}
-          </Button>
-        </footer>
+          <span className="text-neutral-600 dark:text-neutral-300">
+            Footer template — merge fields: <code>{'{title}'}</code> <code>{'{date}'}</code>{' '}
+            <code>{'{author}'}</code> <code>{'{diagramType}'}</code>
+          </span>
+          <input
+            type="text"
+            value={footerTemplate}
+            onChange={(e) => setFooterTemplate(e.target.value)}
+            className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
+          />
+          <span className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
+            Preview: {resolveMergeFields(footerTemplate, doc) || '(empty)'}
+          </span>
+        </label>
       </div>
-    </dialog>
+
+      <footer className="flex flex-wrap justify-end gap-2">
+        <Button variant="ghost" onClick={close}>
+          Cancel
+        </Button>
+        <Button variant="ghost" onClick={handlePrint}>
+          <Printer className="h-3.5 w-3.5" />
+          Open print dialog
+        </Button>
+        <Button
+          variant="primary"
+          onClick={handleVectorPdf}
+          disabled={pdfBusy}
+          aria-label="Save as vector PDF"
+        >
+          <FileDown className="h-3.5 w-3.5" />
+          {pdfBusy ? 'Saving…' : 'Save as PDF'}
+        </Button>
+      </footer>
+    </LargeDialog>
   );
 }

@@ -1,6 +1,4 @@
 import { redactDocument } from '@/domain/redact';
-import { useEscapeKey } from '@/hooks/useEscapeKey';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { exportECWorkshopSheet } from '@/services/ecWorkshopExport';
 import {
@@ -23,9 +21,7 @@ import {
 import { SHARE_LINK_SOFT_WARN_BYTES, generateShareLink } from '@/services/shareLink';
 import { type RootStore, useDocumentStore } from '@/store';
 import clsx from 'clsx';
-import { X } from 'lucide-react';
-import { useRef } from 'react';
-import { Button } from '../ui/Button';
+import { LargeDialog } from '../ui/LargeDialog';
 import { CARD_FOCUS } from '../ui/focusClasses';
 
 /**
@@ -246,10 +242,6 @@ export function ExportPickerDialog() {
   const open = useDocumentStore((s) => s.exportPickerOpen);
   const close = useDocumentStore((s) => s.closeExportPicker);
   const diagramType = useDocumentStore((s) => s.doc.diagramType);
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useFocusTrap(dialogRef, open);
-  useEscapeKey(open, close);
 
   if (!open) return null;
 
@@ -263,68 +255,50 @@ export function ExportPickerDialog() {
   };
 
   return (
-    <dialog
-      open
-      className="fixed inset-0 z-50 m-0 flex h-screen max-h-screen w-screen max-w-none items-center justify-center bg-black/40 p-0"
-      aria-modal="true"
-      aria-labelledby="export-picker-title"
+    <LargeDialog
+      open={open}
+      onClose={close}
+      title="Export"
+      subtitle="Pick a format. Files download to your browser's default location."
+      closeAriaLabel="Close export picker"
+      widthClass="w-[min(720px,94vw)]"
     >
-      <div
-        ref={dialogRef}
-        tabIndex={-1}
-        className="flex max-h-[88vh] w-[min(720px,94vw)] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-xl outline-none dark:border-neutral-800 dark:bg-neutral-950"
-      >
-        <header className="flex items-center justify-between">
-          <div>
-            <h2 id="export-picker-title" className="font-semibold text-base">
-              Export
-            </h2>
-            <p className="text-neutral-500 text-xs dark:text-neutral-400">
-              Pick a format. Files download to your browser's default location.
-            </p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={close} aria-label="Close export picker">
-            <X className="h-4 w-4" />
-          </Button>
-        </header>
-
-        <div className="flex flex-col gap-4 overflow-y-auto pr-1">
-          {EXPORT_CATEGORIES.map((cat) => {
-            const visible = cat.items.filter((it) => !it.onlyOnECDoc || diagramType === 'ec');
-            if (visible.length === 0) return null;
-            return (
-              <section key={cat.title} className="flex flex-col gap-1.5">
-                <h3 className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-                  {cat.title}
-                </h3>
-                <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                  {visible.map((it) => (
-                    <li key={it.id}>
-                      <button
-                        type="button"
-                        onClick={() => void handlePick(it)}
-                        className={clsx(
-                          'group flex w-full flex-col gap-0.5 rounded-md border border-neutral-200 bg-white px-3 py-2 text-left transition',
-                          'hover:border-indigo-400 hover:bg-indigo-50/40',
-                          CARD_FOCUS,
-                          'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
-                        )}
-                      >
-                        <span className="font-medium text-neutral-900 text-sm dark:text-neutral-100">
-                          {it.label}
-                        </span>
-                        <span className="text-[11px] text-neutral-500 leading-snug dark:text-neutral-400">
-                          {it.hint}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            );
-          })}
-        </div>
+      <div className="flex flex-col gap-4 overflow-y-auto pr-1">
+        {EXPORT_CATEGORIES.map((cat) => {
+          const visible = cat.items.filter((it) => !it.onlyOnECDoc || diagramType === 'ec');
+          if (visible.length === 0) return null;
+          return (
+            <section key={cat.title} className="flex flex-col gap-1.5">
+              <h3 className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
+                {cat.title}
+              </h3>
+              <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {visible.map((it) => (
+                  <li key={it.id}>
+                    <button
+                      type="button"
+                      onClick={() => void handlePick(it)}
+                      className={clsx(
+                        'group flex w-full flex-col gap-0.5 rounded-md border border-neutral-200 bg-white px-3 py-2 text-left transition',
+                        'hover:border-indigo-400 hover:bg-indigo-50/40',
+                        CARD_FOCUS,
+                        'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
+                      )}
+                    >
+                      <span className="font-medium text-neutral-900 text-sm dark:text-neutral-100">
+                        {it.label}
+                      </span>
+                      <span className="text-[11px] text-neutral-500 leading-snug dark:text-neutral-400">
+                        {it.hint}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
       </div>
-    </dialog>
+    </LargeDialog>
   );
 }
