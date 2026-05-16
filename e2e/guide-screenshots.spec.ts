@@ -164,7 +164,10 @@ test.describe('book — Part 2 — Thinking Processes', () => {
     await page.keyboard.press('Enter');
     await page.waitForSelector('h2:has-text("New diagram")');
     await page.getByRole('button', { name: /goal tree/i }).click();
-    await page.waitForSelector('[data-component="tp-node"]');
+    // Goal Tree opens with the creation wizard at step 1; no
+    // entities exist yet (the wizard creates the Goal entity on
+    // step-1 commit). Wait for the wizard panel, not a tp-node.
+    await page.waitForSelector('[data-component="creation-wizard"]');
     await page.waitForTimeout(400);
     await _screenshot(page, 'chapter09-goal-tree-wizard', { mask: TOASTER_MASK(page) });
   });
