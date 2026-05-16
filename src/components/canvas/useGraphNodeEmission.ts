@@ -58,25 +58,51 @@ export const useGraphNodeEmission = (
       if (group.collapsed) continue;
       if (!hoistVisibleGroups.has(group.id)) continue;
       if (proj.groupToCollapsedRoot.has(group.id)) continue;
-      // Members visible enough to bound: direct entity members visible AND
-      // (recursively) nested non-collapsed groups' positions can be approximated
-      // by the union of their own entity positions. For simplicity we just
-      // use direct entity members and direct collapsed-root members.
-      const memberPositions: { x: number; y: number; w: number; h: number }[] = [];
+      // Session 107 — single-pass bbox.
+      //
+      // The previous implementation built a `memberPositions` array, then
+      // ran `Math.min(...arr.map(...))` four times (left / top / right /
+      // bottom) plus the spread operator. That's 4 fresh arrays + 4
+      // spread calls allocated per group per emission run.
+      // `useGraphNodeEmission` re-runs on every doc / projection /
+      // positions change (positions change on every drag tick), so for
+      // a doc with 5 groups × 4 transient allocations × 60 frames /
+      // second during drag, that's ~1200 ephemeral arrays per second
+      // — pure GC pressure. Replaced with one pass that tracks the
+      // running min/max directly. Same output; no allocations beyond
+      // the four numbers.
+      let minX = Number.POSITIVE_INFINITY;
+      let minY = Number.POSITIVE_INFINITY;
+      let maxX = Number.NEGATIVE_INFINITY;
+      let maxY = Number.NEGATIVE_INFINITY;
+      let hasMembers = false;
       for (const id of group.memberIds) {
         const p = positions[id];
         if (!p) continue;
+        let w: number;
+        let h: number;
         if (visibleEntityIds.has(id)) {
-          memberPositions.push({ x: p.x, y: p.y, w: NODE_WIDTH, h: NODE_MIN_HEIGHT });
+          w = NODE_WIDTH;
+          h = NODE_MIN_HEIGHT;
         } else if (visibleCollapsedRoots.includes(id)) {
-          memberPositions.push({ x: p.x, y: p.y, w: COLLAPSED_WIDTH, h: COLLAPSED_HEIGHT });
+          w = COLLAPSED_WIDTH;
+          h = COLLAPSED_HEIGHT;
+        } else {
+          continue;
         }
+        hasMembers = true;
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        const right = p.x + w;
+        const bottom = p.y + h;
+        if (right > maxX) maxX = right;
+        if (bottom > maxY) maxY = bottom;
       }
-      if (memberPositions.length === 0) continue;
-      const minX = Math.min(...memberPositions.map((m) => m.x)) - GROUP_PADDING;
-      const minY = Math.min(...memberPositions.map((m) => m.y)) - GROUP_PADDING - GROUP_TITLE_TOP;
-      const maxX = Math.max(...memberPositions.map((m) => m.x + m.w)) + GROUP_PADDING;
-      const maxY = Math.max(...memberPositions.map((m) => m.y + m.h)) + GROUP_PADDING;
+      if (!hasMembers) continue;
+      minX -= GROUP_PADDING;
+      minY -= GROUP_PADDING + GROUP_TITLE_TOP;
+      maxX += GROUP_PADDING;
+      maxY += GROUP_PADDING;
       const groupW = maxX - minX;
       const groupH = maxY - minY;
       const node: TPGroupNode = {

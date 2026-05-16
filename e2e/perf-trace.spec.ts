@@ -172,9 +172,14 @@ test.describe('perf-trace — 100-entity interaction', () => {
     let totalScriptDur = 0;
     let totalLayoutDur = 0;
     let totalPaintDur = 0;
-    let longTaskCount = 0;
-    let longTaskTotalDur = 0;
+    const longTaskList: { name: string; ms: number }[] = [];
     const seenCategories = new Set<string>();
+    // Session 107 — per-event-name aggregation. For each long task
+    // (>50ms) we record its name + duration, then sort by duration
+    // so the worst tasks float to the top of the summary. Gives us
+    // a CI-log signal for "what's slow?" without needing to open
+    // the trace file in a viewer.
+    const eventNameTotals = new Map<string, { count: number; totalMs: number }>();
 
     for (const e of events) {
       if (e.cat) {
@@ -182,6 +187,13 @@ test.describe('perf-trace — 100-entity interaction', () => {
       }
       if (e.ph !== 'X' || typeof e.dur !== 'number') continue;
       const name = e.name ?? '';
+      const durMs = e.dur / 1000;
+      // Aggregate per name regardless of category. Useful for
+      // spotting "function X is called 12,000 times for 300ms total."
+      const agg = eventNameTotals.get(name) ?? { count: 0, totalMs: 0 };
+      agg.count += 1;
+      agg.totalMs += durMs;
+      eventNameTotals.set(name, agg);
       // Heuristic categorization — Chrome's trace categories don't
       // map 1:1 to "scripting/layout/paint" the way the
       // Performance panel labels them, but the event NAME is
@@ -195,8 +207,7 @@ test.describe('perf-trace — 100-entity interaction', () => {
       ) {
         totalScriptDur += e.dur;
         if (e.dur > 50_000) {
-          longTaskCount += 1;
-          longTaskTotalDur += e.dur;
+          longTaskList.push({ name, ms: +durMs.toFixed(1) });
         }
       } else if (name.includes('Layout') || name === 'UpdateLayoutTree') {
         totalLayoutDur += e.dur;
@@ -204,6 +215,19 @@ test.describe('perf-trace — 100-entity interaction', () => {
         totalPaintDur += e.dur;
       }
     }
+
+    longTaskList.sort((a, b) => b.ms - a.ms);
+    // Top 10 most-frequent + top 10 most-expensive event names —
+    // gives a hot-path silhouette without dumping the full 900k+
+    // event table.
+    const byCount = [...eventNameTotals.entries()]
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 10)
+      .map(([name, { count, totalMs }]) => ({ name, count, total_ms: +totalMs.toFixed(1) }));
+    const byTime = [...eventNameTotals.entries()]
+      .sort((a, b) => b[1].totalMs - a[1].totalMs)
+      .slice(0, 10)
+      .map(([name, { count, totalMs }]) => ({ name, count, total_ms: +totalMs.toFixed(1) }));
 
     const summary = {
       events: events.length,
@@ -214,8 +238,16 @@ test.describe('perf-trace — 100-entity interaction', () => {
         paint: +(totalPaintDur / 1000).toFixed(1),
       },
       long_tasks: {
-        count_over_50ms: longTaskCount,
-        total_ms: +(longTaskTotalDur / 1000).toFixed(1),
+        count_over_50ms: longTaskList.length,
+        total_ms: +longTaskList.reduce((s, t) => s + t.ms, 0).toFixed(1),
+        // Session 107 — list each one. CI-log diff after a perf
+        // change tells you which long task you eliminated (or
+        // introduced).
+        items: longTaskList,
+      },
+      hottest_events: {
+        by_count: byCount,
+        by_time: byTime,
       },
       trace_path: TRACE_PATH,
       trace_size_kb: +(traceJson.length / 1024).toFixed(1),

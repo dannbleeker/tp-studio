@@ -256,3 +256,34 @@ body {
 .dark .prose-tp hr {
   border-top-color: #404040;
 }
+
+/*
+ * Session 107 — promote the React Flow viewport to a compositor layer.
+ *
+ * The Session 106 perf trace showed 3.7 s of layout time vs. 0.15 s of
+ * paint over a 30 s scripted interaction — a ~25:1 ratio, suggesting
+ * most layout work is wasted style recalc rather than visually
+ * meaningful change. The culprit: React Flow writes
+ * `style="transform: translate(...) scale(...)"` on
+ * `.react-flow__viewport` every pan/zoom frame. Without
+ * `will-change`, each transform write triggers a full style recalc
+ * cascade through the viewport's descendants (every node + edge).
+ *
+ * Adding `will-change: transform` hints to the browser that the
+ * element is about to transform and asks for a dedicated compositor
+ * layer. Subsequent transform updates then become GPU-only (no style
+ * recalc, no layout pass) — the cost moves off the main thread
+ * entirely and the layout-time budget should drop substantially.
+ *
+ * Tradeoffs: a compositor layer costs GPU memory (~node count × node
+ * size). At 100 entities this is negligible; at 10,000 it'd start
+ * mattering. Worth re-evaluating if real diagrams ever grow past a
+ * few hundred nodes.
+ *
+ * The flag is harmless on browsers that don't honor it (older
+ * versions, certain mobile setups) — they just continue paying the
+ * style-recalc cost they already were.
+ */
+.react-flow__viewport {
+  will-change: transform;
+}
