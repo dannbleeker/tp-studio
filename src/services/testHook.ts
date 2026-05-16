@@ -1,3 +1,4 @@
+import { getCanvasInstance } from '@/services/canvasRef';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 
@@ -72,6 +73,19 @@ export interface TpTestHook {
    * than a per-shape accessor and matches the store's shape exactly.
    */
   getSelection: () => ReturnType<typeof useDocumentStore.getState>['selection'];
+  /**
+   * Session 95 — drive selection through React Flow's own API, which
+   * fires `onSelectionChange` → our Canvas handler mirrors it back
+   * to the store. Matches the production data flow exactly (click
+   * on node → RF updates `selected: true` → onSelectionChange fires
+   * → store mirror). Used by the SelectionToolbar e2e instead of
+   * `page.click()` because the latter raced with RF's mount-time
+   * empty `onSelectionChange` in headless CI Chromium.
+   *
+   * Returns `true` when the instance + node exist; `false` when
+   * either isn't there yet (caller can retry).
+   */
+  selectNodeViaRF: (id: string) => boolean;
 }
 
 /**
@@ -113,6 +127,15 @@ export const maybeInstallTestHook = (): void => {
     },
     confirmAndDeleteEntity,
     getSelection: () => useDocumentStore.getState().selection,
+    selectNodeViaRF: (id) => {
+      const instance = getCanvasInstance();
+      if (!instance) return false;
+      // Single-select: target node `selected: true`, everything else
+      // `selected: false`. Matches what React Flow does internally on
+      // a plain click.
+      instance.setNodes((prev) => prev.map((n) => ({ ...n, selected: n.id === id })));
+      return true;
+    },
   };
   // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an
   // optional `TpTestHook` — no `as any` cast needed. The opt-in URL
