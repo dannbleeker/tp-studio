@@ -22,25 +22,37 @@ import { expect, test } from '@playwright/test';
  * stabilises.
  *
  * ┌─────────────────────────────────────────────────────────────────┐
- * │ ONE-TIME BOOTSTRAP — REMOVE `test.fixme()` AFTER FIRST RUN.     │
+ * │ ONE-TIME BOOTSTRAP — REMOVE THE GUARD BELOW AFTER FIRST RUN.    │
  * ├─────────────────────────────────────────────────────────────────┤
- * │ This spec is marked `fixme` until its baseline PNGs exist on    │
- * │ `main`. To bootstrap:                                           │
+ * │ Until baseline PNGs exist on `main`, regular CI would fail      │
+ * │ these tests (`toHaveScreenshot` errors when no baseline is      │
+ * │ found). The `test.skip` guard below skips them in regular CI    │
+ * │ but lets the snapshot-refresh workflow run them (the workflow   │
+ * │ sets `REFRESH_VISUAL_SNAPSHOTS=1` AND passes `--update-snapshots` │
+ * │ so the run writes baselines instead of comparing).              │
  * │                                                                 │
- * │  1. Trigger the `Update visual snapshots` GitHub Actions        │
- * │     workflow (manual `workflow_dispatch`).                      │
- * │  2. The workflow runs `playwright test --update-snapshots`,     │
- * │     generates `*-chromium-linux.png` baselines, opens a PR.     │
- * │  3. Review the PR (visual diff vs. the dialog snapshots).       │
- * │  4. Merge it. The baseline PNGs land in                         │
+ * │ Bootstrap procedure:                                            │
+ * │  1. Trigger the `Update visual snapshots` workflow (manual      │
+ * │     `workflow_dispatch`). It runs these tests with the env var  │
+ * │     set, generates `*-chromium-linux.png` baselines, opens a    │
+ * │     PR with the new PNGs.                                       │
+ * │  2. Review the PR (visual diff vs. the dialog snapshots).       │
+ * │  3. Merge it. Baselines land in                                 │
  * │     `e2e/visual-dialogs.spec.ts-snapshots/`.                    │
- * │  5. Remove the `test.fixme()` markers below and push.           │
+ * │  4. Remove the `SKIP_WITHOUT_BASELINES` guard below and push.   │
+ * │     CI then enforces the baselines on every subsequent push.    │
  * │                                                                 │
- * │ CI will then enforce the baselines on every subsequent push.    │
- * │ The same workflow refreshes baselines after an intentional      │
- * │ visual change.                                                  │
+ * │ The same workflow refreshes baselines later when an             │
+ * │ intentional visual change lands.                                │
  * └─────────────────────────────────────────────────────────────────┘
  */
+
+// Session 101 bootstrap guard. Skips the spec in regular CI until
+// baseline PNGs exist on `main`; the refresh workflow opts in via
+// `REFRESH_VISUAL_SNAPSHOTS=1`. Remove this block (and the
+// `test.skip(SKIP_WITHOUT_BASELINES, ...)` lines below) once the
+// baselines are committed.
+const SKIP_WITHOUT_BASELINES = !process.env.REFRESH_VISUAL_SNAPSHOTS;
 
 test.describe('dialog visual regression', () => {
   test.beforeEach(async ({ page }) => {
@@ -53,7 +65,10 @@ test.describe('dialog visual regression', () => {
   });
 
   test('settings dialog', async ({ page }) => {
-    test.fixme(true, 'Baselines pending first run of update-visual-snapshots workflow.');
+    test.skip(
+      SKIP_WITHOUT_BASELINES,
+      'Baselines pending first run of update-visual-snapshots workflow.'
+    );
     await page.goto('/?test=1');
     // Cmd+, → openSettings (`useGlobalShortcuts.ts:88`). Ctrl works on
     // the Linux runner; the binding accepts either modifier.
@@ -68,7 +83,10 @@ test.describe('dialog visual regression', () => {
   });
 
   test('help dialog', async ({ page }) => {
-    test.fixme(true, 'Baselines pending first run of update-visual-snapshots workflow.');
+    test.skip(
+      SKIP_WITHOUT_BASELINES,
+      'Baselines pending first run of update-visual-snapshots workflow.'
+    );
     await page.goto('/?test=1');
     // No direct keyboard shortcut for Help — open via the palette.
     // (`useGlobalShortcuts.ts` exposes Cmd+K → openPalette; typing
@@ -86,7 +104,10 @@ test.describe('dialog visual regression', () => {
   });
 
   test('template picker dialog', async ({ page }) => {
-    test.fixme(true, 'Baselines pending first run of update-visual-snapshots workflow.');
+    test.skip(
+      SKIP_WITHOUT_BASELINES,
+      'Baselines pending first run of update-visual-snapshots workflow.'
+    );
     await page.goto('/?test=1');
     // Cmd+K → "New from template" routes through `templatePickerOpen`.
     await page.keyboard.press('Control+K');
