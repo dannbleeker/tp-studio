@@ -1,4 +1,4 @@
-import { pinnedEntities } from './graph';
+import { edgesArray, entitiesArray, pinnedEntities } from './graph';
 import type { TPDocument } from './types';
 
 /**
@@ -32,7 +32,7 @@ export const layoutFingerprint = (doc: TPDocument): string => {
     'stParallelAssumption',
     'stSufficiencyAssumption',
   ];
-  const entityIds = Object.values(doc.entities)
+  const entityIds = entitiesArray(doc)
     .map((e) => {
       const hasFacet =
         e.type === 'injection' &&
@@ -41,7 +41,7 @@ export const layoutFingerprint = (doc: TPDocument): string => {
       return `${e.id}${hasFacet ? ':st' : ''}`;
     })
     .sort();
-  const edgeKeys = Object.values(doc.edges)
+  const edgeKeys = edgesArray(doc)
     .map(
       (e) =>
         `${e.id}:${e.sourceId}>${e.targetId}:${e.andGroupId ?? ''}:${e.orGroupId ?? ''}:${e.xorGroupId ?? ''}`
@@ -54,11 +54,11 @@ export const layoutFingerprint = (doc: TPDocument): string => {
 };
 
 export const validationFingerprint = (doc: TPDocument): string => {
-  const entitySig = Object.values(doc.entities)
+  const entitySig = entitiesArray(doc)
     .map((e) => `${e.id}:${e.type}:${e.title}`)
     .sort()
     .join('|');
-  const edgeSig = Object.values(doc.edges)
+  const edgeSig = edgesArray(doc)
     .map((e) => `${e.id}:${e.sourceId}>${e.targetId}:${e.andGroupId ?? ''}`)
     .sort()
     .join('|');

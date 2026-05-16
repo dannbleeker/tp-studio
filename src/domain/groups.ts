@@ -33,8 +33,26 @@ export const ancestorChain = (doc: TPDocument, memberId: string): Group[] => {
   return chain;
 };
 
-/** Every member id reachable from `groupId`, including nested groups. */
+/**
+ * Every member id reachable from `groupId`, including nested groups.
+ *
+ * Session 108 / Tier 3 — WeakMap-cached on `doc.groups`. The groups
+ * map gets a new reference on any group mutation (immutable update
+ * pattern), so the cache invalidates exactly when it needs to. Called
+ * from `useGraphNodeEmission` (per-emission), the hoist scope check,
+ * and group-mutation actions — all of which can be queried multiple
+ * times per render frame for the same `(doc, groupId)`.
+ */
+const descendantIdsCache = new WeakMap<TPDocument['groups'], Map<string, Set<string>>>();
+
 export const descendantIds = (doc: TPDocument, groupId: string): Set<string> => {
+  let inner = descendantIdsCache.get(doc.groups);
+  if (!inner) {
+    inner = new Map<string, Set<string>>();
+    descendantIdsCache.set(doc.groups, inner);
+  }
+  const cached = inner.get(groupId);
+  if (cached !== undefined) return cached;
   const out = new Set<string>();
   const stack: string[] = [groupId];
   while (stack.length) {
@@ -47,6 +65,7 @@ export const descendantIds = (doc: TPDocument, groupId: string): Set<string> => 
       if (doc.groups[m]) stack.push(m);
     }
   }
+  inner.set(groupId, out);
   return out;
 };
 

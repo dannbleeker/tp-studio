@@ -31,6 +31,9 @@ interface TpTestHook {
   // Session 101 — revision seeding for the SideBySide visual e2e.
   takeRevision: (label?: string) => string;
   openSideBySide: (revisionId: string) => void;
+  // Session 108 — edit-heavy perf trace scenario.
+  editEntityTitle: (id: string, title: string) => void;
+  listEntityIds: () => string[];
 }
 
 declare global {

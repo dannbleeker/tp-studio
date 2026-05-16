@@ -108,17 +108,23 @@ export const isSufficiencyEdge = (edge: Edge): edge is Edge & { kind: 'sufficien
 export const isNecessityEdge = (edge: Edge): edge is Edge & { kind: 'necessity' } =>
   edge.kind === 'necessity';
 
+// Session 108 — `Object.values(doc.edges)` migrated to the cached
+// `edgesArray(doc)` helper added Session 105. These four helpers are
+// called from validators (`reach`, `cycle`), the UDE-reach badge,
+// connection-existence checks during edge creation, and the
+// `connectionCount` reach badge. All run on every doc change; the
+// cached array is reused across all callers within one doc state.
 export const incomingEdges = (doc: TPDocument, entityId: string): Edge[] =>
-  Object.values(doc.edges).filter((e) => e.targetId === entityId);
+  edgesArray(doc).filter((e) => e.targetId === entityId);
 
 export const outgoingEdges = (doc: TPDocument, entityId: string): Edge[] =>
-  Object.values(doc.edges).filter((e) => e.sourceId === entityId);
+  edgesArray(doc).filter((e) => e.sourceId === entityId);
 
 export const connectionCount = (doc: TPDocument, entityId: string): number =>
   incomingEdges(doc, entityId).length + outgoingEdges(doc, entityId).length;
 
 export const hasEdge = (doc: TPDocument, sourceId: string, targetId: string): boolean =>
-  Object.values(doc.edges).some((e) => e.sourceId === sourceId && e.targetId === targetId);
+  edgesArray(doc).some((e) => e.sourceId === sourceId && e.targetId === targetId);
 
 export const isAssumption = (entity: Entity): boolean => entity.type === 'assumption';
 
@@ -335,7 +341,7 @@ export const findPath = (
 export const findCycles = (doc: TPDocument): string[][] => {
   const adj = new Map<string, string[]>();
   for (const id of Object.keys(doc.entities)) adj.set(id, []);
-  for (const e of Object.values(doc.edges)) {
+  for (const e of edgesArray(doc)) {
     const list = adj.get(e.sourceId);
     if (list) list.push(e.targetId);
   }
@@ -387,9 +393,11 @@ export const findCycles = (doc: TPDocument): string[][] => {
 
 export const removeEntityFromEdges = (doc: TPDocument, entityId: string): Record<string, Edge> => {
   const branded = entityId as EntityId;
-  const surviving = Object.values(doc.edges).filter(
-    (e) => e.sourceId !== branded && e.targetId !== branded
-  );
+  // Session 108 — `edgesArray(doc)` returns the cached snapshot; the
+  // store mutation that calls us then creates a NEW edges record
+  // (via the spread below), so we're not violating the readonly
+  // contract — we only read from the cache, never mutate it.
+  const surviving = edgesArray(doc).filter((e) => e.sourceId !== branded && e.targetId !== branded);
   const result: Record<string, Edge> = {};
   for (const edge of surviving) {
     if (!edge.assumptionIds?.includes(branded)) {

@@ -102,6 +102,20 @@ export interface TpTestHook {
    * either isn't there yet (caller can retry).
    */
   selectNodeViaRF: (id: string) => boolean;
+  /**
+   * Session 108 — direct entity-title edit for the perf-trace
+   * "edit-heavy" scenario. Wraps `updateEntity(id, { title })` so
+   * the e2e spec can drive a tight mutation loop without the
+   * dblclick + keystroke gestures (which mostly measure input
+   * handling, not the store + render path we want to profile).
+   */
+  editEntityTitle: (id: string, title: string) => void;
+  /**
+   * Session 108 — list current entity ids. Lets the perf-trace
+   * scenario iterate over the doc without needing to keep track of
+   * the ids returned by the most-recent `seed()` call.
+   */
+  listEntityIds: () => string[];
 }
 
 /**
@@ -173,6 +187,10 @@ export const maybeInstallTestHook = (): void => {
       useDocumentStore.getState().selectEntities([id]);
       return true;
     },
+    editEntityTitle: (id, title) => {
+      useDocumentStore.getState().updateEntity(id, { title });
+    },
+    listEntityIds: () => Object.keys(useDocumentStore.getState().doc.entities),
   };
   // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an
   // optional `TpTestHook` — no `as any` cast needed. The opt-in URL

@@ -68,5 +68,7 @@ jobs:
           # Session 106 — `perf-trace-output/` not `playwright-report/`:
           # the HTML reporter wipes its own dir at run start, deleting
           # anything else.
-          path: perf-trace-output/perf-trace.json
+          # Session 108 — glob pattern picks up BOTH the `all-actions`
+          # and the `edit-heavy` scenarios that the spec now captures.
+          path: perf-trace-output/*.json
           retention-days: 30
