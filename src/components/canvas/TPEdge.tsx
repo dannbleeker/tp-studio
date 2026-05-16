@@ -1,10 +1,17 @@
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
-import { BaseEdge, EdgeLabelRenderer, type EdgeProps, getBezierPath } from '@xyflow/react';
-import { memo } from 'react';
+import {
+  BaseEdge,
+  EdgeLabelRenderer,
+  type EdgeProps,
+  getBezierPath,
+  useStore as useRFStore,
+} from '@xyflow/react';
+import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import type { TPEdge as TPEdgeType } from './flow-types';
+import { type Box, computeRadialEdgePath, nodeBoxOf } from './radialEdgeRouting';
 
 /** E5: maximum characters shown inline on an edge label before truncating
  *  with an ellipsis. The full text remains available via the native HTML
@@ -161,9 +168,62 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       labelY: (y1 + y2) / 2,
     };
   })();
-  const path = mutexPath?.path ?? bezierPath;
-  const labelX = mutexPath?.labelX ?? bezierLabelX;
-  const labelY = mutexPath?.labelY ?? bezierLabelY;
+  // Session 99 — obstacle-aware routing for the radial layout.
+  // The radial / sunburst layout places nodes on concentric rings;
+  // the default React Flow bezier between source / target handles
+  // often passes through cousin or sibling node boxes, especially
+  // on trees deeper than two rings. When `layoutMode === 'radial'`
+  // we read all OTHER node positions via React Flow's store and let
+  // `computeRadialEdgePath` deflect the bezier perpendicular to its
+  // axis enough to clear the obstacles.
+  //
+  // The subscription is gated on `isRadialMode` — the selector
+  // returns a stable `null` in flow / manual modes so unrelated
+  // node drags don't fan re-renders into every edge.
+  //
+  // Junctor and mutex edges keep their existing special-case paths
+  // (the junctor terminus already redirects to the circle perimeter;
+  // the mutex straight-line override is more useful than routing
+  // around boxes for vertically-stacked Wants).
+  const isRadialMode = useDocumentStore((s) => s.layoutMode === 'radial');
+  const radialNodes = useRFStore((s) => (isRadialMode ? s.nodes : null));
+  const hasMutexOverride = mutexPath !== null;
+  const radialRoute = useMemo(() => {
+    if (!isRadialMode || !radialNodes) return null;
+    if (isJunctorEdge) return null;
+    if (hasMutexOverride) return null;
+    const obstacles: Box[] = [];
+    for (const node of radialNodes) {
+      if (node.id === props.source || node.id === props.target) continue;
+      // The width / height in the emitted node objects (set in
+      // `useGraphNodeEmission`) are the canonical box sizes; fall
+      // back to the constants if a future emission path forgets to
+      // set them.
+      const w = node.width ?? NODE_WIDTH;
+      const h = node.height ?? NODE_MIN_HEIGHT;
+      obstacles.push(nodeBoxOf(node.position, w, h));
+    }
+    return computeRadialEdgePath(
+      { x: props.sourceX, y: props.sourceY },
+      { x: props.targetX, y: effectiveTargetY },
+      obstacles
+    );
+  }, [
+    isRadialMode,
+    radialNodes,
+    isJunctorEdge,
+    hasMutexOverride,
+    props.source,
+    props.target,
+    props.sourceX,
+    props.sourceY,
+    props.targetX,
+    effectiveTargetY,
+  ]);
+
+  const path = mutexPath?.path ?? radialRoute?.path ?? bezierPath;
+  const labelX = mutexPath?.labelX ?? radialRoute?.labelX ?? bezierLabelX;
+  const labelY = mutexPath?.labelY ?? radialRoute?.labelY ?? bezierLabelY;
 
   const weight = useDocumentStore((s) => s.doc.edges[props.id]?.weight);
   const hasDescription = useDocumentStore((s) => {

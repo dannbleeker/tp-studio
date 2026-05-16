@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 99 — Radial edge routing + dagre lazy-load contract test
+
+Two backlog items from the post-Session-98 punch list. **1148 tests passing** (was 1130; +16 routing + 2 import-boundary guards). The dagre item turned out to be already shipped (Session 81); the work here is a contract test pinning it.
+
+**Radial edge routing — obstacle-aware Bézier (L → shipped).** The radial / sunburst layout places nodes on concentric rings; React Flow's default bezier between source / target handles routinely passes through cousin or sibling node boxes, getting clutterier as the tree grows. Session 87's UX review parked a fix; Session 99 ships path (a) from the original two implementation options — a custom edge type with a perpendicular-deflection bezier router rather than the heavier A* / orthogonal routing alternative.
+
+- New module `src/components/canvas/radialEdgeRouting.ts` — pure geometry, no React, no DOM. Exports `lineIntersectsBox` (Liang-Barsky parametric clip), `computeRadialEdgePath` (the routing entry point), and `nodeBoxOf` (constructor for the box record).
+- Algorithm: for each edge in radial mode, iterate every OTHER visible node's bounding box, run Liang-Barsky against the straight source→target segment, collect the deflection vectors for hits, average them, and emit a symmetric cubic Bézier whose control points are offset along the perpendicular axis by the averaged clearance. Label centroid sits at the curve's geometric midpoint (`(s + t)/2 + 0.75 · deflection`).
+- TPEdge integration: subscribes to React Flow's `s.nodes` only when `layoutMode === 'radial'`, so flow / manual mode users pay zero re-render cost. Junctor and mutex edges keep their existing special-case paths (the junctor terminus redirects to the circle perimeter; the mutex straight-line override is more useful than routing around boxes for vertically-stacked Wants).
+- 16 unit tests in `tests/components/radialEdgeRouting.test.ts`: line-box intersection (above / below / corner clip / one-endpoint-inside / grazing edge / same-side endpoints), straight-bezier baseline, no-deflect when obstacles are off the segment, perpendicular deflection sign / magnitude, multi-obstacle averaging, custom margin / alpha, zero-length segment.
+- Trade-offs explicitly noted in the module header: this is the "~80% of real cases" router — pathological multi-obstacle clusters still cross. A* / orthogonal routing would handle the rest but the cost (graph search, orthogonal segments, junction joining) wasn't warranted given the rarity in TOC diagrams.
+
+**Dagre lazy-load — contract pinning (S → shipped as a test).** The backlog claimed ~25 KB gzip could come off the eager path by lazy-loading dagre. Verified the claim against the current build: Session 81 already shipped this. `dist/assets/layout-*.js` is a separate 92 KB / 32.26 KB-gzip chunk; `dist/assets/index-*.js` (404 KB) carries no dagre. The split happens via Rollup's implicit chunk inference from the `await import('@/domain/layout')` call in `useGraphPositions.ts`.
+
+The Session-99 work is the regression guard: `tests/build/dagreLazyLoadBoundary.test.ts` grep-walks `src/` and asserts (1) `dagre` is only statically imported from `src/domain/layout.ts`, and (2) `@/domain/layout` has zero static importers in `src/` (`await import()` and `typeof import()` are both allowed; the former is the lazy load, the latter is type-only). If a future change adds a static import that would merge dagre back into the main bundle, this test fails fast with the offending file path. The NEXT_STEPS backlog entry that re-listed this as still-open was stale and has been removed.
+
+**End state:** tsc clean, 1148 tests green, bundle sizes stable (`layout` chunk unchanged at 92 KB / 32.26 KB gzip; `index` chunk grew 402 → 404 KB / 117.21 → 118.03 KB gzip for the new routing helper + integration; bundle-size budget passes).
+
 ## Session 98 — Security audit: jspdf CVEs, CSP, share-link gzip-bomb defense
 
 Full 12-area security audit (markdown XSS, SVG/HTML export, share-link payload, import injection, localStorage tampering, test hook, service worker, CSP, dep audit, repo hygiene, custom-domain DNS, threat model). **1130 tests passing** (was 1129; +1 gzip-bomb defense test). All findings either fixed or documented in `SECURITY.md`.
