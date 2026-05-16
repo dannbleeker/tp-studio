@@ -78,14 +78,15 @@ jobs:
         # individually — any future `visual-*.spec.ts` is picked up
         # automatically.
         #
-        # The visual tests use `test.fixme(true, …)` until their
-        # baselines exist on `main`. The `--update-snapshots` flag
-        # overrides that so this workflow can generate the initial
-        # baseline; the test author then removes the `fixme` markers
-        # in the same PR that lands the baselines.
+        # Session 103 — also run `guide-screenshots.spec.ts`. It uses
+        # `page.screenshot({ path })` (not `toHaveScreenshot`) so
+        # `--update-snapshots` doesn't apply, but the test run still
+        # writes the book's illustration PNGs to
+        # `docs/guide/screenshots/`. Those changes are picked up by
+        # the `add-paths` glob below.
         env:
           REFRESH_VISUAL_SNAPSHOTS: '1'
-        run: pnpm exec playwright test e2e/visual-*.spec.ts --update-snapshots
+        run: pnpm exec playwright test e2e/visual-*.spec.ts e2e/guide-screenshots.spec.ts --update-snapshots
 
       - name: Commit + PR
         uses: peter-evans/create-pull-request@v6
@@ -101,3 +102,4 @@ jobs:
           delete-branch: true
           add-paths: |
             e2e/**/*.png
+            docs/guide/screenshots/*.png

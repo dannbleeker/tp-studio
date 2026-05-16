@@ -2,6 +2,8 @@
 
 A parking lot. Nothing here is required for v1; everything is honest about what's deferred.
 
+> **Session 103 — *Thinking with TP Studio* book.** 17-chapter practitioner guide + 6 appendices under `docs/guide/`. Companion to USER_GUIDE — method-first, tool-second. Screenshots produced by `e2e/guide-screenshots.spec.ts` (Playwright, driven via the `__TP_TEST__` hook); same workflow that refreshes visual-regression baselines also refreshes book screenshots. `docs/guide/AUTHORING.md` documents the refresh procedure for future UI changes. Initial screenshot set generated via one workflow run after this commit; the spec also acts as gesture-regression for the chapters' described paths.
+
 > **Session 85 — under-the-hood pass complete (10 batches, 8 shipped + 2 audit-only).** Twenty maintainability / perf / test-coverage items planned across Phases 1 (A-D) and 2 (E-J); 8 batches shipped real changes, Batch G evaluated audit-clean (3 items not worth the trade), Batches E/F/H/I each carried at least one item that was already done or net-negative. Highlights: per-doc WeakMap memoization for `structuralEntities` + `validate` (saves cost transparently to every caller), property-based migration + CLR-totality coverage via fast-check, dedicated cold-path test for `useGraphPositions`'s lazy dagre import, `vite-plugin-checker` dev overlay, brand-ID consolidation for group selection, CI split into 3 parallel jobs. **1003 tests passing**; full breakdown in CHANGELOG Session 85.
 
 > **Iteration 2 is approved and spec'd.** See [docs/iteration-2-prd.md](docs/iteration-2-prd.md) for the

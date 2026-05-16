@@ -1,0 +1,72 @@
+# Chapter 13 — The CLR — your validation conscience
+
+> *The Categories of Legitimate Reservation are the discipline checks Goldratt taught for evaluating a causal claim. TP Studio surfaces them automatically as warnings. They are reservations a thoughtful colleague would raise. They are not errors.*
+
+## The six categories
+
+Goldratt named six, organized in increasing depth of structural concern:
+
+1. **Clarity.** "I don't understand what you mean." The entity title is empty / ambiguous; the verb is missing; the noun-phrase is generic.
+2. **Entity existence.** "Does that thing actually exist?" The cause you're claiming is real and observable, not hypothetical.
+3. **Cause-effect existence.** "Does that causal relationship actually hold?" The arrow is plausible — not "the moon causes Mondays."
+4. **Cause sufficiency.** "Is that cause enough on its own?" Or do you need an AND-group? This is where missing co-causes get caught.
+5. **Additional cause.** "Is there another cause for that same effect?" Multiple sufficient causes — the OR junctor case.
+6. **Cause-effect reversal.** "Are you sure the arrow doesn't run the other direction?" The classic trap: "tired because I'm grumpy" vs. "grumpy because I'm tired."
+
+TP Studio's validator system implements rules in each of these tiers. The `Warnings` list in the Inspector surfaces them per-entity / per-edge. The `Start CLR walkthrough` palette command iterates them one at a time.
+
+## How TP Studio surfaces them
+
+Each validator carries:
+
+- A **tier**: `clarity`, `sufficiency`, `causality`, or `predictedEffect`. The tier governs the warning's color and the order it appears in the walkthrough wizard.
+- A **diagram-type scope**: most rules fire only on specific diagram types (e.g., `ec-missing-conflict` is EC-only; `complete-step` is TT-only).
+- A **trigger predicate**: a pure function over the doc that returns the set of entities/edges to fire on.
+- Optionally, a **one-click action**: a `WARNING_ACTIONS` registry entry that resolves the warning. Example: the `convert-extra-goals-to-csfs` action on the `goalTree-multiple-goals` warning.
+
+The full list is in [Appendix C](appendix-c-clr-rules.md).
+
+## Reading warnings
+
+Click any entity with an open warning. The Inspector's Warnings section lists them as bullet items with the tier color (yellow for `clarity`, amber for `sufficiency`, orange for `causality`, red for `predictedEffect`). Each warning has a one-line explanation; some carry a "Fix" button when a one-click action is available.
+
+![CLR warnings visible in the Inspector for an entity with no incoming causes](screenshots/chapter13-clr-warnings-visible.png)
+
+## The walkthrough
+
+`Cmd+K → Start CLR walkthrough` opens a modal that iterates every open warning, one at a time, with **Resolve** / **Open in inspector** / **Dismiss** actions. Useful for ratcheting through a complex diagram's warnings without manually clicking each entity.
+
+The walkthrough is scope-limited to *open* warnings — once you dismiss a warning, it doesn't reappear unless the underlying condition changes. That makes the walkthrough a *clearing* gesture: run it before declaring a diagram done; if it's empty, you've considered every reservation.
+
+## Dismissing warnings
+
+Two ways to dismiss:
+
+- **Resolve** — fix the underlying condition. The warning stops firing on its own.
+- **Dismiss with explanation** — keep the condition, but record in the entity's `description` *why* you're accepting the reservation. The walkthrough stops surfacing this one. The audit trail lives in the description.
+
+Don't dismiss without writing the explanation. A dismissed warning with no rationale is a debt you'll pay later when someone reads the diagram and asks "why does this UDE have no causes?"
+
+## Sidebars
+
+> **🛠 How TP Studio helps**
+> - **Per-entity / per-edge Warnings list** in the Inspector.
+> - **`Cmd+K → Start CLR walkthrough`** — modal that iterates open warnings.
+> - **One-click actions** on a subset of warnings (e.g., `convert-extra-goals-to-csfs`).
+> - **Tier-color coding** in the warnings list: clarity (yellow) → sufficiency (amber) → causality (orange) → predicted-effect (red).
+> - **Dismissibility** — every warning can be dismissed; dismissals don't recur until the underlying state changes.
+
+> **💡 Practitioner tips**
+> - **Walk-through *before* you present.** A reader will hit the warnings if you don't.
+> - **Treat warnings as suggestions, not commands.** The CLR is a discipline framework; it doesn't always know your context. Apply judgment.
+> - **The clarity tier is the most forgiving and most pedagogical.** If you're learning, work the clarity warnings until they're empty before tackling the higher tiers.
+
+> **⚠ Common mistakes**
+> - **Dismissing without explanation.** Each dismissal is a future-self bug if the rationale isn't recorded.
+> - **Treating all warnings as equal.** The four tiers are deliberately ordered. A `predictedEffect` warning is structural; a `clarity` warning might just be a typo.
+
+🔁 **Chain to next:** the CLR is the validation conscience. Iteration is the *building* conscience — revisions, branches, side-by-side compare are how a diagram improves over time.
+
+---
+
+→ Continue to [Chapter 14 — Iteration](14-iteration-revisions-branches.md)

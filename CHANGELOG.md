@@ -2,6 +2,38 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 103 — *Thinking with TP Studio* book
+
+A book. The companion practitioner guide to TP Studio, modeled on *Thinking with Flying Logic* (genre, not direct homage — that book wasn't read for this work). 17 chapters + 6 appendices, ~50,000 words, living under `docs/guide/`. Aimed at the third corner between Goldratt's novels (which teach the why) and Cox/Schleier's handbook (which teaches the rigor): the practitioner-facing material that teaches *how to actually sit down and do it*.
+
+**Manuscript structure:**
+- **Front matter** — Foreword.
+- **Part 1 — Foundations** (3 chapters). The constraint, the goal, the Five Focusing Steps. A 30-minute hands-on canvas tour. Reading conventions — causality direction, edge polarity, AND/OR/XOR junctors, back-edges, mutex, span-of-control.
+- **Part 2 — The Thinking Processes** (8 chapters). One chapter per TP — CRT (deep worked example), EC (deep worked example), FRT, PRT, TT, Goal Tree, S&T, Freeform. Each chapter follows the same shape: 🎯 what this process is for, the canonical method, a worked example in TP Studio with screenshots, 🛠 how TP Studio helps, 💡 practitioner tips, ⚠ common mistakes, 🛑 when to stop, 🔁 chain to the next.
+- **Part 3 — Across the canvas** (3 chapters). Groups + assumptions + injections. The CLR in depth. Iteration via revisions, branches, side-by-side compare.
+- **Part 4 — Beyond the screen** (3 chapters). Verbalisation and walkthroughs. Sharing — exports, share links, prints, the standalone HTML viewer. Workshops with TP Studio — facilitator gestures, a 4-hour CRT agenda.
+- **Appendices** — A: end-to-end case study (the customer-support firefighting example used in chapters 4-6, sketched as one continuous narrative). B: keyboard reference. C: every CLR rule. D: every Settings toggle. E: glossary. F: further reading.
+
+**Screenshot pipeline (the part that makes this maintainable):**
+
+The book's screenshots are not hand-captured. They're produced by `e2e/guide-screenshots.spec.ts`, a Playwright spec that drives the production-built app deterministically via the existing `__TP_TEST__` hook and saves PNGs directly to `docs/guide/screenshots/`. Each `test('chapterNN-scene-slug', …)` maps 1:1 to a `screenshots/chapterNN-scene-slug.png` referenced in the manuscript.
+
+Crucially: the spec also acts as **a regression test for the book's gestures**. If a future UI change breaks the path a chapter describes (a palette command renamed, a button moved), the spec fails in regular CI long before any reader hits it. This is the maintainability win — the book stays in sync with the application as TP Studio evolves, not via manual screenshot upkeep but via a Playwright spec the workflow re-runs in a single click.
+
+The same `Update visual snapshots` workflow that already refreshes regression baselines for `visual-*.spec.ts` was extended to also run `guide-screenshots.spec.ts`. The workflow's `add-paths` now includes `docs/guide/screenshots/*.png`. After this commit lands, triggering the workflow generates the initial baseline set of PNGs and opens a PR; review the visual diff, merge, and the book's images resolve.
+
+**Authoring documentation:** `docs/guide/AUTHORING.md` describes the refresh process, the naming convention (`chapterNN-scene-slug`), the difference between guide screenshots (illustration, no diff comparison) and regression baselines (pin, fail on diff), and how to add new chapters or scenes.
+
+**Voice and tone:** Method first, tool second. Each Part-2 chapter is structured around a TOC question, not a TP Studio feature. The tool is the implementation, not the subject. Calibrated honestly in the foreword: the book sits between Goldratt's novels and Cox/Schleier's handbook, aimed at the practitioner who has a problem at work on Wednesday afternoon.
+
+**End state:** tsc clean, vitest unchanged (1156 still passing), `vite build` clean, new spec runs in regular CI under existing infrastructure. Screenshots themselves need the one-click workflow run to materialize.
+
+## Session 102 — Visual regression for the remaining 7 dialogs + canvas-3-entities flake fix
+
+Continues Session 101's dialog-visual scaffold by adding the remaining 7 modals (Print Preview, Export Picker, Diagram Type, Confirm, Quick Capture, Revision Panel, Side-by-Side) to `e2e/visual-dialogs.spec.ts`. Test hook gained `takeRevision(label?)` + `openSideBySide(id)` for the state-dependent ones (Side-by-Side needs a saved revision; Confirm uses the existing `confirmAndDeleteEntity`). New `data-component="template-card"` selector hook on the picker. Baselines bootstrapped via `Update visual snapshots` workflow (PR #3), un-skip commit landed CI green: 15 → 22 Playwright tests, all 10 user-visible dialogs now under continuous pixel-comparison coverage.
+
+**Plus:** fixed the pre-existing `canvas-with-three-entities` flake (the chain of three `page.mouse.dblclick` events sometimes had the 3rd dblclick land on a re-laid-out node; `Canvas.tsx:onDoubleClick` bails when target is `.react-flow__node`, so the 3rd entity was silently never created). Migrated to deterministic `__TP_TEST__.seed` seeding — same visual output, no race. Baseline byte-identical (2% pixel tolerance absorbed the title-text differences). CI green on `4312e80` without a baseline-regen PR.
+
 ## Session 101 — Parked-item triage: drag-splice feedback, junctor consolidation, dialog visual scaffold
 
 Three items lifted out of the parked column with rationales overridden by Dann. **1156 tests passing** (was 1148; +5 splice-target slice + 3 junctor pin).
