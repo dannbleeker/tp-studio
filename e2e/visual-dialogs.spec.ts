@@ -1,33 +1,35 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * Session 101 — Visual regression for the top-three user-visible
- * dialogs (Settings, Help, Template Picker). Sister spec to
+ * Visual regression for the user-visible dialogs. Sister spec to
  * `visual-canvas.spec.ts` which covers the React Flow canvas itself.
  *
- * Why these three (and not the other ~7 dialogs):
- *   - **SettingsDialog** — biggest surface, exercises the tabs +
- *     FormPrimitives + theme swatches. The most likely place a CSS
- *     regression in a shared primitive bites.
- *   - **HelpDialog** — keyboard-shortcut + gesture reference; mostly
- *     static text, low expected churn, high signal when something
- *     changes (typography / token regression).
- *   - **TemplatePickerDialog** — grid of inline-SVG thumbnails. Catches
- *     SVG layout regressions that `templateThumbnailSvg`'s unit tests
- *     miss (those check structure, not rendered geometry).
+ * Session 101 seeded the first three (Settings / Help / Template
+ * Picker — the highest-leverage surfaces): SettingsDialog exercises
+ * the tabs + FormPrimitives + theme swatches; HelpDialog covers the
+ * keyboard-shortcut + gesture reference; TemplatePickerDialog
+ * catches SVG layout regressions in `templateThumbnailSvg`. Session
+ * 102 added the remaining seven (Print Preview, Export Picker,
+ * Diagram Type, Confirm, Quick Capture, Revisions, Side-by-Side) so
+ * every modal in the app has continuous pixel-comparison coverage.
  *
- * The remaining dialogs (Print Preview, Export Picker, Diagram Type,
- * Confirm, Quick Capture, Revisions, Side-by-Side) are tracked as a
- * follow-up in NEXT_STEPS — add them one at a time as their content
- * stabilises.
+ * Baselines are committed under `e2e/visual-dialogs.spec.ts-snapshots/`.
+ * When an intentional visual change lands, trigger the `Update visual
+ * snapshots` workflow to refresh — it commits the regenerated PNGs
+ * back via a PR; review the diff and merge.
  *
- * Baselines are committed under
- * `e2e/visual-dialogs.spec.ts-snapshots/` and were bootstrapped in
- * Session 101 (PR #2 squashed as commit b93ebbb). When an intentional
- * visual change to one of these dialogs lands, trigger the
- * `Update visual snapshots` workflow to refresh — it commits the
- * regenerated PNGs back via a PR; review the diff and merge.
+ * The Session 102 additions carry a `test.skip(SKIP_PENDING_BASELINES,
+ * ...)` guard until their baseline PNGs land on `main`. The pattern
+ * mirrors Session 101's bootstrap: skip in regular CI so we don't fail
+ * on missing baselines, opt-in via `REFRESH_VISUAL_SNAPSHOTS=1` in
+ * the refresh workflow so it generates the initial set. Once the
+ * baselines PR merges, the guard comes out.
  */
+
+// Session 102 — bootstrap guard for the new (Print/Export/Diagram/
+// Confirm/Quick-Capture/Revisions/SideBySide) tests. The original
+// three Session-101 tests have baselines already and aren't gated.
+const SKIP_PENDING_BASELINES = !process.env.REFRESH_VISUAL_SNAPSHOTS;
 
 test.describe('dialog visual regression', () => {
   test.beforeEach(async ({ page }) => {
@@ -84,6 +86,154 @@ test.describe('dialog visual regression', () => {
     // lets any animated transitions on the modal settle.
     await page.waitForTimeout(150);
     await expect(page).toHaveScreenshot('dialog-template-picker.png', {
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-component="toaster"]')],
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────
+  // Session 102 additions — remaining seven dialogs. Each carries a
+  // skip guard until baselines exist on main; remove after the
+  // baseline-refresh PR lands. The pattern follows Session 101's
+  // bootstrap mechanics exactly.
+  // ─────────────────────────────────────────────────────────────────
+
+  test('export picker dialog', async ({ page }) => {
+    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
+    await page.goto('/?test=1');
+    // Palette → "Export…" — opens the unified picker. The catalogue
+    // route is `open-export-picker`; the visible label is "Export…".
+    await page.keyboard.press('Control+K');
+    await page.getByPlaceholder(/command/i).fill('Export');
+    await page.keyboard.press('Enter');
+    // First category heading is stable across format additions and
+    // is rendered inside the LargeDialog body.
+    await page.waitForSelector('h3:has-text("Images")');
+    await expect(page).toHaveScreenshot('dialog-export-picker.png', {
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-component="toaster"]')],
+    });
+  });
+
+  test('print preview dialog', async ({ page }) => {
+    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
+    await page.goto('/?test=1');
+    // Two-step open: the Print/Save-as-PDF route goes through the
+    // Export Picker (Session 90 unified the entry points). Cmd+P
+    // is the browser print dialog, not ours.
+    await page.keyboard.press('Control+K');
+    await page.getByPlaceholder(/command/i).fill('Export');
+    await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: /print/i }).click();
+    await page.waitForSelector('h2:has-text("Print / Save as PDF")');
+    await expect(page).toHaveScreenshot('dialog-print-preview.png', {
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-component="toaster"]')],
+    });
+  });
+
+  test('diagram type picker dialog', async ({ page }) => {
+    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
+    await page.goto('/?test=1');
+    // Palette → "New diagram…" → openDiagramPicker('new'). The
+    // dialog body is a card grid; the title is stable per Session 90.
+    await page.keyboard.press('Control+K');
+    await page.getByPlaceholder(/command/i).fill('New diagram');
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('h2:has-text("New diagram")');
+    await expect(page).toHaveScreenshot('dialog-diagram-type-picker.png', {
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-component="toaster"]')],
+    });
+  });
+
+  test('quick capture dialog', async ({ page }) => {
+    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
+    await page.goto('/?test=1');
+    // Bare `E` key (no modifiers, not in a text field) opens Quick
+    // Capture — `useGlobalShortcuts.ts` listens for it. The dialog
+    // mounts immediately; no async route.
+    await page.keyboard.press('e');
+    await page.waitForSelector('h2#qc-title');
+    await expect(page).toHaveScreenshot('dialog-quick-capture.png', {
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-component="toaster"]')],
+    });
+  });
+
+  test('revision panel', async ({ page }) => {
+    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
+    await page.goto('/?test=1');
+    // The RevisionPanel is an `<aside>`, not a centered dialog, but
+    // it's the History surface and counts toward modal coverage.
+    // Open via the TopBar history button — `aria-label` is stable.
+    // (No global keyboard shortcut today.)
+    await page
+      .getByRole('button', { name: /history/i })
+      .first()
+      .click();
+    await page.waitForSelector('aside[data-component="revision-panel"]');
+    // Settle the slide-in transform (200ms duration in tokens) so
+    // the screenshot captures the resting state, not mid-animation.
+    await page.waitForTimeout(250);
+    await expect(page).toHaveScreenshot('panel-revision.png', {
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-component="toaster"]')],
+    });
+  });
+
+  test('confirm dialog', async ({ page }) => {
+    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
+    await page.goto('/?test=1');
+    // Seed two entities + a connecting edge so the delete action
+    // has a real warning ("This entity has 1 connected edge…"),
+    // then fire `confirmAndDeleteEntity` to open the dialog. The
+    // test hook's `confirmAndDeleteEntity` matches the production
+    // keyboard-Delete path.
+    const ids = await page.evaluate(() => {
+      const hook = window.__TP_TEST__;
+      if (!hook) throw new Error('test hook not installed');
+      const seeded = hook.seed({ titles: ['Cause', 'Effect'] });
+      hook.connect(seeded[0]!, seeded[1]!);
+      return seeded;
+    });
+    // Don't await the promise — it resolves when the user clicks
+    // Confirm/Cancel. We want to screenshot the open dialog instead.
+    await page.evaluate((id) => {
+      window.__TP_TEST__?.confirmAndDeleteEntity(id);
+    }, ids[0]);
+    // The ConfirmDialog uses Modal → native <dialog aria-modal>.
+    // Wait for the primary action button which carries a stable
+    // data attribute.
+    await page.waitForSelector('button[data-confirm-primary="true"]');
+    await expect(page).toHaveScreenshot('dialog-confirm.png', {
+      maxDiffPixelRatio: 0.02,
+      mask: [page.locator('[data-component="toaster"]')],
+    });
+  });
+
+  test('side-by-side compare dialog', async ({ page }) => {
+    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
+    await page.goto('/?test=1');
+    // Seed entities → capture a manual revision → mutate the doc
+    // → open SideBySide against the captured revision. The
+    // visible diff (snapshot has 2 entities, live has 3) exercises
+    // the dialog's added/removed rendering paths.
+    await page.evaluate(() => {
+      const hook = window.__TP_TEST__;
+      if (!hook) throw new Error('test hook not installed');
+      const ids = hook.seed({ titles: ['A', 'B'] });
+      hook.connect(ids[0]!, ids[1]!);
+      const revId = hook.takeRevision('snapshot for compare');
+      // Mutate after the snapshot so there's a real diff to render.
+      hook.seed({ titles: ['A', 'B', 'C'], clear: false });
+      hook.openSideBySide(revId);
+    });
+    await page.waitForSelector('dialog[aria-label="Side-by-side compare"]');
+    // Settle the dialog's internal layout (it absolutely-positions
+    // entity cards by parsed coords).
+    await page.waitForTimeout(250);
+    await expect(page).toHaveScreenshot('dialog-side-by-side.png', {
       maxDiffPixelRatio: 0.02,
       mask: [page.locator('[data-component="toaster"]')],
     });

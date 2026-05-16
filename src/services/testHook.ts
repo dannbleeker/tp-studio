@@ -74,6 +74,22 @@ export interface TpTestHook {
    */
   getSelection: () => ReturnType<typeof useDocumentStore.getState>['selection'];
   /**
+   * Session 101 — capture a manual revision snapshot. Wraps
+   * `useDocumentStore.captureSnapshot(label)` so the SideBySide
+   * visual e2e test can seed a revision without going through the
+   * UI's RevisionPanel button (which would itself need to be open).
+   * Returns the new revision's id.
+   */
+  takeRevision: (label?: string) => string;
+  /**
+   * Session 101 — open the SideBySideDialog against the given
+   * revision id. Wraps `useDocumentStore.openSideBySide(id)`. The
+   * dialog reads `sideBySideRevisionId` from the ui slice; setting
+   * it via this action triggers the same mount path the production
+   * "Compare" button does.
+   */
+  openSideBySide: (revisionId: string) => void;
+  /**
    * Session 95 — drive selection through React Flow's own API, which
    * fires `onSelectionChange` → our Canvas handler mirrors it back
    * to the store. Matches the production data flow exactly (click
@@ -126,6 +142,19 @@ export const maybeInstallTestHook = (): void => {
       return edge?.id ?? null;
     },
     confirmAndDeleteEntity,
+    takeRevision: (label) => {
+      // `captureSnapshot` writes a new revision to the history
+      // slice and returns the new id. Used by the SideBySide
+      // visual e2e test to seed a comparable revision without
+      // going through the RevisionPanel UI.
+      return useDocumentStore.getState().captureSnapshot(label);
+    },
+    openSideBySide: (revisionId) => {
+      // Drives the same store action the production "Compare"
+      // button on a revision row does. The dialog mounts when
+      // `sideBySideRevisionId` is non-null.
+      useDocumentStore.getState().openSideBySide(revisionId);
+    },
     getSelection: () => useDocumentStore.getState().selection,
     selectNodeViaRF: (id) => {
       const instance = getCanvasInstance();
