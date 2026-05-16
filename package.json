@@ -18,6 +18,7 @@
     "lint": "biome check src tests",
     "format": "biome format --write src tests",
     "check:bundle-size": "node ./scripts/check-bundle-size.mjs",
+    "book": "node ./scripts/build-book-pdf.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -68,6 +69,7 @@
     "fast-check": "^3.23.2",
     "jsdom": "^25.0.1",
     "lint-staged": "^17.0.4",
+    "marked": "^18.0.3",
     "postcss": "^8.5.14",
     "simple-git-hooks": "^2.13.1",
     "storybook": "^8.4.7",

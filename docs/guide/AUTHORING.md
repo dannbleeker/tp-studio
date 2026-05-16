@@ -84,6 +84,47 @@ The whole loop is one workflow click + one PR review for most UI changes.
   - **🔁 Chain to next** — at chapter end, signpost to the natural next chapter
 - **Plain Markdown.** No HTML, no MDX. The book renders identically on GitHub web, in VS Code preview, and via any static-site generator pointed at the directory.
 
+## Building the PDF
+
+A single-file PDF of the entire book is committed at
+`docs/guide/Thinking-with-TP-Studio.pdf` for readers who want one
+artifact rather than 24 Markdown files.
+
+To regenerate after a manuscript edit (or after a screenshot
+refresh):
+
+```bash
+pnpm book   # alias for `node ./scripts/build-book-pdf.mjs`
+```
+
+The script (`scripts/build-book-pdf.mjs`):
+1. Reads `docs/guide/*.md` in canonical order (the order is
+   hand-listed in the script so renaming a chapter doesn't silently
+   change the book's flow).
+2. Builds a cover page + a clickable TOC page (anchor links into
+   each chapter).
+3. Renders each chapter's Markdown to HTML via `marked`, rewriting
+   relative `screenshots/...` paths to absolute `file://` URIs so
+   Chromium can load them.
+4. Concatenates everything into one self-contained HTML doc with
+   print-grade CSS (A4, justified body, page-break-before on each
+   H1).
+5. Renders to PDF via Playwright's Chromium using `page.pdf({
+   outline: true })`. The `outline: true` flag extracts the heading
+   hierarchy into navigable PDF bookmarks — the sidebar in any
+   PDF viewer. The TOC page's anchor links also work as clickable
+   in-document jumps.
+
+Requirements: `marked` + `@playwright/test` (both pinned as devDeps).
+The Chromium binary must be installed locally — `pnpm exec
+playwright install chromium` does this once.
+
+Output: `docs/guide/Thinking-with-TP-Studio.pdf`. Typically ~1 MB
+with the 13 chapter screenshots embedded.
+
+Commit the PDF after regenerating. Stakeholders link to the file
+directly via GitHub Pages or download from the repo.
+
 ## Versioning
 
 When TP Studio's schema version bumps (currently v7), or a major UI change lands, mark the affected chapter with a `> *Last reviewed against TP Studio v…*` note near the top. Helps readers calibrate whether the screenshots they see are current.
