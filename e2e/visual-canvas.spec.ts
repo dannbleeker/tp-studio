@@ -59,29 +59,31 @@ test.describe('canvas visual regression', () => {
   });
 
   test('canvas with three entities snapshot', async ({ page }) => {
-    await page.goto('/');
-    const viewport = page.viewportSize();
-    if (!viewport) test.fail();
-    const cx = viewport!.width / 2;
-    const cy = viewport!.height / 2;
+    // Session 102 — migrated from a chain of three `page.mouse.dblclick`
+    // events to deterministic seeding via the `__TP_TEST__` hook. The
+    // original test flaked intermittently on CI Chromium: after the
+    // second entity, dagre re-laid-out A+B, and a re-laid-out node
+    // sometimes occupied the screen coordinate where the 3rd dblclick
+    // was supposed to land. `Canvas.tsx:onDoubleClick` explicitly
+    // bails when the target falls inside `.react-flow__node`, so the
+    // 3rd entity was silently never created. Result: the count poll
+    // exhausted retries with only 2 nodes present.
+    //
+    // The visual output we want to lock in is "3 entities under
+    // dagre auto-layout" — that's exactly what the test hook
+    // produces, and it doesn't depend on screen coordinates at all.
+    // Baseline regenerated alongside this change.
+    await page.goto('/?test=1');
+    await page.evaluate(() => {
+      const hook = window.__TP_TEST__;
+      if (!hook) throw new Error('test hook not installed');
+      hook.seed({ titles: ['One', 'Two', 'Three'] });
+    });
     const nodes = page.locator('[data-component="tp-node"]');
-
-    // Each dblclick is followed by a `toHaveCount` poll for the
-    // expected node count, NOT a fixed sleep. Earlier versions used
-    // 80-ms `waitForTimeout` waits which flaked on the slower CI
-    // runner — the 3rd dblclick sometimes landed before React Flow
-    // had reflowed and didn't register, leaving only 2 nodes when
-    // the snapshot compared. Polling is self-pacing and the
-    // baselines we regenerated continue to apply (visual output is
-    // identical once all 3 nodes are committed).
-    await page.mouse.dblclick(cx - 150, cy);
-    await expect(nodes).toHaveCount(1);
-    await page.mouse.dblclick(cx + 150, cy);
-    await expect(nodes).toHaveCount(2);
-    await page.mouse.dblclick(cx, cy + 100);
     await expect(nodes).toHaveCount(3);
     // Settle dagre + commit any pending position writes before the
-    // screenshot is taken.
+    // screenshot is taken. The two-frame settle gives the layout
+    // hook + React Flow's transition both a chance to finish.
     await page.waitForTimeout(200);
     await expect(page).toHaveScreenshot('canvas-three-entities.png', {
       maxDiffPixelRatio: 0.02,
