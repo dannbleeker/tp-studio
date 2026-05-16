@@ -134,6 +134,14 @@ export const maybeInstallTestHook = (): void => {
       // `selected: false`. Matches what React Flow does internally on
       // a plain click.
       instance.setNodes((prev) => prev.map((n) => ({ ...n, selected: n.id === id })));
+      // Also write directly to our store. The toolbar's visibility
+      // depends on our store's `selection`, not RF's internal state.
+      // RF's `onSelectionChange` would normally mirror the setNodes
+      // call to our store, but in CI Chromium the mirror callback
+      // doesn't always fire (likely because RF dedupes when its
+      // internal selection state didn't actually change between
+      // render passes). Writing to both eliminates the race.
+      useDocumentStore.getState().selectEntities([id]);
       return true;
     },
   };
