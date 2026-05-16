@@ -1,7 +1,17 @@
 {
   "$schema": "https://claude.com/schemas/settings.json",
   "permissions": {
-    "allow": ["Bash(git push:*)"]
+    "allow": [
+      "Bash(git push:*)",
+      "Bash(git push origin main:*)",
+      "Bash(gh run watch:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm build)",
+      "Bash(node ./node_modules/vitest/vitest.mjs:*)",
+      "Bash(node ./node_modules/typescript/bin/tsc:*)"
+    ]
   },
   "hooks": {
     "PreToolUse": [

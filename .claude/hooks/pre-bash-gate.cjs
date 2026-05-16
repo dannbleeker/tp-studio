@@ -85,9 +85,10 @@ const main = () => {
   // ── git push origin main gate ──────────────────────────────────
   if (/(^|[^a-zA-Z0-9_-])git\s+push\b.*origin\b.*main/.test(cmd)) {
     if (process.env.CLAUDE_SKIP_PUSH_GATE === '1') process.exit(0);
-    // Soft gate: warn if the working tree has uncommitted changes. The
-    // commit gate handled tsc + biome; the push gate is mostly here as
-    // a reminder + an opt-in vitest run for the truly cautious.
+
+    // Soft gate #1: warn if the working tree has uncommitted changes.
+    // The commit gate handled tsc + biome already; this is a reminder
+    // that anything uncommitted won't be pushed.
     try {
       const status = execSync('git status --porcelain', {
         cwd: PROJECT_ROOT,
@@ -101,6 +102,38 @@ const main = () => {
       }
     } catch {
       // git status itself failed — odd; let the push attempt proceed.
+    }
+
+    // Session 100 — hard gate: `vite build` must succeed before push.
+    //
+    // The commit gate runs `tsc --noEmit` on every commit, but that
+    // doesn't catch:
+    //   * Local-vs-CI tsc divergences (e.g. `@types/node` resolving
+    //     locally but not on CI). Session 99 lost a CI round-trip on
+    //     a `node:fs` import that local tsc silently accepted; CI's
+    //     `pnpm build` step would have failed sooner.
+    //   * Rollup / vite-plugin failures, bundle-emit issues,
+    //     manualChunks regressions, PWA precache config errors —
+    //     none of which `tsc` sees on its own.
+    //
+    // `vite build` is ~15 s on this project. Acceptable cost for a
+    // gate that fires 1–2× per session. The bundle-size budget is
+    // a separate downstream check (`scripts/check-bundle-size.mjs`)
+    // run by the `/session-end` workflow; we don't duplicate it here.
+    //
+    // Set `CLAUDE_SKIP_PUSH_GATE=1` to bypass (useful for emergency
+    // hotfixes where CI is the canonical signal anyway).
+    try {
+      execSync('node_modules/.bin/vite build', {
+        cwd: PROJECT_ROOT,
+        stdio: 'pipe',
+      });
+    } catch (err) {
+      const tail = String(err.stdout ?? '') + String(err.stderr ?? '');
+      process.stderr.write(
+        `pre-push gate failed: \`vite build\` errored.\n\n${tail.slice(-3000)}\n\nFix the build (or set CLAUDE_SKIP_PUSH_GATE=1 to bypass) before pushing.\n`
+      );
+      process.exit(2);
     }
     process.exit(0);
   }

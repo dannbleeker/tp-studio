@@ -1,0 +1,28 @@
+# Session 100 — normalize line endings to LF.
+#
+# Biome's formatter wants LF; without `.gitattributes` Windows git
+# clients silently convert checked-out files to CRLF (via the
+# `core.autocrlf=true` default), which then trips the formatter every
+# time we run `biome check`. Five files on `main` had accumulated CRLF
+# at the time of writing; Session 100 normalized them all in one pass.
+#
+# This file tells git to store + check out everything as LF
+# regardless of the client's `autocrlf` setting, so the formatter and
+# the working tree agree.
+#
+# Override per-extension below if a tool genuinely needs CRLF (none
+# today — even `.bat` / `.cmd` shims in `scripts/` work fine as LF on
+# Windows in practice).
+
+* text=auto eol=lf
+
+# Binary file types — never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff2 binary
+*.zip binary

@@ -81,6 +81,30 @@ docs/             — feature-research, iteration-2-prd, decisions/ (ADRs)
 
 Memory entries that codify this: `feedback_commit_workflow.md`, `feedback_ci_refactor_workflow.md`, `feedback_notifications.md`, `feedback_tp_studio_docs.md`, `feedback_subagents.md`.
 
+## Multi-area research — use parallel sub-agents
+
+When the next step is "look at how X works in this codebase" and X spans 2+ modules / directories, send parallel sub-agents in a **single message** rather than searching serially. Examples that paid off:
+
+- **Session 99** — parallel `Explore` agents for `radial layout + edge rendering` and `dagre import chain`. Both returned structured reports with code excerpts in <1 min; the implementation phase needed zero follow-up greps.
+- **Session 95** — parallel agents per investigation area saved 4-5 grep round-trips on the SelectionToolbar Phase-1 prep.
+- **Session 93 / EC PPT comparison** — three parallel agents (current state / template / gap) produced a 7-item punch list in one round-trip vs. an estimated 8-10 serial greps.
+
+A single agent is fine when the question is scoped to one place. The amplifier rule: **if you're about to do 2+ grep/glob round-trips in different areas, send parallel sub-agents instead.** The `Agent` tool's per-prompt cost is far less than the conversation-context cost of doing it inline.
+
+Send them via multiple `Agent` tool-use blocks in **one assistant message** — that's what makes them run concurrently. Sequential `Agent` calls across separate messages is just slow grep.
+
+## Plan mode for L-effort features
+
+For new features in the **L (large)** effort bucket — multi-file, new module, design ambiguity, cross-cutting impact — pause and request plan-mode review before writing code:
+
+> "This is L-effort with [these unknowns]. Want me to enter plan mode and write a 60-second plan first, or just code?"
+
+The plan covers: file paths to create / touch, function signatures, test strategy, the alternatives considered + rejected, and any cross-cutting concern (schema, migration, store wiring). Dann reviews, approves or course-corrects, then plan-mode exits and implementation begins.
+
+For **S / M** items (single file, clear scope, well-trodden ground), skip plan mode — the round-trip isn't worth it. Rule of thumb: if Dann would otherwise interrupt mid-implementation to ask "what's your plan?", that's a plan-mode signal.
+
+Items historically worth plan-mode review (from the backlog): radial edge routing (Session 99 — skipped plan mode, would've been worth ~5 min review), Bundle 10 diagram-type additions, schema-version migrations, anything that adds a new domain concept.
+
 ## Environment quirks (Windows + corporate AppLocker)
 
 These have bitten us multiple times — work around them, don't fight them:
