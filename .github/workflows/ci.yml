@@ -11,6 +11,27 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Session 101 — opt into Node 24 for JavaScript actions.
+#
+# Every CI run was printing this deprecation warning:
+#   "Node.js 20 actions are deprecated. The following actions are
+#    running on Node.js 20 and may not work as expected:
+#    actions/checkout@v4, actions/setup-node@v4,
+#    actions/upload-artifact@v4, pnpm/action-setup@v4. Actions will
+#    be forced to run with Node.js 24 by default starting June 2nd,
+#    2026."
+#
+# `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` is GitHub's documented
+# opt-in for the June-2026 forced-default. Setting it at workflow
+# level (here, not per-step) means every JS action in every job
+# inherits the flag — and the same set of actions runs against the
+# Node-24 runtime that will be mandatory anyway, so any breakage
+# surfaces now rather than at the forced-cutover date. The
+# v4-versioned actions all work on Node 24 in practice; the env var
+# just suppresses the warning + future-tests the migration.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 # Session 85 — split the previous monolithic `check` job into three
 # parallel jobs so the fast feedback (lint + types in ~10s) surfaces
 # before contributors wait for the slow steps. Each job re-runs install
