@@ -78,6 +78,14 @@ export function SelectionToolbar() {
   // `selection`; this re-subscribes us on edge-graph mutations so the
   // conditional ungroup-* verbs flip in lockstep.
   const edges = useDocumentStore((s) => s.doc.edges);
+  // Session 96 — re-subscribe on diagramType so the per-diagram
+  // verbs (Mark as UDE / Mark as rootCause for CRT; Add NC + Promote
+  // to Goal for Goal Tree) flip when the user loads a different
+  // diagram type via Import / New / Load example.
+  const diagramType = useDocumentStore((s) => s.doc.diagramType);
+  // Session 96 — re-subscribe on Browse Lock so write-verbs hide
+  // the moment the user toggles the lock on.
+  const browseLocked = useDocumentStore((s) => s.browseLocked);
   const interaction = useCanvasInteractionState();
 
   // React Flow's transform — we want to re-position the toolbar
@@ -96,12 +104,27 @@ export function SelectionToolbar() {
   // mean the branch reference only changes when selection actually
   // changes shape.
   const branch = useMemo(() => branchFor(selection), [selection]);
-  // verbsForBranch reads edges (for ungroup conditional checks) so it
-  // must re-run whenever the edge graph changes. Reading
-  // `useDocumentStore.getState()` here gives us the live state at
-  // render time without an additional subscription.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: edges intentionally retriggers the verb recompute when group state changes
-  const verbs = useMemo(() => verbsForBranch(branch, useDocumentStore.getState()), [branch, edges]);
+  // verbsForBranch reads edges + doc.diagramType + entity.type for
+  // conditional checks. Reading `useDocumentStore.getState()` here
+  // gives us the live state at render time without an additional
+  // subscription. The `edges` / `diagramType` deps retrigger the
+  // recompute when those change — biome can't see they're used
+  // transitively through getState().
+  // biome-ignore lint/correctness/useExhaustiveDependencies: edges + diagramType retrigger the verb recompute via getState()
+  const verbsBeforeLockFilter = useMemo(
+    () => verbsForBranch(branch, useDocumentStore.getState()),
+    [branch, edges, diagramType]
+  );
+  // Session 96 — when Browse Lock is on, hide write-verbs (which
+  // would just produce the standard "Browse Lock is on" toast on
+  // click). Read-only verbs (none today, but a future "Show in
+  // inspector" would qualify) stay visible. We hide rather than
+  // grey-out: a chip with zero clickable actions reads as broken;
+  // an empty toolbar reads as "nothing applicable right now."
+  const verbs = useMemo(
+    () => (browseLocked ? verbsBeforeLockFilter.filter((v) => !v.writes) : verbsBeforeLockFilter),
+    [browseLocked, verbsBeforeLockFilter]
+  );
 
   // Recompute the anchor rect on every relevant change: selection
   // shape, viewport transform, or any interaction state that might

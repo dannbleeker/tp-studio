@@ -93,4 +93,33 @@ test.describe('SelectionToolbar e2e', () => {
     await page.keyboard.press('Escape');
     await expect(page.locator('[data-component="selection-toolbar"]')).toHaveCount(1);
   });
+
+  test('Settings → Behavior toggle hides the toolbar (opt-out works)', async ({ page }) => {
+    // Session 96 — verify the showSelectionToolbar preference actually
+    // gates visibility. We flip the pref via the store directly (the
+    // Settings UI is exercised in other tests) and assert visibility.
+    await seedAndSelectOne(page);
+    await expect(page.locator('[data-component="selection-toolbar"]')).toHaveCount(1);
+
+    // Flip the pref off.
+    await page.evaluate(() => {
+      // The pref isn't on the TpTestHook surface; we read the store
+      // via the same path other tests use for selection.
+      // Cast-free reach: the only public way today is to drive the
+      // Settings UI. The hook exposes selection but not prefs — use
+      // localStorage as the seam (matches the production persist
+      // path) then reload.
+      const raw = window.localStorage.getItem('tp-studio:prefs:v1');
+      const prefs = raw ? JSON.parse(raw) : {};
+      prefs.showSelectionToolbar = false;
+      window.localStorage.setItem('tp-studio:prefs:v1', JSON.stringify(prefs));
+    });
+    await page.reload();
+    await page.goto('/?test=1');
+    await page.waitForFunction(() => Boolean(window.__TP_TEST__));
+    // Re-seed + re-select after the reload.
+    await seedAndSelectOne(page);
+    // Toolbar should be absent because the pref is off.
+    await expect(page.locator('[data-component="selection-toolbar"]')).toHaveCount(0);
+  });
 });

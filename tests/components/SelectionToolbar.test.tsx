@@ -115,6 +115,18 @@ describe('SelectionToolbar', () => {
     expect(container.querySelector('[data-component="selection-toolbar"]')).toBeNull();
   });
 
+  it('hides write-verbs when Browse Lock is on (toolbar disappears entirely)', async () => {
+    // Session 96 — Browse Lock filter. Every verb in the registry
+    // today has `writes: true`, so with the lock on the toolbar
+    // has no verbs to render and hides itself.
+    const a = seedEntity('A');
+    act(() => useDocumentStore.getState().selectEntity(a.id));
+    act(() => useDocumentStore.getState().setBrowseLocked(true));
+    const { container } = renderWithProvider(<SelectionToolbar />);
+    await advanceFrame();
+    expect(container.querySelector('[data-component="selection-toolbar"]')).toBeNull();
+  });
+
   it('clicking the Add child verb runs the add-successor palette command', async () => {
     const a = seedEntity('A');
     act(() => useDocumentStore.getState().selectEntity(a.id));

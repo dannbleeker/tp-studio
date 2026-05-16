@@ -95,6 +95,54 @@ describe('verbsForBranch', () => {
     expect(ids).toContain('confirm-delete-selection');
   });
 
+  // Session 96 — per-diagramType verb expansion.
+  it('CRT context adds mark-as-ude + mark-as-rootcause when applicable', () => {
+    // Default seed is a CRT doc. Add an effect entity (not yet a
+    // UDE or root cause). Both type-marker verbs should surface.
+    const a = seedEntity('A', 'effect');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('mark-as-ude');
+    expect(ids).toContain('mark-as-rootcause');
+  });
+
+  it('CRT context drops mark-as-ude when entity is already a UDE', () => {
+    const a = seedEntity('A', 'ude');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).not.toContain('mark-as-ude');
+    // The root-cause one stays because the entity isn't a root cause.
+    expect(ids).toContain('mark-as-rootcause');
+  });
+
+  it('Goal Tree context adds add-nc-child + promote-to-goal', () => {
+    useDocumentStore.getState().newDocument('goalTree');
+    const a = seedEntity('A', 'criticalSuccessFactor');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('add-nc-child');
+    expect(ids).toContain('promote-to-goal');
+    // Goal Tree shouldn't surface CRT-specific verbs.
+    expect(ids).not.toContain('mark-as-ude');
+    expect(ids).not.toContain('mark-as-rootcause');
+  });
+
+  it('Goal Tree context drops promote-to-goal when entity is already a Goal', () => {
+    useDocumentStore.getState().newDocument('goalTree');
+    const a = seedEntity('A', 'goal');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).not.toContain('promote-to-goal');
+    expect(ids).toContain('add-nc-child');
+  });
+
+  it('single-edge branch now surfaces add-assumption-to-edge', () => {
+    const { edge } = seedConnectedPair();
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-edge', id: edge.id }, state).map((v) => v.id);
+    expect(ids).toContain('add-assumption-to-edge');
+  });
+
   it('single-edge branch surfaces reverse + splice + delete', () => {
     const { edge } = seedConnectedPair();
     const state = useDocumentStore.getState();

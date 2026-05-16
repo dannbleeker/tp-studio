@@ -155,15 +155,17 @@ When you select something on the canvas — an entity, an edge, a group, or mult
 
 **Per-selection verb list:**
 
-- **Single entity** — Add child · Add parent · Delete
-- **Single edge** — Reverse direction · Splice · Delete
+- **Single entity (any diagram)** — Add child · Add parent · Delete
+- **Single entity in a CRT or FRT** — *plus* Mark as UDE · Mark as root cause (skipped when the entity already has that type)
+- **Single entity in a Goal Tree** — *plus* Add necessary condition · Promote to Goal (skipped when the entity is already a Goal)
+- **Single edge** — Reverse direction · Add assumption · Splice · Delete
 - **Single group** — Toggle collapsed · Unhoist
 - **Multiple entities** — Group · *Swap* (when exactly 2 selected) · Delete N
 - **Multiple edges** — Group as AND / OR / XOR · Ungroup AND / OR / XOR (when applicable) · Delete N
 
 Each button's tooltip shows the equivalent keyboard shortcut, so the toolbar doubles as a discovery surface for the keyboard bindings. Clicking a button runs the same palette command Cmd+K would — Browse Lock guards apply, undo history records as normal.
 
-**When the toolbar hides itself:** while you're typing into an entity title (so it doesn't compete with the editor for clicks), while the command palette or any modal is open (those layers take precedence), while you're dragging a node or panning the canvas (would otherwise jitter), and when nothing is selected.
+**When the toolbar hides itself:** while you're typing into an entity title (so it doesn't compete with the editor for clicks), while the command palette or any modal is open (those layers take precedence), while you're dragging a node or panning the canvas (would otherwise jitter), and when nothing is selected. **Browse Lock also hides write-verbs** — and since every verb the toolbar surfaces today is a write, the toolbar disappears entirely while Browse Lock is on. The verbs come back the moment you unlock.
 
 **Disabling the toolbar.** Some users prefer keyboard-only flow with no floating chrome. Settings → Behavior → **Selection toolbar** turns it off; the palette and the right-click menu cover every verb the toolbar surfaces. The toggle persists across reloads.
 

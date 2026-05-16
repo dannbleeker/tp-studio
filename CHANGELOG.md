@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 96 — Selection toolbar: per-diagramType verbs + Browse Lock filter
+
+Closes the "What's still incomplete" audit from Session 95. **1123 tests passing** (was 1117; +6 — five new verb-context tests + one Browse Lock filter test). The Playwright e2e suite grew a fourth case covering the Settings toggle.
+
+**Verb scope expansion** (per palette+toolbar parity — every new toolbar verb has a Cmd+K palette home). Five new palette commands:
+- `mark-as-ude` / `mark-as-rootcause` — single-entity type changers, surfaced when the doc is a CRT or FRT and the entity isn't already that type. Saves the 2-click trip into the Inspector's Type picker.
+- `add-nc-child` — single-entity in a Goal Tree. Creates a `necessaryCondition` child connected via a necessity edge. Mirrors what the Goal Tree creation wizard does for step 4.
+- `promote-to-goal` — single-entity in a Goal Tree. Changes the entity's type to `'goal'`. Surfaced when the entity isn't already a Goal.
+- `add-assumption-to-edge` — single-edge. Creates an `assumption` entity attached to the edge, opens it in inline-edit mode. Mirrors the keyboard `A` shortcut + the EdgeInspector's "+ New assumption" button.
+
+**Selection-verbs registry** (`src/domain/selectionVerbs.ts`) — gained a `writes?: boolean` field on `Verb` and per-diagramType + per-entity-type dispatch in the `single-entity` and `single-edge` branches. The CRT verbs only surface in CRT/FRT docs; the Goal Tree verbs only surface in Goal Tree docs; both branches skip the type-changer verb if the entity is already that type.
+
+**Browse Lock filter** — `SelectionToolbar` now filters out write-verbs (`verb.writes === true`) when `browseLocked` is true. Every verb in the registry today is a write, so the toolbar disappears entirely while locked. The verbs come back the moment Browse Lock toggles off. This replaces what would have been a chip with a toast on every click — a chip with zero clickable affordances reads as broken; an empty toolbar reads as "nothing applicable right now."
+
+**Tests.** 5 new selectionVerbs unit cases (CRT type-marker presence, CRT skip-when-already-typed, Goal Tree per-type verbs, Goal Tree drop-promote-when-Goal, single-edge add-assumption). 1 new SelectionToolbar component case (Browse Lock filter hides the toolbar). 1 new Playwright e2e case (Settings → showSelectionToolbar=false hides the toolbar after reload).
+
+**USER_GUIDE.md** updated with the expanded verb list per diagramType + the Browse Lock hide rule.
+
+End state: tsc clean, Biome clean, 1123 unit tests passing, 4 Playwright e2e cases. Pushed to main; CI green.
+
 ## Session 95 — Selection-anchored toolbar
 
 The UI-pattern research from Session 94 recommended adding a single new affordance to TP Studio: a floating contextual toolbar anchored above the current selection, bridging the gap between "I know which node I mean" and "I know which verb I want." This session ships it across two phases. **1117 tests passing** (was 1097 at start of Session 95; +12 selectionVerbs registry tests + 8 SelectionToolbar component tests). 3 new Playwright e2e specs cover the on-canvas user journey.

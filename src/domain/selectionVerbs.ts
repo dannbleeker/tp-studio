@@ -65,6 +65,18 @@ export type Verb = {
   /** Renders the verb in destructive (rose) styling. Used for
    *  Delete + similar. */
   destructive?: boolean;
+  /** Session 96 — marks the verb as a write-action. The toolbar
+   *  hides write-verbs while Browse Lock is on, since clicking them
+   *  would just produce the standard "Browse Lock is on" toast.
+   *  Read-only verbs (none in the current registry, but a future
+   *  "Copy", "Inspect", "Show in inspector" would qualify) stay
+   *  visible when locked. Most verbs in the registry are writes;
+   *  add `writes: true` defensively when in doubt — the worst-case
+   *  is a verb hides under lock when it could have stayed visible.
+   *  Palette-backed verbs already have their own Browse Lock guard
+   *  via `withWriteGuard()` — this flag is for visibility, not
+   *  authorization. */
+  writes?: boolean;
   /** When the verb's behaviour lives in the palette command
    *  catalogue, set this and skip `run`. The consumer dispatches
    *  via the palette command's own `run(state)`. */
@@ -141,27 +153,82 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
       // toolbar hidden on pane right-click.
       return [];
 
-    case 'single-entity':
-      return [
+    case 'single-entity': {
+      const entity = state.doc.entities[branch.id];
+      const diagramType = state.doc.diagramType;
+      const verbs: Verb[] = [
         {
           id: 'add-successor',
           label: 'Add child',
           shortLabel: 'Child',
+          writes: true,
           paletteCommandId: 'add-successor',
         },
         {
           id: 'add-predecessor',
           label: 'Add parent',
           shortLabel: 'Parent',
+          writes: true,
           paletteCommandId: 'add-predecessor',
         },
-        {
-          id: 'confirm-delete-selection',
-          label: 'Delete',
-          destructive: true,
-          paletteCommandId: 'confirm-delete-selection',
-        },
       ];
+      // Session 96 — per-diagramType verbs.
+      // **CRT** practitioners spend most of their time tagging entities
+      // as UDEs (at the top) or root causes (at the bottom). Surface
+      // both directly so the toolbar replaces a 2-click trip into the
+      // Inspector's Type picker. Skipped on diagrams where the
+      // distinction doesn't apply (Goal Tree, EC, S&T).
+      if (diagramType === 'crt' || diagramType === 'frt') {
+        if (entity && entity.type !== 'ude') {
+          verbs.push({
+            id: 'mark-as-ude',
+            label: 'Mark as UDE',
+            shortLabel: 'UDE',
+            writes: true,
+            paletteCommandId: 'mark-as-ude',
+          });
+        }
+        if (entity && entity.type !== 'rootCause') {
+          verbs.push({
+            id: 'mark-as-rootcause',
+            label: 'Mark as root cause',
+            shortLabel: 'Root',
+            writes: true,
+            paletteCommandId: 'mark-as-rootcause',
+          });
+        }
+      }
+      // **Goal Tree** — "Add NC" creates a necessaryCondition child
+      // connected via a necessity edge (the canonical Goal Tree
+      // build step). "Promote to Goal" only when the selected entity
+      // isn't already a goal.
+      if (diagramType === 'goalTree') {
+        verbs.push({
+          id: 'add-nc-child',
+          label: 'Add necessary condition',
+          shortLabel: 'Add NC',
+          writes: true,
+          paletteCommandId: 'add-nc-child',
+        });
+        if (entity && entity.type !== 'goal') {
+          verbs.push({
+            id: 'promote-to-goal',
+            label: 'Promote to Goal',
+            shortLabel: 'Promote',
+            writes: true,
+            paletteCommandId: 'promote-to-goal',
+          });
+        }
+      }
+      verbs.push({
+        id: 'confirm-delete-selection',
+        label: 'Delete',
+        destructive: true,
+        writes: true,
+        paletteCommandId: 'confirm-delete-selection',
+      });
+      return verbs;
+    }
 
     case 'single-edge': {
       const verbs: Verb[] = [
@@ -169,18 +236,31 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           id: 'reverse-edge',
           label: 'Reverse direction',
           shortLabel: 'Reverse',
+          writes: true,
           paletteCommandId: 'reverse-edge',
+        },
+        // Session 96 — add-assumption-to-edge surfaced for parity
+        // with the keyboard `A` shortcut + the EdgeInspector's
+        // "+ New assumption" button.
+        {
+          id: 'add-assumption-to-edge',
+          label: 'Add assumption',
+          shortLabel: 'Assumption',
+          writes: true,
+          paletteCommandId: 'add-assumption-to-edge',
         },
         {
           id: 'splice-into-edge',
           label: 'Splice entity into edge',
           shortLabel: 'Splice',
+          writes: true,
           paletteCommandId: 'splice-into-edge',
         },
         {
           id: 'confirm-delete-selection',
           label: 'Delete edge',
           destructive: true,
+          writes: true,
           paletteCommandId: 'confirm-delete-selection',
         },
       ];
@@ -193,11 +273,13 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           id: 'toggle-group-collapsed',
           label: 'Toggle collapsed',
           shortLabel: 'Collapse',
+          writes: true,
           paletteCommandId: 'toggle-group-collapsed',
         },
         {
           id: 'unhoist',
           label: 'Unhoist',
+          writes: true,
           paletteCommandId: 'unhoist',
         },
       ];
@@ -208,6 +290,7 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           id: 'group-selected-entities',
           label: 'Group entities',
           shortLabel: 'Group',
+          writes: true,
           paletteCommandId: 'group-selected-entities',
         },
       ];
@@ -216,6 +299,7 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           id: 'swap-entities',
           label: 'Swap entities',
           shortLabel: 'Swap',
+          writes: true,
           paletteCommandId: 'swap-entities',
         });
       }
@@ -224,6 +308,7 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
         label: `Delete ${branch.ids.length} entities`,
         shortLabel: 'Delete',
         destructive: true,
+        writes: true,
         paletteCommandId: 'confirm-delete-selection',
       });
       return verbs;
@@ -239,18 +324,21 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           id: 'group-and',
           label: 'Group as AND',
           shortLabel: 'AND',
+          writes: true,
           paletteCommandId: 'group-and',
         },
         {
           id: 'group-or',
           label: 'Group as OR',
           shortLabel: 'OR',
+          writes: true,
           paletteCommandId: 'group-or',
         },
         {
           id: 'group-xor',
           label: 'Group as XOR',
           shortLabel: 'XOR',
+          writes: true,
           paletteCommandId: 'group-xor',
         },
       ];
@@ -258,6 +346,7 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
         verbs.push({
           id: 'ungroup-and',
           label: 'Ungroup AND',
+          writes: true,
           paletteCommandId: 'ungroup-and',
         });
       }
@@ -265,6 +354,7 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
         verbs.push({
           id: 'ungroup-or',
           label: 'Ungroup OR',
+          writes: true,
           paletteCommandId: 'ungroup-or',
         });
       }
@@ -272,6 +362,7 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
         verbs.push({
           id: 'ungroup-xor',
           label: 'Ungroup XOR',
+          writes: true,
           paletteCommandId: 'ungroup-xor',
         });
       }
@@ -280,6 +371,7 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
         label: `Delete ${branch.ids.length} edges`,
         shortLabel: 'Delete',
         destructive: true,
+        writes: true,
         paletteCommandId: 'confirm-delete-selection',
       });
       return verbs;
