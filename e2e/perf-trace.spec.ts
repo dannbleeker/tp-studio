@@ -190,6 +190,12 @@ async function seedHundredEntities(page: Page): Promise<void> {
 }
 
 test.describe('perf-trace — 100-entity scenarios', () => {
+  // Each scenario runs ~28 s of scripted interaction inside a CDP
+  // trace. The default Playwright test timeout (30 s) is too tight
+  // — setup + tracing overhead pushes total above the budget.
+  // 90 s gives generous headroom while still catching genuine hangs.
+  test.setTimeout(90_000);
+
   test('all-actions: pan + zoom + drag + edit + snapshot', async ({ page }) => {
     test.skip(SKIP_PERF, 'Manual perf run — set PERF_TRACE=1 to enable.');
     await seedHundredEntities(page);
