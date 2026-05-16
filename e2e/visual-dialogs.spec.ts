@@ -17,19 +17,7 @@ import { expect, test } from '@playwright/test';
  * When an intentional visual change lands, trigger the `Update visual
  * snapshots` workflow to refresh — it commits the regenerated PNGs
  * back via a PR; review the diff and merge.
- *
- * The Session 102 additions carry a `test.skip(SKIP_PENDING_BASELINES,
- * ...)` guard until their baseline PNGs land on `main`. The pattern
- * mirrors Session 101's bootstrap: skip in regular CI so we don't fail
- * on missing baselines, opt-in via `REFRESH_VISUAL_SNAPSHOTS=1` in
- * the refresh workflow so it generates the initial set. Once the
- * baselines PR merges, the guard comes out.
  */
-
-// Session 102 — bootstrap guard for the new (Print/Export/Diagram/
-// Confirm/Quick-Capture/Revisions/SideBySide) tests. The original
-// three Session-101 tests have baselines already and aren't gated.
-const SKIP_PENDING_BASELINES = !process.env.REFRESH_VISUAL_SNAPSHOTS;
 
 test.describe('dialog visual regression', () => {
   test.beforeEach(async ({ page }) => {
@@ -99,7 +87,6 @@ test.describe('dialog visual regression', () => {
   // ─────────────────────────────────────────────────────────────────
 
   test('export picker dialog', async ({ page }) => {
-    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
     await page.goto('/?test=1');
     // Palette → "Export…" — opens the unified picker. The catalogue
     // route is `open-export-picker`; the visible label is "Export…".
@@ -116,7 +103,6 @@ test.describe('dialog visual regression', () => {
   });
 
   test('print preview dialog', async ({ page }) => {
-    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
     await page.goto('/?test=1');
     // Two-step open: the Print/Save-as-PDF route goes through the
     // Export Picker (Session 90 unified the entry points). Cmd+P
@@ -133,7 +119,6 @@ test.describe('dialog visual regression', () => {
   });
 
   test('diagram type picker dialog', async ({ page }) => {
-    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
     await page.goto('/?test=1');
     // Palette → "New diagram…" → openDiagramPicker('new'). The
     // dialog body is a card grid; the title is stable per Session 90.
@@ -148,7 +133,6 @@ test.describe('dialog visual regression', () => {
   });
 
   test('quick capture dialog', async ({ page }) => {
-    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
     await page.goto('/?test=1');
     // Bare `E` key (no modifiers, not in a text field) opens Quick
     // Capture — `useGlobalShortcuts.ts` listens for it. The dialog
@@ -162,7 +146,6 @@ test.describe('dialog visual regression', () => {
   });
 
   test('revision panel', async ({ page }) => {
-    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
     await page.goto('/?test=1');
     // The RevisionPanel is an `<aside>`, not a centered dialog, but
     // it's the History surface and counts toward modal coverage.
@@ -183,7 +166,6 @@ test.describe('dialog visual regression', () => {
   });
 
   test('confirm dialog', async ({ page }) => {
-    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
     await page.goto('/?test=1');
     // Seed two entities + a connecting edge so the delete action
     // has a real warning ("This entity has 1 connected edge…"),
@@ -213,7 +195,6 @@ test.describe('dialog visual regression', () => {
   });
 
   test('side-by-side compare dialog', async ({ page }) => {
-    test.skip(SKIP_PENDING_BASELINES, 'Pending baseline bootstrap');
     await page.goto('/?test=1');
     // Seed entities → capture a manual revision → mutate the doc
     // → open SideBySide against the captured revision. The
