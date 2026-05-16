@@ -8,7 +8,8 @@
  * would let Rollup pull the module into whatever chunk the importer
  * lands in).
  *
- * This test grep-walks `src/` and asserts the contract:
+ * This test scans every `.ts` / `.tsx` file in `src/` and asserts the
+ * contract:
  *   - `dagre` is only imported statically from `src/domain/layout.ts`
  *     (the deliberate dependency boundary).
  *   - `@/domain/layout` is only imported dynamically (`await import()`)
@@ -21,40 +22,29 @@
  * accept the lazy-load is gone and update both the test and the
  * `vite.config.ts` comment.
  *
- * Test runs against the file system, not against built output — fast
- * (~10 ms) and doesn't require a build to have happened.
+ * Uses Vite's `import.meta.glob` so the test stays in the same
+ * Vite/Vitest transform pipeline as the rest of the suite — no
+ * `@types/node` dependency, no `node:fs` imports that fail to
+ * type-check under the project's tsconfig.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const SRC_ROOT = join(__dirname, '..', '..', 'src');
-
-const collectFiles = (dir: string, out: string[] = []): string[] => {
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    const s = statSync(full);
-    if (s.isDirectory()) {
-      collectFiles(full, out);
-    } else if (/\.(ts|tsx)$/.test(entry)) {
-      out.push(full);
-    }
-  }
-  return out;
-};
+const SRC_FILES = import.meta.glob<string>('/src/**/*.{ts,tsx}', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
 
 describe('dagre lazy-load static-import boundary (Session 99)', () => {
-  const files = collectFiles(SRC_ROOT);
-
   it('only src/domain/layout.ts statically imports `dagre`', () => {
-    // Match `from 'dagre'` or `from "dagre"` (also `import 'dagre'`
-    // bare side-effect imports, though we have none today).
+    // Match `from 'dagre'` or `from "dagre"`. Also catches bare
+    // side-effect imports `import 'dagre'` (none today, but cheap
+    // to defend against).
     const re = /\bfrom\s+['"]dagre['"]|^\s*import\s+['"]dagre['"]/m;
     const offenders: string[] = [];
-    for (const file of files) {
-      const content = readFileSync(file, 'utf8');
-      if (re.test(content) && !file.replace(/\\/g, '/').endsWith('src/domain/layout.ts')) {
-        offenders.push(file);
+    for (const [path, content] of Object.entries(SRC_FILES)) {
+      if (re.test(content) && path !== '/src/domain/layout.ts') {
+        offenders.push(path);
       }
     }
     expect(offenders).toEqual([]);
@@ -67,9 +57,8 @@ describe('dagre lazy-load static-import boundary (Session 99)', () => {
     // any bare `from '@/domain/layout'` form.
     const re = /\bfrom\s+['"]@\/domain\/layout['"]/m;
     const offenders: string[] = [];
-    for (const file of files) {
-      const content = readFileSync(file, 'utf8');
-      if (re.test(content)) offenders.push(file);
+    for (const [path, content] of Object.entries(SRC_FILES)) {
+      if (re.test(content)) offenders.push(path);
     }
     expect(offenders).toEqual([]);
   });
