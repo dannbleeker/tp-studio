@@ -559,7 +559,11 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
  * state, or data-fields actually change. Unrelated store mutations
  * no longer reach the edge body via emission churn.
  */
-const shallowEqualObject = (a: unknown, b: unknown): boolean => {
+/**
+ * Shallow-equality check on two objects' enumerable own keys.
+ * Exported for direct test coverage of the comparator below.
+ */
+export const shallowEqualObject = (a: unknown, b: unknown): boolean => {
   if (a === b) return true;
   if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
   const ak = Object.keys(a as Record<string, unknown>);
@@ -571,11 +575,19 @@ const shallowEqualObject = (a: unknown, b: unknown): boolean => {
   return true;
 };
 
-export const TPEdge = memo(TPEdgeImpl, (prev, next) => {
-  // Identity + geometry: must all match for the memo to bail.
-  // Comparing them inline (rather than via shallowEqual on the
-  // whole props object) lets us keep the fresh `data` reference
-  // out of the hot path.
+/**
+ * The custom comparator for `React.memo(TPEdge)`. Returns `true`
+ * when the memo should bail (skip re-render); `false` when the
+ * component must re-render.
+ *
+ * Exported separately so unit tests can pin the comparator's
+ * logic directly without the Profiler / reconciler complications
+ * that come with measuring rendered components.
+ */
+export const tpEdgePropsEqual = (
+  prev: EdgeProps<TPEdgeType>,
+  next: EdgeProps<TPEdgeType>
+): boolean => {
   if (prev.id !== next.id) return false;
   if (prev.source !== next.source || prev.target !== next.target) return false;
   if (prev.sourceX !== next.sourceX || prev.sourceY !== next.sourceY) return false;
@@ -585,8 +597,8 @@ export const TPEdge = memo(TPEdgeImpl, (prev, next) => {
   if (prev.selected !== next.selected) return false;
   if (prev.markerEnd !== next.markerEnd) return false;
   if (prev.markerStart !== next.markerStart) return false;
-  // `data` is the fresh-object problem — shallow-compare its
-  // contents.
   return shallowEqualObject(prev.data, next.data);
-});
+};
+
+export const TPEdge = memo(TPEdgeImpl, tpEdgePropsEqual);
 TPEdge.displayName = 'TPEdge';

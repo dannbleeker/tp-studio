@@ -1,0 +1,69 @@
+name: Perf trace
+
+# Session 106 — manual perf-trace runner.
+#
+# `e2e/perf-trace.spec.ts` drives the production build through a
+# 100-entity interaction sequence and captures a Chrome DevTools
+# Protocol trace via Playwright's CDP session. The local dev box
+# can't run the spec because `vite preview` is blocked by AppLocker
+# (see CLAUDE.md "Environment quirks"); CI runs it on demand here.
+#
+# Workflow output:
+#   - stdout summary (event count, scripting/layout/paint totals,
+#     long-task count) printed in the workflow log.
+#   - `playwright-report/perf-trace.json` uploaded as a workflow
+#     artifact; download from the Actions tab and open in
+#     `chrome://tracing` or `perfetto.dev` for the full flame chart.
+#
+# Triggering: manual `workflow_dispatch` only. Not run on push, not
+# part of regular CI's gating.
+
+on:
+  workflow_dispatch:
+
+# Session 101 — opt into Node 24 for JS actions.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  perf-trace:
+    name: Capture Chrome perf trace
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build
+        run: pnpm build
+
+      - name: Capture trace
+        env:
+          PERF_TRACE: '1'
+        run: pnpm exec playwright test e2e/perf-trace.spec.ts
+
+      - name: Upload trace artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-trace
+          path: playwright-report/perf-trace.json
+          retention-days: 30
