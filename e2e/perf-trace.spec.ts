@@ -32,7 +32,12 @@ import { expect, test } from '@playwright/test';
  * (>50ms) which are the main-thread jank moments.
  */
 
-const TRACE_PATH = 'playwright-report/perf-trace.json';
+// Session 106 — written to `perf-trace-output/`, NOT
+// `playwright-report/`. The HTML reporter wipes its own directory at
+// the start of each run, deleting anything else we'd written there.
+// `perf-trace-output/` is gitignored and uploaded as a workflow
+// artifact.
+const TRACE_PATH = 'perf-trace-output/perf-trace.json';
 const SKIP_PERF = process.env.PERF_TRACE !== '1';
 
 interface TraceEvent {

@@ -31,3 +31,6 @@ src/**/*.d.ts
 !src/vite-env.d.ts
 src/domain/types.js
 src/domain/tokens.js
+
+# Session 106 — perf trace artifact (run via .github/workflows/perf-trace.yml)
+perf-trace-output/

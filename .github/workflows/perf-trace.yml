@@ -65,5 +65,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: perf-trace
-          path: playwright-report/perf-trace.json
+          # Session 106 — `perf-trace-output/` not `playwright-report/`:
+          # the HTML reporter wipes its own dir at run start, deleting
+          # anything else.
+          path: perf-trace-output/perf-trace.json
           retention-days: 30
