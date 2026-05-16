@@ -40,6 +40,19 @@ const SHARE_HASH_PREFIX = '#!share=';
  *  and most issue trackers without truncation. */
 export const SHARE_LINK_SOFT_WARN_BYTES = 4096;
 
+/** Session 98 — hard ceiling on decompressed share-link payload (bytes).
+ *
+ *  Gzip-bomb defense: a tiny base64-url payload (a few hundred bytes)
+ *  can decompress to gigabytes if the attacker crafts an all-zero or
+ *  highly repetitive stream. Without a cap, `await new Response(stream)
+ *  .text()` will happily allocate the whole thing and crash the tab
+ *  (or worse, lock the browser long enough to look like a hang).
+ *
+ *  5 MB is far above any legitimate diagram. The largest realistic
+ *  Goal Tree we've seen exports to ~120 KB of JSON; 5 MB gives 40×
+ *  headroom while still aborting hostile payloads in milliseconds. */
+export const SHARE_LINK_MAX_DECOMPRESSED_BYTES = 5 * 1024 * 1024;
+
 /** URL-safe base64 alphabet: `+` → `-`, `/` → `_`, no `=` padding. */
 const toUrlSafeBase64 = (s: string): string =>
   s.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -136,7 +149,40 @@ export const parseShareHash = async (hash: string): Promise<TPDocument | null> =
       },
     });
     const decompressed = source.pipeThrough(new DecompressionStream('gzip'));
-    const json = await new Response(decompressed).text();
+    // Read the decompression output in chunks rather than letting
+    // `await new Response(...).text()` swallow an unbounded stream.
+    // A hostile attacker can craft a tiny gzip payload that expands
+    // to gigabytes (a "zip bomb"); the cap aborts those before they
+    // can OOM the tab. See SHARE_LINK_MAX_DECOMPRESSED_BYTES for the
+    // 5 MB ceiling and rationale.
+    const reader = decompressed.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) {
+          total += value.byteLength;
+          if (total > SHARE_LINK_MAX_DECOMPRESSED_BYTES) {
+            await reader.cancel();
+            throw new Error(
+              `Share link payload exceeds ${SHARE_LINK_MAX_DECOMPRESSED_BYTES} bytes after decompression; refusing to load (possible compression bomb).`
+            );
+          }
+          chunks.push(value);
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    const merged = new Uint8Array(total);
+    let offset = 0;
+    for (const c of chunks) {
+      merged.set(c, offset);
+      offset += c.byteLength;
+    }
+    const json = new TextDecoder().decode(merged);
     return importFromJSON(json);
   } catch (err) {
     throw new Error(`Share link could not be opened: ${errorMessage(err)}`);

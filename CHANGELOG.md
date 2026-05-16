@@ -2,6 +2,44 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 98 — Security audit: jspdf CVEs, CSP, share-link gzip-bomb defense
+
+Full 12-area security audit (markdown XSS, SVG/HTML export, share-link payload, import injection, localStorage tampering, test hook, service worker, CSP, dep audit, repo hygiene, custom-domain DNS, threat model). **1130 tests passing** (was 1129; +1 gzip-bomb defense test). All findings either fixed or documented in `SECURITY.md`.
+
+**P0 — fixed.** `pnpm audit --prod` flagged 19 CVEs in `jspdf` 2.5.2, including two critical: jsPDF Local File Inclusion (patched in 4.0.0) and jsPDF HTML Injection in New Window (patched in 4.2.1). Bumped `jspdf` to `^4.2.1`. Our PDF-export code uses only the stable v1-v4 API surface (`setFont`, `setFontSize`, `setTextColor`, `text`, `rect`, `line`, `circle`, `roundedRect`, `setFillColor`, `setDrawColor`, `addPage`, `save`, `getTextWidth`, `splitTextToSize`); we don't touch the vulnerable `addImage` path. `svg2pdf.js@2.7.0` accepts `jspdf` v2/v3/v4 per its peer-deps, so no companion bump needed. `pnpm audit --prod` now reports zero vulnerabilities.
+
+**P1 — fixed.** Added a strict Content Security Policy as a `<meta http-equiv="Content-Security-Policy">` in `index.html`:
+
+```
+default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';
+img-src 'self' data: blob:; connect-src 'self'; font-src 'self';
+manifest-src 'self'; worker-src 'self'; object-src 'none';
+base-uri 'self'; form-action 'none'
+```
+
+- `script-src 'self'` — no inline scripts; no external CDNs can execute even if injected. Verified `dist/index.html` carries no inline `<script>` blocks after the build.
+- `style-src 'unsafe-inline'` is intentional — React Flow writes `style="transform: ..."` on pan/zoom; dropping inline styles would break canvas interaction. Inline styles cannot execute scripts, so this relaxation doesn't widen the script attack surface.
+- `connect-src 'self'` means a hypothetical XSS escape cannot exfiltrate documents to a third-party endpoint.
+- `frame-ancestors` cannot be set via `<meta>` per CSP spec, and GitHub Pages doesn't let us add arbitrary HTTP headers — documented as a limitation in SECURITY.md.
+
+**P1 — fixed.** Added gzip-bomb defense to `parseShareHash` (`src/services/shareLink.ts`). The previous implementation did `await new Response(decompressed).text()`, which would happily allocate however much the gzip stream produced — a tiny base64 payload of all-zero gzip can expand to gigabytes and crash the tab. Replaced with a chunked read against a 5 MB ceiling (`SHARE_LINK_MAX_DECOMPRESSED_BYTES`), aborting the reader on overflow. 5 MB is ~40× the largest realistic diagram. New test (`tests/services/shareLink.test.ts`) constructs a gzip stream over a 6 MB zero-buffer and asserts the parser rejects with a "compression bomb" error.
+
+**P2 — fixed.** Replaced inert `<a href="#" onclick="return false;">TP Studio</a>` in the static-HTML export footer (`src/domain/htmlExport.ts:187`) with `<span class="brand">TP Studio</span>`. The link was functionally a no-op (`onclick` returned false to suppress navigation) but looked like an event-handler attack surface on a skim audit. The `<span>` is semantically honest and removes the false flag.
+
+**New file: `SECURITY.md`.** Documents the threat model (3 untrusted-data boundaries, no backend, no third-party scripts), every mitigation in place (CSP, DOMPurify, share-link defenses, Browse Lock authorization, dep hygiene), the known limitations (frame-ancestors, style-src 'unsafe-inline', no SRI, localStorage trust model, test hook), and a reporting policy. Session-98 audit findings live in the audit-history section.
+
+**Audit findings that did NOT need a fix:**
+- Markdown XSS — already mitigated via micromark → DOMPurify with a conservative allow-list. DOMPurify drops `<script>`, event handlers, `javascript:` URLs by default.
+- SVG/HTML export injection — entity titles inserted as text nodes (escaped); descriptions go through the same DOMPurify pipeline as the live app. The exported viewer carries no scripts of its own.
+- Import injection (JSON/CSV/Mermaid/FL) — all go through `validateAndNormalizeDoc` which strips unexpected fields and rejects on missing required fields.
+- localStorage tampering — by design, this is the user's own data on their own device; standard web-app trust model applies. SECURITY.md documents the boundary.
+- Test hook (`__TP_TEST__`) — only installed with `?test=1` URL flag, only operates against the same-tab Zustand store, cannot exfiltrate or cross tabs.
+- Service worker / PWA cache — same-origin only; never proxies user data.
+- Repo hygiene — no `.env` committed, GitHub Actions pinned, pre-commit hook enforces Biome, lockfile-deterministic builds.
+- Custom domain DNS — CNAME apex only; no MX records, no email-spoofing surface.
+
+**End state:** tsc clean, Biome clean on touched files, 1130 unit tests passing, `pnpm audit --prod` clean.
+
 ## Session 97 — Selection toolbar: EC / polarity / group color + placement math tests
 
 Final polish round on the SelectionToolbar — closes the EC slot, edge polarity, group color, and placement-math gaps left after Session 96. **1129 tests passing** (was 1123; +6 placement-math unit cases).

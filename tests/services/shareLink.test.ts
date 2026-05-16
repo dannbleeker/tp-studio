@@ -1,4 +1,5 @@
 import {
+  SHARE_LINK_MAX_DECOMPRESSED_BYTES,
   SHARE_LINK_SOFT_WARN_BYTES,
   clearShareHash,
   generateShareLink,
@@ -61,6 +62,48 @@ describe('share-link round-trip', () => {
   it('produces a link well under the soft-warn threshold for a small doc', async () => {
     const link = await generateShareLink(sampleDoc());
     expect(link.length).toBeLessThan(SHARE_LINK_SOFT_WARN_BYTES);
+  });
+
+  /**
+   * Session 98 — gzip-bomb defense.
+   *
+   * A hostile attacker can craft a tiny gzip payload that expands to
+   * gigabytes (the "zip bomb" pattern: a long run of zeros compresses
+   * to almost nothing but decompresses without bound). Without a cap,
+   * `await new Response(stream).text()` will happily allocate the whole
+   * output and lock or crash the tab.
+   *
+   * We assert the cap fires by manufacturing a gzip stream whose
+   * decompressed size exceeds {@link SHARE_LINK_MAX_DECOMPRESSED_BYTES}
+   * and confirming the parser rejects it with a recognisable error
+   * (rather than silently OOMing or returning a truncated doc).
+   *
+   * Building the payload at runtime — rather than checking in a binary
+   * fixture — keeps the test deterministic across browsers and avoids
+   * shipping a 5 MB blob in the repo.
+   */
+  it('rejects payloads whose decompressed size exceeds the cap', async () => {
+    // 6 MB of zeros — well over the 5 MB ceiling, compresses to a
+    // tiny payload thanks to the all-zeros run.
+    const oversize = new Uint8Array(SHARE_LINK_MAX_DECOMPRESSED_BYTES + 1024 * 1024);
+    const source: ReadableStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(oversize);
+        controller.close();
+      },
+    });
+    const compressed = source.pipeThrough(new CompressionStream('gzip'));
+    const buf = await new Response(compressed).arrayBuffer();
+    // Inline-encode to URL-safe base64 so we don't depend on the
+    // module's private helper.
+    const bytes = new Uint8Array(buf);
+    let binary = '';
+    const CHUNK = 0x8000;
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+    }
+    const payload = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    await expect(parseShareHash(`#!share=${payload}`)).rejects.toThrow(/compression bomb|exceeds/i);
   });
 
   it('clearShareHash strips the fragment from the URL without reloading', () => {

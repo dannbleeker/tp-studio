@@ -43,7 +43,7 @@
     "dagre": "^0.8.5",
     "dompurify": "^3.4.2",
     "html-to-image": "^1.11.13",
-    "jspdf": "^2.5.2",
+    "jspdf": "^4.2.1",
     "lucide-react": "^1.14.0",
     "micromark": "^4.0.2",
     "micromark-extension-gfm": "^3.0.0",

@@ -4,6 +4,53 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#6366f1" />
+    <!--
+      Session 98 — Content Security Policy.
+
+      The app is fully same-origin: no external scripts, no analytics,
+      no telemetry, no remote fonts, no third-party iframes. The CSP
+      below pins that property so a future regression (or a successful
+      XSS via some untrusted-content path) can't suddenly start
+      exfiltrating data or loading a malicious script.
+
+      Notes on each directive:
+        * default-src 'self'  — fallback for everything not listed.
+        * script-src 'self'   — module scripts only, no inline. We do
+                                NOT use any inline <script> blocks;
+                                the SW registration goes through
+                                workbox-window which is a same-origin
+                                bundle, and the SW itself uses
+                                importScripts() against same-origin.
+        * style-src 'self' 'unsafe-inline' — React Flow writes inline
+                                style="transform:..." on pan/zoom and
+                                Tailwind emits no external sheets;
+                                inline is required for the canvas to
+                                function. This relaxation does NOT
+                                weaken script-src.
+        * img-src 'self' data: blob: — icons + canvas PNG export
+                                produces blob: URLs; some inline
+                                icons are data: URIs.
+        * connect-src 'self'  — share-link encode/decode is all in
+                                memory; no fetch() targets any other
+                                origin. If you ever add a backend,
+                                add its origin here explicitly.
+        * font-src 'self'     — system stack only.
+        * manifest-src 'self' — PWA manifest is bundled.
+        * worker-src 'self'   — service worker is bundled.
+        * object-src 'none'   — no <object> / <embed>.
+        * base-uri 'self'     — pin <base> to our origin (prevents
+                                <base href="evil.com"> hijack via
+                                injected markup).
+        * form-action 'none'  — the app has no form submissions; any
+                                submit attempt is an injection.
+
+      Limitations:
+        * frame-ancestors cannot be set via <meta> per CSP spec — the
+          GH-Pages host doesn't let us set arbitrary HTTP headers, so
+          embedding-attack protection is best-effort. See SECURITY.md
+          for the full discussion.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'" />
     <!-- Session 89 — public but not discoverable. Belt-and-suspenders
          with public/robots.txt; respectful crawlers honour either. -->
     <meta name="robots" content="noindex, nofollow" />
