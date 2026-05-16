@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 97 — Selection toolbar: EC / polarity / group color + placement math tests
+
+Final polish round on the SelectionToolbar — closes the EC slot, edge polarity, group color, and placement-math gaps left after Session 96. **1129 tests passing** (was 1123; +6 placement-math unit cases).
+
+**New verbs:**
+- `add-prerequisite-need` — single-entity in an EC, on a Want (`D` or `D′`). Creates a new `need` entity upstream and a necessity edge from the new need → the selected want. Matches the canonical EC reading "to obtain this want we must satisfy this need."
+- `cycle-edge-polarity` — single-edge. Cycles default → positive → negative → zero → default on each click. A single verb instead of a 4-option sub-menu; the EdgeInspector's polarity picker still provides one-click landing on a specific state for users who don't want to cycle. Toast confirms the new polarity.
+- `cycle-group-color` — single-group. Cycles through the 6-color palette (slate / indigo / emerald / amber / rose / violet). Same rationale as `cycle-edge-polarity`; the Group Inspector still provides explicit single-click selection.
+
+**Placement math extracted.** The toolbar's anchor / flip / clamp logic moved from inline render code into a pure function `computeToolbarPlacement` in `src/components/canvas/selectionToolbarPlacement.ts`. The SelectionToolbar now calls it with the rect + viewport + geometry constants and uses the returned `{ top, left, flipped }`.
+
+The math now has direct unit-test coverage (`tests/components/selectionToolbarPlacement.test.ts`) for:
+- Default anchor-above with horizontal centering.
+- Flip-below when the would-be top clips the viewport.
+- Horizontal clamp left at viewport-edge selections.
+- Horizontal clamp right at viewport-edge selections.
+- Viewport-too-narrow fallback (centers on viewport).
+- Custom gap honored.
+
+The toolbar component itself supplies a default `estimatedWidth: 320` (~5 verbs) for the horizontal clamp.
+
+**End state:** tsc clean, Biome clean, 1129 unit tests passing, 4 Playwright e2e cases (unchanged from Session 96). Pushed to main; CI green.
+
 ## Session 96 — Selection toolbar: per-diagramType verbs + Browse Lock filter
 
 Closes the "What's still incomplete" audit from Session 95. **1123 tests passing** (was 1117; +6 — five new verb-context tests + one Browse Lock filter test). The Playwright e2e suite grew a fourth case covering the Settings toggle.

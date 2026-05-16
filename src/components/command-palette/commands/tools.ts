@@ -1,4 +1,5 @@
 import { defaultEntityType } from '@/domain/entityTypeMeta';
+import { GROUP_COLORS_ORDER } from '@/domain/groupColors';
 import { validate } from '@/domain/validators';
 import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboard';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
@@ -192,6 +193,85 @@ export const toolCommands: Command[] = [
       const edgeId = sel.ids[0]!;
       const a = s.addAssumptionToEdge(edgeId);
       if (a) s.beginEditing(a.id);
+    },
+  }),
+  // Session 97 — EC slot "Add prerequisite". Selected entity must be a
+  // `want` (D or D′ in an EC). Adds a `need` entity upstream and a
+  // necessity edge from the new need → the want. Maps to the canonical
+  // EC reading "to obtain this want we must satisfy this need."
+  withWriteGuard({
+    id: 'add-prerequisite-need',
+    label: 'Add prerequisite need (EC)',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single Want first.');
+        return;
+      }
+      const wantId = sel.ids[0]!;
+      const want = s.doc.entities[wantId];
+      if (!want || want.type !== 'want') {
+        s.showToast('info', 'Add prerequisite is for the Wants (D / D′) of an EC.');
+        return;
+      }
+      const need = s.addEntity({ type: 'need', startEditing: true });
+      const edge = s.connect(need.id, wantId);
+      if (edge) s.updateEdge(edge.id, { kind: 'necessity' });
+    },
+  }),
+  // Session 97 — cycle an edge through the 4 polarity states
+  // (undefined → positive → negative → zero → undefined). One verb
+  // instead of a sub-menu; users click repeatedly to land where they
+  // want, the EdgeInspector's explicit picker covers the alternative
+  // path for users who want to set a specific value in one click.
+  withWriteGuard({
+    id: 'cycle-edge-polarity',
+    label: 'Cycle edge polarity',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'edges' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single edge first.');
+        return;
+      }
+      const id = sel.ids[0]!;
+      const edge = s.doc.edges[id];
+      if (!edge) return;
+      const next =
+        edge.weight === undefined
+          ? 'positive'
+          : edge.weight === 'positive'
+            ? 'negative'
+            : edge.weight === 'negative'
+              ? 'zero'
+              : undefined;
+      s.setEdgeWeight(id, next);
+      const label = next === undefined ? 'default' : next;
+      s.showToast('info', `Edge polarity → ${label}.`);
+    },
+  }),
+  // Session 97 — cycle the selected group's color through the
+  // canonical 6-color palette. One verb covers all 6 colors via
+  // repeated click; the Group Inspector still provides explicit
+  // single-click color selection for users who want to land on a
+  // specific shade in one step.
+  withWriteGuard({
+    id: 'cycle-group-color',
+    label: 'Cycle group color',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'groups' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single group first.');
+        return;
+      }
+      const id = sel.ids[0]!;
+      const group = s.doc.groups[id];
+      if (!group) return;
+      const idx = GROUP_COLORS_ORDER.indexOf(group.color);
+      const next = GROUP_COLORS_ORDER[(idx + 1) % GROUP_COLORS_ORDER.length]!;
+      s.recolorGroup(id, next);
     },
   }),
   // Copy is intentionally NOT guarded — reading the selection into the

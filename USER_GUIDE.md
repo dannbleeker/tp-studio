@@ -158,8 +158,9 @@ When you select something on the canvas — an entity, an edge, a group, or mult
 - **Single entity (any diagram)** — Add child · Add parent · Delete
 - **Single entity in a CRT or FRT** — *plus* Mark as UDE · Mark as root cause (skipped when the entity already has that type)
 - **Single entity in a Goal Tree** — *plus* Add necessary condition · Promote to Goal (skipped when the entity is already a Goal)
-- **Single edge** — Reverse direction · Add assumption · Splice · Delete
-- **Single group** — Toggle collapsed · Unhoist
+- **Single entity in an EC, on a Want (D / D′)** — *plus* Add prerequisite need (creates the upstream Need with a necessity edge)
+- **Single edge** — Reverse direction · Add assumption · Cycle polarity (default → positive → negative → zero → default) · Splice · Delete
+- **Single group** — Toggle collapsed · Cycle group color (6-color palette) · Unhoist
 - **Multiple entities** — Group · *Swap* (when exactly 2 selected) · Delete N
 - **Multiple edges** — Group as AND / OR / XOR · Ungroup AND / OR / XOR (when applicable) · Delete N
 

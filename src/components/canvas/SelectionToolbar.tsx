@@ -41,14 +41,18 @@ import { useDocumentStore } from '@/store';
 import { useStore as useRFStore } from '@xyflow/react';
 import clsx from 'clsx';
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
+import { computeToolbarPlacement } from './selectionToolbarPlacement';
 
 // Build the command-id → Command map once. The palette command
 // catalogue is module-scoped; the map's references are stable.
 const COMMANDS_BY_ID = new Map(COMMANDS.map((c) => [c.id, c]));
 
-// Geometry constants. All pixels.
+// Geometry constants. All pixels. Passed to `computeToolbarPlacement`
+// each render; the pure function in `selectionToolbarPlacement.ts`
+// has direct unit tests.
 const GAP_PX = 10; // gap between selection bbox edge and toolbar
-const ESTIMATED_HEIGHT_PX = 36; // chip row height; used for flip-below test
+const ESTIMATED_HEIGHT_PX = 36; // chip row height
+const ESTIMATED_WIDTH_PX = 320; // chip row width (~5 verbs); used for horizontal clamp
 const VIEWPORT_MARGIN_PX = 8; // minimum distance from viewport edges
 
 /**
@@ -182,19 +186,25 @@ export function SelectionToolbar() {
   if (!rect) return null;
   if (verbs.length === 0) return null;
 
-  // Compute placement. Anchored above when there's room; flip below
-  // when the selection sits near the top of the viewport. Centered
-  // horizontally on the selection's center; clamped to viewport so
-  // wide selections at viewport edges still render the toolbar in-view.
-  const cx = rect.left + rect.width / 2;
-  const wantTop = rect.top - ESTIMATED_HEIGHT_PX - GAP_PX;
-  const flipBelow = wantTop < VIEWPORT_MARGIN_PX;
-  const top = flipBelow ? rect.bottom + GAP_PX : wantTop;
+  // Compute placement via the extracted pure function. The math
+  // (anchor above / flip below near top / horizontal clamp) is
+  // unit-tested in `selectionToolbarPlacement.test.ts`.
+  const placement = computeToolbarPlacement({
+    selectionRect: rect,
+    viewport: {
+      width: typeof window === 'undefined' ? 1024 : window.innerWidth,
+      height: typeof window === 'undefined' ? 768 : window.innerHeight,
+    },
+    estimatedHeight: ESTIMATED_HEIGHT_PX,
+    estimatedWidth: ESTIMATED_WIDTH_PX,
+    gap: GAP_PX,
+    viewportMargin: VIEWPORT_MARGIN_PX,
+  });
 
   const style: CSSProperties = {
     position: 'fixed',
-    top: `${top}px`,
-    left: `${cx}px`,
+    top: `${placement.top}px`,
+    left: `${placement.left}px`,
     transform: 'translateX(-50%)',
     zIndex: 20,
   };

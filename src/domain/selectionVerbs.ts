@@ -220,6 +220,20 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           });
         }
       }
+      // Session 97 — **EC slot Want** entities surface "Add
+      // prerequisite": creates a `need` upstream of the selected
+      // want with a necessity edge, matching the canonical EC
+      // reading "to obtain Want we must satisfy Need". Skipped
+      // when the entity isn't a want.
+      if (diagramType === 'ec' && entity && entity.type === 'want') {
+        verbs.push({
+          id: 'add-prerequisite-need',
+          label: 'Add prerequisite need',
+          shortLabel: 'Add need',
+          writes: true,
+          paletteCommandId: 'add-prerequisite-need',
+        });
+      }
       verbs.push({
         id: 'confirm-delete-selection',
         label: 'Delete',
@@ -249,6 +263,17 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           writes: true,
           paletteCommandId: 'add-assumption-to-edge',
         },
+        // Session 97 — cycle polarity (default → positive →
+        // negative → zero → default). Single verb instead of a
+        // sub-menu; the EdgeInspector's polarity picker remains
+        // the one-click-to-specific-state alternative.
+        {
+          id: 'cycle-edge-polarity',
+          label: 'Cycle edge polarity',
+          shortLabel: 'Polarity',
+          writes: true,
+          paletteCommandId: 'cycle-edge-polarity',
+        },
         {
           id: 'splice-into-edge',
           label: 'Splice entity into edge',
@@ -275,6 +300,16 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           shortLabel: 'Collapse',
           writes: true,
           paletteCommandId: 'toggle-group-collapsed',
+        },
+        // Session 97 — cycle through the 6-color palette. Repeated
+        // clicks land on the desired color; the Group Inspector
+        // still provides explicit single-click selection.
+        {
+          id: 'cycle-group-color',
+          label: 'Cycle group color',
+          shortLabel: 'Color',
+          writes: true,
+          paletteCommandId: 'cycle-group-color',
         },
         {
           id: 'unhoist',
