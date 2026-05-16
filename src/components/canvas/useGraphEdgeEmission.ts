@@ -1,3 +1,4 @@
+import { edgesArray } from '@/domain/graph';
 import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
 import { MarkerType } from '@xyflow/react';
@@ -38,7 +39,7 @@ export const useGraphEdgeEmission = (doc: TPDocument, projection: GraphProjectio
       isSyntheticEndpoint: boolean;
     };
     const buckets = new Map<string, Bucket>();
-    for (const edge of Object.values(doc.edges)) {
+    for (const edge of edgesArray(doc)) {
       const s = remap(edge.sourceId);
       const t = remap(edge.targetId);
       if (!s || !t || s === t) continue;

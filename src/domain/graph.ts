@@ -23,6 +23,53 @@ export const requireEntity = (doc: TPDocument, id: string): Entity => {
 
 export const getEdge = (doc: TPDocument, id: string): Edge | undefined => doc.edges[id];
 
+/**
+ * Session 105 / Tier 1 #3 — cached `Object.values(doc.edges)`.
+ *
+ * The edges-array materialization shows up dozens of times across the
+ * validators, the layout pipeline, the verbalisation generator, the
+ * exporters, and the canvas render path. Each call allocates a fresh
+ * array — cheap individually, expensive in aggregate when the same
+ * doc state is queried 30+ times per render frame.
+ *
+ * The store uses immutable updates, so `doc.edges` is a stable
+ * reference until the edge map actually changes. A `WeakMap` keyed
+ * on that reference returns the same array across all callers within
+ * the same doc state, with no manual cache invalidation: when the
+ * edges map gets a new reference (on add / remove / update), the
+ * old map drops out of the WeakMap on the next GC pass.
+ *
+ * Callers that mutate the result are violating the contract — the
+ * array is `readonly` to enforce that at the type level. If you need
+ * to filter / sort, `Array.from(edgesArray(doc))` or a `.filter`
+ * chain produces a fresh array without busting the cache.
+ */
+const edgesArrayCache = new WeakMap<TPDocument['edges'], readonly Edge[]>();
+
+export const edgesArray = (doc: TPDocument): readonly Edge[] => {
+  let cached = edgesArrayCache.get(doc.edges);
+  if (cached === undefined) {
+    cached = Object.values(doc.edges);
+    edgesArrayCache.set(doc.edges, cached);
+  }
+  return cached;
+};
+
+/**
+ * Symmetric helper for entities. Identical caching strategy.
+ * See `edgesArray` for the full rationale.
+ */
+const entitiesArrayCache = new WeakMap<TPDocument['entities'], readonly Entity[]>();
+
+export const entitiesArray = (doc: TPDocument): readonly Entity[] => {
+  let cached = entitiesArrayCache.get(doc.entities);
+  if (cached === undefined) {
+    cached = Object.values(doc.entities);
+    entitiesArrayCache.set(doc.entities, cached);
+  }
+  return cached;
+};
+
 export const requireEdge = (doc: TPDocument, id: string): Edge => {
   const edge = doc.edges[id];
   if (!edge) throw new Error(`requireEdge: no edge with id "${id}" in doc`);

@@ -1,6 +1,6 @@
 import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT } from '@/domain/constants';
 import { layoutFingerprint } from '@/domain/fingerprint';
-import { isStNodeFormat, pinnedEntities } from '@/domain/graph';
+import { edgesArray, isStNodeFormat, pinnedEntities } from '@/domain/graph';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { radialLayout } from '@/domain/radialLayout';
 import type { TPDocument } from '@/domain/types';
@@ -94,7 +94,7 @@ const buildLayoutInputs = (
   // multiplicity.
   const seen = new Set<string>();
   const edges: { sourceId: string; targetId: string }[] = [];
-  for (const e of Object.values(doc.edges)) {
+  for (const e of edgesArray(doc)) {
     const s = remap(e.sourceId);
     const t = remap(e.targetId);
     if (!s || !t || s === t) continue;

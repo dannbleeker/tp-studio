@@ -80,32 +80,65 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     targetPosition: props.targetPosition,
   });
 
-  // Narrow subscription: only the label + assumption-count + back-edge flag
-  // for THIS edge. All three selectors return primitives, so they only fire
-  // a render when the actual value changes — not on every doc edit.
-  const edgeLabel = useDocumentStore((s) => s.doc.edges[props.id]?.label);
-  // Session 87 / EC PPT comparison item #6 — combine BOTH legacy
-  // `Edge.assumptionIds` and the v7 first-class `doc.assumptions` map
-  // keyed by edgeId. The two should normally agree post-migration; we
-  // union to be safe (matches `verbalisation.ts → findArrow`).
-  const assumptionCount = useDocumentStore((s) => {
-    const legacy = s.doc.edges[props.id]?.assumptionIds?.length ?? 0;
-    let fromMap = 0;
-    if (s.doc.assumptions) {
-      for (const a of Object.values(s.doc.assumptions)) {
-        if (a.edgeId === props.id) fromMap += 1;
+  // Session 105 / Tier 1 #1 — one shallow-equal selector returning a
+  // flat record of all the per-edge primitives. Previously this file
+  // had 8 separate `useDocumentStore` calls (label, assumptionCount,
+  // isBackEdge, isMutex, weight, hasDescription, isSpliceTarget,
+  // causalityLabel, diagramType), each registering its own
+  // subscription with the store. On a 50-edge diagram that's 400
+  // subscribers; every store change walked all 400 to check if the
+  // selected primitive had changed. The shallow bundle collapses
+  // to one subscriber per edge — the store still walks each subscriber
+  // on each change, but only one per edge instead of eight.
+  //
+  // Assumption count is computed inside the selector — it requires
+  // iterating `doc.assumptions` to count records keyed to this edge.
+  // The compute runs on every store update; we accept the per-call
+  // cost in exchange for the simpler shallow-equal output.
+  const edgeView = useDocumentStore(
+    useShallow((s) => {
+      const edge = s.doc.edges[props.id];
+      const legacyAssumptionCount = edge?.assumptionIds?.length ?? 0;
+      let mapAssumptionCount = 0;
+      if (s.doc.assumptions) {
+        for (const a of Object.values(s.doc.assumptions)) {
+          if (a.edgeId === props.id) mapAssumptionCount += 1;
+        }
       }
-    }
-    return Math.max(legacy, fromMap);
-  });
-  // Session 87 — wire the assumption pill to be clickable: jumps the
-  // inspector to this edge's AssumptionWell (selects the edge AND
-  // forces the EC inspector to the Inspector tab so the well is
-  // visible immediately).
-  const selectEdge = useDocumentStore((s) => s.selectEdge);
-  const setECInspectorTab = useDocumentStore((s) => s.setECInspectorTab);
-  const isBackEdge = useDocumentStore((s) => s.doc.edges[props.id]?.isBackEdge === true);
-  const isMutex = useDocumentStore((s) => s.doc.edges[props.id]?.isMutualExclusion === true);
+      const desc = edge?.description;
+      return {
+        edgeLabel: edge?.label,
+        assumptionCount: Math.max(legacyAssumptionCount, mapAssumptionCount),
+        isBackEdge: edge?.isBackEdge === true,
+        isMutex: edge?.isMutualExclusion === true,
+        weight: edge?.weight,
+        hasDescription: typeof desc === 'string' && desc.trim().length > 0,
+        isSpliceTarget: s.spliceTargetEdgeId === props.id,
+        causalityLabel: s.causalityLabel,
+        diagramType: s.doc.diagramType,
+      };
+    })
+  );
+  const {
+    edgeLabel,
+    assumptionCount,
+    isBackEdge,
+    isMutex,
+    weight,
+    hasDescription,
+    isSpliceTarget,
+    causalityLabel,
+    diagramType,
+  } = edgeView;
+  // Actions in their own shallow bundle. They're stable refs across
+  // store snapshots, so this subscription effectively never fires —
+  // it's bundled for symmetry with the primitives bundle above.
+  const { selectEdge, setECInspectorTab } = useDocumentStore(
+    useShallow((s) => ({
+      selectEdge: s.selectEdge,
+      setECInspectorTab: s.setECInspectorTab,
+    }))
+  );
   // Session 87 UX fix #5 — for the EC D↔D′ mutex edge, the default
   // Left/Right handle layout on EC entities sends the bezier looping
   // around the diagram (D's left side → D′'s right side, with both
@@ -184,6 +217,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // (the junctor terminus already redirects to the circle perimeter;
   // the mutex straight-line override is more useful than routing
   // around boxes for vertically-stacked Wants).
+  // `isRadialMode` could have lived in the `edgeView` bundle above,
+  // but routing it through that bundle would mean every edge re-renders
+  // when ANY edge view-field changes — and we want the radial-mode
+  // flag to gate the React Flow store subscription (`radialNodes`)
+  // independently. Keeping the primitive selector here lets Zustand's
+  // fast-path Object.is comparison short-circuit unrelated updates.
   const isRadialMode = useDocumentStore((s) => s.layoutMode === 'radial');
   const radialNodes = useRFStore((s) => (isRadialMode ? s.nodes : null));
   const hasMutexOverride = mutexPath !== null;
@@ -224,27 +263,10 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const labelX = mutexPath?.labelX ?? radialRoute?.labelX ?? bezierLabelX;
   const labelY = mutexPath?.labelY ?? radialRoute?.labelY ?? bezierLabelY;
 
-  const weight = useDocumentStore((s) => s.doc.edges[props.id]?.weight);
-  const hasDescription = useDocumentStore((s) => {
-    const desc = s.doc.edges[props.id]?.description;
-    return typeof desc === 'string' && desc.trim().length > 0;
-  });
-  // Session 101 — drag-splice target highlight. `Canvas` writes this
-  // mid-gesture; we render an indigo glow + thicker stroke when our
-  // edge is the current target. Subscribing via the equality check
-  // means only the target edge (and the previous one when it changes)
-  // re-renders per drag frame.
-  const isSpliceTarget = useDocumentStore((s) => s.spliceTargetEdgeId === props.id);
-  // Global fallback causality label. Only consulted when this edge has no
-  // explicit `label` of its own — per-edge labels always win. Aggregated
-  // edges (count > 1) skip the fallback too: the `×N` badge is the more
-  // informative thing to show in that slot.
-  //
-  // `'auto'` mode picks the diagram-type-appropriate reading: PRT and EC
-  // edges are necessary-condition relations ("in order to obtain X..."),
-  // CRT/FRT/TT are sufficient-cause ("...because Y exists").
-  const causalityLabel = useDocumentStore((s) => s.causalityLabel);
-  const diagramType = useDocumentStore((s) => s.doc.diagramType);
+  // `weight`, `hasDescription`, `isSpliceTarget`, `causalityLabel`,
+  // `diagramType` were previously individual `useDocumentStore` calls;
+  // Session 105 consolidated them into `edgeView` above. The
+  // resolution logic below is unchanged.
   const isAggregated = aggregateCount > 1;
   const resolvedCausalityLabel: string | undefined = (() => {
     if (causalityLabel === 'none') return undefined;
@@ -512,10 +534,59 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
 }
 
 /**
- * `React.memo` so mutations to other edges don't re-render every edge in
- * the diagram. React Flow re-derives EdgeProps per render; the
- * shallow-equal default comparison catches the case where `data` hasn't
- * changed for this edge.
+ * Session 105 / Tier 1 #6 — custom comparator for `React.memo`.
+ *
+ * The default `React.memo` shallow-compares all props, which seemed
+ * sufficient when this file was first wrapped: a store mutation
+ * unrelated to this edge produces a new `edges` array but each
+ * unchanged edge's `data` reference would be stable.
+ *
+ * In practice, `useGraphEdgeEmission` rebuilds every edge's `data`
+ * object literal on every emission run (see lines 79-90 of
+ * `useGraphEdgeEmission.ts` — `data: { ...andGroupId, ...orGroupId,
+ * ...xorGroupId, ...aggregateCount }` is a fresh spread each time).
+ * That means `data` always fails the default referential compare,
+ * and the memo bails for every edge on every emission — defeating
+ * the purpose.
+ *
+ * The custom comparator below does a shallow comparison ON `data`
+ * (rather than equality OF data). When the entries inside `data`
+ * are unchanged primitives, the comparator returns true and React
+ * skips the re-render. Other EdgeProps fields (sourceX, sourceY,
+ * selected, markerEnd, etc.) get the standard equality check.
+ *
+ * Result: edges only re-render when their own positions, selection
+ * state, or data-fields actually change. Unrelated store mutations
+ * no longer reach the edge body via emission churn.
  */
-export const TPEdge = memo(TPEdgeImpl);
+const shallowEqualObject = (a: unknown, b: unknown): boolean => {
+  if (a === b) return true;
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
+  const ak = Object.keys(a as Record<string, unknown>);
+  const bk = Object.keys(b as Record<string, unknown>);
+  if (ak.length !== bk.length) return false;
+  for (const k of ak) {
+    if ((a as Record<string, unknown>)[k] !== (b as Record<string, unknown>)[k]) return false;
+  }
+  return true;
+};
+
+export const TPEdge = memo(TPEdgeImpl, (prev, next) => {
+  // Identity + geometry: must all match for the memo to bail.
+  // Comparing them inline (rather than via shallowEqual on the
+  // whole props object) lets us keep the fresh `data` reference
+  // out of the hot path.
+  if (prev.id !== next.id) return false;
+  if (prev.source !== next.source || prev.target !== next.target) return false;
+  if (prev.sourceX !== next.sourceX || prev.sourceY !== next.sourceY) return false;
+  if (prev.targetX !== next.targetX || prev.targetY !== next.targetY) return false;
+  if (prev.sourcePosition !== next.sourcePosition) return false;
+  if (prev.targetPosition !== next.targetPosition) return false;
+  if (prev.selected !== next.selected) return false;
+  if (prev.markerEnd !== next.markerEnd) return false;
+  if (prev.markerStart !== next.markerStart) return false;
+  // `data` is the fresh-object problem — shallow-compare its
+  // contents.
+  return shallowEqualObject(prev.data, next.data);
+});
 TPEdge.displayName = 'TPEdge';

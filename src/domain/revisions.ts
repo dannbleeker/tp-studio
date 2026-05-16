@@ -203,8 +203,22 @@ export const computeRevisionDiff = (prev: TPDocument, next: TPDocument): Revisio
  * Detailed ID-level diff used by visual-diff (H2) and side-by-side (H4).
  * Same partition as `computeRevisionDiff` but returns the actual ID sets
  * so consumers can paint each entity/edge by its status.
+ *
+ * Session 105 / Tier 1 #4 — WeakMap cache.
+ *
+ * `useGraphNodeEmission` calls this on every emission run while
+ * compare-mode is active; on a 200-entity diff the inner Set
+ * operations are noticeable. Since the store uses immutable updates,
+ * the `(prev, next)` pair forms a content-stable cache key: as long
+ * as neither doc reference has changed, the diff is the same.
+ *
+ * Two-level WeakMap: `prev → next → diff`. When either doc reference
+ * gets GC'd (typical: the user restores a revision, the old "live"
+ * doc drops off), the WeakMap entries clean themselves up.
  */
-export const computeDetailedRevisionDiff = (
+const detailedDiffCache = new WeakMap<TPDocument, WeakMap<TPDocument, DetailedRevisionDiff>>();
+
+const computeDetailedRevisionDiffUncached = (
   prev: TPDocument,
   next: TPDocument
 ): DetailedRevisionDiff => {
@@ -254,6 +268,23 @@ export const computeDetailedRevisionDiff = (
     groupsRemoved,
     groupsChanged,
   };
+};
+
+export const computeDetailedRevisionDiff = (
+  prev: TPDocument,
+  next: TPDocument
+): DetailedRevisionDiff => {
+  let inner = detailedDiffCache.get(prev);
+  if (!inner) {
+    inner = new WeakMap<TPDocument, DetailedRevisionDiff>();
+    detailedDiffCache.set(prev, inner);
+  }
+  let cached = inner.get(next);
+  if (cached === undefined) {
+    cached = computeDetailedRevisionDiffUncached(prev, next);
+    inner.set(next, cached);
+  }
+  return cached;
 };
 
 /** Resolve one entity id's status against a precomputed detailed diff. */

@@ -1,5 +1,6 @@
 import { findSpliceTargetEdge } from '@/domain/dragSplice';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
+import { edgesArray } from '@/domain/graph';
 import { GRID_DOT } from '@/domain/tokens';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
@@ -155,7 +156,7 @@ function CanvasInner() {
           const hit = findSpliceTargetEdge({
             point: { x: probeX, y: probeY },
             draggedEntityId: draggedNode.id,
-            edges: Object.values(doc.edges),
+            edges: edgesArray(doc),
             entityPositions,
             tolerance: 40,
           });
@@ -188,7 +189,7 @@ function CanvasInner() {
           const hit = findSpliceTargetEdge({
             point: { x: dropX, y: dropY },
             draggedEntityId: draggedNode.id,
-            edges: Object.values(doc.edges),
+            edges: edgesArray(doc),
             entityPositions,
             tolerance: 40,
           });

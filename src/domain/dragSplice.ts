@@ -64,7 +64,10 @@ export type EdgeCandidate = {
 export const findSpliceTargetEdge = (opts: {
   point: Point;
   draggedEntityId: string;
-  edges: Edge[];
+  // Session 105 — `readonly` so callers can pass the cached
+  // `edgesArray(doc)` result without a cast. The function doesn't
+  // mutate the array.
+  edges: readonly Edge[];
   entityPositions: Record<string, Point>;
   /** Maximum centerline-distance in canvas coords. ~30 is a reasonable
    *  default for the standard node-width / font-size combo. */

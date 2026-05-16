@@ -5,7 +5,6 @@ import { CompareBanner } from './components/canvas/CompareBanner';
 import { ContextMenu } from './components/canvas/ContextMenu';
 import { SelectionToolbar } from './components/canvas/SelectionToolbar';
 import { Inspector } from './components/inspector/Inspector';
-import { PrintAppendix } from './components/print/PrintAppendix';
 import { Toaster } from './components/toast/Toaster';
 import { TitleBadge } from './components/toolbar/TitleBadge';
 import { TopBar } from './components/toolbar/TopBar';
@@ -57,6 +56,17 @@ const PrintPreviewDialog = lazy(() =>
   import('./components/print/PrintPreviewDialog').then((m) => ({
     default: m.PrintPreviewDialog,
   }))
+);
+// Session 105 / Tier 1 #5 — `PrintAppendix` only renders during
+// browser print (it's `display: none` on screen via `print.css`).
+// Was previously eager-loaded, pulling 124 LOC + the
+// `structuralEntities` traversal into the index chunk. Lazy-load
+// it so the chunk only materializes when print preview / Cmd+P
+// fires. Suspense fallback is `null` — the appendix is invisible
+// on screen anyway, and by the time the browser print dialog
+// opens, the chunk will have loaded.
+const PrintAppendix = lazy(() =>
+  import('./components/print/PrintAppendix').then((m) => ({ default: m.PrintAppendix }))
 );
 const TemplatePickerDialog = lazy(() =>
   import('./components/templates/TemplatePickerDialog').then((m) => ({
@@ -251,7 +261,9 @@ export function App() {
       </Suspense>
       <ConfirmDialog />
       <Toaster />
-      <PrintAppendix />
+      <Suspense fallback={null}>
+        <PrintAppendix />
+      </Suspense>
       <PrintFooter />
     </main>
   );

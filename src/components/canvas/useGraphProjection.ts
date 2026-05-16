@@ -1,3 +1,4 @@
+import { edgesArray } from '@/domain/graph';
 import {
   computeCollapseProjection,
   descendantIds,
@@ -77,7 +78,7 @@ export const useGraphProjection = (doc: TPDocument): GraphProjection => {
     if (entityCollapsers.size > 0) {
       // Build outgoing adjacency once for O(V+E) BFS per collapser.
       const outAdj = new Map<string, string[]>();
-      for (const edge of Object.values(doc.edges)) {
+      for (const edge of edgesArray(doc)) {
         const list = outAdj.get(edge.sourceId) ?? [];
         list.push(edge.targetId);
         outAdj.set(edge.sourceId, list);

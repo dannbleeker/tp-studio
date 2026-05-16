@@ -545,13 +545,42 @@ function StFacetRow({
 }
 
 /**
- * `React.memo` so a store mutation that doesn't touch THIS node's data
- * doesn't trigger a re-render. React Flow re-derives `data` per render
- * but the immutable-update model in the store means an unchanged
- * entity's `data.entity` reference IS stable across mutations to other
- * entities. The shallow-equal default comparison on NodeProps catches
- * the unchanged case; React Flow passes a fresh props object so we'd
- * lose without `memo`. Saves 50× re-renders on a 50-node graph.
+ * Session 105 / Tier 1 #6 — custom comparator for `React.memo`.
+ *
+ * The default shallow-equal compared NodeProps as a whole, including
+ * `data`. But `useGraphNodeEmission` rebuilds the `data` object on
+ * every emission run (line ~118 of that file: `data: { entity,
+ * ...hidden, ...reach, ...diffStatus }` is a fresh literal). The
+ * default memo's referential compare on `data` therefore failed for
+ * every node on every emission, defeating the purpose.
+ *
+ * This custom comparator shallow-compares the *contents* of `data`
+ * (and a small set of other React Flow props), letting the memo bail
+ * when the entity reference, the optional badge counts, and the
+ * compare-diff status are all unchanged.
+ *
+ * Trade-off: shallow comparing 5 fields costs ~5 strict-equality
+ * checks; about the same as the default compare and an order of
+ * magnitude cheaper than re-rendering the node.
  */
-export const TPNode = memo(TPNodeImpl);
+const shallowEqualNodeData = (a: unknown, b: unknown): boolean => {
+  if (a === b) return true;
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
+  const ak = Object.keys(a as Record<string, unknown>);
+  const bk = Object.keys(b as Record<string, unknown>);
+  if (ak.length !== bk.length) return false;
+  for (const k of ak) {
+    if ((a as Record<string, unknown>)[k] !== (b as Record<string, unknown>)[k]) return false;
+  }
+  return true;
+};
+
+export const TPNode = memo(TPNodeImpl, (prev, next) => {
+  if (prev.id !== next.id) return false;
+  if (prev.selected !== next.selected) return false;
+  if (prev.dragging !== next.dragging) return false;
+  if (prev.positionAbsoluteX !== next.positionAbsoluteX) return false;
+  if (prev.positionAbsoluteY !== next.positionAbsoluteY) return false;
+  return shallowEqualNodeData(prev.data, next.data);
+});
 TPNode.displayName = 'TPNode';

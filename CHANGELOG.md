@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 105 — Tier 1 perf pass: render fan-out + caching + lazy chunks
+
+Six items from the 30-item perf-improvement menu. Tier 1 was the "confident wins" tier — items I expected to move the needle, with concrete code changes, not just code-shape tidiness. No profiler run; the wins are mechanical (fewer subscribers per store update; fewer materializations of the same array; fewer re-renders when nothing relevant changed).
+
+**#3 — cached `Object.values(doc.edges)` + `Object.values(doc.entities)`.** New `edgesArray(doc)` / `entitiesArray(doc)` helpers in `src/domain/graph.ts`. Each materializes `Object.values(...)` once per stable map reference and caches via `WeakMap`. The cache invalidates automatically: an immutable update gives `doc.edges` a new reference; the old entry GC's. Migrated the four hot-path call sites (`useGraphEdgeEmission`, `useGraphPositions`, `useGraphProjection`, `Canvas.tsx`'s drag handlers). The other ~20 call sites (validators / exporters / fingerprint / etc.) can migrate opportunistically; this commit keeps the change surgical to the render hot path. `findSpliceTargetEdge` signature relaxed to `readonly Edge[]` so callers can pass the cached array without a cast.
+
+**#1 — `TPEdge` subscription bundle.** Previously 8 separate `useDocumentStore` calls (label / assumptionCount / isBackEdge / isMutex / weight / hasDescription / isSpliceTarget / causalityLabel / diagramType), each registering its own Zustand subscription. On a 50-edge diagram that's 400 subscribers; every store change walked all 400. Collapsed into one `useShallow` selector returning a flat record (`edgeView`) — one subscriber per edge instead of eight. Plus a separate two-action `useShallow` bundle for `selectEdge` + `setECInspectorTab`. `mutexCoords` (already `useShallow`) and `isRadialMode` stay separate by design: `mutexCoords` is a nested shape, and `isRadialMode` gates an independent React Flow store subscription.
+
+**#6 — Custom `React.memo` comparators for `TPNode` + `TPEdge`.** The default `React.memo` shallow-compared the NodeProps / EdgeProps object as a whole, including the `data` field. But `useGraphNodeEmission` / `useGraphEdgeEmission` rebuild each entity's / edge's `data` literal on every emission run (`data: { entity, ...hidden, ...reach, ...diffStatus }` is a fresh spread each time). The default comparator's referential-equality check on `data` therefore failed for every component on every emission, defeating the memo. Replaced with custom comparators that do shallow-equality *on* `data` (rather than equality *of* data). Plus inline strict-equality on the small set of React Flow props that actually need checking (id, source, target, geometry, selection). Net effect: nodes / edges only re-render when their own state actually changed, not on every doc edit.
+
+**#4 — `computeDetailedRevisionDiff` WeakMap cache.** Two-level WeakMap (`prev → next → diff`) so the diff between two doc references is computed once. `useGraphNodeEmission` calls this on every emission run while compare-mode is active; at 200 entities the inner Set operations were measurable. With the cache, the diff materializes once per `(prev, next)` pair; subsequent calls return the cached `DetailedRevisionDiff` instantly. The WeakMap entries GC when the doc references drop (typical: user restores a revision → old "live" doc references become unreachable → cache cleans up).
+
+**#5 — Index chunk audit + one concrete split.** Read `main.tsx` / `App.tsx` to inventory eager imports. The 13 dialogs are already `lazy()`'d; the obvious un-lazy outlier was **`PrintAppendix`** — eagerly mounted at app root, but `display: none` on screen (only renders during browser print, via print CSS). Lazy-loaded the same way as the other dialogs. New chunk: `PrintAppendix-*.js` at 0.93 KB gzip. Index chunk delta is small (a few new helpers added in #1–#3 partly offset) but the runtime win is meaningful: no eager store subscription, no eager `structuralEntities` traversal, no eager mount.
+
+Other audit findings noted but **not** acted on this commit:
+- The validator catalogue (~1.1k LOC across 17 files) is reachable from eagerly-loaded paths (Inspector, palette commands). A per-diagram-type split is plausible; needs a more careful design pass than this commit's scope.
+- `lucide-react` icons chunk is 9 KB gzip; tree-shaking appears effective on inspection.
+- Other dialogs (Inspector, CompareBanner) are eager but small; not worth lazy-loading.
+
+**End state:** tsc clean, 1156 vitest tests still passing (this work is structural; no test changes needed), `pnpm build` clean, bundle-size budget within tolerance (index chunk at 118 KB gzip vs. 115 KB ceiling + 10% slop = 126.5 KB cap).
+
+**What's not measured.** I did not run a profiler. The wins above are *mechanical*: fewer subscribers, fewer fresh allocations, fewer re-renders when nothing relevant changed. The Chrome DevTools Performance tab would tell us which of these mattered most on a 200-entity diagram. That's the right next move before committing to Tier 2 — Tier 2 contains items I marked as "audit-then-decide" precisely because I didn't have profiler data to justify them.
+
 ## Session 103 — *Thinking with TP Studio* book
 
 A book. The companion practitioner guide to TP Studio, modeled on *Thinking with Flying Logic* (genre, not direct homage — that book wasn't read for this work). 17 chapters + 6 appendices, ~50,000 words, living under `docs/guide/`. Aimed at the third corner between Goldratt's novels (which teach the why) and Cox/Schleier's handbook (which teaches the rigor): the practitioner-facing material that teaches *how to actually sit down and do it*.
