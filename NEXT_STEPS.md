@@ -78,7 +78,86 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 > **Mobile / narrow-viewport pass complete (Session 65).** A new `KebabMenu` component lives at the right edge of the TopBar with `sm:hidden`, surfacing the four buttons (Layout Mode, History, Help, Theme) that the existing responsive classes hide below `sm` (640 px). Items auto-close the menu after activation; Escape and outside-click also dismiss. TitleBadge's narrow-viewport `max-w-` bumped from `100%-7rem` to `100%-9rem` to leave room for the extra icon. The Inspector and RevisionPanel already overlaid with tap-to-dismiss backdrops below `md:`, so no changes needed there. 8 new tests in `tests/components/KebabMenu.test.tsx` (628 total, all green). **The remaining backlog is the structural-extensibility tier**: **B7 + B10** (user-defined attributes + custom entity classes) and the parked **confidence-field UI**.
 
+## Comprehensive security review
+
+Open. The app is a public-internet PWA at <https://tp-studio.struktureretsundfornuft.dk/> — anyone with the URL can use it, and the share-link feature (`#!share=…`) lets users hand a full doc to anyone else. No backend, no auth, no PII storage — but the surface that *does* exist deserves a careful pass. The brief never had a formal security review; what's there is the product of incremental good-instinct decisions, not a deliberate audit.
+
+**Scope of the review (estimated S–M, ~half a day):**
+
+**1. Cross-site scripting (XSS).** TP Studio renders user-provided text in three places that need careful audit:
+- **Markdown descriptions** (`src/components/inspector/MarkdownPreview.tsx` + `services/markdown.ts`). Audit the renderer for `javascript:` URLs in `[text](url)` syntax, `<script>` injection, and `onerror=` handlers on inline `<img>`. Confirm DOMPurify (or whatever sanitizer is in use) is applied to the markdown HTML *before* `dangerouslySetInnerHTML`, with `ALLOWED_URI_REGEXP` excluding `javascript:`/`data:` schemes except where intentional (image embeds).
+- **Entity / edge titles + labels.** Rendered as React text children — safe in normal flow, but check every place that pipes a title into SVG (`exporters/image.ts` SVG export, `templateThumbnailSvg`, EC workshop sheet PDF) and into the self-contained HTML viewer export (`htmlExport.ts`). The HTML viewer is the highest risk surface because it ships as a standalone file the user opens directly — a poisoned title becomes a stored XSS in the exported artifact.
+- **Hyperlinks** (`FL-AN5`). External URL handling: confirm `target="_blank"` carries `rel="noopener noreferrer"` (the canonical fix for tabnabbing); confirm `#N` internal cross-references can't be coerced into navigating to attacker-controlled URLs.
+
+**2. Share-link payload safety** (`src/services/shareLink.ts`). The `#!share=` URL fragment is gzip+base64 of a `TPDocument` JSON. Anyone can craft one and send it. Audit:
+- Schema validation: confirm `persistenceValidators.ts` rejects unexpected fields, oversized strings, deeply nested objects (prototype pollution + DoS).
+- Decompression: confirm gzip bomb defense — a tiny URL could decompress to gigabytes. Cap the decompressed size at ~5 MB (the existing soft-warn at 4 KB is for OUTGOING links, not incoming).
+- Browse Lock auto-engage: confirmed working, but verify the recipient can't be tricked into a state where Browse Lock toggles off without explicit user gesture.
+- URL fragment handling: confirm parser tolerates malformed base64 / corrupt gzip without throwing into the global error boundary (would crash the app on a poisoned link).
+
+**3. Import path injection.** `Import from JSON / CSV / Mermaid / Flying Logic` paths. Audit:
+- JSON: confirm `JSON.parse` is followed by strict schema validation; no `Function`/`eval`-style hidden code paths.
+- CSV: `parseEntitiesCsv` — confirm it doesn't execute formulas (Excel-style `=cmd|'/c calc'!A1` cells would still be inert in TP Studio since we just read strings, but worth pinning).
+- Mermaid: confirm the parser doesn't execute embedded `<script>` or evaluate any directive.
+- Flying Logic: same.
+
+**4. Export sanitization.** Mirror of #1, on the way out:
+- SVG export — every `<text>` and attribute must be XML-escaped. Audit `services/exporters/image.ts` for any string interpolation that bypasses the serializer.
+- HTML viewer export — confirm titles/descriptions get HTML-encoded before base64'ing into the standalone file. The `redactDocument` path (JSON-redacted export) is intentional content stripping; that's not a security feature, but verifying it works as documented prevents a "thought I shared a redacted version" footgun.
+- PDF export — jspdf's `text()` is Latin-1-safe but doesn't sanitize HTML; titles with control characters could break the PDF structure. Audit.
+
+**5. localStorage tampering.** The user can edit their own `localStorage`, but a malicious tab on a different origin can't access it (same-origin policy). Audit:
+- Confirm `loadFromLocalStorageWithStatus()` validates the schema before trusting the doc. A user who pastes a malformed JSON into `tp-studio:active-document:v1` shouldn't crash the app on next reload.
+- Confirm migrations are idempotent and one-way (no migration that reads an attacker-controlled field).
+
+**6. Test hook in production** (`?test=1` URL param installs `window.__TP_TEST__`). Audit:
+- The hook exposes `seed / connect / confirmAndDeleteEntity / getSelection / selectNodeViaRF`. None can exfiltrate data or escalate privileges — they all operate on the user's local doc. Confirm no future hook addition leaks state.
+- Confirm the URL-param check is robust (a single `?test=1` should install, but `?Test=1` should not — case-sensitive). Audit for ambiguity.
+
+**7. Service Worker / PWA cache poisoning.** `vite-plugin-pwa` generates the service worker. Audit:
+- Confirm the SW only caches same-origin resources (no third-party CDN URLs in `precacheManifest`).
+- Confirm the SW respects `Cache-Control: no-store` for sensitive responses (n/a here — no sensitive responses).
+- Confirm `registerType: 'prompt'` means a malicious SW update can't silently take over.
+
+**8. Content Security Policy.** TP Studio currently ships without a `<meta http-equiv="Content-Security-Policy">` header (GitHub Pages doesn't serve HTTP headers). Audit feasibility of adding a meta-tag CSP that:
+- Blocks inline `<script>` (we use Vite which inlines small chunks — would need a `'unsafe-inline'` or `'nonce-*'` allowance).
+- Restricts `connect-src` to same-origin (the app makes no fetch calls beyond the SW; this is restrictive-by-default).
+- Restricts `img-src` to same-origin + `data:` (PNG/JPEG/SVG exports use data URIs).
+
+**9. Dependency supply chain.** Run:
+- `pnpm audit --prod` to surface known CVEs in the production dependency tree.
+- Check `pnpm why <pkg>` for any deeply nested versions that don't match expected.
+- Lock `packageManager` field in `package.json` (already done via simple-git-hooks setup).
+- Audit `package-lock`/`pnpm-lock.yaml` for unexpected upstream sources (anything not on npmjs.com).
+
+**10. Repo hygiene.** The repo went public in Session 89. Confirm:
+- No `.env` files / API tokens in history (`git log --all -- .env*` was clean at the time; re-verify).
+- No personal data in fixtures (the example docs use generic placeholders — confirm none accidentally drifted to real names or company data).
+- GitHub Actions workflow files: confirm `GITHUB_TOKEN` permissions are scoped minimally, no secrets are leaked into the build output.
+- `public/robots.txt` blocks all crawlers (intentional for the low-discoverability target — confirm it's still there).
+
+**11. Custom domain DNS.** `tp-studio.struktureretsundfornuft.dk` is a subdomain Dann controls. Confirm:
+- CNAME record points to GitHub Pages's `*.github.io` endpoint, not a third party.
+- HTTPS certificate is auto-renewed by GitHub Pages (Let's Encrypt under the hood).
+- No DNS records for the subdomain that point at a service Dann doesn't own.
+
+**12. Things explicitly OUT of scope** (already covered by the brief / not applicable):
+- Real-time collab, cloud sync, accounts, auth — none of these exist (per brief).
+- Mobile app store distribution — TP Studio is a PWA, not a native app.
+- GDPR data-subject-access requests — no PII is stored beyond the user's own browser.
+
+**Deliverables of the review:**
+1. A short `SECURITY.md` at the repo root documenting the threat model + the audit findings.
+2. Inline TODO comments in any file where a real (not theoretical) issue was found.
+3. Fix-tier classification: P0 (ship-now fix), P1 (next session), P2 (known limitation, document it).
+4. Optional: add a `pnpm run security` script that runs `pnpm audit` + lints for `dangerouslySetInnerHTML` without sanitization + checks for `javascript:` URLs in any string literal.
+
+**Spawn-the-agent prompt** (for when this gets picked up):
+> Run a comprehensive security review of TP Studio per the spec in `NEXT_STEPS.md` § "Comprehensive security review". Output: a `SECURITY.md` draft + a punch list of P0/P1/P2 findings with file:line references. No code changes in this pass — review only.
+
 ## Selection-anchored contextual toolbar (Session 94 UI research)
+
+> **Status (Session 95): ✅ Shipped.** Phase 1 (selection-verb registry + canvas helpers) landed in `adc95b9`; Phase 2 (SelectionToolbar component + unit + Playwright e2e) landed across `3fb91a6` … `df071f9`. Default ON; opt-out in Settings → Behavior. See CHANGELOG Session 95. Verb-scope follow-ups (Mark as UDE / Promote to Goal / EC slot-specific / etc.) deferred to a future iteration — captured in the Session 95 changelog's "What's still incomplete" audit.
 
 The Top-30 refactor sweep (Session 94) included a parallel UI-pattern research pass — Office ribbon, MindManager, Figma UI3, Miro, Excalidraw, tldraw, Lucidchart, draw.io. Modern canvas-dominated tools have converged on a **floating contextual toolbar anchored above the current selection** as the bridge between "I know which node I mean" and "I know which verb I want." Today that's two clicks in TP Studio (select → reach for palette or inspector); the contextual toolbar would collapse it to one.
 
