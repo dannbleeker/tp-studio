@@ -65,17 +65,21 @@ jobs:
         run: pnpm build
 
       - name: Refresh baselines
-        # `--update-snapshots` writes new PNGs to
-        # `e2e/visual-canvas.spec.ts-snapshots/`. We pass the spec path
-        # explicitly so the run is fast and we don't touch any other
-        # accidental snapshot calls.
+        # `--update-snapshots` writes new PNGs to the matching
+        # `e2e/<spec>.spec.ts-snapshots/` directories. Glob pattern
+        # `e2e/visual-*.spec.ts` covers `visual-canvas.spec.ts` AND
+        # `visual-dialogs.spec.ts` (Session 101) without naming them
+        # individually — any future `visual-*.spec.ts` is picked up
+        # automatically.
         #
-        # The visual tests carry
-        # `test.skip(!!process.env.CI && !process.env.REFRESH_VISUAL_SNAPSHOTS, …)`,
-        # so this env var lets them actually run inside CI.
+        # The visual tests use `test.fixme(true, …)` until their
+        # baselines exist on `main`. The `--update-snapshots` flag
+        # overrides that so this workflow can generate the initial
+        # baseline; the test author then removes the `fixme` markers
+        # in the same PR that lands the baselines.
         env:
           REFRESH_VISUAL_SNAPSHOTS: '1'
-        run: pnpm exec playwright test e2e/visual-canvas.spec.ts --update-snapshots
+        run: pnpm exec playwright test e2e/visual-*.spec.ts --update-snapshots
 
       - name: Commit + PR
         uses: peter-evans/create-pull-request@v6

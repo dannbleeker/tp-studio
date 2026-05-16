@@ -1,3 +1,4 @@
+import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS } from '@/domain/constants';
 import { useDocumentStore } from '@/store';
 import { useStore as useRFStore, useReactFlow } from '@xyflow/react';
 import { useMemo } from 'react';
@@ -30,14 +31,11 @@ import { useMemo } from 'react';
  * visually stack — the store guards prevent the situation.
  */
 
-/** Distance from the target node's bottom edge to the junctor CIRCLE'S
- *  CENTER. Must equal `JUNCTOR_CENTER_OFFSET_Y` in TPEdge.tsx so the
- *  circle aligns with where the source-side bezier curves expect it. */
-const JUNCTOR_CENTER_OFFSET_Y = 35;
-/** Junctor circle radius. Must equal `JUNCTOR_RADIUS` in TPEdge.tsx —
- *  source-side bezier curves terminate at the circle's bottom perimeter
- *  (center + radius), keeping strokes outside the opaque white fill. */
-const JUNCTOR_RADIUS = 14;
+// Session 101 — `JUNCTOR_CENTER_OFFSET_Y` + `JUNCTOR_RADIUS` now live
+// in `@/domain/constants` so this file and `TPEdge.tsx` can't silently
+// drift. The circle's center sits at `targetY + JUNCTOR_CENTER_OFFSET_Y`;
+// source-side beziers in TPEdge terminate at the bottom perimeter
+// (center + radius).
 
 type JunctorKind = 'AND' | 'OR' | 'XOR';
 

@@ -29,6 +29,22 @@ export const NODE_HALF_WIDTH = NODE_WIDTH / 2;
 export const NODE_HALF_HEIGHT = NODE_MIN_HEIGHT / 2;
 export const LAYOUT_RANK_SEPARATION = 80;
 export const LAYOUT_NODE_SEPARATION = 40;
+
+// --- Junctor geometry ---
+// Session 101 — these were declared TWICE: once in `JunctorOverlay.tsx`
+// and once in `TPEdge.tsx`, with identical values. A future tweak in
+// one file without the other would have made the bezier terminus stop
+// landing on the junctor circle's perimeter (TPEdge ends its source-
+// side bezier at `targetY + JUNCTOR_CENTER_OFFSET_Y + JUNCTOR_RADIUS`,
+// which is the BOTTOM of the circle JunctorOverlay paints). Pulled
+// here so the two files always agree.
+//
+// `JUNCTOR_CENTER_OFFSET_Y` is the distance from a target node's
+// bottom edge to the center of the junctor circle. `JUNCTOR_RADIUS`
+// is the circle's radius. The sum is the bezier terminus offset.
+export const JUNCTOR_CENTER_OFFSET_Y = 35;
+export const JUNCTOR_RADIUS = 14;
+export const JUNCTOR_EDGE_TERMINAL_OFFSET_Y = JUNCTOR_CENTER_OFFSET_Y + JUNCTOR_RADIUS;
 // TPNode "zoom-up" pop-out: when the viewport zoom drops below this and the
 // node is selected/hovered, render the magnified title overlay so titles
 // stay legible at low zoom. Lives here next to other canvas tunables so

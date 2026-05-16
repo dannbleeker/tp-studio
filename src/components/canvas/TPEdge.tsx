@@ -1,4 +1,4 @@
-import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import {
@@ -29,25 +29,24 @@ const EDGE_INTERACTION_WIDTH = 32;
 /**
  * E6: for AND-grouped non-aggregated edges, the visible edge segment stops
  * at a "junctor" point sitting just below the target node, rather than at
- * the target's handle itself. ANDOverlay renders the junctor circle (with
- * the "AND" label) and a single short outgoing arrow from junctor up into
- * the target's bottom handle. This matches Flying Logic's visual
- * convention: multiple causes converge into a labelled circle, one line
- * continues to the effect above.
+ * the target's handle itself. JunctorOverlay renders the junctor circle
+ * (with the "AND" / "OR" / "XOR" label) and a single short outgoing arrow
+ * from junctor up into the target's bottom handle. This matches Flying
+ * Logic's visual convention: multiple causes converge into a labelled
+ * circle, one line continues to the effect above.
  *
- * `JUNCTOR_CENTER_OFFSET_Y` is the distance from the target's bottom edge
- * to the junctor circle's CENTER (where ANDOverlay positions the circle).
- * `JUNCTOR_RADIUS` is the circle's radius — must match the value in
- * ANDOverlay.tsx. Source-side bezier curves terminate at
- * `targetY + JUNCTOR_CENTER_OFFSET_Y + JUNCTOR_RADIUS`, which is the
- * BOTTOM of the circle. Ending at the bottom of the circle rather than
- * the center keeps the bezier strokes outside the circle interior so the
- * white-filled circle reads as an opaque junction rather than a
- * transparent disc with lines visible through it.
+ * Source-side bezier curves terminate at the BOTTOM of the junctor circle
+ * (`targetY + JUNCTOR_EDGE_TERMINAL_OFFSET_Y`) rather than the center — that
+ * keeps bezier strokes outside the circle interior so the white-filled
+ * circle reads as an opaque junction rather than a transparent disc with
+ * lines visible through it.
+ *
+ * Session 101 — pulled `JUNCTOR_CENTER_OFFSET_Y` / `JUNCTOR_RADIUS` /
+ * `JUNCTOR_EDGE_TERMINAL_OFFSET_Y` into `@/domain/constants`; they were
+ * previously declared in both this file AND `JunctorOverlay.tsx` with
+ * identical values, which would have silently drifted under any future
+ * tweak.
  */
-const JUNCTOR_CENTER_OFFSET_Y = 35;
-const JUNCTOR_RADIUS = 14;
-const JUNCTOR_EDGE_TERMINAL_OFFSET_Y = JUNCTOR_CENTER_OFFSET_Y + JUNCTOR_RADIUS;
 
 function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const isAnd = Boolean(props.data?.andGroupId);
@@ -230,6 +229,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     const desc = s.doc.edges[props.id]?.description;
     return typeof desc === 'string' && desc.trim().length > 0;
   });
+  // Session 101 — drag-splice target highlight. `Canvas` writes this
+  // mid-gesture; we render an indigo glow + thicker stroke when our
+  // edge is the current target. Subscribing via the equality check
+  // means only the target edge (and the previous one when it changes)
+  // re-renders per drag frame.
+  const isSpliceTarget = useDocumentStore((s) => s.spliceTargetEdgeId === props.id);
   // Global fallback causality label. Only consulted when this edge has no
   // explicit `label` of its own — per-edge labels always win. Aggregated
   // edges (count > 1) skip the fallback too: the `×N` badge is the more
@@ -256,29 +261,44 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // *semantic* signal ("these two Wants conflict") and dominates the
   // diagram's color vocabulary on the rare edges that carry it.
   const MUTEX_STROKE = '#dc2626';
-  const stroke = isMutex
-    ? MUTEX_STROKE
-    : props.selected
-      ? EDGE_STROKE_SELECTED
-      : isJunctorGroup
-        ? EDGE_STROKE_AND
-        : EDGE_STROKE_DEFAULT;
+  // Session 101 — splice-target indigo. Bright enough to read as
+  // "drop here happens" against both light + dark themes; the same
+  // hue family as the project's accent so it doesn't introduce a
+  // new color into the vocabulary.
+  const SPLICE_TARGET_STROKE = '#6366f1';
+  const stroke = isSpliceTarget
+    ? SPLICE_TARGET_STROKE
+    : isMutex
+      ? MUTEX_STROKE
+      : props.selected
+        ? EDGE_STROKE_SELECTED
+        : isJunctorGroup
+          ? EDGE_STROKE_AND
+          : EDGE_STROKE_DEFAULT;
   // E4: selection feedback. Bumping the stroke width is the readable
   // signal — combined with the color change it's hard to miss which edge
   // is selected. A drop-shadow filter adds a faint glow that works on
   // both light and dark backgrounds without needing theme-specific tokens.
   // Back-edges (TOC-reading) get an extra +1.5 px on top of the base so a
   // tagged loop-closer reads as deliberate even in dense diagrams.
+  // Splice-target gets the same +1.5 bump so the gesture preview reads
+  // as deliberate without competing with the selected-edge stroke (which
+  // already gets +1.5).
   const baseWidth = props.selected ? 3 : isJunctorGroup ? 1.75 : 1.5;
-  const strokeWidth = isBackEdge ? baseWidth + 1.5 : baseWidth;
+  const strokeWidth = isBackEdge || isSpliceTarget ? baseWidth + 1.5 : baseWidth;
   // Back-edges render with a subtle dash pattern in addition to the
   // thicker stroke — combination of two cues so the visual reads as
   // "this is *the* tagged loop-closer" rather than "this edge is just
   // selected" in a quick scan.
   const strokeDasharray = isBackEdge ? '6 4' : undefined;
-  const selectedFilter = props.selected
-    ? `drop-shadow(0 0 4px ${EDGE_STROKE_SELECTED}66)`
-    : undefined;
+  // Selected and splice-target both want a glow; splice-target wins
+  // when both happen (the drag gesture is the more time-sensitive
+  // signal and the user already knows what's selected).
+  const selectedFilter = isSpliceTarget
+    ? `drop-shadow(0 0 6px ${SPLICE_TARGET_STROKE}88)`
+    : props.selected
+      ? `drop-shadow(0 0 4px ${EDGE_STROKE_SELECTED}66)`
+      : undefined;
 
   /**
    * Truncate the label for the inline render, leaving the full text on

@@ -18,6 +18,16 @@ export type SelectionSlice = {
   /** Hoist-into-group state. When non-null, the canvas filters to that
    *  group's transitive entity members; cross-boundary edges become stubs. */
   hoistedGroupId: string | null;
+  /** Session 101 — mid-gesture splice-target highlight.
+   *
+   *  When the user Alt-drags a node and it hovers over a splice-target
+   *  edge, `Canvas.tsx` sets this to that edge's id; `TPEdge` reads it
+   *  and renders a thicker stroke + indigo glow so the gesture is
+   *  *discoverable* (Session 83 shipped Alt+drag-splice but no visual
+   *  hint, so users didn't find it). Cleared on drag-stop and on any
+   *  drag without the Alt modifier. This is transient gesture state,
+   *  not persisted. */
+  spliceTargetEdgeId: string | null;
 
   select: (sel: Selection) => void;
   selectEntity: (id: string) => void;
@@ -37,14 +47,27 @@ export type SelectionSlice = {
 
   hoistGroup: (id: string) => void;
   unhoist: () => void;
+
+  /** Session 101 — set the highlighted splice-target edge id (or
+   *  clear it with `null`). Called from `Canvas.tsx`'s
+   *  `onNodeDrag` / `onNodeDragStop` handlers. The action is a
+   *  no-op when the value is already what's requested, so the
+   *  per-frame call during a drag doesn't fan re-renders unless
+   *  the target actually changed. */
+  setSpliceTargetEdge: (edgeId: string | null) => void;
 };
 
-export type SelectionDataKeys = 'selection' | 'editingEntityId' | 'hoistedGroupId';
+export type SelectionDataKeys =
+  | 'selection'
+  | 'editingEntityId'
+  | 'hoistedGroupId'
+  | 'spliceTargetEdgeId';
 
 export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => ({
   selection: { kind: 'none' },
   editingEntityId: null,
   hoistedGroupId: null,
+  spliceTargetEdgeId: null,
 });
 
 const toggleId = (ids: string[], id: string): string[] =>
@@ -57,6 +80,7 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   selection: { kind: 'none' },
   editingEntityId: null,
   hoistedGroupId: null,
+  spliceTargetEdgeId: null,
 
   select: (selection) => set({ selection }),
   // The action surface still accepts plain `string` because selection
@@ -109,4 +133,13 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
     set({ hoistedGroupId: id, selection: { kind: 'none' } });
   },
   unhoist: () => set({ hoistedGroupId: null }),
+
+  setSpliceTargetEdge: (edgeId) => {
+    // Bail-early if the value is already what's requested. `onNodeDrag`
+    // fires ~60 times per second; without this guard every frame would
+    // notify subscribers (every visible TPEdge subscribes to
+    // `spliceTargetEdgeId === props.id`), thrashing reconciliation.
+    if (get().spliceTargetEdgeId === edgeId) return;
+    set({ spliceTargetEdgeId: edgeId });
+  },
 });

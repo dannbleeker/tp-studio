@@ -49,6 +49,7 @@ function CanvasInner() {
     openContextMenu,
     closeHistoryPanel,
     spliceEntityIntoEdge,
+    setSpliceTargetEdge,
     showToast,
   } = useDocumentStore(
     useShallow((s) => ({
@@ -62,6 +63,7 @@ function CanvasInner() {
       openContextMenu: s.openContextMenu,
       closeHistoryPanel: s.closeHistoryPanel,
       spliceEntityIntoEdge: s.spliceEntityIntoEdge,
+      setSpliceTargetEdge: s.setSpliceTargetEdge,
       showToast: s.showToast,
     }))
   );
@@ -123,6 +125,42 @@ function CanvasInner() {
         onConnectEnd={onConnectEnd}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        // Session 101 — drag-splice visual feedback. Per-frame during
+        // an Alt-modified node drag, run the same `findSpliceTargetEdge`
+        // hit-test that `onNodeDragStop` uses and update the store's
+        // `spliceTargetEdgeId`. `TPEdge` reads this and renders an
+        // indigo glow on the target edge so the user can see what's
+        // about to happen before they release.
+        //
+        // The hit-test is O(visible edges) per frame; cheap given
+        // typical diagram sizes (<100 edges). The slice action bails
+        // when the target hasn't changed so we don't re-render every
+        // edge on every mousemove.
+        //
+        // Clears the target on any non-Alt drag — switching modifier
+        // mid-drag (Alt down → Alt up) immediately removes the hint.
+        onNodeDrag={(e, draggedNode) => {
+          if (!e.altKey) {
+            setSpliceTargetEdge(null);
+            return;
+          }
+          const entityPositions: Record<string, { x: number; y: number }> = {};
+          for (const n of nodes) {
+            const cx = n.position.x + (n.measured?.width ?? 0) / 2;
+            const cy = n.position.y + (n.measured?.height ?? 0) / 2;
+            entityPositions[n.id] = { x: cx, y: cy };
+          }
+          const probeX = draggedNode.position.x + (draggedNode.measured?.width ?? 200) / 2;
+          const probeY = draggedNode.position.y + (draggedNode.measured?.height ?? 60) / 2;
+          const hit = findSpliceTargetEdge({
+            point: { x: probeX, y: probeY },
+            draggedEntityId: draggedNode.id,
+            edges: Object.values(doc.edges),
+            entityPositions,
+            tolerance: 40,
+          });
+          setSpliceTargetEdge(hit?.edgeId ?? null);
+        }}
         onNodeDragStop={(e, draggedNode) => {
           // Session 83 — Alt+drag-to-splice. With the Alt modifier held
           // on drop, check whether the dragged entity landed close to
@@ -154,6 +192,10 @@ function CanvasInner() {
             entityPositions,
             tolerance: 40,
           });
+          // Clear the highlight unconditionally — the gesture is over
+          // whether or not it triggered a splice. (Session 101 — the
+          // glow lives only during the drag itself.)
+          setSpliceTargetEdge(null);
           if (!hit) return;
           const ok = spliceEntityIntoEdge(draggedNode.id, hit.edgeId);
           if (ok) {

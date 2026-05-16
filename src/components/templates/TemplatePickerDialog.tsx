@@ -70,6 +70,11 @@ export function TemplatePickerDialog() {
             <li key={spec.id}>
               <button
                 type="button"
+                // Session 101 — selector hook for the e2e visual
+                // regression spec (`visual-dialogs.spec.ts`). The
+                // attribute is also stable enough for future test
+                // targeting if more dialog interactions get added.
+                data-component="template-card"
                 onClick={() => handlePick(spec.id)}
                 aria-label={`Load ${spec.title}: ${typeLabel} with ${entityCount} entities and ${edgeCount} edges`}
                 className={clsx(
