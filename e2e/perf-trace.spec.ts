@@ -98,6 +98,11 @@ async function runScenarioWithTrace(
   let totalPaintDur = 0;
   const longTaskList: { name: string; ms: number }[] = [];
   const eventNameTotals = new Map<string, { count: number; totalMs: number }>();
+  // Session 108b — collect every scripting-task duration so we can
+  // report percentiles. The count-over-50ms metric turned out to be
+  // single-sample-noisy because many tasks sit right at the 50ms
+  // threshold; percentiles give a more stable signal.
+  const scriptTaskDurations: number[] = [];
 
   for (const e of events) {
     if (e.ph !== 'X' || typeof e.dur !== 'number') continue;
@@ -115,6 +120,7 @@ async function runScenarioWithTrace(
       name === 'RunTask'
     ) {
       totalScriptDur += e.dur;
+      scriptTaskDurations.push(durMs);
       if (e.dur > 50_000) {
         longTaskList.push({ name, ms: +durMs.toFixed(1) });
       }
@@ -125,6 +131,30 @@ async function runScenarioWithTrace(
     }
   }
   longTaskList.sort((a, b) => b.ms - a.ms);
+
+  /**
+   * Compute percentile of a sorted array. Standard nearest-rank
+   * percentile — for `p = 95` and an array of length N, returns the
+   * element at index `ceil(N * 0.95) - 1`. Stable enough for the
+   * single-sample comparison we're doing here.
+   */
+  const percentile = (sortedAsc: number[], p: number): number => {
+    if (sortedAsc.length === 0) return 0;
+    const idx = Math.max(
+      0,
+      Math.min(sortedAsc.length - 1, Math.ceil(sortedAsc.length * (p / 100)) - 1)
+    );
+    return sortedAsc[idx] ?? 0;
+  };
+  scriptTaskDurations.sort((a, b) => a - b);
+  const scriptingPercentiles = {
+    p50_ms: +percentile(scriptTaskDurations, 50).toFixed(2),
+    p75_ms: +percentile(scriptTaskDurations, 75).toFixed(2),
+    p95_ms: +percentile(scriptTaskDurations, 95).toFixed(2),
+    p99_ms: +percentile(scriptTaskDurations, 99).toFixed(2),
+    max_ms: +(scriptTaskDurations[scriptTaskDurations.length - 1] ?? 0).toFixed(2),
+    count: scriptTaskDurations.length,
+  };
   const byCount = [...eventNameTotals.entries()]
     .sort((a, b) => b[1].count - a[1].count)
     .slice(0, 10)
@@ -142,6 +172,12 @@ async function runScenarioWithTrace(
       layout: +(totalLayoutDur / 1000).toFixed(1),
       paint: +(totalPaintDur / 1000).toFixed(1),
     },
+    // Session 108b — per-task percentiles. More stable single-sample
+    // signal than `long_tasks.count_over_50ms`, which is sensitive to
+    // tasks sitting right at the threshold and shifted by GC pause
+    // timing. Compare p95/p99 across runs to detect real regressions;
+    // count_over_50ms still useful for "user-felt jank" framing.
+    scripting_percentiles: scriptingPercentiles,
     long_tasks: {
       count_over_50ms: longTaskList.length,
       total_ms: +longTaskList.reduce((s, t) => s + t.ms, 0).toFixed(1),
