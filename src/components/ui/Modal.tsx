@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { type ReactNode, useRef } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useOutsideAndEscape } from '@/hooks/useOutsideAndEscape';
 
 export type ModalProps = {
@@ -16,12 +17,22 @@ export type ModalProps = {
 
 /**
  * Shared modal shell: full-viewport backdrop, dismiss-on-outside-click,
- * dismiss-on-Escape, focus is left to the caller (so command palettes that
- * own an input can autofocus it themselves).
+ * dismiss-on-Escape, **focus-trapped via `useFocusTrap`** (Session 122).
+ *
+ * Initial focus is left to the caller — `useFocusTrap` is passed
+ * `{ initialFocus: false }` here because Modal's consumers each
+ * autofocus a specific element (CommandPalette focuses its query
+ * input; ConfirmDialog focuses the confirm button; QuickCapture
+ * focuses its textarea; HelpDialog/AboutDialog/SettingsDialog leave
+ * focus to the first naturally-focusable element). The trap still
+ * wraps Tab/Shift+Tab at the boundaries and restores focus to the
+ * trigger on dismiss.
  *
  * The inner `<dialog open>` element gives us native aria-modal semantics
  * and satisfies Biome's a11y/useSemanticElements rule. We render manually
- * (no .showModal()) because we control visibility through React state.
+ * (no .showModal()) because we control visibility through React state —
+ * which means the browser's own top-layer focus trap isn't engaged, and
+ * `useFocusTrap` is what keeps Tab inside the dialog.
  *
  * Session 93 — width-class convention reference (#38).
  *
@@ -53,6 +64,11 @@ export function Modal({
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   useOutsideAndEscape(dialogRef, onDismiss, open);
+  // Session 122 — opt-out of `useFocusTrap`'s initial-focus behavior
+  // because each Modal consumer autofocuses its own preferred element
+  // on mount. The trap's Tab/Shift+Tab wrap + restore-focus-on-unmount
+  // still apply.
+  useFocusTrap(dialogRef, open, { initialFocus: false });
 
   if (!open) return null;
 

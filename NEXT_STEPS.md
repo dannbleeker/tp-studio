@@ -86,6 +86,8 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 Items surfaced by the Tier 1/2/3 maintainability arc that didn't ship and are worth picking up in a focused future session. Tagged by suggested next-step shape.
 
+- **Update the book now that versions have changed and screenshots will have changed a bit.** Re-run `e2e/guide-screenshots.spec.ts` to refresh the screenshot set, review each chapter for version-specific references that need updating, and rebuild the PDF via `scripts/build-book-pdf.mjs`.
+
 - ~~**React 19 upgrade.**~~ ✅ **Done (Session 118).** TP Studio is now on `react@19.2.6` + `react-dom@19.2.6` + `@types/react@19.2.14`, with React Compiler enabled via `babel-plugin-react-compiler`. The pre-prep (Sessions 116 Storybook bump + 117 exactOptionalPropertyTypes) paid off — the actual upgrade was a zero-friction `pnpm add` + one `forwardRef` → `ref` prop migration in `Button.tsx` + a one-line `manualChunks` fix for `react-dom/client`. Compiler instrumentation costs ~24 KB gz on the eager index chunk; bundle budget re-pinned accordingly. Manual `TPNode` + `TPEdge` memo comparators stay (the Compiler can't beat them — `data` is rebuilt by spread on every emission run, same blind spot as React's default memo). The original Session 115 prep analysis is preserved below for historical reference.
 
   ### React 19 prep — what we already have right
@@ -175,7 +177,7 @@ New items surfaced by recent work:
 
 
 
-- **Wire `useFocusTrap` into the `Modal` primitive.** Today only `LargeDialog` traps focus; `Modal`-based dialogs (Help, About, Settings, ConfirmDialog, QuickCapture, DocumentInspector, CommandPalette) let Tab escape past the last focusable element. The `useFocusTrap` hook (Session 79) is ready; the design thought needed is autofocus reconciliation — CommandPalette autofocuses its input, ConfirmDialog autofocuses the confirm button, QuickCapture autofocuses the textarea, and the trap's "focus the first focusable on mount" behavior would conflict. Two paths: (a) make `useFocusTrap`'s initial-focus opt-out via a prop, then have each dialog pick the right anchor; (b) add a `trapFocus` prop to `Modal` defaulting `false` and opt-in per dialog. Effort: S–M.
+- ~~**Wire `useFocusTrap` into the `Modal` primitive.**~~ ✅ **Done (Session 123).** Path (a) chosen: `useFocusTrap` gained an optional `{ initialFocus: false }` argument; `Modal` now wires the trap universally with `initialFocus: false` so each consumer keeps its own autofocus (CommandPalette its query input, ConfirmDialog its confirm button, QuickCapture its textarea, etc.). Three new e2e tests in `a11y.spec.ts` pin the trap-inside-dialog contract for Help / About / Settings.
 
 Speculative / profile-gated (don't pick up unless evidence demands):
 

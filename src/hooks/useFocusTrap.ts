@@ -10,6 +10,13 @@ import { type RefObject, useEffect } from 'react';
  *   - Shift+Tab past the first focusable element wraps to the last.
  *   - Initial mount focuses the first focusable element inside the
  *     container (or the container itself if it carries `tabIndex`).
+ *     Opt out via `{ initialFocus: false }` when the consumer wants
+ *     to autofocus a specific element itself (e.g. CommandPalette
+ *     autofocuses its query input; ConfirmDialog autofocuses the
+ *     confirm button).
+ *   - On unmount, focus restores to the element that was focused
+ *     before the trap engaged — helps keyboard users return to the
+ *     trigger button.
  *
  * Used by modal dialogs that should keep focus inside their bounds
  * until dismissed. Mirrors the WAI-ARIA Authoring Practices "dialog
@@ -17,11 +24,19 @@ import { type RefObject, useEffect } from 'react';
  *
  * The hook does NOT handle Escape — wire that up at the call site if
  * you want it (most consumers do via a separate onKeyDown handler).
+ *
+ * Session 122 — added the `initialFocus` opt-out so the `Modal`
+ * primitive can wire the trap universally without conflicting with
+ * the autofocus that several Modal consumers already do
+ * (CommandPalette, ConfirmDialog, QuickCapture, EntityInspector
+ * title field, etc.).
  */
 export const useFocusTrap = (
   containerRef: RefObject<HTMLElement | null>,
-  active: boolean
+  active: boolean,
+  options?: { initialFocus?: boolean }
 ): void => {
+  const initialFocus = options?.initialFocus ?? true;
   useEffect(() => {
     if (!active) return;
     const root = containerRef.current;
@@ -38,12 +53,14 @@ export const useFocusTrap = (
       );
     };
 
-    // Move focus to the first focusable element so screen-readers
-    // announce the dialog content rather than whatever was focused
-    // before.
-    const first = focusables()[0];
-    if (first) first.focus();
-    else root.focus();
+    if (initialFocus) {
+      // Move focus to the first focusable element so screen-readers
+      // announce the dialog content rather than whatever was focused
+      // before. Opt-out when the consumer manages its own autofocus.
+      const first = focusables()[0];
+      if (first) first.focus();
+      else root.focus();
+    }
 
     const onKeyDown = (e: KeyboardEvent): void => {
       if (e.key !== 'Tab') return;
@@ -60,7 +77,7 @@ export const useFocusTrap = (
           e.preventDefault();
           lastEl.focus();
         }
-      } else if (current === lastEl) {
+      } else if (current === lastEl || !root.contains(current)) {
         e.preventDefault();
         firstEl.focus();
       }
@@ -74,5 +91,5 @@ export const useFocusTrap = (
         previouslyFocused.focus();
       }
     };
-  }, [active, containerRef]);
+  }, [active, containerRef, initialFocus]);
 };

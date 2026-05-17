@@ -48,6 +48,10 @@ import { expect, type Page, test } from '@playwright/test';
  * coherence + discoverability remains worth doing periodically — see
  * NEXT_STEPS for the manual checklist.
  *
+ * Session 122 — added per-dialog focus-trap coverage after wiring
+ * `useFocusTrap` into the `Modal` primitive. Three tests assert that
+ * Tabbing inside Help / About / Settings never escapes the dialog.
+ *
  * Run via: `pnpm test:e2e --grep a11y`
  */
 
@@ -174,17 +178,13 @@ test.describe('a11y — keyboard navigation', () => {
    * tests pin the contract per-dialog so a future regression in the
    * Esc cascade or a custom `onDismiss` override fails loudly.
    *
-   * **Not tested here:** strict focus-trap-inside-dialog. The Modal
-   * primitive renders `<dialog open>` without calling `.showModal()`
-   * (so the dialog isn't in the browser's top layer) and doesn't wire
-   * `useFocusTrap`. Tabbing past the last focusable element today
-   * escapes to the page below — a real finding from this session's
-   * #28 prep. Adding focus-trap to `Modal` would touch 8 consumers
-   * including CommandPalette / ConfirmDialog / QuickCapture which
-   * each autofocus a specific element; the trap's initial-focus
-   * behavior risks conflicting with those. Captured as a new Tier-2
-   * backlog item rather than landed here under #28's automated-
-   * coverage scope.
+   * Session 122 — added focus-trap coverage. `Modal` now wires
+   * `useFocusTrap` (with `initialFocus: false` so each consumer can
+   * keep its own autofocus). Tabbing past the last focusable element
+   * wraps back to the first; Shift+Tab past the first wraps to the
+   * last. The test below presses Tab many times and asserts the
+   * activeElement always stays inside the dialog — catches focus-trap
+   * regressions across all Modal-based dialogs in one test.
    */
   for (const which of ['help', 'about', 'settings'] as const) {
     test(`${which} dialog closes on Escape`, async ({ page }) => {
@@ -193,6 +193,25 @@ test.describe('a11y — keyboard navigation', () => {
       await page.keyboard.press('Escape');
       // The dialog should unmount or lose its `open` attribute.
       await expect(page.locator('dialog[open]')).toHaveCount(0);
+    });
+
+    test(`${which} dialog traps focus within itself when tabbing`, async ({ page }) => {
+      await goToTestMode(page);
+      await openDialog(page, which);
+      // Tab through 15 elements — enough to cycle past the longest
+      // dialog's tab order even with multiple focus stops. After
+      // each press, the active element must still be inside the
+      // dialog (focus didn't escape to <body> or the canvas).
+      for (let i = 0; i < 15; i++) {
+        await page.keyboard.press('Tab');
+        const inside = await page.evaluate(() => {
+          const el = document.activeElement;
+          if (!el) return false;
+          const dialog = document.querySelector('dialog[open]');
+          return Boolean(dialog?.contains(el));
+        });
+        expect(inside, `Tab ${i + 1} escaped the ${which} dialog`).toBe(true);
+      }
     });
   }
 });

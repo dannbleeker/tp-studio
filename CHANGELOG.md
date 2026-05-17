@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 123 — Modal focus-trap
+
+The follow-up item flagged during Session 121's #28 prep. `Modal` rendered `<dialog open>` without `.showModal()` and didn't wire `useFocusTrap` — Tabbing past the last focusable element escaped the dialog. Eight Modal-based dialogs were affected (CommandPalette / ConfirmDialog / QuickCapture / AboutDialog / HelpDialog / SettingsDialog / DocumentInspector / Modal.stories).
+
+**The design decision.** Path (a) from the backlog note: make `useFocusTrap`'s initial-focus opt-out, then wire it into `Modal` universally. Three Modal consumers autofocus a specific element on mount (CommandPalette its query input, ConfirmDialog its confirm button, QuickCapture its textarea); the trap's "focus the first focusable on mount" behavior would have raced with those. Adding an `initialFocus` option lets each consumer keep its autofocus while still getting the Tab/Shift+Tab wrap and the focus-restore-on-unmount.
+
+**Changes.**
+
+- `src/hooks/useFocusTrap.ts` — added optional third arg `options?: { initialFocus?: boolean }`. Default `true` preserves the existing `LargeDialog` call site (Session 79 contract unchanged). Also made the forward-Tab boundary check defensive: wraps to first when focus is outside the container, not just when it's on the last element — guards against external focus landing (e.g. a programmatic focus call) re-entering the dialog cleanly.
+- `src/components/ui/Modal.tsx` — wired `useFocusTrap(dialogRef, open, { initialFocus: false })`. Header comment updated to document the autofocus reconciliation.
+- `e2e/a11y.spec.ts` — added 3 new `${which} dialog traps focus within itself when tabbing` tests (Help / About / Settings). Each presses Tab 15 times and asserts `document.activeElement` stays inside `dialog[open]` every iteration. The "not tested here" note from Session 121 dropped.
+
+**End state:** 1200 vitest tests still passing; tsc clean; biome at the 24 pre-existing warnings (none new); 3 new e2e tests cover the contract. The new Tier-2 backlog item is closed.
+
 ## Session 122 — TypeScript 5.9 → 6.0 upgrade
 
 Upgrade C from the dependency-audit survey. One deprecation needed addressing:
