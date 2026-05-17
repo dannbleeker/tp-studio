@@ -2,6 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 121 — Maintainability backlog: Stryker mutation-testing dial-in (#13)
+
+Tier-2 #13 from the Session 112–114 backlog. Stryker infrastructure landed Session 115 but the first run failed with "Vitest failed to find test files related to mutated files" — vitest's `--related` flag couldn't trace tests through our `@/` path-alias imports.
+
+**The fix.** Set `vitest.related = false` in `stryker.config.mjs` per Stryker's own recommended fallback (linked from their troubleshooting page). Every mutant now runs the full 1200-test suite; on a 4-runner config the steady-state per-mutant wall time is ~7 s.
+
+**First-pass score.** Ran the pipeline end-to-end against `src/domain/paletteScore.ts` (47 LOC, the 8-test command-palette fuzzy scorer): **88.24% mutation score** — 30 / 34 mutants killed in 4 min 12 s. The four survivors all live in the `score` loop's `if (i < q.length && ch === q[i]) i++;` check — the boundary case `i === q.length` isn't exercised by the existing tests. Useful, actionable signal; the fix is two new test cases (defer until paletteScore changes substantively).
+
+**Recipe.** `pnpm mutation --mutate src/domain/<file>.ts` for per-file scans (5–20 min). Unbounded `pnpm mutation` against all of `src/domain/**` still takes hours and isn't routine. The per-file form is the practical reporting tool — point it at a module you're actively strengthening tests for and the HTML report (gitignored at `reports/mutation/index.html`) tells you which mutants survived.
+
+Config header (`stryker.config.mjs`) carries the full story: blocker, dial-in, recipe, first-pass scores for trend tracking. Two of the three open maintainability items are now closed; #28 (hands-on keyboard pass) is the last remaining open item.
+
 ## Session 121 — Maintainability backlog: SettingsDialog tab split (#5)
 
 First of the three open maintainability items (Tier-2 #5 — `SettingsDialog` per-tab extraction). Backlog had it as judgment-call ("the parent is already <600 LOC and the tabs are coupled to shared form state"); did it anyway since the new structure makes each tab editable in isolation and decouples their Zustand subscriptions.

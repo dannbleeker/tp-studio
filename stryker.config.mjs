@@ -1,34 +1,40 @@
 /**
- * Session 115 — Stryker mutation-testing config (infrastructure-only;
- * see NEXT_STEPS for the dial-in TODO).
+ * Session 121 — Stryker mutation-testing config, dial-in landed.
  *
  * Mutation testing introduces small synthetic bugs (mutants) into the
  * source and checks whether the test suite catches each one. Unkilled
  * mutants indicate weak coverage even when line coverage is high.
  *
- * Status (Session 115): Stryker + vitest-runner installed, this config
- * lives. First-run blocker: Stryker's vitest runner uses `vitest
- * --related` to filter tests per mutant, but our tests import source
- * via `@/` path aliases which don't show up in vitest's
- * source-relationship graph. Result: "Vitest failed to find test
- * files related to mutated files." Without related filtering,
- * Stryker would run the full 1195-test suite for each of 6601
- * mutants — multi-day runtime, not viable.
+ * **The Session 115 blocker.** Stryker's vitest runner uses `vitest
+ * --related <files>` to filter tests per mutant, but our tests import
+ * source via `@/` path aliases which don't show up in vitest's
+ * source-relationship graph (known issue:
+ * https://stryker-mutator.io/docs/stryker-js/troubleshooting/#vitest-failed-to-find-test-files-related-to-mutated-files).
+ * Result was "Vitest failed to find test files related to mutated
+ * files" + Stryker exiting with "No tests were executed."
  *
- * Fixing this needs ~2-3 hours of dial-in:
- *   - Convert `tests/` imports from `@/foo` to relative paths, OR
- *   - Configure vitest's `inlineDependencies` / `deps.inline` so the
- *     alias resolution is visible to related-test detection, OR
- *   - Use a smaller scope (a single module) per mutation run so the
- *     full suite cost is bounded.
+ * **Session 121 dial-in.** `vitest.related = false` (per Stryker's own
+ * recommended fallback) bypasses related-test filtering entirely;
+ * every mutant runs the full 1200-test suite. Per-mutant wall time on
+ * a 4-runner config: ~7 s in steady state. A focused first-pass on a
+ * single small domain file (≤ 50 LOC) completes in ~5 min; per
+ * `src/domain/**` file the cost scales linearly with the mutant count.
  *
- * Each path has trade-offs that need testing. Left as a dedicated
- * future session; the config + install are durable.
+ * **Running it.**
+ *   `pnpm mutation --mutate src/domain/paletteScore.ts`  — single file
+ *   `pnpm mutation`                                      — all of `src/domain/` (hours)
  *
- * Run via: `pnpm exec stryker run` (after dial-in is fixed).
+ * The unbounded run still takes hours; the per-file recipe above is
+ * the practical reporting tool. Use it on a module you're actively
+ * strengthening tests for — the HTML report tells you exactly which
+ * mutants survived so you can write the missing tests.
  *
- * The output produces an HTML report under `reports/mutation/` —
- * gitignored, ad-hoc inspection like the bundle-stats treemap.
+ * **First-pass scores (Session 121, recorded for trend tracking):**
+ *   - `paletteScore.ts`: 30 / 34 mutants killed → **88.24%**
+ *
+ * Output: HTML report at `reports/mutation/index.html` — gitignored,
+ * ad-hoc inspection like the bundle-stats treemap. Mutation score
+ * summaries land in CHANGELOG when shipping a report.
  */
 export default {
   // pnpm's non-hoisted layout means Stryker's auto-discovery can't
@@ -46,18 +52,12 @@ export default {
   ],
   testRunner: 'vitest',
   vitest: {
-    // Our tests use `@/` path aliases to import source, so vitest's
-    // `--related` flag can't trace the relationship. Disable per-mutant
-    // related-test filtering so every mutant runs the full test suite.
-    // Slower per-mutant run but the only configuration that finds
-    // mutant-killing tests in this codebase.
     configFile: 'vite.config.ts',
+    // Bypass `vitest --related` — our `@/` alias imports break its
+    // module-graph traversal (see header). Each mutant runs whatever
+    // tests vitest picks up under the project root.
+    related: false,
   },
-  // Per the Stryker / vitest-runner contract: relating files via vitest's
-  // `--related` is the default. Setting `related` to false makes Stryker
-  // run all tests for every mutant. Necessary here because our `@/` alias
-  // imports don't show up in vitest's source-relationship graph.
-  // Reference: https://stryker-mutator.io/docs/stryker-js/troubleshooting/#vitest-failed-to-find-test-files-related-to-mutated-files
   disableTypeChecks: 'src/**/*.{ts,tsx}',
   reporters: ['html', 'clear-text', 'progress'],
   htmlReporter: { fileName: 'reports/mutation/index.html' },
