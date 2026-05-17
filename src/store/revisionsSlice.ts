@@ -1,7 +1,7 @@
+import { newRevisionId } from '@/domain/ids';
 import type { Revision } from '@/domain/revisions';
 import type { TPDocument } from '@/domain/types';
 import { STORAGE_KEYS, readJSON, writeJSON } from '@/services/storage';
-import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import type { RootStore } from './types';
 
@@ -154,7 +154,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
       const doc = get().doc;
       const docId = doc.id;
       const revision: Revision = {
-        id: nanoid(10),
+        id: newRevisionId(),
         docId,
         capturedAt: Date.now(),
         doc: cloneDoc(doc),
@@ -182,7 +182,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
         ? `Auto: before restoring "${target.label}"`
         : 'Auto: before restoring snapshot';
       const safety: Revision = {
-        id: nanoid(10),
+        id: newRevisionId(),
         docId,
         capturedAt: Date.now(),
         doc: cloneDoc(doc),
@@ -191,7 +191,11 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
         // ("this was created when we restored snapshot X"). Inherits the
         // target's branch name so the safety record lives in the same
         // bucket as what was restored.
-        parentRevisionId: revisionId,
+        //
+        // Session 113 — `target.id` is the branded RevisionId; use it
+        // directly rather than the plain-string `revisionId` parameter
+        // so the type checks without a cast.
+        parentRevisionId: target.id,
         ...(target.branchName ? { branchName: target.branchName } : {}),
       };
       const nextList = trim([safety, ...list]);
@@ -256,12 +260,15 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
       // actively `restoreSnapshot` on the branched revision (or any later
       // snapshot they make on it) to switch the canvas state.
       const branched: Revision = {
-        id: nanoid(10),
+        id: newRevisionId(),
         docId,
         capturedAt: Date.now(),
         doc: cloneDoc(source.doc),
         label: `${tag} (forked from "${source.label ?? 'snapshot'}")`,
-        parentRevisionId: sourceRevisionId,
+        // Session 113 — use the branded `source.id` rather than the
+        // plain-string `sourceRevisionId` action parameter so the type
+        // checks without a cast at the boundary.
+        parentRevisionId: source.id,
         branchName: tag,
       };
       const nextList = trim([branched, ...list]);
@@ -301,7 +308,7 @@ export const autoSnapshotOutgoing = (outgoing: TPDocument, reason: string): void
   const byDoc = loadRevisionsByDoc();
   const list = byDoc[outgoing.id] ?? [];
   const revision: Revision = {
-    id: nanoid(10),
+    id: newRevisionId(),
     docId: outgoing.id,
     capturedAt: Date.now(),
     doc: cloneDoc(outgoing),

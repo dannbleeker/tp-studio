@@ -255,7 +255,7 @@ Remaining gap:
 
 ### 4. Backward-incompatible migrations stub — ✅ Done (long since)
 
-Backlog entry was stale — the framework is in `src/domain/migrations.ts` with `CURRENT_SCHEMA_VERSION = 7` and six registered migrations (v1 → v7). `importFromJSON` calls `migrateToCurrent` before its strict shape check, so downstream guards assume the target version. Covered by `tests/domain/migrations.test.ts` + `tests/domain/migrationsRoundTrip.test.ts`. The schema has bumped through six versions over the project's life — every backward-incompatible change has used this framework.
+Backlog entry was stale — the framework is in `src/domain/migrations.ts` with `CURRENT_SCHEMA_VERSION = 8` and seven registered migrations (v1 → v8). `importFromJSON` calls `migrateToCurrent` before its strict shape check, so downstream guards assume the target version. Covered by `tests/domain/migrations.test.ts` (per-step + edge cases) + `tests/domain/migrationsRoundTrip.test.ts` (fixture-driven, currently v1–v4 → v5; v5/v6/v7 fixtures not yet added — the property-based test in `migrationsProperty.test.ts` exercises the full chain with arbitrary docs to compensate) + `tests/domain/migrationsProperty.test.ts` (fast-check idempotency + strict-validator round-trip). The schema has bumped through seven backward-compatible upgrades over the project's life — every backward-incompatible change has used this framework.
 
 ## Brief items intentionally out of scope
 

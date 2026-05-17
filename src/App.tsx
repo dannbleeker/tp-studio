@@ -212,7 +212,16 @@ export function App() {
           future canvas-aware overlay can read React Flow's state via
           `useRFStore` from outside the Canvas component. */}
       <ReactFlowProvider>
-        <Canvas />
+        {/* Session 113 — Canvas wrapped in its own ErrorBoundary. React
+            Flow is a third-party renderer; an internal crash there
+            previously surfaced through the root boundary and froze the
+            entire app on the crash screen. Scoped here so a Canvas
+            crash leaves the TopBar / Inspector / palette usable and
+            the user can at least save / export / load a different
+            doc. */}
+        <ErrorBoundary label="Canvas">
+          <Canvas />
+        </ErrorBoundary>
         {/* Session 95 — selection-anchored floating toolbar.
             Mounted inside the provider but outside Canvas's render
             tree so it doesn't get re-mounted on Canvas re-renders.
@@ -222,7 +231,9 @@ export function App() {
           <SelectionToolbar />
         </ErrorBoundary>
       </ReactFlowProvider>
-      <CompareBanner />
+      <ErrorBoundary label="Compare banner">
+        <CompareBanner />
+      </ErrorBoundary>
       {/* Nested ErrorBoundaries scope a crash to a single panel — the
           canvas stays usable if (say) the Inspector blows up on a bad
           warning derivation, and vice versa. The root boundary wrapping
@@ -232,21 +243,43 @@ export function App() {
       </ErrorBoundary>
       <ContextMenu />
       <Suspense fallback={null}>
-        <CommandPalette />
-        <HelpDialog />
-        <AboutDialog />
+        {/* Session 113 — wrap the remaining lazy dialogs / overlays in
+            their own ErrorBoundaries so a render fault in any one
+            doesn't escape to the root crash screen. Settings /
+            Document-details / Revision-history / Side-by-side /
+            Print-preview / Template-picker / Diagram-picker /
+            Export-picker already had boundaries; the seven below
+            (palette / help / about / search / quick-capture /
+            walkthrough) were the remaining gap. Each is a self-
+            contained dialog or overlay so the boundary scope matches
+            the natural failure boundary. */}
+        <ErrorBoundary label="Command palette">
+          <CommandPalette />
+        </ErrorBoundary>
+        <ErrorBoundary label="Help dialog">
+          <HelpDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="About dialog">
+          <AboutDialog />
+        </ErrorBoundary>
         <ErrorBoundary label="Settings">
           <SettingsDialog />
         </ErrorBoundary>
         <ErrorBoundary label="Document details">
           <DocumentInspector />
         </ErrorBoundary>
-        <SearchPanel />
-        <QuickCaptureDialog />
+        <ErrorBoundary label="Search panel">
+          <SearchPanel />
+        </ErrorBoundary>
+        <ErrorBoundary label="Quick capture">
+          <QuickCaptureDialog />
+        </ErrorBoundary>
         <ErrorBoundary label="Revision history">
           <RevisionPanel />
         </ErrorBoundary>
-        <WalkthroughOverlay />
+        <ErrorBoundary label="Walkthrough overlay">
+          <WalkthroughOverlay />
+        </ErrorBoundary>
         <ErrorBoundary label="Side-by-side compare">
           <SideBySideDialog />
         </ErrorBoundary>

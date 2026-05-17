@@ -2,6 +2,38 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 113 — Tier 2 maintainability pass (structural + tests + types)
+
+Second of three planned tiers from the 30-item under-the-hood improvement list. 12 items addressed; the practical landings + the items evaluated and re-deferred with rationale are summarized below.
+
+**#18 — Error boundaries widened.** Added boundaries around the Canvas (highest-impact gap — React Flow is a third-party renderer and an internal crash there previously froze the whole app), Compare banner, Command palette, Help dialog, About dialog, Search panel, Quick capture, and Walkthrough overlay. Eight new boundaries; total at 13 (was 8). Each is a self-contained dialog or overlay so the boundary matches the natural failure boundary; a crash in one panel no longer takes down the app — the root boundary becomes the last-resort net, not the first-line catch.
+
+**#21 — Per-rule validator perf benchmark.** New `tests/perf/validators.bench.test.ts` times every CRT rule on a 100-entity diagram. Output as a markdown table sorted slowest-first; a future PR that introduces an O(n²) check shows up as a measurable jump in `µs/op`. Baseline numbers (single-pass total ≈ 6 ms): `tautology` 310 µs, `entity-existence` 107 µs, `cause-sufficiency` 63 µs; everything else < 50 µs.
+
+**#22 — Per-rule validator memoization.** Evaluated against the benchmark. The existing doc-level `validate()` WeakMap cache from Session 85 already absorbs repeated work — per-rule memoization would only help in scenarios where a doc edit changes rule-irrelevant state (e.g. position-only drags). The marginal win didn't justify the per-rule fingerprint plumbing today; the benchmark is the surviving artifact so future profile data can re-open the question.
+
+**#2 + #3 — TPEdge / TPNode comparator extractions.** Pulled the memo comparators (`tpEdgePropsEqual` + `shallowEqualObject` from TPEdge; `tpNodePropsEqual` + `shallowEqualNodeData` from TPNode) into sibling files (`tpEdgeComparator.ts` / `tpNodeComparator.ts`). Pure functions; easier to unit-test in isolation; the component files stay focused on render. Re-exports preserved at the original module paths so existing test imports work unchanged. Each component file ~50 LOC lighter.
+
+**#4 + #5 — CreationWizardPanel / SettingsDialog splits.** Evaluated. Like `types.ts` in Session 112, both files are well-organized with section banners and the bulk is genuinely-coupled JSX state. No clean extraction boundary that would meaningfully reduce cognitive load. Documented as evaluated-and-deferred.
+
+**#8 — `RevisionId` branded.** New `RevisionId = Brand<string, 'RevisionId'>` in `domain/types.ts` paired with a `newRevisionId()` factory in `domain/ids.ts`. `Revision.id` and `Revision.parentRevisionId` types updated; four `nanoid(10)` call sites in `revisionsSlice` swapped to the factory. Action signatures (`restoreSnapshot(revisionId: string)`, etc.) deliberately stay plain `string` — these are public API entry points from outside the type system; the brand applies AFTER creation. Internally, `parentRevisionId` assignments now use the already-branded `target.id` / `source.id` rather than the plain-string action parameter so the type checks without a cast. `AssumptionId` deliberately NOT branded (the existing rationale at `Assumption` declaration: assumptions share id-space with assumption-Entity records during the v6→v7 migration). `InjectionId` also not branded (injections ARE entities, already carrying `EntityId`).
+
+**#9 — Branded-key Records evaluated.** `Record<EntityId, Entity>` instead of `Record<string, Entity>` would catch cross-type indexing, but `noUncheckedIndexedAccess` (already on) already forces `T | undefined` on lookups and `Object.keys()` returns `string[]` regardless of the key brand. Marginal gain over what's in place; deferred.
+
+**#23 — Migration system audit.** Framework + tests both healthy:
+- `CURRENT_SCHEMA_VERSION = 8`; seven registered migrations (v1→v2 through v7→v8).
+- `applyMigrations` is forward-only (rejects newer-than-app docs), guards against migration cycles (100-step ceiling), and the `migrate` step at each version is idempotent at its end-state version (covered by `migrationsProperty.test.ts`).
+- **Audit finding:** `migrationsRoundTrip.test.ts` carries fixture round-trips for v1–v4 → v5 only. v5/v6/v7 → current rely on the property-based `migrationsProperty.test.ts` test, which exercises the full chain with arbitrary docs. Not a bug but a gap worth noting; explicit fixtures for v5/v6/v7 are Tier 3 future work.
+- **Documentation fix:** `NEXT_STEPS.md` was claiming "CURRENT_SCHEMA_VERSION = 7" and "six registered migrations" — stale, corrected to v8 / seven migrations and an explicit note about the fixture coverage gap.
+
+**#12 — Property-based tests expansion.** Three property-based test files already exist (`migrationsProperty`, `validatorsProperty`, share-link round-trip via example-based tests). Adding a 4th file would require refactoring the existing `docArb` generator in `validatorsProperty.test.ts` into a shared helper to keep the test files DRY. Marginal gain over current coverage; deferred.
+
+**#13 — Mutation testing (stryker).** One-time analysis that mutates source and asserts tests catch the mutation. Genuinely useful but adds multi-MB devDep + tool config + 10+ minute analysis runtime. Re-classified as Tier 3 — would benefit from running once on a stable baseline, not during active maintainability work.
+
+**End state:** **1189 tests passing** (was 1188; +1 from the new validator bench). tsc clean, biome clean, build clean, bundle budget within ceiling, knip surface unchanged from Tier 1.
+
+**Tier 3 (10 items)** still queued: runtime perf (#14-17), storage (#19-20), React Compiler / CI tuning / a11y (#25-28), plus the deferred items from Tier 2 (mutation testing #13, validator-fixture round-trip for v5+, branded-key Records, exactOptionalPropertyTypes follow-through). Awaiting greenlight before proceeding.
+
 ## Session 112 — Tier 1 maintainability pass (knip + coverage gate + audits)
 
 First of three planned tiers from the 30-suggestion under-the-hood improvement list. Tier 1 is mechanical low-risk wins; Tier 2 (structural refactor) and Tier 3 (speculative perf) are deferred until explicit greenlight.

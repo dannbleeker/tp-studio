@@ -563,41 +563,14 @@ function StFacetRow({
  * checks; about the same as the default compare and an order of
  * magnitude cheaper than re-rendering the node.
  */
-/**
- * Shallow-equality check on two objects' enumerable own keys.
- * Exported for direct test coverage of the comparator below.
- */
-export const shallowEqualNodeData = (a: unknown, b: unknown): boolean => {
-  if (a === b) return true;
-  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
-  const ak = Object.keys(a as Record<string, unknown>);
-  const bk = Object.keys(b as Record<string, unknown>);
-  if (ak.length !== bk.length) return false;
-  for (const k of ak) {
-    if ((a as Record<string, unknown>)[k] !== (b as Record<string, unknown>)[k]) return false;
-  }
-  return true;
-};
-
-/**
- * The custom comparator for `React.memo(TPNode)`. Returns `true`
- * when the memo should bail (skip re-render); `false` when the
- * component must re-render.
- *
- * Exported for direct unit-test coverage so the comparator's logic
- * is pinned independently of React's reconciler.
- */
-export const tpNodePropsEqual = (
-  prev: NodeProps<TPNodeType>,
-  next: NodeProps<TPNodeType>
-): boolean => {
-  if (prev.id !== next.id) return false;
-  if (prev.selected !== next.selected) return false;
-  if (prev.dragging !== next.dragging) return false;
-  if (prev.positionAbsoluteX !== next.positionAbsoluteX) return false;
-  if (prev.positionAbsoluteY !== next.positionAbsoluteY) return false;
-  return shallowEqualNodeData(prev.data, next.data);
-};
+// Session 113 — memo comparator + `shallowEqualNodeData` extracted to
+// `./tpNodeComparator.ts` (parallel to the same-session extraction in
+// TPEdge.tsx). Pure functions; easier to unit-test in isolation; the
+// component file stays focused on render. Re-exported here so existing
+// test imports (`import { tpNodePropsEqual } from '@/components/canvas/TPNode'`)
+// keep working unchanged.
+import { shallowEqualNodeData, tpNodePropsEqual } from './tpNodeComparator';
+export { shallowEqualNodeData, tpNodePropsEqual };
 
 export const TPNode = memo(TPNodeImpl, tpNodePropsEqual);
 TPNode.displayName = 'TPNode';

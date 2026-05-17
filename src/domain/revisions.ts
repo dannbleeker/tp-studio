@@ -1,4 +1,4 @@
-import type { TPDocument } from './types';
+import type { RevisionId, TPDocument } from './types';
 
 /**
  * A single snapshot of a document. The full doc is captured by value so a
@@ -9,9 +9,15 @@ import type { TPDocument } from './types';
  * revisions of the same doc are distinguishable). `parentRevisionId`
  * records which revision a restore came from — H1 doesn't use this today
  * but a future H3 (named branches) reads it to walk the lineage.
+ *
+ * Session 113 — `id` and `parentRevisionId` branded as `RevisionId`. The
+ * brand is phantom (zero runtime cost) and surfaces at the type level:
+ * passing an EntityId where a RevisionId is expected (e.g. into
+ * `openSideBySide`) now fails compilation. See `types.ts` for the
+ * brand declaration.
  */
 export type Revision = {
-  id: string;
+  id: RevisionId;
   /** The doc this revision snapshots. Used to filter the panel to "this
    *  doc's history" rather than every doc's history. */
   docId: string;
@@ -29,7 +35,7 @@ export type Revision = {
   /** When this revision was created by `restoreSnapshot`, points at the
    *  revision that was being restored. Wired by H3 (Session 62) so the
    *  history panel can trace "this branch forked off snapshot X." */
-  parentRevisionId?: string;
+  parentRevisionId?: RevisionId;
   /** H3 named branches (Session 62): optional branch tag. Revisions
    *  without a `branchName` belong to the implicit `'main'` branch; the
    *  panel groups by this field so multiple parallel experiments stay

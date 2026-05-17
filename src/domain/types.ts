@@ -50,6 +50,17 @@ export type EntityId = Brand<string, 'EntityId'>;
 export type EdgeId = Brand<string, 'EdgeId'>;
 export type DocumentId = Brand<string, 'DocumentId'>;
 export type GroupId = Brand<string, 'GroupId'>;
+/** Session 113 — brand `RevisionId` so accidental cross-mixing with
+ *  EntityId / EdgeId is caught at compile time. Revisions are created
+ *  by `captureSnapshot` in revisionsSlice; the nanoid string casts
+ *  through `Brand<...>` at that single creation site. The 18 read
+ *  sites (compare / side-by-side / restore / rename / delete actions
+ *  + the test hook) now type-check their revision-id arguments
+ *  against the branded type. `AssumptionId` and `InjectionId` are
+ *  deliberately NOT branded: assumptions share id-space with
+ *  assumption-Entity records during the v6→v7 migration; injections
+ *  ARE entities, so they already carry `EntityId`. */
+export type RevisionId = Brand<string, 'RevisionId'>;
 
 // =====================================================================
 // SECTION 2 — Entity model: type union, span-of-control, attributes, Entity

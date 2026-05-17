@@ -46,7 +46,15 @@ const EDGE_INTERACTION_WIDTH = 32;
  * previously declared in both this file AND `JunctorOverlay.tsx` with
  * identical values, which would have silently drifted under any future
  * tweak.
+ *
+ * Session 113 — memo comparator + `shallowEqualObject` helper extracted
+ * into `./tpEdgeComparator.ts`. Both are pure functions and the unit
+ * tests against them are easier to read when they sit next to the
+ * comparator's source rather than importing through a render-laden
+ * component. No behavior change.
  */
+import { shallowEqualObject, tpEdgePropsEqual } from './tpEdgeComparator';
+export { shallowEqualObject, tpEdgePropsEqual };
 
 function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const isAnd = Boolean(props.data?.andGroupId);
@@ -559,46 +567,5 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
  * state, or data-fields actually change. Unrelated store mutations
  * no longer reach the edge body via emission churn.
  */
-/**
- * Shallow-equality check on two objects' enumerable own keys.
- * Exported for direct test coverage of the comparator below.
- */
-export const shallowEqualObject = (a: unknown, b: unknown): boolean => {
-  if (a === b) return true;
-  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
-  const ak = Object.keys(a as Record<string, unknown>);
-  const bk = Object.keys(b as Record<string, unknown>);
-  if (ak.length !== bk.length) return false;
-  for (const k of ak) {
-    if ((a as Record<string, unknown>)[k] !== (b as Record<string, unknown>)[k]) return false;
-  }
-  return true;
-};
-
-/**
- * The custom comparator for `React.memo(TPEdge)`. Returns `true`
- * when the memo should bail (skip re-render); `false` when the
- * component must re-render.
- *
- * Exported separately so unit tests can pin the comparator's
- * logic directly without the Profiler / reconciler complications
- * that come with measuring rendered components.
- */
-export const tpEdgePropsEqual = (
-  prev: EdgeProps<TPEdgeType>,
-  next: EdgeProps<TPEdgeType>
-): boolean => {
-  if (prev.id !== next.id) return false;
-  if (prev.source !== next.source || prev.target !== next.target) return false;
-  if (prev.sourceX !== next.sourceX || prev.sourceY !== next.sourceY) return false;
-  if (prev.targetX !== next.targetX || prev.targetY !== next.targetY) return false;
-  if (prev.sourcePosition !== next.sourcePosition) return false;
-  if (prev.targetPosition !== next.targetPosition) return false;
-  if (prev.selected !== next.selected) return false;
-  if (prev.markerEnd !== next.markerEnd) return false;
-  if (prev.markerStart !== next.markerStart) return false;
-  return shallowEqualObject(prev.data, next.data);
-};
-
 export const TPEdge = memo(TPEdgeImpl, tpEdgePropsEqual);
 TPEdge.displayName = 'TPEdge';
