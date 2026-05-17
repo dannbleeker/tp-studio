@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 115 — Backlog drawdown + React 19 prep + lazy MarkdownPreview
+
+Six backlog items + a research deliverable, shipped over three commits.
+
+**Commit A (`a8d3ab8`) — research + tests + a11y fix.**
+- **React 19 upgrade prep analysis added to NEXT_STEPS.** Scan against React 19's hard deprecations: `createRoot` ✅, no string refs / legacy Context / `defaultProps` / `useImperativeHandle` / `propTypes`. One soft-deprecated `forwardRef` (Button.tsx) needs migration; rest of the codebase is clean. Suggested Phase A–D execution plan documented with cost estimates. Total cost: ~1–3 hours including Compiler enablement.
+- **Tier-2 #23 — Migration fixture coverage closed.** Added explicit v5 / v6 / v6-EC / v7 fixtures to `migrationsRoundTrip.test.ts`. v6-EC exercises the v6→v7 slot binding + necessity-edge upgrade. Total fixture tests: 5 → 9.
+- **Tier-2 #12 — Property-based test expansion closed.** Extracted `docArb` + child generators from `validatorsProperty.test.ts` into `tests/helpers/docArb.ts`. New `tests/services/shareLinkProperty.test.ts` verifies encode→decode round-trip preserves entity/edge keys + diagram type + entity titles for arbitrary docs. PB test files: 3 → 4.
+- **Session 114 a11y CI fix.** The new axe-core spec caught a real bug: `TitleBadge`'s input had no `aria-label`. Added `aria-label="Document title"` so the screen-reader name is independent of the input value. Dropped 3 stale `biome-ignore noConsole` markers in `e2e/perf-trace.spec.ts` (the rule doesn't apply to e2e specs; suppressions were ineffective).
+
+**Commit B (`2676acb`) — #4 wizard split + #14 lazy MarkdownPreview.**
+- **Tier-3 #14 closed.** `MarkdownField` now `lazy()`-imports `MarkdownPreview` behind a Suspense boundary. Component only renders when the user clicks Preview (Edit is default), so DOMPurify + micromark only land for users who actively preview. **Index chunk: 118.56 KB → 86.74 KB gzip — a 32 KB / 27% reduction.** Two new lazy chunks: `MarkdownPreview-*.js` (22 KB gz) + `purify.es-*.js` (9 KB gz, Rollup auto-split DOMPurify). Bundle budget re-pinned in `bundle-budget.json`: index ceiling 124 KB → 92 KB so future regression catches earlier.
+- **Tier-2 #4 — CreationWizardPanel split (partial).** Extracted `GOAL_TREE_STEPS` + `EC_STEP_BY_SLOT` + `EC_STEPS` + `EC_STEPS_D_FIRST` into `src/components/canvas/creationWizardSteps.ts`. Pure data, no state coupling. Panel: 596 → 547 LOC. Remaining panel logic (drag handler + commit) stays single-file — shared state resists further extraction without inventing a context that hurts more than it helps.
+
+**Commit C (`9e3ad3e`) — #13 mutation-testing infrastructure (dial-in deferred).**
+- **Stryker installed + configured.** `@stryker-mutator/core` + `vitest-runner` + `typescript-checker` added as devDeps. New `stryker.config.mjs` scopes mutation to `src/domain/**` with vitest test runner and HTML reporter at `reports/mutation/`. New `pnpm mutation` script.
+- **First-run dry-run hit known issue.** Stryker's vitest runner uses `vitest --related` to filter tests per mutant, but our tests import source via `@/` path aliases which don't show up in vitest's source-relationship graph. Result: "No tests were found" for any mutant. Without related filtering, the run would take multi-day runtime against 1195 tests × 6601 mutants. Three fix paths documented in `stryker.config.mjs` + NEXT_STEPS (relative imports, vitest `deps.inline`, or per-module scope). Each needs 30-60 min testing; total dial-in ~2-3 hours. Install + config are durable.
+- **Tier-2 #6 — `exactOptionalPropertyTypes` re-evaluated.** Same 272 errors as Session 112's evaluation. Pattern is dominated by `updateEntity` / `updateEdge` action signatures using `Partial<Omit<T, ...>>` which under exactOptional doesn't accept `{ field: undefined }` (the clear-the-field idiom). Realistic fix: `PartialWithUndefined<T>` helper type + retype the store actions + cascade through call sites. Confirmed as own-session work (2-3 hours) — half-flipping leaves the codebase worse than not having the flag.
+
+**End state:** **1195 tests passing** (was 1189; +6: 4 new migration fixtures + 2 share-link PB tests). tsc clean, biome clean, build clean, bundle budget within the new tighter index ceiling (84.7 KB vs. 92 KB). Three commits pushed; the maintainability arc continues.
+
 ## Session 114 — Tier 3 maintainability pass (bundle, SW, a11y, audits)
 
 Third and final tier of the 30-item under-the-hood improvement arc. Scoped tight after Dann's input: skip speculative perf (no profile signal), defer React 19 + `exactOptionalPropertyTypes` to dedicated future sessions, absorb manual keyboard pass into the automated a11y spec, push everything else to a documented backlog.
