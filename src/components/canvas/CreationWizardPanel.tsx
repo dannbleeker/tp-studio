@@ -1,4 +1,4 @@
-import { type ECSlot, EC_SLOTS_BY_ORDER, type WizardOrder } from '@/domain/ecGuiding';
+import { EC_SLOTS_BY_ORDER, type WizardOrder } from '@/domain/ecGuiding';
 import type { Entity } from '@/domain/types';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
@@ -7,6 +7,7 @@ import { ChevronUp, GripVertical, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { ECSlotIndicator } from './ECSlotIndicator';
+import { EC_STEPS, EC_STEPS_D_FIRST, GOAL_TREE_STEPS } from './creationWizardSteps';
 
 /**
  * Session 87 / EC PPT comparison item #3 — Reverse-direction (D-first)
@@ -55,63 +56,8 @@ import { ECSlotIndicator } from './ECSlotIndicator';
  * adds CSFs + the first NC as the user answers each step.
  */
 
-type StepDef = {
-  prompt: string;
-  placeholder: string;
-};
-
-const GOAL_TREE_STEPS: StepDef[] = [
-  {
-    prompt: "What is the Goal? One sentence — the system's purpose.",
-    placeholder: 'e.g. "Be the customer\'s first choice in our category"',
-  },
-  {
-    prompt: 'First Critical Success Factor — what must hold for the Goal?',
-    placeholder: 'e.g. "Customers consistently find what they need"',
-  },
-  {
-    prompt: 'Second Critical Success Factor.',
-    placeholder: 'e.g. "Customers trust the experience end-to-end"',
-  },
-  {
-    prompt: 'Third Critical Success Factor.',
-    placeholder: 'e.g. "Customers recommend us unprompted"',
-  },
-  {
-    prompt: 'First Necessary Condition — pick any CSF and name a prerequisite.',
-    placeholder: 'e.g. "Range covers ≥80% of relevant intent"',
-  },
-];
-
-/**
- * EC wizard prompts keyed by slot. The order is decided at render time
- * by `EC_SLOTS_BY_ORDER` so the same definitions back both the A-first
- * and D-first walks.
- */
-const EC_STEP_BY_SLOT: Record<ECSlot, StepDef> = {
-  a: {
-    prompt: 'What is the shared objective (A) both sides agree on?',
-    placeholder: 'e.g. "Run a sustainable business"',
-  },
-  b: {
-    prompt: 'Need B — what does the first side need to support A?',
-    placeholder: 'e.g. "Hit quarterly revenue targets"',
-  },
-  c: {
-    prompt: 'Need C — what does the other side need to support A?',
-    placeholder: 'e.g. "Sustain product quality"',
-  },
-  d: {
-    prompt: "Want D — the first side's prerequisite (will conflict with D′).",
-    placeholder: 'e.g. "Ship every feature on the roadmap"',
-  },
-  dPrime: {
-    prompt: "Want D′ — the other side's prerequisite (conflicts with D).",
-    placeholder: 'e.g. "Cut the roadmap to half and harden the core"',
-  },
-};
-const EC_STEPS: StepDef[] = EC_SLOTS_BY_ORDER.aFirst.map((slot) => EC_STEP_BY_SLOT[slot]);
-const EC_STEPS_D_FIRST: StepDef[] = EC_SLOTS_BY_ORDER.dFirst.map((slot) => EC_STEP_BY_SLOT[slot]);
+// Step definitions extracted to `./creationWizardSteps.ts` (Session 115
+// Tier-2 #4 structural refactor). Imported above.
 
 export function CreationWizardPanel() {
   // Session 94 (Top-30 #2) — consolidated 12 individual subscriptions

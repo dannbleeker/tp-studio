@@ -1,8 +1,24 @@
-import { MarkdownPreview } from '@/components/ui/MarkdownPreview';
 import clsx from 'clsx';
 import { Eye, Pencil } from 'lucide-react';
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { Field } from './Field';
+
+/**
+ * Session 115 / Tier-3 #14 — `MarkdownPreview` (along with its
+ * transitive deps: DOMPurify ~18 KB gz + the micromark parser stack
+ * ~25 KB gz) is now lazy-loaded. It only renders when the user
+ * actively switches to Preview mode (the default is Edit), so the
+ * markdown deps don't pay their cost on first paint or for users who
+ * never preview a description.
+ *
+ * Suspense fallback is a single-line placeholder that matches the
+ * surrounding preview surface so the flash on first preview-mode
+ * click is barely perceptible. After the chunk loads, all subsequent
+ * preview toggles in the session are instant (browser-cached chunk).
+ */
+const MarkdownPreview = lazy(() =>
+  import('@/components/ui/MarkdownPreview').then((m) => ({ default: m.MarkdownPreview }))
+);
 
 /**
  * Text input that doubles as a markdown preview. Toggle between Edit and
@@ -61,7 +77,9 @@ export function MarkdownField({
         />
       ) : (
         <div className="min-h-[4rem] rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 dark:border-neutral-800 dark:bg-neutral-900/50">
-          <MarkdownPreview source={value} />
+          <Suspense fallback={<p className="text-neutral-400 text-xs italic">Loading preview…</p>}>
+            <MarkdownPreview source={value} />
+          </Suspense>
         </div>
       )}
     </Field>
