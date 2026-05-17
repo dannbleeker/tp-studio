@@ -1,7 +1,7 @@
+import { describe, expect, it } from 'vitest';
 import type { ECSlot } from '@/domain/ecGuiding';
 import { buildExampleEC } from '@/domain/examples/ec';
 import { verbaliseEC } from '@/domain/verbalisation';
-import { describe, expect, it } from 'vitest';
 
 /**
  * Session 87 hotfix regression guard. Before this fix the EC example

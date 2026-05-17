@@ -1,11 +1,11 @@
+import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { renderEdgeSentence, resolveEdgeConnector } from '@/domain/edgeReading';
 import { validationFingerprint } from '@/domain/fingerprint';
 import { validate } from '@/domain/validators';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useDocumentStore } from '@/store';
-import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
-import { useEffect } from 'react';
-import { useShallow } from 'zustand/shallow';
 import { Button } from '../ui/Button';
 
 /**

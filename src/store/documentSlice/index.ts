@@ -1,14 +1,14 @@
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
-import { type DocMetaSlice, createDocMetaSlice, docMetaDefaults } from './docMetaSlice';
-import { type EdgesSlice, createEdgesSlice } from './edgesSlice';
-import { type EntitiesSlice, createEntitiesSlice } from './entitiesSlice';
-import { type GroupsSlice, createGroupsSlice } from './groupsSlice';
+import { createDocMetaSlice, type DocMetaSlice, docMetaDefaults } from './docMetaSlice';
+import { createEdgesSlice, type EdgesSlice } from './edgesSlice';
+import { createEntitiesSlice, type EntitiesSlice } from './entitiesSlice';
+import { createGroupsSlice, type GroupsSlice } from './groupsSlice';
 
+export type { ApplyDocChange } from './docMutate';
 // Re-export the shared helpers so external consumers (e.g. `quickCapture`
 // service which does its own `applyDocChange`-style flow) keep working.
-export { makeApplyDocChange, touch, entityPatch, edgePatch, scrubFromGroups } from './docMutate';
-export type { ApplyDocChange } from './docMutate';
+export { edgePatch, entityPatch, makeApplyDocChange, scrubFromGroups, touch } from './docMutate';
 
 /**
  * Document slice as the consumer-facing union of four sub-slices. Each

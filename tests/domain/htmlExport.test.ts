@@ -1,6 +1,6 @@
+import { describe, expect, it } from 'vitest';
 import { exportToSelfContainedHTML } from '@/domain/htmlExport';
 import type { EntityId } from '@/domain/types';
-import { describe, expect, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 /**

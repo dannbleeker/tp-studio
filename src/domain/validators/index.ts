@@ -165,13 +165,13 @@ export const validateTiered = (doc: TPDocument): Record<ClrTier, Warning[]> => {
   return out;
 };
 
+export { completeStepRule } from './completeStep';
 // Re-export per-rule entry points that real consumers (tests, callers)
 // import via `@/domain/validators`. Speculative re-exports for rules
 // that no consumer references were dropped — tests can still target a
 // single rule via direct `./clarity` imports if needed later, with no
 // boilerplate cost.
 export { cycleRule } from './cycle';
-export { completeStepRule } from './completeStep';
 export { ecMissingConflictRule } from './ecMissingConflict';
 export { externalRootCauseRule } from './externalRootCause';
 export type { UntieredWarning, ValidatorRule } from './shared';

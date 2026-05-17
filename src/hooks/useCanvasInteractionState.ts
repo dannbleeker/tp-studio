@@ -25,9 +25,10 @@
  * `useDocumentStore`. We subscribe via `useRFStore` and combine the
  * value with our store's flags in component scope.
  */
-import { useDocumentStore } from '@/store';
+
 import { useStore as useRFStore } from '@xyflow/react';
 import { useShallow } from 'zustand/shallow';
+import { useDocumentStore } from '@/store';
 
 export type CanvasInteractionState = {
   isEditing: boolean;

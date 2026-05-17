@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { edgesArray } from '@/domain/graph';
 import {
   computeCollapseProjection,
@@ -6,7 +7,6 @@ import {
 } from '@/domain/groups';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { useMemo } from 'react';
 
 /** The shape returned by `computeCollapseProjection` — derived rather than
  *  imported because the domain function inlines its return type. */

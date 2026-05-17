@@ -57,7 +57,11 @@ export const exportToFlyingLogic = (doc: TPDocument): string => {
 
   /** Look up the junctor groupId an edge belongs to (any kind), with the
    *  kind. Cross-kind exclusivity means at most one is set per edge. */
-  const edgeJunctor = (edge: { andGroupId?: string; orGroupId?: string; xorGroupId?: string }): {
+  const edgeJunctor = (edge: {
+    andGroupId?: string;
+    orGroupId?: string;
+    xorGroupId?: string;
+  }): {
     kind: JunctorKind;
     gid: string;
   } | null => {

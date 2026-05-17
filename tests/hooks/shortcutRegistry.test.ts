@@ -1,7 +1,7 @@
+import { describe, expect, it } from 'vitest';
 import { SHORTCUTS } from '@/domain/shortcuts';
 import GLOBAL_HOOK_SOURCE from '@/hooks/useGlobalShortcuts.ts?raw';
 import SELECTION_HOOK_SOURCE from '@/hooks/useSelectionShortcuts.ts?raw';
-import { describe, expect, it } from 'vitest';
 
 /**
  * Source-text link check. The shortcut registry is the single source of

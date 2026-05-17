@@ -6,9 +6,9 @@
 // `tests/stubs/virtual-pwa-register.ts` so jsdom can exercise the
 // callback shapes without a real SW.
 
+import { beforeEach, describe, expect, it } from 'vitest';
 import { __resetPwaUpdateForTest, initPwaUpdateToast } from '@/services/pwaUpdate';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 // The vitest alias in `vite.config.ts` makes `virtual:pwa-register`
 // resolve to `tests/stubs/virtual-pwa-register.ts`. We import the
 // test helpers directly via the stub's filesystem path because the

@@ -1,6 +1,6 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { layoutFingerprint, validationFingerprint } from '@/domain/fingerprint';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

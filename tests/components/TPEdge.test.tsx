@@ -1,10 +1,10 @@
-import { TPEdge } from '@/components/canvas/TPEdge';
-import type { TPEdgeData } from '@/components/canvas/flow-types';
-import { buildExampleEC } from '@/domain/examples/ec';
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { cleanup, render } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { TPEdgeData } from '@/components/canvas/flow-types';
+import { TPEdge } from '@/components/canvas/TPEdge';
+import { buildExampleEC } from '@/domain/examples/ec';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);

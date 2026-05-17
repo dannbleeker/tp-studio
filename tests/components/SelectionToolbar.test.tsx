@@ -19,12 +19,13 @@
  * the "renders when rect is non-null" path; pixel-exact positioning
  * gets coverage in the Playwright e2e.
  */
-import { SelectionToolbar } from '@/components/canvas/SelectionToolbar';
-import { resetStoreForTest, useDocumentStore } from '@/store';
+
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SelectionToolbar } from '@/components/canvas/SelectionToolbar';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 // Stub `getSelectionViewportRect` to return a deterministic rect.

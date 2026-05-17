@@ -1,6 +1,6 @@
+import { useShallow } from 'zustand/shallow';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { useDocumentStore } from '@/store';
-import { useShallow } from 'zustand/shallow';
 
 /**
  * Shared store subscription bundle for the TopBar cluster — `TopBar` itself

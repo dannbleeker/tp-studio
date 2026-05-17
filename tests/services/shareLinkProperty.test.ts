@@ -19,9 +19,10 @@
  * surface that should round-trip means adding it to the arb there,
  * and every PB test inherits the coverage.
  */
-import { generateShareLink, parseShareHash } from '@/services/shareLink';
+
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { generateShareLink, parseShareHash } from '@/services/shareLink';
 import { docArb } from '../helpers/docArb';
 
 describe('share-link — property-based round-trip', () => {

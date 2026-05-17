@@ -1,12 +1,12 @@
+import clsx from 'clsx';
+import { FileDown, Printer } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { structuralEntities } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { log } from '@/services/logger';
 import { exportToVectorPdf } from '@/services/pdfExport';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { FileDown, Printer } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Button } from '../ui/Button';
 import { LargeDialog } from '../ui/LargeDialog';
 

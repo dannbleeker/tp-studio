@@ -1,5 +1,5 @@
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 
 /**
  * Session 83 — `spliceEntityIntoEdge(entityId, edgeId)` takes an

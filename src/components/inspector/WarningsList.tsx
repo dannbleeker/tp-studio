@@ -1,8 +1,8 @@
+import clsx from 'clsx';
+import { AlertCircle, CheckCircle2, Wand2 } from 'lucide-react';
 import type { ClrTier, Warning } from '@/domain/types';
 import { runWarningAction } from '@/services/warningActions';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { AlertCircle, CheckCircle2, Wand2 } from 'lucide-react';
 
 /**
  * Three-level CLR taxonomy (Block C / E5). Inspector renders warnings

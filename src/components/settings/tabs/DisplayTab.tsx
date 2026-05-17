@@ -1,7 +1,7 @@
+import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
 import type { CausalityLabel, DefaultLayoutDirection } from '@/store';
 import { useDocumentStore } from '@/store';
-import { useShallow } from 'zustand/shallow';
 import { RadioGroup, Section, Toggle } from '../formPrimitives';
 
 const CAUSALITY_OPTIONS: { id: CausalityLabel; label: string; hint?: string }[] = [

@@ -1,6 +1,6 @@
+import type { ReactFlowInstance } from '@xyflow/react';
 import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/flow-types';
 import { useDocumentStore } from '@/store';
-import type { ReactFlowInstance } from '@xyflow/react';
 
 // The active React Flow instance, parameterized with our concrete node and
 // edge types. Set on RF onInit, cleared on canvas unmount. Lets command-palette

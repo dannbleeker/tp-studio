@@ -1,6 +1,6 @@
 import { incomingEdges } from '../graph';
 import type { Entity, TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Session 76 / FL-DT4 S&T discipline rule.

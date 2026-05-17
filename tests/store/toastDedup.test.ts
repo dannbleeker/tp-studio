@@ -1,5 +1,5 @@
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 
 /**
  * Session-68 #10: `showToast` deduplicates against the queue so a single

@@ -1,10 +1,10 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   renderEdgeSentence,
   resolveCausalityWord,
   resolveEdgeConnector,
   topologicalEdgeOrder,
 } from '@/domain/edgeReading';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(() => {

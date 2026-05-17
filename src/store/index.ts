@@ -1,6 +1,6 @@
+import { create } from 'zustand';
 import { cancelPendingPersist } from '@/services/persistDebounced';
 import { setStorageErrorListener } from '@/services/storage';
-import { create } from 'zustand';
 import { createDocumentSlice, documentDefaults } from './documentSlice';
 import { createHistorySlice, historyDefaults } from './historySlice';
 import { createRevisionsSlice, revisionsDefaults } from './revisionsSlice';

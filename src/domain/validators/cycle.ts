@@ -1,6 +1,6 @@
 import { findCycles, outgoingEdges } from '../graph';
 import type { Edge, TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Cycle CLR rule (E3 — Bucket E extension). CLR is built on sufficiency

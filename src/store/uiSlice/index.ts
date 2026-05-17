@@ -1,16 +1,16 @@
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
-import { type DialogsSlice, createDialogsSlice, dialogsDefaults } from './dialogsSlice';
+import { createDialogsSlice, type DialogsSlice, dialogsDefaults } from './dialogsSlice';
 import {
-  type PreferencesSlice,
   createPreferencesSlice,
+  type PreferencesSlice,
   preferencesDefaults,
 } from './preferencesSlice';
-import { type SearchSlice, createSearchSlice, searchDefaults } from './searchSlice';
-import { type SelectionSlice, createSelectionSlice, selectionDefaults } from './selectionSlice';
+import { createSearchSlice, type SearchSlice, searchDefaults } from './searchSlice';
+import { createSelectionSlice, type SelectionSlice, selectionDefaults } from './selectionSlice';
 import {
-  type WalkthroughSlice,
   createWalkthroughSlice,
+  type WalkthroughSlice,
   walkthroughDefaults,
 } from './walkthroughSlice';
 
@@ -25,8 +25,8 @@ export type {
   DefaultLayoutDirection,
   EdgePalette,
   LayoutMode,
-  Selection,
   SearchOptions,
+  Selection,
   StoredPrefs,
   Theme,
   Toast,

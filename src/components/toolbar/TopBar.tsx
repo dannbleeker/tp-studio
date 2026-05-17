@@ -1,5 +1,3 @@
-import { SHORTCUT_BY_ID, shortcutToAria } from '@/domain/shortcuts';
-import { useDocumentStore } from '@/store';
 import {
   HelpCircle,
   History,
@@ -12,6 +10,8 @@ import {
   Sun,
   Undo2,
 } from 'lucide-react';
+import { SHORTCUT_BY_ID, shortcutToAria } from '@/domain/shortcuts';
+import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { KebabMenu } from './KebabMenu';
 import { useToolbarActions } from './useToolbarActions';

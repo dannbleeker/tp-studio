@@ -1,7 +1,7 @@
-import { exportToJSON, importFromJSON } from '@/domain/persistence';
-import { TEMPLATE_SPECS, buildTemplate, loadTemplate } from '@/templates';
-import { templateThumbnailSvg } from '@/templates/thumbnail';
 import { describe, expect, it } from 'vitest';
+import { exportToJSON, importFromJSON } from '@/domain/persistence';
+import { buildTemplate, loadTemplate, TEMPLATE_SPECS } from '@/templates';
+import { templateThumbnailSvg } from '@/templates/thumbnail';
 
 /**
  * Session 79 / brief §12 — Templates library smoke tests.

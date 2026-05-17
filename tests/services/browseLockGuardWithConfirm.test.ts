@@ -1,6 +1,6 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { seedConnectedPair } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

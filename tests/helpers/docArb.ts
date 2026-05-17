@@ -13,6 +13,8 @@
  * specific arbitraries here when a test needs them rather than
  * sprinkling new arbitraries through individual test files.
  */
+
+import * as fc from 'fast-check';
 import type {
   DiagramType,
   DocumentId,
@@ -24,7 +26,6 @@ import type {
   EntityType,
   TPDocument,
 } from '@/domain/types';
-import * as fc from 'fast-check';
 
 export const idArb = <T extends string>(prefix: string) =>
   fc

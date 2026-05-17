@@ -1,5 +1,5 @@
-import { errorMessage } from '@/services/errors';
 import { describe, expect, it } from 'vitest';
+import { errorMessage } from '@/services/errors';
 
 describe('errorMessage', () => {
   it('returns message from an Error instance', () => {

@@ -1,6 +1,6 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { findMatches } from '@/domain/search';
 import type { Group, GroupId } from '@/domain/types';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { makeDoc, makeEntity, resetIds } from './helpers';
 
 beforeEach(resetIds);

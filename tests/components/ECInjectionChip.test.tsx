@@ -1,7 +1,7 @@
-import { ECInjectionChip } from '@/components/canvas/ECInjectionChip';
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { ECInjectionChip } from '@/components/canvas/ECInjectionChip';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);

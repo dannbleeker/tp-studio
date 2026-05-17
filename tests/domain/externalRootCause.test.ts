@@ -1,6 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { externalRootCauseRule, validate } from '@/domain/validators';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

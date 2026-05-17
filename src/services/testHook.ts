@@ -39,11 +39,7 @@ export interface TpTestHook {
    * actions. The default `clear` resets localStorage too so a previous
    * test's autosave doesn't leak in.
    */
-  seed: (opts: {
-    type?: EntityType;
-    titles: string[];
-    clear?: boolean;
-  }) => string[];
+  seed: (opts: { type?: EntityType; titles: string[]; clear?: boolean }) => string[];
   /**
    * Connect two seeded entities by id with a sufficiency edge. Returns
    * the edge id, or null if the pair would create a self-loop / dupe.

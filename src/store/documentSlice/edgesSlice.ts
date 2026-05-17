@@ -1,9 +1,9 @@
+import { nanoid } from 'nanoid';
+import type { StateCreator } from 'zustand';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { createEdge, createEntity } from '@/domain/factory';
 import { hasEdge } from '@/domain/graph';
 import type { AttrValue, Edge, EdgeWeight, Entity, Patch } from '@/domain/types';
-import { nanoid } from 'nanoid';
-import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
 import { edgePatch, makeApplyDocChange, touch } from './docMutate';
 
@@ -395,7 +395,7 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
     removeEdgeAttribute: (edgeId, key) => {
       applyDocChange((prev) => {
         const cur = prev.edges[edgeId];
-        if (!cur || !cur.attributes || !(key in cur.attributes)) return prev;
+        if (!cur?.attributes || !(key in cur.attributes)) return prev;
         const { [key]: _drop, ...rest } = cur.attributes;
         // Emit-or-omit pattern (same as removeEntityAttribute in
         // entitiesSlice): when the map empties we drop the attributes

@@ -1,10 +1,10 @@
+import { useMemo } from 'react';
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { rootCauseReachCounts, udeReachCounts } from '@/domain/coreDriver';
 import { descendantIds } from '@/domain/groups';
 import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisions';
 import type { TPDocument } from '@/domain/types';
 import { Z } from '@/domain/zLayers';
-import { useMemo } from 'react';
 import type { AnyTPNode, TPCollapsedGroupNode, TPGroupNode, TPNode } from './flow-types';
 import {
   COLLAPSED_HEIGHT,

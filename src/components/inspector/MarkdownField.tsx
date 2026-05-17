@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { Eye, Pencil } from 'lucide-react';
-import { Suspense, lazy, useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Field } from './Field';
 
 /**

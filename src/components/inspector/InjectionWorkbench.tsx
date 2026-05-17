@@ -1,8 +1,8 @@
-import type { Assumption, Entity } from '@/domain/types';
-import { useDocumentStore } from '@/store';
 import { Plus, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
+import type { Assumption, Entity } from '@/domain/types';
+import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 
 /**

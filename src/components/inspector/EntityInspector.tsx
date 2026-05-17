@@ -1,13 +1,13 @@
-import { type ECSlot, EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL } from '@/domain/ecGuiding';
+import clsx from 'clsx';
+import { Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
+import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL, type ECSlot } from '@/domain/ecGuiding';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { ST_FACET_KEYS } from '@/domain/graph';
 import type { EntityType, Warning } from '@/domain/types';
 import { useEntity } from '@/hooks/useSelected';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
 import { TextArea, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { AttachedEdgesList } from './AttachedEdgesList';
@@ -16,13 +16,7 @@ import { Field } from './Field';
 import { MarkdownField } from './MarkdownField';
 import { WarningsList } from './WarningsList';
 
-export function EntityInspector({
-  entityId,
-  warnings,
-}: {
-  entityId: string;
-  warnings: Warning[];
-}) {
+export function EntityInspector({ entityId, warnings }: { entityId: string; warnings: Warning[] }) {
   const entity = useEntity(entityId);
   // Session 87 — narrow store subscriptions to only the fields the
   // inspector actually consumes. Pre-fix, this component subscribed to

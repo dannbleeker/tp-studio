@@ -1,6 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { exportToOpml } from '@/domain/opmlExport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { seedChain, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

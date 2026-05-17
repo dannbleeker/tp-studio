@@ -1,6 +1,5 @@
-import { completeStepRule } from '@/domain/validators';
-import { validate } from '@/domain/validators';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { completeStepRule, validate } from '@/domain/validators';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(() => {

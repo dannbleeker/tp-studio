@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import {
   computePageCount,
   decodeSvgDataUrl,
@@ -5,7 +6,6 @@ import {
   resolvePagePlaceholders,
 } from '@/services/pdfExport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { describe, expect, it } from 'vitest';
 
 /**
  * Session 80 — direct tests of the pdfExport helpers.

@@ -1,10 +1,10 @@
+import clsx from 'clsx';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { useDocumentStore } from '@/store';
-import { TEMPLATE_SPECS, buildTemplate } from '@/templates';
+import { buildTemplate, TEMPLATE_SPECS } from '@/templates';
 import { TemplateThumbnail } from '@/templates/thumbnail';
-import clsx from 'clsx';
-import { LargeDialog } from '../ui/LargeDialog';
 import { CARD_FOCUS } from '../ui/focusClasses';
+import { LargeDialog } from '../ui/LargeDialog';
 
 /**
  * Session 79 / brief §12 — Templates picker dialog.

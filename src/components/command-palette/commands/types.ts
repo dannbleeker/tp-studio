@@ -1,6 +1,6 @@
+import type { LucideIcon } from 'lucide-react';
 import { guardWriteOrToast } from '@/services/browseLock';
 import type { DocumentStore } from '@/store';
-import type { LucideIcon } from 'lucide-react';
 
 /**
  * One command in the palette. `group` drives the section headers the

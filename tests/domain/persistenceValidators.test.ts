@@ -1,9 +1,9 @@
+import { describe, expect, it } from 'vitest';
 import {
   validateLayoutConfig,
   validateMethodChecklist,
   validateSystemScope,
 } from '@/domain/persistenceValidators';
-import { describe, expect, it } from 'vitest';
 
 /**
  * The "soft" persistence validators (the ones that drop bad fields

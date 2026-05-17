@@ -1,7 +1,7 @@
-import { EdgeInspector } from '@/components/inspector/EdgeInspector';
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { EdgeInspector } from '@/components/inspector/EdgeInspector';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedAndGroupable, seedConnectedPair } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

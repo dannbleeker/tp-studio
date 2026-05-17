@@ -1,7 +1,7 @@
-import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from '@/domain/migrations';
-import { importFromJSON } from '@/domain/persistence';
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from '@/domain/migrations';
+import { importFromJSON } from '@/domain/persistence';
 
 /**
  * Session 85 / #13 — property-based coverage for the migration chain.

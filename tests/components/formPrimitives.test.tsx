@@ -1,6 +1,6 @@
-import { RadioGroup, Section, Slider, Toggle } from '@/components/settings/formPrimitives';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { RadioGroup, Section, Slider, Toggle } from '@/components/settings/formPrimitives';
 
 afterEach(cleanup);
 

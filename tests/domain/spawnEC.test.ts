@@ -1,6 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

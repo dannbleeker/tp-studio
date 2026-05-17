@@ -1,7 +1,7 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { exportToMermaid } from '@/domain/mermaidExport';
 import { importFromMermaid } from '@/domain/mermaidImport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { seedAndGroupable, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

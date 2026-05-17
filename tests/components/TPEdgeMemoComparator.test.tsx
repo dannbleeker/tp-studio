@@ -19,9 +19,10 @@
  * If the comparator returns `true`, React skips the re-render — and
  * vice versa.
  */
+
+import { describe, expect, it } from 'vitest';
 import { shallowEqualObject, tpEdgePropsEqual } from '@/components/canvas/TPEdge';
 import { tpNodePropsEqual } from '@/components/canvas/TPNode';
-import { describe, expect, it } from 'vitest';
 
 const makeEdgeProps = (overrides: Record<string, unknown> = {}) =>
   ({

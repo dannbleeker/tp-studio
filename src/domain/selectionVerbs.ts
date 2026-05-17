@@ -30,8 +30,8 @@
  * the palette once the verb earns its keep.
  */
 
-import type { ContextMenuTarget, DocumentStore, Selection } from '@/store';
 import type { LucideIcon } from 'lucide-react';
+import type { ContextMenuTarget, DocumentStore, Selection } from '@/store';
 
 /**
  * Discriminated union over the kinds of selection contexts a verb

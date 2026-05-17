@@ -1,5 +1,5 @@
-import { useDocumentStore } from '@/store';
 import { useEffect } from 'react';
+import { useDocumentStore } from '@/store';
 
 const ANIM_SPEED_MULTIPLIER = {
   instant: '0',

@@ -1,5 +1,5 @@
-import { exportAnnotationsMarkdown, exportAnnotationsText } from '@/services/annotationsExport';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { exportAnnotationsMarkdown, exportAnnotationsText } from '@/services/annotationsExport';
 import { makeDoc, makeEntity, resetIds } from '../domain/helpers';
 
 beforeEach(resetIds);

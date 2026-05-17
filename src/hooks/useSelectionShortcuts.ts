@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { SIBLING_Y_TOLERANCE_PX } from '@/domain/constants';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { reachableBackward, reachableForward } from '@/domain/graph';
@@ -6,8 +8,6 @@ import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
-import { useEffect } from 'react';
-import { useShallow } from 'zustand/shallow';
 import { isEditableTarget } from './keyboardUtils';
 
 /**

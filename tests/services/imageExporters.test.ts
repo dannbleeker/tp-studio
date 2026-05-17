@@ -1,6 +1,6 @@
-import { exportJPEG, exportPNG, exportSVG } from '@/services/exporters/image';
 import type { Node } from '@xyflow/react';
 import { describe, expect, it } from 'vitest';
+import { exportJPEG, exportPNG, exportSVG } from '@/services/exporters/image';
 
 /**
  * The three image exporters delegate the heavy lifting to `html-to-image`,

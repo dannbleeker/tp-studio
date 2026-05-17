@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import {
   isDiagramType,
   isEdgeKind,
@@ -6,7 +7,6 @@ import {
   isStringArray,
   isTrueMap,
 } from '@/domain/guards';
-import { describe, expect, it } from 'vitest';
 
 /**
  * Type guards are the gatekeepers between `unknown`-typed JSON and the

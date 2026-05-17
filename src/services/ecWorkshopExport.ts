@@ -1,8 +1,8 @@
 import {
   ALL_EC_SLOTS,
-  type ECSlot,
   EC_SLOT_GUIDING_QUESTIONS,
   EC_SLOT_LABEL,
+  type ECSlot,
 } from '@/domain/ecGuiding';
 import type { Entity, TPDocument } from '@/domain/types';
 import { loadJsPdf } from '@/services/exporters/pdfShared';

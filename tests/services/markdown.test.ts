@@ -1,8 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { renderMarkdown } from '@/services/markdown';
+
 import { describe, expect, it } from 'vitest';
+import { renderMarkdown } from '@/services/markdown';
 
 describe('renderMarkdown', () => {
   it('returns an empty string for empty input', () => {

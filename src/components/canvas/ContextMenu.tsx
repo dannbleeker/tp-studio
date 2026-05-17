@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { COMMANDS } from '@/components/command-palette/commands';
 import { defaultEntityType, paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { presetByTitle } from '@/domain/groupPresets';
@@ -10,8 +12,6 @@ import { useEntity } from '@/hooks/useSelected';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { confirmAndDeleteEntity, confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
-import { useEffect, useRef } from 'react';
-import { useShallow } from 'zustand/shallow';
 
 type MenuItem =
   | { kind: 'action'; label: string; destructive?: boolean; run: () => void }
@@ -172,8 +172,8 @@ export function ContextMenu() {
       ref.current.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
     );
     if (items.length === 0) return;
-    const active = document.activeElement;
-    const idx = items.findIndex((el) => el === active);
+    const active = document.activeElement as HTMLButtonElement | null;
+    const idx = active ? items.indexOf(active) : -1;
     const focus = (i: number) => {
       const n = ((i % items.length) + items.length) % items.length;
       items[n]?.focus();

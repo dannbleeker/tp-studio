@@ -1,11 +1,11 @@
+import { RotateCcw } from 'lucide-react';
+import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
 import { Button } from '@/components/ui/Button';
 import { LAYOUT_NODE_SEPARATION, LAYOUT_RANK_SEPARATION } from '@/domain/constants';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import type { LayoutConfig } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { RotateCcw } from 'lucide-react';
-import { useShallow } from 'zustand/shallow';
 import { RadioGroup, Section, Slider } from '../formPrimitives';
 
 /**

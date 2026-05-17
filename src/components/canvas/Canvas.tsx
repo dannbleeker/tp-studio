@@ -1,3 +1,6 @@
+import { Background, BackgroundVariant, Controls, MiniMap, ReactFlow } from '@xyflow/react';
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { findSpliceTargetEdge } from '@/domain/dragSplice';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { edgesArray } from '@/domain/graph';
@@ -5,9 +8,6 @@ import { GRID_DOT } from '@/domain/tokens';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
-import { Background, BackgroundVariant, Controls, MiniMap, ReactFlow } from '@xyflow/react';
-import { useEffect } from 'react';
-import { useShallow } from 'zustand/shallow';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
 import { Breadcrumb } from './Breadcrumb';
 import { CreationWizardPanel } from './CreationWizardPanel';
@@ -21,10 +21,10 @@ import { TPCollapsedGroupNode } from './TPCollapsedGroupNode';
 import { TPEdge } from './TPEdge';
 import { TPGroupNode } from './TPGroupNode';
 import { TPNode } from './TPNode';
-import { ZoomPercent } from './ZoomPercent';
 import { useGraphMutations } from './useGraphMutations';
 import { useGraphView } from './useGraphView';
 import { useSearchDimming } from './useSearchDimming';
+import { ZoomPercent } from './ZoomPercent';
 
 const nodeTypes = {
   tp: TPNode,

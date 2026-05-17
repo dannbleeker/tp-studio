@@ -1,8 +1,8 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { loadFromLocalStorage } from '@/domain/persistence';
 import { flushPersist } from '@/services/persistDebounced';
 import { STORAGE_KEYS } from '@/services/storage';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 beforeEach(() => {

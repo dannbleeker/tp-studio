@@ -1,8 +1,8 @@
-import { computeRevisionDiff, summarizeRevisionDiff } from '@/domain/revisions';
-import type { Revision } from '@/domain/revisions';
 import clsx from 'clsx';
 import { Columns2, Eye, GitBranch, Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import type { Revision } from '@/domain/revisions';
+import { computeRevisionDiff, summarizeRevisionDiff } from '@/domain/revisions';
 import { formatRelativeTime } from './formatTime';
 
 /**

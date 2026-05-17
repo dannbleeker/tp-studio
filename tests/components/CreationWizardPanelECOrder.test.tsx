@@ -1,7 +1,7 @@
-import { CreationWizardPanel } from '@/components/canvas/CreationWizardPanel';
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { CreationWizardPanel } from '@/components/canvas/CreationWizardPanel';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);

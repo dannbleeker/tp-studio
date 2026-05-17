@@ -1,10 +1,10 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { PALETTE_BY_DIAGRAM, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { isNonCausal, isNote, structuralEntities } from '@/domain/graph';
 import { exportReasoningNarrative, exportReasoningOutline } from '@/domain/reasoningExport';
 import { clarityRule } from '@/domain/validators/clarity';
 import { entityExistenceRule } from '@/domain/validators/entityExistence';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { seedChain, seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

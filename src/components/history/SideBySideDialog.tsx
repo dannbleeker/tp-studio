@@ -1,16 +1,16 @@
+import { X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { NODE_HALF_HEIGHT, NODE_HALF_WIDTH, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { structuralEntities } from '@/domain/graph';
 import {
+  computeDetailedRevisionDiff,
   type DetailedRevisionDiff,
   type EntityDiffStatus,
-  computeDetailedRevisionDiff,
   entityStatusFromDiff,
 } from '@/domain/revisions';
 import type { Entity, TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
 
 // Outer padding around the laid-out content so cards near the edge don't
 // clip the panel's scroll container. Card dimensions themselves come from

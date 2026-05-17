@@ -1,10 +1,10 @@
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboard';
 import { flushPersist } from '@/services/persistDebounced';
 import { useDocumentStore } from '@/store';
-import { useEffect } from 'react';
-import { useShallow } from 'zustand/shallow';
 import { isEditableTarget } from './keyboardUtils';
 
 /**

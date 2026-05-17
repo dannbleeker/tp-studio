@@ -1,9 +1,9 @@
+import { cleanup, renderHook, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useGraphPositions } from '@/components/canvas/useGraphPositions';
 import type { GraphProjection } from '@/components/canvas/useGraphProjection';
 import { createDocument } from '@/domain/factory';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { cleanup, renderHook, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 /**
  * Session 85 / #16 — direct coverage for `useGraphPositions`. The hook

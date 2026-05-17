@@ -1,7 +1,7 @@
+import { describe, expect, it } from 'vitest';
 import { createDocument } from '@/domain/factory';
 import { computeRevisionDiff, isEmptyDiff, summarizeRevisionDiff } from '@/domain/revisions';
 import type { Edge, EdgeId, Entity, EntityId, TPDocument } from '@/domain/types';
-import { describe, expect, it } from 'vitest';
 
 /**
  * Domain tests for the revision diff. `computeRevisionDiff` is a pure

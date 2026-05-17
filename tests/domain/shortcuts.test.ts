@@ -1,12 +1,12 @@
+import { describe, expect, it } from 'vitest';
 import {
   PALETTE_KBD_BY_COMMAND_ID,
-  SHORTCUTS,
-  SHORTCUTS_BY_GROUP,
+  paletteKbdForCommand,
   SHORTCUT_BY_ID,
   SHORTCUT_GROUP_TITLE,
-  paletteKbdForCommand,
+  SHORTCUTS,
+  SHORTCUTS_BY_GROUP,
 } from '@/domain/shortcuts';
-import { describe, expect, it } from 'vitest';
 
 /**
  * Sanity-pin the shortcut registry — the file is meant to be the single

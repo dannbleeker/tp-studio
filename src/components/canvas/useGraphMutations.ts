@@ -1,5 +1,3 @@
-import { guardWriteOrToast } from '@/services/browseLock';
-import { useDocumentStore } from '@/store';
 import type {
   Connection,
   EdgeChange,
@@ -9,6 +7,8 @@ import type {
 } from '@xyflow/react';
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { guardWriteOrToast } from '@/services/browseLock';
+import { useDocumentStore } from '@/store';
 
 /**
  * React Flow → store bridge for canvas mutations.

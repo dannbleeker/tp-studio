@@ -1,7 +1,7 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildExampleCRT } from '@/domain/examples/crt';
 import { buildExampleEC } from '@/domain/examples/ec';
 import { exportECWorkshopSheet } from '@/services/ecWorkshopExport';
-import { afterEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * Session 87 / EC PPT comparison item #5 — workshop-handout export.

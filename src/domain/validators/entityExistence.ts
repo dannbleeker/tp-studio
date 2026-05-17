@@ -1,7 +1,7 @@
 import { DISCONNECTED_GRAPH_FLOOR } from '../constants';
 import { incomingEdges, isNonCausal, outgoingEdges } from '../graph';
 import type { TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Entity-existence CLR rule. Two failure modes:

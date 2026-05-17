@@ -1,5 +1,5 @@
-import { importFromJSON } from '@/domain/persistence';
 import { describe, expect, it } from 'vitest';
+import { importFromJSON } from '@/domain/persistence';
 
 /**
  * Migration round-trip — feed `importFromJSON` a minimal document at each

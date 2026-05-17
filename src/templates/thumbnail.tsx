@@ -1,5 +1,5 @@
-import { ENTITY_STRIPE_COLOR } from '@/domain/tokens';
 import type { ReactElement } from 'react';
+import { ENTITY_STRIPE_COLOR } from '@/domain/tokens';
 import type { TemplateSpec } from './shared';
 
 /**

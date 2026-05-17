@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
-import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { useDocumentStore } from '@/store';
 import { AppearanceTab } from './tabs/AppearanceTab';
 import { BehaviorTab } from './tabs/BehaviorTab';
 import { DisplayTab } from './tabs/DisplayTab';

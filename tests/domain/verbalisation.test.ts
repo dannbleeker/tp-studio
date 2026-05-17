@@ -1,6 +1,6 @@
-import type { EntityId } from '@/domain/types';
-import { verbaliseEC, verbalisedECText } from '@/domain/verbalisation';
 import { describe, expect, it } from 'vitest';
+import type { EntityId } from '@/domain/types';
+import { verbalisedECText, verbaliseEC } from '@/domain/verbalisation';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 /**

@@ -1,7 +1,7 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { goalTreeMultipleGoalsRule } from '@/domain/validators/goalTreeMultipleGoals';
 import { runWarningAction } from '@/services/warningActions';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 
 beforeEach(resetStoreForTest);
 

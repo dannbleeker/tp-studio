@@ -1,11 +1,11 @@
+import clsx from 'clsx';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
 import type { DiagramType } from '@/domain/types';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { LargeDialog } from '../ui/LargeDialog';
 import { CARD_FOCUS } from '../ui/focusClasses';
+import { LargeDialog } from '../ui/LargeDialog';
 
 /**
  * Session 90 — DiagramTypePicker.

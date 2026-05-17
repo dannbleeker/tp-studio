@@ -1,10 +1,11 @@
 /**
  * @vitest-environment jsdom
  */
-import { useThemeClass } from '@/hooks/useThemeClass';
-import { resetStoreForTest, useDocumentStore } from '@/store';
+
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { useThemeClass } from '@/hooks/useThemeClass';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(() => {
   resetStoreForTest();

@@ -1,7 +1,7 @@
+import type { StateCreator } from 'zustand';
 import { createGroup } from '@/domain/factory';
 import { wouldCreateCycle } from '@/domain/groups';
 import type { EntityId, Group, GroupColor } from '@/domain/types';
-import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
 import { makeApplyDocChange, touch } from './docMutate';
 
@@ -132,7 +132,7 @@ export const createGroupsSlice: StateCreator<RootStore, [], [], GroupsSlice> = (
     removeFromGroup: (groupId, memberId) => {
       applyDocChange((prev) => {
         const cur = prev.groups[groupId];
-        if (!cur || !cur.memberIds.includes(memberId)) return prev;
+        if (!cur?.memberIds.includes(memberId)) return prev;
         const next: Group = {
           ...cur,
           memberIds: cur.memberIds.filter((m) => m !== memberId),

@@ -1,7 +1,7 @@
 import { CLARITY_WORD_LIMIT } from '../constants';
 import { isNote } from '../graph';
 import type { TPDocument } from '../types';
-import { type UntieredWarning, countWords, makeWarning } from './shared';
+import { countWords, makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Clarity CLR rule — flags titles that violate "one short declarative

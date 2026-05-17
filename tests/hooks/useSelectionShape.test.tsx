@@ -1,7 +1,7 @@
-import { useSelectionShape } from '@/hooks/useSelectionShape';
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { useSelectionShape } from '@/hooks/useSelectionShape';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

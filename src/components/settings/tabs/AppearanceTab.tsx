@@ -1,8 +1,8 @@
+import clsx from 'clsx';
+import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
 import type { EdgePalette, Theme } from '@/store';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { useShallow } from 'zustand/shallow';
 import { RadioGroup, Section } from '../formPrimitives';
 
 /**

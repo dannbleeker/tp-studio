@@ -1,5 +1,5 @@
-import { computeLayout } from '@/domain/layout';
 import { describe, expect, it } from 'vitest';
+import { computeLayout } from '@/domain/layout';
 
 const box = (id: string) => ({ id, width: 200, height: 80 });
 

@@ -1,6 +1,6 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { guardWriteOrToast, isBrowseLocked } from '@/services/browseLock';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 
 beforeEach(resetStoreForTest);
 

@@ -1,7 +1,7 @@
+import { useReactFlow, useStore as useRFStore } from '@xyflow/react';
+import { useMemo } from 'react';
 import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS } from '@/domain/constants';
 import { useDocumentStore } from '@/store';
-import { useStore as useRFStore, useReactFlow } from '@xyflow/react';
-import { useMemo } from 'react';
 
 /**
  * E6 (AND) + Bundle 8 / FL-ED3 + FL-ED4 — Flying-Logic-style junctors.

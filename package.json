@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.4.15",
     "@playwright/test": "^1.48.0",
     "@storybook/react": "^10.4.0",
     "@storybook/react-vite": "^10.4.0",
@@ -94,7 +94,13 @@
   },
   "packageManager": "pnpm@10.33.4",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "@biomejs/biome", "simple-git-hooks"],
-    "ignoredBuiltDependencies": ["core-js"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@biomejs/biome",
+      "simple-git-hooks"
+    ],
+    "ignoredBuiltDependencies": [
+      "core-js"
+    ]
   }
 }

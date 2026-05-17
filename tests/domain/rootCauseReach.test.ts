@@ -1,6 +1,6 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { rootCauseReachCounts } from '@/domain/coreDriver';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

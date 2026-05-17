@@ -1,7 +1,7 @@
-import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
-import { useDocumentStore } from '@/store';
 import type { NodeProps } from '@xyflow/react';
 import clsx from 'clsx';
+import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
+import { useDocumentStore } from '@/store';
 import type { TPGroupNode as TPGroupNodeType } from './flow-types';
 
 /**
@@ -28,7 +28,7 @@ export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
       <button
         type="button"
         className={clsx(
-          '-top-2.5 pointer-events-auto absolute left-3 cursor-pointer rounded-md bg-white px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide shadow-sm dark:bg-neutral-950',
+          'pointer-events-auto absolute -top-2.5 left-3 cursor-pointer rounded-md bg-white px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide shadow-sm dark:bg-neutral-950',
           colors.text
         )}
         onClick={(e) => {

@@ -1,6 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { exportToVgl } from '@/domain/vglExport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { seedAndGroupable, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

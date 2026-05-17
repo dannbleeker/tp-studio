@@ -1,5 +1,5 @@
-import { useDocumentStore } from '@/store';
 import { Syringe } from 'lucide-react';
+import { useDocumentStore } from '@/store';
 
 /**
  * Session 87 / EC PPT comparison item #7 — Injection-summary chip.

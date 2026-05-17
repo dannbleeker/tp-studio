@@ -1,7 +1,7 @@
+import { useMemo } from 'react';
 import { findMatches } from '@/domain/search';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { useMemo } from 'react';
 import type { AnyTPNode, TPEdge } from './flow-types';
 
 /**

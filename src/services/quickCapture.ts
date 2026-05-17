@@ -1,5 +1,5 @@
 import { defaultEntityType } from '@/domain/entityTypeMeta';
-import { type CaptureNode, type ParseResult, flattenPreorder } from '@/domain/quickCapture';
+import { type CaptureNode, flattenPreorder, type ParseResult } from '@/domain/quickCapture';
 import { useDocumentStore } from '@/store';
 
 /**

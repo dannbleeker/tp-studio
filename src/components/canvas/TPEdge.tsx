@@ -3,9 +3,7 @@
 // `memo(impl, tpEdgePropsEqual)`. The Compiler recognises explicit
 // `memo()` and skips auto-memoization for the wrapped component, so
 // the Session 105 comparator's behavior stays intact.
-import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
-import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
-import { useDocumentStore } from '@/store';
+
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -15,6 +13,9 @@ import {
 } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
+import { useDocumentStore } from '@/store';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { type Box, computeRadialEdgePath, nodeBoxOf } from './radialEdgeRouting';
 
@@ -59,6 +60,7 @@ const EDGE_INTERACTION_WIDTH = 32;
  * component. No behavior change.
  */
 import { shallowEqualObject, tpEdgePropsEqual } from './tpEdgeComparator';
+
 export { shallowEqualObject, tpEdgePropsEqual };
 
 function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {

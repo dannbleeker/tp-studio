@@ -1,11 +1,11 @@
+import { ChevronRight, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { type CaptureNode, parseQuickCapture } from '@/domain/quickCapture';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { applyQuickCapture } from '@/services/quickCapture';
 import { useDocumentStore } from '@/store';
-import { ChevronRight, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
 
 /**
  * Modal triggered by `E` (when not in a text field). Users paste or type a

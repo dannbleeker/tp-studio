@@ -1,7 +1,7 @@
-import { errorMessage } from '@/services/errors';
-import { log } from '@/services/logger';
 import { AlertTriangle } from 'lucide-react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { errorMessage } from '@/services/errors';
+import { log } from '@/services/logger';
 import { Button } from './Button';
 
 type Props = {

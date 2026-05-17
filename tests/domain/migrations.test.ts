@@ -1,10 +1,10 @@
+import { describe, expect, it } from 'vitest';
 import {
+  applyMigrations,
   CURRENT_SCHEMA_VERSION,
   type Migration,
-  applyMigrations,
   migrateToCurrent,
 } from '@/domain/migrations';
-import { describe, expect, it } from 'vitest';
 
 describe('migrateToCurrent', () => {
   it('returns a CURRENT_SCHEMA_VERSION document untouched in shape', () => {

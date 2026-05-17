@@ -1,7 +1,7 @@
-import { DIAGRAM_TYPE_LABEL, ENTITY_TYPE_META, defaultEntityType } from '@/domain/entityTypeMeta';
+import { describe, expect, it } from 'vitest';
+import { DIAGRAM_TYPE_LABEL, defaultEntityType, ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
 import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
 import type { DiagramType, EntityType } from '@/domain/types';
-import { describe, expect, it } from 'vitest';
 
 // One source of truth for the diagram-type keys covered by all of the
 // per-DiagramType registries. Sourced from DIAGRAM_TYPE_LABEL because that

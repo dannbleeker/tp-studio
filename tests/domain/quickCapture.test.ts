@@ -1,5 +1,5 @@
-import { parseQuickCapture } from '@/domain/quickCapture';
 import { describe, expect, it } from 'vitest';
+import { parseQuickCapture } from '@/domain/quickCapture';
 
 const titles = (forest: ReturnType<typeof parseQuickCapture>): string[] =>
   forest.roots.flatMap(function flat(n): string[] {

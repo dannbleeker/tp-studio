@@ -1,5 +1,5 @@
-import { paletteScore } from '@/domain/paletteScore';
 import { describe, expect, it } from 'vitest';
+import { paletteScore } from '@/domain/paletteScore';
 
 /**
  * Direct unit coverage for the palette's fuzzy scorer. Previously this

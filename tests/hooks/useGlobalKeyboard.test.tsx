@@ -1,7 +1,7 @@
-import { useGlobalKeyboard } from '@/hooks/useGlobalKeyboard';
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { useGlobalKeyboard } from '@/hooks/useGlobalKeyboard';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 
 const Harness = () => {
   useGlobalKeyboard();

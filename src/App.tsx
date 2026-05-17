@@ -1,10 +1,10 @@
 import { ReactFlowProvider } from '@xyflow/react';
-import { Suspense, lazy, useEffect } from 'react';
-import { DocumentMeta } from './components/DocumentMeta';
+import { lazy, Suspense, useEffect } from 'react';
 import { Canvas } from './components/canvas/Canvas';
 import { CompareBanner } from './components/canvas/CompareBanner';
 import { ContextMenu } from './components/canvas/ContextMenu';
 import { SelectionToolbar } from './components/canvas/SelectionToolbar';
+import { DocumentMeta } from './components/DocumentMeta';
 import { Inspector } from './components/inspector/Inspector';
 import { Toaster } from './components/toast/Toaster';
 import { TitleBadge } from './components/toolbar/TitleBadge';

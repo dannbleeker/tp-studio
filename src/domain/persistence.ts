@@ -1,5 +1,5 @@
 import { errorMessage } from '@/services/errors';
-import { STORAGE_KEYS, readString, removeKey, writeString } from '@/services/storage';
+import { readString, removeKey, STORAGE_KEYS, writeString } from '@/services/storage';
 import { isDiagramType, isObject, isTrueMap } from './guards';
 import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from './migrations';
 import {

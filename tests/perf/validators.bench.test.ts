@@ -1,3 +1,4 @@
+import { describe, it } from 'vitest';
 import type { Edge, Entity, TPDocument } from '@/domain/types';
 /**
  * Session 113 — Per-rule validator microbenchmarks.
@@ -27,7 +28,6 @@ import { entityExistenceRule } from '@/domain/validators/entityExistence';
 import { externalRootCauseRule } from '@/domain/validators/externalRootCause';
 import { indirectEffectRule } from '@/domain/validators/indirectEffect';
 import { tautologyRule } from '@/domain/validators/tautology';
-import { describe, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from '../domain/helpers';
 
 const buildDoc = (entityCount: number): TPDocument => {

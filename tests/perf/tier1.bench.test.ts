@@ -11,10 +11,11 @@
  * and per-op nanoseconds. Output is a Markdown table per group
  * so it copies cleanly into a CHANGELOG entry.
  */
+
+import { describe, it } from 'vitest';
 import { edgesArray, entitiesArray } from '@/domain/graph';
 import { computeDetailedRevisionDiff } from '@/domain/revisions';
 import type { Edge, Entity, TPDocument } from '@/domain/types';
-import { describe, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from '../domain/helpers';
 
 const buildDoc = (entityCount: number): TPDocument => {

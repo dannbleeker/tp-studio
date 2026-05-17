@@ -1,12 +1,12 @@
+import clsx from 'clsx';
+import { X } from 'lucide-react';
+import { useMemo } from 'react';
 import { validationFingerprint } from '@/domain/fingerprint';
 import type { Warning } from '@/domain/types';
 import { validate } from '@/domain/validators';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useSelectionShape } from '@/hooks/useSelectionShape';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { X } from 'lucide-react';
-import { useMemo } from 'react';
 import { Button } from '../ui/Button';
 import { EdgeInspector } from './EdgeInspector';
 import { EntityInspector } from './EntityInspector';

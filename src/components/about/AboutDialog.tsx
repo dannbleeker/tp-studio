@@ -1,5 +1,5 @@
-import { useDocumentStore } from '@/store';
 import { BookOpen, Code2, ExternalLink, FileText, Scale, Shield, X } from 'lucide-react';
+import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 
@@ -90,7 +90,7 @@ function LinkRowItem({ href, Icon, label, hint, external }: LinkRow) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="-mx-2 group flex items-start gap-3 rounded-md px-2 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      className="group -mx-2 flex items-start gap-3 rounded-md px-2 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
     >
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-neutral-500 group-hover:text-indigo-500 dark:text-neutral-400" />
       <div className="min-w-0 flex-1">

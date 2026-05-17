@@ -1,5 +1,5 @@
-import { radialLayout } from '@/domain/radialLayout';
 import { describe, expect, it } from 'vitest';
+import { radialLayout } from '@/domain/radialLayout';
 
 const node = (id: string) => ({ id, width: 220, height: 72 });
 

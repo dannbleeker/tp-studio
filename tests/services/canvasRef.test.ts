@@ -1,3 +1,5 @@
+import type { ReactFlowInstance } from '@xyflow/react';
+import { afterEach, describe, expect, it } from 'vitest';
 import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/flow-types';
 import {
   getCanvasInstance,
@@ -5,8 +7,6 @@ import {
   getSelectedEdges,
   setCanvasInstance,
 } from '@/services/canvasRef';
-import type { ReactFlowInstance } from '@xyflow/react';
-import { afterEach, describe, expect, it } from 'vitest';
 
 /**
  * `canvasRef` is the module-level cache of the active React Flow

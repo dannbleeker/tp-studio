@@ -1,11 +1,11 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  SHARE_LINK_MAX_DECOMPRESSED_BYTES,
-  SHARE_LINK_SOFT_WARN_BYTES,
   clearShareHash,
   generateShareLink,
   parseShareHash,
+  SHARE_LINK_MAX_DECOMPRESSED_BYTES,
+  SHARE_LINK_SOFT_WARN_BYTES,
 } from '@/services/shareLink';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from '../domain/helpers';
 
 beforeEach(() => {

@@ -1,5 +1,5 @@
-import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL } from '@/domain/ecGuiding';
 import { describe, expect, it } from 'vitest';
+import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL } from '@/domain/ecGuiding';
 
 /**
  * Session 87 / EC PPT comparison item #2 — Per-slot guiding questions.

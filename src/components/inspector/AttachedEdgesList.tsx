@@ -1,7 +1,7 @@
-import type { EntityId } from '@/domain/types';
-import { useDocumentStore } from '@/store';
 import { ArrowUpRight } from 'lucide-react';
 import { useMemo } from 'react';
+import type { EntityId } from '@/domain/types';
+import { useDocumentStore } from '@/store';
 import { Field } from './Field';
 
 export function AttachedEdgesList({ assumptionId }: { assumptionId: string }) {

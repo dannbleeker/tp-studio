@@ -18,12 +18,13 @@
  * this as the bezier terminus offset; if the derivation changes,
  * the visual alignment breaks.
  */
+
+import { describe, expect, it } from 'vitest';
 import {
   JUNCTOR_CENTER_OFFSET_Y,
   JUNCTOR_EDGE_TERMINAL_OFFSET_Y,
   JUNCTOR_RADIUS,
 } from '@/domain/constants';
-import { describe, expect, it } from 'vitest';
 
 // Vite's `import.meta.glob` reads the two consumer files at test
 // time without a Node fs dependency (CI's tsc rejects `node:fs`).

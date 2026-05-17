@@ -8,7 +8,7 @@ import { retailOpsCRT } from './retailOpsCRT';
 import { retailOpsGoalTree } from './retailOpsGoalTree';
 import { saasEngineeringCRT } from './saasEngineeringCRT';
 import { salesVsMarketingEC } from './salesVsMarketingEC';
-import { type TemplateSpec, buildTemplate } from './shared';
+import { buildTemplate, type TemplateSpec } from './shared';
 import { speedVsQualityEC } from './speedVsQualityEC';
 
 /**
@@ -53,5 +53,5 @@ export const loadTemplate = (id: string): TPDocument | null => {
   return spec ? buildTemplate(spec) : null;
 };
 
-export { buildTemplate } from './shared';
 export type { TemplateSpec } from './shared';
+export { buildTemplate } from './shared';

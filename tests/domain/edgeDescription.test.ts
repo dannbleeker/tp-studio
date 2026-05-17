@@ -1,6 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { exportToJSON, importFromJSON } from '@/domain/persistence';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { seedConnectedPair } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

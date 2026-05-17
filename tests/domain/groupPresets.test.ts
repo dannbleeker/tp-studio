@@ -1,5 +1,5 @@
-import { GROUP_PRESETS, presetById, presetByTitle } from '@/domain/groupPresets';
 import { describe, expect, it } from 'vitest';
+import { GROUP_PRESETS, presetById, presetByTitle } from '@/domain/groupPresets';
 
 describe('group presets catalog', () => {
   it('has five canonical preset entries', () => {

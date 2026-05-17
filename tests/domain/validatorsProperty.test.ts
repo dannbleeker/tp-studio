@@ -1,6 +1,6 @@
-import { validate, validateTiered } from '@/domain/validators';
 import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { validate, validateTiered } from '@/domain/validators';
 import { docArb } from '../helpers/docArb';
 
 /**

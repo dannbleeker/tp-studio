@@ -1,5 +1,5 @@
 import type { TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Session 79 — Goal Tree multi-goal soft warning.

@@ -1,6 +1,6 @@
 import { incomingEdges } from '../graph';
 import type { EntityType, TPDocument } from '../types';
-import { type UntieredWarning, type ValidatorRule, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning, type ValidatorRule } from './shared';
 
 /**
  * Additional-cause CLR rule, parametrized by the diagram's "terminal-effect"

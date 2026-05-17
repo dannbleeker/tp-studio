@@ -1,3 +1,4 @@
+import type { StateCreator } from 'zustand';
 import { createDocument } from '@/domain/factory';
 import { loadFromLocalStorageWithStatus } from '@/domain/persistence';
 import type {
@@ -9,7 +10,6 @@ import type {
   TPDocument,
 } from '@/domain/types';
 import { flushPersist, persistDebounced } from '@/services/persistDebounced';
-import type { StateCreator } from 'zustand';
 import { pushHistoryEntry } from '../historySlice';
 import { autoSnapshotOutgoing } from '../revisionsSlice';
 import type { RootStore } from '../types';

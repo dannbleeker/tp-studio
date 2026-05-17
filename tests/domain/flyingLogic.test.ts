@@ -1,10 +1,10 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
 /**
  * @vitest-environment jsdom
  */
 import { exportToFlyingLogic, importFromFlyingLogic } from '@/domain/flyingLogic';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(() => {

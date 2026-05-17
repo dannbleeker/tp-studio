@@ -1,7 +1,7 @@
 import { SIMILARITY_THRESHOLD } from '../constants';
 import { outgoingEdges, structuralEntities } from '../graph';
 import type { TPDocument } from '../types';
-import { type UntieredWarning, makeWarning, similarity } from './shared';
+import { makeWarning, similarity, type UntieredWarning } from './shared';
 
 /**
  * Tautology CLR rule. When a structural entity has exactly one outgoing

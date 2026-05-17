@@ -1,6 +1,6 @@
-import { TOAST_AUTO_DISMISS_MS_BY_KIND } from '@/domain/constants';
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
+import { TOAST_AUTO_DISMISS_MS_BY_KIND } from '@/domain/constants';
 import type { RootStore } from '../types';
 import type { ContextMenuState, ContextMenuTarget, Toast, ToastAction, ToastKind } from './types';
 

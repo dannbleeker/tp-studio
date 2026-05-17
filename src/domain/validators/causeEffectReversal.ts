@@ -1,7 +1,7 @@
 import { isOfBuiltin } from '../entityTypeMeta';
 import { incomingEdges, outgoingEdges } from '../graph';
 import type { TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Cause-effect reversal CLR rule. Detects two structural anti-patterns

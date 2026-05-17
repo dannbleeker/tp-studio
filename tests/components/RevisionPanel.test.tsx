@@ -1,7 +1,7 @@
-import { RevisionPanel } from '@/components/history/RevisionPanel';
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { RevisionPanel } from '@/components/history/RevisionPanel';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

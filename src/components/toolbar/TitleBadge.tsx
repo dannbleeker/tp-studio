@@ -1,7 +1,7 @@
+import { Info } from 'lucide-react';
 import { DataComponent } from '@/components/dataComponentNames';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { useDocumentStore } from '@/store';
-import { Info } from 'lucide-react';
 
 /**
  * Editable doc-title at the top-left of the canvas, paired with the

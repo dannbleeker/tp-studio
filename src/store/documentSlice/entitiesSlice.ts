@@ -1,3 +1,4 @@
+import type { StateCreator } from 'zustand';
 import { createEntity } from '@/domain/factory';
 import { removeEntityFromEdges } from '@/domain/graph';
 import type {
@@ -10,7 +11,6 @@ import type {
   EntityType,
   Patch,
 } from '@/domain/types';
-import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
 import { entityPatch, makeApplyDocChange, scrubFromGroups, touch } from './docMutate';
 
@@ -401,7 +401,7 @@ export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice>
     removeEntityAttribute: (id, key) => {
       applyDocChange((prev) => {
         const cur = prev.entities[id];
-        if (!cur || !cur.attributes || !(key in cur.attributes)) return prev;
+        if (!cur?.attributes || !(key in cur.attributes)) return prev;
         const { [key]: _drop, ...rest } = cur.attributes;
         // Empty map collapses to omitting the field (rather than
         // `attributes: undefined`) so the entity doesn't carry a

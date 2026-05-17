@@ -1,5 +1,5 @@
-import { stTacticAssumptionsRule } from '@/domain/validators/stTacticAssumptions';
 import { describe, expect, it } from 'vitest';
+import { stTacticAssumptionsRule } from '@/domain/validators/stTacticAssumptions';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 const buildSTDoc = (

@@ -9,8 +9,8 @@
 // uses `__setDeferredPromptForTest` to inject a synthetic stub
 // directly into the module's captured-event slot.
 
-import { __setDeferredPromptForTest, triggerInstallPrompt } from '@/services/pwaInstall';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { __setDeferredPromptForTest, triggerInstallPrompt } from '@/services/pwaInstall';
 
 afterEach(() => {
   __setDeferredPromptForTest(null);

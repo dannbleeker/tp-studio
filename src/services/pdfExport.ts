@@ -1,10 +1,10 @@
+import { getNodesBounds, getViewportForBounds, type Node } from '@xyflow/react';
 import { PNG_PADDING } from '@/domain/constants';
 import { structuralEntities } from '@/domain/graph';
 import { SURFACE_DARK, SURFACE_LIGHT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
 import { loadJsPdf } from '@/services/exporters/pdfShared';
 import { slug, triggerDownload } from '@/services/exporters/shared';
-import { type Node, getNodesBounds, getViewportForBounds } from '@xyflow/react';
 
 /**
  * Session 80 / brief §8.1 + §8.6 + §8.8 + §8.13 — true vector PDF export.

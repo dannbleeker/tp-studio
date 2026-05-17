@@ -13,10 +13,10 @@
  *      nowhere.
  */
 
+import { beforeEach, describe, expect, it } from 'vitest';
 import { COMMANDS } from '@/components/command-palette/commands';
 import { branchFor, verbsForBranch } from '@/domain/selectionVerbs';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { seedAndGroupable, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

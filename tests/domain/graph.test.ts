@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   connectionCount,
   findCycles,
@@ -11,7 +12,6 @@ import {
   removeEntityFromEdges,
   structuralEntities,
 } from '@/domain/graph';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(resetIds);

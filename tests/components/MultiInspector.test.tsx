@@ -1,7 +1,7 @@
-import { MultiInspector } from '@/components/inspector/MultiInspector';
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { MultiInspector } from '@/components/inspector/MultiInspector';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

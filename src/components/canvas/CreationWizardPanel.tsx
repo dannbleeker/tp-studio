@@ -1,13 +1,13 @@
-import { EC_SLOTS_BY_ORDER, type WizardOrder } from '@/domain/ecGuiding';
-import type { Entity } from '@/domain/types';
-import { log } from '@/services/logger';
-import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { ChevronUp, GripVertical, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { ECSlotIndicator } from './ECSlotIndicator';
+import { EC_SLOTS_BY_ORDER, type WizardOrder } from '@/domain/ecGuiding';
+import type { Entity } from '@/domain/types';
+import { log } from '@/services/logger';
+import { useDocumentStore } from '@/store';
 import { EC_STEPS, EC_STEPS_D_FIRST, GOAL_TREE_STEPS } from './creationWizardSteps';
+import { ECSlotIndicator } from './ECSlotIndicator';
 
 /**
  * Session 87 / EC PPT comparison item #3 — Reverse-direction (D-first)

@@ -1,8 +1,8 @@
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { VerbalisationStrip } from '@/components/inspector/VerbalisationStrip';
 import { buildExampleEC } from '@/domain/examples/ec';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { act, cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);

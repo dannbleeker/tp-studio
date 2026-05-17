@@ -1,5 +1,5 @@
-import type { Entity, Group } from '@/domain/types';
 import type { Edge as RFEdge, Node as RFNode } from '@xyflow/react';
+import type { Entity, Group } from '@/domain/types';
 
 export type TPNodeData = {
   entity: Entity;

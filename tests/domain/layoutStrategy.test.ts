@@ -1,5 +1,5 @@
-import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { describe, expect, it } from 'vitest';
+import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 
 describe('LAYOUT_STRATEGY', () => {
   it('marks every existing diagram type as auto-layout', () => {

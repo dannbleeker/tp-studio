@@ -1,5 +1,5 @@
-import { log } from '@/services/logger';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { log } from '@/services/logger';
 
 /**
  * Vitest runs with `import.meta.env.MODE === 'test'`, so the logger

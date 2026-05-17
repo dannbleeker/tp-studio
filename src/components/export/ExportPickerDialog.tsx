@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { redactDocument } from '@/domain/redact';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { exportECWorkshopSheet } from '@/services/ecWorkshopExport';
@@ -18,11 +19,10 @@ import {
   exportSVG,
   exportVGL,
 } from '@/services/exporters';
-import { SHARE_LINK_SOFT_WARN_BYTES, generateShareLink } from '@/services/shareLink';
+import { generateShareLink, SHARE_LINK_SOFT_WARN_BYTES } from '@/services/shareLink';
 import { type RootStore, useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { LargeDialog } from '../ui/LargeDialog';
 import { CARD_FOCUS } from '../ui/focusClasses';
+import { LargeDialog } from '../ui/LargeDialog';
 
 /**
  * Session 90 — Single Export… picker.

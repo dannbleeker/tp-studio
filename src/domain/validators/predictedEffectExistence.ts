@@ -1,7 +1,7 @@
 import { isOfBuiltin } from '../entityTypeMeta';
 import { outgoingEdges } from '../graph';
 import type { TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Predicted-effect existence CLR rule (FRT-specific). When the user adds

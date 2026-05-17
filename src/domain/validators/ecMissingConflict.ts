@@ -1,6 +1,6 @@
 import { isOfBuiltin } from '../entityTypeMeta';
 import type { TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * EC-specific CLR rule (TOC-reading): an Evaporating Cloud's diagnostic

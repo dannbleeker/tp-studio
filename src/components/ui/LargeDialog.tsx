@@ -25,11 +25,12 @@
  * native `<dialog>` using `showModal()` for browser-built-in focus
  * management, structurally different from the centered cards.
  */
-import { useEscapeKey } from '@/hooks/useEscapeKey';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+
 import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { type ReactNode, useId, useRef } from 'react';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { Button } from './Button';
 
 export type LargeDialogProps = {

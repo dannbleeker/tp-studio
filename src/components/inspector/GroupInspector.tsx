@@ -1,13 +1,13 @@
+import clsx from 'clsx';
+import { ChevronDown, ChevronRight, Maximize2, Trash2 } from 'lucide-react';
 import { TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
 import { INPUT_FOCUS } from '@/components/ui/focusClasses';
-import { GROUP_COLORS_ORDER, GROUP_COLOR_CLASSES } from '@/domain/groupColors';
+import { GROUP_COLOR_CLASSES, GROUP_COLORS_ORDER } from '@/domain/groupColors';
 import { GROUP_PRESETS } from '@/domain/groupPresets';
 import { wouldCreateCycle } from '@/domain/groups';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { ChevronDown, ChevronRight, Maximize2, Trash2 } from 'lucide-react';
 import { Field } from './Field';
 
 export function GroupInspector({ groupId }: { groupId: string }) {

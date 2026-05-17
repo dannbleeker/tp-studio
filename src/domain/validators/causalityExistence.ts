@@ -1,5 +1,5 @@
 import type { TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Causality-existence CLR rule — one warning per edge prompting the user to

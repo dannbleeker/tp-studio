@@ -1,5 +1,5 @@
-import { SHORTCUTS } from '@/domain/shortcuts';
 import { describe, expect, it } from 'vitest';
+import { SHORTCUTS } from '@/domain/shortcuts';
 
 /**
  * Guard against accidentally registering two shortcuts at the same

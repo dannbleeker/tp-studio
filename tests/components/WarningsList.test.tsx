@@ -1,8 +1,8 @@
+import { cleanup, render } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { WarningsList } from '@/components/inspector/WarningsList';
 import type { Warning } from '@/domain/types';
 import { resetStoreForTest } from '@/store';
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);

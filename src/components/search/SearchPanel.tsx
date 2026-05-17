@@ -1,12 +1,12 @@
+import clsx from 'clsx';
+import { CaseSensitive, ChevronDown, ChevronUp, Regex, WholeWord, X } from 'lucide-react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button';
 import { ancestorChain } from '@/domain/groups';
 import { findMatches } from '@/domain/search';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { CaseSensitive, ChevronDown, ChevronUp, Regex, WholeWord, X } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
-import { useShallow } from 'zustand/shallow';
 
 /**
  * Slide-down find panel triggered by Cmd/Ctrl+F. Live-filters as the user
@@ -123,7 +123,7 @@ export function SearchPanel() {
       data-component="search-panel"
       style={panelStyle}
       className={clsx(
-        '-translate-x-1/2 pointer-events-auto absolute top-16 z-20 flex flex-col rounded-xl border border-neutral-200 bg-white/95 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95',
+        'pointer-events-auto absolute top-16 z-20 flex -translate-x-1/2 flex-col rounded-xl border border-neutral-200 bg-white/95 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95',
         // Default geometry when nothing's selected: full-canvas centered.
         !inspectorOpen && 'left-1/2 w-[min(720px,90vw)]'
       )}

@@ -1,6 +1,6 @@
-import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
+import { useDocumentStore } from '@/store';
 
 const ICONS = {
   info: Info,
@@ -40,7 +40,7 @@ export function Toaster() {
       // a wide-text toast still overlapped the Controls / MiniMap
       // stack. 80 px = ~32 px Controls height + ~32 px MiniMap
       // height + breathing room.
-      className="-translate-x-1/2 pointer-events-none fixed bottom-20 left-1/2 z-40 flex flex-col items-center gap-2"
+      className="pointer-events-none fixed bottom-20 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center gap-2"
     >
       {toasts.map((t) => {
         const Icon = ICONS[t.kind];

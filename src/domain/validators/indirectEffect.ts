@@ -1,6 +1,6 @@
 import { incomingEdges, structuralEntities } from '../graph';
 import type { TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Indirect-effect CLR rule (E2 — Bucket E extension). When a structural

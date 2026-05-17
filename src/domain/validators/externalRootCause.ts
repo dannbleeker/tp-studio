@@ -1,5 +1,5 @@
 import type { TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Mental-model CLR nudge (TOC-reading): a root cause flagged

@@ -12,7 +12,7 @@
  *
  * No behavior change — the component imports these exactly as before.
  */
-import { type ECSlot, EC_SLOTS_BY_ORDER } from '@/domain/ecGuiding';
+import { EC_SLOTS_BY_ORDER, type ECSlot } from '@/domain/ecGuiding';
 
 export type StepDef = {
   prompt: string;

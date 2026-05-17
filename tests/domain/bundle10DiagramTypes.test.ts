@@ -1,4 +1,5 @@
-import { DIAGRAM_TYPE_LABEL, PALETTE_BY_DIAGRAM, defaultEntityType } from '@/domain/entityTypeMeta';
+import { describe, expect, it } from 'vitest';
+import { DIAGRAM_TYPE_LABEL, defaultEntityType, PALETTE_BY_DIAGRAM } from '@/domain/entityTypeMeta';
 import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
 import { createDocument } from '@/domain/factory';
 import { isDiagramType } from '@/domain/guards';
@@ -6,7 +7,6 @@ import { HANDLE_ORIENTATION, LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { METHOD_BY_DIAGRAM } from '@/domain/methodChecklist';
 import { exportToJSON, importFromJSON } from '@/domain/persistence';
 import { validate } from '@/domain/validators';
-import { describe, expect, it } from 'vitest';
 
 /**
  * Bundle 10 / FL-DT4 + FL-DT5 — two new diagram types. Both ride on top

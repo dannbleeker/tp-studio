@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   ancestorChain,
   computeCollapseProjection,
@@ -7,7 +8,6 @@ import {
   wouldCreateCycle,
 } from '@/domain/groups';
 import type { Group, GroupId, TPDocument } from '@/domain/types';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { makeDoc, makeEntity, resetIds } from './helpers';
 
 const g = (id: string, members: string[], collapsed = false): Group => ({

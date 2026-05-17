@@ -1,7 +1,7 @@
-import { verbaliseEC } from '@/domain/verbalisation';
-import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { ChevronDown, ChevronUp, Quote } from 'lucide-react';
+import { verbaliseEC } from '@/domain/verbalisation';
+import { useDocumentStore } from '@/store';
 
 /**
  * Session 77 / brief §6 — Evaporating Cloud verbalisation strip.

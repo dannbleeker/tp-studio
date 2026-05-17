@@ -1,9 +1,9 @@
-import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
-import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
-import { useDocumentStore } from '@/store';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import clsx from 'clsx';
 import { ChevronRight } from 'lucide-react';
+import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
+import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
+import { useDocumentStore } from '@/store';
 import type { TPCollapsedGroupNode as TPCollapsedGroupNodeType } from './flow-types';
 
 /**

@@ -1,6 +1,6 @@
-import { SHORTCUTS_BY_GROUP, SHORTCUT_GROUP_TITLE, type ShortcutGroup } from '@/domain/shortcuts';
-import { useDocumentStore } from '@/store';
 import { X } from 'lucide-react';
+import { SHORTCUT_GROUP_TITLE, SHORTCUTS_BY_GROUP, type ShortcutGroup } from '@/domain/shortcuts';
+import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 

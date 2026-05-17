@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   __clearClipboardForTest,
   copySelection,
@@ -5,7 +6,6 @@ import {
   pasteClipboard,
 } from '@/services/clipboard';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { seedEntity } from '../helpers/seedDoc';
 
 // Thin aliases over the shared seedDoc helpers — the tests below read

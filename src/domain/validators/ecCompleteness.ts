@@ -1,5 +1,5 @@
 import type { Entity, TPDocument } from '../types';
-import { type UntieredWarning, makeWarning } from './shared';
+import { makeWarning, type UntieredWarning } from './shared';
 
 /**
  * Session 77 / brief §6 — EC structural completeness rules.

@@ -1,6 +1,6 @@
-import { useDocumentStore } from '@/store';
 import { X } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
+import { useDocumentStore } from '@/store';
 
 /**
  * Session 87 / EC PPT comparison item #1 — Reading-instruction strip.

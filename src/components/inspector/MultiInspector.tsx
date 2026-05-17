@@ -1,11 +1,11 @@
+import clsx from 'clsx';
+import { ArrowLeftRight, ListOrdered, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import type { EntityTitleSize, EntityType } from '@/domain/types';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { ArrowLeftRight, ListOrdered, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { Field } from './Field';

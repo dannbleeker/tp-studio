@@ -13,18 +13,19 @@
 // sufficient for now; if a future Compiler version regresses on this
 // guarantee, move the directive inside the `TPNodeImpl` function body
 // or wrap the export differently.
-import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT, ZOOM_UP_THRESHOLD } from '@/domain/constants';
-import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
-import { ST_FACET_KEYS, isStNodeFormat } from '@/domain/graph';
-import { HANDLE_ORIENTATION, LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
-import { useZoomLevel } from '@/hooks/useZoomLevel';
-import { guardWriteOrToast } from '@/services/browseLock';
-import { useDocumentStore } from '@/store';
+
 import { Handle, type NodeProps, NodeToolbar, Position } from '@xyflow/react';
 import clsx from 'clsx';
 import { Pin } from 'lucide-react';
 import { memo, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT, ZOOM_UP_THRESHOLD } from '@/domain/constants';
+import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
+import { isStNodeFormat, ST_FACET_KEYS } from '@/domain/graph';
+import { HANDLE_ORIENTATION, LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
+import { useZoomLevel } from '@/hooks/useZoomLevel';
+import { guardWriteOrToast } from '@/services/browseLock';
+import { useDocumentStore } from '@/store';
 import type { TPNode as TPNodeType } from './flow-types';
 
 // B5 — zoom-up annotation threshold lives in `@/domain/constants` so UI/UX
@@ -347,7 +348,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       </div>
       {showAnnotationNumbers && (
         <span
-          className="-right-1.5 -top-1.5 pointer-events-none absolute rounded-full border border-neutral-200 bg-white px-1.5 py-0.5 font-semibold text-[10px] text-neutral-600 shadow-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+          className="pointer-events-none absolute -top-1.5 -right-1.5 rounded-full border border-neutral-200 bg-white px-1.5 py-0.5 font-semibold text-[10px] text-neutral-600 shadow-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
           aria-label={`Annotation number ${entity.annotationNumber}`}
         >
           #{entity.annotationNumber}
@@ -355,7 +356,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       )}
       {typeof entity.ordering === 'number' && (
         <span
-          className="-left-1.5 -top-1.5 pointer-events-none absolute rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 font-semibold text-[10px] text-cyan-800 shadow-sm dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200"
+          className="pointer-events-none absolute -top-1.5 -left-1.5 rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 font-semibold text-[10px] text-cyan-800 shadow-sm dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200"
           aria-label={`Step ${entity.ordering}`}
         >
           Step {entity.ordering}
@@ -371,7 +372,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       */}
       {entity.position && LAYOUT_STRATEGY[diagramType] !== 'manual' && (
         <span
-          className="-right-1.5 -bottom-1.5 pointer-events-none absolute rounded-full border border-violet-300 bg-violet-50 p-0.5 text-violet-700 shadow-sm dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200"
+          className="pointer-events-none absolute -right-1.5 -bottom-1.5 rounded-full border border-violet-300 bg-violet-50 p-0.5 text-violet-700 shadow-sm dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200"
           aria-label="Pinned position"
           title="Pinned position — right-click → Unpin to let auto-layout reclaim it"
         >
@@ -384,7 +385,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         // candidate. Rendered bottom-left so it doesn't collide with the
         // top-left step badge or the top-right annotation/ID stack.
         <span
-          className="-bottom-2 -left-1.5 pointer-events-none absolute rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 font-semibold text-[10px] text-amber-800 shadow-sm dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
+          className="pointer-events-none absolute -bottom-2 -left-1.5 rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 font-semibold text-[10px] text-amber-800 shadow-sm dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
           aria-label={`Reaches ${udeReachCount} undesirable effect${udeReachCount === 1 ? '' : 's'}`}
           title={`Reaches ${udeReachCount} UDE${udeReachCount === 1 ? '' : 's'}`}
         >
@@ -399,7 +400,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           // forward, sky for "←N roots" backward. Bottom-right so it
           // doesn't fight the forward badge for screen real estate.
           <span
-            className="-bottom-2 -right-1.5 pointer-events-none absolute rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 font-semibold text-[10px] text-sky-800 shadow-sm dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200"
+            className="pointer-events-none absolute -right-1.5 -bottom-2 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 font-semibold text-[10px] text-sky-800 shadow-sm dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200"
             aria-label={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
             title={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
           >
@@ -414,7 +415,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
             if (!guardWriteOrToast()) return;
             toggleEntityCollapsed(entity.id);
           }}
-          className="-bottom-2 -translate-x-1/2 absolute left-1/2 flex items-center gap-1 rounded-full border border-neutral-200 bg-white px-2 py-0.5 font-medium text-[10px] text-neutral-600 shadow-sm transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-neutral-200 bg-white px-2 py-0.5 font-medium text-[10px] text-neutral-600 shadow-sm transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
           aria-label={
             hiddenDescendantCount
               ? `Expand ${hiddenDescendantCount} hidden descendant${hiddenDescendantCount === 1 ? '' : 's'}`
@@ -585,6 +586,7 @@ function StFacetRow({
 // test imports (`import { tpNodePropsEqual } from '@/components/canvas/TPNode'`)
 // keep working unchanged.
 import { shallowEqualNodeData, tpNodePropsEqual } from './tpNodeComparator';
+
 export { shallowEqualNodeData, tpNodePropsEqual };
 
 export const TPNode = memo(TPNodeImpl, tpNodePropsEqual);

@@ -1,7 +1,7 @@
+import { describe, expect, it } from 'vitest';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { ALL_METHOD_STEP_IDS, METHOD_BY_DIAGRAM } from '@/domain/methodChecklist';
 import type { DiagramType } from '@/domain/types';
-import { describe, expect, it } from 'vitest';
 
 const ALL_DIAGRAM_TYPES = Object.keys(DIAGRAM_TYPE_LABEL) as DiagramType[];
 

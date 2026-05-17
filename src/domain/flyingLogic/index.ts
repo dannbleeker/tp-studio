@@ -31,8 +31,8 @@
  * XML before feeding it in.
  */
 
-export { exportToFlyingLogic } from './writer';
 export { importFromFlyingLogic } from './reader';
+export { exportToFlyingLogic } from './writer';
 
 // Session 112 knip pass — `isEntityType` was re-exported here as a
 // convenience for test helpers, but callers import it directly from

@@ -21,11 +21,7 @@ interface TpTestHook {
   // spec used the escape hatch). Each spec calls only the typed
   // methods below; add a new method here when an existing spec needs
   // one rather than re-introducing the generic escape.
-  seed: (opts: {
-    type?: TpEntityType;
-    titles: string[];
-    clear?: boolean;
-  }) => string[];
+  seed: (opts: { type?: TpEntityType; titles: string[]; clear?: boolean }) => string[];
   connect: (sourceId: string, targetId: string) => string | null;
   confirmAndDeleteEntity: (id: string) => Promise<void>;
   // Session 101 — revision seeding for the SideBySide visual e2e.

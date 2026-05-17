@@ -1,7 +1,7 @@
-import type { AttrKind, AttrValue, Entity } from '@/domain/types';
-import { useDocumentStore } from '@/store';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import type { AttrKind, AttrValue, Entity } from '@/domain/types';
+import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { Field } from './Field';
 

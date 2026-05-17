@@ -1,10 +1,10 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   loadFromLocalStorage,
   loadFromLocalStorageWithStatus,
   saveToLocalStorage,
 } from '@/domain/persistence';
 import { STORAGE_KEYS } from '@/services/storage';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(() => {

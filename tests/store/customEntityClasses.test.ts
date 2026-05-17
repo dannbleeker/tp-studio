@@ -1,7 +1,7 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { entityMeta, paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import type { CustomEntityClass, EntityType } from '@/domain/types';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

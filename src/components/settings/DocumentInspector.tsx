@@ -1,3 +1,5 @@
+import { X } from 'lucide-react';
+import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
 import { MarkdownField } from '@/components/inspector/MarkdownField';
 import { Button } from '@/components/ui/Button';
@@ -6,8 +8,6 @@ import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { METHOD_BY_DIAGRAM, type MethodStep } from '@/domain/methodChecklist';
 import type { DiagramType, SystemScope } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { X } from 'lucide-react';
-import { useShallow } from 'zustand/shallow';
 import { CustomEntityClassesSection } from './CustomEntityClassesSection';
 
 /**

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT } from '@/domain/constants';
 import { layoutFingerprint } from '@/domain/fingerprint';
 import { edgesArray, isStNodeFormat, pinnedEntities } from '@/domain/graph';
@@ -6,7 +7,6 @@ import { radialLayout } from '@/domain/radialLayout';
 import type { TPDocument } from '@/domain/types';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useDocumentStore } from '@/store';
-import { useEffect, useState } from 'react';
 import { COLLAPSED_HEIGHT, COLLAPSED_WIDTH } from './graphViewConstants';
 import type { GraphProjection } from './useGraphProjection';
 

@@ -1,6 +1,6 @@
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 afterEach(cleanup);
 

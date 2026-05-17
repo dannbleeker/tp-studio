@@ -1,6 +1,6 @@
+import { describe, expect, it } from 'vitest';
 import { findSpliceTargetEdge, pointToSegmentDistanceSq } from '@/domain/dragSplice';
 import type { Edge } from '@/domain/types';
-import { describe, expect, it } from 'vitest';
 
 /**
  * Session 83 — geometry tests for the drag-to-splice hit-test. Pure

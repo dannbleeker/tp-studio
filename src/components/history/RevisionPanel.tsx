@@ -1,12 +1,12 @@
-import type { Revision } from '@/domain/revisions';
-import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { Clock, GitBranch, History, X } from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
+import type { Revision } from '@/domain/revisions';
+import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
-import { RevisionRow } from './RevisionRow';
 import { formatRelativeTime } from './formatTime';
+import { RevisionRow } from './RevisionRow';
 
 /**
  * H1 — Revision history side panel. Slides in from the right (the

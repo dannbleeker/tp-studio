@@ -1,6 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pickFile } from '@/services/exporters/picker';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * `pickFile` is the shared file-picker pipeline used by every importer.

@@ -1,8 +1,8 @@
-import { DataComponent } from '@/components/dataComponentNames';
-import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { Eye, GitBranch, History, Lock, Search, Sparkles } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
+import { DataComponent } from '@/components/dataComponentNames';
+import { useDocumentStore } from '@/store';
 
 /**
  * Session 87 (S24) — Global status strip.

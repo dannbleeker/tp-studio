@@ -1,10 +1,10 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  RECENT_COMMANDS_LIMIT,
   __resetRecentCommandsForTest,
   getRecentCommandIds,
+  RECENT_COMMANDS_LIMIT,
   recordRecentCommand,
 } from '@/services/recentCommands';
-import { beforeEach, describe, expect, it } from 'vitest';
 
 beforeEach(() => {
   __resetRecentCommandsForTest();

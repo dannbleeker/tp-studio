@@ -1,5 +1,5 @@
-import { slug } from '@/services/exporters';
 import { describe, expect, it } from 'vitest';
+import { slug } from '@/services/exporters';
 
 describe('slug', () => {
   it('lowercases, replaces non-alphanumeric runs with hyphens', () => {

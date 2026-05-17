@@ -1,6 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { isScopeEmpty, maybeNudgeSystemScope } from '@/services/systemScopeNudge';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 /**
  * Session 83 — coverage for the soft CRT System Scope nudge.

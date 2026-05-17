@@ -1,5 +1,5 @@
-import { validate } from '@/domain/validators';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { validate } from '@/domain/validators';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(() => {

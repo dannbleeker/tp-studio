@@ -1,6 +1,6 @@
+import { describe, expect, it } from 'vitest';
 import { importFromFlyingLogic } from '@/domain/flyingLogic/reader';
 import { exportToFlyingLogic } from '@/domain/flyingLogic/writer';
-import { describe, expect, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 /**

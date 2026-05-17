@@ -1,8 +1,8 @@
+import { Lightbulb, Trash2 } from 'lucide-react';
+import { useShallow } from 'zustand/shallow';
 import type { EdgeWeight, Entity, Warning } from '@/domain/types';
 import { useEdge, useEntity } from '@/hooks/useSelected';
 import { useDocumentStore } from '@/store';
-import { Lightbulb, Trash2 } from 'lucide-react';
-import { useShallow } from 'zustand/shallow';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { AssumptionWell } from './AssumptionWell';
@@ -24,13 +24,7 @@ const WEIGHT_OPTIONS: { id: EdgeWeight | undefined; label: string; hint: string 
   { id: 'zero', label: 'Zero', hint: 'Neutral — flagged as non-influential.' },
 ];
 
-export function EdgeInspector({
-  edgeId,
-  warnings,
-}: {
-  edgeId: string;
-  warnings: Warning[];
-}) {
+export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: Warning[] }) {
   const edge = useEdge(edgeId);
   const source = useEntity(edge?.sourceId);
   const target = useEntity(edge?.targetId);

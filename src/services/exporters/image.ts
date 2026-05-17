@@ -1,7 +1,7 @@
+import { getNodesBounds, getViewportForBounds, type Node } from '@xyflow/react';
 import { PNG_PADDING, PNG_PIXEL_RATIO } from '@/domain/constants';
 import { SURFACE_DARK, SURFACE_LIGHT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
-import { type Node, getNodesBounds, getViewportForBounds } from '@xyflow/react';
 import { slug, triggerDataUrlDownload } from './shared';
 
 /**

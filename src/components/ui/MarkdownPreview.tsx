@@ -1,6 +1,6 @@
+import { useMemo } from 'react';
 import { navigateToEntity, resolveEntityRef } from '@/services/entityRefs';
 import { renderMarkdown } from '@/services/markdown';
-import { useMemo } from 'react';
 
 /**
  * Render a markdown source string as styled, sanitized HTML. Internal entity

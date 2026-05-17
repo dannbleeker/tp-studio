@@ -1,9 +1,9 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   computeDetailedRevisionDiff,
   edgeStatusFromDiff,
   entityStatusFromDiff,
 } from '@/domain/revisions';
-import { beforeEach, describe, expect, it } from 'vitest';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(() => resetIds());

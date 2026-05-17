@@ -1,9 +1,9 @@
+import clsx from 'clsx';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { paletteScore } from '@/domain/paletteScore';
 import { paletteKbdForCommand } from '@/domain/shortcuts';
 import { getRecentCommandIds, recordRecentCommand } from '@/services/recentCommands';
 import { useDocumentStore } from '@/store';
-import clsx from 'clsx';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { iconForCommandId } from './commandIcons';
 import { COMMANDS, type Command } from './commands';

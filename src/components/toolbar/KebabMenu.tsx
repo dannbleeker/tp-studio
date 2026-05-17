@@ -1,5 +1,3 @@
-import { useAutoFocusFirstEnabled } from '@/hooks/useAutoFocusFirstEnabled';
-import { useOutsideAndEscape } from '@/hooks/useOutsideAndEscape';
 import {
   HelpCircle,
   History,
@@ -18,6 +16,8 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useAutoFocusFirstEnabled } from '@/hooks/useAutoFocusFirstEnabled';
+import { useOutsideAndEscape } from '@/hooks/useOutsideAndEscape';
 import { Button } from '../ui/Button';
 import { useToolbarActions } from './useToolbarActions';
 

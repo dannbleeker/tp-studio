@@ -169,7 +169,11 @@ Items surfaced by the Tier 1/2/3 maintainability arc that didn't ship and are wo
   - Authoring a small CRT keyboard-only: add 3 entities, connect them, edit titles, undo / redo, save. Does any step force a mouse?
   - Cmd+K palette: every action discoverable via search? Run `pnpm dev`, open palette, type "ude" / "core" / "snap" — is the right action surfaced?
 
-New item surfaced by #28 prep:
+New items surfaced by recent work:
+
+- **Biome 2 strict-lint cleanup pass.** The 1.9 → 2.4 upgrade (Session 122) surfaced 24 new findings now tracked as warnings. Four categories, each addressable independently: 3 `noStaticElementInteractions` (`<div onClick>` patterns — add role + tabIndex or convert to button), ~14 `useAriaPropsSupportedByRole` (`aria-label` on SVG `<g>` / `<rect>` that don't support it — move to `<title>` element children or drop the label), ~3 `noArrayIndexKey` (React `key={i}` anti-pattern in wizard step lists — derive a stable id), 1 `useIterableCallbackReturn` (a `.forEach` callback that returns a value — convert to `.map` or drop the return). Effort: S–M, can ship in any order.
+
+
 
 - **Wire `useFocusTrap` into the `Modal` primitive.** Today only `LargeDialog` traps focus; `Modal`-based dialogs (Help, About, Settings, ConfirmDialog, QuickCapture, DocumentInspector, CommandPalette) let Tab escape past the last focusable element. The `useFocusTrap` hook (Session 79) is ready; the design thought needed is autofocus reconciliation — CommandPalette autofocuses its input, ConfirmDialog autofocuses the confirm button, QuickCapture autofocuses the textarea, and the trap's "focus the first focusable on mount" behavior would conflict. Two paths: (a) make `useFocusTrap`'s initial-focus opt-out via a prop, then have each dialog pick the right anchor; (b) add a `trapFocus` prop to `Modal` defaulting `false` and opt-in per dialog. Effort: S–M.
 

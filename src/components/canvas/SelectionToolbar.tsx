@@ -1,3 +1,6 @@
+import { useStore as useRFStore } from '@xyflow/react';
+import clsx from 'clsx';
+import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import { iconForCommandId } from '@/components/command-palette/commandIcons';
 import { COMMANDS } from '@/components/command-palette/commands';
 /**
@@ -33,14 +36,11 @@ import { COMMANDS } from '@/components/command-palette/commands';
  */
 import { DataComponent } from '@/components/dataComponentNames';
 import { CARD_FOCUS } from '@/components/ui/focusClasses';
-import { type Verb, branchFor, verbsForBranch } from '@/domain/selectionVerbs';
+import { branchFor, type Verb, verbsForBranch } from '@/domain/selectionVerbs';
 import { paletteKbdForCommand } from '@/domain/shortcuts';
 import { useCanvasInteractionState } from '@/hooks/useCanvasInteractionState';
 import { getSelectionViewportRect } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
-import { useStore as useRFStore } from '@xyflow/react';
-import clsx from 'clsx';
-import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import { computeToolbarPlacement } from './selectionToolbarPlacement';
 
 // Build the command-id → Command map once. The palette command

@@ -1,7 +1,7 @@
-import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
-import { INITIAL_DOC_BY_DIAGRAM, createDocument } from '@/domain/factory';
-import type { DiagramType } from '@/domain/types';
 import { describe, expect, it } from 'vitest';
+import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
+import { createDocument, INITIAL_DOC_BY_DIAGRAM } from '@/domain/factory';
+import type { DiagramType } from '@/domain/types';
 
 const ALL_DIAGRAM_TYPES = Object.keys(DIAGRAM_TYPE_LABEL) as DiagramType[];
 
@@ -17,15 +17,14 @@ describe('createDocument', () => {
     expect(doc.groups).toEqual({});
   });
 
-  it.each(ALL_DIAGRAM_TYPES.filter((t) => t !== 'ec'))(
-    '%s starts blank (no seeded entities / edges)',
-    (type) => {
-      const doc = createDocument(type);
-      expect(doc.entities).toEqual({});
-      expect(doc.edges).toEqual({});
-      expect(doc.nextAnnotationNumber).toBe(1);
-    }
-  );
+  it.each(
+    ALL_DIAGRAM_TYPES.filter((t) => t !== 'ec')
+  )('%s starts blank (no seeded entities / edges)', (type) => {
+    const doc = createDocument(type);
+    expect(doc.entities).toEqual({});
+    expect(doc.edges).toEqual({});
+    expect(doc.nextAnnotationNumber).toBe(1);
+  });
 
   it('EC starts pre-seeded with the 5 boxes at canonical positions and the 4 sufficiency edges', () => {
     // Evaporating Cloud is the first diagram with a non-empty seed — the

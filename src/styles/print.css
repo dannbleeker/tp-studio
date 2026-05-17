@@ -23,16 +23,16 @@
   .dark body,
   .theme-hc body,
   #root {
-    background: #ffffff !important;
-    color: #171717 !important;
-    height: auto !important;
-    overflow: visible !important;
+    background: #ffffff;
+    color: #171717;
+    height: auto;
+    overflow: visible;
   }
 
   main {
-    height: auto !important;
-    overflow: visible !important;
-    position: static !important;
+    height: auto;
+    overflow: visible;
+    position: static;
   }
 
   /* Hide every floating affordance. Everything below is "chrome, not content."
@@ -58,16 +58,16 @@
   [data-component="empty-hint"],
   [data-component="first-entity-tip"],
   [data-component="zoom-percent"] {
-    display: none !important;
+    display: none;
   }
 
   /* Hide the on-canvas title editor in print — the `<PrintHeader>` block
      above renders the title as a proper H1 instead. */
   [data-component="title-badge"] {
-    display: none !important;
+    display: none;
   }
   .print-only {
-    display: block !important;
+    display: block;
   }
 
   /* Expand React Flow's container. The viewport's transform is locked at
@@ -75,10 +75,10 @@
   .react-flow,
   .react-flow__renderer,
   .react-flow__viewport {
-    position: static !important;
-    width: 100% !important;
-    height: auto !important;
-    transform: none !important;
+    position: static;
+    width: 100%;
+    height: auto;
+    transform: none;
   }
 
   /* Print-only header block (document title + author + description). The
@@ -105,7 +105,7 @@
   /* Page footer — print date. Modern browsers' running-header support is
      uneven, so we settle for a single block at the bottom of the document. */
   .print-footer {
-    display: block !important;
+    display: block;
     margin-top: 0.3in;
     font-size: 9pt;
     color: #737373;
@@ -115,8 +115,8 @@
   *,
   *::before,
   *::after {
-    transition: none !important;
-    animation: none !important;
+    transition: none;
+    animation: none;
   }
 
   /* F6: ink-saver mode. Active when the user has the Settings toggle ON
@@ -125,12 +125,12 @@
      dump a wall of ink. Entity types stay distinguishable via their text
      label (UDE / EFFECT / ROOT CAUSE / …) which always reads in print. */
   .print-ink-saver .react-flow__node-tp [style*="background-color"] {
-    background-color: transparent !important;
-    border-right: 1px solid #525252 !important;
+    background-color: transparent;
+    border-right: 1px solid #525252;
   }
   .print-ink-saver .react-flow__node-tpGroup > div,
   .print-ink-saver .react-flow__node-tpCollapsedGroup {
-    background-color: transparent !important;
+    background-color: transparent;
   }
 
   /* Session 77 / brief §10 — print modes from the print-preview dialog.
@@ -139,31 +139,31 @@
 
   /* Ink-saving — colour-strip + thinner edges + softened blacks. */
   body.print-mode-inksaving .react-flow__node-tp [style*="background-color"] {
-    background-color: transparent !important;
-    border-right: 1px solid #737373 !important;
+    background-color: transparent;
+    border-right: 1px solid #737373;
   }
   body.print-mode-inksaving .react-flow__node-tpGroup > div,
   body.print-mode-inksaving .react-flow__node-tpCollapsedGroup {
-    background-color: transparent !important;
+    background-color: transparent;
   }
   body.print-mode-inksaving .react-flow__edge-path {
-    stroke: #525252 !important;
-    stroke-width: 0.75 !important;
+    stroke: #525252;
+    stroke-width: 0.75;
   }
   body.print-mode-inksaving {
-    color: #404040 !important;
+    color: #404040;
   }
 
   /* Workshop — large font, thick edges, prominent group rectangles. */
   body.print-mode-workshop .react-flow__node-tp,
   body.print-mode-workshop .react-flow__node-tp > div {
-    font-size: 14pt !important;
+    font-size: 14pt;
   }
   body.print-mode-workshop .react-flow__edge-path {
-    stroke-width: 2 !important;
+    stroke-width: 2;
   }
   body.print-mode-workshop .react-flow__node-tpGroup > div {
-    border: 2px solid #404040 !important;
+    border: 2px solid #404040;
   }
 
   /* Header / footer bands resolved from the body data-attributes. */
@@ -191,10 +191,10 @@
      carries `print-include-appendix`. The DOM is rendered by the
      PrintAppendix component below in App.tsx. */
   [data-component="print-appendix"] {
-    display: none !important;
+    display: none;
   }
   body.print-include-appendix [data-component="print-appendix"] {
-    display: block !important;
+    display: block;
     page-break-before: always;
   }
 
@@ -204,10 +204,10 @@
      `display: none`) preserves layout so the printed page renders the
      selection in its canvas position rather than collapsing whitespace. */
   body.print-selection-only .react-flow__node:not(.selected) {
-    visibility: hidden !important;
+    visibility: hidden;
   }
   body.print-selection-only .react-flow__edge:not(.selected) {
-    visibility: hidden !important;
+    visibility: hidden;
   }
 }
 

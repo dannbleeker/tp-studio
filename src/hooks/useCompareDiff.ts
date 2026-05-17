@@ -1,6 +1,6 @@
-import { type DetailedRevisionDiff, computeDetailedRevisionDiff } from '@/domain/revisions';
-import { useDocumentStore } from '@/store';
 import { useMemo } from 'react';
+import { computeDetailedRevisionDiff, type DetailedRevisionDiff } from '@/domain/revisions';
+import { useDocumentStore } from '@/store';
 
 /**
  * H2 visual-diff plumbing. When `compareRevisionId` is set, return the

@@ -1,8 +1,8 @@
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Toaster } from '@/components/toast/Toaster';
 import { TOAST_AUTO_DISMISS_MS_BY_KIND } from '@/domain/constants';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * Session 83 — fills the parked Toaster test gap.

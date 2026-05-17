@@ -1,5 +1,5 @@
-import type { EdgeId, EntityId, GroupId } from '@/domain/types';
 import type { StateCreator } from 'zustand';
+import type { EdgeId, EntityId, GroupId } from '@/domain/types';
 import type { RootStore } from '../types';
 import type { Selection } from './types';
 

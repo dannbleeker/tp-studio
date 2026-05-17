@@ -9,7 +9,7 @@ import type {
   GroupId,
   TPDocument,
 } from '../types';
-import { VALID_GROUP_COLORS, mapEntityType } from './typeMaps';
+import { mapEntityType, VALID_GROUP_COLORS } from './typeMaps';
 
 /**
  * Flying Logic XML reader. Two schema variants exist in the wild:

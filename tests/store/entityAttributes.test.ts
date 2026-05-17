@@ -1,5 +1,5 @@
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);

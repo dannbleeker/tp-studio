@@ -1,5 +1,5 @@
-import { clearLayoutCacheForTests, computeLayout, splitIntoComponents } from '@/domain/layout';
 import { afterEach, describe, expect, it } from 'vitest';
+import { clearLayoutCacheForTests, computeLayout, splitIntoComponents } from '@/domain/layout';
 
 /**
  * Session 83 — FL-LA4. The layout module now splits into weakly-connected

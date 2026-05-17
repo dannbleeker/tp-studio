@@ -1,7 +1,7 @@
-import { DocumentMeta, computeBrowserTitle } from '@/components/DocumentMeta';
-import { resetStoreForTest, useDocumentStore } from '@/store';
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { computeBrowserTitle, DocumentMeta } from '@/components/DocumentMeta';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);

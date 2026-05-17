@@ -15,8 +15,9 @@
  * drawn as light lines so the EC shape reads as the recognized
  * 5-box arrow tree, not just five disconnected rectangles.
  */
-import { ALL_EC_SLOTS, type ECSlot, EC_SLOT_GLYPH } from '@/domain/ecGuiding';
+
 import clsx from 'clsx';
+import { ALL_EC_SLOTS, EC_SLOT_GLYPH, type ECSlot } from '@/domain/ecGuiding';
 
 type SlotGeom = { x: number; y: number };
 

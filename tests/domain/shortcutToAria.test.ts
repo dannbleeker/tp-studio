@@ -1,5 +1,5 @@
-import { shortcutToAria } from '@/domain/shortcuts';
 import { describe, expect, it } from 'vitest';
+import { shortcutToAria } from '@/domain/shortcuts';
 
 describe('shortcutToAria', () => {
   it('converts Ctrl+K display string to ARIA Control+K', () => {

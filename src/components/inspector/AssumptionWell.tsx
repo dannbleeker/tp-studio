@@ -1,8 +1,8 @@
-import type { AssumptionStatus, Entity } from '@/domain/types';
-import { useDocumentStore } from '@/store';
 import clsx from 'clsx';
 import { ArrowUpRight, Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import type { AssumptionStatus, Entity } from '@/domain/types';
+import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { Field } from './Field';
 
@@ -50,13 +50,7 @@ const nextStatus = (s: AssumptionStatus): AssumptionStatus => {
   return STATUS_ORDER[(idx + 1) % STATUS_ORDER.length] ?? 'unexamined';
 };
 
-export function AssumptionWell({
-  edgeId,
-  assumptions,
-}: {
-  edgeId: string;
-  assumptions: Entity[];
-}) {
+export function AssumptionWell({ edgeId, assumptions }: { edgeId: string; assumptions: Entity[] }) {
   const addAssumptionToEdge = useDocumentStore((s) => s.addAssumptionToEdge);
   const locked = useDocumentStore((s) => s.browseLocked);
   const diagramType = useDocumentStore((s) => s.doc.diagramType);

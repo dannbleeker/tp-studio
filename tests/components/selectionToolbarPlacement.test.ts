@@ -13,8 +13,9 @@
  * end-to-end "click → toolbar appears" path against the mocked
  * rect; this file pins the geometry independently.
  */
-import { computeToolbarPlacement } from '@/components/canvas/selectionToolbarPlacement';
+
 import { describe, expect, it } from 'vitest';
+import { computeToolbarPlacement } from '@/components/canvas/selectionToolbarPlacement';
 
 const DEFAULTS = {
   viewport: { width: 1024, height: 768 },

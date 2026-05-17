@@ -1,15 +1,15 @@
+import { Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
 import { Button } from '@/components/ui/Button';
 import {
-  CUSTOM_CLASS_ICONS,
   CUSTOM_CLASS_ICON_NAMES,
+  CUSTOM_CLASS_ICONS,
   ENTITY_TYPE_META,
 } from '@/domain/entityTypeMeta';
 import type { CustomEntityClass, EntityType } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { useShallow } from 'zustand/shallow';
 
 /**
  * B10 — per-document custom entity class manager. Lives in the

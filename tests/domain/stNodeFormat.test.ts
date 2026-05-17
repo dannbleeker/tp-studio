@@ -1,5 +1,5 @@
-import { ST_FACET_KEYS, isStNodeFormat } from '@/domain/graph';
 import { describe, expect, it } from 'vitest';
+import { isStNodeFormat, ST_FACET_KEYS } from '@/domain/graph';
 import { makeEntity, resetIds } from './helpers';
 
 /**

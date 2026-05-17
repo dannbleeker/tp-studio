@@ -1,6 +1,6 @@
 import { exportToJSON, saveToLocalStorage } from '@/domain/persistence';
 import type { TPDocument } from '@/domain/types';
-import { STORAGE_KEYS, removeKey, writeString } from './storage';
+import { removeKey, STORAGE_KEYS, writeString } from './storage';
 
 // Idle window before we hit the committed doc key. A burst of mutations
 // inside this window coalesces into one JSON.stringify + setItem call,
