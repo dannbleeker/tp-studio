@@ -51,3 +51,10 @@ public/user-guide.html
 # ad-hoc audits (run `pnpm visualize` then open the file); never
 # committed.
 dist/bundle-stats.html
+
+# Session 115 — Stryker mutation-testing artifacts. Run via
+# `pnpm exec stryker run` (or `pnpm mutation`); writes HTML report
+# under reports/mutation/ + a temp dir under node_modules. Ad-hoc
+# analysis — never committed.
+reports/
+.stryker-tmp/
