@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
@@ -11,7 +12,28 @@ import tailwindConfig from './tailwind.config';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
+// Session 111 — About TP Studio dialog needs build-time metadata
+// (version, build date, copyright string). Read `package.json` once
+// and compute the copyright years string from the current calendar
+// year: "2026" through Dec 31 2026, then "2026–2027" from Jan 1 2027,
+// "2026–2028" from Jan 1 2028, etc. Auto-rolls forward every January
+// without any code edit — each new production build picks it up.
+const pkg = JSON.parse(readFileSync(path.join(here, 'package.json'), 'utf8')) as {
+  version: string;
+};
+const __APP_VERSION__ = pkg.version;
+const __BUILD_DATE__ = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+const __COPYRIGHT_YEARS__ = (() => {
+  const y = new Date().getFullYear();
+  return y <= 2026 ? '2026' : `2026–${y}`;
+})();
+
 export default defineConfig(({ command }) => ({
+  define: {
+    __APP_VERSION__: JSON.stringify(__APP_VERSION__),
+    __BUILD_DATE__: JSON.stringify(__BUILD_DATE__),
+    __COPYRIGHT_YEARS__: JSON.stringify(__COPYRIGHT_YEARS__),
+  },
   // Session 85 / #18 — vite-plugin-checker runs `tsc --noEmit` (and
   // Biome lint) in a worker alongside the dev server and surfaces
   // errors as a browser overlay. Without it, type errors are only

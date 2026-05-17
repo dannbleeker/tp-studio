@@ -8,6 +8,12 @@ export const helpCommands: Command[] = [
     group: 'Help',
     run: (s) => s.openHelp(),
   },
+  {
+    id: 'about',
+    label: 'About TP Studio…',
+    group: 'Help',
+    run: (s) => s.openAbout(),
+  },
   // Session 89 — surface Chrome / Edge's PWA install affordance from
   // the palette. The browser only fires `beforeinstallprompt` once it
   // considers the user "engaged" (multiple visits + dwell time + PWA

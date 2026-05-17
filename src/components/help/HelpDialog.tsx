@@ -55,6 +55,10 @@ const GESTURES: { label: string; gesture: string }[] = [
 export function HelpDialog() {
   const open = useDocumentStore((s) => s.helpOpen);
   const close = useDocumentStore((s) => s.closeHelp);
+  // Session 111 — footer link to the About dialog. Cheap discovery
+  // path: users who hit Help looking for "what is this thing" land
+  // on the About dialog instead of bouncing back out empty-handed.
+  const openAbout = useDocumentStore((s) => s.openAbout);
 
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="help-title">
@@ -112,6 +116,22 @@ export function HelpDialog() {
               </div>
             ))}
           </dl>
+        </section>
+        {/* Session 111 — link to About dialog. The Help dialog is
+            where users look for "what is this thing"; the link
+            forwards them to the About surface that actually carries
+            tagline / version / docs / source / trademarks. */}
+        <section className="border-neutral-200 border-t pt-3 dark:border-neutral-800">
+          <button
+            type="button"
+            onClick={() => {
+              close();
+              openAbout();
+            }}
+            className="text-indigo-600 text-xs hover:underline dark:text-indigo-400"
+          >
+            About this app →
+          </button>
         </section>
       </div>
     </Modal>

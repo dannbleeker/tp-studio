@@ -14,6 +14,12 @@ export type DialogsSlice = {
   paletteOpen: boolean;
   paletteInitialQuery: string;
   helpOpen: boolean;
+  /** Session 111 — About TP Studio dialog. Permanent in-app surface for
+   *  the practitioner's book, the User Guide, the security doc, the
+   *  third-party notices, the GitHub source, the build version, and
+   *  the dynamic copyright string. Lives behind Cmd+K → "About TP
+   *  Studio…" and a footer link inside the Help dialog. */
+  aboutOpen: boolean;
   settingsOpen: boolean;
   docSettingsOpen: boolean;
   contextMenu: ContextMenuState;
@@ -92,6 +98,9 @@ export type DialogsSlice = {
 
   openHelp: () => void;
   closeHelp: () => void;
+
+  openAbout: () => void;
+  closeAbout: () => void;
 
   openSettings: () => void;
   closeSettings: () => void;
@@ -200,6 +209,7 @@ export type DialogsDataKeys =
   | 'paletteOpen'
   | 'paletteInitialQuery'
   | 'helpOpen'
+  | 'aboutOpen'
   | 'settingsOpen'
   | 'docSettingsOpen'
   | 'contextMenu'
@@ -220,6 +230,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   paletteOpen: false,
   paletteInitialQuery: '',
   helpOpen: false,
+  aboutOpen: false,
   settingsOpen: false,
   docSettingsOpen: false,
   contextMenu: { open: false },
@@ -241,6 +252,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   paletteOpen: false,
   paletteInitialQuery: '',
   helpOpen: false,
+  aboutOpen: false,
   settingsOpen: false,
   docSettingsOpen: false,
   contextMenu: { open: false },
@@ -264,6 +276,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openHelp: () => set({ helpOpen: true }),
   closeHelp: () => set({ helpOpen: false }),
+
+  openAbout: () => set({ aboutOpen: true }),
+  closeAbout: () => set({ aboutOpen: false }),
 
   openSettings: () => set({ settingsOpen: true }),
   closeSettings: () => set({ settingsOpen: false }),

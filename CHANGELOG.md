@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 111 — About TP Studio dialog + on-brand docs bundle + README tagline
+
+Coda to Sessions 109–110 (the IP-hygiene arc). Three threads bundled:
+
+**1. About TP Studio dialog** (`src/components/about/AboutDialog.tsx`). Permanent in-app home for the tagline, the practitioner book, the User Guide, the security doc, the third-party notices, the source-code link, and the copyright + trademark notice. Cmd+K → "About TP Studio…" or the new "About this app →" link in the HelpDialog footer. Esc-cascade priority: between palette and Help (`about` peels first if both somehow open). 1188 tests passing (was 1156; +7 AboutDialog cases that pin headline, on-brand URLs, single GitHub link, build metadata, copyright string, and the open/close round-trip).
+
+**2. On-brand docs bundle.** New `scripts/build-docs-bundle.mjs` (run as `prebuild`) (a) copies the book PDF from `docs/guide/` to `public/`, (b) renders `NOTICE.md` / `SECURITY.md` / `USER_GUIDE.md` to standalone HTML pages with a book-flavored stylesheet. Vite ships all four artifacts into `dist/`, so the AboutDialog links to `/Causal-Thinking-with-TP-Studio.pdf` / `/notices.html` / `/security.html` / `/user-guide.html` — all served from the branded subdomain instead of leaking to `github.com`. Service-worker precache covers HTML; the PDF is served from same-origin too. Generated artifacts gitignored (sources of truth stay the canonical Markdown + the committed PDF under `docs/guide/`). One explicit GitHub link remains as the Source-code row — single intentional disclosure, not five accidental leaks.
+
+**3. README tagline updated** (`README.md` line 3). Was `"A focused, modern alternative to Flying Logic for **Theory of Constraints Thinking Process** diagrams."` — that comparative anchor made Flying Logic the reference frame on the first line a visitor reads. Now: `"A practitioner-focused canvas for **Theory of Constraints Thinking Process** diagrams. Open source, local-first, runs in your browser."` Same skeleton, three positive distinguishers (practitioner-focused, open-source, local-first) instead of the alternative-to phrasing. The AboutDialog tagline matches.
+
+**Dynamic copyright string.** `__COPYRIGHT_YEARS__` injected via Vite `define` (`vite.config.ts`). Today (year = 2026): `"2026"`. From Jan 1 2027: `"2026–2027"`. From Jan 1 2028: `"2026–2028"`. No code edit at year-rollover — each new production build picks up the current year and recomputes.
+
+**Build metadata also injected:** `__APP_VERSION__` (from `package.json#version`) + `__BUILD_DATE__` (`YYYY-MM-DD` from `new Date()` at config-evaluation time). Both surface in the About dialog's "Version X · Build YYYY-MM-DD" line. Type declarations in `src/vite-env.d.ts` keep tsc honest at call sites.
+
+**End state:** tsc clean, biome clean on touched files, **1188 tests passing**, `pnpm build` clean, bundle budget within ceiling (index +2.6 KB gzip from the new lazy chunk wiring — well under the 124 KB ceiling), AboutDialog chunk 1.4 KB gzip on its own (lazy-loaded like every other dialog). No production behavior change to existing surfaces; everything new is opt-in via palette or the HelpDialog footer link.
+
 ## Session 110 — Book retitle: *Thinking with TP Studio* → *Causal Thinking with TP Studio*
 
 Coda to Session 109's IP-hygiene pass. Session 109 closed the book's substantive overlap surface with William Dettmer's *Thinking with Flying Logic* (foreword reframing, chapter content edits, attribution corrections, appendix bibliography restoration, new `NOTICE.md` at repo root). The title remained as the strongest direct echo of TwFL — same exact `Thinking with [tool]` structural slot. Legal risk from the title alone was low (book titles aren't copyrightable; the "Thinking with X" pattern is a recognized title trope), but editorially the title was self-imposed framing that didn't serve the book's actual content.

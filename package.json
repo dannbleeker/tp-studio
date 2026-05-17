@@ -8,6 +8,8 @@
     "postinstall": "node ./node_modules/simple-git-hooks/cli.js",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "prebuild": "node ./scripts/build-docs-bundle.mjs",
+    "docs:bundle": "node ./scripts/build-docs-bundle.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

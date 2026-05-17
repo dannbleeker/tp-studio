@@ -190,10 +190,15 @@ export function useGlobalShortcuts() {
       // Priority order (topmost first):
       //   confirmDialog (synchronously blocking) →
       //   quickCapture → diagramPicker → exportPicker → templatePicker →
-      //   printPreview → docSettings → settings → search → help →
+      //   printPreview → docSettings → settings → search → about → help →
       //   palette → sideBySide compare → visual-diff compare → history →
       //   editing (let the textarea cancel its own edit) → hoist →
       //   clearSelection.
+      //
+      // Session 111 — `about` inserted just above `help` since the Help
+      // dialog's footer link closes Help and opens About; if both
+      // somehow ended up open the About dialog is the topmost and
+      // should peel back first.
       if (e.key === 'Escape') {
         const state = useDocumentStore.getState();
         // Synchronous confirm-dialog: resolve as 'cancel' so the
@@ -232,6 +237,10 @@ export function useGlobalShortcuts() {
         }
         if (state.searchOpen) {
           state.closeSearch();
+          return;
+        }
+        if (state.aboutOpen) {
+          state.closeAbout();
           return;
         }
         if (state.helpOpen) {

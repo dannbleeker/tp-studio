@@ -23,6 +23,9 @@ import { bootRecoveryStatus } from './store/documentSlice/docMetaSlice';
 const HelpDialog = lazy(() =>
   import('./components/help/HelpDialog').then((m) => ({ default: m.HelpDialog }))
 );
+const AboutDialog = lazy(() =>
+  import('./components/about/AboutDialog').then((m) => ({ default: m.AboutDialog }))
+);
 const SettingsDialog = lazy(() =>
   import('./components/settings/SettingsDialog').then((m) => ({ default: m.SettingsDialog }))
 );
@@ -231,6 +234,7 @@ export function App() {
       <Suspense fallback={null}>
         <CommandPalette />
         <HelpDialog />
+        <AboutDialog />
         <ErrorBoundary label="Settings">
           <SettingsDialog />
         </ErrorBoundary>

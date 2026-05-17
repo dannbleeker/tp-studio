@@ -24,6 +24,14 @@ declare global {
   interface Window {
     __TP_TEST__?: TpTestHook;
   }
+
+  /** Session 111 — build-time metadata injected by Vite's `define`.
+   *  Available to every module at runtime as a global string literal.
+   *  See `vite.config.ts` for the source values and the dynamic
+   *  copyright-years computation. */
+  const __APP_VERSION__: string;
+  const __BUILD_DATE__: string;
+  const __COPYRIGHT_YEARS__: string;
 }
 
 // Required so TypeScript treats this file as a module (which `declare

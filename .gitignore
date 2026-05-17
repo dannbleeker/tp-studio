@@ -34,3 +34,14 @@ src/domain/tokens.js
 
 # Session 106 — perf trace artifact (run via .github/workflows/perf-trace.yml)
 perf-trace-output/
+
+# Session 111 — generated in-app docs bundle. The book PDF, NOTICE, SECURITY,
+# and USER_GUIDE are rendered into `public/` by `scripts/build-docs-bundle.mjs`
+# (wired as the `prebuild` npm script) so Vite ships them at the branded
+# subdomain instead of users having to follow GitHub links. Sources of truth
+# are committed (the markdown files at repo root + the PDF under docs/guide);
+# the generated copies in public/ are NOT.
+public/Causal-Thinking-with-TP-Studio.pdf
+public/notices.html
+public/security.html
+public/user-guide.html
