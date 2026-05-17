@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 126 — Tailwind 3 → 4 migration
+
+Backlog item #5 from the post-Session-122 upgrade survey. Tailwind v4 (Oxide engine, CSS-first config) is a near-rewrite of v3 — the migration touches the build pipeline, the config surface, and the way custom tokens are declared.
+
+**What changed:**
+
+- **`tailwindcss@3.4.19 → 4.3.0` + `@tailwindcss/vite@4.3.0` installed.** Dropped `autoprefixer` (v4's Vite plugin handles vendor-prefixing internally; the v3 `postcss` peer dep stays around as a transitive of Vite/PostCSS but is no longer a direct dep).
+- **`postcss.config.js` deleted.** The v3 `tailwindcss` + `autoprefixer` PostCSS pipeline isn't used anymore.
+- **`tailwind.config.ts` deleted.** v4's CSS-first config moves theme tokens, dark-mode strategy, and content detection into the CSS file via `@theme` and `@custom-variant` directives.
+- **`vite.config.ts`** — swapped `css.postcss.plugins: [tailwindcss(tailwindConfig), autoprefixer()]` for the dedicated `tailwindcss()` Vite plugin in the main plugin array.
+- **`src/styles/index.css`** — replaced `@tailwind base; @tailwind components; @tailwind utilities;` with `@import "tailwindcss"` and a `@theme` block carrying the project's custom tokens:
+  - `--breakpoint-xs: 480px` (was Session 83's `screens.xs`)
+  - `--font-sans` (was `fontFamily.sans`)
+  - `--text-ui` / `--text-node` / `--text-edge` + paired `--line-height` (was `fontSize.ui / node / edge`)
+  - `@custom-variant dark (&:where(.dark, .dark *))` for class-based dark mode (was `darkMode: 'class'`)
+- **`biome.json`** — enabled `css.parser.tailwindDirectives` so biome parses the new `@theme` / `@custom-variant` / `@import "tailwindcss"` directives without errors.
+- **`knip.json`** — removed `tailwind.config.ts` from `entry` and pruned `tailwindcss` / `autoprefixer` / `postcss` from `ignoreDependencies` (autoprefixer is gone; tailwindcss is a direct dep again).
+
+**End state:** 1200 tests passing; tsc clean; biome 0 warnings/errors; build clean. Index chunk 83.65 KB gz unchanged. The Oxide engine runs ~3× faster than v3's PostCSS-based pipeline (visible in the build plugin-timings — Tailwind drops from a significant share to ~9%).
+
+**Known cosmetic shifts (not addressed in this commit):** v4 renamed several core utility names without changing their CSS output — `shadow-sm → shadow-xs`, `rounded → rounded-sm`, `ring → ring-3` (the old no-suffix bare versions). Our codebase has ~85 references to these utilities still under their v3 names; they continue to compile but now resolve to one step up the scale (e.g., `shadow-sm` now renders as v3's `shadow`). The visual effect is subtle (slightly heavier shadows / larger corners). The official `@tailwindcss/upgrade` codemod would rename these mechanically; running it here was blocked by the environment's `pnpm dlx` policy. Left as future work — visual snapshots will catch any user-visible regression.
+
 ## Session 125 — Vite/Vitest cluster upgrade
 
 Backlog item #4 from the post-Session-122 upgrade survey: vite 5→8, vitest 2→4, @vitest/coverage-v8 2→4, @vitejs/plugin-react 4→6, jsdom 25→29, fast-check 3→4 — all bumped in one cluster since the alignment is tight (vitest pins peer of vite; coverage-v8 pins to vitest; plugin-react pins to vite).

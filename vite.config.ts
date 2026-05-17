@@ -2,14 +2,12 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import autoprefixer from 'autoprefixer';
 import { visualizer } from 'rollup-plugin-visualizer';
-import tailwindcss from 'tailwindcss';
 import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
 import { VitePWA } from 'vite-plugin-pwa';
-import tailwindConfig from './tailwind.config';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -68,6 +66,10 @@ export default defineConfig(({ command }) => ({
       //   plugins: [['babel-plugin-react-compiler', { target: '19' }]],
       // },
     }),
+    // Session 126 — Tailwind v4 Vite plugin. Replaces v3's
+    // postcss-plugin + autoprefixer pair. Reads the CSS-first config
+    // from `src/styles/index.css`'s `@theme` block.
+    tailwindcss(),
     // Session 114 — `rollup-plugin-visualizer` emits a
     // `dist/bundle-stats.html` treemap on every `pnpm build`. Opt-in
     // ad-hoc: ignore it normally; open it with `pnpm visualize` (which
@@ -188,11 +190,10 @@ export default defineConfig(({ command }) => ({
         : {}),
     },
   },
-  css: {
-    postcss: {
-      plugins: [tailwindcss(tailwindConfig), autoprefixer()],
-    },
-  },
+  // Session 126 — Tailwind v4 ships its own Vite plugin
+  // (`@tailwindcss/vite`) that replaces the v3 postcss-plugin + autoprefixer
+  // pair. The plugin reads the CSS-first config from `src/styles/index.css`
+  // (`@theme` block) and handles vendor-prefixing internally.
   build: {
     // Split heavy vendor libs into their own chunks so a feature commit
     // only invalidates one chunk's cache, and html-to-image (only used by

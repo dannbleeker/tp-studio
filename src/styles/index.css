@@ -1,9 +1,42 @@
+@import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
 @import "./print.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/*
+ * Session 126 — Tailwind v4 CSS-first config. Replaces the
+ * `tailwind.config.ts` JS object form (deleted) with `@theme` (custom
+ * tokens) and `@custom-variant dark` (class-based dark mode). The
+ * `content:` array is no longer needed — v4's Oxide engine auto-
+ * detects template files from the project root.
+ */
+
+/* Class-based dark mode: the v3 `darkMode: 'class'` config flag moves
+ * to a `@custom-variant` declaration in v4. `.dark` on any ancestor
+ * triggers `dark:` utility variants; matches the existing semantics. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Session 83 — mobile pass. Tailwind's default `sm:` is 640 px, but
+   * narrow phones (320–479 px) need their own breakpoint to hide
+   * non-essential controls. `xs:` sits at 480 px — common entry point
+   * for portrait phones. v4 declares custom breakpoints as
+   * `--breakpoint-<name>` theme tokens. */
+  --breakpoint-xs: 480px;
+
+  /* Font stack: Inter first, then OS-system fallbacks. */
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Per-surface font-size tokens. v4 wants `--text-<name>` tokens; the
+   * paired `--text-<name>--line-height` declares the matching
+   * line-height (consumed by the `text-<name>` utility automatically). */
+  --text-ui: 13px;
+  --text-ui--line-height: 1.4;
+  --text-node: 15px;
+  --text-node--line-height: 1.35;
+  --text-edge: 11px;
+  --text-edge--line-height: 1.2;
+}
 
 :root {
   color-scheme: light dark;
