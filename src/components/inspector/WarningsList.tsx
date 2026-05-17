@@ -132,7 +132,7 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
                         ? `Reopen warning: ${w.message}`
                         : `Mark warning resolved: ${w.message}`
                     }
-                    className="shrink-0 rounded px-1.5 py-0.5 font-medium text-[10px] text-neutral-600 opacity-0 transition hover:bg-white/60 focus:opacity-100 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
+                    className="shrink-0 rounded-sm px-1.5 py-0.5 font-medium text-[10px] text-neutral-600 opacity-0 transition hover:bg-white/60 focus:opacity-100 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
                   >
                     {w.resolved ? 'Reopen' : 'Resolve'}
                   </button>

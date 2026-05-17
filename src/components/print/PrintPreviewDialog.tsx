@@ -109,7 +109,7 @@ function ModeThumbnail({ mode }: { mode: PrintMode }) {
         viewBox="0 0 60 40"
         role="img"
         aria-label="Standard print preview"
-        className="h-8 w-12 shrink-0 rounded border border-neutral-200 dark:border-neutral-700"
+        className="h-8 w-12 shrink-0 rounded-sm border border-neutral-200 dark:border-neutral-700"
       >
         <title>Standard print preview</title>
         <rect width="60" height="40" fill="#ffffff" />
@@ -131,7 +131,7 @@ function ModeThumbnail({ mode }: { mode: PrintMode }) {
         viewBox="0 0 60 40"
         role="img"
         aria-label="Workshop print preview"
-        className="h-8 w-12 shrink-0 rounded border border-neutral-200 dark:border-neutral-700"
+        className="h-8 w-12 shrink-0 rounded-sm border border-neutral-200 dark:border-neutral-700"
       >
         <title>Workshop print preview</title>
         <rect width="60" height="40" fill="#ffffff" />
@@ -181,7 +181,7 @@ function ModeThumbnail({ mode }: { mode: PrintMode }) {
       viewBox="0 0 60 40"
       role="img"
       aria-label="Ink-saving print preview"
-      className="h-8 w-12 shrink-0 rounded border border-neutral-200 dark:border-neutral-700"
+      className="h-8 w-12 shrink-0 rounded-sm border border-neutral-200 dark:border-neutral-700"
     >
       <title>Ink-saving print preview</title>
       <rect width="60" height="40" fill="#ffffff" />
@@ -448,7 +448,7 @@ export function PrintPreviewDialog() {
             type="text"
             value={headerTemplate}
             onChange={(e) => setHeaderTemplate(e.target.value)}
-            className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
+            className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
           />
           <span className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
             Preview: {resolveMergeFields(headerTemplate, doc) || '(empty)'}
@@ -469,7 +469,7 @@ export function PrintPreviewDialog() {
             type="text"
             value={footerTemplate}
             onChange={(e) => setFooterTemplate(e.target.value)}
-            className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
+            className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
           />
           <span className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
             Preview: {resolveMergeFields(footerTemplate, doc) || '(empty)'}

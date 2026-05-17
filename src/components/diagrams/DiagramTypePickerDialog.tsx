@@ -155,7 +155,7 @@ export function DiagramTypePickerDialog() {
                   'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
                 )}
               >
-                <span className="rounded bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">
+                <span className="rounded-sm bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">
                   {card.short}
                 </span>
                 <h3 className="font-medium text-neutral-900 text-sm leading-tight dark:text-neutral-100">

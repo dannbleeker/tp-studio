@@ -110,13 +110,13 @@ export function AttributesSection({ attributes, onSet, onRemove }: AttributesSec
               value={newKey}
               onChange={(e) => setNewKey(e.target.value)}
               placeholder="Attribute name"
-              className="w-full rounded border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
+              className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
               autoComplete="off"
             />
             <select
               value={newKind}
               onChange={(e) => setNewKind(e.target.value as AttrKind)}
-              className="w-full rounded border border-neutral-200 bg-white px-2 py-1 text-xs dark:border-neutral-700 dark:bg-neutral-950"
+              className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 text-xs dark:border-neutral-700 dark:bg-neutral-950"
             >
               <option value="string">Text</option>
               <option value="int">Integer</option>
@@ -184,7 +184,7 @@ function AttributeRow({
         type="button"
         onClick={onRemove}
         disabled={locked}
-        className="rounded p-0.5 text-neutral-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40 dark:hover:bg-rose-950/40 dark:hover:text-rose-200"
+        className="rounded-sm p-0.5 text-neutral-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40 dark:hover:bg-rose-950/40 dark:hover:text-rose-200"
         aria-label={`Remove attribute ${attrKey}`}
         title="Remove"
       >

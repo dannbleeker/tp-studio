@@ -93,7 +93,7 @@ export function TopBar() {
       >
         <Search className="h-3.5 w-3.5" />
         <span>Commands</span>
-        <kbd className="ml-1 rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900">
+        <kbd className="ml-1 rounded-sm border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900">
           {cmdKey}+K
         </kbd>
       </Button>
@@ -165,7 +165,7 @@ export function TopBar() {
             value={layoutMode}
             onChange={(e) => setLayoutMode(e.target.value as 'flow' | 'radial')}
             aria-label="Layout mode"
-            className="cursor-pointer border-none bg-transparent pr-0 font-medium text-neutral-700 text-xs outline-none dark:text-neutral-200"
+            className="cursor-pointer border-none bg-transparent pr-0 font-medium text-neutral-700 text-xs outline-hidden dark:text-neutral-200"
           >
             <option value="flow">Flow</option>
             <option value="radial">Radial</option>

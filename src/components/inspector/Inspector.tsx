@@ -82,7 +82,7 @@ export function Inspector() {
           // viewports it caps at 85 vw so a phone-sized canvas still has room
           // to breathe behind it; the slide-off when closed is unchanged.
           'inspector-aside absolute top-0 right-0 z-20 h-full w-[min(85vw,320px)] transform md:w-[320px]',
-          'border-neutral-200 border-l bg-white/95 backdrop-blur',
+          'border-neutral-200 border-l bg-white/95 backdrop-blur-sm',
           'dark:border-neutral-800 dark:bg-neutral-950/95',
           // 120 ms slide-in / slide-out so the panel doesn't snap.
           // `ease-out` feels right for entering (decelerates into

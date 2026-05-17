@@ -55,7 +55,7 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
       className={clsx(
         'flex items-start gap-2',
         compact
-          ? 'mx-auto max-w-3xl rounded-md border border-neutral-200 bg-white/95 px-3 py-2 text-[12px] text-neutral-700 italic leading-snug shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95 dark:text-neutral-300'
+          ? 'mx-auto max-w-3xl rounded-md border border-neutral-200 bg-white/95 px-3 py-2 text-[12px] text-neutral-700 italic leading-snug shadow-xs backdrop-blur-xs dark:border-neutral-800 dark:bg-neutral-950/95 dark:text-neutral-300'
           : 'rounded-md border border-neutral-200 bg-white px-3 py-3 text-neutral-800 text-sm leading-relaxed dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200'
       )}
       data-component="verbalisation-strip"
@@ -73,7 +73,7 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
           onClick={() => setCollapsed(false)}
           aria-label="Expand EC verbalisation"
           aria-expanded={false}
-          className="flex w-full items-center justify-between gap-2 text-left not-italic outline-none hover:text-neutral-900 focus:ring-2 focus:ring-violet-400 dark:hover:text-neutral-100"
+          className="flex w-full items-center justify-between gap-2 text-left not-italic outline-hidden hover:text-neutral-900 focus:ring-2 focus:ring-violet-400 dark:hover:text-neutral-100"
         >
           <span className="truncate">
             EC reading
@@ -127,7 +127,7 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
                   disabled={!tok.edgeId}
                   aria-label={ariaLabel}
                   className={clsx(
-                    'mx-0.5 inline rounded border px-1 py-0 font-semibold text-[10px] not-italic transition focus:outline-none focus:ring-2 focus:ring-violet-400',
+                    'mx-0.5 inline rounded-xs border px-1 py-0 font-semibold text-[10px] not-italic transition focus:outline-hidden focus:ring-2 focus:ring-violet-400',
                     tok.assumptionCount > 0
                       ? 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-300 dark:hover:bg-violet-900'
                       : 'border-neutral-300 bg-neutral-50 text-neutral-500 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800',
@@ -146,7 +146,7 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
               onClick={() => setCollapsed(true)}
               aria-label="Collapse EC verbalisation"
               aria-expanded={true}
-              className="shrink-0 self-start rounded p-0.5 text-neutral-400 outline-none transition hover:text-neutral-700 focus:ring-2 focus:ring-violet-400 dark:text-neutral-500 dark:hover:text-neutral-200"
+              className="shrink-0 self-start rounded-sm p-0.5 text-neutral-400 outline-hidden transition hover:text-neutral-700 focus:ring-2 focus:ring-violet-400 dark:text-neutral-500 dark:hover:text-neutral-200"
               title="Collapse"
             >
               <ChevronUp className="h-3 w-3" />

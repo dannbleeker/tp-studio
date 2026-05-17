@@ -62,13 +62,13 @@ export function Toaster() {
                   dismiss(t.id);
                 }}
                 className={clsx(
-                  'ml-1 rounded px-2 py-1 font-semibold text-[11px] uppercase tracking-wide transition',
+                  'ml-1 rounded-xs px-2 py-1 font-semibold text-[11px] uppercase tracking-wide transition',
                   t.action.prominent
                     ? // Session 91 — filled call-to-action. White text on a
                       // toast-kind-tinted background pulls the eye to the
                       // action when the toast itself is informational
                       // (e.g. PWA "New version available → Refresh now").
-                      'bg-indigo-600 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 focus-visible:outline-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                      'bg-indigo-600 text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 focus-visible:outline-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-400'
                     : 'border border-current/30 hover:bg-current/10'
                 )}
               >
@@ -78,7 +78,7 @@ export function Toaster() {
             <button
               type="button"
               onClick={() => dismiss(t.id)}
-              className="ml-1 rounded p-0.5 opacity-60 transition hover:opacity-100"
+              className="ml-1 rounded-sm p-0.5 opacity-60 transition hover:opacity-100"
               aria-label="Dismiss"
             >
               <X className="h-3.5 w-3.5" />

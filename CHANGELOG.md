@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 128 — Tailwind v4 codemod renames
+
+Session 126's documented cosmetic gap: v4 renamed several utility names without changing their CSS values, so our existing `shadow-sm` / `rounded` / `ring` (no-suffix) references resolved one step up the v4 scale. The official `@tailwindcss/upgrade` codemod was blocked by the environment's `pnpm dlx` policy. This commit applies the same renames via a targeted script.
+
+**Renames applied:**
+
+| v3 name | v4 name | Count |
+|---|---|---:|
+| `shadow-sm` | `shadow-xs` | 31 |
+| `shadow` (bare) | `shadow-sm` | — |
+| `rounded-sm` | `rounded-xs` | 9 |
+| `rounded` (bare) | `rounded-sm` | 78 |
+| `blur-sm` | `blur-xs` | 5 |
+| `blur` (bare) | `blur-sm` | 13 |
+| `outline-none` | `outline-hidden` | 35 |
+
+**Total: 171 replacements across 46 files.**
+
+**The targeted approach.** A naïve global find-and-replace breaks real code — `ring` matches `const ring =` (JS identifier) and `radialLayout`'s English-word geometry comments; `blur` matches `.blur()` DOM method calls and `Map`-aliased `MapIcon` (`avoiding a global-shadow lint`); `rounded` shows up in DOT graphviz `style=rounded` output and Mermaid syntax examples in JSDoc.
+
+The codemod restricts itself to three Tailwind-class contexts:
+
+1. `className="..."` JSX attributes (string and `{...}` forms)
+2. `clsx(...)` / `cn(...)` / `twMerge(...)` call arguments
+3. Class-naming `const` declarations — identifiers ending in `Class`, `Classes`, `_FOCUS`, `_INPUT`, or ALL_CAPS shapes (the `focusClasses.ts` pattern)
+
+Outside these contexts, plain-English uses of `shadow` / `ring` / `rounded` stay intact. An earlier broader pass broke `e.currentTarget.blur()` → `.blur-sm()` and `const ring =` → `const ring-3 =`; the targeted scope keeps that clean.
+
+**End state:** 1207 vitest tests passing (no regressions). tsc / biome / build clean. Visual rendering should now match the v3-era look — corner radii, shadows, focus rings, and outline-hidden buttons all at their pre-v4 sizes. Visual snapshots will need a refresh (run the `Update visual snapshots` workflow after merge); the snapshots from Session 126's refresh captured the slightly-bigger v4-default rendering, so refreshing them brings the baselines back to the correct sizes.
+
 ## Session 127 — Selection-toolbar verb extensions
 
 Backlog item #6 — Session 95's deferred verb-scope follow-ups. Three new per-diagram verbs surface on the SelectionToolbar (and inherit the existing ContextMenu rendering via the shared registry):

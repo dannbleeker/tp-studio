@@ -31,7 +31,7 @@ export function TPCollapsedGroupNode({ data, selected }: NodeProps<TPCollapsedGr
     // biome-ignore lint/a11y/noStaticElementInteractions: see comment above the return.
     <div
       className={clsx(
-        'relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 px-3 py-2 text-center shadow-sm transition',
+        'relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 px-3 py-2 text-center shadow-xs transition',
         colors.bgStrong,
         colors.border,
         selected && 'ring-2 ring-indigo-500/60 ring-offset-1'

@@ -124,7 +124,7 @@ function AssumptionRow({
         title={`Status: ${STATUS_LABEL[status]} (click to cycle to ${STATUS_LABEL[nextStatus(status)]})`}
         aria-label={`Assumption status: ${STATUS_LABEL[status]}. Press to cycle to ${STATUS_LABEL[nextStatus(status)]}.`}
         className={clsx(
-          'shrink-0 rounded border px-1 py-0 font-bold text-[9px] uppercase tracking-wide transition focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
+          'shrink-0 rounded-xs border px-1 py-0 font-bold text-[9px] uppercase tracking-wide transition focus:outline-hidden focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
           STATUS_CHIP_CLASS[status]
         )}
       >
@@ -137,12 +137,12 @@ function AssumptionRow({
         placeholder="State the assumption…"
         onChange={(e) => setAssumptionText(assumption.id, e.target.value)}
         disabled={locked}
-        className="flex-1 bg-transparent px-1 py-0.5 text-neutral-800 text-xs outline-none placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
+        className="flex-1 bg-transparent px-1 py-0.5 text-neutral-800 text-xs outline-hidden placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
       />
       <button
         type="button"
         onClick={() => selectEntity(assumption.id)}
-        className="rounded p-1 text-neutral-500 transition hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900/40 dark:hover:text-violet-300"
+        className="rounded-sm p-1 text-neutral-500 transition hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900/40 dark:hover:text-violet-300"
         title="Open assumption"
         aria-label="Open assumption"
       >
@@ -152,7 +152,7 @@ function AssumptionRow({
         type="button"
         onClick={() => detachAssumption(edgeId, assumption.id)}
         disabled={locked}
-        className="rounded p-1 text-neutral-500 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+        className="rounded-sm p-1 text-neutral-500 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950/40 dark:hover:text-red-300"
         title="Detach from this edge"
         aria-label="Detach from this edge"
       >

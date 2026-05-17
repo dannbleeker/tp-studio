@@ -302,7 +302,7 @@ function CanvasInner() {
         <Controls
           position="bottom-left"
           showInteractive={false}
-          className="!rounded-lg !border !border-neutral-200 !bg-white !text-neutral-700 !shadow-sm dark:!border-neutral-800 dark:!bg-neutral-900 dark:!text-neutral-200"
+          className="!rounded-lg !border !border-neutral-200 !bg-white !text-neutral-700 !shadow-xs dark:!border-neutral-800 dark:!bg-neutral-900 dark:!text-neutral-200"
         />
         {showMinimap && (
           <MiniMap
@@ -317,7 +317,7 @@ function CanvasInner() {
             ariaLabel="Diagram minimap"
             // Hidden on phone-narrow viewports; the controls bar and zoom pct
             // are enough for navigation when there's no room for a thumbnail.
-            className="!hidden sm:!block !rounded-lg !border !border-neutral-200 !bg-white/90 !shadow-sm dark:!border-neutral-800 dark:!bg-neutral-900/90"
+            className="!hidden sm:!block !rounded-lg !border !border-neutral-200 !bg-white/90 !shadow-xs dark:!border-neutral-800 dark:!bg-neutral-900/90"
             // Session 87 UX fix #1 — the viewport rectangle was
             // effectively invisible at 8% indigo. Bump opacity so the
             // currently-visible window reads clearly on the thumbnail,

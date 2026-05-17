@@ -84,7 +84,7 @@ export function TemplatePickerDialog() {
                   'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
                 )}
               >
-                <div className="overflow-hidden rounded border border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950">
+                <div className="overflow-hidden rounded-sm border border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950">
                   {/* Session 88 (S22) — JSX thumbnail. Replaces
                       the prior `dangerouslySetInnerHTML` SVG-string
                       injection so the security ignore can go away
@@ -92,7 +92,7 @@ export function TemplatePickerDialog() {
                   <TemplateThumbnail spec={spec} />
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="rounded bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">
+                  <span className="rounded-sm bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">
                     {typeLabel}
                   </span>
                   <span className="text-[10px] text-neutral-500 dark:text-neutral-400">

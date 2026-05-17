@@ -30,19 +30,19 @@ export function FirstEntityTip() {
       // shadow.
       className="pointer-events-none absolute bottom-24 left-1/2 z-10 -translate-x-1/2"
     >
-      <div className="pointer-events-auto flex items-start gap-3 rounded-xl border border-neutral-200 bg-white/95 px-4 py-3 text-xs shadow-md backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95">
+      <div className="pointer-events-auto flex items-start gap-3 rounded-xl border border-neutral-200 bg-white/95 px-4 py-3 text-xs shadow-md backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95">
         <div className="flex flex-col gap-1.5 text-neutral-700 dark:text-neutral-200">
           <p className="font-medium">Next steps</p>
           <p className="text-neutral-500 dark:text-neutral-400">
-            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+            <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
               Tab
             </kbd>{' '}
             adds a child · drag from the bottom handle to connect ·{' '}
-            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+            <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
               Ctrl
             </kbd>
             +
-            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+            <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
               K
             </kbd>{' '}
             opens commands.
@@ -57,7 +57,7 @@ export function FirstEntityTip() {
               Drag on empty canvas
             </strong>{' '}
             to marquee-select · hold{' '}
-            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+            <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
               Alt
             </kbd>{' '}
             while dragging an entity onto an edge to splice it in.
@@ -72,11 +72,11 @@ export function FirstEntityTip() {
               Double-click
             </strong>{' '}
             an entity to rename ·{' '}
-            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+            <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
               Delete
             </kbd>{' '}
             or{' '}
-            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+            <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
               Backspace
             </kbd>{' '}
             removes the selection.
@@ -85,7 +85,7 @@ export function FirstEntityTip() {
         <button
           type="button"
           onClick={dismiss}
-          className="-mr-1 rounded p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+          className="-mr-1 rounded-sm p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
           aria-label="Dismiss tip"
         >
           <X className="h-3 w-3" />

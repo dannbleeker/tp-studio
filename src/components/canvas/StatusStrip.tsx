@@ -144,7 +144,7 @@ export function StatusStrip() {
           title={`Click to exit ${label}`}
           aria-label={`Exit ${label}`}
           className={clsx(
-            'pointer-events-auto flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium text-[10px] shadow-sm backdrop-blur transition',
+            'pointer-events-auto flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium text-[10px] shadow-xs backdrop-blur-xs transition',
             // Tone palette — keeps the strip readable in both light
             // and dark themes without one-off per-chip Tailwind
             // overrides bleeding into every spot.

@@ -94,7 +94,7 @@ export function LargeDialog({
         ref={dialogRef}
         tabIndex={-1}
         className={clsx(
-          'flex max-h-[88vh] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-xl outline-none dark:border-neutral-800 dark:bg-neutral-950',
+          'flex max-h-[88vh] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-xl outline-hidden dark:border-neutral-800 dark:bg-neutral-950',
           widthClass,
           cardClassName
         )}

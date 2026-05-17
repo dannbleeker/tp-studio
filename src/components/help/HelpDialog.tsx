@@ -87,7 +87,7 @@ export function HelpDialog() {
                   <div key={r.id} className="contents">
                     <dt className="text-neutral-700 dark:text-neutral-200">{r.label}</dt>
                     <dd>
-                      <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[11px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
+                      <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[11px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
                         {r.keys}
                       </kbd>
                     </dd>
@@ -109,7 +109,7 @@ export function HelpDialog() {
               <div key={g.label} className="contents">
                 <dt className="text-neutral-700 dark:text-neutral-200">{g.label}</dt>
                 <dd>
-                  <span className="rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[11px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
+                  <span className="rounded-sm border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[11px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
                     {g.gesture}
                   </span>
                 </dd>

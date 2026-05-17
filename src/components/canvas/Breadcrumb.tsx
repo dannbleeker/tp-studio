@@ -28,12 +28,12 @@ export function Breadcrumb() {
   return (
     <div
       data-component="breadcrumb"
-      className="pointer-events-auto absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full border border-neutral-200 bg-white/95 px-3 py-1 text-xs shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95"
+      className="pointer-events-auto absolute top-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full border border-neutral-200 bg-white/95 px-3 py-1 text-xs shadow-xs backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-950/95"
     >
       <button
         type="button"
         onClick={unhoist}
-        className="rounded px-1.5 py-0.5 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+        className="rounded-sm px-1.5 py-0.5 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
         title="Exit hoist (Esc)"
       >
         {doc.title || 'Document'}
@@ -48,7 +48,7 @@ export function Breadcrumb() {
               onClick={() => (isLast ? undefined : hoistGroup(g.id))}
               disabled={isLast}
               className={clsx(
-                'rounded px-1.5 py-0.5 transition',
+                'rounded-xs px-1.5 py-0.5 transition',
                 isLast
                   ? 'cursor-default font-semibold text-neutral-900 dark:text-neutral-100'
                   : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
@@ -62,7 +62,7 @@ export function Breadcrumb() {
       <button
         type="button"
         onClick={unhoist}
-        className="ml-1 rounded p-0.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+        className="ml-1 rounded-sm p-0.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
         aria-label="Exit hoist"
         title="Exit hoist (Esc)"
       >

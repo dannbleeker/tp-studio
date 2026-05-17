@@ -304,7 +304,7 @@ export function CreationWizardPanel() {
         <button
           type="button"
           onClick={close}
-          className="self-end rounded px-2 py-1 font-medium text-neutral-700 text-xs hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          className="self-end rounded-sm px-2 py-1 font-medium text-neutral-700 text-xs hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
         >
           Done
         </button>
@@ -361,7 +361,7 @@ export function CreationWizardPanel() {
             onClick={toggleMinimised}
             aria-label="Minimise wizard"
             title="Minimise"
-            className="rounded p-1 text-neutral-500 transition hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            className="rounded-sm p-1 text-neutral-500 transition hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             <ChevronUp className="h-3.5 w-3.5" />
           </button>
@@ -370,7 +370,7 @@ export function CreationWizardPanel() {
             onClick={close}
             aria-label="Dismiss wizard"
             title="Skip / dismiss"
-            className="rounded p-1 text-neutral-500 transition hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            className="rounded-sm p-1 text-neutral-500 transition hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -410,7 +410,7 @@ export function CreationWizardPanel() {
                   // the canvas later.
                 }}
                 className={clsx(
-                  'flex-1 rounded border px-1.5 py-0.5 font-medium transition',
+                  'flex-1 rounded-xs border px-1.5 py-0.5 font-medium transition',
                   active
                     ? 'border-indigo-400 bg-indigo-100 text-indigo-800 dark:border-indigo-500 dark:bg-indigo-900 dark:text-indigo-200'
                     : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800'
@@ -483,7 +483,7 @@ export function CreationWizardPanel() {
               }
             }
           }}
-          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
         />
         <p className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
           Enter to commit · Shift+Enter for a newline · Esc to dismiss
@@ -495,7 +495,7 @@ export function CreationWizardPanel() {
       {escArmed && (
         <output
           aria-live="polite"
-          className="block rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
+          className="block rounded-sm border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
         >
           Press Esc again to discard this draft and close the wizard.
         </output>
@@ -503,7 +503,7 @@ export function CreationWizardPanel() {
       {skipNoticeOn && (
         <output
           aria-live="polite"
-          className="block rounded border border-neutral-200 bg-neutral-50 px-2 py-1 text-[11px] text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400"
+          className="block rounded-sm border border-neutral-200 bg-neutral-50 px-2 py-1 text-[11px] text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400"
         >
           Step skipped — you can fill it in directly on the canvas later.
         </output>
@@ -521,7 +521,7 @@ export function CreationWizardPanel() {
               advance();
             }
           }}
-          className="rounded px-2 py-1 font-medium text-neutral-600 text-xs transition hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+          className="rounded-sm px-2 py-1 font-medium text-neutral-600 text-xs transition hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
         >
           Skip step
         </button>

@@ -120,7 +120,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
     <div
       data-component="tp-node"
       className={clsx(
-        'group relative flex items-stretch rounded-lg shadow-sm',
+        'group relative flex items-stretch rounded-lg shadow-xs',
         'border',
         // FL-ET7: post-it tint for note entities; subtler card chrome for
         // everything else so a Note reads as annotation, not causality.
@@ -165,7 +165,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       >
         <div
           data-component="zoom-up-card"
-          className="pointer-events-auto max-w-sm rounded-lg border border-neutral-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95"
+          className="pointer-events-auto max-w-sm rounded-lg border border-neutral-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95"
         >
           {/* Session 87 (V4) — entity-type label bumped from
               text-[10px] tracking-wide to text-[11px] tracking-
@@ -219,7 +219,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           */}
           {entity.spanOfControl === 'control' && (
             <span
-              className="ml-1 rounded bg-emerald-100 px-1 font-bold text-[9px] text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
+              className="ml-1 rounded-sm bg-emerald-100 px-1 font-bold text-[9px] text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
               title="Span of control: I can act on this directly"
               role="img"
               aria-label="Span of control: control"
@@ -229,7 +229,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           )}
           {entity.spanOfControl === 'influence' && (
             <span
-              className="ml-1 rounded bg-amber-100 px-1 font-bold text-[9px] text-amber-800 dark:bg-amber-900/50 dark:text-amber-200"
+              className="ml-1 rounded-sm bg-amber-100 px-1 font-bold text-[9px] text-amber-800 dark:bg-amber-900/50 dark:text-amber-200"
               title="Span of control: I can influence this indirectly"
               role="img"
               aria-label="Span of control: influence"
@@ -239,7 +239,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           )}
           {entity.spanOfControl === 'external' && (
             <span
-              className="ml-1 rounded bg-neutral-200 px-1 font-bold text-[9px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200"
+              className="ml-1 rounded-sm bg-neutral-200 px-1 font-bold text-[9px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200"
               title="Span of control: external — outside my control"
               role="img"
               aria-label="Span of control: external"
@@ -251,7 +251,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         {isEditing ? (
           <textarea
             ref={inputRef}
-            className="resize-none border-none bg-transparent p-0 text-neutral-900 text-node leading-snug outline-none placeholder:text-neutral-400 dark:text-neutral-100"
+            className="resize-none border-none bg-transparent p-0 text-neutral-900 text-node leading-snug outline-hidden placeholder:text-neutral-400 dark:text-neutral-100"
             rows={2}
             defaultValue={entity.title}
             placeholder={isNoteEntity ? 'Type a note…' : 'State the effect…'}
@@ -356,7 +356,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       </div>
       {showAnnotationNumbers && (
         <span
-          className="pointer-events-none absolute -top-1.5 -right-1.5 rounded-full border border-neutral-200 bg-white px-1.5 py-0.5 font-semibold text-[10px] text-neutral-600 shadow-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+          className="pointer-events-none absolute -top-1.5 -right-1.5 rounded-full border border-neutral-200 bg-white px-1.5 py-0.5 font-semibold text-[10px] text-neutral-600 shadow-xs dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
           role="img"
           aria-label={`Annotation number ${entity.annotationNumber}`}
         >
@@ -365,7 +365,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       )}
       {typeof entity.ordering === 'number' && (
         <span
-          className="pointer-events-none absolute -top-1.5 -left-1.5 rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 font-semibold text-[10px] text-cyan-800 shadow-sm dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200"
+          className="pointer-events-none absolute -top-1.5 -left-1.5 rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 font-semibold text-[10px] text-cyan-800 shadow-xs dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200"
           role="img"
           aria-label={`Step ${entity.ordering}`}
         >
@@ -382,7 +382,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       */}
       {entity.position && LAYOUT_STRATEGY[diagramType] !== 'manual' && (
         <span
-          className="pointer-events-none absolute -right-1.5 -bottom-1.5 rounded-full border border-violet-300 bg-violet-50 p-0.5 text-violet-700 shadow-sm dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200"
+          className="pointer-events-none absolute -right-1.5 -bottom-1.5 rounded-full border border-violet-300 bg-violet-50 p-0.5 text-violet-700 shadow-xs dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200"
           role="img"
           aria-label="Pinned position"
           title="Pinned position — right-click → Unpin to let auto-layout reclaim it"
@@ -396,7 +396,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         // candidate. Rendered bottom-left so it doesn't collide with the
         // top-left step badge or the top-right annotation/ID stack.
         <span
-          className="pointer-events-none absolute -bottom-2 -left-1.5 rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 font-semibold text-[10px] text-amber-800 shadow-sm dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
+          className="pointer-events-none absolute -bottom-2 -left-1.5 rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 font-semibold text-[10px] text-amber-800 shadow-xs dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
           role="img"
           aria-label={`Reaches ${udeReachCount} undesirable effect${udeReachCount === 1 ? '' : 's'}`}
           title={`Reaches ${udeReachCount} UDE${udeReachCount === 1 ? '' : 's'}`}
@@ -412,7 +412,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           // forward, sky for "←N roots" backward. Bottom-right so it
           // doesn't fight the forward badge for screen real estate.
           <span
-            className="pointer-events-none absolute -right-1.5 -bottom-2 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 font-semibold text-[10px] text-sky-800 shadow-sm dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200"
+            className="pointer-events-none absolute -right-1.5 -bottom-2 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 font-semibold text-[10px] text-sky-800 shadow-xs dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200"
             role="img"
             aria-label={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
             title={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
@@ -428,7 +428,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
             if (!guardWriteOrToast()) return;
             toggleEntityCollapsed(entity.id);
           }}
-          className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-neutral-200 bg-white px-2 py-0.5 font-medium text-[10px] text-neutral-600 shadow-sm transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-neutral-200 bg-white px-2 py-0.5 font-medium text-[10px] text-neutral-600 shadow-xs transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
           aria-label={
             hiddenDescendantCount
               ? `Expand ${hiddenDescendantCount} hidden descendant${hiddenDescendantCount === 1 ? '' : 's'}`
@@ -545,7 +545,7 @@ function StFacetRow({
             }
           }}
           aria-label={`Edit ${label} facet`}
-          className="flex-1 resize-none rounded border border-indigo-300 bg-white px-1 py-0 text-[10px] text-neutral-900 leading-tight outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-400 dark:border-indigo-700 dark:bg-neutral-950 dark:text-neutral-100"
+          className="flex-1 resize-none rounded-sm border border-indigo-300 bg-white px-1 py-0 text-[10px] text-neutral-900 leading-tight outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-400 dark:border-indigo-700 dark:bg-neutral-950 dark:text-neutral-100"
         />
       ) : (
         <button
@@ -561,7 +561,7 @@ function StFacetRow({
           }}
           aria-label={`Edit ${label} facet (double-click)`}
           className={clsx(
-            'flex-1 cursor-text truncate rounded px-0.5 text-left transition hover:bg-indigo-50 dark:hover:bg-indigo-950/30',
+            'flex-1 cursor-text truncate rounded-xs px-0.5 text-left transition hover:bg-indigo-50 dark:hover:bg-indigo-950/30',
             value ? '' : 'text-neutral-400 italic dark:text-neutral-500'
           )}
           title={value ? `${value} — double-click to edit` : 'Double-click to set'}

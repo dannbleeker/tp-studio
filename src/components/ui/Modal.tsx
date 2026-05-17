@@ -89,7 +89,7 @@ export function Modal({
   return (
     <div
       className={clsx(
-        'fixed inset-0 z-50 flex justify-center bg-neutral-900/30 px-4 backdrop-blur-sm',
+        'fixed inset-0 z-50 flex justify-center bg-neutral-900/30 px-4 backdrop-blur-xs',
         align === 'top' ? 'items-start pt-[15vh]' : 'items-center'
       )}
       // No `aria-hidden` on the backdrop — propagates to descendants and

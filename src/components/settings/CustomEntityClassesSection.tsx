@@ -114,7 +114,7 @@ export function CustomEntityClassesSection() {
               className="flex items-center gap-2 rounded-md border border-neutral-200 px-2 py-1 dark:border-neutral-800"
             >
               <span
-                className="h-3 w-1 shrink-0 rounded"
+                className="h-3 w-1 shrink-0 rounded-sm"
                 style={{ backgroundColor: cls.color ?? DEFAULT_COLOR }}
                 aria-hidden
               />
@@ -140,7 +140,7 @@ export function CustomEntityClassesSection() {
                 type="button"
                 onClick={() => remove(id)}
                 disabled={locked}
-                className="rounded p-0.5 text-neutral-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40 dark:hover:bg-rose-950/40 dark:hover:text-rose-200"
+                className="rounded-sm p-0.5 text-neutral-400 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40 dark:hover:bg-rose-950/40 dark:hover:text-rose-200"
                 aria-label={`Remove ${cls.label}`}
                 title="Remove"
               >
@@ -156,7 +156,7 @@ export function CustomEntityClassesSection() {
               value={draft.id}
               onChange={(e) => setDraft({ ...draft, id: e.target.value })}
               placeholder="id (e.g. evidence)"
-              className="w-full rounded border border-neutral-200 bg-white px-2 py-1 font-mono text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
+              className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 font-mono text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
               autoComplete="off"
             />
             <input
@@ -164,7 +164,7 @@ export function CustomEntityClassesSection() {
               value={draft.label}
               onChange={(e) => setDraft({ ...draft, label: e.target.value })}
               placeholder="Label (e.g. Evidence)"
-              className="w-full rounded border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
+              className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
             />
             <label className="flex items-center gap-2 text-xs">
               <span className="text-neutral-600 dark:text-neutral-300">Color</span>
@@ -172,7 +172,7 @@ export function CustomEntityClassesSection() {
                 type="color"
                 value={draft.color ?? DEFAULT_COLOR}
                 onChange={(e) => setDraft({ ...draft, color: e.target.value })}
-                className="h-6 w-10 cursor-pointer rounded border border-neutral-200 dark:border-neutral-700"
+                className="h-6 w-10 cursor-pointer rounded-sm border border-neutral-200 dark:border-neutral-700"
               />
             </label>
             <div className="flex flex-col gap-1 text-xs">
@@ -182,7 +182,7 @@ export function CustomEntityClassesSection() {
                 value={iconFilter}
                 onChange={(e) => setIconFilter(e.target.value)}
                 placeholder="Filter icons (e.g. flag, lock, map)"
-                className="w-full rounded border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
+                className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
                 autoComplete="off"
               />
               <div className="flex max-h-32 flex-wrap gap-1 overflow-y-auto">
@@ -239,7 +239,7 @@ export function CustomEntityClassesSection() {
                     e.target.value ? { ...draft, supersetOf: e.target.value as EntityType } : rest
                   );
                 }}
-                className="w-full rounded border border-neutral-200 bg-white px-2 py-1 dark:border-neutral-700 dark:bg-neutral-950"
+                className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 dark:border-neutral-700 dark:bg-neutral-950"
               >
                 {SUPERSET_OPTIONS.map((opt) => (
                   <option key={opt.id} value={opt.id}>

@@ -113,7 +113,7 @@ export function AppearanceTab() {
                 )}
               >
                 <span
-                  className="block h-8 w-full overflow-hidden rounded border border-neutral-200 dark:border-neutral-700"
+                  className="block h-8 w-full overflow-hidden rounded-sm border border-neutral-200 dark:border-neutral-700"
                   style={{ background: opt.surface }}
                   aria-hidden
                 >

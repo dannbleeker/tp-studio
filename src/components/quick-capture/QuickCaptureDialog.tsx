@@ -91,7 +91,7 @@ export function QuickCaptureDialog() {
             placeholder={
               'Customer satisfaction is declining\n  Order entry is manual\n  Warehouse is understaffed\n    Hard to find qualified pickers'
             }
-            className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 font-mono text-neutral-900 text-xs leading-relaxed outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+            className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 font-mono text-neutral-900 text-xs leading-relaxed outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           />
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
             Indent with 2 spaces or a tab. Bullets (<code>-</code>, <code>*</code>, <code>•</code>,{' '}
@@ -133,13 +133,13 @@ export function QuickCaptureDialog() {
 
       <footer className="flex items-center justify-end gap-2 border-neutral-200 border-t px-4 py-3 dark:border-neutral-800">
         <span className="mr-auto text-[11px] text-neutral-500 dark:text-neutral-400">
-          <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+          <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
             {typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
               ? '⌘'
               : 'Ctrl'}
           </kbd>
           +
-          <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
+          <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-px font-mono text-[10px] dark:border-neutral-700 dark:bg-neutral-800">
             Enter
           </kbd>{' '}
           to create

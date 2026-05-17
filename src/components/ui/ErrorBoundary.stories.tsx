@@ -30,7 +30,7 @@ export const HappyPath: Story = {
   args: { label: 'Inspector' },
   render: (args) => (
     <ErrorBoundary {...args}>
-      <p className="rounded border border-neutral-200 p-3 text-sm">
+      <p className="rounded-sm border border-neutral-200 p-3 text-sm">
         Children render normally — the boundary is invisible.
       </p>
     </ErrorBoundary>

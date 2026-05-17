@@ -80,7 +80,7 @@ export function RevisionRow({
               placeholder="Label this snapshot…"
               // biome-ignore lint/a11y/noAutofocus: opt-in inline rename — the user just clicked the pencil and expects to type immediately.
               autoFocus
-              className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+              className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1 text-neutral-900 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
             />
           ) : (
             <p className="truncate font-medium text-neutral-800 text-sm dark:text-neutral-200">
@@ -98,7 +98,7 @@ export function RevisionRow({
             type="button"
             onClick={onCompare}
             className={clsx(
-              'rounded p-1 transition',
+              'rounded-xs p-1 transition',
               comparing
                 ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
                 : 'text-neutral-400 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-200'
@@ -111,7 +111,7 @@ export function RevisionRow({
           <button
             type="button"
             onClick={onSideBySide}
-            className="rounded p-1 text-neutral-400 transition hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-200"
+            className="rounded-sm p-1 text-neutral-400 transition hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-200"
             aria-label="Side-by-side compare"
             title="Side-by-side compare"
           >
@@ -120,7 +120,7 @@ export function RevisionRow({
           <button
             type="button"
             onClick={onBranch}
-            className="rounded p-1 text-neutral-400 transition hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-200"
+            className="rounded-sm p-1 text-neutral-400 transition hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-200"
             aria-label="Branch from snapshot"
             title="Branch from here (label a fork)"
           >
@@ -132,7 +132,7 @@ export function RevisionRow({
               setDraft(revision.label ?? '');
               setEditing((v) => !v);
             }}
-            className="rounded p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            className="rounded-sm p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
             aria-label="Rename snapshot"
             title="Rename"
           >
@@ -141,7 +141,7 @@ export function RevisionRow({
           <button
             type="button"
             onClick={onRestore}
-            className="rounded p-1 text-neutral-400 transition hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-200"
+            className="rounded-sm p-1 text-neutral-400 transition hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-200"
             aria-label="Restore snapshot"
             title="Restore"
           >
@@ -150,7 +150,7 @@ export function RevisionRow({
           <button
             type="button"
             onClick={onDelete}
-            className="rounded p-1 text-neutral-400 transition hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/40 dark:hover:text-rose-200"
+            className="rounded-sm p-1 text-neutral-400 transition hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/40 dark:hover:text-rose-200"
             aria-label="Delete snapshot"
             title="Delete"
           >

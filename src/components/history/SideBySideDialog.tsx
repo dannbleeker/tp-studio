@@ -86,7 +86,7 @@ export function SideBySideDialog() {
       // `showModal()` isn't available (jsdom, very old browsers); the
       // useEffect above prefers `showModal()` when supported.
       open
-      className="fixed inset-0 z-50 m-0 flex h-screen max-h-screen w-screen max-w-none flex-col bg-black/40 p-0 backdrop-blur-sm"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-screen w-screen max-w-none flex-col bg-black/40 p-0 backdrop-blur-xs"
     >
       <div className="flex flex-1 flex-col bg-white shadow-2xl dark:bg-neutral-950">
         <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
@@ -163,7 +163,7 @@ function Panel({
 
   return (
     <div className="relative flex-1 overflow-auto">
-      <div className="sticky top-0 z-10 border-neutral-200 border-b bg-neutral-50/95 px-3 py-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-400">
+      <div className="sticky top-0 z-10 border-neutral-200 border-b bg-neutral-50/95 px-3 py-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-400">
         {label}
       </div>
       <div
@@ -272,7 +272,7 @@ function EntityCard({
         <span className="font-medium text-[10px] text-neutral-500 uppercase tracking-wide dark:text-neutral-400">
           {meta.label}
           {status !== 'unchanged' && (
-            <span className="ml-2 rounded px-1 font-bold text-[9px] uppercase">
+            <span className="ml-2 rounded-sm px-1 font-bold text-[9px] uppercase">
               {status === 'added' && (
                 <span className="text-emerald-700 dark:text-emerald-300">added</span>
               )}

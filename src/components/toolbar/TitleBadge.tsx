@@ -49,7 +49,7 @@ export function TitleBadge() {
         // reading the value. The axe-core a11y spec caught this on
         // first run; fix here rather than disabling the rule.
         aria-label="Document title"
-        className="pointer-events-auto min-w-0 max-w-[60ch] flex-shrink overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-transparent px-1.5 py-1 font-medium text-neutral-900 text-sm outline-none transition focus:bg-white focus:shadow-sm disabled:opacity-60 sm:px-2 dark:text-neutral-100 dark:focus:bg-neutral-900"
+        className="pointer-events-auto min-w-0 max-w-[60ch] flex-shrink overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-transparent px-1.5 py-1 font-medium text-neutral-900 text-sm outline-hidden transition focus:bg-white focus:shadow-xs disabled:opacity-60 sm:px-2 dark:text-neutral-100 dark:focus:bg-neutral-900"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         size={Math.max(Math.min(title.length, 50), 6)}
@@ -69,7 +69,7 @@ export function TitleBadge() {
         // matters and the Document Inspector stays reachable via the
         // palette ("Document details" command). At xs+ the icon-only
         // button surfaces alongside the title.
-        className="pointer-events-auto xs:inline-flex hidden rounded p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+        className="pointer-events-auto xs:inline-flex hidden rounded-sm p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
         title="Document details"
         aria-label="Document details"
       >

@@ -60,7 +60,7 @@ export function RevisionPanel() {
         // Mirrors the Inspector's geometry so the two panels feel like
         // alternates of one slot rather than competing UI.
         'revision-panel absolute top-0 right-0 z-20 h-full w-[min(85vw,320px)] transform md:w-[320px]',
-        'border-neutral-200 border-l bg-white/95 backdrop-blur',
+        'border-neutral-200 border-l bg-white/95 backdrop-blur-sm',
         'dark:border-neutral-800 dark:bg-neutral-950/95',
         // Match the Inspector's slide animation (200 ms, ease-out) so when
         // history closes and an Inspector opens — or vice versa — the
@@ -107,7 +107,7 @@ export function RevisionPanel() {
           {revisions.length === 0 ? (
             <p className="px-4 py-6 text-center text-neutral-500 text-xs dark:text-neutral-400">
               No snapshots yet. Press{' '}
-              <kbd className="rounded border border-neutral-200 px-1 dark:border-neutral-800">
+              <kbd className="rounded-sm border border-neutral-200 px-1 dark:border-neutral-800">
                 Snapshot now
               </kbd>{' '}
               to capture the current state.
@@ -203,7 +203,7 @@ function RevisionList({
     <div className="flex flex-col">
       {entries.map(([branchName, group]) => (
         <section key={branchName}>
-          <h3 className="sticky top-0 z-10 flex items-center gap-1 border-neutral-200 border-b bg-neutral-50/95 px-4 py-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-400">
+          <h3 className="sticky top-0 z-10 flex items-center gap-1 border-neutral-200 border-b bg-neutral-50/95 px-4 py-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-400">
             <GitBranch className="h-3 w-3" />
             {branchName}
             <span className="ml-1 font-normal text-neutral-400 normal-case tracking-normal">

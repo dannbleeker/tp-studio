@@ -113,12 +113,12 @@ function InjectionRow({
           onChange={(e) => updateEntity(injection.id, { title: e.target.value })}
           disabled={locked}
           placeholder="Injection title…"
-          className="flex-1 bg-transparent px-1 py-0.5 text-neutral-800 text-xs outline-none placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
+          className="flex-1 bg-transparent px-1 py-0.5 text-neutral-800 text-xs outline-hidden placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
         />
         <button
           type="button"
           onClick={() => selectEntity(injection.id)}
-          className="rounded p-0.5 text-neutral-500 transition hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300"
+          className="rounded-sm p-0.5 text-neutral-500 transition hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300"
           title="Open injection in inspector"
           aria-label="Open injection in inspector"
         >
@@ -157,7 +157,7 @@ function InjectionRow({
                 type="button"
                 onClick={() => onUnlink(a.id)}
                 disabled={locked}
-                className="rounded px-1 text-[10px] text-neutral-500 transition hover:bg-red-100 hover:text-red-700 disabled:opacity-50 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+                className="rounded-sm px-1 text-[10px] text-neutral-500 transition hover:bg-red-100 hover:text-red-700 disabled:opacity-50 dark:hover:bg-red-950/40 dark:hover:text-red-300"
                 title="Unlink"
                 aria-label="Unlink assumption"
               >
@@ -168,7 +168,7 @@ function InjectionRow({
         </ul>
       )}
       {picking ? (
-        <div className="flex flex-col gap-0.5 rounded border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-900">
+        <div className="flex flex-col gap-0.5 rounded-sm border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-900">
           <p className="px-1 text-[10px] text-neutral-500 dark:text-neutral-400">Link to:</p>
           {unlinkedAssumptions.length === 0 && (
             <p className="px-1 text-[11px] text-neutral-500 italic dark:text-neutral-400">
@@ -185,7 +185,7 @@ function InjectionRow({
                     setPicking(false);
                   }}
                   aria-label={`Link assumption: ${a.text || 'empty'}`}
-                  className="w-full rounded px-1 py-0.5 text-left text-[11px] text-neutral-700 transition hover:bg-emerald-100 hover:text-emerald-700 focus:bg-emerald-100 focus:outline-none dark:text-neutral-300 dark:focus:bg-emerald-950/40 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
+                  className="w-full rounded-sm px-1 py-0.5 text-left text-[11px] text-neutral-700 transition hover:bg-emerald-100 hover:text-emerald-700 focus:bg-emerald-100 focus:outline-hidden dark:text-neutral-300 dark:focus:bg-emerald-950/40 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
                 >
                   {a.text || <span className="italic">(empty)</span>}
                 </button>
@@ -205,7 +205,7 @@ function InjectionRow({
           type="button"
           onClick={() => setPicking(true)}
           disabled={locked}
-          className="self-start rounded px-1 py-0.5 font-semibold text-[10px] text-emerald-700 uppercase tracking-wide transition hover:bg-emerald-100 disabled:opacity-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
+          className="self-start rounded-sm px-1 py-0.5 font-semibold text-[10px] text-emerald-700 uppercase tracking-wide transition hover:bg-emerald-100 disabled:opacity-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
         >
           + link assumption
         </button>

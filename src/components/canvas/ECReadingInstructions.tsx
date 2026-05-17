@@ -31,7 +31,7 @@ export function ECReadingInstructions() {
     <aside
       data-component="ec-reading-instructions"
       aria-label="Evaporating Cloud reading instructions"
-      className="mx-auto flex max-w-3xl items-center gap-2 rounded-md border border-indigo-200 bg-indigo-50/95 px-3 py-1.5 text-[11px] text-indigo-900 shadow-sm backdrop-blur dark:border-indigo-800 dark:bg-indigo-950/95 dark:text-indigo-100"
+      className="mx-auto flex max-w-3xl items-center gap-2 rounded-md border border-indigo-200 bg-indigo-50/95 px-3 py-1.5 text-[11px] text-indigo-900 shadow-xs backdrop-blur-sm dark:border-indigo-800 dark:bg-indigo-950/95 dark:text-indigo-100"
     >
       <span className="font-semibold text-indigo-700 uppercase tracking-wide dark:text-indigo-300">
         Read every arrow:
@@ -61,7 +61,7 @@ export function ECReadingInstructions() {
         onClick={dismiss}
         aria-label="Dismiss reading instructions"
         title="Dismiss"
-        className="rounded p-0.5 text-indigo-500 transition hover:bg-indigo-100 hover:text-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900 dark:hover:text-indigo-100"
+        className="rounded-sm p-0.5 text-indigo-500 transition hover:bg-indigo-100 hover:text-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900 dark:hover:text-indigo-100"
       >
         <X className="h-3 w-3" />
       </button>

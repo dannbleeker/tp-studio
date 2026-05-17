@@ -130,7 +130,7 @@ export function DocumentInspector() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={locked}
-            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           />
         </Field>
 
@@ -141,7 +141,7 @@ export function DocumentInspector() {
             placeholder="Optional"
             onChange={(e) => setMeta({ author: e.target.value })}
             disabled={locked}
-            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           />
         </Field>
 
@@ -185,7 +185,7 @@ export function DocumentInspector() {
                   placeholder={placeholder}
                   onChange={(e) => setSystemScope({ [key]: e.target.value })}
                   disabled={locked}
-                  className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+                  className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
                 />
               </Field>
             ))}

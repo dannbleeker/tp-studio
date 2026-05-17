@@ -97,7 +97,7 @@ export class ErrorBoundary extends Component<Props, State> {
     // Root-boundary path: full-screen recovery card.
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-neutral-50 px-6 dark:bg-neutral-950">
-        <div className="max-w-md rounded-xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="max-w-md rounded-xl border border-neutral-200 bg-white p-6 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
           <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
             <AlertTriangle className="h-5 w-5" />
             <h1 className="font-semibold text-sm">Something went wrong</h1>

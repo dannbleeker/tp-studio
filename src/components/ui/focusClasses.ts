@@ -31,7 +31,7 @@
  *  dominating the surrounding layout. Always pair with
  *  `outline-none`. */
 export const INPUT_FOCUS =
-  'outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400';
+  'outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400';
 
 /** Clickable cards in picker dialogs (DiagramTypePicker /
  *  ExportPicker / TemplatePicker). Bolder `ring-2` ring at a lighter
@@ -40,9 +40,9 @@ export const INPUT_FOCUS =
  *  Dark-mode override uses `dark:focus:ring-indigo-600` to maintain
  *  visibility on the darker background. */
 export const CARD_FOCUS =
-  'focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:focus:ring-indigo-600';
+  'focus:border-indigo-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-300 dark:focus:ring-indigo-600';
 
 /** EC-themed badges + verbalisation strip controls. Violet ring on
  *  ring-2. The violet keeps the EC visual identity from leaking into
  *  the indigo accent used everywhere else. */
-export const EC_BADGE_FOCUS = 'focus:outline-none focus:ring-2 focus:ring-violet-400';
+export const EC_BADGE_FOCUS = 'focus:outline-hidden focus:ring-2 focus:ring-violet-400';

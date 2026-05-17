@@ -123,7 +123,7 @@ export function SearchPanel() {
       data-component="search-panel"
       style={panelStyle}
       className={clsx(
-        'pointer-events-auto absolute top-16 z-20 flex -translate-x-1/2 flex-col rounded-xl border border-neutral-200 bg-white/95 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95',
+        'pointer-events-auto absolute top-16 z-20 flex -translate-x-1/2 flex-col rounded-xl border border-neutral-200 bg-white/95 shadow-lg backdrop-blur-xs dark:border-neutral-800 dark:bg-neutral-950/95',
         // Default geometry when nothing's selected: full-canvas centered.
         !inspectorOpen && 'left-1/2 w-[min(720px,90vw)]'
       )}
@@ -144,7 +144,7 @@ export function SearchPanel() {
               closeSearch();
             }
           }}
-          className="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900"
+          className="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900"
         />
         <span className="min-w-[64px] text-neutral-500 text-xs tabular-nums dark:text-neutral-400">
           {count === 0 ? 'No matches' : `${safeIndex + 1} / ${count}`}
@@ -244,7 +244,7 @@ function OptionToggle({
       aria-label={label}
       title={label}
       className={clsx(
-        'rounded p-1 transition',
+        'rounded-xs p-1 transition',
         active
           ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
           : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'

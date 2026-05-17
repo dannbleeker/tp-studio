@@ -39,8 +39,8 @@ export function ECInjectionChip() {
       title="Open the Injections tab"
       className={
         hasInjections
-          ? 'pointer-events-auto flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 font-semibold text-[11px] text-emerald-800 shadow-sm transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200 dark:hover:bg-emerald-900'
-          : 'pointer-events-auto flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white/90 px-2.5 py-1 font-semibold text-[11px] text-neutral-600 shadow-sm transition hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:border-neutral-700 dark:bg-neutral-900/90 dark:text-neutral-300 dark:hover:bg-neutral-800'
+          ? 'pointer-events-auto flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 font-semibold text-[11px] text-emerald-800 shadow-xs transition hover:bg-emerald-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-400 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200 dark:hover:bg-emerald-900'
+          : 'pointer-events-auto flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white/90 px-2.5 py-1 font-semibold text-[11px] text-neutral-600 shadow-xs transition hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-neutral-400 dark:border-neutral-700 dark:bg-neutral-900/90 dark:text-neutral-300 dark:hover:bg-neutral-800'
       }
     >
       <Syringe className="h-3 w-3" aria-hidden />

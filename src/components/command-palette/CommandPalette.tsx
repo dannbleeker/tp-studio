@@ -176,7 +176,7 @@ export function CommandPalette() {
             <span>{cmd.label}</span>
           </span>
           {kbd && (
-            <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+            <kbd className="rounded-sm border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
               {kbd}
             </kbd>
           )}
@@ -205,7 +205,7 @@ export function CommandPalette() {
           }
         }}
         placeholder="Type a command…"
-        className="w-full border-neutral-200 border-b bg-transparent px-4 py-3 text-neutral-900 text-sm outline-none placeholder:text-neutral-400 dark:border-neutral-800 dark:text-neutral-100"
+        className="w-full border-neutral-200 border-b bg-transparent px-4 py-3 text-neutral-900 text-sm outline-hidden placeholder:text-neutral-400 dark:border-neutral-800 dark:text-neutral-100"
       />
       <ul className="max-h-[60vh] overflow-y-auto py-1.5">
         {flatList.length === 0 && (
