@@ -80,6 +80,12 @@ export function EntityInspector({
           onChange={(next) => updateEntity(entityId, { title: next })}
           rows={3}
           disabled={locked}
+          // Session 119 — explicit aria-label so the textarea has a
+          // screen-reader name. The visible `<Field label="Title">`
+          // renders a sibling <span> that's not actually associated
+          // with the textarea (no `htmlFor`/`id` wiring), so axe
+          // correctly flagged the form element as label-less.
+          ariaLabel="Entity title"
         />
       </Field>
 
