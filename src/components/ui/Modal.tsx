@@ -17,16 +17,27 @@ export type ModalProps = {
 
 /**
  * Shared modal shell: full-viewport backdrop, dismiss-on-outside-click,
- * dismiss-on-Escape, **focus-trapped via `useFocusTrap`** (Session 122).
+ * dismiss-on-Escape, **focus-trapped via `useFocusTrap`** (Session 123).
  *
- * Initial focus is left to the caller — `useFocusTrap` is passed
- * `{ initialFocus: false }` here because Modal's consumers each
- * autofocus a specific element (CommandPalette focuses its query
- * input; ConfirmDialog focuses the confirm button; QuickCapture
- * focuses its textarea; HelpDialog/AboutDialog/SettingsDialog leave
- * focus to the first naturally-focusable element). The trap still
- * wraps Tab/Shift+Tab at the boundaries and restores focus to the
- * trigger on dismiss.
+ * Focus management strategy:
+ *
+ *   - `useFocusTrap` runs with `initialFocus: true` (the default) so
+ *     focus moves *into* the dialog the moment it mounts. This is
+ *     required for the Tab-trap to engage — the trap's keydown listener
+ *     is attached to the dialog element, so it only fires when focus is
+ *     already inside. Without initial focus, Tab from outside escapes
+ *     unchecked.
+ *
+ *   - Consumers that want a *specific* element focused (CommandPalette
+ *     its query input; ConfirmDialog its confirm button; QuickCapture
+ *     its textarea) install their own `setTimeout(() => ref.focus(), 0)`
+ *     in a useEffect. Those run *after* the trap's useEffect (child
+ *     effects fire before parent, and the setTimeout's macrotask runs
+ *     after the entire commit cycle), so the consumer's autofocus wins
+ *     for the final user-visible focus.
+ *
+ *   - On unmount the trap restores focus to whatever was focused before
+ *     the dialog opened — helps keyboard users return to the trigger.
  *
  * The inner `<dialog open>` element gives us native aria-modal semantics
  * and satisfies Biome's a11y/useSemanticElements rule. We render manually
@@ -64,11 +75,14 @@ export function Modal({
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   useOutsideAndEscape(dialogRef, onDismiss, open);
-  // Session 122 — opt-out of `useFocusTrap`'s initial-focus behavior
-  // because each Modal consumer autofocuses its own preferred element
-  // on mount. The trap's Tab/Shift+Tab wrap + restore-focus-on-unmount
-  // still apply.
-  useFocusTrap(dialogRef, open, { initialFocus: false });
+  // Session 123 — focus-trap. Default `initialFocus: true` ensures
+  // focus lands inside the dialog on mount so the trap's keydown
+  // listener (attached to the dialog) actually fires on subsequent
+  // Tab presses. Consumers that want a specific element focused
+  // (CommandPalette / ConfirmDialog / QuickCapture) install their
+  // own `setTimeout(() => ref.focus(), 0)` which runs after this
+  // effect and wins the final user-visible focus.
+  useFocusTrap(dialogRef, open);
 
   if (!open) return null;
 
