@@ -8,7 +8,7 @@
 // without a budget entry are reported but don't fail the build, so a new
 // dynamic-import doesn't break CI before you've sized its ceiling.
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';

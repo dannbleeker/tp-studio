@@ -10,6 +10,8 @@
       "!**/storybook-static",
       "!**/playwright-report",
       "!**/test-results",
+      "!**/reports",
+      "!**/perf-trace-output",
       "!src/**/*.d.ts",
       "src/vite-env.d.ts",
       "!src/domain/types.js",

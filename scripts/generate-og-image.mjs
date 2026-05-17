@@ -367,10 +367,7 @@ function encodePng(width, height, rgba) {
   const raw = Buffer.alloc(height * (1 + width * 4));
   for (let y = 0; y < height; y++) {
     raw[y * (1 + width * 4)] = 0;
-    Buffer.from(rgba.buffer, y * width * 4, width * 4).copy(
-      raw,
-      y * (1 + width * 4) + 1
-    );
+    Buffer.from(rgba.buffer, y * width * 4, width * 4).copy(raw, y * (1 + width * 4) + 1);
   }
   const idatData = deflateSync(raw, { level: 9 });
 

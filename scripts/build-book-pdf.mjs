@@ -31,11 +31,11 @@
  * regenerating.
  */
 
-import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { marked } from 'marked';
+import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
+import { marked } from 'marked';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(HERE, '..');

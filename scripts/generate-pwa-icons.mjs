@@ -126,14 +126,8 @@ function isOutsideRoundedSquare(x, y, size, radius) {
     // *outer* side of this corner's centre.
     if (
       (cx === radius && inXSide === 'left' && cy === radius && inYSide === 'top') ||
-      (cx === size - 1 - radius &&
-        inXSide === 'right' &&
-        cy === radius &&
-        inYSide === 'top') ||
-      (cx === radius &&
-        inXSide === 'left' &&
-        cy === size - 1 - radius &&
-        inYSide === 'bottom') ||
+      (cx === size - 1 - radius && inXSide === 'right' && cy === radius && inYSide === 'top') ||
+      (cx === radius && inXSide === 'left' && cy === size - 1 - radius && inYSide === 'bottom') ||
       (cx === size - 1 - radius &&
         inXSide === 'right' &&
         cy === size - 1 - radius &&
@@ -187,10 +181,7 @@ function encodePng(width, height, rgba) {
   const raw = Buffer.alloc(height * (1 + width * 4));
   for (let y = 0; y < height; y++) {
     raw[y * (1 + width * 4)] = 0;
-    Buffer.from(rgba.buffer, y * width * 4, width * 4).copy(
-      raw,
-      y * (1 + width * 4) + 1
-    );
+    Buffer.from(rgba.buffer, y * width * 4, width * 4).copy(raw, y * (1 + width * 4) + 1);
   }
   const idatData = deflateSync(raw, { level: 9 });
 
