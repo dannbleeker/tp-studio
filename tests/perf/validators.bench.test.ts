@@ -76,7 +76,10 @@ const printTable = (title: string, rows: Row[]): void => {
 };
 
 describe('Per-rule validator perf — 100-entity CRT', () => {
-  it('times every rule individually', () => {
+  // 10k × ~10 rules of a 100-entity validator CRT is reporting-only output (no
+  // assertions) — under vitest 4's tighter default 5 s test timeout this runs
+  // closer to 8–10 s in CI. Extend the budget to keep the report deterministic.
+  it('times every rule individually', { timeout: 30_000 }, () => {
     const doc = buildDoc(100);
     const iters = 10_000;
     const rows: Row[] = [

@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 125 — Vite/Vitest cluster upgrade
+
+Backlog item #4 from the post-Session-122 upgrade survey: vite 5→8, vitest 2→4, @vitest/coverage-v8 2→4, @vitejs/plugin-react 4→6, jsdom 25→29, fast-check 3→4 — all bumped in one cluster since the alignment is tight (vitest pins peer of vite; coverage-v8 pins to vitest; plugin-react pins to vite).
+
+**Three follow-ups needed past the bare `pnpm add`:**
+
+- **Rolldown's `manualChunks` API.** Vite 8 ships Rolldown as the default bundler. Rolldown's `manualChunks` expects a function `(id) => chunkName | undefined`, not the Rollup-style object map we had. Rewrote our chunking rule as a function — matches on `node_modules/<pkg>/` substrings instead of exact entry names, which is slightly more permissive (catches `react-dom/client` automatically via the `node_modules/react-dom/` prefix). Bundle layout unchanged: `react`, `flow`, `icons` chunks emit at the same sizes (±1 KB gz noise).
+
+- **Vitest 4 `cache.dir` deprecation.** The transform-cache directory key moved from `test.cache.dir` to top-level Vite `cacheDir`. Migrated the existing `node_modules/.cache/vitest` location to the new key — same on-disk path, no warning.
+
+- **Validator perf-bench test timeout.** `tests/perf/validators.bench.test.ts` runs 100k+ rule iterations and was finishing in ~4.8 s under vitest 2 — under vitest 4's tighter scheduling it crosses the default 5 s test timeout. Bumped its per-test timeout to 30 s; report output is the deliverable, not the runtime.
+
+**Bundle/perf impact:** Production build time dropped from ~18 s (Vite 5) to ~8 s (Vite 8 + Rolldown). Index chunk 83.65 KB gz (was 86.94, −3.3). Total bundle size unchanged within rounding. The 1200-test vitest suite runs in the same ~70 s wall (29 s test time + jsdom import overhead — vitest 4's import phase is slower at cold start but warm runs come back under the same envelope).
+
+**Knip + biome + tsc all clean.** Bundle budget passes. The deprecated subdep warnings (`glob@11.1.0`, `source-map@0.8.0-beta.0`) flow from the new vite/vitest stack and are upstream concerns; not actionable here.
+
 ## Session 124 — Biome 2 lint cleanup pass
 
 Tier-2 backlog item #1 (the 24 Biome 2 warnings tracked since Session 122). All 24 resolved; the project is now clean at zero warnings.

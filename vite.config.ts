@@ -199,35 +199,49 @@ export default defineConfig(({ command }) => ({
     // the PNG exporter) ships as a separate chunk that loads on demand.
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Session 118 — `react-dom/client` added explicitly. In React
-          // 19 the createRoot renderer lives at `react-dom/client`
-          // (Rollup doesn't auto-resolve subpath exports into the
-          // parent package's chunk). Without this, `cjs/react-dom-
-          // client.production.js` (~93 KB gz) leaks into the index
-          // chunk.
-          react: ['react', 'react-dom', 'react-dom/client'],
-          flow: ['@xyflow/react'],
-          icons: ['lucide-react'],
-          // Session 81 — `dagre` removed from the `flow` chunk so it can
-          // be code-split. `useGraphPositions` now lazy-loads
-          // `@/domain/layout` via `await import()`, which lets Rollup
-          // place dagre in its own chunk that only loads when an
-          // auto-layout diagram (non-EC) is first laid out. ~25 KB gzip
-          // off the eager critical path.
+        // Session 125 — Vite 8 ships Rolldown by default; its manualChunks
+        // API expects a function, not an object map. The function form is
+        // also more flexible (we can match on path substrings, not just
+        // exact package names). Each branch must return the same name we
+        // used in the object form so `bundle-budget.json` continues to
+        // measure the same chunks.
+        //
+        // Session 118 — `react-dom/client` matched explicitly. In React 19
+        // the createRoot renderer lives at `react-dom/client`; without this,
+        // `cjs/react-dom-client.production.js` (~93 KB gz) leaks into the
+        // index chunk because the bundler doesn't auto-resolve subpath
+        // exports into the parent package's chunk.
+        //
+        // Session 81 — `dagre` deliberately NOT pinned to the flow chunk so
+        // it can be code-split. `useGraphPositions` lazy-loads
+        // `@/domain/layout` via `await import()`, which lets the bundler
+        // place dagre in its own chunk that only loads when an auto-layout
+        // diagram (non-EC) is first laid out. ~25 KB gz off the eager
+        // critical path.
+        manualChunks: (id) => {
+          if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) {
+            return 'react';
+          }
+          if (id.includes('node_modules/@xyflow/react/')) return 'flow';
+          if (id.includes('node_modules/lucide-react/')) return 'icons';
+          return undefined;
         },
       },
     },
   },
+  // Session 84 — persist Vitest's transform cache across runs so the
+  // dev-loop `pnpm test:watch` and the explicit `pnpm test` skip
+  // recompiling unchanged files. ~50s cold run drops to ~5–10s warm.
+  // The cache dir is gitignored alongside `dist/` and `coverage/`.
+  //
+  // Session 125 — vitest 4 moved this from `test.cache.dir` to the top-level
+  // Vite `cacheDir`. Using the Vite key directly avoids the v4 deprecation
+  // warning while keeping the same on-disk location.
+  cacheDir: 'node_modules/.cache/vitest',
   test: {
     environment: 'jsdom',
     globals: false,
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
-    // Session 84 — persist Vitest's transform cache across runs so the
-    // dev-loop `pnpm test:watch` and the explicit `pnpm test` skip
-    // recompiling unchanged files. ~50s cold run drops to ~5–10s warm.
-    // The cache dir is gitignored alongside `dist/` and `coverage/`.
-    cache: { dir: 'node_modules/.cache/vitest' },
     coverage: {
       // V8 is the bundled provider — no extra dep to install. JSON + text
       // covers both human reading and tooling consumers (codecov etc.).
