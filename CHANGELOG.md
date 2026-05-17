@@ -2,6 +2,14 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 129 — #20 IndexedDB migration closed (won't-build)
+
+Backlog item #20 ("migrate persistence from localStorage to IndexedDB") was gated on #19 surfacing real quota problems. With #19's auto-trim mitigation now in place — revisions get pruned when storage fills, the user gets an actionable toast, the in-memory doc keeps editing — the quota path **self-heals**. The dominant reason for an IndexedDB rewrite has effectively been removed.
+
+**Why not ship it anyway.** Migrating would mean rewriting the entire sync persistence seam as async, touching the storage seam, persist-debounce loop, every persisted slice, the boot hydration, the recovery / migration system, the resetStoreForTest helper, and dozens of tests. The autosave + recovery paths are TP Studio's crash-safety story; rewriting them without a real evidence-driven failure mode is the speculative-work pattern the team's "profile-gated" tag exists to avoid.
+
+**Re-open trigger.** A real user report of quota-after-trim, or a feature requirement that needs IndexedDB-only capabilities (cross-tab `BroadcastChannel` sync, blob storage, > 5 MB docs). Until then, localStorage stays canonical.
+
 ## Session 129 — PDF export yield-to-paint (#16)
 
 Backlog item #16 ("workerize SVG → PDF") was framed as moving the export to a Web Worker. Audit: **`svg2pdf.js` has 12+ `document.*` references** (it walks the SVG via DOM APIs to extract geometry / computed styles for the PDF text layout). Web Workers don't have `document`; moving the pipeline to a worker would require a `jsdom`-in-worker shim, which trades main-thread freeze for a much heavier dev surface (multi-day build, fragile vs. svg2pdf upstream changes).
