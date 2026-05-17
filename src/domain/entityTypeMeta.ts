@@ -383,8 +383,10 @@ export const CUSTOM_CLASS_ICON_NAMES = Object.keys(CUSTOM_CLASS_ICONS) as Custom
  *
  *   1. Built-in EntityType → return the canonical `ENTITY_TYPE_META[type]`.
  *   2. Match in `doc.customEntityClasses` → synthesize meta from the
- *      class's `label` / `color`. A generic Box icon stands in until
- *      custom-class icons land (parked).
+ *      class's `label` / `color` / `icon` (Sessions 71 + 76 — picked
+ *      from `CUSTOM_CLASS_ICONS`, a curated 57-Lucide-icon catalogue).
+ *      The icon is persisted as a string id on the class, resolved to
+ *      a Lucide component at render time.
  *   3. Unknown → "Unknown type" placeholder so a doc imported with
  *      a class definition that's since been deleted still renders.
  *

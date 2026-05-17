@@ -54,7 +54,7 @@ src/
 
 tests/            — Vitest unit tests, mirroring src/ tree
 e2e/              — Playwright smoke specs + Linux baselines under *-snapshots/
-docs/             — feature-research, iteration-2-prd, decisions/ (ADRs)
+docs/             — guide/ (practitioner book), decisions/ (ADRs), ui-review-*, distribution-pwa-scoping
 .github/workflows/ — ci.yml + update-visual-snapshots.yml
 .claude/          — hooks, agents, commands (project-local Claude config)
 ```

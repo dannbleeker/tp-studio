@@ -431,7 +431,7 @@ EC documents have a dedicated three-tab inspector and a top-of-canvas **verbalis
   - **Want 1 / Want 2** (fuchsia, far right) — the two strategies that satisfy each need but *conflict* with each other.
 - The four arrows wire D → B → A and D′ → C → A: each want satisfies its need, each need supports the common goal. The conflict between D and D′ isn't a drawn edge — it's implied by the layout (top vs. bottom on the right side).
 - **Drag any box to reposition it.** Positions persist to local storage and survive reload. Auto-layout is disabled for EC; the geometry IS the diagnostic.
-- The palette also surfaces Assumption (violet) for edge side-attachments. CLR rules apply structurally (clarity, entity-existence, causality-existence, tautology); EC-specific rules ("are the two wants genuinely in conflict?") are parked for now.
+- The palette also surfaces Assumption (violet) for edge side-attachments. CLR rules apply structurally (clarity, entity-existence, causality-existence, tautology) **plus the EC-specific `ec-completeness` rule** (Session 77) that bundles five brief-prescribed checks (both wants present, both needs present, all four necessity edges, mutex flag, single conflict). The mutex-edge rule (`ec-missing-conflict`) flags when neither D ↔ D′ edge carries the lightning-bolt mutex marker.
 
 ### EC canvas chrome (Session 87, refined Session 89)
 

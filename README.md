@@ -8,7 +8,7 @@ For end users — see [USER_GUIDE.md](USER_GUIDE.md). For what's planned next �
 
 ## Quick start
 
-Requires **Node 20+** and **pnpm 9+**.
+Requires **Node 22.22.1+** and **pnpm 10+** (enforced via `engines` in `package.json`).
 
 ```bash
 pnpm install
@@ -151,7 +151,7 @@ The implementation lives in two context-keyed hooks: [`useGlobalShortcuts`](src/
 
 ## Testing
 
-316 cases across the test suite ([tests/](tests/)). Coverage spans every layer:
+**1156+ tests** across the suite ([tests/](tests/)) as of Session 108. Coverage spans every layer:
 
 - **Domain** — validators (one file per rule), persistence (round-trip + every malformed-input branch), graph helpers, layout, radial layout, Flying Logic import/export, search, groups, quick capture, palette score, shortcuts registry, layout strategy
 - **Store** — document mutations, groups, AND grouping, assumption attach/detach, undo / redo / coalescing, history cap, cascade delete
@@ -167,6 +167,6 @@ Run `pnpm test`. Run `pnpm test:watch` while developing.
 
 Iteration 2 shipped: navigation/search, multi-select, Quick Capture, groups (nesting + collapse + hoist), rich annotations (markdown descriptions, edge labels), the full export pack (JSON / CSV / PNG / JPEG / SVG / Flying Logic XML / annotations / PDF), and the polish/preferences bundle (Browse Lock, themes including high-contrast, edge-color palettes, animation speed, ink-saver print mode).
 
-Tier 1 features (auto-recovery, reverse-edge, redact, F2–F4 / F6–F7 polish), Tier 2 diagrams (A2 Prerequisite Tree, A3 Transition Tree, A1 Evaporating Cloud) and Tier 3 (F5 radial alternate view) all landed. Connector visuals carry a Flying-Logic-style AND junctor. Two top-10 internal refactor passes have completed (Sessions 32–39).
+Tier 1 features (auto-recovery, reverse-edge, redact, F2–F4 / F6–F7 polish), Tier 2 diagrams (A1 Evaporating Cloud, A2 Prerequisite Tree, A3 Transition Tree) and Tier 3 (F5 radial alternate view + Session 99 obstacle-aware radial edge routing) all landed. Connector visuals carry Flying-Logic-style AND / OR / XOR junctors (Session 73). Goal Tree + EC creation wizards (Session 78), full template library + a11y audit (Session 79), vector PDF export (Session 80), structured S&T trees + Strategy/Tactics diagram type (Session 75), per-document custom entity classes with curated 57-icon Lucide picker (Sessions 70/76), revision history + side-by-side compare + named branches (Sessions 41 + 62), PWA install (Session 89), comprehensive security audit + CSP (Session 98), the 17-chapter *Thinking with TP Studio* book + clickable-TOC PDF (Sessions 103/104), and the under-the-hood performance pass with three-sample perf-trace baseline (Sessions 105–108) all landed.
 
-**316/316 tests green, TypeScript + Biome clean.**
+**1156+ tests green as of Session 108, TypeScript + Biome clean, `pnpm audit --prod` clean.**

@@ -10,9 +10,7 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 > **Session 85 — under-the-hood pass complete (10 batches, 8 shipped + 2 audit-only).** Twenty maintainability / perf / test-coverage items planned across Phases 1 (A-D) and 2 (E-J); 8 batches shipped real changes, Batch G evaluated audit-clean (3 items not worth the trade), Batches E/F/H/I each carried at least one item that was already done or net-negative. Highlights: per-doc WeakMap memoization for `structuralEntities` + `validate` (saves cost transparently to every caller), property-based migration + CLR-totality coverage via fast-check, dedicated cold-path test for `useGraphPositions`'s lazy dagre import, `vite-plugin-checker` dev overlay, brand-ID consolidation for group selection, CI split into 3 parallel jobs. **1003 tests passing**; full breakdown in CHANGELOG Session 85.
 
-> **Iteration 2 is approved and spec'd.** See [docs/iteration-2-prd.md](docs/iteration-2-prd.md) for the
-> full requirement document. Bundles in scope: **1, 2, 3, 5, 6, 11, 13**, plus every item from this
-> file's "Recommended priorities" and "Polish ideas" sections (minus anything reasoning-related).
+> **Iteration 2 complete.** Bundles 1, 2, 3, 5, 6, 11, 13 all shipped (see Bundle sections below for the per-bundle close-out notes). The original `docs/iteration-2-prd.md` requirement document has been deleted as completed-and-archived; CHANGELOG entries for Sessions 60 / 61 / 76 + the Bundle tables in this file are the durable record.
 
 > **Top-10 refactor pass complete (Sessions 32–36).** All ten items from the
 > internal "top-10 cleanup" list have landed: subscription consolidation,
@@ -32,7 +30,7 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 > architecture audit. Plus a bonus drop of the stale `tokens.js` +
 > `tokens.d.ts` duplicates flagged by Biome.
 
-> **Session 19 — Tier 1 from the feature-research menu is in.** A4 / A5 / A6 / A7 / F2 / F3 / F4 / F6 / F7 all landed; see the CHANGELOG entry. The remaining tiers from that catalogue ([docs/feature-research.md](docs/feature-research.md)) are the new parking-lot top, listed below.
+> **Session 19 — Tier 1 from the feature-research menu is in.** A4 / A5 / A6 / A7 / F2 / F3 / F4 / F6 / F7 all landed; see the CHANGELOG entry. The original `docs/feature-research.md` catalogue has since been deleted as completed-and-archived; the Tier 2 / Tier 3 / Tier 4 sections below carry the per-tier close-out notes.
 
 > **Bundle 4 + B + E + N plan complete (Sessions 46–51).** Block 0 (refactor pre-work), Block A (Layout Controls — LA1/LA2/LA3), Block C (CLR rules E2/E3/E5/E6), Block B (B3 icons + B5 zoom-up + B8 batch-edit), and Block D (N1 OPML + N2 DOT + N3 Mermaid exports) all landed. 408/408 tests green. Deferred items listed below; the new batch of TOC-reading ideas from "Thinking with Flying Logic" follows after that.
 
@@ -196,7 +194,7 @@ Both modes consume the same primitive: for each (source, target) pair, render `r
 
 **Why it's worth shipping:** the read-through overlay forces verbalization *during* the analysis. The text export carries that verbalization *out* of the app — into a meeting deck, a brief, a postmortem, a doc the team can edit. Pairs naturally with the existing OPML / DOT / Mermaid exporters but speaks to a different audience (people who think in prose rather than graph syntax).
 
-## Tier 2 — New diagram types (from the feature-research catalogue)
+## Tier 2 — New diagram types
 
 The user picked buckets **A / F / H** out of the 16-bucket catalogue. After Tier 1 (small-effort wins) the next concrete chunk is "table-stakes diagrams that aren't CRT or FRT":
 
