@@ -2,6 +2,10 @@
 
 A parking lot. Nothing here is required for v1; everything is honest about what's deferred.
 
+> **Sessions 105–108 — under-the-hood performance pass + perf-trace baseline.** Tier 1 (Session 105): WeakMap caching on `edgesArray` / `entitiesArray` (used by `incomingEdges` / `outgoingEdges` / `hasEdge` / `findCycles` / `removeEntityFromEdges` / `layoutFingerprint` / `validationFingerprint`), two-level WeakMap memo on `descendantIds`, lazy-loaded `PrintAppendix`, single-pass group bbox replacing 4× `Math.min(...map(...))`, `useShallow`-bundled `useDocumentStore` access in `TPEdge` + custom memo comparators on `TPNode` + `TPEdge`. Tier 2 (Session 107): `will-change: transform` on `.react-flow__viewport`, `requestIdleCallback` two-phase persistence with 1.5s fallback. Tier 3 (Session 108): fast-clone of `Doc` in `revisionsSlice` (replaces `JSON.parse(JSON.stringify)`), edit-heavy perf-trace scenario, percentile reporting (p50/p75/p95/p99/max) in the trace summary. New e2e infrastructure: `e2e/perf-trace.spec.ts` drives a 100-entity scenario through Playwright + CDP Tracing API; manual workflow_dispatch via `.github/workflows/perf-trace.yml` produces a `chrome://tracing`-loadable artifact. Bundle budget re-pinned: flow 110000, index 124000, icons 10500. **Three-sample baseline confirms no regressions across the full Tier 1/2/3 stack.** Tests still green; no production behavior change. Speculative items (workerized dagre, React Flow virtualization, indexed entity-type lookups, FL-LA4 incremental relayout) remain deferred until profile signal demands them — current baseline doesn't.
+
+> **Session 104 — Visual regression baselines + Node 24 + book PDF.** Visual baselines for canvas + 10 dialogs landed via three `chore: refresh visual snapshot baselines` commits (PRs #2 / #3 / #4) using a dedicated `Update visual snapshots` workflow that uploads new PNGs as a workflow artifact. `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` opt-in clears the Node 16/20 deprecation warning on JS actions. `scripts/build-book-pdf.mjs` produces `docs/guide/Thinking-with-TP-Studio.pdf` (marked → Playwright `page.pdf({ outline: true })` for a clickable TOC + cover page).
+
 > **Session 103 — *Thinking with TP Studio* book.** 17-chapter practitioner guide + 6 appendices under `docs/guide/`. Companion to USER_GUIDE — method-first, tool-second. Screenshots produced by `e2e/guide-screenshots.spec.ts` (Playwright, driven via the `__TP_TEST__` hook); same workflow that refreshes visual-regression baselines also refreshes book screenshots. `docs/guide/AUTHORING.md` documents the refresh procedure for future UI changes. Initial screenshot set generated via one workflow run after this commit; the spec also acts as gesture-regression for the chapters' described paths.
 
 > **Session 85 — under-the-hood pass complete (10 batches, 8 shipped + 2 audit-only).** Twenty maintainability / perf / test-coverage items planned across Phases 1 (A-D) and 2 (E-J); 8 batches shipped real changes, Batch G evaluated audit-clean (3 items not worth the trade), Batches E/F/H/I each carried at least one item that was already done or net-negative. Highlights: per-doc WeakMap memoization for `structuralEntities` + `validate` (saves cost transparently to every caller), property-based migration + CLR-totality coverage via fast-check, dedicated cold-path test for `useGraphPositions`'s lazy dagre import, `vite-plugin-checker` dev overlay, brand-ID consolidation for group selection, CI split into 3 parallel jobs. **1003 tests passing**; full breakdown in CHANGELOG Session 85.
@@ -80,82 +84,9 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 > **Mobile / narrow-viewport pass complete (Session 65).** A new `KebabMenu` component lives at the right edge of the TopBar with `sm:hidden`, surfacing the four buttons (Layout Mode, History, Help, Theme) that the existing responsive classes hide below `sm` (640 px). Items auto-close the menu after activation; Escape and outside-click also dismiss. TitleBadge's narrow-viewport `max-w-` bumped from `100%-7rem` to `100%-9rem` to leave room for the extra icon. The Inspector and RevisionPanel already overlaid with tap-to-dismiss backdrops below `md:`, so no changes needed there. 8 new tests in `tests/components/KebabMenu.test.tsx` (628 total, all green). **The remaining backlog is the structural-extensibility tier**: **B7 + B10** (user-defined attributes + custom entity classes) and the parked **confidence-field UI**.
 
-## Comprehensive security review
+## ~~Comprehensive security review~~ ✅ Done (Session 98)
 
-Open. The app is a public-internet PWA at <https://tp-studio.struktureretsundfornuft.dk/> — anyone with the URL can use it, and the share-link feature (`#!share=…`) lets users hand a full doc to anyone else. No backend, no auth, no PII storage — but the surface that *does* exist deserves a careful pass. The brief never had a formal security review; what's there is the product of incremental good-instinct decisions, not a deliberate audit.
-
-**Scope of the review (estimated S–M, ~half a day):**
-
-**1. Cross-site scripting (XSS).** TP Studio renders user-provided text in three places that need careful audit:
-- **Markdown descriptions** (`src/components/inspector/MarkdownPreview.tsx` + `services/markdown.ts`). Audit the renderer for `javascript:` URLs in `[text](url)` syntax, `<script>` injection, and `onerror=` handlers on inline `<img>`. Confirm DOMPurify (or whatever sanitizer is in use) is applied to the markdown HTML *before* `dangerouslySetInnerHTML`, with `ALLOWED_URI_REGEXP` excluding `javascript:`/`data:` schemes except where intentional (image embeds).
-- **Entity / edge titles + labels.** Rendered as React text children — safe in normal flow, but check every place that pipes a title into SVG (`exporters/image.ts` SVG export, `templateThumbnailSvg`, EC workshop sheet PDF) and into the self-contained HTML viewer export (`htmlExport.ts`). The HTML viewer is the highest risk surface because it ships as a standalone file the user opens directly — a poisoned title becomes a stored XSS in the exported artifact.
-- **Hyperlinks** (`FL-AN5`). External URL handling: confirm `target="_blank"` carries `rel="noopener noreferrer"` (the canonical fix for tabnabbing); confirm `#N` internal cross-references can't be coerced into navigating to attacker-controlled URLs.
-
-**2. Share-link payload safety** (`src/services/shareLink.ts`). The `#!share=` URL fragment is gzip+base64 of a `TPDocument` JSON. Anyone can craft one and send it. Audit:
-- Schema validation: confirm `persistenceValidators.ts` rejects unexpected fields, oversized strings, deeply nested objects (prototype pollution + DoS).
-- Decompression: confirm gzip bomb defense — a tiny URL could decompress to gigabytes. Cap the decompressed size at ~5 MB (the existing soft-warn at 4 KB is for OUTGOING links, not incoming).
-- Browse Lock auto-engage: confirmed working, but verify the recipient can't be tricked into a state where Browse Lock toggles off without explicit user gesture.
-- URL fragment handling: confirm parser tolerates malformed base64 / corrupt gzip without throwing into the global error boundary (would crash the app on a poisoned link).
-
-**3. Import path injection.** `Import from JSON / CSV / Mermaid / Flying Logic` paths. Audit:
-- JSON: confirm `JSON.parse` is followed by strict schema validation; no `Function`/`eval`-style hidden code paths.
-- CSV: `parseEntitiesCsv` — confirm it doesn't execute formulas (Excel-style `=cmd|'/c calc'!A1` cells would still be inert in TP Studio since we just read strings, but worth pinning).
-- Mermaid: confirm the parser doesn't execute embedded `<script>` or evaluate any directive.
-- Flying Logic: same.
-
-**4. Export sanitization.** Mirror of #1, on the way out:
-- SVG export — every `<text>` and attribute must be XML-escaped. Audit `services/exporters/image.ts` for any string interpolation that bypasses the serializer.
-- HTML viewer export — confirm titles/descriptions get HTML-encoded before base64'ing into the standalone file. The `redactDocument` path (JSON-redacted export) is intentional content stripping; that's not a security feature, but verifying it works as documented prevents a "thought I shared a redacted version" footgun.
-- PDF export — jspdf's `text()` is Latin-1-safe but doesn't sanitize HTML; titles with control characters could break the PDF structure. Audit.
-
-**5. localStorage tampering.** The user can edit their own `localStorage`, but a malicious tab on a different origin can't access it (same-origin policy). Audit:
-- Confirm `loadFromLocalStorageWithStatus()` validates the schema before trusting the doc. A user who pastes a malformed JSON into `tp-studio:active-document:v1` shouldn't crash the app on next reload.
-- Confirm migrations are idempotent and one-way (no migration that reads an attacker-controlled field).
-
-**6. Test hook in production** (`?test=1` URL param installs `window.__TP_TEST__`). Audit:
-- The hook exposes `seed / connect / confirmAndDeleteEntity / getSelection / selectNodeViaRF`. None can exfiltrate data or escalate privileges — they all operate on the user's local doc. Confirm no future hook addition leaks state.
-- Confirm the URL-param check is robust (a single `?test=1` should install, but `?Test=1` should not — case-sensitive). Audit for ambiguity.
-
-**7. Service Worker / PWA cache poisoning.** `vite-plugin-pwa` generates the service worker. Audit:
-- Confirm the SW only caches same-origin resources (no third-party CDN URLs in `precacheManifest`).
-- Confirm the SW respects `Cache-Control: no-store` for sensitive responses (n/a here — no sensitive responses).
-- Confirm `registerType: 'prompt'` means a malicious SW update can't silently take over.
-
-**8. Content Security Policy.** TP Studio currently ships without a `<meta http-equiv="Content-Security-Policy">` header (GitHub Pages doesn't serve HTTP headers). Audit feasibility of adding a meta-tag CSP that:
-- Blocks inline `<script>` (we use Vite which inlines small chunks — would need a `'unsafe-inline'` or `'nonce-*'` allowance).
-- Restricts `connect-src` to same-origin (the app makes no fetch calls beyond the SW; this is restrictive-by-default).
-- Restricts `img-src` to same-origin + `data:` (PNG/JPEG/SVG exports use data URIs).
-
-**9. Dependency supply chain.** Run:
-- `pnpm audit --prod` to surface known CVEs in the production dependency tree.
-- Check `pnpm why <pkg>` for any deeply nested versions that don't match expected.
-- Lock `packageManager` field in `package.json` (already done via simple-git-hooks setup).
-- Audit `package-lock`/`pnpm-lock.yaml` for unexpected upstream sources (anything not on npmjs.com).
-
-**10. Repo hygiene.** The repo went public in Session 89. Confirm:
-- No `.env` files / API tokens in history (`git log --all -- .env*` was clean at the time; re-verify).
-- No personal data in fixtures (the example docs use generic placeholders — confirm none accidentally drifted to real names or company data).
-- GitHub Actions workflow files: confirm `GITHUB_TOKEN` permissions are scoped minimally, no secrets are leaked into the build output.
-- `public/robots.txt` blocks all crawlers (intentional for the low-discoverability target — confirm it's still there).
-
-**11. Custom domain DNS.** `tp-studio.struktureretsundfornuft.dk` is a subdomain Dann controls. Confirm:
-- CNAME record points to GitHub Pages's `*.github.io` endpoint, not a third party.
-- HTTPS certificate is auto-renewed by GitHub Pages (Let's Encrypt under the hood).
-- No DNS records for the subdomain that point at a service Dann doesn't own.
-
-**12. Things explicitly OUT of scope** (already covered by the brief / not applicable):
-- Real-time collab, cloud sync, accounts, auth — none of these exist (per brief).
-- Mobile app store distribution — TP Studio is a PWA, not a native app.
-- GDPR data-subject-access requests — no PII is stored beyond the user's own browser.
-
-**Deliverables of the review:**
-1. A short `SECURITY.md` at the repo root documenting the threat model + the audit findings.
-2. Inline TODO comments in any file where a real (not theoretical) issue was found.
-3. Fix-tier classification: P0 (ship-now fix), P1 (next session), P2 (known limitation, document it).
-4. Optional: add a `pnpm run security` script that runs `pnpm audit` + lints for `dangerouslySetInnerHTML` without sanitization + checks for `javascript:` URLs in any string literal.
-
-**Spawn-the-agent prompt** (for when this gets picked up):
-> Run a comprehensive security review of TP Studio per the spec in `NEXT_STEPS.md` § "Comprehensive security review". Output: a `SECURITY.md` draft + a punch list of P0/P1/P2 findings with file:line references. No code changes in this pass — review only.
+Full 12-area audit shipped in Session 98 (CHANGELOG entry + commit `5494531`). Deliverables in place: [`SECURITY.md`](SECURITY.md) documents threat model, mitigations, known limitations, and audit history. **P0** — `jspdf` bumped 2.5.2 → ^4.2.1, clears 19 CVEs (incl. two critical). **P1** — strict CSP added as `<meta http-equiv>` in `index.html`; gzip-bomb defense added to `parseShareHash` (5 MB ceiling). **P2** — inert footer `<a onclick="return false;">` replaced with `<span>` in `htmlExport.ts`. Audit findings that needed no fix (markdown DOMPurify, SVG/HTML export escaping, import path validation, localStorage trust model, test-hook scope, service-worker same-origin, repo hygiene, DNS) all documented in `SECURITY.md` § audit history. `pnpm audit --prod` clean. Re-trigger: open a new audit if (a) a new untrusted-data boundary is added, (b) the share-link payload format changes, or (c) a new third-party runtime dependency lands. The Session 98 SECURITY.md doc is the durable record.
 
 ## Selection-anchored contextual toolbar (Session 94 UI research)
 
@@ -296,21 +227,23 @@ candidate features into 13 named bundles with stable `FL-*` IDs so we can say
 "let's do Bundle 1 + FL-EX1 next iteration" without ambiguity. Reasoning / confidence,
 project management, and scripting are out of scope and not catalogued.
 
-## Recommended priorities for the next session
+## ~~Recommended priorities for the next session~~ ✅ All four items shipped
 
-In rough order of "would I notice the difference":
+Archived: each of the four items below has landed and is annotated with the session that closed it. Left in place so the rationale-chain is auditable; new priorities should land elsewhere in this file.
 
 ### 1. AND-junction visual polish — ✅ Done (Session 28)
 
 The original dot/arc approach was replaced wholesale by a Flying-Logic-style **junctor circle**: a white circle labelled "AND" sits just above the target, multiple causes converge into it, one arrow continues to the target. Cleaner than the dot+arc+badge stack it replaced, recognizable to FL transplants, opens a clear extension point if we ever add other junctor types (OR / NOT).
 
-### 2. Mobile / narrow-viewport pass
+### 2. Mobile / narrow-viewport pass — ✅ Done (Session 65, verified Session 87)
 
-Brief said "responsive down to 1024 px is enough." Below that, the 320-px inspector covers most of the canvas. Below 768 px the title-badge overlaps the top-bar buttons. Concrete improvements:
+All three originally-listed improvements shipped:
 
-- Collapsible inspector on narrow viewports (slide off-screen by default, swipe in from the right).
-- Hide command/help/theme button labels under a kebab menu at < 768 px.
-- Respond gracefully to portrait orientation.
+- ~~**Collapsible inspector on narrow viewports.**~~ ✅ Inspector + RevisionPanel overlay with tap-to-dismiss backdrops below `md:` (640 px).
+- ~~**Hide command/help/theme button labels under a kebab menu at < 768 px.**~~ ✅ Session 65 — new `KebabMenu` component, `sm:hidden` surfaces the four hidden buttons (Layout Mode / History / Help / Theme). Session 92 added Undo/Redo entries too.
+- ~~**Respond gracefully to portrait orientation.**~~ ✅ Session 87 (V10) — TopBar verified clean down to 480 px (`xs:` breakpoint).
+
+Beyond what's shipped, "mobile-first design" stays explicitly out of scope per the brief — the surface works at 480 px and up, which is the practical floor for a graph editor.
 
 ### 3. Component-level interaction tests — ✅ mostly done
 

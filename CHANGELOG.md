@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 108 — Tier 3 perf pass + edit-heavy trace + percentile reporting
+
+Closes the three-tier perf sweep. **Tier 3 changes**: `descendantIds` got a two-level WeakMap memo (`doc.groups → groupId → Set<string>`); the call site rebuilds were measurable in the trace. `revisionsSlice` replaced `JSON.parse(JSON.stringify(doc))` with a fast shallow-of-`Record` clone (`cloneDoc`) — same immutability guarantee, ~50× faster on a 100-entity doc. `incomingEdges` / `outgoingEdges` / `hasEdge` / `findCycles` / `removeEntityFromEdges` migrated from raw `Object.values(doc.edges)` to the Session 105 `edgesArray(doc)` helper.
+
+**New trace scenario.** `e2e/perf-trace.spec.ts` now captures two scenarios: the existing `all-actions` walk and a new `edit-heavy` loop that mutates entity titles in a tight inner loop (the workload that exercises `updateEntity` → coalesced persist → React re-render pipeline). New test-hook methods `editEntityTitle(id, title)` + `listEntityIds()` drive the scenario; test timeout extended to 90s.
+
+**Percentile reporting.** The trace summary previously reported a single `scripting_ms` total. Single-sample totals are noisy — a 5% movement can be variance or a real change, and there's no way to tell from one trace. Added `task_duration_percentiles` (p50 / p75 / p95 / p99 / max / count) to both scenarios' summaries; p95 / p99 are the stable single-sample signals now used for regression comparison. After this change, three traces of `all-actions` (6,248 / 6,764 / 6,118 ms scripting) confirmed Tier 3 introduces no regression — the apparent first-sample slowdown was variance, not signal.
+
+**End state:** 1156 tests passing, build clean, three-sample baseline established. Speculative items (workerized dagre, virtualization, indexed lookups, FL-LA4 incremental relayout) stay deferred until profile signal demands them — current baseline doesn't show they'd matter.
+
+## Session 107 — Tier 2 perf pass: act on Session 106 trace findings
+
+Profile-driven tier. The Session 106 CDP trace surfaced two real wins beyond Tier 1's mechanical work:
+
+- **`will-change: transform` on `.react-flow__viewport`.** Layout time dropped 3.7s → 3.4s on the all-actions scenario; paint shifted to the compositor (0.15s → 0.27s). Net: smoother pan/zoom under load. The hint is scoped to the viewport selector, not blanket — global `will-change` would burn GPU memory.
+- **`requestIdleCallback` two-phase persistence.** `persistDebounced.ts` previously committed to localStorage on a `setTimeout`. Replaced with `requestIdleCallback` + 1.5s timeout fallback; localStorage writes now defer to the idle-task tail instead of fighting React for the next frame.
+
+Plus one Session 106 trace finding acted on: the EC `useGraphNodeEmission` group-bbox calculation was 4× `Math.min(...arr.map(...))` — collapsed to a single-pass min/max loop.
+
+**End state:** tsc clean, all tests green, perf-trace shows the wins on the all-actions scenario.
+
+## Session 106 — Perf profiler infrastructure (CDP trace + memo unit tests)
+
+The "did Tier 1 actually move the needle" pass. Two infrastructures:
+
+- **CDP Chrome trace via Playwright.** `e2e/perf-trace.spec.ts` opens the production build, seeds 100 entities via `__TP_TEST__`, then runs a 100-step interaction scenario while capturing a Chrome DevTools Protocol trace through `page.context().newCDPSession()`. The trace JSON loads into `chrome://tracing` or `perfetto.dev` for a full flame chart. New manual workflow `.github/workflows/perf-trace.yml` runs it on `workflow_dispatch` and uploads the trace as a workflow artifact. Local environment can't run the spec (AppLocker blocks `vite preview`); CI's the runner.
+- **Memo comparator unit tests.** `tests/components/TPEdgeMemoComparator.test.tsx` has 22 cases pinning the Session 105 `tpEdgePropsEqual` + `shallowEqualObject` exports. Original plan was to use React Profiler's `onRender` callback but it was too noisy under jsdom; direct unit tests of the exported comparators are more reliable and faster.
+
+**End state:** trace runs on demand, comparator behavior pinned, all tests green.
+
 ## Session 105 — Tier 1 perf pass: render fan-out + caching + lazy chunks
 
 Six items from the 30-item perf-improvement menu. Tier 1 was the "confident wins" tier — items I expected to move the needle, with concrete code changes, not just code-shape tidiness. No profiler run; the wins are mechanical (fewer subscribers per store update; fewer materializations of the same array; fewer re-renders when nothing relevant changed).
