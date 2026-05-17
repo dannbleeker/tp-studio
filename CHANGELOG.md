@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 119 — React Compiler perf comparison + decision to disable
+
+The post-Session-118 audit promised in the React 19 plan. Triggered the `Perf trace` workflow against `main` (Session 118's React 19 + Compiler build), compared the percentiles against Session 108's baseline, and made a data-driven call on the Compiler.
+
+**Findings (vs. Session 108):**
+
+| Metric | Scenario | Session 108 | Session 119 | Delta |
+|---|---|---:|---:|---|
+| p50 | all-actions | 0.02 ms | 0.02 ms | flat |
+| **p95** | **all-actions** | **5.68** | **3.09** | **−45% 🟢** |
+| p99 | all-actions | 29.44 | 34.97 | +19% 🟡 |
+| max | all-actions | 212.59 | 184.37 | −13% 🟢 |
+| p50 | edit-heavy | 0.02 | 0.03 | flat |
+| **p95** | **edit-heavy** | **9.10** | **17.21** | **+89% 🔴** |
+| p99 | edit-heavy | 31.94 | 33.35 | flat |
+| max | edit-heavy | 144.41 | 152.97 | flat |
+
+**Plus** +24 KB gz on the eager index chunk (Compiler instrumentation) and two CI e2e regressions: `delete-flow.spec.ts` Browse-Lock click timeout + `guide-screenshots.spec.ts` chapter14 history-button click timeout — both targeting `<Button>` components by aria-label, the kind of interaction the Compiler's auto-memoization could plausibly perturb.
+
+**Decision: disabled the React Compiler.** For TP Studio's workload — a doc-editing app where rapid small mutations are the hot path — the Compiler's instrumentation overhead doesn't pay back the win it delivers on rarer interaction patterns. The all-actions p95 improvement is real but offset by the edit-heavy regression that affects every keystroke. The plugin install (`babel-plugin-react-compiler@1.0.0`) and the `babel.plugins` config stays in `vite.config.ts` as a commented-out one-line opt-in for a future re-evaluation when either the Compiler matures further or our hot path shifts.
+
+**Bundle budget restored to Session 115's tight ceiling:** index 115 KB → 92 KB (was loosened in Session 118 to accommodate the Compiler). Index chunk back to 86.8 KB gz.
+
+**Companion landings in this session:**
+- `EntityInspector.tsx` TextArea got an explicit `aria-label="Entity title"` — the visible `<Field label="Title">` renders a sibling `<span>` not wired via `htmlFor`/`id`, so axe-core (Session 114) correctly flagged the form element as label-less. Real a11y win, also clears the Session 118 CI a11y failure.
+- TPNode + TPEdge comment notes documenting how the React Compiler interacts with our manual `memo()` wrappers (Compiler is supposed to recognise explicit `memo()` and back off; file-level `'use no memo'` directives were attempted but stripped by Rollup, so we trust the Compiler's auto-detection if it's ever re-enabled).
+- `useMemo` / `useCallback` audit conclusion: leave all 21 sites in place. The Compiler subsumes their perf benefit when enabled, but the manual hooks document intent and provide a safety net. Removing them is cosmetic-only; trade-off doesn't favor the churn.
+
+**End state:** 1195 tests passing locally, tsc / biome / build clean, bundle within the tight Session-115 ceiling. React 19 stays; Compiler is dormant pending evidence.
+
 ## Session 118 — React 19 upgrade + React Compiler enablement
 
 The destination of the IP-hygiene / maintainability / pre-prep arc. React 18.3.1 → 19.2.6 + React Compiler enabled. Four phases (A/B/C/D) per the Session 115 plan, plus Session 117 CI fix-ups.

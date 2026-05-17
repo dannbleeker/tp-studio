@@ -44,22 +44,29 @@ export default defineConfig(({ command }) => ({
   // there would just duplicate the work. The `command === 'serve'`
   // guard keeps the build step's plugin list untouched.
   plugins: [
-    // Session 118 — React Compiler enabled via babel-plugin-react-
-    // compiler. The Compiler auto-memoizes pure React render output so
-    // most useMemo / useCallback / React.memo boilerplate becomes
-    // unnecessary. We're keeping our manual comparators on TPNode /
-    // TPEdge (Session 105 — the auto-memo can't beat them because
-    // `data` is rebuilt-by-spread on every emission run, and the
-    // Compiler's referential check has the same blind spot as React's
-    // default memo). Everything else benefits from the auto-pass.
+    // Session 118 enabled the React Compiler (`babel-plugin-react-
+    // compiler`). Session 119 disabled it again after the perf-trace
+    // comparison against Session 108's baseline showed mixed results:
+    //
+    //   • all-actions p95: 5.68 → 3.09 ms (−45%, win)
+    //   • edit-heavy p95: 9.10 → 17.21 ms (+89%, loss)
+    //   • +24 KB gz on the eager index chunk
+    //   • Two CI e2e regressions (delete-flow + chapter14 screenshot
+    //     both timed out on `getByRole('button')` clicks — the kind of
+    //     interaction the Compiler's auto-memoization could perturb)
+    //
+    // For our specific workload — a doc-editing app where rapid
+    // small mutations are the hot path — the Compiler's instrumentation
+    // overhead doesn't pay back the win it delivers on rarer
+    // interaction patterns. The plugin install + this config stays in
+    // the tree as a one-line opt-in for a future re-evaluation when
+    // either the Compiler matures further or our hot path shifts.
+    //
+    // To re-enable: uncomment the `babel.plugins` line below.
     react({
-      babel: {
-        // Target React 19 directly (the prod build) — Compiler emits
-        // `useMemoCache` calls that are stable across the React 19
-        // runtime. The default '17' target adds a shim import that we
-        // don't need.
-        plugins: [['babel-plugin-react-compiler', { target: '19' }]],
-      },
+      // babel: {
+      //   plugins: [['babel-plugin-react-compiler', { target: '19' }]],
+      // },
     }),
     // Session 114 — `rollup-plugin-visualizer` emits a
     // `dist/bundle-stats.html` treemap on every `pnpm build`. Opt-in

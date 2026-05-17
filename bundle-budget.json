@@ -1,9 +1,9 @@
 {
-  "comment": "Per-chunk gzip-size ceilings in bytes. CI runs scripts/check-bundle-size.mjs after `vite build` and fails the build if any chunk exceeds its budget by >10% (the slop in `slopPercent`). Budgets are sized 5% above the current measured chunks so non-trivial growth is what triggers the alert, not noise from a dependency point-update. Update the numbers here when a deliberate feature lands that grows a chunk — the diff in this file is what reviewers see. Last re-pinned Session 118: React 19 + React Compiler. Compiler instrumentation adds ~24 KB gz to the index chunk (auto-memoization helpers), bringing the eager chunk from Session 115's 84.8 KB → 108.8 KB gz. New ceilings: flow 110 KB (unchanged); index 115 KB (was 92, +23 KB for the Compiler); icons 10.5 KB (unchanged). The `react` chunk holding React 19's runtime + react-dom/client lands at 55 KB gz — left unbudgeted since it's a known vendor cost.",
+  "comment": "Per-chunk gzip-size ceilings in bytes. CI runs scripts/check-bundle-size.mjs after `vite build` and fails the build if any chunk exceeds its budget by >10% (the slop in `slopPercent`). Budgets are sized 5% above the current measured chunks so non-trivial growth is what triggers the alert, not noise from a dependency point-update. Update the numbers here when a deliberate feature lands that grows a chunk — the diff in this file is what reviewers see. Last re-pinned Session 119: React Compiler disabled after the perf-trace comparison vs. Session 108 showed mixed results (all-actions p95 −45% but edit-heavy p95 +89% AND +24 KB gz). Index chunk back to 86.8 KB gz (was 108.8 with Compiler). New ceilings: flow 110 KB (unchanged); index 92 KB (back to Session 115's tight ceiling); icons 10.5 KB (unchanged). The `react` chunk holding React 19's runtime + react-dom/client lands at 55 KB gz — left unbudgeted as a known vendor cost.",
   "slopPercent": 10,
   "chunks": {
     "flow": 110000,
-    "index": 115000,
+    "index": 92000,
     "icons": 10500
   }
 }

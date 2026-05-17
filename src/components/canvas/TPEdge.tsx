@@ -1,3 +1,8 @@
+// Session 119 — note on React Compiler interaction (see TPNode.tsx
+// for the same note in fuller form). `TPEdgeImpl` is wrapped in
+// `memo(impl, tpEdgePropsEqual)`. The Compiler recognises explicit
+// `memo()` and skips auto-memoization for the wrapped component, so
+// the Session 105 comparator's behavior stays intact.
 import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';

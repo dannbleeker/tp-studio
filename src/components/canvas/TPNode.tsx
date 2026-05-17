@@ -1,3 +1,18 @@
+// Session 119 — note on React Compiler interaction:
+// `TPNodeImpl` is wrapped in `memo(impl, tpNodePropsEqual)` (see the
+// bottom of this file). The custom comparator from Session 105 does
+// shallow-equality on `data`'s enumerable keys rather than referential
+// equality (which would always fail because `data` is rebuilt by
+// spread every emission run).
+//
+// The Compiler recognises explicit `memo()` calls and skips
+// auto-memoization for the wrapped component. The file-level
+// `'use no memo'` directive was tried but Rollup strips file-level
+// directives at bundle time ("use no memo" only works at function-
+// body level). Relying on the Compiler's memo-recognition is
+// sufficient for now; if a future Compiler version regresses on this
+// guarantee, move the directive inside the `TPNodeImpl` function body
+// or wrap the export differently.
 import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT, ZOOM_UP_THRESHOLD } from '@/domain/constants';
 import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { ST_FACET_KEYS, isStNodeFormat } from '@/domain/graph';
