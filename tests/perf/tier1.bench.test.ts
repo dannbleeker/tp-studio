@@ -68,14 +68,10 @@ const measure = (label: string, iterations: number, fn: () => void): Row => {
 };
 
 const printTable = (title: string, rows: Row[]): void => {
-  // biome-ignore lint/suspicious/noConsole: bench output is the point
   console.log(`\n### ${title}\n`);
-  // biome-ignore lint/suspicious/noConsole: bench output is the point
   console.log('| Variant | Iters | Total (ms) | ops/sec | ns/op |');
-  // biome-ignore lint/suspicious/noConsole: bench output is the point
   console.log('| --- | ---: | ---: | ---: | ---: |');
   for (const r of rows) {
-    // biome-ignore lint/suspicious/noConsole: bench output is the point
     console.log(
       `| ${r.label} | ${r.iters.toLocaleString()} | ${r.totalMs.toFixed(2)} | ${Math.round(r.opsPerSec).toLocaleString()} | ${r.nsPerOp.toFixed(1)} |`
     );

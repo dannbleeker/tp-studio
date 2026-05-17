@@ -2,6 +2,37 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 112 — Tier 1 maintainability pass (knip + coverage gate + audits)
+
+First of three planned tiers from the 30-suggestion under-the-hood improvement list. Tier 1 is mechanical low-risk wins; Tier 2 (structural refactor) and Tier 3 (speculative perf) are deferred until explicit greenlight.
+
+**#29 — `knip` for dead-code detection.** New devDep `knip@6.14.1`, configured via `knip.json` with project-specific entry patterns (Storybook stories, Playwright specs, vite/playwright/tailwind configs). Wired as `pnpm knip` script and added as a CI step in `lint-types`. Pre-cleanup knip surfaced 6 unused files + 37 unused exports + 36 unused types + 1 duplicate; post-cleanup it surfaces 4 retained exports + 2 retained types (all token constants / back-compat aliases that are intentional API surface, documented at declaration sites).
+
+**Dead code removed:**
+- `src/hooks/useStoreSlice.ts` — Session 94 convenience wrapper for `useDocumentStore(useShallow(...))` that was never adopted by any consumer.
+- `useSelectedEntity`, `useSelectedEdge` in `src/hooks/useSelected.ts` — convenience selectors with no callers.
+- `seedDiverging`, `seedCycle`, `seedForest` in `tests/helpers/seedDoc.ts` — Session 94 test-shape helpers with no callers; comment notes that the patterns are mechanical to reconstruct from `seedEntity` + `state.connect` if real demand surfaces.
+- `requireEntity`, `getEdge`, `requireEdge`, `isSufficiencyEdge`, `isNecessityEdge` in `src/domain/graph.ts` — Session 85 graph-query helpers with no callers; can be re-added from real call-site demand.
+- `PAGE_DIMENSIONS_MM`, `dimensionsFor`, `sanitizeForLatin1Pdf`, `PdfPageSize`, `PdfOrientation` in `src/services/exporters/pdfShared.ts` — Session 94 shared-infra exports that the two PDF callers never used; module trimmed to the single `loadJsPdf` lazy-loader that's actually consumed.
+- `__ENTITY_TYPE_TO_FL_FOR_TEST` test-mode alias in `src/domain/flyingLogic/typeMaps.ts` + its re-export in `flyingLogic/index.ts` — defined Session 94 anticipating tests that never landed.
+- `isEntityType` re-export from `flyingLogic/index.ts` — callers import directly from `@/domain/guards`.
+
+**#10 + #11 — Coverage floor + CI gate.** Ran `pnpm coverage:pin` to read the measured coverage (lines 79.0% / statements 79.0% / functions 72.0% / branches 79.5%) and bumped `vite.config.ts` thresholds from a uniform 65 to (lines 76 / statements 76 / functions 70 / branches 77) — measured floor minus ~3% slop. Vitest enforces the threshold inside `pnpm test:coverage` (already wired into the CI `tests-build` job), so future PRs that drop coverage now fail CI.
+
+**#30 — Stale-comment sweep.** Grepped `src/` for `parked` / `deferred` / `until X ships` / `not yet` patterns; 30+ matches inspected, all but one accurate or false positives ("deferred prompt" PWA pattern, "future X" forward-compatibility hooks, etc.). One genuine stale claim fixed: `src/domain/groupPresets.ts:24` claimed the NSP Block preset was "parked until S&T Tree ships" — S&T shipped Session 75, so the comment was a year stale. Reworded to describe the preset's current role.
+
+**#7 — `biome-ignore` / `ts-expect-error` audit.** All 11 markers in `src/` inspected; every one carries an explanatory comment and remains intentional (useExhaustiveDependencies skips for fingerprint-gated effects, DOMPurify-sanitized `dangerouslySetInnerHTML`, native `<dialog>` Esc handling, etc.). No removals — the audit confirms the codebase's suppression hygiene is good. Also dropped 4 stale `biome-ignore lint/suspicious/noConsole` markers in `tests/perf/tier1.bench.test.ts` that biome was already reporting as ineffective (the rule doesn't apply to bench files).
+
+**#1 — `src/domain/types.ts` split: re-evaluated, re-deferred.** The file's intro comment (lines 4-30) documents the prior Session 94 evaluation that chose not to split despite the 657-LOC size. The reasoning — ~90 import sites would need migration vs. marginal navigation benefit — still holds even with the barrel-re-export workaround that would preserve imports. Section banners give the navigation win; deferred again.
+
+**#6 — `exactOptionalPropertyTypes`: evaluated, deferred.** Enabled the tsconfig flag and got 272 errors back (vs. my Tier 1 estimate of "a few dozen"). Cleanup is mechanical (most fixes are domain types updating `field?: T` → `field?: T | undefined` to accept callers passing `field: someValue` where `someValue` may be undefined), but 272 errors is a focused refactor session of its own. Reverted; re-classified as Tier 1b for a dedicated future pass.
+
+**#24 — Storybook expansion.** One new story added: `src/components/canvas/EmptyHint.stories.tsx`. Catalog grows 6 → 7. Other high-value targets (AboutDialog, Toaster, ConfirmDialog) read from the Zustand store and need a Storybook decorator with store seeding — bigger than this tier's scope.
+
+**End state:** 1188 tests passing, tsc clean, biome clean, build clean, bundle budget within ceiling, knip surface manageable (4 retained exports + 2 retained types as documented intentional API), coverage floor at 76/76/70/77.
+
+**Tier 2 (12 items)** and **Tier 3 (10 items)** are queued — see the Session 112 commit for the original 30-item rationale. Tier 2 covers structural file splits (#2-5), more branded IDs (#8-9), test expansion (#12-13), error boundary audit (#18), validator perf (#21-22), and migration audit (#23). Tier 3 covers runtime perf (#14-17), storage (#19-20), and tooling/a11y (#25-28). Awaiting greenlight before proceeding.
+
 ## Session 111 — About TP Studio dialog + on-brand docs bundle + README tagline
 
 Coda to Sessions 109–110 (the IP-hygiene arc). Three threads bundled:

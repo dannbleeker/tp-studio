@@ -4,26 +4,6 @@
 import type { Edge, Entity, EntityId, TPDocument } from './types';
 
 /**
- * Session 85 (#2) — `requireEntity` / `requireEdge` companions to the
- * existing `getEntity` (line below) and `doc.edges[id]` lookups. Throw
- * on absence with a useful error rather than letting downstream code
- * silently NPE or branch through an `if (!entity) return;` block.
- *
- * Use when the lookup is a runtime invariant: "the action was just
- * dispatched with this id; if it's missing, the store is corrupted."
- * For optional lookups (the entity might legitimately be absent —
- * navigation, search, render skip), prefer the existing `getEntity`
- * helper which returns `Entity | undefined`.
- */
-export const requireEntity = (doc: TPDocument, id: string): Entity => {
-  const entity = doc.entities[id];
-  if (!entity) throw new Error(`requireEntity: no entity with id "${id}" in doc`);
-  return entity;
-};
-
-export const getEdge = (doc: TPDocument, id: string): Edge | undefined => doc.edges[id];
-
-/**
  * Session 105 / Tier 1 #3 — cached `Object.values(doc.edges)`.
  *
  * The edges-array materialization shows up dozens of times across the
@@ -69,44 +49,6 @@ export const entitiesArray = (doc: TPDocument): readonly Entity[] => {
   }
   return cached;
 };
-
-export const requireEdge = (doc: TPDocument, id: string): Edge => {
-  const edge = doc.edges[id];
-  if (!edge) throw new Error(`requireEdge: no edge with id "${id}" in doc`);
-  return edge;
-};
-
-/**
- * Session 85 (#3, light) — kind predicates for Edge.
- *
- * The Edge type is a flat record with `kind: 'sufficiency' | 'necessity'`
- * plus optional fields that are semantically scoped to one kind or the
- * other:
- *
- *  - Sufficiency-only: `andGroupId`, `orGroupId`, `xorGroupId`,
- *    `weight`, `assumptionIds`, `isBackEdge`. Junctor groups + polarity
- *    + back-edge tagging are CRT/FRT/TT concepts; necessity edges
- *    (EC, Goal Tree) don't carry them.
- *  - Necessity-only: `isMutualExclusion`. EC-specific — the diagnostic
- *    *depends* on two Wants being mutually exclusive.
- *  - Common: `label`, `description`, `attributes`.
- *
- * A full discriminated union (`type Edge = SufficiencyEdge |
- * NecessityEdge`) would let TypeScript narrow each access site, but
- * the refactor touches 50+ files (validators, inspector, junctor
- * overlay, exporters, migrations, mutations). For now, these
- * predicates let callers narrow when they care about the distinction:
- *
- *     if (isSufficiencyEdge(edge)) {
- *       // edge.kind === 'sufficiency'; sufficiency-only fields are
- *       // semantically meaningful here.
- *     }
- */
-export const isSufficiencyEdge = (edge: Edge): edge is Edge & { kind: 'sufficiency' } =>
-  edge.kind === 'sufficiency';
-
-export const isNecessityEdge = (edge: Edge): edge is Edge & { kind: 'necessity' } =>
-  edge.kind === 'necessity';
 
 // Session 108 — `Object.values(doc.edges)` migrated to the cached
 // `edgesArray(doc)` helper added Session 105. These four helpers are

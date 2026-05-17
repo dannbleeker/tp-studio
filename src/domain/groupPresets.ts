@@ -20,8 +20,9 @@ import type { GroupColor } from './types';
  *     Outcome) wrapped as a unit. Makes the per-step boundaries explicit
  *     in a multi-step plan.
  *   - **NSP Block** (amber) — Strategy & Tactics Tree triple (Necessary
- *     condition / Sufficient action / Parallel assumption). Parked as a
- *     name + color slot until S&T Tree ships as a diagram type.
+ *     condition / Sufficient action / Parallel assumption). The S&T
+ *     diagram type itself shipped Session 75; this preset works as a
+ *     ready-made grouping for the canonical S&T triple in any diagram.
  *
  * Catalog order matches the typical FRT / PRT / TT workflow: capture
  * negatives, design positives, archive alternatives, model steps.

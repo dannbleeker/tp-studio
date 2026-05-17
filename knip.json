@@ -1,0 +1,38 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "scripts/*.{mjs,cjs}",
+    "tests/**/*.test.{ts,tsx}",
+    "src/**/*.stories.{ts,tsx}",
+    "e2e/**/*.spec.ts",
+    "vite.config.ts",
+    "playwright.config.ts",
+    "tailwind.config.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}", "e2e/**/*.ts", "scripts/**/*.{mjs,cjs}"],
+  "ignore": [
+    ".claude/**",
+    "storybook-static/**",
+    "playwright-report/**",
+    "test-results/**",
+    "perf-trace-output/**",
+    "dist/**",
+    "coverage/**",
+    "e2e/global.d.ts",
+    "tests/stubs/virtual-pwa-register.ts"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "ignoreDependencies": ["tailwindcss", "autoprefixer", "postcss"],
+  "rules": {
+    "files": "warn",
+    "dependencies": "warn",
+    "unlisted": "warn",
+    "binaries": "warn",
+    "unresolved": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "duplicates": "warn",
+    "enumMembers": "warn"
+  }
+}

@@ -80,66 +80,10 @@ export const seedAndGroupable = (): {
   return { a, b, c, e1, e2 };
 };
 
-/**
- * Session 94 (Top-30 #20) — diverging shape: one source with N
- * targets. `a → b1, a → b2, ... a → bN`. Useful for fanout /
- * reachability tests where one cause has multiple consequences.
- */
-export const seedDiverging = (
-  branchTitles: string[],
-  type: EntityType = 'effect'
-): { source: Entity; branches: Entity[]; edges: Edge[] } => {
-  const source = seedEntity('Source', type);
-  const branches: Entity[] = [];
-  const edges: Edge[] = [];
-  const state = useDocumentStore.getState();
-  for (const title of branchTitles) {
-    const b = seedEntity(title, type);
-    branches.push(b);
-    const e = state.connect(source.id, b.id);
-    if (!e) throw new Error(`connect ${source.id}->${b.id} failed in seedDiverging`);
-    edges.push(e);
-  }
-  return { source, branches, edges };
-};
-
-/**
- * Cycle: A → B → C → A. Default 3 nodes; pass titles to extend.
- * The cycle CLR validator and back-edge tests both want this shape.
- */
-export const seedCycle = (
-  titles: string[] = ['A', 'B', 'C'],
-  type: EntityType = 'effect'
-): { entities: Entity[]; edges: Edge[] } => {
-  if (titles.length < 2) throw new Error('seedCycle needs at least 2 nodes');
-  const entities = titles.map((t) => seedEntity(t, type));
-  const edges: Edge[] = [];
-  const state = useDocumentStore.getState();
-  for (let i = 0; i < entities.length; i++) {
-    const a = entities[i]!;
-    const b = entities[(i + 1) % entities.length]!;
-    const edge = state.connect(a.id, b.id);
-    if (!edge) throw new Error(`connect ${a.id}->${b.id} failed in seedCycle`);
-    edges.push(edge);
-  }
-  return { entities, edges };
-};
-
-/**
- * Forest: N disconnected chains. Each `chainTitles[i]` becomes a
- * separate chain via `seedChain`. Used by radial-layout +
- * disconnected-graph CLR rule tests.
- */
-export const seedForest = (
-  chainTitles: string[][],
-  type: EntityType = 'effect'
-): { entities: Entity[]; edges: Edge[] } => {
-  const allEntities: Entity[] = [];
-  const allEdges: Edge[] = [];
-  for (const chain of chainTitles) {
-    const { entities, edges } = seedChain(chain, type);
-    allEntities.push(...entities);
-    allEdges.push(...edges);
-  }
-  return { entities: allEntities, edges: allEdges };
-};
+// Session 94 / Session 112 — `seedDiverging`, `seedCycle`, `seedForest`
+// were authored alongside `seedChain` / `seedConnectedPair` /
+// `seedAndGroupable` but never picked up by a test in the years since.
+// Removed as dead test infrastructure (Session 112 knip pass). If a
+// future test needs one of these shapes, the pattern is mechanical to
+// reconstruct from `seedEntity` + `state.connect` — easier to grow
+// shapes from real test demand than to keep speculative helpers warm.

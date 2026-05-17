@@ -103,5 +103,8 @@ export const mapEntityType = (flClass: string | null): EntityType => {
   return FL_TO_ENTITY_TYPE[flClass] ?? 'effect';
 };
 
-/** Test seam — re-export the entity-type map so tests can assert mappings. */
-export const __ENTITY_TYPE_TO_FL_FOR_TEST = ENTITY_TYPE_TO_FL;
+// Session 94 added `__ENTITY_TYPE_TO_FL_FOR_TEST` as a test-mode alias
+// for `ENTITY_TYPE_TO_FL`, anticipating tests that would assert
+// individual mappings. Two years later no test uses it. Session 112
+// knip pass removed both the alias and its re-export from `./index`;
+// tests can import `ENTITY_TYPE_TO_FL` directly if they want the map.

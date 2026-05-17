@@ -1,5 +1,3 @@
-import { isEntityType } from '../guards';
-
 /**
  * Flying Logic interop (best-effort).
  *
@@ -35,7 +33,7 @@ import { isEntityType } from '../guards';
 
 export { exportToFlyingLogic } from './writer';
 export { importFromFlyingLogic } from './reader';
-export { __ENTITY_TYPE_TO_FL_FOR_TEST } from './typeMaps';
 
-/** Re-export so callers using `EntityType` (e.g. test helpers) can resolve the mapping. */
-export { isEntityType };
+// Session 112 knip pass — `isEntityType` was re-exported here as a
+// convenience for test helpers, but callers import it directly from
+// `@/domain/guards`. Re-export removed to flatten the public surface.
