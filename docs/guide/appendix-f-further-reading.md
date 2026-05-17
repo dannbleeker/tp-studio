@@ -18,10 +18,10 @@ These are the canonical entry points. Read in order of publication, not in order
 - **William H. Dettmer, *The Logical Thinking Process: A Systems Approach to Complex Problem Solving* (2007).** Dettmer's expansion of Goldratt's TPs with more rigor and notation precision. The CLR is covered in clinical detail.
 - **William H. Dettmer, *Goldratt's Theory of Constraints: A Systems Approach to Continuous Improvement* (1997).** The earlier, leaner Dettmer book. Often a better starting point than the 2007 expansion.
 - **H. William Dettmer, *Strategic Navigation: A Systems Approach to Business Strategy* (2003).** Goal Tree and Strategy & Tactics applied to corporate strategy.
+- **William H. Dettmer, *Thinking with Flying Logic* (2011).** A practitioner companion specifically for the Flying Logic software. The closest structural parallel to the present book — same shape (a practitioner-facing companion for a TOC software canvas), different canvas. Worth a read if you also use Flying Logic, or if you want to see how the same method-first / tool-second framing reads from inside the other tool's vocabulary.
 
 ## TOC software lineage
 
-- **Flying Logic documentation.** <https://docs.flyinglogic.com/> The closest thing the TOC-software world has to a canonical user guide. Predates TP Studio by ~15 years; many of TP Studio's design decisions transposed conventions from Flying Logic.
 - **Vector Goldratt site.** <https://www.goldrattresearchlabs.com/> AGI's research arm. Papers, white papers, training material.
 
 ## Practitioner blogs and field literature

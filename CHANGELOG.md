@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 109 — Trademark / attribution review of book + repo
+
+A targeted IP-hygiene pass after a copyright-expert framing of the question "how exposed are we to a trademark or substantial-similarity claim from the Flying Logic ecosystem?" Outcome: low risk overall; two surgical edits + one new NOTICE file close the only items above noise.
+
+**New file: `NOTICE.md`.** Documents that "Flying Logic" is a trademark of its owner, with no affiliation or endorsement between TP Studio and that owner. Distinguishes the three classes of nominative use in this repo (file-format interoperability, comparative product positioning, book-title references for commentary). Linked from README alongside SECURITY.md.
+
+**Book reframing (`docs/guide/00-foreword.md` + `01-the-system-has-a-goal.md`).** The foreword previously framed TP Studio as "the open-source descendant of *Thinking with Flying Logic*." That "descendant" wording implied a derivative relationship that the project doesn't claim and that the original book's author didn't authorize. Reworded to "in that tradition" / "a practitioner companion written specifically for it." Chapter 1's parallel claim ("*Thinking with Flying Logic* assumed Flying Logic; this book assumes TP Studio") generalized to "where comparable practitioner guides have assumed Flying Logic, this book assumes TP Studio." Both edits keep the comparative reference (fair use as commentary) but drop the explicit derivative framing.
+
+**Substantive-similarity audit of all 17 chapters + 6 appendices.** Result: 16 chapters/appendices clean, 4 worth-a-look, 2 reword recommended. Surgical edits landed:
+- **`13-the-clr.md`**: replaced the canonical "tired-grumpy" cause-effect-reversal example (close to Dettmer's pedagogical voice) with a B2B-sales-domain example consistent with the book's running worked example. Reworded the six-category glosses in voice. Added explicit attribution to Dettmer's *Logical Thinking Process* (2007) as the source of the operationalized validator-style framing.
+- **`03-reading-a-diagram.md`**: edge polarity + AND/OR/XOR junctor sections now explicitly credit the practitioner-tool tradition (Flying Logic prominently named) as the source of those visual conventions, rather than vaguely "TOC extended the notation in the 1990s."
+- **`appendix-f-further-reading.md`**: restored Dettmer's *Thinking with Flying Logic* to the bibliography as a structurally parallel companion book. Its earlier omission was conspicuous given the author had read it.
+- **`10-strategy-and-tactics-tree.md`**: rewrote the 5-facet (NA / Strategy / PA / Tactic / SA) table's right-hand column in the book's own voice, breaking any verbatim-table risk against TwFL's facet definitions.
+- **`15-verbalisation-walkthroughs.md`**: extended verbalisation-as-discipline attribution to include Dettmer alongside Goldratt (Dettmer was the more accurate source for the term "verbalisation" as a practice).
+
+**Book PDF rebuilt.** `docs/guide/Thinking-with-TP-Studio.pdf` regenerated from the updated chapters via `pnpm book` so the distributed PDF stays in sync with the markdown source.
+
+**No code changes.** Markdown only; tests unchanged; tsc / biome / build all unaffected.
+
 ## Session 108 — Tier 3 perf pass + edit-heavy trace + percentile reporting
 
 Closes the three-tier perf sweep. **Tier 3 changes**: `descendantIds` got a two-level WeakMap memo (`doc.groups → groupId → Set<string>`); the call site rebuilds were measurable in the trace. `revisionsSlice` replaced `JSON.parse(JSON.stringify(doc))` with a fast shallow-of-`Record` clone (`cloneDoc`) — same immutability guarantee, ~50× faster on a 100-entity doc. `incomingEdges` / `outgoingEdges` / `hasEdge` / `findCycles` / `removeEntityFromEdges` migrated from raw `Object.values(doc.edges)` to the Session 105 `edgesArray(doc)` helper.

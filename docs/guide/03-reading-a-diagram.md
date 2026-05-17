@@ -39,7 +39,7 @@ The verbaliser uses this field to choose between "because" / "therefore" wording
 
 ## Edge polarity
 
-TOC extended the notation in the 1990s to support **polarity** — does this cause *increase* or *decrease* the effect? Three values, plus a default:
+Classical Goldratt CRT notation was binary: an arrow either exists or it doesn't. Practitioner tools, Flying Logic most prominently, extended the notation through the 1990s and 2000s to support **polarity** — does this cause *increase* or *decrease* the effect? TP Studio adopts that extended notation for compatibility with the practitioner tradition. Three values, plus a default:
 
 | Polarity | Visual | Meaning |
 | --- | --- | --- |
@@ -53,9 +53,7 @@ Polarity matters mostly in FRTs and S&T trees, where the question "will this inj
 
 ## AND / OR / XOR junctors
 
-A causal arrow on its own claims *sufficiency*: the cause produces the effect. But many real causal patterns aren't single-arrow — they involve *combinations*.
-
-TP Studio renders three kinds of combinatorial junctor, all sharing the same visual machinery (a small circle just below the target node) with different labels and colors:
+A causal arrow on its own claims *sufficiency*: the cause produces the effect. But many real causal patterns aren't single-arrow — they involve *combinations*. Goldratt's original CRT included AND-grouping; the explicit OR and XOR junctors come from the same practitioner-tool tradition that introduced polarity (above), where they were given visual conventions Flying Logic popularized. TP Studio adopts those conventions:
 
 | Junctor | Visual | Logical meaning |
 | --- | --- | --- |

@@ -12,7 +12,7 @@ Between those two sit the practitioners. They have read Goldratt. They have skim
 
 That third corner is what this book is for.
 
-The tool tradition is what makes the third corner viable. Drawing a CRT by hand teaches you a lot, but it doesn't scale past the first few revisions. Drawing one in PowerPoint is a special kind of hell. The TOC software lineage — Flying Logic and its forebears — gave practitioners the canvas. *Thinking with Flying Logic* showed practitioners how to use it. TP Studio is the open-source descendant of that idea, free and local-first; this book is the open-source descendant of that book.
+The tool tradition is what makes the third corner viable. Drawing a CRT by hand teaches you a lot, but it doesn't scale past the first few revisions. Drawing one in PowerPoint is a special kind of hell. The TOC software ecosystem developed over the last two decades has given practitioners a canvas; a body of practitioner-facing writing has shown how to use it. TP Studio is an open-source, local-first canvas in that tradition; this book is a practitioner companion written specifically for it.
 
 You will get the most out of this book if you read it with TP Studio open in another window and a real problem on your desk. The exercises do not work in the abstract. Pick a domain you understand — a system that frustrates you at work, a recurring failure mode in a project you are running, a strategic question you cannot get straight in your head — and build the diagrams alongside the chapters. By the end you will have constructed at least one Current Reality Tree and at least one Evaporating Cloud for that problem; if you have done the exercises honestly, you will know something about the problem that you did not know when you started.
 

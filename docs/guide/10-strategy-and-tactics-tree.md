@@ -8,15 +8,15 @@
 
 The Goal Tree is *what success looks like*. The S&T tree is *what each person does on Monday morning when we deploy the strategy across 30 teams*.
 
-S&T came late to the TOC tradition (Goldratt formalized it in the 2000s) and is the most operationally specific of the thinking processes. Each node carries its own self-contained micro-argument:
+S&T came late to the TOC tradition (Goldratt formalized it in the 2000s) and is the most operationally specific of the thinking processes. Each node carries its own self-contained micro-argument across five facets. The facet names below are Goldratt's; the one-line characterizations are how this book reads them in practice:
 
-| Facet | What it answers |
+| Facet | A reading |
 | --- | --- |
-| **Necessary Assumption** (NA) | Why this strategy is needed *right now* (the trigger from above). |
-| **Strategy** | The high-level *what* — outcome-shaped. |
-| **Parallel Assumption** (PA) | Why *this particular* strategy is the right one (vs. alternatives). |
-| **Tactic** | The concrete actions implementing the strategy. |
-| **Sufficiency Assumption** (SA) | Why the tactic is sufficient to fulfill the strategy. |
+| **Necessary Assumption** (NA) | The world-state above us has changed enough that *not* acting at this layer has become unacceptable. Captures the trigger handed down from the parent node. |
+| **Strategy** | A statement of the result we are committing to deliver at this layer — what good looks like, not how we get there. Phrased as an outcome, not an action. |
+| **Parallel Assumption** (PA) | Of the strategies that *could* respond to NA, why this one. Captures the comparative choice — the alternatives we considered and what made this one the right pick. |
+| **Tactic** | The concrete things people will do. Verbs, not aspirations. Granular enough that you can tell whether they happened. |
+| **Sufficiency Assumption** (SA) | If we complete the tactic, the strategy is fulfilled. Captures the bet that Tactic → Strategy is a real causal chain, not a hopeful one. |
 
 A complete S&T tree at organizational scale might be 40-100 nodes, decomposed across 4-6 levels. Few teams ever build one. The skill matters mostly when you're either *running* a TOC-style deployment or *evaluating one someone else built*.
 

@@ -4,14 +4,14 @@
 
 ## The six categories
 
-Goldratt named six, organized in increasing depth of structural concern:
+Goldratt named six. The operationalization into validator-style rules that practitioner tools surface — what TP Studio does — owes a debt to William Dettmer's *The Logical Thinking Process* (2007), which formalized the categories for everyday use. Listed here in order of where they typically bite first as you draft a diagram:
 
-1. **Clarity.** "I don't understand what you mean." The entity title is empty / ambiguous; the verb is missing; the noun-phrase is generic.
-2. **Entity existence.** "Does that thing actually exist?" The cause you're claiming is real and observable, not hypothetical.
-3. **Cause-effect existence.** "Does that causal relationship actually hold?" The arrow is plausible — not "the moon causes Mondays."
-4. **Cause sufficiency.** "Is that cause enough on its own?" Or do you need an AND-group? This is where missing co-causes get caught.
-5. **Additional cause.** "Is there another cause for that same effect?" Multiple sufficient causes — the OR junctor case.
-6. **Cause-effect reversal.** "Are you sure the arrow doesn't run the other direction?" The classic trap: "tired because I'm grumpy" vs. "grumpy because I'm tired."
+1. **Clarity.** The reader can't tell what you mean. An empty title, a verb-less noun phrase, an abstraction so generic it could be glued to any tree.
+2. **Entity existence.** You're asserting a state of the world. Is that state actually observable? "Engineering velocity is dropping" lives or dies on whether you can show it.
+3. **Cause-effect existence.** The two entities exist; you've drawn an arrow between them; does the arrow correspond to anything in reality? "Engineering velocity dropped because Mercury went retrograde" fails here, however clean the diagram looks.
+4. **Cause sufficiency.** This cause alone — without anything else lined up alongside it — produces this effect? Or does the effect require a co-cause that you haven't drawn? The category where AND-groups get born.
+5. **Additional cause.** Is there a *different* cause that would also produce this effect? Two roads to the same destination — modelled with OR-junctors, often missed by single-path thinking.
+6. **Cause-effect reversal.** Run the same arrow the other way around; does it still make sense? If the answer is "actually, maybe even more sense," you've inverted the causal direction. The classic trap inside a B2B sales org: "deals are slow because morale is low" — until someone points out the direction is "morale is low because deals are slow."
 
 TP Studio's validator system implements rules in each of these tiers. The `Warnings` list in the Inspector surfaces them per-entity / per-edge. The `Start CLR walkthrough` palette command iterates them one at a time.
 
