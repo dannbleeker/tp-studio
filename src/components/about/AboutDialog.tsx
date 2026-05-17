@@ -168,7 +168,7 @@ export function AboutDialog() {
             href={NOTICES_PATH}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-indigo-600 hover:underline dark:text-indigo-400"
+            className="text-indigo-700 underline dark:text-indigo-300"
           >
             third-party notices
           </a>{' '}
