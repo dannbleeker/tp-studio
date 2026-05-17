@@ -1,4 +1,4 @@
-# Authoring notes — *Thinking with TP Studio*
+# Authoring notes — *Causal Thinking with TP Studio*
 
 How the book stays in sync with the application as TP Studio evolves. Aimed at whoever (Claude, a contributor, future-Dann) sits down to update a chapter after a UI change.
 
@@ -87,8 +87,8 @@ The whole loop is one workflow click + one PR review for most UI changes.
 ## Building the PDF
 
 A single-file PDF of the entire book is committed at
-`docs/guide/Thinking-with-TP-Studio.pdf` for readers who want one
-artifact rather than 24 Markdown files.
+`docs/guide/Causal-Thinking-with-TP-Studio.pdf` for readers who want
+one artifact rather than 24 Markdown files.
 
 To regenerate after a manuscript edit (or after a screenshot
 refresh):
@@ -119,8 +119,8 @@ Requirements: `marked` + `@playwright/test` (both pinned as devDeps).
 The Chromium binary must be installed locally — `pnpm exec
 playwright install chromium` does this once.
 
-Output: `docs/guide/Thinking-with-TP-Studio.pdf`. Typically ~1 MB
-with the 13 chapter screenshots embedded.
+Output: `docs/guide/Causal-Thinking-with-TP-Studio.pdf`. Typically
+~1 MB with the 13 chapter screenshots embedded.
 
 Commit the PDF after regenerating. Stakeholders link to the file
 directly via GitHub Pages or download from the repo.

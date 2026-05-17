@@ -3,8 +3,10 @@ import { dirname, join } from 'node:path';
 import { test } from '@playwright/test';
 
 /**
- * Session 103 — Screenshots for the *Thinking with TP Studio*
- * book (`docs/guide/`).
+ * Session 103 — Screenshots for the *Causal Thinking with TP Studio*
+ * book (`docs/guide/`). Originally titled *Thinking with TP Studio*;
+ * retitled Session 110 to break the surface-level title pattern with
+ * the third-party book *Thinking with Flying Logic*.
  *
  * This spec is companion to `visual-canvas.spec.ts` and
  * `visual-dialogs.spec.ts` but its purpose is different:

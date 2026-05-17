@@ -1,4 +1,4 @@
-# Thinking with TP Studio
+# Causal Thinking with TP Studio
 ### A practitioner's guide to the Theory of Constraints, illustrated with TP Studio
 
 This is the book-length companion to TP Studio. Where the [USER_GUIDE](../../USER_GUIDE.md) teaches *the tool*, this guide teaches *the method* and uses TP Studio as the working canvas throughout.

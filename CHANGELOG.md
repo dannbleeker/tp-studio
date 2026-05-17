@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 110 — Book retitle: *Thinking with TP Studio* → *Causal Thinking with TP Studio*
+
+Coda to Session 109's IP-hygiene pass. Session 109 closed the book's substantive overlap surface with William Dettmer's *Thinking with Flying Logic* (foreword reframing, chapter content edits, attribution corrections, appendix bibliography restoration, new `NOTICE.md` at repo root). The title remained as the strongest direct echo of TwFL — same exact `Thinking with [tool]` structural slot. Legal risk from the title alone was low (book titles aren't copyrightable; the "Thinking with X" pattern is a recognized title trope), but editorially the title was self-imposed framing that didn't serve the book's actual content.
+
+**Retitled to *Causal Thinking with TP Studio*.** The new title:
+
+- Breaks the exact `Thinking with [tool]` pattern match with TwFL (different first word).
+- Names what the book actually teaches — causal reasoning over a graph — rather than leaving "thinking" generic.
+- Stays the same length and meter (5 syllables → 6) so the cover layout barely changes.
+- Lands in the broader "Causal X" academic-and-engineering lineage (Pearl's *Causality*, Pearl & Mackenzie's *Book of Why*) rather than the TwFL lineage.
+
+**Files touched:**
+- `scripts/build-book-pdf.mjs` — comment, `OUT_PATH` constant, console.log, HTML `<title>`, cover-page `<h1>` all updated. Output filename `Thinking-with-TP-Studio.pdf` → `Causal-Thinking-with-TP-Studio.pdf`.
+- `docs/guide/README.md` — book TOC header.
+- `docs/guide/AUTHORING.md` — header + two PDF-filename references in the build instructions.
+- `e2e/guide-screenshots.spec.ts` — module-header comment notes the original title + retitle session for posterity.
+- `README.md` — book reference in the Status section.
+- `NEXT_STEPS.md` — Session 103 + 104 preambles updated to carry the new title + retitle history note.
+- Old `docs/guide/Thinking-with-TP-Studio.pdf` deleted; new `docs/guide/Causal-Thinking-with-TP-Studio.pdf` built via `pnpm book`.
+
+**Not touched** (audit trail / append-only):
+- Historical CHANGELOG entries from Sessions 103, 104, 109 keep the original title — they describe what was true at that time. Future readers can follow the retitle through this Session 110 entry.
+- No code changes. Markdown + one script + one e2e comment + the PDF binary.
+
+**End state:** tsc / biome / build / tests all unaffected. The Session 109 IP-hygiene work is now complete: book reframing + attribution corrections + NOTICE + retitle. Combined, the book's IP exposure surface is at "honest comparative speech in a niche field," which is the lowest practical risk profile available for a derivative-tradition practitioner book.
+
 ## Session 109 — Trademark / attribution review of book + repo
 
 A targeted IP-hygiene pass after a copyright-expert framing of the question "how exposed are we to a trademark or substantial-similarity claim from the Flying Logic ecosystem?" Outcome: low risk overall; two surgical edits + one new NOTICE file close the only items above noise.

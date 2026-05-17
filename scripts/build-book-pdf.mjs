@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Session 104 — Build a single PDF of the *Thinking with TP Studio* book.
+ * Session 104 — Build a single PDF of the *Causal Thinking with TP Studio* book.
  *
  *   Input:   docs/guide/*.md  (manuscript)
  *            docs/guide/screenshots/*.png  (book screenshots)
  *
- *   Output:  docs/guide/Thinking-with-TP-Studio.pdf
+ *   Output:  docs/guide/Causal-Thinking-with-TP-Studio.pdf
  *
  * Pipeline:
  *   1. Read the chapter files in canonical order.
@@ -41,7 +41,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(HERE, '..');
 const GUIDE_DIR = join(PROJECT_ROOT, 'docs', 'guide');
 const SCREENSHOTS_DIR = join(GUIDE_DIR, 'screenshots');
-const OUT_PATH = join(GUIDE_DIR, 'Thinking-with-TP-Studio.pdf');
+const OUT_PATH = join(GUIDE_DIR, 'Causal-Thinking-with-TP-Studio.pdf');
 
 /**
  * Canonical chapter order. Mirrors `docs/guide/README.md`. Hand-listed
@@ -135,7 +135,7 @@ function coverHtml(now) {
 <section class="cover">
   <div class="cover-inner">
     <div class="cover-eyebrow">Practitioner's guide</div>
-    <h1 class="cover-title">Thinking with<br/>TP Studio</h1>
+    <h1 class="cover-title">Causal Thinking<br/>with TP Studio</h1>
     <div class="cover-subtitle">A practitioner's guide to the Theory of Constraints, illustrated end-to-end with TP Studio.</div>
     <div class="cover-meta">
       <div>Generated ${now.toISOString().split('T')[0]}</div>
@@ -442,7 +442,7 @@ a {
 `;
 
 async function main() {
-  console.log(`📖 Building Thinking-with-TP-Studio.pdf …`);
+  console.log(`📖 Building Causal-Thinking-with-TP-Studio.pdf …`);
 
   const chapters = await readChapterMetadata();
   console.log(`  ${chapters.length} chapters discovered`);
@@ -462,7 +462,7 @@ async function main() {
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Thinking with TP Studio</title>
+<title>Causal Thinking with TP Studio</title>
 <style>${STYLESHEET}</style>
 </head>
 <body>
