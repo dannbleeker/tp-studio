@@ -182,7 +182,7 @@ New items surfaced by recent work:
 Speculative / profile-gated (don't pick up unless evidence demands):
 
 - **Tier-3 #16 — Workerize SVG → PDF.** Only matters if real users complain about UI freezes during large-diagram exports. Worker setup + comlink + structured-clone-friendly SVG marshalling. No current signal.
-- **Tier-3 #19 — localStorage quota handling.** Defensive code. Only worth it if anyone hits the quota; current docs are kilobytes, quota is megabytes.
+- ~~**Tier-3 #19 — localStorage quota handling.**~~ ✅ **Done (Session 129).** Storage seam classifies `QuotaExceededError` (+ Firefox's `NS_ERROR_DOM_QUOTA_REACHED`) as a `'quota'` kind. On hit, the store-level listener auto-trims each doc's revision list to half (newest-first), writes the trimmed map back, surfaces an actionable toast ("trimmed N old revisions"), and reloads the in-memory panel. Re-entrancy-guarded so the trimmed write can't recurse.
 - **Tier-3 #20 — IndexedDB migration.** Same gating as #19; #19 is the precursor (detect quota problems first; migrate only if they're real).
 
 ## ~~Comprehensive security review~~ ✅ Done (Session 98)

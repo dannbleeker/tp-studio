@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 129 — localStorage quota handling (#19)
+
+Backlog item #19 from the post-Session-122 list. The storage seam already caught `QuotaExceededError` and surfaced a generic toast; the gap was actionable mitigation. This session adds error classification + auto-trim-and-retry.
+
+**Changes:**
+
+- **`storage.ts` classifies errors.** Listener now receives a `StorageError` tagged `{ kind: 'quota' | 'other'; cause; key; op }`. Detection uses the standard `err.name` check for `QuotaExceededError` + the Firefox-specific `NS_ERROR_DOM_QUOTA_REACHED`. `writeString` and `writeJSON` return `boolean` so callers can probe success directly.
+
+- **`store/index.ts` auto-trims revisions on quota errors.** When the listener receives a `kind: 'quota'` error, it reads the revisions map, halves each per-doc list (keeps the newer half, newest-first), and writes the trimmed map back. Success surfaces a tailored toast ("Browser storage was full — trimmed N old revisions to make room."); the in-memory revisions panel reloads to reflect the trim. A re-entrancy guard prevents the trimmed write from infinitely recursing through the listener.
+
+- **Fallback toast** when trimming doesn't help (no revisions exist, or even the trimmed write fails) is more actionable than before: explicitly tells the user to export to a file or close other tabs.
+
+**Coverage:** 5 new tests in `tests/services/storageQuota.test.ts` pin the classification — `QuotaExceededError` → `'quota'`; `NS_ERROR_DOM_QUOTA_REACHED` → `'quota'`; `SecurityError` → `'other'`; happy-path `writeString` returns `true`; `STORAGE_KEYS.revisions` exists (the upper-layer mitigation reads it).
+
+**End state:** 1219 vitest tests passing (was 1214; +5). tsc / biome / build clean. The quota path was profile-gated ("no real-world incidents"); the mitigation is defensive — if a user ever does hit the quota, they now get an automatic recovery instead of a stuck-in-memory state.
+
 ## Session 128 — TT / PRT selection-toolbar verbs
 
 Closes Session 127's flagged follow-up. The selectionVerbs registry now covers the two remaining first-class TOC diagram types — Transition Tree and Prerequisite Tree — with the same per-slot verb shape as CRT / FRT / Goal Tree / EC.

@@ -3,6 +3,11 @@
 // one-file change. Failed writes (most often QuotaExceededError) are caught
 // and reported via the onStorageError listener; tests can swap behaviour via
 // vi.mock if needed.
+//
+// Session 129 — quota handling. Writes that throw a QuotaExceededError now
+// surface via a typed `StorageError` so the upper layer can do something
+// useful (auto-trim old revisions, swap the toast to a "storage full"
+// message, etc.) instead of just printing the raw error string.
 
 import { log } from './logger';
 
@@ -33,13 +38,47 @@ export const STORAGE_KEYS = {
 
 const hasLocalStorage = (): boolean => typeof globalThis.localStorage !== 'undefined';
 
-type ErrorListener = (err: Error) => void;
+/**
+ * Tagged storage error surfaced to listeners. The `kind` discriminator lets
+ * the upper layer choose a tailored response — `'quota'` triggers an
+ * auto-trim-and-retry mitigation, anything else just toasts.
+ *
+ * Detection uses the DOMException `name` field (`'QuotaExceededError'`)
+ * which is the standard contract for localStorage in every browser back
+ * to IE10. Some private-mode browsers throw `SecurityError` instead of
+ * QuotaExceeded — those still classify as `'other'` and surface
+ * generically, which is the right call (we can't trim our way out of
+ * "storage is disabled").
+ */
+export type StorageErrorKind = 'quota' | 'other';
+export type StorageError = {
+  kind: StorageErrorKind;
+  cause: Error;
+  key: string;
+  op: 'read' | 'write' | 'remove';
+};
+
+const classifyError = (err: unknown): StorageErrorKind => {
+  if (err && typeof err === 'object' && 'name' in err) {
+    const name = (err as { name?: unknown }).name;
+    if (name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+      return 'quota';
+    }
+  }
+  return 'other';
+};
+
+type ErrorListener = (err: StorageError) => void;
 let onError: ErrorListener | null = null;
 
 /**
- * Register a listener for storage errors (typically QuotaExceededError).
- * Returns an unsubscribe function. Only one listener is supported at a time —
- * call sites are layered (store boot wires it once), not many-to-many.
+ * Register a listener for storage errors. Returns an unsubscribe function.
+ * Only one listener is supported at a time — call sites are layered (store
+ * boot wires it once), not many-to-many.
+ *
+ * Session 129 — the listener now receives a `StorageError` tagged with
+ * `kind` ('quota' | 'other'). The store-level handler reads that to decide
+ * between auto-trim mitigation (quota) and a passive toast (other).
  */
 export const setStorageErrorListener = (listener: ErrorListener | null): (() => void) => {
   onError = listener;
@@ -48,12 +87,13 @@ export const setStorageErrorListener = (listener: ErrorListener | null): (() => 
   };
 };
 
-const reportError = (err: unknown): void => {
-  const wrapped = err instanceof Error ? err : new Error(String(err));
+const reportError = (err: unknown, key: string, op: 'read' | 'write' | 'remove'): void => {
+  const cause = err instanceof Error ? err : new Error(String(err));
+  const kind = classifyError(err);
   if (onError) {
-    onError(wrapped);
+    onError({ kind, cause, key, op });
   } else {
-    log.warn('[storage] write failed:', wrapped.message);
+    log.warn(`[storage] ${op} failed for ${key} (${kind}):`, cause.message);
   }
 };
 
@@ -62,17 +102,24 @@ export const readString = (key: string): string | null => {
   try {
     return globalThis.localStorage.getItem(key);
   } catch (err) {
-    reportError(err);
+    reportError(err, key, 'read');
     return null;
   }
 };
 
-export const writeString = (key: string, value: string): void => {
-  if (!hasLocalStorage()) return;
+/**
+ * Write a string value. Returns true on success, false on failure (quota
+ * exceeded, disabled, private-mode quirks). Callers that want to retry
+ * after the listener clears space can check the return and try again.
+ */
+export const writeString = (key: string, value: string): boolean => {
+  if (!hasLocalStorage()) return false;
   try {
     globalThis.localStorage.setItem(key, value);
+    return true;
   } catch (err) {
-    reportError(err);
+    reportError(err, key, 'write');
+    return false;
   }
 };
 
@@ -81,7 +128,7 @@ export const removeKey = (key: string): void => {
   try {
     globalThis.localStorage.removeItem(key);
   } catch (err) {
-    reportError(err);
+    reportError(err, key, 'remove');
   }
 };
 
@@ -95,6 +142,6 @@ export const readJSON = <T>(key: string): T | null => {
   }
 };
 
-export const writeJSON = <T>(key: string, value: T): void => {
+/** Same return contract as `writeString`. */
+export const writeJSON = <T>(key: string, value: T): boolean =>
   writeString(key, JSON.stringify(value, null, 2));
-};
