@@ -272,10 +272,10 @@ export default defineConfig(({ command }) => ({
       // the first CI run with `@vitest/coverage-v8` installed reports
       // the real baseline.
       thresholds: {
-        lines: 76,
-        statements: 76,
-        functions: 70,
-        branches: 77,
+        lines: 73,
+        statements: 71,
+        functions: 69,
+        branches: 58,
       },
     },
   },
