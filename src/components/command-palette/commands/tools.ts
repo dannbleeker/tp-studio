@@ -242,6 +242,143 @@ export const toolCommands: Command[] = [
       if (edge) s.updateEdge(edge.id, { kind: 'necessity' });
     },
   }),
+  // Session 128 — Transition Tree slot verbs. Mirror the CRT/FRT
+  // `mark-as-*` pattern for the two TT-specific roles (the Action
+  // step and the desired Outcome at the top of a TT subtree).
+  // Surfaced only on TT diagrams via the selectionVerbs registry.
+  withWriteGuard({
+    id: 'mark-as-action',
+    label: 'Mark entity as Action (TT)',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity first.');
+        return;
+      }
+      const id = sel.ids[0]!;
+      const e = s.doc.entities[id];
+      if (!e) return;
+      if (e.type === 'action') return;
+      s.updateEntity(id, { type: 'action' });
+    },
+  }),
+  withWriteGuard({
+    id: 'mark-as-outcome',
+    label: 'Mark entity as desired Outcome (TT)',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity first.');
+        return;
+      }
+      const id = sel.ids[0]!;
+      const e = s.doc.entities[id];
+      if (!e) return;
+      if (e.type === 'desiredEffect') return;
+      s.updateEntity(id, { type: 'desiredEffect' });
+    },
+  }),
+  // TT step-completion verb. The `complete-step` validator (Session 53)
+  // fires on Actions whose outgoing edge to an Outcome lacks a non-
+  // Action sibling — the canonical TT step is `(precondition, action)
+  // → outcome`. This verb finds the Action's first outgoing edge,
+  // creates a paired `effect` (precondition slot), and wires it into
+  // the same Outcome so the step becomes complete.
+  withWriteGuard({
+    id: 'add-precondition',
+    label: 'Add precondition to Action (TT)',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single Action first.');
+        return;
+      }
+      const actionId = sel.ids[0]!;
+      const action = s.doc.entities[actionId];
+      if (!action || action.type !== 'action') {
+        s.showToast('info', 'Add precondition is for Action entities in a Transition Tree.');
+        return;
+      }
+      // Find the Action's first outgoing edge to identify the Outcome
+      // we need to also feed. If the Action has no outgoing edge yet,
+      // we can't infer the Outcome — surface a hint and bail.
+      const outgoing = Object.values(s.doc.edges).find((e) => e.sourceId === actionId);
+      if (!outgoing) {
+        s.showToast(
+          'info',
+          'Action needs an Outcome edge first — connect this Action to an outcome, then add precondition.'
+        );
+        return;
+      }
+      const outcomeId = outgoing.targetId;
+      const precondition = s.addEntity({ type: 'effect', startEditing: true });
+      s.connect(precondition.id, outcomeId);
+    },
+  }),
+  // Session 128 — Prerequisite Tree slot verbs. The PRT method pairs
+  // each Obstacle with an Intermediate Objective that removes it;
+  // surfacing the type-flippers + a one-shot "Add IO for this
+  // obstacle" matches the working-set vocabulary of a PRT build.
+  withWriteGuard({
+    id: 'mark-as-obstacle',
+    label: 'Mark entity as Obstacle (PRT)',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity first.');
+        return;
+      }
+      const id = sel.ids[0]!;
+      const e = s.doc.entities[id];
+      if (!e) return;
+      if (e.type === 'obstacle') return;
+      s.updateEntity(id, { type: 'obstacle' });
+    },
+  }),
+  withWriteGuard({
+    id: 'mark-as-io',
+    label: 'Mark entity as Intermediate Objective (PRT)',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity first.');
+        return;
+      }
+      const id = sel.ids[0]!;
+      const e = s.doc.entities[id];
+      if (!e) return;
+      if (e.type === 'intermediateObjective') return;
+      s.updateEntity(id, { type: 'intermediateObjective' });
+    },
+  }),
+  // PRT pairing helper. From a selected Obstacle, mint an IO that
+  // overcomes it and connect IO → Obstacle. Matches the canonical PRT
+  // reading "the IO removes this obstacle on the way to the Goal."
+  withWriteGuard({
+    id: 'add-io-for-obstacle',
+    label: 'Add Intermediate Objective for this Obstacle (PRT)',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single Obstacle first.');
+        return;
+      }
+      const obstacleId = sel.ids[0]!;
+      const obstacle = s.doc.entities[obstacleId];
+      if (!obstacle || obstacle.type !== 'obstacle') {
+        s.showToast('info', 'Add IO is for Obstacle entities in a Prerequisite Tree.');
+        return;
+      }
+      const io = s.addEntity({ type: 'intermediateObjective', startEditing: true });
+      s.connect(io.id, obstacleId);
+    },
+  }),
   // Session 97 — cycle an edge through the 4 polarity states
   // (undefined → positive → negative → zero → undefined). One verb
   // instead of a sub-menu; users click repeatedly to land where they

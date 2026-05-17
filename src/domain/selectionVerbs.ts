@@ -279,6 +279,75 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           paletteCommandId: 'add-prerequisite-need',
         });
       }
+      // Session 128 — **Transition Tree slot verbs.** TT entities split
+      // into Action steps and the (effect / desiredEffect) outcome
+      // they produce; surface `Mark as Action` and `Mark as Outcome`
+      // for one-click slot assignment, plus `Add precondition` (the
+      // canonical TT step-completion gesture that pairs an Action
+      // with a non-Action sibling cause).
+      if (diagramType === 'tt' && entity) {
+        if (entity.type !== 'action') {
+          verbs.push({
+            id: 'mark-as-action',
+            label: 'Mark as Action',
+            shortLabel: 'Action',
+            writes: true,
+            paletteCommandId: 'mark-as-action',
+          });
+        }
+        if (entity.type !== 'desiredEffect') {
+          verbs.push({
+            id: 'mark-as-outcome',
+            label: 'Mark as Outcome',
+            shortLabel: 'Outcome',
+            writes: true,
+            paletteCommandId: 'mark-as-outcome',
+          });
+        }
+        if (entity.type === 'action') {
+          verbs.push({
+            id: 'add-precondition',
+            label: 'Add precondition',
+            shortLabel: 'Add precond',
+            writes: true,
+            paletteCommandId: 'add-precondition',
+          });
+        }
+      }
+      // Session 128 — **Prerequisite Tree slot verbs.** PRT pairs each
+      // Obstacle with an Intermediate Objective that removes it.
+      // Surface `Mark as Obstacle` / `Mark as IO` for slot assignment
+      // and `Add IO for this Obstacle` on a selected Obstacle (mints
+      // a paired IO with the canonical IO → Obstacle edge).
+      if (diagramType === 'prt' && entity) {
+        if (entity.type !== 'obstacle') {
+          verbs.push({
+            id: 'mark-as-obstacle',
+            label: 'Mark as Obstacle',
+            shortLabel: 'Obstacle',
+            writes: true,
+            paletteCommandId: 'mark-as-obstacle',
+          });
+        }
+        if (entity.type !== 'intermediateObjective') {
+          verbs.push({
+            id: 'mark-as-io',
+            label: 'Mark as IO',
+            shortLabel: 'IO',
+            writes: true,
+            paletteCommandId: 'mark-as-io',
+          });
+        }
+        if (entity.type === 'obstacle') {
+          verbs.push({
+            id: 'add-io-for-obstacle',
+            label: 'Add IO for this Obstacle',
+            shortLabel: 'Add IO',
+            writes: true,
+            paletteCommandId: 'add-io-for-obstacle',
+          });
+        }
+      }
       verbs.push({
         id: 'confirm-delete-selection',
         label: 'Delete',

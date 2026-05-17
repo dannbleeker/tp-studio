@@ -192,6 +192,83 @@ describe('verbsForBranch', () => {
     expect(ids).not.toContain('mark-as-csf');
   });
 
+  // Session 128 — TT slot verbs.
+  it('TT context surfaces mark-as-action + mark-as-outcome for a plain effect', () => {
+    useDocumentStore.getState().newDocument('tt');
+    const a = seedEntity('A', 'effect');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('mark-as-action');
+    expect(ids).toContain('mark-as-outcome');
+    // No add-precondition until it's an Action.
+    expect(ids).not.toContain('add-precondition');
+  });
+
+  it('TT context surfaces add-precondition on an Action', () => {
+    useDocumentStore.getState().newDocument('tt');
+    const a = seedEntity('A', 'action');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('add-precondition');
+    // Action drops mark-as-action (already an action) but keeps mark-as-outcome.
+    expect(ids).not.toContain('mark-as-action');
+    expect(ids).toContain('mark-as-outcome');
+  });
+
+  it('TT context drops mark-as-outcome when entity is already a desiredEffect', () => {
+    useDocumentStore.getState().newDocument('tt');
+    const a = seedEntity('A', 'desiredEffect');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).not.toContain('mark-as-outcome');
+    expect(ids).toContain('mark-as-action');
+  });
+
+  // Session 128 — PRT slot verbs.
+  it('PRT context surfaces mark-as-obstacle + mark-as-io for a plain effect', () => {
+    useDocumentStore.getState().newDocument('prt');
+    const a = seedEntity('A', 'effect');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('mark-as-obstacle');
+    expect(ids).toContain('mark-as-io');
+    // No add-io until selection is an obstacle.
+    expect(ids).not.toContain('add-io-for-obstacle');
+  });
+
+  it('PRT context surfaces add-io-for-obstacle on an Obstacle', () => {
+    useDocumentStore.getState().newDocument('prt');
+    const a = seedEntity('A', 'obstacle');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('add-io-for-obstacle');
+    // Obstacle drops mark-as-obstacle (already one) but keeps mark-as-io.
+    expect(ids).not.toContain('mark-as-obstacle');
+    expect(ids).toContain('mark-as-io');
+  });
+
+  it('PRT context drops mark-as-io when entity is already an IO', () => {
+    useDocumentStore.getState().newDocument('prt');
+    const a = seedEntity('A', 'intermediateObjective');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).not.toContain('mark-as-io');
+    expect(ids).toContain('mark-as-obstacle');
+  });
+
+  it('TT/PRT verbs do not leak into other diagram types', () => {
+    // Default seed is CRT. None of the TT or PRT verbs should appear.
+    const a = seedEntity('A', 'effect');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).not.toContain('mark-as-action');
+    expect(ids).not.toContain('mark-as-outcome');
+    expect(ids).not.toContain('add-precondition');
+    expect(ids).not.toContain('mark-as-obstacle');
+    expect(ids).not.toContain('mark-as-io');
+    expect(ids).not.toContain('add-io-for-obstacle');
+  });
+
   it('single-edge branch now surfaces add-assumption-to-edge', () => {
     const { edge } = seedConnectedPair();
     const state = useDocumentStore.getState();

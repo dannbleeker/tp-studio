@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 128 — TT / PRT selection-toolbar verbs
+
+Closes Session 127's flagged follow-up. The selectionVerbs registry now covers the two remaining first-class TOC diagram types — Transition Tree and Prerequisite Tree — with the same per-slot verb shape as CRT / FRT / Goal Tree / EC.
+
+**Transition Tree (`tt`):**
+
+- `Mark as Action` — flip a non-Action entity to `action` (the TT step type).
+- `Mark as Outcome` — flip a non-`desiredEffect` entity to `desiredEffect` (the apex of a TT subtree).
+- `Add precondition` — only on a selected Action. Finds the Action's outgoing edge → Outcome, mints a new `effect` as a sibling cause, wires the new effect into the same Outcome. Matches the canonical TT step `(precondition, action) → outcome` that the `complete-step` validator (Session 53) checks for.
+
+**Prerequisite Tree (`prt`):**
+
+- `Mark as Obstacle` — flip a non-Obstacle entity to `obstacle`.
+- `Mark as IO` — flip a non-Intermediate-Objective entity to `intermediateObjective`.
+- `Add IO for this Obstacle` — only on a selected Obstacle. Mints a paired `intermediateObjective` and wires `IO → Obstacle`, matching the canonical PRT reading "the IO removes this obstacle on the way to the Goal."
+
+Each verb has a matching palette command in `commands/tools.ts` so palette + toolbar share a single behavior path.
+
+**Coverage:** 7 new tests in `selectionVerbs.test.ts` pin the surfacing rules — plain-effect positives, type-already-set negatives, action/obstacle gating for the workflow verbs, and a cross-diagram-type negative ("CRT doesn't surface TT/PRT verbs").
+
+**End state:** 1214 tests passing (was 1207; +7). tsc / biome / build clean. Toolbar width budget holds — TT / PRT verbs are mutually exclusive with CRT / Goal Tree / EC verbs, so any given selection still shows 4–5 chips.
+
 ## Session 128 — Tailwind v4 codemod renames
 
 Session 126's documented cosmetic gap: v4 renamed several utility names without changing their CSS values, so our existing `shadow-sm` / `rounded` / `ring` (no-suffix) references resolved one step up the v4 scale. The official `@tailwindcss/upgrade` codemod was blocked by the environment's `pnpm dlx` policy. This commit applies the same renames via a targeted script.
