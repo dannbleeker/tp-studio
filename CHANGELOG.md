@@ -2,6 +2,23 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 121 — Maintainability backlog: SettingsDialog tab split (#5)
+
+First of the three open maintainability items (Tier-2 #5 — `SettingsDialog` per-tab extraction). Backlog had it as judgment-call ("the parent is already <600 LOC and the tabs are coupled to shared form state"); did it anyway since the new structure makes each tab editable in isolation and decouples their Zustand subscriptions.
+
+**The split.** `src/components/settings/SettingsDialog.tsx` went from **540 LOC → 89 LOC**, becoming a thin orchestrator (modal shell + tab bar + active-tab switch). Four new files under `src/components/settings/tabs/`:
+
+- `AppearanceTab.tsx` (140 LOC) — Theme swatch grid + Edge palette radio
+- `BehaviorTab.tsx` (100 LOC) — Animation speed + Browse Lock + creation-wizard toggles + SelectionToolbar
+- `DisplayTab.tsx` (120 LOC) — Six canvas-overlay toggles + Causality reading + Default direction radios
+- `LayoutTab.tsx` (135 LOC) — Direction + Compactness slider + Bias + Reset (auto-layout diagrams only)
+
+Each tab owns its own `useShallow` subscription scoped to just its state — editing one tab's prefs doesn't re-render the other three. Tab-specific data constants (`THEME_OPTIONS`, `SPEED_OPTIONS`, `DIRECTION_OPTIONS`, etc.) and the compactness slider math (`sliderToCompactness` / `compactnessToSlider`) moved into their respective tab files.
+
+**Test surface unchanged.** All 15 `SettingsDialog.test.tsx` tests pass without modification — the tests interact with the dialog as a single unit and select tabs via the visible tab-bar buttons, which still work identically.
+
+**End state:** 1200 tests passing, tsc clean, biome clean, build clean (index chunk 86.94 KB gz — within the 92 KB ceiling). Two of the three open maintainability items remain (#13 mutation-testing dial-in, #28 hands-on keyboard pass).
+
 ## Session 120 — React 19 polish (DocumentMeta + B5/B6 audits)
 
 Three small follow-ups to Session 118's React 19 upgrade, planned out post-Session-119 as "items B" (worth-evaluating-but-probably-skip). One shipped, two audited and skipped with data.
