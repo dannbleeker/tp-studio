@@ -121,6 +121,18 @@ export const exportECWorkshopSheet = async (doc: TPDocument): Promise<boolean> =
   if (doc.diagramType !== 'ec') return false;
   const slots = slotEntities(doc);
 
+  // Session 129 (#16) — yield once so the caller's "Exporting…" UI
+  // state can paint before the main-thread body runs. See pdfExport.ts
+  // for the rationale on why this approach beats true workerization
+  // (svg2pdf needs DOM APIs that aren't available in Web Workers).
+  await new Promise<void>((resolve) => {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => resolve());
+    } else {
+      setTimeout(resolve, 0);
+    }
+  });
+
   // Lazy-load jspdf — keeps the eager path tiny (jspdf is ~115 KB gz).
   // Session 94 (Top-30 #4) — routed through `loadJsPdf` so the
   // dynamic-import sits in one shared module.

@@ -65,6 +65,24 @@ export interface PdfExportOptions {
 const isSvgRoot = (el: Element | null): el is SVGSVGElement =>
   el !== null && el.tagName.toLowerCase() === 'svg';
 
+/**
+ * Yield to the browser's paint cycle so any pending React renders (e.g.,
+ * the caller's "busy" state flip) can flush before this function takes
+ * over the main thread. `requestAnimationFrame` is the right tool — it
+ * resolves after the next paint, which is exactly when we want the
+ * "Saving…" button label to be on screen.
+ */
+const yieldToPaint = (): Promise<void> =>
+  new Promise((resolve) => {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => resolve());
+    } else {
+      // jsdom + Node test environments don't have rAF; fall through to
+      // setTimeout(0) so unit tests don't hang.
+      setTimeout(resolve, 0);
+    }
+  });
+
 // Page geometry — millimetres, jspdf's default unit.
 const PAGE_DIMENSIONS_MM: Record<PdfPageSize, { width: number; height: number }> = {
   a4: { width: 210, height: 297 },
@@ -336,6 +354,20 @@ export const exportToVectorPdf = async (
   nodes: Node[],
   options: PdfExportOptions = {}
 ): Promise<boolean> => {
+  // Session 129 (#16) — yield once so React can paint the caller's
+  // "Saving…" busy state before the synchronous body of the export
+  // consumes the main thread. The caller (PrintPreviewDialog) flips
+  // `pdfBusy` then awaits this function; without a yield, the button
+  // never repaints before the SVG capture + svg2pdf walk run.
+  //
+  // True workerization (the original FL-#16 framing) is blocked by
+  // svg2pdf.js's 12+ DOM accesses (document.querySelector + computed
+  // styles + DOMParser internals). Moving the whole pipeline to a
+  // Web Worker would need a jsdom shim there, which trades main-
+  // thread freeze for a much heavier dev surface. Yielding before
+  // the work + the "Saving…" button label gives users the same
+  // user-visible signal without the worker-shim complexity.
+  await yieldToPaint();
   const renderable = await captureCanvasSvg(nodes);
   if (!renderable) return false;
   const dims = readSvgDimensions(renderable);

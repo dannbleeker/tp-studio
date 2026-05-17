@@ -181,7 +181,7 @@ New items surfaced by recent work:
 
 Speculative / profile-gated (don't pick up unless evidence demands):
 
-- **Tier-3 #16 — Workerize SVG → PDF.** Only matters if real users complain about UI freezes during large-diagram exports. Worker setup + comlink + structured-clone-friendly SVG marshalling. No current signal.
+- ~~**Tier-3 #16 — Workerize SVG → PDF.**~~ ✅ **Closed with assessment (Session 129).** Audit: `svg2pdf.js` has 12+ `document.*` references; true workerization requires a `jsdom`-in-worker shim, which trades main-thread freeze for multi-day dev surface fragile to svg2pdf upstream changes. Honest mitigation shipped: `exportToVectorPdf` + `exportECWorkshopSheet` `await requestAnimationFrame` before the body so the caller's `pdfBusy` UI state can paint to "Saving…" before the heavy work runs. User-visible signal of acknowledgement without the worker complexity. Re-open if an SVG-to-PDF library appears that doesn't need DOM.
 - ~~**Tier-3 #19 — localStorage quota handling.**~~ ✅ **Done (Session 129).** Storage seam classifies `QuotaExceededError` (+ Firefox's `NS_ERROR_DOM_QUOTA_REACHED`) as a `'quota'` kind. On hit, the store-level listener auto-trims each doc's revision list to half (newest-first), writes the trimmed map back, surfaces an actionable toast ("trimmed N old revisions"), and reloads the in-memory panel. Re-entrancy-guarded so the trimmed write can't recurse.
 - **Tier-3 #20 — IndexedDB migration.** Same gating as #19; #19 is the precursor (detect quota problems first; migrate only if they're real).
 

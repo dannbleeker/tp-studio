@@ -2,6 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 129 — PDF export yield-to-paint (#16)
+
+Backlog item #16 ("workerize SVG → PDF") was framed as moving the export to a Web Worker. Audit: **`svg2pdf.js` has 12+ `document.*` references** (it walks the SVG via DOM APIs to extract geometry / computed styles for the PDF text layout). Web Workers don't have `document`; moving the pipeline to a worker would require a `jsdom`-in-worker shim, which trades main-thread freeze for a much heavier dev surface (multi-day build, fragile vs. svg2pdf upstream changes).
+
+Honest path shipped instead: **yield to paint** before the export's main-thread body runs.
+
+**What changed:** `exportToVectorPdf` and `exportECWorkshopSheet` both `await requestAnimationFrame(...)` once at the top. The caller (`PrintPreviewDialog`) already flips a `pdfBusy` state that swaps the button label to "Saving…"; without a yield, the label never paints because the main thread is consumed by `captureCanvasSvg` + `svg2pdf` immediately on the next line. With the yield, the user sees the busy state flash through *before* the heavy work runs — the click feels acknowledged rather than dropping into a freeze.
+
+Header comments on both call sites document why true workerization is blocked and what the yield-to-paint mitigation buys us.
+
+**End state:** 1223 tests passing (unchanged). tsc / biome / build clean. The "workerize" backlog item is closed with the honest assessment recorded; if a future SVG-to-PDF library appears that doesn't need DOM, the item can be re-opened. The mitigation is small, real, and doesn't paper over the framing — explicit comments tell the next reader exactly why we didn't take the worker path.
+
 ## Session 129 — FL-LA4 reuse-contract regression pin
 
 Backlog item FL-LA4 ("incremental relayout via per-component memoization") shipped in Session 83 as an LRU cache in `src/domain/layout.ts` (line 242). NEXT_STEPS had it as parked; this session pins the cache-reuse contract with a regression test layer and updates the backlog status.
