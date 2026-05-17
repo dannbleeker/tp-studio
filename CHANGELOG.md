@@ -2,6 +2,16 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 122 — TypeScript 5.9 → 6.0 upgrade
+
+Upgrade C from the dependency-audit survey. One deprecation needed addressing:
+
+**`baseUrl` removed from `tsconfig.json`.** TS 6 emits `TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0`. Our use was a vestigial pre-TS-5.0 pattern — paired with `paths: { "@/*": ["src/*"] }`. Since TS 5.0, `paths` resolves relative to `tsconfig.json` itself; the `baseUrl` line was redundant. Fix: drop `baseUrl`, update path to `"@/*": ["./src/*"]` (explicit-relative form). No code change anywhere — every `@/foo` import resolves the same way.
+
+**Zero new errors elsewhere.** The Session 117 `exactOptionalPropertyTypes` work + Sessions 112-115 cleanup left the codebase aligned with TS 6's strictness profile. `tsc --noEmit` is clean.
+
+**End state:** 1200 vitest tests still passing, tsc clean (TS 6.0.3), biome clean, build clean (index chunk 86.92 KB gz — steady).
+
 ## Session 122 — Biome 1.9 → 2.4 upgrade
 
 Upgrade D from the Session 122 dependency-audit survey. Biome 2.4.15 lands cleanly via the official migrator (`biome migrate --write` adjusted `biome.json`: `organizeImports` config moved into `assist.actions.source.organizeImports`, `files.ignore` array converted to `files.includes` with negation patterns, schema URL bumped to 2.4.15).
