@@ -20,6 +20,7 @@
     "lint": "biome check src tests",
     "format": "biome format --write src tests",
     "knip": "knip",
+    "visualize": "vite build",
     "check:bundle-size": "node ./scripts/check-bundle-size.mjs",
     "book": "node ./scripts/build-book-pdf.mjs",
     "storybook": "storybook dev -p 6006",
@@ -58,6 +59,7 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@biomejs/biome": "^1.9.4",
     "@playwright/test": "^1.48.0",
     "@storybook/react": "^8.4.7",
@@ -75,6 +77,7 @@
     "lint-staged": "^17.0.4",
     "marked": "^18.0.3",
     "postcss": "^8.5.14",
+    "rollup-plugin-visualizer": "^7.0.1",
     "simple-git-hooks": "^2.13.1",
     "storybook": "^8.4.7",
     "tailwindcss": "^3.4.19",

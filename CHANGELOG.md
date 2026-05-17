@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 114 — Tier 3 maintainability pass (bundle, SW, a11y, audits)
+
+Third and final tier of the 30-item under-the-hood improvement arc. Scoped tight after Dann's input: skip speculative perf (no profile signal), defer React 19 + `exactOptionalPropertyTypes` to dedicated future sessions, absorb manual keyboard pass into the automated a11y spec, push everything else to a documented backlog.
+
+**#17 — Service-worker tightened for the book PDF.** Surprise audit finding: the practitioner-book PDF was never in precache (workbox glob doesn't include `.pdf`), but Session 111 CHANGELOG claimed it worked offline. Reality: it didn't. Added a `runtimeCaching` rule with `CacheFirst` strategy + 30-day expiration so the first AboutDialog → "Read the book" click caches the response; subsequent loads (including offline) serve from the SW. Precache stays at 43 entries / 2 MB; the PDF cache populates on-demand. Session 111 CHANGELOG's claim is now actually true.
+
+**#14 — Index chunk audit via `rollup-plugin-visualizer`.** New devDep + `pnpm visualize` script. `vite build` emits `dist/bundle-stats.html` (gitignored, ad-hoc). Audit findings: the eager index chunk (~118 KB gz on-disk) is dominated by **DOMPurify (~18 KB gz)** and the **micromark parser stack** (`compile.js` + `syntax.js` + `html-flow.js` ~25 KB gz combined), both loaded eagerly because `MarkdownPreview` is rendered inside the Inspector by default. Lazy-loading `MarkdownPreview` would shave ~30 KB gz off the eager critical path but adds a Suspense flash on first markdown render — UX trade-off, deferred to backlog as profile-gated future work. Everything else in the chunk is our own component code and required core libs. `pnpm visualize` stays around as the durable artifact for future audits.
+
+**#15 — `lucide-react` tree-shake verified clean.** Visualizer showed `icons-B0pSryDd.js` chunk composed of individual icon `.mjs` files (`Icon.mjs`, `rocket.mjs`, `brain.mjs`, …). 36 KB gz total for the icon catalogue — about as tight as named-import tree-shaking gets. No action needed.
+
+**#26 — CI parallel-job tuning evaluated, not worth it.** Profiled Session 113's CI run: lint+types 24s, e2e 103s (29s playwright install dominates), tests+build 111s (82s for `vitest run --coverage` is the real bottleneck). Sharding `vitest` would save ~20-30s for real complexity (multi-job matrix, coverage combine step). Marginal benefit; deferred.
+
+**#27 — `@axe-core/playwright` a11y regression coverage.** New `e2e/a11y.spec.ts` with seven tests across two describe blocks. **Main surfaces** runs `AxeBuilder` against the canvas (3-entity seed), Help dialog, About dialog, and Settings dialog — fails on any critical/serious violation. **Keyboard navigation** verifies Tab cycles through interactive elements without trapping (focus changes ≥40% of the time) and Esc cascades correctly for Help + palette. Three rules deliberately disabled with rationale in the spec header: `color-contrast` (some theme variants fall short by design), `region` (React Flow's canvas isn't a landmark), `aria-allowed-attr` (RF library behavior). The disable list is short on purpose — anything more is deferred a11y debt.
+
+**#28 — Manual keyboard navigation pass.** Absorbed into #27's automated coverage as a smoke check; full hands-on walkthrough by Dann remains worth doing periodically and is captured in the backlog rather than executed this session.
+
+**#25 — React Compiler readiness audit (audit-only).** Code inspection of the 24 files using manual `useMemo` / `useCallback` / `memo()`: codebase is likely Compiler-friendly, no obvious blockers (no render-time mutations, no impure components). The Session 105 custom comparators on `TPNode` / `TPEdge` would survive Compiler adoption — they encode the domain knowledge that `data` is rebuilt by spread on every emission run, which the Compiler's auto-memo (referential equality) would also miss. Audit conclusion + the React 19 upgrade prerequisite both pushed to the backlog as a dedicated future session.
+
+**Backlog updated (`NEXT_STEPS.md`).** New "Maintainability backlog (post-Sessions 112–114)" section captures: React 19 + Compiler enablement (dedicated session), `exactOptionalPropertyTypes` flag flip (272-error grind), lazy `MarkdownPreview` (profile-gated), evaluated-and-deferred file splits (#4/#5), property-based test expansion needing shared `docArb` helper, mutation testing (#13) one-time pass, migration fixture coverage gap (#23 follow-up), hands-on keyboard pass (#28). Speculative / profile-gated items (#16 workerize PDF, #19 localStorage quota, #20 IndexedDB) listed but tagged as "don't pick up unless evidence demands."
+
+**Skipped this session per Dann's call:**
+- **#16 — workerize SVG → PDF**: speculative; no current signal of UI freezes during large-diagram exports.
+- **#19 — localStorage quota handling**: speculative; no real-world quota-overflow incidents.
+- **#20 — IndexedDB migration**: blocked on #19 telling us quota is a real problem.
+
+**End state:** 1189 vitest tests still passing (a11y additions are Playwright e2e, not in the vitest count); tsc clean, biome clean, build clean, bundle budget within ceiling, precache stays at 43 entries / 2 MB (bundle-stats.html explicitly excluded via `globIgnores`).
+
+**The maintainability arc is complete.** Sessions 112 (Tier 1, 8 items) + 113 (Tier 2, 12 items) + 114 (Tier 3, 10 items) addressed 30 items: shipped real work for ~16, evaluated-and-deferred ~14 with documented rationale. The deferred items live in `NEXT_STEPS.md` under the maintainability backlog section so a future session can pick them up with context.
+
 ## Session 113 — Tier 2 maintainability pass (structural + tests + types)
 
 Second of three planned tiers from the 30-item under-the-hood improvement list. 12 items addressed; the practical landings + the items evaluated and re-deferred with rationale are summarized below.

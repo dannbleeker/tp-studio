@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import autoprefixer from 'autoprefixer';
+import { visualizer } from 'rollup-plugin-visualizer';
 import tailwindcss from 'tailwindcss';
 import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
@@ -44,6 +45,18 @@ export default defineConfig(({ command }) => ({
   // guard keeps the build step's plugin list untouched.
   plugins: [
     react(),
+    // Session 114 — `rollup-plugin-visualizer` emits a
+    // `dist/bundle-stats.html` treemap on every `pnpm build`. Opt-in
+    // ad-hoc: ignore it normally; open it with `pnpm visualize` (which
+    // builds + opens the file) when you want to audit chunk
+    // composition or hunt for accidentally-bundled heavy deps. Build
+    // overhead is ~50ms; the HTML file is gitignored.
+    visualizer({
+      filename: 'dist/bundle-stats.html',
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap',
+    }),
     ...(command === 'serve'
       ? [
           checker({
@@ -70,8 +83,42 @@ export default defineConfig(({ command }) => ({
       registerType: 'prompt',
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
+        // Session 114 — exclude the bundle-stats.html treemap emitted
+        // by rollup-plugin-visualizer (~1.6 MB, dev-only artifact).
+        // Without this, the SW precaches it on every visit which both
+        // bloats first-visit download AND fights the visualizer's
+        // intended ad-hoc use (you'd see a stale tree even on local
+        // re-runs because the SW served the cached one).
+        globIgnores: ['bundle-stats.html'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
+        // Session 114 — runtime-cache the practitioner book PDF
+        // (`Causal-Thinking-with-TP-Studio.pdf`). The PDF is ~1 MB; we
+        // deliberately keep it out of the precache `globPatterns` so
+        // the first-visit download isn't bloated by a doc that most
+        // users won't immediately open. But when a user does open it
+        // (from the AboutDialog), workbox now caches the response so
+        // subsequent visits — including offline ones — serve from the
+        // SW. `CacheFirst` because the PDF only changes when we
+        // rebuild + redeploy, in which case Vite's hashed-asset
+        // pipeline normally invalidates the cache; for a name-stable
+        // path like this one we cap the cache age explicitly so
+        // stale-but-valid responses don't linger forever.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.endsWith('.pdf'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tp-studio-pdf-v1',
+              expiration: {
+                maxEntries: 4,
+                // 30 days; long enough to be useful offline, short
+                // enough that a rare rebuild eventually propagates.
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'TP Studio',

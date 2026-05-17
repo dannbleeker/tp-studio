@@ -45,3 +45,9 @@ public/Causal-Thinking-with-TP-Studio.pdf
 public/notices.html
 public/security.html
 public/user-guide.html
+
+# Session 114 — bundle-composition treemap emitted by
+# rollup-plugin-visualizer on every `vite build`. Useful for
+# ad-hoc audits (run `pnpm visualize` then open the file); never
+# committed.
+dist/bundle-stats.html
