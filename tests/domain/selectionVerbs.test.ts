@@ -136,6 +136,62 @@ describe('verbsForBranch', () => {
     expect(ids).toContain('add-nc-child');
   });
 
+  // Session 127 — verb-scope extensions.
+  it('CRT context surfaces spawn-ec on a root cause', () => {
+    const a = seedEntity('A', 'rootCause');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('spawn-ec-from-selection');
+  });
+
+  it('CRT context surfaces spawn-ec on a UDE', () => {
+    const a = seedEntity('A', 'ude');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('spawn-ec-from-selection');
+  });
+
+  it('CRT context omits spawn-ec on a plain effect (not a root cause / UDE)', () => {
+    const a = seedEntity('A', 'effect');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).not.toContain('spawn-ec-from-selection');
+  });
+
+  it('FRT context surfaces start-negative-branch', () => {
+    useDocumentStore.getState().newDocument('frt');
+    const a = seedEntity('A', 'effect');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('start-negative-branch');
+    // FRT shouldn't surface CRT-only verbs.
+    expect(ids).not.toContain('spawn-ec-from-selection');
+  });
+
+  it('Goal Tree context surfaces mark-as-csf on a non-CSF, non-Goal entity', () => {
+    useDocumentStore.getState().newDocument('goalTree');
+    const a = seedEntity('A', 'necessaryCondition');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('mark-as-csf');
+  });
+
+  it('Goal Tree context drops mark-as-csf when entity is already a CSF', () => {
+    useDocumentStore.getState().newDocument('goalTree');
+    const a = seedEntity('A', 'criticalSuccessFactor');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).not.toContain('mark-as-csf');
+  });
+
+  it('Goal Tree context drops mark-as-csf when entity is already a Goal', () => {
+    useDocumentStore.getState().newDocument('goalTree');
+    const a = seedEntity('A', 'goal');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).not.toContain('mark-as-csf');
+  });
+
   it('single-edge branch now surfaces add-assumption-to-edge', () => {
     const { edge } = seedConnectedPair();
     const state = useDocumentStore.getState();

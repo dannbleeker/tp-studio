@@ -158,6 +158,28 @@ export const toolCommands: Command[] = [
       s.showToast('success', `"${e.title || 'Entity'}" promoted to Goal.`);
     },
   }),
+  // Goal Tree — flip a non-CSF entity to a Critical Success Factor.
+  // Session 127: symmetric with `promote-to-goal`. CSFs are the mid-
+  // level "make-or-break" conditions between the top Goal and the
+  // necessaryCondition leaves; surfacing this as a verb lets the
+  // toolbar mirror the Inspector's Type picker.
+  withWriteGuard({
+    id: 'mark-as-csf',
+    label: 'Mark entity as Critical Success Factor',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity first.');
+        return;
+      }
+      const id = sel.ids[0]!;
+      const e = s.doc.entities[id];
+      if (!e) return;
+      if (e.type === 'criticalSuccessFactor') return;
+      s.updateEntity(id, { type: 'criticalSuccessFactor' });
+    },
+  }),
   // Goal Tree — add a necessaryCondition child of the selected
   // entity (typically a CSF or Goal) connected via a necessity
   // edge. Mirrors how the creation wizard fills NCs.

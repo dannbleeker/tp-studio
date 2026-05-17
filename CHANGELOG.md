@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 127 — Selection-toolbar verb extensions
+
+Backlog item #6 — Session 95's deferred verb-scope follow-ups. Three new per-diagram verbs surface on the SelectionToolbar (and inherit the existing ContextMenu rendering via the shared registry):
+
+- **CRT — `Spawn EC from this entity`** (palette command `spawn-ec-from-selection`). Surfaces on single-entity selection in a CRT when the entity is a root cause or a UDE — the two practitioner-meaningful seeds for spinning up an Evaporating Cloud from a CRT finding. Collapses a palette-search step that's high-traffic on a mature CRT.
+
+- **FRT — `Start Negative Branch`** (palette command `start-negative-branch`). Surfaces on any single-entity selection in an FRT. The Negative Branch Reservation workflow is the FRT-specific "what could go wrong with this injection?" walk; previously only reachable via the palette.
+
+- **Goal Tree — `Mark as Critical Success Factor`** (new palette command `mark-as-csf`). Symmetric with the existing `Promote to Goal` verb. CSFs sit between the top Goal and the necessaryCondition leaves; entities created by Quick Capture / drag-create arrive as `effect` and need re-typing to land in the right tier. Surfaces when the selected entity isn't already a CSF or a Goal.
+
+**Coverage:** 7 new tests in `tests/domain/selectionVerbs.test.ts` pin the surfacing rules (root-cause + UDE positive cases, plain-effect negative case for spawn-ec; FRT positive + CRT-only negative for start-negative-branch; non-CSF positive + CSF/Goal negatives for mark-as-csf).
+
+**End state:** 1207 tests passing (was 1200; +7). tsc / biome / knip / build all clean. The toolbar width budget (~5 verbs) holds — the new verbs are conditional on diagram type + entity state, so a typical selection still surfaces 4–5 chips, not 6+.
+
 ## Session 126 — Tailwind 3 → 4 migration
 
 Backlog item #5 from the post-Session-122 upgrade survey. Tailwind v4 (Oxide engine, CSS-first config) is a near-rewrite of v3 — the migration touches the build pipeline, the config surface, and the way custom tokens are declared.

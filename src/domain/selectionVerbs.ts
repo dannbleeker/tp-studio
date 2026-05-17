@@ -197,6 +197,36 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
             paletteCommandId: 'mark-as-rootcause',
           });
         }
+        // Session 127 — practitioner workflows on a fleshed-out CRT
+        // converge on two next steps. From a root cause or a UDE,
+        // spawning an Evaporating Cloud lets the practitioner reason
+        // through the conflict driving the root cause; from any FRT
+        // entity, capturing a Negative Branch reservation walks the
+        // "what could go wrong?" scenario. Both are existing palette
+        // commands — surfacing them as toolbar verbs collapses a
+        // palette-search step that's high-traffic for CRT/FRT work.
+        if (
+          diagramType === 'crt' &&
+          entity &&
+          (entity.type === 'rootCause' || entity.type === 'ude')
+        ) {
+          verbs.push({
+            id: 'spawn-ec-from-selection',
+            label: 'Spawn Evaporating Cloud from this entity',
+            shortLabel: 'Spawn EC',
+            writes: true,
+            paletteCommandId: 'spawn-ec-from-selection',
+          });
+        }
+        if (diagramType === 'frt' && entity) {
+          verbs.push({
+            id: 'start-negative-branch',
+            label: 'Start Negative Branch from this entity',
+            shortLabel: 'Neg branch',
+            writes: true,
+            paletteCommandId: 'start-negative-branch',
+          });
+        }
       }
       // **Goal Tree** — "Add NC" creates a necessaryCondition child
       // connected via a necessity edge (the canonical Goal Tree
@@ -217,6 +247,21 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
             shortLabel: 'Promote',
             writes: true,
             paletteCommandId: 'promote-to-goal',
+          });
+        }
+        // Session 127 — symmetric with `promote-to-goal`. CSFs are
+        // the mid-tier "make-or-break" conditions in a Goal Tree; an
+        // entity created via the wizard arrives as `criticalSuccess
+        // Factor` by default but Quick-Capture / drag-create starts
+        // them as `effect`, so the practitioner needs a one-click
+        // re-type to put them in the right tier.
+        if (entity && entity.type !== 'criticalSuccessFactor' && entity.type !== 'goal') {
+          verbs.push({
+            id: 'mark-as-csf',
+            label: 'Mark as Critical Success Factor',
+            shortLabel: 'Mark CSF',
+            writes: true,
+            paletteCommandId: 'mark-as-csf',
           });
         }
       }
