@@ -23,7 +23,7 @@
     "tests/stubs/virtual-pwa-register.ts"
   ],
   "ignoreExportsUsedInFile": true,
-  "ignoreDependencies": ["tailwindcss", "autoprefixer", "postcss"],
+  "ignoreDependencies": ["tailwindcss", "autoprefixer", "postcss", "babel-plugin-react-compiler"],
   "rules": {
     "files": "warn",
     "dependencies": "warn",
