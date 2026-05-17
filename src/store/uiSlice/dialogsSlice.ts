@@ -378,8 +378,13 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
       set({
         confirmDialog: {
           message,
-          confirmLabel: options?.confirmLabel,
-          cancelLabel: options?.cancelLabel,
+          // Conditional spread to avoid passing `confirmLabel:
+          // undefined` / `cancelLabel: undefined` when the options
+          // object omits them — the confirmDialog type's optional
+          // string fields reject explicit undefined under
+          // exactOptionalPropertyTypes.
+          ...(options?.confirmLabel !== undefined ? { confirmLabel: options.confirmLabel } : {}),
+          ...(options?.cancelLabel !== undefined ? { cancelLabel: options.cancelLabel } : {}),
           resolve,
         },
       });

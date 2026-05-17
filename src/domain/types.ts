@@ -62,6 +62,26 @@ export type GroupId = Brand<string, 'GroupId'>;
  *  ARE entities, so they already carry `EntityId`. */
 export type RevisionId = Brand<string, 'RevisionId'>;
 
+/**
+ * Session 117 — `Patch<T>` for store-action patch parameters.
+ *
+ * Under `exactOptionalPropertyTypes: true`, `Partial<{ field?: U }>`
+ * accepts `{}` and `{ field: U }` but rejects `{ field: undefined }`.
+ * Our store actions (`updateEntity`, `updateEdge`, etc.) idiomatically
+ * accept `{ field: undefined }` to mean "clear this field" — so the
+ * canonical Partial<T> shape under exactOptional doesn't match how
+ * callers want to use the actions.
+ *
+ * `Patch<T>` maps every optional field `field?: U` to `field?: U |
+ * undefined`, preserving the "may be omitted" semantics while
+ * explicitly allowing "may be explicitly cleared." Required fields are
+ * preserved as-is (you can't patch them away).
+ *
+ * Use anywhere a store action takes a partial mutation of a domain
+ * type, e.g. `Patch<Omit<Entity, 'id' | 'createdAt'>>`.
+ */
+export type Patch<T> = { [K in keyof T]?: T[K] | undefined };
+
 // =====================================================================
 // SECTION 2 — Entity model: type union, span-of-control, attributes, Entity
 // =====================================================================

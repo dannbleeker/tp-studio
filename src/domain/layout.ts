@@ -40,11 +40,13 @@ export type LayoutOptions = {
   align?: LayoutAlign;
 };
 
-const DEFAULT_OPTIONS: Required<Omit<LayoutOptions, 'align'>> & Pick<LayoutOptions, 'align'> = {
+// `align` deliberately omitted: dagre treats "no align" specially
+// (it's not the same as align=UL/UR/etc.) and exactOptionalPropertyTypes
+// rejects the explicit `align: undefined` we used to write.
+const DEFAULT_OPTIONS: Required<Omit<LayoutOptions, 'align'>> = {
   rankSep: LAYOUT_RANK_SEPARATION,
   nodeSep: LAYOUT_NODE_SEPARATION,
   direction: 'BT',
-  align: undefined,
 };
 
 /**

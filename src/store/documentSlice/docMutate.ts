@@ -1,4 +1,4 @@
-import type { Edge, Entity, TPDocument } from '@/domain/types';
+import type { Edge, Entity, Patch, TPDocument } from '@/domain/types';
 import { persistDebounced } from '@/services/persistDebounced';
 import { pushHistoryEntry } from '../historySlice';
 import type { RootStore } from '../types';
@@ -40,7 +40,10 @@ export const makeApplyDocChange = (get: () => RootStore, set: DocSetState): Appl
       doc: next,
       past: pushHistoryEntry(get().past, {
         doc: prev,
-        coalesceKey: opts.coalesceKey,
+        // Conditional spread to avoid passing `coalesceKey: undefined`
+        // through to a `HistoryEntry` whose `coalesceKey?: string` field
+        // would reject the explicit undefined under exactOptional.
+        ...(opts.coalesceKey !== undefined ? { coalesceKey: opts.coalesceKey } : {}),
         t: Date.now(),
       }),
       future: [],
@@ -69,7 +72,7 @@ export const touch = (doc: TPDocument): TPDocument => ({ ...doc, updatedAt: Date
 export const entityPatch = (
   doc: TPDocument,
   id: string,
-  patch: Partial<Omit<Entity, 'id' | 'createdAt'>>
+  patch: Patch<Omit<Entity, 'id' | 'createdAt'>>
 ): TPDocument => {
   const cur = doc.entities[id];
   if (!cur) return doc;
@@ -100,7 +103,11 @@ export const entityPatch = (
     }
   }
   if (!changed) return doc;
-  const next: Entity = { ...cur, ...patch, id: cur.id, updatedAt: Date.now() };
+  // Patch<T> permits explicit `undefined` for any field (the "clear this
+  // optional field" idiom); `as Entity` re-asserts the merged shape
+  // matches Entity since cur supplies all required fields and patch can
+  // only nullify optional ones.
+  const next = { ...cur, ...patch, id: cur.id, updatedAt: Date.now() } as Entity;
   return touch({ ...doc, entities: { ...doc.entities, [id]: next } });
 };
 
@@ -112,7 +119,7 @@ export const entityPatch = (
 export const edgePatch = (
   doc: TPDocument,
   id: string,
-  patch: Partial<Omit<Edge, 'id'>>
+  patch: Patch<Omit<Edge, 'id'>>
 ): TPDocument => {
   const cur = doc.edges[id];
   if (!cur) return doc;
@@ -127,7 +134,8 @@ export const edgePatch = (
     }
   }
   if (!changed) return doc;
-  const next: Edge = { ...cur, ...patch, id: cur.id };
+  // See entityPatch above for the rationale on the `as Edge` cast.
+  const next = { ...cur, ...patch, id: cur.id } as Edge;
   return touch({ ...doc, edges: { ...doc.edges, [id]: next } });
 };
 

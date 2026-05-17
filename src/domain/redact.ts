@@ -1,4 +1,4 @@
-import type { Entity, Group, TPDocument } from './types';
+import type { Edge, Entity, Group, TPDocument } from './types';
 
 /**
  * Strip user-supplied text from a document so it can be safely shared
@@ -22,22 +22,19 @@ import type { Entity, Group, TPDocument } from './types';
 export const redactDocument = (doc: TPDocument): TPDocument => {
   const entities: Record<string, Entity> = {};
   for (const e of Object.values(doc.entities)) {
-    entities[e.id] = {
-      ...e,
-      title: `#${e.annotationNumber}`,
-      // The `description` field is omitted entirely when redacted (rather
-      // than blanked) so consumers that switch on its presence don't see
-      // a stray empty-string description.
-      description: undefined,
-    };
+    // Session 117 — destructured-rest pattern to actually omit the
+    // description field (rather than set it to undefined, which
+    // exactOptionalPropertyTypes rejects on the optional `Entity.description`).
+    const { description: _drop, ...rest } = e;
+    entities[e.id] = { ...rest, title: `#${e.annotationNumber}` };
   }
 
   const edges = Object.fromEntries(
-    Object.values(doc.edges).map((edge) => [
-      edge.id,
-      // Drop edge labels but keep the structural andGroupId / assumptionIds.
-      { ...edge, label: undefined },
-    ])
+    Object.values(doc.edges).map((edge) => {
+      // Same emit-or-omit pattern for `label`.
+      const { label: _drop, ...rest } = edge;
+      return [edge.id, rest as Edge];
+    })
   );
 
   const groups: Record<string, Group> = {};
@@ -45,11 +42,11 @@ export const redactDocument = (doc: TPDocument): TPDocument => {
     groups[g.id] = { ...g, title: `Group ${i + 1}` };
   }
 
+  // Author + description omitted at the doc level too.
+  const { author: _dropAuthor, description: _dropDesc, ...docRest } = doc;
   return {
-    ...doc,
+    ...docRest,
     title: 'Untitled',
-    author: undefined,
-    description: undefined,
     entities,
     edges,
     groups,

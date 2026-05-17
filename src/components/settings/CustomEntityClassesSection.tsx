@@ -198,7 +198,13 @@ export function CustomEntityClassesSection() {
                     <button
                       key={name}
                       type="button"
-                      onClick={() => setDraft({ ...draft, icon: selected ? undefined : name })}
+                      onClick={() => {
+                        // Conditional rebuild so we OMIT the icon key
+                        // when clearing rather than setting it to
+                        // undefined (exactOptionalPropertyTypes).
+                        const { icon: _drop, ...rest } = draft;
+                        setDraft(selected ? rest : { ...draft, icon: name });
+                      }}
                       title={name}
                       aria-label={`Use ${name} icon`}
                       aria-pressed={selected}
@@ -225,12 +231,14 @@ export function CustomEntityClassesSection() {
               </span>
               <select
                 value={draft.supersetOf ?? ''}
-                onChange={(e) =>
-                  setDraft({
-                    ...draft,
-                    supersetOf: e.target.value ? (e.target.value as EntityType) : undefined,
-                  })
-                }
+                onChange={(e) => {
+                  // Conditional rebuild — see icon-button above for
+                  // rationale (omit field on clear).
+                  const { supersetOf: _drop, ...rest } = draft;
+                  setDraft(
+                    e.target.value ? { ...draft, supersetOf: e.target.value as EntityType } : rest
+                  );
+                }}
                 className="w-full rounded border border-neutral-200 bg-white px-2 py-1 dark:border-neutral-700 dark:bg-neutral-950"
               >
                 {SUPERSET_OPTIONS.map((opt) => (

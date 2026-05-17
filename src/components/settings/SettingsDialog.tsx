@@ -508,7 +508,7 @@ export function SettingsDialog() {
                   <RadioGroup
                     name="layoutBias"
                     value={biasValue}
-                    onChange={(id) => setLayoutConfig({ align: id === 'auto' ? undefined : id })}
+                    onChange={(id) => setLayoutConfig(id === 'auto' ? {} : { align: id })}
                     options={BIAS_OPTIONS}
                   />
                 </Field>

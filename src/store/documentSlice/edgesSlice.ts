@@ -1,7 +1,7 @@
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { createEdge, createEntity } from '@/domain/factory';
 import { hasEdge } from '@/domain/graph';
-import type { AttrValue, Edge, EdgeWeight, Entity } from '@/domain/types';
+import type { AttrValue, Edge, EdgeWeight, Entity, Patch } from '@/domain/types';
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
@@ -36,7 +36,7 @@ const KIND_LABEL: Record<JunctorKind, string> = {
  */
 export type EdgesSlice = {
   connect: (sourceId: string, targetId: string) => Edge | null;
-  updateEdge: (id: string, patch: Partial<Omit<Edge, 'id'>>) => void;
+  updateEdge: (id: string, patch: Patch<Omit<Edge, 'id'>>) => void;
   deleteEdge: (id: string) => void;
   /** A6: swap an edge's source and target. Useful when a user has built the
    *  arrow in the wrong direction (mis-attributing cause to effect). */
@@ -397,10 +397,14 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
         const cur = prev.edges[edgeId];
         if (!cur || !cur.attributes || !(key in cur.attributes)) return prev;
         const { [key]: _drop, ...rest } = cur.attributes;
-        const nextEdge: Edge = {
-          ...cur,
-          attributes: Object.keys(rest).length > 0 ? rest : undefined,
-        };
+        // Emit-or-omit pattern (same as removeEntityAttribute in
+        // entitiesSlice): when the map empties we drop the attributes
+        // field rather than setting it to undefined, since
+        // exactOptionalPropertyTypes rejects explicit undefined on the
+        // optional `Edge.attributes` field.
+        const { attributes: _dropAttr, ...curRest } = cur;
+        const nextEdge: Edge =
+          Object.keys(rest).length > 0 ? { ...cur, attributes: rest } : curRest;
         return touch({ ...prev, edges: { ...prev.edges, [edgeId]: nextEdge } });
       });
     },

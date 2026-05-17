@@ -185,7 +185,10 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
     el: Element;
     isJunctor: boolean;
     isGroup: boolean;
-    grouped?: string[];
+    // `| undefined` so the parser can pass the result of
+    // `getGroupedAttr` (which may return undefined) directly under
+    // exactOptionalPropertyTypes.
+    grouped?: string[] | undefined;
     collapsed: boolean;
     attrs: Map<string, string>;
     entityClass: string | null;
@@ -241,11 +244,13 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
   type RawEdge = {
     source: string;
     target: string;
-    label?: string;
-    tpStudioId?: string;
+    // `| undefined` so the parser can pass through optional attrs
+    // directly under exactOptionalPropertyTypes.
+    label?: string | undefined;
+    tpStudioId?: string | undefined;
     // Bundle 8 — polarity tag. Round-tripped via `tp-studio-weight`
     // attribute on the edge. Unknown values fall to undefined (no tag).
-    weight?: EdgeWeight;
+    weight?: EdgeWeight | undefined;
   };
   const isEdgeWeight = (v: string | undefined): v is EdgeWeight =>
     v === 'positive' || v === 'negative' || v === 'zero';

@@ -29,7 +29,11 @@ const Demo = ({ align }: { align?: 'center' | 'top' }) => {
       <Button variant="primary" onClick={() => setOpen(true)}>
         Open modal
       </Button>
-      <Modal open={open} onDismiss={() => setOpen(false)} align={align}>
+      <Modal
+        open={open}
+        onDismiss={() => setOpen(false)}
+        {...(align !== undefined ? { align } : {})}
+      >
         <div className="flex flex-col gap-3 p-5">
           <h2 className="font-semibold text-neutral-900 text-sm dark:text-neutral-100">
             Confirm destructive action

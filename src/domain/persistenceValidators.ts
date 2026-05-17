@@ -351,7 +351,10 @@ export const validateLayoutConfig = (v: unknown): TPDocument['layoutConfig'] | u
   if (!isObject(v)) return undefined;
   const out: NonNullable<TPDocument['layoutConfig']> = {};
   if (typeof v.direction === 'string' && VALID_LAYOUT_DIRECTIONS.has(v.direction)) {
-    out.direction = v.direction as NonNullable<TPDocument['layoutConfig']>['direction'];
+    // Concrete narrow rather than `NonNullable<...>['direction']`
+    // which under exactOptionalPropertyTypes still includes
+    // `undefined` (the field is optional on the parent).
+    out.direction = v.direction as 'BT' | 'TB' | 'LR' | 'RL';
   }
   if (typeof v.nodesep === 'number' && Number.isFinite(v.nodesep) && v.nodesep > 0) {
     out.nodesep = v.nodesep;
@@ -360,7 +363,8 @@ export const validateLayoutConfig = (v: unknown): TPDocument['layoutConfig'] | u
     out.ranksep = v.ranksep;
   }
   if (typeof v.align === 'string' && VALID_LAYOUT_ALIGNS.has(v.align)) {
-    out.align = v.align as NonNullable<TPDocument['layoutConfig']>['align'];
+    // Same concrete narrow as `direction` above.
+    out.align = v.align as 'UL' | 'UR' | 'DL' | 'DR';
   }
   return Object.keys(out).length > 0 ? out : undefined;
 };

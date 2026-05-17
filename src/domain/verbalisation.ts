@@ -36,7 +36,15 @@ import type { Entity, TPDocument } from './types';
  */
 export type VerbalisationToken =
   | { kind: 'text'; text: string }
-  | { kind: 'slot'; slot: 'a' | 'b' | 'c' | 'd' | 'dPrime'; entityId?: string; text: string }
+  // Session 117 — `entityId` explicitly allows `undefined` so call sites
+  // can pass `slots.a?.id` (which may be undefined when the slot is
+  // unfilled) without a conditional spread at every push() site.
+  | {
+      kind: 'slot';
+      slot: 'a' | 'b' | 'c' | 'd' | 'dPrime';
+      entityId?: string | undefined;
+      text: string;
+    }
   | { kind: 'assumptionAnchor'; edgeId: string; assumptionCount: number };
 
 /** Placeholder shown when an EC slot hasn't been filled in yet. Keeps

@@ -76,8 +76,11 @@ type ParsedEdge = { source: string; target: string; label?: string; isAnd: boole
 const parseMermaid = (
   raw: string
 ): {
-  title?: string;
-  direction?: 'BT' | 'TB' | 'LR' | 'RL';
+  // `| undefined` on the optionals so the local `let title; let
+  // direction;` decls can flow into the return without conditional
+  // spreads under exactOptionalPropertyTypes.
+  title?: string | undefined;
+  direction?: 'BT' | 'TB' | 'LR' | 'RL' | undefined;
   nodes: Map<string, ParsedNode>;
   nodeTypes: Map<string, EntityType>;
   edges: ParsedEdge[];

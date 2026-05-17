@@ -347,7 +347,14 @@ export const removeEntityFromEdges = (doc: TPDocument, entityId: string): Record
       continue;
     }
     const filtered = edge.assumptionIds.filter((a) => a !== branded);
-    result[edge.id] = { ...edge, assumptionIds: filtered.length ? filtered : undefined };
+    if (filtered.length) {
+      result[edge.id] = { ...edge, assumptionIds: filtered };
+    } else {
+      // Omit the field rather than setting `assumptionIds: undefined`
+      // (exactOptionalPropertyTypes rejects explicit undefined).
+      const { assumptionIds: _drop, ...rest } = edge;
+      result[edge.id] = rest;
+    }
   }
   return result;
 };

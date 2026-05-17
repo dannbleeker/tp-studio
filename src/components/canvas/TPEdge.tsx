@@ -163,14 +163,23 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // `srcPos` / `tgtPos` references), so the selector returns 4
   // primitives at the top level and the component composes them.
   const mutexCoords = useDocumentStore(
-    useShallow((s): { srcX?: number; srcY?: number; tgtX?: number; tgtY?: number } => {
-      if (!isMutex) return {};
-      const edge = s.doc.edges[props.id];
-      if (!edge) return {};
-      const src = s.doc.entities[edge.sourceId]?.position;
-      const tgt = s.doc.entities[edge.targetId]?.position;
-      return { srcX: src?.x, srcY: src?.y, tgtX: tgt?.x, tgtY: tgt?.y };
-    })
+    useShallow(
+      (
+        s
+      ): {
+        srcX?: number | undefined;
+        srcY?: number | undefined;
+        tgtX?: number | undefined;
+        tgtY?: number | undefined;
+      } => {
+        if (!isMutex) return {};
+        const edge = s.doc.edges[props.id];
+        if (!edge) return {};
+        const src = s.doc.entities[edge.sourceId]?.position;
+        const tgt = s.doc.entities[edge.targetId]?.position;
+        return { srcX: src?.x, srcY: src?.y, tgtX: tgt?.x, tgtY: tgt?.y };
+      }
+    )
   );
   const mutexEndpoints =
     isMutex &&
@@ -350,7 +359,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         // causes — suppress React Flow's arrowhead marker so the line
         // reads as a symmetric connector. The ⚡ label-glyph stays as
         // the carrier of intent.
-        markerEnd={isMutex ? undefined : props.markerEnd}
+        //
+        // Session 117 — conditional spread to OMIT `markerEnd` rather
+        // than pass `undefined` to React Flow's `BaseEdge` (whose
+        // optional prop rejects explicit undefined under
+        // exactOptionalPropertyTypes).
+        {...(isMutex ? {} : { markerEnd: props.markerEnd })}
         interactionWidth={EDGE_INTERACTION_WIDTH}
         style={{
           stroke,

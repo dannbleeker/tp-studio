@@ -45,7 +45,15 @@ const toMenuItem = (verb: Verb): MenuItem => {
           void verb.run?.(useDocumentStore.getState());
         }
       : () => {};
-  return { kind: 'action', label: verb.label, destructive: verb.destructive, run };
+  return {
+    kind: 'action',
+    label: verb.label,
+    // Conditional spread to avoid passing `destructive: undefined`
+    // (exactOptionalPropertyTypes rejects the explicit undefined on
+    // the optional `MenuItem.destructive?: boolean` field).
+    ...(verb.destructive !== undefined ? { destructive: verb.destructive } : {}),
+    run,
+  };
 };
 
 /**

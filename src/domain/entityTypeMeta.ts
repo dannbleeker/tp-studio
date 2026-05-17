@@ -449,9 +449,14 @@ export const entityMeta = (typeId: string, doc?: TPDocument): EntityTypeMeta =>
  * canvas double-click default. Built-ins come first (matching their
  * historical order); custom classes append.
  */
-export const paletteForDoc = (
-  doc: Pick<TPDocument, 'diagramType' | 'customEntityClasses'>
-): string[] => {
+export const paletteForDoc = (doc: {
+  diagramType: TPDocument['diagramType'];
+  // Session 117 — explicit `| undefined` so call sites that pull
+  // `customEntityClasses` from `doc` (where it's optional and may
+  // be undefined) can pass it through under
+  // exactOptionalPropertyTypes without conditional spreads.
+  customEntityClasses?: TPDocument['customEntityClasses'] | undefined;
+}): string[] => {
   const builtins = PALETTE_BY_DIAGRAM[doc.diagramType] as string[];
   const custom = doc.customEntityClasses
     ? Object.keys(doc.customEntityClasses).sort((a, b) => a.localeCompare(b))

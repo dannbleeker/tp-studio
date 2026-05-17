@@ -121,7 +121,15 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
   // assumption. We check the five canonical arrows. The user can
   // resolve each warning individually if they want to declare the
   // arrow "considered" without an assumption.
-  const requiredArrows: { source?: Entity; target?: Entity; label: string; mutex?: boolean }[] = [
+  // Session 117 — explicit `| undefined` so the inline-array elements
+  // below can carry the optional `slots.X` lookups (which can be
+  // undefined when the slot is unfilled) without conditional spreads.
+  const requiredArrows: {
+    source?: Entity | undefined;
+    target?: Entity | undefined;
+    label: string;
+    mutex?: boolean;
+  }[] = [
     { source: slots.b, target: slots.a, label: 'B → A' },
     { source: slots.c, target: slots.a, label: 'C → A' },
     { source: slots.d, target: slots.b, label: 'D → B' },

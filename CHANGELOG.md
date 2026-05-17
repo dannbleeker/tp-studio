@@ -2,6 +2,41 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 117 — `exactOptionalPropertyTypes` enabled (React 19 prep step 2)
+
+The 272-error grind from Sessions 112 + 115 — now resolved. Pre-React-19 prep step 2 of 2 complete.
+
+**Why this matters for React 19:** stricter optional-field handling means React 19's type changes (`refs as props`, lifecycle adjustments) land against a tighter baseline. New errors that surface during the upgrade are unambiguously React-19-related rather than tangled with pre-existing `undefined`-vs-omitted confusion.
+
+**The fix shape:** a single new mapped type + targeted application across ~20 files. New `Patch<T>` helper in `domain/types.ts`:
+
+```ts
+export type Patch<T> = { [K in keyof T]?: T[K] | undefined };
+```
+
+Maps every optional field `field?: U` to `field?: U | undefined`, preserving the "may be omitted" semantics while allowing "may be explicitly cleared." Applied to the canonical store-action patch parameters (`updateEntity`, `updateEdge`, `entityPatch`, `edgePatch`) so callers can keep using the `{ field: undefined }` idiom to clear a field.
+
+**Other changes:**
+
+- **`VerbalisationToken.entityId` typed as `string | undefined`** — call sites pass `slots.x?.id` which may be undefined.
+- **`paletteForDoc` parameter type loosened** — accepts `customEntityClasses?: Record<...> | undefined` so callers can pass the doc-level optional field directly.
+- **`createEntity` parameter `title?: string | undefined`** — destructured-default forwarding from `addEntity`.
+- **`RawVertex` / `RawEdge` in FL reader** — `grouped`, `label`, `tpStudioId`, `weight` all explicitly allow undefined so the parser can pass attr lookups directly.
+- **`parseMermaid` return type** — `title` and `direction` explicitly include undefined.
+- **`ecCompleteness` rule's `requiredArrows` typed with explicit `| undefined`** — slot lookups may be undefined when a slot is unfilled.
+- **`persistenceValidators.validateLayoutConfig`** — narrowed two `out.direction` / `out.align` assignments from `NonNullable<...>[K]` (which still includes undefined under exactOptional) to concrete literal-union casts.
+- **`DEFAULT_OPTIONS` in `domain/layout.ts`** — dropped the `align: undefined` member; dagre treats omitted-align differently from `align=undefined` anyway, and exactOptional now enforces the distinction.
+
+**Construction-site fixes (~12 sites)** — replaced `{ field: someMaybeUndefined }` patterns with either:
+- Conditional spread: `{ ...(value !== undefined ? { field: value } : {}) }`, or
+- Destructured-rest emit-or-omit: `const { field: _drop, ...rest } = obj; return condition ? { ...obj, field: newValue } : rest;`
+
+Affected: `docMutate.ts` (entity/edge patch internals, HistoryEntry coalesceKey), `entitiesSlice.ts` (detachAssumption, unlinkInjectionFromAssumption, removeEntityAttribute), `edgesSlice.ts` (removeEdgeAttribute), `dialogsSlice.ts` (confirmDialog labels), `graph.ts` (removeEntityFromEdges assumption-clear branch), `redact.ts` (entity + edge + doc-level field drops), `clipboard.ts` (paste description), `ContextMenu.tsx` (destructive flag), `CustomEntityClassesSection.tsx` (icon + supersetOf in draft state), `SettingsDialog.tsx` (layout align), `TPEdge.tsx` (markerEnd in BaseEdge props), `Modal.stories.tsx` (align in test fixture).
+
+**Two `as Entity` / `as Edge` casts** at the merge sites in `entityPatch` / `edgePatch` — the `Patch<T>` argument is permissive (any field can be undefined) but the merge result keeps required-field values from the prior record. Cast asserts that contract.
+
+**End state:** 0 tsc errors with `exactOptionalPropertyTypes: true`. 1195 tests still passing, biome clean, knip exit 0 (4 retained tokens + 2 retained types as before), build clean, bundle budget within ceiling. The React 19 migration session can now proceed with confidence.
+
 ## Session 116 — Storybook 8 → 10 (React 19 prep step 1)
 
 First of the planned pre-React-19 prep sessions. Storybook 8.x had React 18 peer-deps and would have warned on the React 19 bump; Storybook 10 (current) explicitly supports React 16/17/18/19. Doing this first means the React 19 session lands without parallel Storybook version drama.

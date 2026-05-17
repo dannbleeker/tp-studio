@@ -142,7 +142,11 @@ export const createDocument = (diagramType: DiagramType): TPDocument => {
 
 export const createEntity = (params: {
   type: EntityType;
-  title?: string;
+  // Session 117 — explicit `| undefined` so callers passing `title:
+  // someValue` where someValue may be undefined (the addEntity action
+  // takes `title?: string` which can become undefined when destructured)
+  // pass through under exactOptionalPropertyTypes.
+  title?: string | undefined;
   annotationNumber: number;
 }): Entity => {
   const now = Date.now();

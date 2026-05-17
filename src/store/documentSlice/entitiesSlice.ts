@@ -8,6 +8,7 @@ import type {
   Entity,
   EntityId,
   EntityType,
+  Patch,
 } from '@/domain/types';
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
@@ -23,7 +24,7 @@ import { entityPatch, makeApplyDocChange, scrubFromGroups, touch } from './docMu
  */
 export type EntitiesSlice = {
   addEntity: (params: { type: EntityType; title?: string; startEditing?: boolean }) => Entity;
-  updateEntity: (id: string, patch: Partial<Omit<Entity, 'id' | 'createdAt'>>) => void;
+  updateEntity: (id: string, patch: Patch<Omit<Entity, 'id' | 'createdAt'>>) => void;
   deleteEntity: (id: string) => void;
   /** F7: toggle the per-entity disclosure-triangle collapse state. */
   toggleEntityCollapsed: (id: string) => void;
@@ -275,10 +276,13 @@ export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice>
         const branded = assumptionId as EntityId;
         if (!edge?.assumptionIds?.includes(branded)) return prev;
         const filtered = edge.assumptionIds.filter((a) => a !== branded);
-        const nextEdge: Edge = {
-          ...edge,
-          assumptionIds: filtered.length ? filtered : undefined,
-        };
+        // Session 117 — when filtered is empty, OMIT assumptionIds rather
+        // than setting `assumptionIds: undefined`. Under
+        // exactOptionalPropertyTypes the optional field rejects explicit
+        // undefined. Destructured-rest is the cleanest emit-or-omit
+        // pattern.
+        const { assumptionIds: _drop, ...rest } = edge;
+        const nextEdge: Edge = filtered.length ? { ...edge, assumptionIds: filtered } : rest;
         return touch({ ...prev, edges: { ...prev.edges, [edgeId]: nextEdge } });
       });
     },
@@ -360,9 +364,10 @@ export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice>
         const branded = injectionId as EntityId;
         if (!cur.injectionIds.includes(branded)) return prev;
         const filtered = cur.injectionIds.filter((id) => id !== branded);
+        // See `detachAssumption` for the same emit-or-omit pattern.
+        const { injectionIds: _drop, ...rest } = cur;
         const next: Assumption = {
-          ...cur,
-          injectionIds: filtered.length > 0 ? filtered : undefined,
+          ...(filtered.length > 0 ? { ...cur, injectionIds: filtered } : rest),
           updatedAt: Date.now(),
         };
         return touch({
@@ -398,14 +403,16 @@ export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice>
         const cur = prev.entities[id];
         if (!cur || !cur.attributes || !(key in cur.attributes)) return prev;
         const { [key]: _drop, ...rest } = cur.attributes;
-        const nextEntity: Entity = {
-          ...cur,
-          // Empty map collapses to undefined so the entity doesn't
-          // carry a useless `attributes: {}` after the last key is
-          // removed.
-          attributes: Object.keys(rest).length > 0 ? rest : undefined,
-          updatedAt: Date.now(),
-        };
+        // Empty map collapses to omitting the field (rather than
+        // `attributes: undefined`) so the entity doesn't carry a
+        // useless `attributes: {}` after the last key is removed AND
+        // exactOptionalPropertyTypes' "no explicit undefined" rule is
+        // satisfied.
+        const { attributes: _dropAttr, ...curRest } = cur;
+        const nextEntity: Entity =
+          Object.keys(rest).length > 0
+            ? { ...cur, attributes: rest, updatedAt: Date.now() }
+            : { ...curRest, updatedAt: Date.now() };
         return touch({ ...prev, entities: { ...prev.entities, [id]: nextEntity } });
       });
     },

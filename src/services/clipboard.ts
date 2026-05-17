@@ -69,10 +69,9 @@ export const pasteClipboard = (): PasteResult => {
       title: src.title,
       annotationNumber: startAnnotation + i,
     });
-    const next: Entity = {
-      ...e,
-      description: src.description,
-    };
+    // Conditional spread to avoid passing `description: undefined`
+    // when the source entity has no description (exactOptionalPropertyTypes).
+    const next: Entity = src.description !== undefined ? { ...e, description: src.description } : e;
     idMap.set(src.id, next.id);
     return next;
   });
