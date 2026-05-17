@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 124 — Biome 2 lint cleanup pass
+
+Tier-2 backlog item #1 (the 24 Biome 2 warnings tracked since Session 122). All 24 resolved; the project is now clean at zero warnings.
+
+**Category breakdown:**
+
+- **`a11y/useAriaPropsSupportedByRole` (14)** — divs/spans carrying `aria-label` without a supported role. Fix per case: decorative emoji/badge spans (TPNode reach badges, TPEdge ↻/⚡/− indicators, step/annotation/pin chips) got `role="img"`; the AppearanceTab theme swatch grid and the EC wizard direction toggle group switched to `<fieldset>` with `aria-label` (biome's `useSemanticElements` upgraded the warning to an error and pointed at `<fieldset>` as the right semantic).
+- **`a11y/noStaticElementInteractions` (4)** — React Flow node wrappers (Canvas / TPNode / TPCollapsedGroupNode) and the MarkdownPreview prose container. Each carries an inline `biome-ignore` with a rationale: React Flow owns keyboard navigation across nodes at the canvas level (Tab+Enter); MarkdownPreview's onClick/onKeyDown forward to focusable `<a>` anchors inside the sanitized HTML.
+- **`a11y/useAriaPropsSupportedByRole` on `KebabMenu` (1)** — the History row was `role="menuitem" aria-pressed`; aria-pressed isn't supported on menuitem. Switched to `role="menuitemcheckbox" aria-checked`. The keyboard-walk selector in the menu (and in the test) was extended to match both roles.
+- **`suspicious/noArrayIndexKey` (3)** — CreationWizardPanel's step-dot row (fixed-length per-wizard-kind constant; items never reorder) + QuickCaptureDialog's preview tree (re-derived from textarea content on every keystroke, no stable id available). Each carries an inline ignore with the rationale pinned above.
+- **`suspicious/useIterableCallbackReturn` (1)** — MultiInspector's `present.forEach(...)` callback was implicitly returning `updateEntity`'s return value; converted to a block body.
+- **`complexity/noUselessEmptyExport` (1, auto-fix)** — `src/vite-env.d.ts`'s `export {}` was redundant given the file's existing `import type` statement; auto-removed.
+- **`suppressions/unused` (1, surfaced during the pass)** — `WalkthroughOverlay`'s `lint/a11y/useSemanticElements` ignore no longer triggers under Biome 2 (the rule's heuristics changed); removed the orphaned suppression.
+
+The strict-lint pass also surfaced two real findings worth a note:
+
+- `Modal`-based dialogs now have **fieldset+legend semantics** on their button-group selectors (Theme swatches in Settings; A→D / D→A direction toggle in the EC wizard). That's the correct WAI-ARIA grouping for a single-select button-cluster.
+- The biome-ignore comment format changed in Biome 2: directives must be on the line immediately preceding the offending token (not a multi-line preamble several lines above). All ignores in this pass follow that convention; updated the existing `WalkthroughOverlay` cluster while I was there.
+
+**End state:** 1200 tests passing; tsc clean; biome **0 warnings, 0 errors**; build clean. Three of the four originally-named pre-existing categories of warning are now ✅; remaining backlog item count drops by one.
+
 ## Session 123 — Modal focus-trap
 
 The follow-up item flagged during Session 121's #28 prep. `Modal` rendered `<dialog open>` without `.showModal()` and didn't wire `useFocusTrap` — Tabbing past the last focusable element escaped the dialog. Eight Modal-based dialogs were affected (CommandPalette / ConfirmDialog / QuickCapture / AboutDialog / HelpDialog / SettingsDialog / DocumentInspector / Modal.stories).

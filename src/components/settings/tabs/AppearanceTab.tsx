@@ -93,7 +93,7 @@ export function AppearanceTab() {
             `useSemanticElements` lint (Biome wants `<input
             type="radio">` if we annotate as `role="radio"`).
             Visually still a single-select group. */}
-        <div aria-label="Theme" className="grid grid-cols-4 gap-1.5">
+        <fieldset aria-label="Theme" className="grid grid-cols-4 gap-1.5 border-0 p-0">
           {THEME_OPTIONS.map((opt) => {
             const selected = opt.id === theme;
             return (
@@ -125,7 +125,7 @@ export function AppearanceTab() {
               </button>
             );
           })}
-        </div>
+        </fieldset>
       </Field>
       <Field label="Edge colors">
         <RadioGroup

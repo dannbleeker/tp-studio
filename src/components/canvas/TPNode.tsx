@@ -111,7 +111,12 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
     }
   }, [isEditing]);
 
+  // React Flow node wrapper. React Flow owns keyboard navigation between nodes at
+  // the canvas level (Tab cycles selectable elements; Enter activates). The
+  // double-click here is a "begin editing" shortcut; the equivalent keyboard path
+  // is Enter while focused, dispatched by React Flow's own focus handler.
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: see comment above the return.
     <div
       data-component="tp-node"
       className={clsx(
@@ -216,6 +221,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
             <span
               className="ml-1 rounded bg-emerald-100 px-1 font-bold text-[9px] text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
               title="Span of control: I can act on this directly"
+              role="img"
               aria-label="Span of control: control"
             >
               C
@@ -225,6 +231,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
             <span
               className="ml-1 rounded bg-amber-100 px-1 font-bold text-[9px] text-amber-800 dark:bg-amber-900/50 dark:text-amber-200"
               title="Span of control: I can influence this indirectly"
+              role="img"
               aria-label="Span of control: influence"
             >
               I
@@ -234,6 +241,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
             <span
               className="ml-1 rounded bg-neutral-200 px-1 font-bold text-[9px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200"
               title="Span of control: external — outside my control"
+              role="img"
               aria-label="Span of control: external"
             >
               E
@@ -349,6 +357,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       {showAnnotationNumbers && (
         <span
           className="pointer-events-none absolute -top-1.5 -right-1.5 rounded-full border border-neutral-200 bg-white px-1.5 py-0.5 font-semibold text-[10px] text-neutral-600 shadow-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+          role="img"
           aria-label={`Annotation number ${entity.annotationNumber}`}
         >
           #{entity.annotationNumber}
@@ -357,6 +366,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       {typeof entity.ordering === 'number' && (
         <span
           className="pointer-events-none absolute -top-1.5 -left-1.5 rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 font-semibold text-[10px] text-cyan-800 shadow-sm dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200"
+          role="img"
           aria-label={`Step ${entity.ordering}`}
         >
           Step {entity.ordering}
@@ -373,6 +383,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       {entity.position && LAYOUT_STRATEGY[diagramType] !== 'manual' && (
         <span
           className="pointer-events-none absolute -right-1.5 -bottom-1.5 rounded-full border border-violet-300 bg-violet-50 p-0.5 text-violet-700 shadow-sm dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200"
+          role="img"
           aria-label="Pinned position"
           title="Pinned position — right-click → Unpin to let auto-layout reclaim it"
         >
@@ -386,6 +397,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         // top-left step badge or the top-right annotation/ID stack.
         <span
           className="pointer-events-none absolute -bottom-2 -left-1.5 rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 font-semibold text-[10px] text-amber-800 shadow-sm dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
+          role="img"
           aria-label={`Reaches ${udeReachCount} undesirable effect${udeReachCount === 1 ? '' : 's'}`}
           title={`Reaches ${udeReachCount} UDE${udeReachCount === 1 ? '' : 's'}`}
         >
@@ -401,6 +413,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           // doesn't fight the forward badge for screen real estate.
           <span
             className="pointer-events-none absolute -right-1.5 -bottom-2 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 font-semibold text-[10px] text-sky-800 shadow-sm dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200"
+            role="img"
             aria-label={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
             title={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
           >

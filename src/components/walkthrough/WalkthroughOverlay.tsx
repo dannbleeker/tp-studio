@@ -88,7 +88,6 @@ function WalkthroughOverlayBody() {
   const position = `${walkthrough.index + 1} / ${total}`;
 
   return (
-    // biome-ignore lint/a11y/useSemanticElements: native <dialog> conflicts with our keyboard listener.
     // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard equivalent (Esc) is wired in useEffect.
     <div
       role="dialog"

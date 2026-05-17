@@ -383,10 +383,10 @@ export function CreationWizardPanel() {
           toggle resets the step to 0 so the prompt at index 0 lines
           up with the new lead slot. */}
       {kind === 'ec' && (
-        <div
+        <fieldset
           data-component="ec-wizard-order"
           aria-label="Wizard walk order"
-          className="flex gap-1 text-[10px]"
+          className="flex gap-1 border-0 p-0 text-[10px]"
         >
           {(
             [
@@ -420,14 +420,19 @@ export function CreationWizardPanel() {
               </button>
             );
           })}
-        </div>
+        </fieldset>
       )}
 
       {/* Per-step progress indicator. A series of dots; current one
           highlighted. Lightweight, no library. */}
+      {/* `steps` is a fixed-length per-wizard-kind constant (5–6 entries — see
+          creationWizardSteps.ts). Items never reorder, so the index IS the stable
+          identity within a given wizard kind; including `kind` in the key forces
+          a full remount when the diagram type switches. */}
       <div className="flex gap-1">
         {steps.map((_, i) => (
           <span
+            // biome-ignore lint/suspicious/noArrayIndexKey: see comment above the map.
             key={`step-${i}-${kind}`}
             className={clsx(
               'h-1 flex-1 rounded-full',

@@ -198,7 +198,9 @@ function RenumberControl({
           disabled={locked}
           onClick={() => {
             if (!guardWriteOrToast()) return;
-            present.forEach((e, idx) => updateEntity(e.id, { ordering: startAt + idx }));
+            present.forEach((e, idx) => {
+              updateEntity(e.id, { ordering: startAt + idx });
+            });
           }}
         >
           <ListOrdered className="h-3.5 w-3.5" />

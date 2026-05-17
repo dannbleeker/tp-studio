@@ -112,12 +112,17 @@ export function QuickCaptureDialog() {
           <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
             Preview ({parsed.total} {parsed.total === 1 ? 'entity' : 'entities'})
           </span>
+          {/* `parsed.roots` is re-derived from the textarea content on every
+              keystroke (no stable id). Composing the index with the title is the
+              closest-to-stable key available; the list rebuilds wholesale on
+              edit anyway, so React's reconciliation cost is the same. */}
           <div className="min-h-[14rem] flex-1 overflow-auto rounded-md border border-neutral-200 bg-neutral-50 p-2 text-xs dark:border-neutral-800 dark:bg-neutral-900">
             {parsed.total === 0 ? (
               <p className="text-neutral-400 italic">Nothing to preview yet.</p>
             ) : (
               <ul className="flex flex-col gap-0.5">
                 {parsed.roots.map((node, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: see comment above the surrounding div.
                   <PreviewNode key={`${i}-${node.title}`} node={node} depth={0} />
                 ))}
               </ul>
@@ -163,6 +168,7 @@ function PreviewNode({ node, depth }: { node: CaptureNode; depth: number }) {
       {node.children.length > 0 && (
         <ul className="flex flex-col gap-0.5">
           {node.children.map((c, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: derived view (rebuilt on each parse) — no stable id available; see parent.
             <PreviewNode key={`${i}-${c.title}`} node={c} depth={depth + 1} />
           ))}
         </ul>

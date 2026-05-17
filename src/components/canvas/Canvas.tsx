@@ -98,7 +98,13 @@ function CanvasInner() {
   // cleanest possible canvas.
   const ecChromeCollapsed = useDocumentStore((s) => s.ecChromeCollapsed);
 
+  // React Flow canvas wrapper: the double-click is a workspace gesture ("create
+  // entity on empty canvas"). The canvas itself isn't a button or other interactive
+  // widget; React Flow owns all keyboard navigation for entities/edges below this
+  // layer. Equivalent keyboard path: command-palette "Add entity" or the Tab
+  // shortcut documented in the keyboard help.
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: see comment above the return.
     <div
       className="h-full w-full"
       onDoubleClick={(e) => {

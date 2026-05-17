@@ -23,7 +23,12 @@ export function TPCollapsedGroupNode({ data, selected }: NodeProps<TPCollapsedGr
   const targetPosition = isHorizontal ? Position.Right : Position.Bottom;
   const sourcePosition = isHorizontal ? Position.Left : Position.Top;
 
+  // React Flow custom node body. React Flow handles keyboard navigation between
+  // nodes; the double-click here is a "toggle collapsed" gesture. Equivalent
+  // keyboard path: select the node + the palette command "Toggle group collapsed".
+  // role="button" would mislead screen-reader users — the element IS a graph node.
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: see comment above the return.
     <div
       className={clsx(
         'relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 px-3 py-2 text-center shadow-sm transition',

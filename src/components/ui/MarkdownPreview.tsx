@@ -27,7 +27,13 @@ export function MarkdownPreview({ source }: { source: string }) {
     if (id) navigateToEntity(id);
     return true;
   };
+  // Prose container hosting sanitized markdown. The click/keydown handlers
+  // intercept clicks on `[data-entity-ref]` anchors generated inside the markdown
+  // to drive cross-reference navigation; the document itself isn't a button. The
+  // anchors inside ARE focusable links (real <a> elements) — keyboard Tab + Enter
+  // walks them via native focus, exactly what onKeyDown here forwards.
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: see comment above the return.
     <div
       // biome-ignore lint/security/noDangerouslySetInnerHtml: renderMarkdown sanitizes with DOMPurify.
       dangerouslySetInnerHTML={{ __html: html }}

@@ -33,8 +33,3 @@ declare global {
   const __BUILD_DATE__: string;
   const __COPYRIGHT_YEARS__: string;
 }
-
-// Required so TypeScript treats this file as a module (which `declare
-// global` augmentation requires). `vite/client` reference + the
-// re-export below give the file module status.
-export {};

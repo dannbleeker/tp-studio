@@ -62,7 +62,7 @@ export function KebabMenu() {
   // and would otherwise leave the trigger as activeElement.
   // Session 94 (Top-30 #16) — extracted to a shared hook so future
   // surfaces inherit the disabled-skip behaviour.
-  useAutoFocusFirstEnabled(menuRef, open, '[role="menuitem"]');
+  useAutoFocusFirstEnabled(menuRef, open, '[role="menuitem"], [role="menuitemcheckbox"]');
   // When the menu closes, restore focus to the trigger so Tab continues
   // from where the user was. Matches the WAI-ARIA menu pattern.
   useEffect(() => {
@@ -87,7 +87,9 @@ export function KebabMenu() {
   // previous item and looking like the key did nothing.
   const onMenuKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     const items = Array.from(
-      menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? []
+      menuRef.current?.querySelectorAll<HTMLButtonElement>(
+        '[role="menuitem"], [role="menuitemcheckbox"]'
+      ) ?? []
     );
     if (items.length === 0) return;
     const enabled = items.filter((el) => !el.disabled);
@@ -186,10 +188,10 @@ export function KebabMenu() {
           )}
           <button
             type="button"
-            role="menuitem"
+            role="menuitemcheckbox"
             className={itemClass}
             onClick={runAndClose(toggleHistoryPanel)}
-            aria-pressed={historyPanelOpen}
+            aria-checked={historyPanelOpen}
           >
             <History className="h-3.5 w-3.5" />
             <span>{historyPanelOpen ? 'Close history' : 'Open history'}</span>

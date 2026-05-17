@@ -393,6 +393,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
               transform: `translate(-50%, -50%) translate(${labelX + 16}px, ${labelY - 14}px)`,
             }}
             title="Back-edge — this loop is intentional"
+            role="img"
             aria-label="Back-edge — intentional loop"
           >
             ↻
@@ -415,6 +416,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
               minHeight: 18,
             }}
             title="Mutually exclusive — these two Wants conflict"
+            role="img"
             aria-label="Mutually exclusive Wants — lightning-bolt conflict"
           >
             <span aria-hidden>⚡</span>
@@ -441,6 +443,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
                 ? 'Negative correlation — this cause REDUCES this effect'
                 : 'Zero / neutral — flagged as non-influential'
             }
+            role="img"
             aria-label={`Edge polarity: ${weight}`}
           >
             {weight === 'negative' ? '−' : '∅'}
@@ -511,6 +514,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
               transform: `translate(-50%, -50%) translate(${labelX + 16}px, ${labelY + 14}px)`,
             }}
             title="This edge has a longer description — open inspector to read."
+            role="img"
             aria-label="Edge has a description"
           >
             📝
