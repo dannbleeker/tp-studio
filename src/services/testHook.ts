@@ -116,6 +116,19 @@ export interface TpTestHook {
    * the ids returned by the most-recent `seed()` call.
    */
   listEntityIds: () => string[];
+  /**
+   * Session 121 — deterministically open the Help / About / Settings
+   * dialogs from e2e. Session 116 dropped the dialog axe-scan tests
+   * because the keyboard-press flows (`?` for Help, palette + Enter
+   * for the rest) raced in headless CI Chromium. Going through the
+   * store action directly matches the production code path the
+   * shortcut handlers / palette commands call, with none of the
+   * gesture flakiness. Re-enabled `a11y.spec.ts` dialog scans + focus
+   * checks build on these hooks.
+   */
+  openHelp: () => void;
+  openAbout: () => void;
+  openSettings: () => void;
 }
 
 /**
@@ -191,6 +204,9 @@ export const maybeInstallTestHook = (): void => {
       useDocumentStore.getState().updateEntity(id, { title });
     },
     listEntityIds: () => Object.keys(useDocumentStore.getState().doc.entities),
+    openHelp: () => useDocumentStore.getState().openHelp(),
+    openAbout: () => useDocumentStore.getState().openAbout(),
+    openSettings: () => useDocumentStore.getState().openSettings(),
   };
   // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an
   // optional `TpTestHook` — no `as any` cast needed. The opt-in URL

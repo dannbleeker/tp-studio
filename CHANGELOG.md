@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 121 — Maintainability backlog: Keyboard a11y coverage (#28)
+
+Tier-3 #28 from the Session 112–114 backlog (*"Full hands-on keyboard navigation pass"*). The original framing was an author-driven manual walkthrough; this session lands the **automated portion** — everything I can pin in CI without driving the actual keyboard — and explicitly flags what stays manual.
+
+**Re-enabled the dialog axe scans Session 116 dropped.** Three new tests under `a11y — dialogs` run axe-core against the Help / About / Settings dialogs (scoped to `dialog[open]`, same rule set as the canvas spec) and fail on any critical / serious violation. The Session 116 timeout problem (palette + Enter sequence racing in headless Chromium) is fixed by driving the dialog open through the store action directly — three new methods on `window.__TP_TEST__`: `openHelp` / `openAbout` / `openSettings`, each a one-liner over the corresponding `useDocumentStore` action.
+
+**Added per-dialog Esc-close pinning.** Three `${which} dialog closes on Escape` tests verify the contract per dialog. `Modal` dismisses on Escape via `useOutsideAndEscape` (Session 79); these tests catch a future regression in the Esc cascade or a custom `onDismiss` override.
+
+**Surfaced (and parked) a real finding.** While drafting the focus-trap tests for these dialogs I confirmed that `Modal` renders `<dialog open>` without `.showModal()` and doesn't wire `useFocusTrap` — so Tabbing past the last focusable element today **escapes the dialog** to the page below. That's a real focus-trap gap. Adding `useFocusTrap` to `Modal` would touch 8 consumers (CommandPalette / ConfirmDialog / QuickCapture / AboutDialog / HelpDialog / SettingsDialog / DocumentInspector / `Modal.stories`), several of which autofocus a specific element that would race with the trap's initial-focus behavior. Not landed under #28's automated-coverage scope; captured as a new Tier-2 backlog item ("Wire `useFocusTrap` into `Modal` primitive") — the existing `useFocusTrap` hook is ready, it's the autofocus reconciliation that needs design thought.
+
+**Still manual.** The fully-hands-on portion of #28 — workflow continuity ("can I author a full CRT keyboard-only?"), focus-order coherence ("does the order make sense as I Tab through?"), discoverability ("can I find every action without a mouse?") — remains worth a periodic ~1-hour walkthrough by Dann. Captured in NEXT_STEPS as the manual checklist that complements the automated regression suite.
+
+**End state:** 4 new e2e a11y tests (Help / About / Settings dialog axe + Esc-close, run in CI). 1200 vitest tests still passing. tsc / biome / build clean. All three originally-open maintainability backlog items are now closed; one new item added (Modal focus-trap).
+
 ## Session 121 — Maintainability backlog: Stryker mutation-testing dial-in (#13)
 
 Tier-2 #13 from the Session 112–114 backlog. Stryker infrastructure landed Session 115 but the first run failed with "Vitest failed to find test files related to mutated files" — vitest's `--related` flag couldn't trace tests through our `@/` path-alias imports.

@@ -36,14 +36,17 @@ import { type Page, expect, test } from '@playwright/test';
  * a11y debt that should land as its own session, not silently shipped
  * here.
  *
- * Session 116 — dialog-specific tests (Help / About / Settings) dropped
- * after Session 115's CI run showed them timing out in headless
- * Chromium. The keyboard-press flows are racy (palette filter + Enter
- * sequence raced; some shortcuts like `?` for Help aren't bound). The
- * right fix is to extend `__TP_TEST__` with `openHelp` / `openAbout` /
- * `openSettings` so the spec drives the store deterministically —
- * captured as Tier-4 future work. For now the canvas + Tab-cycle
- * smoke checks below remain green and useful.
+ * Session 121 — dialog axe scans + per-dialog Esc-close coverage.
+ * Session 116 had dropped the dialog tests because the keyboard-press
+ * flows raced in headless CI Chromium; Session 121 re-enables them by
+ * driving the dialog opens through the new
+ * `window.__TP_TEST__.openHelp / openAbout / openSettings` hooks
+ * (deterministic store-action dispatch — same code path the real
+ * shortcuts hit, none of the gesture flakiness). These tests are the
+ * automated portion of Tier-3 #28 (Full hands-on keyboard navigation
+ * pass). The fully-manual author walkthrough of focus-order
+ * coherence + discoverability remains worth doing periodically — see
+ * NEXT_STEPS for the manual checklist.
  *
  * Run via: `pnpm test:e2e --grep a11y`
  */
@@ -56,6 +59,22 @@ const goToTestMode = async (page: Page) => {
   await page.reload();
   await page.goto('/?test=1');
   await page.waitForFunction(() => Boolean(window.__TP_TEST__));
+};
+
+/**
+ * Session 121 — open a dialog via the test hook, then wait for the
+ * <dialog open> element to appear in the DOM. Returns the locator so
+ * subsequent assertions can scope to it.
+ */
+const openDialog = async (page: Page, which: 'help' | 'about' | 'settings') => {
+  await page.evaluate((w) => {
+    if (w === 'help') window.__TP_TEST__?.openHelp();
+    else if (w === 'about') window.__TP_TEST__?.openAbout();
+    else window.__TP_TEST__?.openSettings();
+  }, which);
+  const dialog = page.locator('dialog[open]');
+  await dialog.waitFor({ state: 'visible' });
+  return dialog;
 };
 
 test.describe('a11y — main surfaces', () => {
@@ -83,6 +102,37 @@ test.describe('a11y — main surfaces', () => {
     }
     expect(blocking).toEqual([]);
   });
+});
+
+test.describe('a11y — dialogs', () => {
+  /**
+   * Each dialog is scanned by axe with the same rule set as the main
+   * canvas. Critical / serious violations fail the test; warning-level
+   * findings stay non-blocking (logged but accepted).
+   */
+  for (const which of ['help', 'about', 'settings'] as const) {
+    test(`${which} dialog has no critical / serious axe violations`, async ({ page }) => {
+      await goToTestMode(page);
+      await openDialog(page, which);
+      const results = await new AxeBuilder({ page })
+        .include('dialog[open]')
+        .disableRules(DISABLED_RULES)
+        .analyze();
+      const blocking = results.violations.filter(
+        (v) => v.impact === 'critical' || v.impact === 'serious'
+      );
+      if (blocking.length > 0) {
+        console.log(`Axe blocking violations in ${which} dialog:`);
+        for (const v of blocking) {
+          console.log(`  - [${v.impact}] ${v.id}: ${v.description}`);
+          for (const n of v.nodes.slice(0, 2)) {
+            console.log(`      ${n.target.join(' ')}`);
+          }
+        }
+      }
+      expect(blocking).toEqual([]);
+    });
+  }
 });
 
 test.describe('a11y — keyboard navigation', () => {
@@ -117,4 +167,32 @@ test.describe('a11y — keyboard navigation', () => {
     const distinctRatio = new Set(focusedTags).size / focusedTags.length;
     expect(distinctRatio).toBeGreaterThanOrEqual(0.4);
   });
+
+  /**
+   * Session 121 — per-dialog Esc-close coverage. The Modal primitive
+   * dismisses on Escape via `useOutsideAndEscape` (Session 79); these
+   * tests pin the contract per-dialog so a future regression in the
+   * Esc cascade or a custom `onDismiss` override fails loudly.
+   *
+   * **Not tested here:** strict focus-trap-inside-dialog. The Modal
+   * primitive renders `<dialog open>` without calling `.showModal()`
+   * (so the dialog isn't in the browser's top layer) and doesn't wire
+   * `useFocusTrap`. Tabbing past the last focusable element today
+   * escapes to the page below — a real finding from this session's
+   * #28 prep. Adding focus-trap to `Modal` would touch 8 consumers
+   * including CommandPalette / ConfirmDialog / QuickCapture which
+   * each autofocus a specific element; the trap's initial-focus
+   * behavior risks conflicting with those. Captured as a new Tier-2
+   * backlog item rather than landed here under #28's automated-
+   * coverage scope.
+   */
+  for (const which of ['help', 'about', 'settings'] as const) {
+    test(`${which} dialog closes on Escape`, async ({ page }) => {
+      await goToTestMode(page);
+      await openDialog(page, which);
+      await page.keyboard.press('Escape');
+      // The dialog should unmount or lose its `open` attribute.
+      await expect(page.locator('dialog[open]')).toHaveCount(0);
+    });
+  }
 });
