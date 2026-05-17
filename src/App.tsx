@@ -1,5 +1,6 @@
 import { ReactFlowProvider } from '@xyflow/react';
 import { Suspense, lazy, useEffect } from 'react';
+import { DocumentMeta } from './components/DocumentMeta';
 import { Canvas } from './components/canvas/Canvas';
 import { CompareBanner } from './components/canvas/CompareBanner';
 import { ContextMenu } from './components/canvas/ContextMenu';
@@ -204,6 +205,7 @@ export function App() {
 
   return (
     <main className="relative h-screen w-screen overflow-hidden">
+      <DocumentMeta />
       <PrintHeader />
       <TitleBadge />
       <TopBar />

@@ -2,6 +2,40 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 120 — React 19 polish (DocumentMeta + B5/B6 audits)
+
+Three small follow-ups to Session 118's React 19 upgrade, planned out post-Session-119 as "items B" (worth-evaluating-but-probably-skip). One shipped, two audited and skipped with data.
+
+**B4 — `<DocumentMeta>` component (shipped).** React 19 lets components render `<title>` directly; React hoists it into `<head>` automatically. New `src/components/DocumentMeta.tsx` reads `doc.title` from Zustand and renders `<title>{title} · TP Studio</title>`. Mounted at the App root next to `<TitleBadge />`. The static `<title>TP Studio</title>` in `index.html` stays as the first-paint / pre-hydration fallback.
+
+The title-computation logic was extracted into a pure `computeBrowserTitle(docTitle: string)` helper because jsdom's React 19 metadata hoisting doesn't populate `document.title` reliably enough to assert on. Five unit tests pin the pure function (regular title, empty → "Untitled", whitespace-only → "Untitled", trim behavior, render-without-crash).
+
+**Real-user value:** tab-juggling users with multiple TP Studio docs open in different tabs can now tell their tabs apart by the doc title rather than every tab reading "TP Studio."
+
+**B5 — `useContext` → `use(context)` migration (audited, skipped).** Audit: **zero `useContext` sites in `src/`.** TP Studio uses Zustand for global state and React Flow's own context internally; there's no app-level Context API surface to migrate. No-op item.
+
+**B6 — `useDeferredValue` for expensive renders (audited, skipped).** Re-ran the `Perf trace` workflow against the Session-119 Compiler-disabled build to establish a clean React-19-only baseline:
+
+| Metric | Scenario | Session 108 (R18) | Session 120 (R19) | Delta |
+|---|---|---:|---:|---|
+| p50 | all-actions | 0.02 | 0.02 | flat |
+| p95 | all-actions | 5.68 | 8.46 | +49% 🟡 |
+| p99 | all-actions | 29.44 | 38.40 | +30% 🟡 |
+| max | all-actions | 212.59 | 204.75 | flat |
+| p50 | edit-heavy | 0.02 | 0.02 | flat |
+| **p95** | **edit-heavy** | **9.10** | **9.95** | **+9% (flat)** |
+| p99 | edit-heavy | 31.94 | 31.42 | flat |
+
+React 19 introduces small overhead on rare interactions (all-actions p95 +49%) but the typing-frequency band (edit-heavy) is essentially flat. Both p95s sit well under the 16ms 60fps budget. **No hotspot worth a `useDeferredValue` intervention.**
+
+Also worth noting in passing: comparing Session 119 (Compiler ON) vs Session 120 (Compiler OFF):
+- all-actions p95: Compiler 3.09 → no-Compiler 8.46 → Compiler-win of −63%
+- edit-heavy p95: Compiler 17.21 → no-Compiler 9.95 → Compiler-hurts of +73%
+
+Confirms the Session 119 disable decision: the Compiler delivers a real all-actions win but pays for it with a worse edit-heavy regression. For TP Studio's typing-heavy workload, no-Compiler is the right call.
+
+**End state:** **1200 tests passing** (was 1195; +5 DocumentMeta). tsc clean, biome clean, build clean, knip exit 0. React 19 baseline is healthy and documented.
+
 ## Session 119 — React Compiler perf comparison + decision to disable
 
 The post-Session-118 audit promised in the React 19 plan. Triggered the `Perf trace` workflow against `main` (Session 118's React 19 + Compiler build), compared the percentiles against Session 108's baseline, and made a data-driven call on the Compiler.
