@@ -41,6 +41,14 @@ export function TitleBadge() {
         // title looked truncated-with-no-signal at the start (the
         // input scrolls horizontally on focus); with `truncate`-style
         // overflow the end of the field reads as "this continues."
+        //
+        // Session 115 — `aria-label` added. The visible text IS the
+        // value of the input (the document title), but axe's `label`
+        // rule requires a name independent of the value so a screen
+        // reader can announce "Document title, edit text" before
+        // reading the value. The axe-core a11y spec caught this on
+        // first run; fix here rather than disabling the rule.
+        aria-label="Document title"
         className="pointer-events-auto min-w-0 max-w-[60ch] flex-shrink overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-transparent px-1.5 py-1 font-medium text-neutral-900 text-sm outline-none transition focus:bg-white focus:shadow-sm disabled:opacity-60 sm:px-2 dark:text-neutral-100 dark:focus:bg-neutral-900"
         value={title}
         onChange={(e) => setTitle(e.target.value)}

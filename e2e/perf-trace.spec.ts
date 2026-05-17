@@ -191,11 +191,11 @@ async function runScenarioWithTrace(
     trace_size_kb: +(traceJson.length / 1024).toFixed(1),
   };
 
-  // biome-ignore lint/suspicious/noConsole: deliberate stdout
+  // Deliberate stdout — these prints are the test's primary output.
+  // (The biome `noConsole` rule doesn't apply to e2e specs, so prior
+  // `biome-ignore` markers were ineffective; removed Session 115.)
   console.log(`\n=== PERF TRACE SUMMARY (${slug}) ===`);
-  // biome-ignore lint/suspicious/noConsole: deliberate stdout
   console.log(JSON.stringify(summary, null, 2));
-  // biome-ignore lint/suspicious/noConsole: deliberate stdout
   console.log(`\nFull trace: ${tracePath} (open in chrome://tracing or perfetto.dev)`);
 
   expect(events.length).toBeGreaterThan(500);

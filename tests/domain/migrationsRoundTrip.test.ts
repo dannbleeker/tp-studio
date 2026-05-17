@@ -131,4 +131,179 @@ describe('schema migrations round-trip', () => {
     const v99 = baseFields(99, { nextAnnotationNumber: 2, groups: {} });
     expect(() => importFromJSON(JSON.stringify(v99))).toThrow(/newer than this app supports/);
   });
+
+  // Session 115 — fixtures for v5 / v6 / v7 originals. Each adds the
+  // fields that schema version introduced and asserts the resulting v8
+  // doc carries those fields untouched (or appropriately upgraded).
+  // Until this session the v5+ chain was only covered by
+  // `migrationsProperty.test.ts`'s arbitrary-doc generator; explicit
+  // fixtures pin per-version behavior so a future migration that
+  // accidentally rewrites a v6-era field gets caught here.
+
+  it('imports a v5 fixture → v8 doc with attributes/customEntityClasses untouched', () => {
+    // v5→v6 added Entity.attributes + TPDocument.customEntityClasses
+    // (B7 + B10). A v5 fixture has neither field; the migration
+    // chain shouldn't invent them, just bump the version.
+    const v5 = baseFields(5, {
+      nextAnnotationNumber: 2,
+      groups: {},
+      entities: {
+        'e-1': {
+          id: 'e-1',
+          type: 'ude',
+          title: 'Sample UDE',
+          annotationNumber: 1,
+          createdAt: 1700000000000,
+          updatedAt: 1700000000000,
+        },
+      },
+    });
+    const doc = importFromJSON(JSON.stringify(v5));
+    expect(doc.schemaVersion).toBe(8);
+    // v6 added these fields but only as optional; migration doesn't
+    // populate empty maps in the doc (they remain undefined).
+    expect(doc.customEntityClasses).toBeUndefined();
+    const entity = Object.values(doc.entities)[0];
+    expect(entity?.attributes).toBeUndefined();
+  });
+
+  it('imports a v6 fixture with attributes + customEntityClasses → v8 preserves both', () => {
+    // v6 fixture EXERCISING the B7+B10 fields the v5→v6 migration
+    // unlocked. Migrations v6→v7 and v7→v8 must preserve these
+    // user-defined surfaces unchanged.
+    const v6 = baseFields(6, {
+      nextAnnotationNumber: 2,
+      groups: {},
+      customEntityClasses: {
+        'risk-event': {
+          id: 'risk-event',
+          label: 'Risk Event',
+          color: 'amber',
+          supersetOf: 'effect',
+        },
+      },
+      entities: {
+        'e-1': {
+          id: 'e-1',
+          type: 'ude',
+          title: 'Customer churn rising',
+          annotationNumber: 1,
+          createdAt: 1700000000000,
+          updatedAt: 1700000000000,
+          attributes: {
+            severity: { kind: 'int', value: 8 },
+            owner: { kind: 'string', value: 'Support team' },
+          },
+        },
+      },
+    });
+    const doc = importFromJSON(JSON.stringify(v6));
+    expect(doc.schemaVersion).toBe(8);
+    expect(doc.customEntityClasses?.['risk-event']?.label).toBe('Risk Event');
+    const entity = Object.values(doc.entities)[0];
+    expect(entity?.attributes?.severity).toEqual({ kind: 'int', value: 8 });
+    expect(entity?.attributes?.owner).toEqual({ kind: 'string', value: 'Support team' });
+  });
+
+  it('imports a v6 EC fixture → v8 doc with edges marked necessity + ecSlot assigned', () => {
+    // The big migration is v6→v7: EC edges become 'necessity', and EC
+    // entities at canonical seed coordinates get their slot binding.
+    // This fixture exercises both. The seed coordinates here mirror
+    // `EC_SEED_POSITIONS` in src/domain/migrations.ts.
+    const v6ec = {
+      id: 'doc-ec',
+      title: 'v6 EC fixture',
+      diagramType: 'ec',
+      schemaVersion: 6,
+      createdAt: 1700000000000,
+      updatedAt: 1700000000000,
+      nextAnnotationNumber: 6,
+      groups: {},
+      entities: {
+        a: {
+          id: 'a',
+          type: 'goal',
+          title: 'Objective',
+          annotationNumber: 1,
+          position: { x: 100, y: 250 },
+          createdAt: 1700000000000,
+          updatedAt: 1700000000000,
+        },
+        b: {
+          id: 'b',
+          type: 'need',
+          title: 'Need B',
+          annotationNumber: 2,
+          position: { x: 450, y: 100 },
+          createdAt: 1700000000000,
+          updatedAt: 1700000000000,
+        },
+        c: {
+          id: 'c',
+          type: 'need',
+          title: 'Need C',
+          annotationNumber: 3,
+          position: { x: 450, y: 400 },
+          createdAt: 1700000000000,
+          updatedAt: 1700000000000,
+        },
+        d: {
+          id: 'd',
+          type: 'want',
+          title: 'Want D',
+          annotationNumber: 4,
+          position: { x: 800, y: 100 },
+          createdAt: 1700000000000,
+          updatedAt: 1700000000000,
+        },
+        dPrime: {
+          id: 'dPrime',
+          type: 'want',
+          title: "Want D'",
+          annotationNumber: 5,
+          position: { x: 800, y: 400 },
+          createdAt: 1700000000000,
+          updatedAt: 1700000000000,
+        },
+      },
+      edges: {
+        'e-ba': { id: 'e-ba', sourceId: 'b', targetId: 'a' },
+        'e-ca': { id: 'e-ca', sourceId: 'c', targetId: 'a' },
+      },
+    };
+    const doc = importFromJSON(JSON.stringify(v6ec));
+    expect(doc.schemaVersion).toBe(8);
+    expect(doc.entities.a?.ecSlot).toBe('a');
+    expect(doc.entities.b?.ecSlot).toBe('b');
+    expect(doc.entities.c?.ecSlot).toBe('c');
+    expect(doc.entities.d?.ecSlot).toBe('d');
+    expect(doc.entities.dPrime?.ecSlot).toBe('dPrime');
+    // EC edges all become necessity-kind.
+    expect(doc.edges['e-ba']?.kind).toBe('necessity');
+    expect(doc.edges['e-ca']?.kind).toBe('necessity');
+  });
+
+  it('imports a v7 fixture → v8 doc preserves ecVerbalStyle field', () => {
+    // v7→v8 was a pure version bump documenting that
+    // TPDocument.ecVerbalStyle (Session 87) became allowed. A v7
+    // fixture with `ecVerbalStyle` set must keep it through the bump.
+    const v7 = baseFields(7, {
+      nextAnnotationNumber: 2,
+      groups: {},
+      ecVerbalStyle: 'twoSided',
+      entities: {
+        'e-1': {
+          id: 'e-1',
+          type: 'ude',
+          title: 'Sample UDE',
+          annotationNumber: 1,
+          createdAt: 1700000000000,
+          updatedAt: 1700000000000,
+        },
+      },
+    });
+    const doc = importFromJSON(JSON.stringify(v7));
+    expect(doc.schemaVersion).toBe(8);
+    expect(doc.ecVerbalStyle).toBe('twoSided');
+  });
 });

@@ -86,14 +86,82 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 Items surfaced by the Tier 1/2/3 maintainability arc that didn't ship and are worth picking up in a focused future session. Tagged by suggested next-step shape.
 
-- **React 19 upgrade.** TP Studio is on `react@^18.3.1`. React 19 is GA and pairs naturally with the React Compiler (Session 114 audit concluded the codebase is likely Compiler-friendly). Migration cost: refs become forwarded props, lifecycle method changes, `react-dom` flag shifts, possible `@xyflow/react` peer-deps recheck. Dedicated session; not bundled with maintainability work because the API surface change is real. Pair with React Compiler enablement (one full pass of `babel-plugin-react-compiler` + `eslint-plugin-react-compiler`).
+- **React 19 upgrade.** TP Studio is on `react@^18.3.1`. React 19 is GA and pairs naturally with the React Compiler (Session 114 audit concluded the codebase is likely Compiler-friendly). Dedicated session; not bundled with maintainability work because the API surface change is real. Session 115 prep analysis below.
+
+  ### React 19 prep — what we already have right
+
+  Scan of the codebase against React 19's hard deprecations:
+
+  | Pattern | Status |
+  | --- | --- |
+  | `ReactDOM.render` → `createRoot` migration | ✅ `src/main.tsx` already uses `createRoot` |
+  | String refs (`ref="myEl"`) | ✅ Zero usages |
+  | Legacy Context API (`getChildContext` / `contextType`) | ✅ Zero usages |
+  | `defaultProps` on function components | ✅ Zero usages |
+  | `useImperativeHandle` (deprecated patterns) | ✅ Zero usages |
+  | `propTypes` runtime checks | ✅ Zero usages (we're full TypeScript) |
+
+  ### React 19 prep — what needs migration
+
+  | Area | Cost | What to do |
+  | --- | --- | --- |
+  | **`forwardRef` → `ref` as prop** | S | One file: `src/components/ui/Button.tsx`. React 19 lets function components accept `ref` as a regular prop; `forwardRef` is soft-deprecated. Rewrite: `export const Button = ({ ref, ...rest }: ButtonProps & { ref?: Ref<HTMLButtonElement> }) => ...`. 5 minutes. |
+  | **`@xyflow/react` peer-dep check** | S | Currently `@xyflow/react@^12.10.2`. Their changelog shows React 19 support added in v12.8. We're fine on the wildcard but verify on first install. |
+  | **`@testing-library/react` peer-dep** | S | Currently `^16.0.1`. RTL v16 supports React 19 in their published peer-dep range. Verify in CI. |
+  | **`@vitejs/plugin-react@^4.3.3`** | S | Supports React 19 in v4.3+. Should be transparent. |
+  | **`vite-plugin-pwa`** | S | No React dependency itself; should be transparent. |
+  | **`react-dom/test-utils`** removal | S | Search for it: `act`, `Simulate`, etc. We use `@testing-library/react`'s `act` which proxies; no direct test-utils imports surface in our test files. |
+  | **Strict-mode double-invocation** | S | StrictMode wraps the app already; React 19 keeps this behavior. No change needed. |
+  | **Suspense semantics tightening** | M | React 19 sees siblings as part of the same Suspense boundary differently — needs verification that the Suspense / lazy chains in `App.tsx` (10+ lazy dialogs) still behave on first paint. Manual smoke test post-upgrade. |
+
+  ### React 19 prep — what we'd gain
+
+  | Feature | Applies to us? | Effort to adopt |
+  | --- | --- | --- |
+  | **Actions + `useTransition` for async forms** | Marginal — most state changes are synchronous Zustand writes | — |
+  | **`useOptimistic`** | Marginal — no server round-trips, no optimistic-UI patterns | — |
+  | **`use(promise)` for data fetching** | N/A — local-first, no data fetching | — |
+  | **`useFormStatus`** | N/A — no `<form>` submissions with progress | — |
+  | **Document metadata in components** (`<title>`, `<meta>`) | Low | Could move `index.html` `<title>` into a React component but the static one works fine |
+  | **Improved hydration error messages** | N/A — we're SPA, no hydration |
+  | **`forwardRef` → ref prop simplification** | ✅ Yes | One file change (see above) |
+  | **Compiler compatibility** | ✅ Yes | Audit done Session 114; codebase looks ready. Enable `babel-plugin-react-compiler` post-upgrade. |
+  | **Async transitions** for the heavier mutations | Maybe | Currently the doc-snapshot path is synchronous; could profile to see if `startTransition` would help. Speculative. |
+
+  ### Recommended Session 115 plan
+
+  1. **Phase A — dependencies (~30 min, contained risk):**
+     - `pnpm add react@19 react-dom@19 @types/react@19 @types/react-dom@19`
+     - Verify `@xyflow/react` + `@testing-library/react` + `@vitejs/plugin-react` peer-deps resolve
+     - Run `pnpm test` — expect zero failures (we have no known incompatibilities)
+     - Run `pnpm build` — expect a smaller / same-size index chunk
+  2. **Phase B — `forwardRef` migration (~10 min):**
+     - Rewrite `Button.tsx` to take `ref` as a prop instead of `forwardRef`
+     - Verify Button's call-sites (~20) still compile
+  3. **Phase C — Suspense smoke test (~30 min):**
+     - Manual walkthrough: open every lazy dialog in sequence, ensure Suspense fallbacks don't flash incorrectly
+     - Run the `e2e/visual-dialogs.spec.ts` suite to catch any timing regressions
+  4. **Phase D — React Compiler enablement (~1 hour, optional):**
+     - Install `babel-plugin-react-compiler` + `eslint-plugin-react-compiler`
+     - Configure in `vite.config.ts` via `@vitejs/plugin-react`'s babel options
+     - Run lint to see Compiler-style warnings; fix or document each
+     - Compare bundle size + a perf-trace run to baseline
+  5. **CHANGELOG + commit**
+
+  Total estimated cost: **~2-3 hours** including Phase D, **~1 hour** without. Low risk: every change has a clean test gate.
+
+  ### Risks to watch
+
+  - **`@xyflow/react` internal `forwardRef` deprecation warnings** — React Flow uses `forwardRef` extensively. React 19 may surface deprecation warnings in dev for their internals. Library will catch up but expect noise.
+  - **`@testing-library/react` peer-dep warnings on install** — RTL 16's peer range is wide but pnpm may grumble. `pnpm install --strict-peer-dependencies` would surface this.
+  - **Suspense flush timing** — React 19 batches Suspense updates differently. Our visual-regression spec is the safety net.
 - **Tier-2 #6 — `exactOptionalPropertyTypes` flag flip.** Session 112 evaluated and reverted: 272 errors surface immediately. Cleanup is mechanical (mostly domain types updating `field?: T` → `field?: T \| undefined` to accept callers passing `field: someValue` where `someValue` may be undefined). A half-session of grind work; the surface area is the bottleneck, not the per-fix difficulty.
 - **Tier-3 #14 — Lazy-load `MarkdownPreview` + DOMPurify + micromark.** Session 114 audit (`pnpm visualize` → `dist/bundle-stats.html` treemap) shows the eager index chunk's biggest contributors after our own component code are DOMPurify (~18 KB gz) and the micromark parser stack (~25 KB gz). Both load only because `MarkdownPreview` is currently eagerly imported by `Inspector`. Lazy-loading would shave ~30 KB gz off the eager critical path but adds a Suspense boundary inside the Inspector — flash on first markdown render. Worth doing once profile data confirms the bytes matter; not a default win.
 - **Tier-2 #4 — Split `CreationWizardPanel.tsx` (596 LOC).** Evaluated and deferred — no clean extraction boundary. The two diagram-type sub-wizards (goalTree + ec) are tightly coupled to the panel's shared state. Worth a fresh look only if the file grows past ~700 LOC.
 - **Tier-2 #5 — `SettingsDialog` per-tab extraction.** Each tab's content lives in the parent file; pulling each into `tabs/AppearanceTab.tsx` etc. is mechanical but the parent is already <600 LOC and the tabs are coupled to shared form state. Skip-or-do is a judgment call.
-- **Tier-2 #12 — Property-based test expansion.** Three PB files exist. Adding more first wants the `docArb` generator in `validatorsProperty.test.ts` extracted into `tests/helpers/docArb.ts` so future PB tests don't duplicate it. ~30 min refactor + 1-2 new property tests (share-link round-trip, persistence round-trip).
+- ~~**Tier-2 #12 — Property-based test expansion.**~~ ✅ **Done (Session 115).** Extracted `docArb` (+ `entityArb` / `edgeArb` / `idArb` / `entityTypeArb` / `diagramTypeArb` / `edgeKindArb`) from `validatorsProperty.test.ts` into `tests/helpers/docArb.ts`. New `tests/services/shareLinkProperty.test.ts` verifies the encode→decode round-trip for arbitrary docs preserves entity/edge keys + diagram type + entity titles. Future PB tests inherit the shared generator. Persistence round-trip PB test is still possible follow-up; the helper extraction unlocks it.
 - **Tier-2 #13 — Mutation testing one-time pass.** Install `@stryker-mutator/core` + run once. Outputs which tests fail to catch mutations (weak coverage indicators). 10+ minute analysis; useful when the test suite has plateaued and you want to know where the gaps are.
-- **Tier-2 #23 — Migration fixture coverage gap.** `migrationsRoundTrip.test.ts` carries v1–v4 fixtures; v5/v6/v7 → current rely on property-based tests. Adding explicit fixtures for v5/v6/v7 → v8 would pin the per-version exact behavior. ~1 hour of constructing realistic per-version doc fixtures.
+- ~~**Tier-2 #23 — Migration fixture coverage gap.**~~ ✅ **Done (Session 115).** `migrationsRoundTrip.test.ts` now carries explicit fixtures for v5, v6 (with B7/B10 attributes + customEntityClasses populated), v6 EC (exercising v6→v7's slot binding + necessity-edge upgrade), and v7 (with `ecVerbalStyle`). 9 fixture tests total (was 5). Per-version behavior is pinned; the property-based test still runs as the random-doc safety net.
 - **Tier-3 #28 — Full hands-on keyboard navigation pass.** Session 114 added the automated keyboard subset to `e2e/a11y.spec.ts` (Tab cycle, Esc cascade for help + palette). A hands-on walkthrough by the author catches different things — workflow continuity, focus-order coherence, the discoverability question. Manual session; ~1-2 hours.
 
 Speculative / profile-gated (don't pick up unless evidence demands):
