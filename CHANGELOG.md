@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 129 — FL-LA4 reuse-contract regression pin
+
+Backlog item FL-LA4 ("incremental relayout via per-component memoization") shipped in Session 83 as an LRU cache in `src/domain/layout.ts` (line 242). NEXT_STEPS had it as parked; this session pins the cache-reuse contract with a regression test layer and updates the backlog status.
+
+**What was already done (Session 83).** `computeLayout` splits the input graph into connected components, computes a stable structural cache key per component, and reuses cached dagre output when the key matches. LRU-evicts at 64 entries. Disconnected subgraphs stack vertically with a `COMPONENT_GAP`. The existing `tests/domain/layoutComponents.test.ts` had 8 tests covering split + pack behavior + same-input cache equivalence.
+
+**What Session 129 adds:**
+
+- **`getLayoutCacheStats()`** — exposes `{ hits, misses, size }` so callers (and tests) can observe the cache without reaching into the module. Counters reset alongside the cache via `clearLayoutCacheForTests`.
+- **4 new cache-reuse tests:**
+  - Records a miss on first call, hits on subsequent identical calls.
+  - When one component changes and another doesn't, the unchanged one is a hit; the modified one is a miss.
+  - Reordered nodes/edges produce the same cache key (the key is structural).
+  - LRU eviction respects the 64-entry cap when saturated.
+
+These tests pin the reuse contract — a future refactor that accidentally drops the cache, drifts its keys, or breaks the canonicalization fires loudly in CI rather than producing slow-but-correct output.
+
+**End state:** FL-LA4 closed as ✅ Done (in 83 + pinned in 129). 1223 tests passing (was 1219; +4). tsc / biome / build clean. The "premise unverified by profile data" caveat from the original NEXT_STEPS note still stands — without a profile-trace measuring real cache hit-rate, we don't know how much wall-time this actually saves. But the implementation + tests are durable.
+
 ## Session 129 — localStorage quota handling (#19)
 
 Backlog item #19 from the post-Session-122 list. The storage seam already caught `QuotaExceededError` and surfaced a generic toast; the gap was actionable mitigation. This session adds error classification + auto-trim-and-retry.

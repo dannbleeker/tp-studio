@@ -310,7 +310,7 @@ The user picked buckets **A / F / H** out of the 16-bucket catalogue. After Tier
 ## Tier 3 — Layout & navigation ergonomics
 
 - ~~**F5 Sunburst / radial alternate view.**~~ ✅ **Done (Session 27).** Top-bar toggle flips between dagre flow and a radial sunburst; preference persists app-wide; hidden for hand-positioned (manual) diagrams.
-- **F1 Incremental relayout** — **parked**. The premise was "on a 500-node Goal Tree dagre is noticeable," but title/text edits already short-circuit before the layout path thanks to `layoutFingerprint` only hashing structural changes. Dagre only re-runs on add/remove operations, which aren't high-frequency. A componentwise cache would add real infrastructure (per-component shape hashes, packing logic for disconnected graphs) and change the visual layout for disconnected diagrams. Revisit with profile data showing dagre is actually the bottleneck.
+- ~~**F1 / FL-LA4 Incremental relayout**~~ ✅ **Done (Session 83, pinned Session 129).** Per-component LRU cache in `src/domain/layout.ts` survives across `computeLayout` calls; reuses cached dagre output when a component's structural fingerprint matches. Disconnected subgraphs pack vertically with `COMPONENT_GAP`. 64-entry LRU cap. Session 129 added `getLayoutCacheStats()` observability + 4 cache-reuse regression tests. The "premise unverified by profile data" caveat still stands — no profile-trace measures real hit-rate yet — but the implementation + tests are durable.
 
 **Radial layout polish** ✅ shipped Session 76. Subtree-weighted angular allocation: each center claims an arc of `2π` proportional to its subtree size; each child gets a sub-arc proportional to its own subtree size. Children stay angularly close to their parent; sibling branches don't fight for the same arc.
 
@@ -554,7 +554,7 @@ LA1 / LA2 / LA3 / IN1 shipped Session 47 (Block A); LA5 shipped Session 63. Only
 | ~~`FL-LA1`~~ | ✅ Multiple **layout directions**: BT / TB / LR / RL / radial (Session 47 + Session 27 for radial) |
 | ~~`FL-LA2`~~ | ✅ **Bias** control (Session 47 — Settings → Layout → Bias) |
 | ~~`FL-LA3`~~ | ✅ **Compactness** slider (Session 47 — Settings → Layout → Compactness) |
-| `FL-LA4` | **Incremental layout** — parked. Premise of "dagre is slow on big graphs" unverified by profile data; see Tier 3 notes. |
+| ~~`FL-LA4`~~ | ✅ **Incremental layout** (Session 83 + 129) — per-component LRU cache in `src/domain/layout.ts`; reuse contract pinned via `getLayoutCacheStats()` + tests. |
 | ~~`FL-LA5`~~ | ✅ **Manual node positioning** (Session 63 — drag-to-pin on every diagram type) |
 | ~~`FL-IN1`~~ | ✅ **Layout Inspector** panel (Session 47 — Settings → Layout section) |
 

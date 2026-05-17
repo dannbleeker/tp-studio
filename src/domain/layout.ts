@@ -251,7 +251,22 @@ const componentCache = new Map<
  */
 export const clearLayoutCacheForTests = (): void => {
   componentCache.clear();
+  componentCacheHits = 0;
+  componentCacheMisses = 0;
 };
+
+// Session 129 — FL-LA4 follow-up. Per-component cache observability so
+// tests can pin the reuse contract (when a component didn't change,
+// dagre must not re-run) and so a future perf-trace can measure the
+// real hit-rate on a production scenario instead of guessing at it.
+// Counters reset alongside the cache via `clearLayoutCacheForTests`.
+let componentCacheHits = 0;
+let componentCacheMisses = 0;
+export const getLayoutCacheStats = (): { hits: number; misses: number; size: number } => ({
+  hits: componentCacheHits,
+  misses: componentCacheMisses,
+  size: componentCache.size,
+});
 
 const COMPONENT_GAP = 80; // mm-ish spacing between separately-laid-out subgraphs
 
@@ -278,9 +293,11 @@ export const computeLayout = (
       // LRU touch — re-insert so it's "freshest" for eviction order.
       componentCache.delete(key);
       componentCache.set(key, cached);
+      componentCacheHits += 1;
       laid.push(cached);
       continue;
     }
+    componentCacheMisses += 1;
     const fresh = layoutOneComponent(c.nodes, c.edges, opts);
     if (componentCache.size >= COMPONENT_CACHE_CAP) {
       const oldest = componentCache.keys().next().value;

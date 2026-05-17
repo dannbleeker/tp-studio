@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { clearLayoutCacheForTests, computeLayout, splitIntoComponents } from '@/domain/layout';
+import {
+  clearLayoutCacheForTests,
+  computeLayout,
+  getLayoutCacheStats,
+  splitIntoComponents,
+} from '@/domain/layout';
 
 /**
  * Session 83 — FL-LA4. The layout module now splits into weakly-connected
@@ -111,5 +116,77 @@ describe('computeLayout per-component packing', () => {
     // must place `c` once and only once.
     expect(after.c).toBeDefined();
     expect(before.c).toBeUndefined();
+  });
+});
+
+// Session 129 — FL-LA4 regression pin. The per-component cache landed
+// in Session 83 ("layout-memo"); these tests harden the cache-reuse
+// contract via the new `getLayoutCacheStats` observability hook so a
+// future refactor that accidentally drops the cache (or causes its
+// keys to drift) fires loudly in CI rather than producing slow-but-
+// correct output.
+describe('computeLayout component cache (FL-LA4 reuse contract)', () => {
+  afterEach(() => {
+    clearLayoutCacheForTests();
+  });
+
+  it('records a cache miss on first call, then a hit on the identical call', () => {
+    const nodes = ['a', 'b'].map((id) => ({ id, width: 200, height: 60 }));
+    const edges = [{ sourceId: 'a', targetId: 'b' }];
+    computeLayout(nodes, edges);
+    expect(getLayoutCacheStats()).toMatchObject({ hits: 0, misses: 1, size: 1 });
+    computeLayout(nodes, edges);
+    expect(getLayoutCacheStats()).toMatchObject({ hits: 1, misses: 1, size: 1 });
+    computeLayout(nodes, edges);
+    expect(getLayoutCacheStats()).toMatchObject({ hits: 2, misses: 1, size: 1 });
+  });
+
+  it('reuses unchanged components when a different component is modified', () => {
+    // Two disconnected pairs. First call: 2 misses (both fresh).
+    const nodes = ['a', 'b', 'c', 'd'].map((id) => ({ id, width: 200, height: 60 }));
+    const edges = [
+      { sourceId: 'a', targetId: 'b' },
+      { sourceId: 'c', targetId: 'd' },
+    ];
+    computeLayout(nodes, edges);
+    expect(getLayoutCacheStats()).toMatchObject({ hits: 0, misses: 2, size: 2 });
+
+    // Modify only the {c, d} component by adding `e`. The {a, b}
+    // component is byte-identical → cache hit. The {c, d, e}
+    // component is new → cache miss. Net: 1 hit, 1 miss.
+    const edited = [
+      { sourceId: 'a', targetId: 'b' },
+      { sourceId: 'c', targetId: 'd' },
+      { sourceId: 'd', targetId: 'e' },
+    ];
+    computeLayout([...nodes, { id: 'e', width: 200, height: 60 }], edited);
+    expect(getLayoutCacheStats()).toMatchObject({ hits: 1, misses: 3 });
+  });
+
+  it('treats reordered nodes / edges as the same component (key is structural)', () => {
+    const nodes = [
+      { id: 'a', width: 200, height: 60 },
+      { id: 'b', width: 200, height: 60 },
+    ];
+    const edges = [{ sourceId: 'a', targetId: 'b' }];
+    computeLayout(nodes, edges);
+    expect(getLayoutCacheStats()).toMatchObject({ misses: 1 });
+    // Same component, nodes passed in reverse order. The cache key
+    // must canonicalize so this is still a hit.
+    computeLayout([nodes[1]!, nodes[0]!], edges);
+    expect(getLayoutCacheStats()).toMatchObject({ hits: 1, misses: 1 });
+  });
+
+  it('evicts LRU when the cache is saturated past its cap', () => {
+    // Fill past the 64-entry cap by laying out 70 distinct components.
+    // Each one is a single isolated node — distinct ids guarantee
+    // distinct cache keys. The first 64 stay; entries 65–70 push out
+    // the oldest 6.
+    for (let i = 0; i < 70; i++) {
+      computeLayout([{ id: `n${i}`, width: 100, height: 60 }], []);
+    }
+    const stats = getLayoutCacheStats();
+    expect(stats.misses).toBe(70);
+    expect(stats.size).toBeLessThanOrEqual(64);
   });
 });
