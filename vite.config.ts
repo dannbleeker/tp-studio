@@ -44,7 +44,23 @@ export default defineConfig(({ command }) => ({
   // there would just duplicate the work. The `command === 'serve'`
   // guard keeps the build step's plugin list untouched.
   plugins: [
-    react(),
+    // Session 118 — React Compiler enabled via babel-plugin-react-
+    // compiler. The Compiler auto-memoizes pure React render output so
+    // most useMemo / useCallback / React.memo boilerplate becomes
+    // unnecessary. We're keeping our manual comparators on TPNode /
+    // TPEdge (Session 105 — the auto-memo can't beat them because
+    // `data` is rebuilt-by-spread on every emission run, and the
+    // Compiler's referential check has the same blind spot as React's
+    // default memo). Everything else benefits from the auto-pass.
+    react({
+      babel: {
+        // Target React 19 directly (the prod build) — Compiler emits
+        // `useMemoCache` calls that are stable across the React 19
+        // runtime. The default '17' target adds a shim import that we
+        // don't need.
+        plugins: [['babel-plugin-react-compiler', { target: '19' }]],
+      },
+    }),
     // Session 114 — `rollup-plugin-visualizer` emits a
     // `dist/bundle-stats.html` treemap on every `pnpm build`. Opt-in
     // ad-hoc: ignore it normally; open it with `pnpm visualize` (which
@@ -177,7 +193,13 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          react: ['react', 'react-dom'],
+          // Session 118 — `react-dom/client` added explicitly. In React
+          // 19 the createRoot renderer lives at `react-dom/client`
+          // (Rollup doesn't auto-resolve subpath exports into the
+          // parent package's chunk). Without this, `cjs/react-dom-
+          // client.production.js` (~93 KB gz) leaks into the index
+          // chunk.
+          react: ['react', 'react-dom', 'react-dom/client'],
           flow: ['@xyflow/react'],
           icons: ['lucide-react'],
           // Session 81 — `dagre` removed from the `flow` chunk so it can

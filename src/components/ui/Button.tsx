@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { type ButtonHTMLAttributes, forwardRef } from 'react';
+import type { ButtonHTMLAttributes, Ref } from 'react';
 
 export type ButtonVariant = 'primary' | 'ghost' | 'softNeutral' | 'softViolet' | 'destructive';
 
@@ -26,15 +26,29 @@ const VARIANT: Record<ButtonVariant, string> = {
     'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-300',
 };
 
+/**
+ * Session 118 — migrated `Button` from `forwardRef` to React 19's
+ * `ref` prop. React 19 lets function components accept `ref` as a
+ * regular prop (the parameter type is `Ref<T>`); `forwardRef` is
+ * soft-deprecated in v19 and removed in a future major. The runtime
+ * + DX behaviour is identical for our 20+ call sites — they continue
+ * to pass `<Button ref={...} />` and the ref flows to the underlying
+ * `<button>` exactly as before.
+ */
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  ref?: Ref<HTMLButtonElement>;
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'ghost', size = 'md', className, type = 'button', ...rest },
-  ref
-) {
+export function Button({
+  ref,
+  variant = 'ghost',
+  size = 'md',
+  className,
+  type = 'button',
+  ...rest
+}: ButtonProps) {
   return (
     <button
       ref={ref}
@@ -43,4 +57,4 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {...rest}
     />
   );
-});
+}

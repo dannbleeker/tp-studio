@@ -64,32 +64,48 @@ export const diagramTypeArb = fc.constantFrom<DiagramType>(
 
 export const edgeKindArb = fc.constantFrom<EdgeKind>('sufficiency', 'necessity');
 
-export const entityArb = fc.record({
-  id: idArb<EntityId>('e'),
-  type: entityTypeArb,
-  // Cover the empty-title case (entity-existence rule), short titles,
-  // and titles long enough to trip the >25-words clarity rule.
-  title: fc.oneof(
-    fc.constant(''),
-    fc.string({ minLength: 1, maxLength: 40 }),
-    fc
-      .array(fc.string({ minLength: 1, maxLength: 6 }), { minLength: 26, maxLength: 32 })
-      .map((w) => w.join(' '))
-  ),
-  annotationNumber: fc.integer({ min: 1, max: 999 }),
-  description: fc.option(fc.string({ maxLength: 80 }), { nil: undefined }),
-  createdAt: fc.constant(1_700_000_000_000),
-  updatedAt: fc.constant(1_700_000_000_000),
-}) satisfies fc.Arbitrary<Entity>;
+// Session 117 — Under exactOptionalPropertyTypes, `description?: string`
+// can't accept `description: undefined`. Build entities/edges WITHOUT
+// the optional field by default and conditionally augment via `chain`
+// so the "missing-vs-present" coverage is preserved.
+export const entityArb: fc.Arbitrary<Entity> = fc
+  .record({
+    id: idArb<EntityId>('e'),
+    type: entityTypeArb,
+    // Cover the empty-title case (entity-existence rule), short titles,
+    // and titles long enough to trip the >25-words clarity rule.
+    title: fc.oneof(
+      fc.constant(''),
+      fc.string({ minLength: 1, maxLength: 40 }),
+      fc
+        .array(fc.string({ minLength: 1, maxLength: 6 }), { minLength: 26, maxLength: 32 })
+        .map((w) => w.join(' '))
+    ),
+    annotationNumber: fc.integer({ min: 1, max: 999 }),
+    createdAt: fc.constant(1_700_000_000_000),
+    updatedAt: fc.constant(1_700_000_000_000),
+  })
+  .chain((base) =>
+    fc.oneof(
+      fc.constant(base satisfies Entity),
+      fc.string({ maxLength: 80 }).map((description) => ({ ...base, description }) satisfies Entity)
+    )
+  );
 
-export const edgeArb = (entityIds: EntityId[]) =>
-  fc.record({
-    id: idArb<EdgeId>('edge'),
-    sourceId: fc.constantFrom(...entityIds),
-    targetId: fc.constantFrom(...entityIds),
-    kind: edgeKindArb,
-    label: fc.option(fc.string({ maxLength: 30 }), { nil: undefined }),
-  }) satisfies fc.Arbitrary<Edge>;
+export const edgeArb = (entityIds: EntityId[]): fc.Arbitrary<Edge> =>
+  fc
+    .record({
+      id: idArb<EdgeId>('edge'),
+      sourceId: fc.constantFrom(...entityIds),
+      targetId: fc.constantFrom(...entityIds),
+      kind: edgeKindArb,
+    })
+    .chain((base) =>
+      fc.oneof(
+        fc.constant(base satisfies Edge),
+        fc.string({ maxLength: 30 }).map((label) => ({ ...base, label }) satisfies Edge)
+      )
+    );
 
 /**
  * Full `TPDocument` arbitrary. Generates 1–6 entities with deduped

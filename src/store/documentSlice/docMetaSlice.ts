@@ -4,6 +4,7 @@ import type {
   CustomEntityClass,
   DiagramType,
   LayoutConfig,
+  Patch,
   SystemScope,
   TPDocument,
 } from '@/domain/types';
@@ -50,7 +51,11 @@ export type DocMetaSlice = {
    * the compactness slider through 20 intermediate values collapses to a
    * single undo step.
    */
-  setLayoutConfig: (patch: LayoutConfig | undefined) => void;
+  // Session 117 — `Patch<LayoutConfig>` (rather than `LayoutConfig`)
+  // so callers can pass `{ field: undefined }` to clear a specific
+  // entry. The runtime delete-on-undefined loop below handles the
+  // actual clearing; this type just lets the call sites compile.
+  setLayoutConfig: (patch: Patch<LayoutConfig> | undefined) => void;
 
   /**
    * Patch the document's System Scope capture. Passing `undefined` for a
@@ -266,7 +271,11 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
               return prev;
             }
           }
-          return touch({ ...prev, layoutConfig: next });
+          // After the delete-on-undefined loop above, `next` is
+          // guaranteed to have no `undefined` values. Cast to
+          // LayoutConfig to assert that to the exactOptional type
+          // checker.
+          return touch({ ...prev, layoutConfig: next as LayoutConfig });
         },
         { coalesceKey: 'doc-layout' }
       );

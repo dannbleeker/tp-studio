@@ -2,6 +2,37 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 118 — React 19 upgrade + React Compiler enablement
+
+The destination of the IP-hygiene / maintainability / pre-prep arc. React 18.3.1 → 19.2.6 + React Compiler enabled. Four phases (A/B/C/D) per the Session 115 plan, plus Session 117 CI fix-ups.
+
+**Phase A — React 19 dependency bump.**
+- `react@19.2.6`, `react-dom@19.2.6`, `@types/react@19.2.14`, `@types/react-dom@19.2.3`.
+- **0 tsc errors immediately** after the bump. The Session 117 `exactOptionalPropertyTypes` cleanup pre-emptied the type-strictness drift that React 19's `@types/react` would otherwise have surfaced.
+- **Bundle config fix:** React 19 moved the renderer to `react-dom/client` and Rollup's `manualChunks` doesn't auto-resolve the subpath into the parent package's chunk. Without an explicit `react-dom/client` entry, `cjs/react-dom-client.production.js` (~93 KB gz) leaked into the eager index chunk. Added `'react-dom/client'` to the `react` chunk's manualChunks list — leak gone.
+- All 1195 tests still passing, build clean.
+
+**Phase B — `Button.tsx` `forwardRef` → `ref` prop.**
+- React 19 soft-deprecated `forwardRef`: function components can now accept `ref` as a regular prop. Sole `forwardRef` site in the codebase (`src/components/ui/Button.tsx`) migrated.
+- `ButtonProps` now includes `ref?: Ref<HTMLButtonElement>`. The 20+ call sites continue to use `<Button ref={...} />` unchanged — the migration is internal to Button's definition.
+
+**Phase C — Suspense smoke.** Full test suite passes (147 files / 1195 tests), production build is clean, bundle budget holds. The Suspense flush timing changes in React 19 don't break our lazy-dialog chains in `App.tsx` (the 13 lazy dialogs from Sessions 81/88/111/115's `MarkdownPreview`).
+
+**Phase D — React Compiler enabled.**
+- `babel-plugin-react-compiler@1.0.0` installed as devDep.
+- `vite.config.ts`: `@vitejs/plugin-react`'s `babel.plugins` now carries `[['babel-plugin-react-compiler', { target: '19' }]]`. The Compiler auto-memoizes pure React render output; most `useMemo` / `useCallback` / `React.memo` boilerplate becomes optimized automatically.
+- **Manual comparators on `TPNode` + `TPEdge` stay** (Session 105). The auto-memo can't beat them — `data` is rebuilt by spread on every emission run, and the Compiler's referential check has the same blind spot as React's default `memo()`. Session 114's audit anticipated this; confirmed accurate.
+- **Bundle cost:** Compiler instrumentation adds ~24 KB gz to the eager index chunk. New chunk size: 108.8 KB gz (was 84.8 pre-Compiler). Bundle budget re-pinned in `bundle-budget.json`: index ceiling 92 KB → 115 KB.
+
+**Session 117 CI fix-ups (folded into this commit since they touch the same files):**
+- Local tsc was filtering on `^src/` and missed test-file errors. Five test files needed exactOptional treatment:
+  - `tests/domain/verbalisation.test.ts` — Edge construction with possibly-undefined `assumptionIds` and `isMutualExclusion` — fixed via a `necessityEdge` helper that uses conditional spreads.
+  - `tests/helpers/docArb.ts` — `entityArb` and `edgeArb` generators were using `fc.option(..., { nil: undefined })` for optional fields, which produces `T | undefined` types incompatible with exactOptional. Restructured to generate the base record without the optional field and `chain` into an optional augmented variant — preserves the "missing-vs-present" coverage.
+  - `tests/store/document.test.ts` — calls `setLayoutConfig({ align: undefined })` to test the "explicit undefined clears the field" semantic. Action signature updated from `LayoutConfig | undefined` to `Patch<LayoutConfig> | undefined` so the test's idiom compiles.
+- `setLayoutConfig` internal merge: cast `next` to `LayoutConfig` after the delete-on-undefined loop strips undefined values.
+
+**End state:** 1195 tests passing, tsc clean, biome clean, build clean, bundle budget within ceiling. React 19 + Compiler are live; the pre-React-19 prep arc (Sessions 116/117) paid off with a zero-friction migration.
+
 ## Session 117 — `exactOptionalPropertyTypes` enabled (React 19 prep step 2)
 
 The 272-error grind from Sessions 112 + 115 — now resolved. Pre-React-19 prep step 2 of 2 complete.

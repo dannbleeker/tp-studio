@@ -54,32 +54,22 @@ const buildEC = (
     ecSlot: 'dPrime',
   });
 
+  // Session 117 — conditional spreads to OMIT undefined fields rather
+  // than set them explicitly (exactOptionalPropertyTypes rejects the
+  // explicit-undefined idiom on optional Edge fields).
   const ed = opts.assumptionsOn ?? {};
-  const bToA = {
-    ...makeEdge(b.id, a.id),
+  const necessityEdge = (sourceId: EntityId, targetId: EntityId, ids?: EntityId[]) => ({
+    ...makeEdge(sourceId, targetId),
     kind: 'necessity' as const,
-    assumptionIds: ed.bToA as EntityId[] | undefined,
-  };
-  const cToA = {
-    ...makeEdge(c.id, a.id),
-    kind: 'necessity' as const,
-    assumptionIds: ed.cToA as EntityId[] | undefined,
-  };
-  const dToB = {
-    ...makeEdge(d.id, b.id),
-    kind: 'necessity' as const,
-    assumptionIds: ed.dToB as EntityId[] | undefined,
-  };
-  const dPrimeToC = {
-    ...makeEdge(dPrime.id, c.id),
-    kind: 'necessity' as const,
-    assumptionIds: ed.dPrimeToC as EntityId[] | undefined,
-  };
+    ...(ids ? { assumptionIds: ids } : {}),
+  });
+  const bToA = necessityEdge(b.id, a.id, ed.bToA as EntityId[] | undefined);
+  const cToA = necessityEdge(c.id, a.id, ed.cToA as EntityId[] | undefined);
+  const dToB = necessityEdge(d.id, b.id, ed.dToB as EntityId[] | undefined);
+  const dPrimeToC = necessityEdge(dPrime.id, c.id, ed.dPrimeToC as EntityId[] | undefined);
   const conflict = {
-    ...makeEdge(d.id, dPrime.id),
-    kind: 'necessity' as const,
-    isMutualExclusion: opts.mutexDtoDPrime ? true : undefined,
-    assumptionIds: ed.dToDPrime as EntityId[] | undefined,
+    ...necessityEdge(d.id, dPrime.id, ed.dToDPrime as EntityId[] | undefined),
+    ...(opts.mutexDtoDPrime ? { isMutualExclusion: true as const } : {}),
   };
 
   const doc = makeDoc([a, b, c, d, dPrime], [bToA, cToA, dToB, dPrimeToC, conflict], 'ec');

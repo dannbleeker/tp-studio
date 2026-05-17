@@ -86,7 +86,7 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 Items surfaced by the Tier 1/2/3 maintainability arc that didn't ship and are worth picking up in a focused future session. Tagged by suggested next-step shape.
 
-- **React 19 upgrade.** TP Studio is on `react@^18.3.1`. React 19 is GA and pairs naturally with the React Compiler (Session 114 audit concluded the codebase is likely Compiler-friendly). Dedicated session; not bundled with maintainability work because the API surface change is real. Session 115 prep analysis below.
+- ~~**React 19 upgrade.**~~ ✅ **Done (Session 118).** TP Studio is now on `react@19.2.6` + `react-dom@19.2.6` + `@types/react@19.2.14`, with React Compiler enabled via `babel-plugin-react-compiler`. The pre-prep (Sessions 116 Storybook bump + 117 exactOptionalPropertyTypes) paid off — the actual upgrade was a zero-friction `pnpm add` + one `forwardRef` → `ref` prop migration in `Button.tsx` + a one-line `manualChunks` fix for `react-dom/client`. Compiler instrumentation costs ~24 KB gz on the eager index chunk; bundle budget re-pinned accordingly. Manual `TPNode` + `TPEdge` memo comparators stay (the Compiler can't beat them — `data` is rebuilt by spread on every emission run, same blind spot as React's default memo). The original Session 115 prep analysis is preserved below for historical reference.
 
   ### React 19 prep — what we already have right
 
