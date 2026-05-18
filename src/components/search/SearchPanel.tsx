@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button';
 import { ancestorChain } from '@/domain/groups';
 import { findMatches } from '@/domain/search';
+import { useDelayedFocus } from '@/hooks/useDelayedFocus';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 
@@ -51,13 +52,9 @@ export function SearchPanel() {
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    // Focus the input shortly after the slide-in starts so the focus animation
-    // lines up with the visual reveal.
-    const id = window.setTimeout(() => inputRef.current?.focus(), 60);
-    return () => window.clearTimeout(id);
-  }, [open]);
+  // Session 130 — autofocus extracted into `useDelayedFocus`; 60 ms
+  // delay syncs with the panel's slide-in animation.
+  useDelayedFocus(inputRef, open, 60);
 
   const matches = useMemo(() => findMatches(doc, query, options), [doc, query, options]);
   const count = matches.length;

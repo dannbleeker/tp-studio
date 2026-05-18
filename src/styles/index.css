@@ -15,6 +15,13 @@
  * triggers `dark:` utility variants; matches the existing semantics. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Session 130 — `hocus:` shortcut for the common `hover` + `focus-visible`
+ * pair. We had 7+ duplicated `hover:bg-... focus:ring-...` patterns;
+ * `hocus:` collapses them. Existing call sites stay on the split form
+ * until a focused migration pass; new code should prefer `hocus:`. */
+@custom-variant hocus (&:hover,
+&:focus-visible);
+
 @theme {
   /* Session 83 — mobile pass. Tailwind's default `sm:` is 640 px, but
    * narrow phones (320–479 px) need their own breakpoint to hide
@@ -29,13 +36,12 @@
 
   /* Per-surface font-size tokens. v4 wants `--text-<name>` tokens; the
    * paired `--text-<name>--line-height` declares the matching
-   * line-height (consumed by the `text-<name>` utility automatically). */
+   * line-height (consumed by the `text-<name>` utility automatically).
+   * Session 130 — `--text-edge` had zero references and was removed. */
   --text-ui: 13px;
   --text-ui--line-height: 1.4;
   --text-node: 15px;
   --text-node--line-height: 1.35;
-  --text-edge: 11px;
-  --text-edge--line-height: 1.2;
 }
 
 :root {
@@ -43,6 +49,16 @@
   /* Multiplier consumed by every transition-duration. Updated by useThemeClass
    * from the user's `animationSpeed` preference. */
   --anim-speed: 1;
+
+  /* Session 130 — named duration tokens scaled by --anim-speed. Replaces
+   * the ~7 hand-rolled `calc(Nms * var(--anim-speed))` expressions
+   * scattered across the canvas + inspector animation rules. Token names
+   * follow Tailwind's `duration-*` scale roughly (fast < quick < normal
+   * < slow) so future Tailwind utility additions can map cleanly. */
+  --duration-fast: calc(120ms * var(--anim-speed));
+  --duration-quick: calc(180ms * var(--anim-speed));
+  --duration-normal: calc(220ms * var(--anim-speed));
+  --duration-slow: calc(300ms * var(--anim-speed));
 }
 
 html,
@@ -134,13 +150,13 @@ body {
  * fresh whenever an entity/edge enters the document. */
 .react-flow__node {
   transition:
-    transform calc(300ms * var(--anim-speed)) cubic-bezier(0.22, 1, 0.36, 1),
-    opacity calc(180ms * var(--anim-speed)) ease-out;
-  animation: tp-fade-in calc(220ms * var(--anim-speed)) ease-out;
+    transform var(--duration-slow) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity var(--duration-quick) ease-out;
+  animation: tp-fade-in var(--duration-normal) ease-out;
 }
 
 .react-flow__edge {
-  animation: tp-fade-in calc(220ms * var(--anim-speed)) ease-out;
+  animation: tp-fade-in var(--duration-normal) ease-out;
 }
 
 /* E2: hover state for edges. Thickens the stroke and a subtle opacity bump
@@ -150,7 +166,7 @@ body {
  * the visual response is constrained to the stroke itself. */
 .react-flow__edge:hover .react-flow__edge-path {
   stroke-width: 2.75;
-  transition: stroke-width calc(120ms * var(--anim-speed)) ease-out;
+  transition: stroke-width var(--duration-fast) ease-out;
 }
 
 @keyframes tp-fade-in {
@@ -168,7 +184,7 @@ body {
 .react-flow__node.tp-dimmed,
 .react-flow__edge.tp-dimmed {
   opacity: 0.18;
-  transition: opacity calc(180ms * var(--anim-speed)) ease-out;
+  transition: opacity var(--duration-quick) ease-out;
 }
 
 /* Disable the transition during interactive dragging if we ever
@@ -180,116 +196,125 @@ body {
 /* Inspector slide-in. The aside already uses transform: translate-x-full
  * when closed; this adds a smooth transform transition scaled by --anim-speed. */
 .inspector-aside {
-  transition: transform calc(220ms * var(--anim-speed)) cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform var(--duration-normal) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Lightweight prose styles for rendered markdown previews. Mirrors a small
- * subset of @tailwindcss/typography — keeps the bundle slim. */
-.prose-tp p {
-  margin: 0 0 0.5rem 0;
-}
-.prose-tp p:last-child {
-  margin-bottom: 0;
-}
-.prose-tp h1,
-.prose-tp h2,
-.prose-tp h3,
-.prose-tp h4 {
-  font-weight: 600;
-  margin: 0.75rem 0 0.25rem;
-  line-height: 1.25;
-}
-.prose-tp h1 {
-  font-size: 1rem;
-}
-.prose-tp h2 {
-  font-size: 0.95rem;
-}
-.prose-tp h3,
-.prose-tp h4 {
-  font-size: 0.875rem;
-}
-.prose-tp strong {
-  font-weight: 600;
-}
-.prose-tp em {
-  font-style: italic;
-}
-.prose-tp code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.85em;
-  background: rgba(115, 115, 115, 0.12);
-  padding: 0.1em 0.3em;
-  border-radius: 3px;
-}
-.prose-tp pre {
-  background: rgba(115, 115, 115, 0.12);
-  padding: 0.5rem;
-  border-radius: 4px;
-  overflow-x: auto;
-  font-size: 0.8em;
-  margin: 0 0 0.5rem 0;
-}
-.prose-tp pre code {
-  background: transparent;
-  padding: 0;
-}
-.prose-tp blockquote {
-  border-left: 3px solid #d4d4d4;
-  margin: 0 0 0.5rem 0;
-  padding-left: 0.75rem;
-  color: #525252;
-}
-.dark .prose-tp blockquote {
-  border-left-color: #525252;
-  color: #a3a3a3;
-}
-.prose-tp ul,
-.prose-tp ol {
-  margin: 0 0 0.5rem 0;
-  padding-left: 1.25rem;
-}
-.prose-tp li {
-  margin: 0.1rem 0;
-}
-.prose-tp a {
-  color: #6366f1; /* indigo-500 */
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
-}
-.prose-tp a[data-entity-ref] {
-  text-decoration: none;
-  background: rgba(99, 102, 241, 0.12);
-  padding: 0.05em 0.35em;
-  border-radius: 3px;
-}
-.prose-tp a[data-entity-ref]:hover {
-  background: rgba(99, 102, 241, 0.22);
-}
-.prose-tp table {
-  border-collapse: collapse;
-  font-size: 0.85em;
-  margin: 0 0 0.5rem 0;
-}
-.prose-tp th,
-.prose-tp td {
-  border: 1px solid #e5e5e5;
-  padding: 0.2rem 0.4rem;
-  text-align: left;
-}
-.dark .prose-tp th,
-.dark .prose-tp td {
-  border-color: #404040;
-}
-.prose-tp hr {
-  border: 0;
-  border-top: 1px solid #e5e5e5;
-  margin: 0.75rem 0;
-}
-.dark .prose-tp hr {
-  border-top-color: #404040;
-}
+ * subset of @tailwindcss/typography — keeps the bundle slim.
+ *
+ * Session 130 — wrapped in `@layer components` so the cascade ordering
+ * with Tailwind utilities is explicit. Utility classes (e.g.
+ * `text-red-500`) still win because v4 puts utilities AFTER the
+ * components layer by default. Previously these rules sat outside any
+ * layer, which made their precedence implementation-defined.
+ */
+@layer components {
+  .prose-tp p {
+    margin: 0 0 0.5rem 0;
+  }
+  .prose-tp p:last-child {
+    margin-bottom: 0;
+  }
+  .prose-tp h1,
+  .prose-tp h2,
+  .prose-tp h3,
+  .prose-tp h4 {
+    font-weight: 600;
+    margin: 0.75rem 0 0.25rem;
+    line-height: 1.25;
+  }
+  .prose-tp h1 {
+    font-size: 1rem;
+  }
+  .prose-tp h2 {
+    font-size: 0.95rem;
+  }
+  .prose-tp h3,
+  .prose-tp h4 {
+    font-size: 0.875rem;
+  }
+  .prose-tp strong {
+    font-weight: 600;
+  }
+  .prose-tp em {
+    font-style: italic;
+  }
+  .prose-tp code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    background: rgba(115, 115, 115, 0.12);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+  }
+  .prose-tp pre {
+    background: rgba(115, 115, 115, 0.12);
+    padding: 0.5rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.8em;
+    margin: 0 0 0.5rem 0;
+  }
+  .prose-tp pre code {
+    background: transparent;
+    padding: 0;
+  }
+  .prose-tp blockquote {
+    border-left: 3px solid #d4d4d4;
+    margin: 0 0 0.5rem 0;
+    padding-left: 0.75rem;
+    color: #525252;
+  }
+  .dark .prose-tp blockquote {
+    border-left-color: #525252;
+    color: #a3a3a3;
+  }
+  .prose-tp ul,
+  .prose-tp ol {
+    margin: 0 0 0.5rem 0;
+    padding-left: 1.25rem;
+  }
+  .prose-tp li {
+    margin: 0.1rem 0;
+  }
+  .prose-tp a {
+    color: #6366f1; /* indigo-500 */
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .prose-tp a[data-entity-ref] {
+    text-decoration: none;
+    background: rgba(99, 102, 241, 0.12);
+    padding: 0.05em 0.35em;
+    border-radius: 3px;
+  }
+  .prose-tp a[data-entity-ref]:hover {
+    background: rgba(99, 102, 241, 0.22);
+  }
+  .prose-tp table {
+    border-collapse: collapse;
+    font-size: 0.85em;
+    margin: 0 0 0.5rem 0;
+  }
+  .prose-tp th,
+  .prose-tp td {
+    border: 1px solid #e5e5e5;
+    padding: 0.2rem 0.4rem;
+    text-align: left;
+  }
+  .dark .prose-tp th,
+  .dark .prose-tp td {
+    border-color: #404040;
+  }
+  .prose-tp hr {
+    border: 0;
+    border-top: 1px solid #e5e5e5;
+    margin: 0.75rem 0;
+  }
+  .dark .prose-tp hr {
+    border-top-color: #404040;
+  }
+} /* end @layer components */
 
 /*
  * Session 107 — promote the React Flow viewport to a compositor layer.

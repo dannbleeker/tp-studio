@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { paletteScore } from '@/domain/paletteScore';
 import { paletteKbdForCommand } from '@/domain/shortcuts';
+import { useDelayedFocus } from '@/hooks/useDelayedFocus';
 import { getRecentCommandIds, recordRecentCommand } from '@/services/recentCommands';
 import { useDocumentStore } from '@/store';
 import { Modal } from '../ui/Modal';
@@ -100,9 +101,12 @@ export function CommandPalette() {
     // Snapshot recents on open so a command run since the previous
     // open is visible. Reading from localStorage is cheap.
     setRecentIds(getRecentCommandIds());
-    const t = setTimeout(() => inputRef.current?.focus(), 0);
-    return () => clearTimeout(t);
   }, [open, initialQuery]);
+  // Session 130 — autofocus extracted into `useDelayedFocus`. Same
+  // contract as before (next-macrotask `.focus()` once the dialog has
+  // mounted) but shared across three dialogs instead of inlined per
+  // call site.
+  useDelayedFocus(inputRef, open);
 
   // Session 88 (S17) — the visible row order when no query is set:
   //   [recent commands] + [unfiltered grouped sections]

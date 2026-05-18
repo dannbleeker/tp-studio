@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { type CaptureNode, parseQuickCapture } from '@/domain/quickCapture';
+import { useDelayedFocus } from '@/hooks/useDelayedFocus';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { applyQuickCapture } from '@/services/quickCapture';
 import { useDocumentStore } from '@/store';
@@ -39,9 +40,10 @@ export function QuickCaptureDialog() {
   useEffect(() => {
     if (!open) return;
     setText('');
-    const id = window.setTimeout(() => textareaRef.current?.focus(), 50);
-    return () => window.clearTimeout(id);
   }, [open]);
+  // Session 130 — autofocus extracted into `useDelayedFocus`; 50 ms
+  // delay syncs the focus with the dialog's slide-in animation.
+  useDelayedFocus(textareaRef, open, 50);
 
   const submit = (): void => {
     if (!guardWriteOrToast()) return;

@@ -243,6 +243,12 @@ export default defineConfig(({ command }) => ({
     environment: 'jsdom',
     globals: false,
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
+    // Session 130 — flag slow tests so a future regression doesn't hide
+    // inside the perf-bench files. The validators perf-bench runs ~6 s
+    // (intentionally — it's a 10k-iteration report); 5000 ms is generous
+    // enough to skip that one while catching unintended slowdowns in the
+    // domain / store / component suites.
+    slowTestThreshold: 5000,
     coverage: {
       // V8 is the bundled provider — no extra dep to install. JSON + text
       // covers both human reading and tooling consumers (codecov etc.).

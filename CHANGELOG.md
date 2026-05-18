@@ -2,6 +2,38 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 130 — Tier 1 under-the-hood cleanup pass
+
+Fourteen XS/S items from the 40-suggestion menu (#38 / #36 / #35 / #7 / #6 / #9 / #8 / #17 / #18 / #24 / #23 / #27 / #1 / #2). All small; all leverage the upgrades that landed in Sessions 118-128.
+
+**Tooling (#38, #36, #35):**
+- New `pnpm verify` script runs the full local gate chain (lint → tsc → knip → test → build) so contributors don't need to memorize it.
+- `knip.json` cleanup — removed 11 redundant entries; knip 6 now auto-handles them via gitignore awareness. Dropped `babel-plugin-react-compiler` from `ignoreDependencies` (knip's detection improved).
+- `vitest.slowTestThreshold: 5000` flags any test crossing 5 s so a future regression doesn't hide inside the perf-bench files.
+
+**Tailwind v4 cleanup (#7, #6, #9, #8):**
+- New `@custom-variant hocus (&:hover, &:focus-visible)` for the 7+ duplicated hover+focus pairs. New code prefers `hocus:`; existing call sites stay on the split form until a focused migration.
+- `.prose-tp` markdown styles moved into `@layer components` so their cascade ordering with Tailwind utilities is explicit (utilities win, as v4 intends).
+- Dropped unused `--text-edge` theme token (zero references in the codebase).
+- New `--duration-fast / -quick / -normal / -slow` CSS custom properties scaled by `--anim-speed`. Replaces the ~7 hand-rolled `calc(Nms * var(--anim-speed))` expressions scattered across canvas + inspector animation rules.
+
+**Domain structure (#17, #18, #24):**
+- Split `src/domain/types.ts` (688 LOC) into eight per-concept files under `src/domain/types/`: `ids.ts`, `entity.ts`, `edge.ts`, `assumption.ts`, `clr.ts`, `group.ts`, `customClass.ts`, `document.ts`. `types/index.ts` is a barrel re-exporting the full surface so every existing `import from '@/domain/types'` call site keeps working unchanged. Session 94 had deferred this; the upgrade arc shifted the cost/benefit calculus enough to revisit.
+- Split `src/domain/migrations.ts` (322 LOC) into seven per-version files under `src/domain/migrations/` plus a shared types module and a barrel `index.ts`. Each version's migration is now findable in its own file; the substantive v6→v7 logic (Assumption record minting + EC slot binding) sits apart from the trivial schema-version bumps.
+- New `src/domain/index.ts` barrel re-exporting the full type surface so callers that pull multiple types can collapse three import lines into one (and a future rename of an underlying file only updates the barrel, not dozens of consumers).
+
+**Selection helpers (#27):**
+- New `src/store/uiSlice/selectionHelpers.ts` with `getSelectedIds`, `isSingleSelection`, `isMultiSelection`, and `matchSelection` (exhaustive pattern-match with a compile-time guarantee that all variants are handled). 4 unit tests pin the contract. Existing call sites unchanged.
+
+**React/store cleanup (#1, #2):**
+- `useFingerprintMemo` audited; kept. Originally tagged as a removal candidate, but the hook centralizes a deliberate `// biome-ignore lint/correctness/useExhaustiveDependencies` that would otherwise need to live at every call site. Removing it would lose the documentation + linter-friendly seam.
+- New `useDelayedFocus(ref, active, delayMs?)` hook in `src/hooks/`. Consolidates the `useEffect` + `setTimeout` + `clearTimeout` autofocus pattern from CommandPalette / QuickCaptureDialog / SearchPanel. Each call site now declares the focus intent in one line; the timing rationale (0 ms vs. 50–60 ms slide-in sync) is in the hook's docstring instead of duplicated three places.
+
+**Evaluated and deferred:**
+- **#23 — consolidate `tests/helpers/docArb.ts` + `tests/helpers/seedDoc.ts`.** Re-read both files: they have non-overlapping purposes (declarative property-based generators vs. imperative store-seeding). No actual consolidation work to do; both stay.
+
+**End state:** 1227 vitest tests passing (was 1223; +4 selection-helper tests). tsc clean. biome 0 errors. knip exit 0 (6 pre-existing unused-exports warnings, all `warn` level). Build clean. The 14 items collectively dropped 1010 LOC out of two monolithic domain files into 16 focused per-concept files, added 4 new helpers / hooks with documented contracts, and tightened 3 build-tool surfaces.
+
 ## Session 129 — #20 IndexedDB migration closed (won't-build)
 
 Backlog item #20 ("migrate persistence from localStorage to IndexedDB") was gated on #19 surfacing real quota problems. With #19's auto-trim mitigation now in place — revisions get pruned when storage fills, the user gets an actionable toast, the in-memory doc keeps editing — the quota path **self-heals**. The dominant reason for an IndexedDB rewrite has effectively been removed.
