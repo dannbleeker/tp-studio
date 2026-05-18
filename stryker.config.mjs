@@ -45,7 +45,12 @@ export default {
     'src/domain/**/*.ts',
     '!src/domain/**/*.d.ts',
     '!src/domain/examples/**',
-    '!src/domain/types.ts',
+    // Session 130 — `src/domain/types.ts` was split into the
+    // `src/domain/types/` subfolder (per-concept files) plus
+    // `src/domain/index.ts` (barrel re-export). All type-only, no
+    // executable code worth mutating.
+    '!src/domain/types/**',
+    '!src/domain/index.ts',
     '!src/domain/tokens.ts',
     '!src/domain/zLayers.ts',
     '!src/domain/constants.ts',
@@ -68,6 +73,12 @@ export default {
   thresholds: { high: 80, low: 60, break: null },
   // Keep concurrency reasonable on a laptop; on CI we'd bump this.
   concurrency: 4,
+  // Session 132 — the full vitest suite (1230+ tests across domain,
+  // store, components, and a handful of integration files) now exceeds
+  // Stryker's 5-min default dry-run cap on cold caches. Bump to 15 so
+  // a cold first run completes; warm runs land much faster but the
+  // baseline pass touches cold caches per file.
+  dryRunTimeoutMinutes: 15,
   // Skip checkers — Stryker's TypeScript checker can be flaky on
   // larger projects, and our existing tsc gate already covers
   // compilation. The mutation-survives-test loop is what we want.
