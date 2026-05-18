@@ -217,9 +217,14 @@ body {
   padding: 0;
 }
 
-/* ───── Cover ───── */
+/* ───── Cover ─────
+ * A4 content area is 297mm − 22mm × 2 = 253mm tall. Setting an explicit
+ * mm height (rather than 100vh) makes Chromium's PDF renderer pin the
+ * cover to exactly one page; vh was being computed against the layout
+ * viewport, not the printed page, and produced an under-filled cover.
+ */
 .cover {
-  height: 100vh;
+  height: 253mm;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,6 +242,10 @@ body {
   font-weight: 600;
   margin-bottom: 32pt;
 }
+/* The global h1 rule below forces page-break-before always for
+ * chapter starts. The cover title is an h1 too, which previously
+ * kicked everything after the eyebrow onto a new page. Opt out here
+ * so the cover renders as one cohesive page. */
 .cover-title {
   font-size: 48pt;
   line-height: 1.05;
@@ -244,6 +253,7 @@ body {
   letter-spacing: -0.02em;
   margin: 0 0 32pt 0;
   color: #111827;
+  page-break-before: auto;
 }
 .cover-subtitle {
   font-size: 13pt;
@@ -262,10 +272,14 @@ body {
   margin-top: 4pt;
 }
 
-/* ───── TOC ───── */
+/* ───── TOC ─────
+ * The cover's page-break-after already starts the TOC on a fresh page;
+ * the first chapter's h1 page-break-before starts the body on the next
+ * fresh page. Repeating those breaks on .toc-page was triggering an
+ * intermittent blank page between cover and TOC in Chromium's PDF
+ * renderer. */
 .toc-page {
-  page-break-before: always;
-  page-break-after: always;
+  /* no forced page-breaks — neighbours handle it */
 }
 .toc-title {
   font-size: 26pt;

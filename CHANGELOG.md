@@ -27,6 +27,8 @@ Two items from the Tier-3 deep-dive plan. Both small, both low-risk, both move r
 
   First-export still works offline once the user has performed it once. Cold first-visit precache shrinks by ~220 KB gz for users who never export. Hashed asset filenames keep the regex stable across rebuilds.
 
+**Book PDF — schema-v8 sweep + cover-rendering bug fix.** Refreshed `docs/guide/screenshots/` via the `Update visual snapshots` workflow (PR #7, 3 PNGs changed: connected-pair, causality-because, revision-panel-open). Foreword "last reviewed" pin bumped to schema v8 / Session 132; Chapter 3's "v7 schema" qualifier dropped (the sufficiency-vs-necessity edge.kind point is durable). Also fixed a long-standing cover-rendering bug in `scripts/build-book-pdf.mjs`: the `.cover` used `height: 100vh`, which Chromium's PDF renderer evaluated against Playwright's layout viewport rather than the printed A4 page. The cover-title (and subtitle / meta) rendered off-page, leaving page 1 with only the "Practitioner's guide" eyebrow. Diagnostic walked the PDF's compressed content streams to count text glyphs per page: old build drew ~20 glyphs on page 1, new build draws 194 (full cover). Fix: `.cover { height: 253mm }` (A4 minus 22mm × 2 vertical margins), explicit `.cover-title { page-break-before: auto }` so the global chapter-h1 rule doesn't accidentally apply, and removed the redundant `page-break-before/after: always` on `.toc-page` (cover's `page-break-after` and chapter h1's `page-break-before` already handle the transitions cleanly).
+
 ## Session 131 — Tier 2 real refactors
 
 Eight Tier-2 items from the 40-suggestion menu (#10 / #15 / #16 / #21 / #22 / #25 / #32 / #33). Mix of shipped work and deferred-with-rationale items where the brief was wrong on inspection.
