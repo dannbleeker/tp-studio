@@ -10,16 +10,29 @@ name: Perf trace
 #
 # Workflow output:
 #   - stdout summary (event count, scripting/layout/paint totals,
-#     long-task count) printed in the workflow log.
-#   - `playwright-report/perf-trace.json` uploaded as a workflow
-#     artifact; download from the Actions tab and open in
-#     `chrome://tracing` or `perfetto.dev` for the full flame chart.
+#     long-task count, scripting percentiles) printed in the
+#     workflow log.
+#   - `perf-trace-output/*.json` uploaded as a workflow artifact:
+#     the raw `perf-trace-<scenario>.json` (open in chrome://tracing
+#     or perfetto.dev for the full flame chart) PLUS a small
+#     `perf-trace-<scenario>-summary.json` per scenario consumed by
+#     the regression-check step.
 #
-# Triggering: manual `workflow_dispatch` only. Not run on push, not
-# part of regular CI's gating.
+# Session 132 / Tier 3 #12 — also runs weekly on a cron schedule and
+# diffs the captured summary against `perf-baseline.json` at repo
+# root. A scenario whose `scripting_percentiles.p95_ms` is more than
+# `regressionThresholdPct` worse than its baseline fails the workflow.
+# Update the baseline in the same commit that lands a deliberate
+# perf change.
 
 on:
   workflow_dispatch:
+  schedule:
+    # Mondays 06:00 UTC. The interesting question is "did anything
+    # land last week that quietly slowed the canvas?" Weekly cadence
+    # answers that without spamming the Actions tab; the regression-
+    # check step short-circuits if everything is within threshold.
+    - cron: '0 6 * * 1'
 
 # Session 101 — opt into Node 24 for JS actions.
 env:
@@ -60,6 +73,16 @@ jobs:
           PERF_TRACE: '1'
         run: pnpm exec playwright test e2e/perf-trace.spec.ts
 
+      - name: Check for regression vs perf-baseline.json
+        # Session 132 / Tier 3 #12 — compares each scenario's
+        # `scripting_percentiles.p95_ms` against the checked-in
+        # baseline. Exits non-zero if any p95 regressed beyond
+        # `regressionThresholdPct`. Runs regardless of whether
+        # the trace step exited successfully so we always upload
+        # the artifact, but the workflow conclusion reflects the
+        # regression check.
+        run: node scripts/check-perf-regression.mjs
+
       - name: Upload trace artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -70,5 +93,8 @@ jobs:
           # anything else.
           # Session 108 — glob pattern picks up BOTH the `all-actions`
           # and the `edit-heavy` scenarios that the spec now captures.
+          # Session 132 — the per-scenario `*-summary.json` files
+          # (used by the regression check) land alongside the raw
+          # traces under the same `perf-trace-output/` bucket.
           path: perf-trace-output/*.json
           retention-days: 30

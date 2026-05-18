@@ -27,6 +27,14 @@ Two items from the Tier-3 deep-dive plan. Both small, both low-risk, both move r
 
   First-export still works offline once the user has performed it once. Cold first-visit precache shrinks by ~220 KB gz for users who never export. Hashed asset filenames keep the regex stable across rebuilds.
 
+**Tier 3 #12 — Perf-trace as a weekly CI gate.** Today's `perf-trace.yml` was `workflow_dispatch`-only — useful for ad-hoc measurement, but nothing automatic flagged a regression unless a maintainer remembered to push the button. Closed the loop:
+
+- `e2e/perf-trace.spec.ts` now writes a small `perf-trace-<scenario>-summary.json` alongside the raw multi-MB trace, so a downstream check doesn't have to re-parse the full trace.
+- New `perf-baseline.json` at repo root pins `scripting_percentiles.p95_ms` and `p99_ms` per scenario (`all-actions` = 6.45 ms / 33.96 ms; `edit-heavy` = 9.20 ms / 35.64 ms — measured Session 131). `regressionThresholdPct: 25` leaves headroom for single-run variance while catching real 2-3× regressions.
+- New `scripts/check-perf-regression.mjs` reads each summary, diffs against baseline, exits 1 if any scenario's p95 regresses beyond the threshold. Three smoke-test branches verified locally: PASS within noise, WARN at half-threshold (16%), FAIL over threshold (52%).
+- `perf-trace.yml` now also runs on a weekly cron (Mondays 06:00 UTC) and invokes the regression check after capture. Artifact upload happens regardless of the regression-check result so a failure is still actionable from the Actions tab.
+- Update-baseline workflow documented inline in the diff script header: run the spec, read the printed p95s, edit `perf-baseline.json` in the same commit that introduces the deliberate change. The diff is the audit trail.
+
 **Tier 3 #11 — Stryker mutation testing reshaped as a spot-check tool.** The original plan (Session 130's 40-improvement menu, item #11) called for a per-module mutation-score baseline across `src/domain/` with a CI gate on regression. Session 132 measured the real per-file cost on a deliberately small target (`migrations/v7ToV8.ts`, 7 mutants): **8m55s** dry run + ~9 min static-mutant re-runs + < 1s/non-static mutant = **~25 min wall time for a tiny file**. The dry run is mostly Stryker overhead (511 s of transform/module-resolution vs. 24 s of actual test execution). Across ~50 mutate-eligible domain files, full baseline projects to 12–25 hours per pass. Reshape:
 
 - `stryker.config.mjs` now sets `ignoreStatic: true` (skip the static mutants that dominate runtime) and bumps `dryRunTimeoutMinutes` to 15. Also fixed a stale exclusion (`!src/domain/types.ts` pointing at a file that no longer exists after the Session 130 type-split) and added `!src/domain/types/**` + `!src/domain/index.ts` so the type-only barrel files aren't probed.

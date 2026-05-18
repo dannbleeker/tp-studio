@@ -1,0 +1,17 @@
+{
+  "_comment": "Session 132 / Tier 3 #12 — checked-in perf-trace baseline. The Perf trace workflow's regression-check step compares each scenario's measured `scripting_percentiles.p95_ms` against the matching `p95_ms` here and fails if the measurement is more than `regressionThresholdPct` percent worse than the baseline. Update the values here when a deliberate change makes the perf number genuinely better or worse; the diff in this file is what reviewers see when shipping a perf-relevant change.",
+  "_note_thresholds": "regressionThresholdPct: a single CI run carries real variance (GC pause timing, runner host load, V8 JIT warmup). 25% leaves headroom for that noise while still catching real 2-3x regressions. Tighten only after multiple runs converge on a stable mean.",
+  "regressionThresholdPct": 25,
+  "scenarios": {
+    "all-actions": {
+      "_baselined_from": "Session 131 perf-trace run (commit ace4762). Recorded after Tier 2 maintainability refactors landed.",
+      "p95_ms": 6.45,
+      "p99_ms": 33.96
+    },
+    "edit-heavy": {
+      "_baselined_from": "Session 131 perf-trace run (commit ace4762). Recorded after Tier 2 maintainability refactors landed.",
+      "p95_ms": 9.2,
+      "p99_ms": 35.64
+    }
+  }
+}

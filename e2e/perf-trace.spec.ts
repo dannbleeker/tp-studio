@@ -191,12 +191,21 @@ async function runScenarioWithTrace(
     trace_size_kb: +(traceJson.length / 1024).toFixed(1),
   };
 
+  // Session 132 — also persist the summary alongside the raw trace so
+  // the regression-check workflow (Tier 3 #12) can diff it against
+  // `perf-baseline.json` without re-parsing the multi-MB raw trace.
+  // The summary file is small (~2 KB), gitignored, and lives in the
+  // same `perf-trace-output/` artifact bucket the raw trace uses.
+  const summaryPath = `perf-trace-output/perf-trace-${slug}-summary.json`;
+  await writeFile(summaryPath, JSON.stringify(summary, null, 2));
+
   // Deliberate stdout — these prints are the test's primary output.
   // (The biome `noConsole` rule doesn't apply to e2e specs, so prior
   // `biome-ignore` markers were ineffective; removed Session 115.)
   console.log(`\n=== PERF TRACE SUMMARY (${slug}) ===`);
   console.log(JSON.stringify(summary, null, 2));
   console.log(`\nFull trace: ${tracePath} (open in chrome://tracing or perfetto.dev)`);
+  console.log(`Summary: ${summaryPath}`);
 
   expect(events.length).toBeGreaterThan(500);
   const onDisk = await readFile(tracePath, 'utf8').catch(() => '');
