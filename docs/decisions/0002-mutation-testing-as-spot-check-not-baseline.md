@@ -13,13 +13,15 @@ Session 121 had landed the Stryker config (`stryker.config.mjs`) and gathered on
 
 Session 132 measured the actual per-file cost on a deliberately small target (`src/domain/migrations/v7ToV8.ts` — 7 mutants, ~20 LOC):
 
-| Phase | Time |
-|---|---|
-| Stryker startup + worker pool spawn | ~10 s |
-| Initial dry run (1232 tests, full suite) | **8 m 55 s** |
-| Per-mutant testing | < 1 s each |
-| Static-mutant re-runs (2 of 7) | ~9 min each |
-| **Total wall time per file** | **~25 min** |
+| Phase | Time (default config) | Time (ignoreStatic: true) |
+|---|---|---|
+| Stryker startup + worker pool spawn | ~10 s | ~10 s |
+| Initial dry run (1232 tests, full suite) | **8 m 55 s** | **8 m 40 s** |
+| Per-mutant testing | < 1 s each | < 1 s each |
+| Static-mutant re-runs (2 of 7) | ~9 min each | _skipped_ |
+| **Total wall time per file** | **~25 min** | **9 m 01 s** (measured) |
+
+Score on the post-`ignoreStatic` run: **80.00%** (4 killed, 1 survived). The surviving mutant flipped `if (!isPlainObject(raw)) return raw;` → `if (false) return raw;` — every v1→v8 migration fixture happens to be a plain object, so the early-return path is never exercised. Not worth a test (would mean passing `42` or `null` as a doc to assert the migration is a no-op).
 
 The dry run is mostly transform / module-resolution overhead — actual test execution is 23.7 s, the rest is the 511 s of overhead Stryker reports. Static mutants compound the cost by re-executing the full dry-run cycle each.
 
