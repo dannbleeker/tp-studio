@@ -33,7 +33,7 @@ The most consequential distinction in TOC notation, and the one most easily fudg
 
 **Necessary condition:** the effect *requires* the cause; without the cause, the effect can't happen — but the cause alone is not enough. *"In order to obtain B, we must have A"* — A is required, but other things might also be required. EC and PRT edges are necessity edges.
 
-TP Studio's v7 schema makes the distinction explicit. Each edge has `kind: 'sufficiency' | 'necessity'`, set per-diagram-type by default. You can override per-edge in the Edge Inspector when you have a mixed-causality diagram.
+TP Studio's schema makes the distinction explicit. Each edge has `kind: 'sufficiency' | 'necessity'`, set per-diagram-type by default. You can override per-edge in the Edge Inspector when you have a mixed-causality diagram.
 
 The verbaliser uses this field to choose between "because" / "therefore" wording and "in order to" / "we must" wording. The CLR validators use it too: a *Predicted Effect Existence* check fires only on sufficiency claims, because "if A is true, B should also be true *somewhere we can see*" is a sufficient-cause prediction.
 

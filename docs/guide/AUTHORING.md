@@ -127,4 +127,4 @@ directly via GitHub Pages or download from the repo.
 
 ## Versioning
 
-When TP Studio's schema version bumps (currently v7), or a major UI change lands, mark the affected chapter with a `> *Last reviewed against TP Studio v…*` note near the top. Helps readers calibrate whether the screenshots they see are current.
+When TP Studio's schema version bumps (currently v8), or a major UI change lands, mark the affected chapter with a `> *Last reviewed against TP Studio v…*` note near the top. Helps readers calibrate whether the screenshots they see are current.
