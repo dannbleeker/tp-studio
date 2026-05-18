@@ -79,6 +79,17 @@ export default {
   // a cold first run completes; warm runs land much faster but the
   // baseline pass touches cold caches per file.
   dryRunTimeoutMinutes: 15,
+  // Session 132 — measured per-file cost on `migrations/v7ToV8.ts`:
+  // 8m55s dry run + ~9min static-mutant re-runs = ~25min for a tiny
+  // 7-mutant file. Static mutants re-execute the full dry run each
+  // (they're top-level state changes that can't be intercepted at the
+  // test level). For our codebase 2 of 7 mutants in v7ToV8 were
+  // static; ratio is likely similar across the rest of `domain/`.
+  // `ignoreStatic` skips them entirely — practical impact: we lose
+  // confidence in mutations at module-load time (rare in our pure
+  // domain files) but per-file wall time drops from ~25min to ~9min,
+  // making the spot-check workflow viable.
+  ignoreStatic: true,
   // Skip checkers — Stryker's TypeScript checker can be flaky on
   // larger projects, and our existing tsc gate already covers
   // compilation. The mutation-survives-test loop is what we want.

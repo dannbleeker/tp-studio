@@ -71,3 +71,4 @@ Slug should be short and searchable. `0003-lazy-dagre-via-await-import.md` over 
 The list below is alphabetical-by-slug for now. Once it grows past ~20 entries, add tag-based grouping.
 
 - [0001 — Lazy-load dagre via `await import` instead of `manualChunks` split](0001-lazy-dagre-via-await-import.md)
+- [0002 — Mutation testing as a spot-check tool, not a per-module baseline](0002-mutation-testing-as-spot-check-not-baseline.md)

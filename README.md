@@ -26,8 +26,20 @@ Open http://localhost:5173. The first time you start, the app shows an empty CRT
 | `pnpm preview`      | Preview the production build locally      |
 | `pnpm test`         | Run Vitest test suite once                |
 | `pnpm test:watch`   | Vitest in watch mode                      |
+| `pnpm mutation`     | Run Stryker mutation testing (see below)  |
 | `pnpm lint`         | Biome lint                                |
 | `pnpm format`       | Biome format (write)                      |
+
+### Mutation testing
+
+`pnpm mutation --mutate <file>` runs [Stryker](https://stryker-mutator.io) against a specific source file. Stryker introduces small synthetic bugs (mutants) into the source and checks whether the test suite catches each one — surviving mutants flag weak coverage even when line coverage is high. The HTML report lands at `reports/mutation/index.html` (gitignored).
+
+Per-file run time on this codebase is **~9 min** (8m55s dry run + a few seconds per mutant; static mutants are skipped via `ignoreStatic: true`). Use this as a **spot-check tool** when tightening a specific module's tests, not as a regular CI gate. See [docs/decisions/0002-mutation-testing-as-spot-check-not-baseline.md](docs/decisions/0002-mutation-testing-as-spot-check-not-baseline.md) for the cost rationale.
+
+```bash
+pnpm mutation --mutate src/domain/paletteScore.ts
+# open reports/mutation/index.html and look for surviving mutants
+```
 
 Two git hooks land via `simple-git-hooks` on `pnpm install`:
 
