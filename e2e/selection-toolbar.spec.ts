@@ -143,35 +143,39 @@ test.describe('SelectionToolbar e2e', () => {
     expectedType: string;
   };
 
+  // Note: the toolbar buttons use `aria-label={verb.label}` (the FULL
+  // label, e.g. "Mark as UDE"), not the shortLabel ("UDE"). The visible
+  // chip text is the shortLabel, but `getByRole({ name })` matches on
+  // accessible name = aria-label. Regexes below match the full labels.
   const verbCases: VerbCase[] = [
     {
       diagramType: 'crt',
       seedType: 'effect',
-      verbLabel: /^UDE$/i,
+      verbLabel: /Mark as UDE/i,
       expectedType: 'ude',
     },
     {
       diagramType: 'frt',
       seedType: 'effect',
-      verbLabel: /^UDE$/i,
+      verbLabel: /Mark as UDE/i,
       expectedType: 'ude',
     },
     {
       diagramType: 'goalTree',
       seedType: 'necessaryCondition',
-      verbLabel: /^promote$/i,
+      verbLabel: /Promote to Goal/i,
       expectedType: 'goal',
     },
     {
       diagramType: 'tt',
       seedType: 'effect',
-      verbLabel: /^action$/i,
+      verbLabel: /Mark as Action/i,
       expectedType: 'action',
     },
     {
       diagramType: 'prt',
       seedType: 'effect',
-      verbLabel: /^obstacle$/i,
+      verbLabel: /Mark as Obstacle/i,
       expectedType: 'obstacle',
     },
   ];
