@@ -1,5 +1,5 @@
 import { DIAGRAM_TYPE_LABEL, resolveEntityTypeMeta } from './entityTypeMeta';
-import { structuralEntities } from './graph';
+import { entitiesOfType, structuralEntities } from './graph';
 import type { Entity, TPDocument } from './types';
 import { verbalisedECText } from './verbalisation';
 
@@ -142,7 +142,7 @@ const renderAssumptions = (doc: TPDocument): string => {
 };
 
 const renderInjections = (doc: TPDocument): string => {
-  const injections = Object.values(doc.entities).filter((e) => e.type === 'injection');
+  const injections = entitiesOfType(doc, 'injection');
   if (injections.length === 0) return '';
   const rows = injections.map((e) => renderEntity(e, doc)).join('\n');
   return `<section><h2>Injections (${injections.length})</h2>${rows}</section>`;

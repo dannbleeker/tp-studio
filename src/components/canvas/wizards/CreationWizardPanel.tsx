@@ -3,6 +3,7 @@ import { ChevronUp, GripVertical, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { EC_SLOTS_BY_ORDER, type WizardOrder } from '@/domain/ecGuiding';
+import { entitiesOfType } from '@/domain/graph';
 import type { Entity } from '@/domain/types';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
@@ -248,9 +249,11 @@ export function CreationWizardPanel() {
     } else {
       // Goal Tree — step 0 creates the apex `goal`; steps 1-3 each
       // create a CSF connected to the goal (necessity edge); step 4
-      // creates one NC connected to the first CSF.
+      // creates one NC connected to the first CSF. `entitiesOfType`
+      // reads through the per-doc by-type index (cheap) instead of
+      // filtering the full entities map on each lookup.
       const existing = (type: Entity['type']) =>
-        Object.values(entities).filter((e) => e.type === type);
+        entitiesOfType(useDocumentStore.getState().doc, type);
       if (step === 0) {
         addEntity({ type: 'goal', title: text });
       } else if (step >= 1 && step <= 3) {

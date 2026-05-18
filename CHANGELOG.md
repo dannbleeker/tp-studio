@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 132 — Tier 3 first wave (#28 + #31)
+
+Two items from the Tier-3 deep-dive plan. Both small, both low-risk, both move real numbers.
+
+**#28 — Per-doc by-type entity index.** New `entitiesByType(doc)` + `entitiesOfType(doc, type)` helpers in `src/domain/graph.ts`. Cached on `doc.entities` reference via `WeakMap`, same strategy as the existing `entitiesArray` / `structuralEntities` caches; rebuilt only when the immutable entities map gets a new reference (i.e. when an entity actually mutates). Migrated 10 call sites that previously did `Object.values(doc.entities).filter(e => e.type === X)`:
+
+  - `domain/coreDriver.ts` — UDE id set on every CoreDriver recompute
+  - `domain/htmlExport.ts` — injection list in the HTML viewer export
+  - `domain/reasoningExport.ts` — EC `want` extraction (2 sites)
+  - `domain/validators/goalTreeMultipleGoals.ts` — Goal Tree multi-goal validator
+  - `services/warningActions.ts` — "Convert extras to CSFs" action handler
+  - `services/exporters/ecWorkshopExport.ts` — injection count badge in workshop PDF
+  - `components/canvas/wizards/CreationWizardPanel.tsx` — Goal-Tree wizard's goal lookup
+  - `components/canvas/overlays/ECInjectionChip.tsx` — chip count selector (per store emission while editing an EC)
+  - `components/inspector/InjectionWorkbench.tsx` — Injection workbench list selector
+
+  Returned arrays are `readonly` — call sites that sort copy via `.slice()` first so they don't mutate the cache. Empty-type queries return a frozen empty array reference so `useShallow` / React.memo callers stay stable when a diagram type has no entities of the queried kind. Five new tests in `tests/domain/graph.test.ts` cover grouping, per-doc caching, empty-stability, and rebuild-on-mutation.
+
+**#31 — Service-worker precache audit.** The PDF-export vendor trio (`jspdf`, `html2canvas`, `svg2pdf`) was being precached on first visit despite being lazy-loaded behind the export menu — ~672 KB raw / ~220 KB gz of bytes that 95% of users never touch on first paint. Pushed to runtime-cache instead, mirroring the existing PDF book pattern (Session 114):
+
+  - `workbox.globIgnores` now excludes `assets/jspdf*.js`, `assets/html2canvas*.js`, `assets/svg2pdf*.js`
+  - New `runtimeCaching` entry with `CacheFirst` handler, dedicated `tp-studio-export-vendor-v1` cache name, 6-entry cap, 30-day expiration
+
+  First-export still works offline once the user has performed it once. Cold first-visit precache shrinks by ~220 KB gz for users who never export. Hashed asset filenames keep the regex stable across rebuilds.
+
 ## Session 131 — Tier 2 real refactors
 
 Eight Tier-2 items from the 40-suggestion menu (#10 / #15 / #16 / #21 / #22 / #25 / #32 / #33). Mix of shipped work and deferred-with-rationale items where the brief was wrong on inspection.

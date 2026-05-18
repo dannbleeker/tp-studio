@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   connectionCount,
+  entitiesByType,
+  entitiesOfType,
   findCycles,
   findPath,
   hasEdge,
@@ -58,6 +60,55 @@ describe('hasEdge', () => {
     const doc = makeDoc([a, b], [ab]);
     expect(hasEdge(doc, a.id, b.id)).toBe(true);
     expect(hasEdge(doc, b.id, a.id)).toBe(false);
+  });
+});
+
+describe('entitiesByType / entitiesOfType', () => {
+  it('groups entities by their type', () => {
+    const u1 = makeEntity({ type: 'ude', title: 'UDE 1' });
+    const u2 = makeEntity({ type: 'ude', title: 'UDE 2' });
+    const eff = makeEntity({ type: 'effect', title: 'Effect' });
+    const doc = makeDoc([u1, u2, eff], []);
+    const byType = entitiesByType(doc);
+    expect(byType.get('ude')?.map((e) => e.id)).toEqual([u1.id, u2.id]);
+    expect(byType.get('effect')?.map((e) => e.id)).toEqual([eff.id]);
+    // Types with no entities are absent from the map (not empty array).
+    expect(byType.has('goal')).toBe(false);
+  });
+
+  it('entitiesOfType returns the typed array, empty when missing', () => {
+    const u1 = makeEntity({ type: 'ude', title: 'UDE' });
+    const doc = makeDoc([u1], []);
+    expect(entitiesOfType(doc, 'ude').map((e) => e.id)).toEqual([u1.id]);
+    expect(entitiesOfType(doc, 'goal')).toEqual([]);
+  });
+
+  it('returns the same empty array reference on every missing-type call', () => {
+    // Stable empty result keeps `useShallow` / React.memo callers from
+    // re-emitting on every doc state when a diagram has no entities of
+    // the queried type.
+    const doc = makeDoc([], []);
+    expect(entitiesOfType(doc, 'goal')).toBe(entitiesOfType(doc, 'ude'));
+  });
+
+  it('caches per doc.entities reference', () => {
+    const u1 = makeEntity({ type: 'ude', title: 'UDE' });
+    const doc = makeDoc([u1], []);
+    // Two calls against the same doc share the by-type map reference.
+    expect(entitiesByType(doc)).toBe(entitiesByType(doc));
+    expect(entitiesOfType(doc, 'ude')).toBe(entitiesOfType(doc, 'ude'));
+  });
+
+  it('rebuilds when the entities map gets a new reference', () => {
+    const u1 = makeEntity({ type: 'ude', title: 'UDE' });
+    const doc1 = makeDoc([u1], []);
+    const cached = entitiesByType(doc1);
+    // Simulate an immutable store update — same id, fresh entities map.
+    const u1b = { ...u1, title: 'UDE renamed' };
+    const doc2 = { ...doc1, entities: { [u1b.id]: u1b } };
+    const fresh = entitiesByType(doc2);
+    expect(fresh).not.toBe(cached);
+    expect(fresh.get('ude')?.[0]?.title).toBe('UDE renamed');
   });
 });
 

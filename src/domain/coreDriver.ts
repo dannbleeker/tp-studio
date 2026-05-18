@@ -1,4 +1,5 @@
 import {
+  entitiesOfType,
   getEntity,
   incomingEdges,
   isAssumption,
@@ -138,11 +139,7 @@ export const findCoreDrivers = (doc: TPDocument): CoreDriverCandidate[] => {
     }
   }
 
-  const udeIds = new Set(
-    Object.values(doc.entities)
-      .filter((e) => e.type === 'ude')
-      .map((e) => e.id)
-  );
+  const udeIds = new Set(entitiesOfType(doc, 'ude').map((e) => e.id));
 
   const scored: CoreDriverCandidate[] = pool
     .map((entity) => {

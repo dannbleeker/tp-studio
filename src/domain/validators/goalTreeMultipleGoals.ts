@@ -1,3 +1,4 @@
+import { entitiesOfType } from '../graph';
 import type { TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
 
@@ -19,11 +20,12 @@ import { makeWarning, type UntieredWarning } from './shared';
  */
 export const goalTreeMultipleGoalsRule = (doc: TPDocument): UntieredWarning[] => {
   if (doc.diagramType !== 'goalTree') return [];
-  const goals = Object.values(doc.entities).filter((e) => e.type === 'goal');
+  const goals = entitiesOfType(doc, 'goal');
   if (goals.length <= 1) return [];
   // Warning anchors on the oldest goal — sorted by annotationNumber
   // because two entities created in the same tick share createdAt and
-  // would otherwise tiebreak on random ids.
+  // would otherwise tiebreak on random ids. `.slice()` copies the cached
+  // array before sorting so we don't mutate the by-type index.
   const apex = goals.slice().sort((a, b) => a.annotationNumber - b.annotationNumber)[0];
   if (!apex) return [];
   return [

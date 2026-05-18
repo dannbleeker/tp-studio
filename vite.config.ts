@@ -110,11 +110,20 @@ export default defineConfig(({ command }) => ({
         globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
         // Session 114 — exclude the bundle-stats.html treemap emitted
         // by rollup-plugin-visualizer (~1.6 MB, dev-only artifact).
-        // Without this, the SW precaches it on every visit which both
-        // bloats first-visit download AND fights the visualizer's
-        // intended ad-hoc use (you'd see a stale tree even on local
-        // re-runs because the SW served the cached one).
-        globIgnores: ['bundle-stats.html'],
+        // Session 132 / Tier 3 #31 — also exclude the PDF-export
+        // vendor trio. jspdf, html2canvas, and svg2pdf together add
+        // up to ~672 KB raw (~220 KB gz) of bytes that 95% of users
+        // never touch on first visit. They're lazy-loaded behind the
+        // export menu and runtime-cached below so the first export
+        // still works offline once the user has performed it once.
+        // The win is the cold first-visit precache download for
+        // users who never export.
+        globIgnores: [
+          'bundle-stats.html',
+          'assets/jspdf*.js',
+          'assets/html2canvas*.js',
+          'assets/svg2pdf*.js',
+        ],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         // Session 114 — runtime-cache the practitioner book PDF
@@ -129,6 +138,11 @@ export default defineConfig(({ command }) => ({
         // pipeline normally invalidates the cache; for a name-stable
         // path like this one we cap the cache age explicitly so
         // stale-but-valid responses don't linger forever.
+        //
+        // Session 132 / Tier 3 #31 — same pattern applied to the
+        // PDF-export vendor chunks. The chunks are content-hashed by
+        // Vite, so a redeploy emits a new filename and the SW fetches
+        // the new chunk on demand; the cached old one ages out.
         runtimeCaching: [
           {
             urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.endsWith('.pdf'),
@@ -139,6 +153,19 @@ export default defineConfig(({ command }) => ({
                 maxEntries: 4,
                 // 30 days; long enough to be useful offline, short
                 // enough that a rare rebuild eventually propagates.
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+          {
+            // Hashed asset filenames keep this regex stable across rebuilds.
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin && /\/assets\/(jspdf|html2canvas|svg2pdf)/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tp-studio-export-vendor-v1',
+              expiration: {
+                maxEntries: 6,
                 maxAgeSeconds: 30 * 24 * 60 * 60,
               },
             },

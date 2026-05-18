@@ -4,6 +4,7 @@ import {
   EC_SLOT_LABEL,
   type ECSlot,
 } from '@/domain/ecGuiding';
+import { entitiesOfType } from '@/domain/graph';
 import type { Entity, TPDocument } from '@/domain/types';
 import { loadJsPdf } from '@/services/exporters/pdfShared';
 import { slug, triggerDownload } from '@/services/exporters/shared';
@@ -349,11 +350,7 @@ export const exportECWorkshopSheet = async (doc: TPDocument): Promise<boolean> =
   pdf.text('Injection(s)', injX + 2, injY + 5);
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(140, 140, 140);
-  pdf.text(
-    `${Object.values(doc.entities).filter((e) => e.type === 'injection').length} wired`,
-    injX + 2,
-    injY + 10
-  );
+  pdf.text(`${entitiesOfType(doc, 'injection').length} wired`, injX + 2, injY + 10);
 
   // ── Guiding-questions table (bottom) ───────────────────────────
   const tableX = MARGIN_MM;

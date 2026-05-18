@@ -1,4 +1,5 @@
 import { Syringe } from 'lucide-react';
+import { entitiesOfType } from '@/domain/graph';
 import { useDocumentStore } from '@/store';
 
 /**
@@ -22,9 +23,9 @@ import { useDocumentStore } from '@/store';
 export function ECInjectionChip() {
   const isEC = useDocumentStore((s) => s.doc.diagramType === 'ec');
   // Narrow selector — only re-emits when the injection count changes.
-  const injectionCount = useDocumentStore(
-    (s) => Object.values(s.doc.entities).filter((e) => e.type === 'injection').length
-  );
+  // Reads through the cached by-type index so flipping entities in/out
+  // of `injection` is the only thing that allocates work here.
+  const injectionCount = useDocumentStore((s) => entitiesOfType(s.doc, 'injection').length);
   const requestInjectionsView = useDocumentStore((s) => s.requestECInjectionsView);
 
   if (!isEC) return null;

@@ -1,7 +1,7 @@
 // Pure graph queries over a TPDocument. No React, no store, no DOM —
 // safe to use from validators, store actions, services, and tests.
 
-import type { Edge, Entity, EntityId, TPDocument } from './types';
+import type { Edge, Entity, EntityId, EntityType, TPDocument } from './types';
 
 /**
  * Session 105 / Tier 1 #3 — cached `Object.values(doc.edges)`.
@@ -86,6 +86,63 @@ export const isNote = (entity: Entity): boolean => entity.type === 'note';
  * change away.
  */
 export const isNonCausal = (entity: Entity): boolean => isAssumption(entity) || isNote(entity);
+
+/**
+ * Session 132 / Tier 3 #28 — per-doc-reference index of entities by
+ * type. The `structuralEntities` + `entitiesArray` caches give us
+ * O(1) access to the array, but every "give me the goals" or
+ * "give me the injections" caller still pays O(n) to refilter on
+ * each call. Building the by-type map once per doc state moves
+ * those queries to O(1) at the cost of one extra pass when the doc
+ * mutates.
+ *
+ * Hot callers: the Goal Tree multi-goal validator (per validate
+ * cycle), CoreDriver's UDE lookup (per warnings re-compute), the
+ * EC InjectionWorkbench + ECInjectionChip selectors (per doc-store
+ * emission while editing an EC), and the reasoning/HTML exporters.
+ *
+ * Cache invalidation: keyed on `doc.entities` reference, same
+ * strategy as `entitiesArray` / `structuralEntities`. The store's
+ * immutable updates produce a new reference on every entity
+ * mutation, so the next call rebuilds; intermediate reads share
+ * the cache.
+ *
+ * The returned arrays are `readonly`. Callers that need to sort
+ * must copy via `.slice()` first — sorting in-place would mutate
+ * the cache.
+ */
+const entitiesByTypeCache = new WeakMap<
+  TPDocument['entities'],
+  ReadonlyMap<EntityType, readonly Entity[]>
+>();
+
+export const entitiesByType = (doc: TPDocument): ReadonlyMap<EntityType, readonly Entity[]> => {
+  const cached = entitiesByTypeCache.get(doc.entities);
+  if (cached) return cached;
+  const map = new Map<EntityType, Entity[]>();
+  for (const e of Object.values(doc.entities)) {
+    let arr = map.get(e.type);
+    if (!arr) {
+      arr = [];
+      map.set(e.type, arr);
+    }
+    arr.push(e);
+  }
+  const frozen: ReadonlyMap<EntityType, readonly Entity[]> = map;
+  entitiesByTypeCache.set(doc.entities, frozen);
+  return frozen;
+};
+
+/**
+ * Convenience: the array of entities with the given type. Empty
+ * tuple when no entity of that type exists; the same empty array
+ * reference is returned on every "missing type" call to keep the
+ * caller's referential-equality checks stable.
+ */
+const EMPTY_TYPE_RESULT: readonly Entity[] = Object.freeze([]) as readonly Entity[];
+
+export const entitiesOfType = (doc: TPDocument, type: EntityType): readonly Entity[] =>
+  entitiesByType(doc).get(type) ?? EMPTY_TYPE_RESULT;
 
 // Session 85 — per-doc-reference memo. `structuralEntities` is called
 // from 44+ sites (validators, exporters, emission, inspector, layout,

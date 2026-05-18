@@ -1,3 +1,4 @@
+import { entitiesOfType } from '@/domain/graph';
 import type { TPDocument, Warning } from '@/domain/types';
 import type { RootStore } from '@/store/types';
 
@@ -24,11 +25,12 @@ export type WarningActionHandler = (store: RootStore, doc: TPDocument, warning: 
  */
 const convertExtraGoalsToCsfs: WarningActionHandler = (store, doc) => {
   if (doc.diagramType !== 'goalTree') return;
-  const goals = Object.values(doc.entities).filter((e) => e.type === 'goal');
+  const goals = entitiesOfType(doc, 'goal');
   if (goals.length <= 1) return;
   // Sort by `annotationNumber` (per-doc monotonic counter assigned at
   // creation) — survives multiple entities created in the same
-  // millisecond, unlike `createdAt`, which can collide.
+  // millisecond, unlike `createdAt`, which can collide. `.slice()`
+  // copies the cached by-type array before sorting.
   const sorted = goals.slice().sort((a, b) => a.annotationNumber - b.annotationNumber);
   const apex = sorted[0]!;
   for (const goal of sorted) {

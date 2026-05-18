@@ -2,7 +2,13 @@ import type { CausalityLabel } from '@/store/uiSlice/types';
 import { findCoreDrivers } from './coreDriver';
 import { renderEdgeSentence, resolveEdgeConnector, topologicalEdgeOrder } from './edgeReading';
 import { DIAGRAM_TYPE_LABEL, ENTITY_TYPE_META } from './entityTypeMeta';
-import { incomingEdges, isAssumption, outgoingEdges, structuralEntities } from './graph';
+import {
+  entitiesOfType,
+  incomingEdges,
+  isAssumption,
+  outgoingEdges,
+  structuralEntities,
+} from './graph';
 import type { Edge, Entity, TPDocument } from './types';
 
 /**
@@ -62,8 +68,8 @@ const renderPreamble = (doc: TPDocument): string[] => {
   }
 
   if (doc.diagramType === 'ec') {
-    const wants = Object.values(doc.entities)
-      .filter((e) => e.type === 'want')
+    const wants = entitiesOfType(doc, 'want')
+      .slice()
       .sort((a, b) => a.annotationNumber - b.annotationNumber);
     if (wants.length >= 2 && wants[0] && wants[1]) {
       lines.push('', '## The conflict');
@@ -275,8 +281,8 @@ const renderCausesInto = (
 const renderEcOutline = (doc: TPDocument): string[] => {
   const lines: string[] = [];
   const byType = (t: Entity['type']) =>
-    Object.values(doc.entities)
-      .filter((e) => e.type === t)
+    entitiesOfType(doc, t)
+      .slice()
       .sort((a, b) => a.annotationNumber - b.annotationNumber);
   const goal = byType('goal')[0];
   const needs = byType('need');

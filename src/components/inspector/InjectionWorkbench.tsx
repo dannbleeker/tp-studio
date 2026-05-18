@@ -1,6 +1,7 @@
 import { Plus, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { entitiesOfType } from '@/domain/graph';
 import type { Assumption, Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
@@ -23,7 +24,7 @@ export function InjectionWorkbench() {
   const { injections, assumptions, addEntity, linkInjection, unlinkInjection, setEntityAttribute } =
     useDocumentStore(
       useShallow((s) => ({
-        injections: Object.values(s.doc.entities).filter((e) => e.type === 'injection'),
+        injections: entitiesOfType(s.doc, 'injection'),
         assumptions: s.doc.assumptions ?? ({} as Record<string, Assumption>),
         addEntity: s.addEntity,
         linkInjection: s.linkInjectionToAssumption,
