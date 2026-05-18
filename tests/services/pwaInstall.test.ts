@@ -10,7 +10,7 @@
 // directly into the module's captured-event slot.
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { __setDeferredPromptForTest, triggerInstallPrompt } from '@/services/pwaInstall';
+import { __setDeferredPromptForTest, triggerInstallPrompt } from '@/services/pwa/pwaInstall';
 
 afterEach(() => {
   __setDeferredPromptForTest(null);

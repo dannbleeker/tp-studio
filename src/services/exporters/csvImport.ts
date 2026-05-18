@@ -1,7 +1,7 @@
 import { isEntityType } from '@/domain/guards';
 import type { EntityType } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { pickFile } from './exporters/picker';
+import { pickFile } from '../exporters/picker';
 
 /**
  * Bulk CSV entity import (FL-QC2).

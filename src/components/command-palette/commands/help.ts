@@ -1,4 +1,4 @@
-import { triggerInstallPrompt } from '@/services/pwaInstall';
+import { triggerInstallPrompt } from '@/services/pwa/pwaInstall';
 import type { Command } from './types';
 
 export const helpCommands: Command[] = [

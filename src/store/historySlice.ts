@@ -1,7 +1,7 @@
 import type { StateCreator } from 'zustand';
 import { COALESCE_WINDOW_MS, HISTORY_LIMIT } from '@/domain/constants';
 import type { TPDocument } from '@/domain/types';
-import { persistDebounced } from '@/services/persistDebounced';
+import { persistDebounced } from '@/services/storage/persistDebounced';
 import type { RootStore } from './types';
 
 export type HistoryEntry = {

@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { StatusStrip } from '@/components/canvas/StatusStrip';
+import { StatusStrip } from '@/components/canvas/overlays/StatusStrip';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);

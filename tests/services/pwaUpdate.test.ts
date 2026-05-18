@@ -7,7 +7,7 @@
 // callback shapes without a real SW.
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { __resetPwaUpdateForTest, initPwaUpdateToast } from '@/services/pwaUpdate';
+import { __resetPwaUpdateForTest, initPwaUpdateToast } from '@/services/pwa/pwaUpdate';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 // The vitest alias in `vite.config.ts` makes `virtual:pwa-register`
 // resolve to `tests/stubs/virtual-pwa-register.ts`. We import the

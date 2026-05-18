@@ -1,7 +1,12 @@
 import { create } from 'zustand';
 import type { Revision } from '@/domain/revisions';
-import { cancelPendingPersist } from '@/services/persistDebounced';
-import { readJSON, STORAGE_KEYS, setStorageErrorListener, writeJSON } from '@/services/storage';
+import { cancelPendingPersist } from '@/services/storage/persistDebounced';
+import {
+  readJSON,
+  STORAGE_KEYS,
+  setStorageErrorListener,
+  writeJSON,
+} from '@/services/storage/storage';
 import { createDocumentSlice, documentDefaults } from './documentSlice';
 import { createHistorySlice, historyDefaults } from './historySlice';
 import { createRevisionsSlice, revisionsDefaults } from './revisionsSlice';

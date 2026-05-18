@@ -122,4 +122,101 @@ test.describe('SelectionToolbar e2e', () => {
     // Toolbar should be absent because the pref is off.
     await expect(page.locator('[data-component="selection-toolbar"]')).toHaveCount(0);
   });
+
+  /**
+   * Session 131 — per-diagram-type verb coverage. Verbs added in
+   * Sessions 127 + 128 are unit-tested in `selectionVerbs.test.ts`
+   * (registry-level: "the verb appears in the verb list"), but the
+   * end-to-end path (toolbar renders → user clicks → store mutates →
+   * canvas re-renders) was uncovered. This block exercises that path
+   * for one representative verb per diagram type so a future wiring
+   * regression fires immediately.
+   *
+   * The pattern: switch diagram type, seed an entity that the verb
+   * targets, select it, click the verb, assert the store-side effect.
+   */
+  type VerbCase = {
+    diagramType: 'crt' | 'frt' | 'goalTree' | 'tt' | 'prt';
+    seedType: string;
+    verbLabel: RegExp;
+    /** Read on the entity after the click; must equal `expectedType`. */
+    expectedType: string;
+  };
+
+  const verbCases: VerbCase[] = [
+    {
+      diagramType: 'crt',
+      seedType: 'effect',
+      verbLabel: /^UDE$/i,
+      expectedType: 'ude',
+    },
+    {
+      diagramType: 'frt',
+      seedType: 'effect',
+      verbLabel: /^UDE$/i,
+      expectedType: 'ude',
+    },
+    {
+      diagramType: 'goalTree',
+      seedType: 'necessaryCondition',
+      verbLabel: /^promote$/i,
+      expectedType: 'goal',
+    },
+    {
+      diagramType: 'tt',
+      seedType: 'effect',
+      verbLabel: /^action$/i,
+      expectedType: 'action',
+    },
+    {
+      diagramType: 'prt',
+      seedType: 'effect',
+      verbLabel: /^obstacle$/i,
+      expectedType: 'obstacle',
+    },
+  ];
+
+  for (const { diagramType, seedType, verbLabel, expectedType } of verbCases) {
+    test(`${diagramType}: clicking ${verbLabel.source} updates the entity type`, async ({
+      page,
+    }) => {
+      // Switch the doc to the right diagram type, then seed a single
+      // entity of the right starting type. Both go through the test
+      // hook so we don't leak `window.useDocumentStore` access.
+      const id = await page.evaluate(
+        ({ dt, st }) => {
+          window.__TP_TEST__!.newDocument(
+            dt as 'crt' | 'frt' | 'prt' | 'tt' | 'ec' | 'goalTree' | 'st' | 'freeform'
+          );
+          const created = window.__TP_TEST__!.seed({
+            // biome-ignore lint/suspicious/noExplicitAny: EntityType union belongs to the test-hook surface.
+            type: st as any,
+            titles: ['A'],
+          });
+          return created[0]!;
+        },
+        { dt: diagramType, st: seedType }
+      );
+
+      await page.waitForSelector(`.react-flow__node[data-id="${id}"]`);
+      await page.waitForFunction((eid) => window.__TP_TEST__!.selectNodeViaRF(eid), id, {
+        timeout: 5000,
+      });
+      await page.waitForFunction(() => {
+        const sel = window.__TP_TEST__!.getSelection();
+        return sel.kind === 'entities' && sel.ids.length === 1;
+      });
+
+      const toolbar = page.locator('[data-component="selection-toolbar"]');
+      await expect(toolbar).toHaveCount(1);
+
+      const verb = toolbar.getByRole('button', { name: verbLabel });
+      await expect(verb).toBeVisible();
+      await verb.click();
+
+      // Read the entity back via the test hook and verify its type flipped.
+      const finalType = await page.evaluate((eid) => window.__TP_TEST__!.getEntityType(eid), id);
+      expect(finalType).toBe(expectedType);
+    });
+  }
 });

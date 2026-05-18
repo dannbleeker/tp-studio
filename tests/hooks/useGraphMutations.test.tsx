@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import type { FinalConnectionState, InternalNode } from '@xyflow/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { useGraphMutations } from '@/components/canvas/useGraphMutations';
+import { useGraphMutations } from '@/components/canvas/hooks/useGraphMutations';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 

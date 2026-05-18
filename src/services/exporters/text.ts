@@ -1,8 +1,8 @@
 import { exportToSelfContainedHTML } from '@/domain/htmlExport';
 import { exportToJSON, importFromJSON } from '@/domain/persistence';
 import type { TPDocument } from '@/domain/types';
-import { exportAnnotationsMarkdown, exportAnnotationsText } from '../annotationsExport';
-import { exportToCsv } from '../csvExport';
+import { exportAnnotationsMarkdown, exportAnnotationsText } from './annotationsExport';
+import { exportToCsv } from './csvExport';
 import { pickFile } from './picker';
 import { slug, triggerDownload } from './shared';
 

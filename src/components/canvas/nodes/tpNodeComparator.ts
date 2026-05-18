@@ -1,5 +1,5 @@
 import type { NodeProps } from '@xyflow/react';
-import type { TPNode as TPNodeType } from './flow-types';
+import type { TPNode as TPNodeType } from '../edges/flow-types';
 
 /**
  * Session 113 — extracted from `TPNode.tsx` (sibling of the same-session

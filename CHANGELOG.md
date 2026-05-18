@@ -2,6 +2,41 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 131 — Tier 2 real refactors
+
+Eight Tier-2 items from the 40-suggestion menu (#10 / #15 / #16 / #21 / #22 / #25 / #32 / #33). Mix of shipped work and deferred-with-rationale items where the brief was wrong on inspection.
+
+**Shipped:**
+
+- **#10 — Perf-trace baseline refresh.** Triggered the `Perf trace` workflow against current `main` (post-Tailwind-v4 + Vite-8 + Vitest-4 + Modal-focus-trap + selection-toolbar verbs + all Tier-1 cleanups). Results:
+
+  | Metric | Scenario | Session 108 | Session 120 (R19) | Session 131 |
+  |---|---|---:|---:|---:|
+  | p95 | all-actions | 5.68 | 8.46 | **6.45** |
+  | p99 | all-actions | 29.44 | 38.40 | **33.96** |
+  | p95 | edit-heavy | 9.10 | 9.95 | **9.20** |
+  | p99 | edit-heavy | 31.94 | 31.42 | **35.64** |
+
+  All-actions p95 improved 24% from Session 120 (8.46 → 6.45), most of the way back to Session 108's pre-R19 baseline. Edit-heavy stayed flat within noise. No regressions from the upgrade arc.
+
+- **#15 — `src/components/canvas/` subfolder reorg.** 33 flat files split into `canvas/{nodes,edges,hooks,overlays,wizards}`. `Canvas.tsx` stays at the top level. 47 internal relative imports + 18 external absolute imports rewritten. Test count unchanged.
+
+- **#16 — `src/services/` subfolder reorg.** Moved the user-facing exporters (`pdfExport`, `ecWorkshopExport`, `annotationsExport`, `csvExport`, `csvImport`) into the existing `exporters/` subfolder. New `storage/` group (`storage`, `persistDebounced`, `recentCommands`) and `pwa/` group (`pwaInstall`, `pwaUpdate`). Other top-level services (`clipboard`, `errors`, `logger`, etc.) stay flat — they don't form a clean group.
+
+- **#33 — E2E for selection-toolbar verbs.** Added 5 parametrized tests covering one representative verb per diagram type (CRT mark-as-UDE, FRT mark-as-UDE, Goal Tree promote-to-goal, TT mark-as-action, PRT mark-as-obstacle). Extended `window.__TP_TEST__` with `newDocument` and `getEntityType` so the tests don't reach for `window.useDocumentStore`. The wiring path (toolbar renders → user clicks → store mutates → entity type flips) is now end-to-end-pinned.
+
+**Evaluated and deferred (brief was wrong on closer inspection):**
+
+- **#21 — Data-driven validator rules.** The validators are already factored: each rule is a pure `(doc) => UntieredWarning[]` function, the `tieredRule(tier, ruleId, fn)` factory composes metadata + behaviour, and `RULES_BY_DIAGRAM` is the per-diagram registry. Further restructuring would just shuffle metadata between locations without reducing coupling. Skip until a real coupling problem surfaces.
+
+- **#22 — Split `verbalisation.ts` per diagram type.** The file is EC-specific only (258 LOC, one diagram-type guard at the top). No per-type branching to split. Skip.
+
+- **#25 — Split `entitiesSlice.ts`.** 420 LOC with three clear concerns (entity CRUD, assumption ops, attribute ops). Splitting via Zustand requires three sub-slice factories sharing state references; the ceremony exceeds the readability win. The file's existing top-of-file type doc already makes the concern boundaries clear. Skip; revisit if a real coupling problem emerges.
+
+- **#32 — Role-based test queries.** Large migration touching dozens of test files. Each test file's `querySelector`-style queries are deliberate (often querying `data-component` attributes that aren't role-mappable). Defer to incremental: new tests should use `getByRole`; existing tests stay until they're touched for other reasons.
+
+**End state:** 1227 vitest tests passing (unchanged from Tier 1). 5 new e2e tests covering per-diagram verb wiring. tsc / biome / build / knip clean. Canvas + services folders now navigable. Test-hook surface extended by 2 methods (`newDocument` / `getEntityType`) so future e2e tests don't need `window.useDocumentStore` access.
+
 ## Session 130 — Tier 1 under-the-hood cleanup pass
 
 Fourteen XS/S items from the 40-suggestion menu (#38 / #36 / #35 / #7 / #6 / #9 / #8 / #17 / #18 / #24 / #23 / #27 / #1 / #2). All small; all leverage the upgrades that landed in Sessions 118-128.

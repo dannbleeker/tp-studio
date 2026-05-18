@@ -1,4 +1,10 @@
-import { readJSON, readString, STORAGE_KEYS, writeJSON, writeString } from '@/services/storage';
+import {
+  readJSON,
+  readString,
+  STORAGE_KEYS,
+  writeJSON,
+  writeString,
+} from '@/services/storage/storage';
 import type {
   AnimationSpeed,
   CausalityLabel,

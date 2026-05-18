@@ -125,6 +125,23 @@ export interface TpTestHook {
   openHelp: () => void;
   openAbout: () => void;
   openSettings: () => void;
+  /**
+   * Session 131 — switch the active doc to a fresh document of the
+   * given diagram type. Used by the selection-toolbar e2e to exercise
+   * per-diagram verbs (mark-as-action on TT, mark-as-obstacle on PRT,
+   * etc.) without relying on `window.useDocumentStore` (which is not
+   * exposed in production).
+   */
+  newDocument: (
+    diagramType: 'crt' | 'frt' | 'prt' | 'tt' | 'ec' | 'goalTree' | 'st' | 'freeform'
+  ) => void;
+  /**
+   * Session 131 — read an entity's current type. Pairs with
+   * `editEntityTitle` and lets e2e tests assert "the verb click flipped
+   * the type" without leaking the entire entity record across the
+   * test boundary.
+   */
+  getEntityType: (id: string) => string | null;
 }
 
 /**
@@ -203,6 +220,8 @@ export const maybeInstallTestHook = (): void => {
     openHelp: () => useDocumentStore.getState().openHelp(),
     openAbout: () => useDocumentStore.getState().openAbout(),
     openSettings: () => useDocumentStore.getState().openSettings(),
+    newDocument: (diagramType) => useDocumentStore.getState().newDocument(diagramType),
+    getEntityType: (id) => useDocumentStore.getState().doc.entities[id]?.type ?? null,
   };
   // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an
   // optional `TpTestHook` — no `as any` cast needed. The opt-in URL

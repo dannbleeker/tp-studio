@@ -1,6 +1,6 @@
 import type { ReactFlowInstance } from '@xyflow/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/flow-types';
+import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/edges/flow-types';
 import {
   getCanvasInstance,
   getCanvasNodes,

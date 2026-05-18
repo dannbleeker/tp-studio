@@ -21,8 +21,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { shallowEqualObject, tpEdgePropsEqual } from '@/components/canvas/TPEdge';
-import { tpNodePropsEqual } from '@/components/canvas/TPNode';
+import { shallowEqualObject, tpEdgePropsEqual } from '@/components/canvas/edges/TPEdge';
+import { tpNodePropsEqual } from '@/components/canvas/nodes/TPNode';
 
 const makeEdgeProps = (overrides: Record<string, unknown> = {}) =>
   ({

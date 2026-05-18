@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboard';
-import { flushPersist } from '@/services/persistDebounced';
+import { flushPersist } from '@/services/storage/persistDebounced';
 import { useDocumentStore } from '@/store';
 import { isEditableTarget } from './keyboardUtils';
 

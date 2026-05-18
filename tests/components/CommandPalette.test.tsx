@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CommandPalette } from '@/components/command-palette/CommandPalette';
-import { __resetRecentCommandsForTest } from '@/services/recentCommands';
+import { __resetRecentCommandsForTest } from '@/services/storage/recentCommands';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(() => {

@@ -6,8 +6,8 @@ import { EC_SLOTS_BY_ORDER, type WizardOrder } from '@/domain/ecGuiding';
 import type { Entity } from '@/domain/types';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
+import { ECSlotIndicator } from '../overlays/ECSlotIndicator';
 import { EC_STEPS, EC_STEPS_D_FIRST, GOAL_TREE_STEPS } from './creationWizardSteps';
-import { ECSlotIndicator } from './ECSlotIndicator';
 
 /**
  * Session 87 / EC PPT comparison item #3 — Reverse-direction (D-first)

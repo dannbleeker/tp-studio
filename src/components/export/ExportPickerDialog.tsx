@@ -1,7 +1,6 @@
 import clsx from 'clsx';
 import { redactDocument } from '@/domain/redact';
 import { getCanvasNodes } from '@/services/canvasRef';
-import { exportECWorkshopSheet } from '@/services/ecWorkshopExport';
 import {
   exportAnnotationsMd,
   exportAnnotationsTxt,
@@ -19,6 +18,7 @@ import {
   exportSVG,
   exportVGL,
 } from '@/services/exporters';
+import { exportECWorkshopSheet } from '@/services/exporters/ecWorkshopExport';
 import { generateShareLink, SHARE_LINK_SOFT_WARN_BYTES } from '@/services/shareLink';
 import { type RootStore, useDocumentStore } from '@/store';
 import { CARD_FOCUS } from '../ui/focusClasses';

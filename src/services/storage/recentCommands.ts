@@ -15,7 +15,7 @@
  * the session only. Failures are logged through the shared
  * services/logger so they don't crash the palette.
  */
-import { log } from './logger';
+import { log } from '../logger';
 
 const STORAGE_KEY = 'tp-recent-commands';
 export const RECENT_COMMANDS_LIMIT = 5;

@@ -19,7 +19,7 @@ import {
   computeRadialEdgePath,
   lineIntersectsBox,
   nodeBoxOf,
-} from '@/components/canvas/radialEdgeRouting';
+} from '@/components/canvas/edges/radialEdgeRouting';
 
 describe('lineIntersectsBox', () => {
   const box: Box = { x: 100, y: 100, halfW: 20, halfH: 20 };

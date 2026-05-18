@@ -3,7 +3,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { paletteScore } from '@/domain/paletteScore';
 import { paletteKbdForCommand } from '@/domain/shortcuts';
 import { useDelayedFocus } from '@/hooks/useDelayedFocus';
-import { getRecentCommandIds, recordRecentCommand } from '@/services/recentCommands';
+import { getRecentCommandIds, recordRecentCommand } from '@/services/storage/recentCommands';
 import { useDocumentStore } from '@/store';
 import { Modal } from '../ui/Modal';
 import { iconForCommandId } from './commandIcons';

@@ -1,6 +1,6 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ECSlotIndicator } from '@/components/canvas/ECSlotIndicator';
+import { ECSlotIndicator } from '@/components/canvas/overlays/ECSlotIndicator';
 
 /**
  * Session 93 / EC PPT comparison #32 — ECSlotIndicator unit tests.

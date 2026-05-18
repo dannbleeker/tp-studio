@@ -9,7 +9,7 @@ import type {
   SystemScope,
   TPDocument,
 } from '@/domain/types';
-import { flushPersist, persistDebounced } from '@/services/persistDebounced';
+import { flushPersist, persistDebounced } from '@/services/storage/persistDebounced';
 import { pushHistoryEntry } from '../historySlice';
 import { autoSnapshotOutgoing } from '../revisionsSlice';
 import type { RootStore } from '../types';

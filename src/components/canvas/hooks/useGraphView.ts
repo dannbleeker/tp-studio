@@ -1,6 +1,6 @@
 import type { TPDocument } from '@/domain/types';
 import { useCompareDiff } from '@/hooks/useCompareDiff';
-import type { AnyTPNode, TPEdge } from './flow-types';
+import type { AnyTPNode, TPEdge } from '../edges/flow-types';
 import { useGraphEmission } from './useGraphEmission';
 import { useGraphPositions } from './useGraphPositions';
 import { useGraphProjection } from './useGraphProjection';

@@ -2,7 +2,7 @@ import type { NodeProps } from '@xyflow/react';
 import clsx from 'clsx';
 import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
 import { useDocumentStore } from '@/store';
-import type { TPGroupNode as TPGroupNodeType } from './flow-types';
+import type { TPGroupNode as TPGroupNodeType } from '../edges/flow-types';
 
 /**
  * A group is a non-interactive labelled rounded rectangle drawn behind its

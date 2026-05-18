@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { findMatches } from '@/domain/search';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import type { AnyTPNode, TPEdge } from './flow-types';
+import type { AnyTPNode, TPEdge } from '../edges/flow-types';
 
 /**
  * F4: when the find panel is open with a non-empty query that has matches,

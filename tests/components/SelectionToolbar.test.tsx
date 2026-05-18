@@ -24,7 +24,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { ReactFlowProvider } from '@xyflow/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SelectionToolbar } from '@/components/canvas/SelectionToolbar';
+import { SelectionToolbar } from '@/components/canvas/overlays/SelectionToolbar';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 

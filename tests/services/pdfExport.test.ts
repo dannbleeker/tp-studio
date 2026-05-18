@@ -4,7 +4,7 @@ import {
   decodeSvgDataUrl,
   estimateAppendixPages,
   resolvePagePlaceholders,
-} from '@/services/pdfExport';
+} from '@/services/exporters/pdfExport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 /**

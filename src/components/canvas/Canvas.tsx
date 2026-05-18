@@ -9,22 +9,22 @@ import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
-import { Breadcrumb } from './Breadcrumb';
-import { CreationWizardPanel } from './CreationWizardPanel';
-import { ECInjectionChip } from './ECInjectionChip';
-import { ECReadingInstructions } from './ECReadingInstructions';
-import { EmptyHint } from './EmptyHint';
-import { FirstEntityTip } from './FirstEntityTip';
-import { JunctorOverlay } from './JunctorOverlay';
-import { StatusStrip } from './StatusStrip';
-import { TPCollapsedGroupNode } from './TPCollapsedGroupNode';
-import { TPEdge } from './TPEdge';
-import { TPGroupNode } from './TPGroupNode';
-import { TPNode } from './TPNode';
-import { useGraphMutations } from './useGraphMutations';
-import { useGraphView } from './useGraphView';
-import { useSearchDimming } from './useSearchDimming';
-import { ZoomPercent } from './ZoomPercent';
+import { JunctorOverlay } from './edges/JunctorOverlay';
+import { TPEdge } from './edges/TPEdge';
+import { useGraphMutations } from './hooks/useGraphMutations';
+import { useGraphView } from './hooks/useGraphView';
+import { useSearchDimming } from './hooks/useSearchDimming';
+import { TPCollapsedGroupNode } from './nodes/TPCollapsedGroupNode';
+import { TPGroupNode } from './nodes/TPGroupNode';
+import { TPNode } from './nodes/TPNode';
+import { Breadcrumb } from './overlays/Breadcrumb';
+import { ECInjectionChip } from './overlays/ECInjectionChip';
+import { ECReadingInstructions } from './overlays/ECReadingInstructions';
+import { EmptyHint } from './overlays/EmptyHint';
+import { FirstEntityTip } from './overlays/FirstEntityTip';
+import { StatusStrip } from './overlays/StatusStrip';
+import { ZoomPercent } from './overlays/ZoomPercent';
+import { CreationWizardPanel } from './wizards/CreationWizardPanel';
 
 const nodeTypes = {
   tp: TPNode,

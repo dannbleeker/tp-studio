@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { exportToJSON } from '@/domain/persistence';
 import type { TPDocument } from '@/domain/types';
-import { PersistScheduler } from '@/services/persistDebounced';
-import { STORAGE_KEYS } from '@/services/storage';
+import { PersistScheduler } from '@/services/storage/persistDebounced';
+import { STORAGE_KEYS } from '@/services/storage/storage';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 /**

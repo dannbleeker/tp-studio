@@ -5,7 +5,7 @@ import { descendantIds } from '@/domain/groups';
 import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisions';
 import type { TPDocument } from '@/domain/types';
 import { Z } from '@/domain/zLayers';
-import type { AnyTPNode, TPCollapsedGroupNode, TPGroupNode, TPNode } from './flow-types';
+import type { AnyTPNode, TPCollapsedGroupNode, TPGroupNode, TPNode } from '../edges/flow-types';
 import {
   COLLAPSED_HEIGHT,
   COLLAPSED_WIDTH,

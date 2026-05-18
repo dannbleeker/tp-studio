@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand';
 import { newRevisionId } from '@/domain/ids';
 import type { Revision } from '@/domain/revisions';
 import type { TPDocument } from '@/domain/types';
-import { readJSON, STORAGE_KEYS, writeJSON } from '@/services/storage';
+import { readJSON, STORAGE_KEYS, writeJSON } from '@/services/storage/storage';
 import type { RootStore } from './types';
 
 /**

@@ -2,8 +2,8 @@ import { cleanup, render } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { TPNodeData } from '@/components/canvas/flow-types';
-import { TPNode } from '@/components/canvas/TPNode';
+import type { TPNodeData } from '@/components/canvas/edges/flow-types';
+import { TPNode } from '@/components/canvas/nodes/TPNode';
 import { createEntity } from '@/domain/factory';
 import { resetStoreForTest } from '@/store';
 

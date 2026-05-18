@@ -4,7 +4,7 @@ import {
   loadFromLocalStorageWithStatus,
   saveToLocalStorage,
 } from '@/domain/persistence';
-import { STORAGE_KEYS } from '@/services/storage';
+import { STORAGE_KEYS } from '@/services/storage/storage';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(() => {

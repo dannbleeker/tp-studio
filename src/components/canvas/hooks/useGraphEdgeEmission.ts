@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { edgesArray } from '@/domain/graph';
 import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
-import type { TPEdge } from './flow-types';
+import type { TPEdge } from '../edges/flow-types';
 import type { GraphProjection } from './useGraphProjection';
 
 /**

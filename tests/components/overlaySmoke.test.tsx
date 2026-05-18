@@ -1,10 +1,10 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { CompareBanner } from '@/components/canvas/CompareBanner';
-import { EmptyHint } from '@/components/canvas/EmptyHint';
-import { FirstEntityTip } from '@/components/canvas/FirstEntityTip';
-import { ZoomPercent } from '@/components/canvas/ZoomPercent';
+import { CompareBanner } from '@/components/canvas/overlays/CompareBanner';
+import { EmptyHint } from '@/components/canvas/overlays/EmptyHint';
+import { FirstEntityTip } from '@/components/canvas/overlays/FirstEntityTip';
+import { ZoomPercent } from '@/components/canvas/overlays/ZoomPercent';
 import { QuickCaptureDialog } from '@/components/quick-capture/QuickCaptureDialog';
 import { SearchPanel } from '@/components/search/SearchPanel';
 import { Toaster } from '@/components/toast/Toaster';

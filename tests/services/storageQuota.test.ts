@@ -16,7 +16,7 @@ import {
   type StorageError,
   setStorageErrorListener,
   writeString,
-} from '@/services/storage';
+} from '@/services/storage/storage';
 
 describe('storage error classification', () => {
   let captured: StorageError[] = [];

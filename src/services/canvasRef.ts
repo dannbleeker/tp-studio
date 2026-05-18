@@ -1,5 +1,5 @@
 import type { ReactFlowInstance } from '@xyflow/react';
-import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/flow-types';
+import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/edges/flow-types';
 import { useDocumentStore } from '@/store';
 
 // The active React Flow instance, parameterized with our concrete node and

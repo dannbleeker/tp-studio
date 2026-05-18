@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { ContextMenu } from '@/components/canvas/ContextMenu';
+import { ContextMenu } from '@/components/canvas/overlays/ContextMenu';
 import type { EntityId } from '@/domain/types';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 

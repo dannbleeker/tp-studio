@@ -1,6 +1,6 @@
 import { getCanvasInstance } from '@/services/canvasRef';
-import { applyCsvRows, parseEntitiesCsv, pickCsvFile } from '@/services/csvImport';
 import { pickFlyingLogic, pickJSON, pickMermaid } from '@/services/exporters';
+import { applyCsvRows, parseEntitiesCsv, pickCsvFile } from '@/services/exporters/csvImport';
 import { type Command, withWriteGuard } from './types';
 
 /**

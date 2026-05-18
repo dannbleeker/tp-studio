@@ -1,5 +1,5 @@
 import type { Edge, Entity, Patch, TPDocument } from '@/domain/types';
-import { persistDebounced } from '@/services/persistDebounced';
+import { persistDebounced } from '@/services/storage/persistDebounced';
 import { pushHistoryEntry } from '../historySlice';
 import type { RootStore } from '../types';
 

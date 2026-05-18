@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
 import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import { useDocumentStore } from '@/store';
-import type { TPCollapsedGroupNode as TPCollapsedGroupNodeType } from './flow-types';
+import type { TPCollapsedGroupNode as TPCollapsedGroupNodeType } from '../edges/flow-types';
 
 /**
  * Collapsed group renderer. Visually a single big node that stands in for

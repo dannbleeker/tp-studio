@@ -1,7 +1,7 @@
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { useGraphPositions } from '@/components/canvas/useGraphPositions';
-import type { GraphProjection } from '@/components/canvas/useGraphProjection';
+import { useGraphPositions } from '@/components/canvas/hooks/useGraphPositions';
+import type { GraphProjection } from '@/components/canvas/hooks/useGraphProjection';
 import { createDocument } from '@/domain/factory';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 

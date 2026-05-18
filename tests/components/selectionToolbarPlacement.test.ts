@@ -15,7 +15,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { computeToolbarPlacement } from '@/components/canvas/selectionToolbarPlacement';
+import { computeToolbarPlacement } from '@/components/canvas/overlays/selectionToolbarPlacement';
 
 const DEFAULTS = {
   viewport: { width: 1024, height: 768 },

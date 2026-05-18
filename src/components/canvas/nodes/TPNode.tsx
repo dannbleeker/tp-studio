@@ -26,7 +26,7 @@ import { HANDLE_ORIENTATION, LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { useZoomLevel } from '@/hooks/useZoomLevel';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
-import type { TPNode as TPNodeType } from './flow-types';
+import type { TPNode as TPNodeType } from '../edges/flow-types';
 
 // B5 — zoom-up annotation threshold lives in `@/domain/constants` so UI/UX
 // tweaks happen in one place alongside the other canvas tunables.
@@ -596,7 +596,7 @@ function StFacetRow({
 // `./tpNodeComparator.ts` (parallel to the same-session extraction in
 // TPEdge.tsx). Pure functions; easier to unit-test in isolation; the
 // component file stays focused on render. Re-exported here so existing
-// test imports (`import { tpNodePropsEqual } from '@/components/canvas/TPNode'`)
+// test imports (`import { tpNodePropsEqual } from '@/components/canvas/nodes/TPNode'`)
 // keep working unchanged.
 import { shallowEqualNodeData, tpNodePropsEqual } from './tpNodeComparator';
 

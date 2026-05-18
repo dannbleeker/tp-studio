@@ -2,15 +2,15 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
-import { installFlushOnLifecycleEvents } from './services/persistDebounced';
+import { installFlushOnLifecycleEvents } from './services/storage/persistDebounced';
 // Session 89 — `pwaInstall` is imported for side effects only: the
 // module's top-level `beforeinstallprompt` listener captures the
 // event Chrome / Edge fire once the install criteria are met. The
 // command palette later reads the captured event via
 // `triggerInstallPrompt()` so the "Install TP Studio…" entry has
 // something to consume.
-import './services/pwaInstall';
-import { initPwaUpdateToast } from './services/pwaUpdate';
+import './services/pwa/pwaInstall';
+import { initPwaUpdateToast } from './services/pwa/pwaUpdate';
 import { installSystemScopeNudgeWatcher } from './services/systemScopeNudge';
 import { maybeInstallTestHook } from './services/testHook';
 import './styles/index.css';

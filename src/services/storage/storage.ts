@@ -9,7 +9,7 @@
 // useful (auto-trim old revisions, swap the toast to a "storage full"
 // message, etc.) instead of just printing the raw error string.
 
-import { log } from './logger';
+import { log } from '../logger';
 
 export const STORAGE_KEYS = {
   /** Active document, written on every mutation (debounced). */

@@ -1,6 +1,6 @@
 import type { DetailedRevisionDiff } from '@/domain/revisions';
 import type { TPDocument } from '@/domain/types';
-import type { AnyTPNode, TPEdge } from './flow-types';
+import type { AnyTPNode, TPEdge } from '../edges/flow-types';
 import { useGraphEdgeEmission } from './useGraphEdgeEmission';
 import { useGraphNodeEmission } from './useGraphNodeEmission';
 import type { GraphPositions } from './useGraphPositions';

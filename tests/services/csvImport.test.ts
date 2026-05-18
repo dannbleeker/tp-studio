@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { applyCsvRows, parseEntitiesCsv } from '@/services/csvImport';
+import { applyCsvRows, parseEntitiesCsv } from '@/services/exporters/csvImport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);

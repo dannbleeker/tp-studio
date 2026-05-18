@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { flushPersist } from '@/services/persistDebounced';
+import { flushPersist } from '@/services/storage/persistDebounced';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 

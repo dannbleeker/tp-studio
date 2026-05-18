@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { ECInjectionChip } from '@/components/canvas/ECInjectionChip';
+import { ECInjectionChip } from '@/components/canvas/overlays/ECInjectionChip';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);

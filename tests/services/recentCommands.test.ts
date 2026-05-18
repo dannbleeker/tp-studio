@@ -4,7 +4,7 @@ import {
   getRecentCommandIds,
   RECENT_COMMANDS_LIMIT,
   recordRecentCommand,
-} from '@/services/recentCommands';
+} from '@/services/storage/recentCommands';
 
 beforeEach(() => {
   __resetRecentCommandsForTest();
