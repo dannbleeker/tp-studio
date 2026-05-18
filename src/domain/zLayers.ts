@@ -50,8 +50,6 @@ export const Z = {
   modal: 50,
 } as const;
 
-export type ZTier = keyof typeof Z;
-
 /**
  * Session 94 (Top-30 #18) — Y-axis offset reference table.
  *

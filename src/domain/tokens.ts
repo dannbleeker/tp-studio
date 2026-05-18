@@ -37,7 +37,6 @@ export const ENTITY_STRIPE_COLOR: Record<EntityType, string> = {
 };
 
 export const ACCENT = '#6366f1'; // indigo-500
-export const ACCENT_DARK = '#818cf8'; // indigo-400 — for dark theme
 
 // --- Edge color palettes ---
 // Each palette maps the four edge states (default / selected / AND / arrow marker)
@@ -94,4 +93,3 @@ export const GRID_DOT = '#d4d4d4'; // neutral-300
 // Theme surface backgrounds for PNG export and the print stylesheet.
 export const SURFACE_LIGHT = '#ffffff';
 export const SURFACE_DARK = '#0a0a0a';
-export const SURFACE_HIGH_CONTRAST = '#000000';

@@ -37,5 +37,3 @@ export const DataComponent = {
    *  editing, or when the toolbar is disabled in Settings. */
   SelectionToolbar: 'selection-toolbar',
 } as const;
-
-export type DataComponentName = (typeof DataComponent)[keyof typeof DataComponent];

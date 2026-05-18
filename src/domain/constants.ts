@@ -75,17 +75,12 @@ export const PNG_PADDING = 32;
  * Individual call-sites can override via `showToast(kind, message, {
  * durationMs })` — used by the PWA update toast which wants more dwell
  * time than even the new info default.
- *
- * `TOAST_AUTO_DISMISS_MS` is kept as a back-compat alias for callers
- * that don't pass a kind-specific override; it points at the info
- * default since that's the most-common channel.
  */
 export const TOAST_AUTO_DISMISS_MS_BY_KIND = {
   info: 6000,
   success: 4000,
   error: 10000,
 } as const;
-export const TOAST_AUTO_DISMISS_MS = TOAST_AUTO_DISMISS_MS_BY_KIND.info;
 
 // --- Stacking order (z-index scale) ---
 // Canonical layering table lives in `@/domain/zLayers` (named `Z`, with a

@@ -8,7 +8,7 @@ import type { ContextMenuState, ContextMenuTarget, Toast, ToastAction, ToastKind
  * Everything modal-ish: the command palette, help / settings / doc-settings
  * dialogs, the right-click context menu, the toast stack, and Quick Capture.
  * Each has its own `open*` / `close*` pair; only the toast stack has any
- * real logic (auto-dismiss after `TOAST_AUTO_DISMISS_MS`).
+ * real logic (auto-dismiss per-kind via `TOAST_AUTO_DISMISS_MS_BY_KIND`).
  */
 export type DialogsSlice = {
   paletteOpen: boolean;

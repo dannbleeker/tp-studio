@@ -41,8 +41,3 @@ export const INPUT_FOCUS =
  *  visibility on the darker background. */
 export const CARD_FOCUS =
   'focus:border-indigo-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-300 dark:focus:ring-indigo-600';
-
-/** EC-themed badges + verbalisation strip controls. Violet ring on
- *  ring-2. The violet keeps the EC visual identity from leaking into
- *  the indigo accent used everywhere else. */
-export const EC_BADGE_FOCUS = 'focus:outline-hidden focus:ring-2 focus:ring-violet-400';
