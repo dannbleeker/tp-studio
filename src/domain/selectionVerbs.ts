@@ -367,18 +367,6 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           writes: true,
           paletteCommandId: 'reverse-edge',
         },
-        // Session 133 — drag-substitute for AND-junction creation.
-        // Discoverable on every single-edge selection: clicking the
-        // verb enters join-mode, the next edge click on the canvas
-        // completes the AND-group. Surfaces the gesture without
-        // requiring users to first know how to multi-select.
-        {
-          id: 'start-edge-join-and',
-          label: 'AND-join with another edge…',
-          shortLabel: 'AND-join…',
-          writes: true,
-          paletteCommandId: 'start-edge-join-and',
-        },
         // Session 96 — add-assumption-to-edge surfaced for parity
         // with the keyboard `A` shortcut + the EdgeInspector's
         // "+ New assumption" button.
