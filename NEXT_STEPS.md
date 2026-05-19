@@ -283,7 +283,7 @@ Captured here so a future session can pick them up without re-deriving scope:
 
 ### Reasoning text output ✅ Done (Session 58)
 
-Shipped. `exportReasoningNarrative` + `exportReasoningOutline` in `src/domain/reasoningExport.ts`, browser-side wrappers + palette commands in the Export group. Both modes carry preamble (title, System Scope, EC conflict statement) and per-diagram-type shaping (CRT Core Driver appendix, TT triples, EC structured-description outline). Output is Markdown; pairs with the in-app Read-through overlay (Session 57) which walks the same sentences live.
+Shipped. `exportReasoningNarrative` + `exportReasoningOutline` in `src/domain/reasoningExport.ts`, browser-side wrappers + palette commands in the Export group. Both modes carry preamble (title, System Scope, EC conflict statement, Method-checklist progress as of Session 133) and per-diagram-type shaping (CRT Core Driver appendix, TT triples, EC structured-description outline). Output is Markdown; pairs with the in-app Read-through overlay (Session 57) which walks the same sentences live.
 
 Original design notes left below for context:
 

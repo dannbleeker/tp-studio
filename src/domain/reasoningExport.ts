@@ -9,6 +9,7 @@ import {
   outgoingEdges,
   structuralEntities,
 } from './graph';
+import { METHOD_BY_DIAGRAM } from './methodChecklist';
 import type { Edge, Entity, TPDocument } from './types';
 
 /**
@@ -64,6 +65,24 @@ const renderPreamble = (doc: TPDocument): string[] => {
     if (filled.length > 0) {
       lines.push('', '## System scope');
       for (const [label, val] of filled) lines.push(`- **${label}:** ${val?.trim()}`);
+    }
+  }
+
+  // Session 133 — Method-checklist progress block, kept tight: render
+  // only when the user has actually ticked at least one step. The block
+  // shows all canonical steps for the diagram type as GitHub-style
+  // task-list items (`- [x]` / `- [ ]`) so a reader can see both what
+  // was done AND what's outstanding. Skipped on freeform docs (the
+  // catalog is intentionally empty).
+  const checklist = doc.methodChecklist;
+  const steps = METHOD_BY_DIAGRAM[doc.diagramType];
+  if (steps.length > 0 && checklist && Object.values(checklist).some((v) => v)) {
+    const total = steps.length;
+    const completed = steps.filter((s) => checklist[s.id] === true).length;
+    lines.push('', `## Method checklist (${completed} / ${total})`);
+    for (const step of steps) {
+      const checked = checklist[step.id] === true;
+      lines.push(`- [${checked ? 'x' : ' '}] ${step.label}`);
     }
   }
 

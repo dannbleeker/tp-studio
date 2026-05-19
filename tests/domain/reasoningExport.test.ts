@@ -48,6 +48,25 @@ describe('exportReasoningNarrative — common shape', () => {
     expect(md).toContain('**System goal:** Reduce wait time');
     expect(md).toContain('**Success measures:** p90 < 4h');
   });
+
+  it('omits the Method-checklist preamble when no step is ticked', () => {
+    // Fresh doc → checklist is undefined → preamble skips the section.
+    const md = exportReasoningNarrative(doc());
+    expect(md).not.toContain('## Method checklist');
+  });
+
+  it('renders Method-checklist progress when at least one step is ticked', () => {
+    useDocumentStore.getState().setMethodStep('crt.scope', true);
+    useDocumentStore.getState().setMethodStep('crt.udes', true);
+    const md = exportReasoningNarrative(doc());
+    // Header carries the (completed / total) counter — the CRT
+    // checklist in `domain/methodChecklist.ts` has 9 steps.
+    expect(md).toContain('## Method checklist (2 / 9)');
+    // Checked steps render with `[x]`, others with `[ ]`.
+    expect(md).toContain('- [x] Define the system scope');
+    expect(md).toContain('- [x] List 3–5 critical UDEs');
+    expect(md).toContain('- [ ] Connect UDEs into causal chains');
+  });
 });
 
 describe('exportReasoningNarrative — diagram-specific shaping', () => {
