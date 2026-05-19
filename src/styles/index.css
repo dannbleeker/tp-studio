@@ -187,33 +187,6 @@ body {
   transition: opacity var(--duration-quick) ease-out;
 }
 
-/* Session 133 — selection-anchored dimming. When exactly one entity (or
- * edge) is selected, dim the rest of the canvas to ~50% so the focused
- * item pops while the surrounding causal context stays readable. Lower
- * opacity than search-dimming (0.18) because selection is far more
- * frequent than search — full dim would feel aggressive every click.
- * The selected item itself never gets `tp-focus-dim`. */
-.react-flow__node.tp-focus-dim,
-.react-flow__edge.tp-focus-dim {
-  opacity: 0.5;
-  transition: opacity var(--duration-quick) ease-out;
-}
-
-/* Session 133 — selection halo. Glow around selected nodes that's
- * visible at distance + reads as "focus is here" before the user
- * notices the inner ring. Pairs with the existing Tailwind ring on
- * `.react-flow__node.selected` — the ring is the precise boundary,
- * the glow is the at-a-glance signal. `filter: drop-shadow` follows
- * the rendered shape (including rounded corners) without competing
- * with the box-shadow / ring stack. */
-.react-flow__node.selected {
-  filter: drop-shadow(0 0 10px rgb(99 102 241 / 0.55));
-  transition: filter var(--duration-quick) ease-out;
-}
-.dark .react-flow__node.selected {
-  filter: drop-shadow(0 0 12px rgb(129 140 248 / 0.65));
-}
-
 /* Disable the transition during interactive dragging if we ever
  * enable it. Without this, dragged nodes would lag visibly. */
 .react-flow__node.dragging {
