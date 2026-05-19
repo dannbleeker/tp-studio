@@ -1,10 +1,10 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { CanvasNav } from '@/components/canvas/overlays/CanvasNav';
 import { CompareBanner } from '@/components/canvas/overlays/CompareBanner';
 import { EmptyHint } from '@/components/canvas/overlays/EmptyHint';
 import { FirstEntityTip } from '@/components/canvas/overlays/FirstEntityTip';
-import { ZoomPercent } from '@/components/canvas/overlays/ZoomPercent';
 import { QuickCaptureDialog } from '@/components/quick-capture/QuickCaptureDialog';
 import { SearchPanel } from '@/components/search/SearchPanel';
 import { Toaster } from '@/components/toast/Toaster';
@@ -63,13 +63,14 @@ describe('FirstEntityTip', () => {
   });
 });
 
-describe('ZoomPercent', () => {
+describe('CanvasNav', () => {
   it('mounts without throwing inside a ReactFlowProvider', () => {
-    // ZoomPercent calls `useReactFlow` internally to read the live
-    // viewport scale; the provider has to be present.
+    // CanvasNav calls `useReactFlow` + `useZoomLevel` internally to
+    // read the live viewport state and dispatch zoom actions; the
+    // provider has to be present.
     const { container } = render(
       <ReactFlowProvider>
-        <ZoomPercent />
+        <CanvasNav />
       </ReactFlowProvider>
     );
     expect(container).toBeTruthy();
