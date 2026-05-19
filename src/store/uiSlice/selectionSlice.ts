@@ -29,6 +29,16 @@ export type SelectionSlice = {
    *  not persisted. */
   spliceTargetEdgeId: string | null;
 
+  /** Session 133 — edge-join mode. When non-null, the next edge click
+   *  on the canvas attempts to AND-group the held edge with the
+   *  clicked one. Discoverable substitute for a "drag-edge-onto-edge"
+   *  gesture (which React Flow doesn't support natively because edges
+   *  have no drag handles). Entered via the selection-toolbar verb
+   *  "AND-join with another edge…" on a single-edge selection; exits
+   *  on completion, on Esc, on pane click, or on the verb a second
+   *  time. */
+  joinModeEdgeId: string | null;
+
   select: (sel: Selection) => void;
   selectEntity: (id: string) => void;
   selectEdge: (id: string) => void;
@@ -55,19 +65,28 @@ export type SelectionSlice = {
    *  per-frame call during a drag doesn't fan re-renders unless
    *  the target actually changed. */
   setSpliceTargetEdge: (edgeId: string | null) => void;
+
+  /** Session 133 — enter / exit edge-join mode. `startEdgeJoinMode`
+   *  remembers the source edge id; the next edge click on the canvas
+   *  attempts the AND-group via the existing `groupAsAnd` action and
+   *  then exits the mode regardless of outcome. */
+  startEdgeJoinMode: (edgeId: string) => void;
+  cancelEdgeJoinMode: () => void;
 };
 
 export type SelectionDataKeys =
   | 'selection'
   | 'editingEntityId'
   | 'hoistedGroupId'
-  | 'spliceTargetEdgeId';
+  | 'spliceTargetEdgeId'
+  | 'joinModeEdgeId';
 
 export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => ({
   selection: { kind: 'none' },
   editingEntityId: null,
   hoistedGroupId: null,
   spliceTargetEdgeId: null,
+  joinModeEdgeId: null,
 });
 
 const toggleId = (ids: string[], id: string): string[] =>
@@ -81,6 +100,7 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   editingEntityId: null,
   hoistedGroupId: null,
   spliceTargetEdgeId: null,
+  joinModeEdgeId: null,
 
   select: (selection) => set({ selection }),
   // The action surface still accepts plain `string` because selection
@@ -142,4 +162,7 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
     if (get().spliceTargetEdgeId === edgeId) return;
     set({ spliceTargetEdgeId: edgeId });
   },
+
+  startEdgeJoinMode: (edgeId) => set({ joinModeEdgeId: edgeId }),
+  cancelEdgeJoinMode: () => set({ joinModeEdgeId: null }),
 });

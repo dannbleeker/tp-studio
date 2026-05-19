@@ -267,6 +267,14 @@ export function useGlobalShortcuts() {
           // node textarea will handle its own escape; let it bubble
           return;
         }
+        // Session 133 — edge-join mode wins over hoist + deselect.
+        // Pressing Esc while the "click another edge to AND-join"
+        // prompt is up should cancel the join, not navigate out of
+        // the hoist nor clear the source-edge selection.
+        if (state.joinModeEdgeId !== null) {
+          state.cancelEdgeJoinMode();
+          return;
+        }
         // Hoist takes precedence over deselect, so Esc rises out of nested
         // groups one level at a time.
         if (state.hoistedGroupId !== null) {
