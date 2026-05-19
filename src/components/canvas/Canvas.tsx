@@ -15,7 +15,6 @@ import { TPEdge } from './edges/TPEdge';
 import { useGraphMutations } from './hooks/useGraphMutations';
 import { useGraphView } from './hooks/useGraphView';
 import { useSearchDimming } from './hooks/useSearchDimming';
-import { useSelectionDimming } from './hooks/useSelectionDimming';
 import { TPCollapsedGroupNode } from './nodes/TPCollapsedGroupNode';
 import { TPGroupNode } from './nodes/TPGroupNode';
 import { TPNode } from './nodes/TPNode';
@@ -72,15 +71,7 @@ function CanvasInner() {
   );
 
   const { nodes: rawNodes, edges: rawEdges } = useGraphView(doc);
-  // Session 133 — search-dim wins visually over selection-dim (0.18
-  // < 0.5); composing in this order means a search hit on a selected
-  // entity stays bright while non-hits get search's deeper dim.
-  const { nodes: searchDimmedNodes, edges: searchDimmedEdges } = useSearchDimming(
-    doc,
-    rawNodes,
-    rawEdges
-  );
-  const { nodes, edges } = useSelectionDimming(doc, searchDimmedNodes, searchDimmedEdges);
+  const { nodes, edges } = useSearchDimming(doc, rawNodes, rawEdges);
   const {
     onConnect,
     onConnectEnd,
