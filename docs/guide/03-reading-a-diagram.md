@@ -85,11 +85,11 @@ TP Studio represents this conflict with a **mutex edge** between D and D′: ren
 
 The `ec-missing-conflict` validator fires on any EC document until at least one want↔want edge is flagged as `isMutualExclusion`. Tag it via Edge Inspector → Mutual exclusion, or right-click → Toggle mutual exclusion.
 
-## Span-of-control
+## Locus
 
-A second extension Goldratt added: each entity carries a **span-of-control** flag indicating who controls it.
+A second extension Goldratt added: each entity carries a **Locus** flag (in earlier versions of TP Studio this was labelled "Span of Control") indicating who controls it.
 
-| Span | Visual | Meaning |
+| Locus | Visual | Meaning |
 | --- | --- | --- |
 | `control` | Emerald `C` pill | Inside your control. You can directly change this. |
 | `influence` | Amber `I` pill | Outside your direct control, but you can plausibly influence. Vendors, neighboring teams, customers via product changes. |
@@ -97,7 +97,7 @@ A second extension Goldratt added: each entity carries a **span-of-control** fla
 
 Why it matters: **the constraint you want to find lives in your control or influence zone**, not in the external zone. The `external-root-cause` CLR validator fires on root causes flagged `external` — the diagram tells you you've found a "cause" that you can't actually do anything about, which usually means you've stopped one step short of the real root cause.
 
-Set via Entity Inspector → Span of Control, or right-click → Set span of control.
+Set via Entity Inspector → Locus, or right-click → Set locus.
 
 ## The CLR — a one-paragraph preview
 

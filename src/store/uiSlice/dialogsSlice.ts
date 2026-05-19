@@ -39,6 +39,10 @@ export type DialogsSlice = {
    *  export-format palette commands with one dialog grouped by
    *  category (Images / Documents / Data / Text / Share). */
   exportPickerOpen: boolean;
+  /** Session 133 — single Import… picker that fronts the JSON /
+   *  Mermaid / CSV / Flying Logic file pickers. Replaces the 4
+   *  separate import palette commands with one dialog. */
+  importPickerOpen: boolean;
   /** Session 78 / brief §5 + §6 — creation-wizard panel for the
    *  diagram type the user just opened. `null` when closed; carries
    *  `step` (0-based) and `minimised` so the user can collapse the
@@ -66,6 +70,13 @@ export type DialogsSlice = {
    *  to default on `clearSelection`-equivalent operations is the
    *  Inspector's job, not the store's. */
   ecInspectorTab: 'inspector' | 'verbalisation' | 'injections';
+  /** Session 133 — "Read entire diagram at once" dialog. Alternative
+   *  to the step-through Read-through walkthrough for users who want
+   *  to see (and copy) the full verbal form in one go — especially
+   *  useful for large CRTs where 50+ edges of step-through gets
+   *  tedious. */
+  readAllAtOnceOpen: boolean;
+
   /** H1 — revision-history panel visibility. */
   historyPanelOpen: boolean;
   /** H2 — when set, the canvas is in visual-diff mode and entities/edges
@@ -150,6 +161,11 @@ export type DialogsSlice = {
   openExportPicker: () => void;
   closeExportPicker: () => void;
 
+  /** Session 133 — single Import… picker that fronts the JSON / Mermaid /
+   *  CSV / Flying Logic file-pickers. Mirrors the Export picker pattern. */
+  openImportPicker: () => void;
+  closeImportPicker: () => void;
+
   /** Session 78 — creation-wizard panel control. `openCreationWizard`
    *  resets the panel to step 0 on the given diagram type;
    *  `advanceCreationWizardStep` moves forward by one; `closeCreationWizard`
@@ -182,6 +198,10 @@ export type DialogsSlice = {
   openHistoryPanel: () => void;
   closeHistoryPanel: () => void;
   toggleHistoryPanel: () => void;
+
+  /** Session 133 — open / close the all-at-once verbalisation dialog. */
+  openReadAllAtOnce: () => void;
+  closeReadAllAtOnce: () => void;
 
   /** H2 — enter / exit visual-diff mode. Esc clears via Esc-cascade. */
   openCompare: (revisionId: string) => void;
@@ -219,8 +239,10 @@ export type DialogsDataKeys =
   | 'templatePickerOpen'
   | 'diagramPickerOpen'
   | 'exportPickerOpen'
+  | 'importPickerOpen'
   | 'creationWizard'
   | 'ecInspectorTab'
+  | 'readAllAtOnceOpen'
   | 'historyPanelOpen'
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
@@ -240,8 +262,10 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   templatePickerOpen: false,
   diagramPickerOpen: null,
   exportPickerOpen: false,
+  importPickerOpen: false,
   creationWizard: null,
   ecInspectorTab: 'inspector',
+  readAllAtOnceOpen: false,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -262,8 +286,10 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   templatePickerOpen: false,
   diagramPickerOpen: null,
   exportPickerOpen: false,
+  importPickerOpen: false,
   creationWizard: null,
   ecInspectorTab: 'inspector',
+  readAllAtOnceOpen: false,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -329,6 +355,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   openExportPicker: () => set({ exportPickerOpen: true }),
   closeExportPicker: () => set({ exportPickerOpen: false }),
 
+  openImportPicker: () => set({ importPickerOpen: true }),
+  closeImportPicker: () => set({ importPickerOpen: false }),
+
   openCreationWizard: (kind) =>
     set({ creationWizard: { kind, step: 0, minimised: false, x: null, y: null } }),
   advanceCreationWizardStep: () => {
@@ -362,6 +391,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
     const next = !get().historyPanelOpen;
     set({ historyPanelOpen: next, ...(next ? { selection: { kind: 'none' } } : {}) });
   },
+
+  openReadAllAtOnce: () => set({ readAllAtOnceOpen: true }),
+  closeReadAllAtOnce: () => set({ readAllAtOnceOpen: false }),
 
   openCompare: (revisionId) => set({ compareRevisionId: revisionId }),
   closeCompare: () => set({ compareRevisionId: null }),

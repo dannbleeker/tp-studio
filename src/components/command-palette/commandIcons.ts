@@ -39,10 +39,8 @@ export const COMMAND_ICON_BY_ID: Record<string, LucideIcon | undefined> = {
   'load-example': Sparkles,
   'open-quick-capture': Zap,
   'new-from-template': Sparkles,
-  'import-json': FileUp,
-  'import-flying-logic': FileUp,
-  'import-mermaid': FileUp,
-  'import-csv': FileUp,
+  // Session 133 — single Import… picker replaces the 4 per-source rows.
+  import: FileUp,
   'open-document-inspector': FilePlus,
   'capture-snapshot': History,
   // Edit

@@ -82,6 +82,18 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 > **Mobile / narrow-viewport pass complete (Session 65).** A new `KebabMenu` component lives at the right edge of the TopBar with `sm:hidden`, surfacing the four buttons (Layout Mode, History, Help, Theme) that the existing responsive classes hide below `sm` (640 px). Items auto-close the menu after activation; Escape and outside-click also dismiss. TitleBadge's narrow-viewport `max-w-` bumped from `100%-7rem` to `100%-9rem` to leave room for the extra icon. The Inspector and RevisionPanel already overlaid with tap-to-dismiss backdrops below `md:`, so no changes needed there. 8 new tests in `tests/components/KebabMenu.test.tsx` (628 total, all green). **The remaining backlog is the structural-extensibility tier**: **B7 + B10** (user-defined attributes + custom entity classes) and the parked **confidence-field UI**.
 
+## Session 133 user-note triage — open items
+
+Triaged Session 133 from a batch of user notes. Six items shipped this session (book PDF screenshot fix, edge hit-area widening, Lock/LockOpen icon swap, Span-of-control → Locus rename, all-at-once verbalisation dialog, Import picker dialog, EC assumption dashed-edge overlay). Four parked here for follow-up:
+
+- **Move the React Flow Controls / minimap elsewhere on the canvas.** Today the Controls bar sits bottom-left and the MiniMap bottom-right. User wants the Controls relocated — likely the bottom-left position competes with the Toaster + the new selection-toolbar gestures. Options surfaced in triage: (a) top-right under the TopBar, (b) integrated into the existing `ZoomPercent` indicator chip, (c) behind a single floating "Canvas" menu button. Recommend (b) — most compact, lowest visual noise. Effort: S.
+
+- **CLR map for the practitioner book.** Dann has a hand-drawn / pre-existing map of the CLR (Categories of Legitimate Reservation) he wants embedded in Chapter 13. Blocker: needs the actual artefact (PNG / SVG / draft text). Path: drop the file into `docs/guide/screenshots/` (or a new `docs/guide/diagrams/`), reference from `13-the-clr.md`, rebuild PDF. Effort: S once the artefact arrives.
+
+- **Selection visibility on the canvas — make it more obvious.** Today's cue is a thin coloured border ring. User wants a stronger signal. Options surfaced in triage: (a) drop-shadow halo (`0 0 0 3px rgb(99 102 241 / 0.4)`), (b) thicker accent ring (`ring-2`), (c) scale `transform: scale(1.02)` (animated grow), (d) dim everything else (selection-anchored, reusing the `useSearchDimming` infrastructure). Recommend **(a) + (d)** — glow on the selection, dim outside the logical neighbourhood. Effort: ½–1 session.
+
+- **AND-junction creation via drag gesture.** Today AND junctors are created via Cmd+K → "Group as AND" after selecting ≥ 2 edges. User wants a discoverable drag-based gesture. Options surfaced in triage: (a) **drag from one edge's midpoint onto another edge's midpoint** to group them as AND on the second edge's target — then click the junctor circle to confirm / switch to OR/XOR; (b) **shift-click two edges → palette nudges "Group these N edges as AND?"** Recommend (b) — discoverable, uses existing selection vocabulary, no new gesture to teach. Effort: 1 session.
+
 ## Maintainability backlog (post-Sessions 112–114)
 
 Items surfaced by the Tier 1/2/3 maintainability arc that didn't ship and are worth picking up in a focused future session. Tagged by suggested next-step shape.

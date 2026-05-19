@@ -1,6 +1,6 @@
 # Chapter 15 — Verbalisation and walkthroughs
 
-> *Verbalisation is the TOC tradition's name for "read it aloud, edge by edge, slowly." It is the single most underrated discipline in TOC and the source of most of the "wait — actually I had this wrong" moments. TP Studio supports it three ways.*
+> *Verbalisation is the TOC tradition's name for "read it aloud, edge by edge, slowly." It is the single most underrated discipline in TOC and the source of most of the "wait — actually I had this wrong" moments. TP Studio supports it four ways.*
 
 ## Why aloud
 
@@ -20,13 +20,19 @@ Goldratt and the practitioners who followed him (Dettmer especially) treat verba
 
 Use it solo before you present. Use it with a participant in a workshop. The discipline imposes itself — you can't skim; the overlay shows one sentence at a time.
 
-### 2. The VerbalisationStrip (EC-only)
+### 2. The all-at-once dialog
+
+`Cmd+K → Read entire diagram at once` opens a scrollable panel rendering every edge's sentence in topological order in a single view, with a **Copy all** button that drops the full transcript into the clipboard. Use this when the step-through becomes tedious — a 50+ edge CRT has 50+ clicks in the read-through overlay, but the all-at-once dialog presents the same content in one scroll. Particularly useful for capturing the whole diagram's reasoning into a brief, postmortem, or Slack message without re-typing it.
+
+The two modes are complementary: step-through forces *discipline* (you can't skim, you have to advance), all-at-once gives you *artifact* (the verbal form lives outside the canvas now).
+
+### 3. The VerbalisationStrip (EC-only)
 
 For Evaporating Clouds, the canonical reading is a single paragraph. The VerbalisationStrip renders it above the canvas, updating live as you edit. Settings → EC Verbal Style toggles between `neutral` ("we must") and `twoSided` ("they want / I want") framings.
 
 Read the strip aloud after every structural edit on an EC. The "this sounds wrong" reaction is the most reliable validator the EC has.
 
-### 3. The reasoning narrative / outline exports
+### 4. The reasoning narrative / outline exports
 
 Two Markdown exports under `Cmd+K → Export → Markup → Reasoning`:
 
@@ -52,7 +58,8 @@ The verbaliser is the discipline; the listener is the CLR. The builder is the an
 ## Sidebars
 
 > **🛠 How TP Studio helps**
-> - **`Cmd+K → Start read-through`** — fullscreen verbalisation overlay.
+> - **`Cmd+K → Start read-through`** — step-through fullscreen verbalisation overlay (one edge per page).
+> - **`Cmd+K → Read entire diagram at once`** — single-view scrollable panel with Copy-all (full transcript).
 > - **VerbalisationStrip** on EC canvas — live paragraph rendering.
 > - **`Cmd+K → Start CLR walkthrough`** — partner discipline; iterates open warnings.
 > - **Reasoning narrative export** — Markdown paragraph form per chain.

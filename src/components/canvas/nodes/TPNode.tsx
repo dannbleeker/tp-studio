@@ -212,17 +212,18 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           <meta.icon className="h-3 w-3 shrink-0" style={{ color: meta.stripeColor }} aria-hidden />
           <span>{meta.label}</span>
           {/*
-            Span-of-control (TOC-reading): single-letter pill after the
-            type label. Color encodes the level: emerald for control
-            (act-on-it), amber for influence (affect-it), neutral for
-            external (observe-only). Unset entities show nothing.
+            Locus (TOC-reading; previously "Span of control"):
+            single-letter pill after the type label. Color encodes the
+            level: emerald for control (act-on-it), amber for influence
+            (affect-it), neutral for external (observe-only). Unset
+            entities show nothing.
           */}
           {entity.spanOfControl === 'control' && (
             <span
               className="ml-1 rounded-sm bg-emerald-100 px-1 font-bold text-[9px] text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
-              title="Span of control: I can act on this directly"
+              title="Locus: I can act on this directly"
               role="img"
-              aria-label="Span of control: control"
+              aria-label="Locus: control"
             >
               C
             </span>
@@ -230,9 +231,9 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           {entity.spanOfControl === 'influence' && (
             <span
               className="ml-1 rounded-sm bg-amber-100 px-1 font-bold text-[9px] text-amber-800 dark:bg-amber-900/50 dark:text-amber-200"
-              title="Span of control: I can influence this indirectly"
+              title="Locus: I can influence this indirectly"
               role="img"
-              aria-label="Span of control: influence"
+              aria-label="Locus: influence"
             >
               I
             </span>
@@ -240,9 +241,9 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           {entity.spanOfControl === 'external' && (
             <span
               className="ml-1 rounded-sm bg-neutral-200 px-1 font-bold text-[9px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200"
-              title="Span of control: external — outside my control"
+              title="Locus: external — outside my control"
               role="img"
-              aria-label="Span of control: external"
+              aria-label="Locus: external"
             >
               E
             </span>

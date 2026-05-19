@@ -50,6 +50,10 @@ The PDF route is the most polished. Use Print Preview for the layout knobs; use 
 - **JSON** — canonical schema-versioned export; the most lossless format.
 - **Redacted JSON** — content-stripped JSON. Same structure, generic titles. Useful for sharing the *shape* of an analysis without the confidential content.
 
+## Importing back
+
+Going the other direction — opening someone else's file — uses the single **Import…** picker (`Cmd+K → Import…`). The dialog fans out four sources as cards: **TP Studio JSON** (full round-trip), **Flying Logic file** (`.fll`), **Mermaid diagram** (`.mmd`), and **Entities CSV** (append rather than replace). Each card runs the matching file-picker and replaces (or appends to) the current document.
+
 ## Share links
 
 `Cmd+K → Copy read-only share link`. Generates a URL that:

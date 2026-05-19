@@ -53,7 +53,7 @@ const CRT: MethodStep[] = [
   },
   {
     id: 'crt.span',
-    label: 'Test against your span of control / influence',
+    label: 'Test against your locus — control / influence / external',
     hint: 'A root cause outside what you can affect is rarely the real root — keep digging.',
   },
   {

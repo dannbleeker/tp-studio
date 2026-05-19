@@ -32,7 +32,7 @@
 | **Root cause** | A terminal cause at the bottom of a CRT — the leverage point. |
 | **S&T** | Strategy & Tactics Tree. Operational-deployment decomposition with 5-facet cards. |
 | **SA** | Sufficiency Assumption. The fifth facet of an S&T card — "why this tactic is enough." |
-| **Span of control** | Per-entity flag: `control` / `influence` / `external`. |
+| **Locus** | Per-entity flag: `control` / `influence` / `external`. Previously labelled "Span of control" in TP Studio; the schema field name `spanOfControl` is retained for backward compatibility. |
 | **Strategy** | The second facet of an S&T card — the outcome-shaped "what." |
 | **Sufficiency edge** | An edge claiming "this cause, by itself, produces the effect." Default for CRT/FRT/TT edges. |
 | **Necessity edge** | An edge claiming "the effect requires this cause." Default for PRT/EC edges. |

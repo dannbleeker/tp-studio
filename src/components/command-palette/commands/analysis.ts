@@ -66,7 +66,7 @@ export const analysisCommands: Command[] = [
   }),
   {
     id: 'start-read-through',
-    label: 'Start read-through (verbalize every edge)',
+    label: 'Start read-through (step through every edge)',
     group: 'Review',
     run: (s) => {
       const order = topologicalEdgeOrder(s.doc);
@@ -75,6 +75,19 @@ export const analysisCommands: Command[] = [
         return;
       }
       s.startReadThrough(order);
+    },
+  },
+  {
+    id: 'read-all-at-once',
+    label: 'Read entire diagram at once (one-shot)',
+    group: 'Review',
+    run: (s) => {
+      const order = topologicalEdgeOrder(s.doc);
+      if (order.length === 0) {
+        s.showToast('info', 'No edges to read yet — connect entities first.');
+        return;
+      }
+      s.openReadAllAtOnce();
     },
   },
   {

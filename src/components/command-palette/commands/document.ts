@@ -1,29 +1,4 @@
-import { getCanvasInstance } from '@/services/canvasRef';
-import { pickFlyingLogic, pickJSON, pickMermaid } from '@/services/exporters';
-import { applyCsvRows, parseEntitiesCsv, pickCsvFile } from '@/services/exporters/csvImport';
 import { type Command, withWriteGuard } from './types';
-
-/**
- * Session 87 (V3) — auto-fit-view after a doc load. Examples use
- * canonical seed coordinates (Goal at x=100, Wants at x=800 on EC)
- * that overflow narrower viewports; without fit-view, the user lands
- * on a panned-off canvas and has to manually press the Fit button to
- * see the loaded diagram. Two animation-frame ticks let React Flow
- * reconcile the new node set and finalize layout positions before
- * the fit-to-bounds calculation runs.
- *
- * Pulled into a helper because the import paths all want the same
- * behaviour. The diagram-type picker (Session 90) calls fitView
- * inline so this stays scoped to the import-from-X commands here.
- */
-const fitViewAfterLoad = (): void => {
-  if (typeof window === 'undefined') return;
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(() => {
-      getCanvasInstance()?.fitView({ padding: 0.4, maxZoom: 1.2 });
-    });
-  });
-};
 
 export const documentCommands: Command[] = [
   // Session 90 — replaces the 14 per-diagram `New X` + `Load example X`
@@ -42,71 +17,16 @@ export const documentCommands: Command[] = [
     group: 'File',
     run: (s) => s.openDiagramPicker('example'),
   }),
+  // Session 133 — replaces the four prior per-source import palette
+  // rows (Import from JSON / Mermaid / CSV / Open Flying Logic file)
+  // with a single Import… picker that fans them out as cards. The
+  // dialog (ImportPickerDialog) owns the file-picker dispatch + the
+  // setDocument call; this command just opens it.
   withWriteGuard({
-    id: 'import-json',
-    label: 'Import from JSON…',
+    id: 'import',
+    label: 'Import…',
     group: 'File',
-    run: async (s) => {
-      const doc = await pickJSON();
-      if (doc) {
-        s.setDocument(doc);
-        fitViewAfterLoad();
-      }
-    },
-  }),
-  withWriteGuard({
-    id: 'import-flying-logic',
-    label: 'Open Flying Logic file…',
-    group: 'File',
-    run: async (s) => {
-      const doc = await pickFlyingLogic();
-      if (doc) {
-        s.setDocument(doc);
-        s.showToast('success', `Opened ${doc.title}.`);
-        fitViewAfterLoad();
-      }
-    },
-  }),
-  withWriteGuard({
-    // N3 (Session 64): Mermaid IMPORT. Reverse of the Block D export.
-    id: 'import-mermaid',
-    label: 'Import from Mermaid diagram…',
-    group: 'File',
-    run: async (s) => {
-      const doc = await pickMermaid();
-      if (doc) {
-        s.setDocument(doc);
-        s.showToast(
-          'success',
-          `Imported ${Object.keys(doc.entities).length} entities from Mermaid.`
-        );
-        fitViewAfterLoad();
-      }
-    },
-  }),
-  withWriteGuard({
-    id: 'import-csv',
-    label: 'Import entities from CSV…',
-    group: 'File',
-    run: async (s) => {
-      const text = await pickCsvFile();
-      if (!text) return;
-      const result = parseEntitiesCsv(text);
-      if (!result.ok) {
-        const first = result.errors[0];
-        const more = result.errors.length > 1 ? ` (+${result.errors.length - 1} more)` : '';
-        s.showToast(
-          'error',
-          first ? `CSV line ${first.line}: ${first.message}${more}` : 'CSV import failed.'
-        );
-        return;
-      }
-      const summary = applyCsvRows(result.rows);
-      s.showToast(
-        'success',
-        `Imported ${summary.entities} entit${summary.entities === 1 ? 'y' : 'ies'}, ${summary.edges} edge${summary.edges === 1 ? '' : 's'}.`
-      );
-    },
+    run: (s) => s.openImportPicker(),
   }),
   withWriteGuard({
     id: 'open-quick-capture',

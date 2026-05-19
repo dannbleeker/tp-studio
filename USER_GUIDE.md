@@ -147,7 +147,7 @@ The canvas re-flows automatically after each change, with a 300 ms ease-out anim
 
 **Archiving pruned alternatives.** When you've considered a branch and decided not to pursue it, the book says don't delete — archive. Palette → **Move selection to Archive group** either creates a new "Archive" group (slate, collapsed) or appends to an existing one. The archive stays visible in the inspector but folded out of the canvas, preserving the path-not-taken as a record without cluttering the live diagram.
 
-**Span of control / sphere of influence.** Each entity has an optional 3-value flag in the inspector: **Control** (I can act on this directly), **Influence** (I can affect it indirectly), or **External** (I can only observe it). When set, the node shows a small letter pill — green `C`, amber `I`, neutral `E`. The book's intro and CRT Step 7 ask "have you built down to causes you actually control or influence?" — a root cause flagged External in a CRT fires a soft CLR nudge prompting you to keep digging. FRT injections and other entity types are exempt (the warning would be noise on them).
+**Locus (previously "Span of control").** Each entity has an optional 3-value flag in the inspector labelled **Locus**: **Control** (I can act on this directly), **Influence** (I can affect it indirectly), or **External** (I can only observe it). When set, the node shows a small letter pill — green `C`, amber `I`, neutral `E`. The book's intro and CRT Step 7 ask "have you built down to causes you actually control or influence?" — a root cause flagged External in a CRT fires a soft CLR nudge prompting you to keep digging. FRT injections and other entity types are exempt (the warning would be noise on them). Schema field name remains `spanOfControl` for backward compatibility — only the user-visible label changed.
 
 ## Selection toolbar
 
@@ -215,7 +215,9 @@ Once a diagram has a couple of dozen entities, getting around becomes a separate
 
 Two palette commands turn a diagram into a guided talking-out-loud pass — useful for presentations, audits, and your own discipline.
 
-**Read-through.** Palette → **Start read-through (verbalize every edge)**. Walks every structural edge in topological order (root causes first, terminal effects last) and renders each as a complete English sentence in the diagram's natural reading. CRT/FRT/TT default to `"[Effect] because [Cause]"`; PRT/EC default to `"In order to obtain [Effect], [Cause] must hold."` Use `→` / Space to advance, `←` to go back, Esc to close. Each step has an "Open this edge in the inspector" button so you can stop and edit if a sentence reads wrong.
+**Read-through (step through).** Palette → **Start read-through (step through every edge)**. Walks every structural edge in topological order (root causes first, terminal effects last) and renders each as a complete English sentence in the diagram's natural reading. CRT/FRT/TT default to `"[Effect] because [Cause]"`; PRT/EC default to `"In order to obtain [Effect], [Cause] must hold."` Use `→` / Space to advance, `←` to go back, Esc to close. Each step has an "Open this edge in the inspector" button so you can stop and edit if a sentence reads wrong.
+
+**Read entire diagram at once.** Palette → **Read entire diagram at once (one-shot)**. Alternative to the step-through overlay — opens a scrollable dialog rendering every edge's sentence in topological order in a single view, with a **Copy all** button that drops the full transcript into the clipboard. Use this when a 50+ edge diagram makes the step-through tedious, or when you want to paste the full verbal form into a brief, deck, or postmortem. Same sentence wording as the step-through; the two modes are complementary (step-through for discipline, all-at-once for artefact).
 
 The reading word is controlled by **Settings → Display → Causality reading**:
 - **Auto** — diagram-type-aware (recommended).

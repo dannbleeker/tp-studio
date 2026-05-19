@@ -119,7 +119,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
       {
         id: 'json',
         label: 'JSON',
-        hint: 'Full round-trip: re-import via Import from JSON…',
+        hint: 'Full round-trip: re-import via Import… → TP Studio JSON.',
         run: (s) => exportJSON(s.doc),
       },
       {
@@ -137,7 +137,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
       {
         id: 'flying-logic',
         label: 'Flying Logic',
-        hint: 'Native FL file format. Round-trips with Open Flying Logic file.',
+        hint: 'Native FL file format. Round-trips via Import… → Flying Logic file.',
         run: (s) => exportFlyingLogic(s.doc),
       },
       {
@@ -155,7 +155,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
       {
         id: 'mermaid',
         label: 'Mermaid',
-        hint: 'Markdown-embeddable diagram source. Round-trips with Import from Mermaid…',
+        hint: 'Markdown-embeddable diagram source. Round-trips via Import… → Mermaid diagram.',
         run: (s) => exportMermaid(s.doc),
       },
       {
@@ -167,7 +167,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
       {
         id: 'csv',
         label: 'CSV',
-        hint: 'Entities + edges + groups in one RFC-4180 file. Re-import via Import entities from CSV…',
+        hint: 'Entities + edges + groups in one RFC-4180 file. Re-import via Import… → Entities CSV.',
         run: (s) => exportCSV(s.doc),
       },
     ],

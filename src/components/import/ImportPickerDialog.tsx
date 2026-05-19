@@ -1,0 +1,159 @@
+import clsx from 'clsx';
+import { getCanvasInstance } from '@/services/canvasRef';
+import { pickFlyingLogic, pickJSON, pickMermaid } from '@/services/exporters';
+import { applyCsvRows, parseEntitiesCsv, pickCsvFile } from '@/services/exporters/csvImport';
+import { type RootStore, useDocumentStore } from '@/store';
+import { CARD_FOCUS } from '../ui/focusClasses';
+import { LargeDialog } from '../ui/LargeDialog';
+
+/**
+ * Session 133 — single Import… picker.
+ *
+ * Mirror of the Session 90 ExportPickerDialog. Replaces the four
+ * separate "Import from X" palette commands (JSON / Mermaid / CSV /
+ * Flying Logic) with one Import… palette entry that opens this
+ * dialog. Each card calls the same underlying file picker the old
+ * palette command did — no behaviour change — and closes the dialog
+ * on pick.
+ *
+ * The underlying pickers (`pickJSON`, `pickMermaid`, etc.) each open
+ * a browser file dialog. If the user cancels there, the picker
+ * resolves to `null` and this dialog stays closed (closing happens
+ * synchronously before the `await`).
+ */
+
+type ImportAction = {
+  id: string;
+  label: string;
+  hint: string;
+  run: (s: RootStore) => Promise<void>;
+};
+
+/**
+ * Auto-fit-view helper duplicated from `commands/document.ts` to avoid
+ * a cross-import. Two animation frames let React Flow reconcile the
+ * imported node set + finalize layout before the fit-to-bounds call.
+ */
+const fitViewAfterLoad = (): void => {
+  if (typeof window === 'undefined') return;
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      getCanvasInstance()?.fitView({ padding: 0.4, maxZoom: 1.2 });
+    });
+  });
+};
+
+const IMPORT_ACTIONS: ImportAction[] = [
+  {
+    id: 'json',
+    label: 'TP Studio JSON',
+    hint: 'Open a .tps.json file. Full fidelity round-trip — every entity, edge, group, assumption, revision.',
+    run: async (s) => {
+      const doc = await pickJSON();
+      if (doc) {
+        s.setDocument(doc);
+        fitViewAfterLoad();
+      }
+    },
+  },
+  {
+    id: 'flying-logic',
+    label: 'Flying Logic file',
+    hint: 'Open a .fll diagram exported from Flying Logic. Entity types + edges + groups map across.',
+    run: async (s) => {
+      const doc = await pickFlyingLogic();
+      if (doc) {
+        s.setDocument(doc);
+        s.showToast('success', `Opened ${doc.title}.`);
+        fitViewAfterLoad();
+      }
+    },
+  },
+  {
+    id: 'mermaid',
+    label: 'Mermaid diagram',
+    hint: 'Open a Mermaid .mmd flowchart. Reverses the Mermaid export — node labels become entity titles.',
+    run: async (s) => {
+      const doc = await pickMermaid();
+      if (doc) {
+        s.setDocument(doc);
+        s.showToast(
+          'success',
+          `Imported ${Object.keys(doc.entities).length} entities from Mermaid.`
+        );
+        fitViewAfterLoad();
+      }
+    },
+  },
+  {
+    id: 'csv',
+    label: 'Entities CSV',
+    hint: 'Append entities (and optional edges) from a CSV file. Adds to the current doc rather than replacing.',
+    run: async (s) => {
+      const text = await pickCsvFile();
+      if (!text) return;
+      const result = parseEntitiesCsv(text);
+      if (!result.ok) {
+        const first = result.errors[0];
+        const more = result.errors.length > 1 ? ` (+${result.errors.length - 1} more)` : '';
+        s.showToast(
+          'error',
+          first ? `CSV line ${first.line}: ${first.message}${more}` : 'CSV import failed.'
+        );
+        return;
+      }
+      const summary = applyCsvRows(result.rows);
+      s.showToast(
+        'success',
+        `Imported ${summary.entities} entit${summary.entities === 1 ? 'y' : 'ies'}, ${summary.edges} edge${summary.edges === 1 ? '' : 's'}.`
+      );
+    },
+  },
+];
+
+export function ImportPickerDialog() {
+  const open = useDocumentStore((s) => s.importPickerOpen);
+  const close = useDocumentStore((s) => s.closeImportPicker);
+
+  if (!open) return null;
+
+  const handlePick = async (action: ImportAction): Promise<void> => {
+    close();
+    await action.run(useDocumentStore.getState());
+  };
+
+  return (
+    <LargeDialog
+      open={open}
+      onClose={close}
+      title="Import"
+      subtitle="Pick a source. The current document is replaced (except CSV, which appends)."
+      closeAriaLabel="Close import picker"
+      widthClass="w-[min(640px,94vw)]"
+    >
+      <ul className="grid grid-cols-1 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
+        {IMPORT_ACTIONS.map((it) => (
+          <li key={it.id}>
+            <button
+              type="button"
+              onClick={() => void handlePick(it)}
+              className={clsx(
+                'group flex h-full w-full flex-col gap-0.5 rounded-md border border-neutral-200 bg-white px-3 py-2 text-left transition',
+                'hover:border-indigo-400 hover:bg-indigo-50/40',
+                CARD_FOCUS,
+                'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
+              )}
+            >
+              <span className="font-medium text-neutral-900 text-sm dark:text-neutral-100">
+                {it.label}
+              </span>
+              <span className="text-[11px] text-neutral-500 leading-snug dark:text-neutral-400">
+                {it.hint}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </LargeDialog>
+  );
+}

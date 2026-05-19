@@ -29,8 +29,12 @@ const LABEL_INLINE_MAX = 30;
 /** E1: invisible halo around the stroke that captures clicks. React Flow's
  *  default is 20 px; we bump it so a slightly-imprecise click on a thin
  *  edge still selects it. The halo doesn't visibly render — it's just a
- *  transparent path beneath the visible stroke. */
-const EDGE_INTERACTION_WIDTH = 32;
+ *  transparent path beneath the visible stroke.
+ *  Session 133 — bumped 32 → 48 in response to user feedback that edges
+ *  are still hard to grab when nodes are close together. 48 keeps the
+ *  hit area generous without making adjacent edges fight each other on
+ *  parallel paths. */
+const EDGE_INTERACTION_WIDTH = 48;
 
 /**
  * E6: for AND-grouped non-aggregated edges, the visible edge segment stops

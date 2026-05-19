@@ -207,7 +207,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         </label>
       </Field>
 
-      <Field label="Span of control">
+      <Field label="Locus">
         {/*
           TOC-reading (CRT Step 7): "have you built down to causes you
           actually control or influence?" The three-value flag captures the

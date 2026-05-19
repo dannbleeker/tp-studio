@@ -1,6 +1,6 @@
 # Foreword
 
-> *Last reviewed against TP Studio v0 (schema v8), Session 132.*
+> *Last reviewed against TP Studio v0 (schema v8), Session 133.*
 
 The Theory of Constraints has two literatures and one tool tradition.
 

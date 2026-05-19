@@ -9,6 +9,7 @@ import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
+import { AssumptionAnchorOverlay } from './edges/AssumptionAnchorOverlay';
 import { JunctorOverlay } from './edges/JunctorOverlay';
 import { TPEdge } from './edges/TPEdge';
 import { useGraphMutations } from './hooks/useGraphMutations';
@@ -339,6 +340,7 @@ function CanvasInner() {
         )}
         <ZoomPercent />
         <JunctorOverlay />
+        <AssumptionAnchorOverlay />
         {/* Session 77: EC verbalisation strip overlays the canvas top
             edge on EC docs only. Session 87: stacked under the new
             ECReadingInstructions strip (PPT comparison item #1) and

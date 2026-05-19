@@ -46,6 +46,11 @@ const QuickCaptureDialog = lazy(() =>
 const RevisionPanel = lazy(() =>
   import('./components/history/RevisionPanel').then((m) => ({ default: m.RevisionPanel }))
 );
+const ReadAllAtOnceDialog = lazy(() =>
+  import('./components/walkthrough/ReadAllAtOnceDialog').then((m) => ({
+    default: m.ReadAllAtOnceDialog,
+  }))
+);
 const WalkthroughOverlay = lazy(() =>
   import('./components/walkthrough/WalkthroughOverlay').then((m) => ({
     default: m.WalkthroughOverlay,
@@ -90,6 +95,11 @@ const DiagramTypePickerDialog = lazy(() =>
 const ExportPickerDialog = lazy(() =>
   import('./components/export/ExportPickerDialog').then((m) => ({
     default: m.ExportPickerDialog,
+  }))
+);
+const ImportPickerDialog = lazy(() =>
+  import('./components/import/ImportPickerDialog').then((m) => ({
+    default: m.ImportPickerDialog,
   }))
 );
 // Session 88 (Batch 2) — CommandPalette was eagerly imported; its tree
@@ -282,6 +292,9 @@ export function App() {
         <ErrorBoundary label="Walkthrough overlay">
           <WalkthroughOverlay />
         </ErrorBoundary>
+        <ErrorBoundary label="Read-all-at-once dialog">
+          <ReadAllAtOnceDialog />
+        </ErrorBoundary>
         <ErrorBoundary label="Side-by-side compare">
           <SideBySideDialog />
         </ErrorBoundary>
@@ -296,6 +309,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Export picker">
           <ExportPickerDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Import picker">
+          <ImportPickerDialog />
         </ErrorBoundary>
       </Suspense>
       <ConfirmDialog />

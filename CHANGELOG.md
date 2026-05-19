@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 133 — UX batch from user feedback (six shipped, four parked)
+
+Triaged a batch of user notes from the canvas / EC / book surfaces. Six shipped this session; four parked in `NEXT_STEPS.md` under "Session 133 user-note triage — open items" with concrete options for the design-question ones.
+
+**Shipped:**
+
+- **Book PDF screenshot rendering bug — fixed.** `scripts/build-book-pdf.mjs` rewrote chapter image paths to `file://` URLs and loaded HTML via `page.setContent()`, which Chromium blocks (the document origin is opaque, not file://). Result: 11 of 13 chapter screenshots silently failed to load and the rendered PDF shipped without them. Diagnostic: console listener caught "Not allowed to load local resource" errors + `naturalWidth=0` on every `<img>`. Fix: read each PNG once, encode as base64, inline as `data:image/png;base64,…`. Image XObjects in the rebuilt PDF: 2 → 15 (13 chapter screenshots + 2 internal). Size: 1.11 MB → 1.75 MB. Missing-file path leaves the relative URL intact so the broken-image icon flags a maintainer.
+- **Edge hit area widened.** `EDGE_INTERACTION_WIDTH` bumped 32 → 48 px in `TPEdge.tsx`. Per user feedback that edges were still hard to click when nodes are dense. Same invisible-halo strategy (React Flow's `interactionWidth` prop); only the radius changes. The visible stroke remains 1.5 px so the cue stays subtle.
+- **Padlock icon now swaps Lock ↔ LockOpen.** Reverses the Session 92 single-icon decision per explicit user feedback. Color variant (violet ↔ neutral) stays — redundant cues are an accessibility win for icon-only and color-blind users.
+- **Span of Control → Locus (UI-label rename).** Per user feedback that "span of control" sounded too managerial. The schema field name `Entity.spanOfControl` stays for backward compatibility; only the user-visible labels changed (EntityInspector field header, TPNode tooltip + aria-label strings, method-checklist text, USER_GUIDE, Chapter 3, glossary). Single-word noun "Locus" matches psych's "locus of control" vocabulary without the management overhead.
+- **Verbalisation all-at-once.** New palette command `Read entire diagram at once (one-shot)` opens a lazy-loaded `ReadAllAtOnceDialog` that renders every edge as a sentence in topological order in a single scrollable view, with a "Copy all" button. Alternative to the existing step-through `Read-through` overlay for large CRTs where 50+ click-throughs gets tedious. Reuses `topologicalEdgeOrder` + `renderEdgeSentence` from `edgeReading.ts` so the sentence wording is identical to the step-through. New state: `readAllAtOnceOpen` on `dialogsSlice` + `openReadAllAtOnce` / `closeReadAllAtOnce` actions. Read-through label tweaked: "verbalize every edge" → "step through every edge" so the two modes' names mirror each other.
+- **Import… picker dialog.** New `ImportPickerDialog` (lazy-loaded) replaces the four separate "Import from X" palette rows (JSON / Mermaid / CSV / Flying Logic) with a single `Import…` palette entry that opens a card-grid picker. Mirrors the Session 90 ExportPickerDialog pattern. The export hint strings updated to reference the new "Import… → X" paths. `commandIcons.ts` collapsed 4 entries → 1.
+- **EC assumption dashed-edge overlay.** New `AssumptionAnchorOverlay` SVG component mounted inside `<ReactFlow>` alongside `JunctorOverlay`. For every (assumption-entity, anchor-edge) pair (`Edge.assumptionIds`), draws a faint grey dashed line from the assumption entity's centre to the midpoint of the anchor edge. Pointer events off so it doesn't compete for clicks. Diagram-agnostic (assumption entities exist in every type); most useful on EC where assumptions sit beside the canvas. Reuses `entitiesOfType(doc, 'assumption')` from the Session 132 by-type index for cheap subscription.
+
+**Parked (in NEXT_STEPS under "Session 133 user-note triage"):**
+
+- Move React Flow Controls / minimap on the canvas (three options surfaced)
+- CLR map for the book (needs the artefact)
+- Selection visibility on canvas (four options surfaced; recommended halo + dim-everything-else)
+- AND-junction creation via drag gesture (two options surfaced; recommended shift-click + palette nudge)
+
+Plus a stale-comment fix: `dialogsSlice.ts`'s doc-comment that referenced the removed `TOAST_AUTO_DISMISS_MS` alias has been updated to point at the per-kind table.
+
+Tests + tsc clean (one known flake in `useGraphPositions` lazy-dagre path that passes in isolation). PDF rebuilt — book now ships with all 13 chapter screenshots embedded.
+
 ## Session 132 — Tier 3 first wave (#28 + #31)
 
 Two items from the Tier-3 deep-dive plan. Both small, both low-risk, both move real numbers.
