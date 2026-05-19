@@ -348,8 +348,16 @@ Deleting a group preserves its members. If the group was nested inside a parent,
 
 By default a single arrow from cause to effect means "X is sufficient to produce Y." When two or more causes are *jointly* required — neither alone is enough — group their edges as an **AND**:
 
+**Path A — multi-select then group.** Best for grouping ≥ 3 edges at once.
+
 1. **Shift+click** each edge that should be in the group. (Click one, hold Shift, click the next.)
-2. Open the command palette (`Cmd/Ctrl+K`) and pick **Group selected edges as AND**. The edges turn violet and converge into a small **junctor circle** (a white circle outlined in violet with "AND" written inside) sitting just above the target. A single short arrow continues from the junctor down into the target — the same convention Flying Logic uses for AND vertices.
+2. Open the command palette (`Cmd/Ctrl+K`) and pick **Group selected edges as AND** — or use the selection toolbar's **AND** verb that surfaces automatically on multi-edge selection. The edges turn violet and converge into a small **junctor circle** (a white circle outlined in violet with "AND" written inside) sitting just above the target. A single short arrow continues from the junctor down into the target — the same convention Flying Logic uses for AND vertices.
+
+**Path B — click one edge, then click another.** Best for pairing two existing edges.
+
+1. Select a single edge.
+2. Click the selection toolbar's **AND-join…** verb (or run `Cmd+K → AND-join with another edge…`). A status chip appears reading "Click another edge to AND-join."
+3. Click the second edge anywhere on the canvas. Both edges get AND-grouped. Esc, clicking the source edge again, or clicking the pane all cancel.
 
 Constraints: every edge in a group must share the same target — the tool will refuse to group edges that don't.
 

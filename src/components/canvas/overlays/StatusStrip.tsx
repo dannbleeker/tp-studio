@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Eye, GitBranch, History, Lock, Search, Sparkles } from 'lucide-react';
+import { Eye, GitBranch, History, Link2, Lock, Search, Sparkles } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { DataComponent } from '@/components/dataComponentNames';
 import { useDocumentStore } from '@/store';
@@ -35,12 +35,14 @@ export function StatusStrip() {
     creationWizardActive,
     searchOpen,
     compareRevisionId,
+    joinModeEdgeId,
     setBrowseLocked,
     toggleHistoryPanel,
     closeSearch,
     closeCompare,
     unhoist,
     closeCreationWizard,
+    cancelEdgeJoinMode,
   } = useDocumentStore(
     useShallow((s) => ({
       browseLocked: s.browseLocked,
@@ -49,12 +51,14 @@ export function StatusStrip() {
       creationWizardActive: s.creationWizard !== null,
       searchOpen: s.searchOpen,
       compareRevisionId: s.compareRevisionId,
+      joinModeEdgeId: s.joinModeEdgeId,
       setBrowseLocked: s.setBrowseLocked,
       toggleHistoryPanel: s.toggleHistoryPanel,
       closeSearch: s.closeSearch,
       closeCompare: s.closeCompare,
       unhoist: s.unhoist,
       closeCreationWizard: s.closeCreationWizard,
+      cancelEdgeJoinMode: s.cancelEdgeJoinMode,
     }))
   );
 
@@ -121,6 +125,19 @@ export function StatusStrip() {
       Icon: Eye,
       tone: 'emerald',
       onClick: closeCompare,
+    });
+  }
+  // Session 133 — edge-join mode. Active while the user has invoked
+  // "AND-join with another edge…" but hasn't yet clicked the second
+  // edge. The chip's click cancels the pending join, mirroring the
+  // chip-cancels-mode contract of the others.
+  if (joinModeEdgeId) {
+    chips.push({
+      key: 'edge-join',
+      label: 'Click another edge to AND-join',
+      Icon: Link2,
+      tone: 'indigo',
+      onClick: cancelEdgeJoinMode,
     });
   }
 

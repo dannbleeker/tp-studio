@@ -35,6 +35,26 @@ export const edgeCommands: Command[] = [
       if (!result.ok) s.showToast('info', result.reason);
     },
   }),
+  // Session 133 — drag-substitute for AND-junction creation. With a
+  // single edge selected, this enters "join mode": the next edge the
+  // user clicks gets AND-grouped with the held edge via `groupAsAnd`.
+  // Discoverable via the selection toolbar verb of the same name; the
+  // palette command exists for keyboard parity.
+  withWriteGuard({
+    id: 'start-edge-join-and',
+    label: 'AND-join with another edge…',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'edges' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single edge first.');
+        return;
+      }
+      const id = sel.ids[0]!;
+      s.startEdgeJoinMode(id);
+      s.showToast('info', 'Click another edge to AND-join. Esc to cancel.');
+    },
+  }),
   withWriteGuard({
     id: 'ungroup-and',
     label: 'Ungroup selected AND edges',
