@@ -104,17 +104,42 @@ async function readChapterMetadata() {
 }
 
 /**
- * Walk the rendered HTML for each chapter and rewrite the relative
- * `screenshots/foo.png` image paths to absolute `file://` URIs so
- * Chromium can load them when rendering the standalone HTML document
- * (the Playwright page sees the HTML as a data URI; relative paths
- * have no base to resolve against).
+ * Walk the rendered HTML for each chapter and inline every
+ * `screenshots/foo.png` reference as a `data:image/png;base64,…` URI.
+ *
+ * Session 132 (followup) — the previous implementation rewrote paths
+ * to `file://` absolute URLs, but Chromium's security policy blocks
+ * `file://` resources from HTML loaded via `page.setContent()` (the
+ * document's origin is opaque, not file://). Result: 11 of 13 chapter
+ * screenshots failed to load silently and the rendered PDF shipped
+ * without them. Base64 data URIs bypass the origin check entirely,
+ * inflate the HTML by ~870 KB (well within memory budget for a 1 MB
+ * PDF), and produce the same final binary output.
  */
-function rewriteImagePaths(html) {
-  return html.replace(/(<img\s+[^>]*src=")(screenshots\/)/g, (_, prefix, _path) => {
-    const absDir = SCREENSHOTS_DIR.replace(/\\/g, '/');
-    return `${prefix}file:///${absDir}/`;
-  });
+async function rewriteImagePaths(html) {
+  const matches = [...html.matchAll(/<img\s+[^>]*src="screenshots\/([^"]+)"/g)];
+  if (matches.length === 0) return html;
+  // Resolve each unique file once, then substitute every reference.
+  const fileToDataUri = new Map();
+  for (const m of matches) {
+    const filename = m[1];
+    if (fileToDataUri.has(filename)) continue;
+    try {
+      const buf = await readFile(join(SCREENSHOTS_DIR, filename));
+      const ext = filename.split('.').pop()?.toLowerCase() ?? 'png';
+      const mime = ext === 'png' ? 'image/png' : ext === 'svg' ? 'image/svg+xml' : `image/${ext}`;
+      fileToDataUri.set(filename, `data:${mime};base64,${buf.toString('base64')}`);
+    } catch {
+      // Missing screenshot — leave the relative path so the broken-
+      // image icon renders + a maintainer notices instead of the PDF
+      // shipping without warning.
+      fileToDataUri.set(filename, `screenshots/${filename}`);
+    }
+  }
+  return html.replace(
+    /(<img\s+[^>]*src=")screenshots\/([^"]+)(")/g,
+    (_, prefix, filename, suffix) => `${prefix}${fileToDataUri.get(filename)}${suffix}`
+  );
 }
 
 /**
@@ -123,7 +148,7 @@ function rewriteImagePaths(html) {
  * precisely (default marked-generated H1 ids are based on the title
  * text, which would change if a chapter's title is edited).
  */
-function chapterToHtml(slug, markdownSource) {
+async function chapterToHtml(slug, markdownSource) {
   const html = marked.parse(markdownSource, { mangle: false, headerIds: true });
   // Inject the slug id on the H1 so TOC links resolve.
   const withId = html.replace(/<h1(.*?)>/, `<h1 id="${slug}"$1>`);
