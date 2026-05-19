@@ -57,7 +57,7 @@
   [data-component="search-panel"],
   [data-component="empty-hint"],
   [data-component="first-entity-tip"],
-  [data-component="canvas-nav"] {
+  [data-component="zoom-percent"] {
     display: none;
   }
 
