@@ -1,4 +1,4 @@
-import { Background, BackgroundVariant, Controls, MiniMap, ReactFlow } from '@xyflow/react';
+import { Background, BackgroundVariant, MiniMap, ReactFlow } from '@xyflow/react';
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { findSpliceTargetEdge } from '@/domain/dragSplice';
@@ -19,12 +19,12 @@ import { TPCollapsedGroupNode } from './nodes/TPCollapsedGroupNode';
 import { TPGroupNode } from './nodes/TPGroupNode';
 import { TPNode } from './nodes/TPNode';
 import { Breadcrumb } from './overlays/Breadcrumb';
+import { CanvasNav } from './overlays/CanvasNav';
 import { ECInjectionChip } from './overlays/ECInjectionChip';
 import { ECReadingInstructions } from './overlays/ECReadingInstructions';
 import { EmptyHint } from './overlays/EmptyHint';
 import { FirstEntityTip } from './overlays/FirstEntityTip';
 import { StatusStrip } from './overlays/StatusStrip';
-import { ZoomPercent } from './overlays/ZoomPercent';
 import { CreationWizardPanel } from './wizards/CreationWizardPanel';
 
 const nodeTypes = {
@@ -333,25 +333,21 @@ function CanvasInner() {
         fitViewOptions={{ padding: 0.4, maxZoom: 1.2 }}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color={GRID_DOT} />
-        {/* Session 87 UX fix #2 — Controls moved bottom-LEFT to sit
-            next to the MiniMap. Previously bottom-center collided
-            with the toast layer (`Toaster.tsx` is `bottom-6 left-1/2`)
-            and split navigation chrome across two corners of the
-            canvas. Dark-mode glyph color bumped to neutral-200 —
-            React Flow's built-in dark adaptation only colors the
-            chrome, not the icons themselves. */}
-        <Controls
-          position="bottom-left"
-          showInteractive={false}
-          className="!rounded-lg !border !border-neutral-200 !bg-white !text-neutral-700 !shadow-xs dark:!border-neutral-800 dark:!bg-neutral-900 dark:!text-neutral-200"
-        />
+        {/* Session 133 — the built-in `<Controls>` (zoom in / zoom
+            out / fit-view buttons) used to live bottom-left. Per user
+            feedback that the corner was getting crowded (MiniMap,
+            Toaster spill, selection-toolbar gesture targets), those
+            three actions moved into the new `<CanvasNav>` chip
+            centred at bottom-centre alongside the zoom percent.
+            MiniMap stays bottom-left as the only chrome in that
+            corner now. */}
         {showMinimap && (
           <MiniMap
-            // Bottom-LEFT (now sitting above the Controls, per Session
-            // 87 UX fix #2). The Inspector occupies the right edge
-            // whenever the user has a selection; keeping all
-            // navigation chrome on the left edge keeps the thumbnail
-            // and the controls reachable in the same hand motion.
+            // Bottom-LEFT, now solo in this corner (Controls moved
+            // bottom-centre Session 133). The Inspector occupies the
+            // right edge whenever the user has a selection, so the
+            // thumbnail stays on the opposite side for spatial
+            // separation.
             position="bottom-left"
             pannable
             zoomable
@@ -378,7 +374,7 @@ function CanvasInner() {
             nodeStrokeWidth={1}
           />
         )}
-        <ZoomPercent />
+        <CanvasNav />
         <JunctorOverlay />
         <AssumptionAnchorOverlay />
         {/* Session 77: EC verbalisation strip overlays the canvas top

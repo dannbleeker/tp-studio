@@ -18,7 +18,12 @@ export const DataComponent = {
   EmptyHint: 'empty-hint',
   FirstEntityTip: 'first-entity-tip',
   ZoomUpCard: 'zoom-up-card',
-  ZoomPercent: 'zoom-percent',
+  /** Session 133 — combined zoom-percent + zoom-in / out / fit-to-view
+   *  navigation chip. Replaced the old `ZoomPercent` overlay AND
+   *  React Flow's built-in `<Controls>` bar (bottom-left) by merging
+   *  the four into one centred chip. The `'zoom-percent'` data-component
+   *  was renamed to `'canvas-nav'` to reflect the broader role. */
+  CanvasNav: 'canvas-nav',
   RevisionPanel: 'revision-panel',
   SearchPanel: 'search-panel',
   Toaster: 'toaster',
