@@ -13,6 +13,13 @@
       "Bash(node ./node_modules/typescript/bin/tsc:*)"
     ]
   },
+  "autoMode": {
+    "environment": ["$defaults"],
+    "allow": [
+      "$defaults",
+      "TP Studio is a single-developer project with no PR review process. Direct pushes to origin/main are the standard workflow — Dann reviews changes in-session before authorizing each push and the CI on main is the gate. Treat `git push` / `git push origin main` as authorized when Dann has confirmed in chat (e.g. 'push', 'yes push', 'push to origin/main'). Do not soft-block on the default-branch concern."
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
