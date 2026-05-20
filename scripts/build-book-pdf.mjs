@@ -36,6 +36,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 import { marked } from 'marked';
+import { clrMapHtml, CLR_MAP_CSS } from './lib/clrMapHtml.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(HERE, '..');
@@ -166,7 +167,16 @@ async function rewriteImagePaths(html) {
  * text, which would change if a chapter's title is edited).
  */
 async function chapterToHtml(slug, markdownSource) {
-  const html = marked.parse(markdownSource, { mangle: false, headerIds: true });
+  // Pre-pass: expand `<!-- CLR_MAP -->` placeholders. Done before marked
+  // sees the source so the generated `<div>` tree is preserved exactly
+  // (marked passes HTML through but is fussy about empty-line framing
+  // around block-level HTML; pasting the expanded HTML with surrounding
+  // blank lines lets it land cleanly between paragraphs).
+  const expanded = markdownSource.replace(
+    /<!--\s*CLR_MAP\s*-->/g,
+    () => `\n\n${clrMapHtml()}\n\n`
+  );
+  const html = marked.parse(expanded, { mangle: false, headerIds: true });
   // Inject the slug id on the H1 so TOC links resolve.
   const withId = html.replace(/<h1(.*?)>/, `<h1 id="${slug}"$1>`);
   return rewriteImagePaths(withId);
@@ -490,6 +500,8 @@ a {
   color: #6366f1;
   text-decoration: none;
 }
+
+${CLR_MAP_CSS}
 
 /* Sidebars (call-out blockquotes). The author marks them with leading
    emoji per AUTHORING.md (🎯 🛠 💡 ⚠ 🛑 🔁). They render as styled

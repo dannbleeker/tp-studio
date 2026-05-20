@@ -4,9 +4,9 @@
 
 ## The classical map
 
-Before diving into how TP Studio implements them, here is the classical reference — the eight-box layout Dettmer's *The Logical Thinking Process* uses to teach the CLR, each box pairing the category's question with a tiny example diagram.
+Before diving into how TP Studio implements them, here is the classical reference — the eight-box layout Dettmer's *The Logical Thinking Process* uses to teach the CLR, each box pairing the category's question with a tiny example diagram. Cards mirror TP Studio's canvas: amber stripe for causal nodes, neutral grey for effects, red-dashed for the missing element each category catches.
 
-![The eight Categories of Legitimate Reservation, laid out as Dettmer teaches them — each box shows the category's question and a small diagram illustrating the failure mode it catches](diagrams/clr-map.png)
+<!-- CLR_MAP -->
 
 This map is the territory; TP Studio's warnings are the tools that walk it. Goldratt's original six are the first six boxes; *Predicted Effect* and *Tautology* are Dettmer's additions, used mainly when a stated cause is intangible (you cannot observe it directly, only its consequences).
 
