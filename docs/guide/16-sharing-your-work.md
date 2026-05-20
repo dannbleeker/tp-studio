@@ -27,8 +27,9 @@ Three groups:
 - **SVG** — vector. Sharp at any zoom. Importable into Figma, Illustrator, etc.
 - **PDF** — true vector PDF via jspdf + svg2pdf. Paginated if the diagram exceeds page-height. Optional annotation appendix.
 - **Print / Save as PDF…** — opens the **Print Preview Dialog** with mode picker (Standard / Workshop / Ink-saving), annotation appendix toggle, and header/footer merge fields. The browser print dialog opens after.
+- **PowerPoint deck (.pptx)** — workshop-ready `.pptx` with one slide per major section: cover (doc title + diagram type), System Scope (if filled), an embedded screenshot of the canvas, EC conflict statement (EC-only), paginated reasoning bullets (≤7 sentences/slide in topological order, assumption-edges filtered), Likely Core Driver(s) (CRT-only), and Method-checklist progress. Indigo brand band; vector content where possible. Generated client-side via lazy-loaded `pptxgenjs` — first invocation downloads the vendor chunk (~123 KB gz), subsequent exports are instant.
 
-The PDF route is the most polished. Use Print Preview for the layout knobs; use the direct PDF export for unattended/scripted use.
+The PDF route is the most polished for static layout. Use Print Preview for the layout knobs, the direct PDF export for unattended use, the PowerPoint deck when you need a slide each section of the analysis for a presentation.
 
 ### Markup
 
@@ -46,13 +47,14 @@ The PDF route is the most polished. Use Print Preview for the layout knobs; use 
 - **CSV** — entities + edges + groups in one RFC-4180 file.
 - **Annotations only (.md / .txt)** — just the description bodies, for content-review workflows.
 - **EC Workshop Sheet (PDF)** — one-page PPT-style layout with guiding questions, EC-only.
+- **Risk register (CSV)** — one row per UDE in the doc, with columns `risk_id / risk / trigger / consequence / mitigation / owner / status`. The exporter walks each UDE backwards through the causal graph to find any reachable injection or desired-effect; if one exists the row is `mitigated`, otherwise `open`. Owner comes from `entity.owner` (with a back-compat fallback to `entity.attributes.owner.value` for older docs). Imports cleanly into Jira / Linear / a spreadsheet. Only surfaces in the Export picker when the doc has at least one UDE — NBR diagrams and CRTs are the canonical sources; an EC has no UDEs by construction so it's hidden there.
 - **Standalone HTML viewer** — single self-contained file.
 - **JSON** — canonical schema-versioned export; the most lossless format.
 - **Redacted JSON** — content-stripped JSON. Same structure, generic titles. Useful for sharing the *shape* of an analysis without the confidential content.
 
 ## Importing back
 
-Going the other direction — opening someone else's file — uses the single **Import…** picker (`Cmd+K → Import…`). The dialog fans out four sources as cards: **TP Studio JSON** (full round-trip), **Flying Logic file** (`.fll`), **Mermaid diagram** (`.mmd`), and **Entities CSV** (append rather than replace). Each card runs the matching file-picker and replaces (or appends to) the current document.
+Going the other direction — opening someone else's file — uses the single **Import…** picker (`Cmd+K → Import…`). The dialog fans out five sources as cards: **TP Studio JSON** (full round-trip), **Flying Logic file** (`.fll`), **Mermaid diagram** (`.mmd`), **Entities CSV** (append rather than replace), and **Paste from whiteboard** — the last is the escape hatch for Miro / Mural / FigJam / any text source. Copy stickies from the source board, paste into the textarea, one entity is minted per non-empty line. Bullet markers (`-` `*` `•` `1.` `1)`) are stripped, tab-separated content keeps only the first column. Connectors aren't inferred — Miro / Mural don't expose arrow structure in client-accessible exports, so this path gets the entities into the canvas; you wire causality after.
 
 ## Share links
 

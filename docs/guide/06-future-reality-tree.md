@@ -58,7 +58,10 @@ For each negative branch, draft a *second-order injection*:
 
 The FRT now has 3 injections (one primary, two for negative branches), 5 desired effects, 2 negative-branch UDEs (each suppressed by an injection), and clean paths from the injections to the elimination of the original 3 CRT UDEs.
 
-🛠 **How TP Studio helps:** `Start Negative Branch from this entity` palette command (also right-click context menu) creates a "Negative Branch" group preset (slate-coloured) rooted at the entity you select. Useful for keeping NB sub-trees visually separated.
+🛠 **How TP Studio helps:** Two paths.
+
+1. *Inside this FRT:* `Start Negative Branch from this entity` palette command (also right-click context menu) creates a "Negative Branch" group preset (slate-coloured) rooted at the entity you select. Useful for keeping NB sub-trees visually separated *within* the FRT.
+2. *As its own document:* `Cmd+K → New diagram… → NBR` creates a dedicated **Negative Branch Reservation** diagram. The NBR diagram type carries its own palette (`injection` / `effect` / `ude` / `desiredEffect` / `assumption` / `note`), a 7-step method checklist (state the injection → trace forward to desired effects → identify turning point → articulate UDEs → choose reactive vs proactive mitigation → apply CLR → decide adopt/modify/reject), and feeds the **Risk Register (CSV)** export described in Chapter 16. Use it when the negative branch is the *centrepiece* of the analysis (e.g. a contentious injection that needs a deeper consequence-mapping) rather than a sub-branch of an FRT.
 
 ## Sidebars
 

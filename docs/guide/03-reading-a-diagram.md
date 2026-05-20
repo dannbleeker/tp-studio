@@ -99,6 +99,17 @@ Why it matters: **the constraint you want to find lives in your control or influ
 
 Set via Entity Inspector → Locus, or right-click → Set locus.
 
+## Ownership and validation
+
+The Inspector also carries an **Owner** field — a free-form text input naming whoever's accountable for the entity. Decision owner on a UDE, action assignee on a TT action, validation owner on an assumption — whatever role makes sense for the entity's place in the diagram. Below the field is a **Mark validated** button that stamps a timestamp into `entity.lastValidatedAt`; on subsequent visits the timestamp reads back as "Last validated YYYY-MM-DD by &lt;owner&gt;" so an audit trail accumulates across re-validations.
+
+Two consumers downstream:
+
+1. The **Risk Register (CSV)** export (Chapter 16) reads the field directly — the `owner` column populates from `entity.owner`.
+2. Future collaboration features will use the same field as the human-readable name for the "who" of accountability without needing a formal user model.
+
+The legacy `attributes.owner` key still works for older docs (the risk-register export checks both, preferring the dedicated field), but new docs should use the typed Owner field.
+
 ## The CLR — a one-paragraph preview
 
 Six "Categories of Legitimate Reservation" — the discipline checks Goldratt taught for evaluating someone else's causal claim. TP Studio surfaces them automatically as **warnings** in the Inspector's Warnings list. They are not errors; they are reservations a thoughtful colleague would raise if they were reading your diagram over your shoulder. We get into the CLR in depth in [Chapter 13](13-the-clr.md), but for now know that:
