@@ -37,9 +37,13 @@ describe('useGraphMutations — onConnect', () => {
   it('ignores a Connection with missing source/target', () => {
     const { result } = renderHook(() => useGraphMutations());
     const before = Object.keys(s().doc.edges).length;
+    // React Flow's Connection type marks source/target as `string`, but
+    // in practice the cancel path delivers `null`. Cast to bypass the
+    // declared shape while preserving the runtime behaviour we're
+    // testing.
     result.current.onConnect({
-      source: null,
-      target: null,
+      source: null as unknown as string,
+      target: null as unknown as string,
       sourceHandle: null,
       targetHandle: null,
     });

@@ -119,12 +119,14 @@ describe('TPNode — entity-type-specific rendering', () => {
   });
 
   it('renders a Want entity for EC docs', () => {
-    const entity = createEntity({
+    const base = createEntity({
       type: 'want',
       title: 'Leave at 5',
       annotationNumber: 1,
-      ecSlot: 'd',
     });
+    // `createEntity` doesn't take `ecSlot`; the EC creation wizard sets
+    // it post-mint. Mirror that here with an inline extension.
+    const entity = { ...base, ecSlot: 'd' as const };
     const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
     expect(container.textContent).toContain('Leave at 5');
   });
@@ -197,11 +199,12 @@ describe('TPNode — selected styling', () => {
 });
 
 describe('TPNode — diff-status colour cues', () => {
+  // `TPNodeData.diffStatus` is `'added' | 'removed' | 'changed'` — an
+  // unchanged entity just omits the field.
   it.each([
     ['added'],
     ['removed'],
     ['changed'],
-    ['unchanged'],
   ] as const)('renders without crashing for diffStatus=%s', (status) => {
     const entity = createEntity({ type: 'effect', title: `diff ${status}`, annotationNumber: 1 });
     const { container } = mountWithRF(
