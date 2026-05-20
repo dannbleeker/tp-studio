@@ -301,6 +301,12 @@ title,type,description,parent_title
 "Warehouse is understaffed",rootCause,,"Customer satisfaction is declining"
 ```
 
+### Paste from whiteboard (Miro / Mural)
+
+Open **Import…** in the palette and pick **Paste from whiteboard**. A dialog opens with a textarea — paste sticky-note content from Miro, Mural, FigJam, Lucidspark, or any text source (a bulleted Markdown list, meeting transcript, even chat output). One entity is minted per non-empty line. Bullet markers (`-`, `*`, `•`, `1.`, `1)`) are stripped, and a tab-separated paste (spreadsheet → clipboard) keeps only the first column. Pick the entity type from the dropdown — it defaults to the first entry in the current diagram's palette.
+
+Connectors aren't inferred. Miro / Mural don't export arrow structure in any client-accessible format, so this path gets the entities into the canvas; you wire causality after import. The fresh entities are pre-selected so you can immediately auto-layout (Cmd+L) or group them.
+
 ## Groups
 
 A **group** is a visual container around a region of the diagram — useful when several entities relate to one operational area, one root cause cluster, or one slice of the system. Groups don't affect causal reasoning; they're purely a way to organize the canvas.

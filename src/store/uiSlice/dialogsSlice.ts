@@ -76,6 +76,13 @@ export type DialogsSlice = {
    *  useful for large CRTs where 50+ edges of step-through gets
    *  tedious. */
   readAllAtOnceOpen: boolean;
+  /** Session 134 — "Paste from whiteboard (Miro / Mural)" import
+   *  dialog. Universal escape hatch for whiteboard-tool migration:
+   *  user copies stickies from the source board, pastes into a
+   *  textarea, one entity is minted per non-empty line. Closes the
+   *  Miro/Mural-import gap from the spec gap analysis without
+   *  requiring backend OAuth into either tool's REST API. */
+  whiteboardPasteOpen: boolean;
 
   /** H1 — revision-history panel visibility. */
   historyPanelOpen: boolean;
@@ -203,6 +210,11 @@ export type DialogsSlice = {
   openReadAllAtOnce: () => void;
   closeReadAllAtOnce: () => void;
 
+  /** Session 134 — open / close the "Paste from whiteboard" import
+   *  dialog (closes the Miro / Mural import gap). */
+  openWhiteboardPaste: () => void;
+  closeWhiteboardPaste: () => void;
+
   /** H2 — enter / exit visual-diff mode. Esc clears via Esc-cascade. */
   openCompare: (revisionId: string) => void;
   closeCompare: () => void;
@@ -243,6 +255,7 @@ export type DialogsDataKeys =
   | 'creationWizard'
   | 'ecInspectorTab'
   | 'readAllAtOnceOpen'
+  | 'whiteboardPasteOpen'
   | 'historyPanelOpen'
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
@@ -266,6 +279,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   creationWizard: null,
   ecInspectorTab: 'inspector',
   readAllAtOnceOpen: false,
+  whiteboardPasteOpen: false,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -290,6 +304,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   creationWizard: null,
   ecInspectorTab: 'inspector',
   readAllAtOnceOpen: false,
+  whiteboardPasteOpen: false,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -394,6 +409,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openReadAllAtOnce: () => set({ readAllAtOnceOpen: true }),
   closeReadAllAtOnce: () => set({ readAllAtOnceOpen: false }),
+
+  openWhiteboardPaste: () => set({ whiteboardPasteOpen: true }),
+  closeWhiteboardPaste: () => set({ whiteboardPasteOpen: false }),
 
   openCompare: (revisionId) => set({ compareRevisionId: revisionId }),
   closeCompare: () => set({ compareRevisionId: null }),

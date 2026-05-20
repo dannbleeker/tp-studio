@@ -125,7 +125,7 @@ A 14-section requirements doc Dann brought in for review (research brief on "wha
 
 ### Minor gaps (🟢)
 
-- **Miro / Mural import** — Flying Logic + Mermaid + CSV + JSON only.
+- ~~**Miro / Mural import**~~ ✅ **Done (Session 134).** Shipped as "Paste from whiteboard" — universal escape hatch for whiteboard-tool migration. The 5th card in the Import… picker opens a textarea; user copies stickies from Miro / Mural / FigJam / Lucidspark / any text source, pastes, one entity per non-empty line. Parser is bullet-aware (`-` / `*` / `•` / `1.` / `1)`) and tab-aware (takes only the first column of a spreadsheet paste). Connectors are deliberately not inferred since neither Miro nor Mural exports arrow structure in any client-accessible format (CSV covers sticky text only, JSON backup is proprietary, REST APIs need backend OAuth). User wires causality after import. 18 new tests, USER_GUIDE updated. Source: `src/services/exporters/whiteboardImport.ts`, `src/components/import/WhiteboardPasteDialog.tsx`.
 - **Markdown narrative export** — TP Studio has this (reasoning export); ✅ no gap.
 - **Stakeholder sign-off workflow** — depends on multi-user collaboration.
 - **Pattern library / benchmarking / portfolio view** — V2 spec items; not present.

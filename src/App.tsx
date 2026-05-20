@@ -102,6 +102,11 @@ const ImportPickerDialog = lazy(() =>
     default: m.ImportPickerDialog,
   }))
 );
+const WhiteboardPasteDialog = lazy(() =>
+  import('./components/import/WhiteboardPasteDialog').then((m) => ({
+    default: m.WhiteboardPasteDialog,
+  }))
+);
 // Session 88 (Batch 2) — CommandPalette was eagerly imported; its tree
 // pulls in every command file (9 files of `*Commands` arrays) plus the
 // new icon map. None of that is needed on first paint — the palette
@@ -312,6 +317,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Import picker">
           <ImportPickerDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Whiteboard paste dialog">
+          <WhiteboardPasteDialog />
         </ErrorBoundary>
       </Suspense>
       <ConfirmDialog />

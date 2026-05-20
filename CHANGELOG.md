@@ -2,6 +2,15 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — Paste-from-whiteboard import (closes Miro / Mural minor gap)
+
+- **New "Paste from whiteboard" import path.** Closes the Miro / Mural import minor gap from the spec gap analysis. Neither tool exposes connectors in any client-accessible format (CSV exports cover sticky text but not arrows; JSON backup is proprietary; the REST APIs require OAuth + a backend TP Studio doesn't have), so the practical bridge is the universal one: select stickies on the source board, copy, paste into a TP Studio dialog. One entity is minted per non-empty line.
+- **Parser is bullet- and tab-aware** (`src/services/exporters/whiteboardImport.ts`). Strips leading `-` / `*` / `•` / `1.` / `1)` markers (and tolerates leading whitespace) — matching what Miro / Mural copy-paste produces and the Markdown conventions a notes-app user might dump in. If a line contains a tab (spreadsheet paste), only the first column is taken (the equivalent of Miro/Mural CSV's "Text" column). Connectors are deliberately not inferred — documented in the dialog UI: this path gets you the entities; logic comes from the user.
+- **New dialog** (`src/components/import/WhiteboardPasteDialog.tsx`, lazy-loaded). Textarea, live "N entities will be created" count, entity-type dropdown (defaults to the diagram's first palette entry — most common type for the current diagram), Import / Cancel buttons. Mirrors the Session 133 `ReadAllAtOnceDialog` UX shape.
+- **Wired into the Import… picker** as a 5th card. Calls `openWhiteboardPaste()` on click; the picker closes and the paste dialog opens. New state on `dialogsSlice`: `whiteboardPasteOpen` + `openWhiteboardPaste` / `closeWhiteboardPaste`.
+- **18 new tests** in `tests/services/whiteboardImport.test.ts` covering: empty input, CRLF endings, bullet variants (dash / star / Unicode bullet / numbered), ordered-list markers with `.` or `)`, leading whitespace, tab-column extraction, mid-statement dashes preserved, ordering, and the `applyWhiteboardPaste` round-trip (entity minting + selection).
+- **USER_GUIDE updated** with a "Paste from whiteboard (Miro / Mural)" subsection under CSV import.
+
 ## Session 134 — CLR map embedded in the book (native render)
 
 - **CLR map (classical 8-box layout) embedded natively in Chapter 13.** Two-pass change. First pass landed as a raster image extracted from Dann's `Theory of Constraints.pptx` (slide 2 — "Categories of Legitimate Reservations"). On Dann's review the raster was traded for a native HTML/SVG render so the text is searchable + scalable, the typography matches the book, and the entity boxes echo TP Studio's TPNode visual (left stripe in the entity-type colour, subtle shadow, rounded card).

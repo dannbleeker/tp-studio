@@ -109,6 +109,17 @@ const IMPORT_ACTIONS: ImportAction[] = [
       );
     },
   },
+  {
+    // Session 134 — Miro/Mural escape hatch. Neither tool exposes
+    // connectors in a client-accessible format, so this fronts a paste
+    // dialog (one entity per line) rather than a file picker.
+    id: 'whiteboard',
+    label: 'Paste from whiteboard',
+    hint: 'Miro / Mural / FigJam / any text source. One entity per pasted line; bullet markers stripped. Connectors aren’t inferred.',
+    run: async (s) => {
+      s.openWhiteboardPaste();
+    },
+  },
 ];
 
 export function ImportPickerDialog() {
