@@ -10,7 +10,7 @@
  */
 
 export { exportFlyingLogic, pickFlyingLogic } from './flyingLogic';
-export { exportJPEG, exportPNG, exportSVG } from './image';
+export { capturePngDataUrl, exportJPEG, exportPNG, exportSVG } from './image';
 export {
   exportDOT,
   exportMermaid,
@@ -20,6 +20,7 @@ export {
   exportVGL,
   pickMermaid,
 } from './markup';
+export { exportPPTX } from './pptxExport';
 export { slug } from './shared';
 export {
   exportAnnotationsMd,

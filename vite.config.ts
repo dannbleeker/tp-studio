@@ -118,11 +118,17 @@ export default defineConfig(({ command }) => ({
         // still works offline once the user has performed it once.
         // The win is the cold first-visit precache download for
         // users who never export.
+        //
+        // Session 134 — pptxgen joins the vendor exclusion list when
+        // PowerPoint export shipped (~368 KB raw / ~123 KB gz). Same
+        // logic: lazy-loaded behind the Export… picker; runtime-cached
+        // below for offline use after first invocation.
         globIgnores: [
           'bundle-stats.html',
           'assets/jspdf*.js',
           'assets/html2canvas*.js',
           'assets/svg2pdf*.js',
+          'assets/pptxgen*.js',
         ],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
@@ -160,12 +166,14 @@ export default defineConfig(({ command }) => ({
           {
             // Hashed asset filenames keep this regex stable across rebuilds.
             urlPattern: ({ url, sameOrigin }) =>
-              sameOrigin && /\/assets\/(jspdf|html2canvas|svg2pdf)/.test(url.pathname),
+              sameOrigin && /\/assets\/(jspdf|html2canvas|svg2pdf|pptxgen)/.test(url.pathname),
             handler: 'CacheFirst',
             options: {
               cacheName: 'tp-studio-export-vendor-v1',
               expiration: {
-                maxEntries: 6,
+                // 8 = jspdf + html2canvas + svg2pdf + pptxgen + a
+                // couple of older hashed names while a deploy ages out.
+                maxEntries: 8,
                 maxAgeSeconds: 30 * 24 * 60 * 60,
               },
             },

@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — PowerPoint deck export (closes spec-gap major #10)
+
+- **New PPTX exporter** at `src/services/exporters/pptxExport.ts`. Closes major gap #10 from the spec gap analysis. Generates a workshop-ready `.pptx` deck via the **Export…** picker, with these slides:
+  - **Cover** — indigo brand band, doc title (32pt), diagram type subtitle, author + date footer
+  - **System scope** — bullets for goal / NCs / success measures / boundaries / containing system / interacting systems / I/O (only when at least one field is filled)
+  - **Diagram visual** — embedded PNG screenshot of the canvas via the new `capturePngDataUrl(nodes)` helper extracted from `image.ts`
+  - **EC conflict** — EC-only, the canonical "on the one hand … on the other hand …" framing
+  - **Reasoning** — paginated bullets (≤7 sentences/slide) in topological order, one sentence per edge, assumption-edges filtered
+  - **Likely Core Driver(s)** — CRT-only, top 5 with reach counts
+  - **Method checklist** — when any step ticked, with ☑/☐ glyphs and progress count in the title
+- **`capturePngDataUrl(nodes)` helper** in `image.ts`, called by both the PPTX exporter and the existing `exportPNG`. Replaces duplicated `prepareExport` + `toPng` plumbing; PNG export behaviour unchanged.
+- **`pptxgenjs` (~368 KB raw / ~123 KB gz) lazy-loaded** in the exporter via `await import('pptxgenjs')`. Initial bundle untouched.
+- **Excluded `pptxgen*` from the SW precache** (`vite.config.ts`) and added to the existing `tp-studio-export-vendor-v1` runtime cache. First-visit precache: 1785 KiB → 1425 KiB (-360 KiB) for users who never export PPTX; users who do still get offline-safe re-export after first invocation. `maxEntries` bumped 6 → 8 to fit the new vendor + ageing hashes.
+- **Wired into ExportPickerDialog** as a "PowerPoint deck (.pptx)" card under Documents. Toasts success / error per outcome.
+- **10 new unit tests** in `tests/services/pptxExport.test.ts` covering the pure helpers (`chunkForTest` for slide pagination, `buildSentencesForTest` for narrative ordering + assumption filtering + causality-label respect). Full pipeline test deferred to e2e (pptxgenjs's `writeFile` drives `URL.createObjectURL` + a synthetic link click — out of jsdom scope).
+- **USER_GUIDE updated** with a "PowerPoint deck" entry under the exports section.
+- **NEXT_STEPS major-gap #10 entry struck through.**
+
 ## Session 134 — Pattern library (closes spec-gap minor #4A: reusable domain templates)
 
 - **New "Pattern library…" palette command** opens a `PatternLibraryDialog` listing every curated starter diagram in `src/domain/patterns/`. Distinct from the existing "Load example…" path (which loads one canonical example per diagram type); the library is many-per-type, growable, and surfaces with a filter chip row at the top so users can narrow by diagram type or browse all.

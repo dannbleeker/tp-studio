@@ -13,6 +13,7 @@ import {
   exportMermaid,
   exportOPML,
   exportPNG,
+  exportPPTX,
   exportReasoningNarrativeMd,
   exportReasoningOutlineMd,
   exportSVG,
@@ -109,6 +110,23 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
           const ok = await exportECWorkshopSheet(s.doc);
           if (ok) s.showToast('success', 'EC workshop sheet saved.');
           else s.showToast('error', 'Workshop sheet export failed.');
+        },
+      },
+      {
+        // Session 134 — PowerPoint deck export (closes major gap #10 from
+        // the spec gap analysis). Cover + system scope + diagram screenshot
+        // + reasoning bullets + EC conflict / CRT Core Driver / method
+        // checklist appendices. Lazy-loads pptxgenjs.
+        id: 'pptx-deck',
+        label: 'PowerPoint deck (.pptx)',
+        hint: 'Cover + diagram snapshot + narrative bullets + per-diagram appendix. Workshop-ready.',
+        run: async (s) => {
+          try {
+            await exportPPTX(s.doc, getCanvasNodes(), s.causalityLabel);
+            s.showToast('success', 'PowerPoint deck saved.');
+          } catch (err) {
+            s.showToast('error', err instanceof Error ? err.message : 'PowerPoint export failed.');
+          }
         },
       },
     ],

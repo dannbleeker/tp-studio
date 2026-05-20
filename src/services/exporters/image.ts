@@ -50,19 +50,33 @@ const prepareExport = (
   };
 };
 
-export const exportPNG = async (doc: TPDocument, nodes: Node[]): Promise<void> => {
+/**
+ * Capture the current React Flow viewport as a PNG data URL (no
+ * download triggered). Returns `null` when there's nothing to render
+ * (no nodes, no canvas mounted).
+ *
+ * Extracted from `exportPNG` so other exporters (PPTX deck, future
+ * shareable image previews) can embed the canvas snapshot without
+ * duplicating the prepare-export + html-to-image plumbing.
+ */
+export const capturePngDataUrl = async (nodes: Node[]): Promise<string | null> => {
   const ctx = prepareExport(nodes);
-  if (!ctx) return;
+  if (!ctx) return null;
   // html-to-image is only used by these paths; load it on demand so it
   // doesn't bloat the initial bundle for users who never export.
   const { toPng } = await import('html-to-image');
-  const dataUrl = await toPng(ctx.flowEl, {
+  return toPng(ctx.flowEl, {
     backgroundColor: ctx.backgroundColor,
     pixelRatio: PNG_PIXEL_RATIO,
     width: ctx.width,
     height: ctx.height,
     style: ctx.style,
   });
+};
+
+export const exportPNG = async (doc: TPDocument, nodes: Node[]): Promise<void> => {
+  const dataUrl = await capturePngDataUrl(nodes);
+  if (!dataUrl) return;
   triggerDataUrlDownload(dataUrl, `${slug(doc.title)}.png`);
 };
 

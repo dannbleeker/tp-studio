@@ -108,7 +108,7 @@ A 14-section requirements doc Dann brought in for review (research brief on "wha
 
 - **No formal mode-switching** (spec §7.1). Spec lists Guided / Expert / Workshop / Presentation modes. TP Studio has guided prompts (method checklist) and walkthrough overlays, but no explicit mode-state, no facilitator-vs-contributor view, no presentation mode beyond exports.
 
-- **No PowerPoint export** (spec §8). Listed as workshop-deck format. TP Studio's reasoning-export Markdown could feed a deck but doesn't write `.pptx` directly. Mechanical work; build atop existing reasoning-export.
+- ~~**No PowerPoint export**~~ ✅ **Done (Session 134).** New PPTX exporter at `src/services/exporters/pptxExport.ts` generates a workshop-ready `.pptx` via the Export… picker. Slide structure: cover (indigo brand band, title/diagram-type/author/date) → System scope (when any of the 7 scope fields filled) → embedded canvas screenshot → EC-only conflict slide → paginated reasoning bullets (≤7 sentences per slide, topological order, assumption-edges filtered) → CRT-only Likely Core Driver(s) → Method-checklist progress (when any step ticked). `capturePngDataUrl(nodes)` helper extracted from `image.ts` so both PPTX and PNG exports share the screenshot pipeline. `pptxgenjs` (~123 KB gz) lazy-loaded; excluded from SW precache (precache: 1785 KiB → 1425 KiB) but runtime-cached for offline re-export. 10 new unit tests for the pure helpers (full pipeline deferred to e2e — `writeFile` drives `URL.createObjectURL` + synthetic click which jsdom doesn't model). USER_GUIDE updated.
 
 ### Medium gaps (🟡) — nuance / partial coverage
 

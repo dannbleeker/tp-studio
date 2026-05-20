@@ -55,6 +55,7 @@
     "micromark": "^4.0.2",
     "micromark-extension-gfm": "^3.0.0",
     "nanoid": "^5.0.7",
+    "pptxgenjs": "^4.0.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "svg2pdf.js": "^2.5.0",
