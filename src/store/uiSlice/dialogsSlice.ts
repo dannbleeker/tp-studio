@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import { TOAST_AUTO_DISMISS_MS_BY_KIND } from '@/domain/constants';
+import type { DiagramType } from '@/domain/types';
 import type { RootStore } from '../types';
 import type { ContextMenuState, ContextMenuTarget, Toast, ToastAction, ToastKind } from './types';
 
@@ -83,6 +84,13 @@ export type DialogsSlice = {
    *  Miro/Mural-import gap from the spec gap analysis without
    *  requiring backend OAuth into either tool's REST API. */
   whiteboardPasteOpen: boolean;
+  /** Session 134 — pattern-library picker. Closes minor gap #4 (sub-item
+   *  A) from the spec gap analysis. Lists curated multi-per-type
+   *  starter diagrams in a single grid; replaces / supplements the
+   *  diagram-type picker's one-example-per-type behaviour. `null` =
+   *  closed; `{ filter }` = open and (optionally) pre-filtered to a
+   *  diagram type. */
+  patternLibraryOpen: null | { filter: DiagramType | 'all' };
 
   /** H1 — revision-history panel visibility. */
   historyPanelOpen: boolean;
@@ -215,6 +223,14 @@ export type DialogsSlice = {
   openWhiteboardPaste: () => void;
   closeWhiteboardPaste: () => void;
 
+  /** Session 134 — open / close the pattern-library picker (closes
+   *  minor gap #4A: reusable domain templates). `filter` defaults to
+   *  'all'; callers can pre-filter by diagram type for context-aware
+   *  entry points (e.g. an empty-canvas hint that opens the picker
+   *  pre-filtered to the current diagram's patterns). */
+  openPatternLibrary: (filter?: DiagramType | 'all') => void;
+  closePatternLibrary: () => void;
+
   /** H2 — enter / exit visual-diff mode. Esc clears via Esc-cascade. */
   openCompare: (revisionId: string) => void;
   closeCompare: () => void;
@@ -256,6 +272,7 @@ export type DialogsDataKeys =
   | 'ecInspectorTab'
   | 'readAllAtOnceOpen'
   | 'whiteboardPasteOpen'
+  | 'patternLibraryOpen'
   | 'historyPanelOpen'
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
@@ -280,6 +297,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   ecInspectorTab: 'inspector',
   readAllAtOnceOpen: false,
   whiteboardPasteOpen: false,
+  patternLibraryOpen: null,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -305,6 +323,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   ecInspectorTab: 'inspector',
   readAllAtOnceOpen: false,
   whiteboardPasteOpen: false,
+  patternLibraryOpen: null,
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -412,6 +431,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openWhiteboardPaste: () => set({ whiteboardPasteOpen: true }),
   closeWhiteboardPaste: () => set({ whiteboardPasteOpen: false }),
+
+  openPatternLibrary: (filter = 'all') => set({ patternLibraryOpen: { filter } }),
+  closePatternLibrary: () => set({ patternLibraryOpen: null }),
 
   openCompare: (revisionId) => set({ compareRevisionId: revisionId }),
   closeCompare: () => set({ compareRevisionId: null }),

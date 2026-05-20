@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — Pattern library (closes spec-gap minor #4A: reusable domain templates)
+
+- **New "Pattern library…" palette command** opens a `PatternLibraryDialog` listing every curated starter diagram in `src/domain/patterns/`. Distinct from the existing "Load example…" path (which loads one canonical example per diagram type); the library is many-per-type, growable, and surfaces with a filter chip row at the top so users can narrow by diagram type or browse all.
+- **`Pattern` type + `PATTERNS` registry** in `src/domain/patterns/index.ts`. Each entry: stable `id` (used by tests and the dialog key), diagram-type-tagged `label`, one-line `hint`, `diagramType` enum, and a `build()` factory that mints a fresh `TPDocument`. Two helpers: `patternsForDiagram(type)` filters; `patternById(id)` looks up.
+- **9 starter patterns** shipped:
+  - **CRT**: `customer-satisfaction` (existing example), `engineering-velocity` (new — software-team sprint slip with AND-junctored ops drag)
+  - **EC**: `work-life-balance` (existing), `quality-vs-speed` (new — QA gate vs continuous delivery, teaching-classic engineering tradeoff)
+  - **FRT / PRT / TT / Goal Tree / S&T**: 1 each (registered from the existing per-type examples)
+- **9 new tests** in `tests/domain/patterns.test.ts` guard the registry shape: every TOC type has ≥1 pattern (freeform intentionally skipped), ids are unique, every builder runs without throwing, the doc's `diagramType` matches the registry entry's declaration, every doc carries the current `schemaVersion` (8), filtered subset preserves registry order, lookup-by-id works.
+- **Existing `EXAMPLE_BY_DIAGRAM` registry kept untouched** — drives the quick `Load example…` palette path (one example per diagram type). Pattern library is purely additive: the two registries can coexist and a future PR could consolidate them once the library matures.
+- **Dialog state added to `dialogsSlice`**: `patternLibraryOpen: null | { filter }` + `openPatternLibrary(filter?)` / `closePatternLibrary()`. Filter defaults to `'all'`; callers can pre-filter (e.g. a future empty-canvas hint that opens the library narrowed to the current diagram's patterns).
+- **Lazy-loaded mount** in `App.tsx` alongside the other Session 133 / 134 dialogs.
+- **NEXT_STEPS updated** — minor gap #4 entry struck through for sub-item A; sub-items B (benchmarking via embeddings — needs AI integration) and C (portfolio view — needs cross-diagram traceability + entity ownership) remain parked.
+
+**Growing the library:** drop a new `<type>-<slug>.ts` file in `src/domain/patterns/` exporting a `buildPatternXxx()` function, then register it in the `PATTERNS` array. Tests auto-validate the new entry against the registry shape contract.
+
 ## Session 134 — Paste-from-whiteboard import (closes Miro / Mural minor gap)
 
 - **New "Paste from whiteboard" import path.** Closes the Miro / Mural import minor gap from the spec gap analysis. Neither tool exposes connectors in any client-accessible format (CSV exports cover sticky text but not arrows; JSON backup is proprietary; the REST APIs require OAuth + a backend TP Studio doesn't have), so the practical bridge is the universal one: select stickies on the source board, copy, paste into a TP Studio dialog. One entity is minted per non-empty line.

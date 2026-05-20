@@ -301,6 +301,12 @@ title,type,description,parent_title
 "Warehouse is understaffed",rootCause,,"Customer satisfaction is declining"
 ```
 
+### Pattern library
+
+Need a starter diagram for a common scenario? Open the palette and pick **Pattern library…**. The dialog lists curated starter diagrams across every TOC diagram type — software-team CRTs, classic teaching ECs, the canonical Outcome ← (Precondition + Action) TT shape, and so on. Filter by diagram type via the chip row at the top, or scroll through everything. Click a card to load it; Undo from the success toast restores your previous doc.
+
+The library is distinct from **Load example…** (which loads the one canonical example per diagram type). Patterns are many-per-type and the library grows over time — if you author a new shape worth keeping, drop a builder in `src/domain/patterns/` and register it in the `PATTERNS` array.
+
 ### Paste from whiteboard (Miro / Mural)
 
 Open **Import…** in the palette and pick **Paste from whiteboard**. A dialog opens with a textarea — paste sticky-note content from Miro, Mural, FigJam, Lucidspark, or any text source (a bulleted Markdown list, meeting transcript, even chat output). One entity is minted per non-empty line. Bullet markers (`-`, `*`, `•`, `1.`, `1)`) are stripped, and a tab-separated paste (spreadsheet → clipboard) keeps only the first column. Pick the entity type from the dropdown — it defaults to the first entry in the current diagram's palette.

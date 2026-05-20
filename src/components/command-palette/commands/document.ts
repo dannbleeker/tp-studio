@@ -17,6 +17,17 @@ export const documentCommands: Command[] = [
     group: 'File',
     run: (s) => s.openDiagramPicker('example'),
   }),
+  // Session 134 — pattern library: a many-per-type curated starter
+  // registry. Closes minor gap #4A from the spec gap analysis.
+  // Distinct from `load-example` which loads the one canonical example
+  // per diagram type; this dialog lists every pattern in
+  // `src/domain/patterns/index.ts` with a filter chip row.
+  withWriteGuard({
+    id: 'open-pattern-library',
+    label: 'Pattern library…',
+    group: 'File',
+    run: (s) => s.openPatternLibrary(),
+  }),
   // Session 133 — replaces the four prior per-source import palette
   // rows (Import from JSON / Mermaid / CSV / Open Flying Logic file)
   // with a single Import… picker that fans them out as cards. The
