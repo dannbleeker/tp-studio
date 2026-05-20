@@ -109,6 +109,8 @@ Use Notes for caveats, open questions, references to external docs, or workshop 
 
 **Custom attributes.** Below the WarningsList in the inspector there's an **Attributes** section where you can attach key/value metadata to any entity — text, integer, decimal, or yes/no. Useful for things the built-in fields don't cover: a source URL, a vendor name, a probability, a domain-specific flag. Click **+ Add attribute**, pick a name and a kind, save; the typed input appears in the row. Attributes round-trip through JSON export. **Edges carry the same Attributes section** in the Edge Inspector — handy for per-causality metadata like a probability or a citation slug.
 
+**Owner.** Below Attestation the inspector has an **Owner** field — a free-form text input naming whoever's accountable for the entity (decision owner, action assignee, validation owner, etc.). The field feeds the `owner` column of the risk-register CSV export, and gives a reviewer reading the diagram six months from now a quick "ask this person" anchor without forcing a formal user model. Underneath the field is a **Mark validated** button that stamps the current timestamp into `entity.lastValidatedAt`; once stamped, the date plus the owner name reads back as "Last validated YYYY-MM-DD by …" so an audit trail accumulates across re-validations.
+
 **Deleting.** Press `Delete` (or `Backspace`) with a node selected. If the node has edges attached, you'll get a confirm prompt with the number of connections that will be cut. Cancel from the prompt to keep it.
 
 ## Connecting causes to effects

@@ -94,14 +94,15 @@ const mitigationsFor = (doc: TPDocument, ude: Entity): string => {
 };
 
 /**
- * Pull the entity's `owner` attribute when present. The owner shape
- * is a free-form string in `entity.attributes.owner` — surfaces as an
- * empty cell when not set so the register import into a project
- * tracker stays clean.
+ * Pull the entity's owner. Prefers the dedicated `entity.owner` field
+ * (Session 134); falls back to the legacy `attributes.owner.value`
+ * path that older docs may carry. Empty cell when neither is set so
+ * the register imports cleanly into project trackers.
  */
 const ownerFor = (entity: Entity): string => {
-  const owner = entity.attributes?.owner;
-  return owner?.kind === 'string' ? owner.value : '';
+  if (entity.owner && entity.owner.trim().length > 0) return entity.owner.trim();
+  const legacy = entity.attributes?.owner;
+  return legacy?.kind === 'string' ? legacy.value : '';
 };
 
 /**

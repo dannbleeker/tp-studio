@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — Entity ownership field + NEXT_STEPS backlog cleanup
+
+Two-track ship + tidy.
+
+**Entity ownership (partial closure of spec-gap major #6):**
+
+- New first-class `entity.owner?: string` field — replaces the legacy ad-hoc `attributes.owner.value` path with a proper typed Entity field. The risk-register exporter (Session 134) now prefers the dedicated field; falls back to `attributes.owner.value` for older docs.
+- New `entity.lastValidatedAt?: number` — Unix-ms timestamp for audit trail. Stamped by a "Mark validated" button in the inspector; subsequent visits read it back as "Last validated YYYY-MM-DD by &lt;owner&gt;".
+- EntityInspector gains an **Owner** field block below Attestation: text input + the Mark validated / Re-validate button + the read-only last-validated-by line.
+- USER_GUIDE entry under entity editing.
+- 7 new tests in `tests/domain/entityOwnership.test.ts` covering field persistence, `lastValidatedAt` round-trip, and the risk-register fallback chain (dedicated → legacy → whitespace-only-falls-through).
+
+The full structured `entity.evidence?: EvidenceItem[]` array half of major gap #6 (source-type taxonomy, strength rating, URL refs, per-evidence validation date + owner) is deferred to a follow-up — flagged in the new NEXT_STEPS. Single-owner shipped first because it's the smallest unit that unlocks the risk-register and the future collaboration story.
+
+**NEXT_STEPS.md cleanup:** 751 lines → 153 lines. Stripped all historical session-summary blockquotes (lines 5-83 — those are CHANGELOG's job), all `~~Done~~`-marked sections (security review, EC chrome cleanup, hotfixes, UI tidy batch, UI bigger asks, EC PPT comparison, Polish ideas, Tooling/process, Bundles 1-13, Recommended priorities), and all closed individual bullets inside open sections. Result: a focused parking lot listing only open major gaps (#1-#9 from the spec analysis), open medium gaps, open minor gaps, the three Session 134 loose-end follow-ups (TPNode tooling quirk, PPTX e2e, manual a11y walkthrough), the won't-build list (documented decisions), known environment quirks, and the orientation guide. Suggested priority order updated to reflect this session's closures.
+
+All 1535 tests pass; tsc clean.
+
 ## Session 134 — NBR diagram type + risk register export (closes spec-gap major #5)
 
 Two-for-one: a new `'nbr'` diagram type plus the risk-register CSV export. Closes major gap #5 from the spec analysis (NBR is one of the canonical TP tools per Goldratt; the spec considered it a primary diagram missing from TP Studio's set).

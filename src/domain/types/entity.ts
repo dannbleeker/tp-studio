@@ -116,6 +116,27 @@ export type Entity = {
    *  Flying Logic round-trips carry the attestation. Not validated by any
    *  CLR rule directly; the field exists so users can document provenance. */
   attestation?: string;
+  /** Session 134 / spec major gap #6 — entity ownership. Free-form
+   *  string naming whoever's accountable for the entity (decision owner,
+   *  action assignee, validation owner, etc.). Surfaces as a single-line
+   *  text input in the EntityInspector, and feeds the `owner` column of
+   *  the risk-register CSV export. The dedicated field replaces the
+   *  earlier ad-hoc `attributes.owner.value` path that the risk-register
+   *  exporter falls back to for older docs.
+   *
+   *  Note on scope: the full evidence model from the spec (structured
+   *  EvidenceItem array with source / strength / validatedAt / validatedBy)
+   *  is deferred to a follow-up — see NEXT_STEPS. This session ships only
+   *  the single owner field because that's the smallest unit that
+   *  unlocks the risk register and the future collaboration story. */
+  owner?: string;
+  /** Session 134 / spec major gap #6 — when this entity was last
+   *  verified. Unix milliseconds. Surfaces in the EntityInspector as a
+   *  read-only "Last validated YYYY-MM-DD by …" label (writable via the
+   *  `Mark validated` button which stamps `Date.now()` + the current
+   *  `owner` value). Not used by any CLR rule today; serves as an audit
+   *  trail for risk-register exports and future collaboration features. */
+  lastValidatedAt?: number;
   /** Book-derived (TOC-reading set): three-valued flag distinguishing what
    *  the user can do about this entity — directly control it, indirectly
    *  influence it, or only observe / accept it. Renders as a small icon

@@ -188,6 +188,40 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         />
       </Field>
 
+      <Field label="Owner">
+        {/* Session 134 / spec major gap #6: who's accountable for this
+            entity. Free-form string. Feeds the `owner` column of the
+            risk-register CSV export and gives readers a quick "ask
+            this person" anchor without forcing a formal user model. */}
+        <TextInput
+          value={entity.owner ?? ''}
+          placeholder="Person / role accountable for this entity. Optional."
+          onChange={(next) => {
+            updateEntity(entityId, { owner: next || undefined });
+          }}
+          disabled={locked}
+        />
+        {entity.lastValidatedAt !== undefined && (
+          <p className="mt-1 text-[10px] text-neutral-500 dark:text-neutral-400">
+            Last validated{' '}
+            {new Date(entity.lastValidatedAt).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+            {entity.owner ? ` by ${entity.owner}` : ''}
+          </p>
+        )}
+        <button
+          type="button"
+          disabled={locked}
+          onClick={() => updateEntity(entityId, { lastValidatedAt: Date.now() })}
+          className="mt-1 inline-flex items-center rounded-sm border border-neutral-200 bg-white px-2 py-0.5 text-[11px] text-neutral-700 transition hover:border-indigo-400 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40"
+        >
+          {entity.lastValidatedAt === undefined ? 'Mark validated' : 'Re-validate (now)'}
+        </button>
+      </Field>
+
       <Field label="Unspecified placeholder">
         <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
           <input
