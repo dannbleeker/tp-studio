@@ -214,6 +214,32 @@ body {
   filter: drop-shadow(0 0 12px rgb(129 140 248 / 0.65));
 }
 
+/* Session 134 — selection-anchored dimming, CSS-only architecture.
+ * The earlier hook-based attempt (Session 133 commit `053a41c`) mapped
+ * a className onto non-focus nodes inside a `useMemo`; the map+spread
+ * produced new node references on every render which triggered React
+ * Flow 12.x reconciliation runaway updates (React error #185, confirmed
+ * via Playwright trace). The CSS-only version is purely declarative —
+ * no per-render JS work, no node-ref churn — and uses `:has()` to
+ * detect "at least one node is selected" without any plumbing.
+ *
+ * Visual contract:
+ *   - No selection → no rule applies → all nodes at full opacity.
+ *   - Single / multi-select → selected nodes stay full; everything
+ *     else dims to 0.5.
+ *   - Search-dim wins: `.tp-dimmed` (0.18, declared above) takes
+ *     precedence on non-matching nodes because that rule's later
+ *     declarations resolve first under same-specificity cascade.
+ *
+ * Edges intentionally aren't dimmed — selecting a node doesn't mark
+ * its edges as `.selected`, so any all-edges rule would dim
+ * everything-connecting-the-selection, hurting more than it helps.
+ * The selected node + the halo already give a clear focus signal. */
+.react-flow__viewport:has(.react-flow__node.selected) .react-flow__node:not(.selected) {
+  opacity: 0.5;
+  transition: opacity var(--duration-quick) ease-out;
+}
+
 /* Disable the transition during interactive dragging if we ever
  * enable it. Without this, dragged nodes would lag visibly. */
 .react-flow__node.dragging {
