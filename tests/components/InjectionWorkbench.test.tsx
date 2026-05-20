@@ -53,3 +53,50 @@ describe('InjectionWorkbench', () => {
     expect(button.hasAttribute('disabled')).toBe(true);
   });
 });
+
+describe('InjectionWorkbench — InjectionRow interactions', () => {
+  const seedECDocWithAssumption = () => {
+    // EC docs pre-seed the 5-box layout, so wire an edge between two
+    // existing entities + attach an assumption + mint an injection.
+    const ents = Object.values(useDocumentStore.getState().doc.entities);
+    const a = ents[0];
+    const b = ents[1];
+    if (!a || !b) throw new Error('EC doc lacks pre-seeded entities');
+    const edge = useDocumentStore.getState().connect(a.id, b.id);
+    if (!edge) throw new Error('connect failed');
+    const assumption = useDocumentStore.getState().addAssumptionToEdge(edge.id);
+    if (!assumption) throw new Error('addAssumptionToEdge failed');
+    const inj = useDocumentStore
+      .getState()
+      .addEntity({ type: 'injection', title: 'Auto-publish the report' });
+    return { assumption, injection: inj };
+  };
+
+  it('editing the injection title updates the entity title in the store', () => {
+    const { injection } = seedECDocWithAssumption();
+    render(<InjectionWorkbench />);
+    const input = screen.getByDisplayValue(/Auto-publish the report/);
+    fireEvent.change(input, { target: { value: 'Auto-publish nightly' } });
+    expect(s().doc.entities[injection.id]?.title).toBe('Auto-publish nightly');
+  });
+
+  it('toggling the "Implemented" checkbox sets the implemented attribute', () => {
+    const { injection } = seedECDocWithAssumption();
+    render(<InjectionWorkbench />);
+    const checkbox = screen.getByRole('checkbox');
+    fireEvent.click(checkbox);
+    const attr = s().doc.entities[injection.id]?.attributes?.implemented;
+    expect(attr).toEqual({ kind: 'bool', value: true });
+  });
+
+  it('the per-row "Open injection in inspector" arrow selects the injection', () => {
+    const { injection } = seedECDocWithAssumption();
+    render(<InjectionWorkbench />);
+    const openArrow = screen.getByLabelText(/Open injection in inspector/i);
+    fireEvent.click(openArrow);
+    const sel = s().selection;
+    if (sel.kind === 'entities') {
+      expect(sel.ids).toContain(injection.id);
+    }
+  });
+});

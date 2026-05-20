@@ -95,3 +95,49 @@ describe('WalkthroughOverlay — empty walkthrough', () => {
   // for the e2e follow-up.
   it.todo('renders a graceful empty state when steps is empty (covered via Playwright)');
 });
+
+describe('WalkthroughOverlay — CLR walkthrough', () => {
+  // Seed a doc with one entity whose empty title triggers a `clarity`
+  // / `entity-existence` warning; start the CLR walkthrough on that
+  // warning's id; exercise the Resolve + Open-in-inspector branches.
+  const seedAndStart = async () => {
+    const { validate } = await import('@/domain/validators');
+    useDocumentStore.getState().addEntity({ type: 'effect', title: '' });
+    const warnings = validate(useDocumentStore.getState().doc).filter((w) => !w.resolved);
+    expect(warnings.length).toBeGreaterThan(0);
+    const ids = warnings.map((w) => w.id);
+    useDocumentStore.getState().startClrWalkthrough(ids);
+    return { warningId: ids[0]!, warning: warnings[0]! };
+  };
+
+  it('opens with the CLR header + Resolve / Open-in-inspector buttons', async () => {
+    await seedAndStart();
+    render(<WalkthroughOverlay />);
+    expect(screen.getByText(/CLR walkthrough/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Resolve/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Open in inspector/i })).toBeTruthy();
+  });
+
+  it('"Resolve" marks the warning resolved and advances', async () => {
+    const { warningId } = await seedAndStart();
+    render(<WalkthroughOverlay />);
+    const resolve = screen.getByRole('button', { name: /Resolve/i });
+    fireEvent.click(resolve);
+    expect(s().doc.resolvedWarnings[warningId]).toBe(true);
+  });
+
+  it('"Open in inspector" selects the warning\'s target entity and closes the overlay', async () => {
+    const { warning } = await seedAndStart();
+    render(<WalkthroughOverlay />);
+    const open = screen.getByRole('button', { name: /Open in inspector/i });
+    fireEvent.click(open);
+    expect(s().walkthrough.kind).toBe('closed');
+    if (warning.target.kind === 'entity') {
+      const sel = s().selection;
+      expect(sel.kind).toBe('entities');
+      if (sel.kind === 'entities') {
+        expect(sel.ids).toContain(warning.target.id);
+      }
+    }
+  });
+});

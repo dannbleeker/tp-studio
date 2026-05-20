@@ -66,7 +66,15 @@ describe('useGraphPositions', () => {
     }
   });
 
-  it('hydrates positions asynchronously for a CRT doc (lazy dagre path)', async () => {
+  // Session 134 — bumped the wrapping test timeout to 15 s on top of
+  // the inner `waitFor` 10 s. Coverage instrumentation slows the lazy
+  // `import('@/domain/layout')` (dagre dynamic-import) enough that the
+  // default 5 s test budget can run out before the inner waitFor even
+  // gets a chance to do its polling. The flake only appears under
+  // --coverage; pinning the wall-clock budget here removes it.
+  it('hydrates positions asynchronously for a CRT doc (lazy dagre path)', {
+    timeout: 15_000,
+  }, async () => {
     // CRT has no manual positions — the hook should kick off the dagre
     // import and replace its initial empty-positions snapshot once the
     // module resolves.
@@ -97,7 +105,7 @@ describe('useGraphPositions', () => {
       () => {
         expect(Object.keys(result.current).sort()).toEqual([a.id, b.id].sort());
       },
-      { timeout: 5000 }
+      { timeout: 10_000 }
     );
     expect(typeof result.current[a.id]!.x).toBe('number');
     expect(typeof result.current[b.id]!.y).toBe('number');

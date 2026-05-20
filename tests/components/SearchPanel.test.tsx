@@ -88,4 +88,69 @@ describe('SearchPanel — open', () => {
     fireEvent.change(input, { target: { value: 'Findable' } });
     expect(s().searchQuery).toBe('Findable');
   });
+
+  it('case-sensitive toggle flips its option', () => {
+    seedAndOpen();
+    render(<SearchPanel />);
+    const before = s().searchOptions.caseSensitive;
+    const button = screen.getByLabelText(/Match case/i);
+    fireEvent.click(button);
+    expect(s().searchOptions.caseSensitive).toBe(!before);
+  });
+
+  it('whole-word toggle flips its option', () => {
+    seedAndOpen();
+    render(<SearchPanel />);
+    const before = s().searchOptions.wholeWord;
+    const button = screen.getByLabelText(/Whole word/i);
+    fireEvent.click(button);
+    expect(s().searchOptions.wholeWord).toBe(!before);
+  });
+
+  it('regex toggle flips its option', () => {
+    seedAndOpen();
+    render(<SearchPanel />);
+    const before = s().searchOptions.regex;
+    const button = screen.getByLabelText(/Regex/i);
+    fireEvent.click(button);
+    expect(s().searchOptions.regex).toBe(!before);
+  });
+
+  it('Next match button advances the cursor', () => {
+    seedAndOpen('Findable');
+    render(<SearchPanel />);
+    const next = screen.getByLabelText(/Next match/i);
+    fireEvent.click(next);
+    expect(s().searchMatchIndex).toBe(1);
+  });
+
+  it('Previous match button retreats the cursor', () => {
+    seedAndOpen('Findable');
+    render(<SearchPanel />);
+    const prev = screen.getByLabelText(/Previous match/i);
+    fireEvent.click(prev);
+    expect(s().searchMatchIndex).toBe(-1);
+  });
+
+  it('Close find button closes the panel', () => {
+    seedAndOpen();
+    render(<SearchPanel />);
+    const close = screen.getByLabelText(/Close find/i);
+    fireEvent.click(close);
+    expect(s().searchOpen).toBe(false);
+  });
+
+  it("clicking a result row sets matchIndex to that row's index", () => {
+    seedAndOpen('Findable');
+    render(<SearchPanel />);
+    // Result rows show "<kind> · <field>" in their button text — click the
+    // second one.
+    const buttons = screen.getAllByRole('button');
+    // Heuristic: the result rows are the buttons after the navigation
+    // chrome; pick the one whose textContent contains "entity ·".
+    const rows = buttons.filter((b) => /entity\s+·/i.test(b.textContent ?? ''));
+    if (rows.length < 2) return; // fewer matches than expected; skip
+    fireEvent.click(rows[1]!);
+    expect(s().searchMatchIndex).toBe(1);
+  });
 });

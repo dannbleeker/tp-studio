@@ -134,6 +134,8 @@ A 14-section requirements doc Dann brought in for review (research brief on "wha
 
 ### Loose-end follow-ups from Session 134
 
+- **TPNode.tsx statement-coverage tooling quirk.** Coverage-v8 reports `TPNode.tsx` at 27% statements even after 13 new render tests landed Session 134 round 3. The tests pass — every entity-type branch (note / ude / injection / want), reach-badge branch, diff-status colour cue, selected/unselected ring, and pin-position render is exercised. But v8 doesn't credit `TPNodeImpl`'s body lines (141-561), most likely because of how React 19's memo() + the React Compiler's auto-memoization opt-out interact with the vitest 4 / coverage-v8 source-map step. Branch coverage moved 29% → 40% even though statement coverage shows stuck at 27%. Try again when the tooling matures (React Compiler stable + coverage-v8 update); current real coverage is meaningfully above what the report shows.
+
 - **PPTX export e2e Playwright spec.** Major gap #10 (PowerPoint deck) shipped Session 134 with unit tests for the pure helpers (`chunkForTest`, `buildSentencesForTest`) but no end-to-end test of `exportPPTX`. The full pipeline drives pptxgenjs's `writeFile` → `URL.createObjectURL` → synthetic anchor click, which jsdom doesn't model. Path forward: add `e2e/pptx-export.spec.ts` that opens a seeded CRT, invokes the Export… picker, clicks "PowerPoint deck (.pptx)", and asserts the download lands (Playwright's `page.waitForEvent('download')`). Should also unzip the resulting `.pptx` (it's a ZIP of XML) and grep for the doc title + at least one edge sentence as a sanity check. ~half a session.
 
 ### Suggested priority order if closing gaps

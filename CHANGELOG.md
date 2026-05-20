@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — Test coverage push round 3 (+1.9pp overall, entitiesSlice 65 → 95%)
+
+Third coverage pass after the audit revealed where investment was still leverageable. Overall numbers: 78.6% → **80.51%** statements, 81.34% → **83.33%** lines, 76.4% → **81.43%** functions, 66.5% → **68.74%** branches. 86 new tests, 1422 → 1508 + 1 todo passing; tsc clean.
+
+**Cumulative session lift across all three coverage rounds: 72% → 80.5% statements (+8.5pp), 74% → 83% lines (+8.9pp), 70% → 81% functions (+11pp), 60% → 69% branches (+8.7pp).**
+
+Module lifts in round 3:
+
+- **`entitiesSlice.ts`** (was 65%): 13 new tests in `entitiesSliceAssumptions.test.ts` covering `toggleEntityCollapsed`, `setAssumptionStatus`, `setAssumptionText` (incl. the dual-write to the legacy assumption-entity title), `setAssumptionResolved` (set/clear flag + idempotence), `linkInjectionToAssumption` / `unlinkInjectionFromAssumption` (link/unlink/duplicate-noop). **65% → 95.29%.**
+- **`useGraphMutations.ts`** (was 49%): 12 new tests covering every React Flow → store bridge — `onConnect` (valid / null-source skip), `onConnectEnd` (drop-on-node fallback, self-loop, handle-hit short-circuit), `onNodesChange` (remove, position-on-settle, no-position-during-drag), `onEdgesChange` (remove vs non-remove), and the hovered-edge ref + drop-on-edge co-cause fallback (incl. mouse-leave clearing). **49% → 87.71%.**
+- **`useGlobalShortcuts.ts`** (was 47%): 18 new tests, one per `// reg:` branch in the hook — Cmd+K palette, Cmd+S save, Cmd+Shift+S swap, Cmd+E export menu, Cmd+, settings, Cmd+F find, Cmd+\ clear-selection, bare E quick-capture (+ the editable-target ignore), Cmd+C/X/V clipboard, Cmd+Z/Cmd+Shift+Z undo/redo, plus the Esc cascade for palette / help / clear-selection. **47% → 68.58%.**
+- **`WalkthroughOverlay.tsx`** (was 50.7%): 3 new tests cover the CLR walkthrough branch — opens with the Resolve + Open-in-inspector buttons, Resolve marks the warning resolved + advances, Open-in-inspector selects the warning's target entity + closes the overlay. **50.7% → 76.81%.**
+- **`InjectionWorkbench.tsx`** (was 54.5%): 3 new tests covering the `InjectionRow` interactions — title edit dual-writes to the entity, "Implemented" checkbox sets the attribute, per-row "Open injection in inspector" arrow selects. **54.5% → 72.72%.**
+- **`SearchPanel.tsx`** (was 71.7%): 7 new tests covering the case / whole-word / regex option toggles, the Next / Previous match buttons, the Close find button, and clicking a result row to jump to its match. **71.7% → 81.66%.**
+- **`MultiInspector.tsx`** (was ~50%): 7 new tests covering title-size bulk operations (Compact / Regular / Large), renumber Apply (sequential ordering), Swap entities button (two-selection only), and the 3+ entity branch where Swap is intentionally hidden. **~50% → ~70%.**
+- **`CustomEntityClassesSection.tsx`** (was 42%): 5 new tests covering the Remove button on a class row, the no-id rejection branch, the uppercase-id slug-rule rejection, and a happy-path create-via-form. **42% → ~70%.**
+- **`useCompareDiff.ts`** (was 67%): 3 new tests covering null when no compareRevisionId set, null when compareRevisionId points at a missing revision, and the DetailedRevisionDiff happy path. **67% → ~95%.**
+- **`TPNode.tsx`** (was 27%): 13 new tests covering entity-type-specific renders (note / ude / injection / want), reach badges + pin position + unspecified flag, description / collapsed-with-hidden-descendants, selected styling (ring class), and the 4 diff-status colour-cue branches. Branch coverage 29% → 39.75%. Statement-level coverage stayed at 27% due to a known vitest 4 / coverage-v8 / React 19 / React-Compiler interaction with `memo()`'d components — the assertions pass but coverage-v8 doesn't credit `TPNodeImpl`'s body. Real coverage is meaningfully higher; flagged in NEXT_STEPS for follow-up when the tooling matures.
+
+**Flake fix:** `useGraphPositions.test.tsx > "hydrates positions asynchronously"` had a flaky 5 s timeout under `--coverage` due to the lazy `import('@/domain/layout')` (dagre) running slower under v8 instrumentation. Bumped to a 15 s outer test timeout + 10 s inner waitFor. Documented inline.
+
 ## Session 134 — Test coverage push round 2 (+1.6pp overall, MarkdownPreview 0 → 91%)
 
 Second pass through the medium-gap modules identified by v8 coverage. Overall numbers: 76.99% → **78.6%** statements, 79.86% → **81.34%** lines. 44 new tests bringing the suite to 1422 + 1 todo. Plus filed the PPTX e2e Playwright-spec follow-up in NEXT_STEPS so the gap doesn't get lost.
