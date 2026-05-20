@@ -6,13 +6,7 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ## Open major gaps from the spec analysis
 
-Source: `toc_tp_software_requirements.docx` (Session 134 review). Eight of ten major gaps still open after this session's run.
-
-### 🔴 #1 — AI integration
-
-Spec §5. Only placeholder `Assumption.source: 'ai'` field today; no live LLM calls. Missing: problem-to-tool router, UDE extraction from notes/transcripts, statement rewrite into TOC-compliant grammar, CLR objection generator, assumption extraction from cloud edges, injection brainstorming, negative-branch detection, obstacle/milestone suggestions, TT action decomposition, executive summary, workshop facilitation prompts. The "AI as coach not silent author" framing fits cleanly onto existing assumption/validator hooks.
-
-**Effort:** ~5+ sessions. Needs a product decision on hosted vs BYO-key. Highest user-impact gap for non-experts.
+Source: `toc_tp_software_requirements.docx` (Session 134 review). Seven of ten major gaps still open after this session's run. **AI-integration (spec §5) explicitly out of scope** — moved to the won't-build section below.
 
 ### 🔴 #2 — Multi-user collaboration
 
@@ -67,8 +61,6 @@ Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has
 - **Action eligibility based on satisfied preconditions** — depends on confidence/state propagation (#4).
 - **Roll-up validation for S&T** (sufficiency of subordinate tactics to support the parent) — standard CLR only; no tactic-roll-up-sufficiency validator. Spec considers this an S&T-specific need.
 - **Sufficiency / parallel / necessary assumption distinction for S&T** — method checklist labels mention NA/PA/SA but the data model doesn't sub-type assumptions. Would need `Assumption.kind: 'necessary' | 'parallel' | 'sufficient'`.
-- **Entity grammar rewrite suggestions** ("and"/"because"/"so that" / vague adjectives / present-tense enforcement) — `entity-existence` + `clarity` validators detect issues; no rewrite suggestion. Needs AI (#1).
-- **Coaching/router mode** ("messy problem → pick the right tool") — depends on AI (#1).
 - **Audit trail / GDPR / data retention** — local-only sidesteps GDPR; no audit log of assumption-acceptance / injection-acceptance / decision-resolution. Enterprise feature, tied to #2/#8.
 - **Reactive vs proactive NBR mitigation distinction** — current NBR implementation (Session 134) infers mitigation status from injection-reachability; spec wants a formal `mitigation.kind: 'reactive' | 'proactive'` field. Re-open if practitioners ask for the distinction.
 
@@ -77,7 +69,7 @@ Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has
 ## Open minor gaps
 
 - **Stakeholder sign-off workflow** — depends on multi-user collaboration (#2).
-- **Pattern library — sub-items B + C.** Sub-item A (reusable domain templates) shipped Session 134. Sub-item B (benchmarking / pattern recognition via embeddings) gated by AI (#1). Sub-item C (portfolio of improvement initiatives across multiple docs) gated by cross-diagram traceability (#3) + entity ownership/evidence (#6).
+- **Pattern library — sub-item C.** Sub-item A (reusable domain templates) shipped Session 134. Sub-item C (portfolio of improvement initiatives across multiple docs) gated by cross-diagram traceability (#3) + entity ownership/evidence (#6). Sub-item B (benchmarking / pattern recognition via embeddings) is dropped along with AI integration.
 
 ---
 
@@ -101,10 +93,10 @@ Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has
 If picking the next thing up:
 
 1. **#6 evidence array** (~1 session) — finishes the entity-ownership story started this session. Visible UI immediately.
-2. **#3 cross-diagram traceability** (~2–3 sessions) — most foundational structural gap. Unlocks #6's portfolio-view sub-item, NBR linking back to FRT, and the full TP chain.
+2. **#3 cross-diagram traceability** (~2–3 sessions) — most foundational structural gap. Unlocks the portfolio-view pattern-library sub-item, NBR linking back to FRT, and the full TP chain.
 3. **#7 task bridge** (~1–2 sessions) — mechanical export work. Start with TT → CSV; per-tracker formats follow.
-4. **#4 confidence / state propagation** (~3 sessions) — adds the "what-if" behaviour the spec considers the FRT module's signature.
-5. **#1 AI integration** (~5+ sessions) — highest user-impact for non-expert users, but requires a product call on hosted vs BYO-key first.
+4. **#9 formal mode-switching** (~1–2 sessions) — Guided / Expert / Workshop / Presentation modes.
+5. **#4 confidence / state propagation** (~3 sessions) — adds the "what-if" behaviour the spec considers the FRT module's signature.
 
 Collaboration (#2) and enterprise integration (#8) intentionally deprioritised — both are product-direction decisions rather than sprints.
 
@@ -123,6 +115,10 @@ These come straight from the brief's explicit out-of-scope list, plus items clos
 - Print stylesheets (delivered minimally via `src/styles/print.css`; full one-page print designs not in scope)
 - i18n (English only)
 - **H5 confidence-weighted what-if** — depended on Bucket C (`Entity.confidence` + `Edge.weight`); Bucket C was excluded by user direction in Iteration 2 and schema-confidence was dropped in Session 71. With no signal to scale, H5 has nothing to compute on. Dann moved it to "won't build" in Session 84.
+- **AI integration (spec §5)** — problem-to-tool router, UDE extraction from notes/transcripts, statement rewrite into TOC-compliant grammar, CLR objection generator, assumption extraction from cloud edges, injection brainstorming, negative-branch detection, obstacle/milestone suggestions, TT action decomposition, executive summary generator, workshop facilitation prompts. Explicitly dropped by Dann in Session 134. TP Studio stays deterministic and offline-first; analytical thinking is the practitioner's job, not the tool's. Re-open only if a product direction lands that genuinely needs it.
+- **Entity grammar rewrite suggestions** — depended on AI integration above.
+- **Coaching/router mode** ("messy problem → pick the right tool") — depended on AI integration above.
+- **Pattern library sub-item B** (benchmarking / pattern recognition via embeddings) — depended on AI integration above.
 - **FL-EX8 multi-document tabs** — explored on a preview branch Session 91; cancelled before merge. TP Studio stays single-document.
 - **FL-CO2 cross-document hyperlinks** — depended on FL-EX8.
 - **FL-IN5 tabs per element type** — sectioned inspector groups properties cleanly; tabs add a click without exposing more information.
