@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — Test coverage push (+5pp overall, +70pp on command palette)
+
+Audit-driven coverage lift on areas the v8 report flagged as thin. Overall numbers: 72.0% → 76.99% statements, 74.4% → 79.86% lines. Targeted modules:
+
+- **`src/components/command-palette/commands/`** (8 files, was 4.14% statements / 4.49% lines). New per-file test files (`document.test.ts`, `edges.test.ts`, `groups.test.ts`, `navigate.test.ts`, `view.test.ts`, `help.test.ts`, `analysis.test.ts`, `tools.test.ts`) plus a small `helpers.ts` for the `findCommand` / `runCommand` pair. Each test invokes the command's `run` against a seeded store and asserts the expected store mutation (dialog open, mode flip, type change, AND/OR group, undo/redo, paste, etc.). Caught a class of "I renamed a store action and broke a palette command silently" regression that no other layer catches. Coverage on the directory now 74.48% statements / 80.14% lines.
+- **`ecCompleteness.ts`** (was 53.7% statements). New `tests/domain/ecCompleteness.test.ts` covering all five sub-rules (A non-empty, B/C distinct, want-supports-only-its-need, ≥1 assumption per arrow, ≥1 injection) with table-driven positive/negative cases. The "B and C reference the same entity" branch is unreachable under the live schema (entities map is keyed by id) — documented in the test file rather than crowbarred. Coverage now 96.29%.
+- **`AttachedEdgesList.tsx`** (was 0%). New smoke tests for empty/non-empty/multi-edge branches and the edge-select interaction. Coverage now 100%.
+- **`WalkthroughOverlay.tsx`** (was 5.79%). New tests for the closed render, the dialog opening, Arrow Right / Arrow Left / Space / Esc keyboard nav (read-through mode). Coverage now 50.72%.
+- **`InjectionWorkbench.tsx`** (was 0%). Smoke tests for empty state / existing injection / "New injection" button mint / browse-lock disabling. Coverage now 54.54%.
+- **Bug fix** — the InjectionWorkbench smoke tests surfaced a real production bug: the `useShallow` selector's `assumptions: s.doc.assumptions ?? ({} as Record<...>)` fallback created a fresh empty-object reference on every snapshot, breaking shallow comparison and triggering React's "Maximum update depth exceeded" loop on docs without `assumptions` populated. Fixed by hoisting `EMPTY_ASSUMPTIONS` to a frozen module-level constant. Same loop pattern as the Session 134 `useSelectionDimming` reverted hook; documented inline so future selectors avoid the trap.
+
+107 new tests total. 1378/1378 passing; tsc clean. Two-pass coverage measurement confirmed the lift survives the full suite.
+
 ## Session 134 — PowerPoint deck export (closes spec-gap major #10)
 
 - **New PPTX exporter** at `src/services/exporters/pptxExport.ts`. Closes major gap #10 from the spec gap analysis. Generates a workshop-ready `.pptx` deck via the **Export…** picker, with these slides:

@@ -6,6 +6,19 @@ import type { Assumption, Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 
+// Session 134 — module-level frozen empty fallback for `doc.assumptions`.
+// A fresh `({} as Record<...>)` inside the selector function creates a
+// new reference on every snapshot, breaking `useShallow`'s reference-
+// equality compare and triggering React's "Maximum update depth
+// exceeded" (latent bug surfaced by the InjectionWorkbench smoke test
+// added the same session). Caching the empty fallback at module scope
+// fixes it without touching the consumer-side `Record<string, ...>`
+// signature.
+const EMPTY_ASSUMPTIONS: Record<string, Assumption> = Object.freeze({}) as Record<
+  string,
+  Assumption
+>;
+
 /**
  * Session 77 / brief §6 — Injection Workbench.
  *
@@ -25,7 +38,7 @@ export function InjectionWorkbench() {
     useDocumentStore(
       useShallow((s) => ({
         injections: entitiesOfType(s.doc, 'injection'),
-        assumptions: s.doc.assumptions ?? ({} as Record<string, Assumption>),
+        assumptions: s.doc.assumptions ?? EMPTY_ASSUMPTIONS,
         addEntity: s.addEntity,
         linkInjection: s.linkInjectionToAssumption,
         unlinkInjection: s.unlinkInjectionFromAssumption,
