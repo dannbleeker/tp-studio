@@ -1,11 +1,11 @@
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { TPNodeData } from '@/components/canvas/edges/flow-types';
 import { TPNode } from '@/components/canvas/nodes/TPNode';
 import { createEntity } from '@/domain/factory';
-import { resetStoreForTest } from '@/store';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);
@@ -211,5 +211,159 @@ describe('TPNode — diff-status colour cues', () => {
       <TPNode {...makeNodeProps({ entity, diffStatus: status })} />
     );
     expect(container.textContent).toContain(`diff ${status}`);
+  });
+});
+
+/**
+ * Session 134 coverage push (round 4) — interaction-driven tests.
+ *
+ * The earlier render-tests cover *which JSX branches* mount; these
+ * cover the inline event handlers + the editing-mode useEffect that
+ * jsdom doesn't trigger from a passive render. V8 coverage tracks
+ * each `onMouseEnter={() => ...}` / `onDoubleClick={...}` arrow as
+ * its own function whose body is only credited when the event
+ * actually fires — which is why the static render-tests left the
+ * file at 27% statements. Firing the events drives the function
+ * coverage up.
+ */
+
+describe('TPNode — DOM event handlers', () => {
+  it('double-click enters editing mode via beginEditing', () => {
+    const entity = createEntity({ type: 'effect', title: 'will edit', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    const wrapper = container.querySelector('[data-component="tp-node"]') as HTMLElement;
+    fireEvent.doubleClick(wrapper);
+    expect(useDocumentStore.getState().editingEntityId).toBe(entity.id);
+  });
+
+  it('double-click is a no-op when the doc is browse-locked', () => {
+    useDocumentStore.setState({ browseLocked: true });
+    const entity = createEntity({ type: 'effect', title: 'locked', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    const wrapper = container.querySelector('[data-component="tp-node"]') as HTMLElement;
+    fireEvent.doubleClick(wrapper);
+    expect(useDocumentStore.getState().editingEntityId).toBeNull();
+  });
+
+  it('mouse-enter triggers the hover-state path (zoom-up overlay gate)', () => {
+    const entity = createEntity({ type: 'effect', title: 'hovered', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity }, true)} />);
+    const wrapper = container.querySelector('[data-component="tp-node"]') as HTMLElement;
+    // No assertion beyond "doesn't throw" — hover state is internal,
+    // gates the NodeToolbar's `showZoomUp`, and is only observable
+    // through the zoom-up card which jsdom doesn't render at the
+    // right zoom. Firing the handler still covers its body.
+    fireEvent.mouseEnter(wrapper);
+    fireEvent.mouseLeave(wrapper);
+    expect(wrapper).toBeTruthy();
+  });
+});
+
+describe('TPNode — editing mode render + textarea handlers', () => {
+  it('renders the editing textarea when editingEntityId matches the entity', () => {
+    const entity = createEntity({ type: 'effect', title: 'editing now', annotationNumber: 1 });
+    useDocumentStore.setState({ editingEntityId: entity.id });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    const textarea = container.querySelector('textarea');
+    expect(textarea).not.toBeNull();
+    // The useEffect with `inputRef.current.focus()` fires post-mount;
+    // jsdom honors the focus() call.
+    expect(textarea?.value).toBe('editing now');
+  });
+
+  it('blur on the editing textarea commits the new title and exits editing', () => {
+    const entity = createEntity({ type: 'effect', title: 'before', annotationNumber: 1 });
+    useDocumentStore.setState({
+      editingEntityId: entity.id,
+      doc: { ...useDocumentStore.getState().doc, entities: { [entity.id]: entity } },
+    });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+    // Change the value, then blur. onBlur reads e.currentTarget.value,
+    // calls updateEntity if changed, then endEditing.
+    fireEvent.change(textarea, { target: { value: 'after' } });
+    fireEvent.blur(textarea);
+    expect(useDocumentStore.getState().editingEntityId).toBeNull();
+    expect(useDocumentStore.getState().doc.entities[entity.id]?.title).toBe('after');
+  });
+
+  it('Escape on the editing textarea exits editing without committing', () => {
+    const entity = createEntity({ type: 'effect', title: 'original', annotationNumber: 1 });
+    useDocumentStore.setState({
+      editingEntityId: entity.id,
+      doc: { ...useDocumentStore.getState().doc, entities: { [entity.id]: entity } },
+    });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: 'discarded' } });
+    fireEvent.keyDown(textarea, { key: 'Escape' });
+    expect(useDocumentStore.getState().editingEntityId).toBeNull();
+    // Title untouched — Escape does NOT commit.
+    expect(useDocumentStore.getState().doc.entities[entity.id]?.title).toBe('original');
+  });
+
+  it('plain Enter on the editing textarea commits + exits (via the textarea blur)', () => {
+    const entity = createEntity({ type: 'effect', title: 'before', annotationNumber: 1 });
+    useDocumentStore.setState({
+      editingEntityId: entity.id,
+      doc: { ...useDocumentStore.getState().doc, entities: { [entity.id]: entity } },
+    });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: 'after-enter' } });
+    fireEvent.keyDown(textarea, { key: 'Enter' });
+    // The Enter handler calls e.currentTarget.blur(); the onBlur then
+    // commits the title and clears editingEntityId.
+    expect(useDocumentStore.getState().editingEntityId).toBeNull();
+    expect(useDocumentStore.getState().doc.entities[entity.id]?.title).toBe('after-enter');
+  });
+});
+
+describe('TPNode — preference-driven render branches', () => {
+  it('renders the annotation-number badge when showAnnotationNumbers is true', () => {
+    useDocumentStore.setState({ showAnnotationNumbers: true });
+    const entity = createEntity({ type: 'effect', title: 'numbered', annotationNumber: 42 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    expect(container.textContent).toContain('42');
+  });
+
+  it('renders the entity-id chip when showEntityIds is true', () => {
+    useDocumentStore.setState({ showEntityIds: true });
+    const entity = createEntity({ type: 'effect', title: 'with id', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    // A fragment of the entity id should appear somewhere in the card.
+    expect(container.textContent).toContain(entity.id.slice(0, 6));
+  });
+
+  it('renders the UDE-reach badge when showReachBadges + udeReachCount > 0', () => {
+    useDocumentStore.setState({ showReachBadges: true });
+    const entity = createEntity({ type: 'rootCause', title: 'cause', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity, udeReachCount: 7 })} />);
+    expect(container.textContent).toContain('7');
+  });
+
+  it('renders the reverse-reach badge when showReverseReachBadges + rootCauseReachCount > 0', () => {
+    useDocumentStore.setState({ showReverseReachBadges: true });
+    const entity = createEntity({ type: 'ude', title: 'ude', annotationNumber: 1 });
+    const { container } = mountWithRF(
+      <TPNode {...makeNodeProps({ entity, rootCauseReachCount: 3 })} />
+    );
+    expect(container.textContent).toContain('3');
+  });
+});
+
+describe('TPNode — Locus pill (spanOfControl)', () => {
+  it.each([
+    ['control', 'C'],
+    ['influence', 'I'],
+    ['external', 'E'],
+  ] as const)('renders the %s pill (%s)', (locus, glyph) => {
+    const base = createEntity({ type: 'rootCause', title: 'locus test', annotationNumber: 1 });
+    const entity = { ...base, spanOfControl: locus };
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    // The pill renders a single letter inside an `aria-label="Locus: …"` span.
+    const pill = container.querySelector(`[aria-label="Locus: ${locus}"]`);
+    expect(pill).not.toBeNull();
+    expect(pill?.textContent?.trim()).toBe(glyph);
   });
 });

@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — TPNode coverage diagnosed + fixed (was a misdiagnosis)
+
+Closed the "TPNode tooling quirk" loose-end. The original theory blamed a React 19 × React-Compiler × coverage-v8 interaction; that was wrong (React Compiler is commented out in `vite.config.ts`). The actual cause: v8 coverage counts each *inline arrow handler* on JSX elements (`onMouseEnter={() => setIsHovered(true)}`, `onDoubleClick={...}`, `onBlur={...}`, `onKeyDown={...}`, etc.) as its own function-body. The round-3 render tests passively rendered the component but never fired DOM events, so every handler's body stayed uncovered — and the long uncovered line range `141-561` was mostly handler bodies + the JSX they hang off of, not unreachable code.
+
+The fix is straightforward: add interaction-driven tests that fire the relevant events.
+
+**13 new tests** in `tests/components/TPNode.test.tsx`:
+
+- **DOM event handlers (3 tests):** double-click enters editing mode → `editingEntityId` updates; double-click on a browse-locked doc is a no-op; mouseEnter / mouseLeave fire without throwing.
+- **Editing-mode render + textarea handlers (4 tests):** the editing textarea mounts when `editingEntityId` matches; blur commits the new title + exits editing; Escape exits without committing; Enter commits (via `e.currentTarget.blur()` → onBlur cascade).
+- **Preference-driven render branches (4 tests):** annotation-number badge with `showAnnotationNumbers`, entity-id chip with `showEntityIds`, UDE-reach badge with `showReachBadges + udeReachCount > 0`, reverse-reach badge with `showReverseReachBadges + rootCauseReachCount > 0`.
+- **Locus pill (3 tests, one per variant):** `control` / `influence` / `external` each render the expected `aria-label="Locus: <variant>"` pill with the matching single-letter glyph.
+
+**TPNode.tsx coverage after the push:**
+- Statements: 27% → **48%** (+21pp)
+- Branches: 29% → **61%** (+32pp)
+- Functions: 14% → **38%** (+24pp)
+- Lines: 29% → **49%** (+20pp)
+
+Remaining uncovered ranges (`269-275`, `285-561`) are content for less-common variants — S&T 5-facet rows, hidden-descendant chip with > 0 children, zoom-up overlay at low zoom, Pin glyph requiring `entity.position`, NodeToolbar conditional render. Achievable in a follow-up but the high-traffic interaction paths are now properly covered.
+
+All 1549 + 1 todo tests pass; tsc clean. NEXT_STEPS loose-end entry struck through.
+
 ## Session 134 — PPTX export e2e Playwright spec (closes Session-134 loose end)
 
 New `e2e/pptx-export.spec.ts` covers the full PowerPoint deck export pipeline that the unit tests can't reach (pptxgenjs's `writeFile` → `URL.createObjectURL` → synthetic anchor click doesn't model in jsdom; Playwright intercepts the synthetic-click download natively).
