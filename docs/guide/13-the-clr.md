@@ -2,6 +2,14 @@
 
 > *The Categories of Legitimate Reservation are the discipline checks Goldratt taught for evaluating a causal claim. TP Studio surfaces them automatically as warnings. They are reservations a thoughtful colleague would raise. They are not errors.*
 
+## The classical map
+
+Before diving into how TP Studio implements them, here is the classical reference — the eight-box layout Dettmer's *The Logical Thinking Process* uses to teach the CLR, each box pairing the category's question with a tiny example diagram.
+
+![The eight Categories of Legitimate Reservation, laid out as Dettmer teaches them — each box shows the category's question and a small diagram illustrating the failure mode it catches](diagrams/clr-map.png)
+
+This map is the territory; TP Studio's warnings are the tools that walk it. Goldratt's original six are the first six boxes; *Predicted Effect* and *Tautology* are Dettmer's additions, used mainly when a stated cause is intangible (you cannot observe it directly, only its consequences).
+
 ## The six categories
 
 Goldratt named six. The operationalization into validator-style rules that practitioner tools surface — what TP Studio does — owes a debt to William Dettmer's *The Logical Thinking Process* (2007), which formalized the categories for everyday use. Listed here in order of where they typically bite first as you draft a diagram:

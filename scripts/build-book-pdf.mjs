@@ -41,6 +41,15 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(HERE, '..');
 const GUIDE_DIR = join(PROJECT_ROOT, 'docs', 'guide');
 const SCREENSHOTS_DIR = join(GUIDE_DIR, 'screenshots');
+const DIAGRAMS_DIR = join(GUIDE_DIR, 'diagrams');
+// Markdown image prefixes the rewriter inlines. Keys are the path
+// prefix used in the chapter source; values are the absolute directory
+// to resolve filenames against. Add a new entry here to expose a new
+// asset folder to the book builder.
+const IMAGE_ROOTS = [
+  { prefix: 'screenshots', dir: SCREENSHOTS_DIR },
+  { prefix: 'diagrams', dir: DIAGRAMS_DIR },
+];
 const OUT_PATH = join(GUIDE_DIR, 'Causal-Thinking-with-TP-Studio.pdf');
 
 /**
@@ -117,29 +126,37 @@ async function readChapterMetadata() {
  * PDF), and produce the same final binary output.
  */
 async function rewriteImagePaths(html) {
-  const matches = [...html.matchAll(/<img\s+[^>]*src="screenshots\/([^"]+)"/g)];
-  if (matches.length === 0) return html;
-  // Resolve each unique file once, then substitute every reference.
-  const fileToDataUri = new Map();
-  for (const m of matches) {
-    const filename = m[1];
-    if (fileToDataUri.has(filename)) continue;
-    try {
-      const buf = await readFile(join(SCREENSHOTS_DIR, filename));
-      const ext = filename.split('.').pop()?.toLowerCase() ?? 'png';
-      const mime = ext === 'png' ? 'image/png' : ext === 'svg' ? 'image/svg+xml' : `image/${ext}`;
-      fileToDataUri.set(filename, `data:${mime};base64,${buf.toString('base64')}`);
-    } catch {
-      // Missing screenshot — leave the relative path so the broken-
-      // image icon renders + a maintainer notices instead of the PDF
-      // shipping without warning.
-      fileToDataUri.set(filename, `screenshots/${filename}`);
+  let result = html;
+  for (const { prefix, dir } of IMAGE_ROOTS) {
+    // Build a per-prefix regex so we can substitute each asset root
+    // independently. The literal-prefix interpolation is safe — all
+    // entries in IMAGE_ROOTS are static.
+    const findRe = new RegExp(`<img\\s+[^>]*src="${prefix}\\/([^"]+)"`, 'g');
+    const matches = [...result.matchAll(findRe)];
+    if (matches.length === 0) continue;
+    const fileToDataUri = new Map();
+    for (const m of matches) {
+      const filename = m[1];
+      if (fileToDataUri.has(filename)) continue;
+      try {
+        const buf = await readFile(join(dir, filename));
+        const ext = filename.split('.').pop()?.toLowerCase() ?? 'png';
+        const mime = ext === 'png' ? 'image/png' : ext === 'svg' ? 'image/svg+xml' : `image/${ext}`;
+        fileToDataUri.set(filename, `data:${mime};base64,${buf.toString('base64')}`);
+      } catch {
+        // Missing asset — leave the relative path so the broken-image
+        // icon renders + a maintainer notices instead of the PDF
+        // shipping without warning.
+        fileToDataUri.set(filename, `${prefix}/${filename}`);
+      }
     }
+    const replaceRe = new RegExp(`(<img\\s+[^>]*src=")${prefix}\\/([^"]+)(")`, 'g');
+    result = result.replace(
+      replaceRe,
+      (_, p, filename, suffix) => `${p}${fileToDataUri.get(filename)}${suffix}`
+    );
   }
-  return html.replace(
-    /(<img\s+[^>]*src=")screenshots\/([^"]+)(")/g,
-    (_, prefix, filename, suffix) => `${prefix}${fileToDataUri.get(filename)}${suffix}`
-  );
+  return result;
 }
 
 /**

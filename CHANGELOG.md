@@ -2,6 +2,12 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — CLR map embedded in the book
+
+- **CLR map (classical 8-box layout) embedded in Chapter 13.** Dann supplied the artefact as slide 2 of `Theory of Constraints.pptx` ("Categories of Legitimate Reservations"). Extracted via a one-off PowerPoint COM script (`scripts/extract-clr-slide.py`) to a 2400 × 1350 PNG at `docs/guide/diagrams/clr-map.png`. Chapter 13 now opens with a "The classical map" section embedding the image, with a caption noting that Goldratt's original six are the first six boxes and *Predicted Effect* + *Tautology* are Dettmer's additions for intangible causes.
+- **`build-book-pdf.mjs` generalised to multiple asset roots.** The image-inlining pass previously hard-coded the `screenshots/` prefix. Replaced with an `IMAGE_ROOTS` array (`{ prefix, dir }` entries for `screenshots/` and the new `diagrams/`). Adding a future asset directory is now one entry, not a copy of the rewriter. Behaviour unchanged for existing `screenshots/` references; missing-file paths still fall through to the relative URL so the broken-image icon flags a maintainer. PDF size: ~1.0 MB → ~1.86 MB on the diagram's base64 expansion.
+- **Earlier in the session:** Method-checklist preamble added to reasoning-export Markdown (`exportReasoningNarrative` now renders a `## Method checklist (k / n)` block with `[x]`/`[ ]` per step when at least one step is ticked); CSS-only selection dimming via `:has(.react-flow__node.selected) .react-flow__node:not(.selected) { opacity: 0.5 }` (replaces the reverted hook approach that triggered React error #185); CanvasNav merging zoom percent + zoom in/out + fit-view cleanly into one centred chip.
+
 ## Session 133 — UX batch from user feedback (six shipped, four parked)
 
 Triaged a batch of user notes from the canvas / EC / book surfaces. Six shipped this session; four parked in `NEXT_STEPS.md` under "Session 133 user-note triage — open items" with concrete options for the design-question ones.
