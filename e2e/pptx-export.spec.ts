@@ -107,13 +107,14 @@ test.describe('PowerPoint deck export', () => {
     expect(allSlideText).toContain(causeTitle);
     expect(allSlideText).toContain(effectTitle);
 
-    // Bonus: app.xml carries the doc title in the file metadata
-    // pptxgenjs sets via `pptx.title = doc.title`. Verify that pathway
-    // too so a regression in the metadata write surfaces here.
-    const appXml = zip.file('docProps/app.xml');
-    if (appXml) {
-      const appText = await appXml.async('text');
-      expect(appText).toContain(docTitle);
+    // Bonus: core.xml carries the doc title in the Dublin Core metadata
+    // pptxgenjs sets via `pptx.title = doc.title`. (`docProps/app.xml` is
+    // application metadata — slide count, font list — not the title.)
+    // Verify the metadata-write pathway so a regression surfaces here.
+    const coreXml = zip.file('docProps/core.xml');
+    if (coreXml) {
+      const coreText = await coreXml.async('text');
+      expect(coreText).toContain(docTitle);
     }
   });
 });
