@@ -82,6 +82,67 @@ A parking lot. Nothing here is required for v1; everything is honest about what'
 
 > **Mobile / narrow-viewport pass complete (Session 65).** A new `KebabMenu` component lives at the right edge of the TopBar with `sm:hidden`, surfacing the four buttons (Layout Mode, History, Help, Theme) that the existing responsive classes hide below `sm` (640 px). Items auto-close the menu after activation; Escape and outside-click also dismiss. TitleBadge's narrow-viewport `max-w-` bumped from `100%-7rem` to `100%-9rem` to leave room for the extra icon. The Inspector and RevisionPanel already overlaid with tap-to-dismiss backdrops below `md:`, so no changes needed there. 8 new tests in `tests/components/KebabMenu.test.tsx` (628 total, all green). **The remaining backlog is the structural-extensibility tier**: **B7 + B10** (user-defined attributes + custom entity classes) and the parked **confidence-field UI**.
 
+## Spec gap analysis vs. `toc_tp_software_requirements.docx` (Session 134)
+
+A 14-section requirements doc Dann brought in for review (research brief on "what a TOC TP software tool needs"). Compared point-by-point against the TP Studio codebase. Verdict: TP Studio covers ~70–80% of the spec's MVP/V1 scope as a deterministic, single-user tool, and exceeds it on several axes (custom entity classes, freeform diagrams, XOR junctors, Locus field, EC two-sided verbal style, vector PDF, halo+dim selection cue, reasoning-export diagram-specific shaping, PWA/offline). Source doc: `C:\Users\dann.pedersen\OneDrive - BESTSELLER\Desktop\toc_tp_software_requirements.docx`.
+
+**Solidly covered (no work needed):** all 6 TP diagram types (CRT, EC, FRT, PRT, TT, S&T) + Goal Tree + freeform; sufficient-cause vs necessary-condition `EdgeKind` distinction with "because" / "in order to" / "therefore" framings; 15 built-in entity types + user-definable custom classes; AND/OR/XOR junctors with one-of constraint; 18 CLR validators across clarity/existence/sufficiency tiers + walkthrough wizard + dismissibility; per-diagram method checklists (5–9 steps); 7-field system scope (goal, NCs, success measures, boundaries, containing system, interacting systems, I/O); first-class `Assumption` with status enum + edge back-link + AI-source marker; `buildExampleXXX()` per diagram type via Load-example palette; reasoning export (Markdown narrative + outline) with diagram-specific shaping; PDF/PNG/JPEG/SVG/Mermaid/OPML/DOT/VGL/HTML/CSV/JSON/Flying Logic exports; Mermaid/CSV/Flying Logic/JSON imports; step-through + all-at-once + CLR walkthroughs; dagre auto-layout; revision panel with branching; zoom/minimap/fit-view/search/filter/palette; keyboard nav + screen-reader + high-contrast/colorblind palettes.
+
+### Major gaps (🔴) — features the spec considers core that TP Studio doesn't have
+
+- **No AI integration whatsoever** (spec §5). Only placeholder `Assumption.source: 'ai'` field. Missing: problem-to-tool router, UDE extraction from notes/transcripts, statement rewrite into TOC-compliant grammar, CLR objection generator, assumption extraction from cloud edges, injection brainstorming, negative-branch detection, obstacle/milestone suggestions, TT action decomposition, executive summary, workshop facilitation prompts. The "AI as coach not silent author" framing fits cleanly onto existing assumption/validator hooks. **Highest user-impact gap for non-experts.**
+
+- **No multi-user collaboration** (spec §4). Single-user local-only. Missing: real-time multi-user editing, comments on entities/edges, role-based participation (facilitator/contributor/reviewer/decision owner), workshop mode with voting + timeboxing, stakeholder sign-off on critical assumptions, decision log (why assumptions accepted/rejected with participants). **Largest scope item — changes TP Studio from local-first to cloud-backed; a product-direction decision, not a sprint.**
+
+- **No cross-diagram traceability** (spec §6.2). Each `TPDocument` is standalone JSON; no entity/edge references across documents. The full chain UDE → CRT core driver → Cloud conflict → assumptions → injections → FRT desired effects/negative branches → PRT obstacles/milestones → TT actions/owners must be reconstructed manually. Spec considers this critical: *"Without traceability, each diagram becomes a standalone artifact and the TOC logic chain breaks."* Schema-addition path: an `importedFrom: { docId, entityId }` ref on Entity + per-doc-store cross-ref index + UI affordances for "jump to source". **Highest-leverage structural gap.**
+
+- **No confidence / propagation simulation** (spec §3.4). No `Entity.state` enum (`true / false / unknown / disputed`), no propagation through AND/OR logic, no "what changes if this assumption is false?" simulation. Spec lists this as the FRT module's signature behaviour ("FRT module needs simulation-like behaviour. It should test whether the future-state logic actually propagates"). Schema-light to add (entity state enum + propagation function) but UX work is the tricky part — the "what-if" panel needs careful design.
+
+- **No first-class Negative Branch Reservation diagram type** (spec §2.4). NBR is one of the spec's core TP tools. TP Studio supports the concept inside FRT (predicted-effect validator catches some of it; user can model negative branches as sub-trees) but has no dedicated NBR diagram type, no reactive vs proactive mitigation distinction, no risk-register export (risk / trigger / consequence / mitigation / owner / status). Could be implemented either as a new `nbr` diagram type or as an FRT-mode flag with NBR-specific entity classes + validators.
+
+- **No entity ownership / first-class evidence model** (spec §§5.2, 6.1). Spec wants per-entity / per-assumption / per-milestone / per-action fields for owner (with authority validation for actions), external evidence links (documents, URLs, metrics, interviews), evidence strength rating + source type taxonomy (observed fact / stakeholder assertion / metric / policy / assumption), last-validated date, validation owner. TP Studio has generic `entity.attributes` / `edge.attributes` (key/value bag, B1/Session 87) which *could* host this but isn't a first-class model with UI affordances or validator awareness. Schema-light upgrade: dedicated `entity.owner`, `entity.evidence[]`, `entity.lastValidatedAt` fields.
+
+- **No task / execution bridge** (spec §§2.6, 8). TT actions don't flow into a task tracker. Spec wants TT actions → tasks with owner / due date / dependencies / status / success criteria, exportable to Jira / Trello / Planner / Asana, plus a "buy-in narrative" generator per action. TP Studio exports TT as Markdown / Flying Logic only. Implementation: add an "Export to task tracker" panel building on the existing reasoning-export Markdown.
+
+- **No enterprise integration** (spec §8). No SSO/SAML/OIDC, no Microsoft 365 / Google Workspace, no Slack/Teams, no Confluence/SharePoint, no Jira/Azure DevOps. TP Studio is browser-local PWA. Tied to collaboration scope decision.
+
+- **No formal mode-switching** (spec §7.1). Spec lists Guided / Expert / Workshop / Presentation modes. TP Studio has guided prompts (method checklist) and walkthrough overlays, but no explicit mode-state, no facilitator-vs-contributor view, no presentation mode beyond exports.
+
+- **No PowerPoint export** (spec §8). Listed as workshop-deck format. TP Studio's reasoning-export Markdown could feed a deck but doesn't write `.pptx` directly. Mechanical work; build atop existing reasoning-export.
+
+### Medium gaps (🟡) — nuance / partial coverage
+
+- **Reactive vs proactive NBR mitigation distinction** — generic groups exist; no formal distinction. Workaround via custom attributes.
+- **"Preserve rejected logic in collapsed groups"** — partial via revision branches; no archive-of-rejected concept on the live canvas.
+- **Action quality checks (control / influence / authority for TT actions)** — method checklist hints at it ("Test against your locus — control / influence / external") but not enforced per-action validator. Could be a new `tt-action-locus-set` validator.
+- **Action eligibility based on satisfied preconditions** — not present. Depends on confidence/state propagation (major gap #4).
+- **Roll-up validation for S&T (sufficiency of subordinate tactics to support the parent)** — standard CLR only; no tactic-roll-up-sufficiency validator. Spec considers this an S&T-specific need.
+- **Sufficiency / parallel / necessary assumption distinction for S&T** — method checklist labels mention NA/PA/SA but the data model doesn't sub-type assumptions. Would need `Assumption.kind: 'necessary' | 'parallel' | 'sufficient'`.
+- **Entity grammar rewrite suggestions** ("and"/"because"/"so that" / vague adjectives / present-tense enforcement) — `entity-existence` + `clarity` validators detect issues; no rewrite suggestion (would need AI).
+- **Coaching/router mode** ("messy problem → pick the right tool") — depends on AI.
+- **Audit trail / GDPR / data retention** — local-only sidesteps GDPR; no audit log of assumption-acceptance / injection-acceptance / decision-resolution. Enterprise feature.
+- **Risk register export** (risk / trigger / consequence / mitigation / owner / status) — would map well onto NBR; not present.
+
+### Minor gaps (🟢)
+
+- **Miro / Mural import** — Flying Logic + Mermaid + CSV + JSON only.
+- **Markdown narrative export** — TP Studio has this (reasoning export); ✅ no gap.
+- **Stakeholder sign-off workflow** — depends on multi-user collaboration.
+- **Pattern library / benchmarking / portfolio view** — V2 spec items; not present.
+
+### Suggested priority order if closing gaps
+
+1. **Cross-diagram traceability** (major gap #3). Most foundational. Schema-addition + UI. ~2–3 sessions.
+2. **Confidence / state propagation** (major gap #4). Adds simulation behaviour the spec considers the FRT module's signature. Schema-light. ~3 sessions; the trickier part is "what-if" UX.
+3. **AI integration** (major gap #1). Highest user-impact for non-expert users. Start with statement-rewrite + CLR objection suggestions (both fit existing hooks). ~5+ sessions due to API integration + safety guardrails. Needs a product decision on hosted vs BYO-key.
+4. **Entity ownership + first-class evidence model** (major gap #6). Schema-light. ~1–2 sessions.
+5. **PowerPoint / Jira / Trello export** (major gaps #7, #10). Mechanical. ~1–2 sessions each.
+6. **NBR as first-class diagram type + risk register export** (major gap #5, medium gap "risk register"). Bundle them. ~2 sessions.
+
+Collaboration (major gap #2) is intentionally deprioritised here — it's a product-direction decision, not a sprint.
+
+---
+
 ## Session 133 user-note triage — open items
 
 Triaged Session 133 from a batch of user notes. Six items shipped this session (book PDF screenshot fix, edge hit-area widening, Lock/LockOpen icon swap, Span-of-control → Locus rename, all-at-once verbalisation dialog, Import picker dialog, EC assumption dashed-edge overlay). Four parked here for follow-up:
