@@ -56,6 +56,11 @@ const DIAGRAM_CARDS: DiagramCard[] = [
     use: 'Sequence the concrete actions that turn each intermediate objective into the next, step by step.',
   },
   {
+    type: 'nbr',
+    short: 'NBR',
+    use: 'Trace forward from a candidate injection to its unintended consequences — and the mitigation that breaks the chain.',
+  },
+  {
     type: 'ec',
     short: 'EC',
     use: 'Diagnose a conflict — surface the two opposing wants, the needs behind them, and the shared objective.',

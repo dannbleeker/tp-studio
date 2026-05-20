@@ -120,6 +120,12 @@ export const INITIAL_DOC_BY_DIAGRAM: Record<DiagramType, (now: number) => DocSee
   // (Goal → CSFs → NCs) populates it. A seed-with-empty-Goal might
   // feel friendlier, but the wizard is the canonical entry path.
   goalTree: () => emptySeed(),
+  // Session 134 / spec major gap #5 — NBR starts empty. The canonical
+  // entry path is "select an FRT injection → palette 'Spawn negative
+  // branch from selection'"; an unprompted empty-doc start is also
+  // valid (a user reasoning forward from a candidate injection
+  // already in their head).
+  nbr: () => emptySeed(),
 };
 
 export const createDocument = (diagramType: DiagramType): TPDocument => {

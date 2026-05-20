@@ -253,6 +253,48 @@ const ST: MethodStep[] = [
 // add one without a schema change.
 const FREEFORM: MethodStep[] = [];
 
+// Session 134 / spec major gap #5 — NBR (Negative Branch Reservation).
+// The discipline: pick a candidate injection, trace forward, find where
+// the chain spawns UDEs, then decide reactive mitigation vs proactive
+// redesign for each. Step ids are dot-prefixed `nbr.*` like the others.
+const NBR: MethodStep[] = [
+  {
+    id: 'nbr.injection',
+    label: 'State the candidate injection',
+    hint: 'The change you\'re considering. Concrete and singular — "we add a 1-week QA gate", not "improve quality".',
+  },
+  {
+    id: 'nbr.forward',
+    label: 'Trace forward to the desired effects',
+    hint: "The reason you'd adopt this injection in the first place. Same chains as an FRT.",
+  },
+  {
+    id: 'nbr.turning-point',
+    label: 'Identify the negative-branch turning point',
+    hint: 'The first effect where the chain starts heading somewhere bad. Often a side-consequence the FRT skipped.',
+  },
+  {
+    id: 'nbr.udes',
+    label: 'Articulate each UDE in the branch',
+    hint: 'Present-tense, observable, concrete. Same standard as CRT UDEs.',
+  },
+  {
+    id: 'nbr.mitigation',
+    label: 'Choose mitigation: reactive or proactive',
+    hint: "Reactive = an action that breaks the chain after the UDE starts. Proactive = swap the original injection for one that doesn't spawn the branch.",
+  },
+  {
+    id: 'nbr.clr',
+    label: 'Apply CLR to the branch',
+    hint: "A weak NBR is one where the UDE actually wouldn't follow — challenge the if-then steps before you over-invest in mitigation.",
+  },
+  {
+    id: 'nbr.decision',
+    label: 'Decide: adopt, modify, or reject the injection',
+    hint: 'Capture the call so a reviewer six months from now knows you considered the branch and chose deliberately.',
+  },
+];
+
 // Session 77 / brief §5 — Goal Tree (Dettmer's IO Map).
 const GOAL_TREE: MethodStep[] = [
   {
@@ -296,6 +338,7 @@ export const METHOD_BY_DIAGRAM: Record<DiagramType, MethodStep[]> = {
   st: ST,
   freeform: FREEFORM,
   goalTree: GOAL_TREE,
+  nbr: NBR,
 };
 
 /**

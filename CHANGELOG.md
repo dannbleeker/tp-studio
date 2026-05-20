@@ -2,6 +2,42 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — NBR diagram type + risk register export (closes spec-gap major #5)
+
+Two-for-one: a new `'nbr'` diagram type plus the risk-register CSV export. Closes major gap #5 from the spec analysis (NBR is one of the canonical TP tools per Goldratt; the spec considered it a primary diagram missing from TP Studio's set).
+
+**New diagram type:**
+
+- `'nbr'` added to `DiagramType` union (`src/domain/types/clr.ts`).
+- Registered across every per-diagram registry — TypeScript's `Record<DiagramType, _>` shapes caught four missing entries on the first compile (`LAYOUT_STRATEGY`, `HANDLE_ORIENTATION`, `RULES_BY_DIAGRAM`, `DIAGRAM_LABELS` in pptxExport), exactly the discipline-via-types pattern the registries are meant to enforce.
+- Palette: `injection / effect / ude / desiredEffect / assumption / note`.
+- Layout: auto, vertical handle orientation (bottom-up like FRT).
+- Default entity type on empty-canvas double-click: `ude` (the negative branch is what the user is mapping).
+- 7-step method checklist (`nbr.injection → nbr.forward → nbr.turning-point → nbr.udes → nbr.mitigation → nbr.clr → nbr.decision`) — guides the canonical NBR walk: state the candidate injection, trace forward to desired effects, find the turning-point effect where the chain spawns UDEs, articulate each UDE, choose reactive (action that breaks the chain) vs proactive (replace the injection) mitigation, apply CLR, decide whether to adopt / modify / reject.
+- Validator set mirrors FRT (structural + cause-sufficiency + additional-cause-on-UDE + predicted-effect-existence).
+- Example doc (`src/domain/examples/nbr.ts`) — QA-gate scenario: original injection ("add a 1-week QA gate") spawns both a desirable chain (more careful releases → fewer bugs) and a negative branch (release cycle stretches → competitor ships first / engineers feel boxed in), with a proactive-redesign mitigation (harden the automated test suite — same desired effect, no branch).
+- Pattern library carries the example as `nbr-qa-gate`.
+- Diagram-type picker card with the "use this when…" cue.
+
+**Risk register CSV export:**
+
+- New `src/services/exporters/riskRegister.ts` exports `buildRiskRegisterCsv(doc)` (pure, testable) and `exportRiskRegister(doc)` (triggers download, returns row count).
+- Columns: `risk_id / risk / trigger / consequence / mitigation / owner / status`.
+- For each UDE in the doc:
+  - **trigger** = the immediate incoming-edge predecessors joined by " + " (matches "X plus Y, leading to <UDE>" framing).
+  - **mitigation** = walks BACKWARD from the UDE through the causal graph and collects every reachable `injection` or `desiredEffect` entity title.
+  - **status** = `mitigated` if any mitigation reaches the UDE, `open` otherwise.
+  - **owner** = `entity.attributes.owner.value` when set (free-form string field).
+- Sorted by `annotationNumber` so the register reads in user-authoring order.
+- Surfaced in `ExportPickerDialog` under Documents, gated by a new `requiresEntityType: 'ude'` filter so docs without any UDEs (clouds, goal trees) don't see the empty-CSV trap. Works on NBR + CRT + any other doc that ends in UDEs.
+- RFC-4180-safe escaper (comma-containing titles get quoted; embedded double-quotes get doubled).
+
+**19 new tests:** 11 cover the NBR diagram-type registration (palette / label / default / layout / handles / checklist / validate doesn't throw / example shape / pattern entry / id-uniqueness); 8 cover the risk-register CSV (empty-doc header-only, open-status row, upstream trigger surfacing, backward walk to mitigation with status flip, owner attribute pickup, annotation-number sort, RFC-4180 escaping).
+
+The medium-gap items "Reactive vs proactive NBR mitigation distinction" and "Risk register export" both struck through in NEXT_STEPS. Current implementation infers mitigation status from injection-reachability and uses `entity.attributes.owner` for ownership; a formal `mitigation.kind: 'reactive' | 'proactive'` field on the data model is tabled for a follow-up if practitioners ask for the distinction.
+
+All 1528 tests pass; tsc clean.
+
 ## Session 134 — Test coverage push round 3 (+1.9pp overall, entitiesSlice 65 → 95%)
 
 Third coverage pass after the audit revealed where investment was still leverageable. Overall numbers: 78.6% → **80.51%** statements, 81.34% → **83.33%** lines, 76.4% → **81.43%** functions, 66.5% → **68.74%** branches. 86 new tests, 1422 → 1508 + 1 todo passing; tsc clean.

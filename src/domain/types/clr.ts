@@ -29,7 +29,16 @@ export type DiagramType =
   // user defines per-doc; CLR rules skip everything that pattern-matches
   // on specific built-in types. Useful for argument-mapping, brainstorm
   // boards, dependency sketches that don't fit a TOC pattern.
-  | 'freeform';
+  | 'freeform'
+  // Session 134 / spec major gap #5 — Negative Branch Reservation. A
+  // forward-looking sub-tree from an injection that traces *undesirable*
+  // consequences, the dual of the FRT's desired-effect chain. The
+  // canonical shape: injection at the bottom, an intermediate effect
+  // (the "turning point"), then one or more UDEs above, with attached
+  // mitigation injections (reactive) or replacement injections
+  // (proactive redesign) that prevent the branch. Edges read
+  // sufficient-cause forward — same framing as FRT.
+  | 'nbr';
 
 export type ClrRuleId =
   | 'clarity'

@@ -232,6 +232,21 @@ export const PALETTE_BY_DIAGRAM: Record<DiagramType, EntityType[]> = {
   // Necessary Conditions nested under CSFs; assumptions can sit on any
   // edge, notes float free.
   goalTree: ['goal', 'criticalSuccessFactor', 'necessaryCondition', 'assumption', 'note'],
+  // Session 134 / spec major gap #5 — Negative Branch Reservation. A
+  // dual of the FRT: trace forward from an injection to the *undesirable*
+  // consequences it might generate, then attach mitigations. Palette
+  // mirrors FRT (injection at the bottom, effect / UDE forward, plus
+  // assumption + universal annotations) — no new entity type is needed
+  // because the structural role differs but the building blocks are
+  // the same.
+  nbr: [
+    'injection',
+    'effect',
+    'ude',
+    'desiredEffect',
+    'assumption',
+    ...UNIVERSAL_ANNOTATION_CLASSES,
+  ],
 };
 
 /**
@@ -248,6 +263,7 @@ export const DIAGRAM_TYPE_LABEL: Record<DiagramType, string> = {
   st: 'Strategy & Tactics Tree',
   freeform: 'Freeform Diagram',
   goalTree: 'Goal Tree',
+  nbr: 'Negative Branch Reservation',
 };
 
 /**
@@ -279,6 +295,10 @@ const DEFAULT_ENTITY_TYPE_BY_DIAGRAM: Record<DiagramType, EntityType> = {
   // Goal Tree: the most likely intent on an empty-canvas double-click
   // is to add a Necessary Condition under an existing CSF or NC.
   goalTree: 'necessaryCondition',
+  // NBR: a fresh empty-canvas double-click most likely starts a new
+  // UDE in the negative branch (the whole point of the diagram is
+  // mapping the bad outcomes).
+  nbr: 'ude',
 };
 
 export const defaultEntityType = (diagramType: DiagramType): EntityType =>

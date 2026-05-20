@@ -16,6 +16,7 @@ import {
   exportPPTX,
   exportReasoningNarrativeMd,
   exportReasoningOutlineMd,
+  exportRiskRegister,
   exportSVG,
   exportVGL,
 } from '@/services/exporters';
@@ -48,6 +49,10 @@ type ExportAction = {
   hint: string;
   /** Optional filter — only render when the current diagram matches. */
   onlyOnECDoc?: boolean;
+  /** Optional predicate — only render when the doc contains at least one
+   *  entity matching the filter (e.g. `'ude'` for the risk-register
+   *  export, which would otherwise produce an empty CSV). */
+  requiresEntityType?: 'ude';
   run: (s: RootStore) => void | Promise<void>;
 };
 
@@ -127,6 +132,24 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
           } catch (err) {
             s.showToast('error', err instanceof Error ? err.message : 'PowerPoint export failed.');
           }
+        },
+      },
+      {
+        // Session 134 — risk-register export (closes the second half of
+        // major gap #5: "convert NBR items into a risk register"). One CSV
+        // row per UDE; columns: risk_id / risk / trigger / consequence /
+        // mitigation / owner / status. Diagram-type agnostic — works on
+        // any doc with UDEs (NBR is the canonical case but CRT UDEs map
+        // naturally onto a register too). Gated by `requiresEntityType:
+        // 'ude'` so docs without any UDEs (clouds, goal trees) don't see
+        // the empty-CSV trap.
+        id: 'risk-register',
+        label: 'Risk register (CSV)',
+        hint: 'One row per UDE: risk / trigger / consequence / mitigation / owner / status. Drops into Jira / Linear / a spreadsheet.',
+        requiresEntityType: 'ude',
+        run: (s) => {
+          const n = exportRiskRegister(s.doc);
+          s.showToast('success', `Exported risk register (${n} risk${n === 1 ? '' : 's'}).`);
         },
       },
     ],
@@ -260,6 +283,12 @@ export function ExportPickerDialog() {
   const open = useDocumentStore((s) => s.exportPickerOpen);
   const close = useDocumentStore((s) => s.closeExportPicker);
   const diagramType = useDocumentStore((s) => s.doc.diagramType);
+  // Session 134 — surfaced separately so the `requiresEntityType` filter
+  // below can short-circuit on docs that have no UDEs without forcing a
+  // full doc-tree subscription.
+  const hasAnyUde = useDocumentStore((s) =>
+    Object.values(s.doc.entities).some((e) => e.type === 'ude')
+  );
 
   if (!open) return null;
 
@@ -283,7 +312,11 @@ export function ExportPickerDialog() {
     >
       <div className="flex flex-col gap-4 overflow-y-auto pr-1">
         {EXPORT_CATEGORIES.map((cat) => {
-          const visible = cat.items.filter((it) => !it.onlyOnECDoc || diagramType === 'ec');
+          const visible = cat.items.filter((it) => {
+            if (it.onlyOnECDoc && diagramType !== 'ec') return false;
+            if (it.requiresEntityType === 'ude' && !hasAnyUde) return false;
+            return true;
+          });
           if (visible.length === 0) return null;
           return (
             <section key={cat.title} className="flex flex-col gap-1.5">

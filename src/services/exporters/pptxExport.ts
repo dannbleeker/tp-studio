@@ -54,6 +54,7 @@ const DIAGRAM_LABELS: Record<TPDocument['diagramType'], string> = {
   st: 'Strategy & Tactics Tree',
   goalTree: 'Goal Tree',
   freeform: 'Freeform Diagram',
+  nbr: 'Negative Branch Reservation',
 };
 
 /**

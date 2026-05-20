@@ -118,6 +118,18 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     ...STRUCTURAL_RULES,
     tieredRule('clarity', 'goalTree-multiple-goals', goalTreeMultipleGoalsRule),
   ],
+  // Session 134 / spec major gap #5 — NBR runs the FRT rule set:
+  // structural rules + cause-sufficiency + additional-cause (with the
+  // additional-cause target widened to either `ude` or `desiredEffect`,
+  // since NBR carries both) + predicted-effect-existence. The
+  // negative-branch shape is essentially "an FRT subtree that ends in
+  // UDEs instead of desired effects," so the rules transfer cleanly.
+  nbr: [
+    ...STRUCTURAL_RULES,
+    tieredRule('sufficiency', 'cause-sufficiency', causeSufficiencyRule),
+    tieredRule('sufficiency', 'additional-cause', additionalCauseRuleFor('ude')),
+    tieredRule('existence', 'predicted-effect-existence', predictedEffectExistenceRule),
+  ],
 };
 
 /**

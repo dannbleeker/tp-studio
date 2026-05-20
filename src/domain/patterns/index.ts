@@ -22,6 +22,7 @@ import { buildExampleCRT } from '../examples/crt';
 import { buildExampleEC } from '../examples/ec';
 import { buildExampleFRT } from '../examples/frt';
 import { buildExampleGoalTree } from '../examples/goalTree';
+import { buildExampleNBR } from '../examples/nbr';
 import { buildExamplePRT } from '../examples/prt';
 import { buildExampleST } from '../examples/st';
 import { buildExampleTT } from '../examples/tt';
@@ -102,6 +103,15 @@ export const PATTERNS: Pattern[] = [
     hint: 'Canonical Outcome ← (Precondition + Action) triples joined by AND junctors, including one unspecified precondition.',
     diagramType: 'tt',
     build: buildExampleTT,
+  },
+
+  // ── NBR ────────────────────────────────────────────────────────────
+  {
+    id: 'nbr-qa-gate',
+    label: 'QA gate Negative Branch Reservation',
+    hint: 'Software-team NBR — QA-gate injection spawns slower releases + lost competitive edge; proactive mitigation swaps to test-suite hardening.',
+    diagramType: 'nbr',
+    build: buildExampleNBR,
   },
 
   // ── Goal Tree ─────────────────────────────────────────────────────

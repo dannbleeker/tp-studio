@@ -42,6 +42,10 @@ export const LAYOUT_STRATEGY: Record<DiagramType, LayoutStrategy> = {
   // make `freeform` default to manual layout so every node is hand-
   // placed by default — for now, auto + drag-pin is the cheapest path.
   freeform: 'auto',
+  // Session 134 / spec major gap #5 — NBR is a forward-causal tree
+  // like FRT; auto-layout via dagre gives the right visual default
+  // (injection at the bottom, UDEs at the top).
+  nbr: 'auto',
   // Session 77: Goal Tree — strict top-to-bottom hierarchy. Auto-layout
   // handles it cleanly via dagre with `direction: 'TB'`.
   goalTree: 'auto',
@@ -76,4 +80,5 @@ export const HANDLE_ORIENTATION: Record<DiagramType, HandleOrientation> = {
   st: 'vertical',
   freeform: 'vertical',
   goalTree: 'vertical',
+  nbr: 'vertical',
 };
