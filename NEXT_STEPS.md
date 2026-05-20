@@ -132,6 +132,10 @@ A 14-section requirements doc Dann brought in for review (research brief on "wha
 - **Stakeholder sign-off workflow** — depends on multi-user collaboration.
 - **Pattern library / benchmarking / portfolio view** — V2 spec items; not present.
 
+### Loose-end follow-ups from Session 134
+
+- **PPTX export e2e Playwright spec.** Major gap #10 (PowerPoint deck) shipped Session 134 with unit tests for the pure helpers (`chunkForTest`, `buildSentencesForTest`) but no end-to-end test of `exportPPTX`. The full pipeline drives pptxgenjs's `writeFile` → `URL.createObjectURL` → synthetic anchor click, which jsdom doesn't model. Path forward: add `e2e/pptx-export.spec.ts` that opens a seeded CRT, invokes the Export… picker, clicks "PowerPoint deck (.pptx)", and asserts the download lands (Playwright's `page.waitForEvent('download')`). Should also unzip the resulting `.pptx` (it's a ZIP of XML) and grep for the doc title + at least one edge sentence as a sanity check. ~half a session.
+
 ### Suggested priority order if closing gaps
 
 1. **Cross-diagram traceability** (major gap #3). Most foundational. Schema-addition + UI. ~2–3 sessions.

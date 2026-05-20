@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — Test coverage push round 2 (+1.6pp overall, MarkdownPreview 0 → 91%)
+
+Second pass through the medium-gap modules identified by v8 coverage. Overall numbers: 76.99% → **78.6%** statements, 79.86% → **81.34%** lines. 44 new tests bringing the suite to 1422 + 1 todo. Plus filed the PPTX e2e Playwright-spec follow-up in NEXT_STEPS so the gap doesn't get lost.
+
+- **`MarkdownPreview.tsx`** (was 0%): 7 new tests covering empty-source placeholder, whitespace-only fallback, headings + lists render, the `[data-entity-ref]` click delegator (FL-AN5 cross-reference navigation), the Enter-key keyboard equivalent, and the non-ref click no-op. **0% → 90.9%.**
+- **`useSelectionShortcuts.ts`** (was 36.7%): 13 new tests, one per `// reg:` branch in the hook source. Tab / Shift+Tab for add-child / add-parent, Enter for begin-editing vs hoist-group, `A` for add-assumption-to-edge, Arrow Up / Down for cause / effect nav, Cmd+Shift+Arrow for select-successors / select-predecessors, group ArrowRight / ArrowLeft for expand / collapse, and the editable-target ignore branch. **36.7% → 82.65%.**
+- **`SearchPanel.tsx`** (was 40%): 7 new tests covering closed render, open with chrome, "No matches" empty state, match-count formatting, Escape close, Enter / Shift+Enter advance, and live-query update. **40% → 71.66%.**
+- **`CustomEntityClassesSection.tsx`** (was 23.4%): 4 new tests — no-classes state, listing existing classes, open-add-form interaction, store round-trip. **23.4% → 42.18%.**
+- **`MultiInspector.tsx`** (was 34%): 6 new smoke tests fill the gaps left by the pre-existing `MultiInspector.test.tsx` — entity-multi "N selected" summary, mixed-types and same-type variants, null guard, convert-to button mutation, edge-multi summary. **34% → ~50%.**
+- **`CreationWizardPanel.tsx`** (was 44%): 4 new tests for closed render, Goal Tree mount, EC mount, minimised-toggle. Deeper step-conditional rendering paths remain uncovered — needs a follow-up that walks the wizard step-by-step. **44% → 45%** (small lift; flagged for a later focused session).
+
+**Filed in NEXT_STEPS**: PPTX export e2e Playwright spec (`e2e/pptx-export.spec.ts`) as a loose-end follow-up from the Session 134 PowerPoint export. The full pipeline drives `pptxgenjs.writeFile` → `URL.createObjectURL` → synthetic anchor click, which jsdom doesn't model — covered by the unit tests on the pure helpers; an e2e is the right shape for the integration test.
+
+All 1422 tests pass; tsc clean.
+
 ## Session 134 — Test coverage push (+5pp overall, +70pp on command palette)
 
 Audit-driven coverage lift on areas the v8 report flagged as thin. Overall numbers: 72.0% → 76.99% statements, 74.4% → 79.86% lines. Targeted modules:
