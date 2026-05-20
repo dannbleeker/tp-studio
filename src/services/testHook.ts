@@ -142,6 +142,19 @@ export interface TpTestHook {
    * test boundary.
    */
   getEntityType: (id: string) => string | null;
+  /**
+   * Session 134 — set the document title from e2e. Used by the PPTX
+   * export spec so the test can assert a known-distinctive title
+   * appears in the unzipped slide XML.
+   */
+  setDocTitle: (title: string) => void;
+  /**
+   * Session 134 — open the Export… picker from e2e. The PPTX export
+   * spec invokes the picker programmatically (rather than via the
+   * palette) so it doesn't need to drive the palette query input,
+   * which is irrelevant to the PPTX-export contract under test.
+   */
+  openExportPicker: () => void;
 }
 
 /**
@@ -222,6 +235,8 @@ export const maybeInstallTestHook = (): void => {
     openSettings: () => useDocumentStore.getState().openSettings(),
     newDocument: (diagramType) => useDocumentStore.getState().newDocument(diagramType),
     getEntityType: (id) => useDocumentStore.getState().doc.entities[id]?.type ?? null,
+    setDocTitle: (title) => useDocumentStore.getState().setTitle(title),
+    openExportPicker: () => useDocumentStore.getState().openExportPicker(),
   };
   // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an
   // optional `TpTestHook` — no `as any` cast needed. The opt-in URL

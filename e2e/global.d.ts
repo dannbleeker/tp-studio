@@ -30,6 +30,9 @@ interface TpTestHook {
   // Session 108 — edit-heavy perf trace scenario.
   editEntityTitle: (id: string, title: string) => void;
   listEntityIds: () => string[];
+  // Session 134 — PPTX export e2e.
+  setDocTitle: (title: string) => void;
+  openExportPicker: () => void;
 }
 
 declare global {

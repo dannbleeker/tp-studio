@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — PPTX export e2e Playwright spec (closes Session-134 loose end)
+
+New `e2e/pptx-export.spec.ts` covers the full PowerPoint deck export pipeline that the unit tests can't reach (pptxgenjs's `writeFile` → `URL.createObjectURL` → synthetic anchor click doesn't model in jsdom; Playwright intercepts the synthetic-click download natively).
+
+The spec:
+
+1. Seeds a CRT with distinctive cause / effect titles + a distinctive doc title via `__TP_TEST__.seed` + `connect` + new `setDocTitle` hook.
+2. Opens the Export… picker via new `openExportPicker` hook (skipping the palette UI which is a separate concern).
+3. Clicks the **PowerPoint deck (.pptx)** card; catches the synthetic-anchor download via `page.waitForEvent('download', { timeout: 30_000 })` (30s covers the cold-load of the lazy `pptxgenjs` chunk).
+4. Asserts the `.pptx` filename slug matches (`slug(docTitle)` + `.pptx`), saves to `testInfo.outputPath('exported.pptx')` so failed runs leave the artefact for inspection.
+5. Unzips the `.pptx` via `jszip` (added as a devDependency — was already a transitive dep of pptxgenjs), walks every `ppt/slides/slideN.xml`, concatenates the slide text, and asserts the doc title + both endpoint titles all appear at least once. Covers the cover slide AND the reasoning slides without depending on slide ordering.
+6. Bonus assertion on `docProps/app.xml` validates the pptxgenjs metadata write (`pptx.title = doc.title`).
+
+Two new test hooks added (`setDocTitle`, `openExportPicker`) — also reflected in `e2e/global.d.ts`. Runs on every push via the CI workflow's `e2e` job.
+
 ## Session 134 — Entity ownership field + NEXT_STEPS backlog cleanup
 
 Two-track ship + tidy.
