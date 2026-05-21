@@ -16,7 +16,9 @@ import { indirectEffectRule } from './indirectEffect';
 import { predictedEffectExistenceRule } from './predictedEffectExistence';
 import { type TieredRule, tieredRule } from './shared';
 import { stTacticAssumptionsRule } from './stTacticAssumptions';
+import { stTacticRollupRule } from './stTacticRollup';
 import { tautologyRule } from './tautology';
+import { ttActionLocusUnsetRule } from './ttActionLocusUnset';
 
 /**
  * Per-diagram CLR rule sets. Each rule is a `ValidatorRule` imported from
@@ -79,7 +81,15 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
   // feeding its Outcome. Tier 'sufficiency' because the question is
   // "are these causes enough on their own?" rather than "do these
   // entities exist?"
-  tt: [...STRUCTURAL_RULES, tieredRule('sufficiency', 'complete-step', completeStepRule)],
+  tt: [
+    ...STRUCTURAL_RULES,
+    tieredRule('sufficiency', 'complete-step', completeStepRule),
+    // Session 135 — TT action-locus discipline. Fires on `action`
+    // entities without `spanOfControl` set. Tier `clarity` — same
+    // taxonomic slot as the existing `external-root-cause` mental-
+    // model nudge.
+    tieredRule('clarity', 'tt-action-locus-unset', ttActionLocusUnsetRule),
+  ],
   // EC (A1): structural rules plus the missing-conflict check. The book
   // makes the conflict between the two Wants explicit via an edge; without
   // such an edge, an EC is structurally incomplete. The "both wants point
@@ -104,6 +114,11 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
   st: [
     ...STRUCTURAL_RULES,
     tieredRule('clarity', 'st-tactic-assumptions', stTacticAssumptionsRule),
+    // Session 135 — S&T tactic-rollup structural check. Fires on
+    // non-apex `injection` (tactic) entities that lack child
+    // tactics. Tier `sufficiency` (parallel to `cause-sufficiency`
+    // and `complete-step`).
+    tieredRule('sufficiency', 'st-tactic-rollup', stTacticRollupRule),
   ],
   // FL-DT5 — Freeform diagrams skip every type-pattern-matching CLR rule
   // by definition (no built-in TOC types in the canonical palette). Only

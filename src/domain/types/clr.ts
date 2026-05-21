@@ -70,7 +70,22 @@ export type ClrRuleId =
   // and continue, OR click the action button to convert extra goals
   // into Critical Success Factors. Dettmer's pattern is single-apex
   // but TP Studio doesn't enforce it as a hard constraint.
-  | 'goalTree-multiple-goals';
+  | 'goalTree-multiple-goals'
+  // Session 135 / medium-gap close — TT action-locus check. The method
+  // checklist asks "Test against your locus — control / influence /
+  // external" but until now the validator suite didn't enforce it.
+  // Fires on `action` entities without an explicit `spanOfControl`
+  // set. Tier: clarity (the question is "have you stated this in a
+  // way you can act on?"). One row per under-specified action.
+  | 'tt-action-locus-unset'
+  // Session 135 / medium-gap close — S&T tactic-rollup sufficiency.
+  // Goldratt's S&T pattern: every tactic at a given layer must
+  // decompose into child tactics that, taken together, are sufficient
+  // for the parent. We can't check semantic sufficiency, but we CAN
+  // check that a non-leaf `injection` (tactic) has at least one
+  // child injection feeding it via the structural graph. A tactic
+  // with no children that ISN'T explicitly marked leaf is suspicious.
+  | 'st-tactic-rollup';
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each

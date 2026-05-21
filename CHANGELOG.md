@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Two new CLR validators (closes two medium-gap items)
+
+Two single-session medium-gap rule additions. Both follow the existing CLR validator pattern (one file per rule, registered in `validators/index.ts` via `tieredRule(tier, id, fn)`).
+
+**`tt-action-locus-unset`** (`src/domain/validators/ttActionLocusUnset.ts`). Fires on `action` entities without a `spanOfControl` set. The TT method-checklist already prompts the user to "test each action against your locus" but no validator enforced it — actions could ship with the field unset and sail through the CLR sweep. Tier: `clarity` (same slot as the existing `external-root-cause` mental-model nudge). Skips unspecified-placeholder actions (demanding locus on an un-articulated slot is premature). Wired into the TT diagram registry only — CRT / FRT etc. don't fire even if they contain action entities.
+
+**`st-tactic-rollup`** (`src/domain/validators/stTacticRollup.ts`). Fires on non-apex `injection` (tactic) entities that have a parent (outgoing edges) but no children (no incoming edges) feeding them. Goldratt's S&T pattern: every non-leaf tactic should structurally decompose into sub-tactics. Tier: `sufficiency` (parallel to `cause-sufficiency` and `complete-step`). Apex tactics (no outgoing) and intermediate tactics (both directions) are correctly skipped. Wired into the S&T diagram registry only.
+
+**Type additions** in `src/domain/types/clr.ts`: `'tt-action-locus-unset'` and `'st-tactic-rollup'` added to the `ClrRuleId` union with explanatory comments.
+
+**17 new tests** across `tests/domain/ttActionLocusUnset.test.ts` (9) + `tests/domain/stTacticRollup.test.ts` (8). Each rule's test file covers: positive case fires, every non-firing case (different entity types, all `spanOfControl` values, unspecified placeholders), per-entity firing (3 actions → 3 warnings), wiring through the central `validate()` registry, and the diagram-type gating (only fires on the rule's target diagram).
+
+NEXT_STEPS medium-gap section: both items struck through.
+
+All 1627 tests pass (+17); tsc clean; biome lint clean.
+
 ## Session 135 — App-mode Phase 1C: Guided wizard force-show + Presentation step-through
 
 Phase 1C closes the formal mode-switching loop. All four modes now have visible, distinct behaviour.
