@@ -34,13 +34,17 @@ describe('pointToSegmentDistanceSq', () => {
 });
 
 describe('findSpliceTargetEdge', () => {
-  const mkEdge = (id: string, sourceId: string, targetId: string): Edge =>
-    ({
-      id,
-      sourceId,
-      targetId,
-      kind: 'sufficiency',
-    }) as unknown as Edge;
+  // `id` / `sourceId` / `targetId` are branded string types
+  // (`EdgeId` / `EntityId`); narrow casts on each field replace the
+  // older one-shot `as unknown as Edge` so the intent reads "these
+  // plain strings stand in as branded ids" instead of "bypass the
+  // type-check entirely".
+  const mkEdge = (id: string, sourceId: string, targetId: string): Edge => ({
+    id: id as Edge['id'],
+    sourceId: sourceId as Edge['sourceId'],
+    targetId: targetId as Edge['targetId'],
+    kind: 'sufficiency',
+  });
 
   it('returns null when no edge is within tolerance', () => {
     const result = findSpliceTargetEdge({

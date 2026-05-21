@@ -1,8 +1,9 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
-import type { FinalConnectionState, InternalNode } from '@xyflow/react';
+import type { FinalConnectionState } from '@xyflow/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useGraphMutations } from '@/components/canvas/hooks/useGraphMutations';
 import { resetStoreForTest, useDocumentStore } from '@/store';
+import { mockFinalConnectionState, mockMouseEvent } from '../helpers/reactFlowFixtures';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);
@@ -20,38 +21,23 @@ afterEach(cleanup);
  * the hook routes it correctly. The test focuses on the *bridging logic*,
  * which is the new code; the drag-to-handle path stays exercised by
  * existing canvas tests.
+ *
+ * Session 135 — migrated from local `fakeNode` / `finalStateOverBody` /
+ * `finalStateOverEmptyCanvas` helpers (each carrying its own
+ * `as unknown as` cast) to the shared `mockFinalConnectionState`
+ * fixture in `tests/helpers/reactFlowFixtures.ts`. The fixture knows
+ * the production hook only reads `toHandle` + `fromNode.id` +
+ * `toNode.id` + `isValid`, so the minimal-payload it returns matches
+ * production's actual surface area.
  */
 
-const fakeNode = (id: string): InternalNode =>
-  ({ id, position: { x: 0, y: 0 }, data: {} }) as unknown as InternalNode;
-
 const finalStateOverBody = (fromId: string, toId: string): FinalConnectionState =>
-  ({
-    fromHandle: { id: null, type: 'source', nodeId: fromId, position: 'top' },
-    fromNode: fakeNode(fromId),
-    fromPosition: 'top',
-    isValid: true,
-    to: { x: 0, y: 0 },
-    toHandle: null,
-    toNode: fakeNode(toId),
-    toPosition: 'bottom',
-    pointer: { x: 0, y: 0 },
-  }) as unknown as FinalConnectionState;
+  mockFinalConnectionState({ fromId, toId, isValid: true });
 
 const finalStateOverEmptyCanvas = (fromId: string): FinalConnectionState =>
-  ({
-    fromHandle: { id: null, type: 'source', nodeId: fromId, position: 'top' },
-    fromNode: fakeNode(fromId),
-    fromPosition: 'top',
-    isValid: false,
-    to: { x: 0, y: 0 },
-    toHandle: null,
-    toNode: null,
-    toPosition: 'bottom',
-    pointer: { x: 0, y: 0 },
-  }) as unknown as FinalConnectionState;
+  mockFinalConnectionState({ fromId, toId: null, isValid: false });
 
-const fakeEvent = new MouseEvent('mouseup');
+const fakeEvent = mockMouseEvent();
 
 describe('useGraphMutations.onConnectEnd', () => {
   it('connects when released over a target node body (no handle hit)', () => {
@@ -88,10 +74,12 @@ describe('useGraphMutations.onConnectEnd', () => {
     // fire a second connect in that case.
     const a = seedEntity('A');
     const b = seedEntity('B');
-    const withHandle: FinalConnectionState = {
-      ...finalStateOverBody(a.id, b.id),
-      toHandle: { id: null, type: 'target', nodeId: b.id, position: 'bottom' } as never,
-    };
+    const withHandle: FinalConnectionState = mockFinalConnectionState({
+      fromId: a.id,
+      toId: b.id,
+      isValid: true,
+      toHandle: { nodeId: b.id },
+    });
     const { result } = renderHook(() => useGraphMutations());
     act(() => result.current.onConnectEnd(fakeEvent, withHandle));
     expect(Object.values(useDocumentStore.getState().doc.edges)).toHaveLength(0);

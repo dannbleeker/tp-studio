@@ -1,6 +1,7 @@
 import type { Node } from '@xyflow/react';
 import { describe, expect, it } from 'vitest';
 import { exportJPEG, exportPNG, exportSVG } from '@/services/exporters/image';
+import { makeDoc } from '../domain/helpers';
 
 /**
  * The three image exporters delegate the heavy lifting to `html-to-image`,
@@ -16,9 +17,14 @@ import { exportJPEG, exportPNG, exportSVG } from '@/services/exporters/image';
  * Both early-returns prevent the dynamic-import of `html-to-image` from
  * firing, which is the safe thing to do in a test environment where the
  * downloaded file can't go anywhere.
+ *
+ * Session 135 — `fakeDoc` was originally `{ title: 'Test' } as unknown
+ * as Parameters<…>[0]` to bypass the full TPDocument shape. Now uses
+ * the proper `makeDoc([], [])` builder so the cast is gone and the
+ * test reads as a real (empty) TPDocument.
  */
 
-const fakeDoc = { title: 'Test' } as unknown as Parameters<typeof exportPNG>[0];
+const fakeDoc = makeDoc([], []);
 
 describe('image exporters (early-return paths)', () => {
   it('exportPNG returns without throwing when nodes is empty', async () => {
