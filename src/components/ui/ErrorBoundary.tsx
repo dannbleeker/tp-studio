@@ -80,7 +80,14 @@ export class ErrorBoundary extends Component<Props, State> {
               <span className="font-semibold">{this.props.label} failed to render</span>
             </div>
             {error.message && (
-              <pre className="mt-2 overflow-x-auto rounded-md bg-white/70 px-2 py-1.5 font-mono text-[11px] text-neutral-700 dark:bg-neutral-950/60 dark:text-neutral-200">
+              // tabIndex makes the scrollable region keyboard-accessible
+              // (axe `scrollable-region-focusable`). Without it, users on
+              // keyboard-only setups can't reach overflowed error text.
+              <pre
+                // biome-ignore lint/a11y/noNoninteractiveTabindex: axe scrollable-region-focusable requires keyboard focus on overflow-x-auto regions; Biome's "<pre> isn't interactive" check loses to the runtime accessibility rule.
+                tabIndex={0}
+                className="mt-2 overflow-x-auto rounded-md bg-white/70 px-2 py-1.5 font-mono text-[11px] text-neutral-700 dark:bg-neutral-950/60 dark:text-neutral-200"
+              >
                 {error.message}
               </pre>
             )}
@@ -106,7 +113,13 @@ export class ErrorBoundary extends Component<Props, State> {
             Your document is autosaved — reloading should bring it back intact.
           </p>
           {error.message && (
-            <pre className="mt-3 overflow-x-auto rounded-md bg-neutral-100 px-3 py-2 font-mono text-[11px] text-neutral-700 dark:bg-neutral-950 dark:text-neutral-300">
+            // tabIndex makes the scrollable region keyboard-accessible
+            // (axe `scrollable-region-focusable`).
+            <pre
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: axe scrollable-region-focusable requires keyboard focus on overflow-x-auto regions; Biome's "<pre> isn't interactive" check loses to the runtime accessibility rule.
+              tabIndex={0}
+              className="mt-3 overflow-x-auto rounded-md bg-neutral-100 px-3 py-2 font-mono text-[11px] text-neutral-700 dark:bg-neutral-950 dark:text-neutral-300"
+            >
               {error.message}
             </pre>
           )}
