@@ -59,7 +59,7 @@ describe('CustomEntityClassesSection', () => {
     // Row label is visible.
     expect(screen.getByText(/Risk/)).toBeTruthy();
     // And the store carries the class.
-    expect(s().doc.customEntityClasses?.['risk']).toBeDefined();
+    expect(s().doc.customEntityClasses?.risk).toBeDefined();
   });
 
   it('remove button on a class row deletes the class', () => {
@@ -71,7 +71,7 @@ describe('CustomEntityClassesSection', () => {
     render(<CustomEntityClassesSection />);
     const remove = screen.getByLabelText(/Remove Risk/i);
     fireEvent.click(remove);
-    expect(s().doc.customEntityClasses?.['risk']).toBeUndefined();
+    expect(s().doc.customEntityClasses?.risk).toBeUndefined();
   });
 
   it('does not commit when the new-class id is empty', () => {
@@ -122,7 +122,7 @@ describe('CustomEntityClassesSection', () => {
       .find((b) => /save|commit|create/i.test(b.textContent ?? ''));
     if (!saveButton) return;
     fireEvent.click(saveButton);
-    expect(s().doc.customEntityClasses?.['evidence']).toBeDefined();
-    expect(s().doc.customEntityClasses?.['evidence']?.label).toBe('Evidence');
+    expect(s().doc.customEntityClasses?.evidence).toBeDefined();
+    expect(s().doc.customEntityClasses?.evidence?.label).toBe('Evidence');
   });
 });

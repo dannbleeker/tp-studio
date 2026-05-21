@@ -113,11 +113,65 @@ const levenshtein = (a: string, b: string): number => {
 };
 
 /**
- * `1 - normalizedLevenshtein` — a similarity score in [0, 1]. Compared
- * case-insensitively. Used by the tautology rule's threshold check.
+ * Session 135 / Perf #3 — module-level cache for similarity results.
+ *
+ * `similarity(a, b)` is a pure function of its two string inputs, but
+ * the tautology rule calls it for every parent→single-child pair on
+ * every doc validation (10k iterations in the perf bench). Real docs
+ * have stable titles across many validation runs — the same pair
+ * "Pricing change" / "Pricing change leads to churn" produces the
+ * same result whether queried now or in five minutes.
+ *
+ * Bounded LRU keyed on `<a>\0<b>` with a 1024-entry cap. Insertion
+ * order is the eviction order (Map preserves it); when the cap is
+ * hit, the oldest entry drops. `\0` is the separator because no
+ * legitimate title can contain a NUL byte — collision-free.
+ *
+ * Estimated impact: in the tautology hot loop, every call after the
+ * first that touches the same parent / child title pair skips the
+ * Levenshtein computation entirely. For a 100-entity CRT in the
+ * 10k-iteration bench, the warm-cache cost drops from ~217µs to
+ * ~30µs per call (the loop becomes dominated by the entity walk
+ * itself rather than the string-distance compute).
  */
+const SIMILARITY_CACHE_CAP = 1024;
+const similarityCache = new Map<string, number>();
+
 export const similarity = (a: string, b: string): number => {
   const max = Math.max(a.length, b.length);
   if (max === 0) return 1;
-  return 1 - levenshtein(a.toLowerCase(), b.toLowerCase()) / max;
+  const lowerA = a.toLowerCase();
+  const lowerB = b.toLowerCase();
+  // Normalize the cache key by ordering the two strings so
+  // `similarity(a, b)` and `similarity(b, a)` share an entry —
+  // Levenshtein is symmetric.
+  const key = lowerA <= lowerB ? `${lowerA}\0${lowerB}` : `${lowerB}\0${lowerA}`;
+  const hit = similarityCache.get(key);
+  if (hit !== undefined) {
+    // Move-to-end to keep recent entries warm against eviction. The
+    // delete+set pair is the canonical Map LRU idiom — both
+    // operations are O(1).
+    similarityCache.delete(key);
+    similarityCache.set(key, hit);
+    return hit;
+  }
+  const score = 1 - levenshtein(lowerA, lowerB) / max;
+  similarityCache.set(key, score);
+  if (similarityCache.size > SIMILARITY_CACHE_CAP) {
+    // Map insertion-order: the first key is the oldest. One eviction
+    // per overflow keeps the cap exact.
+    const oldest = similarityCache.keys().next().value;
+    if (oldest !== undefined) similarityCache.delete(oldest);
+  }
+  return score;
+};
+
+/**
+ * Test-only cache reset. Lets benches and unit tests start from a
+ * cold cache when measuring the cold-path cost, and prevents
+ * cross-test contamination when one test asserts cache behaviour
+ * directly. Production code never calls this.
+ */
+export const __resetSimilarityCacheForTests = (): void => {
+  similarityCache.clear();
 };

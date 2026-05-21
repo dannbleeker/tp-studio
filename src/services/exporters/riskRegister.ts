@@ -1,4 +1,4 @@
-import { incomingEdges } from '@/domain/graph';
+import { incomingEdges, outgoingEdges } from '@/domain/graph';
 import type { Entity, EvidenceItem, TPDocument } from '@/domain/types';
 import { slug, triggerDownload } from './shared';
 
@@ -68,34 +68,74 @@ const triggerFor = (doc: TPDocument, ude: Entity): string => {
 };
 
 /**
- * Walk the doc for injection / desiredEffect entities reachable
- * BACKWARD from the UDE (i.e. would-be ancestors in the causal
- * graph). These are the mitigations: an injection or DE that, if
- * adopted, breaks the chain leading to the UDE.
+ * Session 135 / Perf #4 — pre-compute the UDE → mitigation-titles map
+ * in one pass.
  *
- * Returns "(no mitigation)" when the UDE has no injection ancestors
- * — that's the open-risk state.
+ * Original implementation ran a backward BFS *per UDE*, allocating a
+ * fresh `visited` Set + `queue` each call. On a doc with 100 UDEs
+ * sharing mitigation ancestors that's ~15k+ edge visits, dominated
+ * by re-scanning the same subgraph multiple times.
+ *
+ * The forward-only inversion: each injection / desiredEffect is a
+ * mitigation. BFS forward from each mitigation finds every UDE that
+ * mitigation reaches. Map<UDEId, mitigationTitles[]> built once;
+ * per-UDE lookup is O(1).
+ *
+ * Complexity drops from O(U·E) where U = UDE count to O(M·E + U)
+ * where M = mitigation count. On the worst-case 100-UDE doc this is
+ * ~30x fewer edge visits.
  */
-const mitigationsFor = (doc: TPDocument, ude: Entity): string => {
-  const visited = new Set<string>();
-  const queue: string[] = [ude.id];
-  const found: string[] = [];
-  while (queue.length > 0) {
-    const next = queue.shift();
-    if (!next || visited.has(next)) continue;
-    visited.add(next);
-    for (const edge of incomingEdges(doc, next)) {
-      const src = doc.entities[edge.sourceId];
-      if (!src) continue;
-      if (src.type === 'injection' || src.type === 'desiredEffect') {
-        const title = src.title.trim();
-        if (title.length > 0 && !found.includes(title)) found.push(title);
-      }
-      queue.push(src.id);
+const buildMitigationsByUde = (doc: TPDocument): Map<string, string[]> => {
+  const result = new Map<string, string[]>();
+  // First, collect all candidate mitigations (injection + desiredEffect
+  // entities). Walking by type avoids the per-entity filter in the
+  // BFS loop.
+  const mitigations: Entity[] = [];
+  for (const e of Object.values(doc.entities)) {
+    if (e.type === 'injection' || e.type === 'desiredEffect') {
+      const title = e.title.trim();
+      if (title.length > 0) mitigations.push(e);
     }
   }
-  return found.length === 0 ? '(no mitigation)' : found.join('; ');
+  // Forward-BFS from each mitigation; record the mitigation's title
+  // against every UDE reached. The `seenForThisMitigation` Set
+  // prevents duplicate entries when one mitigation reaches the same
+  // UDE via multiple paths.
+  for (const m of mitigations) {
+    const title = m.title.trim();
+    const visited = new Set<string>([m.id]);
+    const queue: string[] = [m.id];
+    while (queue.length > 0) {
+      const next = queue.shift();
+      if (!next) continue;
+      for (const edge of outgoingEdges(doc, next)) {
+        const targetId = edge.targetId;
+        if (visited.has(targetId)) continue;
+        visited.add(targetId);
+        const tgt = doc.entities[targetId];
+        if (!tgt) continue;
+        if (tgt.type === 'ude') {
+          let list = result.get(targetId);
+          if (!list) {
+            list = [];
+            result.set(targetId, list);
+          }
+          if (!list.includes(title)) list.push(title);
+        }
+        queue.push(targetId);
+      }
+    }
+  }
+  return result;
 };
+
+/**
+ * Render the mitigation cell for one UDE, given the pre-computed map.
+ * Returns "(no mitigation)" — the open-risk state — when no mitigation
+ * was found reaching this UDE.
+ */
+const formatMitigations = (titles: string[] | undefined): string =>
+  titles && titles.length > 0 ? titles.join('; ') : '(no mitigation)';
 
 /**
  * Pull the entity's owner. Prefers the dedicated `entity.owner` field
@@ -151,8 +191,12 @@ export const buildRiskRegisterCsv = (doc: TPDocument): string => {
     .filter((e) => e.type === 'ude')
     .sort((a, b) => a.annotationNumber - b.annotationNumber);
 
+  // Session 135 / Perf #4 — one BFS pass instead of one per UDE.
+  // See `buildMitigationsByUde` for the inversion rationale.
+  const mitigationsByUde = buildMitigationsByUde(doc);
+
   for (const ude of udes) {
-    const mitigation = mitigationsFor(doc, ude);
+    const mitigation = formatMitigations(mitigationsByUde.get(ude.id));
     const status = mitigation === '(no mitigation)' ? 'open' : 'mitigated';
     lines.push(
       row([

@@ -50,17 +50,87 @@ export const entitiesArray = (doc: TPDocument): readonly Entity[] => {
   return cached;
 };
 
-// Session 108 — `Object.values(doc.edges)` migrated to the cached
-// `edgesArray(doc)` helper added Session 105. These four helpers are
-// called from validators (`reach`, `cycle`), the UDE-reach badge,
-// connection-existence checks during edge creation, and the
-// `connectionCount` reach badge. All run on every doc change; the
-// cached array is reused across all callers within one doc state.
-export const incomingEdges = (doc: TPDocument, entityId: string): Edge[] =>
-  edgesArray(doc).filter((e) => e.targetId === entityId);
+/**
+ * Session 135 / Perf #1 — per-doc-reference edge index.
+ *
+ * `incomingEdges` / `outgoingEdges` were the highest-frequency
+ * O(E) call in the codebase: every validator that loops entities
+ * called them once per entity, turning N entities × E edges into a
+ * cumulative O(N·E) scan. `edgesArray(doc)` already cached the array
+ * itself, but each filter call still walked every edge.
+ *
+ * The fix is a single forward pass per doc reference that builds two
+ * indices keyed by `sourceId` and `targetId`. Lookups against the
+ * indices are O(1) array fetches (matching the existing
+ * `entitiesByType` pattern). Cache invalidation is automatic via
+ * `WeakMap` keyed on the doc's edges reference — the store's
+ * immutable updates produce a new edges-map reference on every
+ * mutation, so the next call rebuilds. Old refs GC normally.
+ *
+ * The returned arrays are `readonly` to enforce non-mutation: callers
+ * that need to sort/filter must `.slice()` first or use `Array.from`.
+ * `incomingEdges` / `outgoingEdges` return the cached array directly
+ * (not a defensive copy) because the typing prevents the dozens of
+ * callers from mutating it; the wins from sharing references outweigh
+ * the (very small) blast radius if a caller ignores `readonly`.
+ *
+ * Estimated impact (per Session-135 bench): tautology rule drops
+ * from ~217µs to ~80µs at 100 entities; the saving scales linearly
+ * with entity count and dominates as the graph grows.
+ */
+type EdgeIndex = {
+  bySource: ReadonlyMap<string, readonly Edge[]>;
+  byTarget: ReadonlyMap<string, readonly Edge[]>;
+};
 
-export const outgoingEdges = (doc: TPDocument, entityId: string): Edge[] =>
-  edgesArray(doc).filter((e) => e.sourceId === entityId);
+const EMPTY_EDGE_LIST: readonly Edge[] = Object.freeze([]) as readonly Edge[];
+
+const edgeIndexCache = new WeakMap<TPDocument['edges'], EdgeIndex>();
+
+const buildEdgeIndex = (edges: TPDocument['edges']): EdgeIndex => {
+  const bySource = new Map<string, Edge[]>();
+  const byTarget = new Map<string, Edge[]>();
+  for (const edge of Object.values(edges)) {
+    let outs = bySource.get(edge.sourceId);
+    if (!outs) {
+      outs = [];
+      bySource.set(edge.sourceId, outs);
+    }
+    outs.push(edge);
+    let ins = byTarget.get(edge.targetId);
+    if (!ins) {
+      ins = [];
+      byTarget.set(edge.targetId, ins);
+    }
+    ins.push(edge);
+  }
+  return { bySource, byTarget };
+};
+
+const edgeIndex = (doc: TPDocument): EdgeIndex => {
+  let cached = edgeIndexCache.get(doc.edges);
+  if (cached === undefined) {
+    cached = buildEdgeIndex(doc.edges);
+    edgeIndexCache.set(doc.edges, cached);
+  }
+  return cached;
+};
+
+/**
+ * Session 108 → Session 135 — these helpers were O(E) per call
+ * (filter over `edgesArray`); now O(1) via the per-doc edge index
+ * above. Existing call shapes unchanged so the 40+ callers across
+ * validators, exporters, layout, and inspector keep working without
+ * edits. Returns the indexed cached array (typed `readonly`) — the
+ * old `Edge[]` return type became `readonly Edge[]`. Two callers
+ * (`reachableForward` / `reachableBackward`'s spread-into-queue and
+ * `findPath`'s `.map`) consume the value as iterable, both safe.
+ */
+export const incomingEdges = (doc: TPDocument, entityId: string): readonly Edge[] =>
+  edgeIndex(doc).byTarget.get(entityId) ?? EMPTY_EDGE_LIST;
+
+export const outgoingEdges = (doc: TPDocument, entityId: string): readonly Edge[] =>
+  edgeIndex(doc).bySource.get(entityId) ?? EMPTY_EDGE_LIST;
 
 export const connectionCount = (doc: TPDocument, entityId: string): number =>
   incomingEdges(doc, entityId).length + outgoingEdges(doc, entityId).length;

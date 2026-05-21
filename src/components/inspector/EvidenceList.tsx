@@ -231,7 +231,7 @@ function EvidenceRow({
               url: next.trim() === '' ? undefined : next,
             })
           }
-          className="h-[26px] flex-1 min-w-[160px] text-xs"
+          className="h-[26px] min-w-[160px] flex-1 text-xs"
           ariaLabel="Evidence URL"
         />
         {item.url && (

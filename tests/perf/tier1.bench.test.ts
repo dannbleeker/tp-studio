@@ -13,9 +13,10 @@
  */
 
 import { describe, it } from 'vitest';
-import { edgesArray, entitiesArray } from '@/domain/graph';
+import { edgesArray, entitiesArray, incomingEdges, outgoingEdges } from '@/domain/graph';
 import { computeDetailedRevisionDiff } from '@/domain/revisions';
 import type { Edge, Entity, TPDocument } from '@/domain/types';
+import { buildRiskRegisterCsv } from '@/services/exporters/riskRegister';
 import { makeDoc, makeEdge, makeEntity, resetIds } from '../domain/helpers';
 
 const buildDoc = (entityCount: number): TPDocument => {
@@ -108,6 +109,70 @@ describe('Tier 1 perf — microbenchmarks', () => {
       );
     }
     printTable('entitiesArray vs Object.values(doc.entities)', rows);
+  });
+
+  it('incomingEdges / outgoingEdges (Session 135 edge index)', () => {
+    const rows: Row[] = [];
+    for (const N of [100, 500, 1000]) {
+      const doc = buildDoc(N);
+      // Prime the edge-index cache.
+      incomingEdges(
+        doc,
+        doc.entities[Object.keys(doc.entities)[0] ?? ''] ? Object.keys(doc.entities)[0]! : ''
+      );
+      const ids = Object.keys(doc.entities);
+      const sampleId = ids[Math.floor(ids.length / 2)] ?? '';
+      rows.push(
+        measure(`incomingEdges indexed — ${N} entities`, 1_000_000, () =>
+          incomingEdges(doc, sampleId)
+        )
+      );
+      rows.push(
+        measure(`outgoingEdges indexed — ${N} entities`, 1_000_000, () =>
+          outgoingEdges(doc, sampleId)
+        )
+      );
+    }
+    printTable('Edge-index lookups (Perf #1)', rows);
+  });
+
+  it('buildRiskRegisterCsv (Session 135 single-pass mitigation walk)', () => {
+    // Build a synthetic doc with 50 UDEs + 10 mitigations (injection /
+    // desiredEffect) each connected to ~half the UDEs through 2-step
+    // chains. Worst case for the prior per-UDE BFS implementation.
+    const rows: Row[] = [];
+    for (const U of [10, 50, 100]) {
+      resetIds();
+      const udes: Entity[] = [];
+      for (let i = 0; i < U; i++) udes.push(makeEntity({ title: `UDE ${i}`, type: 'ude' }));
+      const intermediates: Entity[] = [];
+      for (let i = 0; i < U; i++)
+        intermediates.push(makeEntity({ title: `Intermediate ${i}`, type: 'effect' }));
+      const injections: Entity[] = [];
+      const M = Math.max(3, Math.floor(U / 5));
+      for (let i = 0; i < M; i++)
+        injections.push(makeEntity({ title: `Injection ${i}`, type: 'injection' }));
+      const edges: Edge[] = [];
+      // intermediate[i] → ude[i]
+      for (let i = 0; i < U; i++) {
+        const src = intermediates[i];
+        const tgt = udes[i];
+        if (src && tgt) edges.push(makeEdge(src.id, tgt.id));
+      }
+      // injection[m] → intermediate[i] for every (m, i) where i % M === m
+      // — gives shared mitigation ancestors across UDEs, which was the
+      // pathological case for the prior implementation.
+      for (let i = 0; i < U; i++) {
+        const inj = injections[i % M];
+        const intm = intermediates[i];
+        if (inj && intm) edges.push(makeEdge(inj.id, intm.id));
+      }
+      const doc = makeDoc([...udes, ...intermediates, ...injections], edges, 'crt');
+      rows.push(
+        measure(`risk register CSV     — ${U} UDEs`, 1000, () => buildRiskRegisterCsv(doc))
+      );
+    }
+    printTable('Risk-register CSV export (Perf #4)', rows);
   });
 
   it('computeDetailedRevisionDiff (cached) vs uncached', () => {

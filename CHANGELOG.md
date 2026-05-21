@@ -2,6 +2,42 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Graph perf: edge index + similarity LRU + risk-register pass inversion
+
+Four targeted perf wins on the validator + exporter hot paths. All transparent — no API surface changes; downstream callers unchanged.
+
+**Perf #1 — Per-doc edge index in `domain/graph.ts`.** `incomingEdges(doc, id)` / `outgoingEdges(doc, id)` were O(E) per call: they filtered `edgesArray(doc)` linearly. Validators that loop entities turned this into cumulative O(N·E). New `edgeIndex(doc)` builds two `Map<entityId, readonly Edge[]>` indices (by source + by target) on first access per doc reference, cached via `WeakMap<doc.edges, EdgeIndex>` — same invalidation pattern as the existing `edgesArray` / `entitiesByType` caches. Lookups collapse to O(1) `Map.get`. Return type tightened from `Edge[]` to `readonly Edge[]` so callers can't mutate the cached array; all 40+ consumers already used read-only ops.
+
+**Perf #2 — Tautology rule now uses the edge index.** No code change to `tautology.ts` — the rule called `outgoingEdges(doc, e.id)` already, so the win is automatic via #1.
+
+**Perf #3 — `similarity()` LRU cache in `validators/shared.ts`.** Module-level `Map<string, number>` keyed by `<lowerA>\0<lowerB>` (with sorted operands so `similarity(a, b)` and `similarity(b, a)` share an entry). 1024-entry cap, insertion-order LRU eviction. The tautology rule's inner Levenshtein call is now amortized O(1) when titles repeat across re-validations. `__resetSimilarityCacheForTests` exported for benches that measure cold-path cost.
+
+**Perf #4 — Single-pass mitigation walk in `riskRegister.ts`.** Previous implementation ran a backward BFS *per UDE* (`mitigationsFor(doc, ude)` allocating a fresh `visited` Set + `queue` each call). On docs with shared mitigation ancestors this was quadratic. New `buildMitigationsByUde(doc)` runs forward BFS from each `injection` / `desiredEffect` once, recording every UDE reached. `Map<UDEId, mitigationTitles[]>` built up-front; per-UDE lookup is O(1). Complexity drops from O(U·E) to O(M·E + U) where M = mitigation count.
+
+**Validator benchmark before → after (100-entity CRT, 10k iterations):**
+
+| Rule | Before | After | Speedup |
+|---|---:|---:|---:|
+| tautology | 216.95µs | 62.72µs | **3.5×** |
+| cause-sufficiency | 90.23µs | 16.21µs | **5.6×** |
+| entity-existence | 69.29µs | 8.71µs | **8.0×** |
+| indirect-effect | 43.95µs | 5.50µs | **8.0×** |
+| cycle | 37.89µs | 16.11µs | **2.4×** |
+| causality-existence | 18.24µs | 13.77µs | 1.3× |
+| clarity | 17.98µs | 13.25µs | 1.4× |
+| cause-effect-reversal | 8.77µs | 2.28µs | **3.8×** |
+| additional-cause | 1.98µs | 0.74µs | 2.7× |
+| external-root-cause | 0.86µs | 0.41µs | 2.1× |
+
+Every rule is faster; the validators that loop entities + call edge helpers benefit the most. The remaining ~63µs in tautology is now dominated by the entity walk itself + Levenshtein on cache-miss pairs.
+
+**New bench coverage** in `tests/perf/tier1.bench.test.ts`:
+
+- Edge-index lookups: 20–33ns/op even at 1000-entity scale.
+- Risk-register CSV export: ~10ms/UDE at 100-UDE scale; scales roughly linearly with UDE count (the O(M·E + U) shape, no more quadratic blowup).
+
+All 1573 tests pass; tsc clean; biome lint clean (modulo two pre-existing aria warnings).
+
 ## Session 134 — Entity evidence[] array (closes spec gap #6 structured half)
 
 Finishes the entity-ownership story started earlier this session. The `owner?: string` + `lastValidatedAt?: number` fields shipped first; the structured `evidence?: EvidenceItem[]` was the second half deferred to a follow-up. Now closed: spec gap #6 is fully shipped.
