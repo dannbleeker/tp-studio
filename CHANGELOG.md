@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — TT-task CSV export (first half of spec gap #7)
+
+Closes the first half of the "Task / execution bridge" spec gap: TT actions → universal CSV format that imports into Jira / Trello / Planner / Asana via each tracker's CSV import path. Per-tracker formats (Jira XML etc.) layer on top if a stakeholder asks; the spec's "buy-in narrative generator" stays parked under the dropped AI-integration scope.
+
+**New exporter:** `src/services/exporters/ttTasks.ts` — `buildTtTasksCsv(doc)` + `exportTtTasks(doc)`. One CSV row per `action` entity; columns: `step / action / precondition / outcome / owner / due_date / status / success_criteria`. Actions sorted by their explicit `ordering` field (the step-number badge on the TT canvas) with a stable annotation-number tie-break. Preconditions and outcomes come from incoming / outgoing edge endpoints. Owner reads `entity.owner` (Session 134) with the legacy `attributes.owner.value` fallback (mirrors the risk-register exporter's precedence). Due-date and status come from reserved attribute keys (`attributes.dueDate.value`, `attributes.implemented.value`). Description fills `success_criteria` with multi-line collapsed to single spaces so tracker importers don't trip on embedded newlines.
+
+**Shared CSV helpers** extracted to `src/services/exporters/shared.ts`: `csvCell(raw)` for RFC 4180-safe escaping + `csvRow(cells)` for one-row build. The risk-register exporter migrated to the shared helpers — same exact behaviour, half the inline code, single source of truth.
+
+**Picker UX:** new `Task tracker CSV` card in `ExportPickerDialog` under the Documents section, next to the Risk register card. Gated by `requiresEntityType: 'action'` — docs without any `action` entity don't see the card (avoids the empty-CSV trap). Selector subscribes to the cached `entitiesOfType` index for O(1) action-existence checks.
+
+**10 new tests** in `tests/services/ttTasks.test.ts`: header-only output on empty docs, neighbour-placeholder text, edge → precondition / outcome mapping, ordering precedence (explicit `ordering` over annotation number), owner precedence (dedicated field vs legacy attribute), status from `attributes.implemented`, due-date from `attributes.dueDate`, description whitespace collapse, RFC 4180 escaping for commas + quotes.
+
+**1598 tests pass** (+10); tsc clean; biome lint clean. NEXT_STEPS spec gap #7 partially struck through — universal CSV is the shippable unit; per-tracker formats follow on request.
+
 ## Session 135 — Book PDF polish: outlines, metadata, page numbers, running header, reproducible date
 
 Six items from the post-Kindle PDF audit, batched into one commit:

@@ -1,6 +1,6 @@
 import { incomingEdges, outgoingEdges } from '@/domain/graph';
 import type { Entity, EvidenceItem, TPDocument } from '@/domain/types';
-import { slug, triggerDownload } from './shared';
+import { csvRow, slug, triggerDownload } from './shared';
 
 /**
  * Session 134 / spec major gap #5 — Risk-register export.
@@ -25,16 +25,8 @@ import { slug, triggerDownload } from './shared';
  * JSON export when round-trip fidelity matters.
  */
 
-/** RFC 4180-safe cell escaper — same shape as `csvExport.ts`'s. */
-const csvCell = (raw: string | number | undefined): string => {
-  if (raw === undefined || raw === null) return '';
-  const s = String(raw);
-  if (s.length === 0) return '';
-  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
-};
-
-const row = (cells: (string | number | undefined)[]): string => cells.map(csvCell).join(',');
+// Session 135 — CSV cell escaper + row builder moved to `./shared.ts`
+// (`csvCell` + `csvRow`) and shared with the TT-tasks exporter.
 
 const HEADER = [
   'risk_id',
@@ -185,7 +177,7 @@ const evidenceFor = (entity: Entity): string => {
  * production path uses `exportRiskRegister(doc)` below.
  */
 export const buildRiskRegisterCsv = (doc: TPDocument): string => {
-  const lines: string[] = [row([...HEADER])];
+  const lines: string[] = [csvRow([...HEADER])];
 
   const udes = Object.values(doc.entities)
     .filter((e) => e.type === 'ude')
@@ -199,7 +191,7 @@ export const buildRiskRegisterCsv = (doc: TPDocument): string => {
     const mitigation = formatMitigations(mitigationsByUde.get(ude.id));
     const status = mitigation === '(no mitigation)' ? 'open' : 'mitigated';
     lines.push(
-      row([
+      csvRow([
         ude.id,
         ude.title.trim() || '(untitled)',
         triggerFor(doc, ude),

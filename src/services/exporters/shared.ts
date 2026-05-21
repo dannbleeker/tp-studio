@@ -49,3 +49,28 @@ export const triggerDataUrlDownload = (dataUrl: string, filename: string): void 
   a.click();
   document.body.removeChild(a);
 };
+
+/**
+ * Session 135 — RFC 4180-safe CSV cell escaper. Quotes any cell
+ * containing `,`, `"`, newline, or CR; doubles up internal quotes.
+ * Empty / null / undefined values produce the empty cell. Shared so
+ * every CSV exporter (`riskRegister.ts`, `ttTasks.ts`, …) uses one
+ * encoder; previously each exporter duplicated this function inline.
+ */
+export const csvCell = (raw: string | number | undefined | null): string => {
+  if (raw === undefined || raw === null) return '';
+  const s = String(raw);
+  if (s.length === 0) return '';
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+};
+
+/**
+ * Build one CSV row from an array of cells. Maps each cell through
+ * `csvCell` for RFC-4180-correct escaping, then joins with commas.
+ * Does NOT add a trailing newline — the caller controls line
+ * terminators (Windows-style CRLF vs Unix LF) by joining with their
+ * preferred separator.
+ */
+export const csvRow = (cells: (string | number | undefined | null)[]): string =>
+  cells.map(csvCell).join(',');

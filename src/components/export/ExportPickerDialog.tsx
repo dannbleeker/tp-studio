@@ -19,6 +19,7 @@ import {
   exportReasoningOutlineMd,
   exportRiskRegister,
   exportSVG,
+  exportTtTasks,
   exportVGL,
 } from '@/services/exporters';
 import { exportECWorkshopSheet } from '@/services/exporters/ecWorkshopExport';
@@ -52,8 +53,9 @@ type ExportAction = {
   onlyOnECDoc?: boolean;
   /** Optional predicate — only render when the doc contains at least one
    *  entity matching the filter (e.g. `'ude'` for the risk-register
-   *  export, which would otherwise produce an empty CSV). */
-  requiresEntityType?: 'ude';
+   *  export, which would otherwise produce an empty CSV; `'action'`
+   *  for the TT-task export added Session 135). */
+  requiresEntityType?: 'ude' | 'action';
   run: (s: RootStore) => void | Promise<void>;
 };
 
@@ -151,6 +153,24 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         run: (s) => {
           const n = exportRiskRegister(s.doc);
           s.showToast('success', `Exported risk register (${n} risk${n === 1 ? '' : 's'}).`);
+        },
+      },
+      {
+        // Session 135 — TT-task tracker CSV (closes the first half of
+        // major gap #7: "TT actions → task tracker"). One CSV row per
+        // `action` entity; columns: step / action / precondition /
+        // outcome / owner / due_date / status / success_criteria.
+        // Diagram-type agnostic — TT is the canonical case but any
+        // doc containing action entities exports cleanly. Gated by
+        // `requiresEntityType: 'action'` so docs without actions
+        // don't see the empty-CSV trap.
+        id: 'tt-tasks',
+        label: 'Task tracker CSV',
+        hint: 'One row per TT action: step / action / precondition / outcome / owner / due / status / success criteria. Drops into Jira / Trello / Planner / Asana.',
+        requiresEntityType: 'action',
+        run: (s) => {
+          const n = exportTtTasks(s.doc);
+          s.showToast('success', `Exported ${n} action${n === 1 ? '' : 's'} to CSV.`);
         },
       },
     ],
@@ -293,6 +313,9 @@ export function ExportPickerDialog() {
   // result stays stable across non-UDE mutations so the component
   // doesn't re-render unnecessarily.
   const hasAnyUde = useDocumentStore((s) => entitiesOfType(s.doc, 'ude').length > 0);
+  // Session 135 / spec major gap #7 — parallel guard for the TT-task
+  // CSV export. Same O(1) cached lookup pattern as `hasAnyUde`.
+  const hasAnyAction = useDocumentStore((s) => entitiesOfType(s.doc, 'action').length > 0);
 
   if (!open) return null;
 
@@ -319,6 +342,7 @@ export function ExportPickerDialog() {
           const visible = cat.items.filter((it) => {
             if (it.onlyOnECDoc && diagramType !== 'ec') return false;
             if (it.requiresEntityType === 'ude' && !hasAnyUde) return false;
+            if (it.requiresEntityType === 'action' && !hasAnyAction) return false;
             return true;
           });
           if (visible.length === 0) return null;

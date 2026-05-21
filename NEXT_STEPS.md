@@ -34,13 +34,13 @@ Spec §§5.2, 6.1. **Both halves shipped Session 134:** (1) dedicated `entity.ow
 
 Closes spec gap #6.
 
-### 🔴 #7 — Task / execution bridge
+### ~~🔴 #7 — Task / execution bridge~~ — *first half done Session 135*
 
-Spec §§2.6, 8. TT actions don't flow into a task tracker. Spec wants TT actions → tasks with owner / due date / dependencies / status / success criteria, exportable to Jira / Trello / Planner / Asana, plus a "buy-in narrative" generator per action. TP Studio exports TT as Markdown / Flying Logic only today.
+Spec §§2.6, 8. TT actions don't flow into a task tracker. **Phase 1 shipped Session 135:** `Task tracker CSV` export in the Export… picker. One CSV row per `action` entity; columns: `step / action / precondition / outcome / owner / due_date / status / success_criteria`. Drops into Jira / Trello / Planner / Asana via their CSV importers. Gated by `requiresEntityType: 'action'` so docs without actions don't see the empty-CSV trap. The dedicated `entity.owner` field is preferred; `attributes.dueDate.value` and `attributes.implemented.value` (bool) feed the due-date + status columns; the description provides success criteria (whitespace-collapsed to a single line).
 
-**Path:** add an "Export to task tracker" panel building on the existing reasoning-export Markdown. Start with CSV (universally importable) before per-tracker formats.
+**Still open:** per-tracker formats (Jira XML, Trello JSON, Asana CSV variant), the spec's "buy-in narrative" generator per action (dropped along with the rest of the AI integration — see Won't build), and bidirectional sync (push status changes back from the tracker — likely never; the doc is the source of truth).
 
-**Effort:** ~1–2 sessions.
+**Effort:** Per-tracker formats are ~30 min each if a stakeholder asks. Otherwise the universal CSV is enough.
 
 ### 🔴 #8 — Enterprise integration
 
@@ -103,7 +103,7 @@ Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has
 If picking the next thing up:
 
 1. **#3 cross-diagram traceability** (~2–3 sessions) — most foundational structural gap. Unlocks the portfolio-view pattern-library sub-item, NBR linking back to FRT, and the full TP chain.
-2. **#7 task bridge** (~1–2 sessions) — mechanical export work. Start with TT → CSV; per-tracker formats follow.
+2. ~~**#7 task bridge** (~1–2 sessions)~~ — first half done Session 135 (TT-task CSV export). Per-tracker formats follow if requested.
 3. **#9 formal mode-switching** (~1–2 sessions) — Guided / Expert / Workshop / Presentation modes.
 4. **#4 confidence / state propagation** (~3 sessions) — adds the "what-if" behaviour the spec considers the FRT module's signature.
 
