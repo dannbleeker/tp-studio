@@ -367,3 +367,146 @@ describe('TPNode — Locus pill (spanOfControl)', () => {
     expect(pill?.textContent?.trim()).toBe(glyph);
   });
 });
+
+/**
+ * Session 135 / infra-debt — TPNode coverage push (round 5). Targets
+ * the remaining uncovered branches called out in NEXT_STEPS: S&T
+ * 5-facet rows, hidden-descendant chip, custom-class icon resolution,
+ * zoom-up overlay NodeToolbar presence.
+ */
+
+describe('TPNode — S&T 5-facet rendering (Session 76)', () => {
+  it('renders the four facet rows (NA / Strategy / PA / SA) on an S&T-formatted injection', () => {
+    // An injection with ANY of the four reserved facet attributes
+    // renders as a multi-row card; partial fills still render the
+    // card so the user sees the missing rows as a visible nudge.
+    const base = createEntity({ type: 'injection', title: 'Adopt OKRs', annotationNumber: 1 });
+    const entity = {
+      ...base,
+      attributes: {
+        stStrategy: { kind: 'string' as const, value: 'Improve focus' },
+        stNecessaryAssumption: { kind: 'string' as const, value: 'Teams want clarity' },
+        stParallelAssumption: { kind: 'string' as const, value: 'Cadence holds' },
+        stSufficiencyAssumption: { kind: 'string' as const, value: 'Execs sponsor it' },
+      },
+    };
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    expect(container.textContent).toContain('Strategy');
+    expect(container.textContent).toContain('NA');
+    expect(container.textContent).toContain('PA');
+    expect(container.textContent).toContain('SA');
+    expect(container.textContent).toContain('Improve focus');
+    expect(container.textContent).toContain('Teams want clarity');
+  });
+
+  it('renders the S&T card even when only one facet is set (partial-fill nudge)', () => {
+    // The S&T renderer fires on ANY facet attribute — partial fills
+    // are an explicit "show the empty slots" affordance.
+    const base = createEntity({ type: 'injection', title: 'Partial', annotationNumber: 1 });
+    const entity = {
+      ...base,
+      attributes: {
+        stStrategy: { kind: 'string' as const, value: 'just-strategy' },
+      },
+    };
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    // The four facet labels still render — the other three rows
+    // show their placeholder rather than going missing.
+    expect(container.textContent).toContain('Strategy');
+    expect(container.textContent).toContain('NA');
+    expect(container.textContent).toContain('PA');
+    expect(container.textContent).toContain('SA');
+  });
+
+  it('does NOT render the S&T card on a non-injection entity even with facet attributes', () => {
+    // Defensive: `isStNodeFormat` requires `entity.type === 'injection'`.
+    // A misclassified `effect` with facet attrs gets the standard layout.
+    const base = createEntity({ type: 'effect', title: 'Not S&T', annotationNumber: 1 });
+    const entity = {
+      ...base,
+      attributes: {
+        stStrategy: { kind: 'string' as const, value: 'misplaced' },
+      },
+    };
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    // The string value shouldn't appear because the S&T rows don't
+    // render for non-injection entities.
+    expect(container.textContent).not.toContain('misplaced');
+  });
+});
+
+describe('TPNode — hidden-descendant chip on the collapse button', () => {
+  it('shows the count when collapsed with hidden children', () => {
+    const entity = createEntity({ type: 'effect', title: 'collapsed', annotationNumber: 1 });
+    const { container } = mountWithRF(
+      <TPNode
+        {...makeNodeProps({ entity: { ...entity, collapsed: true }, hiddenDescendantCount: 7 })}
+      />
+    );
+    // The "+N" chip lives inside the collapse-expand button.
+    const button = container.querySelector('[aria-label*="hidden" i], [title*="hidden" i]');
+    // Fall back to any element whose text matches the count.
+    const text = container.textContent ?? '';
+    expect(text).toMatch(/\b7\b/);
+    // If the chip has an explicit aria-label, even better — but the
+    // visible-count assertion is the load-bearing one.
+    void button;
+  });
+
+  it('omits the chip when collapsed but no hidden descendants', () => {
+    const entity = createEntity({ type: 'effect', title: 'lonely', annotationNumber: 1 });
+    const { container } = mountWithRF(
+      <TPNode
+        {...makeNodeProps({ entity: { ...entity, collapsed: true }, hiddenDescendantCount: 0 })}
+      />
+    );
+    // A zero count shouldn't render a "+0" chip — that would be noise.
+    expect(container.textContent).not.toMatch(/\+\s*0\b/);
+  });
+});
+
+describe('TPNode — custom-entity-class type resolution', () => {
+  it('renders an entity whose type is a custom class slug (not in the built-in palette)', () => {
+    // B10 — per-document custom classes. The store carries them; the
+    // entity's `type` field stores the slug. TPNode resolves the
+    // visual treatment via `resolveEntityTypeMeta(type, customClasses)`.
+    useDocumentStore.setState({
+      doc: {
+        ...useDocumentStore.getState().doc,
+        customEntityClasses: {
+          'risk-item': {
+            id: 'risk-item',
+            label: 'Risk item',
+            color: '#ff6b6b',
+          },
+        },
+      },
+    });
+    const base = createEntity({ type: 'effect', title: 'Custom typed', annotationNumber: 1 });
+    // Force the type to the custom slug after creation (createEntity
+    // only takes the built-in EntityType union).
+    const entity = { ...base, type: 'risk-item' as typeof base.type };
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    expect(container.textContent).toContain('Custom typed');
+    // The custom palette's colour shouldn't make the node crash — the
+    // assertion above is the load-bearing "didn't throw + rendered".
+  });
+
+  it('falls back gracefully when a custom-class slug is not in the doc map', () => {
+    // Importing a doc with an unknown custom slug shouldn't crash the
+    // node — `resolveEntityTypeMeta` returns a Box-fallback meta.
+    const base = createEntity({ type: 'effect', title: 'unknown class', annotationNumber: 1 });
+    const entity = { ...base, type: 'totally-made-up' as typeof base.type };
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    expect(container.textContent).toContain('unknown class');
+  });
+});
+
+// Note: the zoom-up NodeToolbar branch is gated on
+// `showZoomUp = zoom < ZOOM_UP_THRESHOLD && (selected || isHovered)`.
+// React Flow's `<NodeToolbar isVisible={false}>` doesn't render its
+// children to the DOM, so jsdom can't observe the card directly
+// without manipulating React Flow's internal viewport store. The
+// mouseEnter test above covers the `isHovered` state-setter; the
+// declarative JSX branch is exercised at compile time. Skipped here
+// rather than papered-over with a brittle React Flow store mock.
