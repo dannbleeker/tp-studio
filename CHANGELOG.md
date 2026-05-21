@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Infra-debt batch: custom-equality narrowing + test-cast cleanup + smaller refactors
+
+Four items from the new NEXT_STEPS "Infrastructure debt / refactor" section:
+
+**Custom-equality narrowing for `MultiInspector` + `GroupInspector`.** The two components still subscribed to whole `s.doc.entities` / `s.doc.edges` / `s.doc.groups` maps — the simpler `useShallow` doesn't help (Object.is per array element fails on fresh objects). Both now use `useDocumentStoreWith` + `arrayShallowEqualByKeys` to subscribe to the narrow shape they actually need:
+- `EntitiesMulti` derives `{ id, type, titleSize, ordering }` tuples; `paletteForDoc` reads `diagramType` + `customEntityClasses` via a separate `useShallow` bundle.
+- `EdgesMulti` derives `{ id, targetId, andGroupId, orGroupId, xorGroupId }` tuples.
+- `GroupInspector` derives `{ id, title }` nest-candidate tuples; the `wouldCreateCycle` walk runs inside the selector (cheap) but re-renders only fire when the candidate set actually changes.
+
+**Test-cast cleanup.** New `tests/helpers/reactFlowFixtures.ts` exposes three typed builders: `mockConnection(partial)`, `mockFinalConnectionState(partial)`, `mockMouseEvent()`. The biggest consumer (`tests/components/canvas/useGraphMutations.test.tsx` — previously 15 `as unknown as never` casts) migrated to the builders. Reads naturally now: `mockFinalConnectionState({ fromId: a.id, toId: b.id, isValid: true })`. Centralised casts make the test bodies clean and update-in-one-place if React Flow's event shape ever shifts. Migration to other 9 files is mechanical follow-up if needed; this batch took the highest-density file from 15 casts to 0.
+
+**Inline-input migration (`DocumentInspector` title + author).** Two raw `<input>` fields replaced with `<TextInput>` from `formPrimitives.tsx`. Other inline inputs in `PrintPreviewDialog` / `CustomEntityClassesSection` deliberately kept inline — they're INTENTIONALLY smaller (`text-xs py-1`) than the standard `TextInput` (`text-sm py-1.5`) for dense-dialog packing, and adopting the standard would shift their visual size.
+
+**`RadioGroup` button-class migration.** `formPrimitives.tsx`'s `RadioGroup` now uses `SELECTED_BUTTON_CLASS` + `UNSELECTED_BUTTON_CLASS_PLAIN` constants (was open-coded). Tightens the constants' coverage to the last general-purpose call site.
+
+**Deferred infra items** (still in NEXT_STEPS):
+- **File splits** — `TPEdge.tsx` (600 lines) is tightly-coupled JSX render (one return statement with 9 sibling `EdgeLabelRenderer` blocks sharing local state); a forced split would require passing 10+ props per sub-component for marginal readability gain. `entitiesSlice.ts` (576 lines) has clean section boundaries (assumption / attribute / evidence actions); a single-session split via the `StateCreator<RootStore, [], [], PartialSlice>` composition pattern would work but takes longer than this batch had room for. Both deferred.
+- **TPNode coverage finish** — push beyond 48% statements (S&T 5-facet rows, hidden-descendant chip, zoom-up overlay). ~1 hour, deferred.
+
+All 1598 tests pass; tsc clean; biome lint clean.
+
 ## Session 135 — Refactor bundle: shared primitives + chip palette + EdgeAssumptions deprecation + TPNode split
 
 Six items from the 30-suggestion code-improvement list (items #1, #2, #4, #5, #6, #7). Pure refactor / cleanup; no behaviour change beyond the EdgeAssumptions/AssumptionWell unification.

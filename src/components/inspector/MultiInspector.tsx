@@ -1,11 +1,14 @@
 import clsx from 'clsx';
 import { ArrowLeftRight, ListOrdered, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import type { EntityTitleSize, EntityType } from '@/domain/types';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
+import { arrayShallowEqualByKeys } from '@/store/equality';
+import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import {
@@ -15,6 +18,40 @@ import {
   UNSELECTED_BUTTON_CLASS_PLAIN,
 } from '../ui/buttonClasses';
 import { Field } from './Field';
+
+// Session 135 / infra-debt — narrow the EntitiesMulti / EdgesMulti
+// subscriptions away from whole-map (`s.doc.entities` / `s.doc.edges`)
+// reads using custom equality. The selector still walks the
+// selection but `arrayShallowEqualByKeys` skips re-renders when the
+// derived row data is logically the same. Matches the pattern landed
+// for `AttachedEdgesList`, `AssumptionAnchorOverlay`, etc.
+type EntitiesMultiRow = {
+  id: string;
+  type: EntityType;
+  titleSize: EntityTitleSize | undefined;
+  ordering: number | undefined;
+};
+const entitiesMultiRowsEqual = arrayShallowEqualByKeys<EntitiesMultiRow>([
+  'id',
+  'type',
+  'titleSize',
+  'ordering',
+]);
+
+type EdgesMultiRow = {
+  id: string;
+  targetId: string;
+  andGroupId: string | undefined;
+  orGroupId: string | undefined;
+  xorGroupId: string | undefined;
+};
+const edgesMultiRowsEqual = arrayShallowEqualByKeys<EdgesMultiRow>([
+  'id',
+  'targetId',
+  'andGroupId',
+  'orGroupId',
+  'xorGroupId',
+]);
 
 /**
  * Inspector view for multi-selection. Entities: bulk convert + bulk delete +
@@ -32,25 +69,40 @@ export function MultiInspector(
 }
 
 function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
-  const entities = useDocumentStore((s) => s.doc.entities);
-  const doc = useDocumentStore((s) => s.doc);
   const updateEntity = useDocumentStore((s) => s.updateEntity);
   const swapEntities = useDocumentStore((s) => s.swapEntities);
-  // B10: include the doc's custom entity classes in the convert-to palette.
-  const availableTypes = paletteForDoc(doc);
 
-  // Session 135 / Perf #15 — memoize the selection → entity expansion
-  // + the all-same-type derivation. Fresh array per render broke
-  // React.memo on every row component below.
-  const { present, allSameType, sharedType } = useMemo(() => {
-    const list = ids.map((id) => entities[id]).filter((e) => e !== undefined);
-    const same = list.every((e) => e.type === list[0]?.type);
-    return {
-      present: list,
-      allSameType: same,
-      sharedType: same ? list[0]?.type : undefined,
-    };
-  }, [ids, entities]);
+  // Session 135 / infra-debt — narrowed subscription. The component
+  // re-renders only when the selected entities' (id, type, titleSize,
+  // ordering) shape changes, not on every unrelated entity mutation.
+  // `paletteForDoc` only reads diagramType + customEntityClasses;
+  // those are subscribed separately via `useShallow` so an unrelated
+  // entity edit doesn't churn the palette derivation.
+  const present = useDocumentStoreWith((s) => {
+    const out: EntitiesMultiRow[] = [];
+    for (const id of ids) {
+      const e = s.doc.entities[id];
+      if (!e) continue;
+      out.push({ id: e.id, type: e.type, titleSize: e.titleSize, ordering: e.ordering });
+    }
+    return out;
+  }, entitiesMultiRowsEqual);
+  const { diagramType, customEntityClasses } = useDocumentStore(
+    useShallow((s) => ({
+      diagramType: s.doc.diagramType,
+      customEntityClasses: s.doc.customEntityClasses,
+    }))
+  );
+
+  const availableTypes = useMemo(
+    () => paletteForDoc({ diagramType, customEntityClasses }),
+    [diagramType, customEntityClasses]
+  );
+
+  const { allSameType, sharedType } = useMemo(() => {
+    const same = present.every((e) => e.type === present[0]?.type);
+    return { allSameType: same, sharedType: same ? present[0]?.type : undefined };
+  }, [present]);
 
   if (present.length === 0) return null;
 
@@ -60,7 +112,7 @@ function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
         {present.length} entities selected.{' '}
         <span className="text-neutral-500 dark:text-neutral-400">
           {allSameType && sharedType
-            ? `All ${resolveEntityTypeMeta(sharedType, doc.customEntityClasses).label}.`
+            ? `All ${resolveEntityTypeMeta(sharedType, customEntityClasses).label}.`
             : 'Mixed types.'}
         </span>
       </p>
@@ -68,7 +120,7 @@ function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
       <Field label="Convert all to…">
         <div className="grid grid-cols-2 gap-1.5">
           {availableTypes.map((type) => {
-            const meta = resolveEntityTypeMeta(type, doc.customEntityClasses);
+            const meta = resolveEntityTypeMeta(type, customEntityClasses);
             const selected = sharedType === type;
             return (
               <button
@@ -183,7 +235,7 @@ function RenumberControl({
   locked,
   updateEntity,
 }: {
-  present: { id: string; ordering?: number }[];
+  present: { id: string; ordering: number | undefined }[];
   locked: boolean;
   updateEntity: (id: string, patch: { ordering?: number }) => void;
 }) {
@@ -225,7 +277,6 @@ function RenumberControl({
 }
 
 function EdgesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
-  const edges = useDocumentStore((s) => s.doc.edges);
   const groupAsAnd = useDocumentStore((s) => s.groupAsAnd);
   const ungroupAnd = useDocumentStore((s) => s.ungroupAnd);
   const groupAsOr = useDocumentStore((s) => s.groupAsOr);
@@ -234,13 +285,25 @@ function EdgesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
   const ungroupXor = useDocumentStore((s) => s.ungroupXor);
   const showToast = useDocumentStore((s) => s.showToast);
 
-  // Session 135 / Perf #15 — see EntitiesMulti above for the same
-  // pattern: memoize the id → edge expansion so React.memo'd rows
-  // downstream don't re-render on every doc snapshot.
-  const present = useMemo(
-    () => ids.map((id) => edges[id]).filter((e) => e !== undefined),
-    [ids, edges]
-  );
+  // Session 135 / infra-debt — same narrowing pattern as EntitiesMulti
+  // above. Re-renders only when the selected edges' (id, targetId,
+  // junctor groups) shape changes — unrelated edge mutations no
+  // longer churn the panel.
+  const present = useDocumentStoreWith((s) => {
+    const out: EdgesMultiRow[] = [];
+    for (const id of ids) {
+      const e = s.doc.edges[id];
+      if (!e) continue;
+      out.push({
+        id: e.id,
+        targetId: e.targetId,
+        andGroupId: e.andGroupId,
+        orGroupId: e.orGroupId,
+        xorGroupId: e.xorGroupId,
+      });
+    }
+    return out;
+  }, edgesMultiRowsEqual);
 
   if (present.length === 0) return null;
 

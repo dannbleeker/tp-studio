@@ -2,6 +2,11 @@ import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useGraphMutations } from '@/components/canvas/hooks/useGraphMutations';
 import { resetStoreForTest, useDocumentStore } from '@/store';
+import {
+  mockConnection,
+  mockFinalConnectionState,
+  mockMouseEvent,
+} from '../../helpers/reactFlowFixtures';
 import { seedConnectedPair, seedEntity } from '../../helpers/seedDoc';
 
 /**
@@ -38,15 +43,9 @@ describe('useGraphMutations — onConnect', () => {
     const { result } = renderHook(() => useGraphMutations());
     const before = Object.keys(s().doc.edges).length;
     // React Flow's Connection type marks source/target as `string`, but
-    // in practice the cancel path delivers `null`. Cast to bypass the
-    // declared shape while preserving the runtime behaviour we're
-    // testing.
-    result.current.onConnect({
-      source: null as unknown as string,
-      target: null as unknown as string,
-      sourceHandle: null,
-      targetHandle: null,
-    });
+    // in practice the cancel path delivers `null`. `mockConnection`
+    // owns the cast so the test reads naturally.
+    result.current.onConnect(mockConnection({ source: null, target: null }));
     expect(Object.keys(s().doc.edges).length).toBe(before);
   });
 });
@@ -58,13 +57,8 @@ describe('useGraphMutations — onConnectEnd (drop-on-node fallback)', () => {
     const { result } = renderHook(() => useGraphMutations());
     const before = Object.keys(s().doc.edges).length;
     result.current.onConnectEnd(
-      {} as unknown as MouseEvent,
-      {
-        toHandle: null,
-        fromNode: { id: a.id } as unknown as never,
-        toNode: { id: b.id } as unknown as never,
-        isValid: true,
-      } as never
+      mockMouseEvent(),
+      mockFinalConnectionState({ fromId: a.id, toId: b.id, isValid: true })
     );
     expect(Object.keys(s().doc.edges).length).toBe(before + 1);
   });
@@ -74,13 +68,8 @@ describe('useGraphMutations — onConnectEnd (drop-on-node fallback)', () => {
     const { result } = renderHook(() => useGraphMutations());
     const before = Object.keys(s().doc.edges).length;
     result.current.onConnectEnd(
-      {} as unknown as MouseEvent,
-      {
-        toHandle: null,
-        fromNode: { id: a.id } as unknown as never,
-        toNode: { id: a.id } as unknown as never,
-        isValid: false,
-      } as never
+      mockMouseEvent(),
+      mockFinalConnectionState({ fromId: a.id, toId: a.id, isValid: false })
     );
     expect(Object.keys(s().doc.edges).length).toBe(before);
   });
@@ -89,13 +78,12 @@ describe('useGraphMutations — onConnectEnd (drop-on-node fallback)', () => {
     const { result } = renderHook(() => useGraphMutations());
     const before = Object.keys(s().doc.edges).length;
     result.current.onConnectEnd(
-      {} as unknown as MouseEvent,
-      {
-        toHandle: { nodeId: 'x' } as unknown as never,
-        fromNode: { id: 'a' } as unknown as never,
-        toNode: null,
+      mockMouseEvent(),
+      mockFinalConnectionState({
+        fromId: 'a',
+        toHandle: { nodeId: 'x' },
         isValid: true,
-      } as never
+      })
     );
     expect(Object.keys(s().doc.edges).length).toBe(before);
   });
@@ -166,13 +154,8 @@ describe('useGraphMutations — edge-hover ref + drop-on-edge fallback', () => {
     // being our co-cause candidate.
     const before = Object.values(s().doc.edges).filter((e) => e.sourceId === coCause.id).length;
     result.current.onConnectEnd(
-      {} as unknown as MouseEvent,
-      {
-        toHandle: null,
-        fromNode: { id: coCause.id } as unknown as never,
-        toNode: null,
-        isValid: false,
-      } as never
+      mockMouseEvent(),
+      mockFinalConnectionState({ fromId: coCause.id, toId: null, isValid: false })
     );
     const after = Object.values(s().doc.edges).filter((e) => e.sourceId === coCause.id).length;
     expect(after).toBeGreaterThan(before);
@@ -186,13 +169,8 @@ describe('useGraphMutations — edge-hover ref + drop-on-edge fallback', () => {
     result.current.onEdgeMouseLeave(null, { id: edge.id } as never);
     const before = Object.values(s().doc.edges).filter((e) => e.sourceId === coCause.id).length;
     result.current.onConnectEnd(
-      {} as unknown as MouseEvent,
-      {
-        toHandle: null,
-        fromNode: { id: coCause.id } as unknown as never,
-        toNode: null,
-        isValid: false,
-      } as never
+      mockMouseEvent(),
+      mockFinalConnectionState({ fromId: coCause.id, toId: null, isValid: false })
     );
     // Hover was cleared; drop-in-empty-space is a no-op.
     const after = Object.values(s().doc.edges).filter((e) => e.sourceId === coCause.id).length;

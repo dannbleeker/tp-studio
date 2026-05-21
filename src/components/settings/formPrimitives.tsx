@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import type { ChangeEventHandler, ReactNode, Ref } from 'react';
+import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS_PLAIN } from '../ui/buttonClasses';
 import { INPUT_FOCUS } from '../ui/focusClasses';
 
 /**
@@ -47,9 +48,7 @@ export function RadioGroup<T extends string>({
             onClick={() => onChange(opt.id)}
             className={clsx(
               'flex flex-col items-start gap-0.5 rounded-md border px-2.5 py-1.5 text-left text-xs transition',
-              selected
-                ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
-                : 'border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900'
+              selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS_PLAIN
             )}
             aria-pressed={selected}
             data-radio-name={name}

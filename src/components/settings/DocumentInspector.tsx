@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
 import { MarkdownField } from '@/components/inspector/MarkdownField';
+import { TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
 import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '@/components/ui/buttonClasses';
 import { Modal } from '@/components/ui/Modal';
@@ -127,23 +128,15 @@ export function DocumentInspector() {
 
       <div className="max-h-[70vh] space-y-4 overflow-y-auto px-4 py-4">
         <Field label="Title">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={locked}
-            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
-          />
+          <TextInput value={title} onChange={setTitle} disabled={locked} />
         </Field>
 
         <Field label="Author">
-          <input
-            type="text"
+          <TextInput
             value={author}
             placeholder="Optional"
-            onChange={(e) => setMeta({ author: e.target.value })}
+            onChange={(next) => setMeta({ author: next })}
             disabled={locked}
-            className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           />
         </Field>
 

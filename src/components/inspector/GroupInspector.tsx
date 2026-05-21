@@ -1,6 +1,5 @@
 import clsx from 'clsx';
 import { ChevronDown, ChevronRight, Maximize2, Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
 import { TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
 import { INPUT_FOCUS } from '@/components/ui/focusClasses';
@@ -9,7 +8,16 @@ import { GROUP_PRESETS } from '@/domain/groupPresets';
 import { wouldCreateCycle } from '@/domain/groups';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
+import { arrayShallowEqualByKeys } from '@/store/equality';
+import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 import { Field } from './Field';
+
+// Session 135 / infra-debt — equality for the nest-candidates list.
+// The candidate set only changes when a group is added / removed /
+// renamed (the dropdown shows the title). Unrelated group field
+// edits (color, collapsed, memberIds) no longer churn this panel.
+type NestCandidate = { id: string; title: string };
+const nestCandidatesEqual = arrayShallowEqualByKeys<NestCandidate>(['id', 'title']);
 
 export function GroupInspector({ groupId }: { groupId: string }) {
   // Subscribe to just this group's record; `memberCount` is derived locally
@@ -22,31 +30,31 @@ export function GroupInspector({ groupId }: { groupId: string }) {
   const toggleCollapsed = useDocumentStore((s) => s.toggleGroupCollapsed);
   const hoistGroup = useDocumentStore((s) => s.hoistGroup);
   const addToGroup = useDocumentStore((s) => s.addToGroup);
-  const allGroups = useDocumentStore((s) => s.doc.groups);
   const locked = useDocumentStore((s) => s.browseLocked);
   const confirm = useDocumentStore((s) => s.confirm);
 
   // FL-GR2: candidate parent groups for nesting. Exclude self + any
   // group that would form a cycle (the current group's transitive
   // descendants — already filtered by `wouldCreateCycle`).
-  // Need a tiny fresh doc-shaped object here just for the cycle helper.
   //
-  // Session 135 / Perf #13 — memoize the two-stage filter. Runs the
-  // wouldCreateCycle traversal once per (groups, groupId) instead of
-  // per render of this inspector.
-  const nestCandidates = useMemo(() => {
-    if (!group) return [];
-    return Object.values(allGroups)
-      .filter((g) => g.id !== groupId)
-      .filter((g) => {
-        const fakeDoc = {
-          groups: allGroups,
-          entities: {},
-          edges: {},
-        } as never;
-        return !wouldCreateCycle(fakeDoc, g.id, groupId);
-      });
-  }, [allGroups, groupId, group]);
+  // Session 135 / infra-debt — replaced the whole-map subscription on
+  // `s.doc.groups` with a `useDocumentStoreWith` selector that
+  // derives just the candidate (id, title) tuples. The component
+  // re-renders only when the candidate set actually changes, not on
+  // every group-field mutation. The wouldCreateCycle walk still
+  // needs the full groups map inside the selector — that's fine,
+  // the equality check on the OUTPUT is what gates re-render.
+  const nestCandidates = useDocumentStoreWith((s) => {
+    if (!s.doc.groups[groupId]) return [];
+    const fakeDoc = { groups: s.doc.groups, entities: {}, edges: {} } as never;
+    const out: NestCandidate[] = [];
+    for (const g of Object.values(s.doc.groups)) {
+      if (g.id === groupId) continue;
+      if (wouldCreateCycle(fakeDoc, g.id, groupId)) continue;
+      out.push({ id: g.id, title: g.title });
+    }
+    return out;
+  }, nestCandidatesEqual);
 
   if (!group) return null;
 
