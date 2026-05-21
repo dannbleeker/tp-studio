@@ -35,6 +35,7 @@ export type {
   AttrKind,
   AttrValue,
   Entity,
+  EntityState,
   EntityTitleSize,
   EntityType,
   EvidenceItem,

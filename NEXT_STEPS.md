@@ -37,11 +37,23 @@ State + palette commands persist across reloads via `StoredPrefs.appMode`. 12 te
 - Workshop auto-engage high-contrast edge palette — stateful restore on leave adds complexity
 - Guided method-checklist auto-open — heavy modal on every new doc is intrusive
 
-### 🔴 #4 — Confidence / propagation simulation
+### 🟡 #4 — Confidence / propagation simulation *(Phase 1A done, Phase 1B + 1C open)*
 
-Spec §3.4. No `Entity.state` enum (`true / false / unknown / disputed`), no propagation through AND/OR logic, no "what changes if this assumption is false?" simulation. Spec lists this as the FRT module's signature behaviour.
+Spec §3.4. The FRT module's signature behaviour: every entity carries a state value, propagation flows through AND/OR logic on edges, and the user can ask "what changes if this assumption is false?" without committing the change.
 
-**Effort:** Schema-light (entity state enum + propagation function); the trickier part is the "what-if" UX. ~3 sessions.
+**Phase 1A — schema (done Session 135).** `EntityState = 'true' | 'false' | 'unknown' | 'disputed'` + `entity.state?: EntityState` + strict persistence validation (unknown values throw on import, emit-or-omit on export). 3 round-trip assertions cover survival, omission, and rejection. No UI surface yet — partial state (manually-tagged entities, no propagation) is usable in inspector code already if a feature wants to lean on it.
+
+**Phase 1B — propagation engine (open).** Pure-function `propagateStates(doc): Map<EntityId, EntityState>` that walks every entity and resolves a derived state from the incoming edges:
+- Each edge contributes its source's state, mapped through the edge kind. AND-groups (`andGroupId`) merge with a logical AND — every input must be `'true'` for the output to assert true; any `'false'` makes the output `'false'`; any `'disputed'` propagates `'disputed'`; otherwise `'unknown'`.
+- Standalone (non-grouped) edges merge with OR — any `'true'` input asserts true; all `'false'` → `'false'`; otherwise the most-uncertain value bubbles up.
+- Manual `entity.state` always overrides the derived value (the user's claim is the ground truth — propagation only fills in the rest).
+- Returns the derived map but never mutates the doc — the UI can pick whether to display the manual state, the derived state, or a merge.
+
+Test-first: a fixture-driven table covering each merge rule (AND-true, AND-false, AND-disputed, OR-bubbling, manual override). Inspector + node-chrome surfacing comes with Phase 1B.
+
+**Phase 1C — what-if UX (open).** A "speculate" mode: user clicks an entity, picks a hypothetical state, and the canvas shows the downstream cascade without persisting the change. Likely a Zustand-side `speculationOverlay: Map<EntityId, EntityState>` that runs through the same `propagateStates` engine with manual values overlaid, plus a banner offering "commit" / "revert". Spec language: "what changes if this assumption is false?"
+
+**Effort remaining:** Phase 1B ~1 session, Phase 1C ~1–2 sessions.
 
 ### 🔴 #2 — Multi-user collaboration *(product-direction decision, not a sprint)*
 
@@ -104,7 +116,7 @@ From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4
 
 If picking the next thing up:
 
-1. **#4 confidence / state propagation** (~3 sessions) — now the largest open spec gap. The FRT signature behaviour the spec considers core; entity-state enum (`true / false / unknown / disputed`) + AND/OR propagation + "what-if" UX. Schema-only Phase 1A is ~1 session.
+1. **#4 confidence / state propagation Phase 1B** (~1 session) — propagation engine. Phase 1A schema landed Session 135 (`EntityState` + `entity.state?` + persistence). Next slice is `propagateStates(doc)` pure-function + inspector / node-chrome surfacing. Phase 1C (what-if UX) follows.
 2. **Medium gaps as filler** — S&T assumption sub-typing (`Assumption.kind`), "preserve rejected logic in collapsed groups", reactive-vs-proactive NBR mitigation. Each ~1 hour.
 3. **Infrastructure debt** — file splits (TPEdge / entitiesSlice / etc.) + continued test-cast cleanup. Good cleanup-between-features work.
 

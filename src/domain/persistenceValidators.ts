@@ -8,6 +8,7 @@ import type {
   EdgeId,
   Entity,
   EntityId,
+  EntityState,
   EntityType,
   EvidenceItem,
   EvidenceSource,
@@ -263,6 +264,19 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   if (v.unspecified !== undefined && typeof v.unspecified !== 'boolean') {
     throw invalid(label, 'has non-boolean unspecified');
   }
+  // Session 135 / spec gap #4 Phase 1A — entity-state validation.
+  // Strict on the four-valued closed taxonomy; unknown values throw
+  // rather than fall back, so a corrupt import surfaces cleanly
+  // instead of silently downgrading to a default.
+  if (
+    v.state !== undefined &&
+    v.state !== 'true' &&
+    v.state !== 'false' &&
+    v.state !== 'unknown' &&
+    v.state !== 'disputed'
+  ) {
+    throw invalid(label, `has invalid state "${String(v.state)}"`);
+  }
   if (
     v.spanOfControl !== undefined &&
     v.spanOfControl !== 'control' &&
@@ -310,6 +324,9 @@ export const validateEntity = (v: unknown, label: string): Entity => {
     ...(attributes ? { attributes } : {}),
     ...(evidence ? { evidence } : {}),
     ...(importedFrom ? { importedFrom } : {}),
+    ...(v.state === 'true' || v.state === 'false' || v.state === 'unknown' || v.state === 'disputed'
+      ? { state: v.state as EntityState }
+      : {}),
   };
 };
 

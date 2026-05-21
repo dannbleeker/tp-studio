@@ -171,6 +171,38 @@ export type EvidenceItem = {
  *      current store — the ref is opaque until a UI affordance
  *      tries to resolve it.
  */
+/**
+ * Session 135 — spec major gap #4 Phase 1A: entity-state enum.
+ *
+ * The four-valued tag the spec wants on every entity so a CRT / FRT
+ * can be evaluated as a logical claim ("does this hold?") rather
+ * than just structurally drawn. Each value carries a distinct
+ * meaning that the propagation engine (Phase 1B) will read:
+ *
+ *   - `'true'`     — the user has asserted the entity holds in
+ *                    reality. UDEs and observed effects start here.
+ *   - `'false'`    — the user has asserted the entity does NOT
+ *                    hold (e.g. an injection that hasn't been
+ *                    implemented yet, or a falsified prediction).
+ *   - `'unknown'`  — the default. The state hasn't been established;
+ *                    neither true nor false has been claimed.
+ *   - `'disputed'` — two stakeholders disagree. Workshop sessions
+ *                    use this to mark items that need follow-up
+ *                    discussion before propagation can resume.
+ *
+ * Stored as a flat string union, not a discriminated record,
+ * because the four states are exhaustive and the value space is
+ * fixed. Optional on the entity — unset means `'unknown'`
+ * conceptually but isn't materialised on the entity to avoid
+ * carrying a default-value field on every legacy doc.
+ *
+ * Phase 1B adds the AND/OR propagation engine that walks the graph
+ * and surfaces "what changes if this entity is false?" Phase 1C
+ * adds the inspector + canvas-badge UI. This phase is schema-only
+ * so future iteration has a foundation to layer on.
+ */
+export type EntityState = 'true' | 'false' | 'unknown' | 'disputed';
+
 export type ImportedFromRef = {
   /** The source document's `TPDocument.id`. */
   docId: string;
@@ -262,6 +294,14 @@ export type Entity = {
    *  layer on top (Phase 1B/1C). Persisted across JSON export +
    *  share-link reload. See {@link ImportedFromRef}. */
   importedFrom?: ImportedFromRef;
+  /** Session 135 / spec major gap #4 Phase 1A — entity-state tag.
+   *  Four values: `'true'` / `'false'` / `'unknown'` / `'disputed'`.
+   *  Unset on the persisted entity means the user hasn't claimed
+   *  anything yet (conceptually `'unknown'`; the propagation
+   *  engine in Phase 1B treats absence + `'unknown'` identically).
+   *  Persisted across JSON export + share-link reload. See
+   *  {@link EntityState}. */
+  state?: EntityState;
   /** Book-derived (TOC-reading set): three-valued flag distinguishing what
    *  the user can do about this entity — directly control it, indirectly
    *  influence it, or only observe / accept it. Renders as a small icon

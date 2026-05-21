@@ -2,6 +2,37 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Confidence / state propagation Phase 1A (schema only)
+
+Schema-only first slice of spec major gap #4 — confidence / state propagation across logical chains. Parallels the #3 Phase 1A pattern: type + field + persistence emit/re-import + tests, with no UI surface yet. Phase 1B (propagation engine) and Phase 1C (what-if UI) layer on top in later sessions.
+
+**New type** in `src/domain/types/entity.ts`:
+
+```ts
+export type EntityState = 'true' | 'false' | 'unknown' | 'disputed';
+```
+
+Closed four-valued taxonomy modelling the user's claim about an entity:
+- `'true'` — asserted to hold
+- `'false'` — asserted not to hold
+- `'unknown'` — default; user hasn't claimed
+- `'disputed'` — stakeholders disagree
+
+**New field on `Entity`** — `state?: EntityState`. Unset means "unknown" conceptually; persisted across JSON export + share-link reload.
+
+**Persistence** in `persistenceValidators.ts`:
+- Strict validation: any value outside the four-valued taxonomy throws on import (loud surface for corrupt files rather than a silent downgrade).
+- Emit-or-omit on export so unset entities don't grow a `state: undefined` field.
+
+**3 new round-trip assertions** in `tests/domain/persistenceRoundTrip.test.ts`:
+- Full-shape entity with `state: 'disputed'` survives JSON export + re-import.
+- Minimal entity (no `state` set) has `state === undefined` post-round-trip — no inventing fields.
+- Malformed `state` value (`'maybe'`) is rejected at import with an error mentioning the field.
+
+**Why schema-first.** The propagation engine (Phase 1B) needs a stable persisted shape to plan against — once that lands, marking an entity `'false'` and watching downstream entities flip to `'disputed'` is straight expression evaluation. Shipping the schema standalone also means partial state — manually-tagged entities without propagation — is already a usable feature for review meetings.
+
+Major-gap tally: still 3/10 open (Phase 1A doesn't close the gap; Phase 1B will). All 1637 tests pass (+3); tsc clean; biome lint clean.
+
 ## Session 135 — Cross-diagram traceability Phase 1B: closes spec gap #3
 
 Phase 1B layers UI affordances on top of the Phase 1A schema. Users can now create + see cross-diagram entity imports end-to-end.

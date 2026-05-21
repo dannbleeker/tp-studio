@@ -83,6 +83,8 @@ describe('persistence round-trip — every optional Entity field', () => {
         sourceTitle: 'Original entity title',
         importedAt: '2026-05-21T08:00:00.000Z',
       },
+      // Session 135 / spec gap #4 Phase 1A — entity-state tag.
+      state: 'disputed',
     });
 
     const doc = makeDoc([ent], []);
@@ -155,6 +157,9 @@ describe('persistence round-trip — every optional Entity field', () => {
       sourceTitle: 'Original entity title',
       importedAt: '2026-05-21T08:00:00.000Z',
     });
+
+    // Session 135 / spec gap #4 Phase 1A — entity-state tag.
+    expect(survived.state).toBe('disputed');
   });
 
   it('preserves a minimal entity (no optionals) without inventing fields', () => {
@@ -180,6 +185,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     expect(survived.attributes).toBeUndefined();
     expect(survived.evidence).toBeUndefined();
     expect(survived.importedFrom).toBeUndefined();
+    expect(survived.state).toBeUndefined();
   });
 
   it('preserves an importedFrom ref with only the required fields (no sourceTitle / importedAt)', () => {
@@ -195,6 +201,36 @@ describe('persistence round-trip — every optional Entity field', () => {
     // Optionals stay absent on minimal ref.
     expect(survived?.importedFrom?.sourceTitle).toBeUndefined();
     expect(survived?.importedFrom?.importedAt).toBeUndefined();
+  });
+
+  it('rejects an entity with an unknown state value', () => {
+    // Session 135 / spec gap #4 Phase 1A — entity-state.
+    // The validator enumerates the allowed state values; anything
+    // else should throw rather than silently pass through.
+    const malformed = JSON.stringify({
+      schemaVersion: 8,
+      id: 'doc-test',
+      diagramType: 'crt',
+      title: 'malformed-state',
+      nextAnnotationNumber: 2,
+      groups: {},
+      resolvedWarnings: {},
+      createdAt: 1,
+      updatedAt: 1,
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'effect',
+          title: 'x',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          state: 'maybe', // not one of true | false | unknown | disputed
+        },
+      },
+      edges: {},
+    });
+    expect(() => importFromJSON(malformed)).toThrow(/state/i);
   });
 
   it('rejects an importedFrom ref missing docId', () => {
