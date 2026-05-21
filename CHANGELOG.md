@@ -2,6 +2,41 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Cross-diagram traceability Phase 1A (schema + persistence)
+
+Schema-only first slice of spec major gap #3. Foundation for the canonical TOC chain (UDE → CRT core driver → Cloud conflict → assumptions → injections → FRT desired effects / negative branches → PRT obstacles / milestones → TT actions / owners) carrying entity-level traceability across docs. Phase 1B (UI) layers on top.
+
+**New type** in `src/domain/types/entity.ts`:
+
+```ts
+export type ImportedFromRef = {
+  docId: string;       // source document's TPDocument.id
+  entityId: string;    // source entity's Entity.id
+  sourceTitle?: string; // snapshot at import time (lets the UI label even when the source doc isn't open)
+  importedAt?: string;  // ISO timestamp for provenance / audit
+};
+```
+
+Stored as plain strings (not branded `DocumentId` / `EntityId`) because (1) the persistence validator deals in plain strings on the way in, and (2) the referenced doc isn't guaranteed to be open in the current store — the ref is opaque metadata until a UI affordance tries to resolve it.
+
+**Entity field** added next to `evidence`:
+
+```ts
+importedFrom?: ImportedFromRef;
+```
+
+Metadata only — editing the source doesn't auto-propagate to imports. The UI will surface it as a clickable "imported from <doc> → <entity title>" badge (Phase 1B).
+
+**Persistence round-trip** via new `validateImportedFromRef` in `domain/persistenceValidators.ts`. Strict on the two required fields (throws on missing / non-string `docId` or `entityId`); optional `sourceTitle` and `importedAt` follow the type-or-omit rule. Threaded into `validateEntity` like the other optional fields.
+
+**Tests** — extended `tests/domain/persistenceRoundTrip.test.ts` with 2 new cases (5 total): full-shape round-trip (all four fields), minimal ref round-trip (just `docId` + `entityId`; optionals stay absent), and a malformed-ref rejection (`importedFrom: { entityId: '…' }` without `docId` throws). The minimal-entity test also asserts `importedFrom` stays undefined when not set.
+
+**No migration needed** — the field is purely additive at schema v8. Existing docs load unchanged.
+
+NEXT_STEPS spec gap #3 — Phase 1A struck through; Phase 1B (UI affordances) sketched as next.
+
+All 1629 tests pass (+2); tsc clean; biome lint clean.
+
 ## Session 135 — Two new CLR validators (closes two medium-gap items)
 
 Two single-session medium-gap rule additions. Both follow the existing CLR validator pattern (one file per rule, registered in `validators/index.ts` via `tieredRule(tier, id, fn)`).

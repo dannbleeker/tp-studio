@@ -8,13 +8,21 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **four of ten** original major gaps remain. **AI-integration (spec §5)** explicitly out of scope — see won't-build section. **Closed:** #1 NBR, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #9 formal mode-switching, #10 PowerPoint export.
 
-### 🔴 #3 — Cross-diagram traceability *(highest leverage of what's left)*
+### 🔴 #3 — Cross-diagram traceability *(Phase 1A done Session 135 — UI layers next)*
 
-Spec §6.2. Each `TPDocument` is standalone JSON; no entity/edge references across documents. The full chain (UDE → CRT core driver → Cloud conflict → assumptions → injections → FRT desired effects/negative branches → PRT obstacles/milestones → TT actions/owners) must be reconstructed manually. Spec considers this critical: *"Without traceability, each diagram becomes a standalone artifact and the TOC logic chain breaks."*
+Spec §6.2. **Phase 1A shipped:** `ImportedFromRef` type + `entity.importedFrom?: ImportedFromRef` field with strict persistence validation. The schema carries `docId`, `entityId`, optional `sourceTitle` snapshot, optional `importedAt` ISO timestamp. Persisted across JSON export + share-link reload. 2 new tests cover the round-trip + malformed-ref rejection.
 
-**Path:** `importedFrom: { docId, entityId }` ref on Entity + per-doc-store cross-ref index + UI affordances for "jump to source". Phase 1 could ship just the schema field + JSON round-trip; UI can layer on top.
+**Phase 1B (next):** UI affordances.
+- "Imported from <doc> → <entity>" badge on the entity inspector (clickable; opens the source doc if it's in localStorage, otherwise toasts "source doc not available").
+- New "Import from another doc…" command in the palette (open a doc-picker → entity-picker → mint a new entity in the current doc with `importedFrom` set + `title` copied from the source).
+- Filter / search on `importedFrom`-bearing entities so a user can audit "what came from where" across a portfolio.
 
-**Effort:** ~2–3 sessions. Highest-leverage structural gap. Unlocks the portfolio-view pattern-library sub-item and the full TP chain.
+**Phase 1C (later):** cross-doc store + auto-resolution.
+- A separate `documentsSlice` that holds open docs by id with their `TPDocument` payload.
+- "Jump to source" affordance that opens the source doc in a new tab / pane (depends on FL-EX8 multi-doc tabs — currently out of scope per the won't-build list).
+- Reverse-lookup index so an entity can also surface "imported INTO" pointers (who's referenced this entity from elsewhere?).
+
+**Effort remaining:** Phase 1B ~1 session; Phase 1C ~2 sessions (and gated on multi-doc).
 
 ### ~~🔴 #9 — Formal mode-switching~~ — *done Session 135*
 

@@ -76,6 +76,13 @@ describe('persistence round-trip — every optional Entity field', () => {
           updatedAt: 1_734_300_000_000,
         },
       ],
+      // Session 135 / spec gap #3 Phase 1A — cross-diagram traceability.
+      importedFrom: {
+        docId: 'src-doc-id-abc123',
+        entityId: 'src-entity-id-def456',
+        sourceTitle: 'Original entity title',
+        importedAt: '2026-05-21T08:00:00.000Z',
+      },
     });
 
     const doc = makeDoc([ent], []);
@@ -140,6 +147,14 @@ describe('persistence round-trip — every optional Entity field', () => {
       createdAt: 1_734_300_000_000,
       updatedAt: 1_734_300_000_000,
     });
+
+    // ImportedFrom — full shape with both optional fields set.
+    expect(survived.importedFrom).toEqual({
+      docId: 'src-doc-id-abc123',
+      entityId: 'src-entity-id-def456',
+      sourceTitle: 'Original entity title',
+      importedAt: '2026-05-21T08:00:00.000Z',
+    });
   });
 
   it('preserves a minimal entity (no optionals) without inventing fields', () => {
@@ -164,6 +179,51 @@ describe('persistence round-trip — every optional Entity field', () => {
     expect(survived.ecSlot).toBeUndefined();
     expect(survived.attributes).toBeUndefined();
     expect(survived.evidence).toBeUndefined();
+    expect(survived.importedFrom).toBeUndefined();
+  });
+
+  it('preserves an importedFrom ref with only the required fields (no sourceTitle / importedAt)', () => {
+    resetIds();
+    const ent = makeEntity({
+      title: 'Imported entity',
+      importedFrom: { docId: 'doc-abc', entityId: 'ent-xyz' },
+    });
+    const doc = makeDoc([ent], []);
+    const reimported = importFromJSON(exportToJSON(doc));
+    const survived = reimported.entities[ent.id];
+    expect(survived?.importedFrom).toEqual({ docId: 'doc-abc', entityId: 'ent-xyz' });
+    // Optionals stay absent on minimal ref.
+    expect(survived?.importedFrom?.sourceTitle).toBeUndefined();
+    expect(survived?.importedFrom?.importedAt).toBeUndefined();
+  });
+
+  it('rejects an importedFrom ref missing docId', () => {
+    // Construct a malformed doc — a ref without docId is invalid. The
+    // validator should throw rather than silently drop the field.
+    const malformed = JSON.stringify({
+      schemaVersion: 8,
+      id: 'doc-test',
+      diagramType: 'crt',
+      title: 'malformed',
+      nextAnnotationNumber: 2,
+      groups: {},
+      resolvedWarnings: {},
+      createdAt: 1,
+      updatedAt: 1,
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'effect',
+          title: 'x',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          importedFrom: { entityId: 'something' }, // missing docId
+        },
+      },
+      edges: {},
+    });
+    expect(() => importFromJSON(malformed)).toThrow(/docId/i);
   });
 
   it('survives a round-trip with an edge attached, preserving edge metadata', () => {

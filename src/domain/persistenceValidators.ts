@@ -15,6 +15,7 @@ import type {
   Group,
   GroupColor,
   GroupId,
+  ImportedFromRef,
   TPDocument,
 } from './types';
 
@@ -146,6 +147,40 @@ const validateEvidenceItem = (v: unknown, label: string): EvidenceItem => {
 };
 
 /**
+ * Session 135 — validate an `ImportedFromRef`. Strict on the two
+ * required string fields (`docId`, `entityId`); the optional
+ * `sourceTitle` + `importedAt` follow the type-or-omit rule.
+ * Absent → undefined so entities without an import-ref don't carry
+ * the field on round-trip.
+ */
+const validateImportedFromRef = (v: unknown, label: string): ImportedFromRef | undefined => {
+  if (v === undefined || v === null) return undefined;
+  if (!isObject(v)) throw invalid(label, 'must be an object');
+  if (typeof v.docId !== 'string' || v.docId.length === 0) {
+    throw invalid(label, 'has missing or non-string docId');
+  }
+  if (typeof v.entityId !== 'string' || v.entityId.length === 0) {
+    throw invalid(label, 'has missing or non-string entityId');
+  }
+  if (v.sourceTitle !== undefined && typeof v.sourceTitle !== 'string') {
+    throw invalid(label, 'has non-string sourceTitle');
+  }
+  if (v.importedAt !== undefined && typeof v.importedAt !== 'string') {
+    throw invalid(label, 'has non-string importedAt');
+  }
+  return {
+    docId: v.docId,
+    entityId: v.entityId,
+    ...(typeof v.sourceTitle === 'string' && v.sourceTitle.length > 0
+      ? { sourceTitle: v.sourceTitle }
+      : {}),
+    ...(typeof v.importedAt === 'string' && v.importedAt.length > 0
+      ? { importedAt: v.importedAt }
+      : {}),
+  };
+};
+
+/**
  * Session 134 — validate the `evidence` array on an entity. Strict per
  * item (see {@link validateEvidenceItem}). Empty / absent → undefined
  * so entities without evidence don't carry an empty array on round-trip.
@@ -243,6 +278,9 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   }
   const attributes = validateAttributes(v.attributes, `${label}.attributes`);
   const evidence = validateEvidenceArray(v.evidence, `${label}.evidence`);
+  // Session 135 / spec gap #3 Phase 1A — cross-diagram traceability
+  // reference. Absent on most entities; round-trips when set.
+  const importedFrom = validateImportedFromRef(v.importedFrom, `${label}.importedFrom`);
   return {
     id: v.id as EntityId,
     type: v.type,
@@ -271,6 +309,7 @@ export const validateEntity = (v: unknown, label: string): Entity => {
       : {}),
     ...(attributes ? { attributes } : {}),
     ...(evidence ? { evidence } : {}),
+    ...(importedFrom ? { importedFrom } : {}),
   };
 };
 

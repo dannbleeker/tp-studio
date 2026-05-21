@@ -40,6 +40,7 @@ export type {
   EvidenceItem,
   EvidenceSource,
   EvidenceStrength,
+  ImportedFromRef,
   SpanOfControl,
 } from './entity';
 export type { Group, GroupColor } from './group';

@@ -149,6 +149,49 @@ export type EvidenceItem = {
   updatedAt: number;
 };
 
+/**
+ * Session 135 — spec major gap #3 Phase 1A: cross-diagram traceability.
+ *
+ * A reference back to the entity that originally inspired this one,
+ * for the canonical TOC chain (UDE → CRT core driver → Cloud conflict
+ * → assumptions → injections → FRT desired effects / negative
+ * branches → PRT obstacles / milestones → TT actions / owners).
+ *
+ * The reference is metadata, not a live link — editing the source
+ * doesn't auto-propagate to imports. The UI surfaces it as a
+ * clickable "imported from <doc> → <entity>" badge so a reader can
+ * jump back to the source. Round-trips through JSON export +
+ * share-link reload so traceability survives serialization.
+ *
+ * Both ids are stored as plain strings rather than the branded
+ * `DocumentId` / `EntityId` types because:
+ *   1. The persistence validator deals in plain strings on the way
+ *      in (the brand is the construction-site cast).
+ *   2. The referenced doc isn't guaranteed to be open in the
+ *      current store — the ref is opaque until a UI affordance
+ *      tries to resolve it.
+ */
+export type ImportedFromRef = {
+  /** The source document's `TPDocument.id`. */
+  docId: string;
+  /** The source entity's `Entity.id` inside that document. */
+  entityId: string;
+  /**
+   * Optional snapshot of the source entity's title at import time.
+   * Lets the UI render "imported from CRT-1's 'Customer churn'"
+   * even when the source doc isn't open in the current store /
+   * isn't reachable. Updates if the user explicitly re-imports;
+   * doesn't auto-sync.
+   */
+  sourceTitle?: string;
+  /**
+   * Optional ISO-string timestamp of when the import happened.
+   * Provenance for audit trails — useful in workshop settings
+   * where the chain of derivations matters.
+   */
+  importedAt?: string;
+};
+
 export type Entity = {
   id: EntityId;
   type: EntityType;
@@ -211,6 +254,14 @@ export type Entity = {
    *  has been recorded, so docs without evidence don't carry an
    *  empty array. See {@link EvidenceItem}. */
   evidence?: EvidenceItem[];
+  /** Session 135 / spec major gap #3 Phase 1A — cross-diagram
+   *  traceability reference. Records "this entity was originally
+   *  imported from another doc's entity," the foundation of the
+   *  TOC logic chain across diagram types. Metadata only — editing
+   *  the source doesn't auto-propagate to imports; UI affordances
+   *  layer on top (Phase 1B/1C). Persisted across JSON export +
+   *  share-link reload. See {@link ImportedFromRef}. */
+  importedFrom?: ImportedFromRef;
   /** Book-derived (TOC-reading set): three-valued flag distinguishing what
    *  the user can do about this entity — directly control it, indirectly
    *  influence it, or only observe / accept it. Renders as a small icon
