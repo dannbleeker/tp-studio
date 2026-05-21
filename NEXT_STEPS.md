@@ -63,13 +63,12 @@ Spec §8. No SSO/SAML/OIDC, no Microsoft 365 / Google Workspace / Slack / Teams 
 
 ## Infrastructure debt / refactor
 
-From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4 / #5 / #6 / #7 already shipped (button class constants, Select primitive, chip palette, EdgeAssumptions deprecation, TextArea ref, TPNode split). Remaining:
+From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4 / #5 / #6 / #7 already shipped (button class constants, Select primitive, chip palette, EdgeAssumptions deprecation, TextArea ref, TPNode split). **Plus the infra-debt batch (Session 135):** custom-equality narrowing for `MultiInspector` + `GroupInspector`, `DocumentInspector` inline-input migration, `RadioGroup` button-class migration, `reactFlowFixtures.ts` typed builders + biggest-test-cast-cleanup file migration. Remaining:
 
-- **File splits (Tier 2, #8–#15):** TPEdge.tsx (600 lines), entitiesSlice.ts (576), entityTypeMeta.ts (506), selectionVerbs.ts (541), CreationWizardPanel.tsx (550), dialogsSlice.ts (471), PrintPreviewDialog.tsx (500), ContextMenu.tsx (495). Each ~30–60 min. Take them as cleanup gaps between feature work.
-- **Replace `as unknown as X` test casts** with typed mock builders (~21 instances, mostly in `useGraphMutations.test.tsx`). Small `tests/helpers/reactFlowFixtures.ts`. ~1 hour.
-- **Migrate remaining inline `<input>` JSX to `<TextInput>`** — `DocumentInspector.tsx:133,144`, `PrintPreviewDialog.tsx:451,472`, `CustomEntityClassesSection.tsx:154–187`. ~30 min.
-- **Migrate remaining inline button-class callers** to `SELECTED_BUTTON_CLASS_PLAIN` family — `CustomEntityClassesSection.tsx:213` icon picker, `formPrimitives.tsx:51` RadioGroup. ~15 min.
-- **Custom-equality narrowing for `MultiInspector` + `GroupInspector`** — both still subscribe to whole `s.doc.entities` / `s.doc.edges` maps. Wrap with `useDocumentStoreWith` + `arrayShallowEqualByKeys` (the pattern landed for `AttachedEdgesList`). ~45 min.
+- **File splits (Tier 2, #8–#15):** TPEdge.tsx (600 lines, tightly-coupled JSX — forced split low value), entitiesSlice.ts (576, clean section boundaries — natural unit), entityTypeMeta.ts (506), selectionVerbs.ts (541), CreationWizardPanel.tsx (550), dialogsSlice.ts (471), PrintPreviewDialog.tsx (500), ContextMenu.tsx (495). Each ~30–60 min. Take them as cleanup gaps between feature work; `entitiesSlice.ts` is the highest-value first pick (clean assumption / attribute / evidence sections → composable StateCreator pattern).
+- **Continue `as unknown as X` test-cast cleanup.** `useGraphMutations.test.tsx` migrated to `reactFlowFixtures.ts` builders (15 casts → 0). Other 9 files have 1-3 casts each — mechanical follow-up, extend `reactFlowFixtures.ts` for additional shapes as needed. ~30 min total.
+- **Remaining inline `<input>` migrations.** `PrintPreviewDialog.tsx:451,472` and `CustomEntityClassesSection.tsx:154–187` deliberately kept inline this session — they're intentionally smaller (`text-xs py-1`) for dense-dialog packing. Adopting `<TextInput>` would shift visual size unless `formPrimitives.tsx` grows a `size: 'sm' | 'md'` prop. Combined ~45 min.
+- **Icon-picker button-class migration** in `CustomEntityClassesSection.tsx:213`. The current shade (`text-indigo-700` for icon currentColor) intentionally differs from `SELECTED_BUTTON_CLASS`'s `text-indigo-900` (text). Adopt either by adding a third sister constant or accept the visual shift. ~15 min.
 - **TPNode coverage beyond 48% statements** — S&T 5-facet rows, hidden-descendant chip, custom-class icon resolution, zoom-up overlay, NodeToolbar conditional. ~1 hour.
 
 ---
