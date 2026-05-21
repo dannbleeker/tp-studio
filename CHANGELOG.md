@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Book PDF polish: outlines, metadata, page numbers, running header, reproducible date
+
+Six items from the post-Kindle PDF audit, batched into one commit:
+
+**Quick-win bundle:**
+
+- **#1 — PDF outlines / bookmarks back.** Chromium 148's `page.pdf({ outline: true })` silently failed to emit `/Outlines` objects (Skia regression). New `postProcessPdf` step in `scripts/build-book-pdf.mjs` rebuilds the 24-chapter bookmark tree via `pdf-lib`: reads the `/Dests` map that Chromium DID produce, builds one `/Outline` item per chapter with proper `/Prev` / `/Next` linkage, wires `/Outlines` into the Catalog, and sets `/PageMode /UseOutlines` so viewers show the bookmark sidebar on open.
+- **#2 — Full PDF metadata.** Chromium emitted only `/Title` + `/Creator`. Now writes `/Author "Dann Pedersen"`, `/Subject` (the book's subtitle), `/Keywords` (11 TOC-related terms), `/Lang "en"`, plus accurate `/CreationDate` + `/ModDate`. Verified via `pdf-lib` round-trip: title, author, subject, keywords all readable.
+- **#7 — qpdf linearization (CI).** Adds a `qpdf --linearize` post-process step. Linearized PDFs render the first page before the rest of the file downloads — meaningful for browser viewers and historically a Kindle quirk. `qpdf` installed via `apt` in the CI workflow; local builds skip with a notice when qpdf isn't on PATH (Windows dev machines). The PDF is fully valid + readable either way; linearization is strictly a render-speed optimization.
+
+**Polish bundle:**
+
+- **#5 — Page numbers.** `@page { @bottom-center { content: counter(page); ... } }` puts a centred page number in the footer of every body page.
+- **#6 — Running header.** `@page { @top-center { content: "Causal Thinking with TP Studio"; ... } }` puts the book title in the top margin of every body page. Cover + TOC opt out via `@page cover` / `@page toc` named-page contexts (cover stays clean; TOC doesn't carry chrome).
+- **#8 — Reproducible build date.** Replaced `new Date()` with `git log -1 --format=%cI -- docs/guide scripts/build-book-pdf.mjs scripts/lib/bookChapters.mjs scripts/lib/clrMapHtml.mjs` — the latest commit timestamp affecting any PDF input. Identical source → identical timestamp → identical PDF. Stamped on the cover-page "Generated YYYY-MM-DD" text AND the PDF's `/CreationDate` / `/ModDate`. Falls back to `new Date()` outside a git checkout.
+
+**Wiring:**
+
+- `pdf-lib ^1.17.1` added as devDep.
+- CI workflow installs `qpdf` via apt before running `pnpm book`.
+- `package.json` book scripts unchanged — `pnpm book` still produces both EPUB + PDF.
+
+**What's left from the audit:** #4 tagged-PDF accessibility (`/MarkInfo` + `/StructTreeRoot`). Lower priority now that EPUB ships for accessible reading; would require switching from Chromium/Skia to a tagged-PDF toolchain (Pandoc-LaTeX). Parked in NEXT_STEPS.
+
+All 1588 tests pass; tsc clean; biome lint clean. Backlog Kindle + PDF-polish items both marked done.
+
 ## Session 135 — Book EPUB build (fixes the Kindle "shows up but can't open" issue)
 
 Closes the **Book does not work on Kindle** backlog item. The auto-rebuilt PDF (Chromium/Skia, A4, untagged, no `/Author` or `/Lang` metadata) is fine in desktop PDF readers but doesn't render reliably on Kindle — Send-to-Kindle's 2022+ reflow path can't process untagged A4 PDFs, and on a 6-inch screen the A4 fixed-layout is unusable anyway. Fix: ship an EPUB alongside the PDF. Send-to-Kindle accepts `.epub` natively and reflows it perfectly.

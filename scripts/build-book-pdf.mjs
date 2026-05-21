@@ -31,10 +31,12 @@
  * regenerating.
  */
 
-import { readdir, readFile } from 'node:fs/promises';
+import { execSync } from 'node:child_process';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
 import { marked } from 'marked';
+import { PDFDocument, PDFHexString, PDFName, PDFNumber, PDFRef, PDFString } from 'pdf-lib';
 import {
   GUIDE_DIR,
   IMAGE_ROOTS,
@@ -50,6 +52,60 @@ import { CLR_MAP_CSS, clrMapHtml } from './lib/clrMapHtml.mjs';
 // canonical chapter list + add-a-chapter instructions.
 
 const OUT_PATH = join(GUIDE_DIR, 'Causal-Thinking-with-TP-Studio.pdf');
+
+// Session 135 — book-level metadata shared with the EPUB build. Used
+// by the pdf-lib post-process to write Dublin Core-equivalent
+// `/Author`, `/Subject`, `/Keywords`, `/Lang` into the PDF Catalog
+// (Chromium/Skia by default emits only `/Title` + `/Creator`).
+const BOOK_TITLE = 'Causal Thinking with TP Studio';
+const BOOK_SUBTITLE =
+  "A practitioner's guide to the Theory of Constraints, illustrated end-to-end with TP Studio.";
+const BOOK_AUTHOR = 'Dann Pedersen';
+const BOOK_KEYWORDS = [
+  'Theory of Constraints',
+  'TOC',
+  'CRT',
+  'FRT',
+  'PRT',
+  'TT',
+  'Evaporating Cloud',
+  'Goal Tree',
+  'Strategy and Tactics',
+  'Causal reasoning',
+  'TP Studio',
+];
+const BOOK_LANG = 'en';
+
+/**
+ * Session 135 — Polish bundle #8: reproducible build date.
+ *
+ * The cover-page "Generated YYYY-MM-DD" text + the PDF's
+ * `/CreationDate` previously used `new Date()` — every rebuild
+ * stamped a different timestamp, even when the manuscript hadn't
+ * changed. That breaks reproducible-build verification and bloats
+ * the git diff of the committed PDF.
+ *
+ * Instead, derive the date from the latest git commit that touched
+ * any input affecting the PDF output: the manuscript, screenshots,
+ * diagrams, build scripts, and the shared chapter manifest.
+ * Identical source → identical timestamp → identical PDF.
+ *
+ * Fallback to `new Date()` if git isn't available (e.g. running
+ * outside a checkout). The fallback exists so the script doesn't
+ * fail in degenerate dev contexts; CI / the committed PDF will
+ * always have a real timestamp.
+ */
+function getBookDate() {
+  try {
+    const cmd =
+      'git log -1 --format=%cI -- docs/guide scripts/build-book-pdf.mjs scripts/lib/bookChapters.mjs scripts/lib/clrMapHtml.mjs';
+    const out = execSync(cmd, { encoding: 'utf8', cwd: join(GUIDE_DIR, '..', '..') }).trim();
+    if (out) return new Date(out);
+  } catch {
+    // Fall through to `new Date()`.
+  }
+  return new Date();
+}
 
 /**
  * Walk the rendered HTML for each chapter and inline every
@@ -162,9 +218,43 @@ function tocHtml(chapters) {
  * page margin, and the cover/TOC visual treatment.
  */
 const STYLESHEET = `
+/* Session 135 — Polish bundle #5 + #6: page numbers in the bottom
+ * margin and a running book-title header at the top of every
+ * non-cover page. Cover + TOC suppress both via the named-page
+ * overrides below ('@page cover' and '@page toc'). Chromium's PDF
+ * renderer honours @page margin boxes; sizing tuned to fit inside
+ * the 22mm vertical margin without crowding the content area. */
 @page {
   size: A4;
   margin: 22mm 18mm 22mm 18mm;
+  @bottom-center {
+    content: counter(page);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 9pt;
+    color: #9ca3af;
+    margin-top: 8mm;
+  }
+  @top-center {
+    content: "Causal Thinking with TP Studio";
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 8.5pt;
+    color: #9ca3af;
+    letter-spacing: 0.08em;
+    margin-bottom: 8mm;
+  }
+}
+
+/* Cover + TOC: no header/footer chrome. Named-page contexts make
+ * the @page declaration apply only to elements that opt in via
+ * 'page: cover' / 'page: toc'. */
+@page cover {
+  margin: 0;
+  @bottom-center { content: ""; }
+  @top-center { content: ""; }
+}
+@page toc {
+  @bottom-center { content: ""; }
+  @top-center { content: ""; }
 }
 
 * {
@@ -193,6 +283,10 @@ body {
   justify-content: center;
   text-align: center;
   page-break-after: always;
+  /* Session 135 — opt into the 'cover' named-page context so the
+   * @page cover { ... } rule suppresses the header / footer chrome
+   * on the cover. Chromium respects the 'page' property. */
+  page: cover;
 }
 .cover-inner {
   max-width: 480px;
@@ -243,6 +337,10 @@ body {
  * renderer. */
 .toc-page {
   /* no forced page-breaks — neighbours handle it */
+  /* Session 135 — opt into the 'toc' named-page context so the
+   * @page toc { ... } rule suppresses the header / footer chrome
+   * on the contents page. */
+  page: toc;
 }
 .toc-title {
   font-size: 26pt;
@@ -436,7 +534,10 @@ async function main() {
     })
   );
 
-  const now = new Date();
+  // Session 135 / Polish #8 — reproducible build date. Identical
+  // source produces an identical PDF.
+  const now = getBookDate();
+  console.log(`  build date: ${now.toISOString().split('T')[0]}`);
   const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -467,8 +568,159 @@ ${chapterBodies.join('\n')}
     outline: true,
   });
   await browser.close();
+  console.log(`  ✓ Playwright wrote raw PDF`);
+
+  // Session 135 — post-process via pdf-lib to add the metadata +
+  // outlines that Chromium/Skia doesn't emit. See `postProcessPdf`
+  // below for the rationale per step.
+  await postProcessPdf(OUT_PATH, chapters, now);
+
+  // Session 135 / Quick-win #7 — best-effort linearization via
+  // `qpdf --linearize`. Linearized PDFs render the first page
+  // before fully downloading, which matters for browser viewers
+  // and some older Kindle firmware. Silently skipped when qpdf
+  // isn't on PATH (local dev on Windows doesn't have it by
+  // default; the CI Ubuntu runner installs it via apt). The PDF
+  // is fully valid + readable either way — linearization is
+  // strictly a render-speed optimization.
+  tryLinearize(OUT_PATH);
 
   console.log(`✓ Wrote ${OUT_PATH}`);
+}
+
+/**
+ * Session 135 — post-process the raw Chromium output with `pdf-lib`
+ * to fix two long-standing gaps:
+ *
+ *   Quick-win #1 — navigable PDF outlines / bookmarks. Chromium 148
+ *   was supposed to emit `/Outlines` from `page.pdf({ outline: true
+ *   })` but the actual output had zero outline objects (Skia
+ *   regression; unrelated to our content). We rebuild the outline
+ *   from the chapter manifest + the `/Dests` map that Chromium DID
+ *   produce, so every PDF viewer's bookmark sidebar lights up.
+ *
+ *   Quick-win #2 — full metadata. Chromium emits only `/Title` +
+ *   `/Creator`. We add `/Author`, `/Subject`, `/Keywords`, `/Lang`
+ *   so the file matches the EPUB's Dublin Core metadata + reads
+ *   correctly in import classifiers (Send-to-Kindle, library
+ *   software).
+ *
+ * Both passes preserve the existing document structure — we read
+ * the PDF in, mutate the Catalog + Info dictionaries, and re-save.
+ * The byte-level diff is small and the resulting PDF opens
+ * identically in Adobe / Preview / Chromium.
+ */
+async function postProcessPdf(path, chapters, now) {
+  console.log(`  post-processing (metadata + outlines)…`);
+  const raw = await readFile(path);
+  const pdfDoc = await PDFDocument.load(raw, { updateMetadata: false });
+
+  // ── Metadata ────────────────────────────────────────────────
+  pdfDoc.setTitle(BOOK_TITLE);
+  pdfDoc.setAuthor(BOOK_AUTHOR);
+  pdfDoc.setSubject(BOOK_SUBTITLE);
+  pdfDoc.setKeywords(BOOK_KEYWORDS);
+  pdfDoc.setProducer('TP Studio book builder (Playwright + pdf-lib)');
+  pdfDoc.setCreator('TP Studio book builder');
+  pdfDoc.setCreationDate(now);
+  pdfDoc.setModificationDate(now);
+  // `/Lang` lives on the Catalog, not the Info dict. pdf-lib doesn't
+  // wrap that one — set it directly via the low-level API.
+  const catalog = pdfDoc.catalog;
+  catalog.set(PDFName.of('Lang'), PDFString.of(BOOK_LANG));
+
+  // ── Outlines ────────────────────────────────────────────────
+  // Strategy: walk the named-destinations map that Chromium emits
+  // (one entry per anchor id, including each chapter's H1 slug).
+  // For every chapter in the manifest, find its slug in the dest
+  // map. Build a flat outline list (one item per chapter) with the
+  // PDF spec's `/First`, `/Last`, `/Prev`, `/Next`, `/Parent`,
+  // `/Count` linkage. Grouping by part-headers (matching the
+  // book's TOC structure) would be nicer but pdf-lib's low-level
+  // outline construction stays simpler at one level deep — and the
+  // 24-chapter flat list still reads fine in any viewer's bookmark
+  // sidebar.
+  const destsRef = catalog.get(PDFName.of('Dests'));
+  if (destsRef) {
+    const dests = pdfDoc.context.lookup(destsRef);
+    // dests is a PDFDict mapping name → destination array.
+    // Filter to the chapters that have a matching dest.
+    const items = [];
+    for (const c of chapters) {
+      const destValue = dests.get(PDFName.of(c.slug));
+      if (!destValue) continue;
+      items.push({ title: c.title, dest: destValue });
+    }
+    if (items.length > 0) {
+      // Reserve a ref for /Outlines first so each item can point at
+      // it as their /Parent. Build the items with sentinel /Prev
+      // and /Next, then back-patch the linkage after registration.
+      const outlinesRef = PDFRef.of(pdfDoc.context.largestObjectNumber + 1);
+      const itemRefs = items.map((_, i) => PDFRef.of(outlinesRef.objectNumber + 1 + i));
+
+      // Build + register each outline item.
+      items.forEach((item, i) => {
+        const itemDict = pdfDoc.context.obj({
+          Title: PDFHexString.fromText(item.title),
+          Parent: outlinesRef,
+          Dest: item.dest,
+          ...(i > 0 ? { Prev: itemRefs[i - 1] } : {}),
+          ...(i < items.length - 1 ? { Next: itemRefs[i + 1] } : {}),
+        });
+        pdfDoc.context.assign(itemRefs[i], itemDict);
+      });
+
+      // Build + register the /Outlines root.
+      const outlinesDict = pdfDoc.context.obj({
+        Type: 'Outlines',
+        First: itemRefs[0],
+        Last: itemRefs[itemRefs.length - 1],
+        Count: PDFNumber.of(items.length),
+      });
+      pdfDoc.context.assign(outlinesRef, outlinesDict);
+
+      // Wire it into the Catalog + ask viewers to show the
+      // bookmark panel on open.
+      catalog.set(PDFName.of('Outlines'), outlinesRef);
+      catalog.set(PDFName.of('PageMode'), PDFName.of('UseOutlines'));
+      console.log(`  ✓ Outlines: ${items.length} chapters wired into bookmark sidebar`);
+    } else {
+      console.warn(`  ⚠ No chapter destinations found in /Dests — skipping outline build`);
+    }
+  } else {
+    console.warn(`  ⚠ No /Dests dictionary — skipping outline build`);
+  }
+
+  const out = await pdfDoc.save({ useObjectStreams: false });
+  await writeFile(path, out);
+  console.log(`  ✓ Metadata + outlines written`);
+}
+
+/**
+ * Session 135 — best-effort linearization via the qpdf system
+ * binary. Linearization reorders the PDF so the first page renders
+ * before the rest of the file downloads — important for browser
+ * viewers and sometimes a Kindle prerequisite.
+ *
+ * `qpdf` is installed by the rebuild-book-artifacts workflow via
+ * apt; local dev machines may not have it (Windows in particular).
+ * Skipping when qpdf is unavailable is fine — the unlinearized PDF
+ * is fully valid and renders correctly in every modern viewer.
+ */
+function tryLinearize(path) {
+  try {
+    // Run qpdf in-place via the `--replace-input` form. Verbose
+    // stderr suppressed; we only log success / skip.
+    execSync(`qpdf --linearize --replace-input "${path}"`, { stdio: 'pipe' });
+    console.log(`  ✓ Linearized (qpdf)`);
+  } catch (err) {
+    const msg = err?.message ?? String(err);
+    if (/ENOENT|not recognized|not found/i.test(msg)) {
+      console.log(`  ⚠ qpdf not on PATH — skipping linearization (non-fatal)`);
+    } else {
+      console.warn(`  ⚠ qpdf failed: ${msg.split('\n')[0]} — keeping unlinearized PDF`);
+    }
+  }
 }
 
 main().catch((err) => {

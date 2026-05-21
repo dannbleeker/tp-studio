@@ -92,6 +92,15 @@ jobs:
         # it because `pnpm book` runs both builds.
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: Install qpdf
+        # Session 135 — the PDF post-process runs `qpdf --linearize` to
+        # produce a fast-first-page-render artifact. qpdf isn't pre-
+        # installed on the Ubuntu runner; install via apt. The build
+        # script soft-fails when qpdf isn't on PATH (skips
+        # linearization with a notice), so this step is strictly an
+        # optimization — the PDF builds successfully either way.
+        run: sudo apt-get update && sudo apt-get install -y qpdf
+
       - name: Rebuild PDF + EPUB
         # `pnpm book` runs the EPUB build then the PDF build (EPUB
         # first because it's the faster of the two — fail-fast on
