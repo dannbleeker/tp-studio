@@ -6,21 +6,23 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ## Open major gaps from the spec analysis
 
-Source: `toc_tp_software_requirements.docx` (Session 134 review). Seven of ten major gaps still open after this session's run. **AI-integration (spec §5) explicitly out of scope** — moved to the won't-build section below.
+Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **five of ten** original major gaps remain. **AI-integration (spec §5)** explicitly out of scope — see won't-build section. **Closed:** #1 NBR, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #10 PowerPoint export.
 
-### 🔴 #2 — Multi-user collaboration
-
-Spec §4. Single-user local-only. Missing: real-time multi-user editing, comments on entities/edges, role-based participation (facilitator / contributor / reviewer / decision owner), workshop mode with voting + timeboxing, stakeholder sign-off on critical assumptions, decision log.
-
-**Effort:** Largest scope item. Changes TP Studio from local-first to cloud-backed — a product-direction decision, not a sprint.
-
-### 🔴 #3 — Cross-diagram traceability
+### 🔴 #3 — Cross-diagram traceability *(highest leverage of what's left)*
 
 Spec §6.2. Each `TPDocument` is standalone JSON; no entity/edge references across documents. The full chain (UDE → CRT core driver → Cloud conflict → assumptions → injections → FRT desired effects/negative branches → PRT obstacles/milestones → TT actions/owners) must be reconstructed manually. Spec considers this critical: *"Without traceability, each diagram becomes a standalone artifact and the TOC logic chain breaks."*
 
-**Path:** `importedFrom: { docId, entityId }` ref on Entity + per-doc-store cross-ref index + UI affordances for "jump to source".
+**Path:** `importedFrom: { docId, entityId }` ref on Entity + per-doc-store cross-ref index + UI affordances for "jump to source". Phase 1 could ship just the schema field + JSON round-trip; UI can layer on top.
 
-**Effort:** ~2–3 sessions. Highest-leverage structural gap.
+**Effort:** ~2–3 sessions. Highest-leverage structural gap. Unlocks the portfolio-view pattern-library sub-item and the full TP chain.
+
+### 🔴 #9 — Formal mode-switching *(most bounded of what's left)*
+
+Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has guided prompts (method checklist) and walkthrough overlays, but no explicit mode-state, no facilitator-vs-contributor view, no presentation mode beyond exports.
+
+**Path:** Introduce `ui.appMode: 'expert' | 'guided' | 'workshop' | 'presentation'` in the UI slice (defaults to `'expert'`). Per-mode: surface/hide chrome density, toggle the method-checklist prominence, gate canvas zoom controls. Presentation mode hides every chrome element except the canvas + a step-through control.
+
+**Effort:** ~1–2 sessions.
 
 ### 🔴 #4 — Confidence / propagation simulation
 
@@ -28,73 +30,61 @@ Spec §3.4. No `Entity.state` enum (`true / false / unknown / disputed`), no pro
 
 **Effort:** Schema-light (entity state enum + propagation function); the trickier part is the "what-if" UX. ~3 sessions.
 
-### ~~🔴 #6 — Entity ownership + first-class evidence model~~ — *done Session 134*
+### 🔴 #2 — Multi-user collaboration *(product-direction decision, not a sprint)*
 
-Spec §§5.2, 6.1. **Both halves shipped Session 134:** (1) dedicated `entity.owner?: string` + `entity.lastValidatedAt?: number` with Inspector field block, `Mark validated` / `Re-validate` button, and risk-register CSV `owner` column; (2) structured `entity.evidence?: EvidenceItem[]` array with five-way source taxonomy (`observed / stakeholder / metric / policy / assumption`), three-way strength rating (`weak / moderate / strong`), URL refs, per-evidence `validatedAt` + `validatedBy`, EvidenceList UI in the inspector, and risk-register CSV `evidence` column. JSON round-trip persistence works end-to-end (fixed a pre-existing bug where the owner + lastValidatedAt fields were silently dropped on validate). 18 new tests cover store actions, persistence, and CSV format.
+Spec §4. Single-user local-only. Missing: real-time editing, comments, role-based participation, workshop voting + timeboxing, stakeholder sign-off, decision log.
 
-Closes spec gap #6.
+**Status:** Intentionally deprioritised. Changes TP Studio from local-first to cloud-backed. Revisit only if a hosted product direction lands.
 
-### ~~🔴 #7 — Task / execution bridge~~ — *first half done Session 135*
+### 🔴 #8 — Enterprise integration *(tied to #2)*
 
-Spec §§2.6, 8. TT actions don't flow into a task tracker. **Phase 1 shipped Session 135:** `Task tracker CSV` export in the Export… picker. One CSV row per `action` entity; columns: `step / action / precondition / outcome / owner / due_date / status / success_criteria`. Drops into Jira / Trello / Planner / Asana via their CSV importers. Gated by `requiresEntityType: 'action'` so docs without actions don't see the empty-CSV trap. The dedicated `entity.owner` field is preferred; `attributes.dueDate.value` and `attributes.implemented.value` (bool) feed the due-date + status columns; the description provides success criteria (whitespace-collapsed to a single line).
-
-**Still open:** per-tracker formats (Jira XML, Trello JSON, Asana CSV variant), the spec's "buy-in narrative" generator per action (dropped along with the rest of the AI integration — see Won't build), and bidirectional sync (push status changes back from the tracker — likely never; the doc is the source of truth).
-
-**Effort:** Per-tracker formats are ~30 min each if a stakeholder asks. Otherwise the universal CSV is enough.
-
-### 🔴 #8 — Enterprise integration
-
-Spec §8. No SSO/SAML/OIDC, no Microsoft 365 / Google Workspace, no Slack/Teams, no Confluence/SharePoint, no Jira/Azure DevOps. TP Studio is browser-local PWA. Tied to collaboration scope decision (#2).
-
-### 🔴 #9 — Formal mode-switching
-
-Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has guided prompts (method checklist) and walkthrough overlays, but no explicit mode-state, no facilitator-vs-contributor view, no presentation mode beyond exports.
-
-**Effort:** ~1–2 sessions.
+Spec §8. No SSO/SAML/OIDC, no Microsoft 365 / Google Workspace / Slack / Teams / Confluence / SharePoint / Jira / Azure DevOps. TP Studio is browser-local PWA. Re-open with #2.
 
 ---
 
 ## Open medium gaps
 
-- **"Preserve rejected logic in collapsed groups"** — partial via revision branches; no archive-of-rejected concept on the live canvas.
-- **Action quality checks (control / influence / authority for TT actions)** — method checklist hints at it ("Test against your locus — control / influence / external") but not enforced per-action validator. Could be a new `tt-action-locus-set` validator.
-- **Action eligibility based on satisfied preconditions** — depends on confidence/state propagation (#4).
-- **Roll-up validation for S&T** (sufficiency of subordinate tactics to support the parent) — standard CLR only; no tactic-roll-up-sufficiency validator. Spec considers this an S&T-specific need.
-- **Sufficiency / parallel / necessary assumption distinction for S&T** — method checklist labels mention NA/PA/SA but the data model doesn't sub-type assumptions. Would need `Assumption.kind: 'necessary' | 'parallel' | 'sufficient'`.
-- **Audit trail / GDPR / data retention** — local-only sidesteps GDPR; no audit log of assumption-acceptance / injection-acceptance / decision-resolution. Enterprise feature, tied to #2/#8.
-- **Reactive vs proactive NBR mitigation distinction** — current NBR implementation (Session 134) infers mitigation status from injection-reachability; spec wants a formal `mitigation.kind: 'reactive' | 'proactive'` field. Re-open if practitioners ask for the distinction.
+- **Action quality checks** (control / influence / authority for TT actions). New `tt-action-locus-set` validator that fires on action entities without a `spanOfControl` set. Method checklist hints at it ("Test against your locus") but no enforcement. ~1 hour.
+- **Roll-up validation for S&T** — sufficiency of subordinate tactics to support the parent. New `st-tactic-rollup-sufficiency` validator. ~1 hour.
+- **S&T assumption sub-typing** — `Assumption.kind: 'necessary' | 'parallel' | 'sufficient'`. Schema + UI for the discriminator. ~1 session.
+- **"Preserve rejected logic in collapsed groups"** — currently partial via revision branches. No archive-of-rejected concept on the live canvas. Would mean a `Group.archived?: true` flag + a "show archived" toggle. ~1 session.
+- **Reactive vs proactive NBR mitigation distinction** — current NBR (Session 134) infers mitigation status from injection-reachability. Spec wants a formal `mitigation.kind` field. Re-open only if practitioners ask.
+- **Action eligibility based on satisfied preconditions** — gated by #4.
+- **Audit trail / GDPR / data retention** — gated by #2/#8.
 
 ---
 
 ## Open minor gaps
 
-- **Stakeholder sign-off workflow** — depends on multi-user collaboration (#2).
-- **Pattern library — sub-item C.** Sub-item A (reusable domain templates) shipped Session 134. Sub-item C (portfolio of improvement initiatives across multiple docs) gated by cross-diagram traceability (#3) + entity ownership/evidence (#6). Sub-item B (benchmarking / pattern recognition via embeddings) is dropped along with AI integration.
+- **Stakeholder sign-off workflow** — gated by #2.
+- **Pattern library sub-item C** (portfolio-view across multiple docs) — gated by #3.
+
+---
+
+## Infrastructure debt / refactor
+
+From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4 / #5 / #6 / #7 already shipped (button class constants, Select primitive, chip palette, EdgeAssumptions deprecation, TextArea ref, TPNode split). Remaining:
+
+- **File splits (Tier 2, #8–#15):** TPEdge.tsx (600 lines), entitiesSlice.ts (576), entityTypeMeta.ts (506), selectionVerbs.ts (541), CreationWizardPanel.tsx (550), dialogsSlice.ts (471), PrintPreviewDialog.tsx (500), ContextMenu.tsx (495). Each ~30–60 min. Take them as cleanup gaps between feature work.
+- **Replace `as unknown as X` test casts** with typed mock builders (~21 instances, mostly in `useGraphMutations.test.tsx`). Small `tests/helpers/reactFlowFixtures.ts`. ~1 hour.
+- **Migrate remaining inline `<input>` JSX to `<TextInput>`** — `DocumentInspector.tsx:133,144`, `PrintPreviewDialog.tsx:451,472`, `CustomEntityClassesSection.tsx:154–187`. ~30 min.
+- **Migrate remaining inline button-class callers** to `SELECTED_BUTTON_CLASS_PLAIN` family — `CustomEntityClassesSection.tsx:213` icon picker, `formPrimitives.tsx:51` RadioGroup. ~15 min.
+- **Custom-equality narrowing for `MultiInspector` + `GroupInspector`** — both still subscribe to whole `s.doc.entities` / `s.doc.edges` maps. Wrap with `useDocumentStoreWith` + `arrayShallowEqualByKeys` (the pattern landed for `AttachedEdgesList`). ~45 min.
+- **TPNode coverage beyond 48% statements** — S&T 5-facet rows, hidden-descendant chip, custom-class icon resolution, zoom-up overlay, NodeToolbar conditional. ~1 hour.
 
 ---
 
 ## Open polish + quality items
 
-- **UI review by expert agent.** Hand a built doc + the current screenshots to a design-focused subagent and ask for a top-N punch list across visual hierarchy, density, contrast, affordance clarity, and motion. The codebase has grown a lot of inspector surface, dialog chrome, and overlay layers; an outside pass is overdue.
-- ~~**Book does not work on Kindle.**~~ ✅ **Done (Session 135).** Diagnosed the cause (Chromium/Skia produces untagged A4 PDFs with minimal metadata — Kindle's reflow path can't render them) and shipped an EPUB build alongside the PDF. New `scripts/build-book-epub.mjs` packages the same `docs/guide/*.md` source as EPUB 3.0 (with EPUB 2 NCX fallback) using `jszip` + `marked`; no Chromium / pandoc / system dep needed. CI workflow renamed to "Rebuild book artifacts" and now auto-rebuilds both formats on any change to `docs/guide/` or the build scripts. AboutDialog surfaces both download links; the docs bundle copies both into `public/` for offline service-worker caching. Verify on a real Kindle device (the open work is the Kindle round-trip test, not the build pipeline).
-
-- ~~**Book PDF polish — outlines, metadata, page numbers, running header, linearize, reproducible date.**~~ ✅ **Done (Session 135).** Quick-win bundle (#1 outlines + #2 metadata + #7 linearize) + Polish bundle (#5 page numbers + #6 running header + #8 reproducible date) all landed via a `pdf-lib` post-process step in `scripts/build-book-pdf.mjs`. The PDF now carries full Dublin Core metadata (`/Author`, `/Subject`, `/Keywords`, `/Lang`), a 24-entry navigable bookmark sidebar (rebuilt from the chapter manifest + the `/Dests` map Chromium DID emit), a `Causal Thinking with TP Studio` running header on every non-cover page, footer page numbers, a reproducible `/CreationDate` derived from the latest git commit touching the manuscript, and best-effort `qpdf --linearize` (apt-installed in CI; soft-skipped locally on machines without qpdf). Remaining open: #4 tagged-PDF accessibility (`/MarkInfo` + `/StructTreeRoot`) — requires a different toolchain (Pandoc-LaTeX) and is lower priority now that EPUB ships for accessible reading.
-- **Backlog spring-clean — review item per item.** This file has grown organically across 135 sessions. Walk each open entry, decide: still real? still scoped right? estimate still accurate? Goal: hand the next opener a backlog they can trust without re-running the whole gap analysis.
-
----
-
-## Session 134 loose-end follow-ups
-
-- ~~**TPNode.tsx statement-coverage tooling quirk.**~~ ✅ **Diagnosed and fixed (Session 134).** The original theory (React 19 `memo()` × React Compiler × coverage-v8 source-map interaction) was wrong. The actual cause: v8 coverage counts each *inline arrow handler* (`onMouseEnter={() => setIsHovered(true)}`, `onDoubleClick={...}`, `onBlur={...}`, etc.) as its own function-body, and the render-only tests landed in round 3 never fired any DOM events — so the handler bodies stayed uncovered. Round 4 added 13 interaction-driven tests that fire `doubleClick` / `mouseEnter` / `mouseLeave` / `keyDown` / `blur` / `change` events + mount the editing-mode render branch + exercise the four preference toggles (annotation numbers, entity ids, reach badges, reverse-reach badges) + the three Locus pill variants. **TPNode.tsx: 27% → 48% statements (+21pp), 29% → 61% branches (+32pp), 14% → 38% functions (+24pp), 29% → 49% lines (+20pp).** The remaining ~50% is line ranges 269-275 + 285-561 — content for less-common variants (S&T 5-facet rows, hidden-descendant chip with > 0 children, custom-class icon resolution, zoom-up overlay at low zoom, Pin glyph requiring entity.position, NodeToolbar conditional). Achievable in a follow-up if needed, but the high-traffic interaction paths are now properly covered.
-
-- ~~**PPTX export e2e Playwright spec.**~~ ✅ **Done (Session 134).** New `e2e/pptx-export.spec.ts` seeds a CRT with distinctive cause / effect titles + a distinctive doc title, opens the Export… picker via two new test hooks (`setDocTitle` + `openExportPicker`), clicks the **PowerPoint deck (.pptx)** card, catches the synthetic-anchor download via `page.waitForEvent('download')`, saves to the test-info output path, then unzips the `.pptx` (it's a ZIP of XML) via `jszip` and walks every `ppt/slides/slideN.xml`. Asserts the doc title + both endpoint titles appear in the concatenated slide text — covering both the cover slide and the reasoning slides. Bonus assertion on `docProps/app.xml` validates the pptxgenjs metadata-write pathway. Filename slug assertion catches the title → slug → suggested-filename pipeline. Runs on every push via the CI workflow's e2e job.
-
-- **Manual a11y keyboard walkthrough.** Automated portion done Session 121 (axe scans on Help / About / Settings dialogs + Esc-close pins). The fully-manual portion — Tab cycle on the canvas, focus order inside each dialog, Esc cascade priority, authoring a small CRT keyboard-only, palette discoverability — is worth a periodic ~1-hour walkthrough by the author. Checklist:
+- **UI review by expert agent.** Hand a built doc + the current screenshots to a design-focused subagent and ask for a top-N punch list across visual hierarchy, density, contrast, affordance clarity, and motion. The codebase has grown a lot of inspector surface, dialog chrome, and overlay layers; an outside pass is overdue. The `design:design-critique` skill (newly available) is the right vehicle.
+- **Manual a11y keyboard walkthrough.** Automated portion done Session 121 (axe scans on Help / About / Settings dialogs + Esc-close pins). The fully-manual portion — Tab cycle on the canvas, focus order inside each dialog, Esc cascade priority, authoring a small CRT keyboard-only, palette discoverability — is worth a periodic ~1-hour walkthrough by the author.
   - Tab cycle on the canvas: every interactive element reachable without trapping?
   - Tab cycle inside each dialog: focus order matches reading order?
   - Esc cascade: closes the innermost surface first (palette → settings → help → selection)?
   - Author a small CRT keyboard-only: add 3 entities, connect them, edit titles, undo / redo, save. Does any step force a mouse?
   - Cmd+K palette: every action discoverable via search? Open palette, type "ude" / "core" / "snap" — is the right action surfaced?
+- **PDF/UA tagged-PDF accessibility.** Open PDF item from Session 135 polish — `/MarkInfo` + `/StructTreeRoot` for screen-reader navigation. Requires a different toolchain (Pandoc-LaTeX). Lower priority now that EPUB ships for accessible reading.
+- **Verify book on a real Kindle device.** EPUB build pipeline shipped Session 135; the round-trip "email → Kindle imports → reads natively" still needs author verification on actual hardware.
 
 ---
 
@@ -102,33 +92,31 @@ Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has
 
 If picking the next thing up:
 
-1. **#3 cross-diagram traceability** (~2–3 sessions) — most foundational structural gap. Unlocks the portfolio-view pattern-library sub-item, NBR linking back to FRT, and the full TP chain.
-2. ~~**#7 task bridge** (~1–2 sessions)~~ — first half done Session 135 (TT-task CSV export). Per-tracker formats follow if requested.
-3. **#9 formal mode-switching** (~1–2 sessions) — Guided / Expert / Workshop / Presentation modes.
-4. **#4 confidence / state propagation** (~3 sessions) — adds the "what-if" behaviour the spec considers the FRT module's signature.
+1. **#9 formal mode-switching** (~1–2 sessions) — most bounded remaining spec gap. Guided / Expert / Workshop / Presentation modes. Phase 1: introduce `ui.appMode` + chrome-density toggles. Phase 2: presentation mode.
+2. **#3 cross-diagram traceability** (~2–3 sessions) — highest leverage, larger unit. Unlocks portfolio-view pattern-library and the full TP chain.
+3. **#4 confidence / state propagation** (~3 sessions) — FRT signature behaviour per spec.
+4. **Medium gaps as filler** — single-session validator additions (action-locus, S&T roll-up). Good "between bigger units" work.
+5. **Infrastructure debt** — file splits + inline-input migration as cleanup-between-features.
 
-Collaboration (#2) and enterprise integration (#8) intentionally deprioritised — both are product-direction decisions rather than sprints.
+#2 collab and #8 enterprise stay deprioritised — both are product-direction decisions, not sprints.
 
 ---
 
 ## Out of scope — won't build
 
-These come straight from the brief's explicit out-of-scope list, plus items closed during this project's history:
+Items explicitly dropped, in addition to the brief's own out-of-scope list:
 
-- Real-time multi-user collab (revisit if a hosted product direction lands)
-- Cloud sync, accounts, auth (same)
+- Real-time multi-user collab; cloud sync, accounts, auth (revisit with #2 product decision)
 - Project management, calendars, resources, MS Project export
 - Bayesian / evidence-based propagation
 - Course-of-action (COA) analysis features
 - Mobile-first design (responsive down to 480 px is the practical floor)
 - Print stylesheets (delivered minimally via `src/styles/print.css`; full one-page print designs not in scope)
 - i18n (English only)
-- **H5 confidence-weighted what-if** — depended on Bucket C (`Entity.confidence` + `Edge.weight`); Bucket C was excluded by user direction in Iteration 2 and schema-confidence was dropped in Session 71. With no signal to scale, H5 has nothing to compute on. Dann moved it to "won't build" in Session 84.
-- **AI integration (spec §5)** — problem-to-tool router, UDE extraction from notes/transcripts, statement rewrite into TOC-compliant grammar, CLR objection generator, assumption extraction from cloud edges, injection brainstorming, negative-branch detection, obstacle/milestone suggestions, TT action decomposition, executive summary generator, workshop facilitation prompts. Explicitly dropped by Dann in Session 134. TP Studio stays deterministic and offline-first; analytical thinking is the practitioner's job, not the tool's. Re-open only if a product direction lands that genuinely needs it.
-- **Entity grammar rewrite suggestions** — depended on AI integration above.
-- **Coaching/router mode** ("messy problem → pick the right tool") — depended on AI integration above.
-- **Pattern library sub-item B** (benchmarking / pattern recognition via embeddings) — depended on AI integration above.
-- **FL-EX8 multi-document tabs** — explored on a preview branch Session 91; cancelled before merge. TP Studio stays single-document.
+- **H5 confidence-weighted what-if** — depended on `Entity.confidence` + `Edge.weight` (Bucket C), dropped Session 71. Moved to won't-build Session 84.
+- **AI integration (spec §5)** — problem-to-tool router, UDE extraction, statement rewrites, CLR objection generation, assumption extraction, injection brainstorming, NBR detection, obstacle/milestone suggestions, TT action decomposition, executive summary, workshop facilitation prompts. Explicitly dropped Session 134. TP Studio stays deterministic and offline-first. Re-open only if a product direction genuinely needs it.
+- **Entity grammar rewrite suggestions**, **Coaching/router mode**, **Pattern library sub-item B** (embeddings-based pattern recognition) — all depended on AI integration above.
+- **FL-EX8 multi-document tabs** — explored Session 91, cancelled. Single-document by design.
 - **FL-CO2 cross-document hyperlinks** — depended on FL-EX8.
 - **FL-IN5 tabs per element type** — sectioned inspector groups properties cleanly; tabs add a click without exposing more information.
 - **FL-AN4 styled text in titles** — titles stay plain by design.
@@ -137,14 +125,14 @@ These come straight from the brief's explicit out-of-scope list, plus items clos
 
 ## Known environment quirks
 
-These are specific to the Windows + corporate-AppLocker environment this was built on, but apply to anyone hitting the same constraints.
+Specific to the Windows + corporate-AppLocker environment this was built on. Applies to anyone hitting the same constraints.
 
-- **`pnpm dlx` is blocked** in the corporate environment used to scaffold this. `pnpm install` from a `package.json` works; one-off `pnpm dlx <pkg>` from the npm cache temp dir is denied by Group Policy / AppLocker.
-- **PowerShell Constrained Language Mode** breaks `npm.ps1` — npm/pnpm commands must be invoked from Bash or via `.cmd` shims, not via PowerShell scripts.
+- **`pnpm dlx` is blocked** by Group Policy / AppLocker in the corporate environment. `pnpm install` from `package.json` works; one-off `pnpm dlx <pkg>` from the npm cache temp dir is denied.
+- **PowerShell Constrained Language Mode** breaks `npm.ps1`. Invoke npm/pnpm from Bash, via `.cmd` shims, or directly through `node corepack/dist/pnpm.js …`.
 - **`vite preview` blocked by AppLocker** on the local dev box — production-build smoke / perf-trace specs can't run locally; CI handles them via the manual `Perf trace` and `Update visual snapshots` workflows.
-- **OneDrive sync + `node_modules`** is slow and occasionally lock-prone. The project lives at `C:\dev\tp-studio` for that reason.
+- **OneDrive sync + `node_modules`** is slow and occasionally lock-prone. Project lives at `C:\dev\tp-studio` for that reason.
 - **`pnpm-workspace.yaml`** is autogenerated with anomalous content by pnpm 11 in some environments. If `pnpm add` silently fails to update `package.json`, check for and delete that file.
-- **Lazy-loaded dependency chunks** that only pay their cost on demand: `html-to-image` (PNG / JPEG / SVG export), `dagre` + `@/domain/layout` (Session 81; `tests/build/dagreLazyLoadBoundary.test.ts` guards against accidental static imports), `jspdf` + `svg2pdf.js` + `html2canvas` peer (Session 80), `pptxgenjs` (Session 134), `PrintAppendix` (Session 105), `CommandPalette` (Session 88), `MarkdownPreview` + DOMPurify (Session 115).
+- **Lazy-loaded dependency chunks** (only pay their cost on demand): `html-to-image` (PNG / JPEG / SVG export), `dagre` + `@/domain/layout` (Session 81; `tests/build/dagreLazyLoadBoundary.test.ts` guards against accidental static imports), `jspdf` + `svg2pdf.js` + `html2canvas` peer (Session 80), `pptxgenjs` (Session 134), `PrintAppendix` (Session 105), `CommandPalette` (Session 88), `MarkdownPreview` + DOMPurify (Session 115).
 
 ---
 
@@ -152,7 +140,7 @@ These are specific to the Windows + corporate-AppLocker environment this was bui
 
 1. **Pull the project state.** `cd C:\dev\tp-studio && git status` — should be clean. `pnpm install` (preinstall verifies Node `>=22.22.1` + pnpm `^10`). `pnpm dev` to start. `pnpm test` should report 1500+ tests passing.
 2. **Open the durable docs** — [README.md](README.md) for architecture, [USER_GUIDE.md](USER_GUIDE.md) for the feature surface, [CHANGELOG.md](CHANGELOG.md) for the history, [SECURITY.md](SECURITY.md) for the threat model + Session 98 audit.
-3. **Pick a candidate from above** — major gaps first if you want strategic moves; the loose-end follow-ups if you want quick closes.
+3. **Pick a candidate from above** — major gaps first if you want strategic moves, medium gaps for single-session wins, infrastructure debt for "cleanup between features", polish + quality for the things that pay back across every future iteration.
 4. **Build in vertical slices** — one demo-able feature per commit.
 
 Domain-first remains the right discipline: anything new that the data model needs lands in `src/domain/` first, with tests, before any UI work.
