@@ -4,7 +4,9 @@ import { useMemo } from 'react';
 import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL, type ECSlot } from '@/domain/ecGuiding';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { ST_FACET_KEYS } from '@/domain/graph';
-import type { EntityType, Warning } from '@/domain/types';
+import { effectiveState } from '@/domain/statePropagation';
+import type { EntityState, EntityType, Warning } from '@/domain/types';
+import { usePropagatedStates } from '@/hooks/usePropagatedStates';
 import { useEntity } from '@/hooks/useSelected';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
@@ -40,6 +42,10 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   const setEntityAttribute = useDocumentStore((s) => s.setEntityAttribute);
   const removeEntityAttribute = useDocumentStore((s) => s.removeEntityAttribute);
   const locked = useDocumentStore((s) => s.browseLocked);
+  // Session 135 / spec gap #4 Phase 1B — propagated state for the
+  // currently selected entity. Computed once per entities/edges
+  // snapshot; the lookup against the returned record is O(1).
+  const derivedStates = usePropagatedStates();
 
   // Memoize the palette derivation — `paletteForDoc` walks the doc's
   // custom classes and merges with the built-in list. Cheap, but
@@ -319,6 +325,94 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
             );
           })}
         </div>
+      </Field>
+
+      {/* Session 135 / spec gap #4 Phase 1B — entity-state picker +
+          propagation-derived state callout. The four buttons set
+          `entity.state` (or clear it for "Unknown"); the small
+          caption beneath surfaces what the graph itself implies via
+          {@link propagateStates}. When the user's claim disagrees
+          with propagation, the caption turns amber so the conflict
+          reads at a glance. */}
+      <Field label="State">
+        <div data-component="entity-state-picker" className="grid grid-cols-4 gap-1.5 text-xs">
+          {(
+            [
+              { id: undefined, label: 'Unknown' },
+              { id: 'true', label: 'True' },
+              { id: 'false', label: 'False' },
+              { id: 'disputed', label: 'Disputed' },
+            ] as const
+          ).map((opt) => {
+            // Persisted `'unknown'` is treated as "no claim" for
+            // selection purposes — the "Unknown" button highlights
+            // for both `undefined` and the explicit `'unknown'` value.
+            const current: EntityState | undefined =
+              entity.state === 'unknown' ? undefined : entity.state;
+            const selected = (current ?? null) === (opt.id ?? null);
+            return (
+              <button
+                key={opt.label}
+                type="button"
+                disabled={locked}
+                onClick={() => {
+                  const next = opt.id as EntityState | undefined;
+                  updateEntity(entityId, { state: next });
+                }}
+                className={clsx(
+                  'rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60',
+                  selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+                )}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+        {(() => {
+          // Surface propagation only when the graph has something
+          // meaningful to say. Hide when:
+          //   - derived is `'unknown'` AND the user hasn't claimed
+          //     anything either (nothing to report).
+          //   - derived === manual (they agree — uninteresting).
+          const derived = derivedStates[entity.id] ?? 'unknown';
+          const manual = entity.state;
+          const effective = effectiveState(entity, derivedStates);
+          if (derived === 'unknown' && manual === undefined) return null;
+          if (derived === manual) return null;
+          // Conflict: a manual claim disagrees with what propagation
+          // computed (and propagation has signal — not 'unknown').
+          const conflicts =
+            manual !== undefined &&
+            manual !== 'unknown' &&
+            derived !== 'unknown' &&
+            derived !== manual;
+          return (
+            <p
+              className={clsx(
+                'mt-1.5 text-[11px]',
+                conflicts
+                  ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-neutral-600 dark:text-neutral-400'
+              )}
+              data-component="entity-state-derived"
+              data-conflicts={conflicts ? 'true' : undefined}
+            >
+              {conflicts ? (
+                <>
+                  Graph implies <span className="font-semibold">{derived}</span>; your claim is{' '}
+                  <span className="font-semibold">{manual}</span>.
+                </>
+              ) : (
+                <>
+                  Graph implies <span className="font-semibold">{derived}</span>
+                  {manual === undefined ? ' (no manual claim yet).' : '.'}
+                </>
+              )}
+              <span className="sr-only"> Effective state: {effective}.</span>
+            </p>
+          );
+        })()}
       </Field>
 
       {entity.type === 'assumption' && <AttachedEdgesList assumptionId={entityId} />}

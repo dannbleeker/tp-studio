@@ -2,6 +2,48 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Confidence / state propagation Phase 1B (engine + inspector surface)
+
+Second slice of spec major gap #4. The pure-function propagation engine lands together with the inspector affordance — manually-tagged entities now drive a derived state through the graph, and the inspector surfaces both the user's claim and what propagation implies.
+
+**New domain module** `src/domain/statePropagation.ts`:
+
+```ts
+export function propagateStates(
+  doc: Pick<TPDocument, 'entities' | 'edges'>
+): Record<EntityId, EntityState>
+```
+
+Pure-function semantics — no mutation, deterministic, doc-shape-narrowed (only `entities` + `edges` matter so callers can subscribe minimally):
+
+- **Edge contribution.** Source state read from `entity.state` (manual override) if set, else from the derived map (recursive). `weight: 'negative'` flips true ↔ false; `'zero'` skips entirely; `isBackEdge` / `isMutualExclusion` skipped (loop markers + EC-only conflict markers carry no propagation signal).
+- **AND-group merge** (`andGroupId`): all-true → true; any-false → false; any-disputed (no false) → disputed; else unknown.
+- **XOR-group merge** (`xorGroupId`): exactly-one-true → true; multiple-true → false; any-disputed → disputed; all-false → false; else unknown.
+- **OR merge** (default / `orGroupId`): any-true → true; any-disputed (no true) → disputed; all-false → false; else unknown. Junctor groups contribute one OR-input each at the top level (so AND-group + standalone edge merges as two OR-inputs).
+- **Cycle handling.** Entities currently in the recursion stack contribute `'unknown'` so propagation terminates instead of looping. Honest acyclic graphs aren't affected.
+- **No automatic override.** Returns the pure derived map; the caller has `entity.state` already and is the only one who knows whether to display authored / propagated / both side-by-side. `effectiveState(entity, derived)` is the canonical merge helper for code that wants the single-value answer.
+
+**Hook** `src/hooks/usePropagatedStates.ts`:
+- Subscribes to ONLY `doc.entities` + `doc.edges` so unrelated doc mutations don't re-trigger propagation.
+- `useMemo`-gates the engine so consumers don't pay re-propagation cost on every render.
+
+**Inspector surface** — new "State" field block in `EntityInspector` between Locus and the assumption-list:
+- 4-button picker (Unknown / True / False / Disputed). "Unknown" maps to undefined on persist (persisted `'unknown'` from imports is treated as "no claim" so the picker reads correctly).
+- Below the picker, a small caption surfaces propagation when the graph has signal:
+  - When derived agrees with manual (or both are unknown) → hidden (nothing to report).
+  - When derived !== manual → amber callout: `"Graph implies <derived>; your claim is <manual>."`
+  - When manual is unset and propagation has signal → neutral caption: `"Graph implies <derived> (no manual claim yet)."`
+- `data-component="entity-state-picker"` + `data-component="entity-state-derived"` + `data-conflicts="true"` test hooks.
+
+**41 new tests** — 36 in `tests/domain/statePropagation.test.ts` (every merge rule, weight, junctor, cycle, multi-hop chain, manual-override-on-middle, `effectiveState` helper); 5 in `tests/components/Inspector.test.tsx` (picker writes through to store, Unknown clears, hidden caption when no signal, propagation caption when upstream drives, conflict highlight when manual disagrees).
+
+**Phase 1B left for follow-up:**
+- Node-chrome state badge — a tiny chip on TPNode showing the effective state at a glance without selecting. Easy ~30 min once TPNode visual review settles.
+
+**Phase 1C — what-if UX (next).** A "speculate" mode: user clicks an entity, picks a hypothetical state, and the canvas shows the downstream cascade without persisting. Likely a Zustand-side `speculationOverlay: Map<EntityId, EntityState>` that runs through the same `propagateStates` engine with manual values overlaid, plus a banner offering "commit" / "revert". Phase 1B's design — the pure engine + the derived-vs-manual separation — was chosen so 1C can layer on without re-shaping the engine.
+
+Major-gap tally: still 3/10 open (Phase 1B doesn't close #4; Phase 1C does). All 1678 tests pass (+41); tsc clean; biome lint clean.
+
 ## Session 135 — Confidence / state propagation Phase 1A (schema only)
 
 Schema-only first slice of spec major gap #4 — confidence / state propagation across logical chains. Parallels the #3 Phase 1A pattern: type + field + persistence emit/re-import + tests, with no UI surface yet. Phase 1B (propagation engine) and Phase 1C (what-if UI) layer on top in later sessions.

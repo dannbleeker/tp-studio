@@ -37,23 +37,22 @@ State + palette commands persist across reloads via `StoredPrefs.appMode`. 12 te
 - Workshop auto-engage high-contrast edge palette — stateful restore on leave adds complexity
 - Guided method-checklist auto-open — heavy modal on every new doc is intrusive
 
-### 🟡 #4 — Confidence / propagation simulation *(Phase 1A done, Phase 1B + 1C open)*
+### 🟡 #4 — Confidence / propagation simulation *(Phase 1A + 1B done, Phase 1C open)*
 
-Spec §3.4. The FRT module's signature behaviour: every entity carries a state value, propagation flows through AND/OR logic on edges, and the user can ask "what changes if this assumption is false?" without committing the change.
+Spec §3.4. The FRT module's signature behaviour: every entity carries a state value, propagation flows through AND/OR/XOR logic on edges, and the user can ask "what changes if this assumption is false?" without committing the change.
 
-**Phase 1A — schema (done Session 135).** `EntityState = 'true' | 'false' | 'unknown' | 'disputed'` + `entity.state?: EntityState` + strict persistence validation (unknown values throw on import, emit-or-omit on export). 3 round-trip assertions cover survival, omission, and rejection. No UI surface yet — partial state (manually-tagged entities, no propagation) is usable in inspector code already if a feature wants to lean on it.
+**Phase 1A — schema (done Session 135).** `EntityState = 'true' | 'false' | 'unknown' | 'disputed'` + `entity.state?: EntityState` + strict persistence validation (unknown values throw on import, emit-or-omit on export).
 
-**Phase 1B — propagation engine (open).** Pure-function `propagateStates(doc): Map<EntityId, EntityState>` that walks every entity and resolves a derived state from the incoming edges:
-- Each edge contributes its source's state, mapped through the edge kind. AND-groups (`andGroupId`) merge with a logical AND — every input must be `'true'` for the output to assert true; any `'false'` makes the output `'false'`; any `'disputed'` propagates `'disputed'`; otherwise `'unknown'`.
-- Standalone (non-grouped) edges merge with OR — any `'true'` input asserts true; all `'false'` → `'false'`; otherwise the most-uncertain value bubbles up.
-- Manual `entity.state` always overrides the derived value (the user's claim is the ground truth — propagation only fills in the rest).
-- Returns the derived map but never mutates the doc — the UI can pick whether to display the manual state, the derived state, or a merge.
+**Phase 1B — engine + inspector (done Session 135).** Pure `propagateStates(doc): Record<EntityId, EntityState>` with full edge-weight (`'negative'` flips, `'zero'` skips), junctor (AND / OR / XOR), and cycle handling. `effectiveState(entity, derived)` is the canonical merge helper. Inspector exposes a 4-button state picker + a propagation caption that turns amber on conflict. 41 new tests.
 
-Test-first: a fixture-driven table covering each merge rule (AND-true, AND-false, AND-disputed, OR-bubbling, manual override). Inspector + node-chrome surfacing comes with Phase 1B.
+**Phase 1B follow-up (~30 min):**
+- **Node-chrome state badge.** A small chip on TPNode showing the effective state (manual ?? derived) at a glance, so review meetings don't have to open the inspector to read state. Likely sits in the top-right of TPNode next to the annotation number, colour-coded (green=true, red=false, amber=disputed, neutral=unknown). Defer until TPNode's pending visual review (see Open polish + quality) so the visual hierarchy stays coherent.
 
-**Phase 1C — what-if UX (open).** A "speculate" mode: user clicks an entity, picks a hypothetical state, and the canvas shows the downstream cascade without persisting the change. Likely a Zustand-side `speculationOverlay: Map<EntityId, EntityState>` that runs through the same `propagateStates` engine with manual values overlaid, plus a banner offering "commit" / "revert". Spec language: "what changes if this assumption is false?"
+**Phase 1C — what-if UX (open).** A "speculate" mode: user clicks an entity, picks a hypothetical state, and the canvas shows the downstream cascade without persisting. Likely a Zustand-side `speculationOverlay: Map<EntityId, EntityState>` that runs through the same `propagateStates` engine with manual values overlaid, plus a banner offering "commit" / "revert". Spec language: "what changes if this assumption is false?"
 
-**Effort remaining:** Phase 1B ~1 session, Phase 1C ~1–2 sessions.
+The engine + `effectiveState` merge helper was designed for 1C: the speculation overlay reads as "a layer of manual overrides", and the engine's pure-function shape means propagation under the overlay is a single recomputation.
+
+**Effort remaining:** Phase 1C ~1–2 sessions.
 
 ### 🔴 #2 — Multi-user collaboration *(product-direction decision, not a sprint)*
 
@@ -116,7 +115,7 @@ From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4
 
 If picking the next thing up:
 
-1. **#4 confidence / state propagation Phase 1B** (~1 session) — propagation engine. Phase 1A schema landed Session 135 (`EntityState` + `entity.state?` + persistence). Next slice is `propagateStates(doc)` pure-function + inspector / node-chrome surfacing. Phase 1C (what-if UX) follows.
+1. **#4 confidence / state propagation Phase 1C** (~1–2 sessions) — what-if speculation overlay. Phase 1A schema + Phase 1B engine + inspector landed Session 135. Next slice is a `speculationOverlay` store slice + canvas-wide preview + commit/revert banner.
 2. **Medium gaps as filler** — S&T assumption sub-typing (`Assumption.kind`), "preserve rejected logic in collapsed groups", reactive-vs-proactive NBR mitigation. Each ~1 hour.
 3. **Infrastructure debt** — file splits (TPEdge / entitiesSlice / etc.) + continued test-cast cleanup. Good cleanup-between-features work.
 

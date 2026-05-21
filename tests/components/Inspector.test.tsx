@@ -95,4 +95,90 @@ describe('Inspector', () => {
     );
     expect(toggles.length).toBe(2);
   });
+
+  // Session 135 / spec gap #4 Phase 1B — entity-state picker + propagation
+  // surface tests. The picker writes through to the store; the
+  // propagation caption only appears when the graph has signal.
+  describe('entity-state picker (spec gap #4 Phase 1B)', () => {
+    it('writes the selected state through to the store', () => {
+      const a = seedEntity('Order entry is manual');
+      act(() => useDocumentStore.getState().selectEntity(a.id));
+      const { container } = render(<Inspector />);
+      const picker = container.querySelector('[data-component="entity-state-picker"]');
+      expect(picker).toBeTruthy();
+      const trueBtn = Array.from(picker?.querySelectorAll('button') ?? []).find(
+        (b) => b.textContent === 'True'
+      );
+      expect(trueBtn).toBeTruthy();
+      act(() => fireEvent.click(trueBtn!));
+      const persisted = useDocumentStore.getState().doc.entities[a.id]?.state;
+      expect(persisted).toBe('true');
+    });
+
+    it('the "Unknown" button clears a previously-set state to undefined', () => {
+      const a = seedEntity('Manual order entry');
+      act(() => {
+        useDocumentStore.getState().updateEntity(a.id, { state: 'disputed' });
+        useDocumentStore.getState().selectEntity(a.id);
+      });
+      const { container } = render(<Inspector />);
+      const picker = container.querySelector('[data-component="entity-state-picker"]');
+      const unknownBtn = Array.from(picker?.querySelectorAll('button') ?? []).find(
+        (b) => b.textContent === 'Unknown'
+      );
+      expect(unknownBtn).toBeTruthy();
+      act(() => fireEvent.click(unknownBtn!));
+      expect(useDocumentStore.getState().doc.entities[a.id]?.state).toBeUndefined();
+    });
+
+    it('hides the propagation caption when the graph has no signal', () => {
+      // Lone entity, no edges → derived === 'unknown' AND manual is
+      // undefined. The caption SHOULD NOT render.
+      const a = seedEntity('Lonely');
+      act(() => useDocumentStore.getState().selectEntity(a.id));
+      const { container } = render(<Inspector />);
+      expect(container.querySelector('[data-component="entity-state-derived"]')).toBeNull();
+    });
+
+    it('renders the propagation caption when an upstream entity drives a derived state', () => {
+      // a (state=true) → b. b should derive 'true' via propagation.
+      const { a, b } = seedConnectedPairForTest();
+      act(() => {
+        useDocumentStore.getState().updateEntity(a.id, { state: 'true' });
+        useDocumentStore.getState().selectEntity(b.id);
+      });
+      const { container } = render(<Inspector />);
+      const caption = container.querySelector('[data-component="entity-state-derived"]');
+      expect(caption).toBeTruthy();
+      expect(caption?.textContent ?? '').toMatch(/Graph implies.+true/);
+      // Not a conflict — b has no manual state.
+      expect(caption?.getAttribute('data-conflicts')).toBeNull();
+    });
+
+    it('flags a conflict when the manual claim disagrees with propagation', () => {
+      // a (state=true) → b (state=false). Manual says false but graph
+      // implies true. Conflict flag fires.
+      const { a, b } = seedConnectedPairForTest();
+      act(() => {
+        useDocumentStore.getState().updateEntity(a.id, { state: 'true' });
+        useDocumentStore.getState().updateEntity(b.id, { state: 'false' });
+        useDocumentStore.getState().selectEntity(b.id);
+      });
+      const { container } = render(<Inspector />);
+      const caption = container.querySelector('[data-component="entity-state-derived"]');
+      expect(caption).toBeTruthy();
+      expect(caption?.getAttribute('data-conflicts')).toBe('true');
+      expect(caption?.textContent ?? '').toMatch(/Graph implies.+true.+claim is.+false/i);
+    });
+  });
 });
+
+// Inline helper — avoids pulling the full seedConnectedPair from
+// helpers/seedDoc just to keep this test block self-contained.
+function seedConnectedPairForTest() {
+  const a = seedEntity('Cause');
+  const b = seedEntity('Effect');
+  const edge = useDocumentStore.getState().connect(a.id, b.id);
+  if (!edge) throw new Error('connect failed');
+  return { a, b, edge };
+}
