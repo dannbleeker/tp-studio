@@ -1,3 +1,4 @@
+import { validationFingerprint } from '../fingerprint';
 import type { ClrTier, DiagramType, TPDocument, Warning } from '../types';
 import { additionalCauseRuleFor } from './additionalCause';
 import { causalityExistenceRule } from './causalityExistence';
@@ -149,14 +150,75 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
 // cost of producing a fresh array reference); this layer saves the
 // downstream re-computation.
 const validateCache = new WeakMap<TPDocument, Warning[]>();
+
+/**
+ * Session 135 / Perf #5 — fingerprint-keyed cache.
+ *
+ * The doc-reference cache above hits only when the exact same
+ * TPDocument reference is passed in. Any mutation creates a new
+ * reference and forces every rule to re-run — even mutations that
+ * don't affect any rule's inputs (positions, attestation, owner,
+ * evidence, attributes other than the S&T facets, descriptions,
+ * dialogs / preferences). Those mutations happen often: drag-to-pin
+ * fires once per frame, every keystroke in a description bumps the
+ * doc reference, etc.
+ *
+ * The fingerprint includes diagram type + entity ids/types/titles +
+ * edge endpoints + and-group ids + resolved-warning ids. When a
+ * mutation doesn't change the fingerprint, we re-use the prior
+ * validation result and short-circuit the rule run.
+ *
+ * The fingerprint cache is a bounded LRU on (fingerprint string →
+ * Warning[]). 32 entries is enough to cover the realistic
+ * doc-history depth within a single editing session without
+ * unbounded growth. When a cached fingerprint hits, we also write
+ * back into the doc-reference WeakMap so subsequent calls with the
+ * same doc reference take the faster path.
+ *
+ * Estimated impact: drag-to-pin + position-edit-heavy sessions
+ * (which dominated the perf-trace baselines) now skip the validator
+ * sweep entirely — every drag frame and every non-causal text edit
+ * becomes a fingerprint compare + cache hit instead of a full rule
+ * run.
+ */
+const FINGERPRINT_CACHE_CAP = 32;
+const fingerprintCache = new Map<string, Warning[]>();
+
 export const validate = (doc: TPDocument): Warning[] => {
   const cached = validateCache.get(doc);
   if (cached) return cached;
+
+  // Reference miss; check the fingerprint cache before re-running rules.
+  const fp = validationFingerprint(doc);
+  const fpHit = fingerprintCache.get(fp);
+  if (fpHit) {
+    // Promote into the doc-reference cache so the next call with this
+    // same reference takes the fast path, and LRU-bump the fingerprint
+    // entry (delete + set).
+    validateCache.set(doc, fpHit);
+    fingerprintCache.delete(fp);
+    fingerprintCache.set(fp, fpHit);
+    return fpHit;
+  }
+
   const result = RULES_BY_DIAGRAM[doc.diagramType].flatMap((r) =>
     r.fn(doc).map((w) => ({ ...w, tier: r.tier }))
   );
   validateCache.set(doc, result);
+  fingerprintCache.set(fp, result);
+  if (fingerprintCache.size > FINGERPRINT_CACHE_CAP) {
+    const oldest = fingerprintCache.keys().next().value;
+    if (oldest !== undefined) fingerprintCache.delete(oldest);
+  }
   return result;
+};
+
+/**
+ * Test-only cache reset. Lets unit tests / benches start from a cold
+ * cache when measuring the cold-path cost. Production never calls this.
+ */
+export const __resetValidatorCacheForTests = (): void => {
+  fingerprintCache.clear();
 };
 
 /**

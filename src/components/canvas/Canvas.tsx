@@ -1,5 +1,5 @@
 import { Background, BackgroundVariant, MiniMap, ReactFlow } from '@xyflow/react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { findSpliceTargetEdge } from '@/domain/dragSplice';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
@@ -33,6 +33,56 @@ const nodeTypes = {
   tpCollapsedGroup: TPCollapsedGroupNode,
 };
 const edgeTypes = { tp: TPEdge };
+
+/**
+ * Session 135 / Perf #6 — populate a centroid buffer in-place.
+ *
+ * Both drag handlers need an entity-id → centre-of-node map for the
+ * splice-target hit-test. Allocating a fresh `Record<>` per
+ * `onNodeDrag` call (which fires per pointer frame during a drag)
+ * generated ~6k small-object allocations per second on a 100-entity
+ * graph.
+ *
+ * This helper mutates a caller-owned `buf` object: clears the prior
+ * keys (only those that aren't being re-set this call), then writes
+ * one entry per node. The buffer lives in a `useRef` inside
+ * `CanvasInner` so React doesn't track it and the same shape is
+ * reused frame-to-frame.
+ *
+ * Returns the same `buf` reference for chained calls (e.g.
+ * `findSpliceTargetEdge({ entityPositions: populateCentroidsInto(...) })`).
+ */
+type Centroid = { x: number; y: number };
+type CentroidBuf = Record<string, Centroid>;
+type CanvasNodeSlim = {
+  id: string;
+  position: { x: number; y: number };
+  measured?: { width?: number; height?: number };
+};
+
+const populateCentroidsInto = (buf: CentroidBuf, nodes: readonly CanvasNodeSlim[]): CentroidBuf => {
+  // Build a Set of the ids we'll write this call so we can drop stale
+  // entries from a previous (possibly larger) drag without
+  // re-allocating the whole object. Keeping the same buffer shape
+  // helps V8's hidden-class tracking.
+  const ids = new Set<string>();
+  for (const n of nodes) ids.add(n.id);
+  for (const key of Object.keys(buf)) {
+    if (!ids.has(key)) delete buf[key];
+  }
+  for (const n of nodes) {
+    const cx = n.position.x + (n.measured?.width ?? 0) / 2;
+    const cy = n.position.y + (n.measured?.height ?? 0) / 2;
+    const existing = buf[n.id];
+    if (existing) {
+      existing.x = cx;
+      existing.y = cy;
+    } else {
+      buf[n.id] = { x: cx, y: cy };
+    }
+  }
+  return buf;
+};
 
 function CanvasInner() {
   const doc = useDocumentStore((s) => s.doc);
@@ -88,6 +138,20 @@ function CanvasInner() {
   useEffect(() => {
     return () => setCanvasInstance(null);
   }, []);
+
+  // Session 135 / Perf #6 — reuse a single object literal across
+  // `onNodeDrag` / `onNodeDragStop` invocations rather than allocating
+  // a fresh `Record<string, {x, y}>` per pointer frame. During a 60fps
+  // drag on a 100-entity graph the prior code generated ~6,000
+  // small-object allocations per second; the ref-held buffer is
+  // populated in-place (`for (const n of nodes) { buf[n.id] = ... }`)
+  // and re-cleared between drag sessions in `onNodeDragStart`.
+  //
+  // `findSpliceTargetEdge` only reads `entityPositions`, so giving it
+  // the shared buffer is safe. We never hold a reference to the
+  // buffer beyond the synchronous handler, so the mutation can't
+  // surprise an async consumer.
+  const entityCentroidsRef = useRef<Record<string, { x: number; y: number }>>({});
 
   const isEmpty = nodes.length === 0;
   const locked = useDocumentStore((s) => s.browseLocked);
@@ -156,12 +220,7 @@ function CanvasInner() {
             setSpliceTargetEdge(null);
             return;
           }
-          const entityPositions: Record<string, { x: number; y: number }> = {};
-          for (const n of nodes) {
-            const cx = n.position.x + (n.measured?.width ?? 0) / 2;
-            const cy = n.position.y + (n.measured?.height ?? 0) / 2;
-            entityPositions[n.id] = { x: cx, y: cy };
-          }
+          const entityPositions = populateCentroidsInto(entityCentroidsRef.current, nodes);
           const probeX = draggedNode.position.x + (draggedNode.measured?.width ?? 200) / 2;
           const probeY = draggedNode.position.y + (draggedNode.measured?.height ?? 60) / 2;
           const hit = findSpliceTargetEdge({
@@ -185,12 +244,7 @@ function CanvasInner() {
           if (!guardWriteOrToast()) return;
           const dragged = doc.entities[draggedNode.id];
           if (!dragged) return;
-          const entityPositions: Record<string, { x: number; y: number }> = {};
-          for (const n of nodes) {
-            const cx = n.position.x + (n.measured?.width ?? 0) / 2;
-            const cy = n.position.y + (n.measured?.height ?? 0) / 2;
-            entityPositions[n.id] = { x: cx, y: cy };
-          }
+          const entityPositions = populateCentroidsInto(entityCentroidsRef.current, nodes);
           // Use the dragged node's centre (its new dropped position) as
           // the hit-test probe. Tolerance is roughly half a standard
           // node width — generous enough to forgive aim, tight enough

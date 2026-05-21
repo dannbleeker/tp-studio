@@ -1,5 +1,5 @@
 import { Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { AttrKind, AttrValue, Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
@@ -55,7 +55,10 @@ export function AttributesSection({ attributes, onSet, onRemove }: AttributesSec
   const locked = useDocumentStore((s) => s.browseLocked);
 
   const attrs = attributes ?? {};
-  const keys = Object.keys(attrs).sort();
+  // Session 135 / Perf #12 — memoize the sorted key list. Fresh array
+  // per render broke downstream `.map()` referential-equality for the
+  // row sub-components, defeating React.memo on each row.
+  const keys = useMemo(() => Object.keys(attrs).sort(), [attrs]);
 
   const [adding, setAdding] = useState(false);
   const [newKey, setNewKey] = useState('');

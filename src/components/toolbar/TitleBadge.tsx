@@ -1,4 +1,5 @@
 import { Info } from 'lucide-react';
+import { useShallow } from 'zustand/shallow';
 import { DataComponent } from '@/components/dataComponentNames';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { useDocumentStore } from '@/store';
@@ -13,11 +14,21 @@ import { useDocumentStore } from '@/store';
  * z-10 above the canvas.
  */
 export function TitleBadge() {
-  const title = useDocumentStore((s) => s.doc.title);
-  const setTitle = useDocumentStore((s) => s.setTitle);
-  const diagramType = useDocumentStore((s) => s.doc.diagramType);
-  const locked = useDocumentStore((s) => s.browseLocked);
-  const openDocSettings = useDocumentStore((s) => s.openDocSettings);
+  // Session 135 / Perf #9 — collapsed five separate `useDocumentStore`
+  // calls into one `useShallow` bundle. Each subscription was its own
+  // snapshot read; the bundle takes one snapshot read + shallow
+  // compare. All values are primitives (string / boolean) or stable
+  // action refs, so `useShallow` correctly avoids re-renders unless
+  // the relevant primitives actually change.
+  const { title, setTitle, diagramType, locked, openDocSettings } = useDocumentStore(
+    useShallow((s) => ({
+      title: s.doc.title,
+      setTitle: s.setTitle,
+      diagramType: s.doc.diagramType,
+      locked: s.browseLocked,
+      openDocSettings: s.openDocSettings,
+    }))
+  );
 
   return (
     <div

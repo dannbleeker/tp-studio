@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { ChevronDown, ChevronRight, Maximize2, Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
 import { TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
 import { INPUT_FOCUS } from '@/components/ui/focusClasses';
@@ -25,24 +26,29 @@ export function GroupInspector({ groupId }: { groupId: string }) {
   const locked = useDocumentStore((s) => s.browseLocked);
   const confirm = useDocumentStore((s) => s.confirm);
 
-  if (!group) return null;
-
   // FL-GR2: candidate parent groups for nesting. Exclude self + any
   // group that would form a cycle (the current group's transitive
   // descendants — already filtered by `wouldCreateCycle`).
   // Need a tiny fresh doc-shaped object here just for the cycle helper.
-  const nestCandidates = Object.values(allGroups)
-    .filter((g) => g.id !== groupId)
-    .filter((g) => {
-      // Avoid recomputing `descendantIds` here; defer to the canonical
-      // helper. Build the minimal doc shape it expects (just `groups`).
-      const fakeDoc = {
-        groups: allGroups,
-        entities: {},
-        edges: {},
-      } as never;
-      return !wouldCreateCycle(fakeDoc, g.id, groupId);
-    });
+  //
+  // Session 135 / Perf #13 — memoize the two-stage filter. Runs the
+  // wouldCreateCycle traversal once per (groups, groupId) instead of
+  // per render of this inspector.
+  const nestCandidates = useMemo(() => {
+    if (!group) return [];
+    return Object.values(allGroups)
+      .filter((g) => g.id !== groupId)
+      .filter((g) => {
+        const fakeDoc = {
+          groups: allGroups,
+          entities: {},
+          edges: {},
+        } as never;
+        return !wouldCreateCycle(fakeDoc, g.id, groupId);
+      });
+  }, [allGroups, groupId, group]);
+
+  if (!group) return null;
 
   return (
     <div className="flex flex-col gap-4">

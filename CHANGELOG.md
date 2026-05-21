@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Perf batch B: fingerprint cache + drag-handler allocations + memoization sweep
+
+Four more perf items from the audit:
+
+**#5 — Fingerprint-keyed validator cache** in `validators/index.ts`. The existing `WeakMap<TPDocument, Warning[]>` cache hit only on the exact same doc reference. Any mutation creates a new reference, forcing every rule to re-run — including mutations that don't affect any rule input (position, attestation, owner, evidence, attributes other than S&T facets, descriptions, dialogs / preferences). Those are common: drag-to-pin fires once per frame, every keystroke in a description bumps the doc reference.
+
+New layer: when the doc-ref cache misses, compute `validationFingerprint(doc)` (entity ids/types/titles/unspecified/spanOfControl/ecSlot/S&T-facet-presence + edge endpoints/AND-group + resolved-warning ids + diagram type). Check a bounded LRU `Map<fingerprint, Warning[]>` (32 entries). On hit, promote the result into the doc-ref WeakMap and return; on miss, run rules + write both caches. `__resetValidatorCacheForTests` exported for bench cold-path measurement.
+
+The `validationFingerprint` itself grew to include the fields rules actually read (was missing `unspecified` / `spanOfControl` / `ecSlot` / S&T facets — uncovered when the new cache produced cross-test contamination via fingerprint collisions). Docstring lists what's encoded vs. what's free.
+
+**#6 — Canvas drag-handler frame allocations.** `Canvas.tsx`'s `onNodeDrag` / `onNodeDragStop` each built a fresh `Record<entityId, {x, y}>` per pointer frame (~60Hz during drags). ~6k small-object allocations per second on a 100-entity graph. New module-level `populateCentroidsInto(buf, nodes)` mutates a caller-owned buffer in place; `CanvasInner` holds a `useRef<Record<>>` that persists across frames. Same hidden-class across the drag session, no per-frame allocation.
+
+**#12-15 — Memoization sweep in render bodies:**
+- `AttributesSection.tsx:58` — `Object.keys(attrs).sort()` wrapped in `useMemo`.
+- `GroupInspector.tsx:34-45` — two-stage `wouldCreateCycle` filter wrapped (was running on every render).
+- `InjectionWorkbench.tsx:113-118` — parallel filter pair collapsed into one `useMemo` returning `{linked, unlinked}` (single pass instead of two).
+- `MultiInspector.tsx:36+:226` — entity / edge selection-expansion wrapped (was breaking downstream React.memo on every row).
+
+**#17 — `ExportPickerDialog.tsx:289`** — `Object.values(s.doc.entities).some(e => e.type === 'ude')` replaced with the cached `entitiesOfType(s.doc, 'ude').length > 0`. O(N) scan → O(1) Map.get.
+
+**#9 — TitleBadge selector consolidation.** Five separate `useDocumentStore` calls collapsed into one `useShallow` bundle. All values are primitives or stable action refs, so shallow comparison correctly skips re-renders.
+
+**Items considered but dropped:** The audit's #7+#8 "narrow whole-map subscriptions" turned out to need WeakMap-cached derived selectors (the simpler `useShallow` approach doesn't help when the selector returns fresh objects per call — `useShallow` does `Object.is` per array element). Punted to a future session that introduces proper per-doc-reference derived-selector caches alongside `entitiesByType`. `AttributesSection`, `GroupInspector`, `InjectionWorkbench`, `MultiInspector` got the cheaper `useMemo` fix in this batch.
+
+All 1573 tests pass; tsc clean; biome lint clean (modulo two pre-existing aria warnings).
+
 ## Session 135 — Graph perf: edge index + similarity LRU + risk-register pass inversion
 
 Four targeted perf wins on the validator + exporter hot paths. All transparent — no API surface changes; downstream callers unchanged.

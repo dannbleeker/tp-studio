@@ -53,9 +53,52 @@ export const layoutFingerprint = (doc: TPDocument): string => {
   return `${entityIds.join(',')}|${edgeKeys.join(',')}|${positions.join(',')}`;
 };
 
+/**
+ * Session 135 / Perf #5 — used by the validator cache in
+ * `validators/index.ts` to short-circuit re-runs when a mutation
+ * didn't change any input the rules actually read. Must include
+ * every entity / edge field any rule reads; an omission would
+ * silently return stale warnings on a fingerprint hit.
+ *
+ * Currently encoded:
+ *   - diagram type
+ *   - per-entity: id, type, title, unspecified, spanOfControl,
+ *     ecSlot, S&T facet presence (via the `:st` suffix used by
+ *     `layoutFingerprint` so toggling a facet attribute counts)
+ *   - per-edge: id, source, target, andGroupId
+ *   - resolved-warning ids (so "resolve" / "un-resolve" flips
+ *     re-validate)
+ *
+ * NOT encoded (mutating these is free):
+ *   - position, attestation, owner, lastValidatedAt, evidence,
+ *     description, attributes other than S&T facets, collapsed,
+ *     titleSize, ordering, annotationNumber, edge weights / labels /
+ *     descriptions / assumptionIds, OR/XOR group ids, group memberships.
+ *
+ * Note: a future rule that reads any of the "free" fields needs to
+ * either add the field here or invalidate the cache another way.
+ */
+const ST_FACET_FINGERPRINT_KEYS: readonly string[] = [
+  'stStrategy',
+  'stNecessaryAssumption',
+  'stParallelAssumption',
+  'stSufficiencyAssumption',
+];
+
 export const validationFingerprint = (doc: TPDocument): string => {
   const entitySig = entitiesArray(doc)
-    .map((e) => `${e.id}:${e.type}:${e.title}`)
+    .map((e) => {
+      const u = e.unspecified === true ? 'u' : '';
+      const s = e.spanOfControl ? `:${e.spanOfControl[0]}` : '';
+      const slot = e.ecSlot ? `:${e.ecSlot}` : '';
+      const st =
+        e.type === 'injection' &&
+        e.attributes !== undefined &&
+        ST_FACET_FINGERPRINT_KEYS.some((k) => e.attributes?.[k] !== undefined)
+          ? ':st'
+          : '';
+      return `${e.id}:${e.type}:${e.title}:${u}${s}${slot}${st}`;
+    })
     .sort()
     .join('|');
   const edgeSig = edgesArray(doc)

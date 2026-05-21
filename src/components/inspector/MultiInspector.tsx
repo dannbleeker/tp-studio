@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { ArrowLeftRight, ListOrdered, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import type { EntityTitleSize, EntityType } from '@/domain/types';
 import { guardWriteOrToast } from '@/services/browseLock';
@@ -33,11 +33,20 @@ function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
   // B10: include the doc's custom entity classes in the convert-to palette.
   const availableTypes = paletteForDoc(doc);
 
-  const present = ids.map((id) => entities[id]).filter((e) => e !== undefined);
-  if (present.length === 0) return null;
+  // Session 135 / Perf #15 — memoize the selection → entity expansion
+  // + the all-same-type derivation. Fresh array per render broke
+  // React.memo on every row component below.
+  const { present, allSameType, sharedType } = useMemo(() => {
+    const list = ids.map((id) => entities[id]).filter((e) => e !== undefined);
+    const same = list.every((e) => e.type === list[0]?.type);
+    return {
+      present: list,
+      allSameType: same,
+      sharedType: same ? list[0]?.type : undefined,
+    };
+  }, [ids, entities]);
 
-  const allSameType = present.every((e) => e.type === present[0]?.type);
-  const sharedType = allSameType ? present[0]?.type : undefined;
+  if (present.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -223,7 +232,14 @@ function EdgesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
   const ungroupXor = useDocumentStore((s) => s.ungroupXor);
   const showToast = useDocumentStore((s) => s.showToast);
 
-  const present = ids.map((id) => edges[id]).filter((e) => e !== undefined);
+  // Session 135 / Perf #15 — see EntitiesMulti above for the same
+  // pattern: memoize the id → edge expansion so React.memo'd rows
+  // downstream don't re-render on every doc snapshot.
+  const present = useMemo(
+    () => ids.map((id) => edges[id]).filter((e) => e !== undefined),
+    [ids, edges]
+  );
+
   if (present.length === 0) return null;
 
   const hasAndGrouped = present.some((e) => Boolean(e.andGroupId));

@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { entitiesOfType } from '@/domain/graph';
 import { redactDocument } from '@/domain/redact';
 import { getCanvasNodes } from '@/services/canvasRef';
 import {
@@ -285,10 +286,13 @@ export function ExportPickerDialog() {
   const diagramType = useDocumentStore((s) => s.doc.diagramType);
   // Session 134 — surfaced separately so the `requiresEntityType` filter
   // below can short-circuit on docs that have no UDEs without forcing a
-  // full doc-tree subscription.
-  const hasAnyUde = useDocumentStore((s) =>
-    Object.values(s.doc.entities).some((e) => e.type === 'ude')
-  );
+  // full doc-tree subscription. Session 135 / Perf #17 — replaced the
+  // `Object.values().some()` scan with the cached `entitiesOfType`
+  // index (O(1) Map.get); the selector still re-runs on every snapshot,
+  // but the per-call cost drops from O(N) to O(1) and the boolean
+  // result stays stable across non-UDE mutations so the component
+  // doesn't re-render unnecessarily.
+  const hasAnyUde = useDocumentStore((s) => entitiesOfType(s.doc, 'ude').length > 0);
 
   if (!open) return null;
 

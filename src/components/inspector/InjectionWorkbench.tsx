@@ -1,5 +1,5 @@
 import { Plus, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { entitiesOfType } from '@/domain/graph';
 import type { Assumption, Entity } from '@/domain/types';
@@ -110,12 +110,19 @@ function InjectionRow({
   const implementedAttr = injection.attributes?.implemented;
   const implemented = implementedAttr?.kind === 'bool' && implementedAttr.value === true;
 
-  const linkedAssumptions = Object.values(assumptions).filter(
-    (a) => a.injectionIds?.includes(injection.id) ?? false
-  );
-  const unlinkedAssumptions = Object.values(assumptions).filter(
-    (a) => !(a.injectionIds?.includes(injection.id) ?? false)
-  );
+  // Session 135 / Perf #14 — memoize the parallel filters. The
+  // assumptions map only changes on store mutation; without memoization
+  // both filters ran on every InjectionRow render even when nothing
+  // upstream changed.
+  const { linkedAssumptions, unlinkedAssumptions } = useMemo(() => {
+    const linked: Assumption[] = [];
+    const unlinked: Assumption[] = [];
+    for (const a of Object.values(assumptions)) {
+      if (a.injectionIds?.includes(injection.id) ?? false) linked.push(a);
+      else unlinked.push(a);
+    }
+    return { linkedAssumptions: linked, unlinkedAssumptions: unlinked };
+  }, [assumptions, injection.id]);
 
   return (
     <li className="flex flex-col gap-1.5 rounded-md border border-emerald-200 bg-emerald-50/40 p-2 dark:border-emerald-900/40 dark:bg-emerald-950/20">
