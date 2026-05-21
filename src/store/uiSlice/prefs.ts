@@ -7,6 +7,7 @@ import {
 } from '@/services/storage/storage';
 import type {
   AnimationSpeed,
+  AppMode,
   CausalityLabel,
   DefaultLayoutDirection,
   EdgePalette,
@@ -48,6 +49,12 @@ const VALID_DEFAULT_DIRECTIONS: ReadonlySet<DefaultLayoutDirection> = new Set([
   'TB',
   'LR',
   'RL',
+]);
+const VALID_APP_MODES: ReadonlySet<AppMode> = new Set([
+  'expert',
+  'guided',
+  'workshop',
+  'presentation',
 ]);
 
 export const readInitialTheme = (): Theme => {
@@ -119,6 +126,10 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // value (including `undefined` for first-run users) keeps the
     // toolbar visible. Users disable via Settings → Behavior.
     showSelectionToolbar: raw?.showSelectionToolbar !== false,
+    // Session 135 — `'expert'` is the default for first-run users;
+    // unknown / stale mode values fall back to expert so a future
+    // schema change doesn't strand someone in an unusable mode.
+    appMode: raw?.appMode && VALID_APP_MODES.has(raw.appMode) ? raw.appMode : 'expert',
   };
 };
 

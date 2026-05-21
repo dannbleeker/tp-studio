@@ -16,13 +16,17 @@ Spec §6.2. Each `TPDocument` is standalone JSON; no entity/edge references acro
 
 **Effort:** ~2–3 sessions. Highest-leverage structural gap. Unlocks the portfolio-view pattern-library sub-item and the full TP chain.
 
-### 🔴 #9 — Formal mode-switching *(most bounded of what's left)*
+### 🔴 #9 — Formal mode-switching *(Phase 1A done Session 135 — chrome wiring next)*
 
-Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has guided prompts (method checklist) and walkthrough overlays, but no explicit mode-state, no facilitator-vs-contributor view, no presentation mode beyond exports.
+Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. **Phase 1A shipped:** `AppMode` type + persisted `appMode` preference (defaults to `'expert'`) + `setAppMode(mode)` action + four palette commands (`Switch to Expert / Guided / Workshop / Presentation mode`). Survives reloads. 5 new tests cover state, persistence, command registry.
 
-**Path:** Introduce `ui.appMode: 'expert' | 'guided' | 'workshop' | 'presentation'` in the UI slice (defaults to `'expert'`). Per-mode: surface/hide chrome density, toggle the method-checklist prominence, gate canvas zoom controls. Presentation mode hides every chrome element except the canvas + a step-through control.
+**Phase 1B (next):** wire per-mode chrome behaviour. Each is a discrete, testable UI change:
+- **Presentation** — hide `TopBar`, `Inspector`, `SelectionToolbar`, `CanvasNav`; auto-engage Browse Lock; surface a small step-through control (Prev / Next walks the entity ordering).
+- **Workshop** — bump node-text size; high-contrast edge palette; bigger junctor circles; surface a session timer.
+- **Guided** — auto-open the method checklist; force-show the creation wizards (override the per-diagram suppress flags).
+- **Expert** — no chrome change (the existing default).
 
-**Effort:** ~1–2 sessions.
+**Effort:** Phase 1B ~1 session if done as one batch, or ~30 min per mode if split.
 
 ### 🔴 #4 — Confidence / propagation simulation
 

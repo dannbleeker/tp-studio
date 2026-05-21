@@ -105,6 +105,33 @@ export type SearchOptions = {
  */
 export type DefaultLayoutDirection = 'auto' | 'BT' | 'TB' | 'LR' | 'RL';
 
+/**
+ * Session 135 / spec major gap #9 — formal app-mode switching.
+ *
+ * The spec calls for four distinct UX modes the tool can run in:
+ *
+ *   - `'expert'`     — default. Every affordance available; minimal
+ *                      hand-holding. The mode TP Studio has shipped
+ *                      with since v1.
+ *   - `'guided'`     — first-time-author or one-off-workshop mode.
+ *                      Method-checklist prominence is up, the
+ *                      creation wizards are surfaced, walkthrough
+ *                      overlays auto-trigger on novel diagram types.
+ *   - `'workshop'`   — facilitator + group mode. Bigger nodes /
+ *                      higher-contrast colours for projection; voting
+ *                      affordances on assumptions; timer chrome.
+ *   - `'presentation'` — read-only, full-canvas. TopBar /
+ *                        inspector / SelectionToolbar all hidden;
+ *                        only the canvas + a step-through control
+ *                        survive. Auto-engages Browse Lock.
+ *
+ * Phase 1 (Session 135) lands the state field + actions + palette
+ * commands; per-mode chrome wiring layers on top in subsequent
+ * phases. Persisted across reloads so a workshop facilitator's
+ * setup survives a refresh.
+ */
+export type AppMode = 'expert' | 'guided' | 'workshop' | 'presentation';
+
 /** Subset of UI state that gets persisted via `prefs.ts`. */
 export type StoredPrefs = {
   animationSpeed?: AnimationSpeed;
@@ -151,4 +178,7 @@ export type StoredPrefs = {
    *  current selection. Default `true`; opt-out via Settings →
    *  Behavior. */
   showSelectionToolbar?: boolean;
+  /** Session 135 / spec major gap #9 — app-mode preference. Default
+   *  `'expert'`. See {@link AppMode} for the four modes. */
+  appMode?: AppMode;
 };

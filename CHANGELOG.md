@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — App-mode foundation (spec gap #9 Phase 1A)
+
+First slice of the formal mode-switching gap. Phase 1A lands the state + actions + palette commands so subsequent phases have a clean foundation to wire chrome behaviour onto.
+
+**New type** in `src/store/uiSlice/types.ts`: `AppMode = 'expert' | 'guided' | 'workshop' | 'presentation'`. Four modes per the spec — Expert (default; every affordance available), Guided (method-checklist + creation-wizard prominence), Workshop (facilitator + group affordances), Presentation (canvas-only, read-only, full-screen). Type re-exported through the store barrel.
+
+**Persisted preference.** `appMode` joins the existing `StoredPrefs` bag — read at boot via `readInitialPrefs()` with whitelist-validated fallback to `'expert'`, written via `persistPrefs()` after every `setAppMode` call. Survives reloads so a workshop facilitator's setup isn't lost on refresh.
+
+**Action.** `setAppMode(mode)` on `PreferencesSlice`. Direct setter; no chrome side-effects yet — Phase 1B layers those on top once we know how each mode should change the UI.
+
+**Palette commands** in `src/components/command-palette/commands/view.ts`. Four entries: `switch-app-mode-expert` / `…-guided` / `…-workshop` / `…-presentation`. Toasts confirm the switch (useful in Phase 1A since there's no visible chrome change yet); running the active mode's command surfaces an info toast and no-ops. Cmd+K → "expert" / "guided" / "workshop" / "presentation" surfaces the right command.
+
+**5 new tests** in `tests/store/appMode.test.ts`: default state, full cycle through all four modes, command registry has one entry per mode, running a command switches the store, running for the active mode no-ops with info toast.
+
+**Phase 1B (next):** wire chrome changes per mode. Presentation hides TopBar + Inspector + SelectionToolbar; Workshop bumps node sizes; Guided auto-opens method checklist + creation wizards. Each is a discrete UI change with isolated tests.
+
+All 1603 tests pass (+5); tsc clean; biome lint clean.
+
 ## Session 135 — Infra-debt batch: custom-equality narrowing + test-cast cleanup + smaller refactors
 
 Four items from the new NEXT_STEPS "Infrastructure debt / refactor" section:

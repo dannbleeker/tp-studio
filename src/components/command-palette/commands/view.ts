@@ -1,7 +1,40 @@
 import { pinnedEntities } from '@/domain/graph';
+import type { AppMode } from '@/store';
 import { type Command, withWriteGuard } from './types';
 
+// Session 135 / spec major gap #9 — app-mode commands. One palette
+// entry per mode so the user can switch via Cmd+K. The label
+// includes a trailing "mode" word so the palette query "expert"
+// surfaces "Expert mode" cleanly. Toasts confirm the switch — useful
+// because Phase 1 doesn't yet wire visible chrome changes per mode,
+// so without the toast the user wouldn't know the switch happened.
+const APP_MODE_OPTIONS: Array<{
+  id: AppMode;
+  label: string;
+  hint: string;
+}> = [
+  { id: 'expert', label: 'Expert', hint: 'default — every affordance available' },
+  { id: 'guided', label: 'Guided', hint: 'method-checklist + creation wizards prominent' },
+  { id: 'workshop', label: 'Workshop', hint: 'facilitator + group session affordances' },
+  { id: 'presentation', label: 'Presentation', hint: 'canvas-only, read-only, full-screen' },
+];
+
+const appModeCommands: Command[] = APP_MODE_OPTIONS.map((opt) => ({
+  id: `switch-app-mode-${opt.id}`,
+  label: `Switch to ${opt.label} mode`,
+  group: 'View',
+  run: (s) => {
+    if (s.appMode === opt.id) {
+      s.showToast('info', `Already in ${opt.label} mode.`);
+      return;
+    }
+    s.setAppMode(opt.id);
+    s.showToast('success', `${opt.label} mode (${opt.hint}).`);
+  },
+}));
+
 export const viewCommands: Command[] = [
+  ...appModeCommands,
   // Session 90 — `Toggle dark mode` and `Toggle Browse Lock` removed
   // from the palette: both are reachable as dedicated TopBar buttons
   // (`Theme` / `Lock`) on sm+ and via the KebabMenu on xs. Duplicate

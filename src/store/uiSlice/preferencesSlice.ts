@@ -3,6 +3,7 @@ import type { RootStore } from '../types';
 import { readInitialPrefs, readInitialTheme, writePrefs, writeTheme } from './prefs';
 import type {
   AnimationSpeed,
+  AppMode,
   CausalityLabel,
   DefaultLayoutDirection,
   EdgePalette,
@@ -71,6 +72,11 @@ export type PreferencesSlice = {
    *  (small floating chrome that's easy to dismiss for users who
    *  prefer keyboard-only flow). */
   showSelectionToolbar: boolean;
+  /** Session 135 / spec major gap #9 — app-mode (Expert / Guided /
+   *  Workshop / Presentation). Phase 1 lands the state field +
+   *  setter + palette commands; per-mode chrome wiring follows.
+   *  See {@link AppMode}. Persisted across reloads. */
+  appMode: AppMode;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -101,6 +107,8 @@ export type PreferencesSlice = {
   setECChromeCollapsed: (collapsed: boolean) => void;
   /** Session 95 — toggle the floating SelectionToolbar. */
   setShowSelectionToolbar: (show: boolean) => void;
+  /** Session 135 — set the active app mode. */
+  setAppMode: (mode: AppMode) => void;
 };
 
 export type PreferencesDataKeys =
@@ -123,7 +131,8 @@ export type PreferencesDataKeys =
   | 'showECWizard'
   | 'verbalisationStripCollapsed'
   | 'ecChromeCollapsed'
-  | 'showSelectionToolbar';
+  | 'showSelectionToolbar'
+  | 'appMode';
 
 /**
  * Data-only defaults used by `resetStoreForTest`. The theme + persisted
@@ -165,6 +174,11 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   // selection above the selected element; users who prefer
   // keyboard-only flow can disable in Settings → Behavior.
   showSelectionToolbar: true,
+  // Session 135 — Expert is the default mode. First-run users get
+  // the full-affordance experience the tool has shipped with since
+  // v1; explicit switch via the palette to enter Guided / Workshop
+  // / Presentation modes.
+  appMode: 'expert',
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (
@@ -192,6 +206,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       verbalisationStripCollapsed: s.verbalisationStripCollapsed,
       ecChromeCollapsed: s.ecChromeCollapsed,
       showSelectionToolbar: s.showSelectionToolbar,
+      appMode: s.appMode,
     });
   };
 
@@ -216,6 +231,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     verbalisationStripCollapsed: initialPrefs.verbalisationStripCollapsed,
     ecChromeCollapsed: initialPrefs.ecChromeCollapsed,
     showSelectionToolbar: initialPrefs.showSelectionToolbar,
+    appMode: initialPrefs.appMode,
 
     setTheme: (theme) => {
       writeTheme(theme);
@@ -297,6 +313,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setShowSelectionToolbar: (show) => {
       set({ showSelectionToolbar: show });
+      persistPrefs();
+    },
+    setAppMode: (mode) => {
+      set({ appMode: mode });
       persistPrefs();
     },
   };

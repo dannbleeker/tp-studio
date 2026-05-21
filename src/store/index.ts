@@ -16,6 +16,7 @@ import { createUISlice, uiDefaults } from './uiSlice';
 export type { DocumentStore, RootStore } from './types';
 export type {
   AnimationSpeed,
+  AppMode,
   CausalityLabel,
   ContextMenuState,
   ContextMenuTarget,

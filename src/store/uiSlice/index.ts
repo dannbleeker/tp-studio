@@ -19,6 +19,7 @@ import {
 // resolves to this index file.
 export type {
   AnimationSpeed,
+  AppMode,
   CausalityLabel,
   ContextMenuState,
   ContextMenuTarget,
