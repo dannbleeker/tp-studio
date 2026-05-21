@@ -73,6 +73,30 @@ describe('appMode — Browse Lock auto-engage on Presentation', () => {
   });
 });
 
+describe('appMode — Guided mode wizard force-show', () => {
+  it('opens the Goal Tree wizard on newDocument in Guided mode even when the suppress flag is off', () => {
+    // Suppress flag explicitly off — without Guided, the wizard would stay closed.
+    s().setShowGoalTreeWizard(false);
+    s().setAppMode('guided');
+    s().newDocument('goalTree');
+    expect(s().creationWizard?.kind).toBe('goalTree');
+  });
+
+  it('opens the EC wizard on newDocument in Guided mode even when the suppress flag is off', () => {
+    s().setShowECWizard(false);
+    s().setAppMode('guided');
+    s().newDocument('ec');
+    expect(s().creationWizard?.kind).toBe('ec');
+  });
+
+  it('Expert mode honours the dismissed suppress flag (no force-show)', () => {
+    s().setShowGoalTreeWizard(false);
+    s().setAppMode('expert');
+    s().newDocument('goalTree');
+    expect(s().creationWizard).toBe(null);
+  });
+});
+
 describe('appMode — palette commands', () => {
   it('exposes one switch command per mode', async () => {
     // Lazy-load to avoid pulling the palette through the store cold-

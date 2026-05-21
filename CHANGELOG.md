@@ -2,6 +2,33 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — App-mode Phase 1C: Guided wizard force-show + Presentation step-through
+
+Phase 1C closes the formal mode-switching loop. All four modes now have visible, distinct behaviour.
+
+**Guided mode** — creation-wizard force-show. `docMetaSlice.newDocument` previously honoured the per-diagram suppress flag (`showGoalTreeWizard` / `showECWizard`); now an `appMode === 'guided'` override surfaces the wizard regardless of the dismissed-by-default state. Reasoning: the user explicitly opted into the hand-holding flow by switching to Guided. Expert / Workshop / Presentation keep the persisted flag as-is.
+
+**Presentation mode** — step-through control. New `src/components/canvas/overlays/PresentationStepThrough.tsx`:
+- Floating chip at the bottom-centre of the canvas: `<` button, `current / total` position label, `>` button.
+- Surfaces only when `appMode === 'presentation'` (self-gated).
+- Walks structural entities (drops assumptions + notes via `isNonCausal`) in a stable order: explicit `ordering` ascending first, then no-ordering entities by `annotationNumber` ascending.
+- On click: `selectEntities([id])` + `fitView({ nodes: [{ id }], padding: 0.3, duration: 250 })` so the selected entity centres in the viewport with a small ease.
+- Keyboard bindings — `ArrowRight` / `ArrowLeft` walk next / prev. The listener attaches only while Presentation is active so other modes' arrow-key flows aren't shadowed. Defensive: ignores keystrokes when an input / textarea / contentEditable element is focused (Presentation auto-locks anyway; belt-and-braces).
+- A11y: `<fieldset>` + visually-hidden `<legend>` carries the group name for screen readers (passes biome's `useSemanticElements` rule). `aria-live="polite"` on the position label announces step changes.
+
+**App.tsx** — mounts `<PresentationStepThrough />` inside `<ReactFlowProvider>` so `useReactFlow().fitView({...})` is available. Scoped under its own `<ErrorBoundary label="Presentation step-through">` so a render fault doesn't escape to the root crash screen.
+
+**Skipped from Phase 1C** (defer or drop):
+- Workshop session timer — UX choices too open-ended (when does it start? pause / resume / lap? per-doc or per-session?). Reopen with a concrete workshop facilitator use-case.
+- Workshop high-contrast edge palette auto-engage — would mean stateful "restore previous palette on leaving Workshop" with edge cases on cross-mode ping-pong. Workshop's text-size bump (Phase 1B) is enough differentiation for now.
+- Guided method-checklist auto-open — opening a heavy modal on every new doc is intrusive UX. The wizard force-show covers the "new diagram" surface; method checklist is one click away in `Document details…`.
+
+**Tests** — 3 new in `tests/store/appMode.test.ts` covering the wizard force-show: Guided opens GoalTree wizard with suppress-flag off; Guided opens EC wizard with suppress-flag off; Expert mode honours the dismissed flag. 1610 total pass.
+
+NEXT_STEPS spec gap #9 fully closed. All visible mode behaviour shipped; future iteration can add deferred extras (timer / step-through customisation / etc.) if a concrete need surfaces.
+
+All tsc clean; biome lint clean (modulo two pre-existing nursery infos unchanged).
+
 ## Session 135 — App-mode Phase 1B: chrome wiring per mode
 
 Phase 1B lays the visible UX changes onto the Phase 1A foundation. Three modes now have observable behaviour:

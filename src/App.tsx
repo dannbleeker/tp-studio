@@ -1,8 +1,10 @@
 import { ReactFlowProvider } from '@xyflow/react';
+import clsx from 'clsx';
 import { lazy, Suspense, useEffect } from 'react';
 import { Canvas } from './components/canvas/Canvas';
 import { CompareBanner } from './components/canvas/overlays/CompareBanner';
 import { ContextMenu } from './components/canvas/overlays/ContextMenu';
+import { PresentationStepThrough } from './components/canvas/overlays/PresentationStepThrough';
 import { SelectionToolbar } from './components/canvas/overlays/SelectionToolbar';
 import { DocumentMeta } from './components/DocumentMeta';
 import { Inspector } from './components/inspector/Inspector';
@@ -234,9 +236,11 @@ export function App() {
 
   return (
     <main
-      className={`relative h-screen w-screen overflow-hidden${
-        appMode === 'workshop' ? ' app-mode-workshop' : ''
-      }${appMode === 'presentation' ? ' app-mode-presentation' : ''}`}
+      className={clsx(
+        'relative h-screen w-screen overflow-hidden',
+        appMode === 'workshop' && 'app-mode-workshop',
+        appMode === 'presentation' && 'app-mode-presentation'
+      )}
     >
       <DocumentMeta />
       <PrintHeader />
@@ -267,6 +271,15 @@ export function App() {
             <SelectionToolbar />
           </ErrorBoundary>
         )}
+        {/* Session 135 / spec gap #9 Phase 1C — Presentation
+            step-through control. Self-gated on `appMode ===
+            'presentation'` inside the component, so it only mounts
+            chrome when the mode is active. Lives inside the
+            ReactFlowProvider so `useReactFlow().fitView({...})` is
+            available for the focus-on-step behaviour. */}
+        <ErrorBoundary label="Presentation step-through">
+          <PresentationStepThrough />
+        </ErrorBoundary>
       </ReactFlowProvider>
       <ErrorBoundary label="Compare banner">
         <CompareBanner />

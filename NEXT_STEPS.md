@@ -6,7 +6,7 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ## Open major gaps from the spec analysis
 
-Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **five of ten** original major gaps remain. **AI-integration (spec §5)** explicitly out of scope — see won't-build section. **Closed:** #1 NBR, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #10 PowerPoint export.
+Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **four of ten** original major gaps remain. **AI-integration (spec §5)** explicitly out of scope — see won't-build section. **Closed:** #1 NBR, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #9 formal mode-switching, #10 PowerPoint export.
 
 ### 🔴 #3 — Cross-diagram traceability *(highest leverage of what's left)*
 
@@ -16,20 +16,21 @@ Spec §6.2. Each `TPDocument` is standalone JSON; no entity/edge references acro
 
 **Effort:** ~2–3 sessions. Highest-leverage structural gap. Unlocks the portfolio-view pattern-library sub-item and the full TP chain.
 
-### 🔴 #9 — Formal mode-switching *(Phase 1A + 1B done Session 135 — Guided mode + extras pending)*
+### ~~🔴 #9 — Formal mode-switching~~ — *done Session 135*
 
-Spec §7.1. **Phase 1A + 1B shipped Session 135:** `AppMode` type + persisted `appMode` preference + `setAppMode(mode)` action + four palette commands. Per-mode chrome wiring landed for three of four modes:
-- **Presentation** — `App.tsx` hides `TitleBadge` / `TopBar` / `SelectionToolbar` / `Inspector`; `Canvas.tsx` hides `CanvasNav`; `setAppMode('presentation')` auto-engages Browse Lock so projected canvases can't be edited accidentally. Leaving Presentation doesn't auto-unlock.
-- **Workshop** — `.app-mode-workshop` body class bumps `--text-node` from 15px → 18px and line-height to 1.4. Entity cards readable from a 6m room.
-- **Expert** — default (no chrome change).
-- **Guided** — pending Phase 1C.
+Spec §7.1. **Closed Session 135 across Phases 1A / 1B / 1C.** All four modes have visible, distinct behaviour:
 
-**Phase 1C (next):**
-- **Guided** mode — auto-open method checklist; force-show the creation wizards (override `showGoalTreeWizard` / `showECWizard` per-diagram preferences when the app-mode override says to).
-- **Presentation extras** — small step-through control overlay (Prev / Next walks entities by `ordering` or annotation number; arrow keys bound for keyboard-only flow).
-- **Workshop extras** — session timer chip + optional high-contrast edge palette auto-engage.
+- **Expert** (default) — every affordance, no overrides.
+- **Guided** — creation wizards force-shown on `newDocument` regardless of the dismissed-by-default suppress flags (`showGoalTreeWizard` / `showECWizard`).
+- **Workshop** — `.app-mode-workshop` body class bumps `--text-node` 15px → 18px + line-height 1.4 for projected-canvas readability.
+- **Presentation** — `App.tsx` + `Canvas.tsx` hide `TitleBadge` / `TopBar` / `SelectionToolbar` / `Inspector` / `CanvasNav`; `setAppMode('presentation')` auto-engages Browse Lock; new `PresentationStepThrough` overlay (bottom-centre chip with Prev/Next + position label; arrow-key bindings) walks entities by ordering then annotation, `fitView`-focuses on each step.
 
-**Effort:** Phase 1C ~1 session if batched; ~30 min per piece if split.
+State + palette commands persist across reloads via `StoredPrefs.appMode`. 12 tests cover state, persistence, command registry, Browse Lock auto-engage, wizard force-show.
+
+**Deferred extras** (re-open if a concrete use-case lands):
+- Workshop session timer — UX choices too open-ended without a facilitator use-case
+- Workshop auto-engage high-contrast edge palette — stateful restore on leave adds complexity
+- Guided method-checklist auto-open — heavy modal on every new doc is intrusive
 
 ### 🔴 #4 — Confidence / propagation simulation
 
@@ -98,11 +99,10 @@ From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4
 
 If picking the next thing up:
 
-1. **#9 formal mode-switching** (~1–2 sessions) — most bounded remaining spec gap. Guided / Expert / Workshop / Presentation modes. Phase 1: introduce `ui.appMode` + chrome-density toggles. Phase 2: presentation mode.
-2. **#3 cross-diagram traceability** (~2–3 sessions) — highest leverage, larger unit. Unlocks portfolio-view pattern-library and the full TP chain.
-3. **#4 confidence / state propagation** (~3 sessions) — FRT signature behaviour per spec.
-4. **Medium gaps as filler** — single-session validator additions (action-locus, S&T roll-up). Good "between bigger units" work.
-5. **Infrastructure debt** — file splits + inline-input migration as cleanup-between-features.
+1. **#3 cross-diagram traceability** (~2–3 sessions) — now the largest open spec gap. Highest leverage. Unlocks portfolio-view pattern-library and the full TP chain.
+2. **#4 confidence / state propagation** (~3 sessions) — FRT signature behaviour per spec.
+3. **Medium gaps as filler** — single-session validator additions (action-locus, S&T roll-up). Good "between bigger units" work.
+4. **Infrastructure debt** — file splits + inline-input migration as cleanup-between-features.
 
 #2 collab and #8 enterprise stay deprioritised — both are product-direction decisions, not sprints.
 

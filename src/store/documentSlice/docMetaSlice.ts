@@ -186,9 +186,17 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       // Session 78: open the creation wizard panel when the diagram
       // type has one AND the user hasn't turned it off. Goal Tree +
       // EC are the two that have a wizard today.
-      if (diagramType === 'goalTree' && get().showGoalTreeWizard) {
+      //
+      // Session 135 / spec gap #9 Phase 1C — Guided mode forces the
+      // wizards to surface even when the per-diagram suppress flag
+      // is off. The user explicitly opted into the hand-holding flow
+      // by switching to Guided; honour that over their dismissed-by-
+      // default state. Expert / Workshop / Presentation keep the
+      // user's persisted flag as-is.
+      const guidedOverride = get().appMode === 'guided';
+      if (diagramType === 'goalTree' && (get().showGoalTreeWizard || guidedOverride)) {
         get().openCreationWizard('goalTree');
-      } else if (diagramType === 'ec' && get().showECWizard) {
+      } else if (diagramType === 'ec' && (get().showECWizard || guidedOverride)) {
         get().openCreationWizard('ec');
       } else {
         // Closing covers the case where a wizard from a previous doc
