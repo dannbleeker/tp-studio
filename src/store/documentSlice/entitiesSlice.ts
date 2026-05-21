@@ -41,6 +41,14 @@ export type EntitiesSlice = {
   swapEntities: (aId: string, bId: string) => void;
   deleteEntitiesAndEdges: (entityIds: string[], edgeIds: string[]) => void;
 
+  /** Session 135 / spec major gap #3 Phase 1B — mint a new entity in
+   *  the current doc carrying an `importedFrom` ref back to the
+   *  source entity. Copies `type`, `title`, `description` so the new
+   *  entity reads sensibly from day one; the `importedFrom` ref keeps
+   *  the trail back to the source. Returns the minted entity, or
+   *  `null` when the source entity / doc reference is malformed. */
+  addImportedEntity: (params: { sourceDocId: string; sourceEntity: Entity }) => Entity | null;
+
   addAssumptionToEdge: (edgeId: string, title?: string) => Entity | null;
   attachAssumption: (edgeId: string, assumptionId: string) => void;
   detachAssumption: (edgeId: string, assumptionId: string) => void;
@@ -125,6 +133,43 @@ export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice>
       applyDocChange((prev) => entityPatch(prev, id, patch), {
         coalesceKey: `entity:${id}:${patchKeys}`,
       });
+    },
+
+    addImportedEntity: ({ sourceDocId, sourceEntity }) => {
+      // Session 135 / spec major gap #3 Phase 1B — mint an entity in the
+      // current doc that points back to its origin. Copies type +
+      // title + description so the new entity reads sensibly; the
+      // `importedFrom` ref records the source. Selection moves to the
+      // new entity so the user sees what they just imported.
+      if (!sourceDocId || !sourceEntity?.id) return null;
+      const annotationNumber = get().doc.nextAnnotationNumber;
+      const base = createEntity({
+        type: sourceEntity.type,
+        title: sourceEntity.title,
+        annotationNumber,
+      });
+      const entity: Entity = {
+        ...base,
+        ...(sourceEntity.description ? { description: sourceEntity.description } : {}),
+        importedFrom: {
+          docId: sourceDocId,
+          entityId: sourceEntity.id,
+          ...(sourceEntity.title ? { sourceTitle: sourceEntity.title } : {}),
+          importedAt: new Date().toISOString(),
+        },
+      };
+      applyDocChange((prev) =>
+        touch({
+          ...prev,
+          entities: { ...prev.entities, [entity.id]: entity },
+          nextAnnotationNumber: annotationNumber + 1,
+        })
+      );
+      set({
+        selection: { kind: 'entities', ids: [entity.id] },
+        editingEntityId: null,
+      });
+      return entity;
     },
 
     deleteEntity: (id) => {

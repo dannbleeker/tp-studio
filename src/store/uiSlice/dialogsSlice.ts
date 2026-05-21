@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import { TOAST_AUTO_DISMISS_MS_BY_KIND } from '@/domain/constants';
-import type { DiagramType } from '@/domain/types';
+import type { DiagramType, TPDocument } from '@/domain/types';
 import type { RootStore } from '../types';
 import type { ContextMenuState, ContextMenuTarget, Toast, ToastAction, ToastKind } from './types';
 
@@ -44,6 +44,15 @@ export type DialogsSlice = {
    *  Mermaid / CSV / Flying Logic file pickers. Replaces the 4
    *  separate import palette commands with one dialog. */
   importPickerOpen: boolean;
+  /** Session 135 / spec major gap #3 Phase 1B — cross-diagram
+   *  entity import. `null` when no import is in progress; carries
+   *  the parsed source document while the user picks an entity
+   *  from it. The dialog reads the source doc, the user picks an
+   *  entity, the store action mints a new entity in the current
+   *  doc with `importedFrom` set, then this state clears. The
+   *  source doc isn't persisted — it lives in memory only for the
+   *  picker's lifetime. */
+  importEntityPicker: null | { sourceDoc: TPDocument };
   /** Session 78 / brief §5 + §6 — creation-wizard panel for the
    *  diagram type the user just opened. `null` when closed; carries
    *  `step` (0-based) and `minimised` so the user can collapse the
@@ -181,6 +190,14 @@ export type DialogsSlice = {
   openImportPicker: () => void;
   closeImportPicker: () => void;
 
+  /** Session 135 / spec major gap #3 Phase 1B — cross-diagram entity
+   *  import. `openImportEntityPicker` stores the parsed source doc
+   *  in the slice and triggers the dialog mount; `closeImportEntityPicker`
+   *  clears it. The palette command runs the file-picker then calls
+   *  open, so this action receives a fully-parsed `TPDocument`. */
+  openImportEntityPicker: (sourceDoc: TPDocument) => void;
+  closeImportEntityPicker: () => void;
+
   /** Session 78 — creation-wizard panel control. `openCreationWizard`
    *  resets the panel to step 0 on the given diagram type;
    *  `advanceCreationWizardStep` moves forward by one; `closeCreationWizard`
@@ -268,6 +285,7 @@ export type DialogsDataKeys =
   | 'diagramPickerOpen'
   | 'exportPickerOpen'
   | 'importPickerOpen'
+  | 'importEntityPicker'
   | 'creationWizard'
   | 'ecInspectorTab'
   | 'readAllAtOnceOpen'
@@ -293,6 +311,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   diagramPickerOpen: null,
   exportPickerOpen: false,
   importPickerOpen: false,
+  importEntityPicker: null,
   creationWizard: null,
   ecInspectorTab: 'inspector',
   readAllAtOnceOpen: false,
@@ -319,6 +338,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   diagramPickerOpen: null,
   exportPickerOpen: false,
   importPickerOpen: false,
+  importEntityPicker: null,
   creationWizard: null,
   ecInspectorTab: 'inspector',
   readAllAtOnceOpen: false,
@@ -391,6 +411,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openImportPicker: () => set({ importPickerOpen: true }),
   closeImportPicker: () => set({ importPickerOpen: false }),
+
+  openImportEntityPicker: (sourceDoc) => set({ importEntityPicker: { sourceDoc } }),
+  closeImportEntityPicker: () => set({ importEntityPicker: null }),
 
   openCreationWizard: (kind) =>
     set({ creationWizard: { kind, step: 0, minimised: false, x: null, y: null } }),

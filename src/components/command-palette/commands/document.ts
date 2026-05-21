@@ -1,3 +1,5 @@
+import { importFromJSON } from '@/domain/persistence';
+import { pickFile } from '@/services/exporters/picker';
 import { type Command, withWriteGuard } from './types';
 
 export const documentCommands: Command[] = [
@@ -38,6 +40,33 @@ export const documentCommands: Command[] = [
     label: 'Import…',
     group: 'File',
     run: (s) => s.openImportPicker(),
+  }),
+  // Session 135 / spec major gap #3 Phase 1B — cross-diagram entity
+  // import. User picks a TP Studio JSON file, then picks one entity
+  // from it; the new entity in the current doc carries an
+  // `importedFrom` ref back to the source. The doc-level import
+  // path (replace current doc) is the existing `Import…` command
+  // above; this one is the per-entity copy-with-traceability path.
+  withWriteGuard({
+    id: 'import-entity-from-doc',
+    label: 'Import entity from another doc…',
+    group: 'File',
+    run: async (s) => {
+      const sourceDoc = await pickFile({
+        accept: 'application/json,.json',
+        label: 'JSON',
+        parse: importFromJSON,
+      });
+      if (!sourceDoc) return; // user cancelled or parse failed (toast already shown)
+      if (sourceDoc.id === s.doc.id) {
+        s.showToast(
+          'info',
+          'That file is this same document — pick a different one to import from.'
+        );
+        return;
+      }
+      s.openImportEntityPicker(sourceDoc);
+    },
   }),
   withWriteGuard({
     id: 'open-quick-capture',

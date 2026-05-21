@@ -6,23 +6,20 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ## Open major gaps from the spec analysis
 
-Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **four of ten** original major gaps remain. **AI-integration (spec §5)** explicitly out of scope — see won't-build section. **Closed:** #1 NBR, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #9 formal mode-switching, #10 PowerPoint export.
+Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **three of ten** original major gaps remain. **AI-integration (spec §5)** explicitly out of scope — see won't-build section. **Closed:** #1 NBR, #3 cross-diagram traceability, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #9 formal mode-switching, #10 PowerPoint export.
 
-### 🔴 #3 — Cross-diagram traceability *(Phase 1A done Session 135 — UI layers next)*
+### ~~🔴 #3 — Cross-diagram traceability~~ — *done Session 135*
 
-Spec §6.2. **Phase 1A shipped:** `ImportedFromRef` type + `entity.importedFrom?: ImportedFromRef` field with strict persistence validation. The schema carries `docId`, `entityId`, optional `sourceTitle` snapshot, optional `importedAt` ISO timestamp. Persisted across JSON export + share-link reload. 2 new tests cover the round-trip + malformed-ref rejection.
+Spec §6.2. **Closed Session 135 across Phases 1A + 1B.** The schema (`ImportedFromRef` type + `entity.importedFrom?` field with strict persistence validation) ships alongside the UI flow:
 
-**Phase 1B (next):** UI affordances.
-- "Imported from <doc> → <entity>" badge on the entity inspector (clickable; opens the source doc if it's in localStorage, otherwise toasts "source doc not available").
-- New "Import from another doc…" command in the palette (open a doc-picker → entity-picker → mint a new entity in the current doc with `importedFrom` set + `title` copied from the source).
-- Filter / search on `importedFrom`-bearing entities so a user can audit "what came from where" across a portfolio.
+- **Palette command** `Import entity from another doc…` (Cmd+K) — opens a file picker, parses the source TP Studio JSON, hands the entity picker the parsed doc.
+- **Entity-picker dialog** — filterable list of causally-meaningful entities in the source doc, per-entity cards with type chip / annotation number / title / description. Click → mint copy.
+- **`addImportedEntity` store action** — mints a fresh entity in the current doc with `type`/`title`/`description` copied + `importedFrom` set + ISO timestamp captured at mint time.
+- **Inspector badge** — "Imported from <sourceTitle> · doc <id> · imported <date>" indigo-tinted card on entities with `importedFrom` set.
 
-**Phase 1C (later):** cross-doc store + auto-resolution.
-- A separate `documentsSlice` that holds open docs by id with their `TPDocument` payload.
-- "Jump to source" affordance that opens the source doc in a new tab / pane (depends on FL-EX8 multi-doc tabs — currently out of scope per the won't-build list).
-- Reverse-lookup index so an entity can also surface "imported INTO" pointers (who's referenced this entity from elsewhere?).
+9 new tests across persistence round-trip (`tests/domain/persistenceRoundTrip.test.ts`) + store action (`tests/store/importEntity.test.ts`).
 
-**Effort remaining:** Phase 1B ~1 session; Phase 1C ~2 sessions (and gated on multi-doc).
+**Phase 1C left as future-iteration parking lot:** cross-doc store + reverse-lookup + jump-to-source. Gated on multi-doc tabs (currently out of scope per the won't-build list). Re-open when a concrete portfolio-view use case lands.
 
 ### ~~🔴 #9 — Formal mode-switching~~ — *done Session 135*
 
@@ -107,10 +104,9 @@ From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4
 
 If picking the next thing up:
 
-1. **#3 cross-diagram traceability** (~2–3 sessions) — now the largest open spec gap. Highest leverage. Unlocks portfolio-view pattern-library and the full TP chain.
-2. **#4 confidence / state propagation** (~3 sessions) — FRT signature behaviour per spec.
-3. **Medium gaps as filler** — single-session validator additions (action-locus, S&T roll-up). Good "between bigger units" work.
-4. **Infrastructure debt** — file splits + inline-input migration as cleanup-between-features.
+1. **#4 confidence / state propagation** (~3 sessions) — now the largest open spec gap. The FRT signature behaviour the spec considers core; entity-state enum (`true / false / unknown / disputed`) + AND/OR propagation + "what-if" UX. Schema-only Phase 1A is ~1 session.
+2. **Medium gaps as filler** — S&T assumption sub-typing (`Assumption.kind`), "preserve rejected logic in collapsed groups", reactive-vs-proactive NBR mitigation. Each ~1 hour.
+3. **Infrastructure debt** — file splits (TPEdge / entitiesSlice / etc.) + continued test-cast cleanup. Good cleanup-between-features work.
 
 #2 collab and #8 enterprise stay deprioritised — both are product-direction decisions, not sprints.
 

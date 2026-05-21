@@ -2,6 +2,47 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Cross-diagram traceability Phase 1B: closes spec gap #3
+
+Phase 1B layers UI affordances on top of the Phase 1A schema. Users can now create + see cross-diagram entity imports end-to-end.
+
+**Palette command** `Import entity from another doc…` (in `commands/document.ts`):
+- Opens a file picker (`pickFile` with `accept: 'application/json,.json'`)
+- Parses the JSON via the existing `importFromJSON` (gets validation + toast on failure for free)
+- Stores the parsed doc on the new `ui.importEntityPicker` slice state
+- Mounts the entity-picker dialog
+- Bails with an info toast if the user picks the SAME doc they're already viewing
+
+**New dialog** `ImportEntityPickerDialog` (`src/components/import/ImportEntityPickerDialog.tsx`):
+- Filterable list of every causally-meaningful entity (`isNonCausal`-filtered, so notes + assumptions are excluded) sorted by `annotationNumber`
+- Per-entity card shows: type chip with stripe colour, annotation number, title, description (line-clamp-2)
+- Filter box up top — case-insensitive substring on title; empty/all-cleared state shows the right empty message
+- On click: dispatches `addImportedEntity`, toasts success, closes the dialog
+- A11y: standard `<LargeDialog>` shell (focus trap, Esc handling, backdrop, header chrome)
+- Lazy-loaded in `App.tsx` like the other dialogs
+
+**New store action** `addImportedEntity({ sourceDocId, sourceEntity })` in `entitiesSlice.ts`:
+- Mints a fresh entity in the current doc — copies `type`, `title`, `description` from the source so the import reads sensibly from day one
+- Sets `importedFrom: { docId, entityId, sourceTitle?, importedAt }` with the source-title snapshot + ISO timestamp captured at mint time
+- Auto-selects the new entity so the inspector immediately surfaces the import-from badge
+- Returns the minted entity (or `null` for malformed args)
+- Advances `nextAnnotationNumber` like `addEntity`
+
+**Inspector badge** in `EntityInspector.tsx`:
+- Renders a small `"Imported from"` field block when `entity.importedFrom` is set
+- Shows: source title (bold) · short docId · imported-on date
+- Indigo-tinted card chrome — distinct from the surrounding form fields without dominating
+
+**State + actions** on the UI slice:
+- `importEntityPicker: null | { sourceDoc: TPDocument }` — source doc lives in memory only for the picker's lifetime; not persisted
+- `openImportEntityPicker(sourceDoc)` / `closeImportEntityPicker()` actions
+
+**7 new tests** in `tests/store/importEntity.test.ts`: minted-with-importedFrom shape, selection moves to new entity, fresh id (not reused), description copy/skip when source has none, sourceTitle copy/skip when source title is empty, malformed-args returns null, annotation-number advances.
+
+**Spec gap #3 closed.** Schema (Phase 1A) + UI affordances (Phase 1B) ship together as a usable feature. Phase 1C (cross-doc store + reverse-lookup + jump-to-source) is gated on multi-doc tabs which are out of scope per the won't-build list; left in NEXT_STEPS as a future iteration if a real use-case surfaces.
+
+Major-gap tally: 4/10 open → 3/10 open. All 1636 tests pass (+7); tsc clean; biome lint clean.
+
 ## Session 135 — Cross-diagram traceability Phase 1A (schema + persistence)
 
 Schema-only first slice of spec major gap #3. Foundation for the canonical TOC chain (UDE → CRT core driver → Cloud conflict → assumptions → injections → FRT desired effects / negative branches → PRT obstacles / milestones → TT actions / owners) carrying entity-level traceability across docs. Phase 1B (UI) layers on top.

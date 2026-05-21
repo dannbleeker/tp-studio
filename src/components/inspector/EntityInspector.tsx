@@ -175,6 +175,38 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         </Field>
       )}
 
+      {/* Session 135 / spec major gap #3 Phase 1B — cross-diagram
+          traceability badge. Renders only when the entity was
+          minted via the "Import entity from another doc…" command
+          (Cmd+K). The badge is intentionally subtle — a single line
+          beneath the editing controls — because the import-from
+          relationship is metadata, not a primary affordance. The
+          source-title snapshot was captured at import time and
+          doesn't auto-sync; it labels the trail even when the
+          source doc isn't open. */}
+      {entity.importedFrom && (
+        <Field label="Imported from">
+          <p className="rounded-md border border-indigo-200 bg-indigo-50/60 px-2 py-1.5 text-[11px] text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200">
+            <span className="font-semibold">
+              {entity.importedFrom.sourceTitle || '(untitled source)'}
+            </span>
+            <span className="ml-1 text-indigo-700/70 dark:text-indigo-300/70">
+              · doc {entity.importedFrom.docId.slice(0, 8)}…
+            </span>
+            {entity.importedFrom.importedAt && (
+              <span className="ml-1 text-indigo-700/70 dark:text-indigo-300/70">
+                · imported{' '}
+                {new Date(entity.importedFrom.importedAt).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </span>
+            )}
+          </p>
+        </Field>
+      )}
+
       <Field label="Attestation">
         {/* E6: optional source / evidence citation for the entity — "where
             did this come from?" Free text rather than a structured field
