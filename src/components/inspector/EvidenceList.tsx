@@ -1,0 +1,313 @@
+import clsx from 'clsx';
+import { CheckCircle2, ExternalLink, Plus, X } from 'lucide-react';
+import { type RefObject, useEffect, useRef } from 'react';
+import type { EvidenceItem, EvidenceSource, EvidenceStrength } from '@/domain/types';
+import { useDocumentStore } from '@/store';
+import { TextArea, TextInput } from '../settings/formPrimitives';
+import { Button } from '../ui/Button';
+import { Field } from './Field';
+
+/**
+ * Session 134 / spec major gap #6 (structured half) — Evidence list.
+ *
+ * Renders the entity's `evidence[]` array beneath the Owner field
+ * in the EntityInspector. Each row is editable in place: description
+ * textarea on top, a compact strip below with source pill, strength
+ * pill, optional URL field, validate button, and a trash icon.
+ *
+ * The component is intentionally a single editable list — no
+ * collapsible row, no per-item modal. The evidence model is
+ * append-mostly + edit-rarely, and a dialog-per-row would add gesture
+ * cost without a payoff. Keeps the parity with the AssumptionWell's
+ * lightweight inline-edit pattern.
+ *
+ * State flow: every field-change goes through the dedicated
+ * `updateEvidence(entityId, evidenceId, patch)` store action. Add is
+ * `addEvidence(entityId, partial?)` which mints id + timestamps +
+ * defaults (`source: 'observed'`, `strength: 'moderate'`) and returns
+ * the new id so we can focus the description textarea. Remove is
+ * `removeEvidence(entityId, evidenceId)`.
+ */
+
+const SOURCE_ORDER: EvidenceSource[] = [
+  'observed',
+  'stakeholder',
+  'metric',
+  'policy',
+  'assumption',
+];
+
+const SOURCE_LABEL: Record<EvidenceSource, string> = {
+  observed: 'Observed',
+  stakeholder: 'Stakeholder',
+  metric: 'Metric',
+  policy: 'Policy',
+  assumption: 'Assumption',
+};
+
+/** Per-source chip colours. Loosely follow the book's mental cue:
+ *  observed = green ("I saw it"), stakeholder = blue (people),
+ *  metric = indigo (numbers), policy = amber (rules), assumption =
+ *  violet (matches AssumptionWell's chrome for visual continuity). */
+const SOURCE_CHIP_CLASS: Record<EvidenceSource, string> = {
+  observed:
+    'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200',
+  stakeholder:
+    'border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-200',
+  metric:
+    'border-indigo-300 bg-indigo-50 text-indigo-800 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200',
+  policy:
+    'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200',
+  assumption:
+    'border-violet-300 bg-violet-50 text-violet-800 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200',
+};
+
+const STRENGTH_ORDER: EvidenceStrength[] = ['weak', 'moderate', 'strong'];
+
+const STRENGTH_LABEL: Record<EvidenceStrength, string> = {
+  weak: 'Weak',
+  moderate: 'Moderate',
+  strong: 'Strong',
+};
+
+const STRENGTH_CHIP_CLASS: Record<EvidenceStrength, string> = {
+  weak: 'border-neutral-300 bg-neutral-100 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300',
+  moderate:
+    'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200',
+  strong:
+    'border-emerald-400 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200',
+};
+
+const cycleSource = (s: EvidenceSource): EvidenceSource => {
+  const idx = SOURCE_ORDER.indexOf(s);
+  return SOURCE_ORDER[(idx + 1) % SOURCE_ORDER.length] ?? 'observed';
+};
+
+const cycleStrength = (s: EvidenceStrength): EvidenceStrength => {
+  const idx = STRENGTH_ORDER.indexOf(s);
+  return STRENGTH_ORDER[(idx + 1) % STRENGTH_ORDER.length] ?? 'moderate';
+};
+
+const formatValidatedAt = (t: number): string =>
+  new Date(t).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+
+export function EvidenceList({
+  entityId,
+  evidence,
+  ownerHint,
+}: {
+  entityId: string;
+  evidence: EvidenceItem[] | undefined;
+  /** The entity's `owner` field — used as a default `validatedBy`
+   *  value when the user clicks "Mark validated" on a row. The
+   *  evidence row can override this per-item if the entity owner
+   *  isn't the right person to credit. Explicit `| undefined` so
+   *  callers can pass `entity.owner` (an `optional string`)
+   *  through without conditional spread. */
+  ownerHint: string | undefined;
+}) {
+  const addEvidence = useDocumentStore((s) => s.addEvidence);
+  const locked = useDocumentStore((s) => s.browseLocked);
+  const lastAddedRef = useRef<string | null>(null);
+
+  const items = evidence ?? [];
+
+  const handleAdd = () => {
+    const id = addEvidence(entityId);
+    if (id) lastAddedRef.current = id;
+  };
+
+  return (
+    <Field label={`Evidence (${items.length})`}>
+      {items.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {items.map((item) => (
+            <EvidenceRow
+              key={item.id}
+              entityId={entityId}
+              item={item}
+              ownerHint={ownerHint}
+              autoFocus={item.id === lastAddedRef.current}
+            />
+          ))}
+        </ul>
+      )}
+      <Button variant="softNeutral" size="md" onClick={handleAdd} disabled={locked}>
+        <Plus className="h-3.5 w-3.5" />
+        Add evidence
+      </Button>
+    </Field>
+  );
+}
+
+function EvidenceRow({
+  entityId,
+  item,
+  ownerHint,
+  autoFocus,
+}: {
+  entityId: string;
+  item: EvidenceItem;
+  ownerHint: string | undefined;
+  autoFocus: boolean;
+}) {
+  const updateEvidence = useDocumentStore((s) => s.updateEvidence);
+  const removeEvidence = useDocumentStore((s) => s.removeEvidence);
+  const locked = useDocumentStore((s) => s.browseLocked);
+  const descRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (autoFocus) {
+      const ta = descRef.current;
+      if (!ta) return;
+      ta.focus();
+      const end = ta.value.length;
+      ta.setSelectionRange(end, end);
+    }
+  }, [autoFocus]);
+
+  return (
+    <li
+      className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/60 p-2 dark:border-neutral-800 dark:bg-neutral-900/40"
+      data-evidence-id={item.id}
+    >
+      <TextArea
+        rows={2}
+        value={item.description}
+        placeholder="What's the evidence? Citation, observation, measurement, claim…"
+        disabled={locked}
+        onChange={(next) => updateEvidence(entityId, item.id, { description: next })}
+      />
+      {/* `TextArea` from formPrimitives doesn't accept a ref; the bridge
+          below looks up the rendered textarea via the row's
+          `data-evidence-id` container so we can focus the newly-added
+          row programmatically. Adding a ref prop to TextArea would
+          touch a 20+ caller file for one consumer — the bridge is the
+          cheaper isolation. */}
+      <FocusBridge containerSelector={`[data-evidence-id="${item.id}"]`} descRef={descRef} />
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => updateEvidence(entityId, item.id, { source: cycleSource(item.source) })}
+          disabled={locked}
+          title={`Source: ${SOURCE_LABEL[item.source]} (click to cycle)`}
+          aria-label={`Source ${SOURCE_LABEL[item.source]}. Press to cycle.`}
+          className={clsx(
+            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide transition focus:outline-hidden focus:ring-2 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50',
+            SOURCE_CHIP_CLASS[item.source]
+          )}
+        >
+          {SOURCE_LABEL[item.source]}
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            updateEvidence(entityId, item.id, { strength: cycleStrength(item.strength) })
+          }
+          disabled={locked}
+          title={`Strength: ${STRENGTH_LABEL[item.strength]} (click to cycle)`}
+          aria-label={`Strength ${STRENGTH_LABEL[item.strength]}. Press to cycle.`}
+          className={clsx(
+            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide transition focus:outline-hidden focus:ring-2 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50',
+            STRENGTH_CHIP_CLASS[item.strength]
+          )}
+        >
+          {STRENGTH_LABEL[item.strength]}
+        </button>
+        <TextInput
+          type="url"
+          value={item.url ?? ''}
+          placeholder="https://… (optional)"
+          disabled={locked}
+          onChange={(next) =>
+            updateEvidence(entityId, item.id, {
+              // Empty string clears the field; trim whitespace so " "
+              // doesn't persist as the only character.
+              url: next.trim() === '' ? undefined : next,
+            })
+          }
+          className="h-[26px] flex-1 min-w-[160px] text-xs"
+          ariaLabel="Evidence URL"
+        />
+        {item.url && (
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="rounded-sm p-1 text-neutral-500 transition hover:bg-indigo-100 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
+            title="Open citation in new tab"
+            aria-label="Open citation in new tab"
+          >
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        )}
+        <button
+          type="button"
+          onClick={() => removeEvidence(entityId, item.id)}
+          disabled={locked}
+          className="rounded-sm p-1 text-neutral-500 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+          title="Remove evidence"
+          aria-label="Remove evidence"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2 text-[10px] text-neutral-500 dark:text-neutral-400">
+        <button
+          type="button"
+          onClick={() =>
+            updateEvidence(entityId, item.id, {
+              validatedAt: Date.now(),
+              ...(ownerHint && ownerHint.length > 0 ? { validatedBy: ownerHint } : {}),
+            })
+          }
+          disabled={locked}
+          className="inline-flex items-center gap-1 rounded-sm border border-neutral-200 bg-white px-1.5 py-0 text-[10px] text-neutral-700 transition hover:border-emerald-400 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-emerald-500 dark:hover:bg-emerald-950/40"
+        >
+          <CheckCircle2 className="h-3 w-3" />
+          {item.validatedAt === undefined ? 'Mark validated' : 'Re-validate'}
+        </button>
+        {item.validatedAt !== undefined && (
+          <span>
+            {formatValidatedAt(item.validatedAt)}
+            {item.validatedBy ? ` · ${item.validatedBy}` : ''}
+          </span>
+        )}
+      </div>
+    </li>
+  );
+}
+
+/**
+ * Workaround for `TextArea` not exposing its inner ref prop. Looks up
+ * the textarea inside the row's `data-evidence-id` container on mount
+ * and forwards it through the supplied ref. Inert otherwise. Kept
+ * adjacent to the row to make the indirection obvious.
+ *
+ * The alternative — extending `TextArea`'s prop set with a ref prop —
+ * would touch one source-of-truth shared file for a single consumer.
+ * This local bridge is the cheaper isolation.
+ */
+function FocusBridge({
+  containerSelector,
+  descRef,
+}: {
+  containerSelector: string;
+  descRef: RefObject<HTMLTextAreaElement | null>;
+}) {
+  useEffect(() => {
+    const root = document.querySelector(containerSelector);
+    if (!root) return;
+    const ta = root.querySelector('textarea');
+    if (ta instanceof HTMLTextAreaElement) {
+      descRef.current = ta;
+    }
+  }, [containerSelector, descRef]);
+  return null;
+}

@@ -2,6 +2,39 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 134 — Entity evidence[] array (closes spec gap #6 structured half)
+
+Finishes the entity-ownership story started earlier this session. The `owner?: string` + `lastValidatedAt?: number` fields shipped first; the structured `evidence?: EvidenceItem[]` was the second half deferred to a follow-up. Now closed: spec gap #6 is fully shipped.
+
+**New domain types** in `src/domain/types/entity.ts`:
+
+- `EvidenceSource` — closed five-way taxonomy: `'observed' | 'stakeholder' | 'metric' | 'policy' | 'assumption'`.
+- `EvidenceStrength` — three-way qualitative rating: `'weak' | 'moderate' | 'strong'`.
+- `EvidenceItem` — `{ id, description, url?, source, strength, validatedAt?, validatedBy?, createdAt, updatedAt }`. One entity carries many; append order is the reading order.
+- `Entity.evidence?: EvidenceItem[]` — optional, omitted (not `[]`) when no evidence has been recorded.
+
+**Store actions** in `src/store/documentSlice/entitiesSlice.ts`:
+
+- `addEvidence(entityId, partial?)` — mints id + timestamps + defaults (`source: 'observed'`, `strength: 'moderate'`); returns the new id or `null` when the entity is gone.
+- `updateEvidence(entityId, evidenceId, patch)` — partial update with the `Patch<T>` "explicit-undefined-clears-the-field" rule; coalesces undo entries by `evidence:<entityId>:<evidenceId>:<keys>` so a tight description-typing loop collapses to one undo step per row, not per keystroke.
+- `removeEvidence(entityId, evidenceId)` — drops one item; the array collapses to `undefined` when the last is removed.
+
+**Persistence round-trip fix.** The pre-existing `entity.owner` + `entity.lastValidatedAt` fields silently disappeared on JSON export → re-import: `validateEntity` didn't carry them through the field-by-field re-emit. Added validation + round-trip for both fields. The new `evidence` field round-trips via `validateEvidenceItem` + `validateEvidenceArray`, strict on the closed source / strength taxonomies (unknown values throw rather than fall back to defaults — a corrupt import surfaces clearly).
+
+**New EvidenceList component** at `src/components/inspector/EvidenceList.tsx`, mounted in `EntityInspector` beneath the Owner field block. Each row carries a description textarea, source pill (cycling `Observed → Stakeholder → Metric → Policy → Assumption`), strength pill (cycling `Weak → Moderate → Strong`), URL input + open-in-new-tab icon, trash icon, and a per-row `Mark validated` button that stamps the timestamp and uses the entity Owner as the validator. The `+ Add evidence` button focuses the new row's description textarea via a small DOM bridge (TextArea doesn't expose its inner ref; the bridge looks up the textarea via the row's `data-evidence-id` container).
+
+**Risk-register CSV update.** New `evidence` column between `mitigation` and `owner`. Each cell renders the entity's evidence as semicolon-joined `[strength/source] description (url)` entries — `[strong/metric] p95 = 740ms (https://…)`. Empty when the entity has no evidence.
+
+**18 new tests** in `tests/domain/entityEvidence.test.ts`:
+
+- **Store actions (10 tests):** default seed, partial seed, missing-entity bail, single-field patch, source/strength cycling, optional-field clearing (the `url: undefined` idiom), validatedAt/validatedBy stamping, no-op-when-unchanged, missing-id bail, removeEvidence with multi-item list, removeEvidence omits the field on empty.
+- **JSON round-trip (3 tests):** full-shape persistence, the owner + lastValidatedAt regression fix, malformed-source rejection.
+- **Risk register column (3 tests):** single-item format, multi-item semicolon join, empty-cell layout.
+
+**Risk-register header test** updated to match the new 8-column shape.
+
+**1571 tests pass** (+18 from this commit; +1 todo); tsc clean; biome lint clean (modulo the two pre-existing pattern-library / zoom-readout aria warnings). NEXT_STEPS' #6 entry struck through; spec gap #6 closes fully.
+
 ## Session 134 — TPNode coverage diagnosed + fixed (was a misdiagnosis)
 
 Closed the "TPNode tooling quirk" loose-end. The original theory blamed a React 19 × React-Compiler × coverage-v8 interaction; that was wrong (React Compiler is commented out in `vite.config.ts`). The actual cause: v8 coverage counts each *inline arrow handler* on JSX elements (`onMouseEnter={() => setIsHovered(true)}`, `onDoubleClick={...}`, `onBlur={...}`, `onKeyDown={...}`, etc.) as its own function-body. The round-3 render tests passively rendered the component but never fired DOM events, so every handler's body stayed uncovered — and the long uncovered line range `141-561` was mostly handler bodies + the JSX they hang off of, not unreachable code.

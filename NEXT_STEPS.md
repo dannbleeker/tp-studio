@@ -28,11 +28,11 @@ Spec §3.4. No `Entity.state` enum (`true / false / unknown / disputed`), no pro
 
 **Effort:** Schema-light (entity state enum + propagation function); the trickier part is the "what-if" UX. ~3 sessions.
 
-### 🔴 #6 — Entity ownership + first-class evidence model — *partial done Session 134*
+### ~~🔴 #6 — Entity ownership + first-class evidence model~~ — *done Session 134*
 
-Spec §§5.2, 6.1. **Owner field shipped Session 134:** dedicated `entity.owner?: string` (replaces the legacy `attributes.owner.value` path with a real first-class typed field); Inspector field block with a "Mark validated" / "Re-validate" button that stamps `entity.lastValidatedAt`; risk-register CSV exporter prefers the dedicated field. **Still open:** the structured `entity.evidence?: EvidenceItem[]` array (source-type taxonomy: `observed fact / stakeholder assertion / metric / policy / assumption`; strength rating; URL refs; per-evidence validation date + owner). UI list editor for add/edit/remove.
+Spec §§5.2, 6.1. **Both halves shipped Session 134:** (1) dedicated `entity.owner?: string` + `entity.lastValidatedAt?: number` with Inspector field block, `Mark validated` / `Re-validate` button, and risk-register CSV `owner` column; (2) structured `entity.evidence?: EvidenceItem[]` array with five-way source taxonomy (`observed / stakeholder / metric / policy / assumption`), three-way strength rating (`weak / moderate / strong`), URL refs, per-evidence `validatedAt` + `validatedBy`, EvidenceList UI in the inspector, and risk-register CSV `evidence` column. JSON round-trip persistence works end-to-end (fixed a pre-existing bug where the owner + lastValidatedAt fields were silently dropped on validate). 18 new tests cover store actions, persistence, and CSV format.
 
-**Effort:** ~1 session.
+Closes spec gap #6.
 
 ### 🔴 #7 — Task / execution bridge
 
@@ -92,11 +92,10 @@ Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has
 
 If picking the next thing up:
 
-1. **#6 evidence array** (~1 session) — finishes the entity-ownership story started this session. Visible UI immediately.
-2. **#3 cross-diagram traceability** (~2–3 sessions) — most foundational structural gap. Unlocks the portfolio-view pattern-library sub-item, NBR linking back to FRT, and the full TP chain.
-3. **#7 task bridge** (~1–2 sessions) — mechanical export work. Start with TT → CSV; per-tracker formats follow.
-4. **#9 formal mode-switching** (~1–2 sessions) — Guided / Expert / Workshop / Presentation modes.
-5. **#4 confidence / state propagation** (~3 sessions) — adds the "what-if" behaviour the spec considers the FRT module's signature.
+1. **#3 cross-diagram traceability** (~2–3 sessions) — most foundational structural gap. Unlocks the portfolio-view pattern-library sub-item, NBR linking back to FRT, and the full TP chain.
+2. **#7 task bridge** (~1–2 sessions) — mechanical export work. Start with TT → CSV; per-tracker formats follow.
+3. **#9 formal mode-switching** (~1–2 sessions) — Guided / Expert / Workshop / Presentation modes.
+4. **#4 confidence / state propagation** (~3 sessions) — adds the "what-if" behaviour the spec considers the FRT module's signature.
 
 Collaboration (#2) and enterprise integration (#8) intentionally deprioritised — both are product-direction decisions rather than sprints.
 

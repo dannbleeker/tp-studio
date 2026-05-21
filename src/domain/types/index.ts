@@ -37,6 +37,9 @@ export type {
   Entity,
   EntityTitleSize,
   EntityType,
+  EvidenceItem,
+  EvidenceSource,
+  EvidenceStrength,
   SpanOfControl,
 } from './entity';
 export type { Group, GroupColor } from './group';

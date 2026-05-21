@@ -17,6 +17,7 @@
 | **DE** | Desired Effect. The FRT's top-of-tree entity (what the system would produce after the injection). |
 | **EC** | Evaporating Cloud. The 5-box conflict diagram. |
 | **Effect** | An entity in a CRT/FRT that's caused by something and causes something else — intermediate. |
+| **Evidence** | A first-class list on every entity (since Session 134): structured rows backing the entity with a `description`, a 5-way `source` (`Observed / Stakeholder / Metric / Policy / Assumption`), a 3-way `strength` (`Weak / Moderate / Strong`), an optional URL, and a per-row validation stamp. Surfaces in the Inspector beneath the Owner block and feeds the `evidence` column of the Risk Register (CSV) export. |
 | **FRT** | Future Reality Tree. "What would it look like solved?" |
 | **Goal** | The top of a Goal Tree. Single (typically). Time-bounded (preferably). |
 | **Goal Tree** | Top-down decomposition: Goal → CSFs → NCs. Strategic-planning shape. |
@@ -31,7 +32,7 @@
 | **Owner** | Per-entity free-form text field naming whoever's accountable for the entity (decision owner, action assignee, validation owner). Feeds the `owner` column of the Risk Register (CSV) export. |
 | **Pattern library** | Curated starter diagrams for common TOC scenarios. `Cmd+K → Pattern library…` lists every pattern with a filter chip row for diagram type. Distinct from "Load example…" which loads one canonical example per diagram type. |
 | **PRT** | Prerequisite Tree. "What's in our way?" |
-| **Risk register** | A tabular accounting of identified risks, one per row, with `risk / trigger / consequence / mitigation / owner / status` columns. TP Studio's **Risk register (CSV)** export (Chapter 16) generates one from any doc containing UDEs by walking each UDE backward through the causal graph to find reachable injections (the mitigations). Status is `mitigated` if any mitigation reaches the UDE, `open` otherwise. |
+| **Risk register** | A tabular accounting of identified risks, one per row, with `risk / trigger / consequence / mitigation / evidence / owner / status` columns. TP Studio's **Risk register (CSV)** export (Chapter 16) generates one from any doc containing UDEs by walking each UDE backward through the causal graph to find reachable injections (the mitigations). The `evidence` cell renders the UDE's `evidence[]` entries as semicolon-joined `[strength/source] description (url)` rows. Status is `mitigated` if any mitigation reaches the UDE, `open` otherwise. |
 | **Root cause** | A terminal cause at the bottom of a CRT — the leverage point. |
 | **S&T** | Strategy & Tactics Tree. Operational-deployment decomposition with 5-facet cards. |
 | **SA** | Sufficiency Assumption. The fifth facet of an S&T card — "why this tactic is enough." |

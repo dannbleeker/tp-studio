@@ -12,6 +12,7 @@ import { TextArea, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { AttachedEdgesList } from './AttachedEdgesList';
 import { EntityAttributesSection } from './AttributesSection';
+import { EvidenceList } from './EvidenceList';
 import { Field } from './Field';
 import { MarkdownField } from './MarkdownField';
 import { WarningsList } from './WarningsList';
@@ -221,6 +222,14 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           {entity.lastValidatedAt === undefined ? 'Mark validated' : 'Re-validate (now)'}
         </button>
       </Field>
+
+      {/* Session 134 / spec major gap #6 (structured half) — first-class
+          evidence list. Lives beneath the Owner field block since the
+          two are conceptually paired ("who's accountable" + "what
+          they're standing on"). Defaults: hidden chevron means the
+          section is always expanded — the row count in the field label
+          tells the user at a glance whether there's anything to read. */}
+      <EvidenceList entityId={entityId} evidence={entity.evidence} ownerHint={entity.owner} />
 
       <Field label="Unspecified placeholder">
         <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">

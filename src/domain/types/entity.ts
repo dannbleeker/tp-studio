@@ -84,6 +84,71 @@ export type AttrValue =
 /** Discriminator for `AttrValue.kind`, exported for UI consumers. */
 export type AttrKind = AttrValue['kind'];
 
+/**
+ * Session 134 — spec major gap #6 (structured half).
+ *
+ * `EvidenceSource` partitions the five recognisable provenance shapes
+ * a practitioner might cite when defending an entity in a TOC tree.
+ * The taxonomy is intentionally narrow:
+ *
+ *   - `observed`     — first-hand observation ("I saw the queue grow").
+ *   - `stakeholder`  — an assertion from someone with stake ("the CFO says…").
+ *   - `metric`       — a numeric measurement ("p95 = 740 ms").
+ *   - `policy`       — a documented rule or constraint ("PCI requires…").
+ *   - `assumption`   — explicitly an unproven belief, kept honest by the
+ *                      label rather than masquerading as fact.
+ *
+ * Five buckets matches what the existing book / spec call out and gives
+ * the UI a tractable five-way pill chooser. New sources require a
+ * deliberate code change so the taxonomy doesn't drift.
+ */
+export type EvidenceSource = 'observed' | 'stakeholder' | 'metric' | 'policy' | 'assumption';
+
+/**
+ * Session 134 — qualitative strength rating for evidence. Three steps
+ * is the smallest set that lets a reader sort weak / moderate / strong
+ * citations at a glance without forcing pseudo-precision (5-step or
+ * percentage scales invite false confidence). The strength is the
+ * user's judgement, not derived from anything.
+ */
+export type EvidenceStrength = 'weak' | 'moderate' | 'strong';
+
+/**
+ * Session 134 — first-class evidence item attached to an entity. One
+ * entity can carry many; ordering is preserved (append order is the
+ * natural reading order). The shape mirrors `Assumption` enough that
+ * future UI patterns can share components, but the two are conceptually
+ * distinct: an Assumption is about an edge ("we're assuming this
+ * sufficiency holds"), an Evidence is about a node ("here's WHY this
+ * entity exists / is true").
+ *
+ *   - `id`          — stable per-entity sub-id (nanoid). Lets the UI
+ *                     identify rows for edit / delete without index
+ *                     juggling.
+ *   - `description` — required free-text body. The "what we have".
+ *   - `url`         — optional citation URL.
+ *   - `source`      — five-way taxonomy (see {@link EvidenceSource}).
+ *   - `strength`    — three-way rating (see {@link EvidenceStrength}).
+ *   - `validatedAt` / `validatedBy` — per-evidence audit trail. Distinct
+ *     from the entity-level `lastValidatedAt` — that's "I checked this
+ *     entity is still true today"; this is "I checked THIS specific
+ *     piece of evidence is still standing today."
+ *   - `createdAt` / `updatedAt` — millisecond timestamps. `createdAt`
+ *     is stable; `updatedAt` bumps on any field edit so the row's
+ *     last-modified order can be displayed when needed.
+ */
+export type EvidenceItem = {
+  id: string;
+  description: string;
+  url?: string;
+  source: EvidenceSource;
+  strength: EvidenceStrength;
+  validatedAt?: number;
+  validatedBy?: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
 export type Entity = {
   id: EntityId;
   type: EntityType;
@@ -137,6 +202,15 @@ export type Entity = {
    *  `owner` value). Not used by any CLR rule today; serves as an audit
    *  trail for risk-register exports and future collaboration features. */
   lastValidatedAt?: number;
+  /** Session 134 / spec major gap #6 (structured half) — first-class
+   *  evidence list. The list is the audit trail behind the entity:
+   *  citations, measurements, stakeholder claims, policy refs, named
+   *  assumptions. Surfaces in the EntityInspector as an editable list
+   *  beneath the Owner block; feeds the `evidence` column of the
+   *  risk-register CSV export. Omitted (not `[]`) when no evidence
+   *  has been recorded, so docs without evidence don't carry an
+   *  empty array. See {@link EvidenceItem}. */
+  evidence?: EvidenceItem[];
   /** Book-derived (TOC-reading set): three-valued flag distinguishing what
    *  the user can do about this entity — directly control it, indirectly
    *  influence it, or only observe / accept it. Renders as a small icon

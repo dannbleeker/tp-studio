@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import { createEntity } from '@/domain/factory';
 import { removeEntityFromEdges } from '@/domain/graph';
@@ -9,6 +10,7 @@ import type {
   Entity,
   EntityId,
   EntityType,
+  EvidenceItem,
   Patch,
 } from '@/domain/types';
 import type { RootStore } from '../types';
@@ -70,6 +72,31 @@ export type EntitiesSlice = {
   /** B7 — remove one attribute key from an entity. No-op when the
    *  entity has no attributes or when the key is absent. */
   removeEntityAttribute: (id: string, key: string) => void;
+
+  /** Session 134 / spec major gap #6 — append a fresh evidence item
+   *  to the entity's `evidence[]`. Defaults: `source: 'observed'`,
+   *  `strength: 'moderate'`, empty description. Returns the new
+   *  item's id so the UI can focus the freshly-added row, or null
+   *  when the entity doesn't exist. */
+  addEvidence: (entityId: string, partial?: Partial<Omit<EvidenceItem, 'id'>>) => string | null;
+  /** Session 134 / spec major gap #6 — patch one field (or several)
+   *  on an existing evidence item. No-ops when the entity / item
+   *  doesn't exist or the patched values are already current.
+   *  Coalesces by `evidence:<entityId>:<evidenceId>:<keys>` so a
+   *  tight typing loop in the description textarea collapses to one
+   *  undo entry per row, not per keystroke. Use `Patch<…>` (not
+   *  `Partial<…>`) so callers can pass `{ url: undefined }` to clear
+   *  the optional field under `exactOptionalPropertyTypes`. */
+  updateEvidence: (
+    entityId: string,
+    evidenceId: string,
+    patch: Patch<Omit<EvidenceItem, 'id' | 'createdAt'>>
+  ) => void;
+  /** Session 134 / spec major gap #6 — drop one evidence item. The
+   *  array collapses to `undefined` when the last item is removed
+   *  (matching the rest of the optional-array fields' "omit when
+   *  empty" convention). */
+  removeEvidence: (entityId: string, evidenceId: string) => void;
 };
 
 export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice> = (set, get) => {
@@ -416,5 +443,134 @@ export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice>
         return touch({ ...prev, entities: { ...prev.entities, [id]: nextEntity } });
       });
     },
+
+    // ── Session 134: first-class evidence items ─────────────────────
+    addEvidence: (entityId, partial) => {
+      const cur = useDocumentStoreGet(get, entityId);
+      if (!cur) return null;
+      const now = Date.now();
+      const item: EvidenceItem = {
+        id: nanoid(),
+        description: partial?.description ?? '',
+        source: partial?.source ?? 'observed',
+        strength: partial?.strength ?? 'moderate',
+        ...(partial?.url && partial.url.length > 0 ? { url: partial.url } : {}),
+        ...(typeof partial?.validatedAt === 'number' ? { validatedAt: partial.validatedAt } : {}),
+        ...(partial?.validatedBy && partial.validatedBy.length > 0
+          ? { validatedBy: partial.validatedBy }
+          : {}),
+        createdAt: now,
+        updatedAt: now,
+      };
+      applyDocChange((prev) => {
+        const entity = prev.entities[entityId];
+        if (!entity) return prev;
+        const nextList: EvidenceItem[] = [...(entity.evidence ?? []), item];
+        const nextEntity: Entity = {
+          ...entity,
+          evidence: nextList,
+          updatedAt: now,
+        };
+        return touch({ ...prev, entities: { ...prev.entities, [entityId]: nextEntity } });
+      });
+      return item.id;
+    },
+
+    updateEvidence: (entityId, evidenceId, patch) => {
+      const patchKeys = Object.keys(patch).sort().join(',');
+      applyDocChange(
+        (prev) => {
+          const entity = prev.entities[entityId];
+          if (!entity?.evidence) return prev;
+          const idx = entity.evidence.findIndex((e) => e.id === evidenceId);
+          if (idx === -1) return prev;
+          const existing = entity.evidence[idx];
+          if (!existing) return prev;
+
+          // Resolve the next value for each field. The "key present in
+          // patch + value undefined" idiom means "clear this optional
+          // field"; "key absent" means "leave it alone". We can't
+          // collapse these to a single ternary because under
+          // exactOptionalPropertyTypes, optional fields cannot carry
+          // `undefined` as a value — they must be omitted entirely.
+          const nextDescription =
+            'description' in patch && patch.description !== undefined
+              ? patch.description
+              : existing.description;
+          const nextSource =
+            'source' in patch && patch.source !== undefined ? patch.source : existing.source;
+          const nextStrength =
+            'strength' in patch && patch.strength !== undefined
+              ? patch.strength
+              : existing.strength;
+          const nextUrl = 'url' in patch ? patch.url : existing.url;
+          const nextValidatedAt = 'validatedAt' in patch ? patch.validatedAt : existing.validatedAt;
+          const nextValidatedBy = 'validatedBy' in patch ? patch.validatedBy : existing.validatedBy;
+
+          // No-op when every resolved field already equals the existing
+          // value — preserves the doc reference so `applyDocChange`'s
+          // short-circuit avoids a history entry.
+          const same =
+            nextDescription === existing.description &&
+            nextSource === existing.source &&
+            nextStrength === existing.strength &&
+            nextUrl === existing.url &&
+            nextValidatedAt === existing.validatedAt &&
+            nextValidatedBy === existing.validatedBy;
+          if (same) return prev;
+
+          // Emit-or-omit for optional fields. Empty string / undefined
+          // → omit; otherwise keep the value.
+          const cleaned: EvidenceItem = {
+            id: existing.id,
+            description: nextDescription,
+            source: nextSource,
+            strength: nextStrength,
+            ...(nextUrl && nextUrl.length > 0 ? { url: nextUrl } : {}),
+            ...(typeof nextValidatedAt === 'number' ? { validatedAt: nextValidatedAt } : {}),
+            ...(nextValidatedBy && nextValidatedBy.length > 0
+              ? { validatedBy: nextValidatedBy }
+              : {}),
+            createdAt: existing.createdAt,
+            updatedAt: Date.now(),
+          };
+          const nextList: EvidenceItem[] = entity.evidence.map((e, i) => (i === idx ? cleaned : e));
+          const nextEntity: Entity = {
+            ...entity,
+            evidence: nextList,
+            updatedAt: Date.now(),
+          };
+          return touch({ ...prev, entities: { ...prev.entities, [entityId]: nextEntity } });
+        },
+        { coalesceKey: `evidence:${entityId}:${evidenceId}:${patchKeys}` }
+      );
+    },
+
+    removeEvidence: (entityId, evidenceId) => {
+      applyDocChange((prev) => {
+        const entity = prev.entities[entityId];
+        if (!entity?.evidence) return prev;
+        const next = entity.evidence.filter((e) => e.id !== evidenceId);
+        if (next.length === entity.evidence.length) return prev;
+        // Empty array collapses to omitting the field — mirrors the
+        // `attributes` field's emit-or-omit rule.
+        const { evidence: _drop, ...rest } = entity;
+        const nextEntity: Entity =
+          next.length > 0
+            ? { ...entity, evidence: next, updatedAt: Date.now() }
+            : { ...rest, updatedAt: Date.now() };
+        return touch({ ...prev, entities: { ...prev.entities, [entityId]: nextEntity } });
+      });
+    },
   };
 };
+
+/**
+ * Tiny helper: read one entity off the live store without forcing the
+ * caller to type out `get().doc.entities[id]`. Returns `undefined`
+ * when the entity is missing. Used by `addEvidence` to bail before
+ * minting the new item's id if the entity has been deleted out from
+ * under the caller.
+ */
+const useDocumentStoreGet = (get: () => RootStore, entityId: string): Entity | undefined =>
+  get().doc.entities[entityId];

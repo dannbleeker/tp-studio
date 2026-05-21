@@ -9,6 +9,9 @@ import type {
   Entity,
   EntityId,
   EntityType,
+  EvidenceItem,
+  EvidenceSource,
+  EvidenceStrength,
   Group,
   GroupColor,
   GroupId,
@@ -85,6 +88,76 @@ const validateAttrValue = (v: unknown, label: string): AttrValue => {
 };
 
 /**
+ * Session 134 — validate one `EvidenceItem`. The five-way source +
+ * three-way strength taxonomies are closed sets; unrecognised values
+ * throw rather than fall through, so a corrupt import surfaces clearly
+ * rather than silently downgrading to a default. Optional fields
+ * (`url`, `validatedAt`, `validatedBy`) follow the type-or-omit rule:
+ * present-but-wrong-type throws; absent passes; only well-typed values
+ * round-trip.
+ */
+const EVIDENCE_SOURCES: readonly EvidenceSource[] = [
+  'observed',
+  'stakeholder',
+  'metric',
+  'policy',
+  'assumption',
+];
+const EVIDENCE_STRENGTHS: readonly EvidenceStrength[] = ['weak', 'moderate', 'strong'];
+const isEvidenceSource = (v: unknown): v is EvidenceSource =>
+  typeof v === 'string' && (EVIDENCE_SOURCES as readonly string[]).includes(v);
+const isEvidenceStrength = (v: unknown): v is EvidenceStrength =>
+  typeof v === 'string' && (EVIDENCE_STRENGTHS as readonly string[]).includes(v);
+
+const validateEvidenceItem = (v: unknown, label: string): EvidenceItem => {
+  if (!isObject(v)) throw invalid(label, 'must be an object');
+  if (typeof v.id !== 'string') throw invalid(label, 'has no id');
+  if (typeof v.description !== 'string') throw invalid(label, 'has non-string description');
+  if (!isEvidenceSource(v.source)) {
+    throw invalid(label, `has invalid source "${String(v.source)}"`);
+  }
+  if (!isEvidenceStrength(v.strength)) {
+    throw invalid(label, `has invalid strength "${String(v.strength)}"`);
+  }
+  if (v.url !== undefined && typeof v.url !== 'string') {
+    throw invalid(label, 'has non-string url');
+  }
+  if (v.validatedAt !== undefined && typeof v.validatedAt !== 'number') {
+    throw invalid(label, 'has non-number validatedAt');
+  }
+  if (v.validatedBy !== undefined && typeof v.validatedBy !== 'string') {
+    throw invalid(label, 'has non-string validatedBy');
+  }
+  if (typeof v.createdAt !== 'number') throw invalid(label, 'has non-number createdAt');
+  if (typeof v.updatedAt !== 'number') throw invalid(label, 'has non-number updatedAt');
+  return {
+    id: v.id,
+    description: v.description,
+    source: v.source,
+    strength: v.strength,
+    ...(typeof v.url === 'string' && v.url.length > 0 ? { url: v.url } : {}),
+    ...(typeof v.validatedAt === 'number' ? { validatedAt: v.validatedAt } : {}),
+    ...(typeof v.validatedBy === 'string' && v.validatedBy.length > 0
+      ? { validatedBy: v.validatedBy }
+      : {}),
+    createdAt: v.createdAt,
+    updatedAt: v.updatedAt,
+  };
+};
+
+/**
+ * Session 134 — validate the `evidence` array on an entity. Strict per
+ * item (see {@link validateEvidenceItem}). Empty / absent → undefined
+ * so entities without evidence don't carry an empty array on round-trip.
+ */
+const validateEvidenceArray = (v: unknown, label: string): EvidenceItem[] | undefined => {
+  if (v === undefined || v === null) return undefined;
+  if (!Array.isArray(v)) throw invalid(label, 'must be an array');
+  if (v.length === 0) return undefined;
+  return v.map((item, i) => validateEvidenceItem(item, `${label}[${i}]`));
+};
+
+/**
  * B7 — validate the `attributes` map on an entity. Strict: any
  * invalid value throws (with the offending key in the label). Returns
  * undefined when the input is absent or empty — entities without
@@ -142,6 +215,16 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   if (v.attestation !== undefined && typeof v.attestation !== 'string') {
     throw invalid(label, 'has non-string attestation');
   }
+  // Session 134 / spec major gap #6 — entity-level ownership +
+  // last-validated audit timestamp. Round-tripped so JSON exports and
+  // share-link reloads carry the same accountability metadata the
+  // inspector + risk-register exporter consume.
+  if (v.owner !== undefined && typeof v.owner !== 'string') {
+    throw invalid(label, 'has non-string owner');
+  }
+  if (v.lastValidatedAt !== undefined && typeof v.lastValidatedAt !== 'number') {
+    throw invalid(label, 'has non-number lastValidatedAt');
+  }
   if (v.unspecified !== undefined && typeof v.unspecified !== 'boolean') {
     throw invalid(label, 'has non-boolean unspecified');
   }
@@ -159,6 +242,7 @@ export const validateEntity = (v: unknown, label: string): Entity => {
     throw invalid(label, `has invalid ecSlot "${String(v.ecSlot)}"`);
   }
   const attributes = validateAttributes(v.attributes, `${label}.attributes`);
+  const evidence = validateEvidenceArray(v.evidence, `${label}.evidence`);
   return {
     id: v.id as EntityId,
     type: v.type,
@@ -174,6 +258,8 @@ export const validateEntity = (v: unknown, label: string): Entity => {
     ...(typeof v.ordering === 'number' ? { ordering: v.ordering } : {}),
     ...(position ? { position } : {}),
     ...(typeof v.attestation === 'string' ? { attestation: v.attestation } : {}),
+    ...(typeof v.owner === 'string' && v.owner.length > 0 ? { owner: v.owner } : {}),
+    ...(typeof v.lastValidatedAt === 'number' ? { lastValidatedAt: v.lastValidatedAt } : {}),
     ...(v.unspecified === true ? { unspecified: true as const } : {}),
     ...(v.spanOfControl === 'control' ||
     v.spanOfControl === 'influence' ||
@@ -184,6 +270,7 @@ export const validateEntity = (v: unknown, label: string): Entity => {
       ? { ecSlot: v.ecSlot as (typeof validEcSlots)[number] }
       : {}),
     ...(attributes ? { attributes } : {}),
+    ...(evidence ? { evidence } : {}),
   };
 };
 

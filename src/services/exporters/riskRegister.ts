@@ -1,5 +1,5 @@
 import { incomingEdges } from '@/domain/graph';
-import type { Entity, TPDocument } from '@/domain/types';
+import type { Entity, EvidenceItem, TPDocument } from '@/domain/types';
 import { slug, triggerDownload } from './shared';
 
 /**
@@ -9,8 +9,11 @@ import { slug, triggerDownload } from './shared';
  * CSV: one row per UDE, with columns the spec calls out — Risk
  * (the UDE), Trigger (the entity / edge that spawns it), Consequence
  * (the UDE's description), Mitigation (linked injection / action
- * entities), Owner (from `entity.attributes.owner` if set), Status
- * (open / mitigated based on the presence of a mitigation).
+ * entities), Evidence (the UDE's `evidence[]` items rendered as
+ * semicolon-joined `[strength/source] description (url)` entries),
+ * Owner (dedicated `entity.owner` field; legacy `attributes.owner`
+ * fallback), Status (open / mitigated based on the presence of a
+ * mitigation).
  *
  * Diagram-type agnostic — works on any doc containing UDEs (NBR is
  * the canonical case, but a CRT's UDEs map naturally onto a register
@@ -39,6 +42,7 @@ const HEADER = [
   'trigger',
   'consequence',
   'mitigation',
+  'evidence',
   'owner',
   'status',
 ] as const;
@@ -106,6 +110,37 @@ const ownerFor = (entity: Entity): string => {
 };
 
 /**
+ * Render one evidence item for the CSV cell. Format:
+ *   `[strong/metric] p95 = 740 ms (https://…)`
+ *
+ * The bracketed prefix carries the [strength/source] taxonomy so a
+ * register reader gets the qualitative + provenance signals at a
+ * glance. Description is the body; URL trails in parens when set.
+ *
+ * Trims whitespace + collapses internal newlines to spaces so the
+ * cell stays one logical line — the RFC 4180 escaper would otherwise
+ * keep embedded `\n`s, which trips up project-tracker imports that
+ * treat newline-in-cell as row-break.
+ */
+const formatEvidenceItem = (e: EvidenceItem): string => {
+  const desc = e.description.trim().replace(/\s+/g, ' ');
+  const head = `[${e.strength}/${e.source}]`;
+  const body = desc.length > 0 ? ` ${desc}` : '';
+  const tail = e.url && e.url.length > 0 ? ` (${e.url})` : '';
+  return `${head}${body}${tail}`;
+};
+
+/**
+ * Pull the entity's evidence as a single-line semicolon-joined cell.
+ * Empty string when the entity has no evidence so the register cell
+ * imports as blank.
+ */
+const evidenceFor = (entity: Entity): string => {
+  if (!entity.evidence || entity.evidence.length === 0) return '';
+  return entity.evidence.map(formatEvidenceItem).join('; ');
+};
+
+/**
  * Build the CSV text for a given document. Exported for tests; the
  * production path uses `exportRiskRegister(doc)` below.
  */
@@ -126,6 +161,7 @@ export const buildRiskRegisterCsv = (doc: TPDocument): string => {
         triggerFor(doc, ude),
         ude.description ?? '',
         mitigation,
+        evidenceFor(ude),
         ownerFor(ude),
         status,
       ])

@@ -24,7 +24,7 @@ describe('buildRiskRegisterCsv', () => {
     const csv = buildRiskRegisterCsv(doc());
     const lines = csv.split('\n').filter((l) => l.length > 0);
     expect(lines).toHaveLength(1);
-    expect(lines[0]).toBe('risk_id,risk,trigger,consequence,mitigation,owner,status');
+    expect(lines[0]).toBe('risk_id,risk,trigger,consequence,mitigation,evidence,owner,status');
   });
 
   it('emits an "open" row for a UDE with no mitigation', () => {

@@ -110,6 +110,25 @@ Two consumers downstream:
 
 The legacy `attributes.owner` key still works for older docs (the risk-register export checks both, preferring the dedicated field), but new docs should use the typed Owner field.
 
+## Evidence — making provenance explicit
+
+Beneath the Owner block is an **Evidence** list — a structured place to record *what the entity is standing on*. Each row carries:
+
+- A **description** — the actual citation, observation, measurement, or claim. Free text.
+- A **source** pill — cycles through `Observed → Stakeholder → Metric → Policy → Assumption`. The taxonomy is intentionally narrow:
+  - **Observed** — first-hand observation ("I saw the queue grow during demo days")
+  - **Stakeholder** — an assertion from someone with stake ("the CFO says renewals will drop 12%")
+  - **Metric** — a numeric measurement ("p95 latency = 740ms last week")
+  - **Policy** — a documented rule or constraint ("PCI requires segregated networks")
+  - **Assumption** — explicitly an unproven belief, kept honest by the label rather than masquerading as fact
+- A **strength** pill — `Weak / Moderate / Strong`. Your qualitative judgement; nothing derives it for you.
+- An optional **URL** — citation link, dashboard URL, document reference.
+- A per-row **Mark validated** button — stamps the current timestamp and credits the entity's Owner as the validator. Distinct from the entity-level validation: the entity audit-trail tracks "is this entity still true overall"; the per-evidence trail tracks "is THIS specific citation still standing."
+
+Use the list to make provenance explicit at workshop time. A UDE backed by `[strong/metric] p95 = 740ms` reads very differently from one backed by `[weak/assumption] customers probably care about latency`, and the difference often surfaces during the trim step of an FRT — the moderate-evidence claims are the ones to challenge first.
+
+Evidence items survive JSON export / share-link reload, and feed the new `evidence` column of the **Risk Register (CSV)** export — rendered as semicolon-joined `[strength/source] description (url)` entries, so a register reader gets the qualitative signal at a glance without losing the original detail.
+
 ## The CLR — a one-paragraph preview
 
 Six "Categories of Legitimate Reservation" — the discipline checks Goldratt taught for evaluating someone else's causal claim. TP Studio surfaces them automatically as **warnings** in the Inspector's Warnings list. They are not errors; they are reservations a thoughtful colleague would raise if they were reading your diagram over your shoulder. We get into the CLR in depth in [Chapter 13](13-the-clr.md), but for now know that:
