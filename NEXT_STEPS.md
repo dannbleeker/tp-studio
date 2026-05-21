@@ -6,7 +6,7 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ## Open major gaps from the spec analysis
 
-Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **three of ten** original major gaps remain. **AI-integration (spec §5)** explicitly out of scope — see won't-build section. **Closed:** #1 NBR, #3 cross-diagram traceability, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #9 formal mode-switching, #10 PowerPoint export.
+Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **one of ten** original major gaps remains open (#4 confidence / propagation Phase 1C). **Out of scope** per Dann's call (Session 135): #2 multi-user collab, #8 enterprise integration, plus AI integration (spec §5) — see won't-build section. **Closed:** #1 NBR, #3 cross-diagram traceability, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #9 formal mode-switching, #10 PowerPoint export.
 
 ### ~~🔴 #3 — Cross-diagram traceability~~ — *done Session 135*
 
@@ -54,16 +54,6 @@ The engine + `effectiveState` merge helper was designed for 1C: the speculation 
 
 **Effort remaining:** Phase 1C ~1–2 sessions.
 
-### 🔴 #2 — Multi-user collaboration *(product-direction decision, not a sprint)*
-
-Spec §4. Single-user local-only. Missing: real-time editing, comments, role-based participation, workshop voting + timeboxing, stakeholder sign-off, decision log.
-
-**Status:** Intentionally deprioritised. Changes TP Studio from local-first to cloud-backed. Revisit only if a hosted product direction lands.
-
-### 🔴 #8 — Enterprise integration *(tied to #2)*
-
-Spec §8. No SSO/SAML/OIDC, no Microsoft 365 / Google Workspace / Slack / Teams / Confluence / SharePoint / Jira / Azure DevOps. TP Studio is browser-local PWA. Re-open with #2.
-
 ---
 
 ## Open medium gaps
@@ -73,15 +63,7 @@ Spec §8. No SSO/SAML/OIDC, no Microsoft 365 / Google Workspace / Slack / Teams 
 - **S&T assumption sub-typing** — `Assumption.kind: 'necessary' | 'parallel' | 'sufficient'`. Schema + UI for the discriminator. ~1 session.
 - **"Preserve rejected logic in collapsed groups"** — currently partial via revision branches. No archive-of-rejected concept on the live canvas. Would mean a `Group.archived?: true` flag + a "show archived" toggle. ~1 session.
 - **Reactive vs proactive NBR mitigation distinction** — current NBR (Session 134) infers mitigation status from injection-reachability. Spec wants a formal `mitigation.kind` field. Re-open only if practitioners ask.
-- **Action eligibility based on satisfied preconditions** — gated by #4.
-- **Audit trail / GDPR / data retention** — gated by #2/#8.
-
----
-
-## Open minor gaps
-
-- **Stakeholder sign-off workflow** — gated by #2.
-- **Pattern library sub-item C** (portfolio-view across multiple docs) — gated by #3.
+- **Action eligibility based on satisfied preconditions** — gated by #4 (Phase 1B engine unblocked it; Phase 1C lands the speculation surface this would build on).
 
 ---
 
@@ -116,10 +98,8 @@ From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4
 If picking the next thing up:
 
 1. **#4 confidence / state propagation Phase 1C** (~1–2 sessions) — what-if speculation overlay. Phase 1A schema + Phase 1B engine + inspector landed Session 135. Next slice is a `speculationOverlay` store slice + canvas-wide preview + commit/revert banner.
-2. **Medium gaps as filler** — S&T assumption sub-typing (`Assumption.kind`), "preserve rejected logic in collapsed groups", reactive-vs-proactive NBR mitigation. Each ~1 hour.
+2. **Medium gaps as filler** — S&T assumption sub-typing (`Assumption.kind`), "preserve rejected logic in collapsed groups", reactive-vs-proactive NBR mitigation, action eligibility on satisfied preconditions (rides on Phase 1C). Each ~1 hour.
 3. **Infrastructure debt** — file splits (TPEdge / entitiesSlice / etc.) + continued test-cast cleanup. Good cleanup-between-features work.
-
-#2 collab and #8 enterprise stay deprioritised — both are product-direction decisions, not sprints.
 
 ---
 
@@ -127,7 +107,12 @@ If picking the next thing up:
 
 Items explicitly dropped, in addition to the brief's own out-of-scope list:
 
-- Real-time multi-user collab; cloud sync, accounts, auth (revisit with #2 product decision)
+- **#2 Multi-user collaboration (spec §4)** — dropped Session 135. Real-time editing, comments, role-based participation, workshop voting + timeboxing, stakeholder sign-off, decision log. Would flip TP Studio from local-first to cloud-backed; product direction is local-first by design.
+- **#8 Enterprise integration (spec §8)** — dropped Session 135 (tied to #2). SSO/SAML/OIDC, M365 / Google Workspace / Slack / Teams / Confluence / SharePoint / Jira / Azure DevOps. TP Studio is a browser-local PWA.
+- **Audit trail / GDPR / data retention** — dropped Session 135 (depended on #2/#8 server-side identity model). No backend, no audit trail; persistence is local-storage + user-managed export files.
+- **Stakeholder sign-off workflow** — dropped Session 135 (depended on #2 multi-user model).
+- **Pattern library sub-item C — portfolio-view across multiple docs** — dropped Session 135 (depended on FL-EX8 multi-document tabs, which is already won't-build).
+- Cloud sync, accounts, auth (covered by #2 above)
 - Project management, calendars, resources, MS Project export
 - Bayesian / evidence-based propagation
 - Course-of-action (COA) analysis features
