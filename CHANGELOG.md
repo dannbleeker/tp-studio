@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Cleanup batch: TextArea ref + aria warnings gone + roundtrip smoke + button-class constants
+
+Five small wins from the 30-suggestion list:
+
+**1. `TextArea` now accepts a `ref` prop.** `src/components/settings/formPrimitives.tsx` — added optional `ref?: Ref<HTMLTextAreaElement>` via React 19's ref-as-prop. Eliminates the `FocusBridge` workaround introduced in this session's evidence work: `src/components/inspector/EvidenceList.tsx` drops ~20 lines of DOM-lookup-via-`data-evidence-id` indirection and just passes the ref straight through.
+
+**2. Both long-standing aria-prop lint warnings fixed.**
+
+- `CanvasNav.tsx:48` — dropped the redundant `aria-label="Zoom N percent"` on the plain `<span>`. The visible "{pct}%" text already names the element; biome's `useAriaPropsSupportedByRole` had been emitting a warning on every lint run.
+- `PatternLibraryDialog.tsx:87` — replaced `<div aria-label="Filter by diagram type">` with the canonical `<fieldset>` + `<legend className="sr-only">` accessible pattern. Fieldset's UA-default border + padding reset with `border-0 p-0 m-0`. Screen readers announce the group's purpose without visual chrome.
+
+Lint output is now down to ~~2 warnings~~ → **0 warnings, 0 errors, 0 infos**.
+
+**3. Table-driven persistence-roundtrip smoke test.** New `tests/domain/persistenceRoundTrip.test.ts` (3 tests): builds an entity with every documented optional field set, JSON-exports + re-imports, asserts every field survives. Plus a minimal-entity test (asserts no field is invented) and an edge-roundtrip smoke. Would have caught the owner / lastValidatedAt drop bug at write time instead of retroactively. Adding a new optional field to Entity now requires updating this test, which surfaces missing persistence-validator coverage at PR review.
+
+**4. `newEvidenceId()` factory** in `src/domain/ids.ts`. `entitiesSlice.ts`'s `addEvidence` was calling raw `nanoid()`; switched to the typed factory for consistency with `newEntityId` / `newEdgeId` / etc. Returned as plain `string` (not branded) because evidence ids live in per-entity scope.
+
+**5. `SELECTED_BUTTON_CLASS` + `UNSELECTED_BUTTON_CLASS` constants** in new `src/components/ui/buttonClasses.ts`. The same `border-indigo-400 bg-indigo-50 …` selected-state string appeared in 10+ files; one design-token swap meant 10 hand edits. The constants cover BORDER + BG + TEXT state; layout (rounded / padding / text-xs) stays per-site since densities differ. Applied to `EntityInspector` (title size + locus) + `MultiInspector` (title size). 6 more call sites pending a follow-up sweep — migration is incremental (the strings are byte-identical so partial adoption coexists with inlined siblings).
+
+**Totals:** 1588 tests pass (+3 from the new persistence-roundtrip smoke); tsc clean; biome lint **fully clean** for the first time this session.
+
 ## Session 135 — Perf batch C: whole-map subscription narrowing (#7+#8)
 
 Closes the audit's #7+#8 punt-item from batch B. The "right" fix needed custom equality functions (because `useShallow` does `Object.is` per array element, which fails on freshly-allocated objects — which is what most derived selectors produce).

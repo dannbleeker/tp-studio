@@ -1,7 +1,7 @@
-import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import { createEntity } from '@/domain/factory';
 import { removeEntityFromEdges } from '@/domain/graph';
+import { newEvidenceId } from '@/domain/ids';
 import type {
   Assumption,
   AssumptionStatus,
@@ -450,7 +450,7 @@ export const createEntitiesSlice: StateCreator<RootStore, [], [], EntitiesSlice>
       if (!cur) return null;
       const now = Date.now();
       const item: EvidenceItem = {
-        id: nanoid(),
+        id: newEvidenceId(),
         description: partial?.description ?? '',
         source: partial?.source ?? 'observed',
         strength: partial?.strength ?? 'moderate',

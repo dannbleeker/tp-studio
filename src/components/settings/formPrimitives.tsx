@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import type { ChangeEventHandler, ReactNode } from 'react';
+import type { ChangeEventHandler, ReactNode, Ref } from 'react';
 import { INPUT_FOCUS } from '../ui/focusClasses';
 
 /**
@@ -202,6 +202,13 @@ export type TextAreaProps = {
   /** Optional raw onChange (rare — most callers want the `string`
    *  variant). When supplied, replaces the default value-passing. */
   onChangeRaw?: ChangeEventHandler<HTMLTextAreaElement>;
+  /** Session 135 — optional ref to the underlying `<textarea>` so
+   *  callers can focus / select / read DOM state directly. React 19's
+   *  ref-as-prop pattern means no `forwardRef` ceremony. Added so the
+   *  EvidenceList's newly-added-row autofocus path can replace its
+   *  earlier `data-evidence-id` DOM-lookup workaround with a real
+   *  ref. */
+  ref?: Ref<HTMLTextAreaElement>;
 };
 
 export function TextArea({
@@ -215,9 +222,11 @@ export function TextArea({
   rows = 2,
   resizable = false,
   onChangeRaw,
+  ref,
 }: TextAreaProps) {
   return (
     <textarea
+      ref={ref}
       id={id}
       value={value}
       placeholder={placeholder}

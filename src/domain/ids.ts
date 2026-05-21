@@ -22,3 +22,16 @@ export const newEdgeId = (): EdgeId => nanoid() as EdgeId;
 export const newDocumentId = (): DocumentId => nanoid() as DocumentId;
 export const newGroupId = (): GroupId => nanoid() as GroupId;
 export const newRevisionId = (): RevisionId => nanoid(10) as RevisionId;
+
+/**
+ * Session 135 — id factory for `EvidenceItem.id`. Returned as a plain
+ * `string` (not branded) because evidence ids live in per-entity
+ * scope, not a global namespace: two entities can each carry an
+ * evidence item with id `'abc'` without collision, since the lookup
+ * is always `entity.evidence.find(e => e.id === id)`. Branding would
+ * imply uniqueness across the doc, which isn't the contract.
+ *
+ * Kept next to the other id factories so a future schema change
+ * (e.g. global evidence registry) has one place to update.
+ */
+export const newEvidenceId = (): string => nanoid();

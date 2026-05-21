@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { CheckCircle2, ExternalLink, Plus, X } from 'lucide-react';
-import { type RefObject, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { EvidenceItem, EvidenceSource, EvidenceStrength } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { TextArea, TextInput } from '../settings/formPrimitives';
@@ -171,24 +171,15 @@ function EvidenceRow({
   }, [autoFocus]);
 
   return (
-    <li
-      className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/60 p-2 dark:border-neutral-800 dark:bg-neutral-900/40"
-      data-evidence-id={item.id}
-    >
+    <li className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/60 p-2 dark:border-neutral-800 dark:bg-neutral-900/40">
       <TextArea
+        ref={descRef}
         rows={2}
         value={item.description}
         placeholder="What's the evidence? Citation, observation, measurement, claim…"
         disabled={locked}
         onChange={(next) => updateEvidence(entityId, item.id, { description: next })}
       />
-      {/* `TextArea` from formPrimitives doesn't accept a ref; the bridge
-          below looks up the rendered textarea via the row's
-          `data-evidence-id` container so we can focus the newly-added
-          row programmatically. Adding a ref prop to TextArea would
-          touch a 20+ caller file for one consumer — the bridge is the
-          cheaper isolation. */}
-      <FocusBridge containerSelector={`[data-evidence-id="${item.id}"]`} descRef={descRef} />
 
       <div className="flex flex-wrap items-center gap-1.5">
         <button
@@ -282,32 +273,4 @@ function EvidenceRow({
       </div>
     </li>
   );
-}
-
-/**
- * Workaround for `TextArea` not exposing its inner ref prop. Looks up
- * the textarea inside the row's `data-evidence-id` container on mount
- * and forwards it through the supplied ref. Inert otherwise. Kept
- * adjacent to the row to make the indirection obvious.
- *
- * The alternative — extending `TextArea`'s prop set with a ref prop —
- * would touch one source-of-truth shared file for a single consumer.
- * This local bridge is the cheaper isolation.
- */
-function FocusBridge({
-  containerSelector,
-  descRef,
-}: {
-  containerSelector: string;
-  descRef: RefObject<HTMLTextAreaElement | null>;
-}) {
-  useEffect(() => {
-    const root = document.querySelector(containerSelector);
-    if (!root) return;
-    const ta = root.querySelector('textarea');
-    if (ta instanceof HTMLTextAreaElement) {
-      descRef.current = ta;
-    }
-  }, [containerSelector, descRef]);
-  return null;
 }

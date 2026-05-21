@@ -84,7 +84,15 @@ export function PatternLibraryDialog() {
       subtitle="Curated starter diagrams for common TOC scenarios. Pick one to drop onto the canvas; Undo from the toast restores your previous doc."
       closeAriaLabel="Close pattern library"
     >
-      <div className="mb-3 flex flex-wrap gap-1.5" aria-label="Filter by diagram type">
+      {/* Session 135 — `<fieldset>` + visually-hidden `<legend>` is
+          the canonical accessible pattern for "a labelled group of
+          related controls." Biome's `useSemanticElements` rule
+          replaces a plain `<div role="group">`; the legend names the
+          group for screen readers while staying out of the visual
+          layout via `sr-only`. UA-default fieldset chrome (border,
+          padding, inline margin) is reset with `border-0 p-0 m-0`. */}
+      <fieldset className="m-0 mb-3 flex flex-wrap gap-1.5 border-0 p-0">
+        <legend className="sr-only">Filter by diagram type</legend>
         {chips.map((c) => {
           const isActive = filter === c;
           const label = c === 'all' ? 'All' : DIAGRAM_TYPE_LABEL[c];
@@ -107,7 +115,7 @@ export function PatternLibraryDialog() {
             </button>
           );
         })}
-      </div>
+      </fieldset>
 
       {visible.length === 0 ? (
         <p className="px-1 py-6 text-center text-neutral-500 text-sm dark:text-neutral-400">

@@ -10,6 +10,7 @@ import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 import { TextArea, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
+import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '../ui/buttonClasses';
 import { AttachedEdgesList } from './AttachedEdgesList';
 import { EntityAttributesSection } from './AttributesSection';
 import { EvidenceList } from './EvidenceList';
@@ -141,9 +142,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
                 }
                 className={clsx(
                   'rounded-md border px-2 py-1.5 text-xs transition disabled:cursor-not-allowed disabled:opacity-60',
-                  active
-                    ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
-                    : 'border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900'
+                  active ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
                 )}
               >
                 {label}
@@ -275,11 +274,10 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
                 type="button"
                 disabled={locked}
                 onClick={() => updateEntity(entityId, { spanOfControl: opt.id })}
-                className={`rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                  selected
-                    ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
-                    : 'border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900'
-                }`}
+                className={clsx(
+                  'rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60',
+                  selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+                )}
               >
                 {opt.label}
               </button>

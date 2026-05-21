@@ -43,10 +43,11 @@ export function CanvasNav() {
       >
         <Minus className="h-3 w-3" />
       </button>
-      <span
-        className="px-1.5 font-mono text-[10px] text-neutral-600 tabular-nums dark:text-neutral-300"
-        aria-label={`Zoom ${pct} percent`}
-      >
+      {/* Session 135 — `aria-label` removed: the visible "{pct}%" text
+          IS the accessible name; biome's `useAriaPropsSupportedByRole`
+          flagged the redundant label on a plain `<span>`. Screen
+          readers announce the text content directly. */}
+      <span className="px-1.5 font-mono text-[10px] text-neutral-600 tabular-nums dark:text-neutral-300">
         {pct}%
       </span>
       <button

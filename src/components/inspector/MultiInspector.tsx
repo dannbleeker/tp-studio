@@ -8,6 +8,7 @@ import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
+import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '../ui/buttonClasses';
 import { Field } from './Field';
 
 /**
@@ -123,9 +124,7 @@ function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
                 }}
                 className={clsx(
                   'rounded-md border px-2 py-1.5 text-xs transition disabled:cursor-not-allowed disabled:opacity-60',
-                  allMatch
-                    ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
-                    : 'border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900'
+                  allMatch ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
                 )}
               >
                 {label}
