@@ -82,6 +82,40 @@ body {
   color: #f5f5f5;
 }
 
+/*
+ * Session 135 / spec gap #9 Phase 1B — app-mode body classes.
+ * Applied by `App.tsx` based on the persisted `appMode` preference.
+ * The classes layer on top of existing theme classes (.dark,
+ * .theme-hc, etc.) without conflict.
+ */
+
+/*
+ * Workshop mode — facilitator + projected-canvas session. Bumps the
+ * node-title font + base line-height so a 6m-room can read the
+ * canvas. Edges and chrome stay default; the bump is targeted
+ * specifically at the entity cards (the canvas's primary content).
+ * Tokens overridden inside .app-mode-workshop only; outside that
+ * scope every other surface stays at its design defaults.
+ */
+.app-mode-workshop {
+  --text-node: 18px;
+  --text-node--line-height: 1.4;
+}
+
+/*
+ * Presentation mode — read-only canvas projection. Chrome is hidden
+ * at the React level (see `App.tsx`); the body class ensures the
+ * background reads as a clean slate. No visible-only-to-mouse
+ * affordances (right-click context menu still works, but the
+ * SelectionToolbar / Inspector / TopBar are gone). Pair with the
+ * auto-engaged Browse Lock so a stray click can't mutate the doc.
+ */
+.app-mode-presentation {
+  /* Slightly larger nodes than default so the canvas dominates the
+   * screen; falls between Workshop and the default. */
+  --text-node: 16px;
+}
+
 /* High-contrast layer: pure black background, pure white text, thicker
  * focus rings. Layers on top of .dark — applied together. */
 .theme-hc body {

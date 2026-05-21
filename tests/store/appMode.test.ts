@@ -40,6 +40,39 @@ describe('appMode — state + actions', () => {
   });
 });
 
+describe('appMode — Browse Lock auto-engage on Presentation', () => {
+  it('entering Presentation engages Browse Lock when it was off', () => {
+    expect(s().browseLocked).toBe(false);
+    s().setAppMode('presentation');
+    expect(s().browseLocked).toBe(true);
+  });
+
+  it('leaving Presentation does NOT auto-unlock', () => {
+    s().setAppMode('presentation');
+    expect(s().browseLocked).toBe(true);
+    s().setAppMode('expert');
+    // Lock stays — user explicitly toggles off if they want.
+    expect(s().browseLocked).toBe(true);
+  });
+
+  it('entering Presentation when Browse Lock already engaged leaves it untouched', () => {
+    s().setBrowseLocked(true);
+    s().setAppMode('presentation');
+    expect(s().browseLocked).toBe(true);
+    // No surprise toggle off.
+  });
+
+  it('entering Guided / Workshop / Expert does NOT touch Browse Lock', () => {
+    expect(s().browseLocked).toBe(false);
+    s().setAppMode('guided');
+    expect(s().browseLocked).toBe(false);
+    s().setAppMode('workshop');
+    expect(s().browseLocked).toBe(false);
+    s().setAppMode('expert');
+    expect(s().browseLocked).toBe(false);
+  });
+});
+
 describe('appMode — palette commands', () => {
   it('exposes one switch command per mode', async () => {
     // Lazy-load to avoid pulling the palette through the store cold-

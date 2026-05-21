@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — App-mode Phase 1B: chrome wiring per mode
+
+Phase 1B lays the visible UX changes onto the Phase 1A foundation. Three modes now have observable behaviour:
+
+**Presentation mode — read-only canvas projection.** When `appMode === 'presentation'`:
+- `App.tsx` hides `TitleBadge`, `TopBar`, `SelectionToolbar`, and `Inspector` via conditional renders.
+- `Canvas.tsx` hides `CanvasNav` (the zoom-controls chip).
+- `setAppMode('presentation')` auto-engages `browseLocked` when it was off — a stray click on the projected canvas can't accidentally mutate the doc.
+- Leaving Presentation does NOT auto-unlock — the user explicitly toggles via the (now-visible-again) TopBar lock button. Avoids the surprise-unlock that would happen on `Expert` ↔ `Presentation` ping-pong.
+
+**Workshop mode — facilitator + projected canvas.** `--text-node` token bumps from 15px → 18px and line-height from 1.35 → 1.4 via the `.app-mode-workshop` body class. Targeted at the entity cards (the canvas's primary content); chrome and edges stay at default size. Edits like NA / PA / SA facet rows and the corner badges inherit the bigger node text correctly.
+
+**Expert mode — no change** (the default the tool has shipped with since v1).
+
+**Guided mode — deferred to Phase 1C** (auto-open method checklist + force-show creation wizards). Visible but distinct UX choice that warrants its own iteration.
+
+**Tests:** 4 new in `tests/store/appMode.test.ts` covering Browse Lock auto-engage (engages from off, doesn't auto-unlock on leave, leaves an already-locked state alone, other-mode transitions don't touch the lock). 1607 total pass.
+
+NEXT_STEPS spec gap #9 updated — Phase 1B struck through, Phase 1C scope (Guided auto-open + future step-through control + session timer) sketched out.
+
+All tsc clean; biome lint clean (modulo two pre-existing nursery-rule infos unchanged from prior commits).
+
 ## Session 135 — App-mode foundation (spec gap #9 Phase 1A)
 
 First slice of the formal mode-switching gap. Phase 1A lands the state + actions + palette commands so subsequent phases have a clean foundation to wire chrome behaviour onto.

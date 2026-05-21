@@ -16,17 +16,20 @@ Spec §6.2. Each `TPDocument` is standalone JSON; no entity/edge references acro
 
 **Effort:** ~2–3 sessions. Highest-leverage structural gap. Unlocks the portfolio-view pattern-library sub-item and the full TP chain.
 
-### 🔴 #9 — Formal mode-switching *(Phase 1A done Session 135 — chrome wiring next)*
+### 🔴 #9 — Formal mode-switching *(Phase 1A + 1B done Session 135 — Guided mode + extras pending)*
 
-Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. **Phase 1A shipped:** `AppMode` type + persisted `appMode` preference (defaults to `'expert'`) + `setAppMode(mode)` action + four palette commands (`Switch to Expert / Guided / Workshop / Presentation mode`). Survives reloads. 5 new tests cover state, persistence, command registry.
+Spec §7.1. **Phase 1A + 1B shipped Session 135:** `AppMode` type + persisted `appMode` preference + `setAppMode(mode)` action + four palette commands. Per-mode chrome wiring landed for three of four modes:
+- **Presentation** — `App.tsx` hides `TitleBadge` / `TopBar` / `SelectionToolbar` / `Inspector`; `Canvas.tsx` hides `CanvasNav`; `setAppMode('presentation')` auto-engages Browse Lock so projected canvases can't be edited accidentally. Leaving Presentation doesn't auto-unlock.
+- **Workshop** — `.app-mode-workshop` body class bumps `--text-node` from 15px → 18px and line-height to 1.4. Entity cards readable from a 6m room.
+- **Expert** — default (no chrome change).
+- **Guided** — pending Phase 1C.
 
-**Phase 1B (next):** wire per-mode chrome behaviour. Each is a discrete, testable UI change:
-- **Presentation** — hide `TopBar`, `Inspector`, `SelectionToolbar`, `CanvasNav`; auto-engage Browse Lock; surface a small step-through control (Prev / Next walks the entity ordering).
-- **Workshop** — bump node-text size; high-contrast edge palette; bigger junctor circles; surface a session timer.
-- **Guided** — auto-open the method checklist; force-show the creation wizards (override the per-diagram suppress flags).
-- **Expert** — no chrome change (the existing default).
+**Phase 1C (next):**
+- **Guided** mode — auto-open method checklist; force-show the creation wizards (override `showGoalTreeWizard` / `showECWizard` per-diagram preferences when the app-mode override says to).
+- **Presentation extras** — small step-through control overlay (Prev / Next walks entities by `ordering` or annotation number; arrow keys bound for keyboard-only flow).
+- **Workshop extras** — session timer chip + optional high-contrast edge palette auto-engage.
 
-**Effort:** Phase 1B ~1 session if done as one batch, or ~30 min per mode if split.
+**Effort:** Phase 1C ~1 session if batched; ~30 min per piece if split.
 
 ### 🔴 #4 — Confidence / propagation simulation
 

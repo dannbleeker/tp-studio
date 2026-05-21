@@ -166,6 +166,11 @@ function CanvasInner() {
   // currently shown). Default is `true` (hidden) so first-load is the
   // cleanest possible canvas.
   const ecChromeCollapsed = useDocumentStore((s) => s.ecChromeCollapsed);
+  // Session 135 / spec gap #9 Phase 1B — presentation mode hides
+  // the zoom-controls chip so the canvas reads as a clean read-only
+  // surface. Other CanvasNav-adjacent overlays (junctors, assumption
+  // anchors) stay because they're diagram structure, not chrome.
+  const isPresentation = useDocumentStore((s) => s.appMode === 'presentation');
 
   // React Flow canvas wrapper: the double-click is a workspace gesture ("create
   // entity on empty canvas"). The canvas itself isn't a button or other interactive
@@ -428,7 +433,7 @@ function CanvasInner() {
             nodeStrokeWidth={1}
           />
         )}
-        <CanvasNav />
+        {!isPresentation && <CanvasNav />}
         <JunctorOverlay />
         <AssumptionAnchorOverlay />
         {/* Session 77: EC verbalisation strip overlays the canvas top

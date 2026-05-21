@@ -316,7 +316,17 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       persistPrefs();
     },
     setAppMode: (mode) => {
-      set({ appMode: mode });
+      // Session 135 / Phase 1B — entering Presentation auto-engages
+      // Browse Lock so a stray click can't accidentally edit the doc
+      // while it's projected. Leaving Presentation does NOT auto-
+      // unlock — the user can keep it locked explicitly if they want
+      // to. The lock toggle in the (now-hidden) TopBar reappears as
+      // soon as the mode flips back to Expert / Guided / Workshop.
+      const next: Partial<{ appMode: AppMode; browseLocked: boolean }> = { appMode: mode };
+      if (mode === 'presentation' && !get().browseLocked) {
+        next.browseLocked = true;
+      }
+      set(next);
       persistPrefs();
     },
   };

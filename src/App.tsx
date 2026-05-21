@@ -169,6 +169,15 @@ export function App() {
   const showToast = useDocumentStore((s) => s.showToast);
   const setDocument = useDocumentStore((s) => s.setDocument);
   const setBrowseLocked = useDocumentStore((s) => s.setBrowseLocked);
+  // Session 135 / spec gap #9 Phase 1B — read the app-mode at the
+  // root so per-mode chrome conditions live next to the components
+  // they gate. `'presentation'` hides every chrome surface except
+  // the canvas; `'workshop'` adds a body class that bumps text
+  // sizes via the stylesheet (see `styles/index.css` for the
+  // workshop class rules); `'guided'` is reserved for the next
+  // phase (auto-open method checklist + creation wizards).
+  const appMode = useDocumentStore((s) => s.appMode);
+  const isPresentation = appMode === 'presentation';
 
   // FL-EX9: surface a recovery toast when the previous session ended
   // unexpectedly.
@@ -224,11 +233,15 @@ export function App() {
   }, [setDocument, setBrowseLocked, showToast]);
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden">
+    <main
+      className={`relative h-screen w-screen overflow-hidden${
+        appMode === 'workshop' ? ' app-mode-workshop' : ''
+      }${appMode === 'presentation' ? ' app-mode-presentation' : ''}`}
+    >
       <DocumentMeta />
       <PrintHeader />
-      <TitleBadge />
-      <TopBar />
+      {!isPresentation && <TitleBadge />}
+      {!isPresentation && <TopBar />}
       {/* Session 95 — `ReactFlowProvider` hoisted here (was inside
           `<Canvas />` until Phase 2) so the SelectionToolbar and any
           future canvas-aware overlay can read React Flow's state via
@@ -249,9 +262,11 @@ export function App() {
             tree so it doesn't get re-mounted on Canvas re-renders.
             ErrorBoundary scopes any crash so the canvas stays
             usable. */}
-        <ErrorBoundary label="Selection toolbar">
-          <SelectionToolbar />
-        </ErrorBoundary>
+        {!isPresentation && (
+          <ErrorBoundary label="Selection toolbar">
+            <SelectionToolbar />
+          </ErrorBoundary>
+        )}
       </ReactFlowProvider>
       <ErrorBoundary label="Compare banner">
         <CompareBanner />
@@ -260,9 +275,11 @@ export function App() {
           canvas stays usable if (say) the Inspector blows up on a bad
           warning derivation, and vice versa. The root boundary wrapping
           all of <App /> still catches anything that escapes a panel. */}
-      <ErrorBoundary label="Inspector">
-        <Inspector />
-      </ErrorBoundary>
+      {!isPresentation && (
+        <ErrorBoundary label="Inspector">
+          <Inspector />
+        </ErrorBoundary>
+      )}
       <ContextMenu />
       <Suspense fallback={null}>
         {/* Session 113 — wrap the remaining lazy dialogs / overlays in
