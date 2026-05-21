@@ -73,6 +73,14 @@ Spec §7.1. Lists Guided / Expert / Workshop / Presentation modes. TP Studio has
 
 ---
 
+## Open polish + quality items
+
+- **UI review by expert agent.** Hand a built doc + the current screenshots to a design-focused subagent and ask for a top-N punch list across visual hierarchy, density, contrast, affordance clarity, and motion. The codebase has grown a lot of inspector surface, dialog chrome, and overlay layers; an outside pass is overdue.
+- **Book does not work on Kindle.** The auto-rebuilt `Causal-Thinking-with-TP-Studio.pdf` renders on web / desktop PDF readers but Kindle's epub-conversion + reflow path doesn't handle it cleanly (layout collapses, tables break, page numbers wrong). Either ship an `.epub` alongside the PDF or restructure the LaTeX/source so Kindle's importer behaves. Verify on a real Kindle device, not just the Kindle PC reader.
+- **Backlog spring-clean — review item per item.** This file has grown organically across 135 sessions. Walk each open entry, decide: still real? still scoped right? estimate still accurate? Goal: hand the next opener a backlog they can trust without re-running the whole gap analysis.
+
+---
+
 ## Session 134 loose-end follow-ups
 
 - ~~**TPNode.tsx statement-coverage tooling quirk.**~~ ✅ **Diagnosed and fixed (Session 134).** The original theory (React 19 `memo()` × React Compiler × coverage-v8 source-map interaction) was wrong. The actual cause: v8 coverage counts each *inline arrow handler* (`onMouseEnter={() => setIsHovered(true)}`, `onDoubleClick={...}`, `onBlur={...}`, etc.) as its own function-body, and the render-only tests landed in round 3 never fired any DOM events — so the handler bodies stayed uncovered. Round 4 added 13 interaction-driven tests that fire `doubleClick` / `mouseEnter` / `mouseLeave` / `keyDown` / `blur` / `change` events + mount the editing-mode render branch + exercise the four preference toggles (annotation numbers, entity ids, reach badges, reverse-reach badges) + the three Locus pill variants. **TPNode.tsx: 27% → 48% statements (+21pp), 29% → 61% branches (+32pp), 14% → 38% functions (+24pp), 29% → 49% lines (+20pp).** The remaining ~50% is line ranges 269-275 + 285-561 — content for less-common variants (S&T 5-facet rows, hidden-descendant chip with > 0 children, custom-class icon resolution, zoom-up overlay at low zoom, Pin glyph requiring entity.position, NodeToolbar conditional). Achievable in a follow-up if needed, but the high-traffic interaction paths are now properly covered.

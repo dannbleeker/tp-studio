@@ -1,7 +1,7 @@
 import { useReactFlow, useStore as useRFStore } from '@xyflow/react';
-import { useMemo } from 'react';
 import { entitiesOfType } from '@/domain/graph';
-import { useDocumentStore } from '@/store';
+import { arrayShallowEqualByKeys } from '@/store/equality';
+import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 
 /**
  * Session 133 — visualise the "this assumption pertains to that edge"
@@ -32,29 +32,50 @@ import { useDocumentStore } from '@/store';
  * Implementation mirrors `JunctorOverlay` — same SVG + transform
  * pattern.
  */
+type AnchorTriple = {
+  key: string;
+  assumptionId: string;
+  sourceId: string;
+  targetId: string;
+};
+
+// Session 135 / Perf #7 — equality fn so this overlay re-renders only
+// when the anchor set actually changes (assumption attached / detached
+// / endpoint rewired). Unrelated edge mutations (label, weight,
+// attestation) no longer trigger a re-render here.
+const anchorTriplesEqual = arrayShallowEqualByKeys<AnchorTriple>([
+  'key',
+  'assumptionId',
+  'sourceId',
+  'targetId',
+]);
+
 export function AssumptionAnchorOverlay() {
-  const edgesMap = useDocumentStore((s) => s.doc.edges);
-  // entitiesOfType is WeakMap-cached so the subscription only rebuilds
-  // when the entities map gets a new reference (Tier 3 #28).
-  const assumptions = useDocumentStore((s) => entitiesOfType(s.doc, 'assumption'));
   const flow = useReactFlow();
   const transform = useRFStore((s) => s.transform);
 
-  // Index assumption entities by id so the per-edge anchor lookup is
-  // O(1). Edges with no `assumptionIds` are skipped early.
-  const anchors = useMemo(() => {
+  // Derive (assumptionId, sourceId, targetId) triples up-front. The
+  // selector walks edges + filters but the custom equality skips the
+  // component re-render when the triple list is unchanged.
+  const anchors = useDocumentStoreWith((s) => {
+    const assumptions = entitiesOfType(s.doc, 'assumption');
     if (assumptions.length === 0) return [];
-    const assumptionById = new Map(assumptions.map((a) => [a.id, a]));
-    const out: { key: string; assumptionId: string; edgeId: string }[] = [];
-    for (const edge of Object.values(edgesMap)) {
+    const assumptionIds = new Set(assumptions.map((a) => a.id as string));
+    const out: AnchorTriple[] = [];
+    for (const edge of Object.values(s.doc.edges)) {
       if (!edge.assumptionIds?.length) continue;
       for (const aid of edge.assumptionIds) {
-        if (!assumptionById.has(aid)) continue;
-        out.push({ key: `${edge.id}::${aid}`, assumptionId: aid, edgeId: edge.id });
+        if (!assumptionIds.has(aid)) continue;
+        out.push({
+          key: `${edge.id}::${aid}`,
+          assumptionId: aid,
+          sourceId: edge.sourceId,
+          targetId: edge.targetId,
+        });
       }
     }
     return out;
-  }, [edgesMap, assumptions]);
+  }, anchorTriplesEqual);
 
   const [tx, ty, scale] = transform;
 
@@ -64,11 +85,9 @@ export function AssumptionAnchorOverlay() {
   // would lag the viewport.
   const lines: { key: string; x1: number; y1: number; x2: number; y2: number }[] = [];
   for (const a of anchors) {
-    const edge = edgesMap[a.edgeId];
-    if (!edge) continue;
     const aNode = flow.getInternalNode(a.assumptionId);
-    const sNode = flow.getInternalNode(edge.sourceId);
-    const tNode = flow.getInternalNode(edge.targetId);
+    const sNode = flow.getInternalNode(a.sourceId);
+    const tNode = flow.getInternalNode(a.targetId);
     if (!aNode || !sNode || !tNode) continue;
     const centre = (n: typeof aNode) => ({
       x: n.internals.positionAbsolute.x + (n.measured?.width ?? 0) / 2,

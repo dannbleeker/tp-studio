@@ -2,6 +2,30 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Perf batch C: whole-map subscription narrowing (#7+#8)
+
+Closes the audit's #7+#8 punt-item from batch B. The "right" fix needed custom equality functions (because `useShallow` does `Object.is` per array element, which fails on freshly-allocated objects — which is what most derived selectors produce).
+
+**New infra:**
+
+- `src/store/useDocumentStoreWithEquality.ts` — thin wrapper over `useStoreWithEqualityFn` from `zustand/traditional`. Lets a call site pass an equality function alongside the selector, so the component re-renders only when the equality fn says the derived value actually changed.
+- `src/store/equality.ts` — `arrayShallowEqualByKeys<T>(keys)` factory + `primitiveArrayEqual<T>(a, b)`. The keyed-array helper is the canonical pattern for "selector returns `Array<{id, title, ...}>`-shaped triples"; the primitive helper covers `string[]` / `number[]` selectors.
+
+**Applied to four high-traffic surfaces:**
+
+- `AttachedEdgesList.tsx` — was subscribing to `s.doc.edges` + `s.doc.entities` whole maps; every unrelated mutation re-rendered the inspector. Now derives `{id, sourceTitle, targetTitle}` triples through `useDocumentStoreWith` with `arrayShallowEqualByKeys(['id', 'sourceTitle', 'targetTitle'])`. Re-renders only when an attached edge appears / disappears or an endpoint title changes.
+- `AssumptionAnchorOverlay.tsx` — replaced `s.doc.edges` subscription with derived `{key, assumptionId, sourceId, targetId}` triples + custom equality. Edge weight / label / attestation mutations no longer churn the overlay.
+- `JunctorOverlay.tsx` — replaced `s.doc.edges` subscription with derived `{id, kind, targetId}` group triples + custom equality. Junctors no longer re-render on unrelated edge mutations.
+- `ContextMenu.tsx:272` (Perf #16) — replaced `Object.values(edges).some(e => e.sourceId === id)` with `outgoingEdges(doc, id).length > 0`. O(E) → O(1) via the edge index from batch A.
+
+**Tests:**
+
+- New `tests/store/equality.test.ts` — 12 tests covering `arrayShallowEqualByKeys` (reference equality, empty, distinct-but-structurally-equal, length diff, value diff, ignored-extra-keys, null-itemed positions) + `primitiveArrayEqual` (reference, value match, length diff, single-element mismatch, `NaN === NaN` per Object.is).
+
+All 1585 tests pass (+12 from this commit; +1 todo); tsc clean; biome lint clean (modulo two pre-existing aria warnings).
+
+**Backlog notes:** added "UI review by expert agent", "Book does not work on Kindle", and "Backlog spring-clean review item per item" to a new **Open polish + quality items** section in NEXT_STEPS.md.
+
 ## Session 135 — Perf batch B: fingerprint cache + drag-handler allocations + memoization sweep
 
 Four more perf items from the audit:

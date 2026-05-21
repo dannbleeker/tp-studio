@@ -1,7 +1,7 @@
 import { useReactFlow, useStore as useRFStore } from '@xyflow/react';
-import { useMemo } from 'react';
 import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS } from '@/domain/constants';
-import { useDocumentStore } from '@/store';
+import { arrayShallowEqualByKeys } from '@/store/equality';
+import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 
 /**
  * E6 (AND) + Bundle 8 / FL-ED3 + FL-ED4 — Flying-Logic-style junctors.
@@ -65,14 +65,23 @@ const KIND_FIELDS: { kind: JunctorKind; field: 'andGroupId' | 'orGroupId' | 'xor
   { kind: 'XOR', field: 'xorGroupId' },
 ];
 
+type JunctorGroup = { id: string; kind: JunctorKind; targetId: string };
+
+// Session 135 / Perf #7 — equality fn skips re-renders when the
+// junctor group set is unchanged. Unrelated edge mutations (label,
+// weight, attestation, assumptionIds) no longer churn this overlay.
+const junctorGroupsEqual = arrayShallowEqualByKeys<JunctorGroup>(['id', 'kind', 'targetId']);
+
 export function JunctorOverlay() {
-  const edgesMap = useDocumentStore((s) => s.doc.edges);
   const flow = useReactFlow();
   const transform = useRFStore((s) => s.transform);
 
-  const groups = useMemo(() => {
+  // Derive (groupId, kind, targetId) triples up-front. The selector
+  // walks edges + groups them but the custom equality skips the
+  // component re-render when the triple set is unchanged.
+  const groups = useDocumentStoreWith((s) => {
     const byGroup = new Map<string, { kind: JunctorKind; targetId: string }>();
-    for (const edge of Object.values(edgesMap)) {
+    for (const edge of Object.values(s.doc.edges)) {
       for (const { kind, field } of KIND_FIELDS) {
         const gid = edge[field];
         if (gid && !byGroup.has(gid)) {
@@ -80,8 +89,12 @@ export function JunctorOverlay() {
         }
       }
     }
-    return [...byGroup.entries()].map(([id, v]) => ({ id, kind: v.kind, targetId: v.targetId }));
-  }, [edgesMap]);
+    return [...byGroup.entries()].map(([id, v]) => ({
+      id,
+      kind: v.kind,
+      targetId: v.targetId,
+    }));
+  }, junctorGroupsEqual);
 
   const [tx, ty, scale] = transform;
 

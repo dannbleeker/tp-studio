@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { COMMANDS } from '@/components/command-palette/commands';
 import { defaultEntityType, paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
+import { outgoingEdges } from '@/domain/graph';
 import { presetByTitle } from '@/domain/groupPresets';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { type Branch, type Verb, verbsForBranch } from '@/domain/selectionVerbs';
@@ -269,7 +270,12 @@ export function ContextMenu() {
     if (menu.target.kind === 'entity' && entity) {
       const id = menu.target.id;
       const convertOptions = paletteForDoc(docForPalette).filter((t) => t !== entity.type);
-      const hasDownstream = Object.values(edges).some((e) => e?.sourceId === id);
+      // Session 135 / Perf #16 — use the edge index (`outgoingEdges`)
+      // instead of a linear `Object.values(edges).some`. O(1) vs
+      // O(E). Cheap improvement on a code path that runs once per
+      // right-click but the previous implementation was the only
+      // O(E) scan in the menu builder.
+      const hasDownstream = outgoingEdges(docForPalette, id).length > 0;
       // Leading non-destructive verbs (Add child, Add parent) come
       // from the selection-verb registry. Rename + the rest of the
       // single-entity menu (Convert-to, Pin/Unpin, Spawn-EC, NBR,
