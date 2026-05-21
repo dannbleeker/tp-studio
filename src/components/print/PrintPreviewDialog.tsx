@@ -7,6 +7,7 @@ import { getCanvasNodes } from '@/services/canvasRef';
 import { exportToVectorPdf } from '@/services/exporters/pdfExport';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
+import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS_PLAIN } from '../ui/buttonClasses';
 import { LargeDialog } from '../ui/LargeDialog';
@@ -438,23 +439,23 @@ export function PrintPreviewDialog() {
           </span>
         </label>
 
-        <label className="flex flex-col gap-1 text-xs">
+        <label htmlFor="print-header-template" className="flex flex-col gap-1 text-xs">
           <span className="text-neutral-600 dark:text-neutral-300">
             Header template — merge fields: <code>{'{title}'}</code> <code>{'{date}'}</code>{' '}
             <code>{'{author}'}</code> <code>{'{diagramType}'}</code>
           </span>
-          <input
-            type="text"
+          <TextInput
+            id="print-header-template"
             value={headerTemplate}
-            onChange={(e) => setHeaderTemplate(e.target.value)}
-            className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
+            onChange={setHeaderTemplate}
+            size="sm"
           />
           <span className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
             Preview: {resolveMergeFields(headerTemplate, doc) || '(empty)'}
           </span>
         </label>
 
-        <label className="flex flex-col gap-1 text-xs">
+        <label htmlFor="print-footer-template" className="flex flex-col gap-1 text-xs">
           {/* Session 87 (S7) — surfaced the merge-field row above the
                 input, matching the Header field's pattern. Same fields
                 apply to both header and footer; documenting once at
@@ -464,11 +465,11 @@ export function PrintPreviewDialog() {
             Footer template — merge fields: <code>{'{title}'}</code> <code>{'{date}'}</code>{' '}
             <code>{'{author}'}</code> <code>{'{diagramType}'}</code>
           </span>
-          <input
-            type="text"
+          <TextInput
+            id="print-footer-template"
             value={footerTemplate}
-            onChange={(e) => setFooterTemplate(e.target.value)}
-            className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900"
+            onChange={setFooterTemplate}
+            size="sm"
           />
           <span className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
             Preview: {resolveMergeFields(footerTemplate, doc) || '(empty)'}

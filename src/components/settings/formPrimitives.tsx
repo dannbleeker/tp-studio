@@ -139,12 +139,25 @@ export function Toggle({
  * elements use one source of truth for border / padding / focus-ring.
  * `INPUT_FOCUS` carries the focus styling (Session 93 #36 constant).
  *
+ * Session 135 — split into `FIELD_BASE` (chrome: border, focus,
+ * disabled-fade, dark-mode) + `FIELD_SIZE_*` (padding + font-size +
+ * text-colour). Callers picking `size: 'sm'` on TextInput get the
+ * denser variant without re-implementing the chrome.
+ *
  * Components that need a non-default shape (e.g. inline assumption
- * editor in TPNode) can still compose this with extra classes, but
- * the canonical shape is here.
+ * editor in TPNode) can still compose `FIELD_BASE` with extra
+ * classes, but the canonical shape is here.
  */
 const FIELD_BASE =
-  'w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100';
+  'w-full rounded-md border border-neutral-200 bg-white px-2 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100';
+
+/** Default size — matches the inspector / settings convention. */
+const FIELD_SIZE_MD = 'py-1.5 text-sm text-neutral-900';
+/** Denser variant — used by dialogs that pack many rows into a small
+ *  surface (PrintPreviewDialog headers, CustomEntityClassesSection
+ *  rows). The smaller padding + `text-xs` matches what those callers
+ *  had as one-off inline `<input>` markup pre-migration. */
+const FIELD_SIZE_SM = 'py-1 text-xs text-neutral-700 dark:text-neutral-200';
 
 export type TextInputProps = {
   value: string;
@@ -159,6 +172,10 @@ export type TextInputProps = {
   type?: 'text' | 'number' | 'search' | 'url' | 'email';
   /** Optional id — when the host `<label htmlFor>` references this. */
   id?: string;
+  /** Session 135 — `'sm'` (denser, text-xs) vs `'md'` (default,
+   *  inspector convention). Added so dense-dialog callers can drop
+   *  their inline `<input>` markup without changing visual size. */
+  size?: 'sm' | 'md';
 };
 
 export function TextInput({
@@ -170,6 +187,7 @@ export function TextInput({
   ariaLabel,
   type = 'text',
   id,
+  size = 'md',
 }: TextInputProps) {
   return (
     <input
@@ -180,7 +198,12 @@ export function TextInput({
       disabled={disabled}
       aria-label={ariaLabel}
       onChange={(e) => onChange(e.target.value)}
-      className={clsx(FIELD_BASE, INPUT_FOCUS, className)}
+      className={clsx(
+        FIELD_BASE,
+        size === 'sm' ? FIELD_SIZE_SM : FIELD_SIZE_MD,
+        INPUT_FOCUS,
+        className
+      )}
     />
   );
 }
@@ -231,7 +254,7 @@ export function Select<T extends string>({
       disabled={disabled}
       aria-label={ariaLabel}
       onChange={(e) => onChange(e.target.value as T)}
-      className={clsx(FIELD_BASE, INPUT_FOCUS, 'cursor-pointer', className)}
+      className={clsx(FIELD_BASE, FIELD_SIZE_MD, INPUT_FOCUS, 'cursor-pointer', className)}
     >
       {placeholder !== undefined && value === '' && (
         <option value="" disabled>
@@ -295,7 +318,13 @@ export function TextArea({
       aria-label={ariaLabel}
       rows={rows}
       onChange={onChangeRaw ?? ((e) => onChange(e.target.value))}
-      className={clsx(FIELD_BASE, INPUT_FOCUS, resizable ? 'resize-y' : 'resize-none', className)}
+      className={clsx(
+        FIELD_BASE,
+        FIELD_SIZE_MD,
+        INPUT_FOCUS,
+        resizable ? 'resize-y' : 'resize-none',
+        className
+      )}
     />
   );
 }

@@ -1,9 +1,14 @@
+import clsx from 'clsx';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
-import { Select, type SelectOption } from '@/components/settings/formPrimitives';
+import { Select, type SelectOption, TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
+import {
+  SELECTED_BUTTON_CLASS_ICON,
+  UNSELECTED_BUTTON_CLASS_ICON,
+} from '@/components/ui/buttonClasses';
 import {
   CUSTOM_CLASS_ICON_NAMES,
   CUSTOM_CLASS_ICONS,
@@ -152,20 +157,20 @@ export function CustomEntityClassesSection() {
         })}
         {adding && (
           <div className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50 p-2 dark:border-neutral-800 dark:bg-neutral-900">
-            <input
-              type="text"
+            <TextInput
               value={draft.id}
-              onChange={(e) => setDraft({ ...draft, id: e.target.value })}
+              onChange={(v) => setDraft({ ...draft, id: v })}
               placeholder="id (e.g. evidence)"
-              className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 font-mono text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
-              autoComplete="off"
+              size="sm"
+              className="font-mono"
+              ariaLabel="Class id"
             />
-            <input
-              type="text"
+            <TextInput
               value={draft.label}
-              onChange={(e) => setDraft({ ...draft, label: e.target.value })}
+              onChange={(v) => setDraft({ ...draft, label: v })}
               placeholder="Label (e.g. Evidence)"
-              className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
+              size="sm"
+              ariaLabel="Class label"
             />
             <label className="flex items-center gap-2 text-xs">
               <span className="text-neutral-600 dark:text-neutral-300">Color</span>
@@ -178,13 +183,12 @@ export function CustomEntityClassesSection() {
             </label>
             <div className="flex flex-col gap-1 text-xs">
               <span className="text-neutral-600 dark:text-neutral-300">Icon</span>
-              <input
-                type="text"
+              <TextInput
                 value={iconFilter}
-                onChange={(e) => setIconFilter(e.target.value)}
+                onChange={setIconFilter}
                 placeholder="Filter icons (e.g. flag, lock, map)"
-                className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
-                autoComplete="off"
+                size="sm"
+                ariaLabel="Filter icons"
               />
               <div className="flex max-h-32 flex-wrap gap-1 overflow-y-auto">
                 {CUSTOM_CLASS_ICON_NAMES.filter((name) =>
@@ -209,11 +213,10 @@ export function CustomEntityClassesSection() {
                       title={name}
                       aria-label={`Use ${name} icon`}
                       aria-pressed={selected}
-                      className={`flex h-6 w-6 items-center justify-center rounded border transition ${
-                        selected
-                          ? 'border-indigo-400 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950 dark:text-indigo-200'
-                          : 'border-neutral-200 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800'
-                      }`}
+                      className={clsx(
+                        'flex h-6 w-6 items-center justify-center rounded border transition',
+                        selected ? SELECTED_BUTTON_CLASS_ICON : UNSELECTED_BUTTON_CLASS_ICON
+                      )}
                     >
                       <Icon className="h-3.5 w-3.5" />
                     </button>
