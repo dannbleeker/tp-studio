@@ -1,8 +1,10 @@
+import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
 import { MarkdownField } from '@/components/inspector/MarkdownField';
 import { Button } from '@/components/ui/Button';
+import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '@/components/ui/buttonClasses';
 import { Modal } from '@/components/ui/Modal';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { METHOD_BY_DIAGRAM, type MethodStep } from '@/domain/methodChecklist';
@@ -239,11 +241,10 @@ export function DocumentInspector() {
                     data-testid={`ec-verbal-style-${opt.id}`}
                     disabled={locked}
                     onClick={() => setECVerbalStyle(opt.id)}
-                    className={`rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                      active
-                        ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
-                        : 'border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900'
-                    }`}
+                    className={clsx(
+                      'rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60',
+                      active ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+                    )}
                   >
                     {opt.label}
                   </button>

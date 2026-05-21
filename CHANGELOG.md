@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Refactor bundle: shared primitives + chip palette + EdgeAssumptions deprecation + TPNode split
+
+Six items from the 30-suggestion code-improvement list (items #1, #2, #4, #5, #6, #7). Pure refactor / cleanup; no behaviour change beyond the EdgeAssumptions/AssumptionWell unification.
+
+**#1 — Button-class constants applied to the remaining callers.** `SELECTED_BUTTON_CLASS` / `UNSELECTED_BUTTON_CLASS` (from the earlier cleanup bundle) now used in `EdgeInspector` (polarity), `DocumentInspector` (EC verbal style). New `SELECTED_BUTTON_CLASS_PLAIN` / `UNSELECTED_BUTTON_CLASS_PLAIN` sister constants (no text-colour rule) cover the type-picker buttons whose inner span owns the text colour: `EntityInspector` type buttons, `MultiInspector` type buttons, `PrintPreviewDialog` mode picker. Drift-free: all 9+ call sites now reference the same 4 constants.
+
+**#2 — New `<Select>` primitive in `src/components/settings/formPrimitives.tsx`.** Typed `Select<T extends string>` accepting an `options` array (`SelectOption<T>` = `{ label, value }`), an optional `placeholder`, and the same `disabled` / `id` / `ariaLabel` props as `TextInput` / `TextArea`. Completes the form-primitive trio. First consumer migrated: `CustomEntityClassesSection`'s "Behaves as (validators)" picker — drops ~10 lines of hand-rolled `<select>` styling.
+
+**#4 — Chip-color palette extracted to `src/components/inspector/chipColors.ts`.** Three near-identical `Record<…, string>` maps (in `AssumptionWell.tsx`, `EvidenceList.tsx`, and the legacy `EdgeAssumptions.tsx`) had been carrying nearly-identical dark-mode palettes. Now one source of truth: 8 semantic `ChipScheme` palettes (neutral / amber / red / blue / emerald / indigo / violet / yellow) plus three domain-mapping dictionaries (`ASSUMPTION_STATUS_CHIP`, `EVIDENCE_SOURCE_CHIP`, `EVIDENCE_STRENGTH_CHIP`). Single design-token sweep recolours every inspector chip.
+
+**#5 — `EdgeAssumptions.tsx` deprecated and deleted.** The component was a lighter-weight sibling of `AssumptionWell.tsx` — no status chip, no injection workbench link, used on non-EC edges. The audit flagged the two as "near-identical." Now unified on `AssumptionWell` for every diagram type: the status chip (unexamined / valid / invalid / challengeable) is universally useful and the book chapter on assumptions treats status as cross-diagram. Strict improvement on CRT / FRT / PRT / TT edges.
+
+**#6 — `TextArea` ref widening.** Already shipped in the earlier cleanup bundle (`Session 135 — Cleanup batch`). No-op here; flagged for completeness.
+
+**#7 — `TPNode.tsx` split: 607 → 403 lines.**
+
+- `StFacetRow.tsx` (new, 133 lines) — the S&T 5-facet row sub-component (label + inline-edit textarea + double-click-to-edit gesture). Self-contained: its own state machine, store actions, only fires for `injection` entities with at least one S&T facet attribute.
+- `TPNodeBadges.tsx` (new, 193 lines) — six small JSX-returning helpers for the corner badges + Locus pill: `LocusPill`, `AnnotationBadge`, `StepBadge`, `PinBadge`, `ReachForwardBadge`, `ReachReverseBadge`, `CollapsedExpandButton`. Each takes minimum props and renders either its JSX or null; conditional logic for "should this badge render at all" stays in the parent close to the props it inspects.
+- `TPNode.tsx` (slimmed, 403 lines) — focused on the everyday-card render, edit-mode textarea, zoom-up overlay, and the memo wrapper. The badge JSX block dropped from ~110 lines to ~17 lines of `<Badge />` mounts; the S&T row implementation block dropped entirely.
+
+**Totals:** 1598 tests pass; tsc clean; biome lint clean (modulo the now-fixed-via-htmlFor label association in `CustomEntityClassesSection`).
+
 ## Session 135 — TT-task CSV export (first half of spec gap #7)
 
 Closes the first half of the "Task / execution bridge" spec gap: TT actions → universal CSV format that imports into Jira / Trello / Planner / Asana via each tracker's CSV import path. Per-tracker formats (Jira XML etc.) layer on top if a stakeholder asks; the spec's "buy-in narrative generator" stays parked under the dropped AI-integration scope.

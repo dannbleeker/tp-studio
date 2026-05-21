@@ -8,6 +8,7 @@ import { exportToVectorPdf } from '@/services/exporters/pdfExport';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
+import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS_PLAIN } from '../ui/buttonClasses';
 import { LargeDialog } from '../ui/LargeDialog';
 
 /**
@@ -386,9 +387,7 @@ export function PrintPreviewDialog() {
                 onClick={() => setMode(m)}
                 className={clsx(
                   'flex flex-col items-start gap-1.5 rounded-md border px-3 py-2 text-left text-xs transition',
-                  mode === m
-                    ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
-                    : 'border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900'
+                  mode === m ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS_PLAIN
                 )}
               >
                 {/* Session 88 (S20) — inline mode thumbnail. The

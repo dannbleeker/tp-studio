@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { Lightbulb, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import type { EdgeWeight, Entity, Warning } from '@/domain/types';
@@ -5,9 +6,9 @@ import { useEdge, useEntity } from '@/hooks/useSelected';
 import { useDocumentStore } from '@/store';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
+import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '../ui/buttonClasses';
 import { AssumptionWell } from './AssumptionWell';
 import { AttributesSection } from './AttributesSection';
-import { EdgeAssumptions } from './EdgeAssumptions';
 import { Field } from './Field';
 import { MarkdownField } from './MarkdownField';
 import { WarningsList } from './WarningsList';
@@ -164,11 +165,10 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
                 type="button"
                 disabled={locked}
                 onClick={() => setEdgeWeight(edgeId, opt.id)}
-                className={`rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                  selected
-                    ? 'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200'
-                    : 'border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900'
-                }`}
+                className={clsx(
+                  'rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60',
+                  selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+                )}
                 title={opt.hint}
               >
                 {opt.label}
@@ -239,11 +239,16 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
         />
       )}
 
-      {diagramType === 'ec' ? (
-        <AssumptionWell edgeId={edgeId} assumptions={assumptions} />
-      ) : (
-        <EdgeAssumptions edgeId={edgeId} assumptions={assumptions} />
-      )}
+      {/* Session 135 — unified on `<AssumptionWell>` for every diagram
+          type (previously EC used AssumptionWell and non-EC used the
+          lighter-weight EdgeAssumptions). The status chip
+          (unexamined / valid / invalid / challengeable) is universally
+          useful — the book chapter on assumptions treats status as a
+          cross-diagram concept — and ditching the second component
+          collapses two near-identical row implementations into one
+          source of truth. The richer pill UX is a strict improvement
+          on CRT / FRT / PRT / TT edges. */}
+      <AssumptionWell edgeId={edgeId} assumptions={assumptions} />
 
       <AttributesSection
         attributes={edge.attributes}

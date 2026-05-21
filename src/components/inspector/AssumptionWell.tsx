@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { AssumptionStatus, Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
+import { ASSUMPTION_STATUS_CHIP } from './chipColors';
 import { Field } from './Field';
 
 /**
@@ -34,16 +35,10 @@ const STATUS_LABEL: Record<AssumptionStatus, string> = {
   challengeable: 'Challengeable',
 };
 
-const STATUS_CHIP_CLASS: Record<AssumptionStatus, string> = {
-  unexamined:
-    'border-neutral-300 bg-neutral-100 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300',
-  valid:
-    'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200',
-  invalid:
-    'border-red-400 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950 dark:text-red-200',
-  challengeable:
-    'border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-200',
-};
+// Session 135 — chip palette moved to `chipColors.ts` so the
+// inspector's status / source / strength pills share one source of
+// truth for the dark-mode colour stack.
+const STATUS_CHIP_CLASS = ASSUMPTION_STATUS_CHIP;
 
 const nextStatus = (s: AssumptionStatus): AssumptionStatus => {
   const idx = STATUS_ORDER.indexOf(s);

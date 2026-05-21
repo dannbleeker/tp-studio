@@ -5,6 +5,7 @@ import type { EvidenceItem, EvidenceSource, EvidenceStrength } from '@/domain/ty
 import { useDocumentStore } from '@/store';
 import { TextArea, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
+import { EVIDENCE_SOURCE_CHIP, EVIDENCE_STRENGTH_CHIP } from './chipColors';
 import { Field } from './Field';
 
 /**
@@ -45,22 +46,10 @@ const SOURCE_LABEL: Record<EvidenceSource, string> = {
   assumption: 'Assumption',
 };
 
-/** Per-source chip colours. Loosely follow the book's mental cue:
- *  observed = green ("I saw it"), stakeholder = blue (people),
- *  metric = indigo (numbers), policy = amber (rules), assumption =
- *  violet (matches AssumptionWell's chrome for visual continuity). */
-const SOURCE_CHIP_CLASS: Record<EvidenceSource, string> = {
-  observed:
-    'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200',
-  stakeholder:
-    'border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-200',
-  metric:
-    'border-indigo-300 bg-indigo-50 text-indigo-800 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200',
-  policy:
-    'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200',
-  assumption:
-    'border-violet-300 bg-violet-50 text-violet-800 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200',
-};
+// Session 135 — chip palettes moved to `chipColors.ts` (shared with
+// AssumptionWell). Local aliases keep the call-site labels readable
+// while the colour stack lives in one place.
+const SOURCE_CHIP_CLASS = EVIDENCE_SOURCE_CHIP;
 
 const STRENGTH_ORDER: EvidenceStrength[] = ['weak', 'moderate', 'strong'];
 
@@ -70,13 +59,7 @@ const STRENGTH_LABEL: Record<EvidenceStrength, string> = {
   strong: 'Strong',
 };
 
-const STRENGTH_CHIP_CLASS: Record<EvidenceStrength, string> = {
-  weak: 'border-neutral-300 bg-neutral-100 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300',
-  moderate:
-    'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200',
-  strong:
-    'border-emerald-400 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200',
-};
+const STRENGTH_CHIP_CLASS = EVIDENCE_STRENGTH_CHIP;
 
 const cycleSource = (s: EvidenceSource): EvidenceSource => {
   const idx = SOURCE_ORDER.indexOf(s);

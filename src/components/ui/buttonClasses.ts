@@ -35,3 +35,22 @@ export const SELECTED_BUTTON_CLASS =
 
 export const UNSELECTED_BUTTON_CLASS =
   'border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900';
+
+/**
+ * Session 135 — sister constants for buttons whose inner content
+ * (icon, thumbnail, stripe) owns the text colour. Used by:
+ *   - EntityInspector / MultiInspector type-picker buttons (an
+ *     inner `<span>` carries the entity-label text in its own
+ *     neutral colour)
+ *   - PrintPreviewDialog mode picker (`<ModeThumbnail>` + an
+ *     inner label span)
+ *   - DocumentInspector diagram-type picker (icon + label span)
+ *
+ * Same border + background as the full versions; just no `text-…`
+ * to avoid overriding the inner span's colour.
+ */
+export const SELECTED_BUTTON_CLASS_PLAIN =
+  'border-indigo-400 bg-indigo-50 dark:border-indigo-500 dark:bg-indigo-950/40';
+
+export const UNSELECTED_BUTTON_CLASS_PLAIN =
+  'border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900';

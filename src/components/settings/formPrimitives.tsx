@@ -186,6 +186,68 @@ export function TextInput({
   );
 }
 
+/**
+ * Session 135 — `<Select>` primitive completing the form trio
+ * (TextInput / TextArea / Select). The third element was previously
+ * hand-coded inline in `CustomEntityClassesSection.tsx`,
+ * `PrintPreviewDialog.tsx`, and (a half-baked variant in)
+ * `DocumentInspector.tsx`. Each callsite re-implemented the same
+ * border / padding / focus styling, leaving the visual treatment
+ * drift-prone.
+ *
+ * The primitive accepts a typed `options` array (label + value
+ * tuples) so consumers don't `<option>` JSX by hand. `value`
+ * narrows to one of the option values; the optional `placeholder`
+ * surfaces as a disabled first option when no selection has been
+ * made (and only renders when `value === ''`). All other props
+ * mirror `TextInput` for symmetry.
+ */
+export type SelectOption<T extends string> = { label: string; value: T };
+
+export type SelectProps<T extends string> = {
+  value: T | '';
+  onChange: (v: T) => void;
+  options: readonly SelectOption<T>[];
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  ariaLabel?: string;
+  id?: string;
+};
+
+export function Select<T extends string>({
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled,
+  className,
+  ariaLabel,
+  id,
+}: SelectProps<T>) {
+  return (
+    <select
+      id={id}
+      value={value}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      onChange={(e) => onChange(e.target.value as T)}
+      className={clsx(FIELD_BASE, INPUT_FOCUS, 'cursor-pointer', className)}
+    >
+      {placeholder !== undefined && value === '' && (
+        <option value="" disabled>
+          {placeholder}
+        </option>
+      )}
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export type TextAreaProps = {
   value: string;
   onChange: (v: string) => void;

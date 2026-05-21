@@ -16,17 +16,30 @@
 
 import { Handle, type NodeProps, NodeToolbar, Position } from '@xyflow/react';
 import clsx from 'clsx';
-import { Pin } from 'lucide-react';
 import { memo, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT, ZOOM_UP_THRESHOLD } from '@/domain/constants';
 import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { isStNodeFormat, ST_FACET_KEYS } from '@/domain/graph';
-import { HANDLE_ORIENTATION, LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
+import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import { useZoomLevel } from '@/hooks/useZoomLevel';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
 import type { TPNode as TPNodeType } from '../edges/flow-types';
+// Session 135 — sibling-file extractions of the StFacetRow sub-component
+// and the corner-badge JSX. Pulled out of TPNode.tsx to keep this file
+// focused on the everyday-card render + edit machinery; see those
+// files for the per-piece rationale.
+import { StFacetRow } from './StFacetRow';
+import {
+  AnnotationBadge,
+  CollapsedExpandButton,
+  LocusPill,
+  PinBadge,
+  ReachForwardBadge,
+  ReachReverseBadge,
+  StepBadge,
+} from './TPNodeBadges';
 
 // B5 — zoom-up annotation threshold lives in `@/domain/constants` so UI/UX
 // tweaks happen in one place alongside the other canvas tunables.
@@ -213,41 +226,11 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           <span>{meta.label}</span>
           {/*
             Locus (TOC-reading; previously "Span of control"):
-            single-letter pill after the type label. Color encodes the
-            level: emerald for control (act-on-it), amber for influence
-            (affect-it), neutral for external (observe-only). Unset
-            entities show nothing.
+            single-letter pill after the type label. See
+            `TPNodeBadges.tsx → LocusPill` for the per-variant
+            details + colour palette.
           */}
-          {entity.spanOfControl === 'control' && (
-            <span
-              className="ml-1 rounded-sm bg-emerald-100 px-1 font-bold text-[9px] text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
-              title="Locus: I can act on this directly"
-              role="img"
-              aria-label="Locus: control"
-            >
-              C
-            </span>
-          )}
-          {entity.spanOfControl === 'influence' && (
-            <span
-              className="ml-1 rounded-sm bg-amber-100 px-1 font-bold text-[9px] text-amber-800 dark:bg-amber-900/50 dark:text-amber-200"
-              title="Locus: I can influence this indirectly"
-              role="img"
-              aria-label="Locus: influence"
-            >
-              I
-            </span>
-          )}
-          {entity.spanOfControl === 'external' && (
-            <span
-              className="ml-1 rounded-sm bg-neutral-200 px-1 font-bold text-[9px] text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200"
-              title="Locus: external — outside my control"
-              role="img"
-              aria-label="Locus: external"
-            >
-              E
-            </span>
-          )}
+          <LocusPill spanOfControl={entity.spanOfControl} />
         </span>
         {isEditing ? (
           <textarea
@@ -355,93 +338,26 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           </span>
         )}
       </div>
-      {showAnnotationNumbers && (
-        <span
-          className="pointer-events-none absolute -top-1.5 -right-1.5 rounded-full border border-neutral-200 bg-white px-1.5 py-0.5 font-semibold text-[10px] text-neutral-600 shadow-xs dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
-          role="img"
-          aria-label={`Annotation number ${entity.annotationNumber}`}
-        >
-          #{entity.annotationNumber}
-        </span>
-      )}
-      {typeof entity.ordering === 'number' && (
-        <span
-          className="pointer-events-none absolute -top-1.5 -left-1.5 rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 font-semibold text-[10px] text-cyan-800 shadow-xs dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200"
-          role="img"
-          aria-label={`Step ${entity.ordering}`}
-        >
-          Step {entity.ordering}
-        </span>
-      )}
-      {/*
-        LA5 (Session 63): pin indicator. Surfaces only on auto-layout
-        diagrams when this entity has been pinned by a drag — manual-
-        layout diagrams (EC) always read entity.position, so the icon
-        there would be meaningless ("they're all pinned, all the time").
-        Position: bottom-right corner, distinct from the bottom-left
-        reach badge and the top-corner ordering / annotation badges.
-      */}
-      {entity.position && LAYOUT_STRATEGY[diagramType] !== 'manual' && (
-        <span
-          className="pointer-events-none absolute -right-1.5 -bottom-1.5 rounded-full border border-violet-300 bg-violet-50 p-0.5 text-violet-700 shadow-xs dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200"
-          role="img"
-          aria-label="Pinned position"
-          title="Pinned position — right-click → Unpin to let auto-layout reclaim it"
-        >
-          <Pin className="h-2.5 w-2.5" />
-        </span>
-      )}
+      {/* Session 135 — corner badges extracted to `TPNodeBadges.tsx`.
+          Each helper takes the minimum props it needs and renders
+          either its JSX or null; the conditional logic that decides
+          whether to render lives here (closest to the props it
+          inspects). */}
+      {showAnnotationNumbers && <AnnotationBadge annotationNumber={entity.annotationNumber} />}
+      {typeof entity.ordering === 'number' && <StepBadge ordering={entity.ordering} />}
+      {entity.position && <PinBadge diagramType={diagramType} />}
       {showReachBadges && typeof udeReachCount === 'number' && udeReachCount > 0 && (
-        // Cheap continuous version of the Core Driver finder — the higher
-        // this number on a root cause, the stronger the Core Driver
-        // candidate. Rendered bottom-left so it doesn't collide with the
-        // top-left step badge or the top-right annotation/ID stack.
-        <span
-          className="pointer-events-none absolute -bottom-2 -left-1.5 rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 font-semibold text-[10px] text-amber-800 shadow-xs dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
-          role="img"
-          aria-label={`Reaches ${udeReachCount} undesirable effect${udeReachCount === 1 ? '' : 's'}`}
-          title={`Reaches ${udeReachCount} UDE${udeReachCount === 1 ? '' : 's'}`}
-        >
-          →{udeReachCount} UDE{udeReachCount === 1 ? '' : 's'}
-        </span>
+        <ReachForwardBadge count={udeReachCount} />
       )}
       {showReverseReachBadges &&
         typeof rootCauseReachCount === 'number' &&
-        rootCauseReachCount > 0 && (
-          // E2: reverse-reach badge. Sky-blue palette so the two
-          // counters don't collide visually — amber for "→N UDEs"
-          // forward, sky for "←N roots" backward. Bottom-right so it
-          // doesn't fight the forward badge for screen real estate.
-          <span
-            className="pointer-events-none absolute -right-1.5 -bottom-2 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 font-semibold text-[10px] text-sky-800 shadow-xs dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200"
-            role="img"
-            aria-label={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
-            title={`Fed by ${rootCauseReachCount} root cause${rootCauseReachCount === 1 ? '' : 's'}`}
-          >
-            ←{rootCauseReachCount} root{rootCauseReachCount === 1 ? '' : 's'}
-          </span>
-        )}
+        rootCauseReachCount > 0 && <ReachReverseBadge count={rootCauseReachCount} />}
       {isCollapsed && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!guardWriteOrToast()) return;
-            toggleEntityCollapsed(entity.id);
-          }}
-          className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-neutral-200 bg-white px-2 py-0.5 font-medium text-[10px] text-neutral-600 shadow-xs transition hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
-          aria-label={
-            hiddenDescendantCount
-              ? `Expand ${hiddenDescendantCount} hidden descendant${hiddenDescendantCount === 1 ? '' : 's'}`
-              : 'Expand downstream'
-          }
-          title={
-            hiddenDescendantCount ? `Expand (${hiddenDescendantCount} hidden)` : 'Expand downstream'
-          }
-        >
-          <span aria-hidden>▸</span>
-          {hiddenDescendantCount ? <span>+{hiddenDescendantCount}</span> : null}
-        </button>
+        <CollapsedExpandButton
+          entity={entity}
+          hiddenDescendantCount={hiddenDescendantCount}
+          onToggle={toggleEntityCollapsed}
+        />
       )}
       {!isNoteEntity && (
         <Handle
@@ -449,126 +365,6 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           position={sourcePosition}
           className="!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900"
         />
-      )}
-    </div>
-  );
-}
-
-/**
- * Session 76 — one row of the first-class S&T 5-facet card. Renders the
- * facet's label (uppercased, small caps) above its value. `accent`
- * highlights the Strategy row (the parent objective the tactic serves)
- * so it stands out from the three assumption rows.
- *
- * Session 81 — inline edit. Double-click the row's value to swap it for
- * a small textarea; Enter / blur commits to `setEntityAttribute`; Esc
- * cancels. Empty input clears the facet entirely (via `clearEntityAttribute`).
- * Browse Lock blocks the edit entry — same guard as the title.
- */
-function StFacetRow({
-  entityId,
-  attrKey,
-  label,
-  value,
-  accent,
-}: {
-  entityId: string;
-  attrKey: string;
-  label: string;
-  value: string | undefined;
-  accent?: boolean;
-}) {
-  const setEntityAttribute = useDocumentStore((s) => s.setEntityAttribute);
-  const removeEntityAttribute = useDocumentStore((s) => s.removeEntityAttribute);
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value ?? '');
-  const taRef = useRef<HTMLTextAreaElement | null>(null);
-
-  useEffect(() => {
-    if (editing) {
-      // Sync the draft to the latest stored value when the user enters
-      // edit mode, then focus + select for fast overwrite. Tab/Enter
-      // commits; Esc cancels.
-      setDraft(value ?? '');
-      taRef.current?.focus();
-      taRef.current?.select();
-    }
-  }, [editing, value]);
-
-  const commit = (): void => {
-    const next = draft.trim();
-    if (next === (value ?? '').trim()) {
-      // No-op — short-circuit so the store doesn't fire an undo entry.
-      setEditing(false);
-      return;
-    }
-    if (next.length === 0) {
-      removeEntityAttribute(entityId, attrKey);
-    } else {
-      setEntityAttribute(entityId, attrKey, { kind: 'string', value: next });
-    }
-    setEditing(false);
-  };
-
-  const cancel = (): void => {
-    setDraft(value ?? '');
-    setEditing(false);
-  };
-
-  return (
-    <div className="flex items-baseline gap-1">
-      <span
-        className={clsx(
-          'shrink-0 font-semibold uppercase tracking-wide',
-          accent ? 'text-indigo-700 dark:text-indigo-300' : 'text-neutral-500 dark:text-neutral-400'
-        )}
-        style={{ width: 48 }}
-      >
-        {label}
-      </span>
-      {editing ? (
-        <textarea
-          ref={taRef}
-          value={draft}
-          rows={1}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              commit();
-            } else if (e.key === 'Escape') {
-              e.preventDefault();
-              cancel();
-            }
-          }}
-          aria-label={`Edit ${label} facet`}
-          className="flex-1 resize-none rounded-sm border border-indigo-300 bg-white px-1 py-0 text-[10px] text-neutral-900 leading-tight outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-400 dark:border-indigo-700 dark:bg-neutral-950 dark:text-neutral-100"
-        />
-      ) : (
-        <button
-          type="button"
-          // Double-click matches the title's edit gesture. Click alone
-          // would conflict with React Flow's drag/select handling, and
-          // single-click-to-edit would surprise users navigating around
-          // the canvas.
-          onDoubleClick={(e) => {
-            e.stopPropagation();
-            if (!guardWriteOrToast()) return;
-            setEditing(true);
-          }}
-          aria-label={`Edit ${label} facet (double-click)`}
-          className={clsx(
-            'flex-1 cursor-text truncate rounded-xs px-0.5 text-left transition hover:bg-indigo-50 dark:hover:bg-indigo-950/30',
-            value ? '' : 'text-neutral-400 italic dark:text-neutral-500'
-          )}
-          title={value ? `${value} — double-click to edit` : 'Double-click to set'}
-        >
-          {value || '(unset)'}
-        </button>
       )}
     </div>
   );

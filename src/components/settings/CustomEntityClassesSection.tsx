@@ -2,6 +2,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
+import { Select, type SelectOption } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
 import {
   CUSTOM_CLASS_ICON_NAMES,
@@ -33,10 +34,10 @@ const BUILTIN_IDS = new Set(Object.keys(ENTITY_TYPE_META));
 // fallback used by `resolveEntityTypeMeta` for classes without a color.
 const DEFAULT_COLOR = '#64748b';
 
-const SUPERSET_OPTIONS: { id: EntityType | ''; label: string }[] = [
-  { id: '', label: '(none — purely decorative)' },
+const SUPERSET_OPTIONS: SelectOption<EntityType | ''>[] = [
+  { value: '', label: '(none — purely decorative)' },
   ...(Object.keys(ENTITY_TYPE_META) as EntityType[]).map((t) => ({
-    id: t,
+    value: t,
     label: ENTITY_TYPE_META[t].label,
   })),
 ];
@@ -225,29 +226,25 @@ export function CustomEntityClassesSection() {
                 they're added to the curated set).
               </p>
             </div>
-            <label className="flex flex-col gap-0.5 text-xs">
-              <span className="text-neutral-600 dark:text-neutral-300">
+            <div className="flex flex-col gap-0.5 text-xs">
+              <label
+                htmlFor="custom-class-supersetof"
+                className="text-neutral-600 dark:text-neutral-300"
+              >
                 Behaves as (validators)
-              </span>
-              <select
+              </label>
+              <Select<EntityType | ''>
+                id="custom-class-supersetof"
                 value={draft.supersetOf ?? ''}
-                onChange={(e) => {
+                options={SUPERSET_OPTIONS}
+                onChange={(next) => {
                   // Conditional rebuild — see icon-button above for
                   // rationale (omit field on clear).
                   const { supersetOf: _drop, ...rest } = draft;
-                  setDraft(
-                    e.target.value ? { ...draft, supersetOf: e.target.value as EntityType } : rest
-                  );
+                  setDraft(next ? { ...draft, supersetOf: next } : rest);
                 }}
-                className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 dark:border-neutral-700 dark:bg-neutral-950"
-              >
-                {SUPERSET_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+              />
+            </div>
             {error && <p className="text-[11px] text-rose-600 dark:text-rose-400">{error}</p>}
             <div className="flex gap-1">
               <Button variant="primary" size="sm" onClick={commit}>

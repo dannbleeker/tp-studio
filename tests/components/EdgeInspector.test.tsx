@@ -136,7 +136,7 @@ describe('EdgeInspector', () => {
   });
 });
 
-describe('EdgeAssumptions — EC "…because" prefix', () => {
+describe('AssumptionWell — EC "…because" prefix', () => {
   it('seeds new EC assumptions with "…because " and leaves CRT assumptions empty', () => {
     // Set up an EC doc with an edge.
     useDocumentStore.getState().newDocument('ec');

@@ -10,7 +10,12 @@ import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 import { TextArea, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
-import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '../ui/buttonClasses';
+import {
+  SELECTED_BUTTON_CLASS,
+  SELECTED_BUTTON_CLASS_PLAIN,
+  UNSELECTED_BUTTON_CLASS,
+  UNSELECTED_BUTTON_CLASS_PLAIN,
+} from '../ui/buttonClasses';
 import { AttachedEdgesList } from './AttachedEdgesList';
 import { EntityAttributesSection } from './AttributesSection';
 import { EvidenceList } from './EvidenceList';
@@ -98,9 +103,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
                 onClick={() => updateEntity(entityId, { type: type as EntityType })}
                 className={clsx(
                   'flex items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition disabled:cursor-not-allowed disabled:opacity-60',
-                  selected
-                    ? 'border-indigo-400 bg-indigo-50 dark:border-indigo-500 dark:bg-indigo-950/40'
-                    : 'border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900'
+                  selected ? SELECTED_BUTTON_CLASS_PLAIN : UNSELECTED_BUTTON_CLASS_PLAIN
                 )}
               >
                 <span
