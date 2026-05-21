@@ -2,6 +2,33 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Book EPUB build (fixes the Kindle "shows up but can't open" issue)
+
+Closes the **Book does not work on Kindle** backlog item. The auto-rebuilt PDF (Chromium/Skia, A4, untagged, no `/Author` or `/Lang` metadata) is fine in desktop PDF readers but doesn't render reliably on Kindle — Send-to-Kindle's 2022+ reflow path can't process untagged A4 PDFs, and on a 6-inch screen the A4 fixed-layout is unusable anyway. Fix: ship an EPUB alongside the PDF. Send-to-Kindle accepts `.epub` natively and reflows it perfectly.
+
+**Build pipeline:**
+
+- **`scripts/lib/bookChapters.mjs`** (new) — shared chapter manifest + `readChapterMetadata` + `TOC_GROUPS` + `IMAGE_ROOTS`. Single source of truth for both PDF and EPUB builders.
+- **`scripts/build-book-epub.mjs`** (new) — packages the same `docs/guide/*.md` source as EPUB 3.0 (with EPUB 2 NCX fallback) using `jszip` + `marked`. No Chromium, no pandoc, no LaTeX — pure Node + existing devDeps. Emits a spec-compliant EPUB: `mimetype` first + uncompressed; `META-INF/container.xml` pointing at `OEBPS/content.opf`; manifest + spine + Dublin Core metadata (Title, Author, Language, Publisher, Subject, Description, dcterms:modified); EPUB 3 `nav.xhtml` + legacy `toc.ncx`; per-chapter standalone XHTML files with embedded `images/` referenced via the manifest. Output ~690 KB.
+- **`scripts/build-book-pdf.mjs`** — refactored to use the shared `bookChapters.mjs` manifest. No behavior change; output identical to the prior commit. The `TOC_GROUPS` inline list moved out to the shared file so the two outputs match.
+
+**Wiring:**
+
+- `package.json` scripts: `pnpm book` now runs EPUB then PDF; `pnpm book:epub` / `pnpm book:pdf` build one format each.
+- `.github/workflows/rebuild-book-pdf.yml` (renamed in `name:` to **Rebuild book artifacts**) auto-rebuilds both formats on any change to `docs/guide/*.md`, `docs/guide/screenshots/**`, `docs/guide/diagrams/**`, or the build scripts. Commits whichever artifact(s) changed; the commit subject reflects which format(s) updated.
+- `scripts/build-docs-bundle.mjs` copies both PDF + EPUB into `public/` so Vite ships them on the branded subdomain (`tp-studio.struktureretsundfornuft.dk/Causal-Thinking-with-TP-Studio.{pdf,epub}`); service worker picks them up for offline reading.
+- `src/components/about/AboutDialog.tsx` — Read More section now lists both downloads with format-specific hints ("Best for desktop reading" vs. "Email to your Kindle or open in any e-reader app").
+- `docs/guide/AUTHORING.md` — Building section rewritten to cover both formats.
+
+**Verification:**
+
+- `unzip -lv` on the output confirms `mimetype` is `Stored` (uncompressed), as the EPUB spec requires.
+- `content.opf` carries Dublin Core metadata + `dcterms:modified` per EPUB 3.0.
+- 24 chapter XHTML files, 13 embedded screenshots/diagrams, 5 navigation/metadata files.
+- All 1588 tests pass; tsc clean; biome lint clean.
+
+User flow: download `.epub` from the About dialog → email to your Send-to-Kindle address → Kindle imports and opens like any other e-book. No more "shows up but can't open".
+
 ## Session 135 — Cleanup batch: TextArea ref + aria warnings gone + roundtrip smoke + button-class constants
 
 Five small wins from the 30-suggestion list:

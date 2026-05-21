@@ -6,11 +6,12 @@
  * The HTML markup + CSS come from `scripts/lib/clrMapHtml.mjs`, which
  * is also what the book builder embeds at PDF-render time.
  */
-import { chromium } from '@playwright/test';
-import { writeFile, mkdir } from 'node:fs/promises';
+
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { clrMapHtml, CLR_MAP_CSS } from './lib/clrMapHtml.mjs';
+import { chromium } from '@playwright/test';
+import { CLR_MAP_CSS, clrMapHtml } from './lib/clrMapHtml.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');

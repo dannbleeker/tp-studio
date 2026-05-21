@@ -37,6 +37,9 @@ import { Modal } from '../ui/Modal';
  */
 
 const BOOK_PATH = '/Causal-Thinking-with-TP-Studio.pdf';
+// Session 135 — EPUB shipped alongside the PDF. Reflowable format
+// for e-readers; Send-to-Kindle accepts it natively.
+const BOOK_EPUB_PATH = '/Causal-Thinking-with-TP-Studio.epub';
 const USER_GUIDE_PATH = '/user-guide.html';
 const SECURITY_PATH = '/security.html';
 const NOTICES_PATH = '/notices.html';
@@ -54,8 +57,14 @@ const READ_MORE: LinkRow[] = [
   {
     href: BOOK_PATH,
     Icon: BookOpen,
-    label: 'Causal Thinking with TP Studio',
-    hint: 'The practitioner book — ~50,000 words, 17 chapters.',
+    label: 'Causal Thinking with TP Studio (PDF)',
+    hint: 'The practitioner book — ~50,000 words, 17 chapters. Best for desktop reading.',
+  },
+  {
+    href: BOOK_EPUB_PATH,
+    Icon: BookOpen,
+    label: 'Causal Thinking with TP Studio (EPUB)',
+    hint: 'Same book, reflowable. Email to your Kindle or open in any e-reader app.',
   },
   {
     href: USER_GUIDE_PATH,

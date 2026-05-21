@@ -105,9 +105,7 @@ const main = async () => {
       );
     }
     console.log('');
-    console.log(
-      `If this regression is intentional, update perf-baseline.json in the same commit.`
-    );
+    console.log(`If this regression is intentional, update perf-baseline.json in the same commit.`);
     process.exit(1);
   }
 

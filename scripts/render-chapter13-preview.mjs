@@ -6,11 +6,12 @@
  * Disposable — useful for verifying the embedded map looks right after
  * touching `CLR_MAP_CSS` or the chapter body.
  */
-import { chromium } from '@playwright/test';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { clrMapHtml, CLR_MAP_CSS } from './lib/clrMapHtml.mjs';
+import { chromium } from '@playwright/test';
+import { CLR_MAP_CSS, clrMapHtml } from './lib/clrMapHtml.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');

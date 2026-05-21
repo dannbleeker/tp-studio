@@ -1,25 +1,32 @@
-name: Rebuild book PDF
+name: Rebuild book artifacts
 
-# Session 130 — keep `docs/guide/Causal-Thinking-with-TP-Studio.pdf` in
-# sync with its inputs (`docs/guide/*.md` + `docs/guide/screenshots/*.png`)
-# automatically.
+# Session 130 / 135 — keep the book outputs in sync with their inputs
+# automatically. Two artifacts:
+#
+#   docs/guide/Causal-Thinking-with-TP-Studio.pdf
+#   docs/guide/Causal-Thinking-with-TP-Studio.epub
+#
+# Both are derived from the same `docs/guide/*.md` + screenshots /
+# diagrams source. The PDF is for desktop / print; the EPUB is the
+# reflowable form Send-to-Kindle accepts natively (Session 135 fix —
+# the PDF didn't reliably open on Kindle, EPUB does).
 #
 # Why a workflow rather than a pre-commit hook: the PDF rebuild needs
 # Playwright + Chromium (~150 MB binary), takes ~10–20 seconds, and is
 # only meaningful when the inputs change. Pushing that work to every
 # contributor's machine is friction; running it once per change in CI is
-# free.
+# free. The EPUB build is pure-Node (jszip + marked) and would be fast
+# enough for a pre-commit hook, but co-locating with the PDF build
+# keeps the two artefacts in sync in one place.
 #
-# Why commit back to main rather than opening a PR: the PDF is a
-# deterministic derivative of the markdown + screenshots. The actual
-# review happened on the inputs (the manuscript PR that landed the
-# markdown change, or the snapshot-refresh PR that landed new PNGs).
-# A binary PDF diff isn't human-reviewable anyway. Auto-merging back to
-# main keeps the published artifact tracking the source without
-# review-cycle friction.
+# Why commit back to main rather than opening a PR: both artefacts are
+# deterministic derivatives of the markdown + screenshots. The actual
+# review happened on the inputs. A binary diff isn't human-reviewable
+# anyway. Auto-merging keeps the published artifacts tracking the
+# source without review-cycle friction.
 #
 # Loop prevention: this workflow only runs when the triggering commit
-# is NOT from `github-actions[bot]`. The bot's PDF commit includes
+# is NOT from `github-actions[bot]`. The bot's auto-commit includes
 # `[skip pdf]` in the message as a secondary signal for humans reading
 # the log, but the actor check is what guarantees no recursion.
 
@@ -27,11 +34,17 @@ on:
   push:
     branches: [main]
     # Only run when book inputs change. Other commits to main (code,
-    # configs, etc.) don't touch the PDF and shouldn't re-render it.
+    # configs, etc.) don't touch the artifacts and shouldn't re-render
+    # them. The two build scripts + the shared chapter manifest are
+    # also inputs — change one and both outputs should rebuild.
     paths:
       - 'docs/guide/*.md'
       - 'docs/guide/screenshots/**.png'
+      - 'docs/guide/diagrams/**'
       - 'scripts/build-book-pdf.mjs'
+      - 'scripts/build-book-epub.mjs'
+      - 'scripts/lib/bookChapters.mjs'
+      - 'scripts/lib/clrMapHtml.mjs'
   workflow_dispatch:
 
 env:
@@ -39,7 +52,7 @@ env:
 
 jobs:
   rebuild:
-    name: Rebuild PDF
+    name: Rebuild PDF + EPUB
     # Loop guard: skip if the bot itself pushed this commit. Pairs with
     # the `[skip pdf]` marker in the bot's commit-message body for human
     # readability, but the actor check is the load-bearing one.
@@ -72,18 +85,24 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Chromium
-        # The book-build script imports `chromium` from `@playwright/test`
+        # The book-PDF script imports `chromium` from `@playwright/test`
         # and uses it as a headless renderer. `--with-deps` installs the
-        # apt packages chromium needs on the Ubuntu runner.
+        # apt packages chromium needs on the Ubuntu runner. The EPUB
+        # build doesn't need Chromium (pure-Node) but we still install
+        # it because `pnpm book` runs both builds.
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Rebuild PDF
+      - name: Rebuild PDF + EPUB
+        # `pnpm book` runs the EPUB build then the PDF build (EPUB
+        # first because it's the faster of the two — fail-fast on
+        # markdown errors before paying the Playwright startup cost).
         run: pnpm book
 
       - name: Commit + push if changed
-        # Only commit when the PDF actually changed. `git diff --quiet`
-        # returns 0 (success) when there's no diff, 1 when there is —
-        # so the `if` block below only fires on real changes.
+        # Only commit when at least one of the two artifacts changed.
+        # `git diff --quiet` returns 0 (success) when there's no diff,
+        # 1 when there is — the OR pattern below stages whichever one
+        # changed (or both) and skips the commit when neither did.
         #
         # Session 132 — pass the triggering commit's subject (first line
         # only) via env var instead of interpolating `${{ ... }}` directly
@@ -99,13 +118,31 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          if git diff --quiet docs/guide/Causal-Thinking-with-TP-Studio.pdf; then
-            echo "PDF unchanged — nothing to commit."
+          PDF=docs/guide/Causal-Thinking-with-TP-Studio.pdf
+          EPUB=docs/guide/Causal-Thinking-with-TP-Studio.epub
+          PDF_CHANGED=0
+          EPUB_CHANGED=0
+          if ! git diff --quiet "$PDF"; then PDF_CHANGED=1; fi
+          if ! git diff --quiet "$EPUB"; then EPUB_CHANGED=1; fi
+          if [ "$PDF_CHANGED" = "0" ] && [ "$EPUB_CHANGED" = "0" ]; then
+            echo "Both artifacts unchanged — nothing to commit."
             exit 0
           fi
           TRIGGER_FIRST_LINE="$(printf '%s' "${TRIGGER_SUBJECT}" | head -n 1)"
-          git add docs/guide/Causal-Thinking-with-TP-Studio.pdf
-          git commit -m "docs: rebuild book PDF [skip pdf]" \
-            -m "Auto-generated by the Rebuild book PDF workflow in response to changes under docs/guide/. The [skip pdf] marker is informational — the loop guard is the workflow's actor check." \
+          if [ "$PDF_CHANGED" = "1" ]; then git add "$PDF"; fi
+          if [ "$EPUB_CHANGED" = "1" ]; then git add "$EPUB"; fi
+          # Build the artifact-list for the commit body so it's clear
+          # which one(s) actually changed in this rebuild.
+          ARTIFACT_LIST=""
+          if [ "$PDF_CHANGED" = "1" ]; then ARTIFACT_LIST="PDF"; fi
+          if [ "$EPUB_CHANGED" = "1" ]; then
+            if [ -n "$ARTIFACT_LIST" ]; then
+              ARTIFACT_LIST="$ARTIFACT_LIST + EPUB"
+            else
+              ARTIFACT_LIST="EPUB"
+            fi
+          fi
+          git commit -m "docs: rebuild book ($ARTIFACT_LIST) [skip pdf]" \
+            -m "Auto-generated by the Rebuild book artifacts workflow in response to changes under docs/guide/ or scripts/build-book-*.mjs. The [skip pdf] marker is informational — the loop guard is the workflow's actor check." \
             -m "Triggered by: ${TRIGGER_FIRST_LINE}"
           git push origin main

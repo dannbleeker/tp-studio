@@ -32,86 +32,24 @@
  */
 
 import { readdir, readFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { chromium } from '@playwright/test';
 import { marked } from 'marked';
-import { clrMapHtml, CLR_MAP_CSS } from './lib/clrMapHtml.mjs';
+import {
+  GUIDE_DIR,
+  IMAGE_ROOTS,
+  readChapterMetadata,
+  SCREENSHOTS_DIR,
+  TOC_GROUPS,
+} from './lib/bookChapters.mjs';
+import { CLR_MAP_CSS, clrMapHtml } from './lib/clrMapHtml.mjs';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = resolve(HERE, '..');
-const GUIDE_DIR = join(PROJECT_ROOT, 'docs', 'guide');
-const SCREENSHOTS_DIR = join(GUIDE_DIR, 'screenshots');
-const DIAGRAMS_DIR = join(GUIDE_DIR, 'diagrams');
-// Markdown image prefixes the rewriter inlines. Keys are the path
-// prefix used in the chapter source; values are the absolute directory
-// to resolve filenames against. Add a new entry here to expose a new
-// asset folder to the book builder.
-const IMAGE_ROOTS = [
-  { prefix: 'screenshots', dir: SCREENSHOTS_DIR },
-  { prefix: 'diagrams', dir: DIAGRAMS_DIR },
-];
+// Session 135 — the chapter manifest, image-root table, metadata
+// reader, and TOC grouping moved to `lib/bookChapters.mjs` so the
+// EPUB builder shares them with this script. See that file for the
+// canonical chapter list + add-a-chapter instructions.
+
 const OUT_PATH = join(GUIDE_DIR, 'Causal-Thinking-with-TP-Studio.pdf');
-
-/**
- * Canonical chapter order. Mirrors `docs/guide/README.md`. Hand-listed
- * so re-ordering / renaming is explicit; alphabetical sort on the
- * directory would conflate appendices with chapters.
- */
-const CHAPTER_FILES = [
-  '00-foreword.md',
-  '01-the-system-has-a-goal.md',
-  '02-your-first-canvas.md',
-  '03-reading-a-diagram.md',
-  '04-current-reality-tree.md',
-  '05-evaporating-cloud.md',
-  '06-future-reality-tree.md',
-  '07-prerequisite-tree.md',
-  '08-transition-tree.md',
-  '09-goal-tree.md',
-  '10-strategy-and-tactics-tree.md',
-  '11-freeform-diagrams.md',
-  '12-groups-assumptions-injections.md',
-  '13-the-clr.md',
-  '14-iteration-revisions-branches.md',
-  '15-verbalisation-walkthroughs.md',
-  '16-sharing-your-work.md',
-  '17-workshops-with-tp-studio.md',
-  'appendix-a-case-study.md',
-  'appendix-b-keyboard-reference.md',
-  'appendix-c-clr-rules.md',
-  'appendix-d-settings.md',
-  'appendix-e-glossary.md',
-  'appendix-f-further-reading.md',
-];
-
-/**
- * Display-name + slug pairs for the TOC. Derived from the chapter
- * file content (the H1) rather than hard-coded so renames don't
- * silently drift.
- */
-async function readChapterMetadata() {
-  const result = [];
-  for (const filename of CHAPTER_FILES) {
-    const full = join(GUIDE_DIR, filename);
-    const raw = await readFile(full, 'utf8');
-    // First line of the H1 (`# Chapter 4 — …`). Drop the leading `#`.
-    const h1Match = raw.match(/^#\s+(.+?)\s*$/m);
-    if (!h1Match) {
-      throw new Error(`No H1 found in ${filename}`);
-    }
-    // Subtitle (the H3 directly under the H1, if any) — used in the
-    // TOC to make the table read more naturally.
-    const h3Match = raw.match(/^###\s+(.+?)\s*$/m);
-    result.push({
-      filename,
-      slug: filename.replace(/\.md$/, ''),
-      title: h1Match[1],
-      subtitle: h3Match ? h3Match[1] : null,
-    });
-  }
-  return result;
-}
 
 /**
  * Walk the rendered HTML for each chapter and inline every
@@ -172,10 +110,7 @@ async function chapterToHtml(slug, markdownSource) {
   // (marked passes HTML through but is fussy about empty-line framing
   // around block-level HTML; pasting the expanded HTML with surrounding
   // blank lines lets it land cleanly between paragraphs).
-  const expanded = markdownSource.replace(
-    /<!--\s*CLR_MAP\s*-->/g,
-    () => `\n\n${clrMapHtml()}\n\n`
-  );
+  const expanded = markdownSource.replace(/<!--\s*CLR_MAP\s*-->/g, () => `\n\n${clrMapHtml()}\n\n`);
   const html = marked.parse(expanded, { mangle: false, headerIds: true });
   // Inject the slug id on the H1 so TOC links resolve.
   const withId = html.replace(/<h1(.*?)>/, `<h1 id="${slug}"$1>`);
@@ -199,43 +134,19 @@ function coverHtml(now) {
 }
 
 function tocHtml(chapters) {
-  // Group by part for visual structure. The chapter-file naming
-  // convention is what we group on — Part 1 is files 00-03, Part 2 is
-  // 04-11, Part 3 is 12-14, Part 4 is 15-17, Appendices are appendix-*.
-  const groups = [
-    { label: 'Front matter', match: (c) => c.filename.startsWith('00-') },
-    {
-      label: 'Part 1 — Foundations',
-      match: (c) => /^0[1-3]-/.test(c.filename),
-    },
-    {
-      label: 'Part 2 — The Thinking Processes',
-      match: (c) => /^(0[4-9]|1[0-1])-/.test(c.filename),
-    },
-    {
-      label: 'Part 3 — Across the canvas',
-      match: (c) => /^1[2-4]-/.test(c.filename),
-    },
-    {
-      label: 'Part 4 — Beyond the screen',
-      match: (c) => /^1[5-7]-/.test(c.filename),
-    },
-    { label: 'Appendices', match: (c) => c.filename.startsWith('appendix-') },
-  ];
-
-  const sections = groups
-    .map((group) => {
-      const items = chapters.filter(group.match);
-      if (items.length === 0) return '';
-      const rows = items
-        .map((c) => {
-          const subtitle = c.subtitle ? `<span class="toc-subtitle">— ${c.subtitle}</span>` : '';
-          return `<li><a href="#${c.slug}">${c.title}</a>${subtitle}</li>`;
-        })
-        .join('\n');
-      return `<div class="toc-part"><h3>${group.label}</h3><ol class="toc-list">${rows}</ol></div>`;
-    })
-    .join('\n');
+  // Session 135 — `TOC_GROUPS` lives in `lib/bookChapters.mjs` and
+  // is shared with the EPUB builder so the two outputs stay in sync.
+  const sections = TOC_GROUPS.map((group) => {
+    const items = chapters.filter(group.match);
+    if (items.length === 0) return '';
+    const rows = items
+      .map((c) => {
+        const subtitle = c.subtitle ? `<span class="toc-subtitle">— ${c.subtitle}</span>` : '';
+        return `<li><a href="#${c.slug}">${c.title}</a>${subtitle}</li>`;
+      })
+      .join('\n');
+    return `<div class="toc-part"><h3>${group.label}</h3><ol class="toc-list">${rows}</ol></div>`;
+  }).join('\n');
 
   return `
 <section class="toc-page">

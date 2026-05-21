@@ -12,10 +12,11 @@
  * dialog's structure changes — this is a one-off QA artefact, not a
  * regression guard.
  */
-import { chromium } from '@playwright/test';
-import { writeFile, mkdir } from 'node:fs/promises';
+
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { chromium } from '@playwright/test';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -24,15 +25,51 @@ const OUT = resolve(ROOT, 'docs', 'guide', 'diagrams', 'pattern-library-preview.
 // Mirror of the PATTERNS registry — kept inline so the preview script
 // is self-contained.
 const PATTERNS = [
-  ['crt', 'Customer satisfaction declining', 'Classic operational CRT — fulfilment-flow root causes feeding a single customer UDE, with one AND junctor.'],
-  ['crt', 'Engineering velocity decline', 'Software team CRT — sprint slip rolls up from on-call / review / flake causes, with an AND on the ops-drag effect.'],
-  ['ec', 'Work / life balance', 'Teaching-classic personal EC — "leave at 5" vs "stay late", with the explicit D↔D′ mutex arrow.'],
-  ['ec', 'Quality vs speed', 'Engineering tradeoff EC — QA gate vs continuous delivery, both routes to "ship features customers love".'],
-  ['frt', 'Future Reality Tree starter', 'Bottom-up FRT seeded with an injection — propagates through intermediate effects to a desired effect.'],
-  ['prt', 'Prerequisite Tree starter', 'Necessity-style PRT — objective at top, obstacles beneath, intermediate objectives clearing each.'],
-  ['tt', 'Support triage Transition Tree', 'Canonical Outcome ← (Precondition + Action) triples joined by AND junctors, including one unspecified precondition.'],
-  ['goalTree', 'Goal Tree starter', '3-layer necessity tree — Goal at top, Critical Success Factors beneath, Necessary Conditions feeding each CSF.'],
-  ['st', 'Strategy & Tactics starter', 'Hierarchical S&T — strategy / tactic pairs with rationale fields (necessary / parallel / sufficient assumptions).'],
+  [
+    'crt',
+    'Customer satisfaction declining',
+    'Classic operational CRT — fulfilment-flow root causes feeding a single customer UDE, with one AND junctor.',
+  ],
+  [
+    'crt',
+    'Engineering velocity decline',
+    'Software team CRT — sprint slip rolls up from on-call / review / flake causes, with an AND on the ops-drag effect.',
+  ],
+  [
+    'ec',
+    'Work / life balance',
+    'Teaching-classic personal EC — "leave at 5" vs "stay late", with the explicit D↔D′ mutex arrow.',
+  ],
+  [
+    'ec',
+    'Quality vs speed',
+    'Engineering tradeoff EC — QA gate vs continuous delivery, both routes to "ship features customers love".',
+  ],
+  [
+    'frt',
+    'Future Reality Tree starter',
+    'Bottom-up FRT seeded with an injection — propagates through intermediate effects to a desired effect.',
+  ],
+  [
+    'prt',
+    'Prerequisite Tree starter',
+    'Necessity-style PRT — objective at top, obstacles beneath, intermediate objectives clearing each.',
+  ],
+  [
+    'tt',
+    'Support triage Transition Tree',
+    'Canonical Outcome ← (Precondition + Action) triples joined by AND junctors, including one unspecified precondition.',
+  ],
+  [
+    'goalTree',
+    'Goal Tree starter',
+    '3-layer necessity tree — Goal at top, Critical Success Factors beneath, Necessary Conditions feeding each CSF.',
+  ],
+  [
+    'st',
+    'Strategy & Tactics starter',
+    'Hierarchical S&T — strategy / tactic pairs with rationale fields (necessary / parallel / sufficient assumptions).',
+  ],
 ];
 
 const TYPE_LABEL = {

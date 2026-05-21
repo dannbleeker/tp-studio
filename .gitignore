@@ -42,6 +42,7 @@ perf-trace-output/
 # are committed (the markdown files at repo root + the PDF under docs/guide);
 # the generated copies in public/ are NOT.
 public/Causal-Thinking-with-TP-Studio.pdf
+public/Causal-Thinking-with-TP-Studio.epub
 public/notices.html
 public/security.html
 public/user-guide.html

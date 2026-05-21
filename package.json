@@ -24,7 +24,9 @@
     "mutation": "stryker run",
     "visualize": "vite build",
     "check:bundle-size": "node ./scripts/check-bundle-size.mjs",
-    "book": "node ./scripts/build-book-pdf.mjs",
+    "book": "pnpm book:epub && pnpm book:pdf",
+    "book:pdf": "node ./scripts/build-book-pdf.mjs",
+    "book:epub": "node ./scripts/build-book-epub.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

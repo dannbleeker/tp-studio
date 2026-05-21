@@ -84,46 +84,78 @@ The whole loop is one workflow click + one PR review for most UI changes.
   - **🔁 Chain to next** — at chapter end, signpost to the natural next chapter
 - **Plain Markdown.** No HTML, no MDX. The book renders identically on GitHub web, in VS Code preview, and via any static-site generator pointed at the directory.
 
-## Building the PDF
+## Building the PDF and EPUB
 
-A single-file PDF of the entire book is committed at
-`docs/guide/Causal-Thinking-with-TP-Studio.pdf` for readers who want
-one artifact rather than 24 Markdown files.
+Two single-file builds of the book are committed under
+`docs/guide/`:
 
-To regenerate after a manuscript edit (or after a screenshot
+- `Causal-Thinking-with-TP-Studio.pdf` — fixed-layout A4 PDF for
+  desktop viewers and print. Includes navigable bookmarks.
+- `Causal-Thinking-with-TP-Studio.epub` — reflowable EPUB 3 for
+  e-readers. **Send-to-Kindle** accepts EPUB natively (since
+  2022); use this for Kindle delivery — the PDF doesn't reflow
+  well on a 6-inch screen.
+
+To regenerate both after a manuscript edit (or after a screenshot
 refresh):
 
 ```bash
-pnpm book   # alias for `node ./scripts/build-book-pdf.mjs`
+pnpm book        # builds both EPUB and PDF
+pnpm book:pdf    # PDF only
+pnpm book:epub   # EPUB only
 ```
 
-The script (`scripts/build-book-pdf.mjs`):
-1. Reads `docs/guide/*.md` in canonical order (the order is
-   hand-listed in the script so renaming a chapter doesn't silently
-   change the book's flow).
-2. Builds a cover page + a clickable TOC page (anchor links into
-   each chapter).
-3. Renders each chapter's Markdown to HTML via `marked`, rewriting
-   relative `screenshots/...` paths to absolute `file://` URIs so
-   Chromium can load them.
-4. Concatenates everything into one self-contained HTML doc with
-   print-grade CSS (A4, justified body, page-break-before on each
-   H1).
-5. Renders to PDF via Playwright's Chromium using `page.pdf({
-   outline: true })`. The `outline: true` flag extracts the heading
-   hierarchy into navigable PDF bookmarks — the sidebar in any
-   PDF viewer. The TOC page's anchor links also work as clickable
-   in-document jumps.
+Both scripts share the chapter manifest + metadata reader in
+`scripts/lib/bookChapters.mjs`, so the two outputs stay in sync.
 
-Requirements: `marked` + `@playwright/test` (both pinned as devDeps).
-The Chromium binary must be installed locally — `pnpm exec
-playwright install chromium` does this once.
+### PDF (`scripts/build-book-pdf.mjs`)
+
+1. Reads `docs/guide/*.md` in canonical order (hand-listed in
+   `lib/bookChapters.mjs` so renaming a chapter doesn't silently
+   change the book's flow).
+2. Builds a cover page + a clickable TOC (anchor links into each
+   chapter).
+3. Renders each chapter's Markdown to HTML via `marked`, inlining
+   screenshots/diagrams as base64 data URIs (Chromium's setContent
+   origin doesn't permit `file://` references).
+4. Concatenates everything into one HTML doc with print-grade CSS
+   (A4, justified body, page-break-before on each H1).
+5. Renders to PDF via Playwright's Chromium with `outline: true` for
+   navigable PDF bookmarks.
+
+Requirements: `marked` + `@playwright/test`. Chromium binary
+installed via `pnpm exec playwright install chromium`.
 
 Output: `docs/guide/Causal-Thinking-with-TP-Studio.pdf`. Typically
-~1 MB with the 13 chapter screenshots embedded.
+~1.5 MB with the 13 chapter screenshots embedded.
 
-Commit the PDF after regenerating. Stakeholders link to the file
-directly via GitHub Pages or download from the repo.
+### EPUB (`scripts/build-book-epub.mjs`)
+
+1. Reads the same chapter manifest as the PDF builder.
+2. Renders each chapter to a standalone XHTML file under
+   `OEBPS/chapter-NN.xhtml`, rewriting image references to point
+   at embedded `OEBPS/images/<file>` entries.
+3. Builds the `content.opf` package document (Dublin Core metadata,
+   manifest, spine), the EPUB 3 `nav.xhtml` navigation, and the
+   legacy EPUB 2 `toc.ncx` for older readers.
+4. Packages everything with `jszip` — `mimetype` first and
+   STORE-compressed (uncompressed), as the EPUB spec requires.
+
+Pure-Node — no Chromium / Playwright / system dependency. Requires
+`marked` + `jszip` (both pinned as devDeps).
+
+Output: `docs/guide/Causal-Thinking-with-TP-Studio.epub`.
+Typically ~700 KB.
+
+### When to commit
+
+Commit both artifacts after regenerating. Stakeholders link to the
+files directly via GitHub Pages or download from the repo. The
+**Rebuild book artifacts** CI workflow auto-rebuilds on any change
+under `docs/guide/` and commits the updated artifacts back to
+`main` — so you only need to rebuild + commit by hand when working
+offline or when you want the new files in the same PR as the
+markdown change.
 
 ## Versioning
 

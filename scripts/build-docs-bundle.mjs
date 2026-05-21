@@ -40,6 +40,11 @@ const PUBLIC_DIR = join(REPO_ROOT, 'public');
 const GUIDE_DIR = join(REPO_ROOT, 'docs', 'guide');
 
 const BOOK_PDF = join(GUIDE_DIR, 'Causal-Thinking-with-TP-Studio.pdf');
+// Session 135 — EPUB shipped alongside the PDF so the in-app
+// download surface offers a Kindle-friendly format. Same docs-bundle
+// path as the PDF: copied into `public/` so Vite serves it from the
+// branded subdomain and the service worker can cache it offline.
+const BOOK_EPUB = join(GUIDE_DIR, 'Causal-Thinking-with-TP-Studio.epub');
 
 const HTML_PAGES = [
   {
@@ -183,11 +188,18 @@ function copyBookPdf() {
   copyFileSync(BOOK_PDF, dest);
 }
 
+function copyBookEpub() {
+  const dest = join(PUBLIC_DIR, 'Causal-Thinking-with-TP-Studio.epub');
+  copyFileSync(BOOK_EPUB, dest);
+}
+
 function main() {
   ensureDir(PUBLIC_DIR);
   console.log('📚 Building in-app docs bundle …');
   copyBookPdf();
   console.log('  ✓ Copied book PDF');
+  copyBookEpub();
+  console.log('  ✓ Copied book EPUB');
   for (const page of HTML_PAGES) {
     buildHtmlPage(page);
     console.log(`  ✓ Rendered ${page.output.replace(REPO_ROOT, '.')}`);
