@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { exportToJSON } from '@/domain/persistence';
 import type { TPDocument } from '@/domain/types';
 import { PersistScheduler } from '@/services/storage/persistDebounced';
 import { STORAGE_KEYS } from '@/services/storage/storage';
@@ -33,8 +32,9 @@ describe('PersistScheduler', () => {
     scheduler.schedule(doc);
     const live = globalThis.localStorage.getItem(STORAGE_KEYS.docLive);
     expect(live).not.toBeNull();
-    // The live draft content should match the doc serialization.
-    expect(live).toBe(exportToJSON(doc));
+    // Perf #25 — the live draft is now serialized COMPACT (no indentation),
+    // matching the committed slot; pretty-print stays for file exports.
+    expect(live).toBe(JSON.stringify(doc));
     scheduler.cancel();
   });
 

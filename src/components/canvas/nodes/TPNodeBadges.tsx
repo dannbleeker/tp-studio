@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { Pin } from 'lucide-react';
+import { memo } from 'react';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import type { DiagramType, Entity, EntityState, SpanOfControl } from '@/domain/types';
 import { guardWriteOrToast } from '@/services/browseLock';
@@ -17,6 +18,13 @@ import { guardWriteOrToast } from '@/services/browseLock';
  * (the parent supplies the props), so they slot in identically to
  * how they were inlined before. Render placement (corner anchoring
  * via `absolute -top-1.5 -right-1.5` etc.) is preserved verbatim.
+ *
+ * Session 135 / Perf #5 — each badge is wrapped in `memo`. They only
+ * render when `TPNode` (their memoized parent) re-renders; once it
+ * does, a badge whose own props are unchanged (the common case — e.g.
+ * a title edit doesn't touch the annotation number) skips its own
+ * re-render. Cheap insurance: the props are all primitives, so the
+ * default shallow comparison is exactly right.
  */
 
 /**
@@ -25,7 +33,11 @@ import { guardWriteOrToast } from '@/services/browseLock';
  * amber for influence (affect-it), neutral for external
  * (observe-only). Unset entities render nothing.
  */
-export function LocusPill({ spanOfControl }: { spanOfControl: SpanOfControl | undefined }) {
+export const LocusPill = memo(function LocusPill({
+  spanOfControl,
+}: {
+  spanOfControl: SpanOfControl | undefined;
+}) {
   if (spanOfControl === 'control') {
     return (
       <span
@@ -63,14 +75,18 @@ export function LocusPill({ spanOfControl }: { spanOfControl: SpanOfControl | un
     );
   }
   return null;
-}
+});
 
 /**
  * Annotation number badge — top-right corner. Persistent per-doc
  * integer assigned at entity creation; used for `[link to #42]`
  * markdown cross-references in entity descriptions.
  */
-export function AnnotationBadge({ annotationNumber }: { annotationNumber: number }) {
+export const AnnotationBadge = memo(function AnnotationBadge({
+  annotationNumber,
+}: {
+  annotationNumber: number;
+}) {
   return (
     <span
       className="pointer-events-none absolute -top-1.5 -right-1.5 rounded-full border border-neutral-200 bg-white px-1.5 py-0.5 font-semibold text-[10px] text-neutral-600 shadow-xs dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
@@ -80,14 +96,14 @@ export function AnnotationBadge({ annotationNumber }: { annotationNumber: number
       #{annotationNumber}
     </span>
   );
-}
+});
 
 /**
  * Step number badge — top-left corner. Surfaces only on entities
  * carrying `entity.ordering` (TT actions today; generic for any
  * future ordered entity).
  */
-export function StepBadge({ ordering }: { ordering: number }) {
+export const StepBadge = memo(function StepBadge({ ordering }: { ordering: number }) {
   return (
     <span
       className="pointer-events-none absolute -top-1.5 -left-1.5 rounded-full border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 font-semibold text-[10px] text-cyan-800 shadow-xs dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200"
@@ -97,7 +113,7 @@ export function StepBadge({ ordering }: { ordering: number }) {
       Step {ordering}
     </span>
   );
-}
+});
 
 /**
  * Pin indicator — bottom-right corner. Surfaces only on auto-layout
@@ -105,7 +121,7 @@ export function StepBadge({ ordering }: { ordering: number }) {
  * (set by drag). Manual-layout diagrams (EC) suppress because every
  * entity is pinned by definition there.
  */
-export function PinBadge({ diagramType }: { diagramType: DiagramType }) {
+export const PinBadge = memo(function PinBadge({ diagramType }: { diagramType: DiagramType }) {
   if (LAYOUT_STRATEGY[diagramType] === 'manual') return null;
   return (
     <span
@@ -117,14 +133,14 @@ export function PinBadge({ diagramType }: { diagramType: DiagramType }) {
       <Pin className="h-2.5 w-2.5" />
     </span>
   );
-}
+});
 
 /**
  * Forward-reach badge — "this root cause reaches N UDEs." Bottom-left
  * corner. The higher the count, the stronger the Core Driver
  * candidate. Suppressed when count is 0 or undefined.
  */
-export function ReachForwardBadge({ count }: { count: number }) {
+export const ReachForwardBadge = memo(function ReachForwardBadge({ count }: { count: number }) {
   return (
     <span
       className="pointer-events-none absolute -bottom-2 -left-1.5 rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 font-semibold text-[10px] text-amber-800 shadow-xs dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
@@ -135,14 +151,14 @@ export function ReachForwardBadge({ count }: { count: number }) {
       →{count} UDE{count === 1 ? '' : 's'}
     </span>
   );
-}
+});
 
 /**
  * Reverse-reach badge — "fed by N root causes." Bottom-right corner.
  * Sky-blue palette so it doesn't visually collide with the
  * amber forward-reach badge.
  */
-export function ReachReverseBadge({ count }: { count: number }) {
+export const ReachReverseBadge = memo(function ReachReverseBadge({ count }: { count: number }) {
   return (
     <span
       className="pointer-events-none absolute -right-1.5 -bottom-2 rounded-full border border-sky-300 bg-sky-50 px-1.5 py-0.5 font-semibold text-[10px] text-sky-800 shadow-xs dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200"
@@ -153,7 +169,7 @@ export function ReachReverseBadge({ count }: { count: number }) {
       ←{count} root{count === 1 ? '' : 's'}
     </span>
   );
-}
+});
 
 /**
  * Entity-state badge — left-centre edge (the only edge not used by
@@ -185,14 +201,20 @@ const STATE_BADGE_META: Record<
   },
 };
 
-export function StateBadge({ state, speculated }: { state: EntityState; speculated?: boolean }) {
+export const StateBadge = memo(function StateBadge({
+  state,
+  speculated,
+}: {
+  state: EntityState;
+  speculated?: boolean;
+}) {
   if (state === 'unknown') return null;
   const meta = STATE_BADGE_META[state];
   const label = speculated ? `State: ${meta.label} (speculative)` : `State: ${meta.label}`;
   return (
     <span
       className={clsx(
-        'pointer-events-none absolute -left-2 top-1/2 -translate-y-1/2 rounded-full border px-1.5 py-0.5 font-bold text-[10px] shadow-xs',
+        'pointer-events-none absolute top-1/2 -left-2 -translate-y-1/2 rounded-full border px-1.5 py-0.5 font-bold text-[10px] shadow-xs',
         meta.cls,
         speculated && 'border-dashed ring-2 ring-indigo-400/50'
       )}
@@ -203,14 +225,14 @@ export function StateBadge({ state, speculated }: { state: EntityState; speculat
       {meta.glyph}
     </span>
   );
-}
+});
 
 /**
  * Collapsed-downstream chip — bottom-centre. Click expands the
  * hidden descendants. Shown only when the entity is currently
  * collapsed (`entity.collapsed === true`).
  */
-export function CollapsedExpandButton({
+export const CollapsedExpandButton = memo(function CollapsedExpandButton({
   entity,
   hiddenDescendantCount,
   onToggle,
@@ -241,4 +263,4 @@ export function CollapsedExpandButton({
       {hiddenDescendantCount ? <span>+{hiddenDescendantCount}</span> : null}
     </button>
   );
-}
+});

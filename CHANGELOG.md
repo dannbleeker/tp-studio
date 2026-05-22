@@ -2,6 +2,65 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Performance pass, batch 3 (clearing the tail)
+
+Final sweep of the 40-finding audit. Implemented every remaining item that
+delivers a real, safe win; the rest are documented as net-neutral,
+infeasible, or regressive (engineering judgment over a completeness count).
+
+**Shipped:**
+- **#13 — drop the `icons` manualChunk (biggest bundle win).** Pinning all
+  of `lucide-react` to one chunk forced the *entire* icon catalogue —
+  including glyphs used only by lazy dialogs — onto the eager path, since
+  the index chunk referenced it. Letting Rollup co-locate each icon with
+  its consumer pushes lazy-only icons into their lazy chunks; **eager index
+  dropped 83.5 → 68.4 KB gz (−15 KB on first paint)**. Removed the now-stale
+  `icons` budget entry.
+- **#25 — compact the live-draft serialization.** The A5 crash-recovery
+  live draft was written pretty-printed (`exportToJSON`) on every keystroke.
+  Switched to compact `JSON.stringify` — preserves the synchronous-write
+  crash-safety guarantee (timing unchanged) while ~halving the per-keystroke
+  string size. (Done as a *safe* reinterpretation of the audit's "throttle"
+  suggestion, which would have regressed recovery.)
+- **#32 — exporters barrel split.** `ImportPickerDialog` now imports the
+  three picker fns directly from `./flyingLogic` / `./markup` / `./text`
+  instead of the `@/services/exporters` barrel, so its lazy chunk no longer
+  references the heavier export-only siblings.
+- **#5 — memoize the badge components.** Every pure `TPNodeBadges` /
+  `TPEdgeBadges` component is wrapped in `memo`, so once the (already
+  memoized) parent re-renders, a badge whose own props are unchanged skips
+  its render.
+
+**Verified non-issues (no change needed):**
+- #33 — example/pattern/template seed data is already lazy (no eager import).
+- #36 — the `html2canvas` precache-exclude glob targets a real emitted
+  chunk (jspdf v4 pulls it in); not stale.
+
+**Audited, deliberately not done:**
+- #15/#16 (stamp doc-global fields into node/edge `data`) — net-neutral; the
+  per-node/edge `useShallow` bundle is unavoidable and stamping adds emission
+  coupling (esp. the UI-only `causalityLabel`) for no measurable gain.
+- #24 (narrow `CanvasInner`'s doc subscription) — `useGraphView` needs the
+  whole doc; narrowing would mean restructuring its signature, and the
+  non-view fields it'd exclude (title/author/scope) change rarely.
+- #29 (preserve node-object identity across emission) — high regression risk
+  for marginal gain; `TPNode` is already memoized via a custom comparator.
+- #31 (defer the icon catalogue) — the node renderer needs it eagerly to
+  resolve custom-class icons synchronously.
+- #35 (decouple `COMMANDS` from the eager `SelectionToolbar`/`contextMenuItems`)
+  — real but structural: the toolbar resolves `verb.paletteCommandId →
+  cmd.run`/label at render and click time, so decoupling risks regressions in
+  verb execution across two surfaces; the actual eager cost is small (command
+  defs are light store-action closures) and index now has comfortable
+  headroom. Left as a future scoped refactor.
+- #37 (virtualize the command palette) — premature; the catalogue is a few
+  dozen rows and renders fine.
+- #38 (SelectionToolbar per-frame rect read during pan) — required to keep
+  the toolbar anchored to the moving selection; throttling causes lag.
+
+tsc + biome clean; build + bundle-budget pass (index now 68.4 KB gz);
+component + service + store suites green.
+
 ## Session 135 — Performance pass, batch 2 (4 wins + audit of the rest)
 
 The second slice of the 40-finding perf audit. On close inspection most

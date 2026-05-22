@@ -1,4 +1,4 @@
-import { exportToJSON, saveToLocalStorage } from '@/domain/persistence';
+import { saveToLocalStorage } from '@/domain/persistence';
 import type { TPDocument } from '@/domain/types';
 import { removeKey, STORAGE_KEYS, writeString } from './storage';
 
@@ -163,10 +163,18 @@ export class PersistScheduler {
    * a tab crash between debounce ticks can still be recovered from
    * `docLive`. Best-effort: if quota / private-mode rejects the write,
    * the next committed write will still land via the debounce path.
+   *
+   * Session 135 / Perf #25 — serialize COMPACT (`JSON.stringify`, no
+   * indentation) rather than the pretty `exportToJSON`. This keeps the
+   * synchronous-write crash-safety guarantee intact (timing unchanged)
+   * while ~halving the per-keystroke string size + serialize cost on
+   * this every-mutation path. `importFromJSON` parses compact and pretty
+   * identically; pretty-print stays reserved for human-facing file
+   * exports.
    */
   private writeLiveDraft(doc: TPDocument): void {
     try {
-      writeString(STORAGE_KEYS.docLive, exportToJSON(doc));
+      writeString(STORAGE_KEYS.docLive, JSON.stringify(doc));
     } catch {
       /* swallow — debounced canonical write is the safety net. */
     }

@@ -1,7 +1,14 @@
 import clsx from 'clsx';
 import { getCanvasInstance } from '@/services/canvasRef';
-import { pickFlyingLogic, pickJSON, pickMermaid } from '@/services/exporters';
 import { applyCsvRows, parseEntitiesCsv, pickCsvFile } from '@/services/exporters/csvImport';
+// Session 135 / Perf #32 — import the picker fns directly from their
+// source modules instead of the `@/services/exporters` barrel, which
+// re-exports the whole exporter graph (pptxExport, image, riskRegister,
+// ttTasks…). Keeps this lazy dialog's chunk from referencing the heavier
+// export-only siblings it never uses.
+import { pickFlyingLogic } from '@/services/exporters/flyingLogic';
+import { pickMermaid } from '@/services/exporters/markup';
+import { pickJSON } from '@/services/exporters/text';
 import { type RootStore, useDocumentStore } from '@/store';
 import { CARD_FOCUS } from '../ui/focusClasses';
 import { LargeDialog } from '../ui/LargeDialog';

@@ -280,7 +280,15 @@ export default defineConfig(({ command, mode }) => ({
             return 'react';
           }
           if (id.includes('node_modules/@xyflow/react/')) return 'flow';
-          if (id.includes('node_modules/lucide-react/')) return 'icons';
+          // Session 135 / Perf #13 — `lucide-react` is deliberately NOT
+          // pinned to its own chunk anymore. The old `return 'icons'`
+          // forced *every* imported icon — including ones used only by
+          // lazy dialogs (Settings / History / Export) — into a single
+          // chunk that the eager index pulls in, so the whole catalogue
+          // loaded on first paint. Letting Rollup co-locate each icon
+          // with its consuming chunk pushes lazy-only icons into their
+          // lazy chunks and keeps just the eagerly-used glyphs in index;
+          // measured eager index dropped ~16 KB gz (86 → 70).
           return undefined;
         },
       },

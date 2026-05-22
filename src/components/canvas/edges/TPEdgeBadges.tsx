@@ -1,4 +1,5 @@
 import { EdgeLabelRenderer } from '@xyflow/react';
+import { memo } from 'react';
 import type { EdgeWeight } from '@/domain/types';
 
 /**
@@ -10,12 +11,16 @@ import type { EdgeWeight } from '@/domain/types';
  * geometry + the store reads; the render becomes a clean sequence of
  * these badges. Placement offsets (the `translate(...)` deltas) are
  * preserved verbatim so a heavily-annotated edge keeps its layout.
+ *
+ * Session 135 / Perf #5 — wrapped in `memo` (parallel to the node
+ * badges). They re-render only when `TPEdge` does; once it does, a badge
+ * whose own props (anchor + datum) are unchanged skips its own render.
  */
 
 type Anchor = { labelX: number; labelY: number };
 
 /** ↻ glyph — an intentional back-edge (loop is a feature, not a CLR concern). */
-export function BackEdgeBadge({ labelX, labelY }: Anchor) {
+export const BackEdgeBadge = memo(function BackEdgeBadge({ labelX, labelY }: Anchor) {
   return (
     <EdgeLabelRenderer>
       <div
@@ -29,10 +34,10 @@ export function BackEdgeBadge({ labelX, labelY }: Anchor) {
       </div>
     </EdgeLabelRenderer>
   );
-}
+});
 
 /** ⚡ glyph — EC mutual-exclusion conflict between D and D′. */
-export function MutexBadge({ labelX, labelY }: Anchor) {
+export const MutexBadge = memo(function MutexBadge({ labelX, labelY }: Anchor) {
   return (
     <EdgeLabelRenderer>
       <div
@@ -50,10 +55,14 @@ export function MutexBadge({ labelX, labelY }: Anchor) {
       </div>
     </EdgeLabelRenderer>
   );
-}
+});
 
 /** Polarity badge for non-default edge weights (negative `−` / zero `∅`). */
-export function WeightBadge({ labelX, labelY, weight }: Anchor & { weight: EdgeWeight }) {
+export const WeightBadge = memo(function WeightBadge({
+  labelX,
+  labelY,
+  weight,
+}: Anchor & { weight: EdgeWeight }) {
   return (
     <EdgeLabelRenderer>
       <div
@@ -75,10 +84,14 @@ export function WeightBadge({ labelX, labelY, weight }: Anchor & { weight: EdgeW
       </div>
     </EdgeLabelRenderer>
   );
-}
+});
 
 /** ×N pill — count of edges aggregated across a collapsed boundary. */
-export function AggregateBadge({ labelX, labelY, count }: Anchor & { count: number }) {
+export const AggregateBadge = memo(function AggregateBadge({
+  labelX,
+  labelY,
+  count,
+}: Anchor & { count: number }) {
   return (
     <EdgeLabelRenderer>
       <div
@@ -90,14 +103,14 @@ export function AggregateBadge({ labelX, labelY, count }: Anchor & { count: numb
       </div>
     </EdgeLabelRenderer>
   );
-}
+});
 
 /**
  * E3 — "A" pill when the edge carries at least one assumption. A real
  * button: clicking selects the edge AND forces the EC inspector to its
  * Inspector tab so the AssumptionWell is visible without a second click.
  */
-export function AssumptionBadge({
+export const AssumptionBadge = memo(function AssumptionBadge({
   labelX,
   labelY,
   edgeId,
@@ -123,10 +136,10 @@ export function AssumptionBadge({
       </button>
     </EdgeLabelRenderer>
   );
-}
+});
 
 /** 📝 indicator — the edge carries a longer-form description. */
-export function DescriptionBadge({ labelX, labelY }: Anchor) {
+export const DescriptionBadge = memo(function DescriptionBadge({ labelX, labelY }: Anchor) {
   return (
     <EdgeLabelRenderer>
       <div
@@ -140,11 +153,11 @@ export function DescriptionBadge({ labelX, labelY }: Anchor) {
       </div>
     </EdgeLabelRenderer>
   );
-}
+});
 
 /** E5 — inline mid-edge label. Short labels show verbatim; long labels
  *  arrive pre-truncated with the full text on the `title` attribute. */
-export function EdgeInlineLabel({
+export const EdgeInlineLabel = memo(function EdgeInlineLabel({
   labelX,
   labelY,
   fullLabel,
@@ -161,11 +174,15 @@ export function EdgeInlineLabel({
       </div>
     </EdgeLabelRenderer>
   );
-}
+});
 
 /** Muted causality fallback label (e.g. "because" / "therefore") shown
  *  only when no explicit per-edge label is set. */
-export function FallbackLabel({ labelX, labelY, text }: Anchor & { text: string }) {
+export const FallbackLabel = memo(function FallbackLabel({
+  labelX,
+  labelY,
+  text,
+}: Anchor & { text: string }) {
   return (
     <EdgeLabelRenderer>
       <div
@@ -177,4 +194,4 @@ export function FallbackLabel({ labelX, labelY, text }: Anchor & { text: string 
       </div>
     </EdgeLabelRenderer>
   );
-}
+});
