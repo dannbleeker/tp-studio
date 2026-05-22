@@ -44,7 +44,11 @@ describe('PersistScheduler', () => {
     scheduler.schedule(doc);
     expect(globalThis.localStorage.getItem(STORAGE_KEYS.doc)).toBeNull();
     scheduler.flushNow();
-    expect(globalThis.localStorage.getItem(STORAGE_KEYS.doc)).toBe(exportToJSON(doc));
+    // Session 135 / Perf #26 — the committed slot is stored COMPACT
+    // (`JSON.stringify` without indentation); pretty-printing is reserved
+    // for human-facing file exports (`exportToJSON`). The live-draft slot
+    // (asserted above) is unchanged.
+    expect(globalThis.localStorage.getItem(STORAGE_KEYS.doc)).toBe(JSON.stringify(doc));
     expect(globalThis.localStorage.getItem(STORAGE_KEYS.docLive)).toBeNull();
   });
 
