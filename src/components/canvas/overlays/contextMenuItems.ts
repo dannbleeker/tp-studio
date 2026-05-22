@@ -1,4 +1,4 @@
-import { runPaletteCommand } from '@/components/command-palette/runPaletteCommand';
+import { COMMANDS } from '@/components/command-palette/commands';
 import { type Branch, type Verb, verbsForBranch } from '@/domain/selectionVerbs';
 import { useDocumentStore } from '@/store';
 
@@ -23,14 +23,12 @@ export type MenuItem =
  * command yet) fall through to that closure.
  */
 export const toMenuItem = (verb: Verb): MenuItem => {
-  // Perf #35 — palette-backed verbs dispatch through the lazy
-  // `runPaletteCommand` (resolves the command id at click time) instead
-  // of resolving against an eagerly-imported `COMMANDS` array, so the
-  // context menu no longer drags the command catalogue into index.
-  const paletteCommandId = verb.paletteCommandId;
-  const run = paletteCommandId
+  const command = verb.paletteCommandId
+    ? COMMANDS.find((c) => c.id === verb.paletteCommandId)
+    : undefined;
+  const run = command
     ? () => {
-        void runPaletteCommand(paletteCommandId);
+        void command.run(useDocumentStore.getState());
       }
     : verb.run
       ? () => {
