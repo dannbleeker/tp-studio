@@ -38,6 +38,7 @@ import {
   PinBadge,
   ReachForwardBadge,
   ReachReverseBadge,
+  StateBadge,
   StepBadge,
 } from './TPNodeBadges';
 
@@ -46,6 +47,10 @@ import {
 
 function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
   const { entity, hiddenDescendantCount, udeReachCount, rootCauseReachCount, diffStatus } = data;
+  // Session 135 / spec gap #4 — effective state for the canvas badge
+  // (stamped by emission; folds in the speculation overlay when active).
+  const effectiveState = data.effectiveState;
+  const speculated = data.speculated;
   // One shallow-equal selector — the previous 7 individual `useDocumentStore`
   // calls each registered their own subscription that fired on every store
   // change. The `editingEntityId === entity.id` derived boolean stays
@@ -343,6 +348,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           either its JSX or null; the conditional logic that decides
           whether to render lives here (closest to the props it
           inspects). */}
+      {effectiveState && <StateBadge state={effectiveState} speculated={speculated ?? false} />}
       {showAnnotationNumbers && <AnnotationBadge annotationNumber={entity.annotationNumber} />}
       {typeof entity.ordering === 'number' && <StepBadge ordering={entity.ordering} />}
       {entity.position && <PinBadge diagramType={diagramType} />}

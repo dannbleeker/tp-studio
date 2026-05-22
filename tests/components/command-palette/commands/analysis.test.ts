@@ -81,3 +81,40 @@ describe('analysisCommands — start-clr-walkthrough', () => {
     expect(s().toasts.some((t) => /no open CLR/i.test(t.message))).toBe(true);
   });
 });
+
+describe('analysisCommands — speculation (Phase 1C)', () => {
+  it('begin-speculation enters speculation mode', async () => {
+    await runCommand(findCommand(analysisCommands, 'begin-speculation'));
+    expect(s().speculationOverlay).toEqual({});
+    expect(s().toasts.some((t) => /speculation on/i.test(t.message))).toBe(true);
+  });
+
+  it('begin-speculation is a no-op toast when already speculating', async () => {
+    s().beginSpeculation();
+    await runCommand(findCommand(analysisCommands, 'begin-speculation'));
+    expect(s().toasts.some((t) => /already speculating/i.test(t.message))).toBe(true);
+  });
+
+  it('commit-speculation writes overrides into the doc and exits', async () => {
+    const e = seedEntity('A');
+    s().setSpeculativeState(e.id, 'false');
+    await runCommand(findCommand(analysisCommands, 'commit-speculation'));
+    expect(s().speculationOverlay).toBeNull();
+    expect(s().doc.entities[e.id]?.state).toBe('false');
+    expect(s().toasts.some((t) => /committed 1 state change/i.test(t.message))).toBe(true);
+  });
+
+  it('commit-speculation toasts info when not speculating', async () => {
+    await runCommand(findCommand(analysisCommands, 'commit-speculation'));
+    expect(s().toasts.some((t) => /not speculating/i.test(t.message))).toBe(true);
+  });
+
+  it('revert-speculation discards the overlay', async () => {
+    const e = seedEntity('A');
+    s().setSpeculativeState(e.id, 'true');
+    await runCommand(findCommand(analysisCommands, 'revert-speculation'));
+    expect(s().speculationOverlay).toBeNull();
+    expect(s().doc.entities[e.id]?.state).toBeUndefined();
+    expect(s().toasts.some((t) => /discarded/i.test(t.message))).toBe(true);
+  });
+});

@@ -1,5 +1,7 @@
 import type { TPDocument } from '@/domain/types';
 import { useCompareDiff } from '@/hooks/useCompareDiff';
+import { usePropagatedStates } from '@/hooks/usePropagatedStates';
+import { useDocumentStore } from '@/store';
 import type { AnyTPNode, TPEdge } from '../edges/flow-types';
 import { useGraphEmission } from './useGraphEmission';
 import { useGraphPositions } from './useGraphPositions';
@@ -40,5 +42,18 @@ export const useGraphView = (doc: TPDocument): GraphView => {
   // emission can stamp `diffStatus` on each node. Returns null in normal
   // viewing mode — no diff overhead when not comparing.
   const compareDiff = useCompareDiff();
-  return useGraphEmission(doc, projection, positions, compareDiff);
+  // Session 135 / spec gap #4 — propagation-derived states + the
+  // active speculation overlay. Both feed the per-node state badge in
+  // emission. `derivedStates` is memoized on (entities, edges,
+  // overlay) so it's a stable ref across position-only drags.
+  const derivedStates = usePropagatedStates();
+  const speculationOverlay = useDocumentStore((s) => s.speculationOverlay);
+  return useGraphEmission(
+    doc,
+    projection,
+    positions,
+    compareDiff,
+    derivedStates,
+    speculationOverlay
+  );
 };

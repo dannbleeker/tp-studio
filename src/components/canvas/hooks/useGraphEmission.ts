@@ -1,5 +1,5 @@
 import type { DetailedRevisionDiff } from '@/domain/revisions';
-import type { TPDocument } from '@/domain/types';
+import type { EntityId, EntityState, TPDocument } from '@/domain/types';
 import type { AnyTPNode, TPEdge } from '../edges/flow-types';
 import { useGraphEdgeEmission } from './useGraphEdgeEmission';
 import { useGraphNodeEmission } from './useGraphNodeEmission';
@@ -30,9 +30,18 @@ export const useGraphEmission = (
   doc: TPDocument,
   projection: GraphProjection,
   positions: GraphPositions,
-  compareDiff: DetailedRevisionDiff | null
+  compareDiff: DetailedRevisionDiff | null,
+  derivedStates: Record<EntityId, EntityState>,
+  speculationOverlay: Record<string, EntityState> | null
 ): GraphEmission => {
-  const nodes = useGraphNodeEmission(doc, projection, positions, compareDiff);
+  const nodes = useGraphNodeEmission(
+    doc,
+    projection,
+    positions,
+    compareDiff,
+    derivedStates,
+    speculationOverlay
+  );
   const edges = useGraphEdgeEmission(doc, projection);
   return { nodes, edges };
 };

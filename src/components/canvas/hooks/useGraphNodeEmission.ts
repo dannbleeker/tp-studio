@@ -3,7 +3,8 @@ import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { rootCauseReachCounts, udeReachCounts } from '@/domain/coreDriver';
 import { descendantIds } from '@/domain/groups';
 import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisions';
-import type { TPDocument } from '@/domain/types';
+import { effectiveState } from '@/domain/statePropagation';
+import type { EntityId, EntityState, TPDocument } from '@/domain/types';
 import { Z } from '@/domain/zLayers';
 import type { AnyTPNode, TPCollapsedGroupNode, TPGroupNode, TPNode } from '../edges/flow-types';
 import {
@@ -32,7 +33,9 @@ export const useGraphNodeEmission = (
   doc: TPDocument,
   projection: GraphProjection,
   positions: GraphPositions,
-  compareDiff: DetailedRevisionDiff | null = null
+  compareDiff: DetailedRevisionDiff | null = null,
+  derivedStates: Record<EntityId, EntityState> = {},
+  speculationOverlay: Record<string, EntityState> | null = null
 ): AnyTPNode[] => {
   return useMemo(() => {
     const {
@@ -138,6 +141,14 @@ export const useGraphNodeEmission = (
             return s === 'unchanged' ? undefined : s === 'removed' ? undefined : s;
           })()
         : undefined;
+      // Session 135 / spec gap #4 — effective state for the canvas
+      // badge. `effectiveState` folds in the speculation overlay (when
+      // active) → manual `entity.state` → propagation-derived. We omit
+      // the field entirely for `'unknown'` so untagged diagrams render
+      // no badges. `speculated` flags a value sourced from an active
+      // override so the badge can read as "hypothetical".
+      const effState = effectiveState(entity, derivedStates, speculationOverlay ?? undefined);
+      const speculated = speculationOverlay ? entity.id in speculationOverlay : false;
       const node: TPNode = {
         id: entity.id,
         type: 'tp',
@@ -159,6 +170,8 @@ export const useGraphNodeEmission = (
           ...(reach && reach > 0 ? { udeReachCount: reach } : {}),
           ...(reverseReach && reverseReach > 0 ? { rootCauseReachCount: reverseReach } : {}),
           ...(diffStatus ? { diffStatus } : {}),
+          ...(effState !== 'unknown' ? { effectiveState: effState } : {}),
+          ...(speculated ? { speculated: true } : {}),
         },
       };
       nodes.push(node);
@@ -182,5 +195,5 @@ export const useGraphNodeEmission = (
     }
 
     return nodes;
-  }, [doc, projection, positions, compareDiff]);
+  }, [doc, projection, positions, compareDiff, derivedStates, speculationOverlay]);
 };

@@ -2,6 +2,55 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Confidence / state propagation Phase 1C: what-if speculation (closes spec gap #4)
+
+The FRT module's signature behaviour, completed: "what changes
+downstream if this assumption were false?" — explored live on the
+canvas without committing anything until the user says so.
+
+**Engine** (`statePropagation.ts`) — `propagateStates(doc, overrides?)`
+and `effectiveState(entity, derived, overrides?)` now take an optional
+speculative-overrides map. An overridden entity contributes its
+hypothetical value downstream in place of its manual/propagated value;
+the returned map stays the pure propagated value per node (override
+applied to *contributions*, not written back). Precedence:
+override → manual `entity.state` → derived → unknown. Omitting the arg
+reproduces the Phase 1B pass exactly.
+
+**Store** — new UI-only `speculationSlice`:
+- `speculationOverlay: Record<id, EntityState> | null` (null = not
+  speculating). Not persisted, not in undo history, reset by
+  `resetStoreForTest`.
+- `beginSpeculation` / `setSpeculativeState` / `clearSpeculativeState`
+  / `revertSpeculation` / `commitSpeculation`.
+- Commit writes every override into `entity.state` via a new bulk
+  `setEntityStates` action — ONE undo step, not one-per-entity.
+
+**Canvas** — the deferred Phase 1B node state badge ships here, on the
+left-centre edge of each TPNode: green T / red F / amber ? for the
+effective state; `'unknown'` renders nothing so untagged diagrams stay
+clean. Threaded through `useGraphView → useGraphEmission →
+useGraphNodeEmission` from a memoized propagation pass. Under
+speculation the badges reflect the hypothetical cascade and overridden
+nodes get a dashed indigo ring.
+
+**Banner** — `SpeculationBanner` (mounted by `App.tsx`): "Speculating —
+N hypothetical changes" + Commit / Revert (Esc reverts).
+
+**Inspector** — the state picker writes to the overlay (not the doc)
+while speculating, the highlight tracks the speculative value, and a
+hint reminds the user nothing is saved.
+
+**Palette** — `Speculate: what changes if…`, `Commit speculative
+states`, `Revert speculation` (all view-state, skip the write guard).
+
+**Tests** — +7 engine override tests, 16 store-slice tests, +5
+analysis-command tests.
+
+Major-gap tally: **0 of 10 open.** Every original spec major gap is now
+either closed or explicitly out of scope (#2 collab, #8 enterprise, AI
+§5).
+
 ## Session 135 — Archived groups: preserve rejected logic (medium gap)
 
 Lets a user park a branch of reasoning they've rejected (a discarded

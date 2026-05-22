@@ -12,6 +12,12 @@
  * Consumers ask `derived[id]` and get the entity's derived state
  * (`'unknown'` when no edges contribute). Apply manual override via
  * `effectiveState(entity, derived)` from `@/domain/statePropagation`.
+ *
+ * Phase 1C — when a speculation overlay is active, it's threaded into
+ * the engine so `derived` reflects the *hypothetical* cascade. The
+ * overlay is UI-only and never mutates the doc; flipping it triggers
+ * one re-propagation. Non-speculation sessions (`overlay === null`)
+ * compute exactly as Phase 1B did.
  */
 
 import { useMemo } from 'react';
@@ -22,5 +28,9 @@ import { useDocumentStore } from '@/store';
 export function usePropagatedStates(): Record<EntityId, EntityState> {
   const entities = useDocumentStore((s) => s.doc.entities);
   const edges = useDocumentStore((s) => s.doc.edges);
-  return useMemo(() => propagateStates({ entities, edges }), [entities, edges]);
+  const overlay = useDocumentStore((s) => s.speculationOverlay);
+  return useMemo(
+    () => propagateStates({ entities, edges }, overlay ?? undefined),
+    [entities, edges, overlay]
+  );
 }

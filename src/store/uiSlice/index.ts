@@ -9,6 +9,11 @@ import {
 import { createSearchSlice, type SearchSlice, searchDefaults } from './searchSlice';
 import { createSelectionSlice, type SelectionSlice, selectionDefaults } from './selectionSlice';
 import {
+  createSpeculationSlice,
+  type SpeculationSlice,
+  speculationDefaults,
+} from './speculationSlice';
+import {
   createWalkthroughSlice,
   type WalkthroughSlice,
   walkthroughDefaults,
@@ -53,7 +58,8 @@ export type UISlice = SelectionSlice &
   PreferencesSlice &
   DialogsSlice &
   SearchSlice &
-  WalkthroughSlice;
+  WalkthroughSlice &
+  SpeculationSlice;
 
 /**
  * Data-only defaults for the unified slice. Used by `resetStoreForTest` to
@@ -67,12 +73,14 @@ export const uiDefaults = (): Pick<
   | keyof ReturnType<typeof dialogsDefaults>
   | keyof ReturnType<typeof searchDefaults>
   | keyof ReturnType<typeof walkthroughDefaults>
+  | keyof ReturnType<typeof speculationDefaults>
 > => ({
   ...selectionDefaults(),
   ...preferencesDefaults(),
   ...dialogsDefaults(),
   ...searchDefaults(),
   ...walkthroughDefaults(),
+  ...speculationDefaults(),
 });
 
 export const createUISlice: StateCreator<RootStore, [], [], UISlice> = (...args) => ({
@@ -81,4 +89,5 @@ export const createUISlice: StateCreator<RootStore, [], [], UISlice> = (...args)
   ...createDialogsSlice(...args),
   ...createSearchSlice(...args),
   ...createWalkthroughSlice(...args),
+  ...createSpeculationSlice(...args),
 });

@@ -444,4 +444,73 @@ describe('effectiveState — manual / derived merge helper', () => {
       'unknown'
     );
   });
+
+  it('a speculative override outranks both manual and derived', () => {
+    resetIds();
+    const e = makeEntity({ state: 'true' });
+    expect(effectiveState(e, { [e.id]: 'false' }, { [e.id]: 'disputed' })).toBe('disputed');
+  });
+
+  it('falls back to manual when the override map has no entry for this id', () => {
+    resetIds();
+    const e = makeEntity({ state: 'true' });
+    expect(effectiveState(e, {}, { other: 'false' })).toBe('true');
+  });
+});
+
+describe('propagateStates — Phase 1C speculative overrides', () => {
+  it('an override on a leaf flows downstream like a manual state', () => {
+    resetIds();
+    const src = makeEntity(); // no manual state
+    const tgt = makeEntity();
+    const doc = makeDoc([src, tgt], [makeEdge(src.id, tgt.id)]);
+    // No override → unknown downstream.
+    expect(propagateStates(doc)[tgt.id]).toBe('unknown');
+    // Override src to true → target derives true.
+    expect(propagateStates(doc, { [src.id]: 'true' })[tgt.id]).toBe('true');
+  });
+
+  it('an override beats the manual state when contributing downstream', () => {
+    resetIds();
+    const src = makeEntity({ state: 'true' });
+    const tgt = makeEntity();
+    const doc = makeDoc([src, tgt], [makeEdge(src.id, tgt.id)]);
+    // Without override, src=true → tgt=true.
+    expect(propagateStates(doc)[tgt.id]).toBe('true');
+    // Speculating src=false flips the cascade.
+    expect(propagateStates(doc, { [src.id]: 'false' })[tgt.id]).toBe('false');
+  });
+
+  it('cascades a speculative override through a multi-hop chain', () => {
+    resetIds();
+    const a = makeEntity({ state: 'true' });
+    const b = makeEntity();
+    const c = makeEntity();
+    const doc = makeDoc([a, b, c], [makeEdge(a.id, b.id), makeEdge(b.id, c.id)]);
+    const out = propagateStates(doc, { [a.id]: 'false' });
+    expect(out[b.id]).toBe('false');
+    expect(out[c.id]).toBe('false');
+  });
+
+  it('an empty override map matches the no-override pass (backward compat)', () => {
+    resetIds();
+    const a = makeEntity({ state: 'true' });
+    const b = makeEntity();
+    const doc = makeDoc([a, b], [makeEdge(a.id, b.id)]);
+    expect(propagateStates(doc, {})).toEqual(propagateStates(doc));
+  });
+
+  it('overriding an AND-group member flips the merged result', () => {
+    resetIds();
+    const a = makeEntity({ state: 'true' });
+    const b = makeEntity({ state: 'true' });
+    const tgt = makeEntity();
+    const doc = makeDoc(
+      [a, b, tgt],
+      [makeEdge(a.id, tgt.id, { andGroupId: 'g1' }), makeEdge(b.id, tgt.id, { andGroupId: 'g1' })]
+    );
+    expect(propagateStates(doc)[tgt.id]).toBe('true');
+    // Speculating one member false → AND short-circuits to false.
+    expect(propagateStates(doc, { [b.id]: 'false' })[tgt.id]).toBe('false');
+  });
 });

@@ -1,8 +1,18 @@
 import type { Edge as RFEdge, Node as RFNode } from '@xyflow/react';
-import type { Entity, Group } from '@/domain/types';
+import type { Entity, EntityState, Group } from '@/domain/types';
 
 export type TPNodeData = {
   entity: Entity;
+  /** Session 135 / spec gap #4 — the entity's effective state for the
+   *  small canvas badge: speculative override (Phase 1C) ?? manual
+   *  `entity.state` ?? propagation-derived. Stamped by
+   *  `useGraphNodeEmission`. Absent (`'unknown'`) renders no badge —
+   *  the canvas stays clean on diagrams nobody has state-tagged. */
+  effectiveState?: EntityState;
+  /** Phase 1C — true when `effectiveState` comes from an active
+   *  speculation override (not the persisted doc). The badge renders
+   *  with a dashed ring so a hypothetical reads as "not committed". */
+  speculated?: boolean;
   /** F7: when this entity has `collapsed: true` AND its downstream is hidden
    *  by useGraphView, this carries the number of descendants currently
    *  hidden so the TPNode can render a "+N" badge next to its chevron. */

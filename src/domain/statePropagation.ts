@@ -57,15 +57,24 @@
 import type { Edge, EdgeWeight, Entity, EntityId, EntityState, TPDocument } from './types';
 
 /**
- * Merge an entity's manual override with its propagated state.
- * Manual override wins if set; propagation fills in the rest. Returns
- * `'unknown'` if the id isn't in the doc.
+ * Merge an entity's state with its propagated state. Precedence:
+ *   1. speculative `overrides[id]` (Phase 1C what-if overlay), if set
+ *   2. the authored manual `entity.state`, if set
+ *   3. the propagated `derived[id]`
+ *   4. `'unknown'`
+ *
+ * Returns `'unknown'` if the id isn't in the doc. The `overrides`
+ * argument is optional — non-speculation callers omit it and get the
+ * Phase 1B manual-wins behaviour unchanged.
  */
 export function effectiveState(
   entity: Entity | undefined,
-  derived: Record<string, EntityState>
+  derived: Record<string, EntityState>,
+  overrides?: Record<string, EntityState>
 ): EntityState {
   if (!entity) return 'unknown';
+  const ov = overrides?.[entity.id];
+  if (ov) return ov;
   if (entity.state) return entity.state;
   return derived[entity.id] ?? 'unknown';
 }
@@ -124,7 +133,23 @@ function applyWeight(source: EntityState, weight: EdgeWeight | undefined): Entit
  */
 export type PropagationInput = Pick<TPDocument, 'entities' | 'edges'>;
 
-export function propagateStates(doc: PropagationInput): Record<EntityId, EntityState> {
+/**
+ * Compute the derived (propagated) state for every entity.
+ *
+ * `overrides` (Phase 1C what-if overlay) is an optional map of
+ * speculative states. When present, an overridden entity contributes
+ * its speculative value downstream INSTEAD of its manual state or its
+ * own propagated value — so the caller can ask "what cascades if this
+ * assumption were false?" without touching the persisted doc. Omit it
+ * for the plain Phase 1B pass. The returned map is still the pure
+ * propagated value per node (the override is applied to downstream
+ * *contributions*, not written back into the result) — pair it with
+ * `effectiveState(entity, derived, overrides)` for display.
+ */
+export function propagateStates(
+  doc: PropagationInput,
+  overrides?: Record<string, EntityState>
+): Record<EntityId, EntityState> {
   const entities = doc.entities;
   const edges = Object.values(doc.edges);
 
@@ -143,6 +168,11 @@ export function propagateStates(doc: PropagationInput): Record<EntityId, EntityS
   const inProgress = new Set<string>();
 
   function effective(id: string): EntityState {
+    // Phase 1C — a speculative override outranks everything: it's the
+    // hypothetical the user is exploring, so it flows downstream in
+    // place of the entity's manual or propagated value.
+    const ov = overrides?.[id];
+    if (ov) return ov;
     const ent = entities[id];
     if (!ent) return 'unknown';
     // Manual override wins when reading the source's contribution to

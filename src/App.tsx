@@ -6,6 +6,7 @@ import { CompareBanner } from './components/canvas/overlays/CompareBanner';
 import { ContextMenu } from './components/canvas/overlays/ContextMenu';
 import { PresentationStepThrough } from './components/canvas/overlays/PresentationStepThrough';
 import { SelectionToolbar } from './components/canvas/overlays/SelectionToolbar';
+import { SpeculationBanner } from './components/canvas/overlays/SpeculationBanner';
 import { DocumentMeta } from './components/DocumentMeta';
 import { Inspector } from './components/inspector/Inspector';
 import { Toaster } from './components/toast/Toaster';
@@ -288,6 +289,9 @@ export function App() {
       </ReactFlowProvider>
       <ErrorBoundary label="Compare banner">
         <CompareBanner />
+      </ErrorBoundary>
+      <ErrorBoundary label="Speculation banner">
+        <SpeculationBanner />
       </ErrorBoundary>
       {/* Nested ErrorBoundaries scope a crash to a single panel — the
           canvas stays usable if (say) the Inspector blows up on a bad

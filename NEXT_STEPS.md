@@ -6,7 +6,7 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ## Open major gaps from the spec analysis
 
-Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **one of ten** original major gaps remains open (#4 confidence / propagation Phase 1C). **Out of scope** per Dann's call (Session 135): #2 multi-user collab, #8 enterprise integration, plus AI integration (spec §5) — see won't-build section. **Closed:** #1 NBR, #3 cross-diagram traceability, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #9 formal mode-switching, #10 PowerPoint export.
+Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **zero of ten** original major gaps remain open — every one is closed or explicitly out of scope. **Out of scope** per Dann's call (Session 135): #2 multi-user collab, #8 enterprise integration, plus AI integration (spec §5) — see won't-build section. **Closed:** #1 NBR, #3 cross-diagram traceability, **#4 confidence / propagation (Phases 1A + 1B + 1C)**, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #9 formal mode-switching, #10 PowerPoint export.
 
 ### ~~🔴 #3 — Cross-diagram traceability~~ — *done Session 135*
 
@@ -37,22 +37,13 @@ State + palette commands persist across reloads via `StoredPrefs.appMode`. 12 te
 - Workshop auto-engage high-contrast edge palette — stateful restore on leave adds complexity
 - Guided method-checklist auto-open — heavy modal on every new doc is intrusive
 
-### 🟡 #4 — Confidence / propagation simulation *(Phase 1A + 1B done, Phase 1C open)*
+### ~~🔴 #4 — Confidence / propagation simulation~~ — *done Session 135 (Phases 1A + 1B + 1C)*
 
-Spec §3.4. The FRT module's signature behaviour: every entity carries a state value, propagation flows through AND/OR/XOR logic on edges, and the user can ask "what changes if this assumption is false?" without committing the change.
+Spec §3.4 — the FRT module's signature behaviour. **Fully closed.**
 
-**Phase 1A — schema (done Session 135).** `EntityState = 'true' | 'false' | 'unknown' | 'disputed'` + `entity.state?: EntityState` + strict persistence validation (unknown values throw on import, emit-or-omit on export).
-
-**Phase 1B — engine + inspector (done Session 135).** Pure `propagateStates(doc): Record<EntityId, EntityState>` with full edge-weight (`'negative'` flips, `'zero'` skips), junctor (AND / OR / XOR), and cycle handling. `effectiveState(entity, derived)` is the canonical merge helper. Inspector exposes a 4-button state picker + a propagation caption that turns amber on conflict. 41 new tests.
-
-**Phase 1B follow-up (~30 min):**
-- **Node-chrome state badge.** A small chip on TPNode showing the effective state (manual ?? derived) at a glance, so review meetings don't have to open the inspector to read state. Likely sits in the top-right of TPNode next to the annotation number, colour-coded (green=true, red=false, amber=disputed, neutral=unknown). Defer until TPNode's pending visual review (see Open polish + quality) so the visual hierarchy stays coherent.
-
-**Phase 1C — what-if UX (open).** A "speculate" mode: user clicks an entity, picks a hypothetical state, and the canvas shows the downstream cascade without persisting. Likely a Zustand-side `speculationOverlay: Map<EntityId, EntityState>` that runs through the same `propagateStates` engine with manual values overlaid, plus a banner offering "commit" / "revert". Spec language: "what changes if this assumption is false?"
-
-The engine + `effectiveState` merge helper was designed for 1C: the speculation overlay reads as "a layer of manual overrides", and the engine's pure-function shape means propagation under the overlay is a single recomputation.
-
-**Effort remaining:** Phase 1C ~1–2 sessions.
+- **Phase 1A — schema.** `EntityState = 'true' | 'false' | 'unknown' | 'disputed'` + `entity.state?` + strict persistence.
+- **Phase 1B — engine + inspector.** Pure `propagateStates(doc)` with edge-weight (`'negative'` flips, `'zero'` skips), junctors (AND / OR / XOR), cycle handling; `effectiveState` merge helper; inspector 4-button picker + conflict caption.
+- **Phase 1C — what-if speculation.** `propagateStates(doc, overrides?)` overlay-aware engine + UI-only `speculationSlice` (begin / set / clear / revert / commit; commit is one undo step via bulk `setEntityStates`). Canvas state badges (the deferred 1B node chip — green T / red F / amber ?, dashed ring when speculative), `SpeculationBanner` (Commit / Revert / Esc), inspector picker speculation mode, 3 palette commands. +28 tests.
 
 ---
 
@@ -92,10 +83,12 @@ From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4
 
 If picking the next thing up:
 
-1. **#4 confidence / state propagation Phase 1C** (~1–2 sessions) — what-if speculation overlay. Phase 1A schema + Phase 1B engine + inspector landed Session 135. Next slice is a `speculationOverlay` store slice + canvas-wide preview + commit/revert banner.
-2. **Medium gaps as filler** — remaining: reactive-vs-proactive NBR mitigation (policy-parked: re-open if practitioners ask), action eligibility on satisfied preconditions (rides on Phase 1C). S&T assumption sub-typing + archived-groups both done Session 135.
-3. **Design-audit fixes** — the [Session 135 design audit](DESIGN_AUDIT_SESSION_135.md) has a 3-batch action ordering (the `<Field>` label gap is the highest-impact a11y fix). Good cleanup-between-features work.
-4. **Remaining file splits** — TPEdge / entityTypeMeta / selectionVerbs / CreationWizardPanel / dialogsSlice / PrintPreviewDialog / ContextMenu. Mechanical, low-risk.
+**All ten original spec major gaps are now closed or out of scope.** What's left is polish + the optional medium gaps:
+
+1. **Design-audit fixes** — the [Session 135 design audit](DESIGN_AUDIT_SESSION_135.md) has a 3-batch action ordering (the `<Field>` label gap is the highest-impact a11y fix). Good cleanup-between-features work.
+2. **Action eligibility on satisfied preconditions** (~1 hour) — now unblocked: Phase 1C's `effectiveState` + the propagation engine give the "is this action's precondition satisfied?" signal directly. The remaining medium gap with real leverage.
+3. **Remaining file splits** — TPEdge / entityTypeMeta / selectionVerbs / CreationWizardPanel / dialogsSlice / PrintPreviewDialog / ContextMenu. Mechanical, low-risk.
+4. **Reactive-vs-proactive NBR mitigation** — policy-parked; re-open only if practitioners ask.
 
 ---
 

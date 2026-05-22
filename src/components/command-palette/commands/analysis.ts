@@ -64,6 +64,56 @@ export const analysisCommands: Command[] = [
       );
     },
   }),
+  // Phase 1C — what-if speculation. View-state actions (overlay is
+  // UI-only, never mutates the doc until Commit), so they skip the
+  // write guard. The banner's Commit/Revert + the inspector picker
+  // drive the rest of the flow.
+  {
+    id: 'begin-speculation',
+    label: 'Speculate: what changes if… (what-if overlay)',
+    group: 'Review',
+    run: (s) => {
+      if (s.speculationOverlay !== null) {
+        s.showToast('info', 'Already speculating — pick an entity state to explore.');
+        return;
+      }
+      s.beginSpeculation();
+      s.showToast(
+        'info',
+        'Speculation on. Pick a state for any entity to preview the downstream cascade.'
+      );
+    },
+  },
+  {
+    id: 'commit-speculation',
+    label: 'Commit speculative states to the document',
+    group: 'Review',
+    run: (s) => {
+      if (s.speculationOverlay === null) {
+        s.showToast('info', 'Not speculating.');
+        return;
+      }
+      const n = Object.keys(s.speculationOverlay).length;
+      s.commitSpeculation();
+      s.showToast(
+        'success',
+        n > 0 ? `Committed ${n} state change${n === 1 ? '' : 's'}.` : 'Speculation ended.'
+      );
+    },
+  },
+  {
+    id: 'revert-speculation',
+    label: 'Revert speculation (discard what-if)',
+    group: 'Review',
+    run: (s) => {
+      if (s.speculationOverlay === null) {
+        s.showToast('info', 'Not speculating.');
+        return;
+      }
+      s.revertSpeculation();
+      s.showToast('info', 'Speculation discarded.');
+    },
+  },
   {
     id: 'start-read-through',
     label: 'Start read-through (step through every edge)',

@@ -1,6 +1,7 @@
+import clsx from 'clsx';
 import { Pin } from 'lucide-react';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
-import type { DiagramType, Entity, SpanOfControl } from '@/domain/types';
+import type { DiagramType, Entity, EntityState, SpanOfControl } from '@/domain/types';
 import { guardWriteOrToast } from '@/services/browseLock';
 
 /**
@@ -150,6 +151,56 @@ export function ReachReverseBadge({ count }: { count: number }) {
       title={`Fed by ${count} root cause${count === 1 ? '' : 's'}`}
     >
       ←{count} root{count === 1 ? '' : 's'}
+    </span>
+  );
+}
+
+/**
+ * Entity-state badge — left-centre edge (the only edge not used by
+ * the four corner badges). Surfaces the effective state computed by
+ * the propagation engine: green T (true), red F (false), amber ?
+ * (disputed). `'unknown'` renders nothing — untagged diagrams stay
+ * clean. When `speculated` is set, the value is a Phase 1C what-if
+ * override (not committed) so the badge gets a dashed ring + an
+ * "(speculative)" suffix in its label.
+ */
+const STATE_BADGE_META: Record<
+  Exclude<EntityState, 'unknown'>,
+  { glyph: string; label: string; cls: string }
+> = {
+  true: {
+    glyph: 'T',
+    label: 'true',
+    cls: 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200',
+  },
+  false: {
+    glyph: 'F',
+    label: 'false',
+    cls: 'border-red-400 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950 dark:text-red-200',
+  },
+  disputed: {
+    glyph: '?',
+    label: 'disputed',
+    cls: 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200',
+  },
+};
+
+export function StateBadge({ state, speculated }: { state: EntityState; speculated?: boolean }) {
+  if (state === 'unknown') return null;
+  const meta = STATE_BADGE_META[state];
+  const label = speculated ? `State: ${meta.label} (speculative)` : `State: ${meta.label}`;
+  return (
+    <span
+      className={clsx(
+        'pointer-events-none absolute -left-2 top-1/2 -translate-y-1/2 rounded-full border px-1.5 py-0.5 font-bold text-[10px] shadow-xs',
+        meta.cls,
+        speculated && 'border-dashed ring-2 ring-indigo-400/50'
+      )}
+      role="img"
+      aria-label={label}
+      title={label}
+    >
+      {meta.glyph}
     </span>
   );
 }

@@ -14,7 +14,7 @@
 
 import { createEntity } from '@/domain/factory';
 import { removeEntityFromEdges } from '@/domain/graph';
-import type { Entity, EntityType, Patch } from '@/domain/types';
+import type { Entity, EntityState, EntityType, Patch } from '@/domain/types';
 import { entityPatch, scrubFromGroups, touch } from '../docMutate';
 import type { EntityFactoryDeps } from './shared';
 
@@ -28,6 +28,12 @@ export type EntityCrudActions = {
   swapEntities: (aId: string, bId: string) => void;
   deleteEntitiesAndEdges: (entityIds: string[], edgeIds: string[]) => void;
   addImportedEntity: (params: { sourceDocId: string; sourceEntity: Entity }) => Entity | null;
+  /** Phase 1C — write a batch of entity `state` values in ONE history
+   *  step. Used by `commitSpeculation` so reverting a committed what-if
+   *  is a single undo, not one-per-entity. A `state` of `undefined`
+   *  clears the field (back to "unknown"). No-ops on unknown ids and
+   *  on entries whose state already matches. */
+  setEntityStates: (entries: { id: string; state: EntityState | undefined }[]) => void;
 };
 
 export function createEntityCrudActions({
@@ -214,6 +220,32 @@ export function createEntityCrudActions({
         });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });
+    },
+
+    setEntityStates: (entries) => {
+      if (entries.length === 0) return;
+      applyDocChange((prev) => {
+        let changed = false;
+        const nextEntities = { ...prev.entities };
+        for (const { id, state } of entries) {
+          const cur = prev.entities[id];
+          if (!cur) continue;
+          // No-op per entity when the state already matches (treat
+          // absent === undefined so clearing a never-set field is a
+          // no-op too).
+          if ((cur.state ?? undefined) === state) continue;
+          // Emit-or-omit: clearing drops the field rather than storing
+          // `state: undefined` (exactOptionalPropertyTypes + the
+          // persist convention).
+          const { state: _drop, ...rest } = cur;
+          nextEntities[id] = state
+            ? { ...cur, state, updatedAt: Date.now() }
+            : { ...rest, updatedAt: Date.now() };
+          changed = true;
+        }
+        if (!changed) return prev;
+        return touch({ ...prev, entities: nextEntities });
+      });
     },
   };
 }

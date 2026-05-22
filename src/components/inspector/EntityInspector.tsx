@@ -41,6 +41,10 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   const updateEntity = useDocumentStore((s) => s.updateEntity);
   const setEntityAttribute = useDocumentStore((s) => s.setEntityAttribute);
   const removeEntityAttribute = useDocumentStore((s) => s.removeEntityAttribute);
+  // Phase 1C — when a speculation overlay is active, the state picker
+  // writes to the overlay (hypothetical) instead of the doc.
+  const speculationOverlay = useDocumentStore((s) => s.speculationOverlay);
+  const setSpeculativeState = useDocumentStore((s) => s.setSpeculativeState);
   const locked = useDocumentStore((s) => s.browseLocked);
   // Session 135 / spec gap #4 Phase 1B — propagated state for the
   // currently selected entity. Computed once per entities/edges
@@ -335,6 +339,15 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           with propagation, the caption turns amber so the conflict
           reads at a glance. */}
       <Field label="State">
+        {/* Phase 1C — in speculation mode the picker writes to the
+            overlay (hypothetical), the highlight reflects the
+            speculative value, and a hint reminds the user nothing is
+            committed. Outside speculation it edits `entity.state`. */}
+        {speculationOverlay !== null && (
+          <p className="mb-1.5 text-[11px] text-indigo-700 dark:text-indigo-300">
+            Speculating — picking a state explores the cascade without saving.
+          </p>
+        )}
         <div data-component="entity-state-picker" className="grid grid-cols-4 gap-1.5 text-xs">
           {(
             [
@@ -344,20 +357,29 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
               { id: 'disputed', label: 'Disputed' },
             ] as const
           ).map((opt) => {
-            // Persisted `'unknown'` is treated as "no claim" for
-            // selection purposes — the "Unknown" button highlights
-            // for both `undefined` and the explicit `'unknown'` value.
-            const current: EntityState | undefined =
-              entity.state === 'unknown' ? undefined : entity.state;
+            const speculating = speculationOverlay !== null;
+            // In speculation mode the highlight tracks the overlay
+            // value (falling back to the manual state if no override
+            // is set for this entity yet); otherwise it tracks the
+            // persisted manual state. Persisted `'unknown'` is treated
+            // as "no claim" so the "Unknown" button highlights for both
+            // `undefined` and the explicit `'unknown'` value.
+            const overlayVal = speculating ? speculationOverlay[entityId] : undefined;
+            const base = overlayVal ?? entity.state;
+            const current: EntityState | undefined = base === 'unknown' ? undefined : base;
             const selected = (current ?? null) === (opt.id ?? null);
             return (
               <button
                 key={opt.label}
                 type="button"
-                disabled={locked}
+                disabled={locked && !speculating}
                 onClick={() => {
                   const next = opt.id as EntityState | undefined;
-                  updateEntity(entityId, { state: next });
+                  if (speculating) {
+                    setSpeculativeState(entityId, next);
+                  } else {
+                    updateEntity(entityId, { state: next });
+                  }
                 }}
                 className={clsx(
                   'rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60',
