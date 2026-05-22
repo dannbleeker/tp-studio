@@ -239,14 +239,15 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
             {entity.owner ? ` by ${entity.owner}` : ''}
           </p>
         )}
-        <button
-          type="button"
+        <Button
+          variant="softNeutral"
+          size="xs"
           disabled={locked}
           onClick={() => updateEntity(entityId, { lastValidatedAt: Date.now() })}
-          className="mt-1 inline-flex items-center rounded-sm border border-neutral-200 bg-white px-2 py-0.5 text-[11px] text-neutral-700 transition hover:border-indigo-400 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40"
+          className="mt-1 self-start"
         >
           {entity.lastValidatedAt === undefined ? 'Mark validated' : 'Re-validate (now)'}
-        </button>
+        </Button>
       </Field>
 
       {/* Session 134 / spec major gap #6 (structured half) — first-class

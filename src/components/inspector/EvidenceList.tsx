@@ -172,7 +172,7 @@ function EvidenceRow({
           title={`Source: ${SOURCE_LABEL[item.source]} (click to cycle)`}
           aria-label={`Source ${SOURCE_LABEL[item.source]}. Press to cycle.`}
           className={clsx(
-            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide transition focus:outline-hidden focus:ring-2 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50',
+            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide outline-hidden transition focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50',
             SOURCE_CHIP_CLASS[item.source]
           )}
         >
@@ -187,7 +187,7 @@ function EvidenceRow({
           title={`Strength: ${STRENGTH_LABEL[item.strength]} (click to cycle)`}
           aria-label={`Strength ${STRENGTH_LABEL[item.strength]}. Press to cycle.`}
           className={clsx(
-            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide transition focus:outline-hidden focus:ring-2 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50',
+            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide outline-hidden transition focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50',
             STRENGTH_CHIP_CLASS[item.strength]
           )}
         >
@@ -233,20 +233,20 @@ function EvidenceRow({
       </div>
 
       <div className="flex items-center gap-2 text-[10px] text-neutral-500 dark:text-neutral-400">
-        <button
-          type="button"
+        <Button
+          variant="softNeutral"
+          size="xs"
+          disabled={locked}
           onClick={() =>
             updateEvidence(entityId, item.id, {
               validatedAt: Date.now(),
               ...(ownerHint && ownerHint.length > 0 ? { validatedBy: ownerHint } : {}),
             })
           }
-          disabled={locked}
-          className="inline-flex items-center gap-1 rounded-sm border border-neutral-200 bg-white px-1.5 py-0 text-[10px] text-neutral-700 transition hover:border-emerald-400 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-emerald-500 dark:hover:bg-emerald-950/40"
         >
           <CheckCircle2 className="h-3 w-3" />
           {item.validatedAt === undefined ? 'Mark validated' : 'Re-validate'}
-        </button>
+        </Button>
         {item.validatedAt !== undefined && (
           <span>
             {formatValidatedAt(item.validatedAt)}

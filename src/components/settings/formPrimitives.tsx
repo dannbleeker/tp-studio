@@ -156,7 +156,11 @@ export function Toggle({
  * editor in TPNode) can still compose `FIELD_BASE` with extra
  * classes, but the canonical shape is here.
  */
-const FIELD_BASE =
+// Session 135 (design audit #20) — exported so callers that need a
+// raw `<input>` (e.g. AttributeRow's number inputs, which require a
+// `step` attribute TextInput doesn't expose) can compose the same
+// chrome instead of hand-rolling a drifting className.
+export const FIELD_BASE =
   'w-full rounded-md border border-neutral-200 bg-white px-2 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100';
 
 /** Default size — matches the inspector / settings convention. */
@@ -165,7 +169,7 @@ const FIELD_SIZE_MD = 'py-1.5 text-sm text-neutral-900';
  *  surface (PrintPreviewDialog headers, CustomEntityClassesSection
  *  rows). The smaller padding + `text-xs` matches what those callers
  *  had as one-off inline `<input>` markup pre-migration. */
-const FIELD_SIZE_SM = 'py-1 text-xs text-neutral-700 dark:text-neutral-200';
+export const FIELD_SIZE_SM = 'py-1 text-xs text-neutral-700 dark:text-neutral-200';
 
 export type TextInputProps = {
   value: string;
@@ -243,6 +247,9 @@ export type SelectProps<T extends string> = {
   className?: string;
   ariaLabel?: string;
   id?: string;
+  /** Session 135 — `'sm'` (denser) vs `'md'` (default). Mirrors
+   *  `TextInput` so a dense inline form can pair the two at one size. */
+  size?: 'sm' | 'md';
 };
 
 export function Select<T extends string>({
@@ -254,6 +261,7 @@ export function Select<T extends string>({
   className,
   ariaLabel,
   id,
+  size = 'md',
 }: SelectProps<T>) {
   return (
     <select
@@ -262,7 +270,13 @@ export function Select<T extends string>({
       disabled={disabled}
       aria-label={ariaLabel}
       onChange={(e) => onChange(e.target.value as T)}
-      className={clsx(FIELD_BASE, FIELD_SIZE_MD, INPUT_FOCUS, 'cursor-pointer', className)}
+      className={clsx(
+        FIELD_BASE,
+        size === 'sm' ? FIELD_SIZE_SM : FIELD_SIZE_MD,
+        INPUT_FOCUS,
+        'cursor-pointer',
+        className
+      )}
     >
       {placeholder !== undefined && value === '' && (
         <option value="" disabled>

@@ -52,7 +52,9 @@ describe('EdgeInspector', () => {
     if (!result.ok) throw new Error('groupAsAnd failed');
     const grouped = render(<EdgeInspector edgeId={e1.id} warnings={[]} />);
     expect(grouped.container.textContent).toContain('AND group');
-    expect(grouped.container.textContent).toContain(result.groupId);
+    // Design audit #8 — the inspector now shows a short `#abcd` hash of
+    // the group id, not the raw nanoid.
+    expect(grouped.container.textContent).toContain(`#${result.groupId.slice(0, 4)}`);
   });
 
   it('Ungroup button clears andGroupId on the edge', () => {

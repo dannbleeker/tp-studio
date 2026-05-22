@@ -2,6 +2,45 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Design-audit incremental sweep (findings 6, 8, 13–15, 18, 20–25)
+
+The audit's remaining lower-impact items, cleared in one pass.
+
+- **6** — `Button` gains a `size: 'xs'`; the hand-rolled "Mark validated"
+  / "Re-validate" buttons in EntityInspector + EvidenceList route
+  through `<Button variant="softNeutral" size="xs">` instead of two
+  bespoke className stacks.
+- **8** — EdgeInspector shows a short `#abcd` hash of the AND/OR/XOR
+  junctor group id instead of the raw nanoid.
+- **13** — SettingsDialog title bumped to `text-base` to match the
+  LargeDialog picker titles.
+- **14** — focusClasses comment now documents that EC's violet identity
+  is *partial* (badges/chrome violet, but the tab bar shares the
+  app-wide indigo `<TabBar>` — deliberate).
+- **15** — verified `text-ui` is a real defined token (13px); no change.
+- **18** — EvidenceList source/strength pills migrated from `focus:` to
+  `focus-visible:` rings to match the `Button` primitive.
+- **20/21** — AttributesSection: the add-row `<input>`/`<select>` now use
+  `<TextInput size="sm">` / `<Select size="sm">` (the `Select` primitive
+  gained a `size` prop); AttributeRow's value inputs compose the now-
+  exported `FIELD_BASE` + `FIELD_SIZE_SM` + `INPUT_FOCUS` instead of a
+  drifting bespoke className.
+- **22/25** — the narrow-viewport inspector dismiss backdrop is now
+  `aria-hidden` (was an `aria-label` announced to nobody behind
+  `tabIndex={-1}`) and always-mounted with `transition-opacity` so it
+  fades in coordinated with the inspector's 120ms slide.
+- **23** — SelectionToolbar guards the empty verb-label span.
+- **24** — CompareBanner eyebrow size normalized to `text-[10px]`.
+
+**Finding 19 (LargeDialog `showModal()`) deliberately deferred** — jsdom's
+`showModal`/`::backdrop` support is fragile and the migration risks the
+dialog test suite, for a lower-impact gain while a working focus trap +
+`aria-modal` is already in place. Left in NEXT_STEPS.
+
+No behaviour change beyond the documented UI tweaks; tests updated for
+the short-hash + backdrop changes; tsc + biome clean. **Design audit now
+fully actioned except finding 19.**
+
 ## Session 135 — Design-audit batch 3: InsetCard + frosted-glass opacity
 
 Findings 10, 16 — the final visual-consistency pass; completes the

@@ -37,9 +37,12 @@ export function SettingsDialog() {
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="settings-title">
       <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
+        {/* Design audit #13 — text-base to match LargeDialog's title
+            size so the Settings header reads as authoritative as the
+            picker dialogs. */}
         <h2
           id="settings-title"
-          className="font-semibold text-neutral-900 text-sm dark:text-neutral-100"
+          className="font-semibold text-base text-neutral-900 dark:text-neutral-100"
         >
           Settings
         </h2>

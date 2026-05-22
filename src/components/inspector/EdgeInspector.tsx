@@ -104,12 +104,16 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
         placeholder="Optional longer explanation — why this edge holds, what conditions matter. Markdown supported."
         locked={locked}
       />
+      {/* Design audit #8 — the junctor group id is a nanoid, not a
+          user-facing string. Show a short hash (enough to tell two
+          groups apart on one edge's inspector) instead of the raw id;
+          the label + Ungroup button carry the actionable meaning. */}
       {edge.andGroupId && (
         <Field label="AND group" as="group">
           <div className="flex items-center justify-between gap-2">
-            <p className="font-mono text-neutral-600 text-xs dark:text-neutral-300">
-              {edge.andGroupId}
-            </p>
+            <span className="font-mono text-neutral-500 text-xs dark:text-neutral-400">
+              #{edge.andGroupId.slice(0, 4)}
+            </span>
             <Button
               variant="softViolet"
               size="sm"
@@ -124,9 +128,9 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
       {edge.orGroupId && (
         <Field label="OR group" as="group">
           <div className="flex items-center justify-between gap-2">
-            <p className="font-mono text-neutral-600 text-xs dark:text-neutral-300">
-              {edge.orGroupId}
-            </p>
+            <span className="font-mono text-neutral-500 text-xs dark:text-neutral-400">
+              #{edge.orGroupId.slice(0, 4)}
+            </span>
             <Button
               variant="softViolet"
               size="sm"
@@ -141,9 +145,9 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
       {edge.xorGroupId && (
         <Field label="XOR group" as="group">
           <div className="flex items-center justify-between gap-2">
-            <p className="font-mono text-neutral-600 text-xs dark:text-neutral-300">
-              {edge.xorGroupId}
-            </p>
+            <span className="font-mono text-neutral-500 text-xs dark:text-neutral-400">
+              #{edge.xorGroupId.slice(0, 4)}
+            </span>
             <Button
               variant="softViolet"
               size="sm"

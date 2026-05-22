@@ -3,12 +3,16 @@ import type { ButtonHTMLAttributes, Ref } from 'react';
 
 export type ButtonVariant = 'primary' | 'ghost' | 'softNeutral' | 'softViolet' | 'destructive';
 
-export type ButtonSize = 'sm' | 'md' | 'icon';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'icon';
 
 const BASE =
   'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50';
 
 const SIZE: Record<ButtonSize, string> = {
+  // Session 135 (design audit #6) — tiny inline-action size for the
+  // "Mark validated" / "Re-validate" buttons that inspectors used to
+  // hand-roll with bespoke `text-[11px] px-2 py-0.5` className stacks.
+  xs: 'px-2 py-0.5 text-[11px]',
   sm: 'px-2 py-1 text-xs',
   md: 'px-2.5 py-1.5 text-xs',
   icon: 'p-1.5 text-xs',

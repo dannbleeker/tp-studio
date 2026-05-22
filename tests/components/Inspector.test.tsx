@@ -69,21 +69,28 @@ describe('Inspector', () => {
 
   it('renders a narrow-viewport dismiss backdrop that clears the selection', () => {
     // The backdrop is the tap-to-dismiss surface that overlays the canvas
-    // when the inspector is open at < md. CSS hides it from md+ via
-    // `md:hidden`, but in jsdom the element is present in the DOM either
-    // way — what we pin here is the click handler + the aria-label.
+    // when the inspector is open at < md. Session 135 (design audit #22/
+    // #25) — it's now always mounted (faded out + pointer-events-none
+    // when closed) and `aria-hidden` (pointer-only convenience), so we
+    // pin it via `data-component` + the `data-open` flag.
     const a = seedEntity('A');
     act(() => useDocumentStore.getState().selectEntity(a.id));
     const { container } = render(<Inspector />);
-    const backdrop = container.querySelector('button[aria-label="Dismiss inspector"]');
+    const backdrop = container.querySelector('[data-component="inspector-backdrop"]');
     expect(backdrop).toBeTruthy();
+    expect(backdrop?.getAttribute('data-open')).toBe('true');
     act(() => fireEvent.click(backdrop!));
     expect(useDocumentStore.getState().selection.kind).toBe('none');
   });
 
-  it('the dismiss backdrop is absent when nothing is selected', () => {
+  it('the dismiss backdrop is inert (closed) when nothing is selected', () => {
     const { container } = render(<Inspector />);
-    expect(container.querySelector('button[aria-label="Dismiss inspector"]')).toBeNull();
+    // Always in the DOM now, but with no `data-open` flag and
+    // pointer-events-none so it can't intercept canvas clicks.
+    const backdrop = container.querySelector('[data-component="inspector-backdrop"]');
+    expect(backdrop).toBeTruthy();
+    expect(backdrop?.getAttribute('data-open')).toBeNull();
+    expect(backdrop?.className).toContain('pointer-events-none');
   });
 
   it('renders the Edit/Preview toggle for the description field', () => {

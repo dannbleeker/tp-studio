@@ -243,7 +243,9 @@ export function SelectionToolbar() {
             )}
           >
             {Icon ? <Icon className="h-3 w-3" aria-hidden /> : null}
-            <span>{display}</span>
+            {/* Design audit #23 — guard the empty span so a verb with
+                no label doesn't leave a stray gap-1 slot beside the icon. */}
+            {display && <span>{display}</span>}
           </button>
         );
       })}

@@ -1,8 +1,11 @@
+import clsx from 'clsx';
 import { Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { AttrKind, AttrValue, Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { FIELD_BASE, FIELD_SIZE_SM, Select, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
+import { INPUT_FOCUS } from '../ui/focusClasses';
 import { Field } from './Field';
 
 /**
@@ -108,24 +111,27 @@ export function AttributesSection({ attributes, onSet, onRemove }: AttributesSec
         })}
         {adding && (
           <div className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/60 p-2 dark:border-neutral-800 dark:bg-neutral-900/60">
-            <input
-              type="text"
+            {/* Design audit #21 — was a bespoke `<input>`/`<select>`
+                duplicating FIELD_BASE; now the shared `sm` primitives. */}
+            <TextInput
+              size="sm"
               value={newKey}
-              onChange={(e) => setNewKey(e.target.value)}
+              onChange={setNewKey}
               placeholder="Attribute name"
-              className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950"
-              autoComplete="off"
+              ariaLabel="Attribute name"
             />
-            <select
+            <Select
+              size="sm"
               value={newKind}
-              onChange={(e) => setNewKind(e.target.value as AttrKind)}
-              className="w-full rounded-sm border border-neutral-200 bg-white px-2 py-1 text-xs dark:border-neutral-700 dark:bg-neutral-950"
-            >
-              <option value="string">Text</option>
-              <option value="int">Integer</option>
-              <option value="real">Number</option>
-              <option value="bool">Yes / No</option>
-            </select>
+              onChange={(v) => setNewKind(v as AttrKind)}
+              ariaLabel="Attribute type"
+              options={[
+                { value: 'string', label: 'Text' },
+                { value: 'int', label: 'Integer' },
+                { value: 'real', label: 'Number' },
+                { value: 'bool', label: 'Yes / No' },
+              ]}
+            />
             <div className="flex gap-1">
               <Button variant="primary" size="sm" onClick={commitNew} disabled={!newKey.trim()}>
                 Save
@@ -206,8 +212,12 @@ function AttributeValueInput({
   locked: boolean;
   onChange: (v: AttrValue) => void;
 }) {
-  const cls =
-    'min-w-0 flex-1 rounded border border-neutral-200 bg-white px-2 py-0.5 text-xs outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-700 dark:bg-neutral-950';
+  // Design audit #20 — was a near-duplicate of FIELD_BASE + FIELD_SIZE_SM
+  // that had drifted (rounded vs rounded-md, outline-none vs
+  // outline-hidden, focus:ring-1 vs the shared focus-visible ring). Compose
+  // the shared chrome so it can't drift again; `min-w-0 flex-1` is the only
+  // layout addition for the inline row.
+  const cls = clsx(FIELD_BASE, FIELD_SIZE_SM, INPUT_FOCUS, 'min-w-0 flex-1');
   if (value.kind === 'string') {
     return (
       <input

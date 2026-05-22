@@ -14,6 +14,11 @@
  *   - **EC-themed badges** (verbalisation strip, assumption well):
  *     violet ring instead of indigo. This is intentional — EC has its
  *     own visual identity carried through the violet palette.
+ *     (Design audit #14 — the rule is *partial*: EC's badges + chrome
+ *     run violet, but the EC inspector tab bar shares the app-wide
+ *     indigo `<TabBar>` rather than carrying violet. Deliberate — the
+ *     tab bar reads as app navigation, and a one-consumer violet TabBar
+ *     variant wasn't worth the indirection.)
  *
  * This module exposes those three patterns as named constants so
  * future components inherit the right pattern by class name rather

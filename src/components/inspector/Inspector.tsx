@@ -61,22 +61,29 @@ export function Inspector() {
 
   return (
     <>
-      {/* Narrow-viewport backdrop. At < md the inspector covers most of the
-          canvas (85 vw); a tap-to-dismiss surface behind it gives the user
-          a generous click target rather than forcing them to hit the small
-          X in the inspector header. Hidden at md+ where the inspector and
-          canvas comfortably coexist. The backdrop is a button (rather than
-          a div with role="button") so it's natively focusable and the
-          Biome a11y rules stay clean. */}
-      {open && (
-        <button
-          type="button"
-          aria-label="Dismiss inspector"
-          tabIndex={-1}
-          className="absolute inset-0 z-10 cursor-default bg-neutral-900/20 backdrop-blur-[1px] md:hidden"
-          onClick={clearSelection}
-        />
-      )}
+      {/* Narrow-viewport tap-to-dismiss backdrop. At < md the inspector
+          covers most of the canvas (85 vw); this gives a generous
+          dismiss target behind it. Hidden at md+.
+
+          Design audit #22 — `aria-hidden` (was `aria-label` + `tabIndex
+          -1`, i.e. a name announced to nobody): it's a pointer-only
+          convenience that duplicates the header X + Esc, so AT should
+          skip it entirely. #25 — always mounted + `transition-opacity`
+          so the backdrop fades in coordinated with the inspector's
+          120ms slide instead of snapping on; `pointer-events-none`
+          when closed keeps the canvas clickable. */}
+      <button
+        type="button"
+        aria-hidden="true"
+        tabIndex={-1}
+        data-component="inspector-backdrop"
+        data-open={open ? 'true' : undefined}
+        className={clsx(
+          'absolute inset-0 z-10 cursor-default bg-neutral-900/20 backdrop-blur-[1px] transition-opacity duration-[120ms] md:hidden',
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        onClick={clearSelection}
+      />
       <aside
         className={clsx(
           // The inspector takes its full 320 px from md upward. On narrower
