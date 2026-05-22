@@ -54,7 +54,7 @@ Spec §3.4 — the FRT module's signature behaviour. **Fully closed.**
 - ~~**S&T assumption sub-typing**~~ ✅ Done Session 135 — `AssumptionKind = 'necessary' | 'parallel' | 'sufficient'` + optional `Assumption.kind` field + strict persistence + `setAssumptionKind` action + a cycling kind chip in AssumptionWell (—/N/P/S). 9 tests.
 - ~~**"Preserve rejected logic in collapsed groups"**~~ ✅ Done Session 135 — `Group.archived?` flag + `showArchivedGroups` pref + projection hides archived groups & members unless revealed. GroupInspector Archive/Unarchive button (auto-reveals on archive) + 2 palette commands + dimmed canvas treatment. 8 tests.
 - **Reactive vs proactive NBR mitigation distinction** — current NBR (Session 134) infers mitigation status from injection-reachability. Spec wants a formal `mitigation.kind` field. Re-open only if practitioners ask.
-- **Action eligibility based on satisfied preconditions** — gated by #4 (Phase 1B engine unblocked it; Phase 1C lands the speculation surface this would build on).
+- ~~**Action eligibility based on satisfied preconditions**~~ ✅ Done Session 135 — `actionEligibility(doc, derived, actionId, overrides?)` folds a TT Action's preconditions' effective states into eligible / blocked / pending / na; surfaced as an inspector "Eligibility" readout (emerald / rose / amber, via `<InsetCard>`). Overlay-aware (speculation re-derives it). 10 tests.
 
 ---
 
@@ -83,12 +83,13 @@ From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4
 
 If picking the next thing up:
 
-**All ten original spec major gaps are now closed or out of scope.** What's left is polish + the optional medium gaps:
+**All ten original spec major gaps are closed or out of scope; the design audit + infra-debt file splits + the actionable medium gaps are all done.** What's left:
 
-1. **Design-audit fixes** — the [Session 135 design audit](DESIGN_AUDIT_SESSION_135.md) has a 3-batch action ordering (the `<Field>` label gap is the highest-impact a11y fix). Good cleanup-between-features work.
-2. **Action eligibility on satisfied preconditions** (~1 hour) — now unblocked: Phase 1C's `effectiveState` + the propagation engine give the "is this action's precondition satisfied?" signal directly. The remaining medium gap with real leverage.
-3. **Remaining file splits** — TPEdge / entityTypeMeta / selectionVerbs / CreationWizardPanel / dialogsSlice / PrintPreviewDialog / ContextMenu. Mechanical, low-risk.
-4. **Reactive-vs-proactive NBR mitigation** — policy-parked; re-open only if practitioners ask.
+1. **Reactive-vs-proactive NBR mitigation** — the one remaining medium gap; policy-parked, re-open only if practitioners ask.
+2. **Hardware/hands-dependent handoffs** — manual a11y keyboard walkthrough ([checklist](docs/MANUAL_A11Y_WALKTHROUGH.md)) + Kindle device verification ([steps](docs/KINDLE_VERIFICATION.md)). Both need Dann.
+3. **Phase 1C node-chrome / canvas eligibility surfacing** (optional polish) — the eligibility readout is inspector-only today; a small canvas affordance on Action nodes (eligible ✓ / blocked) could follow if review meetings want it at-a-glance.
+
+Otherwise the backlog is genuinely drained — new work would come from fresh spec/product direction.
 
 ---
 

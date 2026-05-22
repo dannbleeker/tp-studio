@@ -16,13 +16,20 @@ import type { ReactNode } from 'react';
  * Extra props (`aria-label`, `data-component`, `role`…) pass through so
  * a caller that was an `<aside>` landmark keeps its semantics.
  */
-const TONE: Record<'indigo' | 'amber' | 'neutral', string> = {
+export type InsetCardTone = 'indigo' | 'amber' | 'neutral' | 'emerald' | 'rose';
+
+const TONE: Record<InsetCardTone, string> = {
   indigo:
     'border-indigo-200 bg-indigo-50/60 text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/40 dark:text-indigo-100',
   amber:
     'border-amber-200 bg-amber-50/60 text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-100',
   neutral:
     'border-neutral-200 bg-neutral-50/60 text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-200',
+  // Session 135 — emerald/rose for positive/negative status cards (the
+  // action-eligibility readout). Same /60 light, /40 dark accent rule.
+  emerald:
+    'border-emerald-300 bg-emerald-50/60 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200',
+  rose: 'border-red-300 bg-red-50/60 text-red-800 dark:border-red-700 dark:bg-red-950/40 dark:text-red-200',
 };
 
 export function InsetCard({
@@ -31,7 +38,7 @@ export function InsetCard({
   children,
   ...rest
 }: {
-  tone?: 'indigo' | 'amber' | 'neutral';
+  tone?: InsetCardTone;
   className?: string;
   children: ReactNode;
 } & React.HTMLAttributes<HTMLDivElement>) {

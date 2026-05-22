@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
+import { actionEligibility } from '@/domain/actionEligibility';
 import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL, type ECSlot } from '@/domain/ecGuiding';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { ST_FACET_KEYS } from '@/domain/graph';
@@ -51,6 +52,24 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   // currently selected entity. Computed once per entities/edges
   // snapshot; the lookup against the returned record is O(1).
   const derivedStates = usePropagatedStates();
+  // Action-eligibility (medium gap) — for a TT Action, fold its
+  // preconditions' effective states into eligible / blocked / pending.
+  // `usePropagatedStates` already subscribes to entities + edges, so
+  // these two reads don't widen the component's re-render surface.
+  const docEntities = useDocumentStore((s) => s.doc.entities);
+  const docEdges = useDocumentStore((s) => s.doc.edges);
+  const eligibility = useMemo(
+    () =>
+      entity?.type === 'action'
+        ? actionEligibility(
+            { entities: docEntities, edges: docEdges },
+            derivedStates,
+            entityId,
+            speculationOverlay ?? undefined
+          )
+        : null,
+    [entity?.type, docEntities, docEdges, derivedStates, entityId, speculationOverlay]
+  );
 
   // Memoize the palette derivation — `paletteForDoc` walks the doc's
   // custom classes and merges with the built-in list. Cheap, but
@@ -160,6 +179,40 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
               if (Number.isFinite(n) && n > 0) updateEntity(entityId, { ordering: n });
             }}
           />
+        </Field>
+      )}
+
+      {/* Action eligibility (medium gap) — folds the action's
+          preconditions' effective states. Renders only when there's a
+          precondition slot to judge (status !== 'na'). Green = ready to
+          fire, red = blocked by a false precondition, neutral =
+          pending. Reflects the speculation overlay when active. */}
+      {eligibility && eligibility.status !== 'na' && (
+        <Field label="Eligibility" as="group">
+          {eligibility.status === 'eligible' && (
+            <InsetCard tone="emerald">
+              <span className="font-semibold">Eligible</span> — every precondition is satisfied;
+              this step is ready to fire.
+            </InsetCard>
+          )}
+          {eligibility.status === 'blocked' && (
+            <InsetCard tone="rose">
+              <span className="font-semibold">Blocked</span> — precondition{' '}
+              <span className="font-semibold">
+                {eligibility.blockedBy?.title?.trim() || '(untitled)'}
+              </span>{' '}
+              is false.
+            </InsetCard>
+          )}
+          {eligibility.status === 'pending' && (
+            <InsetCard tone="amber">
+              <span className="font-semibold">Pending</span> —{' '}
+              {eligibility.preconditions.length === 1
+                ? 'the precondition is'
+                : 'some preconditions are'}{' '}
+              not yet established (unknown / disputed).
+            </InsetCard>
+          )}
         </Field>
       )}
 

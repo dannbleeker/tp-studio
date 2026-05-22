@@ -2,6 +2,38 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Action eligibility (medium gap, on the Phase 1C engine)
+
+The dynamic counterpart to the `complete-step` structural rule. That
+rule asks "does this Transition Tree Action have a precondition at
+all?"; this asks "is the precondition actually **satisfied** — is the
+step ready to fire?" — folding the propagation-derived entity states.
+
+**New domain fn** `actionEligibility(doc, derived, actionId, overrides?)`
+(`domain/actionEligibility.ts`). For a TT Action it gathers its
+preconditions — the non-Action, non-Assumption siblings feeding the
+same Outcome(s) the Action feeds (the exact set `complete-step` keys
+on) — reads each one's `effectiveState` (manual ?? propagated, with the
+optional speculation overlay), and folds:
+- `blocked` — any precondition is `false` (`blockedBy` names it);
+- `eligible` — ≥1 precondition and all `true`;
+- `pending` — preconditions exist, some `unknown`/`disputed`, none false;
+- `na` — not an Action, or no precondition slot.
+
+Pure + overlay-aware (a speculation what-if re-derives eligibility for
+free). 10 tests cover each status, multi-precondition folding, the
+Action/Assumption-sibling exclusion, and a propagation-derived (no
+manual state) precondition.
+
+**Inspector** — an "Eligibility" readout on selected Action entities:
+emerald "Eligible — ready to fire", rose "Blocked — precondition X is
+false", amber "Pending". Reuses the `<InsetCard>` primitive (which
+gained `emerald` + `rose` tones). The two doc reads it needs don't
+widen the inspector's re-render surface (`usePropagatedStates` already
+subscribes to entities + edges).
+
+The last open medium gap. tsc + biome clean.
+
 ## Session 135 — Design-audit finding 19: LargeDialog true modal (showModal)
 
 `LargeDialog` (the centered-card picker shell behind PrintPreview /
