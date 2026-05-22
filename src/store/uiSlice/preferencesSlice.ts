@@ -77,6 +77,9 @@ export type PreferencesSlice = {
    *  setter + palette commands; per-mode chrome wiring follows.
    *  See {@link AppMode}. Persisted across reloads. */
   appMode: AppMode;
+  /** Session 135 medium gap — reveal archived groups (preserve rejected
+   *  logic) on the canvas. Default `false`. */
+  showArchivedGroups: boolean;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -109,6 +112,8 @@ export type PreferencesSlice = {
   setShowSelectionToolbar: (show: boolean) => void;
   /** Session 135 — set the active app mode. */
   setAppMode: (mode: AppMode) => void;
+  /** Session 135 — reveal / hide archived groups on the canvas. */
+  setShowArchivedGroups: (show: boolean) => void;
 };
 
 export type PreferencesDataKeys =
@@ -132,7 +137,8 @@ export type PreferencesDataKeys =
   | 'verbalisationStripCollapsed'
   | 'ecChromeCollapsed'
   | 'showSelectionToolbar'
-  | 'appMode';
+  | 'appMode'
+  | 'showArchivedGroups';
 
 /**
  * Data-only defaults used by `resetStoreForTest`. The theme + persisted
@@ -179,6 +185,8 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   // v1; explicit switch via the palette to enter Guided / Workshop
   // / Presentation modes.
   appMode: 'expert',
+  // Session 135 — archived groups hidden by default; reveal is opt-in.
+  showArchivedGroups: false,
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (
@@ -207,6 +215,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       ecChromeCollapsed: s.ecChromeCollapsed,
       showSelectionToolbar: s.showSelectionToolbar,
       appMode: s.appMode,
+      showArchivedGroups: s.showArchivedGroups,
     });
   };
 
@@ -232,6 +241,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     ecChromeCollapsed: initialPrefs.ecChromeCollapsed,
     showSelectionToolbar: initialPrefs.showSelectionToolbar,
     appMode: initialPrefs.appMode,
+    showArchivedGroups: initialPrefs.showArchivedGroups,
 
     setTheme: (theme) => {
       writeTheme(theme);
@@ -327,6 +337,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         next.browseLocked = true;
       }
       set(next);
+      persistPrefs();
+    },
+    setShowArchivedGroups: (show) => {
+      set({ showArchivedGroups: show });
       persistPrefs();
     },
   };

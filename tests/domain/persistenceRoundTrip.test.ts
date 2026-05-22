@@ -365,6 +365,86 @@ describe('persistence round-trip — every optional Entity field', () => {
     expect(() => importFromJSON(malformed)).toThrow(/kind/i);
   });
 
+  it('preserves an archived group flag across round-trip (emit-or-omit)', () => {
+    // Session 135 medium gap — Group.archived. Only `true` is emitted;
+    // an un-archived group must not grow an `archived: false` field.
+    const raw = JSON.stringify({
+      schemaVersion: 8,
+      id: 'doc-test',
+      diagramType: 'crt',
+      title: 'archived-group',
+      nextAnnotationNumber: 2,
+      resolvedWarnings: {},
+      createdAt: 1,
+      updatedAt: 1,
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'effect',
+          title: 'a',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      edges: {},
+      groups: {
+        g1: {
+          id: 'g1',
+          title: 'Rejected branch',
+          color: 'slate',
+          memberIds: ['e1'],
+          collapsed: false,
+          archived: true,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        g2: {
+          id: 'g2',
+          title: 'Live branch',
+          color: 'indigo',
+          memberIds: [],
+          collapsed: false,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    });
+    const reimported = importFromJSON(raw);
+    expect(reimported.groups.g1?.archived).toBe(true);
+    const g2 = reimported.groups.g2;
+    expect(g2?.archived).toBeUndefined();
+    expect(g2 && 'archived' in g2).toBe(false);
+  });
+
+  it('rejects a group with a non-boolean archived field', () => {
+    const malformed = JSON.stringify({
+      schemaVersion: 8,
+      id: 'doc-test',
+      diagramType: 'crt',
+      title: 'malformed-archived',
+      nextAnnotationNumber: 2,
+      resolvedWarnings: {},
+      createdAt: 1,
+      updatedAt: 1,
+      entities: {},
+      edges: {},
+      groups: {
+        g1: {
+          id: 'g1',
+          title: 'x',
+          color: 'slate',
+          memberIds: [],
+          collapsed: false,
+          archived: 'yes', // not a boolean
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    });
+    expect(() => importFromJSON(malformed)).toThrow(/archived/i);
+  });
+
   it('rejects an importedFrom ref missing docId', () => {
     // Construct a malformed doc — a ref without docId is invalid. The
     // validator should throw rather than silently drop the field.

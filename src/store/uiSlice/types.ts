@@ -181,4 +181,9 @@ export type StoredPrefs = {
   /** Session 135 / spec major gap #9 — app-mode preference. Default
    *  `'expert'`. See {@link AppMode} for the four modes. */
   appMode?: AppMode;
+  /** Session 135 medium gap — reveal archived groups (preserve rejected
+   *  logic) on the canvas. Default `false` (archived branches hidden);
+   *  toggled via the palette / GroupInspector. App-wide viewing
+   *  preference, not a doc property. */
+  showArchivedGroups?: boolean;
 };

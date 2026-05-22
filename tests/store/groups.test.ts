@@ -68,6 +68,29 @@ describe('renameGroup / recolorGroup / toggleGroupCollapsed', () => {
   });
 });
 
+describe('toggleGroupArchived (preserve rejected logic)', () => {
+  it('archives then un-archives, dropping the field when cleared', () => {
+    const a = addNode('A');
+    const g = useDocumentStore.getState().createGroupFromSelection([a.id])!;
+    expect(useDocumentStore.getState().doc.groups[g.id]!.archived).toBeUndefined();
+
+    useDocumentStore.getState().toggleGroupArchived(g.id);
+    expect(useDocumentStore.getState().doc.groups[g.id]!.archived).toBe(true);
+
+    useDocumentStore.getState().toggleGroupArchived(g.id);
+    const rec = useDocumentStore.getState().doc.groups[g.id]!;
+    expect(rec.archived).toBeUndefined();
+    // Emit-or-omit: the key is absent, not present-with-false.
+    expect('archived' in rec).toBe(false);
+  });
+
+  it('is a no-op for an unknown group id', () => {
+    const before = useDocumentStore.getState().doc;
+    useDocumentStore.getState().toggleGroupArchived('nope');
+    expect(useDocumentStore.getState().doc).toBe(before);
+  });
+});
+
 describe('addToGroup / removeFromGroup', () => {
   it('adds and removes a member', () => {
     const a = addNode('A');

@@ -22,6 +22,11 @@ export type GroupsSlice = {
   addToGroup: (groupId: string, memberId: string) => void;
   removeFromGroup: (groupId: string, memberId: string) => void;
   toggleGroupCollapsed: (id: string) => void;
+  /** Session 135 medium gap — flip the "archived" flag (preserve
+   *  rejected logic). Archived groups + their members hide from the
+   *  canvas unless `showArchivedGroups` is on. Emit-or-omit: clearing
+   *  drops the field rather than storing `archived: false`. */
+  toggleGroupArchived: (id: string) => void;
 };
 
 export const createGroupsSlice: StateCreator<RootStore, [], [], GroupsSlice> = (set, get) => {
@@ -147,6 +152,21 @@ export const createGroupsSlice: StateCreator<RootStore, [], [], GroupsSlice> = (
         const cur = prev.groups[id];
         if (!cur) return prev;
         const next: Group = { ...cur, collapsed: !cur.collapsed, updatedAt: Date.now() };
+        return touch({ ...prev, groups: { ...prev.groups, [id]: next } });
+      });
+    },
+
+    toggleGroupArchived: (id) => {
+      applyDocChange((prev) => {
+        const cur = prev.groups[id];
+        if (!cur) return prev;
+        // Emit-or-omit: archiving sets `archived: true`; un-archiving
+        // drops the field entirely (matches the persist convention +
+        // exactOptionalPropertyTypes).
+        const { archived: _drop, ...rest } = cur;
+        const next: Group = cur.archived
+          ? { ...rest, updatedAt: Date.now() }
+          : { ...cur, archived: true, updatedAt: Date.now() };
         return touch({ ...prev, groups: { ...prev.groups, [id]: next } });
       });
     },

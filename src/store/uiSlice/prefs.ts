@@ -130,6 +130,9 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // unknown / stale mode values fall back to expert so a future
     // schema change doesn't strand someone in an unusable mode.
     appMode: raw?.appMode && VALID_APP_MODES.has(raw.appMode) ? raw.appMode : 'expert',
+    // Session 135 medium gap — archived groups hidden by default; the
+    // whole point of archiving is to declutter, so reveal is opt-in.
+    showArchivedGroups: raw?.showArchivedGroups === true,
   };
 };
 

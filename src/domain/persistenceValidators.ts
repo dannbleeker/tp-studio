@@ -467,6 +467,9 @@ export const validateGroup = (v: unknown, label: string): Group => {
   }
   if (!isStringArray(v.memberIds)) throw invalid(label, 'has non-string-array memberIds');
   if (typeof v.collapsed !== 'boolean') throw invalid(label, 'has non-boolean collapsed');
+  if (v.archived !== undefined && typeof v.archived !== 'boolean') {
+    throw invalid(label, 'has non-boolean archived');
+  }
   if (typeof v.createdAt !== 'number') throw invalid(label, 'has non-number createdAt');
   if (typeof v.updatedAt !== 'number') throw invalid(label, 'has non-number updatedAt');
   return {
@@ -475,6 +478,8 @@ export const validateGroup = (v: unknown, label: string): Group => {
     color: v.color as GroupColor,
     memberIds: v.memberIds,
     collapsed: v.collapsed,
+    // Emit-or-omit: only `true` is persisted; unset means "not archived".
+    ...(v.archived === true ? { archived: true as const } : {}),
     createdAt: v.createdAt,
     updatedAt: v.updatedAt,
   };

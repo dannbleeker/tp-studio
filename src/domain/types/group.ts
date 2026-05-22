@@ -23,6 +23,14 @@ export type Group = {
   /** When true, members aren't rendered individually; the group becomes one
    *  big node with a member-count badge. Internal positions are preserved. */
   collapsed: boolean;
+  /** Session 135 medium gap — "preserve rejected logic". When true, the
+   *  group + all its members are hidden from the canvas unless the
+   *  app-wide `showArchivedGroups` preference is on. Lets a user park a
+   *  branch of reasoning they've rejected (a discarded cause cluster, a
+   *  superseded injection set) without deleting it — the logic stays in
+   *  the doc + persists, but doesn't clutter the live diagram. Emit-or-
+   *  omit on persist: only `true` is stored, unset means "not archived". */
+  archived?: boolean;
   createdAt: number;
   updatedAt: number;
 };

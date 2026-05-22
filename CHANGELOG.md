@@ -2,6 +2,45 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Archived groups: preserve rejected logic (medium gap)
+
+Lets a user park a branch of reasoning they've rejected (a discarded
+cause cluster, a superseded injection set) without deleting it — the
+logic stays in the doc + persists, but drops off the live canvas unless
+explicitly revealed.
+
+**New field** `Group.archived?: boolean` (domain/types/group.ts).
+Emit-or-omit on persist: only `true` is stored, unset means "not
+archived". Strict validation: a non-boolean `archived` throws on import.
+
+**New store action** `toggleGroupArchived(id)` on the groups slice —
+archiving sets the flag, un-archiving drops it.
+
+**New preference** `showArchivedGroups` (default `false`) — an app-wide
+viewing preference (persisted in `StoredPrefs`), not a doc property,
+with a `setShowArchivedGroups` setter.
+
+**Projection** (`useGraphProjection`) — when `showArchivedGroups` is
+off, archived groups + everything transitively inside them (via
+`descendantIds`) drop out of both the visible-entity set and the
+visible-group set, so neither the group card nor its members render.
+The hook re-derives when the pref flips.
+
+**UI**:
+- GroupInspector — an Archive / Unarchive button. Archiving while the
+  reveal toggle is off auto-flips the reveal on (so the group doesn't
+  silently vanish), plus an inline "Show archived groups on canvas"
+  checkbox that appears once a group is archived.
+- Two palette commands: "Archive / unarchive selected group" (Edit) and
+  "Show / hide archived groups" (View — skips the write guard so you
+  can reveal while browse-locked).
+- TPGroupNode — archived groups (when shown) render dimmed
+  (`opacity-50 saturate-50`) with an Archive icon on the title chip.
+
+**Tests** — 2 store-action + 2 persistence round-trip + 4 projection
+(hide when off / reveal when on / un-archived always visible /
+un-archive restores).
+
 ## Session 135 — S&T assumption sub-typing (medium gap)
 
 Adds an optional `kind` discriminator to assumptions, mirroring the

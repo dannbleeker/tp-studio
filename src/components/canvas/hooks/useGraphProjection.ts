@@ -47,21 +47,45 @@ export type GraphProjection = {
 
 export const useGraphProjection = (doc: TPDocument): GraphProjection => {
   const hoistedGroupId = useDocumentStore((s) => s.hoistedGroupId);
+  const showArchivedGroups = useDocumentStore((s) => s.showArchivedGroups);
 
   return useMemo(() => {
     const proj = computeCollapseProjection(doc);
+
+    // Session 135 medium gap — "preserve rejected logic". Archived
+    // groups (and everything transitively inside them) drop out of the
+    // visible scope entirely unless the user has flipped on
+    // `showArchivedGroups`. Computed up front so both the entity set
+    // and the group set can filter against it.
+    const archivedHidden = new Set<string>();
+    if (!showArchivedGroups) {
+      for (const [gid, g] of Object.entries(doc.groups)) {
+        if (!g.archived) continue;
+        archivedHidden.add(gid);
+        for (const d of descendantIds(doc, gid)) archivedHidden.add(d);
+      }
+    }
+
     const hoistVisibleEntities = visibleEntityIdsForHoist(doc, hoistedGroupId);
     const hoistVisibleGroups = (() => {
-      if (!hoistedGroupId) return new Set(Object.keys(doc.groups));
-      const inside = descendantIds(doc, hoistedGroupId);
-      const set = new Set<string>();
-      for (const id of inside) if (doc.groups[id]) set.add(id);
-      set.add(hoistedGroupId); // self
-      return set;
+      const base = (() => {
+        if (!hoistedGroupId) return new Set(Object.keys(doc.groups));
+        const inside = descendantIds(doc, hoistedGroupId);
+        const set = new Set<string>();
+        for (const id of inside) if (doc.groups[id]) set.add(id);
+        set.add(hoistedGroupId); // self
+        return set;
+      })();
+      // Drop archived groups from the visible-group set so neither the
+      // group card nor its collapsed-root stand-in renders.
+      for (const id of archivedHidden) base.delete(id);
+      return base;
     })();
     const visibleEntityIds = new Set<string>();
     for (const id of hoistVisibleEntities) {
-      if (!proj.hiddenEntityIds.has(id)) visibleEntityIds.add(id);
+      if (proj.hiddenEntityIds.has(id)) continue;
+      if (archivedHidden.has(id)) continue; // inside an archived group
+      visibleEntityIds.add(id);
     }
 
     // F7: per-entity disclosure-triangle collapse. Walk forward from every
@@ -116,5 +140,5 @@ export const useGraphProjection = (doc: TPDocument): GraphProjection => {
       remap,
       hiddenCountByCollapser,
     };
-  }, [doc, hoistedGroupId]);
+  }, [doc, hoistedGroupId, showArchivedGroups]);
 };

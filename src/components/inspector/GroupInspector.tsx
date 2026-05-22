@@ -1,5 +1,12 @@
 import clsx from 'clsx';
-import { ChevronDown, ChevronRight, Maximize2, Trash2 } from 'lucide-react';
+import {
+  Archive,
+  ArchiveRestore,
+  ChevronDown,
+  ChevronRight,
+  Maximize2,
+  Trash2,
+} from 'lucide-react';
 import { TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
 import { INPUT_FOCUS } from '@/components/ui/focusClasses';
@@ -28,6 +35,9 @@ export function GroupInspector({ groupId }: { groupId: string }) {
   const recolorGroup = useDocumentStore((s) => s.recolorGroup);
   const deleteGroup = useDocumentStore((s) => s.deleteGroup);
   const toggleCollapsed = useDocumentStore((s) => s.toggleGroupCollapsed);
+  const toggleArchived = useDocumentStore((s) => s.toggleGroupArchived);
+  const showArchivedGroups = useDocumentStore((s) => s.showArchivedGroups);
+  const setShowArchivedGroups = useDocumentStore((s) => s.setShowArchivedGroups);
   const hoistGroup = useDocumentStore((s) => s.hoistGroup);
   const addToGroup = useDocumentStore((s) => s.addToGroup);
   const locked = useDocumentStore((s) => s.browseLocked);
@@ -187,6 +197,46 @@ export function GroupInspector({ groupId }: { groupId: string }) {
           <Maximize2 className="h-3.5 w-3.5" />
           Hoist into group
         </Button>
+        {/* Session 135 medium gap — archive (preserve rejected logic).
+            Archiving hides the group + members from the canvas unless
+            "show archived" is on. When archiving a group while the
+            reveal toggle is off, the group would vanish from view — so
+            we auto-flip the reveal on, letting the user keep working
+            with (or immediately unarchive) it instead of it
+            disappearing. */}
+        <Button
+          variant="softNeutral"
+          disabled={locked}
+          onClick={() => {
+            if (!guardWriteOrToast()) return;
+            const archiving = !group.archived;
+            toggleArchived(groupId);
+            if (archiving && !showArchivedGroups) setShowArchivedGroups(true);
+          }}
+        >
+          {group.archived ? (
+            <>
+              <ArchiveRestore className="h-3.5 w-3.5" />
+              Unarchive
+            </>
+          ) : (
+            <>
+              <Archive className="h-3.5 w-3.5" />
+              Archive (preserve, hide)
+            </>
+          )}
+        </Button>
+        {group.archived && (
+          <label className="flex items-center gap-2 px-1 text-neutral-600 text-xs dark:text-neutral-300">
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 accent-indigo-500"
+              checked={showArchivedGroups}
+              onChange={(e) => setShowArchivedGroups(e.target.checked)}
+            />
+            Show archived groups on canvas
+          </label>
+        )}
       </div>
 
       <Button

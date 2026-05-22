@@ -1,5 +1,6 @@
 import type { NodeProps } from '@xyflow/react';
 import clsx from 'clsx';
+import { Archive } from 'lucide-react';
 import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
 import { useDocumentStore } from '@/store';
 import type { TPGroupNode as TPGroupNodeType } from '../edges/flow-types';
@@ -21,6 +22,10 @@ export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
         'pointer-events-none relative rounded-lg border-2 border-dashed',
         colors.bg,
         colors.border,
+        // Session 135 medium gap — an archived group only renders at all
+        // when "show archived" is on; when it does, dim it so it reads
+        // as parked-but-preserved rather than live reasoning.
+        group.archived && 'opacity-50 saturate-50',
         selected && 'ring-2 ring-indigo-500/60 ring-offset-1'
       )}
       style={{ width, height }}
@@ -28,7 +33,7 @@ export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
       <button
         type="button"
         className={clsx(
-          'pointer-events-auto absolute -top-2.5 left-3 cursor-pointer rounded-md bg-white px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide shadow-xs dark:bg-neutral-950',
+          'pointer-events-auto absolute -top-2.5 left-3 flex cursor-pointer items-center gap-1 rounded-md bg-white px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wide shadow-xs dark:bg-neutral-950',
           colors.text
         )}
         onClick={(e) => {
@@ -39,6 +44,7 @@ export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
           selectGroup(group.id);
         }}
       >
+        {group.archived && <Archive className="h-3 w-3" aria-label="Archived" />}
         {group.title || 'Untitled group'}
       </button>
     </div>

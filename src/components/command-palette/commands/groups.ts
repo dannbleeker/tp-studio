@@ -125,6 +125,46 @@ export const groupCommands: Command[] = [
     },
   }),
   withWriteGuard({
+    // Session 135 medium gap — flip the `archived` flag on the selected
+    // group. Distinct from "Move selection to Archive group" above:
+    // that creates a named slate group; this hides ANY group (+ its
+    // members) from the canvas while preserving the logic in the doc.
+    id: 'toggle-group-archived',
+    label: 'Archive / unarchive selected group',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single group to archive or unarchive.');
+        return;
+      }
+      const id = sel.ids[0]!;
+      const g = s.doc.groups[id];
+      if (!g) {
+        s.showToast('info', 'Selection is not a group.');
+        return;
+      }
+      const archiving = !g.archived;
+      s.toggleGroupArchived(id);
+      // Auto-reveal when archiving so the group doesn't silently vanish
+      // out from under the user (mirrors the GroupInspector button).
+      if (archiving && !s.showArchivedGroups) s.setShowArchivedGroups(true);
+      s.showToast('info', archiving ? 'Group archived.' : 'Group unarchived.');
+    },
+  }),
+  // View-state toggle (not a doc mutation) — skips the write guard so
+  // the user can reveal archived branches even while browse-locked.
+  {
+    id: 'toggle-show-archived-groups',
+    label: 'Show / hide archived groups',
+    group: 'View',
+    run: (s) => {
+      const next = !s.showArchivedGroups;
+      s.setShowArchivedGroups(next);
+      s.showToast('info', next ? 'Showing archived groups.' : 'Hiding archived groups.');
+    },
+  },
+  withWriteGuard({
     // TOC-reading: start a Negative Branch sub-tree from the selected
     // entity. The book frames NBR as "an FRT injection has produced an
     // unintended UDE; capture the branch leading to it and decide how to
