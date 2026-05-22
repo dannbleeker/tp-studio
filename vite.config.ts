@@ -134,6 +134,17 @@ export default defineConfig(({ command, mode }) => ({
           'assets/html2canvas*.js',
           'assets/svg2pdf*.js',
           'assets/pptxgen*.js',
+          // Session 135 / Perf #34 — the MarkdownPreview chunk bundles
+          // micromark + the GFM extensions + DOMPurify (~75 KB raw /
+          // ~25 KB gz). It's lazy-loaded behind the description
+          // markdown-preview toggle, which most first-time visitors
+          // never open. Keep it out of the cold precache; the
+          // runtimeCaching rule below serves it offline after first use.
+          // (The small dialog chunks — CommandPalette, PatternLibrary,
+          // Walkthrough — stay precached: they're core UX and only a few
+          // KB each, so deferring them would risk offline-first breakage
+          // for no meaningful bandwidth gain.)
+          'assets/MarkdownPreview*.js',
         ],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
@@ -170,15 +181,20 @@ export default defineConfig(({ command, mode }) => ({
           },
           {
             // Hashed asset filenames keep this regex stable across rebuilds.
+            // Perf #34 adds MarkdownPreview (micromark + DOMPurify) to the
+            // on-demand vendor set — precache-excluded above, fetched +
+            // cached the first time the markdown preview is opened.
             urlPattern: ({ url, sameOrigin }) =>
-              sameOrigin && /\/assets\/(jspdf|html2canvas|svg2pdf|pptxgen)/.test(url.pathname),
+              sameOrigin &&
+              /\/assets\/(jspdf|html2canvas|svg2pdf|pptxgen|MarkdownPreview)/.test(url.pathname),
             handler: 'CacheFirst',
             options: {
               cacheName: 'tp-studio-export-vendor-v1',
               expiration: {
-                // 8 = jspdf + html2canvas + svg2pdf + pptxgen + a
-                // couple of older hashed names while a deploy ages out.
-                maxEntries: 8,
+                // 10 = jspdf + html2canvas + svg2pdf + pptxgen +
+                // MarkdownPreview + a few older hashed names while a
+                // deploy ages out.
+                maxEntries: 10,
                 maxAgeSeconds: 30 * 24 * 60 * 60,
               },
             },

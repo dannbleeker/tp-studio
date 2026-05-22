@@ -113,8 +113,11 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
   // unmount is the only thing that depends on zoom — the node body itself
   // doesn't care.
   const [isHovered, setIsHovered] = useState(false);
-  const zoom = useZoomLevel();
-  const showZoomUp = zoom < ZOOM_UP_THRESHOLD && (selected || isHovered);
+  // Perf #18 — only subscribe to live zoom while interacting; otherwise
+  // the constant selector means pan/zoom frames don't re-render this node.
+  const interacting = selected === true || isHovered;
+  const zoom = useZoomLevel(interacting);
+  const showZoomUp = zoom < ZOOM_UP_THRESHOLD && interacting;
   // Handle orientation is per-diagram-type — vertical for the auto-layout
   // trees (edges flow up via `BT` dagre), horizontal for Evaporating Cloud
   // (edges flow right-to-left across the hand-positioned 5-box layout).

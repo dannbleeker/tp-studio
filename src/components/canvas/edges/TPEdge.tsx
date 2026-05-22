@@ -114,24 +114,17 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // to one subscriber per edge — the store still walks each subscriber
   // on each change, but only one per edge instead of eight.
   //
-  // Assumption count is computed inside the selector — it requires
-  // iterating `doc.assumptions` to count records keyed to this edge.
-  // The compute runs on every store update; we accept the per-call
-  // cost in exchange for the simpler shallow-equal output.
+  // Session 135 / Perf #17 — the assumption count is no longer computed
+  // here (it required iterating `doc.assumptions` per edge on every store
+  // change, O(E·M)). `useGraphEdgeEmission` precomputes it once and stamps
+  // it into `data.assumptionCount`, read below as an O(1) prop.
+  const assumptionCount = props.data?.assumptionCount ?? 0;
   const edgeView = useDocumentStore(
     useShallow((s) => {
       const edge = s.doc.edges[props.id];
-      const legacyAssumptionCount = edge?.assumptionIds?.length ?? 0;
-      let mapAssumptionCount = 0;
-      if (s.doc.assumptions) {
-        for (const a of Object.values(s.doc.assumptions)) {
-          if (a.edgeId === props.id) mapAssumptionCount += 1;
-        }
-      }
       const desc = edge?.description;
       return {
         edgeLabel: edge?.label,
-        assumptionCount: Math.max(legacyAssumptionCount, mapAssumptionCount),
         isBackEdge: edge?.isBackEdge === true,
         isMutex: edge?.isMutualExclusion === true,
         weight: edge?.weight,
@@ -144,7 +137,6 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   );
   const {
     edgeLabel,
-    assumptionCount,
     isBackEdge,
     isMutex,
     weight,

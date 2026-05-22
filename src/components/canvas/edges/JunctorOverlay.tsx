@@ -1,5 +1,6 @@
 import { useReactFlow, useStore as useRFStore } from '@xyflow/react';
 import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS } from '@/domain/constants';
+import type { TPDocument } from '@/domain/types';
 import { arrayShallowEqualByKeys } from '@/store/equality';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 
@@ -72,29 +73,47 @@ type JunctorGroup = { id: string; kind: JunctorKind; targetId: string };
 // weight, attestation, assumptionIds) no longer churn this overlay.
 const junctorGroupsEqual = arrayShallowEqualByKeys<JunctorGroup>(['id', 'kind', 'targetId']);
 
+/**
+ * Session 135 / Perf #39 — WeakMap-cached on the `edges` reference.
+ * This overlay is always mounted; previously its store selector walked
+ * every edge on *every* store change (even a title keystroke) to derive
+ * the junctor groups, then leaned on the equality fn to avoid the
+ * re-render. Caching on `doc.edges` (a fresh ref only on edge mutation)
+ * turns the steady-state selector into an O(1) lookup that returns the
+ * same array reference, so the equality fn short-circuits on identity.
+ */
+const junctorGroupsCache = new WeakMap<TPDocument['edges'], JunctorGroup[]>();
+
+const computeJunctorGroups = (edges: TPDocument['edges']): JunctorGroup[] => {
+  const cached = junctorGroupsCache.get(edges);
+  if (cached) return cached;
+  const byGroup = new Map<string, { kind: JunctorKind; targetId: string }>();
+  for (const edge of Object.values(edges)) {
+    for (const { kind, field } of KIND_FIELDS) {
+      const gid = edge[field];
+      if (gid && !byGroup.has(gid)) {
+        byGroup.set(gid, { kind, targetId: edge.targetId });
+      }
+    }
+  }
+  const result = [...byGroup.entries()].map(([id, v]) => ({
+    id,
+    kind: v.kind,
+    targetId: v.targetId,
+  }));
+  junctorGroupsCache.set(edges, result);
+  return result;
+};
+
 export function JunctorOverlay() {
   const flow = useReactFlow();
   const transform = useRFStore((s) => s.transform);
 
-  // Derive (groupId, kind, targetId) triples up-front. The selector
-  // walks edges + groups them but the custom equality skips the
-  // component re-render when the triple set is unchanged.
-  const groups = useDocumentStoreWith((s) => {
-    const byGroup = new Map<string, { kind: JunctorKind; targetId: string }>();
-    for (const edge of Object.values(s.doc.edges)) {
-      for (const { kind, field } of KIND_FIELDS) {
-        const gid = edge[field];
-        if (gid && !byGroup.has(gid)) {
-          byGroup.set(gid, { kind, targetId: edge.targetId });
-        }
-      }
-    }
-    return [...byGroup.entries()].map(([id, v]) => ({
-      id,
-      kind: v.kind,
-      targetId: v.targetId,
-    }));
-  }, junctorGroupsEqual);
+  // Derive (groupId, kind, targetId) triples from the cached helper —
+  // the selector is now a WeakMap lookup keyed on `doc.edges`, so an
+  // unrelated mutation returns the same array ref and the equality fn
+  // short-circuits.
+  const groups = useDocumentStoreWith((s) => computeJunctorGroups(s.doc.edges), junctorGroupsEqual);
 
   const [tx, ty, scale] = transform;
 

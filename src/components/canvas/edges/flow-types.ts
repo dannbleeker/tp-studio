@@ -45,6 +45,12 @@ export type TPEdgeData = {
   /** When >1, this edge represents N aggregated edges across a collapsed-group
    *  boundary. Rendered with a small count badge; not selectable for editing. */
   aggregateCount?: number;
+  /** Session 135 / Perf #17 — number of assumptions attached to this edge
+   *  (legacy `assumptionIds` ∪ first-class `Assumption` records keyed to it),
+   *  precomputed once in `useGraphEdgeEmission`. Lets `TPEdge` read an O(1)
+   *  count from `data` instead of iterating `doc.assumptions` inside its
+   *  per-edge store selector on every store change. Omitted when 0. */
+  assumptionCount?: number;
 };
 
 export type TPGroupNodeData = {

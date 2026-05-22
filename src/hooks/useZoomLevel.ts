@@ -14,5 +14,15 @@ import { useStore as useRFStore } from '@xyflow/react';
  *
  * Must be called inside a `<ReactFlowProvider>`. The Canvas component
  * mounts the provider around everything that reads viewport state.
+ *
+ * Session 135 / Perf #18 — optional `enabled` gate. `TPNode` calls this
+ * once per visible node, but only *needs* the live zoom while the node is
+ * selected or hovered (the zoom-up overlay). When `enabled` is false the
+ * selector returns a constant, so React-Flow's per-frame transform
+ * notifications never change the value and never re-render the node —
+ * only the one or two interacting nodes pay the per-frame cost during a
+ * pan / zoom. Default `true` preserves the single-subscriber callers
+ * (CanvasNav) unchanged.
  */
-export const useZoomLevel = (): number => useRFStore((s) => s.transform[2]);
+export const useZoomLevel = (enabled = true): number =>
+  useRFStore((s) => (enabled ? s.transform[2] : 1));

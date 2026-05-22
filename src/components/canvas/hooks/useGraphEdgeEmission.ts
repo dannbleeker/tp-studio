@@ -31,6 +31,18 @@ export const useGraphEdgeEmission = (doc: TPDocument, projection: GraphProjectio
   return useMemo(() => {
     const { remap } = projection;
 
+    // Session 135 / Perf #17 — one pass over the first-class assumption
+    // records to build an `edgeId → count` map, instead of TPEdge
+    // iterating `doc.assumptions` inside its per-edge store selector on
+    // every store change (was O(E·M)). Stamped into edge `data` below.
+    const assumptionCountByEdge = new Map<string, number>();
+    if (doc.assumptions) {
+      for (const a of Object.values(doc.assumptions)) {
+        if (a.edgeId)
+          assumptionCountByEdge.set(a.edgeId, (assumptionCountByEdge.get(a.edgeId) ?? 0) + 1);
+      }
+    }
+
     type Bucket = {
       sourceId: string;
       targetId: string;
@@ -77,6 +89,15 @@ export const useGraphEdgeEmission = (doc: TPDocument, projection: GraphProjectio
       // collapsed group has nothing to converge with).
       const anyJunctorGroup = Boolean(andGroupId || orGroupId || xorGroupId);
       const isJunctorEdge = anyJunctorGroup && !isAggregated;
+      // Assumption count only applies to real (non-aggregated) edges —
+      // a synthetic `agg:` edge has no single underlying edge id, so it
+      // never carries an assumption badge (matches prior behaviour).
+      const assumptionCount = isAggregated
+        ? 0
+        : Math.max(
+            b.sample.assumptionIds?.length ?? 0,
+            assumptionCountByEdge.get(b.sample.id) ?? 0
+          );
       const edge: TPEdge = {
         id: isAggregated ? `agg:${b.sourceId}->${b.targetId}` : b.sample.id,
         source: b.sourceId,
@@ -87,6 +108,7 @@ export const useGraphEdgeEmission = (doc: TPDocument, projection: GraphProjectio
           ...(orGroupId ? { orGroupId } : {}),
           ...(xorGroupId ? { xorGroupId } : {}),
           ...(b.count > 1 ? { aggregateCount: b.count } : {}),
+          ...(assumptionCount > 0 ? { assumptionCount } : {}),
         },
         ...(isJunctorEdge
           ? {}

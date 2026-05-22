@@ -2,6 +2,61 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Performance pass, batch 2 (4 wins + audit of the rest)
+
+The second slice of the 40-finding perf audit. On close inspection most
+of the originally-shortlisted "next 10" turned out to be already-mitigated,
+inherent to a feature, or net-neutral — so this lands the 4 that are
+genuine, low-risk wins and documents why the others were left.
+
+**Shipped:**
+- **#17 — edge assumption count precomputed.** `useGraphEdgeEmission`
+  builds an `edgeId→count` map once and stamps `data.assumptionCount`
+  into each edge; `TPEdge` reads the O(1) prop instead of iterating
+  `doc.assumptions` inside its per-edge store selector on every store
+  change (was O(E·M)). +3 emission tests.
+- **#18 — `useZoomLevel` gating.** `TPNode` calls it once per visible
+  node but only needs live zoom while selected/hovered. An `enabled`
+  param returns a constant otherwise, so React-Flow's per-frame transform
+  notifications stop re-rendering every node during a pan/zoom — only the
+  interacting node(s) pay the cost. Single-subscriber callers (CanvasNav)
+  unchanged.
+- **#39 — `JunctorOverlay` edge-walk cached.** This always-mounted
+  overlay re-derived its junctor groups by walking every edge on *every*
+  store change. The derivation is now WeakMap-cached on `doc.edges`, so an
+  unrelated keystroke is an O(1) lookup returning a stable array ref (the
+  equality fn then short-circuits on identity).
+- **#34 — defer MarkdownPreview from precache.** The markdown chunk
+  (micromark + GFM + DOMPurify, ~75 KB raw) is lazy-loaded behind the
+  description preview toggle that most first-time visitors never open.
+  Moved to `globIgnores` + runtime-cached like the export vendors —
+  first-visit precache drops from 56 → 55 entries (−74 KB). Core dialogs
+  (command palette, etc.) stay precached.
+
+**Audited, deliberately not done** (left as-is, with reason):
+- #15/#16 (stamp doc-global fields into node/edge `data`) — net-neutral:
+  the per-node `useShallow` bundle subscription is unavoidable (it carries
+  `editingEntityId` + UI flags), so moving two fields out doesn't reduce
+  subscription frequency and re-renders identically via the comparator.
+- #23 (narrow Inspector's whole-`doc` subscription) — `validate(doc)`
+  genuinely needs the full doc; narrowing requires restructuring the
+  validator signature.
+- #25 (throttle the live-draft write) — conflicts with the deliberate
+  synchronous-write crash-safety invariant (and its test).
+- #29 (preserve node-object identity across emission) — high risk for
+  marginal gain; `TPNode` is already memoized via a custom comparator.
+- #38 (SelectionToolbar per-frame rect read) — required to keep the
+  toolbar anchored to the selection during a pan; throttling causes lag.
+- #31 (defer the icon catalogue) — the node renderer needs it eagerly to
+  resolve custom-class icons synchronously.
+
+**Found, recommended as a separate scoped task:** the full `COMMANDS`
+catalogue + `commandIcons` are pulled into the eager index chunk via the
+always-mounted `SelectionToolbar` (and `contextMenuItems`). Decoupling
+verb derivation from `COMMANDS` is a structural refactor, not a perf-slice.
+
+tsc + biome clean; build + bundle-budget pass; canvas/edge/palette suites green.
+
 ## Session 135 — Performance pass (20 under-the-hood improvements)
 
 A code-grounded perf audit (three parallel surface sweeps: React/Zustand
