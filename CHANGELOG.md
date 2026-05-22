@@ -2,6 +2,37 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — File splits (Tier-2 infrastructure debt)
+
+Closed the last infra-debt item: the seven 470–600-line files flagged
+for splitting. Each is its own commit, verified (tsc + biome + the
+file's tests) before the next. No behaviour change — pure structure.
+
+- **entitiesSlice.ts** (621 → 40) — composer + 4 factories under
+  `entities/` (entityCrud / assumptions / attributes / evidence).
+- **entityTypeMeta.ts** (506 → 226) — split into meta + resolver here,
+  `entityTypeIcons.ts` (the ~60-icon catalogue), `entityPalettes.ts`
+  (per-diagram palette tables + diagram labels + default-type).
+  Re-exports keep all ~28 import sites unchanged.
+- **selectionVerbs.ts** (541 → 342) — the ~200-line single-entity
+  branch builder moved to `selectionVerbsSingleEntity.ts`.
+- **dialogsSlice.ts** (494 → 392) — toast stack → `toastsSlice.ts`,
+  async-confirm → `confirmSlice.ts` (sibling UI sub-slices).
+- **ContextMenu.tsx** (501 → 344) — `MenuItem` + verb helpers →
+  `contextMenuItems.ts`; the role="menu" render + keyboard nav +
+  outside/Esc close → `ContextMenuList.tsx`. The per-branch item
+  builder stays inline (documented decision).
+- **PrintPreviewDialog.tsx** (500 → 312) — print-mode presentation
+  (type / labels / hints / fills / SVG thumbnails) →
+  `PrintModeThumbnail.tsx`.
+- **CreationWizardPanel.tsx** (550 → 484) — drag-to-reposition
+  mechanics → reusable `useDraggablePanel` hook.
+- **TPEdge.tsx** (600 → 456) — the eight mid-edge `<EdgeLabelRenderer>`
+  badges → `TPEdgeBadges.tsx` (mirrors the existing TPNodeBadges
+  precedent). The path-geometry/store-read core stays inline.
+
+All Tier-2 file-split debt cleared; tsc + biome clean throughout.
+
 ## Session 135 — Confidence / state propagation Phase 1C: what-if speculation (closes spec gap #4)
 
 The FRT module's signature behaviour, completed: "what changes
