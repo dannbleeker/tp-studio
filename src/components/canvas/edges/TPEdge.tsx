@@ -4,13 +4,7 @@
 // `memo()` and skips auto-memoization for the wrapped component, so
 // the Session 105 comparator's behavior stays intact.
 
-import {
-  BaseEdge,
-  EdgeLabelRenderer,
-  type EdgeProps,
-  getBezierPath,
-  useStore as useRFStore,
-} from '@xyflow/react';
+import { BaseEdge, type EdgeProps, getBezierPath, useStore as useRFStore } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
@@ -18,6 +12,16 @@ import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/do
 import { useDocumentStore } from '@/store';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { type Box, computeRadialEdgePath, nodeBoxOf } from './radialEdgeRouting';
+import {
+  AggregateBadge,
+  AssumptionBadge,
+  BackEdgeBadge,
+  DescriptionBadge,
+  EdgeInlineLabel,
+  FallbackLabel,
+  MutexBadge,
+  WeightBadge,
+} from './TPEdgeBadges';
 
 /** E5: maximum characters shown inline on an edge label before truncating
  *  with an ellipsis. The full text remains available via the native HTML
@@ -385,187 +389,39 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           ...props.style,
         }}
       />
-      {isBackEdge && (
-        // A small ↻ loop glyph mid-edge labels the tagged back-edge as a
-        // designed feature rather than a CLR concern. Placed alongside the
-        // existing label/aggregate stack — pointer-events stay off so the
-        // edge body itself remains the click target.
-        <EdgeLabelRenderer>
-          <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded-full border border-amber-300 bg-amber-50 px-1.5 font-semibold text-[10px] text-amber-800 shadow-xs dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX + 16}px, ${labelY - 14}px)`,
-            }}
-            title="Back-edge — this loop is intentional"
-            role="img"
-            aria-label="Back-edge — intentional loop"
-          >
-            ↻
-          </div>
-        </EdgeLabelRenderer>
-      )}
-      {isMutex && (
-        // Session 77 / brief §6: lightning-bolt visual for the EC
-        // conflict between D and D′. The previous ⊥ glyph reads as
-        // "orthogonal" rather than "conflict"; ⚡ matches the book's
-        // diagrammatic convention and the brief's spec literally.
-        // Background is red for keyboard-/screen-reader accessibility;
-        // the canvas-edge red stroke is the primary visual.
-        <EdgeLabelRenderer>
-          <div
-            className="nodrag nopan pointer-events-none absolute flex select-none items-center justify-center rounded-full border border-red-400 bg-red-50 px-1.5 font-bold text-[12px] text-red-700 leading-none shadow-xs dark:border-red-700 dark:bg-red-950 dark:text-red-200"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY - 14}px)`,
-              minWidth: 18,
-              minHeight: 18,
-            }}
-            title="Mutually exclusive — these two Wants conflict"
-            role="img"
-            aria-label="Mutually exclusive Wants — lightning-bolt conflict"
-          >
-            <span aria-hidden>⚡</span>
-          </div>
-        </EdgeLabelRenderer>
-      )}
+      {/* Session 135 — mid-edge badges extracted to `TPEdgeBadges.tsx`.
+          Each renders its own `<EdgeLabelRenderer>`; the conditions +
+          placement deltas are unchanged. */}
+      {isBackEdge && <BackEdgeBadge labelX={labelX} labelY={labelY} />}
+      {isMutex && <MutexBadge labelX={labelX} labelY={labelY} />}
       {weight && weight !== 'positive' && (
-        // Bundle 8 / FL-ED1: polarity badge for non-default weights.
-        // Positive is the implicit default (TOC sufficiency) — only
-        // render a badge when the user has explicitly tagged the edge
-        // as negative or zero. Rose for negative, neutral for zero.
-        <EdgeLabelRenderer>
-          <div
-            className={
-              weight === 'negative'
-                ? 'nodrag nopan pointer-events-none absolute select-none rounded-full border border-rose-400 bg-rose-50 px-1.5 font-semibold text-[10px] text-rose-700 shadow-xs dark:border-rose-700 dark:bg-rose-950 dark:text-rose-200'
-                : 'nodrag nopan pointer-events-none absolute select-none rounded-full border border-neutral-300 bg-neutral-50 px-1.5 font-semibold text-[10px] text-neutral-700 shadow-xs dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300'
-            }
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX + 32}px, ${labelY - 14}px)`,
-            }}
-            title={
-              weight === 'negative'
-                ? 'Negative correlation — this cause REDUCES this effect'
-                : 'Zero / neutral — flagged as non-influential'
-            }
-            role="img"
-            aria-label={`Edge polarity: ${weight}`}
-          >
-            {weight === 'negative' ? '−' : '∅'}
-          </div>
-        </EdgeLabelRenderer>
+        <WeightBadge labelX={labelX} labelY={labelY} weight={weight} />
       )}
       {aggregateCount > 1 && (
-        <EdgeLabelRenderer>
-          <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded-full bg-neutral-700 px-1.5 font-semibold text-[10px] text-white shadow-xs dark:bg-neutral-200 dark:text-neutral-800"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            }}
-            title={`${aggregateCount} edges aggregated across the collapsed boundary`}
-          >
-            ×{aggregateCount}
-          </div>
-        </EdgeLabelRenderer>
+        <AggregateBadge labelX={labelX} labelY={labelY} count={aggregateCount} />
       )}
-      {/*
-        E3: assumption indicator. An "A" pill sitting next to the label
-        position when the edge carries at least one assumption. Hover
-        reveals the exact count — useful for edges where the inspector
-        isn't open. Violet matches the assumption entity stripe so the
-        visual language is consistent across the canvas.
-
-        Session 87 / EC PPT comparison item #6: the pill is now a real
-        button. Clicking it selects the edge AND forces the EC
-        inspector to its Inspector tab, so the AssumptionWell is
-        visible without a second click. The hit target sits above
-        nodrag/nopan so React Flow's pan/zoom doesn't swallow the
-        click.
-      */}
       {assumptionCount > 0 && (
-        <EdgeLabelRenderer>
-          <button
-            type="button"
-            data-component="edge-assumption-badge"
-            data-edge-id={props.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              selectEdge(props.id);
-              setECInspectorTab('inspector');
-            }}
-            className="nodrag nopan pointer-events-auto absolute cursor-pointer select-none rounded-full bg-violet-500 px-1.5 font-semibold text-[10px] text-white uppercase tracking-wider shadow-xs transition hover:bg-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-300"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX - 16}px, ${labelY - 14}px)`,
-            }}
-            title={`${assumptionCount} assumption${assumptionCount === 1 ? '' : 's'} on this edge — click to open`}
-            aria-label={`${assumptionCount} assumption${assumptionCount === 1 ? '' : 's'} on this edge. Open the Assumption Well.`}
-          >
-            A{assumptionCount > 1 ? assumptionCount : ''}
-          </button>
-        </EdgeLabelRenderer>
+        <AssumptionBadge
+          labelX={labelX}
+          labelY={labelY}
+          edgeId={props.id}
+          count={assumptionCount}
+          onOpen={() => {
+            selectEdge(props.id);
+            setECInspectorTab('inspector');
+          }}
+        />
       )}
-      {/*
-        Bundle 6 FL-ED7 (Session 60): "📝" indicator when the edge carries
-        a longer-form description. Distinct from the inline `label` (short
-        mid-edge text) and the assumption "A" pill (linked Assumption
-        entities). Placement mirrors the assumption pill but offset to the
-        opposite side so they can coexist on a heavily-annotated edge.
-      */}
-      {hasDescription && (
-        <EdgeLabelRenderer>
-          <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded-full border border-neutral-300 bg-white px-1.5 text-[10px] shadow-xs dark:border-neutral-700 dark:bg-neutral-900"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX + 16}px, ${labelY + 14}px)`,
-            }}
-            title="This edge has a longer description — open inspector to read."
-            role="img"
-            aria-label="Edge has a description"
-          >
-            📝
-          </div>
-        </EdgeLabelRenderer>
-      )}
-      {/*
-        E5 (was FL-AN3): edge label rendered inline mid-edge. Short labels
-        show verbatim; long labels truncate with an ellipsis and put the
-        full text on the `title` attribute for hover. Earlier we hid long
-        labels behind a tiny "i" icon — scanning a diagram for context
-        was impossible without hovering each edge. The truncated-inline
-        approach mirrors how entity titles already work.
-      */}
+      {hasDescription && <DescriptionBadge labelX={labelX} labelY={labelY} />}
       {edgeLabel && truncatedLabel && (
-        <EdgeLabelRenderer>
-          <div
-            className="nodrag nopan pointer-events-auto absolute max-w-[220px] cursor-help select-none truncate rounded-md border border-neutral-200 bg-white/95 px-1.5 py-0.5 text-[11px] text-neutral-700 shadow-xs dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-200"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            }}
-            title={edgeLabel}
-          >
-            {truncatedLabel}
-          </div>
-        </EdgeLabelRenderer>
+        <EdgeInlineLabel
+          labelX={labelX}
+          labelY={labelY}
+          fullLabel={edgeLabel}
+          truncated={truncatedLabel}
+        />
       )}
-      {/*
-        Causality fallback label. Renders only when the user has opted into
-        a global `'because'` / `'therefore'` default in Settings AND this
-        edge has no explicit per-edge label. Visually muted (italic, no
-        border, semi-transparent) so an explicit label still stands out
-        as the more authored thing in the same diagram.
-      */}
-      {fallbackLabel && (
-        <EdgeLabelRenderer>
-          <div
-            className="nodrag nopan pointer-events-none absolute select-none rounded-sm px-1 py-px text-[10px] text-neutral-400 italic dark:text-neutral-500"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            }}
-            aria-hidden="true"
-          >
-            {fallbackLabel}
-          </div>
-        </EdgeLabelRenderer>
-      )}
+      {fallbackLabel && <FallbackLabel labelX={labelX} labelY={labelY} text={fallbackLabel} />}
     </>
   );
 }
