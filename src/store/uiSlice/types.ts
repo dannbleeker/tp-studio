@@ -148,6 +148,11 @@ export type StoredPrefs = {
    *  transitively feed each entity. Independent of the forward
    *  reach badge so the user can show one, the other, or both. */
   showReverseReachBadges?: boolean;
+  /** Session 135 — at-a-glance action-eligibility badge on TT Action
+   *  nodes (eligible ✓ / blocked ✗ / pending ?). Off by default —
+   *  meaningful only on Transition Trees with entity states set; the
+   *  full readout lives in the Entity Inspector regardless. */
+  showActionEligibility?: boolean;
   showMinimap?: boolean;
   /** F6: ink-saving print mode — strips entity-stripe fills and drops the
    *  group background tints when sent to a printer / PDF. */

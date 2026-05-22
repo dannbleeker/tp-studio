@@ -1,4 +1,5 @@
 import type { Edge as RFEdge, Node as RFNode } from '@xyflow/react';
+import type { EligibilityStatus } from '@/domain/actionEligibility';
 import type { Entity, EntityState, Group } from '@/domain/types';
 
 export type TPNodeData = {
@@ -33,6 +34,12 @@ export type TPNodeData = {
    *  TPNode reads this to tint the node accordingly (added/removed/changed).
    *  Absent in normal viewing mode. */
   diffStatus?: 'added' | 'removed' | 'changed';
+  /** Session 135 — TT action-eligibility status for the at-a-glance
+   *  canvas badge (eligible / blocked / pending). Stamped by
+   *  `useGraphNodeEmission` only when `showActionEligibility` is on and
+   *  the entity is an Action with a precondition slot (status !==
+   *  `'na'`); absent otherwise. The full readout lives in the inspector. */
+  eligibility?: Exclude<EligibilityStatus, 'na'>;
 };
 
 export type TPEdgeData = {

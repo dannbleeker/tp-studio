@@ -41,6 +41,7 @@ export function DisplayTab() {
     showEntityIds,
     showReachBadges,
     showReverseReachBadges,
+    showActionEligibility,
     showMinimap,
     printInkSaver,
     causalityLabel,
@@ -49,6 +50,7 @@ export function DisplayTab() {
     setShowEntityIds,
     setShowReachBadges,
     setShowReverseReachBadges,
+    setShowActionEligibility,
     setShowMinimap,
     setPrintInkSaver,
     setCausalityLabel,
@@ -59,6 +61,7 @@ export function DisplayTab() {
       showEntityIds: s.showEntityIds,
       showReachBadges: s.showReachBadges,
       showReverseReachBadges: s.showReverseReachBadges,
+      showActionEligibility: s.showActionEligibility,
       showMinimap: s.showMinimap,
       printInkSaver: s.printInkSaver,
       causalityLabel: s.causalityLabel,
@@ -67,6 +70,7 @@ export function DisplayTab() {
       setShowEntityIds: s.setShowEntityIds,
       setShowReachBadges: s.setShowReachBadges,
       setShowReverseReachBadges: s.setShowReverseReachBadges,
+      setShowActionEligibility: s.setShowActionEligibility,
       setShowMinimap: s.setShowMinimap,
       setPrintInkSaver: s.setPrintInkSaver,
       setCausalityLabel: s.setCausalityLabel,
@@ -99,6 +103,12 @@ export function DisplayTab() {
         hint="On each entity, a bottom-right pill counting how many root causes transitively feed it. Useful on Goal Trees / FRTs where multiple injections converge. Hidden on diagrams without root causes."
         checked={showReverseReachBadges}
         onChange={setShowReverseReachBadges}
+      />
+      <Toggle
+        label="Show action-eligibility badge"
+        hint="On Transition Tree Action nodes, a right-edge ✓ / ✗ / … pill: eligible (every precondition true), blocked (one is false), or pending (undecided). Reflects entity states; the full readout is in the Inspector."
+        checked={showActionEligibility}
+        onChange={setShowActionEligibility}
       />
       <Toggle
         label="Show minimap"

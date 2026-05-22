@@ -48,12 +48,17 @@ export const useGraphView = (doc: TPDocument): GraphView => {
   // overlay) so it's a stable ref across position-only drags.
   const derivedStates = usePropagatedStates();
   const speculationOverlay = useDocumentStore((s) => s.speculationOverlay);
+  // Session 135 — opt-in at-a-glance eligibility badge on TT Action
+  // nodes. Threaded so emission only pays the per-action eligibility
+  // fold when the toggle is on (off → the field is never stamped).
+  const showActionEligibility = useDocumentStore((s) => s.showActionEligibility);
   return useGraphEmission(
     doc,
     projection,
     positions,
     compareDiff,
     derivedStates,
-    speculationOverlay
+    speculationOverlay,
+    showActionEligibility
   );
 };

@@ -84,6 +84,11 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // forward badge (noisy on diagrams that don't have the relevant
     // entity type — root causes here).
     showReverseReachBadges: raw?.showReverseReachBadges === true,
+    // Session 135 — action-eligibility badge OFF by default. It's only
+    // meaningful on a Transition Tree where the user has set entity
+    // states; on a fresh TT every action would read amber "pending",
+    // which is noise. Opt in via Settings → Display.
+    showActionEligibility: raw?.showActionEligibility === true,
     // Minimap default ON — it's a useful affordance for non-trivial diagrams
     // and easy to dismiss in Settings.
     showMinimap: raw?.showMinimap !== false,

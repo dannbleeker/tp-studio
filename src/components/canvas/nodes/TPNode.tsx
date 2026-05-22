@@ -34,6 +34,7 @@ import { StFacetRow } from './StFacetRow';
 import {
   AnnotationBadge,
   CollapsedExpandButton,
+  EligibilityBadge,
   LocusPill,
   PinBadge,
   ReachForwardBadge,
@@ -51,6 +52,9 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
   // (stamped by emission; folds in the speculation overlay when active).
   const effectiveState = data.effectiveState;
   const speculated = data.speculated;
+  // Session 135 — opt-in at-a-glance action-eligibility badge (stamped
+  // by emission only for Action nodes when `showActionEligibility` is on).
+  const eligibility = data.eligibility;
   // One shallow-equal selector — the previous 7 individual `useDocumentStore`
   // calls each registered their own subscription that fired on every store
   // change. The `editingEntityId === entity.id` derived boolean stays
@@ -352,6 +356,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           whether to render lives here (closest to the props it
           inspects). */}
       {effectiveState && <StateBadge state={effectiveState} speculated={speculated ?? false} />}
+      {eligibility && <EligibilityBadge status={eligibility} />}
       {showAnnotationNumbers && <AnnotationBadge annotationNumber={entity.annotationNumber} />}
       {typeof entity.ordering === 'number' && <StepBadge ordering={entity.ordering} />}
       {entity.position && <PinBadge diagramType={diagramType} />}

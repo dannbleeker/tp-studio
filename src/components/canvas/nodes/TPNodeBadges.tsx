@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { Pin } from 'lucide-react';
 import { memo } from 'react';
+import type { EligibilityStatus } from '@/domain/actionEligibility';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import type { DiagramType, Entity, EntityState, SpanOfControl } from '@/domain/types';
 import { guardWriteOrToast } from '@/services/browseLock';
@@ -217,6 +218,59 @@ export const StateBadge = memo(function StateBadge({
         'pointer-events-none absolute top-1/2 -left-2 -translate-y-1/2 rounded-full border px-1.5 py-0.5 font-bold text-[10px] shadow-xs',
         meta.cls,
         speculated && 'border-dashed ring-2 ring-indigo-400/50'
+      )}
+      role="img"
+      aria-label={label}
+      title={label}
+    >
+      {meta.glyph}
+    </span>
+  );
+});
+
+/**
+ * Action-eligibility badge — right-centre edge (mirrors the StateBadge
+ * on the left). Surfaces the TT action-eligibility readout at a glance:
+ * emerald ✓ (eligible — every precondition true), rose ✗ (blocked — a
+ * precondition is false), amber … (pending — preconditions undecided).
+ * Only rendered on Action nodes with a precondition slot, and only when
+ * the `showActionEligibility` preference is on (so a fresh, state-less
+ * TT — where everything reads "pending" — stays uncluttered). The full
+ * readout always lives in the Entity Inspector.
+ */
+const ELIGIBILITY_BADGE_META: Record<
+  Exclude<EligibilityStatus, 'na'>,
+  { glyph: string; label: string; cls: string }
+> = {
+  eligible: {
+    glyph: '✓',
+    label: 'eligible — ready to fire',
+    cls: 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200',
+  },
+  blocked: {
+    glyph: '✗',
+    label: 'blocked — a precondition is false',
+    cls: 'border-red-400 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950 dark:text-red-200',
+  },
+  pending: {
+    glyph: '…',
+    label: 'pending — preconditions undecided',
+    cls: 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200',
+  },
+};
+
+export const EligibilityBadge = memo(function EligibilityBadge({
+  status,
+}: {
+  status: Exclude<EligibilityStatus, 'na'>;
+}) {
+  const meta = ELIGIBILITY_BADGE_META[status];
+  const label = `Action ${meta.label}`;
+  return (
+    <span
+      className={clsx(
+        'pointer-events-none absolute top-1/2 -right-2 -translate-y-1/2 rounded-full border px-1.5 py-0.5 font-bold text-[10px] shadow-xs',
+        meta.cls
       )}
       role="img"
       aria-label={label}

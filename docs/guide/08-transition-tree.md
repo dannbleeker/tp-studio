@@ -71,11 +71,13 @@ Once your steps carry entity states ([Chapter 3](03-reading-a-diagram.md)), the 
 
 Only the *true* preconditions count: sibling actions and assumptions feeding the same outcome are ignored, and a precondition that derives `true` from propagation (without a manual state) still makes the step eligible. Combined with what-if speculation, this answers the live planning question — "if I flip this upstream outcome to done, which steps unblock?" — without editing the saved plan.
 
+Prefer it on the canvas? **Settings → Display → Show action-eligibility badge** mirrors the readout as an at-a-glance pill on each Action node's right edge — emerald `✓` eligible, rose `✗` blocked, amber `…` pending — so you can scan a whole tree for what's runnable without selecting each step. It's off by default (a state-less tree would read all-pending) and reflects speculation live, just like the inspector readout.
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**
 > - `Cmd+K → New Transition Tree`.
-> - **Action-eligibility readout** in the Entity Inspector — eligible / blocked / pending / n/a, folded from precondition states.
+> - **Action-eligibility readout** in the Entity Inspector — eligible / blocked / pending / n/a, folded from precondition states. Optionally mirrored as an at-a-glance ✓ / ✗ / … badge on Action nodes via **Settings → Display → Show action-eligibility badge**.
 > - **`action`** entity type (cyan stripe) — TT-specific.
 > - **`complete-step` validator** flags actions without paired preconditions.
 > - **AND-junctor grouping** is essential to the triple structure; the gesture is the same as elsewhere (select edges → Group as AND).

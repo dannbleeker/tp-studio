@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Action-eligibility canvas badge
+
+Surfaces the TT action-eligibility readout (previously inspector-only) as an
+at-a-glance badge on Action nodes. New **Settings → Display → Show
+action-eligibility badge** toggle (off by default) stamps an `eligibility`
+status into each Action node's `data` during emission — only when the toggle
+is on and the entity is an Action with a precondition slot — and `TPNode`
+renders a right-edge pill: emerald `✓` eligible, rose `✗` blocked, amber `…`
+pending. Folds the same effective states as the inspector, so it tracks
+what-if speculation live.
+
+Off by default because a fresh, state-less Transition Tree would render every
+action "pending" (noise). Threaded the toggle through
+`useGraphView → useGraphEmission → useGraphNodeEmission` so the per-action
+eligibility fold is only computed when the badge is enabled. New
+`EligibilityBadge` in `TPNodeBadges`; preference persisted via `StoredPrefs`.
++3 emission-gate tests. tsc + biome clean; store + canvas + TPNode suites green.
+
 ## Session 135 — Performance pass, batch 3 (clearing the tail)
 
 Final sweep of the 40-finding audit. Implemented every remaining item that

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { actionEligibility } from '@/domain/actionEligibility';
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { rootCauseReachCounts, udeReachCounts } from '@/domain/coreDriver';
 import { descendantEntityCount } from '@/domain/groups';
@@ -35,7 +36,8 @@ export const useGraphNodeEmission = (
   positions: GraphPositions,
   compareDiff: DetailedRevisionDiff | null = null,
   derivedStates: Record<EntityId, EntityState> = {},
-  speculationOverlay: Record<string, EntityState> | null = null
+  speculationOverlay: Record<string, EntityState> | null = null,
+  showActionEligibility = false
 ): AnyTPNode[] => {
   // Session 135 / Perf #19 — hoist the reach BFS out of the
   // position-sensitive memo below. The main emission memo re-runs on
@@ -151,6 +153,14 @@ export const useGraphNodeEmission = (
       // override so the badge can read as "hypothetical".
       const effState = effectiveState(entity, derivedStates, speculationOverlay ?? undefined);
       const speculated = speculationOverlay ? entity.id in speculationOverlay : false;
+      // Session 135 — opt-in at-a-glance eligibility badge for TT Action
+      // nodes. Only folded when the toggle is on; `'na'` (an action with
+      // no precondition slot, or any non-action) is dropped so no badge
+      // renders. Overlay-aware via the same `effectiveState` inputs.
+      const eligibility =
+        showActionEligibility && entity.type === 'action'
+          ? actionEligibility(doc, derivedStates, entity.id, speculationOverlay ?? undefined).status
+          : 'na';
       const node: TPNode = {
         id: entity.id,
         type: 'tp',
@@ -174,6 +184,7 @@ export const useGraphNodeEmission = (
           ...(diffStatus ? { diffStatus } : {}),
           ...(effState !== 'unknown' ? { effectiveState: effState } : {}),
           ...(speculated ? { speculated: true } : {}),
+          ...(eligibility !== 'na' ? { eligibility } : {}),
         },
       };
       nodes.push(node);
@@ -206,5 +217,6 @@ export const useGraphNodeEmission = (
     speculationOverlay,
     reachCounts,
     reverseReachCounts,
+    showActionEligibility,
   ]);
 };

@@ -32,6 +32,11 @@ export type PreferencesSlice = {
    *  `showReachBadges` so the user can show one, the other, or both.
    *  Defaults off; turned on in Settings → Display. */
   showReverseReachBadges: boolean;
+  /** Session 135 — at-a-glance action-eligibility badge on TT Action
+   *  nodes (eligible ✓ / blocked ✗ / pending ?). Off by default; the
+   *  full readout always lives in the Entity Inspector. Turned on in
+   *  Settings → Display. */
+  showActionEligibility: boolean;
   showMinimap: boolean;
   printInkSaver: boolean;
   layoutMode: LayoutMode;
@@ -90,6 +95,8 @@ export type PreferencesSlice = {
   setShowEntityIds: (show: boolean) => void;
   setShowReachBadges: (show: boolean) => void;
   setShowReverseReachBadges: (show: boolean) => void;
+  /** Session 135 — toggle the action-eligibility canvas badge. */
+  setShowActionEligibility: (show: boolean) => void;
   setShowMinimap: (show: boolean) => void;
   setPrintInkSaver: (on: boolean) => void;
   setLayoutMode: (mode: LayoutMode) => void;
@@ -125,6 +132,7 @@ export type PreferencesDataKeys =
   | 'showEntityIds'
   | 'showReachBadges'
   | 'showReverseReachBadges'
+  | 'showActionEligibility'
   | 'showMinimap'
   | 'printInkSaver'
   | 'layoutMode'
@@ -154,6 +162,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   showEntityIds: false,
   showReachBadges: false,
   showReverseReachBadges: false,
+  showActionEligibility: false,
   showMinimap: true,
   printInkSaver: false,
   layoutMode: 'flow',
@@ -204,6 +213,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       showEntityIds: s.showEntityIds,
       showReachBadges: s.showReachBadges,
       showReverseReachBadges: s.showReverseReachBadges,
+      showActionEligibility: s.showActionEligibility,
       showMinimap: s.showMinimap,
       printInkSaver: s.printInkSaver,
       layoutMode: s.layoutMode,
@@ -228,6 +238,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     showEntityIds: initialPrefs.showEntityIds,
     showReachBadges: initialPrefs.showReachBadges,
     showReverseReachBadges: initialPrefs.showReverseReachBadges,
+    showActionEligibility: initialPrefs.showActionEligibility,
     showMinimap: initialPrefs.showMinimap,
     printInkSaver: initialPrefs.printInkSaver,
     layoutMode: initialPrefs.layoutMode,
@@ -280,6 +291,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setShowReverseReachBadges: (show) => {
       set({ showReverseReachBadges: show });
+      persistPrefs();
+    },
+    setShowActionEligibility: (show) => {
+      set({ showActionEligibility: show });
       persistPrefs();
     },
     setShowMinimap: (show) => {

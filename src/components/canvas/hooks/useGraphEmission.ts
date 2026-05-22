@@ -32,7 +32,8 @@ export const useGraphEmission = (
   positions: GraphPositions,
   compareDiff: DetailedRevisionDiff | null,
   derivedStates: Record<EntityId, EntityState>,
-  speculationOverlay: Record<string, EntityState> | null
+  speculationOverlay: Record<string, EntityState> | null,
+  showActionEligibility = false
 ): GraphEmission => {
   const nodes = useGraphNodeEmission(
     doc,
@@ -40,7 +41,8 @@ export const useGraphEmission = (
     positions,
     compareDiff,
     derivedStates,
-    speculationOverlay
+    speculationOverlay,
+    showActionEligibility
   );
   const edges = useGraphEdgeEmission(doc, projection);
   return { nodes, edges };
