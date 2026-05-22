@@ -129,6 +129,25 @@ Use the list to make provenance explicit at workshop time. A UDE backed by `[str
 
 Evidence items survive JSON export / share-link reload, and feed the new `evidence` column of the **Risk Register (CSV)** export — rendered as semicolon-joined `[strength/source] description (url)` entries, so a register reader gets the qualitative signal at a glance without losing the original detail.
 
+## Entity state and what-if speculation
+
+Reading a diagram is one thing; *interrogating* it is another. TP Studio lets you assign each entity a **state** — the answer to "is this true right now?"
+
+| State | Badge | Meaning |
+| --- | --- | --- |
+| `true` | Emerald `T` | The entity holds. The cause is present; the effect has occurred. |
+| `false` | Rose `F` | The entity does not hold. |
+| `unknown` *(default)* | Neutral `?` | Undecided — no claim either way. |
+| `disputed` | Amber `?` | Stakeholders disagree; recorded as contested rather than resolved. |
+
+Set a state from Entity Inspector → State, or by cycling the selected entity. A small state badge then rides the node's corner.
+
+What makes states more than annotation is **propagation**. TP Studio folds known states downstream along the causal structure: a `true` cause whose junctor is satisfied lights its effect `true`; a `false` member of an AND junctor blocks the effect; OR/XOR fold by their own rules; negative-polarity edges flip the signal; zero-polarity and back-edges are skipped; cycles short-circuit rather than loop forever. Derived states render in the same badges but without the manual marker, so you can always tell what *you* asserted from what the diagram *concluded*.
+
+**What-if speculation** is the live version of this. `Cmd+K → Begin speculation` opens a temporary overlay: flip any entity's state and watch propagation re-flow across the canvas in real time, with speculated badges drawn with a dashed ring so they're visibly provisional. A banner offers **Commit** (write the speculated states back as the real ones, in a single undo step) or **Revert** (`Esc`) — discard the overlay and restore reality. Nothing touches the saved document until you commit.
+
+Use it to ask the questions a static diagram can't: "If this assumption turns out false, what downstream effects collapse?" "Which root cause, flipped to true, lights up the most of the tree?" Speculation turns the diagram from a picture into a model you can poke.
+
 ## The CLR — a one-paragraph preview
 
 Six "Categories of Legitimate Reservation" — the discipline checks Goldratt taught for evaluating someone else's causal claim. TP Studio surfaces them automatically as **warnings** in the Inspector's Warnings list. They are not errors; they are reservations a thoughtful colleague would raise if they were reading your diagram over your shoulder. We get into the CLR in depth in [Chapter 13](13-the-clr.md), but for now know that:
@@ -155,6 +174,7 @@ Junctors:       AND (violet) • OR (indigo) • XOR (rose)
 Back-edge:      thick dashed + ↻ glyph
 Mutex (EC):     red + ⚡ glyph
 Span-of-ctrl:   C (emerald) • I (amber) • E (neutral)
+Entity state:   T (true) • F (false) • ? (unknown/disputed) • dashed ring = speculated
 ```
 
 🔁 **Chain to next:** you can read what's on the canvas. Now build one from scratch.

@@ -58,10 +58,24 @@ The TT now reads, top to bottom, as four executable steps, each with a precondit
 
 🛠 **How TP Studio helps:** The `complete-step` validator (CLR tier `sufficiency`, TT-only) fires on any Action whose outgoing edge to its Outcome lacks a non-action sibling (the precondition role). It nudges you toward the triple structure rather than letting you draw a chain of bare actions.
 
+## Action eligibility
+
+Once your steps carry entity states ([Chapter 3](03-reading-a-diagram.md)), the TT stops being a static plan and starts telling you *what's runnable right now*. Select an action and the Entity Inspector shows an **eligibility readout** that folds the effective states of that action's preconditions:
+
+| Status | Meaning |
+| --- | --- |
+| **Eligible** (emerald) | Every precondition feeding the action's outcome is `true`. Go. |
+| **Blocked** (rose) | At least one precondition is `false`. The readout names the offender so you know exactly what's in the way. |
+| **Pending** (amber) | A precondition is `unknown` or `disputed` — the step isn't blocked, but it isn't confirmed ready either. |
+| **n/a** | The action has no precondition slot (a bare action with nothing to gate it). |
+
+Only the *true* preconditions count: sibling actions and assumptions feeding the same outcome are ignored, and a precondition that derives `true` from propagation (without a manual state) still makes the step eligible. Combined with what-if speculation, this answers the live planning question — "if I flip this upstream outcome to done, which steps unblock?" — without editing the saved plan.
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**
 > - `Cmd+K → New Transition Tree`.
+> - **Action-eligibility readout** in the Entity Inspector — eligible / blocked / pending / n/a, folded from precondition states.
 > - **`action`** entity type (cyan stripe) — TT-specific.
 > - **`complete-step` validator** flags actions without paired preconditions.
 > - **AND-junctor grouping** is essential to the triple structure; the gesture is the same as elsewhere (select edges → Group as AND).

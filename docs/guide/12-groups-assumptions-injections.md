@@ -39,6 +39,7 @@ Assumptions are first-class entities (since schema v7). They sit beside the diag
 - A free-text rationale (description).
 - A link to a related injection (when valid: false → "and here's the fix").
 - An `implemented` flag (used in the InjectionWorkbench for FRT carry-forward).
+- A **kind** sub-type — `Necessary`, `Parallel`, `Sufficient`, or untyped. A compact chip cycles through the three roles plus untyped, mirroring the S&T facet vocabulary ([Chapter 10](10-strategy-and-tactics-tree.md)): a *necessary* assumption is the trigger that makes acting unavoidable, a *parallel* assumption is why *this* approach over the alternatives, a *sufficient* assumption is the bet that the chosen tactic actually delivers. Tagging assumptions by kind lets an S&T reviewer see at a glance which part of each micro-argument an assumption is propping up.
 
 The status field is what turns the assumption list from a brainstorm into a decision record. *Open* = "we haven't decided yet"; *valid* = "we've concluded this assumption holds"; *invalid* = "we've concluded this assumption is wrong" → this is where the cloud evaporates.
 
