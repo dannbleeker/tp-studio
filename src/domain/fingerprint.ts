@@ -18,7 +18,34 @@ import type { TPDocument } from './types';
  * and including it keeps the manual-layout branch of `useGraphView`
  * reactive without a parallel fingerprint.
  */
+/**
+ * Session 135 / Perf #30 — both fingerprints are full O(N log N)
+ * sort+stringify passes over every entity & edge, and they're called
+ * on every store emission (layout + validator gates). Many store
+ * mutations are UI-only (selection, theme, palette) and leave
+ * `doc.entities` / `doc.edges` referentially intact, yet the doc
+ * reference changes — so without a cache the string was rebuilt for
+ * nothing. Caching on the exact input references the function reads
+ * means a hit is provably the same string. Old refs GC normally.
+ */
+const layoutFpCache = new WeakMap<TPDocument['entities'], WeakMap<TPDocument['edges'], string>>();
+
 export const layoutFingerprint = (doc: TPDocument): string => {
+  const byEdges = layoutFpCache.get(doc.entities);
+  const hit = byEdges?.get(doc.edges);
+  if (hit !== undefined) return hit;
+  const str = computeLayoutFingerprint(doc);
+  if (byEdges) {
+    byEdges.set(doc.edges, str);
+  } else {
+    const m = new WeakMap<TPDocument['edges'], string>();
+    m.set(doc.edges, str);
+    layoutFpCache.set(doc.entities, m);
+  }
+  return str;
+};
+
+const computeLayoutFingerprint = (doc: TPDocument): string => {
   // Session 76: encode S&T-format state per entity so toggling an
   // injection into / out of the 5-facet card height triggers a
   // relayout. The flag is "any reserved S&T facet attribute is set"
@@ -85,7 +112,36 @@ const ST_FACET_FINGERPRINT_KEYS: readonly string[] = [
   'stSufficiencyAssumption',
 ];
 
+// Perf #30 — keyed on (entities, edges, resolvedWarnings) references.
+// `diagramType` is a primitive and can't be a WeakMap key, so it's
+// stored beside the string and re-checked on a hit (it changes only at
+// document creation/load, which also changes the other refs — the
+// check is belt-and-suspenders).
+const validationFpCache = new WeakMap<
+  TPDocument['entities'],
+  WeakMap<TPDocument['edges'], WeakMap<TPDocument['resolvedWarnings'], { dt: string; str: string }>>
+>();
+
 export const validationFingerprint = (doc: TPDocument): string => {
+  let byEdges = validationFpCache.get(doc.entities);
+  let byResolved = byEdges?.get(doc.edges);
+  const hit = byResolved?.get(doc.resolvedWarnings);
+  if (hit && hit.dt === doc.diagramType) return hit.str;
+
+  const str = computeValidationFingerprint(doc);
+  if (!byEdges) {
+    byEdges = new WeakMap();
+    validationFpCache.set(doc.entities, byEdges);
+  }
+  if (!byResolved) {
+    byResolved = new WeakMap();
+    byEdges.set(doc.edges, byResolved);
+  }
+  byResolved.set(doc.resolvedWarnings, { dt: doc.diagramType, str });
+  return str;
+};
+
+const computeValidationFingerprint = (doc: TPDocument): string => {
   const entitySig = entitiesArray(doc)
     .map((e) => {
       const u = e.unspecified === true ? 'u' : '';

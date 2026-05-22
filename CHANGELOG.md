@@ -2,6 +2,57 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Performance pass (20 under-the-hood improvements)
+
+A code-grounded perf audit (three parallel surface sweeps: React/Zustand
+render, domain algorithms, bundle/build) produced 40 ranked findings;
+this lands the first 20 — a "caching + cheap hoists" slice chosen for low
+risk (all behind existing seams; zero behaviour change; no chunk-budget
+impact). No user-visible change.
+
+**Domain caches** (following the established `edgeIndex` / `entitiesByType`
+WeakMap idiom; a reference hit means "input unchanged → reuse"):
+- `propagateStates` — memoizes the non-speculative result on
+  `(edges, entities)` refs, and reuses a per-`edges` filtered incoming-edge
+  index instead of rebuilding it each call (`statePropagation.ts`).
+- `findCycles` cached on `doc.edges`; `pinnedEntities` cached on
+  `doc.entities`; `hasEdge` now O(1) via the `bySource` index instead of an
+  O(E) scan (`graph.ts`).
+- `udeReachCounts` / `rootCauseReachCounts` cached on `(entities, edges)` —
+  the O(V·(V+E)) BFS no longer re-runs on every drag frame; `findCoreDrivers`
+  reuses the cached counts to skip the BFS for zero-reach candidates
+  (`coreDriver.ts`).
+- `findParentGroup` now an O(1) cached reverse `memberId→group` index
+  (was O(G), O(G²) inside `ancestorChain`); new cached `descendantEntityCount`
+  replaces a per-emission `[...descendantIds].filter().length` (`groups.ts`).
+- `layoutFingerprint` / `validationFingerprint` cached on their exact input
+  refs so UI-only mutations (selection, theme) skip the O(N log N)
+  stringify (`fingerprint.ts`).
+- `actionEligibility` reuses the shared edge index instead of two full
+  `Object.values(doc.edges)` scans (`actionEligibility.ts`).
+
+**Render / component:**
+- `useGraphNodeEmission` hoists the reach BFS into a `[doc]`-keyed memo so
+  it's off the position-sensitive (drag) path.
+- `Breadcrumb` narrows its subscription from the whole `doc` to just
+  `groups` + `title` (always-mounted; no longer re-renders on entity/edge
+  churn).
+- `VerbalisationStrip` memoizes `verbaliseEC(doc)`.
+- `Canvas` hoists the `fitViewOptions` object + MiniMap `nodeColor`
+  callback to module scope (stable identities).
+- Command-palette rows keyed by render-scope + command id instead of the
+  volatile flat index (stable reconciliation across filter/reorder).
+
+**Build:** the `rollup-plugin-visualizer` treemap is gated behind
+`--mode analyze` (run via `pnpm visualize`), so normal builds + CI skip
+the ~50 ms emit + 1.6 MB HTML.
+
+The edge-index and group-membership helpers were widened to accept the
+narrow `{ edges }` / `{ groups }` shapes so the propagation engine,
+eligibility, and Breadcrumb reuse the shared caches without lifting the
+whole doc. +10 cache-contract tests (identity-on-hit, recompute-and-
+correct-on-new-reference). tsc + biome clean; touched-area suites green.
+
 ## Session 135 — Action eligibility (medium gap, on the Phase 1C engine)
 
 The dynamic counterpart to the `complete-step` structural rule. That

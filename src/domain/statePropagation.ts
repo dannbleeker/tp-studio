@@ -146,16 +146,24 @@ export type PropagationInput = Pick<TPDocument, 'entities' | 'edges'>;
  * *contributions*, not written back into the result) — pair it with
  * `effectiveState(entity, derived, overrides)` for display.
  */
-export function propagateStates(
-  doc: PropagationInput,
-  overrides?: Record<string, EntityState>
-): Record<EntityId, EntityState> {
-  const entities = doc.entities;
-  const edges = Object.values(doc.edges);
+/**
+ * Session 135 / Perf #8 — per-edges-reference incoming-edge index.
+ *
+ * The engine's incoming map (back-edge / mutex filtered) only depends
+ * on the edges map. The store's immutable updates give `doc.edges` a
+ * new reference on every edge mutation, so a `WeakMap` keyed on it
+ * returns the same filtered index across every `propagateStates` call
+ * within a doc state — and across the manual pass, the speculation
+ * overlay, action-eligibility, and the exporters that all re-invoke
+ * the engine for the same edges. Old refs GC normally.
+ */
+const incomingIndexCache = new WeakMap<PropagationInput['edges'], Map<string, Edge[]>>();
 
-  // Build incoming-edge index up front so per-entity lookup is O(1).
+const incomingIndex = (edgeMap: PropagationInput['edges']): Map<string, Edge[]> => {
+  const cached = incomingIndexCache.get(edgeMap);
+  if (cached) return cached;
   const incoming = new Map<string, Edge[]>();
-  for (const e of edges) {
+  for (const e of Object.values(edgeMap)) {
     // Skip non-causal edges: back-edges (intentional loops) and
     // mutual-exclusion markers carry no propagation signal.
     if (e.isBackEdge || e.isMutualExclusion) continue;
@@ -163,6 +171,40 @@ export function propagateStates(
     list.push(e);
     incoming.set(e.targetId, list);
   }
+  incomingIndexCache.set(edgeMap, incoming);
+  return incoming;
+};
+
+/**
+ * Session 135 / Perf #7 — memoize the derived-state result for the
+ * non-speculative path. Keyed on `(edges, entities)` references: a hit
+ * means neither the topology nor any manual state changed, so the
+ * propagated map is provably identical. The speculation overlay path
+ * (`overrides` set) is interactive and already memoized at its hook
+ * consumer (`usePropagatedStates`), so it skips this cache rather than
+ * key on the per-keystroke overrides object.
+ */
+const propagationResultCache = new WeakMap<
+  PropagationInput['edges'],
+  WeakMap<PropagationInput['entities'], Record<EntityId, EntityState>>
+>();
+
+export function propagateStates(
+  doc: PropagationInput,
+  overrides?: Record<string, EntityState>
+): Record<EntityId, EntityState> {
+  const entities = doc.entities;
+
+  // Fast path: no speculative overlay → consult the (edges, entities)
+  // result cache before doing any work.
+  if (!overrides) {
+    const hit = propagationResultCache.get(doc.edges)?.get(entities);
+    if (hit) return hit;
+  }
+
+  // Incoming-edge index (back-edge / mutex filtered), cached per edges
+  // reference so repeated invocations within a doc state are O(1).
+  const incoming = incomingIndex(doc.edges);
 
   const derived: Record<EntityId, EntityState> = {};
   const inProgress = new Set<string>();
@@ -249,6 +291,17 @@ export function propagateStates(
 
   for (const id of Object.keys(entities)) {
     computeDerived(id);
+  }
+
+  // Memoize the non-speculative result against the (edges, entities)
+  // references it was computed from.
+  if (!overrides) {
+    let byEntities = propagationResultCache.get(doc.edges);
+    if (!byEntities) {
+      byEntities = new WeakMap();
+      propagationResultCache.set(doc.edges, byEntities);
+    }
+    byEntities.set(entities, derived);
   }
 
   return derived;

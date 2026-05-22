@@ -117,15 +117,32 @@ export const importFromJSON = (raw: string): TPDocument => {
   };
 };
 
+/**
+ * Session 135 / Perf #27 — in-memory copy of the last committed
+ * serialized doc. The backup-slot write needs the *prior* committed
+ * payload; keeping it here avoids a full `localStorage` read (and JSON
+ * re-parse-free string fetch) on every save. `null` until the first
+ * save of the session, where we fall back to reading the slot once.
+ */
+let lastCommittedRaw: string | null = null;
+
 export const saveToLocalStorage = (doc: TPDocument): void => {
+  // Perf #26 — store the COMPACT serialization (no `null, 2`
+  // indentation). Pretty-printing is for human-facing file exports
+  // (`exportToJSON`); the localStorage payload is machine-read only, so
+  // indentation just doubles the string size and serialize time on a
+  // path that runs on every committed save. `importFromJSON` parses
+  // compact and pretty identically.
+  const serialized = JSON.stringify(doc);
   // FL-EX9: copy the prior committed doc into the backup slot BEFORE
   // overwriting the main slot. If the new write fails mid-flight (quota
   // error, mid-write tab kill, partial JSON), the backup still points at
-  // the last known-good state. The cost is one extra localStorage read +
-  // write per save (~negligible — both slots are the same size).
-  const prior = readString(STORAGE_KEYS.doc);
+  // the last known-good state. Perf #27: prefer the in-memory prior over
+  // a fresh slot read.
+  const prior = lastCommittedRaw ?? readString(STORAGE_KEYS.doc);
   if (prior !== null) writeString(STORAGE_KEYS.docBackup, prior);
-  writeString(STORAGE_KEYS.doc, exportToJSON(doc));
+  writeString(STORAGE_KEYS.doc, serialized);
+  lastCommittedRaw = serialized;
 };
 
 /**

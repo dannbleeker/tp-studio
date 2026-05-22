@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { ChevronDown, ChevronUp, Quote } from 'lucide-react';
+import { useMemo } from 'react';
 import { verbaliseEC } from '@/domain/verbalisation';
 import { useDocumentStore } from '@/store';
 
@@ -35,7 +36,10 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
   // read the full thing without re-clicking the chevron each time.
   const collapsed = useDocumentStore((s) => s.verbalisationStripCollapsed);
   const setCollapsed = useDocumentStore((s) => s.setVerbalisationStripCollapsed);
-  const tokens = verbaliseEC(doc);
+  // Session 135 / Perf #3 — `verbaliseEC` walks the EC graph; memoize it
+  // so the strip (which subscribes to the whole doc) doesn't re-derive
+  // the verbalisation on every unrelated store mutation.
+  const tokens = useMemo(() => verbaliseEC(doc), [doc]);
   if (tokens.length === 0) return null;
 
   const isCollapsed = compact && collapsed;

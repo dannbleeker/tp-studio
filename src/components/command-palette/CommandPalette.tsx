@@ -152,11 +152,18 @@ export function CommandPalette() {
    * per-command annotation, so the visual identity stays auditable
    * in one place.
    */
-  const renderRow = (cmd: Command, idx: number) => {
+  const renderRow = (cmd: Command, idx: number, keyScope: string) => {
     const kbd = paletteKbdForCommand(cmd.id);
     const Icon = iconForCommandId(cmd.id);
+    // Session 135 / Perf #6 — stable key from the render context +
+    // command id rather than the flat row index. The same command id
+    // can appear twice in the flat list (a recent command also shows in
+    // its group section), so the id alone isn't unique — but it's unique
+    // *within* a scope ('flat' / 'recent' / the group name), and stable
+    // across filter/reorder so React reconciles rows instead of
+    // rebuilding them.
     return (
-      <li key={`${idx}-${cmd.id}`}>
+      <li key={`${keyScope}:${cmd.id}`}>
         <button
           type="button"
           className={clsx(
@@ -217,7 +224,7 @@ export function CommandPalette() {
         )}
         {sections === null
           ? // Filtered view: flat, sorted by score.
-            filtered.map((cmd, idx) => renderRow(cmd, idx))
+            filtered.map((cmd, idx) => renderRow(cmd, idx, 'flat'))
           : (() => {
               // Unfiltered view: recents (if any) + per-group sections.
               // The running `flatIdx` keeps the row's index in sync
@@ -239,7 +246,7 @@ export function CommandPalette() {
                       >
                         Recent
                       </li>
-                      {recentCommands.map((cmd) => renderRow(cmd, flatIdx++))}
+                      {recentCommands.map((cmd) => renderRow(cmd, flatIdx++, 'recent'))}
                     </Fragment>
                   )}
                   {sections.map((section) => (
@@ -256,7 +263,7 @@ export function CommandPalette() {
                       >
                         {section.group}
                       </li>
-                      {section.items.map((cmd) => renderRow(cmd, flatIdx++))}
+                      {section.items.map((cmd) => renderRow(cmd, flatIdx++, section.group))}
                     </Fragment>
                   ))}
                 </>

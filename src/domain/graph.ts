@@ -87,6 +87,14 @@ const EMPTY_EDGE_LIST: readonly Edge[] = Object.freeze([]) as readonly Edge[];
 
 const edgeIndexCache = new WeakMap<TPDocument['edges'], EdgeIndex>();
 
+/**
+ * Narrow shape accepted by the edge-index helpers: anything carrying an
+ * `edges` map. Lets callers that only hold the `{ entities, edges }`
+ * slice (the propagation engine, action-eligibility) reuse the same
+ * per-`doc.edges` cache without lifting the whole document into scope.
+ */
+type EdgesHost = Pick<TPDocument, 'edges'>;
+
 const buildEdgeIndex = (edges: TPDocument['edges']): EdgeIndex => {
   const bySource = new Map<string, Edge[]>();
   const byTarget = new Map<string, Edge[]>();
@@ -107,7 +115,7 @@ const buildEdgeIndex = (edges: TPDocument['edges']): EdgeIndex => {
   return { bySource, byTarget };
 };
 
-const edgeIndex = (doc: TPDocument): EdgeIndex => {
+const edgeIndex = (doc: EdgesHost): EdgeIndex => {
   let cached = edgeIndexCache.get(doc.edges);
   if (cached === undefined) {
     cached = buildEdgeIndex(doc.edges);
@@ -126,17 +134,21 @@ const edgeIndex = (doc: TPDocument): EdgeIndex => {
  * (`reachableForward` / `reachableBackward`'s spread-into-queue and
  * `findPath`'s `.map`) consume the value as iterable, both safe.
  */
-export const incomingEdges = (doc: TPDocument, entityId: string): readonly Edge[] =>
+export const incomingEdges = (doc: EdgesHost, entityId: string): readonly Edge[] =>
   edgeIndex(doc).byTarget.get(entityId) ?? EMPTY_EDGE_LIST;
 
-export const outgoingEdges = (doc: TPDocument, entityId: string): readonly Edge[] =>
+export const outgoingEdges = (doc: EdgesHost, entityId: string): readonly Edge[] =>
   edgeIndex(doc).bySource.get(entityId) ?? EMPTY_EDGE_LIST;
 
 export const connectionCount = (doc: TPDocument, entityId: string): number =>
   incomingEdges(doc, entityId).length + outgoingEdges(doc, entityId).length;
 
+// Session 135 / Perf #10 — O(1) via the cached `bySource` index
+// instead of an O(E) `.some` scan over the whole edge array. Matters
+// for callers that probe many pairs in a loop (e.g. the EC mutex /
+// duplicate-edge guards).
 export const hasEdge = (doc: TPDocument, sourceId: string, targetId: string): boolean =>
-  edgesArray(doc).some((e) => e.sourceId === sourceId && e.targetId === targetId);
+  (edgeIndex(doc).bySource.get(sourceId) ?? EMPTY_EDGE_LIST).some((e) => e.targetId === targetId);
 
 export const isAssumption = (entity: Entity): boolean => entity.type === 'assumption';
 
@@ -295,8 +307,19 @@ export const getEntity = (doc: TPDocument, id: string): Entity | undefined =>
  * "pinned" from "dragged but not yet committed") only has to update one
  * helper.
  */
-export const pinnedEntities = (doc: TPDocument): Entity[] =>
-  Object.values(doc.entities).filter((e) => e.position !== undefined);
+// Session 135 / Perf #11 — WeakMap-cached on `doc.entities`. Called
+// per render from `useGraphPositions` AND both fingerprints (the
+// layout-key build runs it unconditionally each render); the immutable
+// store update gives a new entities reference exactly when a pin moves,
+// so the cache invalidates precisely when it must.
+const pinnedEntitiesCache = new WeakMap<TPDocument['entities'], Entity[]>();
+export const pinnedEntities = (doc: TPDocument): Entity[] => {
+  const cached = pinnedEntitiesCache.get(doc.entities);
+  if (cached) return cached;
+  const result = Object.values(doc.entities).filter((e) => e.position !== undefined);
+  pinnedEntitiesCache.set(doc.entities, result);
+  return result;
+};
 
 /**
  * Forward reachability: every entity reachable by following outgoing edges
@@ -407,12 +430,24 @@ export const findPath = (
  * Used by Block C / E3 to surface back-edge warnings; the rule emits one
  * warning per cycle targeting the edge that closes it.
  */
+// Session 135 / Perf #9 — WeakMap-cached on `doc.edges`. Cycle
+// membership is a pure function of the edge topology, so it's stable
+// until the edge map gets a new reference (any add / remove / re-point).
+// `cycleRule` runs this on every validate-cache miss; the cache turns
+// the DFS into a one-time cost per edge-set.
+const findCyclesCache = new WeakMap<TPDocument['edges'], string[][]>();
+
 export const findCycles = (doc: TPDocument): string[][] => {
+  const memo = findCyclesCache.get(doc.edges);
+  if (memo) return memo;
+
   const adj = new Map<string, string[]>();
   for (const id of Object.keys(doc.entities)) adj.set(id, []);
-  for (const e of edgesArray(doc)) {
-    const list = adj.get(e.sourceId);
-    if (list) list.push(e.targetId);
+  // Build adjacency from the cached `bySource` index rather than a
+  // fresh edge-array scan.
+  for (const [sourceId, outs] of edgeIndex(doc).bySource) {
+    const list = adj.get(sourceId);
+    if (list) for (const e of outs) list.push(e.targetId);
   }
 
   // Cycle accumulator, keyed by the canonical-rotation string so duplicates
@@ -457,7 +492,9 @@ export const findCycles = (doc: TPDocument): string[][] => {
     if (!visited.has(id)) dfs(id);
   }
 
-  return [...cycles.values()];
+  const result = [...cycles.values()];
+  findCyclesCache.set(doc.edges, result);
+  return result;
 };
 
 export const removeEntityFromEdges = (doc: TPDocument, entityId: string): Record<string, Edge> => {

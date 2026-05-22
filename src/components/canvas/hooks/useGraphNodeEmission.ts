@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { rootCauseReachCounts, udeReachCounts } from '@/domain/coreDriver';
-import { descendantIds } from '@/domain/groups';
+import { descendantEntityCount } from '@/domain/groups';
 import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisions';
 import { effectiveState } from '@/domain/statePropagation';
 import type { EntityId, EntityState, TPDocument } from '@/domain/types';
@@ -37,6 +37,15 @@ export const useGraphNodeEmission = (
   derivedStates: Record<EntityId, EntityState> = {},
   speculationOverlay: Record<string, EntityState> | null = null
 ): AnyTPNode[] => {
+  // Session 135 / Perf #19 — hoist the reach BFS out of the
+  // position-sensitive memo below. The main emission memo re-runs on
+  // every `positions` change (i.e. every drag frame), but the reach
+  // counts depend only on the doc's topology — so computing them in a
+  // `[doc]`-keyed memo keeps the O(V·(V+E)) walk off the drag path.
+  // (The functions are also WeakMap-cached internally, Perf #20.)
+  const reachCounts = useMemo(() => udeReachCounts(doc), [doc]);
+  const reverseReachCounts = useMemo(() => rootCauseReachCounts(doc), [doc]);
+
   return useMemo(() => {
     const {
       proj,
@@ -45,13 +54,6 @@ export const useGraphNodeEmission = (
       hoistVisibleGroups,
       hiddenCountByCollapser,
     } = projection;
-
-    // Pre-compute UDE reach counts once per doc change — used for the
-    // optional reach badge. Empty for diagrams without UDEs.
-    const reachCounts = udeReachCounts(doc);
-    // E2: reverse reach (root-cause count). Empty for diagrams without
-    // `rootCause` entities (PRT / TT / EC).
-    const reverseReachCounts = rootCauseReachCounts(doc);
 
     const nodes: AnyTPNode[] = [];
 
@@ -181,7 +183,7 @@ export const useGraphNodeEmission = (
     for (const groupId of visibleCollapsedRoots) {
       const group = doc.groups[groupId];
       if (!group) continue;
-      const memberCount = [...descendantIds(doc, groupId)].filter((m) => doc.entities[m]).length;
+      const memberCount = descendantEntityCount(doc, groupId);
       const node: TPCollapsedGroupNode = {
         id: group.id,
         type: 'tpCollapsedGroup',
@@ -195,5 +197,14 @@ export const useGraphNodeEmission = (
     }
 
     return nodes;
-  }, [doc, projection, positions, compareDiff, derivedStates, speculationOverlay]);
+  }, [
+    doc,
+    projection,
+    positions,
+    compareDiff,
+    derivedStates,
+    speculationOverlay,
+    reachCounts,
+    reverseReachCounts,
+  ]);
 };

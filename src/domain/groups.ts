@@ -6,19 +6,46 @@ import type { Group, TPDocument } from './types';
  * Layout, collapse / expand, hoist, and cycle detection all consume them.
  */
 
-/** The group (if any) that directly contains `memberId` — entity OR group. */
-export const findParentGroup = (doc: TPDocument, memberId: string): Group | undefined => {
+/**
+ * Narrow shape for the membership helpers — anything with a `groups`
+ * map. Lets callers that only hold `doc.groups` (e.g. the Breadcrumb,
+ * which subscribes to that slice rather than the whole doc) reuse the
+ * same cached reverse index. A full `TPDocument` satisfies it.
+ */
+type GroupsHost = Pick<TPDocument, 'groups'>;
+
+/**
+ * Session 135 / Perf #28 — WeakMap-cached `memberId → parent group`
+ * reverse index, keyed on `doc.groups`. `findParentGroup` was an O(G)
+ * scan (`.some(includes)`) and `ancestorChain` called it in a loop →
+ * O(G²) per ancestor walk; the walk runs per-emission (collapse
+ * projection) and in the always-mounted Breadcrumb. One pass per
+ * groups-reference builds the index; lookups are then O(1). The store's
+ * immutable updates give `doc.groups` a fresh reference on any group
+ * mutation, so the cache invalidates exactly when membership changes.
+ */
+const parentIndexCache = new WeakMap<TPDocument['groups'], Map<string, Group>>();
+
+const parentIndex = (doc: GroupsHost): Map<string, Group> => {
+  const cached = parentIndexCache.get(doc.groups);
+  if (cached) return cached;
+  const index = new Map<string, Group>();
   for (const g of Object.values(doc.groups)) {
-    if (g.memberIds.includes(memberId)) return g;
+    for (const memberId of g.memberIds) index.set(memberId, g);
   }
-  return undefined;
+  parentIndexCache.set(doc.groups, index);
+  return index;
 };
+
+/** The group (if any) that directly contains `memberId` — entity OR group. */
+export const findParentGroup = (doc: GroupsHost, memberId: string): Group | undefined =>
+  parentIndex(doc).get(memberId);
 
 /**
  * Ordered ancestor chain: from the direct parent up to the outermost group.
  * Empty when `memberId` is at the root or unknown.
  */
-export const ancestorChain = (doc: TPDocument, memberId: string): Group[] => {
+export const ancestorChain = (doc: GroupsHost, memberId: string): Group[] => {
   const chain: Group[] = [];
   let cur: string | undefined = memberId;
   const seen = new Set<string>();
@@ -67,6 +94,41 @@ export const descendantIds = (doc: TPDocument, groupId: string): Set<string> => 
   }
   inner.set(groupId, out);
   return out;
+};
+
+/**
+ * Session 135 / Perf #40 — number of *entity* (not nested-group)
+ * members under `groupId`, transitively. The collapsed-root card needs
+ * this count every emission; previously it was
+ * `[...descendantIds(doc, groupId)].filter((m) => doc.entities[m]).length`
+ * — a fresh array spread + filter allocated per collapsed root per
+ * render frame. Cached on `doc.groups` (membership) AND `doc.entities`
+ * (which ids resolve to entities), so it invalidates on either change.
+ */
+const descendantEntityCountCache = new WeakMap<
+  TPDocument['groups'],
+  WeakMap<TPDocument['entities'], Map<string, number>>
+>();
+
+export const descendantEntityCount = (doc: TPDocument, groupId: string): number => {
+  let byEntities = descendantEntityCountCache.get(doc.groups);
+  if (!byEntities) {
+    byEntities = new WeakMap();
+    descendantEntityCountCache.set(doc.groups, byEntities);
+  }
+  let counts = byEntities.get(doc.entities);
+  if (!counts) {
+    counts = new Map();
+    byEntities.set(doc.entities, counts);
+  }
+  const hit = counts.get(groupId);
+  if (hit !== undefined) return hit;
+  let count = 0;
+  for (const m of descendantIds(doc, groupId)) {
+    if (doc.entities[m]) count++;
+  }
+  counts.set(groupId, count);
+  return count;
 };
 
 /**

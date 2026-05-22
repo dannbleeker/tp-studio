@@ -59,19 +59,62 @@ const filterStructural = (doc: TPDocument, ids: Iterable<string>): string[] => {
  * test graphs); we'll cache by `layoutFingerprint` if profiles ever show
  * this in the hot path.
  */
+/**
+ * Session 135 / Perf #20 — both reach maps are pure functions of the
+ * entity set (which entities are UDE / rootCause + the structural
+ * filter) and the edge topology, so they're cached on a nested
+ * `(entities, edges)` WeakMap. This matters because
+ * `useGraphNodeEmission` calls them on every emission — and the
+ * emission memo's deps include `positions`, so without the cache the
+ * O(V·(V+E)) BFS re-ran on every drag frame even though the topology
+ * was unchanged. A reference hit means "graph unchanged → reuse".
+ */
+const udeReachCache = new WeakMap<
+  TPDocument['entities'],
+  WeakMap<TPDocument['edges'], Map<string, number>>
+>();
+const rootCauseReachCache = new WeakMap<
+  TPDocument['entities'],
+  WeakMap<TPDocument['edges'], Map<string, number>>
+>();
+
+const reachCacheGet = (
+  cache: WeakMap<TPDocument['entities'], WeakMap<TPDocument['edges'], Map<string, number>>>,
+  doc: TPDocument
+): Map<string, number> | undefined => cache.get(doc.entities)?.get(doc.edges);
+
+const reachCacheSet = (
+  cache: WeakMap<TPDocument['entities'], WeakMap<TPDocument['edges'], Map<string, number>>>,
+  doc: TPDocument,
+  value: Map<string, number>
+): void => {
+  let byEdges = cache.get(doc.entities);
+  if (!byEdges) {
+    byEdges = new WeakMap();
+    cache.set(doc.entities, byEdges);
+  }
+  byEdges.set(doc.edges, value);
+};
+
 export const udeReachCounts = (doc: TPDocument): Map<string, number> => {
+  const cached = reachCacheGet(udeReachCache, doc);
+  if (cached) return cached;
   const out = new Map<string, number>();
   const udeIds = new Set<string>();
   for (const e of Object.values(doc.entities)) {
     if (e.type === 'ude') udeIds.add(e.id);
   }
-  if (udeIds.size === 0) return out;
+  if (udeIds.size === 0) {
+    reachCacheSet(udeReachCache, doc, out);
+    return out;
+  }
   for (const e of structuralEntities(doc)) {
     const reach = reachableForward(doc, [e.id]);
     let count = 0;
     for (const id of reach) if (udeIds.has(id)) count++;
     if (count > 0) out.set(e.id, count);
   }
+  reachCacheSet(udeReachCache, doc, out);
   return out;
 };
 
@@ -90,12 +133,17 @@ export const udeReachCounts = (doc: TPDocument): Map<string, number> => {
  * converging onto an IO.
  */
 export const rootCauseReachCounts = (doc: TPDocument): Map<string, number> => {
+  const cached = reachCacheGet(rootCauseReachCache, doc);
+  if (cached) return cached;
   const out = new Map<string, number>();
   const rootIds = new Set<string>();
   for (const e of Object.values(doc.entities)) {
     if (e.type === 'rootCause') rootIds.add(e.id);
   }
-  if (rootIds.size === 0) return out;
+  if (rootIds.size === 0) {
+    reachCacheSet(rootCauseReachCache, doc, out);
+    return out;
+  }
   for (const e of structuralEntities(doc)) {
     // Skip root causes themselves — they feed nothing themselves; the
     // badge would always read ←1 (the entity itself) which is noise.
@@ -105,6 +153,7 @@ export const rootCauseReachCounts = (doc: TPDocument): Map<string, number> => {
     for (const id of reach) if (rootIds.has(id)) count++;
     if (count > 0) out.set(e.id, count);
   }
+  reachCacheSet(rootCauseReachCache, doc, out);
   return out;
 };
 
@@ -142,6 +191,11 @@ export const findCoreDrivers = (doc: TPDocument): CoreDriverCandidate[] => {
   const udeIds = new Set(entitiesOfType(doc, 'ude').map((e) => e.id));
 
   const scored: CoreDriverCandidate[] = pool
+    // Session 135 / Perf #21 — reuse the cached `counts` map: a pool
+    // candidate absent from it reaches zero UDEs, so skip the (now
+    // redundant) forward BFS for it entirely. Candidates that DO reach
+    // a UDE still need the walk to recover the ordered `reachedUdeIds`.
+    .filter((entity) => counts.has(entity.id))
     .map((entity) => {
       const reach = reachableForward(doc, [entity.id]);
       const reachedUdeIds: string[] = [];

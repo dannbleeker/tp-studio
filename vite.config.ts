@@ -27,7 +27,7 @@ const __COPYRIGHT_YEARS__ = (() => {
   return y <= 2026 ? '2026' : `2026–${y}`;
 })();
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(__APP_VERSION__),
     __BUILD_DATE__: JSON.stringify(__BUILD_DATE__),
@@ -71,17 +71,22 @@ export default defineConfig(({ command }) => ({
     // from `src/styles/index.css`'s `@theme` block.
     tailwindcss(),
     // Session 114 — `rollup-plugin-visualizer` emits a
-    // `dist/bundle-stats.html` treemap on every `pnpm build`. Opt-in
-    // ad-hoc: ignore it normally; open it with `pnpm visualize` (which
-    // builds + opens the file) when you want to audit chunk
-    // composition or hunt for accidentally-bundled heavy deps. Build
-    // overhead is ~50ms; the HTML file is gitignored.
-    visualizer({
-      filename: 'dist/bundle-stats.html',
-      gzipSize: true,
-      brotliSize: true,
-      template: 'treemap',
-    }),
+    // `dist/bundle-stats.html` treemap. Session 135 / Perf #14 — gate it
+    // behind `--mode analyze` (run via `pnpm visualize`) so the normal
+    // `pnpm build` (and CI) skip the treemap emit entirely rather than
+    // paying ~50 ms + writing a ~1.6 MB HTML file on every build. Using
+    // Vite's `--mode` keeps this cross-platform (no shell env-var
+    // syntax). The HTML file is gitignored.
+    ...(mode === 'analyze'
+      ? [
+          visualizer({
+            filename: 'dist/bundle-stats.html',
+            gzipSize: true,
+            brotliSize: true,
+            template: 'treemap',
+          }),
+        ]
+      : []),
     ...(command === 'serve'
       ? [
           checker({

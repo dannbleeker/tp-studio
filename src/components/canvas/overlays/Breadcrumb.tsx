@@ -12,17 +12,24 @@ import { useDocumentStore } from '@/store';
  * top-left title or top-right toolbar — slotted between them.
  */
 export function Breadcrumb() {
+  // Session 135 / Perf #4 — narrow the subscription. This component is
+  // always mounted; subscribing to the whole `doc` re-rendered it on
+  // every mutation (title edit, edge drag, anywhere). It only consumes
+  // the groups map (chain) and the title, so subscribe to just those —
+  // entity / edge churn no longer touches it. `ancestorChain` is O(1)
+  // per hop via the cached parent index, so no memo is needed.
   const hoistedGroupId = useDocumentStore((s) => s.hoistedGroupId);
-  const doc = useDocumentStore((s) => s.doc);
+  const groups = useDocumentStore((s) => s.doc.groups);
+  const docTitle = useDocumentStore((s) => s.doc.title);
   const hoistGroup = useDocumentStore((s) => s.hoistGroup);
   const unhoist = useDocumentStore((s) => s.unhoist);
 
   if (!hoistedGroupId) return null;
-  const target = doc.groups[hoistedGroupId];
+  const target = groups[hoistedGroupId];
   if (!target) return null;
 
   // The ancestor chain is from direct-parent up; we want top-down for display.
-  const ancestors = ancestorChain(doc, hoistedGroupId).slice().reverse();
+  const ancestors = ancestorChain({ groups }, hoistedGroupId).slice().reverse();
   const chain = [...ancestors, target];
 
   return (
@@ -36,7 +43,7 @@ export function Breadcrumb() {
         className="rounded-sm px-1.5 py-0.5 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
         title="Exit hoist (Esc)"
       >
-        {doc.title || 'Document'}
+        {docTitle || 'Document'}
       </button>
       {chain.map((g, i) => {
         const isLast = i === chain.length - 1;

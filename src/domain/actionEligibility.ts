@@ -1,3 +1,4 @@
+import { incomingEdges, outgoingEdges } from './graph';
 import { effectiveState } from './statePropagation';
 import type { EntityState, TPDocument } from './types';
 
@@ -57,34 +58,35 @@ export function actionEligibility(
   const action = doc.entities[actionId];
   if (!action || action.type !== 'action') return { status: 'na', preconditions: [] };
 
-  const edges = Object.values(doc.edges);
-  // Outcomes this action feeds (skip non-causal back-edges / mutex
-  // markers, mirroring the propagation engine).
+  // Session 135 / Perf #22 — use the shared per-`doc.edges` index
+  // (O(1) lookups) instead of two full `Object.values(doc.edges)`
+  // scans. Outcomes this action feeds (skip non-causal back-edges /
+  // mutex markers, mirroring the propagation engine).
   const outcomeIds = new Set<string>();
-  for (const e of edges) {
-    if (e.sourceId !== actionId) continue;
+  for (const e of outgoingEdges(doc, actionId)) {
     if (e.isBackEdge || e.isMutualExclusion) continue;
     outcomeIds.add(e.targetId);
   }
 
   const seen = new Set<string>();
   const preconditions: Precondition[] = [];
-  for (const e of edges) {
-    if (!outcomeIds.has(e.targetId)) continue;
-    if (e.sourceId === actionId) continue;
-    if (e.isBackEdge || e.isMutualExclusion) continue;
-    const src = doc.entities[e.sourceId];
-    if (!src) continue;
-    // Preconditions are the non-Action, non-Assumption siblings — the
-    // existing conditions, not other do-something steps or edge claims.
-    if (src.type === 'action' || src.type === 'assumption') continue;
-    if (seen.has(src.id)) continue;
-    seen.add(src.id);
-    preconditions.push({
-      id: src.id,
-      title: src.title,
-      state: effectiveState(src, derived, overrides),
-    });
+  for (const outcomeId of outcomeIds) {
+    for (const e of incomingEdges(doc, outcomeId)) {
+      if (e.sourceId === actionId) continue;
+      if (e.isBackEdge || e.isMutualExclusion) continue;
+      const src = doc.entities[e.sourceId];
+      if (!src) continue;
+      // Preconditions are the non-Action, non-Assumption siblings — the
+      // existing conditions, not other do-something steps or edge claims.
+      if (src.type === 'action' || src.type === 'assumption') continue;
+      if (seen.has(src.id)) continue;
+      seen.add(src.id);
+      preconditions.push({
+        id: src.id,
+        title: src.title,
+        state: effectiveState(src, derived, overrides),
+      });
+    }
   }
 
   if (preconditions.length === 0) return { status: 'na', preconditions };

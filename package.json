@@ -22,7 +22,7 @@
     "knip": "knip",
     "verify": "pnpm lint && tsc --noEmit && pnpm knip && pnpm test && pnpm build",
     "mutation": "stryker run",
-    "visualize": "vite build",
+    "visualize": "vite build --mode analyze",
     "check:bundle-size": "node ./scripts/check-bundle-size.mjs",
     "book": "pnpm book:epub && pnpm book:pdf",
     "book:pdf": "node ./scripts/build-book-pdf.mjs",

@@ -1,4 +1,4 @@
-import { Background, BackgroundVariant, MiniMap, ReactFlow } from '@xyflow/react';
+import { Background, BackgroundVariant, MiniMap, type Node, ReactFlow } from '@xyflow/react';
 import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { findSpliceTargetEdge } from '@/domain/dragSplice';
@@ -33,6 +33,14 @@ const nodeTypes = {
   tpCollapsedGroup: TPCollapsedGroupNode,
 };
 const edgeTypes = { tp: TPEdge };
+
+// Session 135 / Perf #1 + #2 — hoist props that were fresh object /
+// function literals on every `CanvasInner` render. A new identity each
+// render makes React Flow + MiniMap treat them as changed; module-scope
+// constants are stable for the component's lifetime.
+const FIT_VIEW_OPTIONS = { padding: 0.4, maxZoom: 1.2 };
+const miniMapNodeColor = (n: Node): string =>
+  n.type === 'tpGroup' || n.type === 'tpCollapsedGroup' ? '#a5b4fc' : '#737373';
 
 /**
  * Session 135 / Perf #6 — populate a centroid buffer in-place.
@@ -389,7 +397,7 @@ function CanvasInner() {
         zoomOnDoubleClick={false}
         proOptions={{ hideAttribution: true }}
         fitView
-        fitViewOptions={{ padding: 0.4, maxZoom: 1.2 }}
+        fitViewOptions={FIT_VIEW_OPTIONS}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color={GRID_DOT} />
         {/* Session 133 — the built-in `<Controls>` (zoom in / zoom
@@ -422,10 +430,7 @@ function CanvasInner() {
             maskColor="rgba(99, 102, 241, 0.18)"
             maskStrokeColor="#6366f1"
             maskStrokeWidth={1.5}
-            nodeColor={(n) => {
-              if (n.type === 'tpGroup' || n.type === 'tpCollapsedGroup') return '#a5b4fc';
-              return '#737373';
-            }}
+            nodeColor={miniMapNodeColor}
             // Border on each node thumbnail — without it, neutral-grey
             // nodes blend into the off-white minimap background. The
             // 1-px slate stroke gives every node a visible silhouette.
