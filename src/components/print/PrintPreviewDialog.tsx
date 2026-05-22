@@ -9,8 +9,9 @@ import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
-import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS_PLAIN } from '../ui/buttonClasses';
+import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '../ui/buttonClasses';
 import { LargeDialog } from '../ui/LargeDialog';
+import { EYEBROW } from '../ui/textClasses';
 import { MODE_HINT, MODE_LABEL, ModeThumbnail, type PrintMode } from './PrintModeThumbnail';
 
 /**
@@ -189,9 +190,7 @@ export function PrintPreviewDialog() {
     >
       <div className="flex flex-col gap-3">
         <fieldset className="flex flex-col gap-2 text-sm">
-          <legend className="font-semibold text-[11px] text-neutral-500 uppercase tracking-wide dark:text-neutral-400">
-            Mode
-          </legend>
+          <legend className={EYEBROW}>Mode</legend>
           <div className="grid grid-cols-3 gap-2">
             {(['standard', 'workshop', 'inksaving'] satisfies PrintMode[]).map((m) => (
               <button
@@ -199,8 +198,10 @@ export function PrintPreviewDialog() {
                 type="button"
                 onClick={() => setMode(m)}
                 className={clsx(
+                  // Design audit #5 — was paired with `_PLAIN` (no text
+                  // colour), fading the unselected MODE_LABEL on dark.
                   'flex flex-col items-start gap-1.5 rounded-md border px-3 py-2 text-left text-xs transition',
-                  mode === m ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS_PLAIN
+                  mode === m ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
                 )}
               >
                 {/* Session 88 (S20) — inline mode thumbnail. The

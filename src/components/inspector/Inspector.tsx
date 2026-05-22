@@ -8,6 +8,7 @@ import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useSelectionShape } from '@/hooks/useSelectionShape';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
+import { TabBar } from '../ui/TabBar';
 import { EdgeInspector } from './EdgeInspector';
 import { EntityInspector } from './EntityInspector';
 import { GroupInspector } from './GroupInspector';
@@ -119,38 +120,18 @@ export function Inspector() {
             </Button>
           </header>
           {isEC && (
-            <div
-              role="tablist"
-              aria-label="Evaporating Cloud inspector views"
-              className="flex border-neutral-200 border-b px-2 dark:border-neutral-800"
-            >
-              {(
+            <TabBar
+              ariaLabel="Evaporating Cloud inspector views"
+              active={ecTab}
+              onChange={setECTab}
+              tabs={
                 [
-                  { id: 'inspector' as const, label: 'Inspector' },
-                  { id: 'verbalisation' as const, label: 'Verbalisation' },
-                  { id: 'injections' as const, label: 'Injections' },
+                  { id: 'inspector', label: 'Inspector' },
+                  { id: 'verbalisation', label: 'Verbalisation' },
+                  { id: 'injections', label: 'Injections' },
                 ] satisfies { id: ECTab; label: string }[]
-              ).map((tab) => {
-                const active = ecTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => setECTab(tab.id)}
-                    className={clsx(
-                      'flex-1 px-2 py-1.5 font-semibold text-[11px] uppercase tracking-wide transition',
-                      active
-                        ? 'border-indigo-500 border-b-2 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300'
-                        : 'border-transparent border-b-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
+              }
+            />
           )}
           <div className="flex-1 overflow-y-auto p-4">
             {isEC && ecTab === 'verbalisation' && <VerbalisationStrip compact={false} />}

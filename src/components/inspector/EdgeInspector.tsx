@@ -6,7 +6,11 @@ import { useEdge, useEntity } from '@/hooks/useSelected';
 import { useDocumentStore } from '@/store';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
-import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '../ui/buttonClasses';
+import {
+  SELECTED_BUTTON_CLASS,
+  TOGGLE_BUTTON_BASE,
+  UNSELECTED_BUTTON_CLASS,
+} from '../ui/buttonClasses';
 import { AssumptionWell } from './AssumptionWell';
 import { AttributesSection } from './AttributesSection';
 import { Field } from './Field';
@@ -166,7 +170,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
                 disabled={locked}
                 onClick={() => setEdgeWeight(edgeId, opt.id)}
                 className={clsx(
-                  'rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60',
+                  TOGGLE_BUTTON_BASE,
                   selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
                 )}
                 title={opt.hint}

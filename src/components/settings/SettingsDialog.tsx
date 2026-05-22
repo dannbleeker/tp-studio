@@ -1,8 +1,8 @@
-import clsx from 'clsx';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { TabBar } from '@/components/ui/TabBar';
 import { useDocumentStore } from '@/store';
 import { AppearanceTab } from './tabs/AppearanceTab';
 import { BehaviorTab } from './tabs/BehaviorTab';
@@ -48,35 +48,14 @@ export function SettingsDialog() {
         </Button>
       </header>
 
-      {/* Session 87 (S25) — tab bar replacing the single-scroll
-          layout. ARIA tablist semantics so screen readers announce
-          the tab transitions. */}
-      <div
-        role="tablist"
-        aria-label="Settings sections"
-        className="flex border-neutral-200 border-b px-2 dark:border-neutral-800"
-      >
-        {TABS.map((t) => {
-          const active = activeTab === t.id;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => setActiveTab(t.id)}
-              className={clsx(
-                'flex-1 px-2 py-2 font-semibold text-[11px] uppercase tracking-wide transition',
-                active
-                  ? 'border-indigo-500 border-b-2 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300'
-                  : 'border-transparent border-b-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
-              )}
-            >
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* Session 87 (S25) — tab bar replacing the single-scroll layout.
+          Session 135 — shared `<TabBar>` (design audit #11). */}
+      <TabBar
+        tabs={TABS}
+        active={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="Settings sections"
+      />
 
       <div className="max-h-[70vh] space-y-6 overflow-y-auto px-4 py-4">
         {activeTab === 'appearance' && <AppearanceTab />}

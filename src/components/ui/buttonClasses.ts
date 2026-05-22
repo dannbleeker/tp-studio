@@ -70,3 +70,22 @@ export const SELECTED_BUTTON_CLASS_ICON =
 
 export const UNSELECTED_BUTTON_CLASS_ICON =
   'border-neutral-200 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800';
+
+/**
+ * Session 135 (design audit #4) — the shared *shape* of a toggle /
+ * radio button, factoring out the third thing every picker hand-coded
+ * alongside the colour constants above: `rounded-md border px-2 py-1.5
+ * text-xs transition` + the disabled fade. Three paddings
+ * (px-2 / px-2.5 / px-3) had drifted across the Type / TitleSize /
+ * Locus / State / Polarity / mode pickers and `RadioGroup`. Compose
+ * with one of the colour pairs:
+ *
+ * ```tsx
+ * clsx(TOGGLE_BUTTON_BASE, selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS)
+ * ```
+ *
+ * The `<ButtonGroup>` primitive bakes this in; raw call sites that
+ * aren't worth converting can still use the constant directly.
+ */
+export const TOGGLE_BUTTON_BASE =
+  'rounded-md border px-2 py-1.5 text-xs transition disabled:cursor-not-allowed disabled:opacity-60';

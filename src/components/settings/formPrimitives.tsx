@@ -1,6 +1,10 @@
 import clsx from 'clsx';
 import type { ChangeEventHandler, ReactNode, Ref } from 'react';
-import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS_PLAIN } from '../ui/buttonClasses';
+import {
+  SELECTED_BUTTON_CLASS,
+  TOGGLE_BUTTON_BASE,
+  UNSELECTED_BUTTON_CLASS,
+} from '../ui/buttonClasses';
 import { INPUT_FOCUS } from '../ui/focusClasses';
 import { EYEBROW } from '../ui/textClasses';
 
@@ -46,8 +50,13 @@ export function RadioGroup<T extends string>({
             type="button"
             onClick={() => onChange(opt.id)}
             className={clsx(
-              'flex flex-col items-start gap-0.5 rounded-md border px-2.5 py-1.5 text-left text-xs transition',
-              selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS_PLAIN
+              TOGGLE_BUTTON_BASE,
+              'flex flex-col items-start gap-0.5 text-left',
+              // Session 135 (design audit #4/#5) — was paired with the
+              // `_PLAIN` (no-text-colour) unselected variant, so the
+              // unselected label inherited an undefined colour; use the
+              // with-text pair so both states read correctly.
+              selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
             )}
             aria-pressed={selected}
             data-radio-name={name}

@@ -2,6 +2,39 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Design-audit batch 2: toggle-button base + ButtonGroup + TabBar
+
+Findings 4, 5, 17, 11 — three component extractions that pay for
+themselves in maintenance volume.
+
+**Finding 4 — `TOGGLE_BUTTON_BASE`.** The shared *shape* of a
+toggle/radio button (`rounded-md border px-2 py-1.5 text-xs transition`
++ disabled fade) was hand-coded with three drifting paddings
+(px-2 / px-2.5 / px-3). New constant in `buttonClasses.ts`; applied to
+the Locus / State / Polarity pickers and `RadioGroup`.
+
+**Finding 17 — `<ButtonGroup>` primitive** (`ui/ButtonGroup.tsx`). A
+declarative single-select toggle grid (`options` / `value` / `onChange`
+/ `columns` / `variant`). The entity-type picker (plain + stripe
+variant) and the title-size picker convert to it. Pickers with an
+"unset" option (Locus / State / Polarity) and the State picker's
+speculation dual-write + `data-component` test hook stay bespoke but
+adopt the shared base.
+
+**Finding 5 — mismatched colour pairs fixed.** `RadioGroup` and the
+PrintPreviewDialog mode picker paired `SELECTED_BUTTON_CLASS` (with
+text colour) against `UNSELECTED_BUTTON_CLASS_PLAIN` (no text colour),
+fading the unselected label on dark. Both now use the with-text
+`UNSELECTED_BUTTON_CLASS`.
+
+**Finding 11 — `<TabBar>` primitive** (`ui/TabBar.tsx`). The Inspector
+EC-views bar and the Settings sections bar were two near-identical
+25-line `role="tablist"` blocks already drifting (py-1.5 vs py-2). One
+component; both convert. The PrintPreviewDialog "Mode" legend + the
+settings `Section` now also use the `EYEBROW` token.
+
+No behaviour change; 58+ inspector / settings tests green, tsc + biome clean.
+
 ## Session 135 — Design-audit batch 1: Field semantics + eyebrow token + inspector hierarchy
 
 First batch of the [Session 135 design audit](docs/DESIGN_AUDIT_SESSION_135.md) (findings 1–3) — one coherent inspector-pane pass fixing a11y + visual hierarchy together.

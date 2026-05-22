@@ -12,11 +12,11 @@ import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 import { TextArea, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
+import { ButtonGroup } from '../ui/ButtonGroup';
 import {
   SELECTED_BUTTON_CLASS,
-  SELECTED_BUTTON_CLASS_PLAIN,
+  TOGGLE_BUTTON_BASE,
   UNSELECTED_BUTTON_CLASS,
-  UNSELECTED_BUTTON_CLASS_PLAIN,
 } from '../ui/buttonClasses';
 import { AttachedEdgesList } from './AttachedEdgesList';
 import { EntityAttributesSection } from './AttributesSection';
@@ -99,32 +99,17 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
       </Field>
 
       <Field label="Type" as="group">
-        <div className="grid grid-cols-2 gap-1.5">
-          {availableTypes.map((type) => {
+        <ButtonGroup
+          variant="plain"
+          columns={2}
+          disabled={locked}
+          value={entity.type}
+          onChange={(type) => updateEntity(entityId, { type: type as EntityType })}
+          options={availableTypes.map((type) => {
             const meta = resolveEntityTypeMeta(type, customEntityClasses);
-            const selected = entity.type === type;
-            return (
-              <button
-                key={type}
-                type="button"
-                disabled={locked}
-                onClick={() => updateEntity(entityId, { type: type as EntityType })}
-                className={clsx(
-                  'flex items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition disabled:cursor-not-allowed disabled:opacity-60',
-                  selected ? SELECTED_BUTTON_CLASS_PLAIN : UNSELECTED_BUTTON_CLASS_PLAIN
-                )}
-              >
-                <span
-                  className="h-3 w-1 shrink-0 rounded-sm"
-                  style={{ backgroundColor: meta.stripeColor }}
-                />
-                <span className="truncate text-neutral-700 dark:text-neutral-200">
-                  {meta.label}
-                </span>
-              </button>
-            );
+            return { id: type, label: meta.label, stripe: meta.stripeColor };
           })}
-        </div>
+        />
       </Field>
 
       <MarkdownField
@@ -139,28 +124,21 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
       />
 
       <Field label="Title size" as="group">
-        <div className="grid grid-cols-3 gap-1.5">
-          {(['sm', 'md', 'lg'] as const).map((size) => {
-            const active = (entity.titleSize ?? 'md') === size;
-            const label = size === 'sm' ? 'Compact' : size === 'md' ? 'Regular' : 'Large';
-            return (
-              <button
-                key={size}
-                type="button"
-                disabled={locked}
-                onClick={() =>
-                  updateEntity(entityId, { titleSize: size === 'md' ? undefined : size })
-                }
-                className={clsx(
-                  'rounded-md border px-2 py-1.5 text-xs transition disabled:cursor-not-allowed disabled:opacity-60',
-                  active ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
-                )}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+        <ButtonGroup
+          columns={3}
+          disabled={locked}
+          value={entity.titleSize ?? 'md'}
+          // `'md'` is the default — clearing it (rather than storing
+          // `'md'`) keeps the persisted entity lean.
+          onChange={(size) =>
+            updateEntity(entityId, { titleSize: size === 'md' ? undefined : size })
+          }
+          options={[
+            { id: 'sm', label: 'Compact' },
+            { id: 'md', label: 'Regular' },
+            { id: 'lg', label: 'Large' },
+          ]}
+        />
       </Field>
 
       {entity.type === 'action' && (
@@ -324,7 +302,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
                 disabled={locked}
                 onClick={() => updateEntity(entityId, { spanOfControl: opt.id })}
                 className={clsx(
-                  'rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60',
+                  TOGGLE_BUTTON_BASE,
                   selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
                 )}
               >
@@ -386,7 +364,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
                   }
                 }}
                 className={clsx(
-                  'rounded-md border px-2 py-1.5 transition disabled:cursor-not-allowed disabled:opacity-60',
+                  TOGGLE_BUTTON_BASE,
                   selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
                 )}
               >
