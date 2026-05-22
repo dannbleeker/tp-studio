@@ -20,7 +20,7 @@
  * gets coverage in the Playwright e2e.
  */
 
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -137,8 +137,11 @@ describe('SelectionToolbar', () => {
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: /^add child$/i }));
     });
-    const after = Object.keys(useDocumentStore.getState().doc.entities).length;
-    expect(after).toBe(before + 1);
+    // Perf #35 — dispatch is now async (the command catalogue is lazy-
+    // loaded on first use), so the mutation lands a microtask later.
+    await waitFor(() => {
+      expect(Object.keys(useDocumentStore.getState().doc.entities).length).toBe(before + 1);
+    });
   });
 
   it("verb tooltip carries the command's keyboard shortcut when one exists", async () => {

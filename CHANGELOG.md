@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Perf #35: decouple the command catalogue from the eager canvas
+
+The structural item parked at the end of the perf audit. The always-mounted
+`SelectionToolbar` and the `ContextMenu` (via `contextMenuItems`) statically
+imported `{ COMMANDS }` purely to resolve a clicked verb's
+`paletteCommandId → run` — which pulled the whole nine-module command
+catalogue into the eager index chunk. Verb *labels* and *icons* come from the
+verb itself, so the catalogue is only needed at dispatch time.
+
+New `runPaletteCommand(id)` (`command-palette/runPaletteCommand.ts`) lazily
+`import()`s the catalogue on first use and caches an `id → run` map; both
+canvas consumers now dispatch through it instead of importing `COMMANDS`. With
+no remaining eager importer, Rollup ships the command tree in a lazy chunk.
+
+**Eager index: 68.4 → 63.5 KB gz** (−5 KB). Combined with #13 the eager index
+is down from 83.5 → 63.5 KB gz across this session (−24%).
+
+Dispatch is now async (a microtask while the chunk resolves on first verb
+click); the one SelectionToolbar test that asserted synchronously now awaits.
+Behaviour is otherwise identical — same canonical handler, same Browse-Lock
+guard. tsc + biome clean; build + bundle-budget pass; 492 component tests green.
+
 ## Session 135 — Performance pass, batch 3 (clearing the tail)
 
 Final sweep of the 40-finding audit. Implemented every remaining item that
