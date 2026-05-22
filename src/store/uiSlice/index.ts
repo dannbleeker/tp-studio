@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
+import { type ConfirmSlice, confirmDefaults, createConfirmSlice } from './confirmSlice';
 import { createDialogsSlice, type DialogsSlice, dialogsDefaults } from './dialogsSlice';
 import {
   createPreferencesSlice,
@@ -13,6 +14,7 @@ import {
   type SpeculationSlice,
   speculationDefaults,
 } from './speculationSlice';
+import { createToastsSlice, type ToastsSlice, toastsDefaults } from './toastsSlice';
 import {
   createWalkthroughSlice,
   type WalkthroughSlice,
@@ -59,7 +61,9 @@ export type UISlice = SelectionSlice &
   DialogsSlice &
   SearchSlice &
   WalkthroughSlice &
-  SpeculationSlice;
+  SpeculationSlice &
+  ToastsSlice &
+  ConfirmSlice;
 
 /**
  * Data-only defaults for the unified slice. Used by `resetStoreForTest` to
@@ -74,6 +78,8 @@ export const uiDefaults = (): Pick<
   | keyof ReturnType<typeof searchDefaults>
   | keyof ReturnType<typeof walkthroughDefaults>
   | keyof ReturnType<typeof speculationDefaults>
+  | keyof ReturnType<typeof toastsDefaults>
+  | keyof ReturnType<typeof confirmDefaults>
 > => ({
   ...selectionDefaults(),
   ...preferencesDefaults(),
@@ -81,6 +87,8 @@ export const uiDefaults = (): Pick<
   ...searchDefaults(),
   ...walkthroughDefaults(),
   ...speculationDefaults(),
+  ...toastsDefaults(),
+  ...confirmDefaults(),
 });
 
 export const createUISlice: StateCreator<RootStore, [], [], UISlice> = (...args) => ({
@@ -90,4 +98,6 @@ export const createUISlice: StateCreator<RootStore, [], [], UISlice> = (...args)
   ...createSearchSlice(...args),
   ...createWalkthroughSlice(...args),
   ...createSpeculationSlice(...args),
+  ...createToastsSlice(...args),
+  ...createConfirmSlice(...args),
 });

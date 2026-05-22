@@ -1,15 +1,18 @@
-import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
-import { TOAST_AUTO_DISMISS_MS_BY_KIND } from '@/domain/constants';
 import type { DiagramType, TPDocument } from '@/domain/types';
 import type { RootStore } from '../types';
-import type { ContextMenuState, ContextMenuTarget, Toast, ToastAction, ToastKind } from './types';
+import type { ContextMenuState, ContextMenuTarget } from './types';
 
 /**
  * Everything modal-ish: the command palette, help / settings / doc-settings
- * dialogs, the right-click context menu, the toast stack, and Quick Capture.
- * Each has its own `open*` / `close*` pair; only the toast stack has any
- * real logic (auto-dismiss per-kind via `TOAST_AUTO_DISMISS_MS_BY_KIND`).
+ * dialogs, the right-click context menu, and Quick Capture. Each has its
+ * own `open*` / `close*` pair — a flat dialog-visibility registry.
+ *
+ * Session 135 — the two parts that carried real runtime logic moved to
+ * their own sibling UI sub-slices: the toast stack to `toastsSlice.ts`,
+ * the async-confirm dialog to `confirmSlice.ts`. Both still resolve on
+ * the root store (`s.showToast`, `s.confirm`), so consumers are
+ * unchanged.
  */
 export type DialogsSlice = {
   paletteOpen: boolean;
@@ -24,7 +27,6 @@ export type DialogsSlice = {
   settingsOpen: boolean;
   docSettingsOpen: boolean;
   contextMenu: ContextMenuState;
-  toasts: Toast[];
   /** FL-QC1 Quick Capture dialog. */
   quickCaptureOpen: boolean;
   /** Session 77 / brief §10 — print preview modal. */
@@ -111,20 +113,6 @@ export type DialogsSlice = {
    *  revision next to the live doc. Independent of `compareRevisionId`
    *  (the user can choose either flavor of comparison per revision). */
   sideBySideRevisionId: string | null;
-  /** Async-confirm dialog state. `null` when no confirm is pending; an
-   *  object holds the message and the pending resolver. The
-   *  `<ConfirmDialog>` component reads this; the `confirm()` action
-   *  returns a Promise<boolean> that resolves once the user picks
-   *  Confirm or Cancel. Replaces the previous synchronous
-   *  `window.confirm` calls so the UI stays theme-aware and the JS
-   *  thread isn't blocked. */
-  confirmDialog: {
-    message: string;
-    confirmLabel?: string;
-    cancelLabel?: string;
-    /** Resolver kept in store so the dialog component can settle it on click. */
-    resolve: (ok: boolean) => void;
-  } | null;
 
   openPalette: () => void;
   openPaletteWithQuery: (query: string) => void;
@@ -145,24 +133,6 @@ export type DialogsSlice = {
 
   openContextMenu: (target: ContextMenuTarget, x: number, y: number) => void;
   closeContextMenu: () => void;
-
-  /** Session 88 (S14) — the optional `action` renders an Undo-style
-   *  button on the toast. Existing two-arg callers continue to work
-   *  unchanged; new call-sites pass `{ action: { label, run } }` to
-   *  surface an affordance the user can click before the auto-dismiss
-   *  fires.
-   *
-   *  Session 91 — optional `durationMs` overrides the per-kind default
-   *  in `TOAST_AUTO_DISMISS_MS_BY_KIND`. The PWA "New version available"
-   *  toast uses this to dwell longer than even the info default since
-   *  the user often needs a moment to save their canvas state before
-   *  refreshing. Omit for the per-kind default. */
-  showToast: (
-    kind: ToastKind,
-    message: string,
-    options?: { action?: ToastAction; durationMs?: number }
-  ) => void;
-  dismissToast: (id: string) => void;
 
   openQuickCapture: () => void;
   closeQuickCapture: () => void;
@@ -255,19 +225,6 @@ export type DialogsSlice = {
   /** H4 — open / close the side-by-side dialog. */
   openSideBySide: (revisionId: string) => void;
   closeSideBySide: () => void;
-
-  /**
-   * Open the async-confirm dialog. Resolves to `true` if the user
-   * confirms, `false` if they cancel (Esc, backdrop click, or
-   * Cancel button). Use this in place of `window.confirm`.
-   */
-  confirm: (
-    message: string,
-    options?: { confirmLabel?: string; cancelLabel?: string }
-  ) => Promise<boolean>;
-  /** Settle the open confirm with the given answer. The component
-   *  wires both buttons + Esc through this. */
-  resolveConfirm: (ok: boolean) => void;
 };
 
 export type DialogsDataKeys =
@@ -278,7 +235,6 @@ export type DialogsDataKeys =
   | 'settingsOpen'
   | 'docSettingsOpen'
   | 'contextMenu'
-  | 'toasts'
   | 'quickCaptureOpen'
   | 'printOpen'
   | 'templatePickerOpen'
@@ -293,8 +249,7 @@ export type DialogsDataKeys =
   | 'patternLibraryOpen'
   | 'historyPanelOpen'
   | 'compareRevisionId'
-  | 'sideBySideRevisionId'
-  | 'confirmDialog';
+  | 'sideBySideRevisionId';
 
 export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   paletteOpen: false,
@@ -304,7 +259,6 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   settingsOpen: false,
   docSettingsOpen: false,
   contextMenu: { open: false },
-  toasts: [],
   quickCaptureOpen: false,
   printOpen: false,
   templatePickerOpen: false,
@@ -320,7 +274,6 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
-  confirmDialog: null,
 });
 
 export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> = (set, get) => ({
@@ -331,7 +284,6 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   settingsOpen: false,
   docSettingsOpen: false,
   contextMenu: { open: false },
-  toasts: [],
   quickCaptureOpen: false,
   printOpen: false,
   templatePickerOpen: false,
@@ -347,7 +299,6 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   historyPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
-  confirmDialog: null,
 
   openPalette: () => set({ paletteOpen: true, paletteInitialQuery: '' }),
   openPaletteWithQuery: (query) => set({ paletteOpen: true, paletteInitialQuery: query }),
@@ -368,31 +319,6 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openContextMenu: (target, x, y) => set({ contextMenu: { open: true, target, x, y } }),
   closeContextMenu: () => set({ contextMenu: { open: false } }),
-
-  showToast: (kind, message, options) => {
-    // Dedup: if the same (kind, message) is already on the queue, drop
-    // this one. Several validators sometimes fire on a single edit and
-    // would otherwise stack identical toasts on top of each other. The
-    // queue is short (≤5 in practice) so the linear scan is free.
-    const existing = get().toasts;
-    if (existing.some((t) => t.kind === kind && t.message === message)) return;
-    const id = nanoid(8);
-    // Session 88 (S14) — action is optional; spread keeps the shape
-    // clean for the common two-arg call. The action's `run` is stored
-    // by reference; Toaster invokes it on click.
-    const toast: Toast = options?.action
-      ? { id, kind, message, action: options.action }
-      : { id, kind, message };
-    set({ toasts: [...existing, toast] });
-    // Session 91 — per-kind defaults grade by urgency (success short,
-    // info medium, error long); per-call `durationMs` overrides for
-    // edge cases like the PWA refresh toast.
-    const duration = options?.durationMs ?? TOAST_AUTO_DISMISS_MS_BY_KIND[kind];
-    setTimeout(() => {
-      set({ toasts: get().toasts.filter((t) => t.id !== id) });
-    }, duration);
-  },
-  dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
 
   openQuickCapture: () => set({ quickCaptureOpen: true }),
   closeQuickCapture: () => set({ quickCaptureOpen: false }),
@@ -463,32 +389,4 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openSideBySide: (revisionId) => set({ sideBySideRevisionId: revisionId }),
   closeSideBySide: () => set({ sideBySideRevisionId: null }),
-
-  confirm: (message, options) => {
-    // If a confirm is somehow already open, resolve it as `false` first
-    // so the previous caller doesn't hang on a forever-pending promise.
-    const existing = get().confirmDialog;
-    if (existing) existing.resolve(false);
-    return new Promise<boolean>((resolve) => {
-      set({
-        confirmDialog: {
-          message,
-          // Conditional spread to avoid passing `confirmLabel:
-          // undefined` / `cancelLabel: undefined` when the options
-          // object omits them — the confirmDialog type's optional
-          // string fields reject explicit undefined under
-          // exactOptionalPropertyTypes.
-          ...(options?.confirmLabel !== undefined ? { confirmLabel: options.confirmLabel } : {}),
-          ...(options?.cancelLabel !== undefined ? { cancelLabel: options.cancelLabel } : {}),
-          resolve,
-        },
-      });
-    });
-  },
-  resolveConfirm: (ok) => {
-    const current = get().confirmDialog;
-    if (!current) return;
-    current.resolve(ok);
-    set({ confirmDialog: null });
-  },
 });
