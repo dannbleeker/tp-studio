@@ -2,7 +2,7 @@ import { useStore as useRFStore } from '@xyflow/react';
 import clsx from 'clsx';
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import { iconForCommandId } from '@/components/command-palette/commandIcons';
-import { COMMANDS } from '@/components/command-palette/commands';
+import { runVerbCommand } from '@/components/command-palette/verbCommandRuns';
 /**
  * Session 95 — Selection-anchored floating toolbar.
  *
@@ -43,10 +43,6 @@ import { getSelectionViewportRect } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import { computeToolbarPlacement } from './selectionToolbarPlacement';
 
-// Build the command-id → Command map once. The palette command
-// catalogue is module-scoped; the map's references are stable.
-const COMMANDS_BY_ID = new Map(COMMANDS.map((c) => [c.id, c]));
-
 // Geometry constants. All pixels. Passed to `computeToolbarPlacement`
 // each render; the pure function in `selectionToolbarPlacement.ts`
 // has direct unit tests.
@@ -56,18 +52,17 @@ const ESTIMATED_WIDTH_PX = 320; // chip row width (~5 verbs); used for horizonta
 const VIEWPORT_MARGIN_PX = 8; // minimum distance from viewport edges
 
 /**
- * Resolve a verb's onClick handler. Palette-backed verbs go through
- * `command.run(state)` so the canonical handler runs (with its
- * Browse-Lock guard etc.); registry-only verbs use their inline `run`.
+ * Resolve a verb's onClick handler. Palette-backed verbs go through the
+ * canonical command handler (with its Browse-Lock guard etc.) — resolved
+ * synchronously via the light `runVerbCommand` registry (Perf #35) so the
+ * eager toolbar no longer imports the whole command catalogue.
+ * Registry-only verbs use their inline `run`.
  */
 const dispatchVerb = (verb: Verb): void => {
   const state = useDocumentStore.getState();
   if (verb.paletteCommandId) {
-    const cmd = COMMANDS_BY_ID.get(verb.paletteCommandId);
-    if (cmd) {
-      void cmd.run(state);
-      return;
-    }
+    runVerbCommand(verb.paletteCommandId, state);
+    return;
   }
   if (verb.run) void verb.run(state);
 };

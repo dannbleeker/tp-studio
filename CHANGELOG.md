@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Perf #35 (proper): command catalogue off the eager canvas path
+
+The earlier lazy-load attempt at #35 was reverted because async dispatch broke
+the click-then-Escape gesture. This is the *synchronous* version: a light
+`verbCommandRuns` registry imports only the four command modules that actually
+hold verb-dispatchable commands (`analysis` / `edges` / `groups` / `tools` —
+verified: all 33 verb-referenced ids live there) and exposes a synchronous
+`id → run` lookup. The always-mounted `SelectionToolbar` + `ContextMenu`
+(`contextMenuItems`) dispatch through it instead of importing the full
+`COMMANDS` catalogue, so the palette-only modules (`document` / `export` /
+`help` / `navigate` / `view`) + the catalogue-assembly glue drop off the eager
+path. The catalogue stays whole behind the lazy CommandPalette.
+
+No duplication / no drift (the registry reuses the same `Command.run` the
+palette uses) and dispatch stays synchronous (so the reverted attempt's timing
+hazard can't recur). Eager index **68.4 → 67.2 KB gz** — a modest ~1.2 KB,
+since the excluded command defs are light (`export`'s heavy libs are already
+lazy-imported inside their run bodies). `commandIcons` stays eager by design:
+the toolbar renders verb icons synchronously, so relocating them wouldn't
+shrink the critical path.
+
++34 registry-contract tests (every verb command resolves; palette-only ones
+don't — guards against a future command move silently breaking a verb).
+tsc + biome clean; build + bundle-budget pass; 529 component tests green.
+
 ## Session 135 — Action-eligibility canvas badge
 
 Surfaces the TT action-eligibility readout (previously inspector-only) as an

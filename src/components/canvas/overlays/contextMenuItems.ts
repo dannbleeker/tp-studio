@@ -1,4 +1,4 @@
-import { COMMANDS } from '@/components/command-palette/commands';
+import { hasVerbCommand, runVerbCommand } from '@/components/command-palette/verbCommandRuns';
 import { type Branch, type Verb, verbsForBranch } from '@/domain/selectionVerbs';
 import { useDocumentStore } from '@/store';
 
@@ -23,18 +23,22 @@ export type MenuItem =
  * command yet) fall through to that closure.
  */
 export const toMenuItem = (verb: Verb): MenuItem => {
-  const command = verb.paletteCommandId
-    ? COMMANDS.find((c) => c.id === verb.paletteCommandId)
-    : undefined;
-  const run = command
-    ? () => {
-        void command.run(useDocumentStore.getState());
-      }
-    : verb.run
+  // Perf #35 — resolve the verb's command synchronously via the light
+  // `verbCommandRuns` registry (the four files that hold verb-backed
+  // commands) instead of the full eager `COMMANDS` catalogue. Same
+  // priority as before: a real command wins, else the verb's inline
+  // `run`, else a no-op.
+  const paletteCommandId = verb.paletteCommandId;
+  const run =
+    paletteCommandId && hasVerbCommand(paletteCommandId)
       ? () => {
-          void verb.run?.(useDocumentStore.getState());
+          runVerbCommand(paletteCommandId, useDocumentStore.getState());
         }
-      : () => {};
+      : verb.run
+        ? () => {
+            void verb.run?.(useDocumentStore.getState());
+          }
+        : () => {};
   return {
     kind: 'action',
     label: verb.label,
