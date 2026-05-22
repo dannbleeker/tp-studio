@@ -103,7 +103,7 @@ If picking the next thing up:
 
 Items explicitly dropped, in addition to the brief's own out-of-scope list:
 
-- **#2 Multi-user collaboration (spec §4)** — dropped Session 135. Real-time editing, comments, role-based participation, workshop voting + timeboxing, stakeholder sign-off, decision log. Would flip TP Studio from local-first to cloud-backed; product direction is local-first by design.
+- **#2 Multi-user collaboration (spec §4)** — out of scope for this version (Dann, Session 135). Real-time editing, comments, role-based participation, workshop voting + timeboxing, stakeholder sign-off, decision log. Would flip TP Studio from local-first to cloud-backed. Not a permanent "never" — parked until a hosted product direction is on the table; revisit then.
 - **#8 Enterprise integration (spec §8)** — dropped Session 135 (tied to #2). SSO/SAML/OIDC, M365 / Google Workspace / Slack / Teams / Confluence / SharePoint / Jira / Azure DevOps. TP Studio is a browser-local PWA.
 - **Audit trail / GDPR / data retention** — dropped Session 135 (depended on #2/#8 server-side identity model). No backend, no audit trail; persistence is local-storage + user-managed export files.
 - **Stakeholder sign-off workflow** — dropped Session 135 (depended on #2 multi-user model).
