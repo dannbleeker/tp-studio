@@ -28,9 +28,8 @@
 
 import clsx from 'clsx';
 import { X } from 'lucide-react';
-import { type ReactNode, useId, useRef } from 'react';
+import { type ReactNode, useEffect, useId, useRef } from 'react';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { Button } from './Button';
 
 export type LargeDialogProps = {
@@ -72,27 +71,55 @@ export function LargeDialog({
   children,
 }: LargeDialogProps) {
   const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-  useFocusTrap(dialogRef, open);
-  // Local Esc handler still fires even though Session 92's global
-  // cascade also handles each picker's open flag. The two are
-  // idempotent — local closes via prop, global closes via store action
-  // — but keeping the local one means the dialog stays Esc-dismissable
-  // if a host ever forgets to wire the cascade entry. Cheap.
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
+  // Design audit #19 — open as a true modal via `showModal()` so the
+  // browser provides the focus trap + page-behind `inert`-ness (the
+  // page-root stays out of the tab order and AT navigation), replacing
+  // the hand-rolled `useFocusTrap`. The component only mounts the
+  // `<dialog>` while open, so this runs once on mount; the cleanup
+  // closes it on unmount. The `showModal` feature-detect + `el.open`
+  // fallback keeps the dialog visible under jsdom / very old browsers
+  // where `showModal` isn't implemented (mirrors SideBySideDialog).
+  useEffect(() => {
+    const el = dialogRef.current;
+    if (!el) return;
+    const supportsModal = typeof el.showModal === 'function';
+    if (supportsModal) {
+      if (!el.open) el.showModal();
+    } else {
+      // jsdom / very old browsers: `showModal` (and `close`) aren't
+      // implemented — toggle the `open` attribute so the dialog stays
+      // visible + queryable. Mirrors SideBySideDialog's guard.
+      el.open = true;
+    }
+    return () => {
+      if (supportsModal) {
+        if (el.open) el.close();
+      } else {
+        el.open = false;
+      }
+    };
+  }, []);
+  // Esc handler — covers the non-modal fallback path (where the native
+  // dialog doesn't respond to Esc) and the global Session-92 cascade.
+  // In the modal path the browser also closes on Esc; the resulting
+  // store update is idempotent.
   useEscapeKey(open, onClose);
 
   if (!open) return null;
 
   return (
+    // No `open` attribute — the effect above calls `showModal()` (true
+    // top-layer modal) instead, which throws if the element is already
+    // open. Esc is handled by `useEscapeKey` (covers both the modal and
+    // the jsdom non-modal fallback); the X button drives `onClose`.
     <dialog
-      open
+      ref={dialogRef}
       className="fixed inset-0 z-50 m-0 flex h-screen max-h-screen w-screen max-w-none items-center justify-center bg-black/40 p-0"
       aria-modal="true"
       aria-labelledby={titleId}
     >
       <div
-        ref={dialogRef}
-        tabIndex={-1}
         className={clsx(
           'flex max-h-[88vh] flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-xl outline-hidden dark:border-neutral-800 dark:bg-neutral-950',
           widthClass,

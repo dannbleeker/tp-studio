@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Design-audit finding 19: LargeDialog true modal (showModal)
+
+`LargeDialog` (the centered-card picker shell behind PrintPreview /
+Export / Import / Template / DiagramType / PatternLibrary /
+ImportEntity dialogs) opened as a non-modal `<dialog open>` + a
+hand-rolled `useFocusTrap`, so page-behind content stayed in the tab
+order + AT navigation. It now opens as a true top-layer modal via
+`el.showModal()` — the browser supplies the focus trap and makes the
+rest of the page inert — replacing `useFocusTrap`. A feature-detected
+`el.open = true` fallback (and matching cleanup) keeps it visible +
+queryable under jsdom / very old browsers where `showModal` isn't
+implemented, mirroring the SideBySideDialog pattern. Esc still routes
+through `useEscapeKey` (covers both the modal and fallback paths). New
+`tests/components/LargeDialog.test.tsx` (5 tests) pins the mount /
+open-state / close-button / Esc / unmount behaviour.
+
+This was the last open design-audit finding — **all 25 now actioned.**
+
 ## Session 135 — Design-audit incremental sweep (findings 6, 8, 13–15, 18, 20–25)
 
 The audit's remaining lower-impact items, cleared in one pass.
