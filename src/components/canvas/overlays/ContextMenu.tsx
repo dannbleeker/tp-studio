@@ -1,72 +1,15 @@
-import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { COMMANDS } from '@/components/command-palette/commands';
 import { defaultEntityType, paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { outgoingEdges } from '@/domain/graph';
 import { presetByTitle } from '@/domain/groupPresets';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
-import { type Branch, type Verb, verbsForBranch } from '@/domain/selectionVerbs';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import type { EntityType } from '@/domain/types';
-import { useOutsideAndEscape } from '@/hooks/useOutsideAndEscape';
 import { useEntity } from '@/hooks/useSelected';
-import { guardWriteOrToast } from '@/services/browseLock';
 import { confirmAndDeleteEntity, confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
-
-type MenuItem =
-  | { kind: 'action'; label: string; destructive?: boolean; run: () => void }
-  | { kind: 'separator' }
-  | { kind: 'header'; label: string };
-
-/**
- * Session 95 — bridge a selection-verb registry entry into a
- * ContextMenu row. For verbs that name a palette command, we run the
- * palette command's canonical handler so menu + Cmd+K + toolbar
- * dispatch through the same code path. Verbs that carry their own
- * inline `run` (no palette command yet) fall through to that closure.
- *
- * Scope: the registry covers the *stable verb subset* — the leading
- * non-destructive verbs that a branch always offers. Destructive
- * deletes and dynamic per-doc sections (Convert-to, Pin/Unpin,
- * Spawn-EC, NBR, back-edge toggle) stay inline below; their labels
- * and conditions are richer than the registry's `state -> Verb[]`
- * model accommodates.
- */
-const toMenuItem = (verb: Verb): MenuItem => {
-  const command = verb.paletteCommandId
-    ? COMMANDS.find((c) => c.id === verb.paletteCommandId)
-    : undefined;
-  const run = command
-    ? () => {
-        void command.run(useDocumentStore.getState());
-      }
-    : verb.run
-      ? () => {
-          void verb.run?.(useDocumentStore.getState());
-        }
-      : () => {};
-  return {
-    kind: 'action',
-    label: verb.label,
-    // Conditional spread to avoid passing `destructive: undefined`
-    // (exactOptionalPropertyTypes rejects the explicit undefined on
-    // the optional `MenuItem.destructive?: boolean` field).
-    ...(verb.destructive !== undefined ? { destructive: verb.destructive } : {}),
-    run,
-  };
-};
-
-/**
- * Non-destructive leading verbs for a branch. The menu keeps its own
- * destructive-delete row inline because the labels differ from the
- * registry's defaults (e.g. "Delete entity" vs "Delete") and the
- * trailing separator before delete is part of the menu's UX rhythm.
- */
-const leadingVerbItems = (branch: Branch): MenuItem[] => {
-  const verbs = verbsForBranch(branch, useDocumentStore.getState()).filter((v) => !v.destructive);
-  return verbs.map(toMenuItem);
-};
+import { ContextMenuList } from './ContextMenuList';
+import { leadingVerbItems, type MenuItem } from './contextMenuItems';
 
 export function ContextMenu() {
   // Shallow-equal selector. The contract:
@@ -138,53 +81,6 @@ export function ContextMenu() {
   // B10: palette + meta lookups need the doc's custom classes.
   const docForPalette = useDocumentStore.getState().doc;
   const entity = useEntity(menu.open && menu.target.kind === 'entity' ? menu.target.id : undefined);
-
-  const ref = useRef<HTMLDivElement | null>(null);
-  useOutsideAndEscape(ref, close, menu.open);
-
-  // Session 88 (S15) — keyboard navigation. The menu used to mount
-  // role="menu" with no key handler; users could only click. Now:
-  //   ArrowDown / ArrowUp walk focusable menuitem rows (skipping
-  //     separators + headers — those aren't buttons in the DOM).
-  //   Home / End jump to first / last.
-  //   Enter activates the focused row (native button behaviour
-  //     handles space already; we don't fight it).
-  //   Escape is already handled by `useOutsideAndEscape` above.
-  // The handler attaches to the menu element so the menu has to be
-  // open (and the user must have focused it — happens automatically
-  // on the first ArrowDown / mouse hover that snaps focus, or
-  // explicit Tab). We auto-focus the first item on open below.
-  useEffect(() => {
-    if (!menu.open) return;
-    const node = ref.current;
-    if (!node) return;
-    // Focus the first menuitem on open so ArrowDown / ArrowUp work
-    // immediately without requiring Tab. Microtask delay so React
-    // mounts the menu children before we query for them.
-    queueMicrotask(() => {
-      const first = node.querySelector<HTMLButtonElement>('button[role="menuitem"]');
-      first?.focus();
-    });
-  }, [menu.open]);
-
-  const onMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const items = Array.from(
-      ref.current.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
-    );
-    if (items.length === 0) return;
-    const active = document.activeElement as HTMLButtonElement | null;
-    const idx = active ? items.indexOf(active) : -1;
-    const focus = (i: number) => {
-      const n = ((i % items.length) + items.length) % items.length;
-      items[n]?.focus();
-      e.preventDefault();
-    };
-    if (e.key === 'ArrowDown') focus(idx + 1);
-    else if (e.key === 'ArrowUp') focus(idx - 1);
-    else if (e.key === 'Home') focus(0);
-    else if (e.key === 'End') focus(items.length - 1);
-  };
 
   if (!menu.open) return null;
 
@@ -444,58 +340,5 @@ export function ContextMenu() {
     ];
   })();
 
-  return (
-    <div
-      ref={ref}
-      className="fixed z-40 min-w-[180px] overflow-hidden rounded-md border border-neutral-200 bg-white py-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
-      style={{ top: menu.y, left: menu.x }}
-      role="menu"
-      // Session 88 (S15) — keyboard nav on the menu surface itself.
-      // tabIndex makes the container focusable so focus inside the
-      // menu doesn't escape on the first Tab.
-      tabIndex={-1}
-      onKeyDown={onMenuKeyDown}
-    >
-      {items.map((item, idx) => {
-        const stableKey =
-          item.kind === 'separator'
-            ? `sep:${idx}`
-            : item.kind === 'header'
-              ? `hdr:${item.label}`
-              : `act:${item.label}`;
-        if (item.kind === 'separator') {
-          return <div key={stableKey} className="my-1 h-px bg-neutral-200 dark:bg-neutral-800" />;
-        }
-        if (item.kind === 'header') {
-          return (
-            <div
-              key={stableKey}
-              className="px-3 pt-1.5 pb-1 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400"
-            >
-              {item.label}
-            </div>
-          );
-        }
-        return (
-          <button
-            key={stableKey}
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              close();
-              if (!guardWriteOrToast()) return;
-              item.run();
-            }}
-            className={
-              item.destructive
-                ? 'flex w-full items-center justify-between px-3 py-1.5 text-left text-red-700 text-sm transition hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/30'
-                : 'flex w-full items-center justify-between px-3 py-1.5 text-left text-neutral-700 text-sm transition hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-900'
-            }
-          >
-            {item.label}
-          </button>
-        );
-      })}
-    </div>
-  );
+  return <ContextMenuList items={items} x={menu.x} y={menu.y} onClose={close} />;
 }
