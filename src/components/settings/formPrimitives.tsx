@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import type { ChangeEventHandler, ReactNode, Ref } from 'react';
 import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS_PLAIN } from '../ui/buttonClasses';
 import { INPUT_FOCUS } from '../ui/focusClasses';
+import { EYEBROW } from '../ui/textClasses';
 
 /**
  * Settings-dialog form primitives. Extracted from `SettingsDialog.tsx` so
@@ -18,9 +19,7 @@ import { INPUT_FOCUS } from '../ui/focusClasses';
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h3 className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-        {title}
-      </h3>
+      <h3 className={EYEBROW}>{title}</h3>
       <div className="flex flex-col gap-3">{children}</div>
     </section>
   );

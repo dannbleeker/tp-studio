@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Design-audit batch 1: Field semantics + eyebrow token + inspector hierarchy
+
+First batch of the [Session 135 design audit](docs/DESIGN_AUDIT_SESSION_135.md) (findings 1–3) — one coherent inspector-pane pass fixing a11y + visual hierarchy together.
+
+**Finding 1 — `<Field>` now emits real label semantics.** Previously every inspector field rendered a presentational `<span>` with no association, so most controls (Owner, Attestation, Polarity, State, Locus…) had no accessible name; only the Title textarea papered over it with a hand-rolled `ariaLabel`. `Field` now takes `as?: 'field' | 'group'`:
+- `'field'` (default) wraps the control in a `<label>` — a label containing one form control names it implicitly, no id threading. Title drops its workaround `ariaLabel`.
+- `'group'` renders `<fieldset><legend>` — correct grouping for button rows (Type / State / Polarity / Locus / Title-size / Color / Preset / Convert-to), multi-control fields (Owner = input + button), inner-`<label>` fields (Unspecified, Back-edge, Mutual-exclusion), list fields (Evidence, Assumptions, Attributes, S&T facets), and read-only display cards (Cause / Effect / Kind / Imported-from / AND-OR-XOR group). ~25 call sites classified and converted across Entity / Edge / Multi / Group inspectors.
+
+**Finding 2 — one `EYEBROW` token.** The same "small uppercase section label" had drifted across 10px / 11px / default sizes. New `src/components/ui/textClasses.ts` exports `EYEBROW`; `Field` + the settings `Section` now use it. (Finding 12 also fixed: `Field` always renders `<span>`/`<legend>`, never the old div-vs-span swap.)
+
+**Finding 3 — inspector header reads as a heading.** The panel root ("Entity" / "Edge" / "Group") was `text-[11px] uppercase text-neutral-500` — one pixel off the Field labels below it, so the hierarchy read flat. Now a real `<h2>` at `text-sm font-semibold text-neutral-700` (no uppercase), so Field eyebrows read as subordinate.
+
+No behaviour change; 70+ inspector / settings tests green, tsc + biome clean.
+
 ## Session 135 — File splits (Tier-2 infrastructure debt)
 
 Closed the last infra-debt item: the seven 470–600-line files flagged

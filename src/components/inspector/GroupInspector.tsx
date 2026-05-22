@@ -78,7 +78,7 @@ export function GroupInspector({ groupId }: { groupId: string }) {
         />
       </Field>
 
-      <Field label="Preset">
+      <Field label="Preset" as="group">
         {/*
           Book-derived (Session 59): canonical names + colors for the
           structural sub-graphs that recur across TOC tree types. Clicking
@@ -118,7 +118,7 @@ export function GroupInspector({ groupId }: { groupId: string }) {
         </div>
       </Field>
 
-      <Field label="Color">
+      <Field label="Color" as="group">
         <div className="flex gap-2">
           {GROUP_COLORS_ORDER.map((c) => (
             <button
@@ -143,7 +143,7 @@ export function GroupInspector({ groupId }: { groupId: string }) {
         </div>
       </Field>
 
-      <Field label="Members">
+      <Field label="Members" as="group">
         <p className="text-neutral-600 text-xs dark:text-neutral-300">
           {memberCount} {memberCount === 1 ? 'item' : 'items'} in this group.
         </p>

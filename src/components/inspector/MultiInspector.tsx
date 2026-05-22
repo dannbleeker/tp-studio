@@ -117,7 +117,7 @@ function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
         </span>
       </p>
 
-      <Field label="Convert all to…">
+      <Field label="Convert all to…" as="group">
         <div className="grid grid-cols-2 gap-1.5">
           {availableTypes.map((type) => {
             const meta = resolveEntityTypeMeta(type, customEntityClasses);
@@ -158,7 +158,7 @@ function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
         are author-specific enough that a "replace all" is almost always
         the wrong choice; the type / size / order ops are not.
       */}
-      <Field label="Title size — apply to all">
+      <Field label="Title size — apply to all" as="group">
         <div className="grid grid-cols-3 gap-1.5">
           {(['sm', 'md', 'lg'] as const).map((size) => {
             const allMatch = present.every((e) => (e.titleSize ?? 'md') === size);
@@ -242,7 +242,7 @@ function RenumberControl({
   const [startAt, setStartAt] = useState(1);
   if (present.length < 2) return null;
   return (
-    <Field label="Renumber as steps">
+    <Field label="Renumber as steps" as="group">
       <div className="flex items-center gap-2">
         <TextInput
           type="number"

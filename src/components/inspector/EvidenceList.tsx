@@ -105,7 +105,7 @@ export function EvidenceList({
   };
 
   return (
-    <Field label={`Evidence (${items.length})`}>
+    <Field label={`Evidence (${items.length})`} as="group">
       {items.length > 0 && (
         <ul className="flex flex-col gap-2">
           {items.map((item) => (

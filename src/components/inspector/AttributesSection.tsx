@@ -85,7 +85,7 @@ export function AttributesSection({ attributes, onSet, onRemove }: AttributesSec
   };
 
   return (
-    <Field label="Attributes">
+    <Field label="Attributes" as="group">
       <div className="flex flex-col gap-1.5">
         {keys.length === 0 && !adding && (
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">

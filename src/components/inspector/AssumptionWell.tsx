@@ -66,7 +66,7 @@ const kindGlyph = (k: AssumptionKind | undefined): string => (k ? KIND_LABEL[k].
 const kindLabel = (k: AssumptionKind | undefined): string => (k ? KIND_LABEL[k] : 'Untyped');
 
 const nextKind = (k: AssumptionKind | undefined): AssumptionKind | undefined => {
-  const idx = KIND_CYCLE.findIndex((x) => x === k);
+  const idx = KIND_CYCLE.indexOf(k);
   return KIND_CYCLE[(idx + 1) % KIND_CYCLE.length];
 };
 
@@ -86,7 +86,7 @@ export function AssumptionWell({ edgeId, assumptions }: { edgeId: string; assump
   };
 
   return (
-    <Field label={`Assumptions (${assumptions.length})`}>
+    <Field label={`Assumptions (${assumptions.length})`} as="group">
       {assumptions.length > 0 && (
         <ul className="flex flex-col gap-1.5">
           {assumptions.map((a) => (

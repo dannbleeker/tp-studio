@@ -70,17 +70,17 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
 
   return (
     <div className="flex flex-col gap-4">
-      <Field label="Cause">
+      <Field label="Cause" as="group">
         <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-neutral-700 text-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
           {source?.title || <span className="text-neutral-400 italic">Untitled</span>}
         </p>
       </Field>
-      <Field label="Effect">
+      <Field label="Effect" as="group">
         <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-neutral-700 text-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
           {target?.title || <span className="text-neutral-400 italic">Untitled</span>}
         </p>
       </Field>
-      <Field label="Kind">
+      <Field label="Kind" as="group">
         <p className="text-neutral-500 text-xs uppercase tracking-wider">{edge.kind}</p>
       </Field>
       <Field label="Label">
@@ -100,7 +100,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
         locked={locked}
       />
       {edge.andGroupId && (
-        <Field label="AND group">
+        <Field label="AND group" as="group">
           <div className="flex items-center justify-between gap-2">
             <p className="font-mono text-neutral-600 text-xs dark:text-neutral-300">
               {edge.andGroupId}
@@ -117,7 +117,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
         </Field>
       )}
       {edge.orGroupId && (
-        <Field label="OR group">
+        <Field label="OR group" as="group">
           <div className="flex items-center justify-between gap-2">
             <p className="font-mono text-neutral-600 text-xs dark:text-neutral-300">
               {edge.orGroupId}
@@ -134,7 +134,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
         </Field>
       )}
       {edge.xorGroupId && (
-        <Field label="XOR group">
+        <Field label="XOR group" as="group">
           <div className="flex items-center justify-between gap-2">
             <p className="font-mono text-neutral-600 text-xs dark:text-neutral-300">
               {edge.xorGroupId}
@@ -151,7 +151,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
         </Field>
       )}
 
-      <Field label="Polarity">
+      <Field label="Polarity" as="group">
         {/* Bundle 8 / FL-ED1: edge weight (positive / negative / zero).
             Metadata only — CLR rules don't change behavior on weight.
             Used by exporters (Flying Logic round-trips it) and as a
@@ -178,7 +178,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
         </div>
       </Field>
 
-      <Field label="Back-edge">
+      <Field label="Back-edge" as="group">
         <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
           <input
             type="checkbox"
@@ -198,7 +198,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
       </Field>
 
       {source?.type === 'want' && target?.type === 'want' && (
-        <Field label="Mutual exclusion (EC)">
+        <Field label="Mutual exclusion (EC)" as="group">
           <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
             <input
               type="checkbox"
@@ -319,7 +319,7 @@ function EcBrainstormPrompt({
   const question = ecQuestionFor(source, target);
   if (!question) return null;
   return (
-    <Field label="Brainstorm prompt">
+    <Field label="Brainstorm prompt" as="group">
       <div className="flex flex-col gap-2 rounded-md border border-amber-200 bg-amber-50/60 p-2 dark:border-amber-900/60 dark:bg-amber-950/30">
         <p className="text-amber-900 text-xs leading-snug dark:text-amber-100">{question}</p>
         <Button

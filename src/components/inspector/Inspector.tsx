@@ -102,9 +102,13 @@ export function Inspector() {
       >
         <div className="flex h-full flex-col">
           <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
-            <span className="font-semibold text-[11px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
+            {/* Session 135 (design audit #3) — the panel root reads as a
+                heading (darker tone, no uppercase, real `<h2>`), so the
+                EYEBROW `<Field>` labels beneath it read as subordinate
+                instead of one-pixel-different siblings. */}
+            <h2 className="font-semibold text-neutral-700 text-sm dark:text-neutral-200">
               {headerLabel}
-            </span>
+            </h2>
             <Button
               variant="ghost"
               size="icon"

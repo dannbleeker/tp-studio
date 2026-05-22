@@ -86,21 +86,19 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
       )}
 
       <Field label="Title">
+        {/* Session 135 (design audit #1) — `Field` now wraps the
+            control in a `<label>`, so the textarea gets its name from
+            the visible "Title" implicitly. The Session-119 explicit
+            ariaLabel is no longer needed. */}
         <TextArea
           value={entity.title}
           onChange={(next) => updateEntity(entityId, { title: next })}
           rows={3}
           disabled={locked}
-          // Session 119 — explicit aria-label so the textarea has a
-          // screen-reader name. The visible `<Field label="Title">`
-          // renders a sibling <span> that's not actually associated
-          // with the textarea (no `htmlFor`/`id` wiring), so axe
-          // correctly flagged the form element as label-less.
-          ariaLabel="Entity title"
         />
       </Field>
 
-      <Field label="Type">
+      <Field label="Type" as="group">
         <div className="grid grid-cols-2 gap-1.5">
           {availableTypes.map((type) => {
             const meta = resolveEntityTypeMeta(type, customEntityClasses);
@@ -140,7 +138,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         locked={locked}
       />
 
-      <Field label="Title size">
+      <Field label="Title size" as="group">
         <div className="grid grid-cols-3 gap-1.5">
           {(['sm', 'md', 'lg'] as const).map((size) => {
             const active = (entity.titleSize ?? 'md') === size;
@@ -195,7 +193,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           doesn't auto-sync; it labels the trail even when the
           source doc isn't open. */}
       {entity.importedFrom && (
-        <Field label="Imported from">
+        <Field label="Imported from" as="group">
           <p className="rounded-md border border-indigo-200 bg-indigo-50/60 px-2 py-1.5 text-[11px] text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200">
             <span className="font-semibold">
               {entity.importedFrom.sourceTitle || '(untitled source)'}
@@ -233,7 +231,10 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         />
       </Field>
 
-      <Field label="Owner">
+      {/* `as="group"` — this Field carries the Owner input PLUS the
+          "Mark validated" button, so a single `<label>` can't wrap it;
+          the input keeps an explicit ariaLabel for its own name. */}
+      <Field label="Owner" as="group">
         {/* Session 134 / spec major gap #6: who's accountable for this
             entity. Free-form string. Feeds the `owner` column of the
             risk-register CSV export and gives readers a quick "ask
@@ -241,6 +242,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         <TextInput
           value={entity.owner ?? ''}
           placeholder="Person / role accountable for this entity. Optional."
+          ariaLabel="Owner"
           onChange={(next) => {
             updateEntity(entityId, { owner: next || undefined });
           }}
@@ -275,7 +277,9 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           tells the user at a glance whether there's anything to read. */}
       <EvidenceList entityId={entityId} evidence={entity.evidence} ownerHint={entity.owner} />
 
-      <Field label="Unspecified placeholder">
+      {/* `as="group"` — body is itself a `<label>` (checkbox + text);
+          nesting it inside another `<label>` would be invalid. */}
+      <Field label="Unspecified placeholder" as="group">
         <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
           <input
             type="checkbox"
@@ -294,7 +298,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         </label>
       </Field>
 
-      <Field label="Locus">
+      <Field label="Locus" as="group">
         {/*
           TOC-reading (CRT Step 7): "have you built down to causes you
           actually control or influence?" The three-value flag captures the
@@ -338,7 +342,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           {@link propagateStates}. When the user's claim disagrees
           with propagation, the caption turns amber so the conflict
           reads at a glance. */}
-      <Field label="State">
+      <Field label="State" as="group">
         {/* Phase 1C — in speculation mode the picker writes to the
             overlay (hypothetical), the highlight reflects the
             speculative value, and a hint reminds the user nothing is
@@ -511,7 +515,7 @@ function StFacetsSection({
     },
   ];
   return (
-    <Field label="S&T facets">
+    <Field label="S&T facets" as="group">
       <div className="flex flex-col gap-2">
         <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
           Goldratt's S&T pattern: the entity title is the <b>tactic</b>. Fill in the four companion
