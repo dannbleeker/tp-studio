@@ -71,10 +71,10 @@ The engine + `effectiveState` merge helper was designed for 1C: the speculation 
 
 From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4 / #5 / #6 / #7 already shipped (button class constants, Select primitive, chip palette, EdgeAssumptions deprecation, TextArea ref, TPNode split). **Plus the infra-debt batch (Session 135):** custom-equality narrowing for `MultiInspector` + `GroupInspector`, `DocumentInspector` inline-input migration, `RadioGroup` button-class migration, `reactFlowFixtures.ts` typed builders + biggest-test-cast-cleanup file migration. Remaining:
 
-- **File splits (Tier 2, #8–#15):** TPEdge.tsx (600 lines, tightly-coupled JSX — forced split low value), entitiesSlice.ts (576, clean section boundaries — natural unit), entityTypeMeta.ts (506), selectionVerbs.ts (541), CreationWizardPanel.tsx (550), dialogsSlice.ts (471), PrintPreviewDialog.tsx (500), ContextMenu.tsx (495). Each ~30–60 min. Take them as cleanup gaps between feature work; `entitiesSlice.ts` is the highest-value first pick (clean assumption / attribute / evidence sections → composable StateCreator pattern).
-- **Continue `as unknown as X` test-cast cleanup.** `useGraphMutations.test.tsx` migrated to `reactFlowFixtures.ts` builders (15 casts → 0). Other 9 files have 1-3 casts each — mechanical follow-up, extend `reactFlowFixtures.ts` for additional shapes as needed. ~30 min total.
-- **Remaining inline `<input>` migrations.** `PrintPreviewDialog.tsx:451,472` and `CustomEntityClassesSection.tsx:154–187` deliberately kept inline this session — they're intentionally smaller (`text-xs py-1`) for dense-dialog packing. Adopting `<TextInput>` would shift visual size unless `formPrimitives.tsx` grows a `size: 'sm' | 'md'` prop. Combined ~45 min.
-- **Icon-picker button-class migration** in `CustomEntityClassesSection.tsx:213`. The current shade (`text-indigo-700` for icon currentColor) intentionally differs from `SELECTED_BUTTON_CLASS`'s `text-indigo-900` (text). Adopt either by adding a third sister constant or accept the visual shift. ~15 min.
+- **File splits (Tier 2):** remaining sprawl — TPEdge.tsx (600 lines, tightly-coupled JSX — forced split low value), entityTypeMeta.ts (506), selectionVerbs.ts (541), CreationWizardPanel.tsx (550), dialogsSlice.ts (471), PrintPreviewDialog.tsx (500), ContextMenu.tsx (495). Each ~30–60 min. Take them as cleanup gaps between feature work. ~~entitiesSlice.ts~~ ✅ split Session 135 (621 → 40-line composer + 4 factories under `entities/`).
+- ~~**`as unknown as X` test-cast cleanup**~~ ✅ Done Session 135 — `useGraphMutations.test.tsx` (15 casts) plus 5 more across `equality` / `TPNode` / `useGraphPositions` / `pwaInstall` / `dragSplice` migrated to `reactFlowFixtures.ts` builders or single-casts. The remaining casts are legitimate (corrupt-input equality tests, browser-native event mocks) and documented as keep.
+- ~~**Inline `<input>` migrations**~~ ✅ Done Session 135 — added `size: 'sm' | 'md'` to `TextInput`; migrated PrintPreviewDialog header/footer + CustomEntityClassesSection text inputs. The `type="color"` input stays inline (TextInput doesn't support that type — legitimate exception).
+- ~~**Icon-picker button-class migration**~~ ✅ Done Session 135 — moved the bespoke icon-button palette into `SELECTED_BUTTON_CLASS_ICON` / `UNSELECTED_BUTTON_CLASS_ICON` sister constants in `buttonClasses.ts` (lighter `text-indigo-700` reads better at Lucide glyph size).
 - ~~**TPNode coverage beyond 48% statements**~~ ✅ Done Session 135 — added 7 tests for S&T 5-facet rows (full + partial fill + non-injection guard), hidden-descendant chip (count + zero-omit), and custom-class slug resolution (in-map + fallback). Zoom-up NodeToolbar branch documented as not jsdom-testable (NodeToolbar with `isVisible={false}` renders no children).
 
 ---
@@ -94,7 +94,8 @@ If picking the next thing up:
 
 1. **#4 confidence / state propagation Phase 1C** (~1–2 sessions) — what-if speculation overlay. Phase 1A schema + Phase 1B engine + inspector landed Session 135. Next slice is a `speculationOverlay` store slice + canvas-wide preview + commit/revert banner.
 2. **Medium gaps as filler** — S&T assumption sub-typing (`Assumption.kind`), "preserve rejected logic in collapsed groups", reactive-vs-proactive NBR mitigation, action eligibility on satisfied preconditions (rides on Phase 1C). Each ~1 hour.
-3. **Infrastructure debt** — file splits (TPEdge / entitiesSlice / etc.) + continued test-cast cleanup. Good cleanup-between-features work.
+3. **Design-audit fixes** — the [Session 135 design audit](DESIGN_AUDIT_SESSION_135.md) has a 3-batch action ordering (the `<Field>` label gap is the highest-impact a11y fix). Good cleanup-between-features work.
+4. **Remaining file splits** — TPEdge / entityTypeMeta / selectionVerbs / CreationWizardPanel / dialogsSlice / PrintPreviewDialog / ContextMenu. Mechanical, low-risk.
 
 ---
 
