@@ -30,6 +30,28 @@ import type { EntityId } from './ids';
 export type AssumptionStatus = 'unexamined' | 'valid' | 'invalid' | 'challengeable';
 
 /**
+ * S&T assumption sub-typing (medium gap, Session 135). The Strategy &
+ * Tactics tree distinguishes three roles an assumption can play in the
+ * logic of a tactic — mirroring the S&T 5-facet keys
+ * (`stNecessaryAssumption` / `stParallelAssumption` /
+ * `stSufficiencyAssumption`):
+ *
+ *   - `'necessary'` — must hold for the cause→effect link to work at
+ *     all ("we can only do X *because* this holds").
+ *   - `'parallel'` — a condition that holds alongside the change but
+ *     isn't itself causal ("while we do X, this is also true").
+ *   - `'sufficient'` — what makes the cause *enough* to produce the
+ *     effect on its own ("X alone suffices *because* this holds").
+ *
+ * Optional + diagram-agnostic: unset means "untyped assumption" (the
+ * common case on CRT / EC edges where the necessary/parallel/
+ * sufficient distinction isn't drawn). Only S&T workflows usually set
+ * it, but the field lives on the shared `Assumption` record so any
+ * diagram can use it.
+ */
+export type AssumptionKind = 'necessary' | 'parallel' | 'sufficient';
+
+/**
  * Assumption IDs share the string space with the assumption-Entity
  * records that shadow them during the v6→v7 migration. Plain `string`
  * rather than a brand — matches the brief's `id: string` shape and
@@ -45,6 +67,11 @@ export type Assumption = {
   edgeId: string;
   text: string;
   status: AssumptionStatus;
+  /** S&T assumption sub-type (Session 135). Optional — unset means
+   *  "untyped". See {@link AssumptionKind}. Persisted across JSON
+   *  export + share-link reload; emit-or-omit so untyped assumptions
+   *  don't grow a `kind: undefined` field. */
+  kind?: AssumptionKind;
   /** Many-to-many to injection entities. Marking an injection
    *  "implemented" (via an attribute on the entity) highlights every
    *  assumption that references it + the corresponding edge in green. */

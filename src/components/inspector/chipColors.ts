@@ -25,7 +25,12 @@
  * downstream code never literals the colours.
  */
 
-import type { AssumptionStatus, EvidenceSource, EvidenceStrength } from '@/domain/types';
+import type {
+  AssumptionKind,
+  AssumptionStatus,
+  EvidenceSource,
+  EvidenceStrength,
+} from '@/domain/types';
 
 export type ChipScheme =
   | 'neutral'
@@ -83,6 +88,23 @@ export const ASSUMPTION_STATUS_CHIP: Record<AssumptionStatus, string> = {
   valid: CHIP_SCHEME.amber,
   invalid: CHIP_SCHEME.red,
   challengeable: CHIP_SCHEME.blue,
+};
+
+/**
+ * Assumption-kind → chip palette mapping (S&T sub-typing, Session
+ * 135). Three roles an assumption can play:
+ *   - necessary  → indigo (the cause can't work without it)
+ *   - parallel   → violet (holds alongside, matches assumption chrome)
+ *   - sufficient → emerald (makes the cause enough on its own)
+ *
+ * The "untyped" (unset) state isn't in this map — the chip renders
+ * neutral via `CHIP_SCHEME.neutral` directly when `kind` is undefined.
+ * Used by `AssumptionWell.tsx` for the cycling kind chip.
+ */
+export const ASSUMPTION_KIND_CHIP: Record<AssumptionKind, string> = {
+  necessary: CHIP_SCHEME.indigo,
+  parallel: CHIP_SCHEME.violet,
+  sufficient: CHIP_SCHEME.emerald,
 };
 
 /**

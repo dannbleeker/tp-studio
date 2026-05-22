@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — S&T assumption sub-typing (medium gap)
+
+Adds an optional `kind` discriminator to assumptions, mirroring the
+Strategy & Tactics tree's necessary / parallel / sufficient assumption
+roles (and the existing S&T 5-facet keys).
+
+**New type** `AssumptionKind = 'necessary' | 'parallel' | 'sufficient'`
+in `domain/types/assumption.ts`, exported through the barrel.
+
+**New field** `Assumption.kind?: AssumptionKind`. Optional + diagram-
+agnostic — unset means "untyped" (the common CRT / EC case). Persisted
+across JSON export + share-link reload; emit-or-omit so untyped
+assumptions don't grow a `kind: undefined` field. Strict validation:
+unknown values throw on import.
+
+**New store action** `setAssumptionKind(assumptionId, kind | undefined)`
+on the assumptions sub-slice — no-ops when unchanged, drops the field
+when cleared.
+
+**Inspector UI** — a second single-letter cycling chip in
+`AssumptionWell` next to the status chip. Cycles untyped (—) →
+Necessary (N) → Parallel (P) → Sufficient (S) → untyped. Colour-coded
+via a new `ASSUMPTION_KIND_CHIP` palette in `chipColors.ts` (indigo /
+violet / emerald; neutral for untyped).
+
+**Tests** — 6 store-action tests (set / change / clear-drops-field /
+no-op unchanged / no-op clear-untyped / no-op unknown id) + 3
+persistence round-trip tests (kind survives, untyped omits the field,
+malformed kind rejected).
+
 ## Session 135 — Confidence / state propagation Phase 1B (engine + inspector surface)
 
 Second slice of spec major gap #4. The pure-function propagation engine lands together with the inspector affordance — manually-tagged entities now drive a derived state through the graph, and the inspector surfaces both the user's claim and what propagation implies.

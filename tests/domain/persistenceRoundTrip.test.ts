@@ -233,6 +233,138 @@ describe('persistence round-trip — every optional Entity field', () => {
     expect(() => importFromJSON(malformed)).toThrow(/state/i);
   });
 
+  it('preserves an assumption kind (S&T sub-typing) across round-trip', () => {
+    // Session 135 medium gap — Assumption.kind. Build a doc with one
+    // edge + a typed assumption record, round-trip it, assert the
+    // kind survives the validator's field-by-field re-emit.
+    const raw = JSON.stringify({
+      schemaVersion: 8,
+      id: 'doc-test',
+      diagramType: 'st',
+      title: 'assumption-kind',
+      nextAnnotationNumber: 3,
+      groups: {},
+      resolvedWarnings: {},
+      createdAt: 1,
+      updatedAt: 1,
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'effect',
+          title: 'a',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        e2: {
+          id: 'e2',
+          type: 'effect',
+          title: 'b',
+          annotationNumber: 2,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      edges: {
+        ed1: {
+          id: 'ed1',
+          sourceId: 'e1',
+          targetId: 'e2',
+          kind: 'sufficiency',
+          assumptionIds: ['as1'],
+        },
+      },
+      assumptions: {
+        as1: {
+          id: 'as1',
+          edgeId: 'ed1',
+          text: 'Teams want clarity',
+          status: 'unexamined',
+          kind: 'necessary',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    });
+    const reimported = importFromJSON(raw);
+    expect(reimported.assumptions?.as1?.kind).toBe('necessary');
+  });
+
+  it('omits an untyped assumption kind on round-trip (no kind: undefined)', () => {
+    const raw = JSON.stringify({
+      schemaVersion: 8,
+      id: 'doc-test',
+      diagramType: 'st',
+      title: 'untyped-assumption',
+      nextAnnotationNumber: 2,
+      groups: {},
+      resolvedWarnings: {},
+      createdAt: 1,
+      updatedAt: 1,
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'effect',
+          title: 'a',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      edges: {},
+      assumptions: {
+        as1: {
+          id: 'as1',
+          edgeId: 'ed1',
+          text: 'x',
+          status: 'unexamined',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    });
+    const rec = importFromJSON(raw).assumptions?.as1;
+    expect(rec?.kind).toBeUndefined();
+    expect(rec && 'kind' in rec).toBe(false);
+  });
+
+  it('rejects an assumption with an unknown kind value', () => {
+    const malformed = JSON.stringify({
+      schemaVersion: 8,
+      id: 'doc-test',
+      diagramType: 'st',
+      title: 'malformed-kind',
+      nextAnnotationNumber: 2,
+      groups: {},
+      resolvedWarnings: {},
+      createdAt: 1,
+      updatedAt: 1,
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'effect',
+          title: 'a',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      edges: {},
+      assumptions: {
+        as1: {
+          id: 'as1',
+          edgeId: 'ed1',
+          text: 'x',
+          status: 'unexamined',
+          kind: 'mandatory', // not one of necessary | parallel | sufficient
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    });
+    expect(() => importFromJSON(malformed)).toThrow(/kind/i);
+  });
+
   it('rejects an importedFrom ref missing docId', () => {
     // Construct a malformed doc — a ref without docId is invalid. The
     // validator should throw rather than silently drop the field.

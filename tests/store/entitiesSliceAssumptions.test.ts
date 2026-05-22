@@ -69,6 +69,53 @@ describe('entitiesSlice — setAssumptionStatus', () => {
   });
 });
 
+describe('entitiesSlice — setAssumptionKind (S&T sub-typing)', () => {
+  it('sets the kind field', () => {
+    const { assumption } = seedEdgeWithAssumption();
+    expect(s().doc.assumptions?.[assumption.id]?.kind).toBeUndefined();
+    useDocumentStore.getState().setAssumptionKind(assumption.id, 'necessary');
+    expect(s().doc.assumptions?.[assumption.id]?.kind).toBe('necessary');
+  });
+
+  it('changes the kind between values', () => {
+    const { assumption } = seedEdgeWithAssumption();
+    useDocumentStore.getState().setAssumptionKind(assumption.id, 'parallel');
+    useDocumentStore.getState().setAssumptionKind(assumption.id, 'sufficient');
+    expect(s().doc.assumptions?.[assumption.id]?.kind).toBe('sufficient');
+  });
+
+  it('clears the kind back to undefined (field dropped, not set to undefined)', () => {
+    const { assumption } = seedEdgeWithAssumption();
+    useDocumentStore.getState().setAssumptionKind(assumption.id, 'necessary');
+    useDocumentStore.getState().setAssumptionKind(assumption.id, undefined);
+    const rec = s().doc.assumptions?.[assumption.id];
+    expect(rec?.kind).toBeUndefined();
+    // Emit-or-omit: the key should be absent, not present-with-undefined.
+    expect(rec && 'kind' in rec).toBe(false);
+  });
+
+  it('is a no-op when the kind is unchanged', () => {
+    const { assumption } = seedEdgeWithAssumption();
+    useDocumentStore.getState().setAssumptionKind(assumption.id, 'parallel');
+    const before = s().doc;
+    useDocumentStore.getState().setAssumptionKind(assumption.id, 'parallel');
+    expect(s().doc).toBe(before);
+  });
+
+  it('is a no-op when clearing an already-untyped assumption', () => {
+    const { assumption } = seedEdgeWithAssumption();
+    const before = s().doc;
+    useDocumentStore.getState().setAssumptionKind(assumption.id, undefined);
+    expect(s().doc).toBe(before);
+  });
+
+  it('is a no-op for an unknown assumption id', () => {
+    const before = s().doc;
+    useDocumentStore.getState().setAssumptionKind('nope', 'necessary');
+    expect(s().doc).toBe(before);
+  });
+});
+
 describe('entitiesSlice — setAssumptionText', () => {
   it('updates both the assumption text and the dual-write entity title', () => {
     const { assumption } = seedEdgeWithAssumption();

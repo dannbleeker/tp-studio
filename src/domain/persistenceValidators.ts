@@ -1,6 +1,7 @@
 import { isEdgeKind, isEntityType, isObject, isStringArray } from './guards';
 import type {
   Assumption,
+  AssumptionKind,
   AssumptionStatus,
   AttrValue,
   CustomEntityClass,
@@ -415,6 +416,10 @@ const ASSUMPTION_STATUSES: readonly AssumptionStatus[] = [
 const isAssumptionStatus = (v: unknown): v is AssumptionStatus =>
   typeof v === 'string' && (ASSUMPTION_STATUSES as readonly string[]).includes(v);
 
+const ASSUMPTION_KINDS: readonly AssumptionKind[] = ['necessary', 'parallel', 'sufficient'];
+const isAssumptionKind = (v: unknown): v is AssumptionKind =>
+  typeof v === 'string' && (ASSUMPTION_KINDS as readonly string[]).includes(v);
+
 export const validateAssumption = (v: unknown, label: string): Assumption => {
   if (!isObject(v)) throw invalid(label, 'must be an object');
   if (typeof v.id !== 'string') throw invalid(label, 'has no id');
@@ -422,6 +427,9 @@ export const validateAssumption = (v: unknown, label: string): Assumption => {
   if (typeof v.text !== 'string') throw invalid(label, 'has non-string text');
   if (!isAssumptionStatus(v.status)) {
     throw invalid(label, `has invalid status "${String(v.status)}"`);
+  }
+  if (v.kind !== undefined && !isAssumptionKind(v.kind)) {
+    throw invalid(label, `has invalid kind "${String(v.kind)}"`);
   }
   if (v.injectionIds !== undefined && !isStringArray(v.injectionIds)) {
     throw invalid(label, 'has non-string-array injectionIds');
@@ -439,6 +447,7 @@ export const validateAssumption = (v: unknown, label: string): Assumption => {
     edgeId: v.edgeId,
     text: v.text,
     status: v.status,
+    ...(isAssumptionKind(v.kind) ? { kind: v.kind } : {}),
     ...(isStringArray(v.injectionIds) && v.injectionIds.length > 0
       ? { injectionIds: v.injectionIds as EntityId[] }
       : {}),

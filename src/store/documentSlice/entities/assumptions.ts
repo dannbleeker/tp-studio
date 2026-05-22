@@ -13,7 +13,14 @@
  */
 
 import { createEntity } from '@/domain/factory';
-import type { Assumption, AssumptionStatus, Edge, Entity, EntityId } from '@/domain/types';
+import type {
+  Assumption,
+  AssumptionKind,
+  AssumptionStatus,
+  Edge,
+  Entity,
+  EntityId,
+} from '@/domain/types';
 import { touch } from '../docMutate';
 import type { EntityFactoryDeps } from './shared';
 
@@ -22,6 +29,9 @@ export type AssumptionActions = {
   attachAssumption: (edgeId: string, assumptionId: string) => void;
   detachAssumption: (edgeId: string, assumptionId: string) => void;
   setAssumptionStatus: (assumptionId: string, status: AssumptionStatus) => void;
+  /** S&T sub-typing (Session 135). Pass `undefined` to clear the kind
+   *  back to "untyped". No-ops when the value is already current. */
+  setAssumptionKind: (assumptionId: string, kind: AssumptionKind | undefined) => void;
   setAssumptionText: (assumptionId: string, text: string) => void;
   setAssumptionResolved: (assumptionId: string, resolved: boolean) => void;
   linkInjectionToAssumption: (assumptionId: string, injectionId: string) => void;
@@ -103,6 +113,26 @@ export function createAssumptionActions({
         const cur = prev.assumptions?.[assumptionId];
         if (!cur || cur.status === status) return prev;
         const next: Assumption = { ...cur, status, updatedAt: Date.now() };
+        return touch({
+          ...prev,
+          assumptions: { ...(prev.assumptions ?? {}), [assumptionId]: next },
+        });
+      });
+    },
+
+    setAssumptionKind: (assumptionId, kind) => {
+      applyDocChange((prev) => {
+        const cur = prev.assumptions?.[assumptionId];
+        if (!cur) return prev;
+        // No-op when the value is unchanged (treat absent === undefined).
+        if ((cur.kind ?? undefined) === kind) return prev;
+        // Emit-or-omit: clearing the kind drops the field entirely
+        // rather than storing `kind: undefined`, matching the rest of
+        // the optional-field convention (and exactOptionalPropertyTypes).
+        const { kind: _drop, ...rest } = cur;
+        const next: Assumption = kind
+          ? { ...cur, kind, updatedAt: Date.now() }
+          : { ...rest, updatedAt: Date.now() };
         return touch({
           ...prev,
           assumptions: { ...(prev.assumptions ?? {}), [assumptionId]: next },

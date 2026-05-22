@@ -19,7 +19,7 @@
  *   - `document.ts`    — LayoutConfig, SystemScope, TPDocument
  */
 
-export type { Assumption, AssumptionStatus } from './assumption';
+export type { Assumption, AssumptionKind, AssumptionStatus } from './assumption';
 export type {
   ClrRuleId,
   ClrTier,

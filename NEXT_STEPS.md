@@ -60,7 +60,7 @@ The engine + `effectiveState` merge helper was designed for 1C: the speculation 
 
 - ~~**Action quality checks** (control / influence / authority for TT actions).~~ ✅ Done Session 135 — `tt-action-locus-unset` validator wired into the TT diagram registry. Fires on action entities without `spanOfControl` set; tier `clarity`. 9 tests cover positive + every non-firing case.
 - ~~**Roll-up validation for S&T**~~ ✅ Done Session 135 — `st-tactic-rollup` validator wired into the S&T diagram registry. Fires on non-apex `injection` tactics that lack child tactics; tier `sufficiency`. 8 tests cover the apex / intermediate / leaf shapes.
-- **S&T assumption sub-typing** — `Assumption.kind: 'necessary' | 'parallel' | 'sufficient'`. Schema + UI for the discriminator. ~1 session.
+- ~~**S&T assumption sub-typing**~~ ✅ Done Session 135 — `AssumptionKind = 'necessary' | 'parallel' | 'sufficient'` + optional `Assumption.kind` field + strict persistence + `setAssumptionKind` action + a cycling kind chip in AssumptionWell (—/N/P/S). 9 tests.
 - **"Preserve rejected logic in collapsed groups"** — currently partial via revision branches. No archive-of-rejected concept on the live canvas. Would mean a `Group.archived?: true` flag + a "show archived" toggle. ~1 session.
 - **Reactive vs proactive NBR mitigation distinction** — current NBR (Session 134) infers mitigation status from injection-reachability. Spec wants a formal `mitigation.kind` field. Re-open only if practitioners ask.
 - **Action eligibility based on satisfied preconditions** — gated by #4 (Phase 1B engine unblocked it; Phase 1C lands the speculation surface this would build on).

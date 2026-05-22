@@ -1,10 +1,10 @@
 import clsx from 'clsx';
 import { ArrowUpRight, Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import type { AssumptionStatus, Entity } from '@/domain/types';
+import type { AssumptionKind, AssumptionStatus, Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
-import { ASSUMPTION_STATUS_CHIP } from './chipColors';
+import { ASSUMPTION_KIND_CHIP, ASSUMPTION_STATUS_CHIP, CHIP_SCHEME } from './chipColors';
 import { Field } from './Field';
 
 /**
@@ -43,6 +43,31 @@ const STATUS_CHIP_CLASS = ASSUMPTION_STATUS_CHIP;
 const nextStatus = (s: AssumptionStatus): AssumptionStatus => {
   const idx = STATUS_ORDER.indexOf(s);
   return STATUS_ORDER[(idx + 1) % STATUS_ORDER.length] ?? 'unexamined';
+};
+
+// S&T sub-typing (Session 135). The kind chip cycles through the
+// "untyped" state (undefined) plus the three roles, so a user can
+// always get back to untyped without a separate clear control.
+const KIND_CYCLE: (AssumptionKind | undefined)[] = [
+  undefined,
+  'necessary',
+  'parallel',
+  'sufficient',
+];
+
+const KIND_LABEL: Record<AssumptionKind, string> = {
+  necessary: 'Necessary',
+  parallel: 'Parallel',
+  sufficient: 'Sufficient',
+};
+
+/** Single-letter glyph for the compact chip. `—` reads as "untyped". */
+const kindGlyph = (k: AssumptionKind | undefined): string => (k ? KIND_LABEL[k].charAt(0) : '—');
+const kindLabel = (k: AssumptionKind | undefined): string => (k ? KIND_LABEL[k] : 'Untyped');
+
+const nextKind = (k: AssumptionKind | undefined): AssumptionKind | undefined => {
+  const idx = KIND_CYCLE.findIndex((x) => x === k);
+  return KIND_CYCLE[(idx + 1) % KIND_CYCLE.length];
 };
 
 export function AssumptionWell({ edgeId, assumptions }: { edgeId: string; assumptions: Entity[] }) {
@@ -93,10 +118,14 @@ function AssumptionRow({
 }) {
   const setAssumptionText = useDocumentStore((s) => s.setAssumptionText);
   const setAssumptionStatus = useDocumentStore((s) => s.setAssumptionStatus);
+  const setAssumptionKind = useDocumentStore((s) => s.setAssumptionKind);
   const detachAssumption = useDocumentStore((s) => s.detachAssumption);
   const selectEntity = useDocumentStore((s) => s.selectEntity);
   const status: AssumptionStatus =
     useDocumentStore((s) => s.doc.assumptions?.[assumption.id]?.status) ?? 'unexamined';
+  const kind: AssumptionKind | undefined = useDocumentStore(
+    (s) => s.doc.assumptions?.[assumption.id]?.kind
+  );
   const locked = useDocumentStore((s) => s.browseLocked);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -124,6 +153,22 @@ function AssumptionRow({
         )}
       >
         {STATUS_LABEL[status][0]}
+      </button>
+      {/* S&T sub-typing chip (Session 135) — cycles untyped → necessary
+          → parallel → sufficient. Sits next to the status chip so the
+          two single-letter pills read as "status · kind". */}
+      <button
+        type="button"
+        onClick={() => setAssumptionKind(assumption.id, nextKind(kind))}
+        disabled={locked}
+        title={`Kind: ${kindLabel(kind)} (click to cycle to ${kindLabel(nextKind(kind))})`}
+        aria-label={`Assumption kind: ${kindLabel(kind)}. Press to cycle to ${kindLabel(nextKind(kind))}.`}
+        className={clsx(
+          'shrink-0 rounded-xs border px-1 py-0 font-bold text-[9px] uppercase tracking-wide transition focus:outline-hidden focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
+          kind ? ASSUMPTION_KIND_CHIP[kind] : CHIP_SCHEME.neutral
+        )}
+      >
+        {kindGlyph(kind)}
       </button>
       <input
         ref={inputRef}
