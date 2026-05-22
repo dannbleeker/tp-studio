@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { ChevronUp, GripVertical, Sparkles, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { EC_SLOTS_BY_ORDER, type WizardOrder } from '@/domain/ecGuiding';
 import { entitiesOfType } from '@/domain/graph';
@@ -9,6 +9,7 @@ import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
 import { ECSlotIndicator } from '../overlays/ECSlotIndicator';
 import { EC_STEPS, EC_STEPS_D_FIRST, GOAL_TREE_STEPS } from './creationWizardSteps';
+import { useDraggablePanel } from './useDraggablePanel';
 
 /**
  * Session 87 / EC PPT comparison item #3 — Reverse-direction (D-first)
@@ -139,69 +140,13 @@ export function CreationWizardPanel() {
     return () => window.clearTimeout(id);
   }, [skipNoticeOn]);
 
-  // Session 88 (S18) — drag-to-reposition. The header band is a drag
-  // handle: pointerdown on it (but NOT on the minimise / dismiss
-  // buttons) begins a drag; pointermove updates the live x/y in
-  // local state; pointerup commits to the store. We track the drag
-  // origin offset so the cursor stays anchored to the header point
-  // the user grabbed, not the panel's top-left corner.
-  const panelRef = useRef<HTMLDivElement | null>(null);
-  const dragRef = useRef<{ dx: number; dy: number; live: { x: number; y: number } } | null>(null);
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
-
-  /** Clamp a position so the panel stays mostly on-screen. We keep
-   *  ~40 px of the header visible on every side so the user can
-   *  always grab it back. The `h` parameter is unused at present —
-   *  the vertical clamp uses a fixed pixel margin against viewport
-   *  height — but kept in the signature so a future tweak (e.g.
-   *  "don't let the panel disappear below the fold") can use it
-   *  without changing the call-sites. */
-  const clampToViewport = useCallback((x: number, y: number, w: number, _h: number) => {
-    const vw = typeof window !== 'undefined' ? window.innerWidth : 1024;
-    const vh = typeof window !== 'undefined' ? window.innerHeight : 768;
-    const minVisible = 40;
-    const cx = Math.max(minVisible - w, Math.min(vw - minVisible, x));
-    const cy = Math.max(0, Math.min(vh - minVisible, y));
-    return { x: cx, y: cy };
-  }, []);
-
-  const onHeaderPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Only respond to primary-button pointer drags on the header
-    // SURFACE itself — clicks that started on an inner button
-    // (minimise / dismiss) should reach those handlers, not start
-    // a drag. closest('button') is the cheapest way to filter.
-    if (e.button !== 0) return;
-    if ((e.target as HTMLElement).closest('button')) return;
-    const panel = panelRef.current;
-    if (!panel) return;
-    const rect = panel.getBoundingClientRect();
-    dragRef.current = {
-      dx: e.clientX - rect.left,
-      dy: e.clientY - rect.top,
-      live: { x: rect.left, y: rect.top },
-    };
-    setDragPos({ x: rect.left, y: rect.top });
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const onHeaderPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    const panel = panelRef.current;
-    if (!drag || !panel) return;
-    const rect = panel.getBoundingClientRect();
-    const next = clampToViewport(e.clientX - drag.dx, e.clientY - drag.dy, rect.width, rect.height);
-    drag.live = next;
-    setDragPos(next);
-  };
-
-  const onHeaderPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    if (!drag) return;
-    setPosition(drag.live.x, drag.live.y);
-    dragRef.current = null;
-    setDragPos(null);
-    e.currentTarget.releasePointerCapture(e.pointerId);
-  };
+  // Session 88 (S18) — drag-to-reposition via the header band. The
+  // mechanics (grab-offset tracking, viewport clamp, commit-on-up)
+  // live in `useDraggablePanel` (Session 135 file split).
+  const { panelRef, dragHandlers, positioned } = useDraggablePanel({
+    committed: state && state.x !== null && state.y !== null ? { x: state.x, y: state.y } : null,
+    onCommit: setPosition,
+  });
 
   if (!state) return null;
   const kind = state.kind;
@@ -315,15 +260,8 @@ export function CreationWizardPanel() {
     );
   }
 
-  // Session 88 (S18) — resolved position. Live drag overrides
-  // committed; committed (`state.x` / `state.y`) overrides default.
-  // Default = no inline style → Tailwind's `top-14 left-4` applies.
-  const positioned =
-    dragPos !== null
-      ? { left: dragPos.x, top: dragPos.y }
-      : state.x !== null && state.y !== null
-        ? { left: state.x, top: state.y }
-        : null;
+  // Session 88 (S18) — resolved position from `useDraggablePanel`.
+  // `null` = no inline style → Tailwind's `top-14 left-4` default.
   return (
     <section
       ref={panelRef}
@@ -337,14 +275,10 @@ export function CreationWizardPanel() {
     >
       {/* Session 88 (S18) — drag handle = the whole header band.
           Inner buttons short-circuit the drag via the `closest`
-          check in `onHeaderPointerDown`. cursor-grab visually
-          advertises the affordance. */}
+          check in the hook. cursor-grab advertises the affordance. */}
       <header
         className="flex cursor-grab select-none items-center justify-between gap-2 active:cursor-grabbing"
-        onPointerDown={onHeaderPointerDown}
-        onPointerMove={onHeaderPointerMove}
-        onPointerUp={onHeaderPointerUp}
-        onPointerCancel={onHeaderPointerUp}
+        {...dragHandlers}
       >
         <div className="flex items-center gap-1.5">
           <GripVertical className="h-3 w-3 text-neutral-400 dark:text-neutral-500" aria-hidden />
