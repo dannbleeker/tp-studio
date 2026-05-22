@@ -76,8 +76,6 @@ Add **Support lead has no protected drafting time**. Connect upward. Also: the s
 
 You should now have something resembling a tree with three UDEs at the top, converging through intermediate effects into a small number of root causes at the bottom. Click each terminal node and mark it `Root Cause` via the Inspector's Type grid.
 
-![A CRT with three UDEs converging through effects into root causes](screenshots/chapter04-crt-step5-causes-added.png)
-
 ### Step 6 — Find the core driver
 
 `Cmd+K → Find core driver(s)`. TP Studio computes UDE-reach for each root cause and selects the top candidate(s). The toast tells you the score: how many UDEs the highest-reach root cause ladders up to.
