@@ -154,7 +154,7 @@ function EvidenceRow({
   }, [autoFocus]);
 
   return (
-    <li className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/60 p-2 dark:border-neutral-800 dark:bg-neutral-900/40">
+    <li className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/60 p-2 dark:border-neutral-800 dark:bg-neutral-900/60">
       <TextArea
         ref={descRef}
         rows={2}

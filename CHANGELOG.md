@@ -2,6 +2,33 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Design-audit batch 3: InsetCard + frosted-glass opacity
+
+Findings 10, 16 — the final visual-consistency pass; completes the
+audit's 3-batch plan.
+
+**Finding 10 — `<InsetCard tone>` primitive** (`ui/InsetCard.tsx`). Six
+"tinted inline note" recipes had drifted (padding px-2 / px-3 / p-2;
+opacity /60 / /70 / opaque; dark washes /30 / /40). One canonical
+recipe: `rounded-md border px-3 py-2 text-xs` + one opacity per role
+(light `/60`; dark `/40` for indigo/amber accents, `/60` neutral). The
+three genuine note cards convert — EC guiding question (was an
+`<aside>`, now an `InsetCard role="note"` keeping its aria-label +
+data-component), Imported-from badge, EC brainstorm prompt. The two
+*functional* neutral rows (Evidence `<li>`, Attributes add-form) keep
+their structure (the `<li>` is list semantics; the add-form's inputs
+are finding 20/21's job) but get their opacity normalized to `/60`,
+killing the 0%/40% drift.
+
+**Finding 16 — frosted-glass opacity.** Rule: chrome (toolbars, nav,
+banners) = `/95`; content cards = `/80`. The only offender was CanvasNav
+at `/90` → bumped to `/95`. Inspector aside, PresentationStepThrough,
+CompareBanner (already `/95`) and EmptyHint (`/80` content) all already
+conformed.
+
+No behaviour change; 49+ inspector / overlay tests green; tsc + biome
+clean. **All three design-audit batches complete.**
+
 ## Session 135 — Design-audit batch 2: toggle-button base + ButtonGroup + TabBar
 
 Findings 4, 5, 17, 11 — three component extractions that pay for

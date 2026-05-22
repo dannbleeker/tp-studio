@@ -11,6 +11,7 @@ import {
   TOGGLE_BUTTON_BASE,
   UNSELECTED_BUTTON_CLASS,
 } from '../ui/buttonClasses';
+import { InsetCard } from '../ui/InsetCard';
 import { AssumptionWell } from './AssumptionWell';
 import { AttributesSection } from './AttributesSection';
 import { Field } from './Field';
@@ -324,7 +325,7 @@ function EcBrainstormPrompt({
   if (!question) return null;
   return (
     <Field label="Brainstorm prompt" as="group">
-      <div className="flex flex-col gap-2 rounded-md border border-amber-200 bg-amber-50/60 p-2 dark:border-amber-900/60 dark:bg-amber-950/30">
+      <InsetCard tone="amber" className="flex flex-col gap-2">
         <p className="text-amber-900 text-xs leading-snug dark:text-amber-100">{question}</p>
         <Button
           variant="softViolet"
@@ -335,7 +336,7 @@ function EcBrainstormPrompt({
           <Lightbulb className="h-3 w-3" />
           Add as a new assumption
         </Button>
-      </div>
+      </InsetCard>
     </Field>
   );
 }

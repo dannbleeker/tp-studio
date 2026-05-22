@@ -107,7 +107,7 @@ export function AttributesSection({ attributes, onSet, onRemove }: AttributesSec
           );
         })}
         {adding && (
-          <div className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50 p-2 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/60 p-2 dark:border-neutral-800 dark:bg-neutral-900/60">
             <input
               type="text"
               value={newKey}

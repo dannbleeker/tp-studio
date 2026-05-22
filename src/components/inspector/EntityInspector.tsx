@@ -18,6 +18,7 @@ import {
   TOGGLE_BUTTON_BASE,
   UNSELECTED_BUTTON_CLASS,
 } from '../ui/buttonClasses';
+import { InsetCard } from '../ui/InsetCard';
 import { AttachedEdgesList } from './AttachedEdgesList';
 import { EntityAttributesSection } from './AttributesSection';
 import { EvidenceList } from './EvidenceList';
@@ -73,16 +74,17 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   return (
     <div className="flex flex-col gap-4">
       {showGuidingQuestion && ecSlot && (
-        <aside
+        <InsetCard
+          tone="indigo"
+          role="note"
           aria-label={`Guiding question for slot ${ecSlot.toUpperCase()}`}
           data-component="ec-guiding-question"
-          className="rounded-md border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-[12px] text-indigo-900 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-100"
         >
           <p className="mb-1 font-semibold text-[10px] text-indigo-700 uppercase tracking-wider dark:text-indigo-300">
             {EC_SLOT_LABEL[ecSlot]}
           </p>
           <p className="italic leading-snug">{EC_SLOT_GUIDING_QUESTIONS[ecSlot]}</p>
-        </aside>
+        </InsetCard>
       )}
 
       <Field label="Title">
@@ -172,7 +174,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           source doc isn't open. */}
       {entity.importedFrom && (
         <Field label="Imported from" as="group">
-          <p className="rounded-md border border-indigo-200 bg-indigo-50/60 px-2 py-1.5 text-[11px] text-indigo-900 dark:border-indigo-900/40 dark:bg-indigo-950/30 dark:text-indigo-200">
+          <InsetCard tone="indigo">
             <span className="font-semibold">
               {entity.importedFrom.sourceTitle || '(untitled source)'}
             </span>
@@ -189,7 +191,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
                 })}
               </span>
             )}
-          </p>
+          </InsetCard>
         </Field>
       )}
 

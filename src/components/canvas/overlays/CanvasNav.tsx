@@ -32,7 +32,7 @@ export function CanvasNav() {
   return (
     <div
       data-component={DataComponent.CanvasNav}
-      className="pointer-events-auto absolute bottom-3 left-1/2 z-10 ml-28 hidden -translate-x-1/2 select-none items-center gap-0.5 rounded-md border border-neutral-200 bg-white/90 p-0.5 shadow-xs sm:flex dark:border-neutral-800 dark:bg-neutral-900/90"
+      className="pointer-events-auto absolute bottom-3 left-1/2 z-10 ml-28 hidden -translate-x-1/2 select-none items-center gap-0.5 rounded-md border border-neutral-200 bg-white/95 p-0.5 shadow-xs sm:flex dark:border-neutral-800 dark:bg-neutral-900/95"
     >
       <button
         type="button"
