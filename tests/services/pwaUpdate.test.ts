@@ -82,3 +82,104 @@ describe('initPwaUpdateToast', () => {
     expect(second).toBe(first);
   });
 });
+
+// Session 135 — `checkForUpdate` (palette `Check for updates`). jsdom
+// doesn't ship a service-worker API; each case stubs
+// `navigator.serviceWorker` to drive one branch of `UpdateCheckResult`.
+
+import { checkForUpdate } from '@/services/pwa/pwaUpdate';
+
+type FakeReg = {
+  waiting?: ServiceWorker | null;
+  installing?: ServiceWorker | null;
+  update: () => Promise<unknown>;
+};
+
+const installFakeServiceWorker = (reg: FakeReg | null): (() => void) => {
+  const nav = navigator as Navigator & {
+    serviceWorker?: { getRegistration: () => Promise<FakeReg | undefined> };
+  };
+  const had = Object.hasOwn(nav, 'serviceWorker');
+  const prev = nav.serviceWorker;
+  Object.defineProperty(navigator, 'serviceWorker', {
+    configurable: true,
+    value: { getRegistration: async () => reg ?? undefined },
+  });
+  return () => {
+    if (had && prev !== undefined) {
+      Object.defineProperty(navigator, 'serviceWorker', {
+        configurable: true,
+        value: prev,
+      });
+    } else {
+      delete (nav as unknown as Record<string, unknown>).serviceWorker;
+    }
+  };
+};
+
+describe('checkForUpdate (Session 135)', () => {
+  it("returns 'unsupported' when no service-worker registration is present", async () => {
+    const restore = installFakeServiceWorker(null);
+    try {
+      expect(await checkForUpdate()).toBe('unsupported');
+    } finally {
+      restore();
+    }
+  });
+
+  it("returns 'up-to-date' and triggers update() when no new SW is found", async () => {
+    let updateCalls = 0;
+    const reg: FakeReg = {
+      update: async () => {
+        updateCalls += 1;
+      },
+    };
+    const restore = installFakeServiceWorker(reg);
+    try {
+      expect(await checkForUpdate()).toBe('up-to-date');
+      expect(updateCalls).toBe(1);
+    } finally {
+      restore();
+    }
+  });
+
+  it("returns 'newly-found' when update() leaves an installing SW", async () => {
+    const reg: FakeReg = {
+      update: async () => {
+        // Mimic the browser advancing the new worker to `installing`
+        // during update() — set the field before the promise resolves.
+        reg.installing = { state: 'installing' } as unknown as ServiceWorker;
+      },
+    };
+    const restore = installFakeServiceWorker(reg);
+    try {
+      expect(await checkForUpdate()).toBe('newly-found');
+    } finally {
+      restore();
+    }
+  });
+
+  it("returns 'already-pending' and re-surfaces the Refresh-now toast when an update is already waiting", async () => {
+    // The toast carries a Refresh-now action only when `initPwaUpdateToast`
+    // has wired the SW (capturing `updateSW`); kick that off first.
+    initPwaUpdateToast();
+    const reg: FakeReg = {
+      waiting: { state: 'installed' } as unknown as ServiceWorker,
+      update: async () => {
+        throw new Error('update() must not run when an update is already waiting');
+      },
+    };
+    const restore = installFakeServiceWorker(reg);
+    try {
+      const before = useDocumentStore.getState().toasts.length;
+      expect(await checkForUpdate()).toBe('already-pending');
+      const toasts = useDocumentStore.getState().toasts;
+      expect(toasts).toHaveLength(before + 1);
+      const last = toasts.at(-1);
+      expect(last?.message).toMatch(/New version/);
+      expect(last?.action?.label).toBe('Refresh now');
+    } finally {
+      restore();
+    }
+  });
+});

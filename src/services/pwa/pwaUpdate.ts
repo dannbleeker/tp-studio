@@ -20,33 +20,52 @@
 // The module-level `registered` guard guarantees we never wire the
 // hook twice, even if `initPwaUpdateToast` is imported in tests or
 // re-invoked via hot reload.
+//
+// Session 135 — added `checkForUpdate()` for the `Check for updates`
+// palette command, so users can force a check instead of waiting for
+// the browser's natural cadence. `updateSW` is hoisted to module scope
+// so the manual-check path can re-surface the "Refresh now" toast when
+// an update is already waiting (e.g. the user dismissed the earlier
+// prompt and wants it back).
 
 import { registerSW } from 'virtual:pwa-register';
 import { useDocumentStore } from '@/store';
 
 let registered = false;
+let cachedUpdateSW: ((reloadPage?: boolean) => Promise<void>) | null = null;
+
+/** Render the canonical "New version… Refresh now" toast. Shared by the
+ *  plugin's `onNeedRefresh` callback and the manual check command's
+ *  already-waiting branch. */
+const showUpdateAvailableToast = (): void => {
+  const refresh = cachedUpdateSW;
+  useDocumentStore.getState().showToast('info', 'New version of TP Studio is available.', {
+    // Session 91 — bump dwell well past the info default so the user
+    // has time to read + decide. The Refresh button is rendered with
+    // `prominent: true` styling (filled, not outline) since the call-
+    // to-action is the whole point of this toast.
+    ...(refresh
+      ? {
+          action: {
+            label: 'Refresh now',
+            run: () => {
+              void refresh(true);
+            },
+            prominent: true,
+          },
+        }
+      : {}),
+    durationMs: 15000,
+  });
+};
 
 export const initPwaUpdateToast = (): void => {
   if (registered || typeof window === 'undefined') return;
   registered = true;
 
-  const updateSW = registerSW({
+  cachedUpdateSW = registerSW({
     onNeedRefresh: () => {
-      // Session 91 — bump dwell well past the info default so the
-      // user has time to read + decide before the affordance vanishes.
-      // The Refresh button is also rendered with `prominent: true`
-      // styling (filled, not outline) since the call-to-action is the
-      // whole point of this toast.
-      useDocumentStore.getState().showToast('info', 'New version of TP Studio is available.', {
-        action: {
-          label: 'Refresh now',
-          run: () => {
-            void updateSW(true);
-          },
-          prominent: true,
-        },
-        durationMs: 15000,
-      });
+      showUpdateAvailableToast();
     },
     onOfflineReady: () => {
       useDocumentStore.getState().showToast('success', 'TP Studio is ready to use offline.');
@@ -54,9 +73,59 @@ export const initPwaUpdateToast = (): void => {
   });
 };
 
+/**
+ * Outcome of a manual `Check for updates` action:
+ *   - `'unsupported'`     — no service-worker API / no registration yet
+ *     (jsdom, plain `http://`, fresh first visit before the SW lands).
+ *   - `'already-pending'` — an update was already waiting; the prompt
+ *     has been re-surfaced via the existing "Refresh now" toast so the
+ *     command itself doesn't need an extra "found" message.
+ *   - `'newly-found'`     — `registration.update()` fetched a new SW
+ *     that's now installing / waiting; the plugin's `onNeedRefresh`
+ *     hook will fire its prompt when the install completes.
+ *   - `'up-to-date'`      — the check completed with no new worker.
+ */
+export type UpdateCheckResult = 'unsupported' | 'already-pending' | 'newly-found' | 'up-to-date';
+
+/**
+ * Session 135 — force a service-worker update check.
+ *
+ * Normally the browser checks for a new SW on each page load + every
+ * ~24h on its own cadence. This lets the user trigger one on demand
+ * (palette command `Check for updates`).
+ *
+ * The branching mirrors `UpdateCheckResult`'s four outcomes; the caller
+ * (palette command) chooses the right toast for each.
+ */
+export const checkForUpdate = async (): Promise<UpdateCheckResult> => {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+    return 'unsupported';
+  }
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (!reg) return 'unsupported';
+  // Already waiting — the user likely dismissed the earlier prompt.
+  // Resurface the canonical "Refresh now" toast and report the state so
+  // the caller doesn't double-up with a generic "found update" toast.
+  if (reg.waiting) {
+    showUpdateAvailableToast();
+    return 'already-pending';
+  }
+  try {
+    await reg.update();
+  } catch {
+    return 'unsupported';
+  }
+  // After `update()` resolves the fetch, the new SW (if any) is in
+  // `installing` or has already advanced to `waiting`. Either way it's
+  // on the way — `onNeedRefresh` will fire its prompt once it lands.
+  if (reg.installing || reg.waiting) return 'newly-found';
+  return 'up-to-date';
+};
+
 // Test hook — vitest needs a way to clear the module-level guard so
 // the first-call branch can be re-exercised across tests. Production
 // callers should never reach for this.
 export const __resetPwaUpdateForTest = (): void => {
   registered = false;
+  cachedUpdateSW = null;
 };

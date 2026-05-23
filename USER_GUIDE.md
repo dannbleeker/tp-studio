@@ -688,6 +688,12 @@ Your documents live in the browser's `localStorage`, exactly where they were bef
 
 **Updates.** A toast appears in the corner whenever a new build is available — click **Refresh now** to drop the old cache and reload, or dismiss and the next natural reload picks up the change anyway. The update flow is explicit (not silent) so you never lose mid-edit state to an unexpected reload.
 
+**Forcing an update check.** Normally the service worker checks for new builds on its own cadence (each page load + every ~24 h). To force one on demand, open `Cmd/Ctrl+K` → **Check for updates**. The result is always explicit:
+- *"You're on the latest version of TP Studio."* — green toast; you're current.
+- *"New version of TP Studio is available."* — info toast with a **Refresh now** action; click to apply.
+- *"New version found — the refresh prompt will appear once it finishes downloading."* — info toast; the canonical Refresh-now prompt fires automatically once the new worker reaches the `waiting` state.
+- *"Update checks aren't available here (the service worker isn't running)."* — info toast; happens on plain `http://`, in private windows that block service workers, or during a fresh first visit before the worker has registered.
+
 iOS Safari has weaker PWA support; Install adds the icon to the home screen but offline support and update prompts are best-effort. macOS / Windows / Android Chrome and Edge are the supported install targets today.
 
 ## Document details

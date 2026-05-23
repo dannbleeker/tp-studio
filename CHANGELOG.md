@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Manual "Check for updates" palette command
+
+The PWA already toasts "New version available — Refresh now" when the service
+worker detects a new build, but the check ran only on the browser's own
+cadence (each page load + every ~24h). New `Cmd/Ctrl+K → Check for updates`
+forces it, and — per the user request — the outcome is always explicit:
+
+- *"You're on the latest version of TP Studio."* — green toast.
+- The canonical "New version… Refresh now" prompt (re-)surfaces when an
+  update is already waiting (e.g. the earlier prompt was dismissed).
+- *"New version found — the refresh prompt will appear once it finishes
+  downloading."* — info toast; the plugin's `onNeedRefresh` then fires the
+  actionable prompt when the new worker reaches `waiting`.
+- *"Update checks aren't available here…"* — when the SW API is absent
+  (plain `http://`, private-mode block, fresh first visit pre-registration).
+
+`pwaUpdate.ts` refactored to hoist `updateSW` to module scope so the
+already-waiting branch can re-surface the same "Refresh now" toast the
+auto-prompt uses (no UX drift between paths). +4 tests covering each of the
+four `UpdateCheckResult` branches via a per-case `navigator.serviceWorker`
+stub. USER_GUIDE + book ch2 updated. tsc + biome clean.
+
 ## Session 135 — Perf #35 (proper): command catalogue off the eager canvas path
 
 The earlier lazy-load attempt at #35 was reverted because async dispatch broke

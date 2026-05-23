@@ -12,6 +12,8 @@ TP Studio runs in a browser tab. Three ways in:
 
 Pick the hosted PWA if you're a reader rather than a contributor. The app is identical either way.
 
+**Updates.** When a new version of TP Studio ships, a small "New version available — Refresh now" toast appears at the bottom of the canvas; click it to apply. The flow is explicit on purpose: silent reloads while you're mid-edit would be hostile. If you want to check on demand (e.g. after a known release), `Cmd/Ctrl+K → Check for updates` forces the service worker to look — it tells you either *"You're on the latest version of TP Studio"* (green) or surfaces the refresh prompt for a new build (info).
+
 The first time you load TP Studio you'll see an empty canvas with a centered hint:
 
 ![Empty canvas with the double-click-to-add-entity hint](screenshots/chapter02-empty-canvas.png)
