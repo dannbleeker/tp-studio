@@ -12,6 +12,7 @@ import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
 import { AssumptionAnchorOverlay } from './edges/AssumptionAnchorOverlay';
 import { JunctorOverlay } from './edges/JunctorOverlay';
 import { TPEdge } from './edges/TPEdge';
+import { useArrowKeyNodeNav } from './hooks/useArrowKeyNodeNav';
 import { useGraphMutations } from './hooks/useGraphMutations';
 import { useGraphView } from './hooks/useGraphView';
 import { useSearchDimming } from './hooks/useSearchDimming';
@@ -142,6 +143,10 @@ function CanvasInner() {
     onEdgeMouseEnter,
     onEdgeMouseLeave,
   } = useGraphMutations();
+
+  // Session 135 — canvas a11y slice 4. Arrow keys, when a node has
+  // focus, walk to the connected neighbour in that direction.
+  useArrowKeyNodeNav();
 
   useEffect(() => {
     return () => setCanvasInstance(null);

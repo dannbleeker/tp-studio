@@ -2,6 +2,37 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Canvas a11y, slice 4: arrow-key navigation between connected nodes
+
+The single biggest UX win for keyboard-only diagram reading. With slice 1's
+ariaLabels + slice 2's focus rings, Tab gets you onto a node and reads it out
+loud; this slice lets you *walk the causal structure* without ever touching
+the mouse. When a `.react-flow__node` owns focus, the four arrow keys jump
+focus + selection to the connected neighbour in that direction.
+
+New `useArrowKeyNodeNav` hook (mounted in `Canvas` inside the
+`ReactFlowProvider`) listens for capture-phase `keydown`s on `window`,
+filters out modifier-arrow combos (so global shortcuts pass through), and
+drives the move via React Flow's `setNodes` (same path
+`__TP_TEST__.selectNodeViaRF` uses) so the production
+`onSelectionChange` → store-mirror flow runs end-to-end. DOM focus follows
+via `el.focus()` because RF's setNodes alone moves selection but not focus.
+
+Pure scoring extracted into `findNeighborInDirection`:
+- Candidates: connected entities (via incoming OR outgoing edges; back-edges
+  + mutex skipped — they're not causal).
+- Must be in the pressed direction (sign of dx/dy).
+- Primary-axis delta must dominate the perpendicular delta — a node mostly
+  to the right shouldn't win an ArrowUp even if it's a little above.
+- Among the remaining, lowest `primary + 0.5 × perp` wins (closer + better
+  axis-aligned beats further + skewed).
+
+Scope deliberately tight: entity nodes only (collapsed-root cards walk
+synthetic post-emission edges, out of scope here). +11 scoring tests cover
+the four cardinals, both edge directions, the perpendicular-rejection,
+multiple-candidates tie-break, back-edge skip, and the missing-position
+fallback.
+
 ## Session 135 — Canvas a11y, slice 3: named main landmark + sharpened axe coverage
 
 `e2e/a11y.spec.ts` already ran an axe scan on a CRT canvas; this slice
