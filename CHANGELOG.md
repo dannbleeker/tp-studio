@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Perf-trace cron: median-of-N so noise stops tripping the gate
+
+The weekly `Perf trace` cron flipped red on commit `60e35fa` with `all-actions`
+p95 at 8.12 ms (+25.9% vs 6.45 ms baseline, just over the 25% threshold). A
+manual rerun on the *same* commit measured **3.15 ms** (−51.2%). Same code, ±50%
+swing — single-run runner variance is real and was tripping the gate on noise.
+
+Fix: the workflow now runs `e2e/perf-trace.spec.ts` three times per scenario,
+snapshots each iteration's canonical `perf-trace-<scenario>-summary.json` to a
+numbered file, and a new `scripts/median-perf-summaries.mjs` writes the median
+of the three back to the canonical path. `check-perf-regression.mjs` then reads
+the median — vastly more stable than any single iteration. The per-iteration
+summaries are retained in the workflow artifact (and surfaced inline as
+`_samples` + `_median_of_n` on the canonical summary) so a borderline trip is
+still debuggable from the workflow log.
+
+End-to-end smoke: given the observed `{6, 8.12, 3.15}` p95 samples the median
+is 6.00 ms → gate passes at −7.0%; the noisy outlier is outvoted. +7 unit tests
+on the pure aggregator (median utility + scenario rollup + composite
+fall-through). Baseline + threshold unchanged (25%); the noise floor can be
+tightened once a few weeks of median data accrue.
+
 ## Session 135 — Manual "Check for updates" palette command
 
 The PWA already toasts "New version available — Refresh now" when the service

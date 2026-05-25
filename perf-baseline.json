@@ -1,6 +1,7 @@
 {
   "_comment": "Session 132 / Tier 3 #12 — checked-in perf-trace baseline. The Perf trace workflow's regression-check step compares each scenario's measured `scripting_percentiles.p95_ms` against the matching `p95_ms` here and fails if the measurement is more than `regressionThresholdPct` percent worse than the baseline. Update the values here when a deliberate change makes the perf number genuinely better or worse; the diff in this file is what reviewers see when shipping a perf-relevant change.",
   "_note_thresholds": "regressionThresholdPct: a single CI run carries real variance (GC pause timing, runner host load, V8 JIT warmup). 25% leaves headroom for that noise while still catching real 2-3x regressions. Tighten only after multiple runs converge on a stable mean.",
+  "_note_median_of_n": "Session 135 — the Perf trace workflow now runs the spec 3 times per scenario and feeds the MEDIAN p95 to this check (see scripts/median-perf-summaries.mjs). One observed run swung 8.12 ms ↔ 3.15 ms for `all-actions` on the same commit, tripping the 25% gate on pure runner noise; median-of-3 outvotes single-run outliers. The per-iteration summaries are retained in the workflow artifact for forensics. Threshold left at 25%; tighten once a few weeks of median data establish the post-median noise floor.",
   "regressionThresholdPct": 25,
   "scenarios": {
     "all-actions": {

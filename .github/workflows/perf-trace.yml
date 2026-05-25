@@ -68,19 +68,46 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Capture trace
+      - name: Capture trace (median of 3 runs)
+        # Session 135 — single perf-trace runs swing wildly on the CI
+        # runner (one observed `all-actions` p95 8.12 ms; the next on
+        # the same commit 3.15 ms). The 25% regression gate then
+        # flipped on noise, not on real perf changes. Running the
+        # spec 3× and feeding the median to the regression check
+        # outvotes single-run outliers without doubling cron time.
+        # Each iteration's canonical summary is snapshotted to a
+        # numbered file so the artifact upload retains every sample
+        # for forensics; the median step below writes the median back
+        # to the canonical summary path the regression-checker reads.
         env:
           PERF_TRACE: '1'
-        run: pnpm exec playwright test e2e/perf-trace.spec.ts
+        run: |
+          for i in 1 2 3; do
+            echo "=== perf-trace iteration $i / 3 ==="
+            pnpm exec playwright test e2e/perf-trace.spec.ts
+            for s in all-actions edit-heavy; do
+              cp "perf-trace-output/perf-trace-$s-summary.json" \
+                 "perf-trace-output/perf-trace-$s-summary.$i.json"
+            done
+          done
+
+      - name: Median the per-iteration summaries
+        # Reads `perf-trace-<scenario>-summary.{1,2,3}.json`, writes
+        # the median back to the canonical `*-summary.json` path the
+        # regression-checker consumes. Annotates with `_median_of_n`
+        # + `_samples` so a borderline gate trip is debuggable from
+        # the workflow log alone (no artifact download needed).
+        run: node scripts/median-perf-summaries.mjs
 
       - name: Check for regression vs perf-baseline.json
         # Session 132 / Tier 3 #12 — compares each scenario's
         # `scripting_percentiles.p95_ms` against the checked-in
         # baseline. Exits non-zero if any p95 regressed beyond
-        # `regressionThresholdPct`. Runs regardless of whether
-        # the trace step exited successfully so we always upload
-        # the artifact, but the workflow conclusion reflects the
-        # regression check.
+        # `regressionThresholdPct`. Now reads the median-of-3 summary
+        # written by the previous step, so single-run noise no longer
+        # trips the gate. Runs regardless of whether the trace step
+        # exited successfully so we always upload the artifact, but
+        # the workflow conclusion reflects the regression check.
         run: node scripts/check-perf-regression.mjs
 
       - name: Upload trace artifact
