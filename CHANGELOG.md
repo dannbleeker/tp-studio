@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Canvas a11y, slice 2: focus-visible rings on RF nodes + edges
+
+React Flow gives every `.react-flow__node` / `.react-flow__edge` wrapper
+`tabIndex=0` but ships no focus-ring style, so the browser default falls back
+to a near-invisible dotted outline against the card fill / SVG stroke —
+keyboard users had no way to see which thing they'd Tabbed to. New CSS rules
+render a 2 px indigo outline (with 3 px offset, matched to the rounded-lg
+card) on `:focus-visible` for nodes; for edges (where outline on `<g>` is
+unreliable cross-browser) the visible edge path thickens to 3.5 + full
+opacity. Distinct from the `.selected` halo on purpose — focus answers
+"where will my Enter / Space land", selection answers "what's chosen". The
+existing per-theme `:focus-visible` rules (high-contrast / rust / coal /
+navy / ayu) override the accent colour through the standard outline cascade.
+
+CSS-only change. The full keyboard Tab path (page top → canvas → nodes →
+out) and a screen-reader spot-check live in the manual checklist; slice 6
+runs the automatable portions against the new code.
+
 ## Session 135 — Canvas a11y, slice 1: accessible names on every node + edge
 
 Foundation for WCAG 2.1 AA on the canvas. React Flow's focusable node wrapper
