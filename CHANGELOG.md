@@ -2,6 +2,30 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Canvas a11y, slice 3: named main landmark + sharpened axe coverage
+
+`e2e/a11y.spec.ts` already ran an axe scan on a CRT canvas; this slice
+extends the coverage on the surfaces it left out:
+
+- **Named main landmark.** `<main aria-label="TP Studio canvas">` so screen
+  readers announce *"main, TP Studio canvas"* when entering the page,
+  rather than just *"main"*.
+- **Canvas with SelectionToolbar visible.** A new scan seeds entities,
+  programmatically selects one (via `__TP_TEST__.selectEntity`), waits for
+  the floating toolbar to mount, and runs axe over the whole page. Catches
+  focus-order / aria-label / contrast regressions on the toolbar chips —
+  an always-mounted overlay that the original CRT scan never exercised.
+- **Evaporating Cloud canvas.** A new scan opens an EC document (distinct
+  chrome: 5 hand-positioned slots, reading-instructions strip, EC-specific
+  accents) and runs axe over it. Catches per-diagram-type regressions a
+  CRT-only scan would miss.
+
+Refactored the per-test boilerplate into a shared `expectNoBlockingViolations`
+helper so the diagnostic output (impact / rule id / first 2 nodes) stays
+consistent across scans. Disabled rules unchanged (color-contrast / region /
+aria-allowed-attr — each documented in the spec file). No TS/biome
+violations.
+
 ## Session 135 — Canvas a11y, slice 2: focus-visible rings on RF nodes + edges
 
 React Flow gives every `.react-flow__node` / `.react-flow__edge` wrapper

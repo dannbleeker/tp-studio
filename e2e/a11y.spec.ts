@@ -81,6 +81,26 @@ const openDialog = async (page: Page, which: 'help' | 'about' | 'settings') => {
   return dialog;
 };
 
+/** Shared assertion: scan, log any blocking violations for forensics,
+ *  fail if any critical / serious findings landed. Keeps the diagnostic
+ *  output consistent across the various surface tests. */
+const expectNoBlockingViolations = async (axe: AxeBuilder, surface: string): Promise<void> => {
+  const results = await axe.disableRules(DISABLED_RULES).analyze();
+  const blocking = results.violations.filter(
+    (v) => v.impact === 'critical' || v.impact === 'serious'
+  );
+  if (blocking.length > 0) {
+    console.log(`Axe blocking violations in ${surface}:`);
+    for (const v of blocking) {
+      console.log(`  - [${v.impact}] ${v.id}: ${v.description}`);
+      for (const n of v.nodes.slice(0, 2)) {
+        console.log(`      ${n.target.join(' ')}`);
+      }
+    }
+  }
+  expect(blocking, `${surface} had blocking axe violations`).toEqual([]);
+};
+
 test.describe('a11y — main surfaces', () => {
   test('canvas with content has no critical / serious axe violations', async ({ page }) => {
     await goToTestMode(page);
@@ -91,20 +111,50 @@ test.describe('a11y — main surfaces', () => {
       });
     });
     await page.waitForSelector('[data-component="tp-node"]');
-    const results = await new AxeBuilder({ page }).disableRules(DISABLED_RULES).analyze();
-    const blocking = results.violations.filter(
-      (v) => v.impact === 'critical' || v.impact === 'serious'
+    await expectNoBlockingViolations(new AxeBuilder({ page }), 'canvas with content');
+  });
+
+  /**
+   * Session 135 — slice 3. Selection toolbar is an always-mounted overlay
+   * that materialises only when something is selected (3-5 floating action
+   * chips above the selection bbox). It wasn't covered by the original
+   * canvas scan because that scan never selected anything. Catches any
+   * focus-order / aria-label / contrast regression on the toolbar surface.
+   */
+  test('canvas with a selected entity (SelectionToolbar visible) has no blocking violations', async ({
+    page,
+  }) => {
+    await goToTestMode(page);
+    const ids = await page.evaluate(() => {
+      const seeded = window.__TP_TEST__?.seed({
+        type: 'effect',
+        titles: ['Customers churn', 'NPS keeps dropping'],
+      });
+      return seeded ?? [];
+    });
+    await page.waitForSelector('[data-component="tp-node"]');
+    await page.evaluate((id) => window.__TP_TEST__?.selectEntity(id), ids[0] ?? '');
+    // The toolbar mounts on the next animation frame after selection lands.
+    await page.waitForSelector('[data-component="selection-toolbar"]', { state: 'visible' });
+    await expectNoBlockingViolations(
+      page,
+      new AxeBuilder({ page }),
+      'canvas with SelectionToolbar'
     );
-    if (blocking.length > 0) {
-      console.log('Axe blocking violations:');
-      for (const v of blocking) {
-        console.log(`  - [${v.impact}] ${v.id}: ${v.description}`);
-        for (const n of v.nodes.slice(0, 2)) {
-          console.log(`      ${n.target.join(' ')}`);
-        }
-      }
-    }
-    expect(blocking).toEqual([]);
+  });
+
+  /**
+   * Session 135 — slice 3. Evaporating Cloud renders distinct chrome
+   * (the EC reading-instructions strip + the verbalisation strip), and
+   * the diagram-type-specific accent stylings around the 5 slot boxes.
+   * Scan an EC document to catch contrast / role / name regressions
+   * that wouldn't surface on a CRT scan.
+   */
+  test('Evaporating Cloud canvas has no blocking violations', async ({ page }) => {
+    await goToTestMode(page);
+    await page.evaluate(() => window.__TP_TEST__?.newDocument('ec'));
+    await page.waitForSelector('[data-component="tp-node"]');
+    await expectNoBlockingViolations(new AxeBuilder({ page }), 'EC canvas');
   });
 });
 

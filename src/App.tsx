@@ -242,6 +242,10 @@ export function App() {
 
   return (
     <main
+      // Session 135 — name the main landmark so screen readers announce
+      // "main, TP Studio canvas" when entering, not just "main." Part of
+      // the canvas a11y push (slice 3).
+      aria-label="TP Studio canvas"
       className={clsx(
         'relative h-screen w-screen overflow-hidden',
         appMode === 'workshop' && 'app-mode-workshop',
