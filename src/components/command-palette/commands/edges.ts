@@ -55,6 +55,53 @@ export const edgeCommands: Command[] = [
       s.showToast('info', 'Click another edge to AND-join. Esc to cancel.');
     },
   }),
+  // Session 135 — a11y slice 5. Keyboard-only edge creation. Two-step
+  // palette flow: select the source entity, run `start-edge-from-selection`;
+  // select the target (Tab or arrow keys), run `complete-edge-to-selection`.
+  // Mirrors the mouse-drag default (sufficiency edge) without ever leaving
+  // the keyboard. Esc cancels via the global cascade.
+  withWriteGuard({
+    id: 'start-edge-from-selection',
+    label: 'Start edge from selected entity… (keyboard)',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity to start the edge from.');
+        return;
+      }
+      s.startPendingEdge(sel.ids[0]!);
+      s.showToast(
+        'info',
+        'Edge pending — select another entity, then Cmd/Ctrl+K → "Complete edge to selected entity". Esc cancels.'
+      );
+    },
+  }),
+  withWriteGuard({
+    id: 'complete-edge-to-selection',
+    label: 'Complete edge to selected entity (keyboard)',
+    group: 'Edit',
+    run: (s) => {
+      if (!s.pendingEdgeSourceId) {
+        s.showToast('info', 'No edge pending. Start one via "Start edge from selected entity".');
+        return;
+      }
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single target entity, then run this command.');
+        return;
+      }
+      const targetId = sel.ids[0]!;
+      if (targetId === s.pendingEdgeSourceId) {
+        s.showToast('info', 'Target must differ from the source.');
+        s.cancelPendingEdge();
+        return;
+      }
+      const result = s.completePendingEdge(targetId);
+      if (result) s.showToast('success', 'Edge created.');
+      else s.showToast('info', 'Could not create that edge (duplicate?).');
+    },
+  }),
   withWriteGuard({
     id: 'ungroup-and',
     label: 'Ungroup selected AND edges',

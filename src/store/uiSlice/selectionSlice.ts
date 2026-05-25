@@ -39,6 +39,15 @@ export type SelectionSlice = {
    *  time. */
   joinModeEdgeId: string | null;
 
+  /** Session 135 — a11y slice 5. Keyboard edge-creation mode. While set,
+   *  the canvas is in "pick a target" mode: the user selected a source
+   *  entity, invoked `Create edge from selected entity` via the palette,
+   *  and now needs to pick a target. `completePendingEdge(targetId)`
+   *  creates the edge via the existing `connect` action and clears the
+   *  state; `cancelPendingEdge()` clears without creating. The Esc
+   *  cascade clears it ahead of join-mode + hoist + selection. */
+  pendingEdgeSourceId: string | null;
+
   select: (sel: Selection) => void;
   selectEntity: (id: string) => void;
   selectEdge: (id: string) => void;
@@ -72,6 +81,15 @@ export type SelectionSlice = {
    *  then exits the mode regardless of outcome. */
   startEdgeJoinMode: (edgeId: string) => void;
   cancelEdgeJoinMode: () => void;
+
+  /** Session 135 — a11y slice 5. Enter keyboard edge-creation mode with
+   *  the given source entity id. The next `completePendingEdge(targetId)`
+   *  creates the edge via the document store's `connect(sourceId,
+   *  targetId)` action and clears the pending state. Returns the new
+   *  edge id (or null if connect rejected, e.g. self-loop / duplicate). */
+  startPendingEdge: (sourceId: string) => void;
+  cancelPendingEdge: () => void;
+  completePendingEdge: (targetId: string) => string | null;
 };
 
 export type SelectionDataKeys =
@@ -79,7 +97,8 @@ export type SelectionDataKeys =
   | 'editingEntityId'
   | 'hoistedGroupId'
   | 'spliceTargetEdgeId'
-  | 'joinModeEdgeId';
+  | 'joinModeEdgeId'
+  | 'pendingEdgeSourceId';
 
 export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => ({
   selection: { kind: 'none' },
@@ -87,6 +106,7 @@ export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => 
   hoistedGroupId: null,
   spliceTargetEdgeId: null,
   joinModeEdgeId: null,
+  pendingEdgeSourceId: null,
 });
 
 const toggleId = (ids: string[], id: string): string[] =>
@@ -101,6 +121,7 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   hoistedGroupId: null,
   spliceTargetEdgeId: null,
   joinModeEdgeId: null,
+  pendingEdgeSourceId: null,
 
   select: (selection) => set({ selection }),
   // The action surface still accepts plain `string` because selection
@@ -165,4 +186,18 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
 
   startEdgeJoinMode: (edgeId) => set({ joinModeEdgeId: edgeId }),
   cancelEdgeJoinMode: () => set({ joinModeEdgeId: null }),
+
+  // Session 135 — keyboard edge-creation mode. The `connect` action lives
+  // in the document slice (edgesSlice); we dispatch through `get()` to
+  // reach it without a circular slice import.
+  startPendingEdge: (sourceId) => set({ pendingEdgeSourceId: sourceId }),
+  cancelPendingEdge: () => set({ pendingEdgeSourceId: null }),
+  completePendingEdge: (targetId) => {
+    const sourceId = get().pendingEdgeSourceId;
+    if (!sourceId) return null;
+    set({ pendingEdgeSourceId: null });
+    if (sourceId === targetId) return null; // self-loop guard
+    const edge = get().connect(sourceId, targetId);
+    return edge?.id ?? null;
+  },
 });

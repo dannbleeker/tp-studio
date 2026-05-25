@@ -267,6 +267,14 @@ export function useGlobalShortcuts() {
           // node textarea will handle its own escape; let it bubble
           return;
         }
+        // Session 135 — a11y slice 5. Pending-keyboard-edge wins over
+        // join + hoist + deselect, same rationale as join-mode below.
+        // Esc cancels the "pick a target" prompt without dropping
+        // the current selection.
+        if (state.pendingEdgeSourceId !== null) {
+          state.cancelPendingEdge();
+          return;
+        }
         // Session 133 — edge-join mode wins over hoist + deselect.
         // Pressing Esc while the "click another edge to AND-join"
         // prompt is up should cancel the join, not navigate out of

@@ -36,6 +36,7 @@ export function StatusStrip() {
     searchOpen,
     compareRevisionId,
     joinModeEdgeId,
+    pendingEdgeSourceId,
     setBrowseLocked,
     toggleHistoryPanel,
     closeSearch,
@@ -43,6 +44,7 @@ export function StatusStrip() {
     unhoist,
     closeCreationWizard,
     cancelEdgeJoinMode,
+    cancelPendingEdge,
   } = useDocumentStore(
     useShallow((s) => ({
       browseLocked: s.browseLocked,
@@ -52,6 +54,7 @@ export function StatusStrip() {
       searchOpen: s.searchOpen,
       compareRevisionId: s.compareRevisionId,
       joinModeEdgeId: s.joinModeEdgeId,
+      pendingEdgeSourceId: s.pendingEdgeSourceId,
       setBrowseLocked: s.setBrowseLocked,
       toggleHistoryPanel: s.toggleHistoryPanel,
       closeSearch: s.closeSearch,
@@ -59,6 +62,7 @@ export function StatusStrip() {
       unhoist: s.unhoist,
       closeCreationWizard: s.closeCreationWizard,
       cancelEdgeJoinMode: s.cancelEdgeJoinMode,
+      cancelPendingEdge: s.cancelPendingEdge,
     }))
   );
 
@@ -138,6 +142,18 @@ export function StatusStrip() {
       Icon: Link2,
       tone: 'indigo',
       onClick: cancelEdgeJoinMode,
+    });
+  }
+  // Session 135 — a11y slice 5. Pending keyboard edge-creation: a chip
+  // explaining the next step ("select target, palette → Complete edge").
+  // Click cancels the pending edge, parallel to the join-mode chip.
+  if (pendingEdgeSourceId) {
+    chips.push({
+      key: 'pending-edge',
+      label: 'Select target, then palette → Complete edge',
+      Icon: Link2,
+      tone: 'indigo',
+      onClick: cancelPendingEdge,
     });
   }
 

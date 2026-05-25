@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Canvas a11y, slice 5: keyboard edge-creation gesture
+
+The last mouse-only authoring step gets a keyboard path. A two-step palette
+flow:
+
+1. Select the source entity → `Cmd/Ctrl+K` → **Start edge from selected
+   entity… (keyboard)**. Sets `pendingEdgeSourceId` in the selection slice;
+   the StatusStrip surfaces an "Select target, then palette → Complete edge"
+   chip + a toast spells out the next step.
+2. Move focus / selection to the target (Tab + slice 4's arrow-key nav) →
+   `Cmd/Ctrl+K` → **Complete edge to selected entity (keyboard)**. Creates
+   the edge via the existing `connect(sourceId, targetId)` action — same
+   sufficiency-default the mouse-drag produces — and clears the pending
+   state.
+
+Esc cancels the pending edge via the global cascade (just ahead of the
+join-mode + hoist + deselect tiers, same precedence rationale as join-mode).
+Self-loop (source = target) returns a friendly toast + clears the pending
+state. Duplicate edges fall through to `connect`'s existing rejection.
+
+Mirrors the existing `joinModeEdgeId` plumbing precisely, so no new shape
+in the slice / no new UI primitive — just a parallel state field
+(`pendingEdgeSourceId`), parallel actions, a parallel StatusStrip chip, and
+two palette commands. +5 behavioural tests cover both commands' happy /
+error / self-loop / no-pending paths.
+
 ## Session 135 — Canvas a11y, slice 4: arrow-key navigation between connected nodes
 
 The single biggest UX win for keyboard-only diagram reading. With slice 1's

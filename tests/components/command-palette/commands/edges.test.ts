@@ -96,6 +96,55 @@ describe('edgeCommands — AND/OR/XOR groupings', () => {
   });
 });
 
+describe('edgeCommands — keyboard edge-creation (slice 5)', () => {
+  it('start-edge-from-selection sets pendingEdgeSourceId when a single entity is selected', async () => {
+    const a = seedEntity('A');
+    useDocumentStore.getState().selectEntity(a.id);
+    await runCommand(findCommand(edgeCommands, 'start-edge-from-selection'));
+    expect(s().pendingEdgeSourceId).toBe(a.id);
+  });
+
+  it('start-edge-from-selection toasts info when no entity is selected', async () => {
+    await runCommand(findCommand(edgeCommands, 'start-edge-from-selection'));
+    expect(s().pendingEdgeSourceId).toBeNull();
+    expect(s().toasts.some((t) => /select a single entity/i.test(t.message))).toBe(true);
+  });
+
+  it('complete-edge-to-selection creates an edge between the source + currently-selected target', async () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    useDocumentStore.getState().selectEntity(a.id);
+    await runCommand(findCommand(edgeCommands, 'start-edge-from-selection'));
+    useDocumentStore.getState().selectEntity(b.id);
+    const before = Object.keys(s().doc.edges).length;
+    await runCommand(findCommand(edgeCommands, 'complete-edge-to-selection'));
+    expect(Object.keys(s().doc.edges).length).toBe(before + 1);
+    expect(s().pendingEdgeSourceId).toBeNull();
+    // The new edge connects A -> B.
+    expect(
+      Object.values(s().doc.edges).some((e) => e.sourceId === a.id && e.targetId === b.id)
+    ).toBe(true);
+  });
+
+  it('complete-edge-to-selection rejects a self-loop (source = target) and clears the pending state', async () => {
+    const a = seedEntity('A');
+    useDocumentStore.getState().selectEntity(a.id);
+    await runCommand(findCommand(edgeCommands, 'start-edge-from-selection'));
+    // Keep `a` selected — same entity. complete should reject + clear.
+    const before = Object.keys(s().doc.edges).length;
+    await runCommand(findCommand(edgeCommands, 'complete-edge-to-selection'));
+    expect(Object.keys(s().doc.edges).length).toBe(before);
+    expect(s().pendingEdgeSourceId).toBeNull();
+  });
+
+  it('complete-edge-to-selection toasts info when no edge is pending', async () => {
+    const a = seedEntity('A');
+    useDocumentStore.getState().selectEntity(a.id);
+    await runCommand(findCommand(edgeCommands, 'complete-edge-to-selection'));
+    expect(s().toasts.some((t) => /no edge pending/i.test(t.message))).toBe(true);
+  });
+});
+
 describe('edgeCommands — registry shape', () => {
   it('registers all expected ids exactly once', () => {
     const expected = [
@@ -108,6 +157,8 @@ describe('edgeCommands — registry shape', () => {
       'group-xor',
       'ungroup-xor',
       'splice-into-edge',
+      'start-edge-from-selection',
+      'complete-edge-to-selection',
     ];
     for (const id of expected) {
       expect(
