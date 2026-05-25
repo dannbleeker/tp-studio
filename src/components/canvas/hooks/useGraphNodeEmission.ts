@@ -14,6 +14,7 @@ import {
   GROUP_PADDING,
   GROUP_TITLE_TOP,
 } from './graphViewConstants';
+import { collapsedGroupAriaLabel, entityAriaLabel, groupAriaLabel } from './nodeAriaLabels';
 import type { GraphPositions } from './useGraphPositions';
 import type { GraphProjection } from './useGraphProjection';
 
@@ -121,6 +122,9 @@ export const useGraphNodeEmission = (
         // height} via the TPGroupNode renderer.
         width: groupW,
         height: groupH,
+        // Session 135 — accessible name for screen readers: title +
+        // transitive entity count + collapsed/archived modifiers.
+        ariaLabel: groupAriaLabel(group, descendantEntityCount(doc, group.id)),
         data: { group, width: groupW, height: groupH },
         selectable: true,
         draggable: false,
@@ -161,10 +165,20 @@ export const useGraphNodeEmission = (
         showActionEligibility && entity.type === 'action'
           ? actionEligibility(doc, derivedStates, entity.id, speculationOverlay ?? undefined).status
           : 'na';
+      // Session 135 — accessible name for the React Flow node wrapper.
+      // Composes the same data the visual badges encode: type + title +
+      // ordering + locus + state (with speculative marker) + eligibility.
+      const ariaLabel = entityAriaLabel(entity, {
+        ...(doc.customEntityClasses ? { customClasses: doc.customEntityClasses } : {}),
+        effectiveState: effState,
+        speculated,
+        ...(eligibility !== 'na' ? { eligibility } : {}),
+      });
       const node: TPNode = {
         id: entity.id,
         type: 'tp',
         position: positions[entity.id] ?? { x: 0, y: 0 },
+        ariaLabel,
         // Explicit width / height so React Flow's MiniMap can compute
         // node thumbnails before the live DOM has been measured (Session
         // 87 UX fix #1 follow-up: pre-fix the MiniMap rendered as an
@@ -202,6 +216,9 @@ export const useGraphNodeEmission = (
         // Same measurement-hint rationale as the TPNode branch above.
         width: COLLAPSED_WIDTH,
         height: COLLAPSED_HEIGHT,
+        // Session 135 — "Collapsed group: title (N hidden)" so screen
+        // readers announce what this single card stands in for.
+        ariaLabel: collapsedGroupAriaLabel(group, memberCount),
         data: { group, memberCount, width: COLLAPSED_WIDTH, height: COLLAPSED_HEIGHT },
       };
       nodes.push(node);

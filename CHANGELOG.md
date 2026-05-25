@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Canvas a11y, slice 1: accessible names on every node + edge
+
+Foundation for WCAG 2.1 AA on the canvas. React Flow's focusable node wrapper
+(`.react-flow__node`) reads as the empty string to screen readers without an
+`ariaLabel` — i.e. the canvas was silent rectangles. New
+`nodeAriaLabels.ts` exposes pure helpers (`entityAriaLabel`,
+`groupAriaLabel`, `collapsedGroupAriaLabel`, `edgeAriaLabel`) that compose a
+single readable string per node kind from the same data the visual badges
+already encode, and the emission pipeline stamps the result onto every
+emitted node + edge.
+
+Examples (deterministic — the helpers are pure and pinned by tests):
+- `"Undesirable Effect: Customers churn at renewal, locus influence, state true"`
+- `"Action: Send the audit, step 3, locus control, action blocked"`
+- `"Group: Negative Branch A (5 entities), collapsed"`
+- `"Edge from Customers churn at renewal to NPS keeps dropping, back-edge, 2 assumptions"`
+
+No mouse-user UX change; this is the screen-reader contract. +18 helper
+contract tests covering type+title, ordering, locus, state +
+speculative marker, eligibility, group modifiers, edge aggregation, and the
+"untitled" fallback. Foundation for the slices that follow (focus rings,
+arrow-key navigation, axe coverage on the canvas, keyboard edge gesture).
+
 ## Session 135 — Perf-trace cron: median-of-N so noise stops tripping the gate
 
 The weekly `Perf trace` cron flipped red on commit `60e35fa` with `all-actions`

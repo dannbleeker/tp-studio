@@ -4,6 +4,7 @@ import { edgesArray } from '@/domain/graph';
 import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
 import type { TPEdge } from '../edges/flow-types';
+import { edgeAriaLabel } from './nodeAriaLabels';
 import type { GraphProjection } from './useGraphProjection';
 
 /**
@@ -98,11 +99,26 @@ export const useGraphEdgeEmission = (doc: TPDocument, projection: GraphProjectio
             b.sample.assumptionIds?.length ?? 0,
             assumptionCountByEdge.get(b.sample.id) ?? 0
           );
+      // Session 135 — accessible name for screen readers. Source/target
+      // are already remapped to VISIBLE node ids (real entities or
+      // collapsed-root groups), so look up the user-facing title from
+      // either map. Falls back to the id if neither resolves (paranoid).
+      const visibleTitle = (id: string): string =>
+        doc.entities[id]?.title || doc.groups[id]?.title || id;
+      const ariaLabel = edgeAriaLabel({
+        sourceTitle: visibleTitle(b.sourceId),
+        targetTitle: visibleTitle(b.targetId),
+        ...(b.count > 1 ? { aggregateCount: b.count } : {}),
+        ...(b.sample.isBackEdge ? { isBackEdge: true } : {}),
+        ...(b.sample.isMutualExclusion ? { isMutex: true } : {}),
+        ...(assumptionCount > 0 ? { assumptionCount } : {}),
+      });
       const edge: TPEdge = {
         id: isAggregated ? `agg:${b.sourceId}->${b.targetId}` : b.sample.id,
         source: b.sourceId,
         target: b.targetId,
         type: 'tp',
+        ariaLabel,
         data: {
           ...(andGroupId ? { andGroupId } : {}),
           ...(orGroupId ? { orGroupId } : {}),
