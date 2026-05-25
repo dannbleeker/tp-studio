@@ -46,10 +46,14 @@ test.describe('dialog visual regression', () => {
   test('help dialog', async ({ page }) => {
     await page.goto('/?test=1');
     // No direct keyboard shortcut for Help — open via the palette.
-    // (`useGlobalShortcuts.ts` exposes Cmd+K → openPalette; typing
-    // "Keyboard" then Enter lands on the Help dialog command.)
+    // (`useGlobalShortcuts.ts` exposes Cmd+K → openPalette.) Query
+    // "shortcuts" is unique to "Show keyboard shortcuts"; previously
+    // "Keyboard" tied with the slice-5 edge-creation commands ("Start
+    // edge from selected entity… (keyboard)" / "Complete edge to
+    // selected entity (keyboard)") at score 50 and the Enter selected
+    // the wrong command.
     await page.keyboard.press('Control+K');
-    await page.getByPlaceholder(/command/i).fill('Keyboard');
+    await page.getByPlaceholder(/command/i).fill('shortcuts');
     await page.keyboard.press('Enter');
     // The dialog header carries the title — wait for it before
     // screenshotting so we capture a fully-painted modal.
