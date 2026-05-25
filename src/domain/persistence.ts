@@ -238,4 +238,11 @@ export const loadFromLocalStorage = (): TPDocument | null => loadFromLocalStorag
 export const clearLocalStorage = (): void => {
   removeKey(STORAGE_KEYS.doc);
   removeKey(STORAGE_KEYS.docBackup);
+  // Session 135 security audit — also drop the in-memory Perf #27 cache.
+  // Otherwise a subsequent `saveToLocalStorage` would write the stale
+  // pre-clear payload to the backup slot (the canonical state at that
+  // point is empty, not the cached prior value). Currently unreachable
+  // from the UI (no production caller), but the cache should match the
+  // canonical storage state for future-safety + test correctness.
+  lastCommittedRaw = null;
 };

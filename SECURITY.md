@@ -7,7 +7,11 @@ business — and for future maintainers landing security-relevant
 changes (so the trade-offs already considered don't have to be
 re-derived from scratch).
 
-Last reviewed: Session 98 (2026-05-15) — see CHANGELOG for the full
+Last reviewed: Session 135 (2026-05-25) — refreshed against ~213 commits
+of new surface (Phase 1A/B/C state propagation + what-if speculation,
+action eligibility, importedFrom cross-doc, perf #26/#27 persistence
+changes, lazy command catalogue, PWA Check-for-updates, canvas a11y push).
+Findings + walked-clean list in section 6 below. See CHANGELOG for full
 history.
 
 ---
@@ -137,8 +141,9 @@ example-loaded documents harder.
 
 ### 3.6 Dependency hygiene
 
-- `pnpm audit --prod` is clean as of Session 98 (was 19
-  vulnerabilities in `jspdf` 2.5.2; fixed by bumping to 4.2.1).
+- `pnpm audit --prod` is clean as of Session 135 (was 19
+  vulnerabilities in `jspdf` 2.5.2 in Session 98; fixed by bumping to
+  4.2.1; re-verified clean on the 2026-05-25 audit refresh).
 - All dependencies are pinned via `pnpm-lock.yaml`.
 - The build is deterministic from the lockfile.
 - No dependencies load remote code at runtime.
@@ -204,6 +209,45 @@ is: fix on `main` → push → CI green → deployed via GitHub Pages
 automatically. Disclosure happens in CHANGELOG and a release tag.
 
 ## 6. Audit history
+
+- **Session 135 (2026-05-25)** — Refresh against ~213 commits since
+  Session 98. New code surfaces walked: Phase 1A/B/C entity-state +
+  what-if speculation overlay, action-eligibility computation,
+  `importedFrom` cross-doc reference, perf #26/#27 persistence changes
+  (compact `JSON.stringify` instead of pretty, in-memory `lastCommittedRaw`
+  cache, compact live-draft), `verbCommandRuns` lazy-catalogue registry,
+  PWA `Check for updates` palette command, the six-slice canvas a11y
+  push (ariaLabel stamping, focus rings, keyboard nav + edge creation).
+  Findings:
+  - **P3 (fixed)** — `clearLocalStorage()` did not reset the in-memory
+    `lastCommittedRaw` cache introduced in perf #27. A subsequent
+    `saveToLocalStorage()` would have written the stale pre-clear payload
+    into the backup slot. Unreachable from the UI (no production caller)
+    but a real cache/state mismatch; fix is a one-line `lastCommittedRaw
+    = null` in `clearLocalStorage`, regression test added.
+  - **Walked clean (no findings):**
+    - `pnpm audit --prod`: 0 vulnerabilities.
+    - No new `dangerouslySetInnerHTML`, `fetch`, `XMLHttpRequest`,
+      `postMessage`, `eval`, or `new Function()` introduced in src/ since
+      2026-05-15.
+    - CSP `<meta>` policy (3.1) unchanged.
+    - New persistence validators (`validateImportedFromRef`,
+      `isAssumptionKind`, `Group.archived`, `Entity.state`,
+      `validateCustomEntityClass`) are strict, with explicit type checks
+      + emit-or-omit shape; reject shadowing built-in entity types.
+    - `importedFrom.{sourceTitle,docId,importedAt}` render only as JSX
+      text (React-escaped), never as `innerHTML`.
+    - `runVerbCommand(id, store)` only invoked with `verb.paletteCommandId`
+      from the compile-time `selectionVerbs` registry — not from any
+      doc-derived string.
+    - `speculationOverlay` lives only in the UI slice; not in
+      `StoredPrefs`, not in `persistence.ts`, not in `exportToJSON` — no
+      hypothetical-state-leak path.
+    - `ariaLabel` strings built via string concatenation and passed into
+      React's `aria-label` attribute (escaped).
+    - PWA `checkForUpdate` only invokes
+      `navigator.serviceWorker.getRegistration().update()` — same-origin,
+      no user-controlled input.
 
 - **Session 98 (2026-05-15)** — Full 12-area security audit. Findings:
   - **P0 (fixed)** — 19 CVEs in `jspdf` 2.5.2 (2 critical: Local

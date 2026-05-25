@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Security audit refresh
+
+Walked SECURITY.md's 12 areas against ~213 commits since the Session 98
+baseline. New surfaces audited: Phase 1A/B/C state propagation + what-if
+speculation overlay, action eligibility, `importedFrom` cross-doc reference,
+perf #26/#27 persistence changes, `verbCommandRuns` lazy catalogue, PWA
+`Check for updates`, and the six-slice canvas a11y push.
+
+**Findings: one P3 hygiene fix.** `clearLocalStorage()` didn't reset the
+in-memory `lastCommittedRaw` cache introduced in perf #27, so a subsequent
+`saveToLocalStorage()` would have written the stale pre-clear payload into
+the backup slot. Currently unreachable from the UI (no production caller —
+only tests use the action), but a real cache/state mismatch worth fixing.
+One-line addition: `lastCommittedRaw = null` in `clearLocalStorage`, regression
+test added (save A → clear → save B → assert backup doesn't contain A's
+sentinel).
+
+**Walked clean** (no findings) on: `pnpm audit --prod`, no new
+`dangerouslySetInnerHTML`/`fetch`/`postMessage`/`eval`/`new Function()`
+introduced, CSP unchanged, every new persistence field has a strict validator
+(`validateImportedFromRef`, `isAssumptionKind`, `Group.archived`,
+`Entity.state`, `validateCustomEntityClass`), cross-doc references render
+only as React-escaped JSX text, the verb-command registry only resolves
+compile-time `paletteCommandId` constants, the speculation overlay never
+crosses the persistence boundary, ariaLabel strings go into React's escaped
+`aria-label` attribute, and the PWA update check is same-origin only.
+
+SECURITY.md "Last reviewed" bumped to 2026-05-25; full findings + walked-clean
+list in §6 audit history.
+
 ## Session 135 — Canvas a11y, slice 6: verification + docs sync (push complete)
 
 Closes the six-slice canvas-accessibility push.

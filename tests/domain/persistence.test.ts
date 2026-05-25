@@ -106,4 +106,23 @@ describe('localStorage round-trip', () => {
     clearLocalStorage();
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
+
+  it('clearLocalStorage also drops the in-memory backup cache (Session 135 audit)', () => {
+    // Save A, clear, save B. The backup slot after the second save MUST
+    // NOT contain A's payload — the canonical state at save B was empty
+    // (post-clear), so backup stays empty. Pre-fix the in-memory
+    // `lastCommittedRaw` cache (Perf #27) held A across the clear, and
+    // the next save wrote A into backup.
+    const docA = { ...sampleDoc(), title: 'sentinel-A' };
+    const docB = { ...sampleDoc(), title: 'sentinel-B' };
+    saveToLocalStorage(docA);
+    clearLocalStorage();
+    saveToLocalStorage(docB);
+    const main = localStorage.getItem(STORAGE_KEY);
+    expect(main).not.toBeNull();
+    expect(main).toContain('sentinel-B');
+    const backupRaw = localStorage.getItem('tp-studio:doc-backup');
+    // Backup must be empty OR not contain the pre-clear sentinel.
+    expect(backupRaw === null || !backupRaw.includes('sentinel-A')).toBe(true);
+  });
 });
