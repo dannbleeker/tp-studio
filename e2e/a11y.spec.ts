@@ -132,15 +132,21 @@ test.describe('a11y — main surfaces', () => {
       });
       return seeded ?? [];
     });
-    await page.waitForSelector('[data-component="tp-node"]');
-    await page.evaluate((id) => window.__TP_TEST__?.selectEntity(id), ids[0] ?? '');
-    // The toolbar mounts on the next animation frame after selection lands.
+    const targetId = ids[0] ?? '';
+    await page.waitForSelector(`.react-flow__node[data-id="${targetId}"]`);
+    // Drive selection through RF's `setNodes` → `onSelectionChange` → store
+    // mirror path (matches the production click flow). Pattern lifted from
+    // the existing SelectionToolbar e2e — `selectNodeViaRF` retries until
+    // RF has mounted the node; `getSelection` confirms the store mirrored.
+    await page.waitForFunction((eid) => window.__TP_TEST__!.selectNodeViaRF(eid), targetId, {
+      timeout: 5000,
+    });
+    await page.waitForFunction(() => {
+      const sel = window.__TP_TEST__!.getSelection();
+      return sel.kind === 'entities' && sel.ids.length === 1;
+    });
     await page.waitForSelector('[data-component="selection-toolbar"]', { state: 'visible' });
-    await expectNoBlockingViolations(
-      page,
-      new AxeBuilder({ page }),
-      'canvas with SelectionToolbar'
-    );
+    await expectNoBlockingViolations(new AxeBuilder({ page }), 'canvas with SelectionToolbar');
   });
 
   /**
