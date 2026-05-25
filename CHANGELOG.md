@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Canvas a11y, slice 6: verification + docs sync (push complete)
+
+Closes the six-slice canvas-accessibility push.
+
+`docs/MANUAL_A11Y_WALKTHROUGH.md` now annotates every row that's backed by
+code with a 🤖 marker, summarises the automated coverage shipped across
+slices 1–5 at the top, and crosses off the "Keyboard edge-connect" known
+candidate (resolved by slice 5). New rows added for the new keyboard
+surfaces (arrow-key navigation, the two-step edge-creation flow) so the
+checklist tracks them too.
+
+`USER_GUIDE.md` gains an Accessibility section that documents the
+keyboard surfaces from a user's POV — node/edge announcements, Tab + arrow
+walking, keyboard edge creation, the Esc cascade priority, theme contrast,
+and which guards live in CI vs. the manual checklist. TOC updated.
+
+Slice scorecard:
+- **#1 — accessible names** on every node + edge (foundation; +18 tests)
+- **#2 — focus-visible rings** distinct from the selection halo (CSS)
+- **#3 — sharpened axe coverage** (canvas + SelectionToolbar + EC + named landmark)
+- **#4 — arrow-key navigation** between connected nodes (+11 tests)
+- **#5 — keyboard edge-creation gesture** (+5 tests)
+- **#6 — checklist sync + USER_GUIDE Accessibility section** (this entry)
+
+Result: TP Studio is now keyboard-navigable end-to-end. The "feels right"
+final verification — screen-reader voice quality on the announcement
+strings, theme-variant contrast on a real display — stays in the manual
+checklist for Dann's hands.
+
 ## Session 135 — Canvas a11y, slice 5: keyboard edge-creation gesture
 
 The last mouse-only authoring step gets a keyboard path. A two-step palette

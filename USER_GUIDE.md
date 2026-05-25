@@ -23,8 +23,9 @@ A practitioner's walkthrough. Assumes familiarity with the Thinking Process — 
 13. [Settings & themes](#settings--themes)
 12. [Browse Lock](#browse-lock)
 13. [Document details](#document-details)
-14. [Keyboard reference](#keyboard-reference)
-15. [Tips](#tips)
+14. [Accessibility](#accessibility)
+15. [Keyboard reference](#keyboard-reference)
+16. [Tips](#tips)
 
 ## Starting up
 
@@ -731,6 +732,32 @@ Branches are a lightweight way to fork "what-if" experiments without losing the 
 The history panel groups revisions by branch with sticky headers (Main first, then named branches by most-recent activity). To activate a branch's state, click its **Restore** button — your live doc swaps to that snapshot (and a safety capture of the outgoing state lands in the same branch).
 
 This is the MVP version: branches are an organizational layer over the flat revision list, not a full multi-document workspace. Subsequent snapshots after a restore land in the Main branch unless you branch again.
+
+## Accessibility
+
+TP Studio targets WCAG 2.1 AA and ships a real keyboard-only authoring path — useful for screen-reader users, motor-disability users, and anyone who prefers to keep their hands on the home row.
+
+**On the canvas:**
+- **Every node + edge announces itself.** Screen readers read out the human type label + title + (where set) ordering step, locus, propagated state (with `(speculative)` marker on Phase 1C what-if overlays), and action-eligibility status. Edges announce `Edge from <source> to <target>` plus back-edge / mutual-exclusion / assumption-count modifiers. Group rectangles read `Group: <title> (<N> entities)` with collapsed / archived markers; collapsed-root cards read `Collapsed group: <title> (<N> entities hidden)`.
+- **Tab + Shift+Tab walk the canvas;** a visible focus ring marks where you are (distinct from the selection halo so you can tell "where will my Enter land" from "what's chosen").
+- **Arrow keys walk the graph.** With a node focused, ←/↑/→/↓ jumps focus + selection to the connected neighbour in that direction. Picks the connected entity whose center is most in the pressed direction; ignores back-edges and mutual-exclusion markers.
+- **Keyboard edge creation.** Two-step palette flow: select source → `Cmd/Ctrl+K → Start edge from selected entity… (keyboard)`; select target (Tab or arrow keys) → `Cmd/Ctrl+K → Complete edge to selected entity (keyboard)`. The StatusStrip chip "Select target, then palette → Complete edge" shows while an edge is pending; click it (or press Esc) to cancel.
+
+**Dialogs and the palette:**
+- Help, About, Settings, the Export picker, the Import-entity picker, the Template picker, and Print preview all trap focus inside themselves while open (no Tab escapes), close on Esc, and return focus to the element that opened them.
+- `Cmd/Ctrl+K` opens the command palette from anywhere; every primary action is reachable by search.
+- The Esc cascade prioritises the innermost surface: editing-textarea → pending-keyboard-edge → AND-join mode → hoist → selection.
+
+**Themes and contrast:**
+- The default light and dark themes meet AA contrast for body text; `High contrast` (white on pure black + thicker focus rings) gives full AAA contrast.
+- Four named dark variants (`Rust` / `Coal` / `Navy` / `Ayu`) drive the focus-ring accent through `:focus-visible`, so the ring colour matches the theme without losing visibility.
+
+**What automated tests guard:**
+- Axe scans on the canvas (CRT and EC variants), the canvas-with-SelectionToolbar surface, and the Help / About / Settings dialogs — every commit fails CI if a `critical` or `serious` axe finding lands.
+- Focus-trap and Esc-close pins for each dialog.
+- Tab-cycle smoke check (focus doesn't get stuck on the canvas).
+
+**What still needs a human pass** is the "feels right" portion: screen-reader voice quality on the announcement strings, focus-order coherence across a busy CRT, contrast on theme variants. `docs/MANUAL_A11Y_WALKTHROUGH.md` is the checklist; rows already backed by code carry a 🤖 marker.
 
 ## Keyboard reference
 
