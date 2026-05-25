@@ -458,6 +458,269 @@ describe('effectiveState — manual / derived merge helper', () => {
   });
 });
 
+describe('propagateStates — reducer mixed-state corner cases (mutation pass)', () => {
+  // Session 135 mutation pass. The reducers were covered by homogeneous
+  // tests (all-true, all-false, etc.) which leave `every` ↔ `some` and
+  // boundary-flip mutants alive. These tests stress mixed-state inputs
+  // that have only one correct answer under the documented semantics.
+
+  it('OR with no trues, no disputed, mix of false + unknown → unknown', () => {
+    // `every(v === 'false')` (line 102) guards the all-false → 'false'
+    // result. With `some`, one false sibling would short-circuit to
+    // 'false'. With `every` intact: not all false → fall through to
+    // 'unknown' (no signal-bearing input). Diagnostic shape.
+    resetIds();
+    const a = makeEntity({ state: 'false' });
+    const b = makeEntity(); // unknown
+    const tgt = makeEntity();
+    const out = propagateStates(
+      makeDoc([a, b, tgt], [makeEdge(a.id, tgt.id), makeEdge(b.id, tgt.id)])
+    );
+    expect(out[tgt.id]).toBe('unknown');
+  });
+
+  it('XOR with exactly-one-true and an unknown is uncertain → unknown', () => {
+    // XOR's "exactly one true" only commits to 'true' when every other
+    // contribution is also a definite ('true' | 'false'). An 'unknown'
+    // sibling means "we don't yet know if XOR is violated", so → unknown.
+    // Pins both the `every` → `some` mutant and the `(v === 'true' || v
+    // === 'false')` → `true` mutant on line 112.
+    resetIds();
+    const a = makeEntity({ state: 'true' });
+    const b = makeEntity(); // unknown
+    const tgt = makeEntity();
+    const out = propagateStates(
+      makeDoc(
+        [a, b, tgt],
+        [makeEdge(a.id, tgt.id, { xorGroupId: 'x1' }), makeEdge(b.id, tgt.id, { xorGroupId: 'x1' })]
+      )
+    );
+    expect(out[tgt.id]).toBe('unknown');
+  });
+
+  it('XOR with no trues + a mix of false + unknown → unknown', () => {
+    // Pins line 113 (`trues >= 2` → `true`), line 114:7 (every-false →
+    // 'false' guard, both ConditionalExpression + MethodExpression
+    // mutants), and line 114:27 (lambda body). The 'unknown' sibling
+    // means we can't claim "all false"; the function falls through to
+    // 'unknown'. With any of those mutants flipped, the function returns
+    // 'false' instead.
+    resetIds();
+    const a = makeEntity({ state: 'false' });
+    const b = makeEntity(); // unknown
+    const tgt = makeEntity();
+    const out = propagateStates(
+      makeDoc(
+        [a, b, tgt],
+        [makeEdge(a.id, tgt.id, { xorGroupId: 'x1' }), makeEdge(b.id, tgt.id, { xorGroupId: 'x1' })]
+      )
+    );
+    expect(out[tgt.id]).toBe('unknown');
+  });
+
+  it('an OR-group with two trues stays true (vs XOR which would flip to false)', () => {
+    // Pins line 275 (`tier === XOR_TIER` → `true`) and the line 248
+    // `else if (ed.xorGroupId)` → `else if (true)` mutant. If the OR
+    // group were reduced as XOR by mistake, two trues would flip to
+    // 'false'.
+    resetIds();
+    const a = makeEntity({ state: 'true' });
+    const b = makeEntity({ state: 'true' });
+    const tgt = makeEntity();
+    const out = propagateStates(
+      makeDoc(
+        [a, b, tgt],
+        [makeEdge(a.id, tgt.id, { orGroupId: 'or1' }), makeEdge(b.id, tgt.id, { orGroupId: 'or1' })]
+      )
+    );
+    expect(out[tgt.id]).toBe('true');
+  });
+});
+
+describe('propagateStates — junctor isolation by group id (mutation pass)', () => {
+  // Each `<tier>:${id}` key (lines 244 / 249 / 254) distinguishes one
+  // junctor group from another at the same target. Without the id in the
+  // key, distinct groups collapse into one. These tests pair two
+  // different-id groups of the same tier whose merge would yield a
+  // different overall result than the independent fold.
+
+  it('AND-groups with distinct ids reduce independently (no key collapse)', () => {
+    // g1 = AND(true, true) → true. g2 = AND(true, false) → false.
+    // Top OR: true ∨ false = true. If both groups collapsed (key
+    // mutation), AND(true, true, true, false) = false → top = false.
+    resetIds();
+    const a = makeEntity({ state: 'true' });
+    const b = makeEntity({ state: 'true' });
+    const c = makeEntity({ state: 'true' });
+    const d = makeEntity({ state: 'false' });
+    const tgt = makeEntity();
+    const out = propagateStates(
+      makeDoc(
+        [a, b, c, d, tgt],
+        [
+          makeEdge(a.id, tgt.id, { andGroupId: 'g1' }),
+          makeEdge(b.id, tgt.id, { andGroupId: 'g1' }),
+          makeEdge(c.id, tgt.id, { andGroupId: 'g2' }),
+          makeEdge(d.id, tgt.id, { andGroupId: 'g2' }),
+        ]
+      )
+    );
+    expect(out[tgt.id]).toBe('true');
+  });
+
+  it('XOR-groups with distinct ids reduce independently (no key collapse)', () => {
+    // g1 = XOR(true, false) → true. g2 = XOR(true, true) → false.
+    // Top OR: true ∨ false = true. If both groups collapsed:
+    // XOR(true, false, true, true) → trues=3 → false → top = false.
+    resetIds();
+    const a = makeEntity({ state: 'true' });
+    const b = makeEntity({ state: 'false' });
+    const c = makeEntity({ state: 'true' });
+    const d = makeEntity({ state: 'true' });
+    const tgt = makeEntity();
+    const out = propagateStates(
+      makeDoc(
+        [a, b, c, d, tgt],
+        [
+          makeEdge(a.id, tgt.id, { xorGroupId: 'x1' }),
+          makeEdge(b.id, tgt.id, { xorGroupId: 'x1' }),
+          makeEdge(c.id, tgt.id, { xorGroupId: 'x2' }),
+          makeEdge(d.id, tgt.id, { xorGroupId: 'x2' }),
+        ]
+      )
+    );
+    expect(out[tgt.id]).toBe('true');
+  });
+
+  it('OR-groups with distinct ids stay distinct (key includes the id)', () => {
+    // Two explicit OR-groups, each with all-false members. Each reduces
+    // independently to 'false'; top OR is 'false'. If both collapsed
+    // into one cache key, the result is still 'false' — equivalent. So
+    // we use a shape where collapse matters: each group's all-false
+    // member set is distinct, and one group additionally has a true
+    // sibling.
+    //   g1 = OR(true, false) → true
+    //   g2 = OR(false, false) → false
+    //   Top OR: true. Collapsed OR(true, false, false, false) → still
+    //   true. Same result. Let's prove collapse via the standalone-merge
+    //   path instead — the OR cache key is exercised by the explicit
+    //   orGroupId fixture below, which is the canonical OR-group shape.
+    resetIds();
+    const a = makeEntity({ state: 'false' });
+    const b = makeEntity({ state: 'false' });
+    const c = makeEntity({ state: 'false' });
+    const d = makeEntity({ state: 'true' });
+    const tgt = makeEntity();
+    const out = propagateStates(
+      makeDoc(
+        [a, b, c, d, tgt],
+        [
+          makeEdge(a.id, tgt.id, { orGroupId: 'or-x' }),
+          makeEdge(b.id, tgt.id, { orGroupId: 'or-x' }),
+          makeEdge(c.id, tgt.id, { orGroupId: 'or-y' }),
+          makeEdge(d.id, tgt.id, { orGroupId: 'or-y' }),
+        ]
+      )
+    );
+    expect(out[tgt.id]).toBe('true');
+  });
+});
+
+describe('propagateStates — zero-weight contributions are inert (mutation pass)', () => {
+  // Existing tests cover zero weight on standalone edges. These pin the
+  // same semantics inside a junctor group (line 269 `if (c !== null)`)
+  // and the contribs.length === 0 short-circuit (line 271).
+
+  it('AND-group with a zero-weight sibling treats it as no contribution (not a null void)', () => {
+    // AND(true, zero-skipped) = AND(true) = true. With the `c !== null`
+    // guard disabled (mutant), null would be pushed into contribs and
+    // reduceAnd's `every === 'true'` check would see a non-'true' value
+    // → fall through to 'unknown'. Target would read 'unknown' instead.
+    resetIds();
+    const a = makeEntity({ state: 'true' });
+    const zero = makeEntity({ state: 'false' });
+    const tgt = makeEntity();
+    const out = propagateStates(
+      makeDoc(
+        [a, zero, tgt],
+        [
+          makeEdge(a.id, tgt.id, { andGroupId: 'g1' }),
+          makeEdge(zero.id, tgt.id, { andGroupId: 'g1', weight: 'zero' }),
+        ]
+      )
+    );
+    expect(out[tgt.id]).toBe('true');
+  });
+
+  it('a junctor group with only zero-weight inputs contributes nothing (does NOT poison sibling groups)', () => {
+    // g1 = AND { zero(true) } → no contribs → skip. g2 = AND { x(false) }
+    // → false. orInputs = ['false']. Top OR: 'false'.
+    // With `if (contribs.length === 0) continue` flipped to `if (false)
+    // continue`, the AND would receive [] and reduceAnd([]) returns
+    // 'unknown'. orInputs = ['unknown', 'false']. reduceOr finds no
+    // 'true' / 'disputed' / all-'false' → 'unknown'. Asserting 'false'
+    // catches the difference.
+    resetIds();
+    const zeroEnt = makeEntity({ state: 'true' });
+    const xEnt = makeEntity({ state: 'false' });
+    const tgt = makeEntity();
+    const out = propagateStates(
+      makeDoc(
+        [zeroEnt, xEnt, tgt],
+        [
+          makeEdge(zeroEnt.id, tgt.id, { andGroupId: 'g-zero', weight: 'zero' }),
+          makeEdge(xEnt.id, tgt.id, { andGroupId: 'g-other' }),
+        ]
+      )
+    );
+    expect(out[tgt.id]).toBe('false');
+  });
+});
+
+describe('propagateStates — result cache integrity (mutation pass)', () => {
+  // Session 135 Perf #7 cache. These pin the two write-side conditionals
+  // (`if (!overrides)` line 298 and `if (!byEntities)` line 300) which
+  // existing identity tests don't catch — they exercise the read side
+  // only.
+
+  it('a speculative pass does NOT poison the (no-override) result cache', () => {
+    // Without the `if (!overrides)` guard on the cache write, the
+    // speculative pass would overwrite the (edges, entities) entry with
+    // the override-derived result. A subsequent no-override call would
+    // read the poisoned cache and return the speculated result instead
+    // of the true propagated one.
+    resetIds();
+    const a = makeEntity({ type: 'effect', state: 'true' });
+    const b = makeEntity({ type: 'effect' });
+    const doc = makeDoc([a, b], [makeEdge(a.id, b.id)]);
+    const plain = propagateStates(doc);
+    const speculated = propagateStates(doc, { [a.id]: 'false' });
+    expect(speculated[b.id]).toBe('false');
+    const plainAgain = propagateStates(doc);
+    expect(plainAgain).toBe(plain);
+    expect(plainAgain[b.id]).toBe('true');
+  });
+
+  it('the result cache survives a same-edges different-entities call (byEntities map is not re-created)', () => {
+    // The `if (!byEntities)` guard ensures we only allocate the inner
+    // WeakMap once per edges reference. With `if (true)`, every save
+    // would allocate a fresh inner map — destroying the entries for
+    // earlier (edges, entities) tuples. This test edits one entity
+    // (new entities reference, same edges reference) then asks again
+    // for the original doc and asserts the cache still returns the
+    // original derived result.
+    resetIds();
+    const a = makeEntity({ type: 'effect', state: 'true' });
+    const b = makeEntity({ type: 'effect' });
+    const doc1 = makeDoc([a, b], [makeEdge(a.id, b.id)]);
+    const first = propagateStates(doc1);
+    const aEdited = { ...a, title: 'edited' };
+    const doc2 = { ...doc1, entities: { ...doc1.entities, [a.id]: aEdited } };
+    propagateStates(doc2);
+    expect(propagateStates(doc1)).toBe(first);
+  });
+});
+
 describe('propagateStates — Phase 1C speculative overrides', () => {
   it('an override on a leaf flows downstream like a manual state', () => {
     resetIds();

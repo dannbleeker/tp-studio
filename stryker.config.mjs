@@ -29,8 +29,26 @@
  * strengthening tests for — the HTML report tells you exactly which
  * mutants survived so you can write the missing tests.
  *
- * **First-pass scores (Session 121, recorded for trend tracking):**
- *   - `paletteScore.ts`: 30 / 34 mutants killed → **88.24%**
+ * **First-pass scores (recorded for trend tracking):**
+ *   - `paletteScore.ts` (Session 121): 30 / 34 mutants killed → **88.24%**
+ *   - `actionEligibility.ts` (Session 135): 65 / 66 → **98.48%**
+ *     (initial 54 / 66 → 81.82%; +6 tests + 1 assertion strengthen the
+ *     na-guard, back-edge / mutex filters on both sides, orphan-edge
+ *     `!src` guard, dedupe, and `every` vs `some` folding. One
+ *     functionally-equivalent survivor on the self-source short-circuit
+ *     accepted; documented inline.)
+ *   - `statePropagation.ts` (Session 135): 200 / 228 → **88.16%**
+ *     (initial 185 / 228 → 81.58%; +11 tests harden reducer mixed-state
+ *     edge cases, junctor-id isolation, zero-weight-in-junctor inertness,
+ *     and cache integrity across speculative + same-edges-different-
+ *     entities calls. The remaining ~22 survivors + 5 no-coverage cluster
+ *     around defensive `if (values.length === 0) return 'unknown'` guards
+ *     in reducers — reachable only through closed call sites that already
+ *     filter empties — and `'unknown'` ↔ `""` string-literal swaps inside
+ *     a chain where the top-level reduceOr collapses both to `'unknown'`.
+ *     These are functionally-equivalent at the public-API level; further
+ *     gains would require exposing internal helpers or removing the
+ *     defensive guards.)
  *
  * Output: HTML report at `reports/mutation/index.html` — gitignored,
  * ad-hoc inspection like the bundle-stats treemap. Mutation score

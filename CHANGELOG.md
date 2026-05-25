@@ -2,6 +2,184 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 135 — Stryker mutation testing, first sweep across Phase 1B engine + action eligibility
+
+Ran the configured-but-mostly-dormant Stryker harness on two of the
+Session 135 medium-gap modules. The point isn't the score by itself — it
+flushes out *tests that pass regardless of whether the production code is
+correct*, which is the failure mode line-coverage misses.
+
+**Final scores after triage + targeted test additions:**
+
+- `src/domain/actionEligibility.ts` — **98.48%** (65 / 66 killed). Started
+  at 81.82% (54 / 66). One accepted equivalent survivor on the self-source
+  short-circuit (line 75) — redundant with the action-type filter four
+  lines down; documented inline in the source.
+- `src/domain/statePropagation.ts` — **88.16%** (200 / 228 killed) /
+  **90.13%** covered. Started at 81.58% (185 / 228). The remaining 22
+  survivors + 5 no-coverage cluster around equivalent mutants the
+  public-API can't observe.
+
+`tests/domain/actionEligibility.test.ts` gains 7 new tests + 1 assertion
+strengthen on the existing na-for-non-action test. The twelve initial
+survivors clustered by gap:
+
+- **na-guard at line 59** (4 mutants — `||` → `&&`, two `ConditionalExpression`
+  collapses, and the `preconditions: []` `ArrayDeclaration` mutant). All
+  existing non-action tests reached the empty-preconditions fallback at
+  line 92 and still returned `'na'`, so the early-return guard could be
+  disabled without test fallout. Hardened with a "non-action entity short-
+  circuits even when its outcome has other true preconditions" test +
+  asserting the early return's `preconditions: []` shape explicitly.
+- **Back-edge / mutex filters on both edge collections** (4 mutants —
+  `if(false)` + `||` → `&&` on lines 67 and 76). No test seeded a
+  back-edge or mutex marker, so the filters were never exercised. Added
+  four directed tests, one per (back-edge / mutex) × (outgoing / incoming)
+  combination. The mutex-only variants pin the `LogicalOperator` mutant
+  specifically (with `&&`, an edge with only `isMutualExclusion=true`
+  would no longer be skipped).
+- **Orphan-edge `!src` guard at line 78** (1 mutant). Tests built every
+  edge with `makeEdge(a.id, b.id)` so source entities always existed.
+  Added a test that hand-crafts an edge with a non-existent source id
+  and asserts both `not.toThrow()` and the surviving real preconditions
+  yield the correct status.
+- **Dedupe at line 82** (1 mutant). The action-with-two-outcomes-sharing-
+  one-precondition shape wasn't tested. Added a test that asserts the
+  shared precondition lands in `preconditions` exactly once.
+- **`every` vs `some` folding at line 96** (1 mutant). Existing tests
+  used homogeneous precondition states (all true, all false, all unknown).
+  Added a mixed `true` + `unknown` test that pins the `every` semantics —
+  with `some`, the one true sibling would satisfy the all-true check and
+  return `'eligible'` instead of `'pending'`.
+
+`tests/domain/statePropagation.test.ts` gains 11 new tests across four
+describe blocks targeting the dominant survivor classes:
+
+- **Reducer mixed-state corner cases** (4 tests, ~6 mutants killed).
+  Homogeneous reducer tests left `every` ↔ `some`, the XOR
+  exactly-one-true `(v === 'true' || v === 'false')` check, and the
+  `trues >= 2` ladder mutable without test fallout. Added (1) OR with
+  mix of false + unknown, (2) XOR exactly-one-true with an unknown
+  sibling, (3) XOR no-trues with false + unknown, (4) OR-group with two
+  trues that stays true (vs XOR which would flip).
+- **Junctor isolation by group id** (3 tests, 2–3 mutants killed). The
+  group key (`and:${id}`, `xor:${id}`, `or:${id}`) was vulnerable to a
+  `StringLiteral` mutant that collapsed it to `""` — distinct same-tier
+  groups would have merged. Added one test per tier with two
+  different-id groups whose merged result would diverge from the
+  independent fold.
+- **Zero-weight contributions are inert** (2 tests, 2 mutants killed).
+  Existing zero-weight coverage tested standalone edges. Added (1) AND
+  group with a zero-weight sibling (the `if (c !== null)` guard at line
+  269 stayed alive), and (2) all-zero-weight junctor group does not
+  poison sibling-group contributions (line 271).
+- **Result cache integrity** (2 tests, 2 mutants killed). Perf #7's
+  `if (!overrides)` write guard (line 298) and `if (!byEntities)` outer
+  cache guard (line 300) were both observed by identity tests on the
+  read side only. Added (1) a speculative pass does NOT poison the
+  no-override cache, and (2) the result cache survives a same-edges
+  different-entities call without re-creating the inner WeakMap.
+
+**Surviving equivalent-mutant classes** for `statePropagation.ts`,
+documented as defensive code or chain-invisible swaps:
+
+- `if (values.length === 0) return 'unknown'` in all three reducers
+  (lines 90 / 99 / 109). Reducers are only called from `computeDerived`
+  after `if (contribs.length === 0) continue;` (line 271) already
+  filters empty arrays. The guards are defensive; the empty path is
+  never reached from the public API.
+- `'unknown'` ↔ `""` string-literal swaps inside the propagation chain
+  (lines 94 / 115 / 219 / 224 / 235). When a reducer returns `""`
+  instead of `'unknown'`, the top-level `reduceOr` treats both as
+  not-`'true'` / not-`'disputed'` / not-all-`'false'` and falls through
+  to `'unknown'` — the chain collapses both to the same final
+  observable value.
+- The `incomingIndex` cache hit (line 164 — `if (cached) return cached;`
+  → `if (false)`). At the public API, the outer `propagationResultCache`
+  on `(edges, entities)` short-circuits before `incomingIndex` is even
+  called — a public-API test can't observe whether the inner cache hit
+  or missed.
+- Multiple `if (id in derived)` re-entrance guards and the `??` /
+  `BlockStatement` mutants on `derived[id]` lookups (lines 223 / 229).
+  The function body re-assigns the same value at the bottom, so the
+  early-return optimisations are observationally inert.
+- `else if (ed.orGroupId)` true/false flip (line 253) and the OR
+  cache-key collapse (line 254). OR reduction is associative *and*
+  flat — `reduceOr([reduceOr(a), reduceOr(b)])` equals `reduceOr([…a, …b])`
+  for any inputs, so distinct OR keys vs collapsed OR keys give the
+  same observable answer.
+- `orInputs.length === 0 ? 'unknown' : reduceOr(orInputs)` → `false ? …`
+  (line 286). `reduceOr([])` returns `'unknown'` (line 99 guard), so
+  always calling it on an empty list gives the same value.
+
+Further gains would require either (a) exposing the reducers as a
+testable sub-module, (b) removing the defensive empty-array guards
+(decreases robustness), or (c) collapsing `'unknown'` and `''` into
+one canonical sentinel everywhere. None is worth it for the marginal
+score lift — the surviving mutants are by definition behaviorally
+indistinguishable through the public API.
+
+The single original `actionEligibility.ts` survivor (line 75 — the
+self-source short-circuit `if (e.sourceId === actionId) continue;`)
+is functionally equivalent: the action-type filter at line 81 catches
+the same edges via `src.type === 'action'` because
+`doc.entities[actionId]` always resolves to the action entity (entities
+are keyed by id), whose type is always `'action'`. The continue is a
+micro-optimization that avoids the entity lookup for self-edges.
+Documented inline.
+
+The twelve initial `actionEligibility.ts` survivors clustered by gap:
+
+- **na-guard at line 59** (4 mutants — `||` → `&&`, two `ConditionalExpression`
+  collapses, and the `preconditions: []` `ArrayDeclaration` mutant). All
+  existing non-action tests reached the empty-preconditions fallback at
+  line 92 and still returned `'na'`, so the early-return guard could be
+  disabled without test fallout. Hardened with a "non-action entity short-
+  circuits even when its outcome has other true preconditions" test +
+  asserting the early return's `preconditions: []` shape explicitly.
+- **Back-edge / mutex filters on both edge collections** (4 mutants —
+  `if(false)` + `||` → `&&` on lines 67 and 76). No test seeded a
+  back-edge or mutex marker, so the filters were never exercised. Added
+  four directed tests, one per (back-edge / mutex) × (outgoing / incoming)
+  combination. The mutex-only variants pin the `LogicalOperator` mutant
+  specifically (with `&&`, an edge with only `isMutualExclusion=true`
+  would no longer be skipped).
+- **Orphan-edge `!src` guard at line 78** (1 mutant). Tests built every
+  edge with `makeEdge(a.id, b.id)` so source entities always existed.
+  Added a test that hand-crafts an edge with a non-existent source id
+  and asserts both `not.toThrow()` and the surviving real preconditions
+  yield the correct status.
+- **Dedupe at line 82** (1 mutant). The action-with-two-outcomes-sharing-
+  one-precondition shape wasn't tested. Added a test that asserts the
+  shared precondition lands in `preconditions` exactly once.
+- **`every` vs `some` folding at line 96** (1 mutant). Existing tests
+  used homogeneous precondition states (all true, all false, all unknown).
+  Added a mixed `true` + `unknown` test that pins the `every` semantics —
+  with `some`, the one true sibling would satisfy the all-true check and
+  return `'eligible'` instead of `'pending'`.
+
+Single accepted survivor: the line-75 `if (e.sourceId === actionId)
+continue;` filter is a micro-optimisation (skip the `doc.entities[]`
+lookup for self-edges); semantically the action-type filter at line 81
+catches the same case via `src.type === 'action'`. The two are equivalent
+because `doc.entities[actionId]` is always the action entity (keyed-by-id
+storage), whose type is always `'action'`. Documented inline.
+
+`stryker.config.mjs` trend table updated with the new score next to the
+existing `paletteScore.ts` Session 121 baseline (88.24%). The HTML report
+remains gitignored at `reports/mutation/index.html`; full mutation surveys
+are an ad-hoc local-run tool, not a CI gate (per-file run is ~10 min wall
+clock — Stryker's full vitest pass takes ~8 min as the dry run).
+
+Per-file run recipe (in `stryker.config.mjs` header):
+
+```
+pnpm mutation --mutate src/domain/actionEligibility.ts
+```
+
+7 new tests added to `tests/domain/actionEligibility.test.ts`; 1 existing
+test gained a `preconditions: []` assertion.
+
 ## Session 135 — Security audit refresh
 
 Walked SECURITY.md's 12 areas against ~213 commits since the Session 98

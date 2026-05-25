@@ -72,6 +72,11 @@ export function actionEligibility(
   const preconditions: Precondition[] = [];
   for (const outcomeId of outcomeIds) {
     for (const e of incomingEdges(doc, outcomeId)) {
+      // Skip the action's own edge to its outcome — a micro-optimisation
+      // that avoids the `doc.entities[]` lookup. Removing this line is
+      // a Stryker-survivor equivalent mutant (Session 135 audit): the
+      // action-type filter below catches the same edges via `src.type
+      // === 'action'`. Keeping the early continue is the cheaper path.
       if (e.sourceId === actionId) continue;
       if (e.isBackEdge || e.isMutualExclusion) continue;
       const src = doc.entities[e.sourceId];
