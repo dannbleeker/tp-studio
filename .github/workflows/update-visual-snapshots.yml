@@ -87,7 +87,7 @@ jobs:
         run: pnpm exec playwright test e2e/visual-*.spec.ts e2e/guide-screenshots.spec.ts --update-snapshots
 
       - name: Commit + PR
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: 'chore: refresh visual snapshot baselines'
           title: 'chore: refresh visual snapshot baselines'
