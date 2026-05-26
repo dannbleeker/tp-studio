@@ -47,8 +47,9 @@ on:
       - 'scripts/lib/clrMapHtml.mjs'
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+# Session 135 (2026-05-26) — supersedes the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24
+# env-var workaround: every JS action pinned to a major that runs on
+# Node 24 natively. See ci.yml for the full rationale.
 
 jobs:
   rebuild:
@@ -63,7 +64,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Use a personal token would be needed to trigger downstream
           # workflows on the bot-push; the default GITHUB_TOKEN is fine
@@ -72,12 +73,12 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 

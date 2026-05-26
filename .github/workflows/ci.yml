@@ -11,26 +11,14 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# Session 101 — opt into Node 24 for JavaScript actions.
-#
-# Every CI run was printing this deprecation warning:
-#   "Node.js 20 actions are deprecated. The following actions are
-#    running on Node.js 20 and may not work as expected:
-#    actions/checkout@v4, actions/setup-node@v4,
-#    actions/upload-artifact@v4, pnpm/action-setup@v4. Actions will
-#    be forced to run with Node.js 24 by default starting June 2nd,
-#    2026."
-#
-# `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` is GitHub's documented
-# opt-in for the June-2026 forced-default. Setting it at workflow
-# level (here, not per-step) means every JS action in every job
-# inherits the flag — and the same set of actions runs against the
-# Node-24 runtime that will be mandatory anyway, so any breakage
-# surfaces now rather than at the forced-cutover date. The
-# v4-versioned actions all work on Node 24 in practice; the env var
-# just suppresses the warning + future-tests the migration.
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+# Session 135 (2026-05-26) — supersedes the Session 101
+# FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 env-var hack: every JS action is
+# now pinned to a major that runs on Node 24 natively
+# (actions/checkout@v6, actions/setup-node@v6, pnpm/action-setup@v6,
+# actions/upload-artifact@v7). The env var was a workaround for the
+# v4-on-Node-20 deprecation warning; with v6+/v7+ actions the
+# deprecation is resolved at the source, so the flag is no longer
+# necessary and was removed.
 
 # Session 85 — split the previous monolithic `check` job into three
 # parallel jobs so the fast feedback (lint + types in ~10s) surfaces
@@ -46,17 +34,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up pnpm
-        # No `version:` — `pnpm/action-setup@v4` reads `packageManager` from
+        # No `version:` — `pnpm/action-setup` reads `packageManager` from
         # package.json. Keeps the CI version in lockstep with developers.
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'pnpm'
@@ -84,15 +72,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'pnpm'
@@ -108,7 +96,7 @@ jobs:
         # makes the html/json reports inspectable from the run artifacts
         # so a coverage drop is visible in PRs.
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage/
@@ -132,15 +120,15 @@ jobs:
     # fast-feedback jobs from finishing.
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'pnpm'
@@ -161,7 +149,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/

@@ -34,9 +34,10 @@ on:
     # check step short-circuits if everything is within threshold.
     - cron: '0 6 * * 1'
 
-# Session 101 — opt into Node 24 for JS actions.
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+# Session 135 (2026-05-26) — supersedes the Session 101
+# FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 env-var workaround: every JS
+# action is now pinned to a major that runs on Node 24 natively. See
+# ci.yml for the full rationale.
 
 jobs:
   perf-trace:
@@ -47,15 +48,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
 
@@ -112,7 +113,7 @@ jobs:
 
       - name: Upload trace artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: perf-trace
           # Session 106 — `perf-trace-output/` not `playwright-report/`:
