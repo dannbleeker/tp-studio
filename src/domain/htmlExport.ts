@@ -148,9 +148,21 @@ const renderInjections = (doc: TPDocument): string => {
   return `<section><h2>Injections (${injections.length})</h2>${rows}</section>`;
 };
 
-/** Build the full HTML viewer document for `doc`. Returns a string
- *  ready to be wrapped in a `Blob` and downloaded as `<title>.html`. */
-export const exportToSelfContainedHTML = (doc: TPDocument): string => {
+/**
+ * Build the full HTML viewer document for `doc`. Returns a string
+ * ready to be wrapped in a `Blob` and downloaded as `<title>.html`.
+ *
+ * Session 136 — optional `previewPng` (a `data:image/png;base64,...`
+ * URL) embeds the rendered canvas as a `<figure>` at the top of the
+ * `<main>` content so the shared artifact carries both the visual +
+ * the structured read-out. Capture happens at the service layer
+ * (`exportHTMLViewer`) via `capturePngDataUrl()`; this domain function
+ * stays pure (string in → string out).
+ */
+export const exportToSelfContainedHTML = (
+  doc: TPDocument,
+  options: { previewPng?: string } = {}
+): string => {
   const title = doc.title || 'Untitled';
   const diagramLabel = DIAGRAM_TYPE_LABEL[doc.diagramType];
   const author = doc.author ? `<span> · ${escapeHtml(doc.author)}</span>` : '';
@@ -162,13 +174,34 @@ export const exportToSelfContainedHTML = (doc: TPDocument): string => {
   // on it directly. The `unescape(encodeURIComponent(...))` dance
   // handles non-ASCII titles safely.
   const payload = btoa(unescape(encodeURIComponent(JSON.stringify(doc))));
+  // Optional canvas preview. The PNG data URL is already base64-encoded
+  // by `html-to-image`; just inlined into `src`. Centred via a max-
+  // width + auto-margin block so the image stays readable on narrow
+  // viewports without bursting wider than the surrounding text column.
+  const previewFigure = options.previewPng
+    ? `<figure class="preview"><img src="${escapeHtml(options.previewPng)}" alt="Diagram preview" /></figure>`
+    : '';
+  // Inline the figure-specific CSS alongside the existing VIEWER_CSS
+  // so this stays a single-file artifact. Border + subtle shadow read
+  // as "this is a snapshot of the canvas" without distracting from the
+  // structured list below.
+  const PREVIEW_CSS = `
+  .preview { margin: 0 0 32px 0; padding: 0; }
+  .preview img {
+    display: block; max-width: 100%; height: auto; margin: 0 auto;
+    border: 1px solid #e5e5e5; border-radius: 6px; background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    .preview img { border-color: #404040; background: #fafafa; }
+  }`;
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <title>${escapeHtml(title)} — TP Studio</title>
 <meta name="generator" content="TP Studio self-contained viewer" />
-<style>${VIEWER_CSS}</style>
+<style>${VIEWER_CSS}${PREVIEW_CSS}</style>
 </head>
 <body>
 <header>
@@ -178,6 +211,7 @@ export const exportToSelfContainedHTML = (doc: TPDocument): string => {
   ${doc.description ? `<p style="margin-top:12px;color:#404040">${escapeHtml(doc.description)}</p>` : ''}
 </header>
 <main>
+  ${previewFigure}
   ${renderECVerbal(doc)}
   ${renderEntityList(doc)}
   ${renderAssumptions(doc)}

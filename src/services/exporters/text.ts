@@ -1,8 +1,10 @@
+import type { Node } from '@xyflow/react';
 import { exportToSelfContainedHTML } from '@/domain/htmlExport';
 import { exportToJSON, importFromJSON } from '@/domain/persistence';
 import type { TPDocument } from '@/domain/types';
 import { exportAnnotationsMarkdown, exportAnnotationsText } from './annotationsExport';
 import { exportToCsv } from './csvExport';
+import { capturePngDataUrl } from './image';
 import { pickFile } from './picker';
 import { slug, triggerDownload } from './shared';
 
@@ -25,9 +27,18 @@ export const exportJSON = (doc: TPDocument): void => {
  * `.html` file with all CSS + JS inlined and the JSON document
  * embedded as a `<script type="application/json">` payload. The
  * recipient opens it in any browser; no install, no network.
+ *
+ * Session 136 — also captures the current React Flow canvas as an
+ * embedded PNG so the shared artifact carries both the visual layout
+ * + the structured read-out. The capture is best-effort: if the
+ * canvas isn't mounted (e.g. headless export, no nodes), the export
+ * still completes without the figure. The PNG capture runs in
+ * parallel with the HTML string build via `Promise.all` so the
+ * cumulative latency stays close to the slower of the two.
  */
-export const exportHTMLViewer = (doc: TPDocument): void => {
-  const html = exportToSelfContainedHTML(doc);
+export const exportHTMLViewer = async (doc: TPDocument, nodes: Node[]): Promise<void> => {
+  const previewPng = (await capturePngDataUrl(nodes)) ?? undefined;
+  const html = exportToSelfContainedHTML(doc, { ...(previewPng ? { previewPng } : {}) });
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   triggerDownload(blob, `${slug(doc.title)}.html`);
 };

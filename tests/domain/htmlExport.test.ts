@@ -90,4 +90,22 @@ describe('exportToSelfContainedHTML', () => {
     expect(html).toContain('class="status unexamined"');
     void ({} as EntityId); // keep the import non-empty for the test file's typing pattern
   });
+
+  it('embeds the preview PNG figure when `previewPng` is provided (Session 136)', () => {
+    const doc = makeDoc([makeEntity({ type: 'ude', title: 'X' })], [], 'crt');
+    // Tiny 1x1 transparent PNG data URL — enough to verify the embed
+    // path; the real export captures the canvas via `html-to-image`.
+    const tinyPng =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=';
+    const html = exportToSelfContainedHTML(doc, { previewPng: tinyPng });
+    expect(html).toContain('<figure class="preview">');
+    expect(html).toContain(`src="${tinyPng}"`);
+    expect(html).toContain('alt="Diagram preview"');
+  });
+
+  it('omits the preview figure when `previewPng` is not provided', () => {
+    const doc = makeDoc([makeEntity({ type: 'ude', title: 'X' })], [], 'crt');
+    const html = exportToSelfContainedHTML(doc);
+    expect(html).not.toContain('<figure class="preview">');
+  });
 });

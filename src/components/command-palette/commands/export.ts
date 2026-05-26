@@ -14,7 +14,11 @@ export const exportCommands: Command[] = [
   {
     id: 'open-export-picker',
     label: 'Export…',
-    group: 'Export',
+    // Session 136 — was its own `'Export'` group; merged into the
+    // `'File'` family so the palette mirrors a desktop File menu
+    // (Open / Import / Export / Save-as adjacent to each other) per
+    // Dann's usage feedback.
+    group: 'File',
     run: (s) => s.openExportPicker(),
   },
 ];

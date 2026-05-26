@@ -107,7 +107,12 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         id: 'html-viewer',
         label: 'Self-contained HTML viewer',
         hint: 'Single .html file, no network. Opens in any browser, works offline.',
-        run: (s) => exportHTMLViewer(s.doc),
+        // Session 136 — exporter now also embeds a PNG render of the
+        // canvas as a `<figure>` at the top, so the same `getCanvasNodes`
+        // dance the image exports use applies here.
+        run: async (s) => {
+          await exportHTMLViewer(s.doc, getCanvasNodes());
+        },
       },
       {
         id: 'ec-workshop-sheet',
