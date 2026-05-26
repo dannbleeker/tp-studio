@@ -27,11 +27,13 @@ export function BehaviorTab() {
     browseLocked,
     showGoalTreeWizard,
     showECWizard,
+    showCRTWizard,
     showSelectionToolbar,
     setAnimationSpeed,
     setBrowseLocked,
     setShowGoalTreeWizard,
     setShowECWizard,
+    setShowCRTWizard,
     setShowSelectionToolbar,
   } = useDocumentStore(
     useShallow((s) => ({
@@ -39,11 +41,13 @@ export function BehaviorTab() {
       browseLocked: s.browseLocked,
       showGoalTreeWizard: s.showGoalTreeWizard,
       showECWizard: s.showECWizard,
+      showCRTWizard: s.showCRTWizard,
       showSelectionToolbar: s.showSelectionToolbar,
       setAnimationSpeed: s.setAnimationSpeed,
       setBrowseLocked: s.setBrowseLocked,
       setShowGoalTreeWizard: s.setShowGoalTreeWizard,
       setShowECWizard: s.setShowECWizard,
+      setShowCRTWizard: s.setShowCRTWizard,
       setShowSelectionToolbar: s.setShowSelectionToolbar,
     }))
   );
@@ -85,6 +89,12 @@ export function BehaviorTab() {
           hint="Open the guided 5-step panel when you create a new EC. Off = the 5 pre-seeded boxes appear ready to edit."
           checked={showECWizard}
           onChange={setShowECWizard}
+        />
+        <Toggle
+          label="Current Reality Tree"
+          hint="Open the guided 3-step UDE-elicitation panel when you create a new CRT. Off = empty canvas, you list UDEs manually."
+          checked={showCRTWizard}
+          onChange={setShowCRTWizard}
         />
       </div>
       {/* Session 95 — SelectionToolbar toggle. Default ON; the

@@ -165,11 +165,14 @@ export type StoredPrefs = {
   causalityLabel?: CausalityLabel;
   /** FL-TO3: app-wide default layout direction for new documents. */
   defaultLayoutDirection?: DefaultLayoutDirection;
-  /** Session 78 — per-diagram creation-wizard preferences. Default
-   *  true for both; the user dismisses via the panel checkbox or
-   *  Settings → Behavior. */
+  /** Session 78 / 136 — per-diagram creation-wizard preferences.
+   *  Default true for all three; the user dismisses via the panel's
+   *  "Don't show this again" checkbox or Settings → Behavior. */
   showGoalTreeWizard?: boolean;
   showECWizard?: boolean;
+  /** Session 136 — CRT creation wizard preference. Walks the user
+   *  through capturing the first three UDEs on a new CRT doc. */
+  showCRTWizard?: boolean;
   /** Session 87 — EC verbalisation strip collapse state. Default
    *  `true` (collapsed) so the canvas reclaims vertical space on EC
    *  docs; user expands per-session via the strip's chevron. */

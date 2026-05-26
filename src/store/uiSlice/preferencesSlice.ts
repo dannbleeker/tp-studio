@@ -60,6 +60,12 @@ export type PreferencesSlice = {
    *  the Goal Tree flag so a user can keep the EC wizard on while
    *  dismissing the Goal Tree one. */
   showECWizard: boolean;
+  /** Session 136 — CRT creation wizard preference. The Current
+   *  Reality Tree starts with UDE discovery; the wizard walks the
+   *  user through capturing the first three UDEs and then steps
+   *  out so the user can build the causal chain by hand. Default
+   *  true so first-time users get the guided flow. */
+  showCRTWizard: boolean;
   /** Session 87 — collapse the EC verbalisation strip above the
    *  canvas to a one-line summary by default. Default true so the
    *  canvas reclaims ~150 px of vertical chrome; user expands per-
@@ -110,6 +116,8 @@ export type PreferencesSlice = {
    *  Persists to localStorage so the choice survives reloads. */
   setShowGoalTreeWizard: (show: boolean) => void;
   setShowECWizard: (show: boolean) => void;
+  /** Session 136 — toggle the CRT creation-wizard preference. */
+  setShowCRTWizard: (show: boolean) => void;
   /** Session 87 — toggle the EC verbalisation-strip collapse flag.
    *  Persisted across reloads. */
   setVerbalisationStripCollapsed: (collapsed: boolean) => void;
@@ -150,6 +158,7 @@ export type PreferencesDataKeys =
   | 'ecReadingInstructionsDismissed'
   | 'showGoalTreeWizard'
   | 'showECWizard'
+  | 'showCRTWizard'
   | 'verbalisationStripCollapsed'
   | 'ecChromeCollapsed'
   | 'showSelectionToolbar'
@@ -185,6 +194,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   ecReadingInstructionsDismissed: false,
   showGoalTreeWizard: true,
   showECWizard: true,
+  showCRTWizard: true,
   // Collapsed by default — Dann's Session 87 UX feedback: the full
   // chained verbalisation paragraph eats ~150 px of canvas chrome and
   // wraps to 5+ lines on a typical EC. Default collapsed, expand per
@@ -234,6 +244,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       defaultLayoutDirection: s.defaultLayoutDirection,
       showGoalTreeWizard: s.showGoalTreeWizard,
       showECWizard: s.showECWizard,
+      showCRTWizard: s.showCRTWizard,
       verbalisationStripCollapsed: s.verbalisationStripCollapsed,
       ecChromeCollapsed: s.ecChromeCollapsed,
       showSelectionToolbar: s.showSelectionToolbar,
@@ -261,6 +272,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     ecReadingInstructionsDismissed: false,
     showGoalTreeWizard: initialPrefs.showGoalTreeWizard,
     showECWizard: initialPrefs.showECWizard,
+    showCRTWizard: initialPrefs.showCRTWizard,
     verbalisationStripCollapsed: initialPrefs.verbalisationStripCollapsed,
     ecChromeCollapsed: initialPrefs.ecChromeCollapsed,
     showSelectionToolbar: initialPrefs.showSelectionToolbar,
@@ -341,6 +353,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       set({ showECWizard: show });
       persistPrefs();
     },
+    setShowCRTWizard: (show) => {
+      set({ showCRTWizard: show });
+      persistPrefs();
+    },
     setVerbalisationStripCollapsed: (collapsed) => {
       set({ verbalisationStripCollapsed: collapsed });
       persistPrefs();
@@ -404,6 +420,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         ecReadingInstructionsDismissed: d.ecReadingInstructionsDismissed,
         showGoalTreeWizard: d.showGoalTreeWizard,
         showECWizard: d.showECWizard,
+        showCRTWizard: d.showCRTWizard,
         verbalisationStripCollapsed: d.verbalisationStripCollapsed,
         ecChromeCollapsed: d.ecChromeCollapsed,
         showSelectionToolbar: d.showSelectionToolbar,

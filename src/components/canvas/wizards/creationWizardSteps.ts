@@ -74,3 +74,30 @@ export const EC_STEPS: StepDef[] = EC_SLOTS_BY_ORDER.aFirst.map((slot) => EC_STE
 export const EC_STEPS_D_FIRST: StepDef[] = EC_SLOTS_BY_ORDER.dFirst.map(
   (slot) => EC_STEP_BY_SLOT[slot]
 );
+
+/**
+ * Session 136 — CRT creation wizard prompts. The Current Reality Tree
+ * starts from undesirable effects (UDEs) and works backwards to a
+ * shared root cause. The classic Goldratt advice: list 5–10 UDEs first,
+ * then look for connections.
+ *
+ * The wizard keeps it tight at three UDEs — enough to make the
+ * "now find what they share" step land naturally, without making the
+ * onboarding longer than the EC + Goal Tree wizards. Subsequent UDEs
+ * + the causal chain are the user's work; the wizard only opens the
+ * door.
+ */
+export const CRT_STEPS: StepDef[] = [
+  {
+    prompt: 'First UDE — what is one problem that bothers you about this system?',
+    placeholder: 'e.g. "Customers churn before their second renewal"',
+  },
+  {
+    prompt: 'Second UDE — what else bothers you? UDEs often share a root cause.',
+    placeholder: 'e.g. "Support tickets spike in the first 60 days"',
+  },
+  {
+    prompt: 'Third UDE — one more. Look for problems that feel connected to the first two.',
+    placeholder: 'e.g. "Sales pipelines stall in the proof-of-concept phase"',
+  },
+];

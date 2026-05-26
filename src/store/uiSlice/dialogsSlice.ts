@@ -63,7 +63,7 @@ export type DialogsSlice = {
    *  always safe — the canvas state already reflects whatever was
    *  entered. */
   creationWizard: null | {
-    kind: 'goalTree' | 'ec';
+    kind: 'goalTree' | 'ec' | 'crt';
     step: number;
     minimised: boolean;
     /** Session 88 (S18) — drag-to-reposition. `x` / `y` are the
@@ -173,7 +173,7 @@ export type DialogsSlice = {
    *  `advanceCreationWizardStep` moves forward by one; `closeCreationWizard`
    *  dismisses entirely; `toggleCreationWizardMinimised` collapses /
    *  re-expands without losing state. */
-  openCreationWizard: (kind: 'goalTree' | 'ec') => void;
+  openCreationWizard: (kind: 'goalTree' | 'ec' | 'crt') => void;
   advanceCreationWizardStep: () => void;
   closeCreationWizard: () => void;
   toggleCreationWizardMinimised: () => void;

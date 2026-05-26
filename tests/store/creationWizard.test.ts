@@ -60,14 +60,38 @@ describe('Creation wizard — preference-driven open', () => {
     expect(useDocumentStore.getState().creationWizard).toBeNull();
   });
 
-  it('does NOT open the wizard for non-wizardable diagram types (CRT)', () => {
-    useDocumentStore.getState().newDocument('crt');
+  // Session 136 — CRT is now wizardable too. The earlier "CRT counts as
+  // a non-wizardable type" test was inverted: assert CRT opens the
+  // wizard when its pref is on, and use FRT as the non-wizardable case
+  // (no wizard support for it).
+  it('opens the wizard on newDocument(crt) when showCRTWizard is true', () => {
+    const s = useDocumentStore.getState();
+    expect(s.showCRTWizard).toBe(true);
+    s.newDocument('crt');
+    const after = useDocumentStore.getState();
+    expect(after.creationWizard).toEqual({
+      kind: 'crt',
+      step: 0,
+      minimised: false,
+      x: null,
+      y: null,
+    });
+  });
+
+  it('does NOT open the wizard for non-wizardable diagram types (FRT)', () => {
+    useDocumentStore.getState().newDocument('frt');
     expect(useDocumentStore.getState().creationWizard).toBeNull();
   });
 
   it('closes a previous wizard when switching to a non-wizardable diagram', () => {
     useDocumentStore.getState().newDocument('goalTree');
     expect(useDocumentStore.getState().creationWizard).not.toBeNull();
+    useDocumentStore.getState().newDocument('frt');
+    expect(useDocumentStore.getState().creationWizard).toBeNull();
+  });
+
+  it('does NOT open the CRT wizard when showCRTWizard is off', () => {
+    useDocumentStore.getState().setShowCRTWizard(false);
     useDocumentStore.getState().newDocument('crt');
     expect(useDocumentStore.getState().creationWizard).toBeNull();
   });

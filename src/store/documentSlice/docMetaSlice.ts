@@ -198,6 +198,11 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         get().openCreationWizard('goalTree');
       } else if (diagramType === 'ec' && (get().showECWizard || guidedOverride)) {
         get().openCreationWizard('ec');
+      } else if (diagramType === 'crt' && (get().showCRTWizard || guidedOverride)) {
+        // Session 136 — CRT wizard parallel to GT / EC. Walks the
+        // user through capturing the first three UDEs; the causal
+        // chain back to a root cause is the user's work.
+        get().openCreationWizard('crt');
       } else {
         // Closing covers the case where a wizard from a previous doc
         // was open; switching to a non-wizardable diagram clears it.

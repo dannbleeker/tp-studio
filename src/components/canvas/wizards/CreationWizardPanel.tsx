@@ -8,7 +8,7 @@ import type { Entity } from '@/domain/types';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
 import { ECSlotIndicator } from '../overlays/ECSlotIndicator';
-import { EC_STEPS, EC_STEPS_D_FIRST, GOAL_TREE_STEPS } from './creationWizardSteps';
+import { CRT_STEPS, EC_STEPS, EC_STEPS_D_FIRST, GOAL_TREE_STEPS } from './creationWizardSteps';
 import { useDraggablePanel } from './useDraggablePanel';
 
 /**
@@ -77,6 +77,7 @@ export function CreationWizardPanel() {
     setPosition,
     setShowGoalTreeWizard,
     setShowECWizard,
+    setShowCRTWizard,
     entities,
     addEntity,
     updateEntity,
@@ -91,6 +92,7 @@ export function CreationWizardPanel() {
       setPosition: s.setCreationWizardPosition,
       setShowGoalTreeWizard: s.setShowGoalTreeWizard,
       setShowECWizard: s.setShowECWizard,
+      setShowCRTWizard: s.setShowCRTWizard,
       entities: s.doc.entities,
       addEntity: s.addEntity,
       updateEntity: s.updateEntity,
@@ -151,7 +153,13 @@ export function CreationWizardPanel() {
   if (!state) return null;
   const kind = state.kind;
   const steps =
-    kind === 'goalTree' ? GOAL_TREE_STEPS : wizardOrder === 'dFirst' ? EC_STEPS_D_FIRST : EC_STEPS;
+    kind === 'goalTree'
+      ? GOAL_TREE_STEPS
+      : kind === 'crt'
+        ? CRT_STEPS
+        : wizardOrder === 'dFirst'
+          ? EC_STEPS_D_FIRST
+          : EC_STEPS;
   const step = state.step;
   const isFinalStep = step >= steps.length - 1;
   const isDone = step >= steps.length;
@@ -159,6 +167,7 @@ export function CreationWizardPanel() {
 
   const handleDontShowAgain = (checked: boolean): void => {
     if (kind === 'goalTree') setShowGoalTreeWizard(!checked);
+    else if (kind === 'crt') setShowCRTWizard(!checked);
     else setShowECWizard(!checked);
   };
 
@@ -191,6 +200,14 @@ export function CreationWizardPanel() {
         // diagnostics rather than vanishing silently.
         log.warn('ec-wizard-missing-slot', { targetSlot, step });
       }
+    } else if (kind === 'crt') {
+      // Session 136 — CRT wizard. Each of the 3 steps mints a UDE
+      // entity. The wizard intentionally stops there — building the
+      // causal chain back to a root cause is the user's work (per
+      // Goldratt: UDE list first, connections afterwards). No edges
+      // created from the wizard; the user wires them by hand once
+      // the symptom layer is captured.
+      addEntity({ type: 'ude', title: text });
     } else {
       // Goal Tree — step 0 creates the apex `goal`; steps 1-3 each
       // create a CSF connected to the goal (necessity edge); step 4
@@ -266,7 +283,7 @@ export function CreationWizardPanel() {
     <section
       ref={panelRef}
       data-component="creation-wizard"
-      aria-label={`${kind === 'goalTree' ? 'Goal Tree' : 'Evaporating Cloud'} creation wizard`}
+      aria-label={`${kind === 'goalTree' ? 'Goal Tree' : kind === 'crt' ? 'Current Reality Tree' : 'Evaporating Cloud'} creation wizard`}
       className={clsx(
         'absolute z-30 flex w-[min(380px,92vw)] flex-col gap-2 rounded-lg border border-indigo-200 bg-white p-3 shadow-lg dark:border-indigo-800 dark:bg-neutral-900',
         positioned === null && 'top-14 left-4'
@@ -288,8 +305,12 @@ export function CreationWizardPanel() {
             aria-live="polite"
             aria-atomic="true"
           >
-            {kind === 'goalTree' ? 'Goal Tree setup' : 'Evaporating Cloud setup'} · step {step + 1}{' '}
-            of {steps.length}
+            {kind === 'goalTree'
+              ? 'Goal Tree setup'
+              : kind === 'crt'
+                ? 'Current Reality Tree setup'
+                : 'Evaporating Cloud setup'}{' '}
+            · step {step + 1} of {steps.length}
           </span>
         </div>
         <div className="flex items-center gap-0.5">

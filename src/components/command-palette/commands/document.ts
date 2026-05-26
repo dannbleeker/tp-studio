@@ -109,8 +109,8 @@ export const documentCommands: Command[] = [
   },
   {
     // Session 78 — manually reopen the creation wizard for the current
-    // doc. Works when the diagram type is Goal Tree or EC; no-op
-    // (with a friendly toast) on any other type.
+    // doc. Works when the diagram type is Goal Tree, EC, or (Session 136)
+    // CRT; no-op (with a friendly toast) on any other type.
     id: 'reopen-creation-wizard',
     label: 'Reopen creation wizard',
     group: 'Review',
@@ -118,8 +118,13 @@ export const documentCommands: Command[] = [
       const kind = s.doc.diagramType;
       if (kind === 'goalTree' || kind === 'ec') {
         s.openCreationWizard(kind);
+      } else if (kind === 'crt') {
+        s.openCreationWizard('crt');
       } else {
-        s.showToast('info', 'Creation wizard is only available on Goal Tree + Evaporating Cloud.');
+        s.showToast(
+          'info',
+          'Creation wizard is only available on Goal Tree / Evaporating Cloud / CRT.'
+        );
       }
     },
   },
