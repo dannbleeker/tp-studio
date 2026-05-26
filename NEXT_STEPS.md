@@ -87,9 +87,10 @@ If picking the next thing up:
 
 1. **Reactive-vs-proactive NBR mitigation** — the one remaining medium gap; policy-parked, re-open only if practitioners ask.
 2. **Hardware/hands-dependent handoffs** — manual a11y keyboard walkthrough ([checklist](docs/MANUAL_A11Y_WALKTHROUGH.md)) + Kindle device verification ([steps](docs/KINDLE_VERIFICATION.md)). Both need Dann.
-3. **Phase 1C node-chrome / canvas eligibility surfacing** (optional polish) — the eligibility readout is inspector-only today; a small canvas affordance on Action nodes (eligible ✓ / blocked) could follow if review meetings want it at-a-glance.
 
 Otherwise the backlog is genuinely drained — new work would come from fresh spec/product direction.
+
+*(Was on the list: "Phase 1C node-chrome / canvas eligibility surfacing." Already done — `EligibilityBadge` ships on Action nodes via the `Show action-eligibility badge` Display setting, with full inspector readout retained. Code in `src/components/canvas/nodes/TPNodeBadges.tsx` + `useGraphNodeEmission.ts`; tests in `tests/components/canvas/eligibilityBadgeEmission.test.tsx`.)*
 
 ---
 
