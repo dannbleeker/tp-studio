@@ -130,7 +130,23 @@ export default defineConfig(({ command, mode }) => ({
     VitePWA({
       registerType: 'prompt',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
+        // Session 136 — `.pdf` + `.epub` added so the book artifacts
+        // (`docs/guide/Causal-Thinking-with-TP-Studio.{pdf,epub}`,
+        // copied into `public/` by `scripts/build-docs-bundle.mjs`)
+        // pre-cache on install rather than waiting for the user to
+        // open the book online first. Dann's offline-on-a-plane
+        // repro: the runtimeCaching rule below was hit on first open
+        // — but only AFTER an online visit. Pre-caching trades ~1 MB
+        // of cold-install bandwidth for a guaranteed offline-from-
+        // first-launch story. The matching `.epub` was completely
+        // uncached before; now it's bundled with the rest of the
+        // shell.
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2,pdf,epub}'],
+        // Bump the per-file cache ceiling so the larger PDF (~1 MB)
+        // fits the precache. Default is 2 MB; we set 4 MB explicitly
+        // both for headroom and as documentation that the book is
+        // the largest precached artifact.
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         // Session 114 — exclude the bundle-stats.html treemap emitted
         // by rollup-plugin-visualizer (~1.6 MB, dev-only artifact).
         // Session 132 / Tier 3 #31 — also exclude the PDF-export
