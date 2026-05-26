@@ -88,6 +88,21 @@ If picking the next thing up:
 1. **Reactive-vs-proactive NBR mitigation** — the one remaining medium gap; policy-parked, re-open only if practitioners ask.
 2. **Hardware/hands-dependent handoffs** — manual a11y keyboard walkthrough ([checklist](docs/MANUAL_A11Y_WALKTHROUGH.md)) + Kindle device verification ([steps](docs/KINDLE_VERIFICATION.md)). Both need Dann.
 
+## Session 136 usage feedback — bigger items parked for their own session
+
+From Dann's "how it feels in real use" pass (Session 136). Trivial copy/defaults landed inline; the items below need their own design + research time:
+
+- **Render-engine layout pass (top priority)** — when a map changes, the canvas should auto-reflow so every edge is visible (no edges hidden behind nodes), and entities should pull closer together when there's slack. Today's auto-layout only fires on explicit re-layout; live edits leave the diagram visually noisy. Needs a write-up: which layout algorithm (dagre / ELK / custom force-directed), what invalidates the layout (every edit vs. debounced vs. user-triggered), how user-placed positions interact with the auto-pass, perf budget. Pair with the AND-connector routing fix below.
+- **AND connector rendering + drag-drop creation** — the AND-junctor visual today renders edges at fixed offsets, which looks chaotic on dense graphs. Spec: edges feed into the AND box first, then a single edge exits to the target. Plus: support creating an AND group by dragging an edge onto an existing AND box. Probably co-built with the layout pass above.
+- **Pattern library expansion** — research 5 patterns per diagram type from the published TOC literature (Goldratt, Dettmer, Scheinkopf, Cox/Boyd), with careful copyright handling (originality at the description level; no copy-paste from sources). Curate as `domain/patterns/<type>/<pattern-id>.ts`. Aim: every new doc has a recognisable starter shape.
+- **Edit-menu → left toolbar redesign** — the Edit menu has grown enough to feel cluttered. Consider a left-rail vertical toolbar for the most-used verbs (delete, group as AND, join, splice, etc.) and reserve the menu for less-frequent actions. Design discussion first; no implementation until shape agreed.
+- **PWA offline integrity** — Dann hit two failures on a plane (no internet): the book PDF/EPUB didn't load, and `pptxgen.es-DQvezJKa.js` failed dynamic import. The first is a service-worker pre-cache gap (the docs-bundle outputs may not be in the SW manifest); the second is a lazy-chunk URL that the SW didn't capture at install time. Both need investigation of the workbox `registerRoute` and `additionalManifestEntries` config.
+- **Multi-document tabs** — re-opened from the won't-build list per Dann's session-136 usage feedback. Tabs across diagrams of the same document set (CRT + EC + PRT in one workspace). Last considered Session 91 and cancelled; the new ask is the same shape. Probably still depends on a cross-doc model. Worth a fresh PRD before committing.
+- **HTML export with embedded preview image** — the static-HTML viewer is text-only today; embedding a PNG render at the top would make it more useful as a share artifact.
+- **EC PDF workshop export bug** — the EC workshop-mode PDF export doesn't produce a usable file. Reproduce + diagnose.
+- **EC "Read every arrow" label position** — currently overlaps with other overlay UI. Move it out of the way.
+- **Flying Logic notes-as-connections regression** — Dann reports that connections seem lost on import; the source `.flow` may carry notes that should become edges (or vice versa). Needs Dann's reproducer file before investigation can start.
+
 Otherwise the backlog is genuinely drained — new work would come from fresh spec/product direction.
 
 *(Was on the list: "Phase 1C node-chrome / canvas eligibility surfacing." Already done — `EligibilityBadge` ships on Action nodes via the `Show action-eligibility badge` Display setting, with full inspector readout retained. Code in `src/components/canvas/nodes/TPNodeBadges.tsx` + `useGraphNodeEmission.ts`; tests in `tests/components/canvas/eligibilityBadgeEmission.test.tsx`.)*

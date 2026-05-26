@@ -76,6 +76,10 @@ const READ_MORE: LinkRow[] = [
     href: SECURITY_PATH,
     Icon: Shield,
     label: 'Security & threat model',
+    // Session 136 — surface the latest audit pointer here so it's
+    // visible without clicking through (and refreshes automatically
+    // when SECURITY.md's `Last reviewed:` line moves forward).
+    hint: `Last audit: ${__SECURITY_AUDIT_LABEL__}.`,
   },
   {
     href: NOTICES_PATH,
@@ -171,8 +175,8 @@ export function AboutDialog() {
 
         {/* Copyright + trademark notice */}
         <footer className="border-neutral-200 border-t pt-4 text-[11px] text-neutral-500 leading-relaxed dark:border-neutral-800 dark:text-neutral-400">
-          © {__COPYRIGHT_YEARS__} Dann Pedersen. &quot;Flying Logic&quot; is a trademark of its
-          owner. See{' '}
+          © {__COPYRIGHT_YEARS__} Dann Bleeker Pedersen. &quot;Flying Logic&quot; is a trademark of
+          its owner. See{' '}
           <a
             href={NOTICES_PATH}
             target="_blank"

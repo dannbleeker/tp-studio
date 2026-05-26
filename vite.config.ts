@@ -27,11 +27,29 @@ const __COPYRIGHT_YEARS__ = (() => {
   return y <= 2026 ? '2026' : `2026–${y}`;
 })();
 
+// Session 136 — surface the latest security-audit pointer in the
+// About dialog so it auto-refreshes whenever SECURITY.md's "Last
+// reviewed" line changes. Extract just the `Session N (YYYY-MM-DD)`
+// segment of that line — the bullet keeps the trail short. The
+// fallback covers the case where SECURITY.md is missing or the line
+// shape changed; we don't want a missing audit string to fail the
+// build.
+const __SECURITY_AUDIT_LABEL__ = (() => {
+  try {
+    const md = readFileSync(path.join(here, 'SECURITY.md'), 'utf8');
+    const m = md.match(/^Last reviewed:\s*(Session\s+\d+\s*\([\d-]+\))/m);
+    return m ? m[1] : 'see Security & threat model';
+  } catch {
+    return 'see Security & threat model';
+  }
+})();
+
 export default defineConfig(({ command, mode }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(__APP_VERSION__),
     __BUILD_DATE__: JSON.stringify(__BUILD_DATE__),
     __COPYRIGHT_YEARS__: JSON.stringify(__COPYRIGHT_YEARS__),
+    __SECURITY_AUDIT_LABEL__: JSON.stringify(__SECURITY_AUDIT_LABEL__),
   },
   // Session 85 / #18 — vite-plugin-checker runs `tsc --noEmit` (and
   // Biome lint) in a worker alongside the dev server and surfaces

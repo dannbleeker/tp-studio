@@ -166,7 +166,12 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   showMinimap: true,
   printInkSaver: false,
   layoutMode: 'flow',
-  causalityLabel: 'none',
+  // Session 136 — default flipped from 'none' to 'auto' per Dann's
+  // usage feedback. Fresh installs get the diagram-type-aware verbal
+  // reading right away ("because" on CRT/FRT/TT, "in order to" on PRT/EC)
+  // without needing to discover the setting. Stored prefs are unaffected
+  // — existing users who explicitly chose 'none' keep their selection.
+  causalityLabel: 'auto',
   defaultLayoutDirection: 'auto',
   emptyStateTipDismissed: false,
   ecReadingInstructionsDismissed: false,

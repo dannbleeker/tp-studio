@@ -28,8 +28,14 @@ declare global {
   /** Session 111 — build-time metadata injected by Vite's `define`.
    *  Available to every module at runtime as a global string literal.
    *  See `vite.config.ts` for the source values and the dynamic
-   *  copyright-years computation. */
+   *  copyright-years computation.
+   *
+   *  Session 136 — `__SECURITY_AUDIT_LABEL__` is read at build time
+   *  from the `Last reviewed:` line in `SECURITY.md` (just the
+   *  `Session N (YYYY-MM-DD)` token), so the About dialog's Security
+   *  row reflects the latest audit without a separate copy edit. */
   const __APP_VERSION__: string;
   const __BUILD_DATE__: string;
   const __COPYRIGHT_YEARS__: string;
+  const __SECURITY_AUDIT_LABEL__: string;
 }

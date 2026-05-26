@@ -134,7 +134,9 @@ describe('SettingsDialog', () => {
     open();
     const { container } = render(<SettingsDialog />);
     selectTab(container, 'Display');
-    expect(useDocumentStore.getState().causalityLabel).toBe('none');
+    // Session 136 — default flipped to 'auto' (was 'none') so fresh
+    // installs get the diagram-type-aware label by default.
+    expect(useDocumentStore.getState().causalityLabel).toBe('auto');
     clickByText(container, 'Because');
     expect(useDocumentStore.getState().causalityLabel).toBe('because');
     clickByText(container, 'Therefore');
