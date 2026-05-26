@@ -56,21 +56,34 @@ describe('Note entity (FL-ET7)', () => {
     expect(meta.stripeColor.toLowerCase()).toBe('#eab308');
   });
 
-  it('connect() refuses to make a note an edge endpoint', () => {
+  it('connect() now ALLOWS notes as edge endpoints (Session 136 — was refused under the original FL-ET7 philosophy)', () => {
+    // Session 136 — Dann's usage feedback: "make it possible to do
+    // new [note-edges] generally". The original FL-ET7 philosophy
+    // ("notes sit outside the causal graph, full stop") drove a
+    // silent refusal in `connect()`; that block was lifted because
+    // it dropped legitimate annotation links (most visible at FL
+    // import: see the "retail goal map.xlogic" reproducer). Notes
+    // are now first-class endpoints. The dotted-edge styling in
+    // `TPEdge.tsx`'s `isNoteEdge` branch carries the
+    // "this isn't a causal edge" signal visually.
+    //
+    // The validators + propagation engine still treat notes as
+    // `isNonCausal`, so the existence of these edges has no effect
+    // on CLR derivations or state propagation — the rule that's
+    // covered in the other tests below this one.
     const note = seedEntity('A reminder', 'note');
     const effect = seedEntity('Some effect', 'effect');
     const state = useDocumentStore.getState();
 
-    // Note → effect rejected.
-    expect(state.connect(note.id, effect.id)).toBeNull();
-    // Effect → note rejected.
-    expect(state.connect(effect.id, note.id)).toBeNull();
-    // Note → note rejected (same-id guard also catches this, but the
-    // type guard is the load-bearing one we want covered).
+    const e1 = state.connect(note.id, effect.id);
+    const e2 = state.connect(effect.id, note.id);
     const note2 = seedEntity('Another reminder', 'note');
-    expect(state.connect(note.id, note2.id)).toBeNull();
+    const e3 = state.connect(note.id, note2.id);
 
-    expect(Object.keys(state.doc.edges)).toHaveLength(0);
+    expect(e1).not.toBeNull();
+    expect(e2).not.toBeNull();
+    expect(e3).not.toBeNull();
+    expect(Object.keys(useDocumentStore.getState().doc.edges)).toHaveLength(3);
   });
 
   it('addCoCauseToEdge refuses notes as source', () => {

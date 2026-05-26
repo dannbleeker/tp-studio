@@ -123,6 +123,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     useShallow((s) => {
       const edge = s.doc.edges[props.id];
       const desc = edge?.description;
+      // Session 136 — note-touching edges render dotted (and a thinner
+      // stroke) so they read as "annotation" rather than "causal".
+      // Source-or-target is enough because notes never participate in
+      // causal junctors, so we don't need to walk junctor membership.
+      const sourceIsNote = edge ? s.doc.entities[edge.sourceId]?.type === 'note' : false;
+      const targetIsNote = edge ? s.doc.entities[edge.targetId]?.type === 'note' : false;
       return {
         edgeLabel: edge?.label,
         isBackEdge: edge?.isBackEdge === true,
@@ -132,6 +138,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         isSpliceTarget: s.spliceTargetEdgeId === props.id,
         causalityLabel: s.causalityLabel,
         diagramType: s.doc.diagramType,
+        isNoteEdge: sourceIsNote || targetIsNote,
       };
     })
   );
@@ -144,6 +151,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     isSpliceTarget,
     causalityLabel,
     diagramType,
+    isNoteEdge,
   } = edgeView;
   // Actions in their own shallow bundle. They're stable refs across
   // store snapshots, so this subscription effectively never fires —
@@ -330,13 +338,27 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // Splice-target gets the same +1.5 bump so the gesture preview reads
   // as deliberate without competing with the selected-edge stroke (which
   // already gets +1.5).
-  const baseWidth = props.selected ? 3 : isJunctorGroup ? 1.75 : 1.5;
+  // Session 136 — note-touching edges paint thinner so they read as
+  // ancillary annotation rather than competing with the causal
+  // backbone. Stroke width drops a hair below the default 1.5 instead
+  // of stacking with `selected` / `back-edge` bumps (which keep their
+  // existing widths even on a note edge — selection feedback still
+  // wins).
+  const baseWidth = props.selected ? 3 : isJunctorGroup ? 1.75 : isNoteEdge ? 1.25 : 1.5;
   const strokeWidth = isBackEdge || isSpliceTarget ? baseWidth + 1.5 : baseWidth;
   // Back-edges render with a subtle dash pattern in addition to the
   // thicker stroke — combination of two cues so the visual reads as
   // "this is *the* tagged loop-closer" rather than "this edge is just
   // selected" in a quick scan.
-  const strokeDasharray = isBackEdge ? '6 4' : undefined;
+  //
+  // Session 136 — note-touching edges also render dotted ("2 3", a
+  // tighter pattern than back-edge's "6 4") so the visual differs
+  // from both default-solid and back-edge-dashed. Selection still
+  // bumps the stroke width so a selected note-edge stays
+  // distinguishable from an unselected one. Back-edge takes
+  // precedence over note-edge if both flags happen — back-edges are
+  // the more semantically loaded signal.
+  const strokeDasharray = isBackEdge ? '6 4' : isNoteEdge ? '2 3' : undefined;
   // Selected and splice-target both want a glow; splice-target wins
   // when both happen (the drag gesture is the more time-sensitive
   // signal and the user already knows what's selected).

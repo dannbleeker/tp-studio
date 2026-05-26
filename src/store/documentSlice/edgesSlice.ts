@@ -108,11 +108,15 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       const source = doc.entities[sourceId];
       const target = doc.entities[targetId];
       if (!source || !target) return null;
-      // FL-ET7: Notes sit outside the causal graph — silently refuse to
-      // make them an endpoint of a causal edge. Same posture as the
-      // implicit "assumptions don't get connected this way" rule (the UI
-      // never exposes the gesture; this is the defense-in-depth guard).
-      if (source.type === 'note' || target.type === 'note') return null;
+      // Session 136 — note-endpoints used to be silently refused here
+      // (FL-ET7 philosophy: notes sit outside the causal graph). Per
+      // Dann's usage feedback, that block is lifted: a user can now
+      // drag a connection into / out of a note. The visual treatment
+      // diverges (note-touching edges paint dotted + thinner; see
+      // `TPEdge.tsx`) so the user reads them as annotation links,
+      // not as causal edges. The validators + propagation engine
+      // already treat notes as non-causal (`isNonCausal()`), so the
+      // edge's existence has no effect on CLR / state derivation.
       if (hasEdge(doc, sourceId, targetId)) return null;
       const edge = createEdge({ sourceId, targetId });
       applyDocChange((prev) => touch({ ...prev, edges: { ...prev.edges, [edge.id]: edge } }));

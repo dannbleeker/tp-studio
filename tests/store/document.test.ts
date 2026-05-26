@@ -390,3 +390,54 @@ describe('setLayoutConfig (Block A)', () => {
     expect(useDocumentStore.getState().past.length).toBe(past0 + 1);
   });
 });
+
+describe('connect — note endpoints (Session 136)', () => {
+  // FL-ET7 used to silently refuse `connect()` calls touching a Note
+  // (the philosophy was "notes sit outside the causal graph, full
+  // stop"). Session 136 lifted that block per Dann's usage feedback —
+  // a user can now drag a connection into or out of a note. The
+  // edge's existence still has no effect on CLR / propagation
+  // (validators + state engine both filter via `isNonCausal`); the
+  // visual treatment in `TPEdge.tsx` paints it dotted + thinner so
+  // the user reads it as annotation rather than causal.
+
+  it('creates an edge from a note source to an entity target', () => {
+    const note = seedEntity('A note', 'note');
+    const effect = seedEntity('An effect', 'effect');
+    const edge = connect(note.id, effect.id);
+    expect(edge).not.toBeNull();
+    if (!edge) return;
+    expect(edge.sourceId).toBe(note.id);
+    expect(edge.targetId).toBe(effect.id);
+  });
+
+  it('creates an edge from an entity source to a note target', () => {
+    const effect = seedEntity('An effect', 'effect');
+    const note = seedEntity('A note', 'note');
+    const edge = connect(effect.id, note.id);
+    expect(edge).not.toBeNull();
+    if (!edge) return;
+    expect(edge.sourceId).toBe(effect.id);
+    expect(edge.targetId).toBe(note.id);
+  });
+
+  it('creates an edge between two notes', () => {
+    // Two notes pointing at each other is unusual but not forbidden —
+    // a workshop facilitator might want a note tied to an annotation
+    // about that note. The store action lets it through; rendering
+    // treats both endpoints as note-typed and paints dotted.
+    const a = seedEntity('Note A', 'note');
+    const b = seedEntity('Note B', 'note');
+    const edge = connect(a.id, b.id);
+    expect(edge).not.toBeNull();
+  });
+
+  it('still refuses duplicate note edges (existing-edge guard intact)', () => {
+    const note = seedEntity('A note', 'note');
+    const effect = seedEntity('An effect', 'effect');
+    expect(connect(note.id, effect.id)).not.toBeNull();
+    // Second attempt with the same endpoints — should hit the
+    // `hasEdge` guard and return null.
+    expect(connect(note.id, effect.id)).toBeNull();
+  });
+});

@@ -86,7 +86,10 @@ describe('AboutDialog', () => {
     // dynamically computed at build time; here it's the seeded test
     // value (2026), but the wider contract is that whatever the
     // build-time __COPYRIGHT_YEARS__ resolves to ends up in the DOM.
-    expect(getByText(/© 2026 Dann Pedersen/)).toBeTruthy();
+    // Session 136 — copyright now reads "Dann Bleeker Pedersen"
+    // (was "Dann Pedersen") per Dann's usage feedback to use his
+    // full name.
+    expect(getByText(/© 2026 Dann Bleeker Pedersen/)).toBeTruthy();
     expect(getByText(/Flying Logic.*trademark/i)).toBeTruthy();
   });
 
