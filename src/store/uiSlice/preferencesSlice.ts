@@ -121,6 +121,14 @@ export type PreferencesSlice = {
   setAppMode: (mode: AppMode) => void;
   /** Session 135 — reveal / hide archived groups on the canvas. */
   setShowArchivedGroups: (show: boolean) => void;
+  /** Session 136 — reset every persisted preference back to its
+   *  factory default, including theme. Per Dann's usage-feedback ask
+   *  ("all settings should be able to restore to defaults"). The
+   *  session-only flags (`emptyStateTipDismissed`,
+   *  `ecReadingInstructionsDismissed`) reset too so the welcome
+   *  affordances reappear on the next interaction — matches what a
+   *  user expects from "reset". */
+  resetPreferencesToDefaults: () => void;
 };
 
 export type PreferencesDataKeys =
@@ -361,6 +369,47 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setShowArchivedGroups: (show) => {
       set({ showArchivedGroups: show });
+      persistPrefs();
+    },
+    resetPreferencesToDefaults: () => {
+      // Session 136 — single canonical source for "what's a default" is
+      // `preferencesDefaults()`; calling `set()` with its full result
+      // rewrites every persisted field back to factory state. Theme has
+      // its own writer (separate localStorage key, no need to recompute
+      // CSS), so we hit `writeTheme` explicitly. `persistPrefs()` then
+      // writes the rest to the canonical prefs slot.
+      //
+      // The auto-engage-Browse-Lock-on-Presentation pairing in
+      // `setAppMode` is intentionally NOT replicated here: resetting
+      // returns appMode to 'expert' (no auto-lock), so Browse Lock
+      // returns to its default `false` — that's the right outcome.
+      const d = preferencesDefaults();
+      writeTheme(d.theme);
+      set({
+        theme: d.theme,
+        animationSpeed: d.animationSpeed,
+        edgePalette: d.edgePalette,
+        browseLocked: d.browseLocked,
+        showAnnotationNumbers: d.showAnnotationNumbers,
+        showEntityIds: d.showEntityIds,
+        showReachBadges: d.showReachBadges,
+        showReverseReachBadges: d.showReverseReachBadges,
+        showActionEligibility: d.showActionEligibility,
+        showMinimap: d.showMinimap,
+        printInkSaver: d.printInkSaver,
+        layoutMode: d.layoutMode,
+        causalityLabel: d.causalityLabel,
+        defaultLayoutDirection: d.defaultLayoutDirection,
+        emptyStateTipDismissed: d.emptyStateTipDismissed,
+        ecReadingInstructionsDismissed: d.ecReadingInstructionsDismissed,
+        showGoalTreeWizard: d.showGoalTreeWizard,
+        showECWizard: d.showECWizard,
+        verbalisationStripCollapsed: d.verbalisationStripCollapsed,
+        ecChromeCollapsed: d.ecChromeCollapsed,
+        showSelectionToolbar: d.showSelectionToolbar,
+        appMode: d.appMode,
+        showArchivedGroups: d.showArchivedGroups,
+      });
       persistPrefs();
     },
   };

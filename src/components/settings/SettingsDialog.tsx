@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { RotateCcw, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -32,7 +32,26 @@ const TABS: { id: SettingsTab; label: string }[] = [
 export function SettingsDialog() {
   const open = useDocumentStore((s) => s.settingsOpen);
   const close = useDocumentStore((s) => s.closeSettings);
+  const confirm = useDocumentStore((s) => s.confirm);
+  const resetPreferencesToDefaults = useDocumentStore((s) => s.resetPreferencesToDefaults);
+  const showToast = useDocumentStore((s) => s.showToast);
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
+
+  // Session 136 — Dann asked for "all settings should be able to
+  // restore to defaults". Single CTA at the dialog footer (not per
+  // control) keeps the chrome calm; the confirm prompt gates the
+  // destructive write. Resets every persisted preference back to
+  // its factory default — see `resetPreferencesToDefaults` in the
+  // preferences slice for the canonical list.
+  const handleReset = async () => {
+    const ok = await confirm(
+      'Reset every setting (Appearance / Behavior / Display / Layout) back to its factory default? Documents on the canvas are not affected.',
+      { confirmLabel: 'Reset' }
+    );
+    if (!ok) return;
+    resetPreferencesToDefaults();
+    showToast('success', 'Settings restored to defaults.');
+  };
 
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="settings-title">
@@ -66,6 +85,16 @@ export function SettingsDialog() {
         {activeTab === 'display' && <DisplayTab />}
         {activeTab === 'layout' && <LayoutTab />}
       </div>
+
+      {/* Session 136 — Restore-to-defaults footer. Right-aligned ghost
+          button so it reads as a quiet escape hatch, not a primary
+          action. Confirm prompt covers the destructive write. */}
+      <footer className="flex items-center justify-end border-neutral-200 border-t px-4 py-2 dark:border-neutral-800">
+        <Button variant="softNeutral" size="xs" onClick={handleReset}>
+          <RotateCcw className="h-3.5 w-3.5" />
+          Restore defaults
+        </Button>
+      </footer>
     </Modal>
   );
 }
