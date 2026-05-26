@@ -463,7 +463,14 @@ function CanvasInner() {
                 from Session 87 (V10): at xs (< 640 px) the strip drops
                 below the TopBar; at sm+ it sits in the top band. */}
             {!ecChromeCollapsed && (
-              <div className="pointer-events-none absolute top-14 right-0 left-0 z-10 flex flex-col items-stretch gap-1 px-4 sm:top-2">
+              // Session 136 — dropped the `sm:top-2` override: at sm+,
+              // top-2 (8px) collided horizontally with the TitleBadge
+              // (`top-4 left-4`) and the TopBar buttons (`top-4
+              // right-4`), hiding the start of "Read every arrow:"
+              // behind app chrome. Pinning to `top-14` (56 px) at
+              // every viewport keeps the strip cleanly below the
+              // TopBar — the xs default was always correct.
+              <div className="pointer-events-none absolute top-14 right-0 left-0 z-10 flex flex-col items-stretch gap-1 px-4">
                 <div className="pointer-events-auto">
                   <ECReadingInstructions />
                 </div>

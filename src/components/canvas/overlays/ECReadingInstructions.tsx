@@ -61,9 +61,14 @@ export function ECReadingInstructions() {
         onClick={dismiss}
         aria-label="Dismiss reading instructions"
         title="Dismiss"
-        className="rounded-sm p-0.5 text-indigo-500 transition hover:bg-indigo-100 hover:text-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-900 dark:hover:text-indigo-100"
+        // Session 136 — bumped from `h-3 w-3 + p-0.5` to `h-4 w-4 +
+        // p-1` so the dismiss affordance reads at the same visual
+        // weight as the Modal close buttons elsewhere (Inspector,
+        // About, Settings). The smaller icon was easy to miss in
+        // the dense indigo strip.
+        className="rounded-sm p-1 text-indigo-600 transition hover:bg-indigo-100 hover:text-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-900 dark:hover:text-indigo-100"
       >
-        <X className="h-3 w-3" />
+        <X className="h-4 w-4" />
       </button>
     </aside>
   );

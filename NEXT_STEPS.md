@@ -100,8 +100,15 @@ From Dann's "how it feels in real use" pass (Session 136). Trivial copy/defaults
 - **Multi-document tabs** — re-opened from the won't-build list per Dann's session-136 usage feedback. Tabs across diagrams of the same document set (CRT + EC + PRT in one workspace). Last considered Session 91 and cancelled; the new ask is the same shape. Probably still depends on a cross-doc model. Worth a fresh PRD before committing.
 - **HTML export with embedded preview image** — the static-HTML viewer is text-only today; embedding a PNG render at the top would make it more useful as a share artifact.
 - **EC PDF workshop export bug** — the EC workshop-mode PDF export doesn't produce a usable file. Reproduce + diagnose.
-- **EC "Read every arrow" label position** — currently overlaps with other overlay UI. Move it out of the way.
 - **Flying Logic notes-as-connections regression** — Dann reports that connections seem lost on import; the source `.flow` may carry notes that should become edges (or vice versa). Needs Dann's reproducer file before investigation can start.
+
+### Session 136 bugs awaiting reproduction
+
+These were reported in the Session 136 usage pass but aren't reproducible from code alone:
+
+- **Inspector closes when making a selection inside it** — *what kind of selection?* The aside has a narrow-viewport tap-to-dismiss backdrop (hidden at md+) and an X / `clearSelection` button — neither should fire on a text-select or radio-click inside an input. Need: a step-by-step repro (which field, which gesture, what was selected before).
+- **"Add evidence" button does nothing** — most likely Browse Lock is on (it auto-engages on share-link / example loads and disables every mutating button silently). Need: a screenshot of the Inspector with the lock state visible — if Browse Lock is on, the fix is a toast saying "Browse Lock is on — unlock to add evidence"; if it's off, the click is a real regression. Either way: confirm Browse Lock state when reproducing.
+- **Edges render behind entity nodes** — folded into the render-engine layout pass above. The fix is real edge routing (around obstacles), not just z-order — pure z-order raise puts edges over titles, which looks worse.
 
 Otherwise the backlog is genuinely drained — new work would come from fresh spec/product direction.
 
