@@ -54,28 +54,15 @@ describe('TopBar', () => {
     expect(unlockBtn.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('Layout-mode dropdown flips between flow and radial', () => {
-    const { container } = render(<TopBar />);
-    // Default doc is a CRT (auto-layout), so the dropdown is visible.
-    // Session 87 UX fix #3 reshaped the layout-mode control from an
-    // icon-toggle button into an explicit two-option <select>.
-    const select = container.querySelector('select[aria-label="Layout mode"]') as HTMLSelectElement;
-    expect(select).toBeTruthy();
-    expect(select.value).toBe('flow');
-    // Drive the change via the native event the select element fires;
-    // <option> elements aren't independently clickable in jsdom.
-    act(() => {
-      select.value = 'radial';
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    expect(useDocumentStore.getState().layoutMode).toBe('radial');
-  });
-
-  it('hides the layout-mode dropdown for manual-layout diagrams (EC)', () => {
-    // EC is the only manual-layout diagram today. Swapping documents flips
-    // the diagram type; the dropdown disappears because the EC geometry IS
-    // the diagnostic — flipping to radial would erase the conflict.
-    act(() => useDocumentStore.getState().newDocument('ec'));
+  // Session 136 — the standalone Layout-mode `<select>` moved off the
+  // TopBar into the kebab menu (per Dann's usage feedback: "the [Flow]
+  // button on the canvas should be put into a menu"). The earlier
+  // two TopBar tests for the dropdown migrated into
+  // `tests/components/KebabMenu.test.tsx` ("Layout-mode menuitem flips
+  // between flow and radial" + "omits the layout-mode item for
+  // manual-layout diagrams (EC)"). The select shouldn't render here
+  // anymore at any viewport.
+  it('does NOT render the layout-mode dropdown in the topbar (moved to kebab in Session 136)', () => {
     const { container } = render(<TopBar />);
     expect(container.querySelector('select[aria-label="Layout mode"]')).toBeNull();
   });

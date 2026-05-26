@@ -1,16 +1,4 @@
-import {
-  HelpCircle,
-  History,
-  Lock,
-  LockOpen,
-  Moon,
-  Network,
-  Orbit,
-  Redo2,
-  Search,
-  Sun,
-  Undo2,
-} from 'lucide-react';
+import { HelpCircle, History, Lock, LockOpen, Moon, Redo2, Search, Sun, Undo2 } from 'lucide-react';
 import { SHORTCUT_BY_ID, shortcutToAria } from '@/domain/shortcuts';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
@@ -41,17 +29,19 @@ export function TopBar() {
   // mode, history, help, layout-toggle visibility) live in the shared hook
   // so both surfaces stay in sync and we register a single shallow-equal
   // selector for the cluster instead of one per primitive.
+  // Session 136 — `layoutMode` / `setLayoutMode` / `showLayoutToggle`
+  // dropped from the topbar's destructure because the standalone Flow
+  // ↔ Radial picker moved into the kebab menu. The KebabMenu still
+  // subscribes via the same hook, so the shared selector stays in
+  // place; we just don't read those fields here anymore.
   const {
     theme,
-    layoutMode,
     historyPanelOpen,
-    showLayoutToggle,
     canUndo,
     canRedo,
     toggleTheme,
     openHelp,
     toggleHistoryPanel,
-    setLayoutMode,
     undo,
     redo,
   } = useToolbarActions();
@@ -143,35 +133,15 @@ export function TopBar() {
       >
         {browseLocked ? <Lock className="h-3.5 w-3.5" /> : <LockOpen className="h-3.5 w-3.5" />}
       </Button>
-      {/* F5 layout-mode picker. Session 87 UX fix #3 — was a single
-          icon-toggle that swapped Orbit ↔ Network on click; replaced
-          with an explicit two-option dropdown so the available modes
-          are discoverable without trial-and-error. Hidden for
-          manual-layout diagrams (EC) where layout mode is meaningless.
-          The icon to the left of the select stays as a state-glance
-          cue; the select itself is the canonical control. */}
-      {showLayoutToggle && (
-        <label
-          className="pointer-events-auto hidden h-7 items-center gap-1 rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-medium text-neutral-700 text-xs transition hover:bg-neutral-100 md:inline-flex dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:bg-neutral-900"
-          title="Layout mode"
-        >
-          {layoutMode === 'flow' ? (
-            <Network className="h-3.5 w-3.5" aria-hidden />
-          ) : (
-            <Orbit className="h-3.5 w-3.5" aria-hidden />
-          )}
-          <span className="sr-only">Layout mode</span>
-          <select
-            value={layoutMode}
-            onChange={(e) => setLayoutMode(e.target.value as 'flow' | 'radial')}
-            aria-label="Layout mode"
-            className="cursor-pointer border-none bg-transparent pr-0 font-medium text-neutral-700 text-xs outline-hidden dark:text-neutral-200"
-          >
-            <option value="flow">Flow</option>
-            <option value="radial">Radial</option>
-          </select>
-        </label>
-      )}
+      {/* Session 136 — layout-mode picker removed from the topbar per
+          Dann's usage feedback ("the [Flow] button on the canvas
+          should be put into a menu"). The control lives in the kebab
+          menu now, which Session 136 also makes visible at every
+          viewport width (was sm:hidden). Trade-off: one extra click
+          to switch Flow ↔ Radial on desktop, but the canvas chrome
+          loses a 100-px-wide element that the user was rarely
+          changing. The Cmd+K palette command still reaches the
+          toggle for keyboard-driven flows. */}
       {/* H1 history panel toggle. Visible at sm+ (like Help / Theme); the
           palette command "Open history…" still reaches it on phone-narrow.
           aria-pressed reflects the open state so screen readers announce

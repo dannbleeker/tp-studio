@@ -22,15 +22,21 @@ import { Button } from '../ui/Button';
 import { useToolbarActions } from './useToolbarActions';
 
 /**
- * Phone-narrow (`< sm`, 640 px) kebab menu — surfaces the toolbar buttons
- * that hide on narrow viewports (Layout Mode, History, Help, Theme) behind
- * a single icon. Without this, those actions are only reachable via the
- * command palette, which is awkward on touch devices without a hardware
- * keyboard.
+ * Kebab "More actions" menu — single icon trigger that opens a vertical
+ * list of secondary toolbar actions (Undo / Redo / Layout Mode / History
+ * / Help / Theme).
  *
- * Hidden at `sm:` and above where the buttons render directly in the
- * TopBar. Browse Lock and the Commands button live outside the kebab
- * because they're the primary CTAs and remain visible at every width.
+ * Session 136 — visible at every viewport width (was `sm:hidden`,
+ * narrow-only). The trigger was added at all widths after Dann asked
+ * to move the standalone Layout-mode picker off the topbar chrome:
+ * Layout lives here now, full stop. The other items still also have
+ * standalone topbar buttons at `sm:` and above (so a desktop user
+ * keeps one-click Undo / History / Help / Theme); the kebab is the
+ * single source of truth on narrow widths and the only entry point
+ * for Layout-mode regardless of width.
+ *
+ * Browse Lock and the Commands button stay outside the kebab — primary
+ * CTAs visible at every width.
  */
 export function KebabMenu() {
   const [open, setOpen] = useState(false);
@@ -122,7 +128,8 @@ export function KebabMenu() {
     'flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800';
 
   return (
-    <div ref={containerRef} className="relative sm:hidden">
+    <div ref={containerRef} className="relative">
+      {/* Session 136 — `sm:hidden` removed; menu is always visible. */}
       <Button
         ref={triggerRef}
         variant={open ? 'softViolet' : 'softNeutral'}

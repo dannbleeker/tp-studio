@@ -106,6 +106,39 @@ describe('TPNode — entity-type-specific rendering', () => {
     expect(wrapper?.className ?? '').toMatch(/yellow/);
   });
 
+  it('note entities still render both React Flow handles (Session 136 — hidden but present so FL-imported note-edges paint)', () => {
+    // Session 136 regression fix. The original FL-ET7 implementation
+    // omitted source + target `<Handle>`s on note nodes so the user
+    // couldn't drag a connection into / out of them. Side-effect:
+    // every Flying-Logic-imported edge whose endpoint was a Note
+    // silently failed to render because React Flow needs a handle to
+    // anchor to. Dann's "retail goal map.xlogic" lost ~6 edges this
+    // way. Fix: render the handles but mark them `isConnectable=
+    // false` + invisible — the drag-restriction stays, the visual
+    // edge survives.
+    const entity = createEntity({ type: 'note', title: 'A note', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    const handles = container.querySelectorAll('.react-flow__handle');
+    // One target handle + one source handle.
+    expect(handles.length).toBe(2);
+    // Both are pointer-events:none + opacity:0 so the affordance
+    // stays invisible to the user even though it's in the DOM.
+    handles.forEach((h) => {
+      expect(h.className).toMatch(/pointer-events-none/);
+      expect(h.className).toMatch(/opacity-0/);
+    });
+  });
+
+  it('non-note entities render the visible (connectable) handle styling', () => {
+    const entity = createEntity({ type: 'effect', title: 'An effect', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
+    const handles = container.querySelectorAll('.react-flow__handle');
+    expect(handles.length).toBe(2);
+    handles.forEach((h) => {
+      expect(h.className).not.toMatch(/opacity-0/);
+    });
+  });
+
   it('renders a UDE entity (the most common CRT shape)', () => {
     const entity = createEntity({ type: 'ude', title: 'Customer churn', annotationNumber: 1 });
     const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);

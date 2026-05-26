@@ -215,13 +215,28 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           )}
         </div>
       </NodeToolbar>
-      {!isNoteEntity && (
-        <Handle
-          type="target"
-          position={targetPosition}
-          className="!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900"
-        />
-      )}
+      {/* Session 136 — Notes used to render NO handles at all (FL-ET7
+          philosophy: notes sit outside the causal graph and the user
+          can't drag connections into / out of them). Side-effect: any
+          edge whose endpoint was a Note silently failed to render
+          because React Flow needs a handle to anchor to. That broke
+          Flying Logic imports — `.xlogic` files where Notes are
+          tethered to nearby entities (Dann's "retail goal map"
+          repro) lost every such edge on import. Fix: still render
+          handles on Notes, but mark them `isConnectable={false}` so
+          React Flow's connection gestures continue to refuse them as
+          drag sources / targets. Edges land on them visually; the
+          UX guarantee from FL-ET7 stays intact. */}
+      <Handle
+        type="target"
+        position={targetPosition}
+        isConnectable={!isNoteEntity}
+        className={
+          isNoteEntity
+            ? '!pointer-events-none !opacity-0 !h-2 !w-2'
+            : '!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900'
+        }
+      />
       <div
         className="w-1.5 shrink-0 rounded-l-lg"
         style={{ backgroundColor: meta.stripeColor }}
@@ -373,13 +388,20 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           onToggle={toggleEntityCollapsed}
         />
       )}
-      {!isNoteEntity && (
-        <Handle
-          type="source"
-          position={sourcePosition}
-          className="!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900"
-        />
-      )}
+      {/* See the target-handle comment above. Source handle gets the
+          same Session-136 treatment so edges with a Note as source
+          (FL-ET7 imports often have these — a note like "SameSystem"
+          → entity, marking provenance) also render. */}
+      <Handle
+        type="source"
+        position={sourcePosition}
+        isConnectable={!isNoteEntity}
+        className={
+          isNoteEntity
+            ? '!pointer-events-none !opacity-0 !h-2 !w-2'
+            : '!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900'
+        }
+      />
     </div>
   );
 }
