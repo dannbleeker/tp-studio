@@ -8,6 +8,7 @@ import { entitiesOfType } from '@/domain/graph';
 import type { Entity, TPDocument } from '@/domain/types';
 import { loadJsPdf } from '@/services/exporters/pdfShared';
 import { slug, triggerDownload } from '@/services/exporters/shared';
+import { log } from '@/services/logger';
 
 /**
  * Session 87 / EC PPT comparison item #5 — One-page workshop-handout EC export.
@@ -116,10 +117,32 @@ const slotEntities = (doc: TPDocument): Record<ECSlot, Entity | undefined> => {
 
 /**
  * Build the EC workshop sheet PDF and trigger a download. Returns
- * `false` when the doc isn't an EC — the caller surfaces a toast.
+ * `false` when the doc isn't an EC, when the lazy `jspdf` import
+ * fails (e.g. offline + chunk not yet cached, Session 136 repro),
+ * or when PDF construction throws for any other reason — the caller
+ * surfaces a generic failure toast. Specific failures are logged so
+ * the next reproducer in the field has a trail.
  */
 export const exportECWorkshopSheet = async (doc: TPDocument): Promise<boolean> => {
   if (doc.diagramType !== 'ec') return false;
+  try {
+    return await buildAndDownloadECWorkshopSheet(doc);
+  } catch (err) {
+    // Session 136 — Dann reported "The EC PDF workshop export does
+    // not work" without further detail. Possible root causes
+    // include offline + uncached `jspdf` chunk (the runtime-cache
+    // rule needs a prior online visit), jspdf throwing on
+    // unexpected character ranges in titles, or an entity-shape
+    // change that broke `slotEntities`. Catch + log so the next
+    // repro shows up in console with a stack trace; return false
+    // so the caller's "Workshop sheet export failed" toast fires
+    // instead of an unhandled rejection bubbling to React.
+    log.error('ec-workshop-export-failed', { error: String(err) });
+    return false;
+  }
+};
+
+const buildAndDownloadECWorkshopSheet = async (doc: TPDocument): Promise<boolean> => {
   const slots = slotEntities(doc);
 
   // Session 129 (#16) — yield once so the caller's "Exporting…" UI
