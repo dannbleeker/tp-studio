@@ -354,14 +354,24 @@ function CanvasInner() {
           // single-kind contract). A new non-empty selection also closes
           // the H1 history panel so the inspector can take over the right
           // edge.
+          //
+          // Session 136 — the empty-arrays branch used to call
+          // `clearSelection()`. That made the inspector close on any
+          // doc edit: when the user edited an entity field, the new
+          // doc reference rebuilt the `nodes` array, React Flow
+          // re-keyed internally, and during that re-keying it fired
+          // `onSelectionChange` with empty selNodes/selEdges before
+          // settling on the new selection — which cleared the store
+          // selection mid-edit. The right "deselect" gesture is
+          // `onPaneClick` (handled separately above); we don't need
+          // to mirror empty here too. Drop the else, keep only the
+          // mirror-non-empty branches.
           if (selEdges.length > 0) {
             selectEdges(selEdges.map((e) => e.id));
             closeHistoryPanel();
           } else if (selNodes.length > 0) {
             selectEntities(selNodes.map((n) => n.id));
             closeHistoryPanel();
-          } else {
-            clearSelection();
           }
         }}
         onNodeContextMenu={(e, n) => {

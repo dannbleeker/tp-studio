@@ -94,14 +94,29 @@ export function EvidenceList({
   ownerHint: string | undefined;
 }) {
   const addEvidence = useDocumentStore((s) => s.addEvidence);
+  const showToast = useDocumentStore((s) => s.showToast);
   const locked = useDocumentStore((s) => s.browseLocked);
   const lastAddedRef = useRef<string | null>(null);
 
   const items = evidence ?? [];
 
+  // Session 136 — Dann reported "Add evidence does nothing" with
+  // Browse Lock off. The store action returns `null` when the
+  // `entityId` lookup misses (stale prop reference, race with a
+  // delete, etc.); previously we just swallowed that, leaving the
+  // user with a click that visibly did nothing. Surface a toast so
+  // any future regression is self-diagnosing. The success path is
+  // unchanged.
   const handleAdd = () => {
     const id = addEvidence(entityId);
-    if (id) lastAddedRef.current = id;
+    if (id) {
+      lastAddedRef.current = id;
+    } else {
+      showToast(
+        'error',
+        "Couldn't add evidence — the entity has gone away. Re-select and try again."
+      );
+    }
   };
 
   return (
