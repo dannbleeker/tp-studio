@@ -11,7 +11,11 @@ import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { METHOD_BY_DIAGRAM, type MethodStep } from '@/domain/methodChecklist';
 import type { DiagramType, SystemScope } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { CustomEntityClassesSection } from './CustomEntityClassesSection';
+
+// Session 136 — CustomEntityClassesSection removed (feature dropped
+// per Dann's usage feedback). Import gone; data layer still accepts
+// the field for backward-compat reads of older docs but no UI lets
+// users author them.
 
 /**
  * Stable module-level fallbacks for the `useShallow` selector. Without
@@ -251,8 +255,6 @@ export function DocumentInspector() {
             </p>
           </Field>
         )}
-
-        <CustomEntityClassesSection />
 
         <dl className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs dark:border-neutral-800 dark:bg-neutral-900">
           <Stat label="Type" value={DIAGRAM_TYPE_LABEL[diagramType]} />

@@ -21,7 +21,11 @@ import {
 } from '../ui/buttonClasses';
 import { InsetCard } from '../ui/InsetCard';
 import { AttachedEdgesList } from './AttachedEdgesList';
-import { EntityAttributesSection } from './AttributesSection';
+// Session 136 — EntityAttributesSection removed (user-custom
+// attributes dropped per Dann's usage feedback). The `attributes`
+// field on Entity stays in the data model because the S&T 5-facet
+// feature uses it for built-in keys (ST_FACET_KEYS); only the
+// free-form key/value editor surface is gone.
 import { EvidenceList } from './EvidenceList';
 import { Field } from './Field';
 import { MarkdownField } from './MarkdownField';
@@ -485,8 +489,6 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           onClear={(key) => removeEntityAttribute(entityId, key)}
         />
       )}
-
-      <EntityAttributesSection entity={entity} />
 
       <WarningsList warnings={warnings} />
 

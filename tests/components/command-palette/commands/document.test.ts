@@ -63,7 +63,9 @@ describe('documentCommands', () => {
   });
 
   it('reopen-creation-wizard toasts info on a non-wizard diagram type', async () => {
-    useDocumentStore.getState().newDocument('crt');
+    // Session 136 — CRT joined the wizard club, so the non-wizard
+    // case uses FRT now (the wizard family is goalTree + ec + crt).
+    useDocumentStore.getState().newDocument('frt');
     await runCommand(findCommand(documentCommands, 'reopen-creation-wizard'));
     expect(s().creationWizard).toBeNull();
     expect(s().toasts.some((t) => /only available/i.test(t.message))).toBe(true);

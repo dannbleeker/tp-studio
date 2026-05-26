@@ -13,7 +13,10 @@ import {
 } from '../ui/buttonClasses';
 import { InsetCard } from '../ui/InsetCard';
 import { AssumptionWell } from './AssumptionWell';
-import { AttributesSection } from './AttributesSection';
+// Session 136 — AttributesSection removed (user-custom attributes
+// feature dropped per Dann's usage feedback). Edges retain their
+// `attributes` field in the data model for any S&T-or-FL-imported
+// payloads, but there's no UI to author them.
 import { Field } from './Field';
 import { MarkdownField } from './MarkdownField';
 import { WarningsList } from './WarningsList';
@@ -45,8 +48,6 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
     setEdgeWeight,
     updateEdge,
     addAssumptionToEdge,
-    setEdgeAttribute,
-    removeEdgeAttribute,
     entities,
     diagramType,
     locked,
@@ -59,8 +60,11 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
       setEdgeWeight: s.setEdgeWeight,
       updateEdge: s.updateEdge,
       addAssumptionToEdge: s.addAssumptionToEdge,
-      setEdgeAttribute: s.setEdgeAttribute,
-      removeEdgeAttribute: s.removeEdgeAttribute,
+      // Session 136 — setEdgeAttribute / removeEdgeAttribute dropped
+      // here because the AttributesSection UI is gone (user-custom
+      // attributes feature removed). Store actions remain available
+      // for any S&T-or-FL-imported payloads that touch edge
+      // attributes directly.
       entities: s.doc.entities,
       diagramType: s.doc.diagramType,
       locked: s.browseLocked,
@@ -258,12 +262,6 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
           source of truth. The richer pill UX is a strict improvement
           on CRT / FRT / PRT / TT edges. */}
       <AssumptionWell edgeId={edgeId} assumptions={assumptions} />
-
-      <AttributesSection
-        attributes={edge.attributes}
-        onSet={(key, value) => setEdgeAttribute(edgeId, key, value)}
-        onRemove={(key) => removeEdgeAttribute(edgeId, key)}
-      />
 
       <WarningsList warnings={warnings} />
 
