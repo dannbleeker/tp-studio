@@ -128,8 +128,16 @@ export function KebabMenu() {
     'flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800';
 
   return (
-    <div ref={containerRef} className="relative">
-      {/* Session 136 — `sm:hidden` removed; menu is always visible. */}
+    <div ref={containerRef} className="relative sm:hidden">
+      {/* Session 136 — initial removal of `sm:hidden` caused a
+          TopBar layout shift loop on Desktop viewports: with the
+          kebab trigger added at sm+, Playwright's
+          element-is-stable retry on adjacent buttons (the Lock
+          toggle, the History button) thrashed and timed out. The
+          kebab stays narrow-only; Layout-mode picker was already
+          removed from the TopBar (it's reachable via the Cmd+K
+          palette command "Switch to radial layout" /
+          "Switch to flow layout" at every viewport). */}
       <Button
         ref={triggerRef}
         variant={open ? 'softViolet' : 'softNeutral'}
