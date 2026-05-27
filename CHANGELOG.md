@@ -2,6 +2,51 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 137 — Pattern library expansion (5 per diagram type)
+
+Curated starter diagrams for every supported TOC diagram type
+reached the "5 per type" milestone called out in `NEXT_STEPS.md`. The
+library now carries **40 patterns total** across CRT / FRT / PRT /
+TT / EC / Goal Tree / S&T / NBR — 5 each.
+
+**Visible change:** the **Pattern library…** picker (Cmd+K) now
+opens to a 40-card grid. Each card carries an original description
+written for this session; no entity title or hint is copied from
+the source TOC literature (Goldratt, Dettmer, Scheinkopf, Cox /
+Boyd) — the canonical scenarios are recognisable, but the words on
+every node are fresh.
+
+**Curation choices:**
+
+- **CRT** (5): customer-satisfaction (existing), engineering-velocity
+  (existing), multi-project-bottleneck, sales-pipeline-stall,
+  inventory-turns-falling.
+- **FRT** (5): default starter, WIP-cap rollout, single-team OKR
+  adoption, drum-buffer-rope scheduling, segment-specific pricing
+  experiment.
+- **PRT** (5): default starter, database migration, new-market entry,
+  performance-review rollout, zero-defect manufacturing.
+- **TT** (5): support-triage (existing), engineer onboarding,
+  incident response, feature-flag rollout, enterprise deal close.
+- **EC** (5): work-life balance (existing), quality-vs-speed
+  (existing), centralize-vs-federate, build-vs-buy,
+  specialist-vs-generalist hiring.
+- **Goal Tree** (5): default starter, sustainable product org,
+  profitable subscription business, trustworthy ML system,
+  effective sales team.
+- **S&T** (5): default starter, operating-constraint exploitation,
+  quality-first strategy, geographic market expansion, reduce
+  time-to-market.
+- **NBR** (5): QA-gate (existing), hiring freeze, aggressive
+  deadlines, outsourced support, open-source release.
+
+**Tests** — `tests/domain/patterns.test.ts` now pins the ≥5-per-type
+invariant (in addition to the existing "every pattern builds /
+declared diagram type matches / schemaVersion is current" guards).
+A future removal that drops a type below 5 fires red and the
+contributor has to either add a replacement or lower the target
+deliberately.
+
 ## Session 137 — OR / XOR drag-create on junctor circles
 
 Closes the deferred OR / XOR half of the Session 136 AND drag-create

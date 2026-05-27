@@ -25,6 +25,24 @@ describe('pattern registry', () => {
     }
   });
 
+  it('has ≥5 patterns per non-freeform diagram type (Session 137 library expansion)', () => {
+    // Session 137 — the curated pattern library reached the "5 per
+    // type" milestone called out in `NEXT_STEPS.md`. Pinning the
+    // floor here so a future removal that drops a type below 5 fires
+    // red and the contributor has to either add a replacement or
+    // make the call to lower the target deliberately. NBR included
+    // even though the registry tests originally listed only the
+    // seven primary types — the library now covers it too.
+    const required: DiagramType[] = ['crt', 'frt', 'prt', 'tt', 'ec', 'goalTree', 'st', 'nbr'];
+    for (const t of required) {
+      const matched = patternsForDiagram(t);
+      expect(
+        matched.length,
+        `expected ≥5 patterns for ${t}, got ${matched.length}`
+      ).toBeGreaterThanOrEqual(5);
+    }
+  });
+
   it('uses unique stable ids', () => {
     const ids = PATTERNS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
