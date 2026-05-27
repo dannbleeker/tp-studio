@@ -4,6 +4,18 @@ import type { CausalityLabel, DefaultLayoutDirection } from '@/store';
 import { useDocumentStore } from '@/store';
 import { RadioGroup, Section, Toggle } from '../formPrimitives';
 
+type LayoutDensity = 'compact' | 'balanced' | 'spacious';
+
+const LAYOUT_DENSITY_OPTIONS: { id: LayoutDensity; label: string; hint?: string }[] = [
+  { id: 'compact', label: 'Compact', hint: 'Pull entities closer (0.75× spacing) — dense maps' },
+  { id: 'balanced', label: 'Balanced', hint: 'Default — tightened in Session 136' },
+  {
+    id: 'spacious',
+    label: 'Spacious',
+    hint: 'Loosen for projector / accessibility (1.5× spacing)',
+  },
+];
+
 const CAUSALITY_OPTIONS: { id: CausalityLabel; label: string; hint?: string }[] = [
   { id: 'none', label: 'None', hint: 'No fallback label' },
   { id: 'auto', label: 'Auto', hint: 'CRT/FRT/TT → "because", PRT/EC → "in order to"' },
@@ -46,6 +58,7 @@ export function DisplayTab() {
     printInkSaver,
     causalityLabel,
     defaultLayoutDirection,
+    layoutDensity,
     setShowAnnotationNumbers,
     setShowEntityIds,
     setShowReachBadges,
@@ -55,6 +68,7 @@ export function DisplayTab() {
     setPrintInkSaver,
     setCausalityLabel,
     setDefaultLayoutDirection,
+    setLayoutDensity,
   } = useDocumentStore(
     useShallow((s) => ({
       showAnnotationNumbers: s.showAnnotationNumbers,
@@ -66,6 +80,7 @@ export function DisplayTab() {
       printInkSaver: s.printInkSaver,
       causalityLabel: s.causalityLabel,
       defaultLayoutDirection: s.defaultLayoutDirection,
+      layoutDensity: s.layoutDensity,
       setShowAnnotationNumbers: s.setShowAnnotationNumbers,
       setShowEntityIds: s.setShowEntityIds,
       setShowReachBadges: s.setShowReachBadges,
@@ -75,6 +90,7 @@ export function DisplayTab() {
       setPrintInkSaver: s.setPrintInkSaver,
       setCausalityLabel: s.setCausalityLabel,
       setDefaultLayoutDirection: s.setDefaultLayoutDirection,
+      setLayoutDensity: s.setLayoutDensity,
     }))
   );
 
@@ -136,6 +152,14 @@ export function DisplayTab() {
           value={defaultLayoutDirection}
           onChange={setDefaultLayoutDirection}
           options={DEFAULT_DIRECTION_OPTIONS}
+        />
+      </Field>
+      <Field label="Layout density">
+        <RadioGroup
+          name="layoutDensity"
+          value={layoutDensity}
+          onChange={setLayoutDensity}
+          options={LAYOUT_DENSITY_OPTIONS}
         />
       </Field>
     </Section>

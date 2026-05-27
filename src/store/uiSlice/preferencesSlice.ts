@@ -60,6 +60,14 @@ export type PreferencesSlice = {
    *  the Goal Tree flag so a user can keep the EC wizard on while
    *  dismissing the Goal Tree one. */
   showECWizard: boolean;
+  /** Session 136 — layout density. Three presets that scale the
+   *  auto-layout's rank + node separation: `'compact'` 0.75× (pull
+   *  entities closer for dense maps), `'balanced'` 1.0× (the
+   *  Session-136 tightened default — see `constants.ts`), `'spacious'`
+   *  1.5× (looser layout for projector mode / accessibility). Applied
+   *  at `layoutConfigToOptions()` time; per-doc `layoutConfig.rankSep`
+   *  / `.nodeSep` still wins when set explicitly. */
+  layoutDensity: 'compact' | 'balanced' | 'spacious';
   /** Session 136 — CRT creation wizard preference. The Current
    *  Reality Tree starts with UDE discovery; the wizard walks the
    *  user through capturing the first three UDEs and then steps
@@ -118,6 +126,8 @@ export type PreferencesSlice = {
   setShowECWizard: (show: boolean) => void;
   /** Session 136 — toggle the CRT creation-wizard preference. */
   setShowCRTWizard: (show: boolean) => void;
+  /** Session 136 — set the layout-density preset. */
+  setLayoutDensity: (density: 'compact' | 'balanced' | 'spacious') => void;
   /** Session 87 — toggle the EC verbalisation-strip collapse flag.
    *  Persisted across reloads. */
   setVerbalisationStripCollapsed: (collapsed: boolean) => void;
@@ -159,6 +169,7 @@ export type PreferencesDataKeys =
   | 'showGoalTreeWizard'
   | 'showECWizard'
   | 'showCRTWizard'
+  | 'layoutDensity'
   | 'verbalisationStripCollapsed'
   | 'ecChromeCollapsed'
   | 'showSelectionToolbar'
@@ -195,6 +206,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   showGoalTreeWizard: true,
   showECWizard: true,
   showCRTWizard: true,
+  layoutDensity: 'balanced',
   // Collapsed by default — Dann's Session 87 UX feedback: the full
   // chained verbalisation paragraph eats ~150 px of canvas chrome and
   // wraps to 5+ lines on a typical EC. Default collapsed, expand per
@@ -245,6 +257,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       showGoalTreeWizard: s.showGoalTreeWizard,
       showECWizard: s.showECWizard,
       showCRTWizard: s.showCRTWizard,
+      layoutDensity: s.layoutDensity,
       verbalisationStripCollapsed: s.verbalisationStripCollapsed,
       ecChromeCollapsed: s.ecChromeCollapsed,
       showSelectionToolbar: s.showSelectionToolbar,
@@ -273,6 +286,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     showGoalTreeWizard: initialPrefs.showGoalTreeWizard,
     showECWizard: initialPrefs.showECWizard,
     showCRTWizard: initialPrefs.showCRTWizard,
+    layoutDensity: initialPrefs.layoutDensity,
     verbalisationStripCollapsed: initialPrefs.verbalisationStripCollapsed,
     ecChromeCollapsed: initialPrefs.ecChromeCollapsed,
     showSelectionToolbar: initialPrefs.showSelectionToolbar,
@@ -355,6 +369,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setShowCRTWizard: (show) => {
       set({ showCRTWizard: show });
+      persistPrefs();
+    },
+    setLayoutDensity: (density) => {
+      set({ layoutDensity: density });
       persistPrefs();
     },
     setVerbalisationStripCollapsed: (collapsed) => {

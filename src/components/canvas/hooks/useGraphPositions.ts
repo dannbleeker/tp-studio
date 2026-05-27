@@ -124,6 +124,10 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   // F5: alternate-view toggle. Manual-layout diagrams (EC) ignore it — their
   // positions live on the entities themselves, not in a layout algorithm.
   const layoutMode = useDocumentStore((s) => s.layoutMode);
+  // Session 136 — layout density multiplier (compact / balanced /
+  // spacious). Applied per dagre call below; per-doc `layoutConfig`
+  // overrides still win.
+  const layoutDensity = useDocumentStore((s) => s.layoutDensity);
   // Hoist state is part of the layout cache key — a hoist swap should
   // recompute positions even when the underlying doc fingerprint hasn't
   // changed. Read it directly from the store (stable selector ref).
@@ -175,28 +179,50 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   // Dagre is heavy (~25 KB gzip). Lazy-load via `await import()` and
   // cache the resolved module module-level so subsequent renders are
   // effectively synchronous (a resolved Promise + setState round-trip).
-  const [dagreState, setDagreState] = useState<{ fp: string; data: GraphPositions }>({
+  const [dagreState, setDagreState] = useState<{
+    fp: string;
+    density: typeof layoutDensity;
+    data: GraphPositions;
+  }>({
     fp: '',
+    density: layoutDensity,
     data: {},
   });
-  // biome-ignore lint/correctness/useExhaustiveDependencies: by design — we re-run when the structural fingerprint changes; doc/projection/layoutMode are closed-over and read at effect time. Listing them as deps would re-fire the layout on title-only edits, defeating the fingerprint gate.
+  // Session 136 — density multipliers. `'compact'` pulls entities
+  // closer, `'spacious'` loosens for projector mode. Applied as a
+  // factor on top of `LAYOUT_RANK_SEPARATION` / `LAYOUT_NODE_SEPARATION`
+  // (per-doc `layoutConfig.rankSep` / `.nodeSep` overrides still win).
+  const densityMultiplier =
+    layoutDensity === 'compact' ? 0.75 : layoutDensity === 'spacious' ? 1.5 : 1.0;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: by design — we re-run when the structural fingerprint OR the density preset changes; doc/projection/layoutMode are closed-over and read at effect time. Listing them as deps would re-fire the layout on title-only edits, defeating the fingerprint gate.
   useEffect(() => {
     if (strategy === 'manual') return;
     if (layoutMode === 'radial') return;
-    if (dagreState.fp === fp) return;
+    if (dagreState.fp === fp && dagreState.density === layoutDensity) return;
     let cancelled = false;
     void (async () => {
       const mod = await loadLayoutModule();
       if (cancelled) return;
       const { nodes, edges } = buildLayoutInputs(doc, projection);
-      const auto = mod.computeLayout(nodes, edges, mod.layoutConfigToOptions(doc.layoutConfig));
+      const opts = mod.layoutConfigToOptions(doc.layoutConfig);
+      // Apply the density multiplier only when the per-doc override
+      // is absent; an explicit `layoutConfig.ranksep` (user dialed
+      // the per-doc setting) wins as-is. Note the lowercase dagre-style
+      // field names on `LayoutConfig` (per `types/document.ts`).
+      if (doc.layoutConfig?.ranksep === undefined) {
+        opts.rankSep = (opts.rankSep ?? 60) * densityMultiplier;
+      }
+      if (doc.layoutConfig?.nodesep === undefined) {
+        opts.nodeSep = (opts.nodeSep ?? 32) * densityMultiplier;
+      }
+      const auto = mod.computeLayout(nodes, edges, opts);
       if (cancelled) return;
-      setDagreState({ fp, data: overlayPinned(doc, projection, auto) });
+      setDagreState({ fp, density: layoutDensity, data: overlayPinned(doc, projection, auto) });
     })();
     return () => {
       cancelled = true;
     };
-  }, [fp]);
+  }, [fp, layoutDensity]);
 
   if (manualPositions) return manualPositions;
   if (radialPositions) return radialPositions;

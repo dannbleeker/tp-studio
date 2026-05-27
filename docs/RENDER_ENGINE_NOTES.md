@@ -147,8 +147,9 @@ values.
 
 ---
 
-## Session 136 deliverables (in this commit)
+## Session 136 deliverables
 
+**First commit (5060132):**
 - Tightened `LAYOUT_RANK_SEPARATION` 80 → 60 + `LAYOUT_NODE_SEPARATION`
   40 → 32 in `src/domain/constants.ts`.
 - New `Re-layout diagram (clear pinned positions)` palette command
@@ -157,6 +158,47 @@ values.
   fresh result.
 - This document.
 
+**Follow-up commit (75a2dc3): AND drag-create.**
+JunctorOverlay's circles are now hit-tested during connection drag.
+Drag an edge body, release over an existing AND circle → the source
+joins the AND group via `addCoCauseToEdge`. The plumbing:
+
+- `setHoveredJunctor({ groupId, kind }) / getHoveredJunctor()` in
+  `src/services/canvasRef.ts` — singleton ref, mirrors the existing
+  `hoveredEdgeRef` pattern.
+- `JunctorOverlay` opts the circle into `pointer-events: auto` (parent
+  SVG stays inert) and writes the ref on hover.
+- `useGraphMutations.onConnectEnd` reads the junctor ref between the
+  drop-on-node and drop-on-edge fallbacks (junctor is the more
+  specific gesture).
+- AND → `addCoCauseToEdge(memberEdgeId, sourceId)`. OR / XOR → friendly
+  info toast (gesture understood, action not yet wired; deferred to
+  the same future session as the routing pass).
+
+**Follow-up commit (current): layout density UI.**
+- New `layoutDensity: 'compact' | 'balanced' | 'spacious'` preference
+  in `StoredPrefs`. Default `'balanced'` (== current Session-136
+  tightened defaults).
+- `useGraphPositions` multiplies the dagre `rankSep` / `nodeSep` by
+  the density factor before each layout call. The per-doc
+  `layoutConfig.rankSep` / `.nodeSep` override still wins when set
+  explicitly — the multiplier only applies in the absence of an
+  explicit per-doc value.
+- Settings → Display surfaces a 3-radio control with copy describing
+  each preset's intent ("dense maps", "default", "projector /
+  accessibility").
+
 Pinned positions are not migrated. Existing docs with hand-dragged
 entities keep those positions; the user can clear them per-entity via
 the inspector or globally via the new palette command.
+
+## What's still TBD after Session 136
+
+- Real obstacle-aware edge routing — see §1 above. The single biggest
+  remaining ask from the usage-feedback list; needs a multi-session
+  budget. Recommended next session: prototype the dagre + custom
+  routing approach (option B) on a representative diagram and
+  benchmark perf before deciding final scope.
+- OR / XOR drag-create — see §2 above. Visual hit-test is in; the
+  domain action for OR / XOR co-cause adds needs design + tests.
+  Co-build with the routing pass.

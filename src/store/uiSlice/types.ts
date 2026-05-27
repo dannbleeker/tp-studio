@@ -173,6 +173,10 @@ export type StoredPrefs = {
   /** Session 136 — CRT creation wizard preference. Walks the user
    *  through capturing the first three UDEs on a new CRT doc. */
   showCRTWizard?: boolean;
+  /** Session 136 — three-preset density for the dagre layout
+   *  (compact / balanced / spacious). Per-doc `layoutConfig.rankSep`
+   *  / `.nodeSep` overrides still win when set explicitly. */
+  layoutDensity?: 'compact' | 'balanced' | 'spacious';
   /** Session 87 — EC verbalisation strip collapse state. Default
    *  `true` (collapsed) so the canvas reclaims vertical space on EC
    *  docs; user expands per-session via the strip's chevron. */

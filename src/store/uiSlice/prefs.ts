@@ -118,6 +118,15 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // Session 136 — CRT wizard preference, same `!== false` semantics
     // so first-run users get the guided 3-UDE elicitation.
     showCRTWizard: raw?.showCRTWizard !== false,
+    // Session 136 — layout density. Default `'balanced'`; unknown
+    // values (future / corrupt) fall back to balanced rather than
+    // throwing.
+    layoutDensity:
+      raw?.layoutDensity === 'compact' ||
+      raw?.layoutDensity === 'spacious' ||
+      raw?.layoutDensity === 'balanced'
+        ? raw.layoutDensity
+        : 'balanced',
     // Session 87 — collapsed by default so the EC canvas reclaims
     // ~150 px of vertical chrome; user expands per-session via the
     // strip's chevron. `!== false` semantics: any non-`false` value
