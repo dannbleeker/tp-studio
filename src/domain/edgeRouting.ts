@@ -458,47 +458,115 @@ export const pickDetourWaypoint = (
 };
 
 // -- Phase C — visibility graph + A\* -------------------------------------
+//
+// Phase D refactor: the visibility graph is now a reusable
+// {@link VisibilityGraph} value that callers can build once per
+// layout pass and run A\* against per-edge. This brings the per-edge
+// cost from O(n² m) (full rebuild) down to O(n) for the source/target
+// extension + O(n² + n log n) for A\*, which is what the proposal's
+// 50-edge ≤ 5 ms target assumes.
 
 /**
- * Build the visibility graph + run A\* from source to target. Vertices
- * are { source, target, each obstacle's 4 padded corners }; edges
- * connect vertex pairs whose connecting segment doesn't cross any
- * obstacle's interior. A\* uses straight-line euclidean distance as
- * the heuristic — admissible because the actual shortest path is
- * never shorter than the straight line.
+ * Reusable visibility-graph value. Vertices are the obstacle corners
+ * (4 per obstacle), stored as parallel `Float64Array`s for cache-
+ * friendly access; the adjacency lists are flat-array per-vertex.
  *
- * Returns the shortest obstacle-free path as a sequence of points
- * including the source (index 0) and target (last). When no path
- * exists (rare — only when source/target is itself inside an
- * obstacle's padded box and no edges connect to it), returns `null`
- * so the caller can fall back to the default bezier.
+ * Construct once via {@link buildVisibilityGraph} and call
+ * {@link aStarOnGraph} per edge to find the shortest path between
+ * arbitrary source/target points.
  *
- * Exported for direct unit testing of the routing core.
+ * The flat-array representation deliberately exposes the storage
+ * format — Phase D's per-layout cache reuses the same graph across
+ * many A\* calls and shaving allocations on each path lookup matters.
  */
-export const findVisibilityPath = (
-  source: Point,
-  target: Point,
+export type VisibilityGraph = {
+  /** Total number of corner vertices in the graph. = 4 × obstacles.length. */
+  readonly cornerCount: number;
+  /** Corner x-coordinates, indexed 0…cornerCount-1. */
+  readonly vx: Float64Array;
+  /** Corner y-coordinates, indexed 0…cornerCount-1. */
+  readonly vy: Float64Array;
+  /** Per-corner adjacency: `adjIdx[i]` is the list of neighbor corner indices. */
+  readonly adjIdx: readonly number[][];
+  /** Per-corner adjacency edge weights matching {@link adjIdx}. */
+  readonly adjW: readonly number[][];
+  /** Shrunk-interior obstacle x-mins, used for visibility checks involving the source/target. */
+  readonly oxmin: Float64Array;
+  /** Shrunk-interior obstacle x-maxes. */
+  readonly oxmax: Float64Array;
+  /** Shrunk-interior obstacle y-mins. */
+  readonly oymin: Float64Array;
+  /** Shrunk-interior obstacle y-maxes. */
+  readonly oymax: Float64Array;
+  /** Obstacle count (= oxmin.length, etc.). */
+  readonly obstacleCount: number;
+};
+
+/** Visibility check on flat arrays. Pulled out as a top-level helper
+ *  so both graph construction and A\* extension can call it. The
+ *  `excludeIdx0` / `excludeIdx1` parameters skip up to two specific
+ *  obstacle indices — used in `aStarOnGraph` to exempt the source /
+ *  target nodes' own boxes, since their handle positions sit inside
+ *  the shrunk-interior bounds. Pass `-1` for unused exclude slots. */
+const segmentVisible = (
+  sx: number,
+  sy: number,
+  tx: number,
+  ty: number,
+  oxmin: Float64Array,
+  oxmax: Float64Array,
+  oymin: Float64Array,
+  oymax: Float64Array,
+  m: number,
+  excludeIdx0: number = -1,
+  excludeIdx1: number = -1
+): boolean => {
+  for (let k = 0; k < m; k++) {
+    if (k === excludeIdx0 || k === excludeIdx1) continue;
+    if (
+      segmentCrossesBoxBounds(
+        sx,
+        sy,
+        tx,
+        ty,
+        oxmin[k] ?? 0,
+        oxmax[k] ?? 0,
+        oymin[k] ?? 0,
+        oymax[k] ?? 0
+      )
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
+ * Build a {@link VisibilityGraph} from an obstacle list. The corners
+ * of each obstacle are nudged outward by `padding`; pairs of corners
+ * whose connecting segment doesn't cross any obstacle's shrunk
+ * interior become graph edges with their euclidean distance as weight.
+ *
+ * Phase D — exported so `computeEdgeRoutes` can build the graph once
+ * per layout pass and reuse it across many A\* calls. The expensive
+ * O(n² m) work happens here; per-edge A\* is then cheap.
+ */
+export const buildVisibilityGraph = (
   obstacles: readonly Box[],
   padding: number = OBSTACLE_PADDING
-): Point[] | null => {
-  // Vertices stored as parallel flat arrays so the inner A\* + visibility
-  // loops never allocate / dereference `Point` objects. For 50 obstacles
-  // (≤ 202 vertices) this drops per-call cost from ~10 ms to ~1 ms.
-  const vertexCount = 2 + obstacles.length * 4;
-  const vx = new Float64Array(vertexCount);
-  const vy = new Float64Array(vertexCount);
-  vx[0] = source.x;
-  vy[0] = source.y;
-  vx[1] = target.x;
-  vy[1] = target.y;
-  for (let i = 0; i < obstacles.length; i++) {
+): VisibilityGraph => {
+  const m = obstacles.length;
+  const cornerCount = m * 4;
+  const vx = new Float64Array(cornerCount);
+  const vy = new Float64Array(cornerCount);
+  for (let i = 0; i < m; i++) {
     const o = obstacles[i];
     if (!o) continue;
     const left = o.x - padding;
     const right = o.x + o.width + padding;
     const top = o.y - padding;
     const bottom = o.y + o.height + padding;
-    const base = 2 + i * 4;
+    const base = i * 4;
     vx[base] = left;
     vy[base] = top;
     vx[base + 1] = right;
@@ -508,15 +576,9 @@ export const findVisibilityPath = (
     vx[base + 3] = right;
     vy[base + 3] = bottom;
   }
-  const SOURCE_IDX = 0;
-  const TARGET_IDX = 1;
-
-  // Pre-compute the shrunk-interior bounds for each padded obstacle.
-  // The EPS shrink keeps corner-corner edges along a shared boundary
-  // visible to each other (otherwise the visibility graph wouldn't
-  // have any edges between corners of the same box).
+  // Shrunk-interior obstacle bounds for the visibility check. EPS
+  // keeps corner-corner edges along a shared boundary visible.
   const EPS = 0.001;
-  const m = obstacles.length;
   const oxmin = new Float64Array(m);
   const oxmax = new Float64Array(m);
   const oymin = new Float64Array(m);
@@ -529,44 +591,20 @@ export const findVisibilityPath = (
     oymin[i] = o.y - padding + EPS;
     oymax[i] = o.y + o.height + padding - EPS;
   }
-
-  /** Visibility check on flat arrays — no allocations. */
-  const visible = (sx: number, sy: number, tx: number, ty: number): boolean => {
-    for (let k = 0; k < m; k++) {
-      if (
-        segmentCrossesBoxBounds(
-          sx,
-          sy,
-          tx,
-          ty,
-          oxmin[k] ?? 0,
-          oxmax[k] ?? 0,
-          oymin[k] ?? 0,
-          oymax[k] ?? 0
-        )
-      ) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  // Adjacency as flat arrays — `adjIdx[i]` is the list of neighbor
-  // indices for vertex i; `adjW[i]` is the matching edge weights.
-  // Pre-allocated to avoid resize cost on the inner loop.
-  const adjIdx: number[][] = new Array(vertexCount);
-  const adjW: number[][] = new Array(vertexCount);
-  for (let i = 0; i < vertexCount; i++) {
+  // Adjacency build — O(n² m) once.
+  const adjIdx: number[][] = new Array(cornerCount);
+  const adjW: number[][] = new Array(cornerCount);
+  for (let i = 0; i < cornerCount; i++) {
     adjIdx[i] = [];
     adjW[i] = [];
   }
-  for (let i = 0; i < vertexCount; i++) {
+  for (let i = 0; i < cornerCount; i++) {
     const sx = vx[i] ?? 0;
     const sy = vy[i] ?? 0;
-    for (let j = i + 1; j < vertexCount; j++) {
+    for (let j = i + 1; j < cornerCount; j++) {
       const tx = vx[j] ?? 0;
       const ty = vy[j] ?? 0;
-      if (!visible(sx, sy, tx, ty)) continue;
+      if (!segmentVisible(sx, sy, tx, ty, oxmin, oxmax, oymin, oymax, m)) continue;
       const w = Math.hypot(tx - sx, ty - sy);
       adjIdx[i]?.push(j);
       adjW[i]?.push(w);
@@ -574,10 +612,114 @@ export const findVisibilityPath = (
       adjW[j]?.push(w);
     }
   }
+  return { cornerCount, vx, vy, adjIdx, adjW, oxmin, oxmax, oymin, oymax, obstacleCount: m };
+};
 
-  // A\* with linear-scan open-set. For ~200 vertices the simple scan
-  // is plenty fast; a binary heap would add code without measurable
-  // gain on this size.
+/**
+ * Run A\* through a pre-built {@link VisibilityGraph} from `source`
+ * to `target`. The graph carries only the obstacle corners; the
+ * source and target are added on top as transient vertices, and
+ * their visibility to each corner is checked on the fly. The A\*
+ * heuristic is straight-line euclidean distance.
+ *
+ * Returns the shortest obstacle-free corner sequence (including
+ * source as the first element and target as the last) or `null` if
+ * no path exists.
+ */
+export const aStarOnGraph = (
+  graph: VisibilityGraph,
+  source: Point,
+  target: Point,
+  /**
+   * Optional obstacle indices to skip in visibility checks. The
+   * caller passes the indices of the source / target node's own
+   * boxes — the handle positions sit on those boxes' boundaries
+   * (= inside the shrunk-interior), so without this skip the source
+   * couldn't see any corner outside its own box and A\* would fail.
+   * Pass `-1` for unused slots; two slots is enough for typical
+   * source+target exclusion.
+   */
+  excludeSourceBox: number = -1,
+  excludeTargetBox: number = -1
+): Point[] | null => {
+  const cornerCount = graph.cornerCount;
+  const m = graph.obstacleCount;
+  // Vertex layout: [source, target, corner_0, corner_1, ...]
+  const vertexCount = 2 + cornerCount;
+  const SOURCE_IDX = 0;
+  const TARGET_IDX = 1;
+
+  // Reusable per-vertex coordinate accessors — source/target inlined,
+  // corners via the graph's flat arrays.
+  const getVx = (idx: number): number =>
+    idx === SOURCE_IDX ? source.x : idx === TARGET_IDX ? target.x : (graph.vx[idx - 2] ?? 0);
+  const getVy = (idx: number): number =>
+    idx === SOURCE_IDX ? source.y : idx === TARGET_IDX ? target.y : (graph.vy[idx - 2] ?? 0);
+
+  // Visibility between source/target and every corner. We don't add
+  // these into the graph (would mutate the shared cache); instead
+  // we keep two side arrays.
+  const sourceToCornerW = new Float64Array(cornerCount);
+  const targetToCornerW = new Float64Array(cornerCount);
+  for (let k = 0; k < cornerCount; k++) {
+    sourceToCornerW[k] = Number.POSITIVE_INFINITY;
+    targetToCornerW[k] = Number.POSITIVE_INFINITY;
+  }
+  for (let k = 0; k < cornerCount; k++) {
+    const cx = graph.vx[k] ?? 0;
+    const cy = graph.vy[k] ?? 0;
+    if (
+      segmentVisible(
+        source.x,
+        source.y,
+        cx,
+        cy,
+        graph.oxmin,
+        graph.oxmax,
+        graph.oymin,
+        graph.oymax,
+        m,
+        excludeSourceBox,
+        excludeTargetBox
+      )
+    ) {
+      sourceToCornerW[k] = Math.hypot(cx - source.x, cy - source.y);
+    }
+    if (
+      segmentVisible(
+        target.x,
+        target.y,
+        cx,
+        cy,
+        graph.oxmin,
+        graph.oxmax,
+        graph.oymin,
+        graph.oymax,
+        m,
+        excludeSourceBox,
+        excludeTargetBox
+      )
+    ) {
+      targetToCornerW[k] = Math.hypot(cx - target.x, cy - target.y);
+    }
+  }
+  // Source→target direct visibility.
+  const sourceToTargetW = segmentVisible(
+    source.x,
+    source.y,
+    target.x,
+    target.y,
+    graph.oxmin,
+    graph.oxmax,
+    graph.oymin,
+    graph.oymax,
+    m,
+    excludeSourceBox,
+    excludeTargetBox
+  )
+    ? Math.hypot(target.x - source.x, target.y - source.y)
+    : Number.POSITIVE_INFINITY;
+
   const gScore = new Float64Array(vertexCount);
   const fScore = new Float64Array(vertexCount);
   for (let i = 0; i < vertexCount; i++) {
@@ -588,8 +730,47 @@ export const findVisibilityPath = (
   gScore[SOURCE_IDX] = 0;
   fScore[SOURCE_IDX] = Math.hypot(target.x - source.x, target.y - source.y);
   const open = new Set<number>([SOURCE_IDX]);
-  const targetVx = vx[TARGET_IDX] ?? 0;
-  const targetVy = vy[TARGET_IDX] ?? 0;
+
+  // Returns the iterator over (neighborIdx, weight) for vertex `v`.
+  // For the source / target we splice in the side arrays + the
+  // direct source-target edge; for corners we read from the graph.
+  const iterateNeighbors = (
+    v: number,
+    visit: (neighborIdx: number, weight: number) => void
+  ): void => {
+    if (v === SOURCE_IDX) {
+      for (let k = 0; k < cornerCount; k++) {
+        const w = sourceToCornerW[k] ?? Number.POSITIVE_INFINITY;
+        if (Number.isFinite(w)) visit(2 + k, w);
+      }
+      if (Number.isFinite(sourceToTargetW)) visit(TARGET_IDX, sourceToTargetW);
+      return;
+    }
+    if (v === TARGET_IDX) {
+      for (let k = 0; k < cornerCount; k++) {
+        const w = targetToCornerW[k] ?? Number.POSITIVE_INFINITY;
+        if (Number.isFinite(w)) visit(2 + k, w);
+      }
+      if (Number.isFinite(sourceToTargetW)) visit(SOURCE_IDX, sourceToTargetW);
+      return;
+    }
+    // Corner vertex.
+    const cornerIdx = v - 2;
+    const neighbors = graph.adjIdx[cornerIdx];
+    const weights = graph.adjW[cornerIdx];
+    if (neighbors && weights) {
+      for (let i = 0; i < neighbors.length; i++) {
+        const ni = neighbors[i];
+        const w = weights[i];
+        if (ni !== undefined && w !== undefined) visit(2 + ni, w);
+      }
+    }
+    // Plus the back-edges to source/target if reachable.
+    const wToSource = sourceToCornerW[cornerIdx] ?? Number.POSITIVE_INFINITY;
+    if (Number.isFinite(wToSource)) visit(SOURCE_IDX, wToSource);
+    const wToTarget = targetToCornerW[cornerIdx] ?? Number.POSITIVE_INFINITY;
+    if (Number.isFinite(wToTarget)) visit(TARGET_IDX, wToTarget);
+  };
 
   while (open.size > 0) {
     let best = -1;
@@ -603,43 +784,50 @@ export const findVisibilityPath = (
     }
     if (best === -1) break;
     if (best === TARGET_IDX) {
-      // Reconstruct the path back to the source.
+      // Reconstruct the path.
       const path: Point[] = [];
       let cursor: number = best;
       while (cursor !== -1) {
-        path.push({ x: vx[cursor] ?? 0, y: vy[cursor] ?? 0 });
+        path.push({ x: getVx(cursor), y: getVy(cursor) });
         cursor = cameFrom[cursor] ?? -1;
       }
       path.reverse();
       return path;
     }
     open.delete(best);
-    const neighborIds = adjIdx[best];
-    const neighborWs = adjW[best];
-    if (!neighborIds || !neighborWs) continue;
     const gBest = gScore[best] ?? Number.POSITIVE_INFINITY;
-    for (let k = 0; k < neighborIds.length; k++) {
-      const neighborIdx = neighborIds[k];
-      const weight = neighborWs[k];
-      if (neighborIdx === undefined || weight === undefined) continue;
+    iterateNeighbors(best, (neighborIdx, weight) => {
       const tentativeG = gBest + weight;
       const currentG = gScore[neighborIdx] ?? Number.POSITIVE_INFINITY;
       if (tentativeG < currentG) {
         cameFrom[neighborIdx] = best;
         gScore[neighborIdx] = tentativeG;
-        const nvx = vx[neighborIdx] ?? 0;
-        const nvy = vy[neighborIdx] ?? 0;
-        fScore[neighborIdx] = tentativeG + Math.hypot(targetVx - nvx, targetVy - nvy);
+        fScore[neighborIdx] =
+          tentativeG + Math.hypot(target.x - getVx(neighborIdx), target.y - getVy(neighborIdx));
         if (!open.has(neighborIdx)) open.add(neighborIdx);
       }
-    }
+    });
   }
-
-  // No path — source / target unreachable through the visibility
-  // graph. Real cases: one endpoint sits inside an obstacle's padded
-  // box (the user dragged a node on top of another). Caller falls
-  // back to the default bezier.
   return null;
+};
+
+/**
+ * Convenience wrapper — builds a fresh graph and runs A\* on it. Used
+ * by single-edge callers (e.g. tests, the `routeEdge` shortcut path)
+ * that don't need the caching benefit.
+ *
+ * For multi-edge layouts, prefer {@link buildVisibilityGraph} +
+ * {@link aStarOnGraph} so the O(n²m) graph construction amortises
+ * across edges.
+ */
+export const findVisibilityPath = (
+  source: Point,
+  target: Point,
+  obstacles: readonly Box[],
+  padding: number = OBSTACLE_PADDING
+): Point[] | null => {
+  const graph = buildVisibilityGraph(obstacles, padding);
+  return aStarOnGraph(graph, source, target);
 };
 
 /**
