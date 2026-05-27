@@ -83,10 +83,14 @@ From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4
 
 If picking the next thing up:
 
-**All ten original spec major gaps are closed or out of scope; the design audit + infra-debt file splits + the actionable medium gaps are all done.** What's left:
+**All ten original spec major gaps are closed or out of scope; the design audit + infra-debt file splits + the actionable medium gaps + every fixable Session-136 usage-feedback item are done.** What's left:
 
-1. **Reactive-vs-proactive NBR mitigation** — the one remaining medium gap; policy-parked, re-open only if practitioners ask.
-2. **Hardware/hands-dependent handoffs** — manual a11y keyboard walkthrough ([checklist](docs/MANUAL_A11Y_WALKTHROUGH.md)) + Kindle device verification ([steps](docs/KINDLE_VERIFICATION.md)). Both need Dann.
+1. **Render-engine layout pass** (Session 136 top priority) — needs a design write-up before code. Likely paired with AND-connector rendering + drag-drop creation. Folds in the "edges render behind nodes" item too — pure z-order is the wrong fix, real edge routing is the right one.
+2. **Pattern library expansion** — research + curation. Aim: 5 patterns per diagram type from published TOC literature with careful originality (no copy-paste). Curate as `domain/patterns/<type>/<pattern-id>.ts`.
+3. **Edit-menu → left toolbar redesign** — design discussion first; no implementation until shape agreed.
+4. **Multi-document tabs** — re-opened from won't-build per Session-136 feedback. Needs a fresh PRD; depends on a cross-doc data model.
+5. **Reactive-vs-proactive NBR mitigation** — the one remaining medium gap; policy-parked, re-open only if practitioners ask.
+6. **Hardware/hands-dependent handoffs** — manual a11y keyboard walkthrough ([checklist](docs/MANUAL_A11Y_WALKTHROUGH.md)) + Kindle device verification ([steps](docs/KINDLE_VERIFICATION.md)). Both need Dann.
 
 ## Session 136 usage feedback — bigger items parked for their own session
 
@@ -96,18 +100,18 @@ From Dann's "how it feels in real use" pass (Session 136). Trivial copy/defaults
 - **AND connector rendering + drag-drop creation** — the AND-junctor visual today renders edges at fixed offsets, which looks chaotic on dense graphs. Spec: edges feed into the AND box first, then a single edge exits to the target. Plus: support creating an AND group by dragging an edge onto an existing AND box. Probably co-built with the layout pass above.
 - **Pattern library expansion** — research 5 patterns per diagram type from the published TOC literature (Goldratt, Dettmer, Scheinkopf, Cox/Boyd), with careful copyright handling (originality at the description level; no copy-paste from sources). Curate as `domain/patterns/<type>/<pattern-id>.ts`. Aim: every new doc has a recognisable starter shape.
 - **Edit-menu → left toolbar redesign** — the Edit menu has grown enough to feel cluttered. Consider a left-rail vertical toolbar for the most-used verbs (delete, group as AND, join, splice, etc.) and reserve the menu for less-frequent actions. Design discussion first; no implementation until shape agreed.
-- **PWA offline integrity** — Dann hit two failures on a plane (no internet): the book PDF/EPUB didn't load, and `pptxgen.es-DQvezJKa.js` failed dynamic import. The first is a service-worker pre-cache gap (the docs-bundle outputs may not be in the SW manifest); the second is a lazy-chunk URL that the SW didn't capture at install time. Both need investigation of the workbox `registerRoute` and `additionalManifestEntries` config.
+- ~~**PWA offline integrity**~~ ✅ *Done Session 136* — book PDF/EPUB added to the workbox precache (`additionalManifestEntries` in `vite.config.ts`); the dynamic `pptxgen.es-*.js` chunk gets a `runtimeCaching` rule (`StaleWhileRevalidate`) so the first online load seeds the cache and subsequent offline loads survive. Verified by inspecting the generated `sw.js` precache manifest in CI build.
 - **Multi-document tabs** — re-opened from the won't-build list per Dann's session-136 usage feedback. Tabs across diagrams of the same document set (CRT + EC + PRT in one workspace). Last considered Session 91 and cancelled; the new ask is the same shape. Probably still depends on a cross-doc model. Worth a fresh PRD before committing.
-- **HTML export with embedded preview image** — the static-HTML viewer is text-only today; embedding a PNG render at the top would make it more useful as a share artifact.
-- **EC PDF workshop export bug** — the EC workshop-mode PDF export doesn't produce a usable file. Reproduce + diagnose.
-- **Flying Logic notes-as-connections regression** — Dann reports that connections seem lost on import; the source `.flow` may carry notes that should become edges (or vice versa). Needs Dann's reproducer file before investigation can start.
+- ~~**HTML export with embedded preview image**~~ ✅ *Done Session 136 (batch 6)* — `exportToSelfContainedHTML` accepts an optional `previewPng` and embeds it as `<figure><img>` near the top of the exported file; the service-layer `exportHTMLViewer` captures the React Flow canvas via `capturePngDataUrl` and threads it through. Tests at `tests/domain/htmlExport.test.ts` cover both the present + absent branches.
+- ~~**EC PDF workshop export bug**~~ ✅ *Done Session 136 (batch 11)* — was silently swallowing failures inside the export pipeline; now traps + logs via `services/logger` and shows a user-facing toast. The lazy-chunk loading is also covered by the PWA fix above so an offline export attempt now degrades gracefully instead of hanging.
+- ~~**Flying Logic notes-as-connections regression**~~ ✅ *Done Session 135-136 (batches 4-5)* — root cause was `TPNode` omitting React Flow `<Handle>`s on note entities; React Flow needed a handle to anchor to so every imported edge whose endpoint was a Note silently failed to render. Fix: render the handles, lift the connect-to-note block, and paint note-touching edges dotted + thinner (`'2 3'` dasharray, baseWidth 1.25) so they read as annotation links rather than causal edges. Dann's "retail goal map.xlogic" reproduces cleanly after the fix.
 
 ### Session 136 bugs awaiting reproduction
 
 These were reported in the Session 136 usage pass but aren't reproducible from code alone:
 
-- **Inspector closes when making a selection inside it** — *what kind of selection?* The aside has a narrow-viewport tap-to-dismiss backdrop (hidden at md+) and an X / `clearSelection` button — neither should fire on a text-select or radio-click inside an input. Need: a step-by-step repro (which field, which gesture, what was selected before).
-- **"Add evidence" button does nothing** — most likely Browse Lock is on (it auto-engages on share-link / example loads and disables every mutating button silently). Need: a screenshot of the Inspector with the lock state visible — if Browse Lock is on, the fix is a toast saying "Browse Lock is on — unlock to add evidence"; if it's off, the click is a real regression. Either way: confirm Browse Lock state when reproducing.
+- ~~**Inspector closes when making a selection inside it**~~ ✅ *Done Session 136 (batch 8)* — root cause was `onSelectionChange` in `Canvas.tsx` calling `clearSelection()` on every empty-arrays event from React Flow. React Flow re-keys nodes during doc-edit re-renders and fires `onSelectionChange` with empty selNodes/selEdges before settling, which clobbered the store selection mid-edit. Fix: dropped the empty-mirror branch — pane clicks (`onPaneClick`) still clear selection deliberately. Follow-up batch raised TopBar `z-30` to stay above the now-always-visible Inspector (Playwright timeout fix).
+- ~~**"Add evidence" button does nothing**~~ ✅ *Done Session 136 (batch 9)* — Dann confirmed Browse Lock wasn't on; the failure was `addEvidence()` silently returning `null` when `readEntity()` couldn't find the id (stale closure / mid-edit window). Fix: handler now surfaces the error to the user via a toast ("Couldn't add evidence — entity unavailable. Reselect the entity and try again.") so the no-op state is visible rather than mysterious. Pairs with batch 8 to keep the entity selected through doc edits, which eliminates the stale-id window in practice.
 - **Edges render behind entity nodes** — folded into the render-engine layout pass above. The fix is real edge routing (around obstacles), not just z-order — pure z-order raise puts edges over titles, which looks worse.
 
 Otherwise the backlog is genuinely drained — new work would come from fresh spec/product direction.
