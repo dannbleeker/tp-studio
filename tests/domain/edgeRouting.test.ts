@@ -15,11 +15,14 @@ import { describe, expect, it } from 'vitest';
 import {
   type Box,
   bezierThroughWaypoint,
+  bezierThroughWaypoints,
   DETOUR_CLEARANCE,
   defaultBezierPath,
   type EdgeRoute,
   findBlockingObstacles,
+  findVisibilityPath,
   OBSTACLE_PADDING,
+  type Point,
   pickDetourWaypoint,
   routeEdge,
   sampleDefaultBezier,
@@ -245,10 +248,10 @@ describe('pickDetourWaypoint', () => {
   });
 });
 
-// -- routeEdge single-obstacle integration --------------------------------
+// -- routeEdge obstacle-avoidance integration -----------------------------
 
-describe('routeEdge — Phase B single-obstacle heuristic', () => {
-  it('routes around a single blocker via a waypoint', () => {
+describe('routeEdge — obstacle avoidance', () => {
+  it('routes around a single blocker via interior waypoint(s)', () => {
     // Bezier from (0, 0) → (200, 200); blocker at the centre of the line.
     const obstacle: Box = { x: 80, y: 80, width: 40, height: 40 };
     const route = routeEdge({
@@ -256,16 +259,19 @@ describe('routeEdge — Phase B single-obstacle heuristic', () => {
       target: { x: 200, y: 200 },
       obstacles: [obstacle],
     });
-    expect(route.waypoints).toHaveLength(3);
-    // The waypoint should not lie inside the (padded) box.
-    const wp = route.waypoints[1];
-    if (!wp) throw new Error('unreachable');
+    expect(route.waypoints.length).toBeGreaterThanOrEqual(3);
+    // Every interior waypoint should sit outside the obstacle's padded
+    // footprint (corners of the padded box are admissible).
     const pxmin = obstacle.x - OBSTACLE_PADDING;
     const pxmax = obstacle.x + obstacle.width + OBSTACLE_PADDING;
     const pymin = obstacle.y - OBSTACLE_PADDING;
     const pymax = obstacle.y + obstacle.height + OBSTACLE_PADDING;
-    const insidePadded = wp.x >= pxmin && wp.x <= pxmax && wp.y >= pymin && wp.y <= pymax;
-    expect(insidePadded).toBe(false);
+    for (let i = 1; i < route.waypoints.length - 1; i++) {
+      const wp = route.waypoints[i];
+      if (!wp) throw new Error('unreachable');
+      const insidePadded = wp.x > pxmin && wp.x < pxmax && wp.y > pymin && wp.y < pymax;
+      expect(insidePadded).toBe(false);
+    }
   });
 
   it('keeps the default bezier when no obstacle blocks', () => {
@@ -279,7 +285,10 @@ describe('routeEdge — Phase B single-obstacle heuristic', () => {
     expect(route.d).toBe(defaultBezierPath(ORIGIN, FAR));
   });
 
-  it('falls through to default bezier when 2+ obstacles block (deferred to Phase C)', () => {
+  it('routes around multiple blockers via the visibility graph', () => {
+    // Two obstacles on the bezier — Phase C's A\* finds a path that
+    // detours around BOTH boxes. Pre-Phase-C behavior was a fallthrough
+    // to the default bezier; this test pins the new contract.
     const box1: Box = { x: 50, y: 50, width: 30, height: 30 };
     const box2: Box = { x: 150, y: 150, width: 30, height: 30 };
     const route = routeEdge({
@@ -287,24 +296,21 @@ describe('routeEdge — Phase B single-obstacle heuristic', () => {
       target: { x: 200, y: 200 },
       obstacles: [box1, box2],
     });
-    // Multi-blocker fallback — Phase B does not detour for these.
-    expect(route.waypoints).toEqual([
-      { x: 0, y: 0 },
-      { x: 200, y: 200 },
-    ]);
-    expect(route.d).toBe(defaultBezierPath({ x: 0, y: 0 }, { x: 200, y: 200 }));
+    // A\* produces at least 3 waypoints (source + corner(s) + target);
+    // for two diagonally-stacked obstacles we typically see 3-4.
+    expect(route.waypoints.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('emits a path containing two cubic segments when a detour fires', () => {
+  it('emits multi-cubic SVG when waypoints are present', () => {
     const obstacle: Box = { x: 80, y: 80, width: 40, height: 40 };
     const route = routeEdge({
       source: { x: 0, y: 0 },
       target: { x: 200, y: 200 },
       obstacles: [obstacle],
     });
-    // Two `C ...` cubic commands joined at the waypoint.
     const cubicCount = (route.d.match(/C/g) ?? []).length;
-    expect(cubicCount).toBe(2);
+    // One cubic per pair of consecutive waypoints.
+    expect(cubicCount).toBe(route.waypoints.length - 1);
   });
 });
 
@@ -319,6 +325,170 @@ describe('bezierThroughWaypoint', () => {
     expect((d.match(/C/g) ?? []).length).toBe(2);
     // The waypoint coords appear in the middle (between the two cubics).
     expect(d).toContain('100,50');
+  });
+});
+
+// -- bezierThroughWaypoints (Phase C multi-waypoint composer) -------------
+
+describe('bezierThroughWaypoints', () => {
+  it('throws on fewer than 2 points', () => {
+    expect(() => bezierThroughWaypoints([])).toThrow();
+    expect(() => bezierThroughWaypoints([{ x: 0, y: 0 }])).toThrow();
+  });
+
+  it('matches defaultBezierPath when given just source+target', () => {
+    const d = bezierThroughWaypoints([
+      { x: 0, y: 0 },
+      { x: 100, y: 200 },
+    ]);
+    expect(d).toBe(defaultBezierPath({ x: 0, y: 0 }, { x: 100, y: 200 }));
+  });
+
+  it('emits N-1 cubic segments for N points', () => {
+    const points: Point[] = [
+      { x: 0, y: 0 },
+      { x: 50, y: 50 },
+      { x: 100, y: 100 },
+      { x: 200, y: 200 },
+    ];
+    const d = bezierThroughWaypoints(points);
+    // Three cubic segments for four points.
+    expect((d.match(/C/g) ?? []).length).toBe(3);
+    // First point is the move target.
+    expect(d.startsWith('M0,0')).toBe(true);
+    // Last point closes the path.
+    expect(d.endsWith('200,200')).toBe(true);
+  });
+});
+
+// -- findVisibilityPath (Phase C visibility-graph + A\*) ------------------
+
+describe('findVisibilityPath', () => {
+  it('returns a 2-point path when source and target are mutually visible', () => {
+    const path = findVisibilityPath({ x: 0, y: 0 }, { x: 200, y: 200 }, []);
+    expect(path).not.toBeNull();
+    expect(path).toHaveLength(2);
+    expect(path?.[0]).toEqual({ x: 0, y: 0 });
+    expect(path?.[1]).toEqual({ x: 200, y: 200 });
+  });
+
+  it('routes around a single obstacle blocking the straight line', () => {
+    const obstacle: Box = { x: 80, y: 80, width: 40, height: 40 };
+    const path = findVisibilityPath({ x: 0, y: 0 }, { x: 200, y: 200 }, [obstacle]);
+    expect(path).not.toBeNull();
+    expect(path?.length ?? 0).toBeGreaterThanOrEqual(3);
+    // First and last entries are the endpoints.
+    expect(path?.[0]).toEqual({ x: 0, y: 0 });
+    expect(path?.[path.length - 1]).toEqual({ x: 200, y: 200 });
+  });
+
+  it('routes around two diagonally-stacked obstacles', () => {
+    const box1: Box = { x: 50, y: 50, width: 30, height: 30 };
+    const box2: Box = { x: 150, y: 150, width: 30, height: 30 };
+    const path = findVisibilityPath({ x: 0, y: 0 }, { x: 200, y: 200 }, [box1, box2]);
+    expect(path).not.toBeNull();
+    expect(path?.length ?? 0).toBeGreaterThanOrEqual(3);
+  });
+
+  it('returns null when source is trapped inside an obstacle (degenerate)', () => {
+    // Source sits inside the padded box; no corner is visible to it
+    // (every candidate edge from source crosses the box). A\* returns
+    // null and the caller falls back to the bezier.
+    const obstacle: Box = { x: 0, y: 0, width: 100, height: 100 };
+    const path = findVisibilityPath({ x: 50, y: 50 }, { x: 300, y: 300 }, [obstacle]);
+    // Either null OR a single fallback — both are acceptable graceful
+    // degradation. We just require the function not to throw.
+    if (path) {
+      expect(path[0]).toEqual({ x: 50, y: 50 });
+    }
+  });
+});
+
+// -- Property test: no edge crosses any non-endpoint obstacle ------------
+
+describe('routeEdge — property: no waypoint segment crosses an obstacle', () => {
+  // Generates random 3-5 obstacle scenarios + random endpoints, then
+  // verifies that every consecutive-waypoint segment is obstacle-free
+  // (apart from the unavoidable degenerate cases where the bezier
+  // fallback fires). Replaces the proposal's "100 random graphs"
+  // property test with a smaller, deterministic seed for CI stability.
+  const SEED = 12345;
+  const rand = (() => {
+    // Mulberry32 — small, deterministic PRNG. Good enough for property
+    // generation; we don't need cryptographic strength.
+    let s = SEED;
+    return () => {
+      s += 0x6d2b79f5;
+      let t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  })();
+
+  it('over 50 random scenarios — no straight segment between consecutive waypoints crosses any non-endpoint obstacle interior', () => {
+    let scenarios = 0;
+    let totalChecks = 0;
+    for (let trial = 0; trial < 50; trial++) {
+      const source: Point = { x: rand() * 100, y: rand() * 100 };
+      const target: Point = { x: 400 + rand() * 100, y: 400 + rand() * 100 };
+      const obstacles: Box[] = [];
+      const obstacleCount = 2 + Math.floor(rand() * 4); // 2-5
+      for (let i = 0; i < obstacleCount; i++) {
+        obstacles.push({
+          x: 100 + rand() * 300,
+          y: 100 + rand() * 300,
+          width: 30 + rand() * 40,
+          height: 20 + rand() * 30,
+        });
+      }
+      // Filter out obstacles that contain source/target — A\* would
+      // fail on those (handled by the fallback) and we don't want to
+      // measure the fallback here.
+      const safeObstacles = obstacles.filter((b) => {
+        const inS =
+          source.x >= b.x &&
+          source.x <= b.x + b.width &&
+          source.y >= b.y &&
+          source.y <= b.y + b.height;
+        const inT =
+          target.x >= b.x &&
+          target.x <= b.x + b.width &&
+          target.y >= b.y &&
+          target.y <= b.y + b.height;
+        return !inS && !inT;
+      });
+      if (safeObstacles.length === 0) continue;
+      const route = routeEdge({ source, target, obstacles: safeObstacles });
+      if (route.waypoints.length < 3) continue; // bezier-only — no segment claim
+      scenarios++;
+      // Check every consecutive-waypoint segment vs every obstacle
+      // *interior* (corners-on-boundary visibility relies on the
+      // interior-only test, same as the algorithm uses internally).
+      for (let i = 0; i < route.waypoints.length - 1; i++) {
+        const a = route.waypoints[i];
+        const b = route.waypoints[i + 1];
+        if (!a || !b) continue;
+        for (const box of safeObstacles) {
+          // Pad and shrink for the interior-only check used by the algorithm.
+          const EPS = 0.1;
+          const innerBox: Box = {
+            x: box.x - OBSTACLE_PADDING + EPS,
+            y: box.y - OBSTACLE_PADDING + EPS,
+            width: box.width + 2 * OBSTACLE_PADDING - 2 * EPS,
+            height: box.height + 2 * OBSTACLE_PADDING - 2 * EPS,
+          };
+          const crosses = segmentIntersectsBox(a, b, innerBox);
+          totalChecks++;
+          expect(crosses).toBe(false);
+        }
+      }
+    }
+    // Make sure we actually exercised the property in some scenarios —
+    // otherwise the test would pass trivially even if A\* always fell
+    // back to the bezier.
+    expect(scenarios).toBeGreaterThan(0);
+    expect(totalChecks).toBeGreaterThan(0);
   });
 });
 

@@ -9,16 +9,18 @@
  *                                            useGraphEmission stamps
  *                                            `data.route` per edge
  *
- * Behavior is gated on `SMART_ROUTING_ENABLED`. Phase A + Phase B
- * leave the gate `false` so the user-visible behavior stays
- * "React Flow's default bezier". Phase B does populate the
- * `computeEdgeRoutes` helper with the single-obstacle heuristic, but
- * the hook short-circuits to `{}` until the gate flips in Phase C.
+ * Phase C (current) — the smart routing gate is now a store-backed
+ * preference read (`s.edgeRouting === 'smart'`). The default is
+ * `'smart'` per the proposal's locked decision; the `'direct'`
+ * opt-out is exposed in Settings → Display. When set to `'direct'`,
+ * this hook returns `{}` and every edge falls through to React Flow's
+ * default bezier (the pre-Phase-C behavior). When set to `'smart'`,
+ * `computeEdgeRoutes` builds the per-edge route map via the
+ * visibility-graph + A\* router.
  *
- * `computeEdgeRoutes` is the pure helper. Phase B tests exercise it
- * directly so we can pin the iteration logic + per-edge `routeEdge`
- * calls without flipping the gate on production. The hook just wraps
- * it inside `useMemo` + the gate check.
+ * `computeEdgeRoutes` is the pure helper. Tests exercise it directly
+ * so we can pin the iteration logic + per-edge `routeEdge` calls
+ * regardless of the user's preference.
  */
 
 import { useMemo } from 'react';
@@ -26,24 +28,13 @@ import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT } from '@/domain/constants'
 import { type Box, type EdgeRoute, type Point, routeEdge } from '@/domain/edgeRouting';
 import { edgesArray, isStNodeFormat } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
+import { useDocumentStore } from '@/store';
 import { COLLAPSED_HEIGHT, COLLAPSED_WIDTH } from './graphViewConstants';
 import type { GraphPositions } from './useGraphPositions';
 import type { GraphProjection } from './useGraphProjection';
 
-/**
- * Phase-gate constant. Read by `useEdgeRoutes` to decide whether to
- * call `computeEdgeRoutes` (Phase B+ logic) or short-circuit with
- * `{}`. Phase C flips this to a store-backed preference read; until
- * then it's a hard `false` so the populated path stays dead-but-
- * tested.
- *
- * Exported for the test so we can assert the gate's current value and
- * fail loudly if a future commit flips it without the corresponding
- * Settings + StoredPrefs wiring.
- */
-export const SMART_ROUTING_ENABLED = false;
-
-/** Map from edge id → routed geometry. Empty when the gate is off. */
+/** Map from edge id → routed geometry. Empty when the user opts out
+ *  (`StoredPrefs.edgeRouting === 'direct'`). */
 export type EdgeRouteMap = Readonly<Record<string, EdgeRoute>>;
 
 /**
@@ -101,8 +92,9 @@ const handlePositionsFor = (
 
 /**
  * Pure helper — given the doc + projection + positions, produce the
- * per-edge route map. Phase B exercises this directly in tests; the
- * hook below calls it behind the gate.
+ * per-edge route map by iterating the visible edges and calling
+ * `routeEdge` per edge. Tests exercise this directly; the hook below
+ * calls it when the user's preference is `'smart'`.
  *
  * Iteration:
  *   1. Build the obstacle list once per call — every visible node /
@@ -117,8 +109,9 @@ const handlePositionsFor = (
  *      - Call `routeEdge` and stamp the result keyed by the real edge id.
  *
  * Aggregated `agg:` edges are not routed — their endpoints are
- * synthetic and Phase B's single-blocker case has nothing useful to
- * say about them. They fall through to the default bezier.
+ * synthetic and the bucket-aggregation logic in `useGraphEdgeEmission`
+ * already keys them with a different id. They fall through to the
+ * default bezier.
  */
 export const computeEdgeRoutes = (
   doc: TPDocument,
@@ -175,16 +168,18 @@ export const computeEdgeRoutes = (
 };
 
 /**
- * React hook wrapper. Memoizes on (doc, projection, positions) and
- * short-circuits to `{}` when the gate is off.
+ * React hook wrapper. Reads the user's `edgeRouting` preference and
+ * either computes the route map (`'smart'`) or returns `{}` so every
+ * edge falls through to the default bezier (`'direct'`).
  */
 export const useEdgeRoutes = (
   doc: TPDocument,
   projection: GraphProjection,
   positions: GraphPositions
 ): EdgeRouteMap => {
+  const smartRouting = useDocumentStore((s) => s.edgeRouting === 'smart');
   return useMemo<EdgeRouteMap>(() => {
-    if (!SMART_ROUTING_ENABLED) return {};
+    if (!smartRouting) return {};
     return computeEdgeRoutes(doc, projection, positions);
-  }, [doc, projection, positions]);
+  }, [smartRouting, doc, projection, positions]);
 };

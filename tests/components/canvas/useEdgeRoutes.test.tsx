@@ -3,24 +3,17 @@
  *
  * Two layers under test:
  *
- *  1. **The hook + gate** — `useEdgeRoutes` returns `{}` while the
- *     hard-coded `SMART_ROUTING_ENABLED` constant is `false`. If a
- *     future commit flips that gate without the corresponding
- *     `StoredPrefs.edgeRouting` + Settings UI (Phase C deliverables),
- *     one of these tests fires red as a safety net.
- *  2. **The pure helper** — `computeEdgeRoutes` is what the hook
- *     calls when the gate is on. Phase B exercises it directly so
- *     the iteration logic + per-edge `routeEdge` calls are pinned
- *     before Phase C activates them.
+ *  1. **The hook + preference** — `useEdgeRoutes` returns `{}` when the
+ *     user's `edgeRouting` preference is `'direct'` (the opt-out) and
+ *     a populated map when the preference is `'smart'` (the default).
+ *  2. **The pure helper** — `computeEdgeRoutes` is what the hook calls
+ *     when the preference is `'smart'`. The iteration logic + per-edge
+ *     `routeEdge` invocation is exercised directly.
  */
 
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  computeEdgeRoutes,
-  SMART_ROUTING_ENABLED,
-  useEdgeRoutes,
-} from '@/components/canvas/hooks/useEdgeRoutes';
+import { computeEdgeRoutes, useEdgeRoutes } from '@/components/canvas/hooks/useEdgeRoutes';
 import { useGraphProjection } from '@/components/canvas/hooks/useGraphProjection';
 import { computeCollapseProjection } from '@/domain/groups';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -28,31 +21,29 @@ import { seedEntity } from '../../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);
 
-// -- Gate -------------------------------------------------------------------
+// -- Preference defaults ---------------------------------------------------
 
-describe('SMART_ROUTING_ENABLED gate', () => {
-  it('is false on main', () => {
-    // If this fires red, the gate has been flipped without the Phase C
-    // companion changes (StoredPrefs.edgeRouting + Settings → Display
-    // radio + the visibility-graph algorithm itself). Roll back the
-    // gate flip or land the full Phase C deliverable.
-    expect(SMART_ROUTING_ENABLED).toBe(false);
+describe('edgeRouting preference', () => {
+  it('defaults to smart routing on a fresh store', () => {
+    // Locked decision per `docs/EDGE_ROUTING_PROPOSAL.md`: smart is the
+    // first-release default. If this fires red, the opt-out flipped to
+    // the default — review whether that was deliberate.
+    expect(useDocumentStore.getState().edgeRouting).toBe('smart');
+  });
+
+  it('persists across setEdgeRouting calls', () => {
+    useDocumentStore.getState().setEdgeRouting('direct');
+    expect(useDocumentStore.getState().edgeRouting).toBe('direct');
+    useDocumentStore.getState().setEdgeRouting('smart');
+    expect(useDocumentStore.getState().edgeRouting).toBe('smart');
   });
 });
 
 // -- useEdgeRoutes hook ----------------------------------------------------
 
-describe('useEdgeRoutes — short-circuits while the gate is off', () => {
-  it('returns {} for an empty doc', () => {
-    const doc = useDocumentStore.getState().doc;
-    const { result } = renderHook(() => {
-      const projection = useGraphProjection(doc);
-      return useEdgeRoutes(doc, projection, {});
-    });
-    expect(result.current).toEqual({});
-  });
-
-  it('returns {} when the doc has entities + edges', () => {
+describe('useEdgeRoutes — preference-gated', () => {
+  it('returns {} when edgeRouting is "direct"', () => {
+    useDocumentStore.getState().setEdgeRouting('direct');
     const a = seedEntity('A');
     const b = seedEntity('B');
     const edge = useDocumentStore.getState().connect(a.id, b.id);
@@ -60,7 +51,7 @@ describe('useEdgeRoutes — short-circuits while the gate is off', () => {
     const doc = useDocumentStore.getState().doc;
     const positions = {
       [a.id]: { x: 0, y: 0 },
-      [b.id]: { x: 200, y: 100 },
+      [b.id]: { x: 0, y: 200 },
     };
     const { result } = renderHook(() => {
       const projection = useGraphProjection(doc);
@@ -68,15 +59,33 @@ describe('useEdgeRoutes — short-circuits while the gate is off', () => {
     });
     expect(result.current).toEqual({});
   });
+
+  it('returns a populated map when edgeRouting is "smart" (default)', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const edge = useDocumentStore.getState().connect(a.id, b.id);
+    if (!edge) throw new Error('edge not created');
+    const doc = useDocumentStore.getState().doc;
+    const positions = {
+      [a.id]: { x: 0, y: 0 },
+      [b.id]: { x: 0, y: 200 },
+    };
+    const { result } = renderHook(() => {
+      const projection = useGraphProjection(doc);
+      return useEdgeRoutes(doc, projection, positions);
+    });
+    expect(result.current[edge.id]).toBeDefined();
+    expect(result.current[edge.id]?.waypoints.length).toBeGreaterThanOrEqual(2);
+  });
 });
 
-// -- computeEdgeRoutes pure helper (Phase B-tested, gate-independent) ------
+// -- computeEdgeRoutes pure helper ----------------------------------------
 
 /**
  * Build a minimal `GraphProjection` value out of a doc + the entity
  * ids we want as the visible set. The hook normally derives this via
- * `useGraphProjection`, but Phase B tests want a fixture-style
- * shortcut that doesn't pay the React renderHook cost on every test.
+ * `useGraphProjection`, but the tests want a fixture-style shortcut
+ * that doesn't pay the React renderHook cost on every test.
  */
 const projectionOf = (
   doc: ReturnType<typeof useDocumentStore.getState>['doc'],
@@ -94,7 +103,7 @@ const projectionOf = (
   };
 };
 
-describe('computeEdgeRoutes — Phase B iteration', () => {
+describe('computeEdgeRoutes — iteration', () => {
   it('routes a single edge with no obstacles via the default bezier', () => {
     const a = seedEntity('A');
     const b = seedEntity('B');
@@ -111,18 +120,15 @@ describe('computeEdgeRoutes — Phase B iteration', () => {
     expect(routes[edge.id]?.waypoints).toHaveLength(2);
   });
 
-  it('routes a colinear 3-node case via a waypoint', () => {
+  it('routes a colinear 3-node case via interior waypoint(s)', () => {
     // A directly above B directly above C. The A→C edge should route
-    // around B (single blocker on the straight line).
+    // around B; A* yields at least one interior waypoint.
     const a = seedEntity('A');
     const b = seedEntity('B');
     const c = seedEntity('C');
     const edge = useDocumentStore.getState().connect(a.id, c.id);
     if (!edge) throw new Error('edge not created');
     const doc = useDocumentStore.getState().doc;
-    // Dann's tightened layout: ~60 px rank separation. Position the
-    // three nodes so the default bezier from A's bottom handle to C's
-    // top handle passes through B's body.
     const positions = {
       [a.id]: { x: 0, y: 0 },
       [b.id]: { x: 0, y: 120 },
@@ -132,12 +138,10 @@ describe('computeEdgeRoutes — Phase B iteration', () => {
     const routes = computeEdgeRoutes(doc, projection, positions);
     const route = routes[edge.id];
     expect(route).toBeDefined();
-    expect(route?.waypoints).toHaveLength(3);
+    expect(route?.waypoints.length).toBeGreaterThanOrEqual(3);
   });
 
   it('does NOT add a waypoint when the obstacle sits beside the line', () => {
-    // A above C with B way to the side. The A→C bezier shouldn't be
-    // touched.
     const a = seedEntity('A');
     const b = seedEntity('B');
     const c = seedEntity('C');
@@ -161,20 +165,14 @@ describe('computeEdgeRoutes — Phase B iteration', () => {
     if (!edge) throw new Error('edge not created');
     const doc = useDocumentStore.getState().doc;
     const projection = projectionOf(doc, [a.id, b.id]);
-    // Only `a` has a position — `b` is unresolved. The edge should be
-    // skipped rather than crashing.
     const routes = computeEdgeRoutes(doc, projection, { [a.id]: { x: 0, y: 0 } });
     expect(routes[edge.id]).toBeUndefined();
   });
 
   it('routes only one entry per remapped pair (matches aggregation rules)', () => {
-    // Two underlying edges A→B (a duplicate). Routing should produce
-    // one entry, keyed by the FIRST underlying edge id encountered.
     const a = seedEntity('A');
     const b = seedEntity('B');
     const edge1 = useDocumentStore.getState().connect(a.id, b.id);
-    // The second `connect` is a no-op (duplicate is rejected by the
-    // store), so explicitly check via the result.
     const edge2 = useDocumentStore.getState().connect(a.id, b.id);
     if (!edge1) throw new Error('edge1 not created');
     expect(edge2).toBeNull();
