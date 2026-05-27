@@ -194,11 +194,14 @@ the inspector or globally via the new palette command.
 
 ## What's still TBD after Session 136
 
-- Real obstacle-aware edge routing — see §1 above. The single biggest
-  remaining ask from the usage-feedback list; needs a multi-session
-  budget. Recommended next session: prototype the dagre + custom
-  routing approach (option B) on a representative diagram and
-  benchmark perf before deciding final scope.
+- Real obstacle-aware edge routing — see §1 above. **Full
+  implementation plan now lives at
+  [`docs/EDGE_ROUTING_PROPOSAL.md`](EDGE_ROUTING_PROPOSAL.md)**: four
+  phases (foundations → single-obstacle heuristic → visibility-graph
+  + A\* → polish), ~18 hours total, visible-improvement gradient lands
+  Phase B as the first MVP. Three open questions (visual preference,
+  default strategy, ship cadence) Dann needs to answer before Phase A
+  starts.
 - OR / XOR drag-create — see §2 above. Visual hit-test is in; the
   domain action for OR / XOR co-cause adds needs design + tests.
   Co-build with the routing pass.
