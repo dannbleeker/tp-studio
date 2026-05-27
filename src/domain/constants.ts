@@ -27,8 +27,17 @@ export const ST_NODE_HEIGHT = 220;
 // else that needs the visual center of a card.
 export const NODE_HALF_WIDTH = NODE_WIDTH / 2;
 export const NODE_HALF_HEIGHT = NODE_MIN_HEIGHT / 2;
-export const LAYOUT_RANK_SEPARATION = 80;
-export const LAYOUT_NODE_SEPARATION = 40;
+// Session 136 — tightened from 80/40 to 60/32 per Dann's "entities
+// should pull closer when there's slack" usage feedback. The previous
+// values left visible gaps between ranks on small graphs; 60 px is
+// enough headroom for an edge label without making the diagram feel
+// stretched. nodeSep dropped to 32 (down from 40) to match — the
+// horizontal gap between siblings was the most visible "this could
+// be tighter" axis. If a future use-case wants the looser layout
+// (high-density EC walls, projector mode), the doc-level
+// `layoutConfig.rankSep` / `.nodeSep` override these per document.
+export const LAYOUT_RANK_SEPARATION = 60;
+export const LAYOUT_NODE_SEPARATION = 32;
 
 // --- Junctor geometry ---
 // Session 101 — these were declared TWICE: once in `JunctorOverlay.tsx`

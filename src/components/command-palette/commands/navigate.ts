@@ -81,4 +81,33 @@ export const navigateCommands: Command[] = [
       inst?.fitView({ padding: 0.4, maxZoom: 1.2, duration: 200 });
     },
   },
+  {
+    // Session 136 — explicit user-triggered relayout. The auto-layout
+    // already fires on every structural edit (entities + edges added /
+    // removed; see `useGraphPositions` + `fingerprint.ts`), but pinned
+    // positions and post-drag manual placement can leave the diagram
+    // looking off. This command clears every pinned `entity.position`
+    // and triggers a fresh dagre pass + a fit-view so the user can
+    // reset to the auto-layout from a single keystroke. Browse Lock
+    // does NOT block this — it's a view operation that mutates
+    // positions but not any other doc state, and the user explicitly
+    // asked for it.
+    id: 're-layout',
+    label: 'Re-layout diagram (clear pinned positions)',
+    group: 'View',
+    run: (s) => {
+      // Clear every pinned position. `setEntityPosition(id, null)`
+      // (per `entityCrud.ts`) removes the field; dagre's next pass
+      // then sees them as free.
+      const ids = Object.keys(s.doc.entities);
+      for (const id of ids) {
+        s.setEntityPosition(id, null);
+      }
+      // Give the auto-layout effect a tick to recompute, then fit.
+      setTimeout(() => {
+        const inst = getCanvasInstance();
+        inst?.fitView({ padding: 0.4, maxZoom: 1.2, duration: 200 });
+      }, 50);
+    },
+  },
 ];
