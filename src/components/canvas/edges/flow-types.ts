@@ -1,5 +1,6 @@
 import type { Edge as RFEdge, Node as RFNode } from '@xyflow/react';
 import type { EligibilityStatus } from '@/domain/actionEligibility';
+import type { EdgeRoute } from '@/domain/edgeRouting';
 import type { Entity, EntityState, Group } from '@/domain/types';
 
 export type TPNodeData = {
@@ -58,6 +59,13 @@ export type TPEdgeData = {
    *  count from `data` instead of iterating `doc.assumptions` inside its
    *  per-edge store selector on every store change. Omitted when 0. */
   assumptionCount?: number;
+  /** Phase A scaffold for obstacle-aware edge routing. When present,
+   *  `TPEdge` consumes the precomputed SVG path instead of computing a
+   *  bezier from React Flow's source / target handles. Stamped per edge
+   *  by `useEdgeRoutes` once the smart-routing gate flips in Phase C.
+   *  Omitted in Phase A — the hook returns an empty map so every edge
+   *  falls through to the existing bezier behavior. */
+  route?: EdgeRoute;
 };
 
 export type TPGroupNodeData = {

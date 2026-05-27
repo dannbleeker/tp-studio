@@ -291,7 +291,23 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     effectiveTargetY,
   ]);
 
-  const path = mutexPath?.path ?? radialRoute?.path ?? bezierPath;
+  // Phase A scaffold for obstacle-aware edge routing — `data.route.d`
+  // is the precomputed SVG path string from the dagre-mode router (see
+  // `docs/EDGE_ROUTING_PROPOSAL.md` and `useEdgeRoutes`). Phase A
+  // never stamps the field (gate is off) so this branch is dead code
+  // until Phase C; the wiring is in place now so Phase C only has to
+  // flip the gate + add the Settings UI. Order of precedence:
+  //   1. Mutex override — bidirectional conflict, always wins.
+  //   2. Radial mode's perpendicular-deflection router — only fires
+  //      when `layoutMode === 'radial'`.
+  //   3. Smart router's precomputed path — only fires in flow layouts
+  //      once Phase C ships.
+  //   4. Default bezier — current behavior.
+  // For now, the label position falls back to the bezier midpoint when
+  // we use the routed path; Phase C+ will compute a real midpoint
+  // along the routed waypoints.
+  const routedPath = props.data?.route?.d;
+  const path = mutexPath?.path ?? radialRoute?.path ?? routedPath ?? bezierPath;
   const labelX = mutexPath?.labelX ?? radialRoute?.labelX ?? bezierLabelX;
   const labelY = mutexPath?.labelY ?? radialRoute?.labelY ?? bezierLabelY;
 
