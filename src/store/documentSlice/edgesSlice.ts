@@ -13,7 +13,7 @@ import { edgePatch, makeApplyDocChange, touch } from './docMutate';
  * time; the store actions refuse cross-kind grouping and the
  * persistence validator trims conflicting fields on import.
  */
-type JunctorKind = 'and' | 'or' | 'xor';
+export type JunctorKind = 'and' | 'or' | 'xor';
 const KIND_FIELD: Record<JunctorKind, 'andGroupId' | 'orGroupId' | 'xorGroupId'> = {
   and: 'andGroupId',
   or: 'orGroupId',
@@ -77,21 +77,33 @@ export type EdgesSlice = {
   spliceEntityIntoEdge: (entityId: string, edgeId: string) => boolean;
 
   /** TOC-reading direct-manipulation: add a co-cause to an existing edge's
-   *  target by AND-grouping a new `source → target` edge with the
-   *  existing one. The book treats dragging from an entity onto an edge as
-   *  the canonical way to introduce an additional sufficient cause —
-   *  "this also has to hold for the effect to happen."
+   *  target by junctor-grouping a new `source → target` edge with the
+   *  existing one. The book treats dragging from an entity onto an edge
+   *  (or onto an existing junctor circle) as the canonical way to
+   *  introduce an additional cause — "this also has to hold for the
+   *  effect to happen" (AND), "this is an alternative path" (OR), or
+   *  "exactly one of these holds" (XOR).
    *
    *  Behavior:
-   *    - Source entity must exist, be structural (not assumption), and
-   *      differ from the existing edge's source / target.
-   *    - If the existing edge already has an `andGroupId`, the new edge
-   *      joins that same group.
-   *    - If the existing edge is solo, a fresh `andGroupId` is minted and
-   *      stamped on BOTH the existing edge and the new edge.
+   *    - Source entity must exist, be structural (not assumption / note),
+   *      and differ from the existing edge's source / target.
+   *    - `kind` defaults to `'and'`. Pass `'or'` / `'xor'` to join those
+   *      junctor kinds instead.
+   *    - If the existing edge already belongs to a junctor of the
+   *      REQUESTED kind, the new edge joins that same group.
+   *    - If the existing edge belongs to a DIFFERENT kind (e.g. asking
+   *      OR on an AND-grouped edge), refuse and return null — one
+   *      junctor per edge, enforced.
+   *    - If the existing edge is solo, a fresh group id is minted for
+   *      the requested kind and stamped on BOTH the existing edge and
+   *      the new edge.
    *    - Duplicate detection: if source already feeds target, no-op.
    *  Returns the new edge, or `null` on any of the failure paths. */
-  addCoCauseToEdge: (existingEdgeId: string, sourceEntityId: string) => Edge | null;
+  addCoCauseToEdge: (
+    existingEdgeId: string,
+    sourceEntityId: string,
+    kind?: JunctorKind
+  ) => Edge | null;
 
   /** B1 — user-defined edge attributes (mirror of `setEntityAttribute`). */
   setEdgeAttribute: (edgeId: string, key: string, value: AttrValue) => void;
@@ -240,7 +252,7 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       });
     },
 
-    addCoCauseToEdge: (existingEdgeId, sourceEntityId) => {
+    addCoCauseToEdge: (existingEdgeId, sourceEntityId, kind = 'and') => {
       const { doc } = get();
       const existing = doc.edges[existingEdgeId];
       if (!existing) return null;
@@ -252,21 +264,31 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       // Self / duplicate guards.
       if (sourceEntityId === existing.sourceId || sourceEntityId === existing.targetId) return null;
       if (hasEdge(doc, sourceEntityId, existing.targetId)) return null;
+      // Cross-kind exclusivity: an edge belongs to at most one junctor
+      // kind at a time. Trying to add an OR co-cause to an AND-grouped
+      // edge (or any other mismatch) returns null rather than silently
+      // converting. Matches `groupAs`'s exclusivity check.
+      const otherFields = OTHER_KIND_FIELDS(kind);
+      if (otherFields.some((f) => existing[f])) return null;
 
-      // Determine the andGroupId for both edges.
-      const groupId = existing.andGroupId ?? `and_${nanoid(8)}`;
+      // Determine the group id for the requested kind. Reuse the
+      // existing group when the edge already belongs to one of the
+      // matching kind; mint a fresh `<kind>_<nanoid>` otherwise so the
+      // id encodes the junctor kind for grep-friendliness.
+      const kindField = KIND_FIELD[kind];
+      const groupId = existing[kindField] ?? `${kind}_${nanoid(8)}`;
       const newEdgeBase = createEdge({
         sourceId: sourceEntityId,
         targetId: existing.targetId,
-        andGroupId: groupId,
+        [kindField]: groupId,
       });
 
       applyDocChange((prev) => {
         const cur = prev.edges[existingEdgeId];
         if (!cur) return prev;
         const nextEdges = { ...prev.edges };
-        if (cur.andGroupId !== groupId) {
-          nextEdges[existingEdgeId] = { ...cur, andGroupId: groupId };
+        if (cur[kindField] !== groupId) {
+          nextEdges[existingEdgeId] = { ...cur, [kindField]: groupId };
         }
         nextEdges[newEdgeBase.id] = newEdgeBase;
         return touch({ ...prev, edges: nextEdges });

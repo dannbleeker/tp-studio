@@ -20,18 +20,20 @@ export const getCanvasNodes = (): TPNode[] =>
   (cached?.getNodes() ?? []).filter((n): n is TPNode => n.type === 'tp');
 
 /**
- * Session 136 — junctor hover ref. JunctorOverlay paints the AND /
- * OR / XOR circles below each target; when the user is connection-
- * dragging and hovers over a junctor, the overlay writes the
- * junctor's group id here and `useGraphMutations.onConnectEnd` reads
- * it after the hovered-edge check fails. Set to `{ groupId, kind }`
- * to enable the drop-on-junctor gesture; cleared on mouseLeave so a
- * stale hover from a prior drag doesn't trigger on the next.
+ * Session 136 + 137 — junctor hover ref. JunctorOverlay paints the
+ * AND / OR / XOR circles below each target; when the user is
+ * connection-dragging and hovers over a junctor, the overlay writes
+ * the junctor's group id here and `useGraphMutations.onConnectEnd`
+ * reads it after the hovered-edge check fails. Set to
+ * `{ groupId, kind }` to enable the drop-on-junctor gesture; cleared
+ * on mouseLeave so a stale hover from a prior drag doesn't trigger on
+ * the next.
  *
- * `kind` rides along so the receiver can produce a friendly toast
- * (e.g. "Added as a co-cause (AND-grouped)" vs. "(OR-grouped)").
- * Today only AND drag-create is implemented per the design doc
- * — OR/XOR fall through to a deferred toast.
+ * `kind` rides along so the receiver can route to the correct
+ * `addCoCauseToEdge(edge, source, kind)` invocation + emit the right
+ * toast wording. All three kinds (AND added Session 136; OR + XOR
+ * added Session 137) dispatch through the same code path; the kind
+ * is mapped to the matching `*GroupId` field on `TPEdgeData`.
  */
 export type HoveredJunctor = { groupId: string; kind: 'AND' | 'OR' | 'XOR' };
 let hoveredJunctor: HoveredJunctor | null = null;

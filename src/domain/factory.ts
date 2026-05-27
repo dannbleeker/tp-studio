@@ -170,12 +170,20 @@ export const createEdge = (params: {
   sourceId: string;
   targetId: string;
   andGroupId?: string;
+  orGroupId?: string;
+  xorGroupId?: string;
 }): Edge => ({
   id: newEdgeId(),
   sourceId: params.sourceId as EntityId,
   targetId: params.targetId as EntityId,
   kind: 'sufficiency',
+  // Junctor membership fields are mutually exclusive at the call site
+  // (an edge belongs to at most one of AND / OR / XOR); spread each one
+  // independently so the resulting edge only carries the field the
+  // caller asked for.
   ...(params.andGroupId ? { andGroupId: params.andGroupId } : {}),
+  ...(params.orGroupId ? { orGroupId: params.orGroupId } : {}),
+  ...(params.xorGroupId ? { xorGroupId: params.xorGroupId } : {}),
 });
 
 export const createGroup = (params: {
