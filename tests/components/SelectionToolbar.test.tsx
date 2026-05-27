@@ -153,4 +153,39 @@ describe('SelectionToolbar', () => {
     const title = deleteBtn.getAttribute('title') ?? '';
     expect(title.toLowerCase()).toContain('delete');
   });
+
+  it('renders above the Inspector aside (z-index ≥ 25)', async () => {
+    // Session 137 — regression guard for the silent-cover bug.
+    // The Inspector aside uses Tailwind's `z-20`. If the toolbar
+    // also lands at `z-20`, App's DOM order (Inspector is later)
+    // hides the toolbar wherever the Inspector and the toolbar's
+    // horizontal band overlap. Pin the explicit `zIndex` so a
+    // future style refactor can't reintroduce the regression.
+    const a = seedEntity('A');
+    act(() => useDocumentStore.getState().selectEntity(a.id));
+    renderWithProvider(<SelectionToolbar />);
+    await advanceFrame();
+    const root = screen.getByRole('toolbar', { name: /selection actions/i });
+    const zIndex = Number.parseInt(root.style.zIndex, 10);
+    expect(zIndex).toBeGreaterThanOrEqual(25);
+  });
+
+  it('wraps verbs to a second row when the verb count is high (Option B)', async () => {
+    // Session 137 — Option B beef-up. A multi-edge selection with
+    // AND + OR + XOR + ungroups + delete blows past the single-row
+    // budget (≥ 6 verbs). The toolbar should use `flex-wrap` so the
+    // chips wrap to a second row rather than overflowing the
+    // viewport or truncating.
+    //
+    // The unit test verifies the className carries `flex-wrap`;
+    // the visual wrap behavior + estimated-height plumbing into
+    // the placement math are exercised in the e2e + the placement
+    // unit tests.
+    const a = seedEntity('A');
+    act(() => useDocumentStore.getState().selectEntity(a.id));
+    renderWithProvider(<SelectionToolbar />);
+    await advanceFrame();
+    const root = screen.getByRole('toolbar', { name: /selection actions/i });
+    expect(root.className).toMatch(/\bflex-wrap\b/);
+  });
 });

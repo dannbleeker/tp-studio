@@ -47,8 +47,14 @@ import { computeToolbarPlacement } from './selectionToolbarPlacement';
 // each render; the pure function in `selectionToolbarPlacement.ts`
 // has direct unit tests.
 const GAP_PX = 10; // gap between selection bbox edge and toolbar
-const ESTIMATED_HEIGHT_PX = 36; // chip row height
-const ESTIMATED_WIDTH_PX = 320; // chip row width (~5 verbs); used for horizontal clamp
+// Session 137 — Option B beef-up. The chip row now wraps to a second
+// line when the verb count exceeds what fits at `ESTIMATED_WIDTH_PX`.
+// The placement math accepts `estimatedHeight` per-render so we can
+// pass `ESTIMATED_HEIGHT_PX * rowCount` and the anchor still clears
+// the selection rect.
+const ESTIMATED_ROW_HEIGHT_PX = 36; // single chip row height
+const CHIPS_PER_ROW = 6; // verb count that fits on one row at ~480 px
+const ESTIMATED_WIDTH_PX = 480; // chip row width (~6 verbs); used for horizontal clamp
 const VIEWPORT_MARGIN_PX = 8; // minimum distance from viewport edges
 
 /**
@@ -181,6 +187,14 @@ export function SelectionToolbar() {
   if (!rect) return null;
   if (verbs.length === 0) return null;
 
+  // Session 137 — multi-row chip layout. Verb-heavy branches (CRT
+  // single-entity hits 7+ verbs; multi-edge AND/OR/XOR + ungroups
+  // hit 7) wrap to a second row rather than truncating. The
+  // placement math gets the actual row count so the anchor still
+  // clears the selection rect.
+  const rowCount = Math.max(1, Math.ceil(verbs.length / CHIPS_PER_ROW));
+  const estimatedHeight = ESTIMATED_ROW_HEIGHT_PX * rowCount + (rowCount - 1) * 4; // 4 px gap between rows
+
   // Compute placement via the extracted pure function. The math
   // (anchor above / flip below near top / horizontal clamp) is
   // unit-tested in `selectionToolbarPlacement.test.ts`.
@@ -190,7 +204,7 @@ export function SelectionToolbar() {
       width: typeof window === 'undefined' ? 1024 : window.innerWidth,
       height: typeof window === 'undefined' ? 768 : window.innerHeight,
     },
-    estimatedHeight: ESTIMATED_HEIGHT_PX,
+    estimatedHeight,
     estimatedWidth: ESTIMATED_WIDTH_PX,
     gap: GAP_PX,
     viewportMargin: VIEWPORT_MARGIN_PX,
@@ -201,7 +215,14 @@ export function SelectionToolbar() {
     top: `${placement.top}px`,
     left: `${placement.left}px`,
     transform: 'translateX(-50%)',
-    zIndex: 20,
+    // Session 137 — raised from `z-20` to `z-25` so the toolbar sits
+    // *above* the Inspector aside (also `z-20`, but later in App's
+    // DOM order → it was silently covering the toolbar whenever a
+    // selection on the right side of the canvas pushed the toolbar
+    // into the Inspector's horizontal band). TopBar stays above
+    // everything at `z-30`; the toolbar slots between Inspector and
+    // TopBar.
+    zIndex: 25,
   };
 
   return (
@@ -212,7 +233,14 @@ export function SelectionToolbar() {
       // pointer-events-auto on the chip row but `none` on the wrapper
       // would be cleaner; the wrapper itself doesn't intercept anything
       // since its only child is the visible chip row.
-      className="pointer-events-auto flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-1.5 py-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
+      //
+      // Session 137 — `flex-wrap` lets verb-heavy branches (CRT single-
+      // entity, multi-edge AND/OR/XOR) drop to a second row instead of
+      // truncating. `max-w-[480px]` matches `ESTIMATED_WIDTH_PX` so the
+      // placement math and the actual chip-row width stay in lockstep.
+      // `gap-y-1` adds vertical breathing room between rows; the
+      // estimated height computation above accounts for the same 4 px gap.
+      className="pointer-events-auto flex max-w-[480px] flex-wrap items-center gap-x-1 gap-y-1 rounded-lg border border-neutral-200 bg-white px-1.5 py-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
       style={style}
     >
       {verbs.map((verb) => {
