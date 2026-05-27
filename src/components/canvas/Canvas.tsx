@@ -366,6 +366,17 @@ function CanvasInner() {
           // `onPaneClick` (handled separately above); we don't need
           // to mirror empty here too. Drop the else, keep only the
           // mirror-non-empty branches.
+          //
+          // **Do NOT re-add an `else { clearSelection() }` here.** The
+          // regression coverage that pins this lives at
+          // `tests/store/inspectorStaysOpenOnEdit.test.ts` — those
+          // tests assert that every doc-mutating action (updateEntity
+          // title / type / description / state / position / etc.)
+          // leaves the store selection intact. The browser-level
+          // round-trip through React Flow's selection state is
+          // covered by the e2e suite. If a deselect path is genuinely
+          // needed, add it to `onPaneClick` or to a focused gesture
+          // handler, not here.
           if (selEdges.length > 0) {
             selectEdges(selEdges.map((e) => e.id));
             closeHistoryPanel();

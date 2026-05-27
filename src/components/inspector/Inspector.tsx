@@ -72,6 +72,14 @@ export function Inspector() {
           so the backdrop fades in coordinated with the inspector's
           120ms slide instead of snapping on; `pointer-events-none`
           when closed keeps the canvas clickable. */}
+      {/* Intended-close path #1 (narrow viewports < md): the dim
+          backdrop behind the aside dismisses the inspector when the
+          user taps outside it. `md:hidden` keeps this off the desktop
+          layout where the aside sits next to the canvas (no overlap).
+          The selection-clearing contract is locked by
+          `tests/store/inspectorStaysOpenOnEdit.test.ts` — if a future
+          change accidentally adds a doc-edit-triggered clearSelection
+          path, those tests fail. */}
       <button
         type="button"
         aria-hidden="true"
@@ -117,6 +125,12 @@ export function Inspector() {
             <h2 className="font-semibold text-neutral-700 text-sm dark:text-neutral-200">
               {headerLabel}
             </h2>
+            {/* Intended-close path #2: the explicit X button in the
+                header. Same regression contract as the backdrop —
+                tests in `tests/store/inspectorStaysOpenOnEdit.test.ts`
+                lock the invariant that doc edits never close the
+                inspector; only `onPaneClick`, this X, the narrow-
+                viewport backdrop, and the Esc cascade do. */}
             <Button
               variant="ghost"
               size="icon"
