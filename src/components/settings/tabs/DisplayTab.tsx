@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
-import type { CausalityLabel, DefaultLayoutDirection } from '@/store';
+import type { CausalityLabel, DefaultLayoutDirection, EdgeRouting } from '@/store';
 import { useDocumentStore } from '@/store';
 import { RadioGroup, Section, Toggle } from '../formPrimitives';
 
@@ -13,6 +13,22 @@ const LAYOUT_DENSITY_OPTIONS: { id: LayoutDensity; label: string; hint?: string 
     id: 'spacious',
     label: 'Spacious',
     hint: 'Loosen for projector / accessibility (1.5× spacing)',
+  },
+];
+
+/** Phase C of the obstacle-aware edge routing project — the user-
+ *  facing toggle between the smart router and the pre-Phase-C bezier.
+ *  Default `'smart'` per the proposal's locked decision. */
+const EDGE_ROUTING_OPTIONS: { id: EdgeRouting; label: string; hint?: string }[] = [
+  {
+    id: 'smart',
+    label: 'Smart (avoid obstacles)',
+    hint: 'Routes edges around non-endpoint node bodies (default)',
+  },
+  {
+    id: 'direct',
+    label: 'Direct (curves through anything)',
+    hint: 'Pre-routing behavior — every edge is React Flow’s default bezier',
   },
 ];
 
@@ -59,6 +75,7 @@ export function DisplayTab() {
     causalityLabel,
     defaultLayoutDirection,
     layoutDensity,
+    edgeRouting,
     setShowAnnotationNumbers,
     setShowEntityIds,
     setShowReachBadges,
@@ -69,6 +86,7 @@ export function DisplayTab() {
     setCausalityLabel,
     setDefaultLayoutDirection,
     setLayoutDensity,
+    setEdgeRouting,
   } = useDocumentStore(
     useShallow((s) => ({
       showAnnotationNumbers: s.showAnnotationNumbers,
@@ -81,6 +99,7 @@ export function DisplayTab() {
       causalityLabel: s.causalityLabel,
       defaultLayoutDirection: s.defaultLayoutDirection,
       layoutDensity: s.layoutDensity,
+      edgeRouting: s.edgeRouting,
       setShowAnnotationNumbers: s.setShowAnnotationNumbers,
       setShowEntityIds: s.setShowEntityIds,
       setShowReachBadges: s.setShowReachBadges,
@@ -91,6 +110,7 @@ export function DisplayTab() {
       setCausalityLabel: s.setCausalityLabel,
       setDefaultLayoutDirection: s.setDefaultLayoutDirection,
       setLayoutDensity: s.setLayoutDensity,
+      setEdgeRouting: s.setEdgeRouting,
     }))
   );
 
@@ -160,6 +180,14 @@ export function DisplayTab() {
           value={layoutDensity}
           onChange={setLayoutDensity}
           options={LAYOUT_DENSITY_OPTIONS}
+        />
+      </Field>
+      <Field label="Edge routing">
+        <RadioGroup
+          name="edgeRouting"
+          value={edgeRouting}
+          onChange={setEdgeRouting}
+          options={EDGE_ROUTING_OPTIONS}
         />
       </Field>
     </Section>

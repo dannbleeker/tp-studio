@@ -1,6 +1,7 @@
 import type { DetailedRevisionDiff } from '@/domain/revisions';
 import type { EntityId, EntityState, TPDocument } from '@/domain/types';
 import type { AnyTPNode, TPEdge } from '../edges/flow-types';
+import type { EdgeRouteMap } from './useEdgeRoutes';
 import { useGraphEdgeEmission } from './useGraphEdgeEmission';
 import { useGraphNodeEmission } from './useGraphNodeEmission';
 import type { GraphPositions } from './useGraphPositions';
@@ -33,7 +34,11 @@ export const useGraphEmission = (
   compareDiff: DetailedRevisionDiff | null,
   derivedStates: Record<EntityId, EntityState>,
   speculationOverlay: Record<string, EntityState> | null,
-  showActionEligibility = false
+  showActionEligibility = false,
+  // Phase A — empty by default; `useGraphView` threads the real map in
+  // from `useEdgeRoutes`. Tests that mount `useGraphEmission` directly
+  // continue to work with the existing positional argument list.
+  routes: EdgeRouteMap = {}
 ): GraphEmission => {
   const nodes = useGraphNodeEmission(
     doc,
@@ -44,6 +49,6 @@ export const useGraphEmission = (
     speculationOverlay,
     showActionEligibility
   );
-  const edges = useGraphEdgeEmission(doc, projection);
+  const edges = useGraphEdgeEmission(doc, projection, routes);
   return { nodes, edges };
 };

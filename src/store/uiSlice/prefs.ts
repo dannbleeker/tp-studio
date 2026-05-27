@@ -11,6 +11,7 @@ import type {
   CausalityLabel,
   DefaultLayoutDirection,
   EdgePalette,
+  EdgeRouting,
   LayoutMode,
   StoredPrefs,
   Theme,
@@ -56,6 +57,7 @@ const VALID_APP_MODES: ReadonlySet<AppMode> = new Set([
   'workshop',
   'presentation',
 ]);
+const VALID_EDGE_ROUTING: ReadonlySet<EdgeRouting> = new Set(['smart', 'direct']);
 
 export const readInitialTheme = (): Theme => {
   const raw = readString(STORAGE_KEYS.theme);
@@ -150,6 +152,13 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // Session 135 medium gap — archived groups hidden by default; the
     // whole point of archiving is to declutter, so reveal is opt-in.
     showArchivedGroups: raw?.showArchivedGroups === true,
+    // Phase C edge routing — `'smart'` is the locked default per the
+    // proposal. The `'direct'` opt-out exists as an escape hatch for
+    // users who specifically want the pre-Phase-C behavior. Unknown
+    // values (stale / corrupt) fall back to smart rather than
+    // throwing.
+    edgeRouting:
+      raw?.edgeRouting && VALID_EDGE_ROUTING.has(raw.edgeRouting) ? raw.edgeRouting : 'smart',
   };
 };
 

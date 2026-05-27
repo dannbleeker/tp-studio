@@ -22,6 +22,7 @@ export type {
   ContextMenuTarget,
   DefaultLayoutDirection,
   EdgePalette,
+  EdgeRouting,
   LayoutMode,
   Selection,
   Theme,

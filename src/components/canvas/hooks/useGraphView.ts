@@ -3,6 +3,7 @@ import { useCompareDiff } from '@/hooks/useCompareDiff';
 import { usePropagatedStates } from '@/hooks/usePropagatedStates';
 import { useDocumentStore } from '@/store';
 import type { AnyTPNode, TPEdge } from '../edges/flow-types';
+import { useEdgeRoutes } from './useEdgeRoutes';
 import { useGraphEmission } from './useGraphEmission';
 import { useGraphPositions } from './useGraphPositions';
 import { useGraphProjection } from './useGraphProjection';
@@ -38,6 +39,13 @@ export type GraphView = {
 export const useGraphView = (doc: TPDocument): GraphView => {
   const projection = useGraphProjection(doc);
   const positions = useGraphPositions(doc, projection);
+  // Phase A scaffold for obstacle-aware edge routing. The hook is
+  // gated off and returns `{}` until Phase C flips the gate — see
+  // `docs/EDGE_ROUTING_PROPOSAL.md` and `useEdgeRoutes.SMART_ROUTING_ENABLED`.
+  // Inserted into the composition order now so the Phase C commit
+  // only has to flip the gate and add the Settings UI without
+  // re-plumbing the hook chain.
+  const routes = useEdgeRoutes(doc, projection, positions);
   // H2: when a compare revision is active, fetch the detailed diff so
   // emission can stamp `diffStatus` on each node. Returns null in normal
   // viewing mode — no diff overhead when not comparing.
@@ -59,6 +67,7 @@ export const useGraphView = (doc: TPDocument): GraphView => {
     compareDiff,
     derivedStates,
     speculationOverlay,
-    showActionEligibility
+    showActionEligibility,
+    routes
   );
 };

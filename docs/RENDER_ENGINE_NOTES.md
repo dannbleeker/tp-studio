@@ -72,38 +72,31 @@ short line continues from circle into target's bottom handle (only place an arro
 
 ## What still needs a dedicated session
 
-### 1. Real edge routing (avoid obstacles)
+### 1. Real edge routing (avoid obstacles) — ✅ SHIPPED (Session 137)
 
 **Symptom**: on dense graphs, dagre's edge polylines sometimes pass
 *through* node bodies (the edge is technically rendered behind the
 node, so the user sees the edge appear / disappear at the node's
 edges). Dann's Session-136 feedback flagged this.
 
-**Why it happens**: dagre only ranks nodes + assigns columns; it does
-not route edges around obstacles. React Flow then connects each edge's
-source handle to its target handle with a smooth bezier, with no
-obstacle awareness.
+**Resolution**: Phase A → D of the obstacle-aware routing project
+landed in Session 137. The full plan (locked decisions, phasing, test
+strategy) is in [`docs/EDGE_ROUTING_PROPOSAL.md`](EDGE_ROUTING_PROPOSAL.md);
+the implementation lives at:
 
-**Options**:
+- `src/domain/edgeRouting.ts` — pure-geometry router (visibility graph
+  + A\* + smoothed bezier through waypoints).
+- `src/components/canvas/hooks/useEdgeRoutes.ts` — React adapter +
+  per-layout visibility-graph cache.
+- `StoredPrefs.edgeRouting` (`'smart' | 'direct'`, default `'smart'`)
+  + Settings → Display radio.
 
-- **A) Switch the layout backend to ELK** (eclipse layout kernel). ELK
-  has orthogonal + polyline routers that natively avoid node
-  intersections. Trade-offs: ~70 KB gzip (vs dagre's 25 KB), worker-
-  based async API, harder to tune (more knobs), slower on small
-  graphs. The migration also throws away every hand-tuned dagre
-  constant in `layout.ts`.
-- **B) Custom obstacle-avoidance on top of dagre.** Keep dagre for
-  node placement, write a routing pass that computes each edge as an
-  orthogonal polyline avoiding node bounding boxes. Cheaper bundle
-  cost but several days of work to make robust on cycles + multi-rank
-  edges.
-- **C) Z-order shuffle (sometimes used as a hack).** Force edges
-  *over* nodes. Looks bad — the edge crosses the node title text.
-  Rejected.
-
-**Recommendation**: **B** for now (keep dagre, add an obstacle-aware
-routing pass), with **A** as the planned follow-up once we hit graphs
-where B's perf cost becomes visible (>500 entities).
+**Approach chosen**: option B from the original list (keep dagre, add
+an obstacle-aware routing pass on top). The router emits **bezier
+curves through waypoints** rather than orthogonal polylines, per
+Dann's locked decision on visual identity. Phase E (ELK migration) is
+parked unless we hit >1000-entity graphs where the visibility-graph
+build cost becomes visible.
 
 ### 2. AND drag-drop creation
 

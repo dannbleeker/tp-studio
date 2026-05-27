@@ -2,6 +2,66 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 137 — Obstacle-aware edge routing (Phases A–D)
+
+Multi-session arc that turned the "edges render behind entity nodes"
+finding from Session 136 into a real fix. The design plan + locked
+decisions live at [docs/EDGE_ROUTING_PROPOSAL.md](docs/EDGE_ROUTING_PROPOSAL.md);
+this entry summarizes what landed.
+
+**Visible change:** edges that would otherwise pass through a non-
+endpoint node body now route around it via a visibility-graph + A\*
+pathfinder. The visual identity stays organic — routed paths are
+smoothed beziers through the waypoint corners, not orthogonal
+Manhattan polylines. Toggle in **Settings → Display → Edge routing**:
+`Smart` (default) or `Direct` (the pre-routing bezier behavior).
+
+**Under the hood:**
+
+- `src/domain/edgeRouting.ts` — new module. Pure-geometry router that
+  doesn't read the store or depend on React Flow. Exports
+  `buildVisibilityGraph(obstacles)`, `aStarOnGraph(graph, s, t,
+  excludeBoxes)`, `routeEdge(input)`, and the visual-style helpers
+  `bezierThroughWaypoint` / `bezierThroughWaypoints`.
+- `src/components/canvas/hooks/useEdgeRoutes.ts` — React adapter.
+  Builds the visibility graph **once per layout pass** and runs A\*
+  per edge against the cached graph; this brings the proposal's
+  perf target within reach. Reads the `edgeRouting` store
+  preference to decide between routed paths and the bezier
+  fallback.
+- `src/store/uiSlice` — new `EdgeRouting` type (`'smart' | 'direct'`),
+  `StoredPrefs.edgeRouting`, `setEdgeRouting` action,
+  `preferencesDefaults.edgeRouting = 'smart'`. The radio surfaces
+  in `DisplayTab.tsx`.
+- `src/components/canvas/edges/flow-types.ts` — `TPEdgeData` gains
+  `route?: EdgeRoute`; `TPEdge` consumes `data.route?.d` ahead of
+  the default bezier.
+
+**Phasing in commit history:**
+
+- **Phase A** — API contract + types + no-op `routeEdge` returning
+  bezier verbatim. Gated behind a hard-coded `SMART_ROUTING_ENABLED
+  = false` constant.
+- **Phase B** — single-obstacle deflection heuristic via sampled-
+  bezier hit-test + waypoint placement (above/below — shorter side
+  wins).
+- **Phase C** — visibility-graph + A\* router for the multi-obstacle
+  case. Flipped the gate to a store-backed preference read; added
+  the Settings UI + StoredPrefs entry. **First user-visible
+  release.**
+- **Phase D** — junctor-segment integration (routed edges terminate
+  at the junctor circle's bottom perimeter, matching the existing
+  TPEdge override), per-layout visibility-graph cache (~10× perf
+  win), USER_GUIDE blurb, this changelog entry.
+
+**Tests:** 1926 green, +63 new across `tests/domain/edgeRouting.test.ts`
++ `tests/components/canvas/useEdgeRoutes.test.tsx`. Coverage spans
+the API contract, the Liang-Barsky math, the visibility-graph
+construction, A\* correctness, the property "no waypoint segment
+crosses any non-endpoint obstacle", and a regression-guard perf
+budget. The junctor integration is verified via the AND-grouped
+3-node case.
+
 ## Session 135 — Stryker mutation testing, first sweep across Phase 1B engine + action eligibility
 
 Ran the configured-but-mostly-dormant Stryker harness on two of the

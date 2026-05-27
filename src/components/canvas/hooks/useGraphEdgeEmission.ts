@@ -5,6 +5,7 @@ import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
 import type { TPEdge } from '../edges/flow-types';
 import { edgeAriaLabel } from './nodeAriaLabels';
+import type { EdgeRouteMap } from './useEdgeRoutes';
 import type { GraphProjection } from './useGraphProjection';
 
 /**
@@ -28,7 +29,17 @@ import type { GraphProjection } from './useGraphProjection';
  *     circle (ANDOverlay) owns the arrow into the target. Aggregated AND
  *     edges keep their arrowhead because they don't get junctor treatment.
  */
-export const useGraphEdgeEmission = (doc: TPDocument, projection: GraphProjection): TPEdge[] => {
+export const useGraphEdgeEmission = (
+  doc: TPDocument,
+  projection: GraphProjection,
+  // Phase A — `routes` is always `{}` because `useEdgeRoutes` short-
+  // circuits behind a hard-coded gate. Phase C flips that gate; when
+  // populated, each real (non-aggregated) edge picks up its
+  // precomputed path string from the map and stamps it into `data.route`.
+  // Defaulting to `{}` keeps the existing two-argument call sites
+  // working (tests that import this hook directly, etc.).
+  routes: EdgeRouteMap = {}
+): TPEdge[] => {
   return useMemo(() => {
     const { remap } = projection;
 
@@ -113,6 +124,11 @@ export const useGraphEdgeEmission = (doc: TPDocument, projection: GraphProjectio
         ...(b.sample.isMutualExclusion ? { isMutex: true } : {}),
         ...(assumptionCount > 0 ? { assumptionCount } : {}),
       });
+      // Phase A — `route` only attaches to real (non-aggregated) edges
+      // for the same reason as `assumptionCount`: an aggregated `agg:`
+      // edge has no single underlying edge id to key the route map on.
+      // In Phase A this is always undefined because `routes` is `{}`.
+      const route = isAggregated ? undefined : routes[b.sample.id];
       const edge: TPEdge = {
         id: isAggregated ? `agg:${b.sourceId}->${b.targetId}` : b.sample.id,
         source: b.sourceId,
@@ -125,6 +141,7 @@ export const useGraphEdgeEmission = (doc: TPDocument, projection: GraphProjectio
           ...(xorGroupId ? { xorGroupId } : {}),
           ...(b.count > 1 ? { aggregateCount: b.count } : {}),
           ...(assumptionCount > 0 ? { assumptionCount } : {}),
+          ...(route ? { route } : {}),
         },
         ...(isJunctorEdge
           ? {}
@@ -140,5 +157,5 @@ export const useGraphEdgeEmission = (doc: TPDocument, projection: GraphProjectio
     }
 
     return edges;
-  }, [doc, projection]);
+  }, [doc, projection, routes]);
 };
