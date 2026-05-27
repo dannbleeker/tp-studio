@@ -1,11 +1,18 @@
 /**
  * Pattern library — curated starter diagrams for common TOC scenarios.
  *
- * Session 134: closes minor gap #4 (sub-item A) from the spec gap
- * analysis. Each `Pattern` is a fully-formed `TPDocument` factory the
- * "Pattern library…" picker can drop onto the canvas as a starting
- * point. Distinct from `EXAMPLE_BY_DIAGRAM` (one example per diagram
- * type, kept for the quick "Load example" command); patterns are
+ * Session 134 closed minor gap #4 (sub-item A) from the spec gap
+ * analysis with the first two patterns + the dialog plumbing.
+ * Session 137 expanded the library to **5 patterns per diagram type**
+ * (CRT / FRT / PRT / TT / EC / Goal Tree / S&T / NBR), drawn from
+ * canonical TOC literature (Goldratt, Dettmer, Scheinkopf, Cox /
+ * Boyd) with original descriptions — no copy-paste at the entity-
+ * title level.
+ *
+ * Each `Pattern` is a fully-formed `TPDocument` factory the "Pattern
+ * library…" picker can drop onto the canvas as a starting point.
+ * Distinct from `EXAMPLE_BY_DIAGRAM` (one example per diagram type,
+ * kept for the quick "Load example" command); patterns are
  * many-per-type and surface in a dedicated library dialog.
  *
  * The library is intentionally curated, not generated: each pattern
@@ -28,7 +35,37 @@ import { buildExampleST } from '../examples/st';
 import { buildExampleTT } from '../examples/tt';
 import type { DiagramType, TPDocument } from '../types';
 import { buildPatternCRTEngineeringVelocity } from './crt-engineering-velocity';
+import { buildPatternCRTInventoryTurnsFalling } from './crt-inventory-turns-falling';
+import { buildPatternCRTMultiProjectBottleneck } from './crt-multi-project-bottleneck';
+import { buildPatternCRTSalesPipelineStall } from './crt-sales-pipeline-stall';
+import { buildPatternECBuildVsBuy } from './ec-build-vs-buy';
+import { buildPatternECCentralizeVsFederate } from './ec-centralize-vs-federate';
 import { buildPatternECQualityVsSpeed } from './ec-quality-vs-speed';
+import { buildPatternECSpecialistVsGeneralist } from './ec-specialist-vs-generalist';
+import { buildPatternFRTDbrScheduling } from './frt-dbr-scheduling';
+import { buildPatternFRTPricingExperiment } from './frt-pricing-experiment';
+import { buildPatternFRTTeamOkrs } from './frt-team-okrs';
+import { buildPatternFRTWipCap } from './frt-wip-cap';
+import { buildPatternGoalTreeEffectiveSalesTeam } from './goalTree-effective-sales-team';
+import { buildPatternGoalTreeSubscriptionBusiness } from './goalTree-subscription-business';
+import { buildPatternGoalTreeSustainableProductOrg } from './goalTree-sustainable-product-org';
+import { buildPatternGoalTreeTrustworthyMl } from './goalTree-trustworthy-ml';
+import { buildPatternNBRAggressiveDeadlines } from './nbr-aggressive-deadlines';
+import { buildPatternNBRHiringFreeze } from './nbr-hiring-freeze';
+import { buildPatternNBROpenSourceRelease } from './nbr-open-source-release';
+import { buildPatternNBROutsourcedSupport } from './nbr-outsourced-support';
+import { buildPatternPRTDatabaseMigration } from './prt-database-migration';
+import { buildPatternPRTNewMarketEntry } from './prt-new-market-entry';
+import { buildPatternPRTPerformanceReviews } from './prt-performance-reviews';
+import { buildPatternPRTZeroDefects } from './prt-zero-defects';
+import { buildPatternSTConstraintExploitation } from './st-constraint-exploitation';
+import { buildPatternSTMarketExpansion } from './st-market-expansion';
+import { buildPatternSTQualityFirst } from './st-quality-first';
+import { buildPatternSTTimeToMarket } from './st-time-to-market';
+import { buildPatternTTDealClose } from './tt-deal-close';
+import { buildPatternTTEngineerOnboarding } from './tt-engineer-onboarding';
+import { buildPatternTTFeatureRollout } from './tt-feature-rollout';
+import { buildPatternTTIncidentResponse } from './tt-incident-response';
 
 export type Pattern = {
   /** Stable id used by tests + as the dialog list key. */
@@ -57,9 +94,30 @@ export const PATTERNS: Pattern[] = [
   {
     id: 'crt-engineering-velocity',
     label: 'Engineering velocity decline',
-    hint: 'Software team CRT — sprint slip rolls up from on-call / review / flake causes, with an AND on the ops-drag effect.',
+    hint: 'Software-team CRT — sprint slip rolls up from on-call / review / flake causes, with an AND on the ops-drag effect.',
     diagramType: 'crt',
     build: buildPatternCRTEngineeringVelocity,
+  },
+  {
+    id: 'crt-multi-project-bottleneck',
+    label: 'Multi-project bottleneck',
+    hint: 'Critical-chain CRT — shared-specialist contention combines with safety-burn and WIP indiscipline to slip every milestone at once.',
+    diagramType: 'crt',
+    build: buildPatternCRTMultiProjectBottleneck,
+  },
+  {
+    id: 'crt-sales-pipeline-stall',
+    label: 'Sales pipeline stall',
+    hint: 'Revenue-team CRT — qualification gaps + SE bottleneck + discount-lever behaviour combine to miss quarterly target.',
+    diagramType: 'crt',
+    build: buildPatternCRTSalesPipelineStall,
+  },
+  {
+    id: 'crt-inventory-turns-falling',
+    label: 'Inventory turns falling',
+    hint: 'Manufacturing CRT — batch sizing + safety stock + maintenance over-buy combine to drag inventory turns below plan.',
+    diagramType: 'crt',
+    build: buildPatternCRTInventoryTurnsFalling,
   },
 
   // ── EC ─────────────────────────────────────────────────────────────
@@ -77,6 +135,27 @@ export const PATTERNS: Pattern[] = [
     diagramType: 'ec',
     build: buildPatternECQualityVsSpeed,
   },
+  {
+    id: 'ec-centralize-vs-federate',
+    label: 'Centralize vs federate',
+    hint: 'Org-design EC — central design-system team vs embedded maintainers, around shared brand coherence.',
+    diagramType: 'ec',
+    build: buildPatternECCentralizeVsFederate,
+  },
+  {
+    id: 'ec-build-vs-buy',
+    label: 'Build vs buy',
+    hint: 'Procurement EC — in-house customer data platform vs vendor adoption, around control and speed needs.',
+    diagramType: 'ec',
+    build: buildPatternECBuildVsBuy,
+  },
+  {
+    id: 'ec-specialist-vs-generalist',
+    label: 'Specialist vs generalist hiring',
+    hint: 'Team-composition EC — deep-tenure hire vs T-shaped hire, around "solve hard problems" vs "pivot to new ones."',
+    diagramType: 'ec',
+    build: buildPatternECSpecialistVsGeneralist,
+  },
 
   // ── FRT ────────────────────────────────────────────────────────────
   {
@@ -85,6 +164,34 @@ export const PATTERNS: Pattern[] = [
     hint: 'Bottom-up FRT seeded with an injection — propagates through intermediate effects to a desired effect.',
     diagramType: 'frt',
     build: buildExampleFRT,
+  },
+  {
+    id: 'frt-wip-cap',
+    label: 'WIP cap rollout',
+    hint: 'Flow-improvement FRT — cap WIP at every stage; queues drain, hand-offs surface, variance narrows, p95 lead-time drops.',
+    diagramType: 'frt',
+    build: buildPatternFRTWipCap,
+  },
+  {
+    id: 'frt-team-okrs',
+    label: 'Single-team OKR adoption',
+    hint: 'Focus-first FRT — cutting to two team objectives drives clarity, deeper work, and the right outcomes shipped.',
+    diagramType: 'frt',
+    build: buildPatternFRTTeamOkrs,
+  },
+  {
+    id: 'frt-dbr-scheduling',
+    label: 'Drum-buffer-rope scheduling',
+    hint: 'Manufacturing FRT — DBR drains WIP, kills expedites, and lifts plant throughput on existing capacity.',
+    diagramType: 'frt',
+    build: buildPatternFRTDbrScheduling,
+  },
+  {
+    id: 'frt-pricing-experiment',
+    label: 'Segment-specific pricing experiment',
+    hint: 'Commercial FRT — price change + CPQ lock jointly drive enterprise margin lift without churn.',
+    diagramType: 'frt',
+    build: buildPatternFRTPricingExperiment,
   },
 
   // ── PRT ────────────────────────────────────────────────────────────
@@ -95,6 +202,34 @@ export const PATTERNS: Pattern[] = [
     diagramType: 'prt',
     build: buildExamplePRT,
   },
+  {
+    id: 'prt-database-migration',
+    label: 'Database migration',
+    hint: 'Technical PRT — four obstacles a real migration team will recognise, each paired with a measurable IO.',
+    diagramType: 'prt',
+    build: buildPatternPRTDatabaseMigration,
+  },
+  {
+    id: 'prt-new-market-entry',
+    label: 'New-market entry',
+    hint: 'Go-to-market PRT — regulatory, brand, payments, and support obstacles for entering a new geographic market.',
+    diagramType: 'prt',
+    build: buildPatternPRTNewMarketEntry,
+  },
+  {
+    id: 'prt-performance-reviews',
+    label: 'Performance-review rollout',
+    hint: 'Change-management PRT — the four social obstacles every performance-review rollout actually trips over.',
+    diagramType: 'prt',
+    build: buildPatternPRTPerformanceReviews,
+  },
+  {
+    id: 'prt-zero-defects',
+    label: 'Zero-defect manufacturing',
+    hint: 'Quality-program PRT — culture, measurement, supplier-drift, and ECO obstacles to consistent zero-defect shipping.',
+    diagramType: 'prt',
+    build: buildPatternPRTZeroDefects,
+  },
 
   // ── TT ─────────────────────────────────────────────────────────────
   {
@@ -104,14 +239,70 @@ export const PATTERNS: Pattern[] = [
     diagramType: 'tt',
     build: buildExampleTT,
   },
+  {
+    id: 'tt-engineer-onboarding',
+    label: 'Engineer onboarding',
+    hint: 'People-process TT — laptop → environment → starter ticket → reviewed PR → first production merge.',
+    diagramType: 'tt',
+    build: buildPatternTTEngineerOnboarding,
+  },
+  {
+    id: 'tt-incident-response',
+    label: 'Incident response',
+    hint: "Ops TT — acknowledge, identify, communicate, mitigate, post-mortem — each step's outcome a measurable state.",
+    diagramType: 'tt',
+    build: buildPatternTTIncidentResponse,
+  },
+  {
+    id: 'tt-feature-rollout',
+    label: 'Feature-flag rollout',
+    hint: 'Delivery TT — staged cohorts (employees → 1% → 25% → 100%) with measurement gates between every expansion.',
+    diagramType: 'tt',
+    build: buildPatternTTFeatureRollout,
+  },
+  {
+    id: 'tt-deal-close',
+    label: 'Enterprise deal close',
+    hint: 'Sales TT — buyer-side stakeholder states (champion → CFO sponsor → security → procurement → signed).',
+    diagramType: 'tt',
+    build: buildPatternTTDealClose,
+  },
 
   // ── NBR ────────────────────────────────────────────────────────────
   {
     id: 'nbr-qa-gate',
-    label: 'QA gate Negative Branch Reservation',
+    label: 'QA gate NBR',
     hint: 'Software-team NBR — QA-gate injection spawns slower releases + lost competitive edge; proactive mitigation swaps to test-suite hardening.',
     diagramType: 'nbr',
     build: buildExampleNBR,
+  },
+  {
+    id: 'nbr-hiring-freeze',
+    label: 'Hiring freeze NBR',
+    hint: 'Cost-control NBR — freeze drops headcount cost but produces burnout + leadership-pipeline thinning; mitigation keeps critical backfills.',
+    diagramType: 'nbr',
+    build: buildPatternNBRHiringFreeze,
+  },
+  {
+    id: 'nbr-aggressive-deadlines',
+    label: 'Aggressive deadlines NBR',
+    hint: 'Schedule-pressure NBR — public deadline hits the date but spawns post-launch incidents + senior attrition; mitigation cuts scope instead.',
+    diagramType: 'nbr',
+    build: buildPatternNBRAggressiveDeadlines,
+  },
+  {
+    id: 'nbr-outsourced-support',
+    label: 'Outsourced support NBR',
+    hint: 'Cost-savings NBR — vendor support drops cost but loses customer signal + slows escalation; mitigation requires weekly issue patterns + 1h SLA.',
+    diagramType: 'nbr',
+    build: buildPatternNBROutsourcedSupport,
+  },
+  {
+    id: 'nbr-open-source-release',
+    label: 'Open-source release NBR',
+    hint: 'Visibility-injection NBR — OSS release lifts adoption but adds maintainer burnout + enterprise dilution; mitigation carves out paid surfaces.',
+    diagramType: 'nbr',
+    build: buildPatternNBROpenSourceRelease,
   },
 
   // ── Goal Tree ─────────────────────────────────────────────────────
@@ -122,6 +313,34 @@ export const PATTERNS: Pattern[] = [
     diagramType: 'goalTree',
     build: buildExampleGoalTree,
   },
+  {
+    id: 'goalTree-sustainable-product-org',
+    label: 'Sustainable product organization',
+    hint: 'Org Goal Tree — local decision-making, outcome learning, sustainable pace, with observable NC numbers.',
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreeSustainableProductOrg,
+  },
+  {
+    id: 'goalTree-subscription-business',
+    label: 'Profitable subscription business',
+    hint: 'Financial Goal Tree — CAC payback, retention, and per-customer margin, each tied to a board-pack number.',
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreeSubscriptionBusiness,
+  },
+  {
+    id: 'goalTree-trustworthy-ml',
+    label: 'Trustworthy ML system',
+    hint: 'ML-system Goal Tree — honest claims, online/offline parity, detectable failures, with observable practices as NCs.',
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreeTrustworthyMl,
+  },
+  {
+    id: 'goalTree-effective-sales-team',
+    label: 'Effective sales team',
+    hint: 'Go-to-market Goal Tree — real pipeline, equipped reps, coaching that pays off — each NC visible on a Monday.',
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreeEffectiveSalesTeam,
+  },
 
   // ── S&T ───────────────────────────────────────────────────────────
   {
@@ -130,6 +349,34 @@ export const PATTERNS: Pattern[] = [
     hint: 'Hierarchical S&T — strategy / tactic pairs with rationale fields (necessary / parallel / sufficient assumptions).',
     diagramType: 'st',
     build: buildExampleST,
+  },
+  {
+    id: 'st-constraint-exploitation',
+    label: 'Operating-constraint exploitation',
+    hint: 'Five-focusing-steps S&T — subordinate every other station to the bottleneck; setup / cleaning moved off the constraint.',
+    diagramType: 'st',
+    build: buildPatternSTConstraintExploitation,
+  },
+  {
+    id: 'st-quality-first',
+    label: 'Quality-first strategy',
+    hint: 'Quality-as-moat S&T — "no surprise releases" gate plus test plans + customer-shape samples on every PR.',
+    diagramType: 'st',
+    build: buildPatternSTQualityFirst,
+  },
+  {
+    id: 'st-market-expansion',
+    label: 'Geographic market expansion',
+    hint: 'Go-to-market S&T — locally-staffed presence in the new market via a country-lead-first hiring sequence.',
+    diagramType: 'st',
+    build: buildPatternSTMarketExpansion,
+  },
+  {
+    id: 'st-time-to-market',
+    label: 'Reduce time-to-market',
+    hint: 'Concurrent-engineering S&T — design / engineering / GTM converging on a single live brief with weekly cross-team reviews.',
+    diagramType: 'st',
+    build: buildPatternSTTimeToMarket,
   },
 ];
 
