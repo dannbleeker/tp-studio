@@ -1,6 +1,7 @@
 import { useReactFlow, useStore as useRFStore } from '@xyflow/react';
 import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS } from '@/domain/constants';
 import type { TPDocument } from '@/domain/types';
+import { setHoveredJunctor } from '@/services/canvasRef';
 import { arrayShallowEqualByKeys } from '@/store/equality';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 
@@ -183,6 +184,24 @@ export function JunctorOverlay() {
                 strokeWidth={1.75}
                 markerEnd={`url(#tp-junctor-arrow-${j.kind.toLowerCase()})`}
               />
+              {/* Session 136 — circle is hit-tested during connection
+                  drag so the user can drop an edge onto an existing
+                  junctor to join its group. Pointer-events is enabled
+                  on this single element (the parent SVG stays
+                  `pointer-events-none` so the rest of the overlay
+                  doesn't swallow clicks). `setHoveredJunctor` writes
+                  to the singleton ref in `canvasRef.ts`;
+                  `useGraphMutations.onConnectEnd` reads it after the
+                  hovered-edge fallback fails, calling
+                  `addCoCauseToEdge` (AND) or surfacing an info toast
+                  for OR/XOR (not yet implemented per the design
+                  doc). The mouse-only hover dance is the
+                  drag-gesture's hit-test, not an interaction surface
+                  users discover keyboard-first — the palette
+                  commands ("Group as AND", "Add co-cause to edge")
+                  cover the keyboard path, so the static-interactions
+                  rule's complaint is intentionally suppressed. */}
+              {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG hit target for drag-to-AND; keyboard path is the "Group as AND" palette command */}
               <circle
                 cx={j.cx}
                 cy={j.cy}
@@ -190,6 +209,9 @@ export function JunctorOverlay() {
                 fill="white"
                 stroke={stroke}
                 strokeWidth={1.5}
+                style={{ pointerEvents: 'auto' }}
+                onMouseEnter={() => setHoveredJunctor({ groupId: j.id, kind: j.kind })}
+                onMouseLeave={() => setHoveredJunctor(null)}
               />
               <text
                 x={j.cx}

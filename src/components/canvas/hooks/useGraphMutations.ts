@@ -8,6 +8,7 @@ import type {
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { guardWriteOrToast } from '@/services/browseLock';
+import { getCanvasInstance, getHoveredJunctor, setHoveredJunctor } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 
 /**
@@ -87,30 +88,81 @@ export const useGraphMutations = (): {
 
   const onConnectEnd = useCallback(
     (_event: MouseEvent | TouchEvent, connectionState: FinalConnectionState) => {
-      // Connection-drag end: three release contexts in priority order:
+      // Connection-drag end: priority order
       //   1. Released on a handle dot                → `onConnect` already
       //      fired; nothing to do here.
       //   2. Released over a node body (Session 49)  → bridge to `connect`.
-      //   3. Released over an edge body (TOC-reading)→ add co-cause via
+      //   3. Released over a JUNCTOR circle (Session 136) → join the
+      //      group via `addCoCauseToEdge` on any of its member edges.
+      //      Picked up before the edge-body fallback so a hover that
+      //      sat on a junctor and an underlying edge body resolves to
+      //      the junctor (more specific gesture).
+      //   4. Released over an edge body (TOC-reading)→ add co-cause via
       //      AND junctor on that edge's target.
-      //   4. Released in empty space                 → drop the connection.
+      //   5. Released in empty space                 → drop the connection.
       if (connectionState.toHandle !== null) return;
       if (!connectionState.fromNode) return;
       const sourceId = connectionState.fromNode.id;
 
       if (connectionState.toNode) {
         const targetId = connectionState.toNode.id;
-        if (sourceId === targetId) return;
+        if (sourceId === targetId) {
+          hoveredEdgeRef.current = null;
+          setHoveredJunctor(null);
+          return;
+        }
         if (!guardWriteOrToast()) return;
         connect(sourceId, targetId);
+        hoveredEdgeRef.current = null;
+        setHoveredJunctor(null);
+        return;
+      }
+
+      // No `toNode`. Check if the cursor was over a junctor circle.
+      // `JunctorOverlay`'s circles set `setHoveredJunctor({...})` on
+      // mouseEnter; we consume + clear it here so a stale hover from
+      // an earlier drag doesn't trigger on the next.
+      const hoveredJunctor = getHoveredJunctor();
+      setHoveredJunctor(null);
+      if (hoveredJunctor) {
+        if (hoveredJunctor.kind !== 'AND') {
+          // OR / XOR drag-create not implemented yet (the spec called
+          // out AND specifically; the design doc parks OR/XOR as a
+          // follow-up). Friendly toast so the user knows the gesture
+          // was understood but not actioned.
+          showToast(
+            'info',
+            `${hoveredJunctor.kind} drag-create not implemented yet — use the palette to group as ${hoveredJunctor.kind}.`
+          );
+          hoveredEdgeRef.current = null;
+          return;
+        }
+        if (!guardWriteOrToast()) return;
+        // Find any edge in this junctor's group so `addCoCauseToEdge`
+        // has a host edge to attach to. Group membership is by
+        // `andGroupId` on the edge; picking any member is fine since
+        // they all share the same target.
+        const flow = getCanvasInstance();
+        const rfEdges = flow?.getEdges() ?? [];
+        const memberEdge = rfEdges.find((e) => e.data?.andGroupId === hoveredJunctor.groupId);
+        if (!memberEdge) {
+          // Group disappeared mid-drag (rare; e.g. user undid an edge
+          // while dragging). Fail open with an info toast.
+          showToast('info', 'AND group no longer exists — try again.');
+          hoveredEdgeRef.current = null;
+          return;
+        }
+        const result = addCoCauseToEdge(memberEdge.id, sourceId);
+        if (result) {
+          showToast('success', 'Added as a co-cause (AND-grouped).');
+        } else {
+          showToast('info', 'Cannot AND here — same source/target, or duplicate edge.');
+        }
         hoveredEdgeRef.current = null;
         return;
       }
 
-      // No `toNode` — but the cursor MAY have been over an edge. Consume
-      // the tracked-hovered-edge ref. We clear the ref unconditionally so
-      // a stale hover from an earlier gesture doesn't trigger on the next
-      // unrelated drag.
+      // No `toNode` and no junctor. Check the hovered-edge ref next.
       const hoveredEdgeId = hoveredEdgeRef.current;
       hoveredEdgeRef.current = null;
       if (!hoveredEdgeId) return;
