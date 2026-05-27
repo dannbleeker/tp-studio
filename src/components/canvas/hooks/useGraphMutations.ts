@@ -125,44 +125,47 @@ export const useGraphMutations = (): {
       const hoveredJunctor = getHoveredJunctor();
       setHoveredJunctor(null);
       if (hoveredJunctor) {
-        if (hoveredJunctor.kind !== 'AND') {
-          // OR / XOR drag-create not implemented yet (the spec called
-          // out AND specifically; the design doc parks OR/XOR as a
-          // follow-up). Friendly toast so the user knows the gesture
-          // was understood but not actioned.
-          showToast(
-            'info',
-            `${hoveredJunctor.kind} drag-create not implemented yet — use the palette to group as ${hoveredJunctor.kind}.`
-          );
-          hoveredEdgeRef.current = null;
-          return;
-        }
         if (!guardWriteOrToast()) return;
+        // Map the overlay's display label ('AND' / 'OR' / 'XOR') to the
+        // store's lowercase kind enum + the matching `*GroupId` field
+        // on `TPEdgeData`. The three are isomorphic; keeping the
+        // mapping explicit lets the type checker catch any future
+        // junctor-kind addition.
+        const kindLower: 'and' | 'or' | 'xor' =
+          hoveredJunctor.kind === 'AND' ? 'and' : hoveredJunctor.kind === 'OR' ? 'or' : 'xor';
+        const groupIdField: 'andGroupId' | 'orGroupId' | 'xorGroupId' =
+          kindLower === 'and' ? 'andGroupId' : kindLower === 'or' ? 'orGroupId' : 'xorGroupId';
         // Find any edge in this junctor's group so `addCoCauseToEdge`
-        // has a host edge to attach to. Group membership is by
-        // `andGroupId` on the edge; picking any member is fine since
-        // they all share the same target.
+        // has a host edge to attach to. Group membership is by the
+        // matching `*GroupId` field on the edge; picking any member is
+        // fine since they all share the same target.
         const flow = getCanvasInstance();
         const rfEdges = flow?.getEdges() ?? [];
-        const memberEdge = rfEdges.find((e) => e.data?.andGroupId === hoveredJunctor.groupId);
+        const memberEdge = rfEdges.find((e) => e.data?.[groupIdField] === hoveredJunctor.groupId);
         if (!memberEdge) {
           // Group disappeared mid-drag (rare; e.g. user undid an edge
           // while dragging). Fail open with an info toast.
-          showToast('info', 'AND group no longer exists — try again.');
+          showToast('info', `${hoveredJunctor.kind} group no longer exists — try again.`);
           hoveredEdgeRef.current = null;
           return;
         }
-        const result = addCoCauseToEdge(memberEdge.id, sourceId);
+        const result = addCoCauseToEdge(memberEdge.id, sourceId, kindLower);
         if (result) {
-          showToast('success', 'Added as a co-cause (AND-grouped).');
+          showToast('success', `Added as a co-cause (${hoveredJunctor.kind}-grouped).`);
         } else {
-          showToast('info', 'Cannot AND here — same source/target, or duplicate edge.');
+          showToast(
+            'info',
+            `Cannot ${hoveredJunctor.kind} here — same source/target, or duplicate edge.`
+          );
         }
         hoveredEdgeRef.current = null;
         return;
       }
 
       // No `toNode` and no junctor. Check the hovered-edge ref next.
+      // The edge-body drop is always AND (the canonical "add a
+      // sufficient co-cause" gesture from the book); OR / XOR only fire
+      // when the user explicitly drops on an existing junctor circle.
       const hoveredEdgeId = hoveredEdgeRef.current;
       hoveredEdgeRef.current = null;
       if (!hoveredEdgeId) return;

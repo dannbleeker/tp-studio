@@ -2,6 +2,42 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 137 — OR / XOR drag-create on junctor circles
+
+Closes the deferred OR / XOR half of the Session 136 AND drag-create
+work. The store action `addCoCauseToEdge` gained an optional `kind`
+parameter (`'and'` default, `'or'` / `'xor'` opt-in); the React Flow
+drop-handler in `useGraphMutations.onConnectEnd` reads the hovered
+junctor's kind from the singleton ref and dispatches to the matching
+junctor field. Cross-kind exclusivity is enforced — trying to add an
+OR co-cause to an AND-grouped edge returns null rather than silently
+converting.
+
+**Visible change:** Dragging an edge from any entity and releasing
+over an existing OR or XOR junctor circle now joins that group (the
+gesture was a friendly info-toast no-op before this session). The
+edge-body drop with no junctor circle in range stays AND-only — the
+canonical "add a sufficient co-cause" gesture from the book.
+
+**Under the hood:**
+
+- `src/store/documentSlice/edgesSlice.ts` — `addCoCauseToEdge` accepts
+  the kind parameter. Mint id prefix encodes the kind for grep-
+  friendliness (`and_<nanoid>` / `or_<nanoid>` / `xor_<nanoid>`).
+- `src/domain/factory.ts` — `createEdge` accepts `orGroupId` /
+  `xorGroupId` in addition to the pre-existing `andGroupId`.
+- `src/components/canvas/hooks/useGraphMutations.ts` — drops the
+  AND-only short-circuit; maps `hoveredJunctor.kind` to the matching
+  `*GroupId` field for member-edge lookup, threads the kind into the
+  store action, and emits a kind-specific success toast.
+- `src/components/canvas/edges/JunctorOverlay.tsx` +
+  `src/services/canvasRef.ts` — comment updates only; the hit-test
+  and ref shape were already kind-aware from Session 136.
+
+**Tests** — 8 new tests on `tests/domain/addCoCauseToEdge.test.ts`:
+mint + join behavior for OR + XOR, cross-kind exclusivity refusals
+in all three pairwise combinations.
+
 ## Session 137 — Obstacle-aware edge routing (Phases A–D)
 
 Multi-session arc that turned the "edges render behind entity nodes"

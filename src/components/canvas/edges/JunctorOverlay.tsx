@@ -184,24 +184,26 @@ export function JunctorOverlay() {
                 strokeWidth={1.75}
                 markerEnd={`url(#tp-junctor-arrow-${j.kind.toLowerCase()})`}
               />
-              {/* Session 136 — circle is hit-tested during connection
-                  drag so the user can drop an edge onto an existing
-                  junctor to join its group. Pointer-events is enabled
-                  on this single element (the parent SVG stays
-                  `pointer-events-none` so the rest of the overlay
-                  doesn't swallow clicks). `setHoveredJunctor` writes
-                  to the singleton ref in `canvasRef.ts`;
-                  `useGraphMutations.onConnectEnd` reads it after the
-                  hovered-edge fallback fails, calling
-                  `addCoCauseToEdge` (AND) or surfacing an info toast
-                  for OR/XOR (not yet implemented per the design
-                  doc). The mouse-only hover dance is the
-                  drag-gesture's hit-test, not an interaction surface
-                  users discover keyboard-first — the palette
-                  commands ("Group as AND", "Add co-cause to edge")
-                  cover the keyboard path, so the static-interactions
-                  rule's complaint is intentionally suppressed. */}
-              {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG hit target for drag-to-AND; keyboard path is the "Group as AND" palette command */}
+              {/* Session 136 + 137 — circle is hit-tested during
+                  connection drag so the user can drop an edge onto an
+                  existing junctor to join its group. AND landed in
+                  Session 136; OR / XOR added Session 137 — all three
+                  kinds now dispatch through `addCoCauseToEdge(edge,
+                  source, kind)` with the right `kind` derived from
+                  the hovered junctor's label. Pointer-events is
+                  enabled on this single element (the parent SVG
+                  stays `pointer-events-none` so the rest of the
+                  overlay doesn't swallow clicks).
+                  `setHoveredJunctor` writes to the singleton ref in
+                  `canvasRef.ts`; `useGraphMutations.onConnectEnd`
+                  reads it after the hovered-edge fallback fails. The
+                  mouse-only hover dance is the drag-gesture's
+                  hit-test, not an interaction surface users discover
+                  keyboard-first — the palette commands ("Group as
+                  AND / OR / XOR", "Add co-cause to edge") cover the
+                  keyboard path, so the static-interactions rule's
+                  complaint is intentionally suppressed. */}
+              {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG hit target for drag-to-junctor (AND/OR/XOR); keyboard path is the "Group as <kind>" palette commands */}
               <circle
                 cx={j.cx}
                 cy={j.cy}

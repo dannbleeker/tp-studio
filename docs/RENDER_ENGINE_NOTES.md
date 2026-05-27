@@ -168,6 +168,18 @@ joins the AND group via `addCoCauseToEdge`. The plumbing:
   info toast (gesture understood, action not yet wired; deferred to
   the same future session as the routing pass).
 
+**Follow-up commit (Session 137): OR / XOR drag-create.**
+The Session-136 toast-on-OR/XOR stub now dispatches through the same
+`addCoCauseToEdge` path. The store action gained an optional `kind`
+parameter (`'and'` default, `'or'` / `'xor'` opt-in); cross-kind
+exclusivity is enforced (adding an OR co-cause to an AND-grouped
+edge returns null). `useGraphMutations.onConnectEnd` reads the
+hovered junctor's `kind`, maps to the matching `*GroupId` field for
+member-edge lookup, and emits a kind-specific toast ("Added as a
+co-cause (OR-grouped)" etc.). The edge-body drop (no junctor circle)
+stays AND-only — the canonical "add a sufficient co-cause" gesture
+from the book.
+
 **Follow-up commit (current): layout density UI.**
 - New `layoutDensity: 'compact' | 'balanced' | 'spacious'` preference
   in `StoredPrefs`. Default `'balanced'` (== current Session-136
@@ -195,6 +207,8 @@ the inspector or globally via the new palette command.
   Phase B as the first MVP. Three open questions (visual preference,
   default strategy, ship cadence) Dann needs to answer before Phase A
   starts.
-- OR / XOR drag-create — see §2 above. Visual hit-test is in; the
-  domain action for OR / XOR co-cause adds needs design + tests.
-  Co-build with the routing pass.
+- ~~OR / XOR drag-create~~ ✅ *Done Session 137* — the store action
+  generalised to accept a `kind` parameter; `useGraphMutations.onConnectEnd`
+  dispatches through the same path for all three kinds. Cross-kind
+  exclusivity refuses adds that would conflict with an existing
+  junctor membership.
