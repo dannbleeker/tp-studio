@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { EdgeId, EntityId, GroupId } from '@/domain/types';
+import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
 import type { Selection } from './types';
 
@@ -166,10 +167,11 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   endEditing: () => set({ editingEntityId: null }),
 
   hoistGroup: (id) => {
-    // Cross-slice read: the doc lives in documentSlice. The combined root
-    // store exposes both, so `get()` resolves the doc and the group lookup
-    // works without circular slice imports.
-    const doc = get().doc;
+    // Cross-slice read: the doc lives in documentSlice. The combined
+    // root store exposes both. Session 137 / multi-doc Batch 1 routes
+    // through `currentDoc()` so a future swap of the data model is
+    // one-line.
+    const doc = currentDoc(get());
     if (!doc.groups[id]) return;
     set({ hoistedGroupId: id, selection: { kind: 'none' } });
   },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exportToJSON, importFromJSON } from '@/domain/persistence';
-import type { Entity } from '@/domain/types';
+import type { DocumentId, Entity, EntityId } from '@/domain/types';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 /**
@@ -77,9 +77,11 @@ describe('persistence round-trip — every optional Entity field', () => {
         },
       ],
       // Session 135 / spec gap #3 Phase 1A — cross-diagram traceability.
+      // Session 137 — fields tightened to `DocumentId` / `EntityId`
+      // brands; test fixtures cast plain strings at the seam.
       importedFrom: {
-        docId: 'src-doc-id-abc123',
-        entityId: 'src-entity-id-def456',
+        docId: 'src-doc-id-abc123' as DocumentId,
+        entityId: 'src-entity-id-def456' as EntityId,
         sourceTitle: 'Original entity title',
         importedAt: '2026-05-21T08:00:00.000Z',
       },
@@ -192,7 +194,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     resetIds();
     const ent = makeEntity({
       title: 'Imported entity',
-      importedFrom: { docId: 'doc-abc', entityId: 'ent-xyz' },
+      importedFrom: { docId: 'doc-abc' as DocumentId, entityId: 'ent-xyz' as EntityId },
     });
     const doc = makeDoc([ent], []);
     const reimported = importFromJSON(exportToJSON(doc));

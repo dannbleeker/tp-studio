@@ -2,7 +2,7 @@
 // union, the per-entity rendering options (title size, span-of-control),
 // the user-defined-attribute shape, and the `Entity` record itself.
 
-import type { EntityId } from './ids';
+import type { DocumentId, EntityId } from './ids';
 
 export type EntityType =
   | 'ude'
@@ -204,10 +204,15 @@ export type EvidenceItem = {
 export type EntityState = 'true' | 'false' | 'unknown' | 'disputed';
 
 export type ImportedFromRef = {
-  /** The source document's `TPDocument.id`. */
-  docId: string;
-  /** The source entity's `Entity.id` inside that document. */
-  entityId: string;
+  /** The source document's `TPDocument.id`.
+   *  Session 137 (multi-doc tabs Batch 1) — tightened from `string` to
+   *  the branded `DocumentId` type so future cross-doc operations can't
+   *  accidentally pass an EntityId / GroupId here. */
+  docId: DocumentId;
+  /** The source entity's `Entity.id` inside that document.
+   *  Session 137 — tightened from `string` to `EntityId`, same rationale
+   *  as `docId` above. */
+  entityId: EntityId;
   /**
    * Optional snapshot of the source entity's title at import time.
    * Lets the UI render "imported from CRT-1's 'Customer churn'"

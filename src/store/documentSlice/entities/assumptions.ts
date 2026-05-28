@@ -21,6 +21,7 @@ import type {
   Entity,
   EntityId,
 } from '@/domain/types';
+import { currentDoc } from '../../selectors';
 import { touch } from '../docMutate';
 import type { EntityFactoryDeps } from './shared';
 
@@ -44,9 +45,10 @@ export function createAssumptionActions({
 }: EntityFactoryDeps): AssumptionActions {
   return {
     addAssumptionToEdge: (edgeId, title) => {
-      const edge = get().doc.edges[edgeId];
+      const doc = currentDoc(get());
+      const edge = doc.edges[edgeId];
       if (!edge) return null;
-      const annotationNumber = get().doc.nextAnnotationNumber;
+      const annotationNumber = doc.nextAnnotationNumber;
       const entity = createEntity({ type: 'assumption', title, annotationNumber });
       // Session 77: also mint a first-class Assumption record so the
       // EC AssumptionWell has a status chip + injection link from day

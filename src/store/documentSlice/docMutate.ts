@@ -1,6 +1,7 @@
 import type { Edge, Entity, Patch, TPDocument } from '@/domain/types';
 import { persistDebounced } from '@/services/storage/persistDebounced';
 import { pushHistoryEntry } from '../historySlice';
+import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
 
 /**
@@ -32,7 +33,7 @@ type DocSetState = (partial: Partial<RootStore>) => void;
  */
 export const makeApplyDocChange = (get: () => RootStore, set: DocSetState): ApplyDocChange => {
   return (mutator, opts = {}) => {
-    const prev = get().doc;
+    const prev = currentDoc(get());
     const next = mutator(prev);
     if (next === prev) return;
     persistDebounced(next);

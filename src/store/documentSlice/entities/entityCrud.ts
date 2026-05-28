@@ -14,7 +14,8 @@
 
 import { createEntity } from '@/domain/factory';
 import { removeEntityFromEdges } from '@/domain/graph';
-import type { Entity, EntityState, EntityType, Patch } from '@/domain/types';
+import type { DocumentId, Entity, EntityState, EntityType, Patch } from '@/domain/types';
+import { currentDoc } from '../../selectors';
 import { entityPatch, scrubFromGroups, touch } from '../docMutate';
 import type { EntityFactoryDeps } from './shared';
 
@@ -27,7 +28,12 @@ export type EntityCrudActions = {
   clearAllEntityPositions: () => number;
   swapEntities: (aId: string, bId: string) => void;
   deleteEntitiesAndEdges: (entityIds: string[], edgeIds: string[]) => void;
-  addImportedEntity: (params: { sourceDocId: string; sourceEntity: Entity }) => Entity | null;
+  /** Session 137 / multi-doc Batch 1 — `sourceDocId` tightened from
+   *  `string` to the branded `DocumentId` type so future cross-doc
+   *  operations can't accidentally pass an EntityId / GroupId here.
+   *  Call sites already pass `state.sourceDoc.id`, which is
+   *  `TPDocument.id: DocumentId`. */
+  addImportedEntity: (params: { sourceDocId: DocumentId; sourceEntity: Entity }) => Entity | null;
   /** Phase 1C — write a batch of entity `state` values in ONE history
    *  step. Used by `commitSpeculation` so reverting a committed what-if
    *  is a single undo, not one-per-entity. A `state` of `undefined`
@@ -43,7 +49,7 @@ export function createEntityCrudActions({
 }: EntityFactoryDeps): EntityCrudActions {
   return {
     addEntity: ({ type, title, startEditing }) => {
-      const annotationNumber = get().doc.nextAnnotationNumber;
+      const annotationNumber = currentDoc(get()).nextAnnotationNumber;
       const entity = createEntity({ type, title, annotationNumber });
       applyDocChange((prev) =>
         touch({
@@ -73,7 +79,7 @@ export function createEntityCrudActions({
       // `importedFrom` ref records the source. Selection moves to the
       // new entity so the user sees what they just imported.
       if (!sourceDocId || !sourceEntity?.id) return null;
-      const annotationNumber = get().doc.nextAnnotationNumber;
+      const annotationNumber = currentDoc(get()).nextAnnotationNumber;
       const base = createEntity({
         type: sourceEntity.type,
         title: sourceEntity.title,
@@ -118,7 +124,7 @@ export function createEntityCrudActions({
     },
 
     toggleEntityCollapsed: (id) => {
-      const cur = get().doc.entities[id];
+      const cur = currentDoc(get()).entities[id];
       if (!cur) return;
       applyDocChange((prev) =>
         entityPatch(prev, id, { collapsed: cur.collapsed ? undefined : true })

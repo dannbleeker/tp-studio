@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { Entity } from '@/domain/types';
+import type { DocumentId, Entity } from '@/domain/types';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { makeEntity, resetIds as resetTestIds } from '../domain/helpers';
+
+// Session 137 — `addImportedEntity` now takes a branded `DocumentId`.
+// Test fixtures cast the literal at the seam.
+const SOURCE_DOC_ID = 'src-doc-abc' as DocumentId;
 
 /**
  * Session 135 / spec major gap #3 Phase 1B — cross-diagram entity
@@ -30,7 +34,7 @@ describe('addImportedEntity', () => {
     });
     const before = Object.keys(s().doc.entities).length;
     const minted = s().addImportedEntity({
-      sourceDocId: 'src-doc-abc',
+      sourceDocId: SOURCE_DOC_ID,
       sourceEntity,
     });
     expect(minted).not.toBeNull();
@@ -42,7 +46,7 @@ describe('addImportedEntity', () => {
     expect(stored?.title).toBe('Customer churn');
     expect(stored?.description).toBe('Customers dropping at 15%/mo');
     expect(stored?.importedFrom).toEqual({
-      docId: 'src-doc-abc',
+      docId: SOURCE_DOC_ID,
       entityId: sourceEntity.id,
       sourceTitle: 'Customer churn',
       // importedAt is a Date.now() ISO string at mint time — assert
@@ -54,7 +58,7 @@ describe('addImportedEntity', () => {
   it('selects the newly imported entity', () => {
     const sourceEntity = makeEntity({ type: 'effect', title: 'Slow onboarding' });
     const minted = s().addImportedEntity({
-      sourceDocId: 'src-doc-abc',
+      sourceDocId: SOURCE_DOC_ID,
       sourceEntity,
     });
     if (!minted) return;
@@ -68,7 +72,7 @@ describe('addImportedEntity', () => {
   it('mints a fresh id — does NOT reuse the source entity id', () => {
     const sourceEntity = makeEntity({ type: 'effect', title: 'X' });
     const minted = s().addImportedEntity({
-      sourceDocId: 'src-doc-abc',
+      sourceDocId: SOURCE_DOC_ID,
       sourceEntity,
     });
     if (!minted) return;
@@ -78,7 +82,7 @@ describe('addImportedEntity', () => {
   it('skips description when the source entity has none', () => {
     const sourceEntity = makeEntity({ type: 'effect', title: 'Plain' });
     const minted = s().addImportedEntity({
-      sourceDocId: 'src-doc-abc',
+      sourceDocId: SOURCE_DOC_ID,
       sourceEntity,
     });
     if (!minted) return;
@@ -88,7 +92,7 @@ describe('addImportedEntity', () => {
   it('skips sourceTitle when the source entity has empty title', () => {
     const sourceEntity = makeEntity({ type: 'effect', title: '' });
     const minted = s().addImportedEntity({
-      sourceDocId: 'src-doc-abc',
+      sourceDocId: SOURCE_DOC_ID,
       sourceEntity,
     });
     if (!minted) return;
@@ -97,13 +101,13 @@ describe('addImportedEntity', () => {
 
   it('returns null when sourceDocId is empty', () => {
     const sourceEntity = makeEntity({ type: 'effect', title: 'X' });
-    expect(s().addImportedEntity({ sourceDocId: '', sourceEntity })).toBeNull();
+    expect(s().addImportedEntity({ sourceDocId: '' as DocumentId, sourceEntity })).toBeNull();
   });
 
   it('the next annotation number advances after import', () => {
     const next = s().doc.nextAnnotationNumber;
     const sourceEntity = makeEntity({ type: 'effect', title: 'X' });
-    s().addImportedEntity({ sourceDocId: 'src-doc-abc', sourceEntity });
+    s().addImportedEntity({ sourceDocId: SOURCE_DOC_ID, sourceEntity });
     expect(s().doc.nextAnnotationNumber).toBe(next + 1);
   });
 });

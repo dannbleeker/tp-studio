@@ -1,4 +1,4 @@
-import type { RevisionId, TPDocument } from './types';
+import type { DocumentId, RevisionId, TPDocument } from './types';
 
 /**
  * A single snapshot of a document. The full doc is captured by value so a
@@ -19,8 +19,11 @@ import type { RevisionId, TPDocument } from './types';
 export type Revision = {
   id: RevisionId;
   /** The doc this revision snapshots. Used to filter the panel to "this
-   *  doc's history" rather than every doc's history. */
-  docId: string;
+   *  doc's history" rather than every doc's history. Session 137 /
+   *  multi-doc Batch 1 — tightened from `string` to `DocumentId`; the
+   *  call sites in `revisionsSlice.ts` already produce `DocumentId`
+   *  via `currentDoc(get()).id`. */
+  docId: DocumentId;
   /** Wall-clock millis at capture time. Sorts revisions newest-first in the
    *  history panel. */
   capturedAt: number;

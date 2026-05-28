@@ -8,6 +8,7 @@
 
 import { newEvidenceId } from '@/domain/ids';
 import type { Entity, EvidenceItem, Patch } from '@/domain/types';
+import { currentDoc } from '../../selectors';
 import type { RootStore } from '../../types';
 import { touch } from '../docMutate';
 import type { EntityFactoryDeps } from './shared';
@@ -146,10 +147,10 @@ export function createEvidenceActions({ get, applyDocChange }: EntityFactoryDeps
 
 /**
  * Tiny helper: read one entity off the live store without forcing the
- * caller to type out `get().doc.entities[id]`. Returns `undefined`
- * when the entity is missing. Used by `addEvidence` to bail before
- * minting the new item's id if the entity has been deleted out from
- * under the caller.
+ * caller to type out `currentDoc(get()).entities[id]`. Returns
+ * `undefined` when the entity is missing. Used by `addEvidence` to
+ * bail before minting the new item's id if the entity has been
+ * deleted out from under the caller.
  */
 const readEntity = (get: () => RootStore, entityId: string): Entity | undefined =>
-  get().doc.entities[entityId];
+  currentDoc(get()).entities[entityId];

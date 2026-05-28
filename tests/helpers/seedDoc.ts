@@ -1,4 +1,4 @@
-import type { Edge, Entity, EntityType } from '@/domain/types';
+import type { DiagramType, DocumentId, Edge, Entity, EntityType } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 
 /**
@@ -87,3 +87,26 @@ export const seedAndGroupable = (): {
 // future test needs one of these shapes, the pattern is mechanical to
 // reconstruct from `seedEntity` + `state.connect` — easier to grow
 // shapes from real test demand than to keep speculative helpers warm.
+
+/**
+ * Session 137 / multi-doc tabs Batch 1 — see
+ * `docs/MULTI_DOC_TABS_PLAN.md`.
+ *
+ * Open a fresh document and return its `DocumentId`. Today this is a
+ * thin wrapper over `state.newDocument(diagramType)` — single-doc by
+ * construction, the same as every existing test fixture. Post Phase 2
+ * (data-model flip), `newDocument` becomes "open a new tab and
+ * activate it" and this helper still returns the new doc's id without
+ * any test-side change.
+ *
+ * Existing helpers (`seedEntity`, `seedConnectedPair`, etc.) continue
+ * to operate against whichever doc is active. New tests that want to
+ * exercise multi-tab behaviour can call `seedTab` to mint a separate
+ * doc + then drive `seedEntity` against the active tab.
+ *
+ * `diagramType` defaults to `'crt'` (`newDocument`'s implicit default).
+ */
+export const seedTab = (diagramType: DiagramType = 'crt'): DocumentId => {
+  useDocumentStore.getState().newDocument(diagramType);
+  return useDocumentStore.getState().doc.id;
+};

@@ -5,6 +5,7 @@ import type {
   AssumptionStatus,
   AttrValue,
   CustomEntityClass,
+  DocumentId,
   Edge,
   EdgeId,
   Entity,
@@ -171,8 +172,12 @@ const validateImportedFromRef = (v: unknown, label: string): ImportedFromRef | u
     throw invalid(label, 'has non-string importedAt');
   }
   return {
-    docId: v.docId,
-    entityId: v.entityId,
+    // Session 137 — Batch 1 tightened the field types to the branded
+    // `DocumentId` / `EntityId`. Validator-emitted values are
+    // structurally valid id strings; the `as` cast affirms the brand
+    // at the trust boundary.
+    docId: v.docId as DocumentId,
+    entityId: v.entityId as EntityId,
     ...(typeof v.sourceTitle === 'string' && v.sourceTitle.length > 0
       ? { sourceTitle: v.sourceTitle }
       : {}),
