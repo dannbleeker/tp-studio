@@ -57,9 +57,27 @@ texts are produced by the package manager's manifest (`package.json` +
 
 ## TP Studio's own license
 
-TP Studio does not currently distribute a public software license. The
-repository is published in the open for transparency and reference, but
-redistribution, modification, and commercial use are not yet covered by an
-express license grant. A formal `LICENSE` file may be added in a future
-session; if you intend to fork, redistribute, or build on this code, please
-open an issue first.
+TP Studio is dual-licensed across two distinct artefacts in this
+repository:
+
+- **The software** — all source code (`src/`, `tests/`, `scripts/`,
+  build configuration, etc.) — is licensed under the **Apache License
+  2.0**. See [`LICENSE`](LICENSE) in the repository root for the full
+  text. Permissive: free for use, modification, and redistribution
+  (including commercial use) with attribution and a patent grant.
+
+- **The book** — the practitioner guide in [`docs/guide/`](docs/guide/),
+  including the assembled EPUB and PDF artefacts — is licensed under
+  **Creative Commons Attribution-NonCommercial 4.0 International
+  (CC BY-NC 4.0)**. See [`LICENSE-BOOK`](LICENSE-BOOK) in the
+  repository root for the full text and scope. Free for non-commercial
+  use with attribution; commercial use (paid courses, paid consulting
+  deliverables, paid republishing) requires prior written permission
+  from the author.
+
+Both licenses apply only to the original work of the TP Studio
+project. Third-party trademarks and third-party authors' work
+referenced in the book (Goldratt, Dettmer, Scheinkopf, Cox/Boyd, etc.)
+remain the property of their respective owners; see the trademark
+notices above and the **Scope of this license** section of
+`LICENSE-BOOK` for the boundary.

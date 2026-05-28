@@ -2,6 +2,8 @@
   "name": "tp-studio",
   "private": true,
   "version": "0.0.0",
+  "license": "Apache-2.0",
+  "author": "Dann Bleeker Pedersen",
   "type": "module",
   "scripts": {
     "preinstall": "node ./scripts/check-node-version.cjs",
