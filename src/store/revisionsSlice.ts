@@ -3,6 +3,7 @@ import { newRevisionId } from '@/domain/ids';
 import type { Revision } from '@/domain/revisions';
 import type { TPDocument } from '@/domain/types';
 import { readJSON, STORAGE_KEYS, writeJSON } from '@/services/storage/storage';
+import { currentDoc } from './selectors';
 import type { RootStore } from './types';
 
 /**
@@ -151,7 +152,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
     revisions: [],
 
     captureSnapshot: (label) => {
-      const doc = get().doc;
+      const doc = currentDoc(get());
       const docId = doc.id;
       const revision: Revision = {
         id: newRevisionId(),
@@ -169,7 +170,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
     },
 
     restoreSnapshot: (revisionId) => {
-      const doc = get().doc;
+      const doc = currentDoc(get());
       const docId = doc.id;
       const byDoc = loadRevisionsByDoc();
       const list = byDoc[docId] ?? [];
@@ -209,7 +210,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
     },
 
     deleteSnapshot: (revisionId) => {
-      const docId = get().doc.id;
+      const docId = currentDoc(get()).id;
       const byDoc = loadRevisionsByDoc();
       const list = byDoc[docId] ?? [];
       const next = list.filter((r) => r.id !== revisionId);
@@ -219,7 +220,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
     },
 
     renameSnapshot: (revisionId, label) => {
-      const docId = get().doc.id;
+      const docId = currentDoc(get()).id;
       const byDoc = loadRevisionsByDoc();
       const list = byDoc[docId] ?? [];
       const trimmedLabel = label.trim();
@@ -242,13 +243,13 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
     },
 
     reloadRevisionsForActiveDoc: () => {
-      const docId = get().doc.id;
+      const docId = currentDoc(get()).id;
       const byDoc = loadRevisionsByDoc();
       set({ revisions: byDoc[docId] ?? [] });
     },
 
     branchFromRevision: (sourceRevisionId, branchName) => {
-      const docId = get().doc.id;
+      const docId = currentDoc(get()).id;
       const byDoc = loadRevisionsByDoc();
       const list = byDoc[docId] ?? [];
       const source = list.find((r) => r.id === sourceRevisionId);

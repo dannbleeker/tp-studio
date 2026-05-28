@@ -12,6 +12,7 @@ import type {
 import { flushPersist, persistDebounced } from '@/services/storage/persistDebounced';
 import { pushHistoryEntry } from '../historySlice';
 import { autoSnapshotOutgoing } from '../revisionsSlice';
+import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
 import { makeApplyDocChange, touch } from './docMutate';
 
@@ -137,7 +138,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
     doc: initialDoc,
 
     setDocument: (doc) => {
-      const prev = get().doc;
+      const prev = currentDoc(get());
       // H1 — capture the outgoing doc as a revision so the user can roll
       // back. Suppressed when the swap is itself a revision restore (the
       // restore path captures its own safety snapshot first). Skipped
@@ -161,7 +162,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
     },
 
     newDocument: (diagramType) => {
-      const prev = get().doc;
+      const prev = currentDoc(get());
       autoSnapshotOutgoing(prev, `new ${diagramType} document`);
       const base = createDocument(diagramType);
       // FL-TO3: seed the fresh doc with the user's preferred layout
@@ -224,7 +225,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       // an undoable user action, so pushing a history entry would be
       // noise (Cmd+Z would "un-show" a toast that's already gone).
       // Persist directly so the flag survives the next reload.
-      const prev = get().doc;
+      const prev = currentDoc(get());
       if (prev.systemScopeNudgeShown) return;
       const next = touch({ ...prev, systemScopeNudgeShown: true });
       persistDebounced(next);

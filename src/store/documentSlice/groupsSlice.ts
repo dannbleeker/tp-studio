@@ -2,6 +2,7 @@ import type { StateCreator } from 'zustand';
 import { createGroup } from '@/domain/factory';
 import { wouldCreateCycle } from '@/domain/groups';
 import type { EntityId, Group, GroupColor } from '@/domain/types';
+import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
 import { makeApplyDocChange, touch } from './docMutate';
 
@@ -39,7 +40,7 @@ export const createGroupsSlice: StateCreator<RootStore, [], [], GroupsSlice> = (
     // here — the caller decides whether to flatten first. (Most flows pass
     // the current entity selection which is naturally non-overlapping.)
     createGroupFromSelection: (memberIds, params = {}) => {
-      const doc = get().doc;
+      const doc = currentDoc(get());
       const valid = memberIds.filter((id) => Boolean(doc.entities[id]) || Boolean(doc.groups[id]));
       if (valid.length === 0) return null;
       const group = createGroup({ ...params, memberIds: valid });
