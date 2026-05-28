@@ -1,5 +1,6 @@
 import { useStore as useRFStore } from '@xyflow/react';
 import clsx from 'clsx';
+import { X } from 'lucide-react';
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import { iconForCommandId } from '@/components/command-palette/commandIcons';
 import { runVerbCommand } from '@/components/command-palette/verbCommandRuns';
@@ -56,6 +57,11 @@ const ESTIMATED_ROW_HEIGHT_PX = 36; // single chip row height
 const CHIPS_PER_ROW = 6; // verb count that fits on one row at ~480 px
 const ESTIMATED_WIDTH_PX = 480; // chip row width (~6 verbs); used for horizontal clamp
 const VIEWPORT_MARGIN_PX = 8; // minimum distance from viewport edges
+// Session 137 — discoverability tip sub-row. ~22 px tall (10 px text
+// + vertical padding + the 1 px separator border). Added to the
+// estimated height when the tip is visible so the placement math
+// reserves room above the selection.
+const TIP_ROW_HEIGHT_PX = 22;
 
 /**
  * Resolve a verb's onClick handler. Palette-backed verbs go through the
@@ -77,6 +83,12 @@ export function SelectionToolbar() {
   // Subscriptions. Visibility-affecting selectors return primitives so
   // each is shallow-equal-stable.
   const showSelectionToolbar = useDocumentStore((s) => s.showSelectionToolbar);
+  // Session 137 — discoverability tip. Mirrors `emptyStateTipDismissed`
+  // / `FirstEntityTip` — a single boolean + a setter, persisted to
+  // localStorage. The tip auto-dismisses on the first verb click;
+  // X-button click flips it explicitly without firing a verb.
+  const tipDismissed = useDocumentStore((s) => s.selectionToolbarTipDismissed);
+  const dismissTip = useDocumentStore((s) => s.dismissSelectionToolbarTip);
   const selection = useDocumentStore((s) => s.selection);
   // Edge presence — when the selection mode changes we want to
   // re-compute the verb list. The actual selection IDs are inside
@@ -191,9 +203,14 @@ export function SelectionToolbar() {
   // single-entity hits 7+ verbs; multi-edge AND/OR/XOR + ungroups
   // hit 7) wrap to a second row rather than truncating. The
   // placement math gets the actual row count so the anchor still
-  // clears the selection rect.
+  // clears the selection rect. The discoverability tip adds one
+  // extra row of fixed height when visible.
   const rowCount = Math.max(1, Math.ceil(verbs.length / CHIPS_PER_ROW));
-  const estimatedHeight = ESTIMATED_ROW_HEIGHT_PX * rowCount + (rowCount - 1) * 4; // 4 px gap between rows
+  const tipVisible = !tipDismissed;
+  const estimatedHeight =
+    ESTIMATED_ROW_HEIGHT_PX * rowCount +
+    (rowCount - 1) * 4 + // 4 px gap between chip rows
+    (tipVisible ? TIP_ROW_HEIGHT_PX : 0);
 
   // Compute placement via the extracted pure function. The math
   // (anchor above / flip below near top / horizontal clamp) is
@@ -234,44 +251,73 @@ export function SelectionToolbar() {
       // would be cleaner; the wrapper itself doesn't intercept anything
       // since its only child is the visible chip row.
       //
-      // Session 137 — `flex-wrap` lets verb-heavy branches (CRT single-
-      // entity, multi-edge AND/OR/XOR) drop to a second row instead of
-      // truncating. `max-w-[480px]` matches `ESTIMATED_WIDTH_PX` so the
-      // placement math and the actual chip-row width stay in lockstep.
-      // `gap-y-1` adds vertical breathing room between rows; the
-      // estimated height computation above accounts for the same 4 px gap.
-      className="pointer-events-auto flex max-w-[480px] flex-wrap items-center gap-x-1 gap-y-1 rounded-lg border border-neutral-200 bg-white px-1.5 py-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
+      // Session 137 — outer wrapper now uses `flex-col` so the chip row
+      // and the optional discoverability tip stack vertically. The
+      // chip row itself still uses `flex-wrap` for verb-heavy
+      // branches; `max-w-[480px]` matches `ESTIMATED_WIDTH_PX` so the
+      // placement math and the actual width stay in lockstep.
+      className="pointer-events-auto flex max-w-[480px] flex-col gap-y-1 rounded-lg border border-neutral-200 bg-white px-1.5 py-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
       style={style}
     >
-      {verbs.map((verb) => {
-        const Icon = verb.icon ?? iconForCommandId(verb.id);
-        const kbd = verb.paletteCommandId
-          ? paletteKbdForCommand(verb.paletteCommandId)
-          : paletteKbdForCommand(verb.id);
-        const display = verb.shortLabel ?? verb.label;
-        const tooltip = kbd ? `${verb.label}  (${kbd})` : verb.label;
-        return (
+      <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
+        {verbs.map((verb) => {
+          const Icon = verb.icon ?? iconForCommandId(verb.id);
+          const kbd = verb.paletteCommandId
+            ? paletteKbdForCommand(verb.paletteCommandId)
+            : paletteKbdForCommand(verb.id);
+          const display = verb.shortLabel ?? verb.label;
+          const tooltip = kbd ? `${verb.label}  (${kbd})` : verb.label;
+          return (
+            <button
+              key={verb.id}
+              type="button"
+              onClick={() => {
+                dispatchVerb(verb);
+                // Session 137 — first verb click counts as discovery;
+                // dismiss the tip permanently. The action is idempotent
+                // so repeated clicks coalesce.
+                if (tipVisible) dismissTip();
+              }}
+              title={tooltip}
+              aria-label={verb.label}
+              className={clsx(
+                'inline-flex items-center gap-1 rounded-md px-2 py-1 font-medium text-xs transition',
+                CARD_FOCUS,
+                verb.destructive
+                  ? 'text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/40'
+                  : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800'
+              )}
+            >
+              {Icon ? <Icon className="h-3 w-3" aria-hidden /> : null}
+              {/* Design audit #23 — guard the empty span so a verb with
+                  no label doesn't leave a stray gap-1 slot beside the icon. */}
+              {display && <span>{display}</span>}
+            </button>
+          );
+        })}
+      </div>
+      {/* Session 137 — Option B discoverability hint. One subtle line
+          under the chip row pointing users at the right-click menu
+          (which still carries the dynamic / less-common items —
+          Convert-to-X, Pin/Unpin, Spawn EC, NBR, etc). Dismissed
+          permanently on first verb click or on the X. Mirrors the
+          first-entity tip's dismiss pattern. */}
+      {tipVisible && (
+        <div
+          data-component="selection-toolbar-tip"
+          className="flex items-center justify-between gap-2 border-neutral-100 border-t px-1 pt-1 text-[10px] text-neutral-500 dark:border-neutral-800 dark:text-neutral-400"
+        >
+          <span>Right-click for more actions</span>
           <button
-            key={verb.id}
             type="button"
-            onClick={() => dispatchVerb(verb)}
-            title={tooltip}
-            aria-label={verb.label}
-            className={clsx(
-              'inline-flex items-center gap-1 rounded-md px-2 py-1 font-medium text-xs transition',
-              CARD_FOCUS,
-              verb.destructive
-                ? 'text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/40'
-                : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800'
-            )}
+            onClick={dismissTip}
+            className="-mr-0.5 rounded-sm p-0.5 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            aria-label="Dismiss tip"
           >
-            {Icon ? <Icon className="h-3 w-3" aria-hidden /> : null}
-            {/* Design audit #23 — guard the empty span so a verb with
-                no label doesn't leave a stray gap-1 slot beside the icon. */}
-            {display && <span>{display}</span>}
+            <X className="h-2.5 w-2.5" aria-hidden />
           </button>
-        );
-      })}
+        </div>
+      )}
     </div>
   );
 }
