@@ -92,6 +92,11 @@ export type PreferencesSlice = {
    *  (small floating chrome that's easy to dismiss for users who
    *  prefer keyboard-only flow). */
   showSelectionToolbar: boolean;
+  /** Session 137 — discoverability hint dismissed flag. The toolbar
+   *  shows a one-line tip below its chip row ("Right-click for more
+   *  actions") until this is `true`. Flipped permanently by the
+   *  first verb-click or the tip's own X. Persisted across reloads. */
+  selectionToolbarTipDismissed: boolean;
   /** Session 135 / spec major gap #9 — app-mode (Expert / Guided /
    *  Workshop / Presentation). Phase 1 lands the state field +
    *  setter + palette commands; per-mode chrome wiring follows.
@@ -141,6 +146,10 @@ export type PreferencesSlice = {
   setECChromeCollapsed: (collapsed: boolean) => void;
   /** Session 95 — toggle the floating SelectionToolbar. */
   setShowSelectionToolbar: (show: boolean) => void;
+  /** Session 137 — dismiss the SelectionToolbar discoverability hint.
+   *  Idempotent: once flipped to `true`, subsequent calls are no-ops.
+   *  Persisted so the hint never reappears. */
+  dismissSelectionToolbarTip: () => void;
   /** Session 135 — set the active app mode. */
   setAppMode: (mode: AppMode) => void;
   /** Session 135 — reveal / hide archived groups on the canvas. */
@@ -181,6 +190,7 @@ export type PreferencesDataKeys =
   | 'verbalisationStripCollapsed'
   | 'ecChromeCollapsed'
   | 'showSelectionToolbar'
+  | 'selectionToolbarTipDismissed'
   | 'appMode'
   | 'showArchivedGroups'
   | 'edgeRouting';
@@ -233,6 +243,11 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   // selection above the selected element; users who prefer
   // keyboard-only flow can disable in Settings → Behavior.
   showSelectionToolbar: true,
+  // Session 137 — discoverability tip starts un-dismissed so first-
+  // time users see "Right-click for more actions" below the chip
+  // row. Mirrors the first-entity tip's default-show + dismiss-once
+  // pattern.
+  selectionToolbarTipDismissed: false,
   // Session 135 — Expert is the default mode. First-run users get
   // the full-affordance experience the tool has shipped with since
   // v1; explicit switch via the palette to enter Guided / Workshop
@@ -273,6 +288,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       verbalisationStripCollapsed: s.verbalisationStripCollapsed,
       ecChromeCollapsed: s.ecChromeCollapsed,
       showSelectionToolbar: s.showSelectionToolbar,
+      selectionToolbarTipDismissed: s.selectionToolbarTipDismissed,
       appMode: s.appMode,
       showArchivedGroups: s.showArchivedGroups,
       edgeRouting: s.edgeRouting,
@@ -303,6 +319,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     verbalisationStripCollapsed: initialPrefs.verbalisationStripCollapsed,
     ecChromeCollapsed: initialPrefs.ecChromeCollapsed,
     showSelectionToolbar: initialPrefs.showSelectionToolbar,
+    selectionToolbarTipDismissed: initialPrefs.selectionToolbarTipDismissed,
     appMode: initialPrefs.appMode,
     showArchivedGroups: initialPrefs.showArchivedGroups,
     edgeRouting: initialPrefs.edgeRouting,
@@ -401,6 +418,14 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       set({ showSelectionToolbar: show });
       persistPrefs();
     },
+    dismissSelectionToolbarTip: () => {
+      // Idempotent — repeated calls (e.g. first verb click + first
+      // X click landing close together) all coalesce into a single
+      // persist write at the final `true`.
+      if (get().selectionToolbarTipDismissed) return;
+      set({ selectionToolbarTipDismissed: true });
+      persistPrefs();
+    },
     setAppMode: (mode) => {
       // Session 135 / Phase 1B — entering Presentation auto-engages
       // Browse Lock so a stray click can't accidentally edit the doc
@@ -460,6 +485,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         verbalisationStripCollapsed: d.verbalisationStripCollapsed,
         ecChromeCollapsed: d.ecChromeCollapsed,
         showSelectionToolbar: d.showSelectionToolbar,
+        selectionToolbarTipDismissed: d.selectionToolbarTipDismissed,
         appMode: d.appMode,
         showArchivedGroups: d.showArchivedGroups,
         edgeRouting: d.edgeRouting,

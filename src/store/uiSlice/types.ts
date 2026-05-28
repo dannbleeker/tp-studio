@@ -202,6 +202,13 @@ export type StoredPrefs = {
    *  current selection. Default `true`; opt-out via Settings →
    *  Behavior. */
   showSelectionToolbar?: boolean;
+  /** Session 137 — discoverability hint on the SelectionToolbar.
+   *  Default `false` (tip visible) so first-time users see the
+   *  "Right-click for more actions" line under the chip row. Flips
+   *  permanently to `true` the first time the user clicks any verb
+   *  on the toolbar, or clicks the tip's own dismiss X. Persisted
+   *  across reloads. */
+  selectionToolbarTipDismissed?: boolean;
   /** Session 135 / spec major gap #9 — app-mode preference. Default
    *  `'expert'`. See {@link AppMode} for the four modes. */
   appMode?: AppMode;

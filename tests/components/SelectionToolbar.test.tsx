@@ -153,4 +153,93 @@ describe('SelectionToolbar', () => {
     const title = deleteBtn.getAttribute('title') ?? '';
     expect(title.toLowerCase()).toContain('delete');
   });
+
+  it('renders above the Inspector aside (z-index ≥ 25)', async () => {
+    // Session 137 — regression guard for the silent-cover bug.
+    // The Inspector aside uses Tailwind's `z-20`. If the toolbar
+    // also lands at `z-20`, App's DOM order (Inspector is later)
+    // hides the toolbar wherever the Inspector and the toolbar's
+    // horizontal band overlap. Pin the explicit `zIndex` so a
+    // future style refactor can't reintroduce the regression.
+    const a = seedEntity('A');
+    act(() => useDocumentStore.getState().selectEntity(a.id));
+    renderWithProvider(<SelectionToolbar />);
+    await advanceFrame();
+    const root = screen.getByRole('toolbar', { name: /selection actions/i });
+    const zIndex = Number.parseInt(root.style.zIndex, 10);
+    expect(zIndex).toBeGreaterThanOrEqual(25);
+  });
+
+  it('wraps verbs to a second row when the verb count is high (Option B)', async () => {
+    // Session 137 — Option B beef-up. A multi-edge selection with
+    // AND + OR + XOR + ungroups + delete blows past the single-row
+    // budget (≥ 6 verbs). The chip row carries `flex-wrap` so the
+    // chips wrap to a second row rather than overflowing the
+    // viewport or truncating.
+    //
+    // The unit test verifies the chip row's className carries
+    // `flex-wrap`; the visual wrap behavior + estimated-height
+    // plumbing into the placement math are exercised in the e2e
+    // + the placement unit tests.
+    const a = seedEntity('A');
+    act(() => useDocumentStore.getState().selectEntity(a.id));
+    renderWithProvider(<SelectionToolbar />);
+    await advanceFrame();
+    const root = screen.getByRole('toolbar', { name: /selection actions/i });
+    // The chip row is the first child div under the toolbar root
+    // (the second child is the optional tip row). Both carry their
+    // own flex layout — we look for `flex-wrap` on the chip row.
+    const chipRow = root.firstElementChild as HTMLElement | null;
+    expect(chipRow).not.toBeNull();
+    expect(chipRow?.className).toMatch(/\bflex-wrap\b/);
+  });
+
+  it('shows the discoverability tip on first render (Session 137 Option B #2)', async () => {
+    // The tip starts un-dismissed; first-time users see "Right-click
+    // for more actions" below the chip row. Mirrors the first-entity
+    // tip's default-show pattern.
+    const a = seedEntity('A');
+    act(() => useDocumentStore.getState().selectEntity(a.id));
+    renderWithProvider(<SelectionToolbar />);
+    await advanceFrame();
+    expect(screen.getByText(/right-click for more actions/i)).toBeTruthy();
+  });
+
+  it('hides the tip when selectionToolbarTipDismissed is true', async () => {
+    const a = seedEntity('A');
+    act(() => {
+      useDocumentStore.getState().selectEntity(a.id);
+      useDocumentStore.getState().dismissSelectionToolbarTip();
+    });
+    renderWithProvider(<SelectionToolbar />);
+    await advanceFrame();
+    expect(screen.queryByText(/right-click for more actions/i)).toBeNull();
+  });
+
+  it('auto-dismisses the tip on first verb click', async () => {
+    const a = seedEntity('A');
+    act(() => useDocumentStore.getState().selectEntity(a.id));
+    renderWithProvider(<SelectionToolbar />);
+    await advanceFrame();
+    expect(useDocumentStore.getState().selectionToolbarTipDismissed).toBe(false);
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: /^add child$/i }));
+    });
+    expect(useDocumentStore.getState().selectionToolbarTipDismissed).toBe(true);
+  });
+
+  it('dismisses the tip via the X button without firing a verb', async () => {
+    const a = seedEntity('A');
+    act(() => useDocumentStore.getState().selectEntity(a.id));
+    renderWithProvider(<SelectionToolbar />);
+    await advanceFrame();
+    const before = Object.keys(useDocumentStore.getState().doc.entities).length;
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: /dismiss tip/i }));
+    });
+    // Tip flag flipped, entity count unchanged (no verb fired).
+    expect(useDocumentStore.getState().selectionToolbarTipDismissed).toBe(true);
+    const after = Object.keys(useDocumentStore.getState().doc.entities).length;
+    expect(after).toBe(before);
+  });
 });

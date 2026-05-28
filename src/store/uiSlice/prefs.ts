@@ -145,6 +145,13 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // value (including `undefined` for first-run users) keeps the
     // toolbar visible. Users disable via Settings → Behavior.
     showSelectionToolbar: raw?.showSelectionToolbar !== false,
+    // Session 137 — discoverability hint default OFF (tip visible).
+    // Flips to `true` (dismissed) the first time the user clicks any
+    // toolbar verb or the tip's own X. `=== true` semantics: any
+    // non-`true` value (including `undefined` on first-run) keeps
+    // the tip visible — same default-show pattern as the first-entity
+    // tip.
+    selectionToolbarTipDismissed: raw?.selectionToolbarTipDismissed === true,
     // Session 135 — `'expert'` is the default for first-run users;
     // unknown / stale mode values fall back to expert so a future
     // schema change doesn't strand someone in an unusable mode.
