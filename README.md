@@ -182,3 +182,12 @@ Iteration 2 shipped: navigation/search, multi-select, Quick Capture, groups (nes
 Tier 1 features (auto-recovery, reverse-edge, redact, F2–F4 / F6–F7 polish), Tier 2 diagrams (A1 Evaporating Cloud, A2 Prerequisite Tree, A3 Transition Tree) and Tier 3 (F5 radial alternate view + Session 99 obstacle-aware radial edge routing) all landed. Connector visuals carry Flying-Logic-style AND / OR / XOR junctors (Session 73). Goal Tree + EC creation wizards (Session 78), full template library + a11y audit (Session 79), vector PDF export (Session 80), structured S&T trees + Strategy/Tactics diagram type (Session 75), per-document custom entity classes with curated 57-icon Lucide picker (Sessions 70/76), revision history + side-by-side compare + named branches (Sessions 41 + 62), PWA install (Session 89), comprehensive security audit + CSP (Session 98), the 17-chapter *Causal Thinking with TP Studio* book + clickable-TOC PDF (Sessions 103/104; retitled Session 110), and the under-the-hood performance pass with three-sample perf-trace baseline (Sessions 105–108) all landed.
 
 **1156+ tests green as of Session 108, TypeScript + Biome clean, `pnpm audit --prod` clean.**
+
+## License
+
+TP Studio is dual-licensed. The two artefacts in this repository are governed by different licenses:
+
+- **The software** — all source code under `src/`, `tests/`, `scripts/`, the build configuration, etc. — is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for the full text. Permissive use including commercial use, with attribution and a patent grant.
+- **The book** — the practitioner guide in [`docs/guide/`](docs/guide/) (the source Markdown, the assembled EPUB, the PDF) — is licensed under **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**. See [LICENSE-BOOK](LICENSE-BOOK) for the full text + scope. Free for non-commercial use with attribution; commercial republishing or paid courses / consulting use requires prior written permission.
+
+Third-party trademarks and third-party authors' work referenced in the book remain the property of their respective owners. See [NOTICE.md](NOTICE.md) for the trademark notices and the boundary between TP Studio's own license and what it doesn't grant rights to.

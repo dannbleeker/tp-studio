@@ -23,3 +23,9 @@ Thank you for picking this up. Now open the application and let us begin.
 ---
 
 → Continue to [Chapter 1 — The system has a goal](01-the-system-has-a-goal.md)
+
+---
+
+## Colophon
+
+© 2026 Dann Bleeker Pedersen. *Causal Thinking with TP Studio* is released under the [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/) (CC BY-NC 4.0). You are free to share and adapt the material with attribution; commercial use (paid courses, paid consulting deliverables, paid republishing) requires prior written permission. See [LICENSE-BOOK](../../LICENSE-BOOK) in the repository for full scope. References to third-party works (Goldratt, Dettmer, Scheinkopf, Cox/Boyd, and others) remain the copyright of their respective authors.
