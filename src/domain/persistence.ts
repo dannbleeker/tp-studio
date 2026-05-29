@@ -377,17 +377,20 @@ export const persistTabsManifest = (manifest: TabsManifest): void => {
 };
 
 /**
- * Persist the active document everywhere it needs to go. Phase 2 entry
- * point used by the debounce scheduler's committed write:
+ * Persist the active document's BODY on the debounce scheduler's committed
+ * write: per-doc committed + backup rotation (`saveDocToLocalStorage`) plus
+ * the legacy single-doc dual-write (downgrade safety; drop in a later
+ * cleanup).
  *
- *   1. per-doc committed + backup rotation (`saveDocToLocalStorage`)
- *   2. single-tab manifest — Phase 5 moves this to the tab actions, which
- *      know the real `tabOrder`; the scheduler only ever sees one doc.
- *   3. legacy single-doc slots — DUAL-WRITE; drop this line in Phase 5.
+ * It deliberately does NOT touch the tab manifest. The manifest is owned by
+ * the tab actions (openTab / switchTab / closeTab / reorderTabs /
+ * duplicateTab), which know the real `tabOrder`. Writing a single-tab
+ * manifest here (as Batch 2.2 did, when single-tab) would clobber a
+ * multi-tab manifest on the very next committed edit — which silently
+ * dropped every tab but the active one on reload (Batch 5.4 fix).
  */
 export const persistActiveDoc = (doc: TPDocument): void => {
   saveDocToLocalStorage(doc);
-  persistTabsManifest({ activeDocId: doc.id, tabOrder: [doc.id] });
   saveToLocalStorage(doc);
 };
 
@@ -456,9 +459,12 @@ export const loadAllTabsWithStatus = (): TabsLoadResult => {
   const legacy = loadFromLocalStorageWithStatus();
   if (legacy.doc) {
     const { doc } = legacy;
-    // One-time migration: establish the per-doc format + manifest so the
-    // next boot takes the manifest path above. Idempotent for this doc.
+    // One-time migration: establish the per-doc format + a single-tab
+    // manifest so the next boot takes the manifest path above. The manifest
+    // write is explicit here because `persistActiveDoc` no longer touches it
+    // (it's the tab actions' job). Idempotent for this doc.
     persistActiveDoc(doc);
+    persistTabsManifest({ activeDocId: doc.id, tabOrder: [doc.id] });
     return {
       docs: { [doc.id]: doc },
       activeDocId: doc.id,

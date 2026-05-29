@@ -15,6 +15,7 @@ import { createDocument } from '@/domain/factory';
 import { loadAllTabsWithStatus, readTabsManifest, type TabsLoadResult } from '@/domain/persistence';
 import type { DocumentId } from '@/domain/types';
 import { docCommittedKey } from '@/services/storage/keys';
+import { flushPersist } from '@/services/storage/persistDebounced';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { tabStateFromLoad } from '@/store/documentSlice/docMetaSlice';
 import { seedEntity } from '../helpers/seedDoc';
@@ -242,5 +243,20 @@ describe('Batch 5.4 — boot restores all tabs (tabStateFromLoad)', () => {
     expect(restored.tabOrder).toEqual([aId, b.id]);
     expect(restored.activeDocId).toBe(b.id);
     expect(Object.keys(restored.docs).sort()).toEqual([aId, b.id].sort());
+  });
+
+  it('a committed edit after opening a 2nd tab keeps both tabs on reload', () => {
+    // The bug: the debounced auto-save (persistActiveDoc) wrote a single-tab
+    // manifest, clobbering [A, B] back to [B] on the next edit — so a reload
+    // after editing the new tab dropped tab A.
+    const aId = s().activeDocId;
+    const b = createDocument('frt');
+    s().openTab(b); // manifest [A, B], active = B
+    seedEntity('edit-on-B'); // edits B → schedules a debounced commit
+    flushPersist(); // commits B through the scheduler (persistActiveDoc)
+
+    const restored = tabStateFromLoad(loadAllTabsWithStatus());
+    expect(restored.tabOrder).toEqual([aId, b.id]); // both survive
+    expect(restored.activeDocId).toBe(b.id);
   });
 });
