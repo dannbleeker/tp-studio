@@ -666,8 +666,7 @@ persistence change, no history change, no UI. Landed: `src/store/activeDoc.ts`
 (the `activeDocState` helper), `docs`/`activeDocId`/`tabOrder` on
 `DocMetaSlice`, the 6 write sites rerouted, invariant tests in
 `tests/store/multiDocState.test.ts`. Full suite stayed green with zero
-edits to existing tests. **Next: Batch 2.2 (persistence) — gated on Dann's
-review of the migration design.**
+edits to existing tests. **Merged to main (PR #16, rebase) Session 138.**
 
 Files:
 - `docMetaSlice.ts` — extend `DocMetaSlice` type with
@@ -692,7 +691,23 @@ newDocument / undo / redo, including undo across a setDocument boundary.
 edits to existing tests. **This is the safe batch to execute under
 auto-mode.**
 
-#### Batch 2.2 — Per-doc persistence + boot + migration (HIGH risk, ~1-2 sessions)
+#### Batch 2.2 — Per-doc persistence + boot + migration (HIGH risk) — ✅ SHIPPED (Session 138)
+
+**As built:** landed on `feat/multi-doc-tabs-2-2-persistence` off the merged
+2.1 baseline. Diverged from the plan below in three deliberate, safer ways:
+(1) **dual-write** — every committed save *also* writes the legacy single-doc
+slots for the whole of Phase 2 (not just "keep one release as fallback"), so a
+rollback / older cached PWA shell still boots from the same browser; Phase 5
+drops the legacy write. (2) The per-doc backup reads its prior body straight
+from storage rather than via an in-memory `lastCommittedRaw` Map — the
+debounced path makes the extra `getItem` negligible and it removes a
+stale-cache bug class. (3) The committed/live/backup precedence is a single
+shared `pickBestDoc` resolver used by both the legacy and per-doc loaders. The
+`store/index.ts` quota-handler extension + true lazy-parse of non-active bodies
+are deferred to Phase 5 (no-ops under single-tab). New `persistence.ts` exports:
+`persistActiveDoc`, `saveDocToLocalStorage`, `loadAllTabsWithStatus`,
+`persistTabsManifest`, `readTabsManifest`; tests in
+`tests/domain/multiDocPersistence.test.ts`. Full suite green (1982).
 
 The genuine risk concentration. Wire up `keys.ts`, rewrite the scheduler
 + save/load for per-doc slots, add the tabs manifest, migrate from
@@ -733,8 +748,8 @@ tab's.
 ### Sequencing + gates
 
 1. Batch 2.1 — first, own PR. Low risk; green with no existing-test edits.
-2. Batch 2.2 — own PR after 2.1 merges. HIGH risk; eyes on the migration
-   + a manual reload smoke test before merge.
+2. Batch 2.2 — ✅ shipped Session 138 (own PR off the merged 2.1 baseline;
+   dual-write design; persistence tests + boot-reload smoke test).
 3. Batch 2.3 — deferred; bundle with Phase 3 or Phase 5.
 
 After 2.1 + 2.2 merge, the store + storage are fully multi-doc-capable
