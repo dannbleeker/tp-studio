@@ -2,12 +2,12 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 138 — Multi-doc tabs Phase 2 (state shape + per-doc persistence)
+## Session 138 — Multi-doc tabs Phase 2 + per-doc history (Phase 3 start)
 
-Phase 2 of the multi-document tabs arc (`docs/MULTI_DOC_TABS_PLAN.md`)
-landed in two batches. **No visible change yet** — the app is still
-single-tab; this is the data-model + storage groundwork the Phase 5 tab
-strip rides on.
+Multi-document tabs (`docs/MULTI_DOC_TABS_PLAN.md`) advanced through three
+batches. **No visible change yet** — the app is still single-tab; this is
+the data-model + storage + history groundwork the Phase 5 tab strip rides
+on.
 
 **Batch 2.1 — multi-doc state shape.** The store grew `docs`
 (`Record<DocumentId, TPDocument>`), `activeDocId`, and `tabOrder`
@@ -43,6 +43,16 @@ the legacy single-doc slot and migrates it into the new format.
 per-doc backup rotation, per-doc recovery precedence, legacy migration +
 no-re-migrate, malformed/missing manifest, lost-body fallback, and an
 end-to-end store → scheduler → boot reload.
+
+**Batch 2.3 — per-doc history (Phase 3 start).** Added `historyByDoc`
+(`Record<DocumentId, { past, future }>`) to the history slice plus the pure
+`applyTabSwitchHistory` operation Phase 5's `switchTab` will call to swap a
+tab's undo/redo stacks in and out (park the leaving tab, promote the
+entering tab's parked stacks, drop the now-live copy). Additive, mirroring
+2.1 / 2.2: the ACTIVE tab's stacks stay canonical in the top-level
+`past` / `future`, so single-tab undo/redo is byte-for-byte unchanged and
+`historyByDoc` stays empty (no caller yet). `tests/store/perDocHistory.test.ts`
+pins the switch mechanism + the behaviour-preserving invariant.
 
 ## Session 137 — Pattern library expansion (5 per diagram type)
 
