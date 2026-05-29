@@ -56,7 +56,7 @@ export function TabStrip() {
       role="toolbar"
       aria-label="Open documents"
       data-component="tab-strip"
-      className="absolute inset-x-0 top-0 z-20 flex h-9 items-stretch gap-0.5 overflow-x-auto border-neutral-200 border-b bg-neutral-100/95 px-1 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95"
+      className="absolute inset-x-0 top-0 z-20 flex h-9 select-none items-stretch gap-0.5 overflow-x-auto border-neutral-200 border-b bg-neutral-100/95 px-1 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95"
     >
       {chips.map((chip) => (
         <div
@@ -73,7 +73,7 @@ export function TabStrip() {
             data-component="tab"
             aria-current={chip.active || undefined}
             onClick={() => switchTab(chip.id)}
-            className="min-w-0 flex-1 truncate text-left outline-hidden"
+            className="min-w-0 flex-1 cursor-pointer truncate text-left outline-hidden"
             title={chip.title}
           >
             {chip.title}
@@ -83,7 +83,7 @@ export function TabStrip() {
               type="button"
               aria-label={`Close ${chip.title}`}
               onClick={() => closeTab(chip.id)}
-              className="shrink-0 rounded-sm p-0.5 text-neutral-400 opacity-0 transition hover:bg-neutral-300/60 hover:text-neutral-700 focus:opacity-100 group-hover:opacity-100 dark:hover:bg-neutral-700/60 dark:hover:text-neutral-200"
+              className="shrink-0 cursor-pointer rounded-sm p-0.5 text-neutral-400 opacity-0 transition hover:bg-neutral-300/60 hover:text-neutral-700 focus:opacity-100 group-hover:opacity-100 dark:hover:bg-neutral-700/60 dark:hover:text-neutral-200"
             >
               <X className="h-3 w-3" />
             </button>
@@ -94,7 +94,7 @@ export function TabStrip() {
         type="button"
         aria-label="New tab"
         onClick={() => openTab(createDocument('crt'))}
-        className="my-1 shrink-0 self-center rounded-sm p-1 text-neutral-500 transition hover:bg-neutral-200/70 hover:text-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800/70 dark:hover:text-neutral-200"
+        className="my-1 shrink-0 cursor-pointer self-center rounded-sm p-1 text-neutral-500 transition hover:bg-neutral-200/70 hover:text-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800/70 dark:hover:text-neutral-200"
       >
         <Plus className="h-3.5 w-3.5" />
       </button>
