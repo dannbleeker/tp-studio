@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand';
 import { createDocument } from '@/domain/factory';
-import { loadFromLocalStorageWithStatus } from '@/domain/persistence';
+import { loadAllTabsWithStatus } from '@/domain/persistence';
 import type {
   CustomEntityClass,
   DiagramType,
@@ -119,8 +119,14 @@ export type DocMetaSlice = {
   removeCustomEntityClass: (id: string) => void;
 };
 
-const initialLoad = loadFromLocalStorageWithStatus();
-const initialDoc = initialLoad.doc ?? createDocument('crt');
+// Batch 2.2 — boot through the multi-doc loader (manifest → per-doc slots,
+// with a one-time migration from the legacy single-doc slots). The app is
+// still single-tab, so we hydrate the store with just the active doc;
+// Phase 5 will build the full tab set from `initialLoad.docs` / `tabOrder`.
+const initialLoad = loadAllTabsWithStatus();
+const initialActiveId = initialLoad.activeDocId;
+const initialDoc =
+  (initialActiveId ? initialLoad.docs[initialActiveId] : undefined) ?? createDocument('crt');
 
 /**
  * FL-EX9 — boot-time recovery signal. The App component reads this on

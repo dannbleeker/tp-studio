@@ -1,4 +1,10 @@
 import { errorMessage } from '@/services/errors';
+import {
+  docBackupKey,
+  docCommittedKey,
+  docLiveKey,
+  tabsManifestKey,
+} from '@/services/storage/keys';
 import { readString, removeKey, STORAGE_KEYS, writeString } from '@/services/storage/storage';
 import { isDiagramType, isObject, isTrueMap } from './guards';
 import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from './migrations';
@@ -25,6 +31,13 @@ import type { DocumentId, TPDocument } from './types';
  *   - `exportToJSON` / `importFromJSON` — string ↔ TPDocument
  *   - `saveToLocalStorage` / `loadFromLocalStorage` / `clearLocalStorage`
  *   - `STORAGE_KEY` — re-export of the canonical localStorage key
+ *
+ * Multi-doc tabs (Batch 2.2) — per-doc slots + tab manifest, dual-written
+ * with the legacy single-doc slots above (see the banner lower in the file):
+ *   - `persistActiveDoc` — save the active doc to per-doc + manifest + legacy
+ *   - `saveDocToLocalStorage` — per-doc committed write + backup rotation
+ *   - `loadAllTabsWithStatus` — boot loader (manifest → per-doc; legacy migrate)
+ *   - `persistTabsManifest` / `readTabsManifest` — the tab manifest
  */
 
 /** Re-exported for tests and any consumer that needs the literal key. */
@@ -183,50 +196,63 @@ export type LoadResult = {
  * Returns `{ doc: null, ... }` when nothing usable is stored; the caller
  * falls back to a fresh blank document.
  */
-export const loadFromLocalStorageWithStatus = (): LoadResult => {
-  const committedRaw = readString(STORAGE_KEYS.doc);
-  const liveRaw = readString(STORAGE_KEYS.docLive);
-  const backupRaw = readString(STORAGE_KEYS.docBackup);
+/** Parse a stored doc payload, returning `null` on absent or invalid JSON. */
+const tryParseDoc = (raw: string | null): TPDocument | null => {
+  if (raw === null) return null;
+  try {
+    return importFromJSON(raw);
+  } catch {
+    return null;
+  }
+};
 
-  const tryParse = (raw: string | null): TPDocument | null => {
-    if (raw === null) return null;
-    try {
-      return importFromJSON(raw);
-    } catch {
-      return null;
-    }
-  };
+/**
+ * Pure committed / live / backup precedence resolver. Extracted in
+ * Batch 2.2 so the legacy single-doc loader and the per-doc loader
+ * (`loadDocByIdWithStatus`) share ONE proven recovery policy instead of
+ * duplicating it. Precedence:
+ *
+ *   1. committed intact → committed, unless a live draft has a newer
+ *      `updatedAt` (un-committed edits from the previous session win).
+ *   2. committed unreadable → backup (recoveredFromBackup), unless the
+ *      live draft is newer than the backup → live (still a backup-tier
+ *      recovery: the most recent committed snapshot was lost).
+ *   3. only the live draft survived → live (recoveredFromLiveDraftOnly).
+ *   4. nothing usable → `{ doc: null }`.
+ */
+const pickBestDoc = (
+  committedRaw: string | null,
+  liveRaw: string | null,
+  backupRaw: string | null
+): LoadResult => {
+  const committed = tryParseDoc(committedRaw);
+  const live = tryParseDoc(liveRaw);
+  const backup = tryParseDoc(backupRaw);
 
-  const committed = tryParse(committedRaw);
-  const live = tryParse(liveRaw);
-  const backup = tryParse(backupRaw);
-
-  // Happy path: committed doc is intact.
   if (committed) {
     if (live && live.updatedAt > committed.updatedAt) {
       return { doc: live, recoveredFromBackup: false, recoveredFromLiveDraftOnly: false };
     }
     return { doc: committed, recoveredFromBackup: false, recoveredFromLiveDraftOnly: false };
   }
-
-  // Committed unreadable. Try backup; the live draft is also a candidate
-  // and may carry newer (unsaved) edits than the backup.
   if (backup) {
     if (live && live.updatedAt > backup.updatedAt) {
-      // Both exist; live is newer than the backup. Treat this as a
-      // backup-tier recovery (we still lost the most recent committed
-      // snapshot) but surface the newer live-draft content.
       return { doc: live, recoveredFromBackup: true, recoveredFromLiveDraftOnly: false };
     }
     return { doc: backup, recoveredFromBackup: true, recoveredFromLiveDraftOnly: false };
   }
-
-  // Last resort: only the live draft survived.
   if (live) {
     return { doc: live, recoveredFromBackup: false, recoveredFromLiveDraftOnly: true };
   }
   return { doc: null, recoveredFromBackup: false, recoveredFromLiveDraftOnly: false };
 };
+
+export const loadFromLocalStorageWithStatus = (): LoadResult =>
+  pickBestDoc(
+    readString(STORAGE_KEYS.doc),
+    readString(STORAGE_KEYS.docLive),
+    readString(STORAGE_KEYS.docBackup)
+  );
 
 /**
  * Backwards-compatible wrapper that drops the recovery metadata. New
@@ -245,4 +271,200 @@ export const clearLocalStorage = (): void => {
   // from the UI (no production caller), but the cache should match the
   // canonical storage state for future-safety + test correctness.
   lastCommittedRaw = null;
+  // Batch 2.2 — also drop the per-doc slots the manifest knows about, plus
+  // the manifest itself, so a clear leaves no stale per-doc body that the
+  // multi-doc boot path (`loadAllTabsWithStatus`) would resurrect.
+  // (Phase 5: enumerate by the `tp-studio:doc:` key prefix once tabs can
+  // exist beyond a single-entry manifest.)
+  const manifest = readTabsManifest();
+  if (manifest) {
+    for (const id of manifest.tabOrder) {
+      removeKey(docCommittedKey(id));
+      removeKey(docLiveKey(id));
+      removeKey(docBackupKey(id));
+    }
+  }
+  removeKey(tabsManifestKey);
+};
+
+// ───────────────────────────────────────────────────────────────────────
+// Multi-doc tabs — Phase 2, Batch 2.2: per-doc persistence + tab manifest.
+// See docs/MULTI_DOC_TABS_PLAN.md.
+//
+// Storage model (the app is still SINGLE-TAB in Phase 2, so `tabOrder`
+// always holds exactly one id — the plumbing is exercised under single-tab
+// before Phase 5 turns on the real tab strip):
+//
+//   tp-studio:doc:<id>:committed:v2   per-doc committed body (debounced)
+//   tp-studio:doc:<id>:live:v2        per-doc live draft (sync / keystroke)
+//   tp-studio:doc:<id>:backup:v2      per-doc prior-commit rotation
+//   tp-studio:tabs:v1                 manifest { activeDocId, tabOrder }
+//
+// DUAL-WRITE: every committed save ALSO writes the legacy single-doc slots
+// (via `saveToLocalStorage`). That keeps a pre-2.2 build (a rollback, or an
+// older cached PWA shell) bootable from the same browser — eliminating the
+// downgrade-data-loss risk of a hard format switch. Phase 5 drops the
+// legacy write (one line in `persistActiveDoc`) once tabs ship for real.
+// ───────────────────────────────────────────────────────────────────────
+
+/** Tab manifest payload — which docs are open and which one is active. */
+export type TabsManifest = {
+  activeDocId: DocumentId;
+  tabOrder: DocumentId[];
+};
+
+/**
+ * Per-doc committed write with backup rotation — the per-doc analogue of
+ * `saveToLocalStorage`. Copies the prior committed body into the per-doc
+ * backup slot BEFORE overwriting committed, so a mid-write failure (quota,
+ * tab kill) leaves the last good snapshot intact.
+ *
+ * Reads the prior body straight from storage rather than caching it in
+ * memory: this runs on the debounced path (not per-keystroke), so one
+ * extra `getItem` is negligible, and it sidesteps the stale-cache bug
+ * class that a per-doc `lastCommitted` map would introduce across doc
+ * swaps / tab closes.
+ */
+export const saveDocToLocalStorage = (doc: TPDocument): void => {
+  const committedKey = docCommittedKey(doc.id);
+  const prior = readString(committedKey);
+  if (prior !== null) writeString(docBackupKey(doc.id), prior);
+  writeString(committedKey, JSON.stringify(doc));
+};
+
+/** Per-doc loader — committed / live / backup precedence for ONE doc id. */
+const loadDocByIdWithStatus = (id: DocumentId): LoadResult =>
+  pickBestDoc(
+    readString(docCommittedKey(id)),
+    readString(docLiveKey(id)),
+    readString(docBackupKey(id))
+  );
+
+/** Validate a parsed manifest shape. Returns `null` if absent / malformed. */
+const parseTabsManifest = (raw: string | null): TabsManifest | null => {
+  if (raw === null) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!isObject(parsed)) return null;
+  const { activeDocId, tabOrder } = parsed as { activeDocId?: unknown; tabOrder?: unknown };
+  if (typeof activeDocId !== 'string') return null;
+  if (!Array.isArray(tabOrder) || !tabOrder.every((t) => typeof t === 'string')) return null;
+  return { activeDocId: activeDocId as DocumentId, tabOrder: tabOrder as DocumentId[] };
+};
+
+/** Read + validate the tab manifest. `null` when absent or malformed. */
+export const readTabsManifest = (): TabsManifest | null =>
+  parseTabsManifest(readString(tabsManifestKey));
+
+/** Write the tab manifest (tiny payload — callers write synchronously). */
+export const persistTabsManifest = (manifest: TabsManifest): void => {
+  writeString(tabsManifestKey, JSON.stringify(manifest));
+};
+
+/**
+ * Persist the active document everywhere it needs to go. Phase 2 entry
+ * point used by the debounce scheduler's committed write:
+ *
+ *   1. per-doc committed + backup rotation (`saveDocToLocalStorage`)
+ *   2. single-tab manifest — Phase 5 moves this to the tab actions, which
+ *      know the real `tabOrder`; the scheduler only ever sees one doc.
+ *   3. legacy single-doc slots — DUAL-WRITE; drop this line in Phase 5.
+ */
+export const persistActiveDoc = (doc: TPDocument): void => {
+  saveDocToLocalStorage(doc);
+  persistTabsManifest({ activeDocId: doc.id, tabOrder: [doc.id] });
+  saveToLocalStorage(doc);
+};
+
+/**
+ * Boot loader for the multi-doc world. The result mirrors the store's
+ * Batch-2.1 fields (`docs` / `activeDocId` / `tabOrder`) plus the
+ * active-doc recovery flags.
+ *
+ *   - Manifest present → load each listed doc from its per-doc slots (the
+ *     new canonical path, exercised here under single-tab before Phase 5
+ *     depends on it). Tabs whose body was lost are dropped from the order.
+ *   - Manifest absent → legacy single-doc format (pre-2.2) or a first-ever
+ *     run. Load via the legacy slots and, if a doc survived, MIGRATE it
+ *     into the per-doc format + write the manifest so the next boot takes
+ *     the manifest path.
+ *
+ * Phase 5 will (a) build true multi-tab state from `docs` / `tabOrder`
+ * rather than collapsing to the active doc at the boot call site, and
+ * (b) lazy-parse non-active bodies (locked decision #3). In single-tab
+ * there is at most one body, so the eager load here is already optimal.
+ */
+export type TabsLoadResult = {
+  docs: Record<DocumentId, TPDocument>;
+  activeDocId: DocumentId | null;
+  tabOrder: DocumentId[];
+  recoveredFromBackup: boolean;
+  recoveredFromLiveDraftOnly: boolean;
+  migratedFromLegacy: boolean;
+};
+
+export const loadAllTabsWithStatus = (): TabsLoadResult => {
+  const manifest = readTabsManifest();
+  if (manifest) {
+    const docs: Record<DocumentId, TPDocument> = {};
+    let recoveredFromBackup = false;
+    let recoveredFromLiveDraftOnly = false;
+    for (const id of manifest.tabOrder) {
+      const res = loadDocByIdWithStatus(id);
+      if (res.doc) {
+        docs[id] = res.doc;
+        if (id === manifest.activeDocId) {
+          recoveredFromBackup = res.recoveredFromBackup;
+          recoveredFromLiveDraftOnly = res.recoveredFromLiveDraftOnly;
+        }
+      }
+    }
+    // Resolve the active id: the manifest's choice if its body survived,
+    // else the first surviving tab so a lost active body still boots to
+    // something the user had open.
+    const survivingOrder = manifest.tabOrder.filter((id) => docs[id]);
+    const activeDocId =
+      manifest.activeDocId && docs[manifest.activeDocId]
+        ? manifest.activeDocId
+        : (survivingOrder[0] ?? null);
+    return {
+      docs,
+      activeDocId,
+      tabOrder: survivingOrder,
+      recoveredFromBackup,
+      recoveredFromLiveDraftOnly,
+      migratedFromLegacy: false,
+    };
+  }
+
+  // No manifest — legacy single-doc format or a first-ever run.
+  const legacy = loadFromLocalStorageWithStatus();
+  if (legacy.doc) {
+    const { doc } = legacy;
+    // One-time migration: establish the per-doc format + manifest so the
+    // next boot takes the manifest path above. Idempotent for this doc.
+    persistActiveDoc(doc);
+    return {
+      docs: { [doc.id]: doc },
+      activeDocId: doc.id,
+      tabOrder: [doc.id],
+      recoveredFromBackup: legacy.recoveredFromBackup,
+      recoveredFromLiveDraftOnly: legacy.recoveredFromLiveDraftOnly,
+      migratedFromLegacy: true,
+    };
+  }
+
+  // Nothing stored at all.
+  return {
+    docs: {},
+    activeDocId: null,
+    tabOrder: [],
+    recoveredFromBackup: false,
+    recoveredFromLiveDraftOnly: false,
+    migratedFromLegacy: false,
+  };
 };

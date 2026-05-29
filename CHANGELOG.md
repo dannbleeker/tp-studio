@@ -2,6 +2,48 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Multi-doc tabs Phase 2 (state shape + per-doc persistence)
+
+Phase 2 of the multi-document tabs arc (`docs/MULTI_DOC_TABS_PLAN.md`)
+landed in two batches. **No visible change yet** — the app is still
+single-tab; this is the data-model + storage groundwork the Phase 5 tab
+strip rides on.
+
+**Batch 2.1 — multi-doc state shape.** The store grew `docs`
+(`Record<DocumentId, TPDocument>`), `activeDocId`, and `tabOrder`
+alongside the existing `doc`, kept in lockstep by a single
+`activeDocState(nextDoc)` shaper at every doc-write site
+(`makeApplyDocChange`, `setDocument`, `newDocument`,
+`markSystemScopeNudgeShown`, undo, redo). `doc` stays canonical and
+`currentDoc()` is unchanged, so the 212 read sites and every existing
+test pass untouched. `tests/store/multiDocState.test.ts` pins the
+single-tab invariant (`docs[activeDocId] === doc`, `tabOrder === [doc.id]`)
+after every mutation kind, including undo across a `newDocument` boundary.
+
+**Batch 2.2 — per-doc persistence + tab manifest.** localStorage gains
+per-doc slots keyed by `doc.id` (`committed` / `live` / `backup`, the
+`:v2` keys from Batch 1's dormant `keys.ts`) plus a tab manifest
+(`tp-studio:tabs:v1` = `{ activeDocId, tabOrder }`). Boot reads the
+manifest → per-doc slots; on a pre-2.2 store with no manifest it loads
+the legacy single-doc slot and migrates it into the new format.
+
+- **Dual-write for safe rollback.** Every committed save *also* writes the
+  legacy single-doc slots, so a downgrade (a rollback, or an older cached
+  PWA shell) still boots from the same browser — there is no hard format
+  switch and so no downgrade-data-loss window. Phase 5 drops the legacy
+  write once tabs ship for real.
+- **Recovery preserved.** The committed/live/backup precedence (FL-EX9 +
+  A5 auto-recovery) is now a single shared `pickBestDoc` resolver across
+  the legacy and per-doc loaders, so crash-recovery + live-draft recovery
+  behave identically per doc.
+- Still single-tab: the manifest always holds one entry, so the new read
+  path is exercised under single-tab before Phase 5 depends on it.
+
+`tests/domain/multiDocPersistence.test.ts` covers round-trip, dual-write,
+per-doc backup rotation, per-doc recovery precedence, legacy migration +
+no-re-migrate, malformed/missing manifest, lost-body fallback, and an
+end-to-end store → scheduler → boot reload.
+
 ## Session 137 — Pattern library expansion (5 per diagram type)
 
 Curated starter diagrams for every supported TOC diagram type

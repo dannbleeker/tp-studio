@@ -1,5 +1,6 @@
-import { saveToLocalStorage } from '@/domain/persistence';
+import { persistActiveDoc } from '@/domain/persistence';
 import type { TPDocument } from '@/domain/types';
+import { docLiveKey } from './keys';
 import { removeKey, STORAGE_KEYS, writeString } from './storage';
 
 // Idle window before we hit the committed doc key. A burst of mutations
@@ -117,9 +118,13 @@ export class PersistScheduler {
     if (!this.pending) return;
     const doc = this.pending;
     this.pending = null;
-    saveToLocalStorage(doc);
-    // Once the canonical key is written, the live draft is redundant.
+    // Batch 2.2 — persist the active doc to its per-doc slots + the tab
+    // manifest, dual-writing the legacy single-doc slots for downgrade
+    // safety. See `persistActiveDoc`.
+    persistActiveDoc(doc);
+    // Once the canonical keys are written, both live drafts are redundant.
     removeKey(STORAGE_KEYS.docLive);
+    removeKey(docLiveKey(doc.id));
   }
 
   /**
@@ -174,7 +179,13 @@ export class PersistScheduler {
    */
   private writeLiveDraft(doc: TPDocument): void {
     try {
-      writeString(STORAGE_KEYS.docLive, JSON.stringify(doc));
+      // Batch 2.2 — serialize ONCE, write to both the legacy live slot
+      // (dual-write) and the per-doc live slot. The `JSON.stringify` is the
+      // costly part on this every-keystroke path; the extra `setItem` of
+      // the already-built string is cheap.
+      const raw = JSON.stringify(doc);
+      writeString(STORAGE_KEYS.docLive, raw);
+      writeString(docLiveKey(doc.id), raw);
     } catch {
       /* swallow — debounced canonical write is the safety net. */
     }
