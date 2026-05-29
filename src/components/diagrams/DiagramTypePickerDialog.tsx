@@ -7,6 +7,7 @@ import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { CARD_FOCUS } from '../ui/focusClasses';
 import { LargeDialog } from '../ui/LargeDialog';
+import { undoRestoreAction } from '../ui/loadToast';
 
 /**
  * Session 90 — DiagramTypePicker.
@@ -20,7 +21,7 @@ import { LargeDialog } from '../ui/LargeDialog';
  * Mode comes from the store's `diagramPickerOpen` tri-state:
  *   - `null`     → dialog closed
  *   - `'new'`    → click a card → `newDocument(type)`
- *   - `'example'`→ click a card → `setDocument(buildExample(type))`
+ *   - `'example'`→ click a card → `openDocInTab(buildExample(type))`
  *
  * Card content per diagram type is hand-curated below — a one-line
  * "use this when…" cue plus the canonical label. Order matches the
@@ -88,6 +89,7 @@ export function DiagramTypePickerDialog() {
   const close = useDocumentStore((s) => s.closeDiagramPicker);
   const newDocument = useDocumentStore((s) => s.newDocument);
   const setDocument = useDocumentStore((s) => s.setDocument);
+  const openDocInTab = useDocumentStore((s) => s.openDocInTab);
   const showToast = useDocumentStore((s) => s.showToast);
 
   const open = mode !== null;
@@ -107,23 +109,28 @@ export function DiagramTypePickerDialog() {
 
   const handlePick = (type: DiagramType): void => {
     const previousDoc = currentDoc(useDocumentStore.getState());
+    let openedNewTab = false;
     if (mode === 'new') {
+      // 'New' replaces the active tab via `newDocument` (which carries its
+      // own creation-wizard + system-scope-nudge semantics). The tab
+      // strip's + button and the New-tab palette command are the
+      // "fresh doc in a new tab" paths.
       newDocument(type);
     } else {
-      setDocument(EXAMPLE_BY_DIAGRAM[type]());
+      openedNewTab = openDocInTab(EXAMPLE_BY_DIAGRAM[type]());
     }
     fitViewAfterLoad();
+    // `undoRestoreAction` offers Undo whenever the active doc was replaced:
+    // a 'new' doc (openedNewTab stays false here) or an example loaded in
+    // replace mode. An example opened in a new tab is undone by closing it.
     showToast(
       'success',
       mode === 'new'
         ? `New ${DIAGRAM_TYPE_LABEL[type]} created.`
-        : `Loaded example ${DIAGRAM_TYPE_LABEL[type]}.`,
-      {
-        action: {
-          label: 'Undo',
-          run: () => setDocument(previousDoc),
-        },
-      }
+        : openedNewTab
+          ? `Loaded example ${DIAGRAM_TYPE_LABEL[type]} in a new tab.`
+          : `Loaded example ${DIAGRAM_TYPE_LABEL[type]}.`,
+      undoRestoreAction(openedNewTab, previousDoc, setDocument)
     );
     close();
   };

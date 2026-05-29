@@ -2,12 +2,14 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 138 — Multi-doc tabs Phases 2–5 (foundation → visible tab strip)
+## Session 138 — Multi-doc tabs Phases 2–5 (foundation → working tabs)
 
-Multi-document tabs (`docs/MULTI_DOC_TABS_PLAN.md`) advanced through three
-batches. **No visible change yet** — the app is still single-tab; this is
-the data-model + storage + history groundwork the Phase 5 tab strip rides
-on.
+Multi-document tabs (`docs/MULTI_DOC_TABS_PLAN.md`) went from data-model
+groundwork to a working, visible feature across nine batches. The app now
+opens multiple documents in a top-of-canvas tab strip — switch / close /
+reorder / duplicate tabs, every tab restored on reload with its own
+undo/redo history — and loading a document (import, pattern, template,
+example, share link) opens it in a new tab by default.
 
 **Batch 2.1 — multi-doc state shape.** The store grew `docs`
 (`Record<DocumentId, TPDocument>`), `activeDocId`, and `tabOrder`
@@ -92,8 +94,10 @@ by **tab isolation** — editing tab A leaves tab B byte-identical.
 `src/components/toolbar/TabStrip.tsx`: a full-width chip bar pinned to the
 top of the canvas (`App.tsx`; `TitleBadge` + `TopBar` nudged from `top-4`
 to `top-12` to clear it). Click a chip to `switchTab`, the X to `closeTab`,
-the trailing `+` to open a fresh CRT in a new tab. `role="tablist"` /
-`role="tab"` + `aria-selected` for assistive tech; re-render-disciplined
+the trailing `+` to open a fresh CRT in a new tab. Exposed as a labelled
+`role="toolbar"` of buttons with `aria-current` on the active chip — a
+closeable-tab strip can't satisfy a strict ARIA `tablist`'s required
+children (the axe e2e enforces this); re-render-disciplined
 via `useDocumentStoreWith` + array-by-keys equality so a plain entity edit
 doesn't churn the strip. `tests/components/TabStrip.test.tsx` (5) pins the
 functional + a11y contract. Keyboard (Cmd+T/W/1–9), palette commands, and
@@ -122,6 +126,28 @@ drag-reorder case in `TabStrip.test.tsx`. The Cmd+T/W/1–9 keyboard map is
 deferred to a focused follow-up — those keys only reach an installed PWA in
 `display-mode: standalone`, so they need gating to avoid clobbering the
 browser's own shortcuts.
+
+**Batch 5.3 — loading a document opens a new tab.** Every "open a different
+document" surface now routes through a new `openDocInTab(doc)` store action
+instead of `setDocument`: **import** (JSON / Flying Logic / Mermaid),
+**pattern library**, **template picker**, **load-example**, **share-link**
+boot, and **spawn-EC-from-conflict**. By default (locked decision #6) each
+opens the doc in a new tab and keeps the current one — so importing a file
+or loading an example no longer discards your work, and spawning an EC from
+a CRT keeps the CRT open beside it. A **Settings → Behavior** toggle ("Open
+documents in new tabs", persisted) restores the pre-tabs
+replace-the-active-document behaviour for anyone who prefers it. Toasts
+adapt: a new tab is undone by closing it, so the "Undo" affordance (which
+rolls the active doc back) shows only in replace mode — the shared rule
+lives in `undoRestoreAction` (`components/ui/loadToast.ts`). CSV import
+(appends) and clipboard paste / revision-restore (in-place edits) keep their
+existing `setDocument` path; the palette **New diagram…** (`newDocument`,
+which carries its own creation-wizard semantics) still replaces in place —
+the strip's `+` and the New-tab command are the "fresh doc in a new tab"
+paths. Tests: `tests/store/openDocInTab.test.ts` (behaviour + the pref's
+localStorage round-trip), an end-to-end pattern-dialog reroute
+(`tests/components/loadRoutesToNewTab.test.tsx`), and the `undoRestoreAction`
+contract (`tests/components/loadToast.test.ts`).
 
 ## Session 137 — Pattern library expansion (5 per diagram type)
 
