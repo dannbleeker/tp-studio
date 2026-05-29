@@ -79,6 +79,37 @@ From the Session 135 "30 code-improvement suggestions" audit. Items #1 / #2 / #4
 
 ---
 
+## Pattern library — new example: Dann's IT-function Goal Tree
+
+**Status: backlog (added Session 138).** Build a 6th Goal Tree pattern from Dann's own 2020 article *"Generic goals for an IT function"* and register it in the library. Because the article is **Dann's own published work**, the entity titles may be used **verbatim** — the "no copy-paste from Goldratt / Dettmer / Scheinkopf" originality rule that governs every other library pattern does **not** apply here. The source `.docx` lives only in Dann's Downloads and won't survive to a future session, so the full structure is captured below; the build needs nothing external.
+
+**Source:** Dann Bleeker Pedersen, *"Generic goals for an IT function"* (2020). A Dettmer-style Goal Tree / Intermediate Objectives Map for a generic IT function (grounds itself in Dettmer's *Logical Thinking Process* / *Strategic Navigation* + Goldratt). The article's thesis: every IT function's goal decomposes into a "build new value" arm and an "operate efficiently" arm, bounded by a financial constraint — and that shape is where the classic Dev-vs-Ops conflict lives.
+
+**Structure — 1 Goal · 2 CSFs · 6 NCs · 8 necessity edges:**
+
+- **Goal:** "Ensure that technology is utilized to support the organization in reaching the overall goals, both now and in the future."
+  - **Boundary constraint (from the article):** "Financial restrictions must be adhered to." The Goal Tree node kinds are only `goal` / `criticalSuccessFactor` / `necessaryCondition` — there is no boundary kind. Represent it as a **note entity attached to the Goal** (annotation; note-edges render dotted automatically), *not* as a CSF. Its consequences already surface as the two cost-minimizing NCs (A2 + B1), so leaving it as a note is faithful. Confirm `'note'` is a valid `buildEntity` kind in the pattern-builder context before relying on it; if not, drop the note and keep the constraint in the pattern `hint` only.
+- **CSF A:** "Develop and implement IT assets that bring the organization towards its goal, both now and in the future."
+  - **NC A1:** "Create as much value with IT assets as possible, both now and in the future."
+  - **NC A2:** "Minimize the cost (and time) of developing and implementing IT assets, both now and in the future."
+  - **NC A3:** "Minimize the value of IT-inventory (assets not in production)."
+- **CSF B:** "Ensure an efficient operation of IT assets, both now and in the future."
+  - **NC B1:** "Minimize the cost needed to operate the IT assets, both now and in the future."
+  - **NC B2:** "Minimize the perceived downtime for users, both now and in the future." *(the article stresses* perceived *— a slow UI or a support queue costs productivity just like a true outage)*
+  - **NC B3:** "Have the right level of IT security, both now and in the future." *(a Goldilocks condition — balance, not maximize)*
+
+Edges (all `kind: 'necessity'`, child → parent): A→Goal, B→Goal, A1→A, A2→A, A3→A, B1→B, B2→B, B3→B.
+
+**Build recipe** (mirror `src/domain/patterns/goalTree-sustainable-product-org.ts`):
+- New file `src/domain/patterns/goalTree-it-function.ts` exporting `buildPatternGoalTreeITFunction(): TPDocument`.
+- Use `buildEntity('goal' | 'criticalSuccessFactor' | 'necessaryCondition', title, t, n)` + `buildEdge(childId, parentId, { kind: 'necessity' })` from `../examples/shared`; `newDocumentId()` from `../ids`; `diagramType: 'goalTree'`, `schemaVersion: 8`, `nextAnnotationNumber` = entity count + 1.
+- Register in `src/domain/patterns/index.ts` under the Goal Tree block: `id: 'goalTree-it-function'`, `label: 'Generic IT-function goals'`, `hint: "IT-function Goal Tree (Dann's 2020 article) — build-and-implement value vs efficient operation, under a financial-restriction boundary."`, `diagramType: 'goalTree'`, `build: buildPatternGoalTreeITFunction`.
+- Document `title: 'Generic IT-function goals (Goal Tree)'`.
+
+**Test impact:** `tests/domain/patterns.test.ts` asserts **≥5** patterns per type (`toBeGreaterThanOrEqual(5)`), so a 6th Goal Tree pattern is safe — nothing to relax. Generic per-pattern checks also require `schemaVersion === 8`, non-empty title, unique id, entities present, matching `diagramType`. Optionally add a targeted test pinning the 9-entity / 8-edge shape. Update CHANGELOG + USER_GUIDE pattern-library list per the docs-in-sync rule.
+
+---
+
 ## Suggested priority order
 
 If picking the next thing up:
@@ -86,7 +117,7 @@ If picking the next thing up:
 **All ten original spec major gaps are closed or out of scope; the design audit + infra-debt file splits + the actionable medium gaps + every fixable Session-136 usage-feedback item are done.** What's left:
 
 1. **Render-engine layout pass** (Session 136 top priority) — needs a design write-up before code. Likely paired with AND-connector rendering + drag-drop creation. Folds in the "edges render behind nodes" item too — pure z-order is the wrong fix, real edge routing is the right one.
-2. **Pattern library expansion** — research + curation. Aim: 5 patterns per diagram type from published TOC literature with careful originality (no copy-paste). Curate as `domain/patterns/<type>/<pattern-id>.ts`.
+2. **Pattern library — IT-function Goal Tree example** *(fresh, buildable now)* — add a 6th Goal Tree pattern from Dann's own 2020 "Generic goals for an IT function" article; full structure + build recipe captured in the "Pattern library — new example" section above. *(The general 5-per-type expansion is already done — Session 137.)*
 3. **Edit-menu → left toolbar redesign** — design discussion first; no implementation until shape agreed.
 4. **Multi-document tabs** — *Session 137 planned in depth + Batch 1 shipping.* Full implementation plan at [docs/MULTI_DOC_TABS_PLAN.md](docs/MULTI_DOC_TABS_PLAN.md) — 6 phases, 8–12 sessions, 46–68 hours total. All 7 design questions answered (tab strip placement, undo scope, reload behavior, duplicate-tab semantics, speculation overlay on switch, new-doc routing, compare-mode scope). Batch 1 (Phase 1) lands now as zero-behaviour-change refactor: `currentDoc()` selector + per-doc storage key generators + `DocumentId` brand tightening + `seedTab` test helper. Phases 2–6 follow in subsequent sessions.
 5. **Reactive-vs-proactive NBR mitigation** — the one remaining medium gap; policy-parked, re-open only if practitioners ask.
@@ -114,7 +145,7 @@ These were reported in the Session 136 usage pass but aren't reproducible from c
 - ~~**"Add evidence" button does nothing**~~ ✅ *Done Session 136 (batch 9)* — Dann confirmed Browse Lock wasn't on; the failure was `addEvidence()` silently returning `null` when `readEntity()` couldn't find the id (stale closure / mid-edit window). Fix: handler now surfaces the error to the user via a toast ("Couldn't add evidence — entity unavailable. Reselect the entity and try again.") so the no-op state is visible rather than mysterious. Pairs with batch 8 to keep the entity selected through doc edits, which eliminates the stale-id window in practice.
 - ~~**Edges render behind entity nodes**~~ ✅ *Fixed Phases A+B+C of the obstacle-aware routing project* — the smart router computes a visibility-graph + A\* path around non-endpoint node bodies and emits a multi-cubic bezier through the resulting waypoints. Toggle in Settings → Display ("Smart" / "Direct"), default `'smart'`. Phase D (next) integrates the junctor segment + adds a per-layout route cache.
 
-Otherwise the backlog is genuinely drained — new work would come from fresh spec/product direction.
+Otherwise the backlog is near-drained — the one fresh item is Dann's IT-function Goal Tree example (see the "Pattern library — new example" section above); beyond that, new work would come from fresh spec/product direction.
 
 *(Was on the list: "Phase 1C node-chrome / canvas eligibility surfacing." Already done — `EligibilityBadge` ships on Action nodes via the `Show action-eligibility badge` Display setting, with full inspector readout retained. Code in `src/components/canvas/nodes/TPNodeBadges.tsx` + `useGraphNodeEmission.ts`; tests in `tests/components/canvas/eligibilityBadgeEmission.test.tsx`.)*
 
