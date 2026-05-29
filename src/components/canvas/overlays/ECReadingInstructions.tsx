@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Session 87 / EC PPT comparison item #1 — Reading-instruction strip.
@@ -21,7 +22,7 @@ export function ECReadingInstructions() {
     useShallow((s) => ({
       dismissed: s.ecReadingInstructionsDismissed,
       dismiss: s.dismissECReadingInstructions,
-      isEC: s.doc.diagramType === 'ec',
+      isEC: currentDoc(s).diagramType === 'ec',
     }))
   );
 

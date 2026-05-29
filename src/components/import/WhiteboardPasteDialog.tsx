@@ -5,6 +5,7 @@ import { entityMeta, paletteForDoc } from '@/domain/entityTypeMeta';
 import type { EntityType } from '@/domain/types';
 import { applyWhiteboardPaste, parseWhiteboardPaste } from '@/services/exporters/whiteboardImport';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 
@@ -35,7 +36,7 @@ export function WhiteboardPasteDialog() {
   const { open, doc, close, showToast } = useDocumentStore(
     useShallow((s) => ({
       open: s.whiteboardPasteOpen,
-      doc: s.doc,
+      doc: currentDoc(s),
       close: s.closeWhiteboardPaste,
       showToast: s.showToast,
     }))

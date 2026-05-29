@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import type { Revision } from '@/domain/revisions';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
 import { formatRelativeTime } from './formatTime';
 import { RevisionRow } from './RevisionRow';
@@ -35,7 +36,7 @@ export function RevisionPanel() {
       open: s.historyPanelOpen,
       close: s.closeHistoryPanel,
       revisions: s.revisions,
-      doc: s.doc,
+      doc: currentDoc(s),
       captureSnapshot: s.captureSnapshot,
       restoreSnapshot: s.restoreSnapshot,
       deleteSnapshot: s.deleteSnapshot,

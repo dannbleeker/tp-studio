@@ -1,5 +1,6 @@
 import { structuralEntities } from '@/domain/graph';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Session 77 / brief §10 mode "Annotation-included" — renders a
@@ -11,7 +12,7 @@ import { useDocumentStore } from '@/store';
  * visibility on `body.print-include-appendix`.
  */
 export function PrintAppendix() {
-  const doc = useDocumentStore((s) => s.doc);
+  const doc = useDocumentStore((s) => currentDoc(s));
   const entities = structuralEntities(doc)
     .slice()
     .sort((a, b) => a.annotationNumber - b.annotationNumber);

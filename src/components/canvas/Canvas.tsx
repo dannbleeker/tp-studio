@@ -8,6 +8,7 @@ import { GRID_DOT } from '@/domain/tokens';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
 import { AssumptionAnchorOverlay } from './edges/AssumptionAnchorOverlay';
 import { JunctorOverlay } from './edges/JunctorOverlay';
@@ -94,7 +95,7 @@ const populateCentroidsInto = (buf: CentroidBuf, nodes: readonly CanvasNodeSlim[
 };
 
 function CanvasInner() {
-  const doc = useDocumentStore((s) => s.doc);
+  const doc = useDocumentStore((s) => currentDoc(s));
   // Action-only bundle: every field below is a store-action ref (stable
   // across renders), so this selector never re-emits and the component
   // doesn't re-render on store changes that aren't `doc`. Keep state

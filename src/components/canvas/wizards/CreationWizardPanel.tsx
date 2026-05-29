@@ -7,6 +7,7 @@ import { entitiesOfType } from '@/domain/graph';
 import type { Entity } from '@/domain/types';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { ECSlotIndicator } from '../overlays/ECSlotIndicator';
 import { CRT_STEPS, EC_STEPS, EC_STEPS_D_FIRST, GOAL_TREE_STEPS } from './creationWizardSteps';
 import { useDraggablePanel } from './useDraggablePanel';
@@ -93,7 +94,7 @@ export function CreationWizardPanel() {
       setShowGoalTreeWizard: s.setShowGoalTreeWizard,
       setShowECWizard: s.setShowECWizard,
       setShowCRTWizard: s.setShowCRTWizard,
-      entities: s.doc.entities,
+      entities: currentDoc(s).entities,
       addEntity: s.addEntity,
       updateEntity: s.updateEntity,
       connect: s.connect,
@@ -215,7 +216,7 @@ export function CreationWizardPanel() {
       // reads through the per-doc by-type index (cheap) instead of
       // filtering the full entities map on each lookup.
       const existing = (type: Entity['type']) =>
-        entitiesOfType(useDocumentStore.getState().doc, type);
+        entitiesOfType(currentDoc(useDocumentStore.getState()), type);
       if (step === 0) {
         addEntity({ type: 'goal', title: text });
       } else if (step >= 1 && step <= 3) {

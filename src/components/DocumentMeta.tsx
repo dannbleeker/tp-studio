@@ -1,4 +1,5 @@
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Session 120 — Dynamic browser-tab title.
@@ -32,6 +33,6 @@ export const computeBrowserTitle = (docTitle: string): string => {
 };
 
 export function DocumentMeta() {
-  const docTitle = useDocumentStore((s) => s.doc.title);
+  const docTitle = useDocumentStore((s) => currentDoc(s).title);
   return <title>{computeBrowserTitle(docTitle)}</title>;
 }

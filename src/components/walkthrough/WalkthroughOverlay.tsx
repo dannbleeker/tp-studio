@@ -6,6 +6,7 @@ import { validationFingerprint } from '@/domain/fingerprint';
 import { validate } from '@/domain/validators';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
 
 /**
@@ -47,7 +48,7 @@ function WalkthroughOverlayBody() {
       walkthroughNext: s.walkthroughNext,
       walkthroughPrev: s.walkthroughPrev,
       closeWalkthrough: s.closeWalkthrough,
-      doc: s.doc,
+      doc: currentDoc(s),
       causalityLabel: s.causalityLabel,
       selectEdge: s.selectEdge,
       selectEntity: s.selectEntity,
@@ -210,7 +211,7 @@ function ClrWalkthroughBody({
   onOpenInInspector: (target: ReturnType<typeof validate>[number]['target']) => void;
 }) {
   const warning = liveWarnings.find((w) => w.id === warningId);
-  const doc = useDocumentStore((s) => s.doc);
+  const doc = useDocumentStore((s) => currentDoc(s));
   if (!warning) {
     return (
       <p className="text-neutral-500 text-sm dark:text-neutral-400">

@@ -1,6 +1,7 @@
 import { useReactFlow, useStore as useRFStore } from '@xyflow/react';
 import { entitiesOfType } from '@/domain/graph';
 import { arrayShallowEqualByKeys } from '@/store/equality';
+import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 
 /**
@@ -58,11 +59,12 @@ export function AssumptionAnchorOverlay() {
   // selector walks edges + filters but the custom equality skips the
   // component re-render when the triple list is unchanged.
   const anchors = useDocumentStoreWith((s) => {
-    const assumptions = entitiesOfType(s.doc, 'assumption');
+    const doc = currentDoc(s);
+    const assumptions = entitiesOfType(doc, 'assumption');
     if (assumptions.length === 0) return [];
     const assumptionIds = new Set(assumptions.map((a) => a.id as string));
     const out: AnchorTriple[] = [];
-    for (const edge of Object.values(s.doc.edges)) {
+    for (const edge of Object.values(doc.edges)) {
       if (!edge.assumptionIds?.length) continue;
       for (const aid of edge.assumptionIds) {
         if (!assumptionIds.has(aid)) continue;

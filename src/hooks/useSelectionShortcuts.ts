@@ -8,6 +8,7 @@ import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { isEditableTarget } from './keyboardUtils';
 
 /**
@@ -45,18 +46,17 @@ export function useSelectionShortcuts() {
       // Cmd/Ctrl+Shift+ArrowRight / ArrowLeft — select successors / predecessors.
       if (cmdOrCtrl && e.shiftKey && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
         const state = useDocumentStore.getState();
+        const doc = currentDoc(state);
         const sel = state.selection;
         if (sel.kind !== 'entities' || sel.ids.length === 0) return;
         e.preventDefault();
         // `Selection.ids` is `string[]`; filter on `doc.entities[id]`
         // guarantees the survivors are real entity ids, so the brand cast
         // is safe at this boundary.
-        const seed = sel.ids.filter((id) => state.doc.entities[id]) as EntityId[];
+        const seed = sel.ids.filter((id) => doc.entities[id]) as EntityId[];
         if (seed.length === 0) return;
         const reached =
-          e.key === 'ArrowRight'
-            ? reachableForward(state.doc, seed)
-            : reachableBackward(state.doc, seed);
+          e.key === 'ArrowRight' ? reachableForward(doc, seed) : reachableBackward(doc, seed);
         const ids = new Set<string>(seed);
         for (const r of reached) ids.add(r);
         state.selectEntities([...ids]);
@@ -66,7 +66,9 @@ export function useSelectionShortcuts() {
       // Per-selection shortcuts read live store state once per keystroke. The
       // `single` shorthand captures the common "exactly one entity / edge
       // selected" predicate that several branches below share.
-      const { selection, doc } = useDocumentStore.getState();
+      const _state2 = useDocumentStore.getState();
+      const selection = _state2.selection;
+      const doc = currentDoc(_state2);
       const single =
         (selection.kind === 'entities' || selection.kind === 'edges') && selection.ids.length === 1
           ? { kind: selection.kind, id: selection.ids[0]! }

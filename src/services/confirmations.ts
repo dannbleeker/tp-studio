@@ -1,6 +1,7 @@
 import { connectionCount } from '@/domain/graph';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Delete an entity, prompting first when it has connections so the user
@@ -16,10 +17,11 @@ import { useDocumentStore } from '@/store';
 export const confirmAndDeleteEntity = async (id: string): Promise<void> => {
   if (!guardWriteOrToast()) return;
   const state = useDocumentStore.getState();
-  const entity = state.doc.entities[id];
+  const doc = currentDoc(state);
+  const entity = doc.entities[id];
   if (!entity) return;
 
-  const connections = connectionCount(state.doc, id);
+  const connections = connectionCount(doc, id);
   if (connections > 0) {
     const title = entity.title.trim() || 'this entity';
     const plural = connections === 1 ? '' : 's';
@@ -41,6 +43,7 @@ export const confirmAndDeleteEntity = async (id: string): Promise<void> => {
 export const confirmAndDeleteSelection = async (): Promise<void> => {
   if (!guardWriteOrToast()) return;
   const state = useDocumentStore.getState();
+  const doc = currentDoc(state);
   const sel = state.selection;
   if (sel.kind === 'none') return;
 
@@ -49,9 +52,9 @@ export const confirmAndDeleteSelection = async (): Promise<void> => {
       await confirmAndDeleteEntity(sel.ids[0]);
       return;
     }
-    const entityIds = sel.ids.filter((id) => state.doc.entities[id]);
+    const entityIds = sel.ids.filter((id) => doc.entities[id]);
     // Cascade: every edge that touches any selected entity goes too.
-    const cascadingEdges = Object.values(state.doc.edges).filter(
+    const cascadingEdges = Object.values(doc.edges).filter(
       (e) => entityIds.includes(e.sourceId) || entityIds.includes(e.targetId)
     );
     const cascadeCount = cascadingEdges.length;
@@ -66,7 +69,7 @@ export const confirmAndDeleteSelection = async (): Promise<void> => {
   }
 
   // edges
-  const edgeIds = sel.ids.filter((id) => state.doc.edges[id]);
+  const edgeIds = sel.ids.filter((id) => doc.edges[id]);
   if (edgeIds.length === 0) return;
   const msg = `Delete ${edgeIds.length} edge${edgeIds.length === 1 ? '' : 's'}?`;
   const ok = await state.confirm(msg, { confirmLabel: 'Delete' });

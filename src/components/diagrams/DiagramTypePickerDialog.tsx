@@ -4,6 +4,7 @@ import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
 import type { DiagramType } from '@/domain/types';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { CARD_FOCUS } from '../ui/focusClasses';
 import { LargeDialog } from '../ui/LargeDialog';
 
@@ -105,7 +106,7 @@ export function DiagramTypePickerDialog() {
   };
 
   const handlePick = (type: DiagramType): void => {
-    const previousDoc = useDocumentStore.getState().doc;
+    const previousDoc = currentDoc(useDocumentStore.getState());
     if (mode === 'new') {
       newDocument(type);
     } else {

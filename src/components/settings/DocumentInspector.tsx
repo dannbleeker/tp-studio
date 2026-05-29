@@ -11,6 +11,7 @@ import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { METHOD_BY_DIAGRAM, type MethodStep } from '@/domain/methodChecklist';
 import type { DiagramType, SystemScope } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 // Session 136 — CustomEntityClassesSection removed (feature dropped
 // per Dann's usage feedback). Import gone; data layer still accepts
@@ -96,15 +97,15 @@ export function DocumentInspector() {
     setECVerbalStyle,
   } = useDocumentStore(
     useShallow((s) => ({
-      title: s.doc.title,
-      author: s.doc.author ?? '',
-      description: s.doc.description ?? '',
-      diagramType: s.doc.diagramType,
-      entityCount: Object.keys(s.doc.entities).length,
-      edgeCount: Object.keys(s.doc.edges).length,
-      systemScope: s.doc.systemScope ?? EMPTY_SCOPE,
-      methodChecklist: s.doc.methodChecklist ?? EMPTY_CHECKLIST,
-      ecVerbalStyle: s.doc.ecVerbalStyle ?? 'neutral',
+      title: currentDoc(s).title,
+      author: currentDoc(s).author ?? '',
+      description: currentDoc(s).description ?? '',
+      diagramType: currentDoc(s).diagramType,
+      entityCount: Object.keys(currentDoc(s).entities).length,
+      edgeCount: Object.keys(currentDoc(s).edges).length,
+      systemScope: currentDoc(s).systemScope ?? EMPTY_SCOPE,
+      methodChecklist: currentDoc(s).methodChecklist ?? EMPTY_CHECKLIST,
+      ecVerbalStyle: currentDoc(s).ecVerbalStyle ?? 'neutral',
       setTitle: s.setTitle,
       setMeta: s.setDocumentMeta,
       setSystemScope: s.setSystemScope,

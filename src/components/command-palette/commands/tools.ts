@@ -3,6 +3,7 @@ import { GROUP_COLORS_ORDER } from '@/domain/groupColors';
 import { validate } from '@/domain/validators';
 import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboard';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
+import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
 
 export const toolCommands: Command[] = [
@@ -11,7 +12,7 @@ export const toolCommands: Command[] = [
     label: 'Run validation',
     group: 'Review',
     run: (s) => {
-      const warnings = validate(s.doc);
+      const warnings = validate(currentDoc(s));
       const open = warnings.filter((w) => !w.resolved).length;
       const resolved = warnings.filter((w) => w.resolved).length;
       // Session 87 UX fix #4 — spell out "Categories of Legitimate
@@ -64,7 +65,7 @@ export const toolCommands: Command[] = [
       }
       const parentId = sel.ids[0]!;
       const fresh = s.addEntity({
-        type: defaultEntityType(s.doc.diagramType),
+        type: defaultEntityType(currentDoc(s).diagramType),
         startEditing: true,
       });
       s.connect(parentId, fresh.id);
@@ -82,7 +83,7 @@ export const toolCommands: Command[] = [
       }
       const childId = sel.ids[0]!;
       const fresh = s.addEntity({
-        type: defaultEntityType(s.doc.diagramType),
+        type: defaultEntityType(currentDoc(s).diagramType),
         startEditing: true,
       });
       s.connect(fresh.id, childId);
@@ -114,7 +115,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const e = s.doc.entities[id];
+      const e = currentDoc(s).entities[id];
       if (!e) return;
       if (e.type === 'ude') return;
       s.updateEntity(id, { type: 'ude' });
@@ -131,7 +132,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const e = s.doc.entities[id];
+      const e = currentDoc(s).entities[id];
       if (!e) return;
       if (e.type === 'rootCause') return;
       s.updateEntity(id, { type: 'rootCause' });
@@ -151,7 +152,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const e = s.doc.entities[id];
+      const e = currentDoc(s).entities[id];
       if (!e) return;
       if (e.type === 'goal') return;
       s.updateEntity(id, { type: 'goal' });
@@ -174,7 +175,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const e = s.doc.entities[id];
+      const e = currentDoc(s).entities[id];
       if (!e) return;
       if (e.type === 'criticalSuccessFactor') return;
       s.updateEntity(id, { type: 'criticalSuccessFactor' });
@@ -232,7 +233,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const wantId = sel.ids[0]!;
-      const want = s.doc.entities[wantId];
+      const want = currentDoc(s).entities[wantId];
       if (!want || want.type !== 'want') {
         s.showToast('info', 'Add prerequisite is for the Wants (D / D′) of an EC.');
         return;
@@ -257,7 +258,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const e = s.doc.entities[id];
+      const e = currentDoc(s).entities[id];
       if (!e) return;
       if (e.type === 'action') return;
       s.updateEntity(id, { type: 'action' });
@@ -274,7 +275,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const e = s.doc.entities[id];
+      const e = currentDoc(s).entities[id];
       if (!e) return;
       if (e.type === 'desiredEffect') return;
       s.updateEntity(id, { type: 'desiredEffect' });
@@ -297,7 +298,8 @@ export const toolCommands: Command[] = [
         return;
       }
       const actionId = sel.ids[0]!;
-      const action = s.doc.entities[actionId];
+      const doc = currentDoc(s);
+      const action = doc.entities[actionId];
       if (!action || action.type !== 'action') {
         s.showToast('info', 'Add precondition is for Action entities in a Transition Tree.');
         return;
@@ -305,7 +307,7 @@ export const toolCommands: Command[] = [
       // Find the Action's first outgoing edge to identify the Outcome
       // we need to also feed. If the Action has no outgoing edge yet,
       // we can't infer the Outcome — surface a hint and bail.
-      const outgoing = Object.values(s.doc.edges).find((e) => e.sourceId === actionId);
+      const outgoing = Object.values(doc.edges).find((e) => e.sourceId === actionId);
       if (!outgoing) {
         s.showToast(
           'info',
@@ -333,7 +335,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const e = s.doc.entities[id];
+      const e = currentDoc(s).entities[id];
       if (!e) return;
       if (e.type === 'obstacle') return;
       s.updateEntity(id, { type: 'obstacle' });
@@ -350,7 +352,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const e = s.doc.entities[id];
+      const e = currentDoc(s).entities[id];
       if (!e) return;
       if (e.type === 'intermediateObjective') return;
       s.updateEntity(id, { type: 'intermediateObjective' });
@@ -370,7 +372,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const obstacleId = sel.ids[0]!;
-      const obstacle = s.doc.entities[obstacleId];
+      const obstacle = currentDoc(s).entities[obstacleId];
       if (!obstacle || obstacle.type !== 'obstacle') {
         s.showToast('info', 'Add IO is for Obstacle entities in a Prerequisite Tree.');
         return;
@@ -395,7 +397,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const edge = s.doc.edges[id];
+      const edge = currentDoc(s).edges[id];
       if (!edge) return;
       const next =
         edge.weight === undefined
@@ -426,7 +428,7 @@ export const toolCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const group = s.doc.groups[id];
+      const group = currentDoc(s).groups[id];
       if (!group) return;
       const idx = GROUP_COLORS_ORDER.indexOf(group.color);
       const next = GROUP_COLORS_ORDER[(idx + 1) % GROUP_COLORS_ORDER.length]!;

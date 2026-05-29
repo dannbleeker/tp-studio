@@ -3,6 +3,7 @@ import { ArrowUpRight, Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import type { AssumptionKind, AssumptionStatus, Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
 import { ASSUMPTION_KIND_CHIP, ASSUMPTION_STATUS_CHIP, CHIP_SCHEME } from './chipColors';
 import { Field } from './Field';
@@ -73,7 +74,7 @@ const nextKind = (k: AssumptionKind | undefined): AssumptionKind | undefined => 
 export function AssumptionWell({ edgeId, assumptions }: { edgeId: string; assumptions: Entity[] }) {
   const addAssumptionToEdge = useDocumentStore((s) => s.addAssumptionToEdge);
   const locked = useDocumentStore((s) => s.browseLocked);
-  const diagramType = useDocumentStore((s) => s.doc.diagramType);
+  const diagramType = useDocumentStore((s) => currentDoc(s).diagramType);
   const lastAddedRef = useRef<string | null>(null);
 
   const handleAdd = () => {
@@ -122,9 +123,9 @@ function AssumptionRow({
   const detachAssumption = useDocumentStore((s) => s.detachAssumption);
   const selectEntity = useDocumentStore((s) => s.selectEntity);
   const status: AssumptionStatus =
-    useDocumentStore((s) => s.doc.assumptions?.[assumption.id]?.status) ?? 'unexamined';
+    useDocumentStore((s) => currentDoc(s).assumptions?.[assumption.id]?.status) ?? 'unexamined';
   const kind: AssumptionKind | undefined = useDocumentStore(
-    (s) => s.doc.assumptions?.[assumption.id]?.kind
+    (s) => currentDoc(s).assumptions?.[assumption.id]?.kind
   );
   const locked = useDocumentStore((s) => s.browseLocked);
   const inputRef = useRef<HTMLInputElement | null>(null);

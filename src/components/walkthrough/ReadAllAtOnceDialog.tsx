@@ -7,6 +7,7 @@ import {
   topologicalEdgeOrder,
 } from '@/domain/edgeReading';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 
@@ -35,7 +36,7 @@ export function ReadAllAtOnceDialog() {
   const { open, doc, causalityLabel, close } = useDocumentStore(
     useShallow((s) => ({
       open: s.readAllAtOnceOpen,
-      doc: s.doc,
+      doc: currentDoc(s),
       causalityLabel: s.causalityLabel,
       close: s.closeReadAllAtOnce,
     }))

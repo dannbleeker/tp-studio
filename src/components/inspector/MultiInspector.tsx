@@ -8,6 +8,7 @@ import { guardWriteOrToast } from '@/services/browseLock';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 import { arrayShallowEqualByKeys } from '@/store/equality';
+import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
@@ -81,7 +82,7 @@ function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
   const present = useDocumentStoreWith((s) => {
     const out: EntitiesMultiRow[] = [];
     for (const id of ids) {
-      const e = s.doc.entities[id];
+      const e = currentDoc(s).entities[id];
       if (!e) continue;
       out.push({ id: e.id, type: e.type, titleSize: e.titleSize, ordering: e.ordering });
     }
@@ -89,8 +90,8 @@ function EntitiesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
   }, entitiesMultiRowsEqual);
   const { diagramType, customEntityClasses } = useDocumentStore(
     useShallow((s) => ({
-      diagramType: s.doc.diagramType,
-      customEntityClasses: s.doc.customEntityClasses,
+      diagramType: currentDoc(s).diagramType,
+      customEntityClasses: currentDoc(s).customEntityClasses,
     }))
   );
 
@@ -292,7 +293,7 @@ function EdgesMulti({ ids, locked }: { ids: string[]; locked: boolean }) {
   const present = useDocumentStoreWith((s) => {
     const out: EdgesMultiRow[] = [];
     for (const id of ids) {
-      const e = s.doc.edges[id];
+      const e = currentDoc(s).edges[id];
       if (!e) continue;
       out.push({
         id: e.id,

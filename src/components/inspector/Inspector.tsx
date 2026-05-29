@@ -7,6 +7,7 @@ import { validate } from '@/domain/validators';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useSelectionShape } from '@/hooks/useSelectionShape';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
 import { TabBar } from '../ui/TabBar';
 import { EdgeInspector } from './EdgeInspector';
@@ -21,7 +22,7 @@ type ECTab = 'inspector' | 'verbalisation' | 'injections';
 const EMPTY: Warning[] = [];
 
 export function Inspector() {
-  const doc = useDocumentStore((s) => s.doc);
+  const doc = useDocumentStore((s) => currentDoc(s));
   const clearSelection = useDocumentStore((s) => s.clearSelection);
   const { selection, open, singleId, isSingleGroup, isMulti, headerLabel } = useSelectionShape();
   // Session 77 — EC-only tab bar. The "Inspector" tab is the existing

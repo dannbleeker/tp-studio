@@ -2,6 +2,7 @@ import { ArrowUpRight } from 'lucide-react';
 import type { EntityId } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { arrayShallowEqualByKeys } from '@/store/equality';
+import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 import { Field } from './Field';
 
@@ -24,13 +25,14 @@ export function AttachedEdgesList({ assumptionId }: { assumptionId: string }) {
   // edge / entity mutations are now free.
   const attached = useDocumentStoreWith((s) => {
     const branded = assumptionId as EntityId;
+    const doc = currentDoc(s);
     const out: AttachedEntry[] = [];
-    for (const edge of Object.values(s.doc.edges)) {
+    for (const edge of Object.values(doc.edges)) {
       if (!edge.assumptionIds?.includes(branded)) continue;
       out.push({
         id: edge.id,
-        sourceTitle: s.doc.entities[edge.sourceId]?.title ?? '',
-        targetTitle: s.doc.entities[edge.targetId]?.title ?? '',
+        sourceTitle: doc.entities[edge.sourceId]?.title ?? '',
+        targetTitle: doc.entities[edge.targetId]?.title ?? '',
       });
     }
     return out;

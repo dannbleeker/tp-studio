@@ -1,4 +1,5 @@
 import { presetById, presetByTitle } from '@/domain/groupPresets';
+import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
 
 export const groupCommands: Command[] = [
@@ -27,7 +28,7 @@ export const groupCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      if (!s.doc.groups[id]) {
+      if (!currentDoc(s).groups[id]) {
         s.showToast('info', 'Selection is not a group.');
         return;
       }
@@ -46,7 +47,7 @@ export const groupCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      if (!s.doc.groups[id]) {
+      if (!currentDoc(s).groups[id]) {
         s.showToast('info', 'Selection is not a group.');
         return;
       }
@@ -68,7 +69,7 @@ export const groupCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      if (!s.doc.groups[id]) {
+      if (!currentDoc(s).groups[id]) {
         s.showToast('info', 'Selection is not a group.');
         return;
       }
@@ -107,7 +108,7 @@ export const groupCommands: Command[] = [
       if (!preset) return;
       // Reuse an existing Archive group when present so the doc doesn't
       // accumulate multiple "Archive (2)", "Archive (3)" duplicates.
-      const existing = Object.values(s.doc.groups).find(
+      const existing = Object.values(currentDoc(s).groups).find(
         (g) => g.title.trim().toLowerCase() === preset.title.toLowerCase()
       );
       if (existing) {
@@ -139,7 +140,7 @@ export const groupCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const g = s.doc.groups[id];
+      const g = currentDoc(s).groups[id];
       if (!g) {
         s.showToast('info', 'Selection is not a group.');
         return;

@@ -7,6 +7,7 @@ import { useDelayedFocus } from '@/hooks/useDelayedFocus';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { applyQuickCapture } from '@/services/quickCapture';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Modal triggered by `E` (when not in a text field). Users paste or type a
@@ -21,7 +22,7 @@ export function QuickCaptureDialog() {
   const open = useDocumentStore((s) => s.quickCaptureOpen);
   const close = useDocumentStore((s) => s.closeQuickCapture);
   const selection = useDocumentStore((s) => s.selection);
-  const entities = useDocumentStore((s) => s.doc.entities);
+  const entities = useDocumentStore((s) => currentDoc(s).entities);
   const showToast = useDocumentStore((s) => s.showToast);
   const [text, setText] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);

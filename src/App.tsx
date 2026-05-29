@@ -19,6 +19,7 @@ import { useThemeClass } from './hooks/useThemeClass';
 import { clearShareHash, parseShareHash } from './services/shareLink';
 import { useDocumentStore } from './store';
 import { bootRecoveryStatus } from './store/documentSlice/docMetaSlice';
+import { currentDoc } from './store/selectors';
 
 // Modal dialogs and the find panel are mounted at the app root but rarely
 // open. Defer their code via React.lazy so the initial bundle ships only
@@ -138,9 +139,9 @@ const CommandPalette = lazy(() =>
  * carries the doc metadata at the top of the first page.
  */
 function PrintHeader() {
-  const title = useDocumentStore((s) => s.doc.title);
-  const author = useDocumentStore((s) => s.doc.author);
-  const description = useDocumentStore((s) => s.doc.description);
+  const title = useDocumentStore((s) => currentDoc(s).title);
+  const author = useDocumentStore((s) => currentDoc(s).author);
+  const description = useDocumentStore((s) => currentDoc(s).description);
   return (
     <div className="print-only">
       <h1>{title || 'Untitled'}</h1>

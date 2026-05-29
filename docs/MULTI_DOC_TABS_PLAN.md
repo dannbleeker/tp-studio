@@ -442,10 +442,13 @@ index.
 re-fires on a Phase 5 tab switch). Behaviour-preserving in single-tab;
 existing service tests pass untouched. The clipboard `sourceDocId` tag was
 deferred to Phase 5, where cross-tab paste actually consumes it (YAGNI).
-**Batch 4.2 (remaining):** the bulk component `state.doc` → `currentDoc(s)`
-migration (~191 reads) — its own focused session; high-volume, mechanical,
-low-risk (the seam returns `state.doc` today, so it's a no-op refactor that
-pre-routes every read for Phase 5).
+**Batch 4.2 ✅ SHIPPED (Session 138):** migrated all remaining store-derived
+`state.doc` / `s.doc` reads — **179 across 61 files** — to `currentDoc(s)`.
+Fanned out across 5 parallel sub-agents by directory, verified centrally
+(tsc + full suite 1990 + completeness grep). No-op refactor today
+(`currentDoc(s) === s.doc`), so zero test edits. `state.doc` is now read in
+exactly one place outside the store (inside `currentDoc`), so Phase 5 can
+make `doc` multi-tab-derived from one line. **Phase 4 complete.**
 
 **Goal**: every place that reads `state.doc.id` or holds doc-scoped
 state in a module variable gains "which doc?" awareness. Still single-tab

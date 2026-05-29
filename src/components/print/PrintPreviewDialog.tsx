@@ -7,6 +7,7 @@ import { getCanvasNodes } from '@/services/canvasRef';
 import { exportToVectorPdf } from '@/services/exporters/pdfExport';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '../ui/buttonClasses';
@@ -82,7 +83,7 @@ const resolveMergeFields = (template: string, doc: TPDocument): string => {
 export function PrintPreviewDialog() {
   const open = useDocumentStore((s) => s.printOpen);
   const close = useDocumentStore((s) => s.closePrintPreview);
-  const doc = useDocumentStore((s) => s.doc);
+  const doc = useDocumentStore((s) => currentDoc(s));
   const selection = useDocumentStore((s) => s.selection);
   const showToast = useDocumentStore((s) => s.showToast);
 

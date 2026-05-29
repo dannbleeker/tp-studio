@@ -32,6 +32,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 import type { ContextMenuTarget, DocumentStore, Selection } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { verbsForSingleEntity } from './selectionVerbsSingleEntity';
 
 /**
@@ -277,7 +278,7 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
     }
 
     case 'multi-edges': {
-      const edges = state.doc.edges;
+      const edges = currentDoc(state).edges;
       const anyAndGrouped = branch.ids.some((id) => edges[id]?.andGroupId);
       const anyOrGrouped = branch.ids.some((id) => edges[id]?.orGroupId);
       const anyXorGrouped = branch.ids.some((id) => edges[id]?.xorGroupId);
