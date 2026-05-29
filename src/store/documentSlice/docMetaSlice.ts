@@ -4,12 +4,14 @@ import { loadFromLocalStorageWithStatus } from '@/domain/persistence';
 import type {
   CustomEntityClass,
   DiagramType,
+  DocumentId,
   LayoutConfig,
   Patch,
   SystemScope,
   TPDocument,
 } from '@/domain/types';
 import { flushPersist, persistDebounced } from '@/services/storage/persistDebounced';
+import { activeDocState } from '../activeDoc';
 import { pushHistoryEntry } from '../historySlice';
 import { autoSnapshotOutgoing } from '../revisionsSlice';
 import { currentDoc } from '../selectors';
@@ -27,7 +29,19 @@ import { makeApplyDocChange, touch } from './docMutate';
  * `doc` but don't define it.
  */
 export type DocMetaSlice = {
+  /** The active tab's working document — canonical write target. What
+   *  `currentDoc(state)` returns and what every read site subscribes to.
+   *  Kept in lockstep with `docs[activeDocId]` via `activeDocState`. */
   doc: TPDocument;
+  /** Multi-doc tabs Phase 2 (Batch 2.1) — the open-document map. In
+   *  Phase 2 the app is still single-tab, so this always holds exactly
+   *  one entry equal to `doc`. Phase 5 relaxes that to N tabs. See
+   *  `src/store/activeDoc.ts` + `docs/MULTI_DOC_TABS_PLAN.md`. */
+  docs: Record<DocumentId, TPDocument>;
+  /** Which entry in `docs` is the active tab. Always `=== doc.id`. */
+  activeDocId: DocumentId;
+  /** Left-to-right tab ordering. Single entry in Phase 2. */
+  tabOrder: DocumentId[];
   setDocument: (doc: TPDocument) => void;
   newDocument: (diagramType: DiagramType) => void;
   setTitle: (title: string) => void;
@@ -126,16 +140,21 @@ export const bootRecoveryStatus: {
 /**
  * Data-only defaults for this sub-slice. Tests reset via the unified
  * `documentDefaults()` in `./index.ts`, which composes from here.
+ *
+ * Batch 2.1 — returns the full active-doc field set (`doc` + `docs` +
+ * `activeDocId` + `tabOrder`) built around one fresh document so the
+ * single-tab invariant holds the moment a test resets the store.
  */
-export const docMetaDefaults = (): Pick<DocMetaSlice, 'doc'> => ({
-  doc: createDocument('crt'),
-});
+export const docMetaDefaults = (): Pick<
+  DocMetaSlice,
+  'doc' | 'docs' | 'activeDocId' | 'tabOrder'
+> => activeDocState(createDocument('crt'));
 
 export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> = (set, get) => {
   const applyDocChange = makeApplyDocChange(get, set);
 
   return {
-    doc: initialDoc,
+    ...activeDocState(initialDoc),
 
     setDocument: (doc) => {
       const prev = currentDoc(get());
@@ -149,8 +168,11 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       // Document swap is explicit user intent — persist synchronously.
       persistDebounced(doc);
       flushPersist();
+      // Batch 2.1 — `activeDocState` rebuilds the single-tab map/order
+      // around the incoming doc, preserving today's replace-current-doc
+      // behavior (Phase 5 changes this to append a tab).
       set({
-        doc,
+        ...activeDocState(doc),
         selection: { kind: 'none' },
         editingEntityId: null,
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
@@ -177,7 +199,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       persistDebounced(doc);
       flushPersist();
       set({
-        doc,
+        ...activeDocState(doc),
         selection: { kind: 'none' },
         editingEntityId: null,
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
@@ -229,7 +251,10 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       if (prev.systemScopeNudgeShown) return;
       const next = touch({ ...prev, systemScopeNudgeShown: true });
       persistDebounced(next);
-      set({ doc: next });
+      // Same id as `prev` (content-only flag flip) so `activeDocState`
+      // just refreshes the doc reference + mirror; activeDocId/tabOrder
+      // are unchanged.
+      set(activeDocState(next));
     },
 
     resolveWarning: (warningId) => {
