@@ -64,6 +64,9 @@ const buildDoc = (docId: string, updatedAt: number, title = 'Doc'): TPDocument =
 describe('Batch 2.2 — persistActiveDoc / loadAllTabsWithStatus round-trip', () => {
   it('round-trips the active doc through the per-doc slots + manifest', () => {
     persistActiveDoc(buildDoc('doc_aaa', 1000, 'Active'));
+    // The manifest is the tab actions' job (not persistActiveDoc's); mimic
+    // an open tab so loadAllTabsWithStatus takes the manifest path.
+    persistTabsManifest({ activeDocId: id('doc_aaa'), tabOrder: [id('doc_aaa')] });
 
     const res = loadAllTabsWithStatus();
     expect(res.activeDocId).toBe('doc_aaa');
@@ -74,9 +77,14 @@ describe('Batch 2.2 — persistActiveDoc / loadAllTabsWithStatus round-trip', ()
     expect(res.recoveredFromLiveDraftOnly).toBe(false);
   });
 
-  it('writes the manifest with the active id + single-tab order', () => {
-    persistActiveDoc(buildDoc('doc_bbb', 1000));
-    expect(readTabsManifest()).toEqual({ activeDocId: 'doc_bbb', tabOrder: ['doc_bbb'] });
+  it('persistActiveDoc does NOT clobber a multi-tab manifest (5.4 regression)', () => {
+    // A multi-tab manifest is in place (written by the tab actions)…
+    persistTabsManifest({ activeDocId: id('doc_b'), tabOrder: [id('doc_a'), id('doc_b')] });
+    // …and the debounced auto-save commits the active doc.
+    persistActiveDoc(buildDoc('doc_b', 1000));
+    // The manifest must be untouched. Previously persistActiveDoc wrote a
+    // single-tab `[doc_b]` here, dropping doc_a on the next reload.
+    expect(readTabsManifest()).toEqual({ activeDocId: 'doc_b', tabOrder: ['doc_a', 'doc_b'] });
   });
 
   it('dual-writes the legacy single-doc slot for downgrade safety', () => {
