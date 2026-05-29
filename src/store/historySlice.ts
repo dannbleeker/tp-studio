@@ -2,7 +2,7 @@ import type { StateCreator } from 'zustand';
 import { COALESCE_WINDOW_MS, HISTORY_LIMIT } from '@/domain/constants';
 import type { DocumentId, TPDocument } from '@/domain/types';
 import { persistDebounced } from '@/services/storage/persistDebounced';
-import { activeDocState } from './activeDoc';
+import { setActiveDoc } from './activeDoc';
 import { currentDoc } from './selectors';
 import type { RootStore } from './types';
 
@@ -53,7 +53,7 @@ export const pushHistoryEntry = (past: HistoryEntry[], entry: HistoryEntry): His
 /** Park `stacks` under `docId` in the per-doc history map. Overwrites any
  *  prior parked stacks for that id. Internal building block of
  *  `applyTabSwitchHistory`. */
-const stashHistory = (
+export const stashHistory = (
   historyByDoc: Record<DocumentId, DocHistory>,
   docId: DocumentId,
   stacks: DocHistory
@@ -110,11 +110,12 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     const last = past[past.length - 1];
     if (!last) return;
     persistDebounced(last.doc);
-    // Batch 2.1 — undo may restore a doc with a DIFFERENT id (undoing a
-    // setDocument / newDocument). `activeDocState` makes `activeDocId` +
-    // the docs map follow the restored doc's id automatically.
+    // Batch 5.1 — undo may restore a doc with a DIFFERENT id (undoing a
+    // replace-mode setDocument). `setActiveDoc` swaps the ACTIVE tab to the
+    // restored doc (rekeying if the id changed) while leaving every other
+    // open tab untouched.
     set({
-      ...activeDocState(last.doc),
+      ...setActiveDoc(state, last.doc),
       past: past.slice(0, -1),
       future: [...future, { doc, t: Date.now() }],
       editingEntityId: null,
@@ -128,10 +129,11 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     const next = future[future.length - 1];
     if (!next) return;
     persistDebounced(next.doc);
-    // Batch 2.1 — symmetric with undo: redo may restore a different doc
-    // id, so route through `activeDocState`.
+    // Batch 5.1 — symmetric with undo: redo may restore a different doc
+    // id, so route through `setActiveDoc` (active-tab swap, other tabs
+    // untouched).
     set({
-      ...activeDocState(next.doc),
+      ...setActiveDoc(state, next.doc),
       future: future.slice(0, -1),
       past: [...past, { doc, t: Date.now() }],
       editingEntityId: null,

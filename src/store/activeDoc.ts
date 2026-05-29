@@ -60,3 +60,41 @@ export const activeDocState = (nextDoc: TPDocument): ActiveDocFields => ({
   activeDocId: nextDoc.id,
   tabOrder: [nextDoc.id],
 });
+
+/**
+ * Multi-doc tabs Phase 5 (Batch 5.1) — put `nextDoc` into the ACTIVE tab,
+ * leaving every OTHER open tab untouched. This is the multi-tab-safe
+ * replacement for `activeDocState` at the "edit / replace the active doc"
+ * sites (makeApplyDocChange, undo, redo, markSystemScopeNudgeShown,
+ * setDocument, newDocument) — where the old collapse-to-one-tab behaviour
+ * would have destroyed the other tabs on the next keystroke.
+ *
+ *   - Same id (`nextDoc.id === activeDocId`) — the common case (content
+ *     edit, undo/redo, paste): replace the active tab's doc in place;
+ *     `tabOrder` unchanged.
+ *   - Different id (a replace-mode doc load, or undo across one): swap the
+ *     active tab to the new doc, keeping its POSITION in `tabOrder` and
+ *     dropping the old id from `docs`.
+ *
+ * In single-tab (`docs` has one entry) this is behaviourally identical to
+ * `activeDocState`, so it's a no-op flip until real tabs exist (5.2+).
+ */
+export const setActiveDoc = (state: ActiveDocFields, nextDoc: TPDocument): ActiveDocFields => {
+  if (nextDoc.id === state.activeDocId) {
+    return {
+      doc: nextDoc,
+      docs: { ...state.docs, [nextDoc.id]: nextDoc },
+      activeDocId: nextDoc.id,
+      tabOrder: state.tabOrder,
+    };
+  }
+  // Rekey: the active tab now holds a different-id doc. Keep its slot in
+  // `tabOrder`; drop the old id from `docs`.
+  const { [state.activeDocId]: _old, ...rest } = state.docs;
+  return {
+    doc: nextDoc,
+    docs: { ...rest, [nextDoc.id]: nextDoc },
+    activeDocId: nextDoc.id,
+    tabOrder: state.tabOrder.map((id) => (id === state.activeDocId ? nextDoc.id : id)),
+  };
+};

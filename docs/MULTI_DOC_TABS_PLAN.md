@@ -823,7 +823,24 @@ be REWRITTEN as a multi-tab invariant** (`docs[activeDocId] === doc`,
 `tabOrder` stable across edits, edits to A don't touch B). Expect that
 file to change substantially — it is the canary, not a regression.
 
-### Batch 5.1 — Tab engine (HIGH risk, store only, no UI) — own PR
+### Batch 5.1 — Tab engine (HIGH risk, store only, no UI) — ✅ SHIPPED (Session 138)
+
+**As built:** added `setActiveDoc` (the rekey-capable in-place active-tab
+setter) and flipped the 6 doc-write sites off `activeDocState`; added
+`openTab` / `switchTab` / `closeTab` / `reorderTabs` / `duplicateTab` to
+`docMetaSlice` (no new slice needed — they're `DocMetaSlice` methods).
+`switchTab` uses `applyTabSwitchHistory` (2.3) + drops speculation
+(decision #5); `closeTab` never leaves zero tabs + `removeDocFromStorage`s
+the closed doc; manifest rewritten by the actions (not the scheduler). The
+single-tab 2.1 invariant tests passed untouched (the flip is a no-op until
+a 2nd tab exists), so they stay as the regression guard;
+`tests/store/tabEngine.test.ts` (13) is the multi-tab proof (tab
+isolation, per-tab history, close-neighbour, duplicate independence,
+manifest). Deferred the active-tab legacy dual-write decision to a later
+batch (still dual-writing). **Watch-item:** one flaky full-suite run (2
+transient failures) that did not reproduce across 4 subsequent full runs +
+3 isolated tabEngine runs (13/13 each) — looks pre-existing/timing, not in
+the deterministic tab tests.
 
 The riskiest change in the whole arc. Pure store + persistence + history;
 no React. Files: a new `documentsSlice` (or extend `docMetaSlice`),
