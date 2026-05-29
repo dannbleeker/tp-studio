@@ -7,6 +7,7 @@ import {
   persistTabsManifest,
   removeDocFromStorage,
   saveDocToLocalStorage,
+  type TabsLoadResult,
 } from '@/domain/persistence';
 import type {
   CustomEntityClass,
@@ -18,7 +19,7 @@ import type {
   TPDocument,
 } from '@/domain/types';
 import { flushPersist, persistDebounced } from '@/services/storage/persistDebounced';
-import { activeDocState, setActiveDoc } from '../activeDoc';
+import { type ActiveDocFields, activeDocState, setActiveDoc } from '../activeDoc';
 import { applyTabSwitchHistory, pushHistoryEntry, stashHistory } from '../historySlice';
 import { autoSnapshotOutgoing } from '../revisionsSlice';
 import { currentDoc } from '../selectors';
@@ -147,14 +148,26 @@ export type DocMetaSlice = {
   removeCustomEntityClass: (id: string) => void;
 };
 
-// Batch 2.2 — boot through the multi-doc loader (manifest → per-doc slots,
-// with a one-time migration from the legacy single-doc slots). The app is
-// still single-tab, so we hydrate the store with just the active doc;
-// Phase 5 will build the full tab set from `initialLoad.docs` / `tabOrder`.
+/**
+ * Build the boot-time active-doc state from a multi-doc load (Batch 5.4).
+ * Restores ALL open tabs (`docs` + `tabOrder` + `activeDocId`) so a reload
+ * brings back every open tab, not just the active one. Falls back to a
+ * single fresh CRT when nothing usable was stored (first run / cleared /
+ * all bodies lost). Per-tab undo history isn't persisted across reload, so
+ * restored tabs boot with empty `past` / `future` (the data-only defaults).
+ */
+export const tabStateFromLoad = (load: TabsLoadResult): ActiveDocFields => {
+  const active = load.activeDocId ? load.docs[load.activeDocId] : undefined;
+  if (load.activeDocId && active && load.tabOrder.length > 0) {
+    return { doc: active, docs: load.docs, activeDocId: load.activeDocId, tabOrder: load.tabOrder };
+  }
+  return activeDocState(createDocument('crt'));
+};
+
+// Batch 5.4 — boot rebuilds the FULL tab set from the manifest + per-doc
+// slots, so a reload restores every open tab (not just the active one).
 const initialLoad = loadAllTabsWithStatus();
-const initialActiveId = initialLoad.activeDocId;
-const initialDoc =
-  (initialActiveId ? initialLoad.docs[initialActiveId] : undefined) ?? createDocument('crt');
+const initialTabState = tabStateFromLoad(initialLoad);
 
 /**
  * FL-EX9 — boot-time recovery signal. The App component reads this on
@@ -188,7 +201,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
   const applyDocChange = makeApplyDocChange(get, set);
 
   return {
-    ...activeDocState(initialDoc),
+    ...initialTabState,
 
     setDocument: (doc) => {
       const prev = currentDoc(get());
@@ -294,8 +307,12 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
     // ── Multi-doc tabs (Phase 5, Batch 5.1) — the tab engine ─────────────
     openTab: (doc) => {
       const state = get();
-      // Commit the outgoing tab's pending write before leaving it.
+      // Persist the outgoing tab before leaving it: flush any pending
+      // debounced write, then force-commit its body — a never-edited tab
+      // has no pending write to flush, and its body must be in storage for
+      // a reload to restore it (Batch 5.4).
       flushPersist();
+      saveDocToLocalStorage(state.doc);
       const tabOrder = [...state.tabOrder, doc.id];
       set({
         doc,
@@ -324,7 +341,10 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       if (id === state.activeDocId) return;
       const target = state.docs[id];
       if (!target) return;
+      // Persist the outgoing tab (force-commit, not just flush pending) so
+      // a reload restores it (Batch 5.4).
       flushPersist();
+      saveDocToLocalStorage(state.doc);
       // Park the leaving tab's live stacks; promote the entering tab's.
       const swapped = applyTabSwitchHistory(
         state.historyByDoc,
