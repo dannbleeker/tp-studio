@@ -736,7 +736,20 @@ per-doc live-draft recovery, manifest-missing fallback. Land on its own
 PR with the persistence tests front-and-centre + a manual reload smoke
 test before merge.
 
-#### Batch 2.3 — Per-doc history (MEDIUM risk, ~0.5 session) — DEFERABLE
+#### Batch 2.3 — Per-doc history (LOW risk as built) — ✅ SHIPPED (Session 138)
+
+**As built:** chose the additive Design X (mirrors 2.1's `docs` mirror +
+2.2's dual-write) over the plan's literal "move `past`/`future` into
+`historyByDoc[activeDocId]`" (Design Y, which would have touched every
+undo/redo read + test). The ACTIVE tab's stacks stay canonical in the
+top-level `past`/`future`; only INACTIVE tabs park in
+`historyByDoc: Record<DocumentId, DocHistory>` (default `{}`). Shipped the
+pure `applyTabSwitchHistory(historyByDoc, leavingId, liveStacks, enteringId)`
+helper in `historySlice.ts` — the exact operation Phase 5's `switchTab`
+calls (park leaving → promote entering → drop the now-live parked copy). No
+caller yet, so single-tab undo/redo is byte-for-byte unchanged and the map
+stays empty. Tests: `tests/store/perDocHistory.test.ts`. Stacked on the
+2.2 branch.
 
 Only matters when switching tabs (Phase 5). Until the tab strip ships
 there is one tab, so global `past`/`future` ARE the active doc's history
@@ -750,7 +763,8 @@ tab's.
 1. Batch 2.1 — first, own PR. Low risk; green with no existing-test edits.
 2. Batch 2.2 — ✅ shipped Session 138 (own PR off the merged 2.1 baseline;
    dual-write design; persistence tests + boot-reload smoke test).
-3. Batch 2.3 — deferred; bundle with Phase 3 or Phase 5.
+3. Batch 2.3 — ✅ shipped Session 138 (additive `historyByDoc` +
+   `applyTabSwitchHistory`; stacked on the 2.2 branch).
 
 After 2.1 + 2.2 merge, the store + storage are fully multi-doc-capable
 while the app stays single-tab. Phase 3 + Phase 4 then proceed; Phase 5
