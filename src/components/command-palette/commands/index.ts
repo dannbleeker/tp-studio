@@ -5,6 +5,7 @@ import { exportCommands } from './export';
 import { groupCommands } from './groups';
 import { helpCommands } from './help';
 import { navigateCommands } from './navigate';
+import { tabCommands } from './tabs';
 import { toolCommands } from './tools';
 import type { Command } from './types';
 import { viewCommands } from './view';
@@ -31,4 +32,5 @@ export const COMMANDS: Command[] = [
   ...groupCommands,
   ...navigateCommands,
   ...analysisCommands,
+  ...tabCommands,
 ];

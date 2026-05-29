@@ -112,6 +112,17 @@ a boot-load restores both). (Eager-parses all tab bodies at boot; true
 lazy-parse of non-active bodies — locked decision #3 — deferred until boot
 perf with many tabs actually warrants it.)
 
+**Batch 5.2b — tab palette commands + drag-to-reorder.** Five palette
+commands (Cmd+K): **New tab**, **Duplicate tab**, **Close tab**, **Next
+tab**, **Previous tab** (`commands/tabs.ts`) — the portable tab controls,
+since the conventional Cmd+T / Cmd+W / Cmd+1–9 keys are intercepted by the
+browser in a normal tab. Plus **drag-to-reorder** on the strip (HTML5 DnD →
+`reorderTabs`). Tests: `tests/components/tabCommands.test.ts` (5) + a
+drag-reorder case in `TabStrip.test.tsx`. The Cmd+T/W/1–9 keyboard map is
+deferred to a focused follow-up — those keys only reach an installed PWA in
+`display-mode: standalone`, so they need gating to avoid clobbering the
+browser's own shortcuts.
+
 ## Session 137 — Pattern library expansion (5 per diagram type)
 
 Curated starter diagrams for every supported TOC diagram type
