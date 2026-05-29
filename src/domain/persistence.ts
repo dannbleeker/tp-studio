@@ -332,6 +332,17 @@ export const saveDocToLocalStorage = (doc: TPDocument): void => {
   writeString(committedKey, JSON.stringify(doc));
 };
 
+/**
+ * Drop a single doc's per-doc slots (committed / live / backup) — Batch 5.1,
+ * used by `closeTab` so a closed tab leaves no orphaned body in storage.
+ * The tab manifest is rewritten separately by the calling tab action.
+ */
+export const removeDocFromStorage = (id: DocumentId): void => {
+  removeKey(docCommittedKey(id));
+  removeKey(docLiveKey(id));
+  removeKey(docBackupKey(id));
+};
+
 /** Per-doc loader — committed / live / backup precedence for ONE doc id. */
 const loadDocByIdWithStatus = (id: DocumentId): LoadResult =>
   pickBestDoc(

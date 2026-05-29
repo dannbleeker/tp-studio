@@ -1,6 +1,13 @@
 import type { StateCreator } from 'zustand';
 import { createDocument } from '@/domain/factory';
-import { loadAllTabsWithStatus } from '@/domain/persistence';
+import { newDocumentId } from '@/domain/ids';
+import {
+  importFromJSON,
+  loadAllTabsWithStatus,
+  persistTabsManifest,
+  removeDocFromStorage,
+  saveDocToLocalStorage,
+} from '@/domain/persistence';
 import type {
   CustomEntityClass,
   DiagramType,
@@ -11,11 +18,12 @@ import type {
   TPDocument,
 } from '@/domain/types';
 import { flushPersist, persistDebounced } from '@/services/storage/persistDebounced';
-import { activeDocState } from '../activeDoc';
-import { pushHistoryEntry } from '../historySlice';
+import { activeDocState, setActiveDoc } from '../activeDoc';
+import { applyTabSwitchHistory, pushHistoryEntry, stashHistory } from '../historySlice';
 import { autoSnapshotOutgoing } from '../revisionsSlice';
 import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
+import { speculationDefaults } from '../uiSlice/speculationSlice';
 import { makeApplyDocChange, touch } from './docMutate';
 
 /**
@@ -31,16 +39,17 @@ import { makeApplyDocChange, touch } from './docMutate';
 export type DocMetaSlice = {
   /** The active tab's working document — canonical write target. What
    *  `currentDoc(state)` returns and what every read site subscribes to.
-   *  Kept in lockstep with `docs[activeDocId]` via `activeDocState`. */
+   *  Kept in lockstep with `docs[activeDocId]` via `setActiveDoc`. */
   doc: TPDocument;
-  /** Multi-doc tabs Phase 2 (Batch 2.1) — the open-document map. In
-   *  Phase 2 the app is still single-tab, so this always holds exactly
-   *  one entry equal to `doc`. Phase 5 relaxes that to N tabs. See
+  /** Multi-doc tabs — the open-document map (one entry per open tab),
+   *  keyed by id. The tab engine (`openTab` / `switchTab` / `closeTab` /
+   *  `reorderTabs` / `duplicateTab`, Batch 5.1) maintains it; the
+   *  invariant `docs[activeDocId] === doc` always holds. See
    *  `src/store/activeDoc.ts` + `docs/MULTI_DOC_TABS_PLAN.md`. */
   docs: Record<DocumentId, TPDocument>;
   /** Which entry in `docs` is the active tab. Always `=== doc.id`. */
   activeDocId: DocumentId;
-  /** Left-to-right tab ordering. Single entry in Phase 2. */
+  /** Left-to-right tab-strip ordering (one id per open tab). */
   tabOrder: DocumentId[];
   setDocument: (doc: TPDocument) => void;
   newDocument: (diagramType: DiagramType) => void;
@@ -51,6 +60,25 @@ export type DocMetaSlice = {
    *  toast fires so the nudge doesn't re-show on subsequent doc
    *  swaps. */
   markSystemScopeNudgeShown: () => void;
+
+  // ── Multi-doc tabs (Phase 5, Batch 5.1) — the tab engine ─────────────
+  /** Open `doc` in a NEW tab and activate it. The current tab stays open;
+   *  its undo/redo stacks are parked in `historyByDoc`. */
+  openTab: (doc: TPDocument) => void;
+  /** Switch the active tab to `id` (no-op if already active or unknown).
+   *  Swaps the live undo/redo stacks (via `applyTabSwitchHistory`) and
+   *  drops any speculation overlay (locked decision #5). */
+  switchTab: (id: DocumentId) => void;
+  /** Close tab `id`. If it was active, activates the right-hand neighbour
+   *  (clamped); if it was the last tab, opens a fresh blank CRT so there is
+   *  never zero tabs. Drops the closed doc's per-doc storage slots. */
+  closeTab: (id: DocumentId) => void;
+  /** Reorder the tab strip. `order` must be a permutation of `tabOrder`;
+   *  a non-permutation is ignored. */
+  reorderTabs: (order: DocumentId[]) => void;
+  /** Duplicate tab `id` into a new tab (fresh doc id, deep content copy,
+   *  `(copy)` appended to the title) and activate it (locked decision #4). */
+  duplicateTab: (id: DocumentId) => void;
 
   resolveWarning: (warningId: string) => void;
   unresolveWarning: (warningId: string) => void;
@@ -178,7 +206,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       // around the incoming doc, preserving today's replace-current-doc
       // behavior (Phase 5 changes this to append a tab).
       set({
-        ...activeDocState(doc),
+        ...setActiveDoc(get(), doc),
         selection: { kind: 'none' },
         editingEntityId: null,
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
@@ -205,7 +233,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       persistDebounced(doc);
       flushPersist();
       set({
-        ...activeDocState(doc),
+        ...setActiveDoc(get(), doc),
         selection: { kind: 'none' },
         editingEntityId: null,
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
@@ -257,10 +285,152 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       if (prev.systemScopeNudgeShown) return;
       const next = touch({ ...prev, systemScopeNudgeShown: true });
       persistDebounced(next);
-      // Same id as `prev` (content-only flag flip) so `activeDocState`
-      // just refreshes the doc reference + mirror; activeDocId/tabOrder
-      // are unchanged.
-      set(activeDocState(next));
+      // Same id as `prev` (content-only flag flip) so `setActiveDoc`
+      // refreshes the active tab's doc in place; other tabs, activeDocId,
+      // and tabOrder are unchanged.
+      set(setActiveDoc(get(), next));
+    },
+
+    // ── Multi-doc tabs (Phase 5, Batch 5.1) — the tab engine ─────────────
+    openTab: (doc) => {
+      const state = get();
+      // Commit the outgoing tab's pending write before leaving it.
+      flushPersist();
+      const tabOrder = [...state.tabOrder, doc.id];
+      set({
+        doc,
+        docs: { ...state.docs, [doc.id]: doc },
+        activeDocId: doc.id,
+        tabOrder,
+        // Park the outgoing tab's live stacks; the new tab starts empty.
+        historyByDoc: stashHistory(state.historyByDoc, state.activeDocId, {
+          past: state.past,
+          future: state.future,
+        }),
+        past: [],
+        future: [],
+        selection: { kind: 'none' },
+        editingEntityId: null,
+        // Decision #5 — a fresh tab starts in normal (non-speculative) mode.
+        ...speculationDefaults(),
+      });
+      saveDocToLocalStorage(doc);
+      persistTabsManifest({ activeDocId: doc.id, tabOrder });
+      get().reloadRevisionsForActiveDoc();
+    },
+
+    switchTab: (id) => {
+      const state = get();
+      if (id === state.activeDocId) return;
+      const target = state.docs[id];
+      if (!target) return;
+      flushPersist();
+      // Park the leaving tab's live stacks; promote the entering tab's.
+      const swapped = applyTabSwitchHistory(
+        state.historyByDoc,
+        state.activeDocId,
+        { past: state.past, future: state.future },
+        id
+      );
+      set({
+        doc: target,
+        activeDocId: id,
+        historyByDoc: swapped.historyByDoc,
+        past: swapped.past,
+        future: swapped.future,
+        selection: { kind: 'none' },
+        editingEntityId: null,
+        ...speculationDefaults(),
+      });
+      persistTabsManifest({ activeDocId: id, tabOrder: state.tabOrder });
+      get().reloadRevisionsForActiveDoc();
+    },
+
+    closeTab: (id) => {
+      const state = get();
+      if (!state.docs[id]) return;
+      const idx = state.tabOrder.indexOf(id);
+      const remaining = state.tabOrder.filter((t) => t !== id);
+      const { [id]: _closedDoc, ...docsRest } = state.docs;
+      const { [id]: _closedHist, ...historyRest } = state.historyByDoc;
+      flushPersist();
+
+      // Last tab closed → never zero tabs; replace with a fresh blank CRT.
+      if (remaining.length === 0) {
+        const fresh = createDocument('crt');
+        set({
+          ...activeDocState(fresh),
+          historyByDoc: {},
+          past: [],
+          future: [],
+          selection: { kind: 'none' },
+          editingEntityId: null,
+          ...speculationDefaults(),
+        });
+        saveDocToLocalStorage(fresh);
+        persistTabsManifest({ activeDocId: fresh.id, tabOrder: [fresh.id] });
+        removeDocFromStorage(id);
+        get().reloadRevisionsForActiveDoc();
+        return;
+      }
+
+      // Closing a background tab → active tab untouched.
+      if (id !== state.activeDocId) {
+        set({ docs: docsRest, tabOrder: remaining, historyByDoc: historyRest });
+        persistTabsManifest({ activeDocId: state.activeDocId, tabOrder: remaining });
+        removeDocFromStorage(id);
+        return;
+      }
+
+      // Closing the active tab → activate the right-hand neighbour (clamped
+      // to the new last tab when the closed tab was rightmost).
+      const nextActiveId = remaining[Math.min(idx, remaining.length - 1)];
+      const target = nextActiveId ? docsRest[nextActiveId] : undefined;
+      if (!nextActiveId || !target) return;
+      const restored = historyRest[nextActiveId] ?? { past: [], future: [] };
+      const { [nextActiveId]: _nowLive, ...historyParked } = historyRest;
+      set({
+        doc: target,
+        docs: docsRest,
+        activeDocId: nextActiveId,
+        tabOrder: remaining,
+        historyByDoc: historyParked,
+        past: restored.past,
+        future: restored.future,
+        selection: { kind: 'none' },
+        editingEntityId: null,
+        ...speculationDefaults(),
+      });
+      persistTabsManifest({ activeDocId: nextActiveId, tabOrder: remaining });
+      removeDocFromStorage(id);
+      get().reloadRevisionsForActiveDoc();
+    },
+
+    reorderTabs: (order) => {
+      const state = get();
+      // Ignore anything that isn't a permutation of the current open set.
+      if (order.length !== state.tabOrder.length || !order.every((tid) => state.docs[tid])) {
+        return;
+      }
+      set({ tabOrder: order });
+      persistTabsManifest({ activeDocId: state.activeDocId, tabOrder: order });
+    },
+
+    duplicateTab: (id) => {
+      const src = get().docs[id];
+      if (!src) return;
+      // Deep copy via a JSON round-trip (validates + clones nested maps),
+      // then a fresh id + `(copy)` title so the duplicate is fully
+      // independent — its own history, persistence, share link (decision #4).
+      const cloned = importFromJSON(JSON.stringify(src));
+      const copy: TPDocument = {
+        ...cloned,
+        id: newDocumentId(),
+        title: `${src.title} (copy)`,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      get().openTab(copy);
     },
 
     resolveWarning: (warningId) => {

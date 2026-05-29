@@ -2,7 +2,7 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 138 — Multi-doc tabs Phases 2–4 (state, persistence, history, services)
+## Session 138 — Multi-doc tabs Phases 2–5 (foundation + tab engine)
 
 Multi-document tabs (`docs/MULTI_DOC_TABS_PLAN.md`) advanced through three
 batches. **No visible change yet** — the app is still single-tab; this is
@@ -71,6 +71,22 @@ preserved), so the full suite stayed green (1990) with zero test edits.
 `state.doc` is now read in exactly one place outside the store — inside
 `currentDoc` itself — so Phase 5 can make `doc` multi-tab-derived by
 touching one line.
+
+**Batch 5.1 — tab engine (Phase 5 start, store only — no UI yet).** Flipped
+the core data-model invariant: the doc-write sites moved from
+`activeDocState` (which collapsed the store to a single tab) to the new
+`setActiveDoc` (replace the ACTIVE tab in place, leaving other tabs
+untouched; rekeys when the active tab's doc id changes). Added the store
+actions `openTab` / `switchTab` / `closeTab` / `reorderTabs` /
+`duplicateTab` — switching parks + restores the per-tab undo/redo stacks
+(2.3's `applyTabSwitchHistory`), rewrites the tab manifest (2.2), and drops
+the speculation overlay (decision #5); `closeTab` never leaves zero tabs
+and clears the closed doc's per-doc storage; `duplicateTab` mints a fresh
+id + `(copy)` title (decision #4). **No tab UI yet (5.2)** — the app stays
+single-tab on screen and behaviour is unchanged: the flip is a no-op until
+a second tab exists, so the 2.1 single-tab invariant tests pass untouched.
+`tests/store/tabEngine.test.ts` (13) drives the actions directly, headlined
+by **tab isolation** — editing tab A leaves tab B byte-identical.
 
 ## Session 137 — Pattern library expansion (5 per diagram type)
 
