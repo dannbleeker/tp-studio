@@ -2,7 +2,7 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 138 — Multi-doc tabs Phase 2 + per-doc history (Phase 3 start)
+## Session 138 — Multi-doc tabs Phases 2–4 (state, persistence, history, services)
 
 Multi-document tabs (`docs/MULTI_DOC_TABS_PLAN.md`) advanced through three
 batches. **No visible change yet** — the app is still single-tab; this is
@@ -53,6 +53,15 @@ entering tab's parked stacks, drop the now-live copy). Additive, mirroring
 `past` / `future`, so single-tab undo/redo is byte-for-byte unchanged and
 `historyByDoc` stays empty (no caller yet). `tests/store/perDocHistory.test.ts`
 pins the switch mechanism + the behaviour-preserving invariant.
+
+**Batch 4.1 — cross-doc-aware services (Phase 4 start).** Routed the three
+doc-scoped services (`clipboard`, `systemScopeNudge`, `canvasRef`) onto the
+`currentDoc()` read seam, and switched the system-scope nudge watcher to key
+on `activeDocId` rather than `doc.id` so it re-evaluates on a Phase 5 tab
+switch (equal today under the single-tab invariant — behaviour-preserving;
+existing service tests pass untouched). The bulk migration of the remaining
+~191 component `state.doc` reads to the seam is deferred to its own focused
+batch (4.2).
 
 ## Session 137 — Pattern library expansion (5 per diagram type)
 
