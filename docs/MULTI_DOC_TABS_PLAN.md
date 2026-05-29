@@ -783,3 +783,194 @@ tab's.
 After 2.1 + 2.2 merge, the store + storage are fully multi-doc-capable
 while the app stays single-tab. Phase 3 + Phase 4 then proceed; Phase 5
 flips the tab strip on.
+
+---
+
+## Phase 5 — detailed execution plan (Session 138 prep)
+
+**Where we are:** Phases 1–4 are merged to `main`. In place already:
+`docs` / `activeDocId` / `tabOrder` state + the `activeDocState` single-tab
+shaper (2.1); per-doc localStorage slots + tab manifest + dual-write
+boot/migration (`saveDocToLocalStorage` / `persistTabsManifest` /
+`loadAllTabsWithStatus`, 2.2); per-doc history infra (`historyByDoc` +
+the pure `applyTabSwitchHistory`, 2.3); and the `currentDoc()` read seam
+across all 61 consumer files (4.1 + 4.2). **`state.doc` is read in exactly
+one place outside the store — inside `currentDoc`.** So Phase 5 is: flip
+the data model from single-tab to N-tab, add the tab actions, build the
+strip UI, route doc-loads to new tabs, and restore N tabs on boot.
+
+### The central change: `activeDocState` (collapse) → in-place active update
+
+Today every doc-write site calls `activeDocState(next)`, which COLLAPSES
+the store to a single tab (`docs = { [next.id]: next }`, `tabOrder =
+[next.id]`). That is exactly what must stop: a content edit on tab A must
+leave tabs B/C intact. Split the one shaper into two:
+
+- **`replaceActiveDoc(state, nextDoc)`** — keep `docs` (other tabs),
+  `activeDocId`, `tabOrder`; set `doc = nextDoc` and
+  `docs[activeDocId] = nextDoc`. Used by the 4 *edit-the-active-doc* sites:
+  `makeApplyDocChange`, `markSystemScopeNudgeShown`, `undo`, `redo`.
+  Invariant it relies on: `nextDoc.id === activeDocId` (holds — content
+  edits keep the id; undo/redo are per-tab so never cross tabs; paste
+  spreads `...currentDoc` so keeps the id).
+- The multi-tab **tab actions** below own `tabOrder` / `activeDocId`
+  changes. `activeDocState` (single-entry) is retired except possibly as
+  a helper inside `openTab`.
+
+This is the invariant flip: **`tests/store/multiDocState.test.ts` (the 2.1
+single-tab invariant — `tabOrder === [doc.id]` after every mutation) must
+be REWRITTEN as a multi-tab invariant** (`docs[activeDocId] === doc`,
+`tabOrder` stable across edits, edits to A don't touch B). Expect that
+file to change substantially — it is the canary, not a regression.
+
+### Batch 5.1 — Tab engine (HIGH risk, store only, no UI) — own PR
+
+The riskiest change in the whole arc. Pure store + persistence + history;
+no React. Files: a new `documentsSlice` (or extend `docMetaSlice`),
+`docMutate.ts`, `historySlice` wiring, `persistDebounced.ts` /
+`persistence.ts`, boot in `docMetaSlice`.
+
+Actions:
+- **`openTab(doc)`** — flush the current tab's pending write; stash the
+  current tab's live `past`/`future` into `historyByDoc`; append `doc.id`
+  to `tabOrder`; `docs[doc.id] = doc`; set it active with empty history;
+  clear `selection` / `editingEntityId` / speculation overlay (decision
+  #5); `saveDocToLocalStorage(doc)` + `persistTabsManifest`;
+  `reloadRevisionsForActiveDoc`.
+- **`switchTab(toId)`** — flush current; `applyTabSwitchHistory(historyByDoc,
+  activeDocId, {past,future}, toId)` → swap the live stacks; set
+  `doc = docs[toId]` / `activeDocId = toId`; lazy-parse `toId`'s body if
+  still raw (see 5.4); clear selection/editing/speculation; persist
+  manifest; reload revisions; let the canvas re-mount (below).
+- **`closeTab(id)`** — remove from `tabOrder` + `docs` + `historyByDoc`;
+  if it was active, `switchTab` to the right-hand neighbour (else
+  left); if it was the LAST tab, `openTab(createDocument('crt'))` so there
+  is never zero tabs; drop `id`'s per-doc storage slots + manifest entry.
+  (A "recently closed / reopen" stack is out of scope; revisit in Phase 6
+  if asked.)
+- **`reorderTabs(order)`** — set `tabOrder = order`; persist manifest.
+- **`duplicateTab(id)`** — mint a fresh `DocumentId`, deep-copy the
+  content, append ` (copy)` to the title (decision #4), `openTab` it.
+
+Persistence shifts (decision: keep it safe):
+- The tab manifest write MOVES out of `persistActiveDoc` (which only sees
+  the active doc) INTO the tab actions (which know `tabOrder`).
+  `persistActiveDoc` keeps writing the active doc's per-doc committed slot.
+- **Keep the active-tab legacy dual-write through Phase 5** (one cheap
+  setItem) so a downgrade still recovers the active tab; the original plan
+  said "Phase 5 drops the legacy write" but a downgrade can't represent N
+  tabs anyway, and keeping the active-tab mirror costs nothing. Revisit in
+  Phase 6.
+
+Canvas re-mount: key `<Canvas />` (or the inner `<ReactFlow>`) by
+`activeDocId` so a `switchTab` remounts it → `canvasRef` re-sets via
+`onInit`, React Flow re-fits, no stale per-tab viewport/selection leaks.
+
+Tests (headless, the real proof Phase 5 works): open 2 tabs → tabOrder /
+docs / active correct; **edit tab A → tab B's doc is byte-identical**
+(the multi-tab invariant); switch A↔B → doc + history + selection swap,
+speculation cleared; close active → neighbour active; close last → fresh
+blank; duplicate → new id + `(copy)` + independent edits; reorder; N-tab
+persistence round-trip (`save 2 tabs → loadAllTabsWithStatus → both back`,
+manifest = tabOrder). Rewrite `multiDocState.test.ts` to the multi-tab
+invariant.
+
+### Batch 5.2 — TabStrip UI + keyboard + palette — own PR
+
+- **`src/components/toolbar/TabStrip.tsx`** — rendered in `App.tsx`
+  **between `<TopBar />` (line ~259) and the `<Canvas />` wrapper (~273)**,
+  gated `!isPresentation` (locked decision #1: above the canvas,
+  full-width, ~32 px chrome). One chip per `tabOrder` entry (title via
+  `docs[id].title`, active highlighted), per-tab close `X` (→ `closeTab`),
+  trailing `+` (→ new blank tab), drag-to-reorder (→ `reorderTabs`).
+  Accessible: `role="tablist"` / `role="tab"` + `aria-selected`, arrow-key
+  move between chips, the close X is a real focusable button.
+- **Keyboard** (`useGlobalShortcuts.ts`, same `cmdOrCtrl && e.key`
+  pattern as Cmd+K/S/F): Cmd+T new tab, Cmd+W close active, Cmd+1..9 jump
+  to tab N. **⚠️ Caveat:** in a normal browser tab Cmd+T / Cmd+W are
+  reserved by the browser and cannot be reliably `preventDefault`'d — they
+  only reach the app in installed-PWA (`display: standalone`) mode. So the
+  `+` / `X` buttons + palette commands are the always-available path;
+  treat the shortcuts as a PWA bonus and don't rely on them in tests.
+- **Palette** — a new `tabCommands: Command[]` (own file, registered in
+  `commands/index.ts`'s `COMMANDS`): "New tab", "Close tab", "Next tab",
+  "Previous tab", "Duplicate tab".
+
+Tests: TabStrip renders N chips with the active one flagged; click chip →
+`switchTab`; X → `closeTab`; `+` → open; palette commands present + wired.
+Drag-reorder is e2e-only (note it; don't block on a jsdom test).
+
+### Batch 5.3 — Route doc-loads to new tabs + Settings toggle — own PR
+
+- New pref **`openDocsInNewTab: boolean` (default `true`, decision #6)** +
+  a Settings → Documents toggle ("Open imported / loaded documents in a
+  new tab").
+- New store action **`openDocInTab(doc)`** = `pref ? openTab(doc) :
+  setDocument(doc)`.
+- Re-route the **doc-LOAD** call sites to `openDocInTab`: `App.tsx`
+  share-link receiver (226); `ImportPickerDialog` (61/73/86);
+  `PatternLibraryDialog` (69); `TemplatePickerDialog` (44);
+  `DiagramTypePickerDialog` load-example (113); spawn-EC (`ContextMenu`
+  230 + `analysis.ts` 61); and `newDocument` internally.
+- **KEEP `setDocument` for**: clipboard **paste** (`clipboard.ts:102` — a
+  same-id edit of the active doc, NOT a load → must never spawn a tab) and
+  as the toggle-off "replace active tab" path of `openDocInTab`.
+- **"Undo" restore toasts** (`DiagramTypePicker:124`, `PatternLibrary:74`,
+  `Template:48` — currently `setDocument(previousDoc)`): in new-tab mode
+  the natural undo is **close the just-opened tab**, not restore the old
+  doc. Rework these toast actions to `closeTab(newTabId)` when in new-tab
+  mode (or drop the undo affordance there, since closing the tab is
+  obvious). In replace mode they keep `setDocument(previousDoc)`.
+
+Tests: pref on → load opens a new tab (tabOrder grows, original intact);
+pref off → replaces active; paste always edits the active tab.
+
+### Batch 5.4 — Boot multi-tab restore (+ optional lazy-parse) — own PR
+
+- `docMetaSlice` boot builds **multi-tab** state from
+  `loadAllTabsWithStatus()`'s `docs` / `tabOrder` / `activeDocId` (instead
+  of `activeDocState(initialDoc)`). The fallback-to-blank + legacy
+  migration paths already exist.
+- **Lazy-parse (decision #3) is a PERF optimization, not correctness.**
+  `loadAllTabsWithStatus` currently eager-parses every listed tab.
+  Recommendation: **ship eager-parse-all in 5.4** (simple + correct; fine
+  for the typical 2–6 tabs) and add true lazy-parse (active eager, others
+  kept as raw JSON strings parsed on first `switchTab`) ONLY if boot perf
+  measurably suffers with many tabs. True lazy-parse needs a "raw vs
+  parsed" representation in `docs` — defer that complexity until measured.
+
+Tests: boot a 2-tab manifest → both restored, correct active; a
+missing/corrupt non-active body → that tab dropped (already handled);
+legacy single-doc migration still boots to one tab.
+
+### Sequencing + gates
+
+1. **5.1 — tab engine** (own PR, HIGH risk). Rewrites the 2.1 invariant
+   test. The full suite is the safety net; expect only `multiDocState`
+   edits among existing tests.
+2. **5.2 — TabStrip UI + keyboard + palette** (own PR). Manual smoke:
+   tabs visible, clickable, `+`/X work.
+3. **5.3 — load routing + Settings toggle** (own PR).
+4. **5.4 — boot multi-tab restore** (own PR). Manual smoke: open 2 tabs,
+   reload, both come back with the right active tab.
+
+Then **Phase 6** polish (quota "close some tabs" toast; "forget closed
+doc"; walkthrough-cursor-on-switch; optional speculation carry-across;
+"save/export all tabs"). Phase 3's deferred bits — per-tab `searchMatchIndex`
+reset + speculation drop-on-switch — fold into 5.1/5.2 (the switch path).
+
+### Risk register
+
+- **5.1 is the highest-risk change in the arc** — it flips the core
+  single-tab invariant. Mitigation: store-only (no UI) so it's fully
+  headless-testable; land it alone; the 1990-test suite + the rewritten
+  multi-tab invariant test are the gate.
+- **Cmd+T / Cmd+W browser-shadowing** — only reliable in installed-PWA
+  mode; buttons + palette are the real path.
+- **Canvas re-mount on switch** — key by `activeDocId`; verify no stale
+  React Flow viewport/selection/edge-routing-cache leaks across tabs.
+- **Speculation overlay** (decision #5) — `switchTab` must clear the
+  speculation slice, else an overlay from tab A bleeds onto tab B.
+- **Paste vs load** — the one `setDocument` caller that must NOT become a
+  tab-open is `clipboard.ts`. Getting this wrong silently spawns a tab on
+  every paste.
