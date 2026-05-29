@@ -1,6 +1,7 @@
 import type { ReactFlowInstance } from '@xyflow/react';
 import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/edges/flow-types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 // The active React Flow instance, parameterized with our concrete node and
 // edge types. Set on RF onInit, cleared on canvas unmount. Lets command-palette
@@ -103,7 +104,7 @@ const collectSelectionEntityIds = (
   if (sel.kind === 'edges') {
     const endpointIds = new Set<string>();
     for (const edgeId of sel.ids) {
-      const edge = state.doc.edges[edgeId];
+      const edge = currentDoc(state).edges[edgeId];
       if (edge) {
         endpointIds.add(edge.sourceId);
         endpointIds.add(edge.targetId);

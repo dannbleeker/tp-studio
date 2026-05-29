@@ -1,6 +1,7 @@
 import { createEdge, createEntity } from '@/domain/factory';
 import type { Edge, Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 type ClipboardPayload = {
   entities: Entity[];
@@ -21,11 +22,10 @@ export const copySelection = (): number => {
   const ids = state.selection.ids;
   if (ids.length === 0) return 0;
   const idSet = new Set(ids);
-  const entities = ids
-    .map((id) => state.doc.entities[id])
-    .filter((e): e is Entity => e !== undefined);
+  const doc = currentDoc(state);
+  const entities = ids.map((id) => doc.entities[id]).filter((e): e is Entity => e !== undefined);
   if (entities.length === 0) return 0;
-  const edges = Object.values(state.doc.edges).filter(
+  const edges = Object.values(doc.edges).filter(
     (e) => idSet.has(e.sourceId) && idSet.has(e.targetId)
   );
   buffer = { entities, edges };
@@ -59,7 +59,8 @@ type PasteResult = { ok: true; entities: number; edges: number } | { ok: false }
 export const pasteClipboard = (): PasteResult => {
   if (!buffer || buffer.entities.length === 0) return { ok: false };
   const state = useDocumentStore.getState();
-  const startAnnotation = state.doc.nextAnnotationNumber;
+  const doc = currentDoc(state);
+  const startAnnotation = doc.nextAnnotationNumber;
 
   // Mint new entities, preserve the per-entity id mapping for edge remap.
   const idMap = new Map<string, string>();
@@ -86,13 +87,13 @@ export const pasteClipboard = (): PasteResult => {
 
   // Splice into the doc via setDocument (one history step, persistence flush).
   const nextDoc = {
-    ...state.doc,
+    ...doc,
     entities: {
-      ...state.doc.entities,
+      ...doc.entities,
       ...Object.fromEntries(newEntities.map((e) => [e.id, e])),
     },
     edges: {
-      ...state.doc.edges,
+      ...doc.edges,
       ...Object.fromEntries(newEdges.map((e) => [e.id, e])),
     },
     nextAnnotationNumber: startAnnotation + newEntities.length,

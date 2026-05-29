@@ -436,6 +436,17 @@ index.
 
 ### Phase 4 — Cross-doc-aware services + components
 
+**Batch 4.1 ✅ SHIPPED (Session 138):** the three doc-scoped services —
+`clipboard.ts`, `systemScopeNudge.ts`, `canvasRef.ts` — now read via the
+`currentDoc()` seam, and the nudge watcher keys on `activeDocId` (so it
+re-fires on a Phase 5 tab switch). Behaviour-preserving in single-tab;
+existing service tests pass untouched. The clipboard `sourceDocId` tag was
+deferred to Phase 5, where cross-tab paste actually consumes it (YAGNI).
+**Batch 4.2 (remaining):** the bulk component `state.doc` → `currentDoc(s)`
+migration (~191 reads) — its own focused session; high-volume, mechanical,
+low-risk (the seam returns `state.doc` today, so it's a no-op refactor that
+pre-routes every read for Phase 5).
+
 **Goal**: every place that reads `state.doc.id` or holds doc-scoped
 state in a module variable gains "which doc?" awareness. Still single-tab
 visually.

@@ -1,5 +1,6 @@
 import type { SystemScope, TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Session 83 — soft System Scope nudge.
@@ -55,17 +56,21 @@ export { isScopeEmpty };
  * Install a `useDocumentStore` subscription that fires the nudge on
  * doc swaps (`setDocument` / `newDocument` / share-link load / boot
  * with stored doc). Called once from `main.tsx`. The subscription
- * compares `doc.id`s so it fires on full doc swaps but not on every
+ * compares `activeDocId`s so it fires on full doc swaps but not on every
  * title-edit tick.
  */
 export const installSystemScopeNudgeWatcher = (): void => {
   // Fire once for the boot doc — handles the localStorage-restore path.
-  maybeNudgeSystemScope(useDocumentStore.getState().doc);
-  let lastId = useDocumentStore.getState().doc.id;
+  maybeNudgeSystemScope(currentDoc(useDocumentStore.getState()));
+  // Phase 4 — key on `activeDocId` rather than `doc.id`. They're equal
+  // today (single-tab invariant), but in Phase 5 a tab SWITCH changes
+  // `activeDocId` (and the active `doc`) without a `setDocument`, and the
+  // nudge should re-evaluate for the newly-active doc.
+  let lastId = useDocumentStore.getState().activeDocId;
   useDocumentStore.subscribe((state) => {
-    if (state.doc.id !== lastId) {
-      lastId = state.doc.id;
-      maybeNudgeSystemScope(state.doc);
+    if (state.activeDocId !== lastId) {
+      lastId = state.activeDocId;
+      maybeNudgeSystemScope(currentDoc(state));
     }
   });
 };
