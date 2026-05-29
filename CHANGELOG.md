@@ -100,6 +100,18 @@ functional + a11y contract. Keyboard (Cmd+T/W/1–9), palette commands, and
 drag-to-reorder land in 5.2b; routing doc-loads to new tabs is 5.3. (Visual
 layout is a first pass — pending a real-browser look.)
 
+**Batch 5.4 — boot restores all tabs.** Reload now brings back **every**
+open tab, not just the active one. Boot rebuilds the full `docs` /
+`tabOrder` / `activeDocId` from the manifest + per-doc slots via the new
+`tabStateFromLoad` (falling back to a single fresh CRT when nothing's
+stored). Fixed the other half too: `openTab` / `switchTab` now
+**force-commit the outgoing tab's body** — a never-edited tab had no
+pending write to flush, so it wasn't in storage for the reload to find.
+End-to-end coverage in `tests/store/tabEngine.test.ts` (open a 2nd tab →
+a boot-load restores both). (Eager-parses all tab bodies at boot; true
+lazy-parse of non-active bodies — locked decision #3 — deferred until boot
+perf with many tabs actually warrants it.)
+
 ## Session 137 — Pattern library expansion (5 per diagram type)
 
 Curated starter diagrams for every supported TOC diagram type

@@ -957,7 +957,21 @@ Drag-reorder is e2e-only (note it; don't block on a jsdom test).
 Tests: pref on → load opens a new tab (tabOrder grows, original intact);
 pref off → replaces active; paste always edits the active tab.
 
-### Batch 5.4 — Boot multi-tab restore (+ optional lazy-parse) — own PR
+### Batch 5.4 — Boot multi-tab restore — ✅ SHIPPED (Session 138, folded into the 5.2 PR)
+
+**As built:** boot rebuilds the full tab set via the new exported
+`tabStateFromLoad(load)` in `docMetaSlice` (used at module init from
+`loadAllTabsWithStatus()`; fallback to a single fresh CRT). Also closed the
+gap that made Dann's "reload shows one tab" repro: `openTab` / `switchTab`
+now `saveDocToLocalStorage(state.doc)` the **outgoing** tab (a never-edited
+tab has no pending debounced write to flush, so its body wasn't in
+storage). Eager-parse-all at boot (lazy-parse — decision #3 — deferred as a
+perf-only optimization). Tests in `tests/store/tabEngine.test.ts`
+(`tabStateFromLoad` units + an open-2-tabs → boot-load-restores-both
+end-to-end). Folded into PR #23 so the visible-tabs feature is whole
+(tabs that survive a reload).
+
+
 
 - `docMetaSlice` boot builds **multi-tab** state from
   `loadAllTabsWithStatus()`'s `docs` / `tabOrder` / `activeDocId` (instead

@@ -12,10 +12,11 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDocument } from '@/domain/factory';
-import { readTabsManifest } from '@/domain/persistence';
+import { loadAllTabsWithStatus, readTabsManifest, type TabsLoadResult } from '@/domain/persistence';
 import type { DocumentId } from '@/domain/types';
 import { docCommittedKey } from '@/services/storage/keys';
 import { resetStoreForTest, useDocumentStore } from '@/store';
+import { tabStateFromLoad } from '@/store/documentSlice/docMetaSlice';
 import { seedEntity } from '../helpers/seedDoc';
 
 beforeEach(() => {
@@ -194,5 +195,52 @@ describe('Batch 5.1 — manifest persistence', () => {
     expect(readTabsManifest()).toEqual({ activeDocId: b.id, tabOrder: [aId, b.id] });
     s().switchTab(aId);
     expect(readTabsManifest()).toEqual({ activeDocId: aId, tabOrder: [aId, b.id] });
+  });
+});
+
+describe('Batch 5.4 — boot restores all tabs (tabStateFromLoad)', () => {
+  it('falls back to a single fresh CRT when nothing was stored', () => {
+    const st = tabStateFromLoad({
+      docs: {},
+      activeDocId: null,
+      tabOrder: [],
+      recoveredFromBackup: false,
+      recoveredFromLiveDraftOnly: false,
+      migratedFromLegacy: false,
+    });
+    expect(st.tabOrder).toHaveLength(1);
+    expect(Object.keys(st.docs)).toHaveLength(1);
+    expect(st.doc.diagramType).toBe('crt');
+    expect(st.activeDocId).toBe(st.doc.id);
+  });
+
+  it('rebuilds the full multi-tab state from a load', () => {
+    const a = createDocument('crt');
+    const b = createDocument('frt');
+    const load: TabsLoadResult = {
+      docs: { [a.id]: a, [b.id]: b },
+      activeDocId: b.id,
+      tabOrder: [a.id, b.id],
+      recoveredFromBackup: false,
+      recoveredFromLiveDraftOnly: false,
+      migratedFromLegacy: false,
+    };
+    const st = tabStateFromLoad(load);
+    expect(st.activeDocId).toBe(b.id);
+    expect(st.tabOrder).toEqual([a.id, b.id]);
+    expect(st.doc).toBe(b);
+    expect(Object.keys(st.docs)).toHaveLength(2);
+  });
+
+  it('end-to-end: open a 2nd tab, then a boot-load restores BOTH tabs', () => {
+    const aId = s().activeDocId;
+    const b = createDocument('frt');
+    s().openTab(b); // force-persists outgoing A + new B + manifest [A, B]
+
+    // Simulate a reload: read storage back + rebuild the boot state.
+    const restored = tabStateFromLoad(loadAllTabsWithStatus());
+    expect(restored.tabOrder).toEqual([aId, b.id]);
+    expect(restored.activeDocId).toBe(b.id);
+    expect(Object.keys(restored.docs).sort()).toEqual([aId, b.id].sort());
   });
 });
