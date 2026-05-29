@@ -76,7 +76,7 @@ export function TopBar() {
       // top edge is mild visual overlap (the Inspector body sits
       // below the Topbar's ~h-12 band); modals stay above both at
       // `z-50`.
-      className="absolute top-4 right-4 z-30 flex items-center gap-2"
+      className="absolute top-12 right-4 z-30 flex items-center gap-2"
     >
       {/* Below sm we collapse the Commands button to an icon to free up
           horizontal space; above sm, the full text + kbd hint shows. The

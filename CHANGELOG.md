@@ -2,7 +2,7 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 138 — Multi-doc tabs Phases 2–5 (foundation + tab engine)
+## Session 138 — Multi-doc tabs Phases 2–5 (foundation → visible tab strip)
 
 Multi-document tabs (`docs/MULTI_DOC_TABS_PLAN.md`) advanced through three
 batches. **No visible change yet** — the app is still single-tab; this is
@@ -87,6 +87,18 @@ single-tab on screen and behaviour is unchanged: the flip is a no-op until
 a second tab exists, so the 2.1 single-tab invariant tests pass untouched.
 `tests/store/tabEngine.test.ts` (13) drives the actions directly, headlined
 by **tab isolation** — editing tab A leaves tab B byte-identical.
+
+**Batch 5.2 — TabStrip UI (tabs are now visible).** New
+`src/components/toolbar/TabStrip.tsx`: a full-width chip bar pinned to the
+top of the canvas (`App.tsx`; `TitleBadge` + `TopBar` nudged from `top-4`
+to `top-12` to clear it). Click a chip to `switchTab`, the X to `closeTab`,
+the trailing `+` to open a fresh CRT in a new tab. `role="tablist"` /
+`role="tab"` + `aria-selected` for assistive tech; re-render-disciplined
+via `useDocumentStoreWith` + array-by-keys equality so a plain entity edit
+doesn't churn the strip. `tests/components/TabStrip.test.tsx` (5) pins the
+functional + a11y contract. Keyboard (Cmd+T/W/1–9), palette commands, and
+drag-to-reorder land in 5.2b; routing doc-loads to new tabs is 5.3. (Visual
+layout is a first pass — pending a real-browser look.)
 
 ## Session 137 — Pattern library expansion (5 per diagram type)
 

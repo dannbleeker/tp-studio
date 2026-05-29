@@ -892,7 +892,22 @@ persistence round-trip (`save 2 tabs → loadAllTabsWithStatus → both back`,
 manifest = tabOrder). Rewrite `multiDocState.test.ts` to the multi-tab
 invariant.
 
-### Batch 5.2 — TabStrip UI + keyboard + palette — own PR
+### Batch 5.2 — TabStrip UI + keyboard + palette — ◧ CORE SHIPPED (Session 138)
+
+**As built (5.2 core):** `src/components/toolbar/TabStrip.tsx` — full-width
+chip bar `absolute top-0` over the canvas; chips (click → `switchTab`),
+per-chip X (`closeTab`, hidden on the sole tab), trailing `+` (open a fresh
+CRT). `TitleBadge` + `TopBar` nudged `top-4` → `top-12` to clear it.
+`role="tablist"`/`tab` + `aria-selected`; `useDocumentStoreWith` +
+array-by-keys equality for re-render discipline. Tests:
+`tests/components/TabStrip.test.tsx` (5). **Deferred to 5.2b:** Cmd+T/W/1–9
+keyboard (browser-shadowed outside installed-PWA mode) + the tab palette
+commands + drag-to-reorder (e2e-only). **Visual layout is a first pass —
+needs a real-browser look** (floating `top-0` bar vs the absolute
+`TitleBadge`/`TopBar` overlays; this PR is gated on visual review, not
+auto-merged).
+
+
 
 - **`src/components/toolbar/TabStrip.tsx`** — rendered in `App.tsx`
   **between `<TopBar />` (line ~259) and the `<Canvas />` wrapper (~273)**,

@@ -10,6 +10,7 @@ import { SpeculationBanner } from './components/canvas/overlays/SpeculationBanne
 import { DocumentMeta } from './components/DocumentMeta';
 import { Inspector } from './components/inspector/Inspector';
 import { Toaster } from './components/toast/Toaster';
+import { TabStrip } from './components/toolbar/TabStrip';
 import { TitleBadge } from './components/toolbar/TitleBadge';
 import { TopBar } from './components/toolbar/TopBar';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
@@ -255,6 +256,7 @@ export function App() {
     >
       <DocumentMeta />
       <PrintHeader />
+      {!isPresentation && <TabStrip />}
       {!isPresentation && <TitleBadge />}
       {!isPresentation && <TopBar />}
       {/* Session 95 — `ReactFlowProvider` hoisted here (was inside

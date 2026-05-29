@@ -42,7 +42,7 @@ export function TitleBadge() {
       //   <sm  (TopBar ~120 px, icon-only Commands + Lock + Kebab)
       //   sm   (TopBar ~150 px, full Commands + Lock + History + Help + Theme)
       //   md+  (TopBar ~280 px, full Commands + Lock + Layout + History + Help + Theme)
-      className="pointer-events-none absolute top-4 left-4 z-10 flex max-w-[calc(100%-7rem)] xs:max-w-[calc(100%-9rem)] items-center gap-1.5 sm:max-w-[calc(100%-12rem)] sm:gap-2 md:max-w-[calc(100%-20rem)]"
+      className="pointer-events-none absolute top-12 left-4 z-10 flex max-w-[calc(100%-7rem)] xs:max-w-[calc(100%-9rem)] items-center gap-1.5 sm:max-w-[calc(100%-12rem)] sm:gap-2 md:max-w-[calc(100%-20rem)]"
     >
       <input
         // The width follows the title text so the badge sits close to it, but
