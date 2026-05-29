@@ -41,8 +41,21 @@ export function TabStrip() {
   const switchTab = useDocumentStore((s) => s.switchTab);
   const closeTab = useDocumentStore((s) => s.closeTab);
   const openTab = useDocumentStore((s) => s.openTab);
+  const reorderTabs = useDocumentStore((s) => s.reorderTabs);
 
   const canClose = chips.length > 1;
+
+  // Drag-to-reorder: move the dragged chip into the drop target's slot.
+  const handleDrop = (draggedId: string, targetId: DocumentId) => {
+    if (draggedId === targetId) return;
+    const order = chips.map((c) => c.id);
+    const from = order.indexOf(draggedId as DocumentId);
+    const to = order.indexOf(targetId);
+    if (from < 0 || to < 0) return;
+    order.splice(from, 1);
+    order.splice(to, 0, draggedId as DocumentId);
+    reorderTabs(order);
+  };
 
   return (
     <div
@@ -59,8 +72,19 @@ export function TabStrip() {
       className="absolute inset-x-0 top-0 z-20 flex h-9 select-none items-stretch gap-0.5 overflow-x-auto border-neutral-200 border-b bg-neutral-100/95 px-1 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95"
     >
       {chips.map((chip) => (
+        // biome-ignore lint/a11y/noStaticElementInteractions: drag-to-reorder is a pointer-only enhancement — switching + reordering tabs is fully reachable via the chip buttons and the New/Close/Next/Previous palette commands.
         <div
           key={chip.id}
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', chip.id);
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            handleDrop(e.dataTransfer.getData('text/plain'), chip.id);
+          }}
           className={clsx(
             'group flex min-w-0 max-w-[14rem] items-center gap-1 self-end rounded-t-md border border-b-0 px-2 py-1 text-xs transition',
             chip.active

@@ -898,11 +898,15 @@ invariant.
 chip bar `absolute top-0` over the canvas; chips (click → `switchTab`),
 per-chip X (`closeTab`, hidden on the sole tab), trailing `+` (open a fresh
 CRT). `TitleBadge` + `TopBar` nudged `top-4` → `top-12` to clear it.
-`role="tablist"`/`tab` + `aria-selected`; `useDocumentStoreWith` +
-array-by-keys equality for re-render discipline. Tests:
-`tests/components/TabStrip.test.tsx` (5). **Deferred to 5.2b:** Cmd+T/W/1–9
-keyboard (browser-shadowed outside installed-PWA mode) + the tab palette
-commands + drag-to-reorder (e2e-only). **Visual layout is a first pass —
+`role="toolbar"` + `aria-current` (the a11y fix replaced the strict tablist
+— a closeable-tab strip can't satisfy `tablist`'s required `tab` children,
+which the axe e2e flagged critically); `useDocumentStoreWith` + array-by-keys
+equality for re-render discipline. **5.2b (shipped Session 138):** tab palette
+commands (New / Duplicate / Close / Next / Previous) + drag-to-reorder, with
+`tests/components/{tabCommands,TabStrip}.test.tsx`. **Still deferred:** the
+Cmd+T/W/1–9 keyboard map — those keys only reach an installed PWA in
+`display-mode: standalone`, so they need gating to avoid clobbering the
+browser's own shortcuts. **Visual layout is a first pass —
 needs a real-browser look** (floating `top-0` bar vs the absolute
 `TitleBadge`/`TopBar` overlays; this PR is gated on visual review, not
 auto-merged).

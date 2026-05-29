@@ -90,4 +90,38 @@ describe('Batch 5.2 — TabStrip', () => {
     render(<TabStrip />);
     expect(screen.getByRole('toolbar', { name: 'Open documents' })).toBeTruthy();
   });
+
+  it('drag-to-reorder moves a chip into the drop target slot', () => {
+    const aId = s().activeDocId;
+    act(() => {
+      s().setTitle('Alpha');
+    });
+    const b = docNamed('Beta');
+    act(() => {
+      s().openTab(b); // order [A, B]
+    });
+    render(<TabStrip />);
+
+    const aChip = screen.getByRole('button', { name: 'Alpha' }).closest('[draggable="true"]');
+    const bChip = screen.getByRole('button', { name: 'Beta' }).closest('[draggable="true"]');
+    expect(aChip).not.toBeNull();
+    expect(bChip).not.toBeNull();
+
+    // jsdom has no real DataTransfer — feed a minimal mock through the events.
+    const bag: Record<string, string> = {};
+    const dataTransfer = {
+      effectAllowed: '',
+      setData: (k: string, v: string) => {
+        bag[k] = v;
+      },
+      getData: (k: string) => bag[k] ?? '',
+    };
+    act(() => {
+      fireEvent.dragStart(aChip as Element, { dataTransfer });
+      fireEvent.drop(bChip as Element, { dataTransfer });
+    });
+
+    // A dropped onto B → A takes B's slot → [B, A].
+    expect(s().tabOrder).toEqual([b.id, aId]);
+  });
 });
