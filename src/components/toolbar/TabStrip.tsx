@@ -46,7 +46,14 @@ export function TabStrip() {
 
   return (
     <div
-      role="tablist"
+      // A labelled toolbar of buttons rather than a strict ARIA tablist: a
+      // closeable-tab strip (tab + per-tab close + a trailing "new tab")
+      // can't satisfy `tablist`'s aria-required-children (which wants ONLY
+      // `role="tab"` children), and axe flags it critically. `toolbar` has
+      // no required children + no native-element equivalent (so Biome's
+      // useSemanticElements is happy); the buttons are self-labelling and
+      // the active chip carries `aria-current`.
+      role="toolbar"
       aria-label="Open documents"
       data-component="tab-strip"
       className="absolute inset-x-0 top-0 z-20 flex h-9 items-stretch gap-0.5 overflow-x-auto border-neutral-200 border-b bg-neutral-100/95 px-1 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95"
@@ -63,8 +70,8 @@ export function TabStrip() {
         >
           <button
             type="button"
-            role="tab"
-            aria-selected={chip.active}
+            data-component="tab"
+            aria-current={chip.active || undefined}
             onClick={() => switchTab(chip.id)}
             className="min-w-0 flex-1 truncate text-left outline-hidden"
             title={chip.title}

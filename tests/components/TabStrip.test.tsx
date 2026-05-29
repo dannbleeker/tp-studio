@@ -2,9 +2,11 @@
  * Multi-doc tabs Phase 5, Batch 5.2 — TabStrip component contract.
  *
  * Drives the store's tab engine (5.1) through the UI: one chip per open
- * tab, the active one flagged, click-to-switch, close-X, and the `+`
- * new-tab button. Layout / visual polish is verified manually + in e2e;
- * this pins the functional + a11y contract.
+ * tab, the active one flagged with `aria-current`, click-to-switch,
+ * close-X, and the `+` new-tab button. The strip is a labelled
+ * `role="group"` of buttons (NOT a strict ARIA tablist — a closeable-tab
+ * strip can't satisfy `tablist`'s aria-required-children, which the axe
+ * e2e enforces). Layout / visual polish is verified manually + in e2e.
  */
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -16,6 +18,7 @@ import { resetStoreForTest, useDocumentStore } from '@/store';
 
 const s = () => useDocumentStore.getState();
 const docNamed = (title: string): TPDocument => ({ ...createDocument('frt'), title });
+const tabCount = () => document.querySelectorAll('[data-component="tab"]').length;
 
 beforeEach(() => {
   resetStoreForTest();
@@ -29,15 +32,15 @@ describe('Batch 5.2 — TabStrip', () => {
       s().setTitle('Alpha');
     });
     render(<TabStrip />);
-    expect(screen.getAllByRole('tab')).toHaveLength(1);
-    expect(screen.getByRole('tab', { name: 'Alpha' }).getAttribute('aria-selected')).toBe('true');
+    expect(tabCount()).toBe(1);
+    expect(screen.getByRole('button', { name: 'Alpha' }).getAttribute('aria-current')).toBe('true');
 
     act(() => {
       s().openTab(docNamed('Beta'));
     });
-    expect(screen.getAllByRole('tab')).toHaveLength(2);
-    expect(screen.getByRole('tab', { name: 'Beta' }).getAttribute('aria-selected')).toBe('true');
-    expect(screen.getByRole('tab', { name: 'Alpha' }).getAttribute('aria-selected')).toBe('false');
+    expect(tabCount()).toBe(2);
+    expect(screen.getByRole('button', { name: 'Beta' }).getAttribute('aria-current')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Alpha' }).getAttribute('aria-current')).toBeNull();
   });
 
   it('clicking a tab switches to it', () => {
@@ -51,19 +54,19 @@ describe('Batch 5.2 — TabStrip', () => {
     render(<TabStrip />);
 
     act(() => {
-      fireEvent.click(screen.getByRole('tab', { name: 'Alpha' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Alpha' }));
     });
     expect(s().activeDocId).not.toBe(beta.id);
-    expect(screen.getByRole('tab', { name: 'Alpha' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Alpha' }).getAttribute('aria-current')).toBe('true');
   });
 
   it('the + button opens a new tab', () => {
     render(<TabStrip />);
-    expect(screen.getAllByRole('tab')).toHaveLength(1);
+    expect(tabCount()).toBe(1);
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'New tab' }));
     });
-    expect(screen.getAllByRole('tab')).toHaveLength(2);
+    expect(tabCount()).toBe(2);
     expect(s().tabOrder).toHaveLength(2);
   });
 
@@ -79,12 +82,12 @@ describe('Batch 5.2 — TabStrip', () => {
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'Close Beta' }));
     });
-    expect(screen.getAllByRole('tab')).toHaveLength(1);
+    expect(tabCount()).toBe(1);
     expect(s().tabOrder).not.toContain(beta.id);
   });
 
-  it('exposes a labelled tablist for assistive tech', () => {
+  it('exposes a labelled toolbar for assistive tech', () => {
     render(<TabStrip />);
-    expect(screen.getByRole('tablist', { name: 'Open documents' })).toBeTruthy();
+    expect(screen.getByRole('toolbar', { name: 'Open documents' })).toBeTruthy();
   });
 });
