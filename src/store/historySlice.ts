@@ -2,6 +2,7 @@ import type { StateCreator } from 'zustand';
 import { COALESCE_WINDOW_MS, HISTORY_LIMIT } from '@/domain/constants';
 import type { TPDocument } from '@/domain/types';
 import { persistDebounced } from '@/services/storage/persistDebounced';
+import { activeDocState } from './activeDoc';
 import { currentDoc } from './selectors';
 import type { RootStore } from './types';
 
@@ -55,8 +56,11 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     const last = past[past.length - 1];
     if (!last) return;
     persistDebounced(last.doc);
+    // Batch 2.1 — undo may restore a doc with a DIFFERENT id (undoing a
+    // setDocument / newDocument). `activeDocState` makes `activeDocId` +
+    // the docs map follow the restored doc's id automatically.
     set({
-      doc: last.doc,
+      ...activeDocState(last.doc),
       past: past.slice(0, -1),
       future: [...future, { doc, t: Date.now() }],
       editingEntityId: null,
@@ -70,8 +74,10 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     const next = future[future.length - 1];
     if (!next) return;
     persistDebounced(next.doc);
+    // Batch 2.1 — symmetric with undo: redo may restore a different doc
+    // id, so route through `activeDocState`.
     set({
-      doc: next.doc,
+      ...activeDocState(next.doc),
       future: future.slice(0, -1),
       past: [...past, { doc, t: Date.now() }],
       editingEntityId: null,

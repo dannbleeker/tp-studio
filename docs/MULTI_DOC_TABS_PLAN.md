@@ -659,10 +659,15 @@ Correct for all 6 sites including the subtle ones:
 Three independently-shippable, green-CI sub-batches. Each stays invisible
 (single-tab) until Phase 5 flips the UI on.
 
-#### Batch 2.1 — Multi-doc state shape (LOW risk, ~2-3 hours)
+#### Batch 2.1 — Multi-doc state shape (LOW risk, ~2-3 hours) — ✅ SHIPPED (Session 138)
 
 Pure-additive state + the uniform-helper rewrite of the 6 sites. No
-persistence change, no history change, no UI.
+persistence change, no history change, no UI. Landed: `src/store/activeDoc.ts`
+(the `activeDocState` helper), `docs`/`activeDocId`/`tabOrder` on
+`DocMetaSlice`, the 6 write sites rerouted, invariant tests in
+`tests/store/multiDocState.test.ts`. Full suite stayed green with zero
+edits to existing tests. **Next: Batch 2.2 (persistence) — gated on Dann's
+review of the migration design.**
 
 Files:
 - `docMetaSlice.ts` — extend `DocMetaSlice` type with

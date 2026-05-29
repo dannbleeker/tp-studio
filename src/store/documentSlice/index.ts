@@ -31,10 +31,15 @@ export { edgePatch, entityPatch, makeApplyDocChange, scrubFromGroups, touch } fr
 export type DocumentSlice = DocMetaSlice & EntitiesSlice & EdgesSlice & GroupsSlice;
 
 /**
- * Data-only defaults. The doc field is the only piece of state here; the
- * sub-slices are action-only beyond that. Used by `resetStoreForTest`.
+ * Data-only defaults. Batch 2.1 — the document slice now carries the
+ * multi-doc state fields (`docs` / `activeDocId` / `tabOrder`) alongside
+ * `doc`; `docMetaDefaults()` builds all four around one fresh document so
+ * `resetStoreForTest` lands a consistent single-tab state.
  */
-export const documentDefaults = (): Pick<DocumentSlice, 'doc'> => docMetaDefaults();
+export const documentDefaults = (): Pick<
+  DocumentSlice,
+  'doc' | 'docs' | 'activeDocId' | 'tabOrder'
+> => docMetaDefaults();
 
 export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice> = (...args) => ({
   ...createDocMetaSlice(...args),

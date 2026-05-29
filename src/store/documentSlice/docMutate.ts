@@ -1,5 +1,6 @@
 import type { Edge, Entity, Patch, TPDocument } from '@/domain/types';
 import { persistDebounced } from '@/services/storage/persistDebounced';
+import { activeDocState } from '../activeDoc';
 import { pushHistoryEntry } from '../historySlice';
 import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
@@ -37,8 +38,11 @@ export const makeApplyDocChange = (get: () => RootStore, set: DocSetState): Appl
     const next = mutator(prev);
     if (next === prev) return;
     persistDebounced(next);
+    // Batch 2.1 — content edits keep the same doc id, so `activeDocState`
+    // refreshes `doc` + mirrors it into `docs[activeDocId]`; the tab
+    // identity / order are unchanged.
     set({
-      doc: next,
+      ...activeDocState(next),
       past: pushHistoryEntry(get().past, {
         doc: prev,
         // Conditional spread to avoid passing `coalesceKey: undefined`
