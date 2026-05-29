@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { computeDetailedRevisionDiff, type DetailedRevisionDiff } from '@/domain/revisions';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * H2 visual-diff plumbing. When `compareRevisionId` is set, return the
@@ -16,7 +17,7 @@ import { useDocumentStore } from '@/store';
 export const useCompareDiff = (): DetailedRevisionDiff | null => {
   const compareRevisionId = useDocumentStore((s) => s.compareRevisionId);
   const revisions = useDocumentStore((s) => s.revisions);
-  const liveDoc = useDocumentStore((s) => s.doc);
+  const liveDoc = useDocumentStore((s) => currentDoc(s));
 
   return useMemo(() => {
     if (!compareRevisionId) return null;

@@ -25,6 +25,7 @@ import {
 import { exportECWorkshopSheet } from '@/services/exporters/ecWorkshopExport';
 import { generateShareLink, SHARE_LINK_SOFT_WARN_BYTES } from '@/services/shareLink';
 import { type RootStore, useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { CARD_FOCUS } from '../ui/focusClasses';
 import { LargeDialog } from '../ui/LargeDialog';
 
@@ -73,7 +74,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         label: 'PNG (2×)',
         hint: 'Raster, 2× density, theme-aware. Best for slides.',
         run: async (s) => {
-          await exportPNG(s.doc, getCanvasNodes());
+          await exportPNG(currentDoc(s), getCanvasNodes());
         },
       },
       {
@@ -81,7 +82,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         label: 'JPEG (2×)',
         hint: 'Smaller file than PNG, no transparency.',
         run: async (s) => {
-          await exportJPEG(s.doc, getCanvasNodes());
+          await exportJPEG(currentDoc(s), getCanvasNodes());
         },
       },
       {
@@ -89,7 +90,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         label: 'SVG',
         hint: 'Vector, sharp at any zoom. Best for design tools.',
         run: async (s) => {
-          await exportSVG(s.doc, getCanvasNodes());
+          await exportSVG(currentDoc(s), getCanvasNodes());
         },
       },
     ],
@@ -111,7 +112,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         // canvas as a `<figure>` at the top, so the same `getCanvasNodes`
         // dance the image exports use applies here.
         run: async (s) => {
-          await exportHTMLViewer(s.doc, getCanvasNodes());
+          await exportHTMLViewer(currentDoc(s), getCanvasNodes());
         },
       },
       {
@@ -120,7 +121,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         hint: 'One-page A4 landscape handout matching the BESTSELLER PPT layout.',
         onlyOnECDoc: true,
         run: async (s) => {
-          const ok = await exportECWorkshopSheet(s.doc);
+          const ok = await exportECWorkshopSheet(currentDoc(s));
           if (ok) s.showToast('success', 'EC workshop sheet saved.');
           else s.showToast('error', 'Workshop sheet export failed.');
         },
@@ -135,7 +136,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         hint: 'Cover + diagram snapshot + narrative bullets + per-diagram appendix. Workshop-ready.',
         run: async (s) => {
           try {
-            await exportPPTX(s.doc, getCanvasNodes(), s.causalityLabel);
+            await exportPPTX(currentDoc(s), getCanvasNodes(), s.causalityLabel);
             s.showToast('success', 'PowerPoint deck saved.');
           } catch (err) {
             s.showToast('error', err instanceof Error ? err.message : 'PowerPoint export failed.');
@@ -156,7 +157,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         hint: 'One row per UDE: risk / trigger / consequence / mitigation / owner / status. Drops into Jira / Linear / a spreadsheet.',
         requiresEntityType: 'ude',
         run: (s) => {
-          const n = exportRiskRegister(s.doc);
+          const n = exportRiskRegister(currentDoc(s));
           s.showToast('success', `Exported risk register (${n} risk${n === 1 ? '' : 's'}).`);
         },
       },
@@ -174,7 +175,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         hint: 'One row per TT action: step / action / precondition / outcome / owner / due / status / success criteria. Drops into Jira / Trello / Planner / Asana.',
         requiresEntityType: 'action',
         run: (s) => {
-          const n = exportTtTasks(s.doc);
+          const n = exportTtTasks(currentDoc(s));
           s.showToast('success', `Exported ${n} action${n === 1 ? '' : 's'} to CSV.`);
         },
       },
@@ -187,14 +188,14 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         id: 'json',
         label: 'JSON',
         hint: 'Full round-trip: re-import via Import… → TP Studio JSON.',
-        run: (s) => exportJSON(s.doc),
+        run: (s) => exportJSON(currentDoc(s)),
       },
       {
         id: 'json-redacted',
         label: 'JSON (redacted)',
         hint: 'Titles → #N, descriptions / labels stripped. For sharing a structural sample.',
         run: (s) => {
-          exportJSON(redactDocument(s.doc));
+          exportJSON(redactDocument(currentDoc(s)));
           s.showToast(
             'info',
             'Exported with titles replaced by #N and descriptions / labels stripped.'
@@ -205,37 +206,37 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         id: 'flying-logic',
         label: 'Flying Logic',
         hint: 'Native FL file format. Round-trips via Import… → Flying Logic file.',
-        run: (s) => exportFlyingLogic(s.doc),
+        run: (s) => exportFlyingLogic(currentDoc(s)),
       },
       {
         id: 'opml',
         label: 'OPML outline',
         hint: 'Opens in OmniOutliner, Bike, Logseq, etc.',
-        run: (s) => exportOPML(s.doc),
+        run: (s) => exportOPML(currentDoc(s)),
       },
       {
         id: 'dot',
         label: 'Graphviz DOT',
         hint: 'Re-render via Graphviz tooling.',
-        run: (s) => exportDOT(s.doc),
+        run: (s) => exportDOT(currentDoc(s)),
       },
       {
         id: 'mermaid',
         label: 'Mermaid',
         hint: 'Markdown-embeddable diagram source. Round-trips via Import… → Mermaid diagram.',
-        run: (s) => exportMermaid(s.doc),
+        run: (s) => exportMermaid(currentDoc(s)),
       },
       {
         id: 'vgl',
         label: 'VGL (declarative)',
         hint: 'Vector Graph Language-flavored file. One-way; no companion import.',
-        run: (s) => exportVGL(s.doc),
+        run: (s) => exportVGL(currentDoc(s)),
       },
       {
         id: 'csv',
         label: 'CSV',
         hint: 'Entities + edges + groups in one RFC-4180 file. Re-import via Import… → Entities CSV.',
-        run: (s) => exportCSV(s.doc),
+        run: (s) => exportCSV(currentDoc(s)),
       },
     ],
   },
@@ -246,25 +247,25 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         id: 'annotations-md',
         label: 'Annotations (Markdown)',
         hint: 'Numbered list of entity descriptions + edge notes + assumptions.',
-        run: (s) => exportAnnotationsMd(s.doc),
+        run: (s) => exportAnnotationsMd(currentDoc(s)),
       },
       {
         id: 'annotations-txt',
         label: 'Annotations (plain text)',
         hint: 'Same content as the Markdown variant, without formatting.',
-        run: (s) => exportAnnotationsTxt(s.doc),
+        run: (s) => exportAnnotationsTxt(currentDoc(s)),
       },
       {
         id: 'reasoning-narrative',
         label: 'Reasoning as narrative (Markdown)',
         hint: 'Prose write-up of the causal chain. Best for emails / briefs.',
-        run: (s) => exportReasoningNarrativeMd(s.doc),
+        run: (s) => exportReasoningNarrativeMd(currentDoc(s)),
       },
       {
         id: 'reasoning-outline',
         label: 'Reasoning as outline (Markdown)',
         hint: 'Structured argument form. Best for slide-style writeups.',
-        run: (s) => exportReasoningOutlineMd(s.doc),
+        run: (s) => exportReasoningOutlineMd(currentDoc(s)),
       },
     ],
   },
@@ -277,7 +278,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         hint: 'Compressed share URL with the doc embedded. Receiver opens it Browse-Locked.',
         run: async (s) => {
           try {
-            const link = await generateShareLink(s.doc);
+            const link = await generateShareLink(currentDoc(s));
             if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
               await navigator.clipboard.writeText(link);
               const tooLarge = link.length > SHARE_LINK_SOFT_WARN_BYTES;
@@ -308,7 +309,7 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
 export function ExportPickerDialog() {
   const open = useDocumentStore((s) => s.exportPickerOpen);
   const close = useDocumentStore((s) => s.closeExportPicker);
-  const diagramType = useDocumentStore((s) => s.doc.diagramType);
+  const diagramType = useDocumentStore((s) => currentDoc(s).diagramType);
   // Session 134 — surfaced separately so the `requiresEntityType` filter
   // below can short-circuit on docs that have no UDEs without forcing a
   // full doc-tree subscription. Session 135 / Perf #17 — replaced the
@@ -317,10 +318,10 @@ export function ExportPickerDialog() {
   // but the per-call cost drops from O(N) to O(1) and the boolean
   // result stays stable across non-UDE mutations so the component
   // doesn't re-render unnecessarily.
-  const hasAnyUde = useDocumentStore((s) => entitiesOfType(s.doc, 'ude').length > 0);
+  const hasAnyUde = useDocumentStore((s) => entitiesOfType(currentDoc(s), 'ude').length > 0);
   // Session 135 / spec major gap #7 — parallel guard for the TT-task
   // CSV export. Same O(1) cached lookup pattern as `hasAnyUde`.
-  const hasAnyAction = useDocumentStore((s) => entitiesOfType(s.doc, 'action').length > 0);
+  const hasAnyAction = useDocumentStore((s) => entitiesOfType(currentDoc(s), 'action').length > 0);
 
   if (!open) return null;
 

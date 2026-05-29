@@ -1,6 +1,7 @@
 import { findPath, reachableBackward, reachableForward } from '@/domain/graph';
 import type { EntityId } from '@/domain/types';
 import { getCanvasInstance } from '@/services/canvasRef';
+import { currentDoc } from '@/store/selectors';
 import type { Command } from './types';
 
 export const navigateCommands: Command[] = [
@@ -22,7 +23,7 @@ export const navigateCommands: Command[] = [
       }
       const [a, b] = sel.ids;
       if (!a || !b) return;
-      const path = findPath(s.doc, a, b);
+      const path = findPath(currentDoc(s), a, b);
       if (!path) {
         s.showToast('info', 'No path found between selected entities.');
         return;
@@ -48,8 +49,9 @@ export const navigateCommands: Command[] = [
       // React Flow events that haven't been brand-typed yet) — every
       // value that survives the `doc.entities[id]` filter is an existing
       // entity, so the EntityId cast is safe.
-      const seed = sel.ids.filter((id) => s.doc.entities[id]) as EntityId[];
-      const reached = reachableForward(s.doc, seed);
+      const doc = currentDoc(s);
+      const seed = sel.ids.filter((id) => doc.entities[id]) as EntityId[];
+      const reached = reachableForward(doc, seed);
       const ids = new Set<string>(seed);
       for (const r of reached) ids.add(r);
       s.selectEntities([...ids]);
@@ -65,8 +67,9 @@ export const navigateCommands: Command[] = [
         s.showToast('info', 'Select one or more entities first.');
         return;
       }
-      const seed = sel.ids.filter((id) => s.doc.entities[id]) as EntityId[];
-      const reached = reachableBackward(s.doc, seed);
+      const doc = currentDoc(s);
+      const seed = sel.ids.filter((id) => doc.entities[id]) as EntityId[];
+      const reached = reachableBackward(doc, seed);
       const ids = new Set<string>(seed);
       for (const r of reached) ids.add(r);
       s.selectEntities([...ids]);
@@ -99,7 +102,7 @@ export const navigateCommands: Command[] = [
       // Clear every pinned position. `setEntityPosition(id, null)`
       // (per `entityCrud.ts`) removes the field; dagre's next pass
       // then sees them as free.
-      const ids = Object.keys(s.doc.entities);
+      const ids = Object.keys(currentDoc(s).entities);
       for (const id of ids) {
         s.setEntityPosition(id, null);
       }

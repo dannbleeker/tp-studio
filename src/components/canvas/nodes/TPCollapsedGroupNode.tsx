@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
 import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import type { TPCollapsedGroupNode as TPCollapsedGroupNodeType } from '../edges/flow-types';
 
 /**
@@ -18,7 +19,7 @@ export function TPCollapsedGroupNode({ data, selected }: NodeProps<TPCollapsedGr
   const toggle = useDocumentStore((s) => s.toggleGroupCollapsed);
   // Handle orientation tracks the current diagram type (vertical for the
   // auto-layout trees; horizontal for Evaporating Cloud's L→R flow).
-  const diagramType = useDocumentStore((s) => s.doc.diagramType);
+  const diagramType = useDocumentStore((s) => currentDoc(s).diagramType);
   const isHorizontal = HANDLE_ORIENTATION[diagramType] === 'horizontal';
   const targetPosition = isHorizontal ? Position.Right : Position.Bottom;
   const sourcePosition = isHorizontal ? Position.Left : Position.Top;

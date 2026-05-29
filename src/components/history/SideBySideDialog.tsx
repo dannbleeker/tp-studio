@@ -11,6 +11,7 @@ import {
 } from '@/domain/revisions';
 import type { Entity, TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 // Outer padding around the laid-out content so cards near the edge don't
 // clip the panel's scroll container. Card dimensions themselves come from
@@ -35,7 +36,7 @@ export function SideBySideDialog() {
   const sideBySideRevisionId = useDocumentStore((s) => s.sideBySideRevisionId);
   const closeSideBySide = useDocumentStore((s) => s.closeSideBySide);
   const revisions = useDocumentStore((s) => s.revisions);
-  const liveDoc = useDocumentStore((s) => s.doc);
+  const liveDoc = useDocumentStore((s) => currentDoc(s));
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const rev = revisions.find((r) => r.id === sideBySideRevisionId);

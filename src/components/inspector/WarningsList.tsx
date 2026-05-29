@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, Wand2 } from 'lucide-react';
 import type { ClrTier, Warning } from '@/domain/types';
 import { runWarningAction } from '@/services/warningActions';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Three-level CLR taxonomy (Block C / E5). Inspector renders warnings
@@ -37,7 +38,7 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
   const runAction = (w: Warning): void => {
     if (!w.action) return;
     const state = useDocumentStore.getState();
-    const ok = runWarningAction(state, state.doc, w);
+    const ok = runWarningAction(state, currentDoc(state), w);
     if (ok) {
       showToast('success', `Applied: ${w.action.label}`);
     } else {

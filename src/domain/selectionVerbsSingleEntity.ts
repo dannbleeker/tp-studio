@@ -12,6 +12,7 @@
  */
 
 import type { DocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import type { Verb } from './selectionVerbs';
 
 /**
@@ -21,8 +22,9 @@ import type { Verb } from './selectionVerbs';
  * branch-dispatch context.
  */
 export const verbsForSingleEntity = (id: string, state: DocumentStore): Verb[] => {
-  const entity = state.doc.entities[id];
-  const diagramType = state.doc.diagramType;
+  const doc = currentDoc(state);
+  const entity = doc.entities[id];
+  const diagramType = doc.diagramType;
   const verbs: Verb[] = [
     {
       id: 'add-successor',

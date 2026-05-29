@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/shallow';
 import { entitiesOfType } from '@/domain/graph';
 import type { Assumption, Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
 
 // Session 134 — module-level frozen empty fallback for `doc.assumptions`.
@@ -37,8 +38,8 @@ export function InjectionWorkbench() {
   const { injections, assumptions, addEntity, linkInjection, unlinkInjection, setEntityAttribute } =
     useDocumentStore(
       useShallow((s) => ({
-        injections: entitiesOfType(s.doc, 'injection'),
-        assumptions: s.doc.assumptions ?? EMPTY_ASSUMPTIONS,
+        injections: entitiesOfType(currentDoc(s), 'injection'),
+        assumptions: currentDoc(s).assumptions ?? EMPTY_ASSUMPTIONS,
         addEntity: s.addEntity,
         linkInjection: s.linkInjectionToAssumption,
         unlinkInjection: s.unlinkInjectionFromAssumption,

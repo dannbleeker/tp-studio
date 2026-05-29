@@ -3,6 +3,7 @@ import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS } from '@/domain/constants';
 import type { TPDocument } from '@/domain/types';
 import { setHoveredJunctor } from '@/services/canvasRef';
 import { arrayShallowEqualByKeys } from '@/store/equality';
+import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 
 /**
@@ -114,7 +115,10 @@ export function JunctorOverlay() {
   // the selector is now a WeakMap lookup keyed on `doc.edges`, so an
   // unrelated mutation returns the same array ref and the equality fn
   // short-circuits.
-  const groups = useDocumentStoreWith((s) => computeJunctorGroups(s.doc.edges), junctorGroupsEqual);
+  const groups = useDocumentStoreWith(
+    (s) => computeJunctorGroups(currentDoc(s).edges),
+    junctorGroupsEqual
+  );
 
   const [tx, ty, scale] = transform;
 

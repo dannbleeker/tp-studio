@@ -1,5 +1,6 @@
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { getSelectedEdges } from '@/services/canvasRef';
+import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
 
 export const edgeCommands: Command[] = [
@@ -14,10 +15,10 @@ export const edgeCommands: Command[] = [
         return;
       }
       const id = sel.ids[0]!;
-      const before = s.doc.edges[id];
+      const before = currentDoc(s).edges[id];
       if (!before) return;
       s.reverseEdge(id);
-      const after = s.doc.edges[id];
+      const after = currentDoc(s).edges[id];
       if (after && (after.sourceId !== before.sourceId || after.targetId !== before.targetId)) {
         s.showToast('success', 'Edge reversed.');
       } else {
@@ -177,10 +178,11 @@ export const edgeCommands: Command[] = [
         return;
       }
       const edgeId = sel.ids[0]!;
-      const edge = s.doc.edges[edgeId];
+      const doc = currentDoc(s);
+      const edge = doc.edges[edgeId];
       if (!edge) return;
       const fresh = s.addEntity({
-        type: defaultEntityType(s.doc.diagramType),
+        type: defaultEntityType(doc.diagramType),
         startEditing: true,
       });
       const ok = s.spliceEntityIntoEdge(fresh.id, edgeId);

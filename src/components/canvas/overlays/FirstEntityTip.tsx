@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Shown once the user has placed their first entity — points them at the
@@ -16,7 +17,7 @@ export function FirstEntityTip() {
     useShallow((s) => ({
       dismissed: s.emptyStateTipDismissed,
       dismiss: s.dismissEmptyStateTip,
-      entityCount: Object.keys(s.doc.entities).length,
+      entityCount: Object.keys(currentDoc(s).entities).length,
     }))
   );
 

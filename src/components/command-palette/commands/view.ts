@@ -1,5 +1,6 @@
 import { pinnedEntities } from '@/domain/graph';
 import type { AppMode } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
 
 // Session 135 / spec major gap #9 — app-mode commands. One palette
@@ -55,7 +56,7 @@ export const viewCommands: Command[] = [
     label: 'Reset layout — unpin all entities',
     group: 'View',
     run: async (s) => {
-      const pinnedCount = pinnedEntities(s.doc).length;
+      const pinnedCount = pinnedEntities(currentDoc(s)).length;
       if (pinnedCount === 0) {
         s.showToast('info', 'No pinned entities — nothing to reset.');
         return;

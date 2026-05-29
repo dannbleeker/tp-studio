@@ -8,6 +8,7 @@ import { findMatches } from '@/domain/search';
 import { useDelayedFocus } from '@/hooks/useDelayedFocus';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Slide-down find panel triggered by Cmd/Ctrl+F. Live-filters as the user
@@ -16,7 +17,7 @@ import { useDocumentStore } from '@/store';
  */
 export function SearchPanel() {
   const open = useDocumentStore((s) => s.searchOpen);
-  const doc = useDocumentStore((s) => s.doc);
+  const doc = useDocumentStore((s) => currentDoc(s));
   // Inspector occupies up to 320 px on the right when anything is selected.
   // We shift the find-panel center left and tighten the width so the panel
   // never lands underneath the inspector at narrower viewports.
@@ -69,7 +70,7 @@ export function SearchPanel() {
     const state = useDocumentStore.getState();
     // X-Search-5: auto-expand collapsed ancestors so the match becomes visible.
     if (active.kind === 'entity' || active.kind === 'group') {
-      const ancestors = ancestorChain(state.doc, active.id);
+      const ancestors = ancestorChain(currentDoc(state), active.id);
       for (const a of ancestors) {
         if (a.collapsed) toggleGroupCollapsed(a.id);
       }

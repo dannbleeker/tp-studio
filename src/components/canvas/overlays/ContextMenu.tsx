@@ -8,6 +8,7 @@ import type { EntityType } from '@/domain/types';
 import { useEntity } from '@/hooks/useSelected';
 import { confirmAndDeleteEntity, confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { ContextMenuList } from './ContextMenuList';
 import { leadingVerbItems, type MenuItem } from './contextMenuItems';
 
@@ -57,29 +58,32 @@ export function ContextMenu() {
     edges,
     customEntityClasses,
   } = useDocumentStore(
-    useShallow((s) => ({
-      menu: s.contextMenu,
-      close: s.closeContextMenu,
-      selection: s.selection,
-      addEntity: s.addEntity,
-      beginEditing: s.beginEditing,
-      updateEntity: s.updateEntity,
-      ungroupAnd: s.ungroupAnd,
-      ungroupOr: s.ungroupOr,
-      ungroupXor: s.ungroupXor,
-      toggleEntityCollapsed: s.toggleEntityCollapsed,
-      swapEntities: s.swapEntities,
-      showToast: s.showToast,
-      setDocument: s.setDocument,
-      setEntityPosition: s.setEntityPosition,
-      createGroupFromSelection: s.createGroupFromSelection,
-      diagramType: s.doc.diagramType,
-      edges: s.doc.edges,
-      customEntityClasses: s.doc.customEntityClasses,
-    }))
+    useShallow((s) => {
+      const doc = currentDoc(s);
+      return {
+        menu: s.contextMenu,
+        close: s.closeContextMenu,
+        selection: s.selection,
+        addEntity: s.addEntity,
+        beginEditing: s.beginEditing,
+        updateEntity: s.updateEntity,
+        ungroupAnd: s.ungroupAnd,
+        ungroupOr: s.ungroupOr,
+        ungroupXor: s.ungroupXor,
+        toggleEntityCollapsed: s.toggleEntityCollapsed,
+        swapEntities: s.swapEntities,
+        showToast: s.showToast,
+        setDocument: s.setDocument,
+        setEntityPosition: s.setEntityPosition,
+        createGroupFromSelection: s.createGroupFromSelection,
+        diagramType: doc.diagramType,
+        edges: doc.edges,
+        customEntityClasses: doc.customEntityClasses,
+      };
+    })
   );
   // B10: palette + meta lookups need the doc's custom classes.
-  const docForPalette = useDocumentStore.getState().doc;
+  const docForPalette = currentDoc(useDocumentStore.getState());
   const entity = useEntity(menu.open && menu.target.kind === 'entity' ? menu.target.id : undefined);
 
   if (!menu.open) return null;
@@ -221,7 +225,7 @@ export function ContextMenu() {
           kind: 'action',
           label: 'Spawn Evaporating Cloud from this entity',
           run: () => {
-            const doc = useDocumentStore.getState().doc;
+            const doc = currentDoc(useDocumentStore.getState());
             const newDoc = spawnECFromConflict(doc, id);
             setDocument(newDoc);
             showToast(

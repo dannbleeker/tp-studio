@@ -10,6 +10,7 @@ import { useShallow } from 'zustand/shallow';
 import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { type Box, computeRadialEdgePath, nodeBoxOf } from './radialEdgeRouting';
 import {
@@ -121,14 +122,15 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const assumptionCount = props.data?.assumptionCount ?? 0;
   const edgeView = useDocumentStore(
     useShallow((s) => {
-      const edge = s.doc.edges[props.id];
+      const doc = currentDoc(s);
+      const edge = doc.edges[props.id];
       const desc = edge?.description;
       // Session 136 — note-touching edges render dotted (and a thinner
       // stroke) so they read as "annotation" rather than "causal".
       // Source-or-target is enough because notes never participate in
       // causal junctors, so we don't need to walk junctor membership.
-      const sourceIsNote = edge ? s.doc.entities[edge.sourceId]?.type === 'note' : false;
-      const targetIsNote = edge ? s.doc.entities[edge.targetId]?.type === 'note' : false;
+      const sourceIsNote = edge ? doc.entities[edge.sourceId]?.type === 'note' : false;
+      const targetIsNote = edge ? doc.entities[edge.targetId]?.type === 'note' : false;
       return {
         edgeLabel: edge?.label,
         isBackEdge: edge?.isBackEdge === true,
@@ -137,7 +139,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         hasDescription: typeof desc === 'string' && desc.trim().length > 0,
         isSpliceTarget: s.spliceTargetEdgeId === props.id,
         causalityLabel: s.causalityLabel,
-        diagramType: s.doc.diagramType,
+        diagramType: doc.diagramType,
         isNoteEdge: sourceIsNote || targetIsNote,
       };
     })
@@ -188,10 +190,11 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         tgtY?: number | undefined;
       } => {
         if (!isMutex) return {};
-        const edge = s.doc.edges[props.id];
+        const doc = currentDoc(s);
+        const edge = doc.edges[props.id];
         if (!edge) return {};
-        const src = s.doc.entities[edge.sourceId]?.position;
-        const tgt = s.doc.entities[edge.targetId]?.position;
+        const src = doc.entities[edge.sourceId]?.position;
+        const tgt = doc.entities[edge.targetId]?.position;
         return { srcX: src?.x, srcY: src?.y, tgtX: tgt?.x, tgtY: tgt?.y };
       }
     )

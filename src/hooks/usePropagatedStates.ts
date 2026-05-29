@@ -24,10 +24,11 @@ import { useMemo } from 'react';
 import { propagateStates } from '@/domain/statePropagation';
 import type { EntityId, EntityState } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 export function usePropagatedStates(): Record<EntityId, EntityState> {
-  const entities = useDocumentStore((s) => s.doc.entities);
-  const edges = useDocumentStore((s) => s.doc.edges);
+  const entities = useDocumentStore((s) => currentDoc(s).entities);
+  const edges = useDocumentStore((s) => currentDoc(s).edges);
   const overlay = useDocumentStore((s) => s.speculationOverlay);
   return useMemo(
     () => propagateStates({ entities, edges }, overlay ?? undefined),

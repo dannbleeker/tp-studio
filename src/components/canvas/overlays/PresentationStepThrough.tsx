@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { isNonCausal } from '@/domain/graph';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Session 135 / spec gap #9 Phase 1C — Presentation-mode step-through
@@ -46,7 +47,7 @@ export function PresentationStepThrough() {
   const { orderedIds, currentId } = useDocumentStore(
     useShallow((s) => {
       const list: { id: string; ordering: number | undefined; annotation: number }[] = [];
-      for (const e of Object.values(s.doc.entities)) {
+      for (const e of Object.values(currentDoc(s).entities)) {
         // Drop assumptions + notes — they're conceptually outside
         // the causal walk and would be confusing to step through.
         if (isNonCausal(e)) continue;

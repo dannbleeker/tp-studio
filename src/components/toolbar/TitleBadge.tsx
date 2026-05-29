@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { DataComponent } from '@/components/dataComponentNames';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Editable doc-title at the top-left of the canvas, paired with the
@@ -21,13 +22,16 @@ export function TitleBadge() {
   // action refs, so `useShallow` correctly avoids re-renders unless
   // the relevant primitives actually change.
   const { title, setTitle, diagramType, locked, openDocSettings } = useDocumentStore(
-    useShallow((s) => ({
-      title: s.doc.title,
-      setTitle: s.setTitle,
-      diagramType: s.doc.diagramType,
-      locked: s.browseLocked,
-      openDocSettings: s.openDocSettings,
-    }))
+    useShallow((s) => {
+      const doc = currentDoc(s);
+      return {
+        title: doc.title,
+        setTitle: s.setTitle,
+        diagramType: doc.diagramType,
+        locked: s.browseLocked,
+        openDocSettings: s.openDocSettings,
+      };
+    })
   );
 
   return (

@@ -25,6 +25,7 @@ import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import { useZoomLevel } from '@/hooks/useZoomLevel';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import type { TPNode as TPNodeType } from '../edges/flow-types';
 // Session 135 — sibling-file extractions of the StFacetRow sub-component
 // and the corner-badge JSX. Pulled out of TPNode.tsx to keep this file
@@ -72,19 +73,22 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
     diagramType,
     customEntityClasses,
   } = useDocumentStore(
-    useShallow((s) => ({
-      isEditing: s.editingEntityId === entity.id,
-      updateEntity: s.updateEntity,
-      endEditing: s.endEditing,
-      beginEditing: s.beginEditing,
-      toggleEntityCollapsed: s.toggleEntityCollapsed,
-      showAnnotationNumbers: s.showAnnotationNumbers,
-      showEntityIds: s.showEntityIds,
-      showReachBadges: s.showReachBadges,
-      showReverseReachBadges: s.showReverseReachBadges,
-      diagramType: s.doc.diagramType,
-      customEntityClasses: s.doc.customEntityClasses,
-    }))
+    useShallow((s) => {
+      const doc = currentDoc(s);
+      return {
+        isEditing: s.editingEntityId === entity.id,
+        updateEntity: s.updateEntity,
+        endEditing: s.endEditing,
+        beginEditing: s.beginEditing,
+        toggleEntityCollapsed: s.toggleEntityCollapsed,
+        showAnnotationNumbers: s.showAnnotationNumbers,
+        showEntityIds: s.showEntityIds,
+        showReachBadges: s.showReachBadges,
+        showReverseReachBadges: s.showReverseReachBadges,
+        diagramType: doc.diagramType,
+        customEntityClasses: doc.customEntityClasses,
+      };
+    })
   );
   // B10 — resolve through the doc-aware lookup so custom entity
   // classes pick up their label / colour / icon. Built-ins resolve

@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/shallow';
 import type { EdgeWeight, Entity, Warning } from '@/domain/types';
 import { useEdge, useEntity } from '@/hooks/useSelected';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import {
@@ -65,8 +66,8 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
       // attributes feature removed). Store actions remain available
       // for any S&T-or-FL-imported payloads that touch edge
       // attributes directly.
-      entities: s.doc.entities,
-      diagramType: s.doc.diagramType,
+      entities: currentDoc(s).entities,
+      diagramType: currentDoc(s).diagramType,
       locked: s.browseLocked,
     }))
   );

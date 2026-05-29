@@ -1,6 +1,7 @@
 import { useShallow } from 'zustand/shallow';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Shared store subscription bundle for the TopBar cluster — `TopBar` itself
@@ -43,7 +44,7 @@ export const useToolbarActions = (): ToolbarActions =>
       theme: s.theme,
       layoutMode: s.layoutMode,
       historyPanelOpen: s.historyPanelOpen,
-      showLayoutToggle: LAYOUT_STRATEGY[s.doc.diagramType] === 'auto',
+      showLayoutToggle: LAYOUT_STRATEGY[currentDoc(s).diagramType] === 'auto',
       canUndo: s.past.length > 0,
       canRedo: s.future.length > 0,
       toggleTheme: s.toggleTheme,

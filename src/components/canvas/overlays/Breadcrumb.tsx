@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { ChevronRight, X } from 'lucide-react';
 import { ancestorChain } from '@/domain/groups';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Slim breadcrumb shown at the top of the canvas while hoisted. Click any
@@ -19,8 +20,8 @@ export function Breadcrumb() {
   // entity / edge churn no longer touches it. `ancestorChain` is O(1)
   // per hop via the cached parent index, so no memo is needed.
   const hoistedGroupId = useDocumentStore((s) => s.hoistedGroupId);
-  const groups = useDocumentStore((s) => s.doc.groups);
-  const docTitle = useDocumentStore((s) => s.doc.title);
+  const groups = useDocumentStore((s) => currentDoc(s).groups);
+  const docTitle = useDocumentStore((s) => currentDoc(s).title);
   const hoistGroup = useDocumentStore((s) => s.hoistGroup);
   const unhoist = useDocumentStore((s) => s.unhoist);
 

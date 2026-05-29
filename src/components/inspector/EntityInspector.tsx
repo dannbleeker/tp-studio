@@ -11,6 +11,7 @@ import { usePropagatedStates } from '@/hooks/usePropagatedStates';
 import { useEntity } from '@/hooks/useSelected';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { TextArea, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { ButtonGroup } from '../ui/ButtonGroup';
@@ -42,8 +43,8 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   // `customEntityClasses` (B10 user-defined classes layered onto the
   // built-in palette). The rest of the doc state doesn't influence this
   // component's render output.
-  const diagramType = useDocumentStore((s) => s.doc.diagramType);
-  const customEntityClasses = useDocumentStore((s) => s.doc.customEntityClasses);
+  const diagramType = useDocumentStore((s) => currentDoc(s).diagramType);
+  const customEntityClasses = useDocumentStore((s) => currentDoc(s).customEntityClasses);
   const updateEntity = useDocumentStore((s) => s.updateEntity);
   const setEntityAttribute = useDocumentStore((s) => s.setEntityAttribute);
   const removeEntityAttribute = useDocumentStore((s) => s.removeEntityAttribute);
@@ -60,8 +61,8 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   // preconditions' effective states into eligible / blocked / pending.
   // `usePropagatedStates` already subscribes to entities + edges, so
   // these two reads don't widen the component's re-render surface.
-  const docEntities = useDocumentStore((s) => s.doc.entities);
-  const docEdges = useDocumentStore((s) => s.doc.edges);
+  const docEntities = useDocumentStore((s) => currentDoc(s).entities);
+  const docEdges = useDocumentStore((s) => currentDoc(s).edges);
   const eligibility = useMemo(
     () =>
       entity?.type === 'action'

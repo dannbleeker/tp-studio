@@ -16,6 +16,7 @@ import { wouldCreateCycle } from '@/domain/groups';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
 import { arrayShallowEqualByKeys } from '@/store/equality';
+import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 import { Field } from './Field';
 
@@ -29,7 +30,7 @@ const nestCandidatesEqual = arrayShallowEqualByKeys<NestCandidate>(['id', 'title
 export function GroupInspector({ groupId }: { groupId: string }) {
   // Subscribe to just this group's record; `memberCount` is derived locally
   // so we don't fire a second subscriber for what's already in `group`.
-  const group = useDocumentStore((s) => s.doc.groups[groupId]);
+  const group = useDocumentStore((s) => currentDoc(s).groups[groupId]);
   const memberCount = group?.memberIds.length ?? 0;
   const renameGroup = useDocumentStore((s) => s.renameGroup);
   const recolorGroup = useDocumentStore((s) => s.recolorGroup);
@@ -55,10 +56,11 @@ export function GroupInspector({ groupId }: { groupId: string }) {
   // needs the full groups map inside the selector — that's fine,
   // the equality check on the OUTPUT is what gates re-render.
   const nestCandidates = useDocumentStoreWith((s) => {
-    if (!s.doc.groups[groupId]) return [];
-    const fakeDoc = { groups: s.doc.groups, entities: {}, edges: {} } as never;
+    const doc = currentDoc(s);
+    if (!doc.groups[groupId]) return [];
+    const fakeDoc = { groups: doc.groups, entities: {}, edges: {} } as never;
     const out: NestCandidate[] = [];
-    for (const g of Object.values(s.doc.groups)) {
+    for (const g of Object.values(doc.groups)) {
       if (g.id === groupId) continue;
       if (wouldCreateCycle(fakeDoc, g.id, groupId)) continue;
       out.push({ id: g.id, title: g.title });

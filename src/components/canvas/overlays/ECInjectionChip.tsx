@@ -1,6 +1,7 @@
 import { Syringe } from 'lucide-react';
 import { entitiesOfType } from '@/domain/graph';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Session 87 / EC PPT comparison item #7 — Injection-summary chip.
@@ -21,11 +22,11 @@ import { useDocumentStore } from '@/store';
  * preferred tab on mount.
  */
 export function ECInjectionChip() {
-  const isEC = useDocumentStore((s) => s.doc.diagramType === 'ec');
+  const isEC = useDocumentStore((s) => currentDoc(s).diagramType === 'ec');
   // Narrow selector — only re-emits when the injection count changes.
   // Reads through the cached by-type index so flipping entities in/out
   // of `injection` is the only thing that allocates work here.
-  const injectionCount = useDocumentStore((s) => entitiesOfType(s.doc, 'injection').length);
+  const injectionCount = useDocumentStore((s) => entitiesOfType(currentDoc(s), 'injection').length);
   const requestInjectionsView = useDocumentStore((s) => s.requestECInjectionsView);
 
   if (!isEC) return null;

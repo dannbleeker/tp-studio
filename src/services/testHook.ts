@@ -1,6 +1,7 @@
 import { getCanvasInstance } from '@/services/canvasRef';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Session 82 — Playwright test hook.
@@ -181,7 +182,7 @@ export const maybeInstallTestHook = (): void => {
       // Drop every existing entity so the seed is a clean slate even
       // when `clear` was false (e.g. a follow-up seed in the same
       // page load).
-      for (const id of Object.keys(state.doc.entities)) {
+      for (const id of Object.keys(currentDoc(state).entities)) {
         state.deleteEntity(id);
       }
       for (const title of titles) {
@@ -229,12 +230,12 @@ export const maybeInstallTestHook = (): void => {
     editEntityTitle: (id, title) => {
       useDocumentStore.getState().updateEntity(id, { title });
     },
-    listEntityIds: () => Object.keys(useDocumentStore.getState().doc.entities),
+    listEntityIds: () => Object.keys(currentDoc(useDocumentStore.getState()).entities),
     openHelp: () => useDocumentStore.getState().openHelp(),
     openAbout: () => useDocumentStore.getState().openAbout(),
     openSettings: () => useDocumentStore.getState().openSettings(),
     newDocument: (diagramType) => useDocumentStore.getState().newDocument(diagramType),
-    getEntityType: (id) => useDocumentStore.getState().doc.entities[id]?.type ?? null,
+    getEntityType: (id) => currentDoc(useDocumentStore.getState()).entities[id]?.type ?? null,
     setDocTitle: (title) => useDocumentStore.getState().setTitle(title),
     openExportPicker: () => useDocumentStore.getState().openExportPicker(),
   };

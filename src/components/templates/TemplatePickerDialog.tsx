@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { buildTemplate, TEMPLATE_SPECS } from '@/templates';
 import { TemplateThumbnail } from '@/templates/thumbnail';
 import { CARD_FOCUS } from '../ui/focusClasses';
@@ -38,7 +39,7 @@ export function TemplatePickerDialog() {
   const handlePick = (id: string): void => {
     const spec = TEMPLATE_SPECS.find((t) => t.id === id);
     if (!spec) return;
-    const previousDoc = useDocumentStore.getState().doc;
+    const previousDoc = currentDoc(useDocumentStore.getState());
     const doc = buildTemplate(spec);
     setDocument(doc);
     showToast('success', `Loaded template: ${spec.title}`, {

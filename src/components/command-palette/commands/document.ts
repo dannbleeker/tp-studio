@@ -1,5 +1,6 @@
 import { importFromJSON } from '@/domain/persistence';
 import { pickFile } from '@/services/exporters/picker';
+import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
 
 export const documentCommands: Command[] = [
@@ -58,7 +59,7 @@ export const documentCommands: Command[] = [
         parse: importFromJSON,
       });
       if (!sourceDoc) return; // user cancelled or parse failed (toast already shown)
-      if (sourceDoc.id === s.doc.id) {
+      if (sourceDoc.id === currentDoc(s).id) {
         s.showToast(
           'info',
           'That file is this same document — pick a different one to import from.'
@@ -115,7 +116,7 @@ export const documentCommands: Command[] = [
     label: 'Reopen creation wizard',
     group: 'Review',
     run: (s) => {
-      const kind = s.doc.diagramType;
+      const kind = currentDoc(s).diagramType;
       if (kind === 'goalTree' || kind === 'ec') {
         s.openCreationWizard(kind);
       } else if (kind === 'crt') {
@@ -138,7 +139,7 @@ export const documentCommands: Command[] = [
     label: 'Toggle EC reading guide',
     group: 'View',
     run: (s) => {
-      if (s.doc.diagramType !== 'ec') {
+      if (currentDoc(s).diagramType !== 'ec') {
         s.showToast(
           'info',
           'The EC reading guide is only available on Evaporating Cloud diagrams.'

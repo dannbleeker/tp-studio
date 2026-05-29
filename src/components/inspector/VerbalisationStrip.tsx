@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Quote } from 'lucide-react';
 import { useMemo } from 'react';
 import { verbaliseEC } from '@/domain/verbalisation';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Session 77 / brief §6 — Evaporating Cloud verbalisation strip.
@@ -29,7 +30,7 @@ import { useDocumentStore } from '@/store';
  * returns `null`.
  */
 export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {}) {
-  const doc = useDocumentStore((s) => s.doc);
+  const doc = useDocumentStore((s) => currentDoc(s));
   const selectEdge = useDocumentStore((s) => s.selectEdge);
   // Persisted collapse flag — only consulted in the compact (canvas)
   // variant; the inspector tab is always expanded so the user can

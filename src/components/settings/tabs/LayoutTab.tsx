@@ -6,6 +6,7 @@ import { LAYOUT_NODE_SEPARATION, LAYOUT_RANK_SEPARATION } from '@/domain/constan
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import type { LayoutConfig } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { RadioGroup, Section, Slider } from '../formPrimitives';
 
 /**
@@ -77,8 +78,8 @@ const hasLayoutOverride = (cfg: LayoutConfig | undefined): boolean =>
 export function LayoutTab() {
   const { diagramType, layoutConfig, setLayoutConfig } = useDocumentStore(
     useShallow((s) => ({
-      diagramType: s.doc.diagramType,
-      layoutConfig: s.doc.layoutConfig,
+      diagramType: currentDoc(s).diagramType,
+      layoutConfig: currentDoc(s).layoutConfig,
       setLayoutConfig: s.setLayoutConfig,
     }))
   );

@@ -59,9 +59,18 @@ doc-scoped services (`clipboard`, `systemScopeNudge`, `canvasRef`) onto the
 `currentDoc()` read seam, and switched the system-scope nudge watcher to key
 on `activeDocId` rather than `doc.id` so it re-evaluates on a Phase 5 tab
 switch (equal today under the single-tab invariant — behaviour-preserving;
-existing service tests pass untouched). The bulk migration of the remaining
-~191 component `state.doc` reads to the seam is deferred to its own focused
-batch (4.2).
+existing service tests pass untouched).
+
+**Batch 4.2 — `currentDoc` component sweep (Phase 4 complete).** Migrated
+every remaining store-derived `state.doc` / `s.doc` read — **179 reads
+across 61 files** (components, hooks, services, palette commands) — to the
+`currentDoc()` seam. Fanned out across 5 parallel sub-agents by directory,
+then verified centrally (tsc + full suite + a completeness grep). Pure
+no-op refactor today (`currentDoc(s) === s.doc`, reference equality
+preserved), so the full suite stayed green (1990) with zero test edits.
+`state.doc` is now read in exactly one place outside the store — inside
+`currentDoc` itself — so Phase 5 can make `doc` multi-tab-derived by
+touching one line.
 
 ## Session 137 — Pattern library expansion (5 per diagram type)
 

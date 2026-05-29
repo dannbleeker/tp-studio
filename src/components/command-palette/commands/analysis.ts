@@ -2,6 +2,7 @@ import { findCoreDrivers } from '@/domain/coreDriver';
 import { topologicalEdgeOrder } from '@/domain/edgeReading';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import { validate } from '@/domain/validators';
+import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
 
 /**
@@ -17,7 +18,7 @@ export const analysisCommands: Command[] = [
     label: 'Find core driver(s)',
     group: 'Review',
     run: (s) => {
-      const candidates = findCoreDrivers(s.doc);
+      const candidates = findCoreDrivers(currentDoc(s));
       if (candidates.length === 0) {
         s.showToast(
           'info',
@@ -56,7 +57,7 @@ export const analysisCommands: Command[] = [
         return;
       }
       const conflictId = sel.ids[0];
-      const newDoc = spawnECFromConflict(s.doc, conflictId);
+      const newDoc = spawnECFromConflict(currentDoc(s), conflictId);
       s.setDocument(newDoc);
       s.showToast(
         'success',
@@ -119,7 +120,7 @@ export const analysisCommands: Command[] = [
     label: 'Start read-through (step through every edge)',
     group: 'Review',
     run: (s) => {
-      const order = topologicalEdgeOrder(s.doc);
+      const order = topologicalEdgeOrder(currentDoc(s));
       if (order.length === 0) {
         s.showToast('info', 'No edges to walk through yet — connect entities first.');
         return;
@@ -132,7 +133,7 @@ export const analysisCommands: Command[] = [
     label: 'Read entire diagram at once (one-shot)',
     group: 'Review',
     run: (s) => {
-      const order = topologicalEdgeOrder(s.doc);
+      const order = topologicalEdgeOrder(currentDoc(s));
       if (order.length === 0) {
         s.showToast('info', 'No edges to read yet — connect entities first.');
         return;
@@ -145,7 +146,7 @@ export const analysisCommands: Command[] = [
     label: 'Start CLR walkthrough',
     group: 'Review',
     run: (s) => {
-      const warnings = validate(s.doc).filter((w) => !w.resolved);
+      const warnings = validate(currentDoc(s)).filter((w) => !w.resolved);
       if (warnings.length === 0) {
         s.showToast('success', 'No open CLR concerns to walk through.');
         return;

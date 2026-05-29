@@ -1,5 +1,6 @@
 import { ancestorChain } from '@/domain/groups';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Resolve an entity reference string to a concrete entity id.
@@ -10,7 +11,7 @@ import { useDocumentStore } from '@/store';
  * Returns null if nothing matches.
  */
 export const resolveEntityRef = (ref: string): string | null => {
-  const doc = useDocumentStore.getState().doc;
+  const doc = currentDoc(useDocumentStore.getState());
   if (ref.startsWith('#')) {
     const n = Number.parseInt(ref.slice(1), 10);
     if (Number.isNaN(n)) return null;
@@ -27,7 +28,7 @@ export const resolveEntityRef = (ref: string): string | null => {
  */
 export const navigateToEntity = (id: string): void => {
   const state = useDocumentStore.getState();
-  const ancestors = ancestorChain(state.doc, id);
+  const ancestors = ancestorChain(currentDoc(state), id);
   for (const a of ancestors) {
     if (a.collapsed) state.toggleGroupCollapsed(a.id);
   }

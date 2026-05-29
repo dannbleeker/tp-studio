@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { incomingEdges, outgoingEdges } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Session 135 — canvas a11y slice 4. Arrow-key navigation between
@@ -166,7 +167,7 @@ export const useArrowKeyNodeNav = (): void => {
       const targetId = findNeighborInDirection(
         fromId,
         direction,
-        useDocumentStore.getState().doc,
+        currentDoc(useDocumentStore.getState()),
         flow
       );
       if (!targetId) return;

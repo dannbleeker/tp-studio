@@ -1,6 +1,7 @@
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { type CaptureNode, flattenPreorder, type ParseResult } from '@/domain/quickCapture';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 
 /**
  * Apply a parsed Quick Capture tree to the current document.
@@ -19,7 +20,7 @@ export const applyQuickCapture = (
   if (result.total === 0) return { entities: 0, edges: 0 };
 
   const state = useDocumentStore.getState();
-  const type = defaultEntityType(state.doc.diagramType);
+  const type = defaultEntityType(currentDoc(state).diagramType);
 
   // Map from the parsed-tree node reference to the freshly-minted entity id.
   const idByNode = new Map<CaptureNode, string>();

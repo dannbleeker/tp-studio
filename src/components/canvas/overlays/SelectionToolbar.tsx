@@ -42,6 +42,7 @@ import { paletteKbdForCommand } from '@/domain/shortcuts';
 import { useCanvasInteractionState } from '@/hooks/useCanvasInteractionState';
 import { getSelectionViewportRect } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { computeToolbarPlacement } from './selectionToolbarPlacement';
 
 // Geometry constants. All pixels. Passed to `computeToolbarPlacement`
@@ -94,12 +95,12 @@ export function SelectionToolbar() {
   // re-compute the verb list. The actual selection IDs are inside
   // `selection`; this re-subscribes us on edge-graph mutations so the
   // conditional ungroup-* verbs flip in lockstep.
-  const edges = useDocumentStore((s) => s.doc.edges);
+  const edges = useDocumentStore((s) => currentDoc(s).edges);
   // Session 96 — re-subscribe on diagramType so the per-diagram
   // verbs (Mark as UDE / Mark as rootCause for CRT; Add NC + Promote
   // to Goal for Goal Tree) flip when the user loads a different
   // diagram type via Import / New / Load example.
-  const diagramType = useDocumentStore((s) => s.doc.diagramType);
+  const diagramType = useDocumentStore((s) => currentDoc(s).diagramType);
   // Session 96 — re-subscribe on Browse Lock so write-verbs hide
   // the moment the user toggles the lock on.
   const browseLocked = useDocumentStore((s) => s.browseLocked);

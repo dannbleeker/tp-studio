@@ -5,6 +5,7 @@ import { PATTERNS } from '@/domain/patterns';
 import type { DiagramType } from '@/domain/types';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { CARD_FOCUS } from '../ui/focusClasses';
 import { LargeDialog } from '../ui/LargeDialog';
 
@@ -64,7 +65,7 @@ export function PatternLibraryDialog() {
   const handlePick = (patternId: string): void => {
     const pattern = PATTERNS.find((p) => p.id === patternId);
     if (!pattern) return;
-    const previousDoc = useDocumentStore.getState().doc;
+    const previousDoc = currentDoc(useDocumentStore.getState());
     setDocument(pattern.build());
     fitViewAfterLoad();
     showToast('success', `Loaded pattern "${pattern.label}".`, {
