@@ -584,3 +584,154 @@ wide end.
 - `src/store/historySlice.ts`
 - `src/store/revisionsSlice.ts`
 - `src/services/storage/storage.ts`
+
+---
+
+## Phase 2 — detailed execution plan (Session 138 prep)
+
+Written after a full grounding pass over the real code (`store/index.ts`,
+`docMetaSlice.ts`, `docMutate.ts`, `historySlice.ts`,
+`persistDebounced.ts`, `persistence.ts`, `storage.ts`,
+`revisionsSlice.ts`, `documentSlice/index.ts`). Supersedes the section-5
+Phase 2 summary with a concrete, batch-by-batch breakdown.
+
+### The keystone fact: exactly 6 `state.doc` write sites
+
+Every mutation of the active document funnels through one of these:
+
+1. `docMutate.ts` — `makeApplyDocChange` → `set({ doc: next, past, future })`.
+   Covers ALL entity / edge / group / meta content edits.
+2. `docMetaSlice.ts` — `setDocument` → `set({ doc, selection, editingEntityId, past, future })`.
+3. `docMetaSlice.ts` — `newDocument` → same shape as setDocument.
+4. `docMetaSlice.ts` — `markSystemScopeNudgeShown` → `set({ doc: next })`.
+5. `historySlice.ts` — `undo` → `set({ doc: last.doc, past, future, editingEntityId })`.
+6. `historySlice.ts` — `redo` → `set({ doc: next.doc, future, past, editingEntityId })`.
+
+Because the write surface is this small, the data-model flip is a uniform
+rewrite of 6 call sites behind one helper — not a sprawling change.
+
+### Canonicality framing (refines section 2)
+
+`state.doc` stays the working copy of the active tab and remains the
+canonical write target. `state.docs[state.activeDocId]` is kept in
+lockstep on every write. The invariant that holds after every mutation:
+
+    state.docs[state.activeDocId] === state.doc      (same reference)
+    state.tabOrder.includes(state.activeDocId)
+
+In Phase 2 the app is still single-tab, so additionally
+`tabOrder.length === 1`, `tabOrder[0] === doc.id`, and
+`docs === { [doc.id]: doc }`. Multi-tab (Phase 5) relaxes only the
+`length === 1` part; the core invariant is permanent.
+
+Consequence: `currentDoc(state)` KEEPS returning `state.doc` through
+Phase 2. Reads stay byte-for-byte unchanged, so the 212 read sites and
+the whole test suite are untouched by the flip. (`currentDoc` would flip
+to `state.docs[state.activeDocId]` only if `doc` is ever dropped, which
+tabs do not require.)
+
+### The uniform helper
+
+Add `activeDocState(nextDoc)` returning:
+
+    { doc: nextDoc,
+      docs: { [nextDoc.id]: nextDoc },     // single-tab: replace map
+      activeDocId: nextDoc.id,
+      tabOrder: [nextDoc.id] }
+
+Every `set({ doc: X, ...rest })` becomes `set({ ...activeDocState(X), ...rest })`.
+Correct for all 6 sites including the subtle ones:
+
+- Content edits (sites 1, 4): `nextDoc.id` equals current `activeDocId`;
+  map/order rebuild to the same shape, only the doc reference changes.
+- Document swaps (sites 2, 3): `nextDoc.id` is NEW; map/order rebuild to
+  the new single entry, dropping the old. Preserves today's
+  REPLACE-current-doc behavior exactly. (Phase 5 changes
+  setDocument/newDocument to APPEND a tab per locked decision #6; Phase 2
+  keeps replace.)
+- Undo/redo across a doc-swap boundary (sites 5, 6): `last.doc` /
+  `next.doc` may carry a DIFFERENT id (undoing a setDocument restores the
+  prior doc with its old id). The uniform helper handles it: `activeDocId`
+  follows the restored doc's id. No special-casing.
+
+### Batch decomposition
+
+Three independently-shippable, green-CI sub-batches. Each stays invisible
+(single-tab) until Phase 5 flips the UI on.
+
+#### Batch 2.1 — Multi-doc state shape (LOW risk, ~2-3 hours)
+
+Pure-additive state + the uniform-helper rewrite of the 6 sites. No
+persistence change, no history change, no UI.
+
+Files:
+- `docMetaSlice.ts` — extend `DocMetaSlice` type with
+  `docs: Record<DocumentId, TPDocument>`, `activeDocId: DocumentId`,
+  `tabOrder: DocumentId[]`. Initialize from `initialDoc`. Route the
+  setDocument / newDocument / markSystemScopeNudgeShown `set` calls
+  through `activeDocState`. Update `docMetaDefaults()` to build the
+  map/order around the single fresh `createDocument('crt')`.
+- `docMutate.ts` — `makeApplyDocChange` `set` through `activeDocState`;
+  export the helper.
+- `historySlice.ts` — undo/redo `set` calls through `activeDocState`.
+- `documentSlice/index.ts` — `documentDefaults()` returns the new fields
+  (delegates to `docMetaDefaults()`).
+- `store/index.ts` — `resetStoreForTest` needs no change (already spreads
+  `documentDefaults()`).
+
+Tests (`tests/store/multiDocState.test.ts`, new): invariant after
+addEntity / updateEntity / deleteEntity / connect / group / setDocument /
+newDocument / undo / redo, including undo across a setDocument boundary.
+
+`currentDoc` stays `state.doc`. Expect the full suite green with ZERO
+edits to existing tests. **This is the safe batch to execute under
+auto-mode.**
+
+#### Batch 2.2 — Per-doc persistence + boot + migration (HIGH risk, ~1-2 sessions)
+
+The genuine risk concentration. Wire up `keys.ts`, rewrite the scheduler
++ save/load for per-doc slots, add the tabs manifest, migrate from
+single-doc storage. Still single-tab.
+
+Files:
+- `persistDebounced.ts` — `PersistScheduler` becomes active-doc-aware:
+  `schedule(doc)` writes `docLiveKey(doc.id)`; `writeNow()` calls a new
+  `saveDocToLocalStorage(doc)` + removes `docLiveKey(doc.id)`.
+- `persistence.ts` — new `saveDocToLocalStorage(doc)` writing
+  `docCommittedKey(doc.id)` + `docBackupKey(doc.id)` rotation, with a
+  per-doc `lastCommittedRaw` Map (not a single module var). New
+  `loadAllTabsWithStatus()` reading manifest → per-doc slots →
+  `{ docs, activeDocId, tabOrder, recovery }`, lazy-parsing non-active
+  bodies (locked decision #3).
+- New `persistTabsManifest({ activeDocId, tabOrder })`.
+- Boot migration (in `docMetaSlice.ts` module init): manifest present →
+  `loadAllTabsWithStatus()`; else read legacy `STORAGE_KEYS.doc` →
+  migrate into per-doc slots + write manifest + keep legacy slot one
+  release as fallback.
+- `store/index.ts` quota handler — extend Session-129 trim to also drop
+  inactive-tab backup slots (no-op guard in single-tab; live in Phase 5).
+
+Tests: round-trip, migration from legacy slot, per-doc backup rotation,
+per-doc live-draft recovery, manifest-missing fallback. Land on its own
+PR with the persistence tests front-and-centre + a manual reload smoke
+test before merge.
+
+#### Batch 2.3 — Per-doc history (MEDIUM risk, ~0.5 session) — DEFERABLE
+
+Only matters when switching tabs (Phase 5). Until the tab strip ships
+there is one tab, so global `past`/`future` ARE the active doc's history
+and behave identically. Recommendation: defer 2.3 to ride with Phase 3
+or Phase 5. When done: `state.historyByDoc: Record<DocId, {past, future}>`;
+`switchTab` stashes the leaving tab's stacks and restores the entering
+tab's.
+
+### Sequencing + gates
+
+1. Batch 2.1 — first, own PR. Low risk; green with no existing-test edits.
+2. Batch 2.2 — own PR after 2.1 merges. HIGH risk; eyes on the migration
+   + a manual reload smoke test before merge.
+3. Batch 2.3 — deferred; bundle with Phase 3 or Phase 5.
+
+After 2.1 + 2.2 merge, the store + storage are fully multi-doc-capable
+while the app stays single-tab. Phase 3 + Phase 4 then proceed; Phase 5
+flips the tab strip on.
