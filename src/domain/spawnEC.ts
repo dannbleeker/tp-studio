@@ -5,10 +5,11 @@ import type { Edge, Entity, EntityId, TPDocument } from './types';
  * Spawn a fresh Evaporating Cloud document seeded from a CRT entity (typically
  * the identified Core Driver). The book's prescription: "after producing a
  * CRT, recast the Core Driver as the Core Conflict and explore it with an
- * EC." This action does that without forcing the user into multi-document
- * tab plumbing — the spawned doc fully replaces the current one via the
- * existing `setDocument` action, which auto-snapshots the outgoing CRT as
- * a revision (Session 41's H1 work).
+ * EC." The caller routes this doc through `openDocInTab`, so by default
+ * (Session 138, decision #6) the EC opens in a NEW tab and the CRT stays
+ * open beside it; in opt-out "replace" mode it fully replaces the current
+ * doc via `setDocument`, which auto-snapshots the outgoing CRT as a
+ * revision (Session 41's H1 work).
  *
  * Layout uses the same canonical 5-box coordinates as `INITIAL_DOC_BY_DIAGRAM.ec`
  * and `buildExampleEC` so the new doc looks like every other freshly-opened

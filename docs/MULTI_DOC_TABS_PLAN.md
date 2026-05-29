@@ -936,7 +936,26 @@ Tests: TabStrip renders N chips with the active one flagged; click chip →
 `switchTab`; X → `closeTab`; `+` → open; palette commands present + wired.
 Drag-reorder is e2e-only (note it; don't block on a jsdom test).
 
-### Batch 5.3 — Route doc-loads to new tabs + Settings toggle — own PR
+### Batch 5.3 — Route doc-loads to new tabs + Settings toggle — ✅ SHIPPED (Session 138)
+
+**As built:** `openDocsInNewTab` (default `true`) lives in the prefs bag with
+its toggle in **Settings → Behavior** ("Open documents in new tabs"); the
+`openDocInTab(doc): boolean` action returns whether a new tab opened.
+Rerouted import (JSON / Flying Logic / Mermaid), pattern, template,
+load-example, the share-link receiver, and spawn-EC-from-conflict. **Two
+deviations from the plan below:** (1) `newDocument` was **left replacing in
+place** — it carries creation-wizard / system-scope-nudge semantics, and the
+strip's `+` button + the New-tab palette command already cover "fresh doc in
+a new tab"; (2) for the **undo toast** in new-tab mode we simply **drop the
+Undo action** (closing the tab is the obvious undo) rather than wiring
+`closeTab(newTabId)` — the replace-mode `setDocument(previousDoc)` undo is
+preserved. The shared "undo only in replace mode" rule is `undoRestoreAction`
+(`components/ui/loadToast.ts`). Spawn-EC + share-link are now non-destructive
+(the source CRT / the receiver's own work stays in its own tab). Tests:
+`tests/store/openDocInTab.test.ts`, `tests/components/loadRoutesToNewTab.test.tsx`,
+`tests/components/loadToast.test.ts`.
+
+Original plan:
 
 - New pref **`openDocsInNewTab: boolean` (default `true`, decision #6)** +
   a Settings → Documents toggle ("Open imported / loaded documents in a
@@ -995,14 +1014,12 @@ legacy single-doc migration still boots to one tab.
 
 ### Sequencing + gates
 
-1. **5.1 — tab engine** (own PR, HIGH risk). Rewrites the 2.1 invariant
-   test. The full suite is the safety net; expect only `multiDocState`
-   edits among existing tests.
-2. **5.2 — TabStrip UI + keyboard + palette** (own PR). Manual smoke:
-   tabs visible, clickable, `+`/X work.
-3. **5.3 — load routing + Settings toggle** (own PR).
-4. **5.4 — boot multi-tab restore** (own PR). Manual smoke: open 2 tabs,
-   reload, both come back with the right active tab.
+1. ✅ **5.1 — tab engine** (shipped). Rewrote the 2.1 invariant test; the
+   full suite was the safety net.
+2. ✅ **5.2 / 5.2b — TabStrip UI + palette commands + drag-reorder**
+   (shipped). Cmd+T/W/1–9 keyboard map still deferred (PWA-standalone-gated).
+3. ✅ **5.3 — load routing + Settings toggle** (shipped).
+4. ✅ **5.4 — boot multi-tab restore** (shipped, folded into the 5.2 PR).
 
 Then **Phase 6** polish (quota "close some tabs" toast; "forget closed
 doc"; walkthrough-cursor-on-switch; optional speculation carry-across;

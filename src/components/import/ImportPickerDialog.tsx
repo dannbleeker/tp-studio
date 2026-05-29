@@ -58,7 +58,7 @@ const IMPORT_ACTIONS: ImportAction[] = [
     run: async (s) => {
       const doc = await pickJSON();
       if (doc) {
-        s.setDocument(doc);
+        s.openDocInTab(doc);
         fitViewAfterLoad();
       }
     },
@@ -70,7 +70,7 @@ const IMPORT_ACTIONS: ImportAction[] = [
     run: async (s) => {
       const doc = await pickFlyingLogic();
       if (doc) {
-        s.setDocument(doc);
+        s.openDocInTab(doc);
         s.showToast('success', `Opened ${doc.title}.`);
         fitViewAfterLoad();
       }
@@ -83,7 +83,7 @@ const IMPORT_ACTIONS: ImportAction[] = [
     run: async (s) => {
       const doc = await pickMermaid();
       if (doc) {
-        s.setDocument(doc);
+        s.openDocInTab(doc);
         s.showToast(
           'success',
           `Imported ${Object.keys(doc.entities).length} entities from Mermaid.`
@@ -145,7 +145,7 @@ export function ImportPickerDialog() {
       open={open}
       onClose={close}
       title="Import"
-      subtitle="Pick a source. The current document is replaced (except CSV, which appends)."
+      subtitle="Pick a source to import. CSV appends to the current document; the rest open the imported diagram."
       closeAriaLabel="Close import picker"
       widthClass="w-[min(640px,94vw)]"
     >

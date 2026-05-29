@@ -17,9 +17,10 @@ const SPEED_OPTIONS: { id: AnimationSpeed; label: string; hint?: string }[] = [
 
 /**
  * Session 121 — Behavior tab extracted from `SettingsDialog`. Covers
- * animation speed, Browse Lock, the two creation-wizard toggles, and
- * the SelectionToolbar opt-out. All four pieces are "what happens when
- * you interact" — grouped on a single tab since Session 87 (S25).
+ * animation speed, Browse Lock, the three creation-wizard toggles, the
+ * SelectionToolbar opt-out, and (Session 138) the open-in-new-tab
+ * opt-out. All are "what happens when you interact" — grouped on a
+ * single tab since Session 87 (S25).
  */
 export function BehaviorTab() {
   const {
@@ -29,12 +30,14 @@ export function BehaviorTab() {
     showECWizard,
     showCRTWizard,
     showSelectionToolbar,
+    openDocsInNewTab,
     setAnimationSpeed,
     setBrowseLocked,
     setShowGoalTreeWizard,
     setShowECWizard,
     setShowCRTWizard,
     setShowSelectionToolbar,
+    setOpenDocsInNewTab,
   } = useDocumentStore(
     useShallow((s) => ({
       animationSpeed: s.animationSpeed,
@@ -43,12 +46,14 @@ export function BehaviorTab() {
       showECWizard: s.showECWizard,
       showCRTWizard: s.showCRTWizard,
       showSelectionToolbar: s.showSelectionToolbar,
+      openDocsInNewTab: s.openDocsInNewTab,
       setAnimationSpeed: s.setAnimationSpeed,
       setBrowseLocked: s.setBrowseLocked,
       setShowGoalTreeWizard: s.setShowGoalTreeWizard,
       setShowECWizard: s.setShowECWizard,
       setShowCRTWizard: s.setShowCRTWizard,
       setShowSelectionToolbar: s.setShowSelectionToolbar,
+      setOpenDocsInNewTab: s.setOpenDocsInNewTab,
     }))
   );
 
@@ -107,6 +112,17 @@ export function BehaviorTab() {
         hint="Show a small floating toolbar above the selected entity / edge with the top 3-5 verbs scoped to its kind. Off = palette + context menu only."
         checked={showSelectionToolbar}
         onChange={setShowSelectionToolbar}
+      />
+      {/* Session 138 (Batch 5.3) — open-in-new-tab toggle. Default ON:
+          loading a document (import, pattern, template, example, or a
+          shared link) opens it in a new tab and keeps the current one.
+          Off restores the pre-tabs behavior — each load replaces the
+          active document. */}
+      <Toggle
+        label="Open documents in new tabs"
+        hint="On = importing, loading a pattern / template / example, or opening a shared link opens a new tab. Off = the load replaces the current document."
+        checked={openDocsInNewTab}
+        onChange={setOpenDocsInNewTab}
       />
     </Section>
   );

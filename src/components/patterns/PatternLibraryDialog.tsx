@@ -8,6 +8,7 @@ import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { CARD_FOCUS } from '../ui/focusClasses';
 import { LargeDialog } from '../ui/LargeDialog';
+import { undoRestoreAction } from '../ui/loadToast';
 
 /**
  * Session 134 — pattern-library picker.
@@ -48,6 +49,7 @@ export function PatternLibraryDialog() {
   const state = useDocumentStore((s) => s.patternLibraryOpen);
   const close = useDocumentStore((s) => s.closePatternLibrary);
   const setDocument = useDocumentStore((s) => s.setDocument);
+  const openDocInTab = useDocumentStore((s) => s.openDocInTab);
   const showToast = useDocumentStore((s) => s.showToast);
 
   // Local filter state is seeded from the open-payload but the user
@@ -66,14 +68,15 @@ export function PatternLibraryDialog() {
     const pattern = PATTERNS.find((p) => p.id === patternId);
     if (!pattern) return;
     const previousDoc = currentDoc(useDocumentStore.getState());
-    setDocument(pattern.build());
+    const openedNewTab = openDocInTab(pattern.build());
     fitViewAfterLoad();
-    showToast('success', `Loaded pattern "${pattern.label}".`, {
-      action: {
-        label: 'Undo',
-        run: () => setDocument(previousDoc),
-      },
-    });
+    showToast(
+      'success',
+      openedNewTab
+        ? `Opened pattern "${pattern.label}" in a new tab.`
+        : `Loaded pattern "${pattern.label}".`,
+      undoRestoreAction(openedNewTab, previousDoc, setDocument)
+    );
     close();
   };
 
@@ -82,7 +85,7 @@ export function PatternLibraryDialog() {
       open={true}
       onClose={close}
       title="Pattern library"
-      subtitle="Curated starter diagrams for common TOC scenarios. Pick one to drop onto the canvas; Undo from the toast restores your previous doc."
+      subtitle="Curated starter diagrams for common TOC scenarios. Pick one to open it (in a new tab by default)."
       closeAriaLabel="Close pattern library"
     >
       {/* Session 135 — `<fieldset>` + visually-hidden `<legend>` is

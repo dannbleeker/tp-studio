@@ -58,10 +58,12 @@ export const analysisCommands: Command[] = [
       }
       const conflictId = sel.ids[0];
       const newDoc = spawnECFromConflict(currentDoc(s), conflictId);
-      s.setDocument(newDoc);
+      const openedNewTab = s.openDocInTab(newDoc);
       s.showToast(
         'success',
-        'New Evaporating Cloud seeded — fill in Goal, Needs, and the conflicting Want.'
+        openedNewTab
+          ? 'New Evaporating Cloud opened in a new tab — fill in Goal, Needs, and the conflicting Want. (Your CRT stays in its tab.)'
+          : 'New Evaporating Cloud seeded — fill in Goal, Needs, and the conflicting Want.'
       );
     },
   }),

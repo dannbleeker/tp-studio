@@ -80,6 +80,14 @@ export type DocMetaSlice = {
   /** Duplicate tab `id` into a new tab (fresh doc id, deep content copy,
    *  `(copy)` appended to the title) and activate it (locked decision #4). */
   duplicateTab: (id: DocumentId) => void;
+  /** Session 138 (Batch 5.3) — open `doc` honouring the
+   *  `openDocsInNewTab` preference: a NEW tab when enabled (default,
+   *  returns `true`), otherwise replace the active document via
+   *  `setDocument` (returns `false`). The boolean lets a caller tailor
+   *  its post-load toast — a new tab is "undone" by closing it, so an
+   *  "Undo" that restores the previous doc only makes sense in replace
+   *  mode. */
+  openDocInTab: (doc: TPDocument) => boolean;
 
   resolveWarning: (warningId: string) => void;
   unresolveWarning: (warningId: string) => void;
@@ -451,6 +459,18 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         updatedAt: Date.now(),
       };
       get().openTab(copy);
+    },
+
+    openDocInTab: (doc) => {
+      // Decision #6 — loaded documents open in a new tab by default; the
+      // `openDocsInNewTab` pref lets users restore the pre-tabs "replace
+      // the active document" behavior. Returns whether a new tab opened.
+      if (get().openDocsInNewTab) {
+        get().openTab(doc);
+        return true;
+      }
+      get().setDocument(doc);
+      return false;
     },
 
     resolveWarning: (warningId) => {

@@ -166,6 +166,11 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // throwing.
     edgeRouting:
       raw?.edgeRouting && VALID_EDGE_ROUTING.has(raw.edgeRouting) ? raw.edgeRouting : 'smart',
+    // Session 138 — open loaded documents in a new tab by default.
+    // `!== false` semantics: any non-`false` value (including
+    // `undefined` for existing users with no stored value) keeps the
+    // new-tab default. Opt out via Settings → Behavior.
+    openDocsInNewTab: raw?.openDocsInNewTab !== false,
   };
 };
 

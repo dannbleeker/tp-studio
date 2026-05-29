@@ -6,6 +6,7 @@ import { buildTemplate, TEMPLATE_SPECS } from '@/templates';
 import { TemplateThumbnail } from '@/templates/thumbnail';
 import { CARD_FOCUS } from '../ui/focusClasses';
 import { LargeDialog } from '../ui/LargeDialog';
+import { undoRestoreAction } from '../ui/loadToast';
 
 /**
  * Session 79 / brief §12 — Templates picker dialog.
@@ -20,8 +21,8 @@ import { LargeDialog } from '../ui/LargeDialog';
  *   - Entity + edge counts.
  *
  * Clicking a card inflates the spec with `buildTemplate(spec)`,
- * dispatches `setDocument`, and closes the dialog. A toast confirms
- * which template loaded.
+ * dispatches `openDocInTab` (a new tab by default, decision #6), and
+ * closes the dialog. A toast confirms which template loaded.
  *
  * Session 94 — migrated to the shared `LargeDialog` shell; focus-trap,
  * Esc handling, backdrop, and header chrome live there now.
@@ -30,6 +31,7 @@ export function TemplatePickerDialog() {
   const open = useDocumentStore((s) => s.templatePickerOpen);
   const close = useDocumentStore((s) => s.closeTemplatePicker);
   const setDocument = useDocumentStore((s) => s.setDocument);
+  const openDocInTab = useDocumentStore((s) => s.openDocInTab);
   const showToast = useDocumentStore((s) => s.showToast);
 
   // Session 88 (S14) — capture the prior doc before swapping so the
@@ -40,14 +42,14 @@ export function TemplatePickerDialog() {
     const spec = TEMPLATE_SPECS.find((t) => t.id === id);
     if (!spec) return;
     const previousDoc = currentDoc(useDocumentStore.getState());
-    const doc = buildTemplate(spec);
-    setDocument(doc);
-    showToast('success', `Loaded template: ${spec.title}`, {
-      action: {
-        label: 'Undo',
-        run: () => setDocument(previousDoc),
-      },
-    });
+    const openedNewTab = openDocInTab(buildTemplate(spec));
+    showToast(
+      'success',
+      openedNewTab
+        ? `Opened template "${spec.title}" in a new tab.`
+        : `Loaded template: ${spec.title}`,
+      undoRestoreAction(openedNewTab, previousDoc, setDocument)
+    );
     close();
   };
 

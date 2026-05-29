@@ -92,6 +92,10 @@ export type PreferencesSlice = {
    *  (small floating chrome that's easy to dismiss for users who
    *  prefer keyboard-only flow). */
   showSelectionToolbar: boolean;
+  /** Session 138 — open loaded documents (import / pattern / template
+   *  / example / share-link) in a NEW tab. Default `true`; opt out
+   *  (replace the active document instead) via Settings → Behavior. */
+  openDocsInNewTab: boolean;
   /** Session 137 — discoverability hint dismissed flag. The toolbar
    *  shows a one-line tip below its chip row ("Right-click for more
    *  actions") until this is `true`. Flipped permanently by the
@@ -146,6 +150,9 @@ export type PreferencesSlice = {
   setECChromeCollapsed: (collapsed: boolean) => void;
   /** Session 95 — toggle the floating SelectionToolbar. */
   setShowSelectionToolbar: (show: boolean) => void;
+  /** Session 138 — toggle whether loaded documents open in a new tab
+   *  (default) or replace the active document. */
+  setOpenDocsInNewTab: (open: boolean) => void;
   /** Session 137 — dismiss the SelectionToolbar discoverability hint.
    *  Idempotent: once flipped to `true`, subsequent calls are no-ops.
    *  Persisted so the hint never reappears. */
@@ -193,6 +200,7 @@ export type PreferencesDataKeys =
   | 'selectionToolbarTipDismissed'
   | 'appMode'
   | 'showArchivedGroups'
+  | 'openDocsInNewTab'
   | 'edgeRouting';
 
 /**
@@ -258,6 +266,9 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   // Phase C — smart routing is the locked default per the proposal.
   // The `'direct'` opt-out is exposed in Settings → Display.
   edgeRouting: 'smart',
+  // Session 138 — loaded documents open in a new tab by default;
+  // opt out (replace the active doc) in Settings → Behavior.
+  openDocsInNewTab: true,
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (
@@ -292,6 +303,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       appMode: s.appMode,
       showArchivedGroups: s.showArchivedGroups,
       edgeRouting: s.edgeRouting,
+      openDocsInNewTab: s.openDocsInNewTab,
     });
   };
 
@@ -323,6 +335,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     appMode: initialPrefs.appMode,
     showArchivedGroups: initialPrefs.showArchivedGroups,
     edgeRouting: initialPrefs.edgeRouting,
+    openDocsInNewTab: initialPrefs.openDocsInNewTab,
 
     setTheme: (theme) => {
       writeTheme(theme);
@@ -418,6 +431,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       set({ showSelectionToolbar: show });
       persistPrefs();
     },
+    setOpenDocsInNewTab: (open) => {
+      set({ openDocsInNewTab: open });
+      persistPrefs();
+    },
     dismissSelectionToolbarTip: () => {
       // Idempotent — repeated calls (e.g. first verb click + first
       // X click landing close together) all coalesce into a single
@@ -489,6 +506,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         appMode: d.appMode,
         showArchivedGroups: d.showArchivedGroups,
         edgeRouting: d.edgeRouting,
+        openDocsInNewTab: d.openDocsInNewTab,
       });
       persistPrefs();
     },

@@ -177,7 +177,7 @@ export function App() {
   useThemeClass();
   useGlobalKeyboard();
   const showToast = useDocumentStore((s) => s.showToast);
-  const setDocument = useDocumentStore((s) => s.setDocument);
+  const openDocInTab = useDocumentStore((s) => s.openDocInTab);
   const setBrowseLocked = useDocumentStore((s) => s.setBrowseLocked);
   // Session 135 / spec gap #9 Phase 1B — read the app-mode at the
   // root so per-mode chrome conditions live next to the components
@@ -209,10 +209,10 @@ export function App() {
 
   // FL-CO1: if the URL fragment carries a share payload, load the
   // shared doc into the store and auto-engage Browse Lock so the
-  // receiver can't accidentally edit it. The original autosaved doc
-  // is preserved as a revision via `setDocument`'s built-in safety
-  // snapshot, so the receiver can roll back to it from the revision
-  // panel if they want their own working copy back.
+  // receiver can't accidentally edit it. Routed through `openDocInTab`
+  // so the shared doc opens in a NEW tab by default (the receiver's own
+  // work stays in its own tab); in opt-out "replace" mode `setDocument`'s
+  // built-in safety snapshot preserves the outgoing doc as a revision.
   useEffect(() => {
     if (shareLinkBootHandled) return;
     shareLinkBootHandled = true;
@@ -224,7 +224,7 @@ export function App() {
       try {
         const shared = await parseShareHash(hash);
         if (cancelled || !shared) return;
-        setDocument(shared);
+        openDocInTab(shared);
         setBrowseLocked(true);
         clearShareHash();
         showToast(
@@ -240,7 +240,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [setDocument, setBrowseLocked, showToast]);
+  }, [openDocInTab, setBrowseLocked, showToast]);
 
   return (
     <main

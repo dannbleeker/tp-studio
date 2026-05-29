@@ -217,4 +217,10 @@ export type StoredPrefs = {
    *  toggled via the palette / GroupInspector. App-wide viewing
    *  preference, not a doc property. */
   showArchivedGroups?: boolean;
+  /** Session 138 — open documents (import / pattern / template /
+   *  example / share-link) in a NEW tab. Default `true` (`!== false`
+   *  semantics: any non-`false` value, including `undefined` on
+   *  first-run, keeps the new-tab default). Opt out (replace the
+   *  active doc instead) via Settings → Behavior. */
+  openDocsInNewTab?: boolean;
 };
