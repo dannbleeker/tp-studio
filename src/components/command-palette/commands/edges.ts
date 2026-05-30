@@ -83,7 +83,8 @@ export const edgeCommands: Command[] = [
     label: 'Complete edge to selected entity (keyboard)',
     group: 'Edit',
     run: (s) => {
-      if (!s.pendingEdgeSourceId) {
+      const mode = s.canvasMode;
+      if (mode.kind !== 'pending-edge') {
         s.showToast('info', 'No edge pending. Start one via "Start edge from selected entity".');
         return;
       }
@@ -93,7 +94,7 @@ export const edgeCommands: Command[] = [
         return;
       }
       const targetId = sel.ids[0]!;
-      if (targetId === s.pendingEdgeSourceId) {
+      if (targetId === mode.sourceId) {
         s.showToast('info', 'Target must differ from the source.');
         s.cancelPendingEdge();
         return;

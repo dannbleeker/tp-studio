@@ -303,7 +303,7 @@ export function useGlobalShortcuts() {
         // join + hoist + deselect, same rationale as join-mode below.
         // Esc cancels the "pick a target" prompt without dropping
         // the current selection.
-        if (state.pendingEdgeSourceId !== null) {
+        if (state.canvasMode.kind === 'pending-edge') {
           state.cancelPendingEdge();
           return;
         }
@@ -311,7 +311,7 @@ export function useGlobalShortcuts() {
         // Pressing Esc while the "click another edge to AND-join"
         // prompt is up should cancel the join, not navigate out of
         // the hoist nor clear the source-edge selection.
-        if (state.joinModeEdgeId !== null) {
+        if (state.canvasMode.kind === 'edge-join') {
           state.cancelEdgeJoinMode();
           return;
         }

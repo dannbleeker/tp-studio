@@ -35,8 +35,7 @@ export function StatusStrip() {
     creationWizardActive,
     searchOpen,
     compareRevisionId,
-    joinModeEdgeId,
-    pendingEdgeSourceId,
+    canvasMode,
     setBrowseLocked,
     toggleHistoryPanel,
     closeSearch,
@@ -53,8 +52,7 @@ export function StatusStrip() {
       creationWizardActive: s.creationWizard !== null,
       searchOpen: s.searchOpen,
       compareRevisionId: s.compareRevisionId,
-      joinModeEdgeId: s.joinModeEdgeId,
-      pendingEdgeSourceId: s.pendingEdgeSourceId,
+      canvasMode: s.canvasMode,
       setBrowseLocked: s.setBrowseLocked,
       toggleHistoryPanel: s.toggleHistoryPanel,
       closeSearch: s.closeSearch,
@@ -135,7 +133,7 @@ export function StatusStrip() {
   // "AND-join with another edge…" but hasn't yet clicked the second
   // edge. The chip's click cancels the pending join, mirroring the
   // chip-cancels-mode contract of the others.
-  if (joinModeEdgeId) {
+  if (canvasMode.kind === 'edge-join') {
     chips.push({
       key: 'edge-join',
       label: 'Click another edge to AND-join',
@@ -147,7 +145,7 @@ export function StatusStrip() {
   // Session 135 — a11y slice 5. Pending keyboard edge-creation: a chip
   // explaining the next step ("select target, palette → Complete edge").
   // Click cancels the pending edge, parallel to the join-mode chip.
-  if (pendingEdgeSourceId) {
+  if (canvasMode.kind === 'pending-edge') {
     chips.push({
       key: 'pending-edge',
       label: 'Select target, then palette → Complete edge',

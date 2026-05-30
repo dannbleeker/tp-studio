@@ -45,12 +45,12 @@ describe('edgeCommands — start-edge-join-and', () => {
     const { edge } = seedConnectedPair();
     useDocumentStore.getState().selectEdges([edge.id]);
     await runCommand(findCommand(edgeCommands, 'start-edge-join-and'));
-    expect(s().joinModeEdgeId).toBe(edge.id);
+    expect(s().canvasMode).toEqual({ kind: 'edge-join', edgeId: edge.id });
   });
 
   it('toasts info when no edge is selected', async () => {
     await runCommand(findCommand(edgeCommands, 'start-edge-join-and'));
-    expect(s().joinModeEdgeId).toBeNull();
+    expect(s().canvasMode.kind).toBe('idle');
     expect(s().toasts.some((t) => /select a single edge/i.test(t.message))).toBe(true);
   });
 });
@@ -97,16 +97,16 @@ describe('edgeCommands — AND/OR/XOR groupings', () => {
 });
 
 describe('edgeCommands — keyboard edge-creation (slice 5)', () => {
-  it('start-edge-from-selection sets pendingEdgeSourceId when a single entity is selected', async () => {
+  it('start-edge-from-selection enters pending-edge mode when a single entity is selected', async () => {
     const a = seedEntity('A');
     useDocumentStore.getState().selectEntity(a.id);
     await runCommand(findCommand(edgeCommands, 'start-edge-from-selection'));
-    expect(s().pendingEdgeSourceId).toBe(a.id);
+    expect(s().canvasMode).toEqual({ kind: 'pending-edge', sourceId: a.id });
   });
 
   it('start-edge-from-selection toasts info when no entity is selected', async () => {
     await runCommand(findCommand(edgeCommands, 'start-edge-from-selection'));
-    expect(s().pendingEdgeSourceId).toBeNull();
+    expect(s().canvasMode.kind).toBe('idle');
     expect(s().toasts.some((t) => /select a single entity/i.test(t.message))).toBe(true);
   });
 
@@ -119,7 +119,7 @@ describe('edgeCommands — keyboard edge-creation (slice 5)', () => {
     const before = Object.keys(s().doc.edges).length;
     await runCommand(findCommand(edgeCommands, 'complete-edge-to-selection'));
     expect(Object.keys(s().doc.edges).length).toBe(before + 1);
-    expect(s().pendingEdgeSourceId).toBeNull();
+    expect(s().canvasMode.kind).toBe('idle');
     // The new edge connects A -> B.
     expect(
       Object.values(s().doc.edges).some((e) => e.sourceId === a.id && e.targetId === b.id)
@@ -134,7 +134,7 @@ describe('edgeCommands — keyboard edge-creation (slice 5)', () => {
     const before = Object.keys(s().doc.edges).length;
     await runCommand(findCommand(edgeCommands, 'complete-edge-to-selection'));
     expect(Object.keys(s().doc.edges).length).toBe(before);
-    expect(s().pendingEdgeSourceId).toBeNull();
+    expect(s().canvasMode.kind).toBe('idle');
   });
 
   it('complete-edge-to-selection toasts info when no edge is pending', async () => {
