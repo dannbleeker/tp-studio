@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { readTabsManifest, removeDocBackup } from '@/domain/persistence';
 import type { Revision } from '@/domain/revisions';
 import { cancelPendingPersist } from '@/services/storage/persistDebounced';
 import {
@@ -87,6 +88,24 @@ const tryTrimRevisionsForQuota = (): { trimmed: number; revisionsDropped: number
   return { trimmed: trimmedDocs, revisionsDropped: droppedRevisions };
 };
 
+/**
+ * Phase 6 quota mitigation, second tier — drop the backup slot of every
+ * INACTIVE open tab (the active tab keeps all three slots). These backups
+ * are the lowest-value per-doc data; the committed + live bodies of those
+ * tabs remain, so nothing the user can see is lost. Returns how many
+ * backups were actually freed.
+ */
+const tryDropInactiveTabBackups = (): number => {
+  const manifest = readTabsManifest();
+  if (!manifest) return 0;
+  let dropped = 0;
+  for (const id of manifest.tabOrder) {
+    if (id === manifest.activeDocId) continue;
+    if (removeDocBackup(id)) dropped += 1;
+  }
+  return dropped;
+};
+
 setStorageErrorListener((err) => {
   const store = useDocumentStore.getState();
   if (err.kind === 'quota' && !quotaMitigationInFlight) {
@@ -103,15 +122,28 @@ setStorageErrorListener((err) => {
         store.reloadRevisionsForActiveDoc();
         return;
       }
+      // Second tier — drop inactive open tabs' backup slots before giving up
+      // (lowest-value per-doc data; committed + live bodies remain).
+      const droppedBackups = tryDropInactiveTabBackups();
+      if (droppedBackups > 0) {
+        store.showToast(
+          'info',
+          `Browser storage was full — freed space by dropping ${droppedBackups} inactive tab backup${droppedBackups === 1 ? '' : 's'}. Your open tabs are safe.`
+        );
+        return;
+      }
     } finally {
       quotaMitigationInFlight = false;
     }
     // Trim didn't help (no revisions to trim, or the trimmed write also
     // failed) — fall through to the generic toast so the user at least
     // knows their edits are in-memory only.
+    const openTabs = readTabsManifest()?.tabOrder.length ?? 1;
     store.showToast(
       'error',
-      "Browser storage is full and can't be freed automatically. Export to a file or close other tabs to free space."
+      openTabs > 1
+        ? 'Browser storage is full. Close some tabs to free space — each open tab keeps its own saved copy — or export a doc to a file.'
+        : "Browser storage is full and can't be freed automatically. Export to a file to free space."
     );
     return;
   }

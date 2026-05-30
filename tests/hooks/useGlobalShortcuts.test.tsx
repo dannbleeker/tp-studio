@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createDocument } from '@/domain/factory';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedConnectedPair, seedEntity } from '../helpers/seedDoc';
@@ -188,5 +189,60 @@ describe('useGlobalShortcuts — Esc cascade', () => {
     render(<Host />);
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(s().selection.kind).toBe('none');
+  });
+});
+
+describe('useGlobalShortcuts — tab shortcuts (installed PWA only)', () => {
+  // jsdom has no `matchMedia`; stub it so the standalone gate can flip on/off.
+  const stubStandalone = (on: boolean) =>
+    vi.stubGlobal(
+      'matchMedia',
+      (q: string) =>
+        ({
+          matches: on && q.includes('display-mode'),
+          media: q,
+          onchange: null,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          addListener: () => {},
+          removeListener: () => {},
+          dispatchEvent: () => false,
+        }) as unknown as MediaQueryList
+    );
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('Cmd+T opens a new tab when standalone', () => {
+    stubStandalone(true);
+    const before = s().tabOrder.length;
+    render(<Host />);
+    fireEvent.keyDown(window, { key: 't', metaKey: true });
+    expect(s().tabOrder.length).toBe(before + 1);
+  });
+
+  it('Cmd+T does nothing in a normal browser tab (not standalone)', () => {
+    stubStandalone(false);
+    const before = s().tabOrder.length;
+    render(<Host />);
+    fireEvent.keyDown(window, { key: 't', metaKey: true });
+    expect(s().tabOrder.length).toBe(before);
+  });
+
+  it('Cmd+1 switches to the first tab when standalone', () => {
+    stubStandalone(true);
+    const aId = s().activeDocId;
+    s().openTab(createDocument('frt')); // [A, B], active = B
+    render(<Host />);
+    fireEvent.keyDown(window, { key: '1', metaKey: true });
+    expect(s().activeDocId).toBe(aId);
+  });
+
+  it('Cmd+W closes the active tab when standalone', () => {
+    stubStandalone(true);
+    const aId = s().activeDocId;
+    s().openTab(createDocument('frt')); // active = B
+    render(<Host />);
+    fireEvent.keyDown(window, { key: 'w', metaKey: true });
+    expect(s().tabOrder).toEqual([aId]);
+    expect(s().activeDocId).toBe(aId);
   });
 });

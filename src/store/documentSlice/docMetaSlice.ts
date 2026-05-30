@@ -336,6 +336,9 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         future: [],
         selection: { kind: 'none' },
         editingEntityId: null,
+        // Phase 6 — drop any guided walkthrough; its targetIds point at the
+        // previous active doc's edges/warnings.
+        walkthrough: { kind: 'closed' },
         // Decision #5 — a fresh tab starts in normal (non-speculative) mode.
         ...speculationDefaults(),
       });
@@ -368,6 +371,9 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         future: swapped.future,
         selection: { kind: 'none' },
         editingEntityId: null,
+        // Phase 6 — drop any guided walkthrough; its targetIds point at the
+        // previous active doc's edges/warnings.
+        walkthrough: { kind: 'closed' },
         ...speculationDefaults(),
       });
       persistTabsManifest({ activeDocId: id, tabOrder: state.tabOrder });
@@ -393,6 +399,9 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
           future: [],
           selection: { kind: 'none' },
           editingEntityId: null,
+          // Phase 6 — drop any guided walkthrough; its targetIds point at the
+          // previous active doc's edges/warnings.
+          walkthrough: { kind: 'closed' },
           ...speculationDefaults(),
         });
         saveDocToLocalStorage(fresh);
@@ -427,6 +436,9 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         future: restored.future,
         selection: { kind: 'none' },
         editingEntityId: null,
+        // Phase 6 — drop any guided walkthrough; its targetIds point at the
+        // previous active doc's edges/warnings.
+        walkthrough: { kind: 'closed' },
         ...speculationDefaults(),
       });
       persistTabsManifest({ activeDocId: nextActiveId, tabOrder: remaining });

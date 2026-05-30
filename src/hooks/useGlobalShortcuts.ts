@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { createDocument } from '@/domain/factory';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboard';
+import { isStandalonePWA } from '@/services/pwa';
 import { flushPersist } from '@/services/storage/persistDebounced';
 import { useDocumentStore } from '@/store';
 import { isEditableTarget } from './keyboardUtils';
@@ -49,6 +51,36 @@ export function useGlobalShortcuts() {
         e.preventDefault();
         togglePalette();
         return;
+      }
+
+      // reg: new-tab / close-tab / switch-tab
+      // Multi-doc tab management. Browsers reserve Cmd/Ctrl+T / +W / +1–9 for
+      // their own tab strip and won't let a page override them, so these bind
+      // ONLY inside an installed PWA (display-mode: standalone); in a normal
+      // browser tab the palette commands are the portable path.
+      if (cmdOrCtrl && !e.altKey && isStandalonePWA()) {
+        const k = e.key.toLowerCase();
+        if (k === 't' && !e.shiftKey) {
+          e.preventDefault();
+          if (!guardWriteOrToast()) return;
+          useDocumentStore.getState().openTab(createDocument('crt'));
+          return;
+        }
+        if (k === 'w' && !e.shiftKey) {
+          e.preventDefault();
+          const st = useDocumentStore.getState();
+          st.closeTab(st.activeDocId);
+          return;
+        }
+        // Cmd/Ctrl+1–9 — jump to the Nth tab; 9 = last tab (browser convention).
+        if (/^[1-9]$/.test(e.key)) {
+          e.preventDefault();
+          const st = useDocumentStore.getState();
+          const order = st.tabOrder;
+          const target = e.key === '9' ? order[order.length - 1] : order[Number(e.key) - 1];
+          if (target && target !== st.activeDocId) st.switchTab(target);
+          return;
+        }
       }
 
       // reg: save / swap-entities

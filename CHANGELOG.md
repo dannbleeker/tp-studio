@@ -149,6 +149,30 @@ localStorage round-trip), an end-to-end pattern-dialog reroute
 (`tests/components/loadRoutesToNewTab.test.tsx`), and the `undoRestoreAction`
 contract (`tests/components/loadToast.test.ts`).
 
+**Multi-doc tabs — PWA keyboard shortcuts.** Inside an installed PWA
+(`display-mode: standalone`), **Cmd/Ctrl+T** opens a new tab, **Cmd/Ctrl+W**
+closes the active one, and **Cmd/Ctrl+1–9** jump to the Nth tab (9 = last, the
+browser convention). Gated to standalone because browsers reserve those keys
+for their own tab strip and won't let a page override them — in a normal
+browser tab the palette commands (New / Close / Next / Previous tab) stay the
+portable path. New `isStandalonePWA()` helper (`services/pwa.ts`); three
+registry entries + `// reg:` markers so the in-app Help dialog lists them.
+`tests/hooks/useGlobalShortcuts.test.tsx` stubs `matchMedia` to drive both the
+standalone and browser-tab branches.
+
+**Multi-doc tabs — Phase 6 polish.** Three edge cases that only surface with
+tabs live: (1) **walkthrough-on-switch** — any tab transition (open / switch /
+close) now drops an active guided walkthrough, whose `targetIds` pointed at
+the previous doc's edges/warnings. (2) **Quota mitigation, tier 2** — when
+storage fills, after trimming revisions the handler now also drops inactive
+open tabs' backup slots (`removeDocBackup` — lowest-value data; their committed
++ live bodies remain) before the final toast, which is now tab-count-aware
+("close some tabs to free space"). (3) **Forget closed documents** — a new
+palette command + `forgetClosedDocs` action purge the lingering revision
+history of every doc you've closed (open tabs keep theirs), reclaiming storage;
+confirms first since it's irreversible. Tests in
+`tests/store/multiTabPhase6.test.ts`. This wraps the multi-doc tabs arc.
+
 ## Session 137 — Pattern library expansion (5 per diagram type)
 
 Curated starter diagrams for every supported TOC diagram type

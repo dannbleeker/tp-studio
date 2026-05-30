@@ -1,7 +1,8 @@
 import type { StateCreator } from 'zustand';
 import { newRevisionId } from '@/domain/ids';
+import { removeDocFromStorage } from '@/domain/persistence';
 import type { Revision } from '@/domain/revisions';
-import type { TPDocument } from '@/domain/types';
+import type { DocumentId, TPDocument } from '@/domain/types';
 import { readJSON, STORAGE_KEYS, writeJSON } from '@/services/storage/storage';
 import { currentDoc } from './selectors';
 import type { RootStore } from './types';
@@ -79,6 +80,15 @@ export type RevisionsSlice = {
    * Returns the new revision id, or null when the source isn't found.
    */
   branchFromRevision: (sourceRevisionId: string, branchName: string) => string | null;
+
+  /**
+   * Phase 6 — purge per-doc storage (revisions + any lingering body slots)
+   * for every doc NOT currently open in a tab. Frees space held by closed
+   * documents; the open tabs (active + background) keep their full history.
+   * Returns how many closed docs were forgotten and how many revisions that
+   * dropped.
+   */
+  forgetClosedDocs: () => { docsForgotten: number; revisionsDropped: number };
 };
 
 export type RevisionsDataKeys = 'revisions';
@@ -167,6 +177,27 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
       saveRevisionsByDoc({ ...byDoc, [docId]: nextList });
       set({ revisions: nextList });
       return revision.id;
+    },
+
+    forgetClosedDocs: () => {
+      const openIds = new Set<string>(get().tabOrder);
+      const byDoc = loadRevisionsByDoc();
+      const next: RevisionsByDoc = {};
+      let docsForgotten = 0;
+      let revisionsDropped = 0;
+      for (const [docId, list] of Object.entries(byDoc)) {
+        if (openIds.has(docId)) {
+          next[docId] = list;
+          continue;
+        }
+        docsForgotten += 1;
+        revisionsDropped += Array.isArray(list) ? list.length : 0;
+        // Defensively drop any lingering body slots too — closeTab already
+        // removes them on close; this also sweeps pre-multi-tab orphans.
+        removeDocFromStorage(docId as DocumentId);
+      }
+      if (docsForgotten > 0) saveRevisionsByDoc(next);
+      return { docsForgotten, revisionsDropped };
     },
 
     restoreSnapshot: (revisionId) => {
