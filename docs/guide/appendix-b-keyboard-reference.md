@@ -46,6 +46,11 @@
 | `Cmd/Ctrl+\` | Close inspector (clear selection) |
 | `E` (no modifiers, not in text field) | Open Quick Capture |
 | `?` | Open Help dialog |
+| `Cmd/Ctrl+T` | New tab *(installed app only)* |
+| `Cmd/Ctrl+W` | Close tab *(installed app only)* |
+| `Cmd/Ctrl+1`–`9` | Switch to tab 1–9, 9 = last *(installed app only)* |
+
+> *The three tab keys above fire only in an installed PWA (`display-mode: standalone`). In a normal browser tab those keys belong to the browser, so use the palette tab commands below instead.*
 
 ## Palette commands worth memorising
 
@@ -66,6 +71,8 @@
 | `Move selection to Archive group` | Quick archive |
 | `Toggle EC reading guide` | EC-only |
 | `Reopen creation wizard` | If you dismissed and want it back |
+| `New tab` / `Duplicate tab` / `Close tab` / `Next tab` / `Previous tab` | Tab management (works in any browser) |
+| `Forget closed documents` | Reclaim storage from documents you've closed |
 | `Copy read-only share link` | Fragment-encoded share URL |
 | `Export` | Open the unified picker |
 

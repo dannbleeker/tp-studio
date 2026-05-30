@@ -6,6 +6,7 @@ A practitioner's walkthrough. Assumes familiarity with the Thinking Process — 
 
 1. [Starting up](#starting-up)
 2. [What you see](#what-you-see)
+3. [Working with multiple documents (tabs)](#working-with-multiple-documents-tabs)
 3. [Building a Current Reality Tree](#building-a-current-reality-tree)
 4. [Working with entities](#working-with-entities)
 5. [Connecting causes to effects](#connecting-causes-to-effects)
@@ -49,6 +50,24 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 | Zoom controls | Bottom-center | Zoom in, zoom out, fit-to-view. |
 | Inspector | Right panel | Slides in when you select an entity or edge. Holds title, type, description, CLR warnings, and delete. |
 | Toasts | Bottom-center, overlay | Brief confirmations: "Saved", "Loaded example CRT", "3 open CLR concerns", etc. |
+
+## Working with multiple documents (tabs)
+
+TP Studio holds several documents open at once, each in its own tab. The **tab strip** runs along the very top of the canvas:
+
+- **Switch** — click a tab.
+- **New tab** — click the **+** at the end of the strip (opens a blank CRT), or `Cmd/Ctrl+K → New tab`.
+- **Close** — hover a tab and click its **✕**. Closing the last tab leaves a fresh blank one — there's never zero tabs.
+- **Reorder** — drag a tab left or right.
+- **Duplicate** — `Cmd/Ctrl+K → Duplicate tab` makes an independent copy (own id, own history, `(copy)` title).
+
+Each tab is fully independent: its own undo/redo history, its own autosave, its own share link. Switching tabs parks one document's history and restores the other's. **Every open tab comes back when you reload** — close the browser and your whole working set is restored, not just the last document.
+
+**Opening a document opens a new tab.** Importing a file, loading a pattern / template / example, opening a shared link, or spawning an Evaporating Cloud from a conflict all open in a *new* tab by default, leaving your current work untouched. To restore the old "replace the current document" behaviour, turn off **Settings → Behavior → "Open documents in new tabs."**
+
+**Tab commands (palette, everywhere).** `Cmd/Ctrl+K` reaches **New tab**, **Duplicate tab**, **Close tab**, **Next tab**, **Previous tab**, and **Forget closed documents** — the last reclaims storage from documents you've closed (open tabs keep their history; it confirms first).
+
+**Keyboard shortcuts (installed app only).** When you install TP Studio as a desktop / mobile app, the native tab keys work: **`Cmd/Ctrl+T`** new tab, **`Cmd/Ctrl+W`** close tab, **`Cmd/Ctrl+1`–`9`** jump to a tab (9 = last). In a normal browser tab those keys belong to the browser, so use the palette commands instead.
 
 ## Building a Current Reality Tree
 

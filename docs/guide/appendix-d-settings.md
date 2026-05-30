@@ -29,6 +29,7 @@
 | Show creation wizard for Goal Trees | On | Auto-open the wizard on new Goal Tree docs. |
 | Show creation wizard for ECs | On | Auto-open the wizard on new EC docs. |
 | Show selection toolbar | On | The floating 3-5 verbs above selected entities. |
+| Open documents in new tabs | On | Importing, or loading a pattern / template / example / shared link, opens a new tab instead of replacing the current document. Off restores the pre-tabs "replace what's open" behaviour. |
 
 ## Layout
 

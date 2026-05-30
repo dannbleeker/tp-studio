@@ -85,6 +85,16 @@ A few commands worth memorizing today:
 | `Copy read-only share link` | Generate a URL that encodes the entire doc and load it elsewhere in read-only mode. |
 | `Show keyboard shortcuts` | The full key reference. |
 
+## Working with multiple documents
+
+TP Studio keeps several documents open at once, each in its own **tab** along the top of the canvas. Click a tab to switch; click the **+** to open a fresh CRT; hover a tab and click **✕** to close it; drag a tab to reorder. Closing the last tab leaves a new blank one — there is never zero.
+
+Each tab is independent: its own undo history, autosave, and share link. Reloading the browser restores *every* open tab, not just the active one.
+
+Opening a document — an import, a pattern, a template, an example, a shared link, or an Evaporating Cloud spawned from a conflict — opens it in a *new* tab by default, leaving your current work in place. Prefer the old "replace what's open" behaviour? Turn off **Settings → Behavior → "Open documents in new tabs"** ([Appendix D](appendix-d-settings.md)).
+
+The palette (`Cmd/Ctrl+K`) carries **New / Duplicate / Close / Next / Previous tab** and **Forget closed documents** (reclaims storage from closed docs). Installed as an app, the native **`Cmd/Ctrl+T` / `+W` / `+1`–`9`** keys work too ([Appendix B](appendix-b-keyboard-reference.md)).
+
 ## Saving, exporting, sharing — the one-paragraph version
 
 You don't save. TP Studio saves continuously to localStorage. Close the tab; reopen; your work is there.
