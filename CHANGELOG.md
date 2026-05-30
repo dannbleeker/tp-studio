@@ -2,6 +2,16 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — `resolveEdgePath` extraction (prep)
+
+Pulled the edge-path priority chain (mutex › radial › smart-routed › bezier)
+out of `TPEdge`'s ~470-line body into a pure `resolveEdgePath()`
+(`src/components/canvas/edges/resolveEdgePath.ts`) — the seam to reach for when
+a junctor / AND edge renders along the wrong path. Behaviour-identical (the
+empty-routed-path-string case is preserved to match the original `??` chain);
+5 unit tests pin the priority order + that edge case. The TPEdge component test
++ full suite stay green.
+
 ## Session 138 — Canvas coverage: centroid helper + search-dimming (prep)
 
 Safety-net coverage ahead of the rendering/clickability work. Extracted the
