@@ -28,7 +28,7 @@
 
 import { useStore as useRFStore } from '@xyflow/react';
 import { useShallow } from 'zustand/shallow';
-import { useDocumentStore } from '@/store';
+import { type RootStore, useDocumentStore } from '@/store';
 
 export type CanvasInteractionState = {
   isEditing: boolean;
@@ -37,6 +37,38 @@ export type CanvasInteractionState = {
   isDragging: boolean;
 };
 
+/**
+ * True when any CENTERED modal dialog is open — the kind that takes over the
+ * foreground with a backdrop. Canvas overlays (the SelectionToolbar) hide
+ * while one is up. Deliberately EXCLUDES side panels — the Inspector and the
+ * Revision panel (`historyPanelOpen`) — since the toolbar is designed to
+ * coexist with those.
+ *
+ * Keep this in sync with the dialog flags in `dialogsSlice`: a new centered
+ * dialog must be added here, or canvas overlays will render behind it. The
+ * gap that motivated extracting this (Import picker / Pattern library / About
+ * / Whiteboard-paste / Read-all-at-once / visual-diff Compare were missing)
+ * is covered by `tests/hooks/canvasInteractionState.test.ts`.
+ */
+export const isAnyModalOpen = (s: RootStore): boolean =>
+  s.settingsOpen ||
+  s.helpOpen ||
+  s.aboutOpen ||
+  s.docSettingsOpen ||
+  s.searchOpen ||
+  s.printOpen ||
+  s.diagramPickerOpen !== null ||
+  s.exportPickerOpen ||
+  s.importPickerOpen ||
+  s.templatePickerOpen ||
+  s.patternLibraryOpen !== null ||
+  s.whiteboardPasteOpen ||
+  s.readAllAtOnceOpen ||
+  s.quickCaptureOpen ||
+  s.confirmDialog !== null ||
+  s.sideBySideRevisionId !== null ||
+  s.compareRevisionId !== null;
+
 export function useCanvasInteractionState(): CanvasInteractionState {
   // App-state-side flags. One shallow-equal selector — re-renders
   // only when one of these primitives flips.
@@ -44,18 +76,7 @@ export function useCanvasInteractionState(): CanvasInteractionState {
     useShallow((s) => ({
       isEditing: s.editingEntityId !== null,
       isPaletteOpen: s.paletteOpen,
-      isModalOpen:
-        s.settingsOpen ||
-        s.helpOpen ||
-        s.docSettingsOpen ||
-        s.searchOpen ||
-        s.printOpen ||
-        s.diagramPickerOpen !== null ||
-        s.exportPickerOpen ||
-        s.templatePickerOpen ||
-        s.confirmDialog !== null ||
-        s.quickCaptureOpen ||
-        s.sideBySideRevisionId !== null,
+      isModalOpen: isAnyModalOpen(s),
     }))
   );
 
