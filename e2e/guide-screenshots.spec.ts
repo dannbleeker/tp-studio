@@ -90,6 +90,27 @@ test.describe('book — Part 1 — Foundations', () => {
     await _screenshot(page, 'chapter02-connected-pair', { mask: TOASTER_MASK(page) });
   });
 
+  test('chapter02-tabs', async ({ page }) => {
+    await page.goto('/?test=1');
+    await page.evaluate(() => {
+      const hook = window.__TP_TEST__;
+      if (!hook) throw new Error('test hook not installed');
+      // Default first tab: a small slice of the book's running CRT example.
+      hook.seed({ type: 'ude', titles: ['Customers churn at renewal'] });
+      hook.setDocTitle('Renewal churn (CRT)');
+      // Two more documents, each its own tab and a different diagram type,
+      // so the strip shows a realistic mixed working set.
+      hook.openTab('ec', 'Triage vs. ship (EC)');
+      hook.openTab('goalTree', 'Team goal tree');
+      // Re-focus the CRT so the canvas beneath the strip shows content.
+      hook.switchToTabIndex(0);
+    });
+    await page.waitForSelector('[data-component="tab-strip"]');
+    await page.waitForSelector('[data-component="tp-node"]');
+    await page.waitForTimeout(300);
+    await _screenshot(page, 'chapter02-tabs', { mask: TOASTER_MASK(page) });
+  });
+
   test('chapter03-causality-because', async ({ page }) => {
     await page.goto('/?test=1');
     await page.evaluate(() => {
