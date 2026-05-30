@@ -211,8 +211,16 @@
   }
 }
 
-/* Hidden in normal view; the @media print block above turns these on. */
+/* Hidden in normal view; the @media print block above turns these on
+   (the appendix additionally needs the `print-include-appendix` body class).
+
+   The appendix MUST carry a screen-default `display: none` like the other
+   two: Session 138's app shell is a flex column, so a visible appendix would
+   claim real flow space and shrink the canvas row. Before that refactor the
+   full-height canvas pushed it below the fold where `overflow-hidden` clipped
+   it, which masked the missing rule. */
 .print-only,
-.print-footer {
+.print-footer,
+[data-component="print-appendix"] {
   display: none;
 }
