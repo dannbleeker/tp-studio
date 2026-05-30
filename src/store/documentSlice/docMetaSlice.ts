@@ -230,6 +230,9 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         ...setActiveDoc(get(), doc),
         selection: { kind: 'none' },
         editingEntityId: null,
+        // Phase 6 follow-up — a replaced / new active doc invalidates any
+        // guided walkthrough (its targetIds point at the old doc's edges).
+        walkthrough: { kind: 'closed' },
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
         future: [],
       });
@@ -257,6 +260,9 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         ...setActiveDoc(get(), doc),
         selection: { kind: 'none' },
         editingEntityId: null,
+        // Phase 6 follow-up — a replaced / new active doc invalidates any
+        // guided walkthrough (its targetIds point at the old doc's edges).
+        walkthrough: { kind: 'closed' },
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
         future: [],
       });

@@ -173,6 +173,16 @@ history of every doc you've closed (open tabs keep theirs), reclaiming storage;
 confirms first since it's irreversible. Tests in
 `tests/store/multiTabPhase6.test.ts`. This wraps the multi-doc tabs arc.
 
+**Multi-doc tabs — review follow-ups.** Two fixes from a post-merge diff
+review: (1) `isStandalonePWA()` no longer counts `display-mode: fullscreen`,
+which also matched the browser's own F11 fullscreen in a normal tab and would
+have falsely enabled the tab keys there (the manifest is `display: standalone`,
+so a real install never reports `fullscreen`). (2) `setDocument` / `newDocument`
+now also drop an active guided walkthrough — the replace-mode load path and the
+new-doc path were missed by the original Phase 6 change, leaving the walkthrough
+pointed at the previous doc. Regression tests in `tests/services/pwa.test.ts` +
+`tests/store/multiTabPhase6.test.ts`.
+
 ## Session 137 — Pattern library expansion (5 per diagram type)
 
 Curated starter diagrams for every supported TOC diagram type

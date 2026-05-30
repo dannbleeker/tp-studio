@@ -70,3 +70,18 @@ describe('Phase 6 — forgetClosedDocs', () => {
     expect(revisionsDropped).toBe(0);
   });
 });
+
+describe('Phase 6 follow-up — walkthrough drops on a doc replace / new', () => {
+  it('replacing the active doc (setDocument, the replace-mode load path) closes it', () => {
+    s().startReadThrough(['e1']);
+    expect(s().walkthrough.kind).toBe('read-through');
+    s().setDocument(createDocument('frt'));
+    expect(s().walkthrough.kind).toBe('closed');
+  });
+
+  it('creating a new document closes it', () => {
+    s().startReadThrough(['e1']);
+    s().newDocument('frt');
+    expect(s().walkthrough.kind).toBe('closed');
+  });
+});
