@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Balance the auto-layout map (centering pass + auto-layout authoritative)
+
+Two changes so auto-layout diagrams (CRT/FRT/PRT/TT/S&T/Goal Tree/NBR/freeform)
+stay balanced with short, flow-aligned connectors:
+
+- **Centering pass** (`balanceFreeAxis` in `src/domain/layout.ts`): dagre's
+  Brandes-Köpf x-assignment tugs a mid-tree effect sideways between its parent
+  (above) and its causes (below), so a cause's connector runs diagonally into the
+  effect's side. A deterministic post-dagre pass re-centers each node over the
+  mean position of its causes, source→sink, with an order-preserving min-gap
+  clamp (can't reorder or overlap) + a recenter step (no rank skew). It's a pure
+  function of the same (nodes, edges, opts) tuple dagre saw → the per-component
+  layout cache stays valid. Turns the diagonal side-entry into a short bottom→top
+  connector. Edge anchoring is unchanged (shortest side, #5).
+- **Auto-layout is authoritative**: stored `entity.position` is now honored ONLY
+  for `manual` diagrams (Evaporating Cloud). Auto diagrams ignore stored
+  positions entirely (dagre + radial win), so the map is always a fresh balanced
+  layout — including imported (`.xlogic`) / legacy diagrams, which re-flow on
+  open. `overlayPinned` + the redundant `pinnedKey` cache segment are removed
+  from `useGraphPositions` (`layoutFingerprint` already covers EC position
+  changes); the now-dead context-menu "Unpin position" action + stale LA5
+  comments are cleaned. (Node dragging is already disabled app-wide, so no drag
+  UX changes.)
+
+Tests: new `tests/domain/layoutBalance.test.ts` (effect centered over causes
+within 8 px; no-overlap; determinism; no-op small graphs; multi-parent) + auto-
+ignores-pin / EC-honors-pin cases in `useGraphPositions.test.tsx`. Existing
+layout direction + component-packing + cache tests stay green. tsc + biome +
+full suite green (2150 passed).
+
 ## Session 138 — Fix: AND/OR/XOR junctor circle now tracks its target
 
 `JunctorOverlay` read each target node's position imperatively

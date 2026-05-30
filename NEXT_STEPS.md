@@ -156,9 +156,9 @@ Dann's five-goal pass on how the canvas draws + how grabbable it is. **Shipped:*
 1. **Fix AND rendering bugs** — visual glitches on AND/junctor rendering. ✅ *One fixed Session 138* — the junctor circle floated off on its own after a re-layout / drag because `JunctorOverlay` only re-rendered on pan/zoom + group changes, never on node-position changes; it now tracks its target via a live `useStore` selector (`computeJunctors`). Re-open with specifics if other AND glitches surface.
 2. **Easier drag-and-drop** — make dragging entities + creating connections more forgiving.
 3. **Easier edge/connector selection** — connectors are still fiddly to click (the 48 px halo helped; more wanted).
-4. **"Balance" the map** — keep connectors short via better node placement (layout-level; complements the per-edge 4-side work that just shipped).
+4. ~~**"Balance" the map**~~ ✅ *Session 138* — auto-layout is now authoritative (stored positions ignored for auto diagrams; imports re-flow), and a post-dagre **centering pass** (`balanceFreeAxis`, `src/domain/layout.ts`) re-centers each effect over the mean of its causes, so connectors come out short + near-vertical. Edge anchoring unchanged (#5). Details in CHANGELOG.
 
-Otherwise the backlog is drained — Dann's IT-function Goal Tree example shipped Session 138; beyond the four goals above, new work would come from fresh spec/product direction.
+Open goals remaining: **#2 easier drag-and-drop**, **#3 easier edge/connector selection** (+ re-open #1 if other AND glitches surface). Otherwise the backlog is drained — beyond those, new work would come from fresh spec/product direction.
 
 *(Was on the list: "Phase 1C node-chrome / canvas eligibility surfacing." Already done — `EligibilityBadge` ships on Action nodes via the `Show action-eligibility badge` Display setting, with full inspector readout retained. Code in `src/components/canvas/nodes/TPNodeBadges.tsx` + `useGraphNodeEmission.ts`; tests in `tests/components/canvas/eligibilityBadgeEmission.test.tsx`.)*
 

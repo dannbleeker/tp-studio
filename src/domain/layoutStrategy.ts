@@ -37,10 +37,10 @@ export const LAYOUT_STRATEGY: Record<DiagramType, LayoutStrategy> = {
   // dagre gives the right visual default; per-doc layoutConfig can flip
   // the direction (TB tends to read better for S&T than BT).
   st: 'auto',
-  // FL-DT5: free-form diagrams are autosizing today (dagre); users can
-  // drag-pin individual nodes per-entity (LA5). A future option might
-  // make `freeform` default to manual layout so every node is hand-
-  // placed by default — for now, auto + drag-pin is the cheapest path.
+  // FL-DT5: free-form diagrams use dagre auto-layout (Goal #4 — auto-layout
+  // is authoritative; stored positions are ignored). A future option could
+  // make `freeform` default to `manual` so every node is hand-placed; for
+  // now auto-layout is the cheapest path.
   freeform: 'auto',
   // Session 134 / spec major gap #5 — NBR is a forward-causal tree
   // like FRT; auto-layout via dagre gives the right visual default

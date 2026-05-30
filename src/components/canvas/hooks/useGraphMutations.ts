@@ -198,12 +198,13 @@ export const useGraphMutations = (): {
           // key, but we avoid the per-frame store churn entirely.
           change.dragging === false
         ) {
-          // LA5: persist the position on EVERY diagram type, not just
-          // manual-layout ones. On auto-layout diagrams, the persisted
-          // position pins the entity — dagre routes around it on the
-          // next layout pass. The original `strategy === 'manual'` gate
-          // is gone; the cache-key change in `useGraphPositions`
-          // (`pinnedKey`) re-runs layout when a new pin lands.
+          // Position persistence is meaningful only for `manual` diagrams
+          // (Evaporating Cloud), where `useGraphPositions` reads
+          // `entity.position` directly. On `auto` diagrams dagre is
+          // authoritative (Goal #4) and any stored position is ignored.
+          // This branch is currently unreachable anyway — node dragging is
+          // disabled (`Canvas.tsx` `nodesDraggable={false}`) — kept for
+          // if/when EC drag-to-reposition is re-enabled.
           if (!guardWriteOrToast()) continue;
           setEntityPosition(change.id, change.position);
         }

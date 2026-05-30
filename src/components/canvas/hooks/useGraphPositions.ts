@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT } from '@/domain/constants';
 import { layoutFingerprint } from '@/domain/fingerprint';
-import { edgesArray, isStNodeFormat, pinnedEntities } from '@/domain/graph';
+import { edgesArray, isStNodeFormat } from '@/domain/graph';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { radialLayout } from '@/domain/radialLayout';
 import type { TPDocument } from '@/domain/types';
@@ -115,20 +115,6 @@ const buildLayoutInputs = (
   return { nodes, edges };
 };
 
-/** Overlay LA5 pinned positions on top of an auto-layout result. */
-const overlayPinned = (
-  doc: TPDocument,
-  projection: GraphProjection,
-  base: GraphPositions
-): GraphPositions => {
-  const out: GraphPositions = { ...base };
-  for (const id of projection.visibleEntityIds) {
-    const e = doc.entities[id];
-    if (e?.position) out[id] = e.position;
-  }
-  return out;
-};
-
 export const useGraphPositions = (doc: TPDocument, projection: GraphProjection): GraphPositions => {
   // F5: alternate-view toggle. Manual-layout diagrams (EC) ignore it — their
   // positions live on the entities themselves, not in a layout algorithm.
@@ -143,23 +129,19 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   const hoistedGroupId = useDocumentStore((s) => s.hoistedGroupId);
 
   const strategy = LAYOUT_STRATEGY[doc.diagramType];
-  // LA5 cache-key segment: hash of pinned-entity positions. Auto-layout
-  // diagrams now honor `entity.position` as a pin override on top of
-  // dagre's output; a position change to a pinned entity must invalidate
-  // the memo so the overlay re-applies. Sorted-string form so order
-  // doesn't flap the key. Empty when no entity is pinned, which is the
-  // common case on fresh CRT/FRT/PRT/TT docs.
-  const pinnedKey = pinnedEntities(doc)
-    .map((e) => `${e.id}:${e.position?.x},${e.position?.y}`)
-    .sort()
-    .join('|');
+  // Goal #4 — auto-layout is authoritative: `entity.position` is honored
+  // ONLY for `manual` diagrams (EC), read directly in the manual branch
+  // below. Auto diagrams (dagre + radial) ignore stored positions entirely
+  // so the map is always a fresh balanced layout, so there's no pin-overlay
+  // cache segment here — `layoutFingerprint` already encodes position
+  // changes, which is all the manual (EC) memo needs to recompute.
   const fp = `${layoutFingerprint(doc)}|h:${hoistedGroupId ?? ''}|c:${[
     ...projection.proj.collapsedRoots,
   ]
     .sort()
     .join(
       ','
-    )}|ec:${[...projection.hiddenCountByCollapser.keys()].sort().join(',')}|cfg:${layoutConfigKey(doc.layoutConfig)}|p:${pinnedKey}|s:${strategy}|m:${layoutMode}`;
+    )}|ec:${[...projection.hiddenCountByCollapser.keys()].sort().join(',')}|cfg:${layoutConfigKey(doc.layoutConfig)}|s:${strategy}|m:${layoutMode}`;
 
   // Manual-layout diagrams (Evaporating Cloud) skip the layout engine
   // entirely: positions live on the entities themselves. Compute
@@ -181,8 +163,8 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   const radialPositions = useFingerprintMemo(() => {
     if (strategy === 'manual' || layoutMode !== 'radial') return null;
     const { nodes, edges } = buildLayoutInputs(doc, projection);
-    const auto = radialLayout(nodes, edges);
-    return overlayPinned(doc, projection, auto);
+    // Auto-layout authoritative — radial output wins; stored positions ignored.
+    return radialLayout(nodes, edges);
   }, `radial:${fp}`);
 
   // Dagre is heavy (~25 KB gzip). Lazy-load via `await import()` and
@@ -227,7 +209,8 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
         }
         const auto = mod.computeLayout(nodes, edges, opts);
         if (cancelled) return;
-        setDagreState({ fp, density: layoutDensity, data: overlayPinned(doc, projection, auto) });
+        // Auto-layout authoritative — dagre output wins; stored positions ignored.
+        setDagreState({ fp, density: layoutDensity, data: auto });
       } catch {
         // The layout engine failed to load or compute. `loadLayoutModule` has
         // cleared its cache, so the next structural change re-attempts it;

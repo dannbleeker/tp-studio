@@ -2,7 +2,6 @@ import { useShallow } from 'zustand/shallow';
 import { defaultEntityType, paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { outgoingEdges } from '@/domain/graph';
 import { presetByTitle } from '@/domain/groupPresets';
-import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import type { EntityType } from '@/domain/types';
 import { useEntity } from '@/hooks/useSelected';
@@ -27,7 +26,7 @@ export function ContextMenu() {
   //     - close, addEntity, beginEditing, updateEntity,
   //       ungroupAnd, ungroupOr, ungroupXor,
   //       toggleEntityCollapsed, swapEntities, showToast, setDocument,
-  //       setEntityPosition, createGroupFromSelection
+  //       createGroupFromSelection
   //
   // Session 95 — connect / groupAsAnd / groupAsOr / groupAsXor /
   // reverseEdge / spliceEdge dropped out of this selector when the
@@ -52,7 +51,6 @@ export function ContextMenu() {
     swapEntities,
     showToast,
     setDocument,
-    setEntityPosition,
     createGroupFromSelection,
     diagramType,
     edges,
@@ -74,7 +72,6 @@ export function ContextMenu() {
         swapEntities: s.swapEntities,
         showToast: s.showToast,
         setDocument: s.setDocument,
-        setEntityPosition: s.setEntityPosition,
         createGroupFromSelection: s.createGroupFromSelection,
         diagramType: doc.diagramType,
         edges: doc.edges,
@@ -201,21 +198,6 @@ export function ContextMenu() {
             label: resolveEntityTypeMeta(type, customEntityClasses).label,
             run: () => updateEntity(id, { type: type as EntityType }),
           })),
-        });
-      }
-      // LA5 (Session 63): pin / unpin position. Only meaningful on
-      // auto-layout diagrams — manual-layout diagrams (EC) always read
-      // entity.position by definition. Show "Unpin" when the entity is
-      // currently pinned; otherwise nothing (a drag is the way to pin).
-      if (LAYOUT_STRATEGY[diagramType] !== 'manual' && entity.position) {
-        result.push({ kind: 'separator' });
-        result.push({
-          kind: 'action',
-          label: 'Unpin position (let layout reclaim)',
-          run: () => {
-            setEntityPosition(id, null);
-            showToast('info', 'Position unpinned — auto-layout will place this entity again.');
-          },
         });
       }
       // Spawn EC: only meaningful for CRT (the canonical "recast Core Driver

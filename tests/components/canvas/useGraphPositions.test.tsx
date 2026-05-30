@@ -129,4 +129,42 @@ describe('useGraphPositions', () => {
     expect(typeof result.current[root.id]!.x).toBe('number');
     expect(typeof result.current[child.id]!.y).toBe('number');
   });
+
+  // Goal #4 — auto-layout is authoritative: a stored `entity.position` on a
+  // dagre diagram is ignored (the map is always a fresh balanced layout).
+  it('ignores a stored position on an auto (dagre) diagram', { timeout: 15_000 }, async () => {
+    useDocumentStore.setState({ doc: createDocument('crt') });
+    const { addEntity, connect, setEntityPosition } = useDocumentStore.getState();
+    const a = addEntity({ type: 'effect', title: 'A' });
+    const b = addEntity({ type: 'effect', title: 'B' });
+    connect(a.id, b.id);
+    // Pin A at an extreme coordinate dagre would never produce.
+    setEntityPosition(a.id, { x: 9999, y: 9999 });
+    const doc = useDocumentStore.getState().doc;
+    const projection = projectionFor([a.id, b.id]);
+
+    const { result } = renderHook(() => useGraphPositions(doc, projection));
+
+    await waitFor(
+      () => {
+        expect(Object.keys(result.current).sort()).toEqual([a.id, b.id].sort());
+      },
+      { timeout: 10_000 }
+    );
+    // The pin is ignored; dagre owns the position.
+    expect(result.current[a.id]).not.toEqual({ x: 9999, y: 9999 });
+  });
+
+  it('honors entity.position on a manual (EC) diagram', () => {
+    useDocumentStore.setState({ doc: createDocument('ec') });
+    const someId = Object.keys(useDocumentStore.getState().doc.entities)[0]!;
+    useDocumentStore.getState().setEntityPosition(someId, { x: 1234, y: 5678 });
+    const doc = useDocumentStore.getState().doc;
+    const projection = projectionFor(Object.keys(doc.entities));
+
+    const { result } = renderHook(() => useGraphPositions(doc, projection));
+
+    // EC is manual — the stored position is read verbatim.
+    expect(result.current[someId]).toEqual({ x: 1234, y: 5678 });
+  });
 });

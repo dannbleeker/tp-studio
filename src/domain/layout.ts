@@ -94,6 +94,124 @@ export const layoutConfigToOptions = (cfg: LayoutConfig | undefined): LayoutOpti
   };
 };
 
+// -- Goal #4 — post-dagre centering pass ----------------------------------
+//
+// dagre's Brandes-Köpf x-assignment balances a mid-tree node between its
+// parent (sink side) and its children (source side). When an effect has a
+// parent above AND causes below, the parent tugs the effect sideways off
+// its causes — so the locked shortest-side edge anchoring (#5) then enters
+// the effect on its *side*, drawing a long diagonal. This pass re-centers
+// each node over the mean position of its causes (flow-source neighbours),
+// turning that diagonal into a short bottom→top connector.
+//
+// It runs AFTER `dagre.layout` on dagre's centre coords, mutating them in
+// place. It is a pure function of the same (nodes, edges, opts) tuple dagre
+// already saw — so the per-component layout cache stays valid — and it
+// never reorders nodes within a rank or shrinks the `nodeSep` gap, so it
+// can't introduce crossings or overlaps.
+
+const CENTERING_ITERATIONS = 2;
+const CENTERING_EPS = 0.5;
+
+const balanceFreeAxis = (
+  g: dagre.graphlib.Graph,
+  opts: { direction: LayoutDirection; nodeSep: number },
+  nodes: NodeBox[],
+  edges: EdgeRef[]
+): void => {
+  // Nothing to balance with 0–2 nodes (a single chain is already aligned).
+  if (nodes.length <= 2) return;
+  // BT/TB flow vertically → re-centre on X; LR/RL → re-centre on Y. The
+  // "source side" (where causes sit along the rank axis) flips per dir.
+  const vertical = opts.direction === 'BT' || opts.direction === 'TB';
+  const sourceAtLargerRank = opts.direction === 'BT' || opts.direction === 'RL';
+
+  const freeOf = (id: string): number => {
+    const n = g.node(id);
+    return vertical ? n.x : n.y;
+  };
+  const setFree = (id: string, v: number): void => {
+    const n = g.node(id);
+    if (vertical) n.x = v;
+    else n.y = v;
+  };
+  const rankOf = (id: string): number => {
+    const n = g.node(id);
+    return vertical ? n.y : n.x;
+  };
+  const freeExtentOf = (id: string): number => {
+    const n = g.node(id);
+    return vertical ? n.width : n.height;
+  };
+
+  const realIds = new Set(nodes.map((n) => n.id));
+  // causes[effect] = its source-side neighbours (real edges only).
+  const causes = new Map<string, string[]>();
+  for (const e of edges) {
+    if (!realIds.has(e.sourceId) || !realIds.has(e.targetId)) continue;
+    const arr = causes.get(e.targetId);
+    if (arr) arr.push(e.sourceId);
+    else causes.set(e.targetId, [e.sourceId]);
+  }
+
+  // Bucket real nodes by rank-axis coord (dagre assigns one value per rank).
+  const ranks = new Map<number, string[]>();
+  for (const n of nodes) {
+    const r = rankOf(n.id);
+    const row = ranks.get(r);
+    if (row) row.push(n.id);
+    else ranks.set(r, [n.id]);
+  }
+  // Process source → sink so a node's causes are finalized before it.
+  const rankCoords = [...ranks.keys()].sort((a, b) => (sourceAtLargerRank ? b - a : a - b));
+
+  for (let iter = 0; iter < CENTERING_ITERATIONS; iter++) {
+    let moved = false;
+    for (const rc of rankCoords) {
+      const row = ranks.get(rc);
+      if (!row || row.length === 0) continue;
+      // Stable left→right order by current free coord (id tie-break).
+      row.sort((a, b) => {
+        const fa = freeOf(a);
+        const fb = freeOf(b);
+        return fa !== fb ? fa - fb : a < b ? -1 : a > b ? 1 : 0;
+      });
+      const desired = row.map((id) => {
+        const cs = causes.get(id);
+        if (!cs || cs.length === 0) return freeOf(id);
+        let sum = 0;
+        for (const c of cs) sum += freeOf(c);
+        return sum / cs.length;
+      });
+      // Forward min-gap clamp — order-preserving, guarantees no overlap.
+      const pos = desired.slice();
+      for (let i = 1; i < row.length; i++) {
+        const gap = nodeSepBetween(freeExtentOf(row[i - 1]!), freeExtentOf(row[i]!), opts.nodeSep);
+        const lo = pos[i - 1]! + gap;
+        if (pos[i]! < lo) pos[i] = lo;
+      }
+      // Re-centre the row's centroid onto the desired centroid so the
+      // forward clamp's right-bias doesn't skew the rank off its causes.
+      // A uniform shift preserves every gap, so no overlap is introduced.
+      let shift = 0;
+      for (let i = 0; i < row.length; i++) shift += pos[i]! - desired[i]!;
+      shift /= row.length;
+      for (let i = 0; i < row.length; i++) {
+        const target = pos[i]! - shift;
+        if (Math.abs(target - freeOf(row[i]!)) > CENTERING_EPS) {
+          setFree(row[i]!, target);
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+};
+
+/** Centre-to-centre minimum gap reproducing dagre's edge-to-edge `nodesep`. */
+const nodeSepBetween = (extentA: number, extentB: number, nodeSep: number): number =>
+  nodeSep + (extentA + extentB) / 2;
+
 /**
  * Run dagre on a single (assumed-connected or trivially-disconnected)
  * graph. Internal helper for the per-component path below; the exported
@@ -134,6 +252,8 @@ const layoutOneComponent = (
   }
 
   dagre.layout(g);
+  // Goal #4 — re-centre each node over its causes (see `balanceFreeAxis`).
+  balanceFreeAxis(g, opts, nodes, edges);
 
   const positions: Record<string, Position> = {};
   let minX = Number.POSITIVE_INFINITY;
