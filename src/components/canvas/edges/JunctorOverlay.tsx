@@ -1,4 +1,4 @@
-import { useReactFlow, useStore as useRFStore } from '@xyflow/react';
+import { useStore as useRFStore } from '@xyflow/react';
 import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS } from '@/domain/constants';
 import type { TPDocument } from '@/domain/types';
 import { setHoveredJunctor } from '@/services/canvasRef';
@@ -107,8 +107,43 @@ const computeJunctorGroups = (edges: TPDocument['edges']): JunctorGroup[] => {
   return result;
 };
 
+/** The slice of a React Flow internal node `computeJunctors` reads. Kept
+ *  minimal so the helper is trivially unit-testable with a plain object. */
+type TargetNodeGeometry = {
+  readonly internals: { readonly positionAbsolute: { readonly x: number; readonly y: number } };
+  readonly measured?: { readonly width?: number; readonly height?: number } | undefined;
+};
+
+/**
+ * Pure junctor-geometry: place each group's circle centered just below its
+ * target node, using the target's LIVE absolute position + measured size.
+ * `getNode` is the live lookup (React Flow's `nodeLookup`), so the geometry
+ * recomputes whenever the target moves. Exported for unit testing.
+ */
+export const computeJunctors = (
+  groups: readonly JunctorGroup[],
+  getNode: (id: string) => TargetNodeGeometry | undefined
+): Junctor[] => {
+  const out: Junctor[] = [];
+  for (const g of groups) {
+    const target = getNode(g.targetId);
+    if (!target) continue;
+    const tPos = target.internals.positionAbsolute;
+    const tWidth = target.measured?.width ?? 220;
+    const tHeight = target.measured?.height ?? 72;
+    const tX = tPos.x + tWidth / 2;
+    const tY = tPos.y + tHeight;
+    out.push({ id: g.id, kind: g.kind, cx: tX, cy: tY + JUNCTOR_CENTER_OFFSET_Y, tx: tX, ty: tY });
+  }
+  return out;
+};
+
+// Session 138 — content equality so the React Flow store subscription only
+// re-renders the overlay when a junctor's geometry actually changed (a
+// target moved / resized), not on every unrelated store tick.
+const junctorsEqual = arrayShallowEqualByKeys<Junctor>(['id', 'kind', 'cx', 'cy', 'tx', 'ty']);
+
 export function JunctorOverlay() {
-  const flow = useReactFlow();
   const transform = useRFStore((s) => s.transform);
 
   // Derive (groupId, kind, targetId) triples from the cached helper —
@@ -122,27 +157,20 @@ export function JunctorOverlay() {
 
   const [tx, ty, scale] = transform;
 
-  // No memo: `flow.getInternalNode` returns null until React Flow has
-  // measured the target node, and `groups` / `flow` don't change when
-  // that measurement lands.
-  const junctors: Junctor[] = [];
-  for (const g of groups) {
-    const target = flow.getInternalNode(g.targetId);
-    if (!target) continue;
-    const tPos = target.internals.positionAbsolute;
-    const tWidth = target.measured?.width ?? 220;
-    const tHeight = target.measured?.height ?? 72;
-    const tX = tPos.x + tWidth / 2;
-    const tY = tPos.y + tHeight;
-    junctors.push({
-      id: g.id,
-      kind: g.kind,
-      cx: tX,
-      cy: tY + JUNCTOR_CENTER_OFFSET_Y,
-      tx: tX,
-      ty: tY,
-    });
-  }
+  // Subscribe to the LIVE node geometry so each junctor tracks its target
+  // through layout shifts + drags — not just pan/zoom + group edits. The
+  // previous version read positions imperatively via `flow.getInternalNode`
+  // with no position subscription, so the circle stuck to wherever the
+  // target sat when the junctor group last changed — the "AND circle floats
+  // off on its own after a re-layout / drag" bug. `useStore` re-runs this
+  // selector on every React Flow store change; `junctorsEqual` keeps it from
+  // re-rendering unless a junctor's geometry actually moved. `nodeLookup`
+  // entries appear once React Flow has measured the node, so the overlay
+  // also fills in correctly on first paint instead of reading a stale slot.
+  const junctors = useRFStore(
+    (s) => computeJunctors(groups, (id) => s.nodeLookup.get(id)),
+    junctorsEqual
+  );
 
   if (junctors.length === 0) return null;
 

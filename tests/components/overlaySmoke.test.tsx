@@ -1,6 +1,7 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { JunctorOverlay } from '@/components/canvas/edges/JunctorOverlay';
 import { CanvasNav } from '@/components/canvas/overlays/CanvasNav';
 import { CompareBanner } from '@/components/canvas/overlays/CompareBanner';
 import { EmptyHint } from '@/components/canvas/overlays/EmptyHint';
@@ -123,5 +124,19 @@ describe('WalkthroughOverlay', () => {
     const { container } = render(<WalkthroughOverlay />);
     // Closed → no dialog content.
     expect(container.textContent ?? '').not.toMatch(/Read-through|CLR walkthrough/);
+  });
+});
+
+describe('JunctorOverlay', () => {
+  it('mounts inside a ReactFlowProvider and renders no junctors for an empty doc', () => {
+    // Guards the `useStore(selector, junctorsEqual)` wiring: a selector that
+    // builds a fresh array each tick must not crash or loop under
+    // useSyncExternalStore. Fresh store → no junctor groups → returns null.
+    const { container } = render(
+      <ReactFlowProvider>
+        <JunctorOverlay />
+      </ReactFlowProvider>
+    );
+    expect(container.textContent ?? '').not.toMatch(/AND|OR|XOR/);
   });
 });
