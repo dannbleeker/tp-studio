@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Canvas context-menu handler seam (prep)
+
+Lifted the three right-click handlers (`onNodeContextMenu` / `onEdgeContextMenu`
+/ `onPaneContextMenu`) out of `Canvas.tsx` into a `useCanvasContextMenuHandlers`
+hook + 4 unit tests (select-then-open at the cursor; keep an existing
+multi-selection on a node right-click; the edge + pane variants). With this,
+every canvas pointer gesture — click, drag, and right-click — is now an
+extracted, unit-tested hook; only `onSelectionChange` stays inline (the
+Session-136 empty-event race fix, pinned at the store level). `Canvas.tsx` sheds
+three more action destructures. Behaviour-preserving; tsc + full suite green.
+
+(The coordinate-drag / node-click *e2e* gestures were deliberately NOT added —
+this app's e2e architecture avoids node clicks because of React Flow's
+mount-time `onSelectionChange` race, so they'd be flaky; the now-complete unit
+coverage gives the same assurance.)
+
 ## Session 138 — Canvas emission / layout / mutation coverage (prep)
 
 Three unit-coverage additions ahead of the rendering/clickability work, none
