@@ -2,6 +2,17 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Canvas coverage: centroid helper + search-dimming (prep)
+
+Safety-net coverage ahead of the rendering/clickability work. Extracted the
+drag-splice centroid buffer (`populateCentroidsInto` + its types) out of
+`Canvas.tsx` into `src/components/canvas/centroids.ts` so it's unit-testable
+without importing the whole React Flow host, and added characterization tests
+for it (centre-from-measured, missing-dimension default, stale-key pruning,
+buffer reuse) and for `useSearchDimming` (closed-search no-op, empty-query
+no-op, non-match dimming, the both-endpoints edge rule). Behaviour-preserving;
+8 new tests, full suite green.
+
 ## Session 138 — `canvasMode` discriminated union (prep for rendering/clickability work)
 
 Folded the two mutually-exclusive canvas gesture flags — `joinModeEdgeId`
