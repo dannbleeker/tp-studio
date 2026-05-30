@@ -5,6 +5,29 @@ import type { RootStore } from '../types';
 import type { Selection } from './types';
 
 /**
+ * The canvas's current *interaction mode* — the two mutually-exclusive
+ * "the next click means something special" gestures, folded into one
+ * discriminated union (Session 138) so they can't both be half-set and a
+ * reader can `switch` on `kind`.
+ *
+ *   - `idle`         — normal canvas; clicks select.
+ *   - `edge-join`    — Session 133. The next edge click AND-groups the held
+ *                      `edgeId` with the clicked edge (entered via the
+ *                      selection-toolbar "AND-join with another edge…" verb).
+ *   - `pending-edge` — Session 135 (a11y slice 5). Keyboard edge creation: a
+ *                      source entity is chosen and the next entity click /
+ *                      `completePendingEdge` makes the edge.
+ *
+ * Deliberately NOT folded in: `hoistedGroupId` (an orthogonal *view* filter —
+ * you can be hoisted AND mid-gesture) and `spliceTargetEdgeId` (per-frame
+ * drag highlight, not a mode).
+ */
+export type CanvasMode =
+  | { kind: 'idle' }
+  | { kind: 'edge-join'; edgeId: EdgeId }
+  | { kind: 'pending-edge'; sourceId: EntityId };
+
+/**
  * Selection state and the "currently editing inline" cursor, plus hoist
  * (which is selection-adjacent — entering a hoist clears selection so the
  * inspector doesn't dangle on something outside the hoisted scope).
@@ -30,24 +53,14 @@ export type SelectionSlice = {
    *  not persisted. */
   spliceTargetEdgeId: string | null;
 
-  /** Session 133 — edge-join mode. When non-null, the next edge click
-   *  on the canvas attempts to AND-group the held edge with the
-   *  clicked one. Discoverable substitute for a "drag-edge-onto-edge"
-   *  gesture (which React Flow doesn't support natively because edges
-   *  have no drag handles). Entered via the selection-toolbar verb
-   *  "AND-join with another edge…" on a single-edge selection; exits
-   *  on completion, on Esc, on pane click, or on the verb a second
-   *  time. */
-  joinModeEdgeId: string | null;
-
-  /** Session 135 — a11y slice 5. Keyboard edge-creation mode. While set,
-   *  the canvas is in "pick a target" mode: the user selected a source
-   *  entity, invoked `Create edge from selected entity` via the palette,
-   *  and now needs to pick a target. `completePendingEdge(targetId)`
-   *  creates the edge via the existing `connect` action and clears the
-   *  state; `cancelPendingEdge()` clears without creating. The Esc
-   *  cascade clears it ahead of join-mode + hoist + selection. */
-  pendingEdgeSourceId: string | null;
+  /** Session 138 — the canvas interaction mode (`idle` / `edge-join` /
+   *  `pending-edge`), folding the former `joinModeEdgeId` +
+   *  `pendingEdgeSourceId` nullable flags into one discriminated union so
+   *  the two gestures are mutually exclusive by construction. The
+   *  start/cancel/complete actions below drive it; the Esc cascade clears
+   *  the active mode ahead of hoist + selection. (Hoist + splice-target
+   *  stay separate — see `CanvasMode`.) */
+  canvasMode: CanvasMode;
 
   select: (sel: Selection) => void;
   selectEntity: (id: string) => void;
@@ -98,16 +111,14 @@ export type SelectionDataKeys =
   | 'editingEntityId'
   | 'hoistedGroupId'
   | 'spliceTargetEdgeId'
-  | 'joinModeEdgeId'
-  | 'pendingEdgeSourceId';
+  | 'canvasMode';
 
 export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => ({
   selection: { kind: 'none' },
   editingEntityId: null,
   hoistedGroupId: null,
   spliceTargetEdgeId: null,
-  joinModeEdgeId: null,
-  pendingEdgeSourceId: null,
+  canvasMode: { kind: 'idle' },
 });
 
 const toggleId = (ids: string[], id: string): string[] =>
@@ -121,8 +132,7 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   editingEntityId: null,
   hoistedGroupId: null,
   spliceTargetEdgeId: null,
-  joinModeEdgeId: null,
-  pendingEdgeSourceId: null,
+  canvasMode: { kind: 'idle' },
 
   select: (selection) => set({ selection }),
   // The action surface still accepts plain `string` because selection
@@ -186,18 +196,23 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
     set({ spliceTargetEdgeId: edgeId });
   },
 
-  startEdgeJoinMode: (edgeId) => set({ joinModeEdgeId: edgeId }),
-  cancelEdgeJoinMode: () => set({ joinModeEdgeId: null }),
+  startEdgeJoinMode: (edgeId) =>
+    set({ canvasMode: { kind: 'edge-join', edgeId: edgeId as EdgeId } }),
+  cancelEdgeJoinMode: () =>
+    set((s) => (s.canvasMode.kind === 'edge-join' ? { canvasMode: { kind: 'idle' } } : {})),
 
   // Session 135 — keyboard edge-creation mode. The `connect` action lives
   // in the document slice (edgesSlice); we dispatch through `get()` to
   // reach it without a circular slice import.
-  startPendingEdge: (sourceId) => set({ pendingEdgeSourceId: sourceId }),
-  cancelPendingEdge: () => set({ pendingEdgeSourceId: null }),
+  startPendingEdge: (sourceId) =>
+    set({ canvasMode: { kind: 'pending-edge', sourceId: sourceId as EntityId } }),
+  cancelPendingEdge: () =>
+    set((s) => (s.canvasMode.kind === 'pending-edge' ? { canvasMode: { kind: 'idle' } } : {})),
   completePendingEdge: (targetId) => {
-    const sourceId = get().pendingEdgeSourceId;
-    if (!sourceId) return null;
-    set({ pendingEdgeSourceId: null });
+    const mode = get().canvasMode;
+    if (mode.kind !== 'pending-edge') return null;
+    const { sourceId } = mode;
+    set({ canvasMode: { kind: 'idle' } });
     if (sourceId === targetId) return null; // self-loop guard
     const edge = get().connect(sourceId, targetId);
     return edge?.id ?? null;

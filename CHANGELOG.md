@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — `canvasMode` discriminated union (prep for rendering/clickability work)
+
+Folded the two mutually-exclusive canvas gesture flags — `joinModeEdgeId`
+(Session 133 edge-join) and `pendingEdgeSourceId` (Session 135 keyboard
+edge-creation) — into one `CanvasMode` union (`idle | edge-join | pending-edge`)
+on the selection slice. The gestures are now exclusive by construction (the old
+pair of nullable flags could each be set independently), and every reader
+`switch`es on `canvasMode.kind` instead of null-checking two fields.
+
+Deliberately left out (despite the original "three flags" framing):
+`hoistedGroupId` is an orthogonal *view* filter — you can be hoisted into a
+group AND mid-gesture, and the Esc cascade peels them as separate layers, so
+folding it would force a false exclusivity and break "AND-join an edge while
+hoisted." `spliceTargetEdgeId` is per-frame drag-highlight, not a mode.
+
+Consumers updated: the slice start/cancel/complete actions, `Canvas.tsx`
+(onEdgeClick join + onPaneClick cancel), `StatusStrip` (the mode chips),
+`useGlobalShortcuts` (the Esc cascade), and the `complete-edge` palette command
++ its tests. Behaviour-preserving; tsc + full suite green. First of the tiered
+prep items ahead of the rendering/clickability changes.
+
 ## Session 138 — Canvas robustness pass (pre-work for rendering/clickability changes)
 
 Three safety fixes surfaced by a survey of the canvas rendering + interaction

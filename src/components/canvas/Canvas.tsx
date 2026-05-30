@@ -320,7 +320,8 @@ function CanvasInner() {
         // Failure modes (same source/target, duplicate, etc.) surface
         // via the existing `groupAsAnd` reason toast.
         onEdgeClick={(e, ed) => {
-          const joinSource = useDocumentStore.getState().joinModeEdgeId;
+          const mode = useDocumentStore.getState().canvasMode;
+          const joinSource = mode.kind === 'edge-join' ? mode.edgeId : null;
           if (!joinSource) return;
           if (joinSource === ed.id) {
             // Clicking the source edge again cancels — gives the user
@@ -345,7 +346,7 @@ function CanvasInner() {
         onPaneClick={() => {
           // Pane click also exits join mode — same cancellation
           // semantics as Esc / clicking the source edge again.
-          if (useDocumentStore.getState().joinModeEdgeId) cancelEdgeJoinMode();
+          if (useDocumentStore.getState().canvasMode.kind === 'edge-join') cancelEdgeJoinMode();
           clearSelection();
         }}
         onSelectionChange={({ nodes: selNodes, edges: selEdges }) => {
