@@ -13,6 +13,7 @@ import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { type Box, computeRadialEdgePath, nodeBoxOf } from './radialEdgeRouting';
+import { resolveEdgePath } from './resolveEdgePath';
 import {
   AggregateBadge,
   AssumptionBadge,
@@ -310,9 +311,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // we use the routed path; Phase C+ will compute a real midpoint
   // along the routed waypoints.
   const routedPath = props.data?.route?.d;
-  const path = mutexPath?.path ?? radialRoute?.path ?? routedPath ?? bezierPath;
-  const labelX = mutexPath?.labelX ?? radialRoute?.labelX ?? bezierLabelX;
-  const labelY = mutexPath?.labelY ?? radialRoute?.labelY ?? bezierLabelY;
+  const { path, labelX, labelY } = resolveEdgePath({
+    mutex: mutexPath,
+    radial: radialRoute,
+    routedPath,
+    bezier: { path: bezierPath, labelX: bezierLabelX, labelY: bezierLabelY },
+  });
 
   // `weight`, `hasDescription`, `isSpliceTarget`, `causalityLabel`,
   // `diagramType` were previously individual `useDocumentStore` calls;
