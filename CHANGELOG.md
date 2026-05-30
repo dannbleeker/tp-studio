@@ -2,6 +2,45 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Chrome header row (end the floating-overlay overlap)
+
+The tab strip, title, and toolbar were `absolute`-positioned overlays
+floating over the canvas, each nudged with its own `top-N` / `z-N` to dodge
+the others — and the full-height Inspector (`top-0`, right slide-in)
+overlapped them, so the TopBar's buttons rendered over the Inspector body
+(worse after Batch 5.2's `top-12` nudge that made room for the tab strip).
+
+Restructured the shell into a flex column (`App.tsx`): a real `<header>`
+(`z-30`, `shrink-0`) stacks the TabStrip over a **TitleBadge · TopBar** band,
+and the canvas, its overlays, and the Inspector live in a `relative flex-1`
+content row beneath it.
+
+- **De-absoluted the chrome.** TabStrip / TitleBadge / TopBar flow inside the
+  header now and dropped their `top-N` / `max-w` / `z-N` clearance hacks
+  (TitleBadge truncates via `flex-1 min-w-0`; TopBar sits right via
+  `justify-between`).
+- **Inspector can't overlap.** It's `absolute` *within the content row*, so it
+  slides in below the header — clear of the toolbar and the tab strip.
+- **Canvas overlays reset.** The EC reading strip, injection chip, Compare +
+  Speculation banners, and the CreationWizardPanel default moved from
+  `top-12` / `top-14` to `top-2` now that there's no floating chrome to dodge.
+- Refreshed the `zLayers.ts` y-offset reference table to match.
+
+**Follow-on fix — PrintAppendix on screen.** The appendix
+(`[data-component=print-appendix]`) was hidden only inside `@media print`; on
+screen it had no `display: none`. The old `relative` shell incidentally
+masked that — the full-height canvas pushed it below the fold where
+`overflow-hidden` clipped it. The flex column made it a real flow sibling that
+claimed height and squashed the canvas (it ended high, with the "Annotation
+appendix" list showing below). Added it to the screen-default hide rule beside
+`.print-only` / `.print-footer`; print output is unchanged (the
+`print-include-appendix` override still wins in `@media print`).
+
+No behaviour tests changed — the refactor touched only positioning, so the
+full suite stayed green. Verified on the dev server: header band renders, the
+Inspector no longer overlaps the toolbar, and the canvas fills to the viewport
+bottom.
+
 ## Session 138 — Tame the Edit surfaces (palette sub-sections + context-menu submenu)
 
 Two declutter passes on the action surfaces, from the Edit-menu design
