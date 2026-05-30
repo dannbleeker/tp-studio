@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Fix: AND/OR/XOR junctor circle now tracks its target
+
+`JunctorOverlay` read each target node's position imperatively
+(`flow.getInternalNode`) but only re-rendered on viewport (pan/zoom) or
+junctor-group changes — never on node-position changes. So when a target
+moved (a re-layout after adding the junction, or a drag) without the
+viewport or group set changing, the circle stayed pinned to the target's
+OLD position and floated off on its own, arrow pointing into empty space.
+
+Fix: read the geometry from the live React Flow store via `useStore`, so the
+overlay re-renders whenever a target moves. The math is extracted into a
+pure, unit-tested `computeJunctors(groups, getNode)`; a content-equality fn
+(`junctorsEqual`) keeps the overlay from re-rendering unless a junctor
+actually moved. Bonus: the circle now also fills in correctly on first paint
+(once the node is measured) instead of reading an empty `nodeLookup` slot.
+
+Tests: new `tests/components/canvas/junctorOverlay.test.ts` (geometry + a
+"circle follows the target" property + missing-node + size-fallback) + a
+`JunctorOverlay` smoke mount in `overlaySmoke.test.tsx`. Full suite green
+(2143 passed).
+
 ## Session 138 — 4-side edge anchoring (connectors choose the shortest path in/out)
 
 Smart-mode connectors now choose which of the four sides (top / bottom / left /

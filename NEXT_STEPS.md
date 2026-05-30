@@ -153,7 +153,7 @@ Dann's five-goal pass on how the canvas draws + how grabbable it is. **Shipped:*
 
 **Still open (Dann's goals #1–4 — do one at a time):**
 
-1. **Fix AND rendering bugs** — visual glitches on AND/junctor rendering.
+1. **Fix AND rendering bugs** — visual glitches on AND/junctor rendering. ✅ *One fixed Session 138* — the junctor circle floated off on its own after a re-layout / drag because `JunctorOverlay` only re-rendered on pan/zoom + group changes, never on node-position changes; it now tracks its target via a live `useStore` selector (`computeJunctors`). Re-open with specifics if other AND glitches surface.
 2. **Easier drag-and-drop** — make dragging entities + creating connections more forgiving.
 3. **Easier edge/connector selection** — connectors are still fiddly to click (the 48 px halo helped; more wanted).
 4. **"Balance" the map** — keep connectors short via better node placement (layout-level; complements the per-edge 4-side work that just shipped).
