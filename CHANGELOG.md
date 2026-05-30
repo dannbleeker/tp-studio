@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Multi-tab tail: per-doc ephemeral reset on doc change
+
+Closed Phase 3's last deferred bit (`docs/MULTI_DOC_TABS_PLAN.md`): the
+in-document **search match index** (`searchMatchIndex`, a pointer into the
+active doc's match list) wasn't reset when the active document changed, so
+switching tabs left the find panel pointing at a match position from the
+previous doc.
+
+Fixed by centralising every doc-change action's reset into one
+`activeDocEphemeralReset()` helper (`docMetaSlice.ts`) — selection, the
+editing-entity id, the walkthrough cursor, the speculation overlay, **and**
+the search match index — spread by all six doc-change sites (`setDocument` /
+`newDocument` / `openTab` / `switchTab` / `closeTab` ×2). Each site previously
+inlined a near-identical block, and two had drifted: `setDocument` /
+`newDocument` reset selection + walkthrough but **not** the speculation
+overlay (a what-if overlay could bleed onto a replace-mode-loaded doc) or the
+search index. The helper makes the reset uniform, so a future doc-change
+action physically can't forget one.
+
+Speculation **drop**-on-switch (locked decision #5) stays the default;
+carry-across remains opt-in. 4 new tests in `tabEngine.test.ts` pin the
+search-index + speculation reset across `switchTab` / `setDocument` /
+`newDocument`. Full suite green.
+
+Also tidied `NEXT_STEPS.md`: the "Suggested priority order" still listed the
+render-engine layout pass as the #1 to-do, but that shipped Sessions 136–137 —
+marked it (and this multi-tab tail) done. The multi-tab arc is now complete;
+the only un-built options (speculation carry-across, "save/export all tabs")
+are deliberately opt-in.
+
 ## Session 138 — Chrome header row (end the floating-overlay overlap)
 
 The tab strip, title, and toolbar were `absolute`-positioned overlays

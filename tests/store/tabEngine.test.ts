@@ -112,6 +112,56 @@ describe('Batch 5.1 — switchTab', () => {
   });
 });
 
+describe('Multi-tab tail — per-doc ephemeral reset on doc change', () => {
+  it('switchTab resets the search match index (it points into the previous doc match list)', () => {
+    const aId = s().activeDocId;
+    s().openTab(createDocument('frt')); // active = B
+    s().switchTab(aId); // back to A
+    s().setSearchMatchIndex(3);
+    expect(s().searchMatchIndex).toBe(3);
+
+    const bId = s().tabOrder.find((id) => id !== aId) as DocumentId;
+    s().switchTab(bId);
+    expect(s().searchMatchIndex).toBe(0);
+  });
+
+  it('switchTab drops the speculation overlay (decision #5 — no bleed across tabs)', () => {
+    const aId = s().activeDocId;
+    const e = seedEntity('A1');
+    s().openTab(createDocument('frt'));
+    s().switchTab(aId);
+    s().beginSpeculation();
+    s().setSpeculativeState(e.id, 'false');
+    expect(s().speculationOverlay).not.toBeNull();
+
+    const bId = s().tabOrder.find((id) => id !== aId) as DocumentId;
+    s().switchTab(bId);
+    expect(s().speculationOverlay).toBeNull();
+  });
+
+  it('setDocument clears the search index + speculation overlay (replace-mode load)', () => {
+    const e = seedEntity('A1');
+    s().setSearchMatchIndex(5);
+    s().beginSpeculation();
+    s().setSpeculativeState(e.id, 'false');
+
+    s().setDocument(createDocument('frt'));
+    expect(s().searchMatchIndex).toBe(0);
+    expect(s().speculationOverlay).toBeNull();
+  });
+
+  it('newDocument clears the search index + speculation overlay', () => {
+    const e = seedEntity('A1');
+    s().setSearchMatchIndex(2);
+    s().beginSpeculation();
+    s().setSpeculativeState(e.id, 'false');
+
+    s().newDocument('frt');
+    expect(s().searchMatchIndex).toBe(0);
+    expect(s().speculationOverlay).toBeNull();
+  });
+});
+
 describe('Batch 5.1 — closeTab', () => {
   it('closing a background tab leaves the active tab untouched', () => {
     const aId = s().activeDocId;
