@@ -143,9 +143,22 @@ These were reported in the Session 136 usage pass but aren't reproducible from c
 
 - ~~**Inspector closes when making a selection inside it**~~ ✅ *Done Session 136 (batch 8)* — root cause was `onSelectionChange` in `Canvas.tsx` calling `clearSelection()` on every empty-arrays event from React Flow. React Flow re-keys nodes during doc-edit re-renders and fires `onSelectionChange` with empty selNodes/selEdges before settling, which clobbered the store selection mid-edit. Fix: dropped the empty-mirror branch — pane clicks (`onPaneClick`) still clear selection deliberately. Follow-up batch raised TopBar `z-30` to stay above the now-always-visible Inspector (Playwright timeout fix).
 - ~~**"Add evidence" button does nothing**~~ ✅ *Done Session 136 (batch 9)* — Dann confirmed Browse Lock wasn't on; the failure was `addEvidence()` silently returning `null` when `readEntity()` couldn't find the id (stale closure / mid-edit window). Fix: handler now surfaces the error to the user via a toast ("Couldn't add evidence — entity unavailable. Reselect the entity and try again.") so the no-op state is visible rather than mysterious. Pairs with batch 8 to keep the entity selected through doc edits, which eliminates the stale-id window in practice.
-- ~~**Edges render behind entity nodes**~~ ✅ *Fixed Phases A+B+C of the obstacle-aware routing project* — the smart router computes a visibility-graph + A\* path around non-endpoint node bodies and emits a multi-cubic bezier through the resulting waypoints. Toggle in Settings → Display ("Smart" / "Direct"), default `'smart'`. Phase D (next) integrates the junctor segment + adds a per-layout route cache.
+- ~~**Edges render behind entity nodes**~~ ✅ *Fixed Phases A+B+C of the obstacle-aware routing project* — the smart router computes a visibility-graph + A\* path around non-endpoint node bodies and emits a multi-cubic bezier through the resulting waypoints. Toggle in Settings → Display ("Smart" / "Direct"), default `'smart'`. Phase D (junctor segment + per-layout route cache) and Session-138 **4-side anchoring** (`src/domain/edgeSides.ts` — connectors pick the shortest side to exit/enter) both shipped on top.
 
-Otherwise the backlog is drained — Dann's IT-function Goal Tree example shipped Session 138; beyond that, new work would come from fresh spec/product direction.
+## Canvas rendering & "clickability" improvements (Session 138 thread)
+
+Dann's five-goal pass on how the canvas draws + how grabbable it is. **Shipped:**
+
+5. ✅ **Connectors choose the shortest path in/out (4-side anchoring)** — *Session 138* — smart-mode edges now exit/enter on the best of all four node sides ("prefer flow direction", curves kept), folded into `'smart'` (no new toggle); junctor source-legs + side-by-side mutex included; radial excluded. New `src/domain/edgeSides.ts` + side-aware emitters in `edgeRouting.ts`. Also corrected the latent dagre-`BT` away-side anchoring. Details in CHANGELOG.
+
+**Still open (Dann's goals #1–4 — do one at a time):**
+
+1. **Fix AND rendering bugs** — visual glitches on AND/junctor rendering.
+2. **Easier drag-and-drop** — make dragging entities + creating connections more forgiving.
+3. **Easier edge/connector selection** — connectors are still fiddly to click (the 48 px halo helped; more wanted).
+4. **"Balance" the map** — keep connectors short via better node placement (layout-level; complements the per-edge 4-side work that just shipped).
+
+Otherwise the backlog is drained — Dann's IT-function Goal Tree example shipped Session 138; beyond the four goals above, new work would come from fresh spec/product direction.
 
 *(Was on the list: "Phase 1C node-chrome / canvas eligibility surfacing." Already done — `EligibilityBadge` ships on Action nodes via the `Show action-eligibility badge` Display setting, with full inspector readout retained. Code in `src/components/canvas/nodes/TPNodeBadges.tsx` + `useGraphNodeEmission.ts`; tests in `tests/components/canvas/eligibilityBadgeEmission.test.tsx`.)*
 

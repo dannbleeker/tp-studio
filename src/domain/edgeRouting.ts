@@ -35,6 +35,11 @@
  * obstacle crossings that a single perpendicular deflection can't fix.
  */
 
+// Type-only import — `edgeSides` imports values back from this module, so
+// a value import here would be a runtime cycle. `import type` is erased at
+// compile time, leaving only this module's runtime exports for `edgeSides`.
+import type { Side } from './edgeSides';
+
 /** A point in flow coordinates (pre-viewport-transform). */
 export type Point = { readonly x: number; readonly y: number };
 
@@ -238,6 +243,141 @@ export const sampleDefaultBezier = (source: Point, target: Point): Point[] => {
   return out;
 };
 
+// -- Feature #5 — side-aware tangent emitters -----------------------------
+//
+// The default emitters above bake a VERTICAL tangent (control points at
+// the vertical midpoint), which only looks right when the edge leaves the
+// source bottom and enters the target top. Once `selectEdgeSides` can pick
+// any of the four sides, the curve must leave each endpoint perpendicular
+// to its chosen side — exactly what React Flow's own `getBezierPath` does.
+// These siblings take a {@link Side} per endpoint and offset the control
+// point along that side's outward normal. The legacy emitters are kept
+// intact so existing callers / snapshots are byte-for-byte unchanged.
+
+/** Unit outward normal for a box side. */
+const sideNormal = (s: Side): Point =>
+  s === 'top'
+    ? { x: 0, y: -1 }
+    : s === 'bottom'
+      ? { x: 0, y: 1 }
+      : s === 'left'
+        ? { x: -1, y: 0 }
+        : { x: 1, y: 0 };
+
+/**
+ * Control-point reach as a fraction of the run. 0.5 reproduces the
+ * vertical-midpoint control points of {@link defaultBezierPath} exactly
+ * for the (bottom → top) facing pair, so that case stays byte-identical.
+ */
+const BEZIER_CURVATURE = 0.5;
+
+const controlOffset = (normal: Point, dx: number, dy: number): number =>
+  (normal.y !== 0 ? dy : dx) * BEZIER_CURVATURE;
+
+/**
+ * A single cubic from `source` to `target` whose tangents leave each
+ * endpoint perpendicular to its chosen side. For (bottom, top) with the
+ * target below, this collapses to `defaultBezierPath`'s output.
+ */
+export const sideBezierSegment = (
+  source: Point,
+  sourceSide: Side,
+  target: Point,
+  targetSide: Side
+): string => {
+  const dx = Math.abs(target.x - source.x);
+  const dy = Math.abs(target.y - source.y);
+  const sn = sideNormal(sourceSide);
+  const tn = sideNormal(targetSide);
+  const sOff = controlOffset(sn, dx, dy);
+  const tOff = controlOffset(tn, dx, dy);
+  const c1x = source.x + sn.x * sOff;
+  const c1y = source.y + sn.y * sOff;
+  const c2x = target.x + tn.x * tOff;
+  const c2y = target.y + tn.y * tOff;
+  return `M${source.x},${source.y} C${c1x},${c1y} ${c2x},${c2y} ${target.x},${target.y}`;
+};
+
+/**
+ * Multi-waypoint variant. Only the first and last cubics are side-aware
+ * (they touch a node); every interior cubic keeps the vertical-midpoint
+ * control points of {@link bezierThroughWaypoints}, byte-for-byte, so
+ * interior route shapes are unchanged. Input includes source as
+ * `points[0]` and target as the last entry.
+ */
+export const bezierThroughWaypointsSided = (
+  points: readonly Point[],
+  sourceSide: Side,
+  targetSide: Side
+): string => {
+  if (points.length < 2) {
+    throw new Error(`bezierThroughWaypointsSided requires at least 2 points, got ${points.length}`);
+  }
+  if (points.length === 2) {
+    const [p0, p1] = points as readonly [Point, Point, ...Point[]];
+    return sideBezierSegment(p0, sourceSide, p1, targetSide);
+  }
+  const n = points.length;
+  let path = `M${points[0]?.x},${points[0]?.y}`;
+  for (let i = 0; i < n - 1; i++) {
+    const a = points[i];
+    const b = points[i + 1];
+    if (!a || !b) continue;
+    const midY = (a.y + b.y) / 2;
+    // Interior default: vertical-midpoint controls (identical to the
+    // legacy emitter). First/last legs override the touching control.
+    let c1x = a.x;
+    let c1y = midY;
+    let c2x = b.x;
+    let c2y = midY;
+    if (i === 0) {
+      const sn = sideNormal(sourceSide);
+      const off = controlOffset(sn, Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+      c1x = a.x + sn.x * off;
+      c1y = a.y + sn.y * off;
+    }
+    if (i === n - 2) {
+      const tn = sideNormal(targetSide);
+      const off = controlOffset(tn, Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+      c2x = b.x + tn.x * off;
+      c2y = b.y + tn.y * off;
+    }
+    path += ` C${c1x},${c1y} ${c2x},${c2y} ${b.x},${b.y}`;
+  }
+  return path;
+};
+
+/**
+ * Side-aware sibling of {@link sampleDefaultBezier} — samples the cubic
+ * that {@link sideBezierSegment} draws, so the curvature-dip hit-test
+ * stays correct for horizontal anchors.
+ */
+export const sampleSidedBezier = (
+  source: Point,
+  sourceSide: Side,
+  target: Point,
+  targetSide: Side
+): Point[] => {
+  const dx = Math.abs(target.x - source.x);
+  const dy = Math.abs(target.y - source.y);
+  const sn = sideNormal(sourceSide);
+  const tn = sideNormal(targetSide);
+  const p1: Point = {
+    x: source.x + sn.x * controlOffset(sn, dx, dy),
+    y: source.y + sn.y * controlOffset(sn, dx, dy),
+  };
+  const p2: Point = {
+    x: target.x + tn.x * controlOffset(tn, dx, dy),
+    y: target.y + tn.y * controlOffset(tn, dx, dy),
+  };
+  const out: Point[] = [];
+  for (let i = 0; i < BEZIER_SAMPLE_COUNT; i++) {
+    const t = i / (BEZIER_SAMPLE_COUNT - 1);
+    out.push(cubicBezierAt(source, p1, p2, target, t));
+  }
+  return out;
+};
+
 /**
  * Exact line-segment-vs-axis-aligned-box intersection test (Liang-
  * Barsky parametric clipping). Returns `true` when the segment from
@@ -385,22 +525,14 @@ const padBox = (box: Box, margin: number): Box => ({
   height: box.height + 2 * margin,
 });
 
-/**
- * Find every obstacle whose padded bounding box is crossed by the
- * sampled bezier polyline between `source` and `target`. Returns the
- * boxes in their original (unpadded) form so callers can compute
- * detour offsets relative to the visible footprint.
- *
- * Exported for direct unit testing of the hit-test layer.
- */
-export const findBlockingObstacles = (
-  source: Point,
-  target: Point,
+/** Shared core — which obstacles a sampled polyline crosses. Returns the
+ *  blocking boxes in their original (unpadded) form. */
+const blockersForSamples = (
+  samples: readonly Point[],
   obstacles: readonly Box[],
-  padding: number = OBSTACLE_PADDING
+  padding: number
 ): Box[] => {
   if (obstacles.length === 0) return [];
-  const samples = sampleDefaultBezier(source, target);
   const blockers: Box[] = [];
   for (const box of obstacles) {
     const padded = padBox(box, padding);
@@ -418,6 +550,36 @@ export const findBlockingObstacles = (
   }
   return blockers;
 };
+
+/**
+ * Find every obstacle whose padded bounding box is crossed by the
+ * sampled bezier polyline between `source` and `target`. Returns the
+ * boxes in their original (unpadded) form so callers can compute
+ * detour offsets relative to the visible footprint.
+ *
+ * Exported for direct unit testing of the hit-test layer.
+ */
+export const findBlockingObstacles = (
+  source: Point,
+  target: Point,
+  obstacles: readonly Box[],
+  padding: number = OBSTACLE_PADDING
+): Box[] => blockersForSamples(sampleDefaultBezier(source, target), obstacles, padding);
+
+/**
+ * Side-aware sibling of {@link findBlockingObstacles} — samples the
+ * sided bezier so the curvature-dip test is correct when the edge
+ * leaves / enters a horizontal side.
+ */
+export const findBlockingObstaclesSided = (
+  source: Point,
+  sourceSide: Side,
+  target: Point,
+  targetSide: Side,
+  obstacles: readonly Box[],
+  padding: number = OBSTACLE_PADDING
+): Box[] =>
+  blockersForSamples(sampleSidedBezier(source, sourceSide, target, targetSide), obstacles, padding);
 
 /**
  * Pick the waypoint coordinates for a single-obstacle detour. The

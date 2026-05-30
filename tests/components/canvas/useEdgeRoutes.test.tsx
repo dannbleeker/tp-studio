@@ -15,6 +15,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { computeEdgeRoutes, useEdgeRoutes } from '@/components/canvas/hooks/useEdgeRoutes';
 import { useGraphProjection } from '@/components/canvas/hooks/useGraphProjection';
+import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { computeCollapseProjection } from '@/domain/groups';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../../helpers/seedDoc';
@@ -262,5 +263,84 @@ describe('computeEdgeRoutes — iteration', () => {
     const lastB = routeB?.waypoints[routeB.waypoints.length - 1];
     expect(lastA?.y).toBeGreaterThan(240);
     expect(lastB?.y).toBeGreaterThan(240);
+  });
+});
+
+// -- Feature #5 — 4-side anchoring -----------------------------------------
+
+describe('computeEdgeRoutes — 4-side anchoring', () => {
+  const HALF_W = NODE_WIDTH / 2;
+  const HALF_H = NODE_MIN_HEIGHT / 2;
+
+  it('keeps source-bottom / target-top when the source sits above the target', () => {
+    // The common dagre case (parent above child). Anchors are unchanged
+    // from the old fixed behaviour — facing sides happen to be bottom/top.
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const edge = useDocumentStore.getState().connect(a.id, b.id);
+    if (!edge) throw new Error('edge not created');
+    const doc = useDocumentStore.getState().doc;
+    const positions = { [a.id]: { x: 0, y: 0 }, [b.id]: { x: 0, y: 200 } };
+    const projection = projectionOf(doc, [a.id, b.id]);
+    const wp = computeEdgeRoutes(doc, projection, positions)[edge.id]?.waypoints;
+    expect(wp?.[0]).toEqual({ x: HALF_W, y: NODE_MIN_HEIGHT }); // source bottom
+    expect(wp?.[1]).toEqual({ x: HALF_W, y: 200 }); // target top
+  });
+
+  it('flips to source-top / target-bottom when the source sits below the target (BT fix)', () => {
+    // Production dagre `BT`: cause below, effect above. The position-based
+    // picker now anchors on the FACING sides — source top, target bottom —
+    // instead of the old fixed source-bottom / target-top (which pointed
+    // the edge the long way round).
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const edge = useDocumentStore.getState().connect(a.id, b.id);
+    if (!edge) throw new Error('edge not created');
+    const doc = useDocumentStore.getState().doc;
+    const positions = { [a.id]: { x: 0, y: 200 }, [b.id]: { x: 0, y: 0 } };
+    const projection = projectionOf(doc, [a.id, b.id]);
+    const wp = computeEdgeRoutes(doc, projection, positions)[edge.id]?.waypoints;
+    expect(wp?.[0]).toEqual({ x: HALF_W, y: 200 }); // source top
+    expect(wp?.[1]).toEqual({ x: HALF_W, y: NODE_MIN_HEIGHT }); // target bottom
+  });
+
+  it('anchors on left/right facing sides for a horizontal (ec) layout', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const edge = useDocumentStore.getState().connect(a.id, b.id);
+    if (!edge) throw new Error('edge not created');
+    // Flip the active doc to a horizontal layout type — only `diagramType`
+    // drives the axis; the seeded entities are otherwise unchanged.
+    useDocumentStore.setState((s) => ({ doc: { ...s.doc, diagramType: 'ec' as const } }));
+    const doc = useDocumentStore.getState().doc;
+    const positions = { [a.id]: { x: 0, y: 0 }, [b.id]: { x: 300, y: 0 } };
+    const projection = projectionOf(doc, [a.id, b.id]);
+    const wp = computeEdgeRoutes(doc, projection, positions)[edge.id]?.waypoints;
+    expect(wp?.[0]).toEqual({ x: NODE_WIDTH, y: HALF_H }); // source right side
+    expect(wp?.[1]).toEqual({ x: 300, y: HALF_H }); // target left side
+  });
+
+  it('junctor edge: source anchors on a side, terminus stays the circle bottom', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('C');
+    const store = useDocumentStore.getState();
+    const e1 = store.connect(a.id, c.id);
+    const e2 = store.connect(b.id, c.id);
+    if (!e1 || !e2) throw new Error('edges not created');
+    const grp = store.groupAsAnd([e1.id, e2.id]);
+    if (!grp.ok) throw new Error(`groupAsAnd failed: ${grp.reason}`);
+    const doc = useDocumentStore.getState().doc;
+    const positions = {
+      [a.id]: { x: 500, y: 200 }, // source far right + below the circle
+      [b.id]: { x: 520, y: 200 },
+      [c.id]: { x: 0, y: 0 }, // target → circle override at (HALF_W, 49)
+    };
+    const projection = projectionOf(doc, [a.id, b.id, c.id]);
+    const wp = computeEdgeRoutes(doc, projection, positions)[e1.id]?.waypoints;
+    // Left side (nearer the circle) rather than the old fixed bottom-centre.
+    expect(wp?.[0]).toEqual({ x: 500, y: 200 + HALF_H });
+    // Still terminates at the junctor circle's bottom perimeter.
+    expect(wp?.[wp.length - 1]).toEqual({ x: HALF_W, y: JUNCTOR_EDGE_TERMINAL_OFFSET_Y });
   });
 });

@@ -8,6 +8,7 @@ import { BaseEdge, type EdgeProps, getBezierPath, useStore as useRFStore } from 
 import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { selectEdgeSides } from '@/domain/edgeSides';
 import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -222,18 +223,25 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     const { srcPos, tgtPos } = mutexEndpoints;
     const verticalGap = Math.abs(srcPos.y - tgtPos.y);
     const horizontalGap = Math.abs(srcPos.x - tgtPos.x);
-    if (verticalGap <= NODE_MIN_HEIGHT) return null;
-    if (horizontalGap > NODE_WIDTH * 1.5) return null;
-    const upper = srcPos.y <= tgtPos.y ? srcPos : tgtPos;
-    const lower = srcPos.y <= tgtPos.y ? tgtPos : srcPos;
-    const x1 = upper.x + NODE_WIDTH / 2;
-    const y1 = upper.y + NODE_MIN_HEIGHT;
-    const x2 = lower.x + NODE_WIDTH / 2;
-    const y2 = lower.y;
+    // Bail only when the two Wants basically overlap — there's no clean
+    // facing pair then, so the default bezier reads better. Feature #5
+    // dropped the old "too far horizontally" cap so side-by-side Wants
+    // now connect on their facing left/right sides instead of looping.
+    if (verticalGap <= NODE_MIN_HEIGHT && horizontalGap <= NODE_WIDTH) return null;
+    // Axis by the dominant gap: stacked Wants connect top↔bottom, side-by-
+    // side Wants connect left↔right. `selectEdgeSides` picks the facing
+    // anchors; the mutex line stays dead-straight between them.
+    const axis = horizontalGap >= verticalGap ? 'horizontal' : 'vertical';
+    const { sourceAnchor: a, targetAnchor: t } = selectEdgeSides({
+      sourceBox: { x: srcPos.x, y: srcPos.y, width: NODE_WIDTH, height: NODE_MIN_HEIGHT },
+      targetBox: { x: tgtPos.x, y: tgtPos.y, width: NODE_WIDTH, height: NODE_MIN_HEIGHT },
+      axis,
+      obstacles: [],
+    });
     return {
-      path: `M ${x1},${y1} L ${x2},${y2}`,
-      labelX: (x1 + x2) / 2,
-      labelY: (y1 + y2) / 2,
+      path: `M ${a.x},${a.y} L ${t.x},${t.y}`,
+      labelX: (a.x + t.x) / 2,
+      labelY: (a.y + t.y) / 2,
     };
   })();
   // Session 99 — obstacle-aware routing for the radial layout.

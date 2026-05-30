@@ -110,10 +110,10 @@ describe('TPEdge', () => {
       expect(Math.abs(x2 - 910)).toBeLessThanOrEqual(2);
     });
 
-    it('does not override for horizontally-aligned mutex edges', () => {
-      // Defensive: if two wants somehow land side-by-side (custom
-      // layout / user drag), the vertical-gap guard should keep the
-      // bezier path rather than drawing a forced straight line.
+    it('draws a straight line on the facing sides for side-by-side mutex wants (Feature #5)', () => {
+      // Feature #5 relaxed the old vertical-only gate: two wants dragged
+      // side-by-side now connect on their facing left/right sides with a
+      // clean straight line instead of falling back to a looping bezier.
       const doc = buildExampleEC();
       const wants = Object.values(doc.entities).filter((e) => e.type === 'want');
       expect(wants).toHaveLength(2);
@@ -153,13 +153,17 @@ describe('TPEdge', () => {
       );
 
       const d = container.querySelector('path')?.getAttribute('d') ?? '';
-      // Override-skipped path must not be the simple two-point straight
-      // line the mutex override emits. The bezier may contain C / Q /
-      // additional control-point coords; whatever React Flow chooses,
-      // it should carry more than the 4 coordinate numbers a plain M-L
-      // produces.
-      const coordCount = Array.from(d.matchAll(/-?\d+(?:\.\d+)?/g)).length;
-      expect(coordCount).toBeGreaterThan(4);
+      // Straight line on the facing sides: "M x,y L x,y", no curve.
+      expect(d.startsWith('M ')).toBe(true);
+      expect(d).toContain(' L ');
+      expect(d).not.toContain(' C ');
+      const matches = Array.from(d.matchAll(/-?\d+(?:\.\d+)?/g)).map((m) => Number(m[0]));
+      expect(matches).toHaveLength(4);
+      // Both endpoints sit on the shared horizontal centerline
+      // (y = 200 + NODE_MIN_HEIGHT/2 = 236). ±2 px tolerance.
+      const [, y1, , y2] = matches as [number, number, number, number];
+      expect(Math.abs(y1 - 236)).toBeLessThanOrEqual(2);
+      expect(Math.abs(y2 - 236)).toBeLessThanOrEqual(2);
     });
   });
 });

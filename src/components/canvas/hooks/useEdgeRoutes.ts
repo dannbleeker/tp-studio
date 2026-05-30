@@ -33,14 +33,16 @@ import {
 import {
   aStarOnGraph,
   type Box,
-  bezierThroughWaypoints,
+  bezierThroughWaypointsSided,
   buildVisibilityGraph,
-  defaultBezierPath,
   type EdgeRoute,
-  findBlockingObstacles,
+  findBlockingObstaclesSided,
   type Point,
+  sideBezierSegment,
 } from '@/domain/edgeRouting';
+import { type Axis, type SideSelection, selectEdgeSides } from '@/domain/edgeSides';
 import { edgesArray, isStNodeFormat } from '@/domain/graph';
+import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { COLLAPSED_HEIGHT, COLLAPSED_WIDTH } from './graphViewConstants';
@@ -75,42 +77,41 @@ const obstacleBoxFor = (doc: TPDocument, id: string, position: Point): Box | nul
 };
 
 /**
- * Compute the source / target handle positions for an edge given the
- * top-left node positions in `positions`. The default React Flow
- * handle layout on TPNode is `Position.Bottom` for the source handle
- * and `Position.Top` for the target. We match those exactly so the
- * routed bezier joins the same anchor points the unrouted edge would
- * have used.
+ * Choose the source / target side + anchor point for one edge (Feature
+ * #5). Replaces the old fixed source-bottom / target-top anchoring with
+ * {@link selectEdgeSides}, which picks the facing sides by relative
+ * position and can switch sides to keep the connector short or dodge a
+ * node. The old fixed anchors landed on the away-facing sides under
+ * dagre `BT` (cause below, effect above); the position-based picker
+ * corrects that.
  *
- * Returns `null` if either endpoint's position or box is missing —
- * happens transiently between a layout invalidation and the next
- * dagre re-run.
+ * Junctor-grouped edges still terminate at the junctor circle's BOTTOM
+ * perimeter (a fixed point below the target, `targetY +
+ * JUNCTOR_EDGE_TERMINAL_OFFSET_Y`) — passed as the override so only the
+ * source side varies. JunctorOverlay paints the short line from the
+ * circle into the target.
  */
-const handlePositionsFor = (
-  doc: TPDocument,
-  sourceId: string,
-  targetId: string,
-  positions: GraphPositions,
+const sideSelectionFor = (
+  sourceBox: Box,
+  targetBox: Box,
+  axis: Axis,
+  obstacles: readonly Box[],
   isJunctorMember: boolean
-): { source: Point; target: Point } | null => {
-  const sPos = positions[sourceId];
-  const tPos = positions[targetId];
-  if (!sPos || !tPos) return null;
-  const sBox = obstacleBoxFor(doc, sourceId, sPos);
-  const tBox = obstacleBoxFor(doc, targetId, tPos);
-  if (!sBox || !tBox) return null;
-  // Phase D — for junctor-grouped edges, the routed segment ends at
-  // the BOTTOM perimeter of the junctor circle rather than the
-  // target's top handle. JunctorOverlay paints the short line from
-  // the circle into the target. Matches the existing TPEdge bezier
-  // override at `targetY + JUNCTOR_EDGE_TERMINAL_OFFSET_Y`, so the
-  // routed and unrouted geometries share the same endpoint.
-  const targetY = isJunctorMember ? tBox.y + JUNCTOR_EDGE_TERMINAL_OFFSET_Y : tBox.y;
-  return {
-    source: { x: sBox.x + sBox.width / 2, y: sBox.y + sBox.height },
-    target: { x: tBox.x + tBox.width / 2, y: targetY },
-  };
-};
+): SideSelection =>
+  selectEdgeSides({
+    sourceBox,
+    targetBox,
+    axis,
+    obstacles,
+    ...(isJunctorMember
+      ? {
+          targetAnchorOverride: {
+            x: targetBox.x + targetBox.width / 2,
+            y: targetBox.y + JUNCTOR_EDGE_TERMINAL_OFFSET_Y,
+          },
+        }
+      : {}),
+  });
 
 /**
  * Pure helper — given the doc + projection + positions, produce the
@@ -146,6 +147,10 @@ export const computeEdgeRoutes = (
   projection: GraphProjection,
   positions: GraphPositions
 ): EdgeRouteMap => {
+  // Feature #5 — the layout's main flow axis drives the "prefer flow
+  // direction" side choice: vertical for the dagre trees, horizontal
+  // for Evaporating Cloud.
+  const axis: Axis = HANDLE_ORIENTATION[doc.diagramType];
   // Build the universal obstacle box list once.
   const allBoxes = new Map<string, Box>();
   for (const id of projection.visibleEntityIds) {
@@ -187,68 +192,73 @@ export const computeEdgeRoutes = (
     const s = projection.remap(edge.sourceId);
     const t = projection.remap(edge.targetId);
     if (!s || !t || s === t) continue;
-    // Phase D — junctor edges route to the junctor circle's bottom
-    // perimeter, not the target's top handle. Match TPEdge's
-    // existing override condition: any junctor-grouped edge that
-    // hasn't been bucket-aggregated.
+    // Junctor edges route to the junctor circle's bottom perimeter,
+    // not a target side. Match TPEdge's override condition: any
+    // junctor-grouped edge that hasn't been bucket-aggregated.
     const isJunctorMember = Boolean(edge.andGroupId || edge.orGroupId || edge.xorGroupId);
     const pairKey = `${s}->${t}:${isJunctorMember ? 'j' : 'd'}`;
     if (seenPairs.has(pairKey)) continue;
     seenPairs.add(pairKey);
-    const handles = handlePositionsFor(doc, s, t, positions, isJunctorMember);
-    if (!handles) continue;
-    // Phase D fix — the source/target handle positions sit on their
-    // own box boundary, which means they fall *inside* the visibility
-    // graph's shrunk-interior bounds. Without exclusion, A\* would
-    // think the source can't see any corner outside its own box and
-    // fail. Pass the source/target box indices so the visibility
-    // check skips them for this edge's queries.
+    const sBox = allBoxes.get(s);
+    const tBox = allBoxes.get(t);
+    if (!sBox || !tBox) continue;
+    // Per-edge obstacle set — every visible box except this edge's own
+    // two endpoints. Shared by the side picker (which sides are clear?)
+    // and the curvature-dip check below.
+    const obstaclesForEdge: Box[] = [];
+    for (let i = 0; i < allBoxesArr.length; i++) {
+      const id = allBoxIds[i];
+      const box = allBoxesArr[i];
+      if (!box || id === s || id === t) continue;
+      obstaclesForEdge.push(box);
+    }
+    const sel = sideSelectionFor(sBox, tBox, axis, obstaclesForEdge, isJunctorMember);
+    // Phase D fix — the anchor points sit on their own box boundary, so
+    // they fall *inside* the visibility graph's shrunk-interior bounds.
+    // Pass the source/target box indices so the visibility check skips
+    // them for this edge's queries.
     const sourceBoxIdx = allBoxIds.indexOf(s);
     const targetBoxIdx = allBoxIds.indexOf(t);
-    const path = aStarOnGraph(graph, handles.source, handles.target, sourceBoxIdx, targetBoxIdx);
+    const path = aStarOnGraph(
+      graph,
+      sel.sourceAnchor,
+      sel.targetAnchor,
+      sourceBoxIdx,
+      targetBoxIdx
+    );
+    // The A\*-failed and direct-visibility branches both emit the same
+    // side-aware curve between the chosen anchors — keep it in one place.
+    const sidedCurve = () =>
+      sideBezierSegment(sel.sourceAnchor, sel.sourceSide, sel.targetAnchor, sel.targetSide);
+    const directWaypoints = [sel.sourceAnchor, sel.targetAnchor];
     if (!path || path.length < 2) {
-      // A\* failed — likely source/target inside an obstacle. Fall
-      // back to the default bezier.
-      out[edge.id] = {
-        d: defaultBezierPath(handles.source, handles.target),
-        waypoints: [handles.source, handles.target],
-      };
+      // A\* failed — likely source/target inside an obstacle. Fall back
+      // to the side-aware bezier between the chosen anchors.
+      out[edge.id] = { d: sidedCurve(), waypoints: directWaypoints };
       continue;
     }
     if (path.length === 2) {
-      // Direct visibility — emit the default bezier (skipping the
-      // straight-line "L" path A\* might have used).
-      // Only use the bezier when the straight line is genuinely
-      // obstacle-free at the BEZIER level (not just at the polyline
-      // level the visibility-graph reasons about). The bezier's
-      // curvature can dip into obstacles a straight line clears.
-      const obstaclesForEdge: Box[] = [];
-      for (let i = 0; i < allBoxesArr.length; i++) {
-        const id = allBoxIds[i];
-        const box = allBoxesArr[i];
-        if (!box || id === s || id === t) continue;
-        obstaclesForEdge.push(box);
-      }
-      const blockers = findBlockingObstacles(handles.source, handles.target, obstaclesForEdge);
-      if (blockers.length === 0) {
-        out[edge.id] = {
-          d: defaultBezierPath(handles.source, handles.target),
-          waypoints: [handles.source, handles.target],
-        };
-      } else {
-        // The straight line is clear at the polyline level but the
-        // curved bezier dips into an obstacle. Use the polyline
-        // straight-line as the path (no curvature → guaranteed
-        // obstacle-free).
-        out[edge.id] = {
-          d: bezierThroughWaypoints([handles.source, handles.target]),
-          waypoints: [handles.source, handles.target],
-        };
-      }
+      // Direct visibility. Emit the side-aware curve unless its curvature
+      // dips into an obstacle a straight line would clear — in which case
+      // use the dead-straight segment (cannot dip).
+      const dips =
+        findBlockingObstaclesSided(
+          sel.sourceAnchor,
+          sel.sourceSide,
+          sel.targetAnchor,
+          sel.targetSide,
+          obstaclesForEdge
+        ).length > 0;
+      out[edge.id] = {
+        d: dips
+          ? `M${sel.sourceAnchor.x},${sel.sourceAnchor.y} L${sel.targetAnchor.x},${sel.targetAnchor.y}`
+          : sidedCurve(),
+        waypoints: directWaypoints,
+      };
       continue;
     }
     out[edge.id] = {
-      d: bezierThroughWaypoints(path),
+      d: bezierThroughWaypointsSided(path, sel.sourceSide, sel.targetSide),
       waypoints: path,
     };
   }

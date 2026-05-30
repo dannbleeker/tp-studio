@@ -194,6 +194,18 @@ loaded.
 
 ### Phase E (not in scope, parked) — future improvements
 
+- ~~**Four-side anchoring**~~ ✅ *Shipped Session 138* — connectors now choose
+  which of the four sides (top/bottom/left/right) to exit the source and enter
+  the target, instead of fixed source-bottom / target-top. Pure `selectEdgeSides`
+  (`src/domain/edgeSides.ts`) picks the anchor pair *before* A\* ("prefer flow
+  direction": facing pair along the layout axis by default; switch only when an
+  alternative is ≥ 60 px shorter or the preferred shot is blocked). Curves are
+  kept via side-aware bezier emitters in `edgeRouting.ts` (control point along
+  each chosen side's outward normal; reduces byte-for-byte to the old
+  vertical-midpoint curve for bottom→top). Junctor source-legs + side-by-side
+  mutex included; radial keeps its own router. Also fixed the latent dagre-`BT`
+  away-side anchoring (cause-below / effect-above now anchors on the facing
+  sides). Folded into `'smart'` — no new Settings toggle.
 - **Channel routing**: dedicated horizontal/vertical lanes between
   rank rows for a cleaner "engineered" look. ELK does this natively
   if we ever migrate.

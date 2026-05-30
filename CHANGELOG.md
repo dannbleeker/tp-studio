@@ -2,6 +2,47 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — 4-side edge anchoring (connectors choose the shortest path in/out)
+
+Smart-mode connectors now choose which of the four sides (top / bottom / left /
+right) to leave the source and enter the target, instead of the old fixed
+source-bottom / target-top. The policy is "prefer flow direction": the facing
+pair along the layout's main axis (vertical for the dagre trees, horizontal for
+Evaporating Cloud) is the default; an alternative side-pair wins only when it is
+clearly shorter (≥ `SIDE_SWITCH_MARGIN` = 60 px) or the preferred straight shot
+is blocked by a node. Curves are kept — new side-aware bezier emitters offset
+each control point along the chosen side's outward normal (React-Flow-style),
+reducing byte-for-byte to the old vertical-midpoint curve for the bottom→top
+pair.
+
+This also corrects a latent inconsistency: under dagre `BT` the cause sits below
+the effect, so the old fixed source-bottom / target-top anchored on the
+*away-facing* sides. The position-based picker now lands on the facing sides —
+and, in the common case, exactly on TPNode's source-top / target-bottom handle
+dots, closing the gap the old anchoring left.
+
+- **New** `src/domain/edgeSides.ts` — pure `selectEdgeSides` (4 candidate pairs:
+  preferred + cross-axis facing + 2 L-shaped; margin-guarded; obstacle-aware) +
+  `SIDE_SWITCH_MARGIN`.
+- **`src/domain/edgeRouting.ts`** — `sideBezierSegment` /
+  `bezierThroughWaypointsSided` / `sampleSidedBezier` / `findBlockingObstaclesSided`
+  alongside the (untouched) legacy emitters.
+- **`useEdgeRoutes`** — the anchor step now calls `selectEdgeSides` and threads the
+  chosen sides into the emitters; folded entirely into the existing `'smart'`
+  mode (no new Settings toggle; `'direct'` unchanged).
+- **Junctor (AND/OR/XOR)** — source-leg side selection only; the circle stays
+  anchored below the target (its visual convention) and `JunctorOverlay` is
+  untouched.
+- **Mutex** — the straight-line override picks the facing sides by the dominant
+  gap, so side-by-side Wants connect left↔right (was: looping bezier fallback);
+  stacked Wants are unchanged.
+- Radial layout keeps its own router (excluded).
+
+Tests: new `tests/domain/edgeSides.test.ts`; extended `edgeRouting` (sided
+emitters + byte-identical backward-compat), `useEdgeRoutes` (BT-fix orientation,
+horizontal facing, junctor side-anchor), and the side-by-side mutex case in
+`TPEdge.test.tsx`. tsc + biome + full suite green (2137 passed).
+
 ## Session 138 — Canvas context-menu handler seam (prep)
 
 Lifted the three right-click handlers (`onNodeContextMenu` / `onEdgeContextMenu`

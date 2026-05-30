@@ -16,17 +16,21 @@ import {
   type Box,
   bezierThroughWaypoint,
   bezierThroughWaypoints,
+  bezierThroughWaypointsSided,
   DETOUR_CLEARANCE,
   defaultBezierPath,
   type EdgeRoute,
   findBlockingObstacles,
+  findBlockingObstaclesSided,
   findVisibilityPath,
   OBSTACLE_PADDING,
   type Point,
   pickDetourWaypoint,
   routeEdge,
   sampleDefaultBezier,
+  sampleSidedBezier,
   segmentIntersectsBox,
+  sideBezierSegment,
 } from '@/domain/edgeRouting';
 
 const ORIGIN = { x: 0, y: 0 };
@@ -533,4 +537,107 @@ describe('routeEdge — perf budget', () => {
     // cost, narrow enough to catch genuine 10×+ regressions.
     expect(elapsed).toBeLessThan(5000);
   }, 30000);
+});
+
+// -- Feature #5 — side-aware tangent emitters -----------------------------
+
+describe('sideBezierSegment', () => {
+  it('is byte-identical to defaultBezierPath for the (bottom → top) facing pair', () => {
+    const source = { x: 10, y: 20 };
+    const target = { x: 110, y: 220 };
+    expect(sideBezierSegment(source, 'bottom', target, 'top')).toBe(
+      defaultBezierPath(source, target)
+    );
+    expect(sideBezierSegment(source, 'bottom', target, 'top')).toBe(
+      'M10,20 C10,120 110,120 110,220'
+    );
+  });
+
+  it('bows horizontally for a left/right facing pair', () => {
+    // Control points reach along the horizontal normals → curve leaves
+    // the right side and enters the left side flat.
+    expect(sideBezierSegment({ x: 0, y: 50 }, 'right', { x: 100, y: 50 }, 'left')).toBe(
+      'M0,50 C50,50 50,50 100,50'
+    );
+  });
+
+  it('offsets the control point along the chosen side normal', () => {
+    // Source exits its LEFT side → first control point is left of the
+    // source and on its y; target enters its RIGHT side likewise.
+    expect(sideBezierSegment({ x: 100, y: 50 }, 'left', { x: 0, y: 50 }, 'right')).toBe(
+      'M100,50 C50,50 50,50 0,50'
+    );
+  });
+});
+
+describe('bezierThroughWaypointsSided', () => {
+  it('throws on fewer than two points', () => {
+    expect(() => bezierThroughWaypointsSided([], 'bottom', 'top')).toThrow();
+    expect(() => bezierThroughWaypointsSided([{ x: 0, y: 0 }], 'bottom', 'top')).toThrow();
+  });
+
+  it('matches sideBezierSegment when given just source + target', () => {
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 100, y: 200 },
+    ];
+    expect(bezierThroughWaypointsSided(pts, 'right', 'left')).toBe(
+      sideBezierSegment(pts[0]!, 'right', pts[1]!, 'left')
+    );
+  });
+
+  it('equals the legacy emitter for a (bottom → top) monotone-y waypoint chain', () => {
+    // Every leg descends in y, so the side-aware first/last controls
+    // collapse to the vertical-midpoint controls — byte-for-byte legacy.
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 40, y: 100 },
+      { x: 10, y: 200 },
+      { x: 60, y: 300 },
+    ];
+    expect(bezierThroughWaypointsSided(pts, 'bottom', 'top')).toBe(bezierThroughWaypoints(pts));
+  });
+
+  it('leaves interior cubics unchanged when the end sides differ', () => {
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 40, y: 100 },
+      { x: 10, y: 200 },
+      { x: 60, y: 300 },
+    ];
+    // The middle leg (40,100)→(10,200) keeps its vertical-midpoint cubic
+    // regardless of the chosen end sides.
+    const interior = 'C40,150 10,150 10,200';
+    expect(bezierThroughWaypoints(pts)).toContain(interior);
+    expect(bezierThroughWaypointsSided(pts, 'left', 'right')).toContain(interior);
+  });
+});
+
+describe('sampleSidedBezier', () => {
+  it('returns BEZIER_SAMPLE_COUNT points spanning source → target', () => {
+    const samples = sampleSidedBezier({ x: 10, y: 20 }, 'bottom', { x: 110, y: 220 }, 'top');
+    expect(samples).toHaveLength(8);
+    expect(samples[0]).toEqual({ x: 10, y: 20 });
+    expect(samples[samples.length - 1]).toEqual({ x: 110, y: 220 });
+  });
+});
+
+describe('findBlockingObstaclesSided', () => {
+  it('flags an obstacle the sided curve passes through', () => {
+    const obstacle: Box = { x: -20, y: 90, width: 40, height: 20 };
+    const blockers = findBlockingObstaclesSided({ x: 0, y: 0 }, 'bottom', { x: 0, y: 200 }, 'top', [
+      obstacle,
+    ]);
+    expect(blockers).toEqual([obstacle]);
+  });
+
+  it('returns nothing when the obstacle sits clear of the curve', () => {
+    const obstacle: Box = { x: 200, y: 90, width: 40, height: 20 };
+    expect(
+      findBlockingObstaclesSided({ x: 0, y: 0 }, 'bottom', { x: 0, y: 200 }, 'top', [obstacle])
+    ).toEqual([]);
+    expect(
+      findBlockingObstaclesSided({ x: 0, y: 0 }, 'bottom', { x: 0, y: 200 }, 'top', [])
+    ).toEqual([]);
+  });
 });
