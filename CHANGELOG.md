@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Tame the Edit surfaces (palette sub-sections + context-menu submenu)
+
+Two declutter passes on the action surfaces, from the Edit-menu design
+discussion — a left-rail toolbar was set aside as redundant with the floating
+Selection toolbar (which already surfaces the most-used verbs per selection):
+
+- **Palette `Edit` group → labelled sub-sections.** The 43-command `Edit`
+  group now lays out under sub-headers — **Clipboard & history · Build · Type
+  · Edges & junctors · Groups · Delete & swap** — in the *unfiltered* view, so
+  scanning (rather than searching) can find a verb by category. Search is
+  untouched (typing still flattens by score). Central, test-guarded
+  `EDIT_SUBGROUP` map (`editSubgroups.ts`).
+- **Right-click "Convert to" → a submenu.** The entity context menu folds its
+  inline entity-type list into a single **"Convert to ▸"** row that reveals a
+  nested flyout on **hover** (and on click, just in case). New `submenu`
+  `MenuItem` kind + a flyout renderer in `ContextMenuList` (keyboard: `→` /
+  Enter opens, `←` backs out; flips left near the right viewport edge). Trims
+  every entity right-click by several rows.
+
+Tests: `tests/components/editSubgroups.test.ts` (map coverage + sort),
+`ContextMenu.test.tsx` (submenu opens on hover), `CommandPalette.test.tsx`
+(sub-headers render). Full suite 2067 green.
+
 ## Session 138 — IT-function Goal Tree pattern
 
 Added a 6th Goal Tree to the pattern library: **Generic IT-function goals**,

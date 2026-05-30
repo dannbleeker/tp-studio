@@ -9,6 +9,7 @@ import { Modal } from '../ui/Modal';
 import { iconForCommandId } from './commandIcons';
 import { COMMANDS, type Command } from './commands';
 import type { CommandGroup } from './commands/types';
+import { EDIT_SUBGROUP, sortEditItems } from './editSubgroups';
 
 /**
  * Order in which section headers appear when the palette is unfiltered.
@@ -89,7 +90,11 @@ export function CommandPalette() {
     const ordered: { group: CommandGroup; items: Command[] }[] = [];
     for (const g of GROUP_ORDER) {
       const items = byGroup.get(g);
-      if (items && items.length > 0) ordered.push({ group: g, items });
+      if (items && items.length > 0) {
+        // The big `Edit` group lays out under sub-headers (see render); order
+        // its items by sub-section so the headers break the list cleanly.
+        ordered.push({ group: g, items: g === 'Edit' ? sortEditItems(items) : items });
+      }
     }
     return ordered;
   }, [query, filtered]);
@@ -263,7 +268,31 @@ export function CommandPalette() {
                       >
                         {section.group}
                       </li>
-                      {section.items.map((cmd) => renderRow(cmd, flatIdx++, section.group))}
+                      {section.items.map((cmd, i) => {
+                        // Edit-group rows break under sub-headers; other
+                        // groups render flat. The sub-header shows on the
+                        // first command of each sub-section.
+                        const sub = section.group === 'Edit' ? EDIT_SUBGROUP[cmd.id] : undefined;
+                        const prevId = i > 0 ? section.items[i - 1]?.id : undefined;
+                        const prevSub =
+                          section.group === 'Edit' && prevId ? EDIT_SUBGROUP[prevId] : undefined;
+                        const row = renderRow(cmd, flatIdx++, section.group);
+                        if (sub && sub !== prevSub) {
+                          return (
+                            <Fragment key={`sub:${section.group}:${cmd.id}`}>
+                              <li
+                                role="presentation"
+                                data-subheader=""
+                                className="select-none px-4 pt-2 pb-0.5 pl-6 font-medium text-[9px] text-neutral-400 uppercase tracking-wide dark:text-neutral-500"
+                              >
+                                {sub}
+                              </li>
+                              {row}
+                            </Fragment>
+                          );
+                        }
+                        return row;
+                      })}
                     </Fragment>
                   ))}
                 </>
