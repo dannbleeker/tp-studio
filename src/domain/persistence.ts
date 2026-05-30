@@ -343,6 +343,19 @@ export const removeDocFromStorage = (id: DocumentId): void => {
   removeKey(docBackupKey(id));
 };
 
+/**
+ * Phase 6 quota mitigation — drop ONLY the backup slot for one doc (the
+ * lowest-value per-doc data; its committed + live bodies remain). Returns
+ * whether a backup slot actually existed, so callers can count what they
+ * freed.
+ */
+export const removeDocBackup = (id: DocumentId): boolean => {
+  const key = docBackupKey(id);
+  const existed = readString(key) !== null;
+  removeKey(key);
+  return existed;
+};
+
 /** Per-doc loader — committed / live / backup precedence for ONE doc id. */
 const loadDocByIdWithStatus = (id: DocumentId): LoadResult =>
   pickBestDoc(

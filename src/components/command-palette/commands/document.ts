@@ -42,6 +42,29 @@ export const documentCommands: Command[] = [
     group: 'File',
     run: (s) => s.openImportPicker(),
   }),
+  // Phase 6 (Session 138) — reclaim storage held by documents you've closed.
+  // Open tabs keep their full revision history; everything else is forgotten.
+  // Irreversible, so it confirms first. Not a write to the active doc, so no
+  // write guard.
+  {
+    id: 'forget-closed-docs',
+    label: 'Forget closed documents…',
+    group: 'File',
+    run: async (s) => {
+      const ok = await s.confirm(
+        'Permanently delete the saved revision history of every document you have closed? Your open tabs keep their full history. This cannot be undone.',
+        { confirmLabel: 'Forget closed docs' }
+      );
+      if (!ok) return;
+      const { docsForgotten, revisionsDropped } = s.forgetClosedDocs();
+      s.showToast(
+        docsForgotten > 0 ? 'success' : 'info',
+        docsForgotten > 0
+          ? `Forgot ${docsForgotten} closed document${docsForgotten === 1 ? '' : 's'} (${revisionsDropped} revision${revisionsDropped === 1 ? '' : 's'} freed).`
+          : 'No closed documents to forget — every saved document is currently open.'
+      );
+    },
+  },
   // Session 135 / spec major gap #3 Phase 1B — cross-diagram entity
   // import. User picks a TP Studio JSON file, then picks one entity
   // from it; the new entity in the current doc carries an

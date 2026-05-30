@@ -156,6 +156,31 @@ export const SHORTCUTS: Shortcut[] = [
     group: 'global',
     bindsAt: 'hook',
   },
+  // Multi-doc tabs (Session 138). Browsers reserve Cmd/Ctrl+T / +W / +1–9
+  // for their own tab strip and block page overrides, so these bind ONLY in
+  // an installed PWA (display-mode: standalone). In a normal browser tab,
+  // use the palette commands (New / Close / Next / Previous tab) instead.
+  {
+    id: 'new-tab',
+    keys: `${M}+T`,
+    label: 'New tab (installed app)',
+    group: 'global',
+    bindsAt: 'hook',
+  },
+  {
+    id: 'close-tab',
+    keys: `${M}+W`,
+    label: 'Close tab (installed app)',
+    group: 'global',
+    bindsAt: 'hook',
+  },
+  {
+    id: 'switch-tab',
+    keys: `${M}+1…9`,
+    label: 'Switch to tab 1–9 (installed app)',
+    group: 'global',
+    bindsAt: 'hook',
+  },
 
   // On a selected entity ----------------------------------------------------
   { id: 'rename', keys: 'Enter', label: 'Rename', group: 'entity', bindsAt: 'hook' },

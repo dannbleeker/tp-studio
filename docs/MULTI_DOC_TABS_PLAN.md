@@ -492,11 +492,27 @@ strip above the canvas, full-width.
 **Risk**: medium. UI is large but the data model is settled.
 **Time**: 2–3 sessions (12–18 hours).
 
-### Phase 6 — Polish, edge cases, docs
+### Phase 6 — Polish, edge cases, docs — ◧ CORE SHIPPED (Session 138)
 
 **Goal**: close the gaps that only surface with multi-tab live.
 
-**Deliverables**:
+**As built (Session 138):** the three live-with-tabs gaps are closed —
+(1) **walkthrough-on-switch**: every tab transition (open / switch / close)
+drops an active guided walkthrough (`docMetaSlice`), since its `targetIds`
+point at the previous doc's edges/warnings. (2) **quota mitigation tier-2 +
+toast**: the storage-quota handler (`store/index.ts`), after trimming
+revisions, now also drops inactive open tabs' backup slots (`removeDocBackup`),
+and the final toast is tab-count-aware ("close some tabs to free space").
+(3) **Forget closed documents**: shipped as a **palette command**
+(`commands/document.ts`) + `forgetClosedDocs` action (`revisionsSlice`) —
+*not* a Settings → Documents tab — that purges the lingering revision history
+of closed docs (open tabs keep theirs); confirms first. Tests in
+`tests/store/multiTabPhase6.test.ts`. **PWA keyboard shortcuts** (Cmd+T/W/1–9,
+standalone-gated) shipped in the same batch (`services/pwa.ts` +
+`useGlobalShortcuts`). Still **optional / on-request**: speculation-overlay
+carry-across-switch and explicit "Save all / Export all tabs" commands.
+
+**Original deliverables**:
 - Quota toast: "close some tabs to free space."
 - "Forget closed doc" command in Settings → Documents.
 - Walkthrough cursor behaviour on tab switch (drop or pause-restore —
