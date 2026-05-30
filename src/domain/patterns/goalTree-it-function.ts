@@ -16,10 +16,11 @@ import type { Edge, TPDocument } from '../types';
  * **operate-efficiently** arm (CSF B: run the existing assets well), bounded
  * by a financial restriction. That shape is exactly where the classic
  * Dev-vs-Ops conflict lives. The financial-restriction boundary isn't a node
- * kind in a Goal Tree (only Goal / CSF / Necessary Condition exist); its
- * consequences already surface as the two cost-minimizing NCs (A2 + B1), so
- * the tree stays a clean 1 Goal · 2 CSFs · 6 NCs and the constraint lives in
- * the pattern's library hint.
+ * kind in a Goal Tree (only Goal / CSF / Necessary Condition exist), so it
+ * rides as a non-causal **note** pinned above the Goal — rendered dotted
+ * automatically because an endpoint is a note, and excluded from the CLR
+ * rules. Its cost consequences also surface as the two cost-minimizing NCs
+ * (A2 + B1).
  */
 export const buildPatternGoalTreeITFunction = (): TPDocument => {
   const t = Date.now();
@@ -84,7 +85,12 @@ export const buildPatternGoalTreeITFunction = (): TPDocument => {
     9
   );
 
-  const entities = [goal, csfA, csfB, ncA1, ncA2, ncA3, ncB1, ncB2, ncB3];
+  // The article's bounding constraint. A Goal Tree has no boundary node kind
+  // (only Goal / CSF / NC), so it rides as a non-causal note pinned to the
+  // Goal — rendered dotted automatically because an endpoint is a note.
+  const boundary = buildEntity('note', 'Financial restrictions must be adhered to.', t, 10);
+
+  const entities = [goal, csfA, csfB, ncA1, ncA2, ncA3, ncB1, ncB2, ncB3, boundary];
   const edges: Edge[] = [
     // CSFs → Goal
     buildEdge(csfA.id, goal.id, { kind: 'necessity' }),
@@ -97,6 +103,8 @@ export const buildPatternGoalTreeITFunction = (): TPDocument => {
     buildEdge(ncB1.id, csfB.id, { kind: 'necessity' }),
     buildEdge(ncB2.id, csfB.id, { kind: 'necessity' }),
     buildEdge(ncB3.id, csfB.id, { kind: 'necessity' }),
+    // Boundary note pinned above the Goal — dotted (note endpoint), non-causal.
+    buildEdge(goal.id, boundary.id),
   ];
 
   return {
@@ -107,7 +115,7 @@ export const buildPatternGoalTreeITFunction = (): TPDocument => {
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},
     resolvedWarnings: {},
-    nextAnnotationNumber: 10,
+    nextAnnotationNumber: 11,
     createdAt: t,
     updatedAt: t,
     schemaVersion: 8,
