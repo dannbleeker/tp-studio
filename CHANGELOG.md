@@ -2,6 +2,33 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Canvas robustness pass (pre-work for rendering/clickability changes)
+
+Three safety fixes surfaced by a survey of the canvas rendering + interaction
+code, done ahead of upcoming changes to that surface:
+
+- **The layout engine no longer fails permanently.** `loadLayoutModule` cached
+  the dynamic `import('@/domain/layout')` promise — including a *rejected* one.
+  A transient chunk-fetch failure (a stale PWA chunk after a deploy, a network
+  blip) left the canvas un-laid-out forever. Now a failed import clears the
+  cache slot so the next layout trigger re-fetches, and the call site swallows
+  the rejection cleanly instead of throwing into the void. (`useGraphPositions.ts`)
+- **The selection toolbar's z-order is now greppable.** Its `zIndex: 25` was an
+  inline literal absent from the `Z` enum, so a `Z.*` audit couldn't see it
+  (and three `z-30` banners silently sit above it). Added `Z.toolbar` (25,
+  between `Z.aside` and `Z.menu`) with a docstring and pointed the toolbar at
+  it. (`zLayers.ts`, `SelectionToolbar.tsx`)
+- **Presentation step-through no longer desyncs the selection ring.**
+  `focusEntity` wrote the store selection but not React Flow's own node
+  `selected` flag, so the stepped-to node could miss its highlight until the
+  next interaction (the divergence `testHook.selectNodeViaRF` documents). It now
+  dual-writes RF state too. (`PresentationStepThrough.tsx`)
+
+No behaviour change on the happy path; full suite green. (The bigger prep items
+— characterization tests for `Canvas.tsx`'s event handlers, extracting the click
+dispatch into a hook, the node/edge visual seams — are held to pair with the
+actual rendering/clickability changes.)
+
 ## Session 138 — Multi-tab tail: per-doc ephemeral reset on doc change
 
 Closed Phase 3's last deferred bit (`docs/MULTI_DOC_TABS_PLAN.md`): the

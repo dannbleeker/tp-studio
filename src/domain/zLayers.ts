@@ -26,6 +26,11 @@
  *                        `z-30`.)
  *   `Z.aside`     (20)  — Inspector (right slide-in) and SearchPanel (top
  *                        slide-down). Cover the canvas, never cover modals.
+ *   `Z.toolbar`   (25)  — Selection toolbar (floats above a selection). One
+ *                        notch above `Z.aside` so it clears the Inspector
+ *                        when a right-side selection pushes the toolbar into
+ *                        the Inspector's band; still below the header chrome
+ *                        (`z-30`) and the context menu.
  *   `Z.menu`      (40)  — ContextMenu (right-click). Tracks the cursor;
  *                        floats above asides but below modals.
  *   `Z.toast`     (40)  — Toaster. Same tier as the context menu because
@@ -47,6 +52,7 @@ export const Z = {
   controls: 5,
   chrome: 10,
   aside: 20,
+  toolbar: 25,
   menu: 40,
   toast: 40,
   modal: 50,
