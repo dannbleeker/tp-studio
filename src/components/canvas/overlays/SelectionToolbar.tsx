@@ -39,6 +39,7 @@ import { DataComponent } from '@/components/dataComponentNames';
 import { CARD_FOCUS } from '@/components/ui/focusClasses';
 import { branchFor, type Verb, verbsForBranch } from '@/domain/selectionVerbs';
 import { paletteKbdForCommand } from '@/domain/shortcuts';
+import { Z } from '@/domain/zLayers';
 import { useCanvasInteractionState } from '@/hooks/useCanvasInteractionState';
 import { getSelectionViewportRect } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -233,14 +234,12 @@ export function SelectionToolbar() {
     top: `${placement.top}px`,
     left: `${placement.left}px`,
     transform: 'translateX(-50%)',
-    // Session 137 — raised from `z-20` to `z-25` so the toolbar sits
-    // *above* the Inspector aside (also `z-20`, but later in App's
-    // DOM order → it was silently covering the toolbar whenever a
-    // selection on the right side of the canvas pushed the toolbar
-    // into the Inspector's horizontal band). TopBar stays above
-    // everything at `z-30`; the toolbar slots between Inspector and
-    // TopBar.
-    zIndex: 25,
+    // Session 137 — sits *above* the Inspector aside (`Z.aside`, also a
+    // right-side surface) so a selection on the right of the canvas doesn't
+    // get its toolbar silently covered; still below the header chrome
+    // (`z-30`). Centralised as `Z.toolbar` (Session 138) so this z-order is
+    // greppable from `zLayers.ts` rather than a bare inline number.
+    zIndex: Z.toolbar,
   };
 
   return (

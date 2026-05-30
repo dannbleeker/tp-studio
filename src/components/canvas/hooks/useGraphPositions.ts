@@ -55,10 +55,19 @@ let layoutModulePromise: Promise<LayoutModule> | null = null;
 const loadLayoutModule = (): Promise<LayoutModule> => {
   if (layoutModule) return Promise.resolve(layoutModule);
   if (!layoutModulePromise) {
-    layoutModulePromise = import('@/domain/layout').then((m) => {
-      layoutModule = m;
-      return m;
-    });
+    layoutModulePromise = import('@/domain/layout')
+      .then((m) => {
+        layoutModule = m;
+        return m;
+      })
+      .catch((err) => {
+        // A failed dynamic import (a stale PWA chunk after a deploy, or a
+        // transient network drop) must NOT stay cached — clearing the slot
+        // lets the next layout trigger re-fetch instead of leaving the canvas
+        // un-laid-out forever.
+        layoutModulePromise = null;
+        throw err;
+      });
   }
   return layoutModulePromise;
 };
@@ -201,23 +210,30 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
     if (dagreState.fp === fp && dagreState.density === layoutDensity) return;
     let cancelled = false;
     void (async () => {
-      const mod = await loadLayoutModule();
-      if (cancelled) return;
-      const { nodes, edges } = buildLayoutInputs(doc, projection);
-      const opts = mod.layoutConfigToOptions(doc.layoutConfig);
-      // Apply the density multiplier only when the per-doc override
-      // is absent; an explicit `layoutConfig.ranksep` (user dialed
-      // the per-doc setting) wins as-is. Note the lowercase dagre-style
-      // field names on `LayoutConfig` (per `types/document.ts`).
-      if (doc.layoutConfig?.ranksep === undefined) {
-        opts.rankSep = (opts.rankSep ?? 60) * densityMultiplier;
+      try {
+        const mod = await loadLayoutModule();
+        if (cancelled) return;
+        const { nodes, edges } = buildLayoutInputs(doc, projection);
+        const opts = mod.layoutConfigToOptions(doc.layoutConfig);
+        // Apply the density multiplier only when the per-doc override
+        // is absent; an explicit `layoutConfig.ranksep` (user dialed
+        // the per-doc setting) wins as-is. Note the lowercase dagre-style
+        // field names on `LayoutConfig` (per `types/document.ts`).
+        if (doc.layoutConfig?.ranksep === undefined) {
+          opts.rankSep = (opts.rankSep ?? 60) * densityMultiplier;
+        }
+        if (doc.layoutConfig?.nodesep === undefined) {
+          opts.nodeSep = (opts.nodeSep ?? 32) * densityMultiplier;
+        }
+        const auto = mod.computeLayout(nodes, edges, opts);
+        if (cancelled) return;
+        setDagreState({ fp, density: layoutDensity, data: overlayPinned(doc, projection, auto) });
+      } catch {
+        // The layout engine failed to load or compute. `loadLayoutModule` has
+        // cleared its cache, so the next structural change re-attempts it;
+        // until then the canvas shows un-laid-out positions rather than
+        // throwing an unhandled rejection into the void.
       }
-      if (doc.layoutConfig?.nodesep === undefined) {
-        opts.nodeSep = (opts.nodeSep ?? 32) * densityMultiplier;
-      }
-      const auto = mod.computeLayout(nodes, edges, opts);
-      if (cancelled) return;
-      setDagreState({ fp, density: layoutDensity, data: overlayPinned(doc, projection, auto) });
     })();
     return () => {
       cancelled = true;

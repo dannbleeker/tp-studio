@@ -82,6 +82,12 @@ export function PresentationStepThrough() {
 
   const focusEntity = useCallback(
     (id: string) => {
+      // Mirror the selection into React Flow's own node state, not just the
+      // store. Selecting via the store alone leaves RF's visual `selected`
+      // flag stale until the next user interaction — the same divergence
+      // `testHook.selectNodeViaRF` documents — so the stepped-to node would
+      // miss its selection ring during presentation playback.
+      flow.setNodes((nodes) => nodes.map((n) => ({ ...n, selected: n.id === id })));
       selectEntities([id]);
       // `fitView` accepts a `nodes` array via React Flow's typed
       // options; the cast satisfies TS's narrower `FitViewOptions`
