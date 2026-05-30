@@ -62,21 +62,12 @@ export function TopBar() {
   return (
     <div
       data-component="top-bar"
-      // Session 136 — raised from `z-10` to `z-30` (above the
-      // Inspector aside at `z-20`). The Inspector slides in from the
-      // right edge with `w-[min(85vw,320px)]`, which puts it directly
-      // over the TopBar's right-anchored buttons. Until batch 8 lifted
-      // the spurious `clearSelection()` on every doc edit, the
-      // Inspector closed often enough that the coverage wasn't
-      // observable; with the fix landed, the TopBar buttons (Lock,
-      // History, etc.) became unclickable whenever the Inspector was
-      // open, breaking `delete-flow.spec.ts:75` and
-      // `guide-screenshots.spec.ts:214` in Playwright's
-      // element-is-stable retry loop. The TopBar over the Inspector's
-      // top edge is mild visual overlap (the Inspector body sits
-      // below the Topbar's ~h-12 band); modals stay above both at
-      // `z-50`.
-      className="absolute top-12 right-4 z-30 flex items-center gap-2"
+      // Session 138 — the TopBar lives in the chrome header's title row
+      // (right side) rather than floating `absolute` over the canvas. That
+      // ended the old overlap with the Inspector aside (which previously
+      // forced the TopBar to `z-30` just to stay clickable); the header sits
+      // above the content row now, so nothing covers these buttons.
+      className="flex shrink-0 items-center gap-2"
     >
       {/* Below sm we collapse the Commands button to an icon to free up
           horizontal space; above sm, the full text + kbd hint shows. The

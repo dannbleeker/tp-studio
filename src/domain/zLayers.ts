@@ -18,10 +18,12 @@
  *                        decides internally; do not override).
  *   `Z.controls`   (5)  — React Flow's `<Controls>` and `<MiniMap>`.
  *                        Visible at all times; sit just above the canvas.
- *   `Z.chrome`    (10)  — Top-left title region, top-right TopBar, breadcrumb,
- *                        bottom-center FirstEntityTip + ZoomPercent. Always
- *                        visible app chrome that lives outside the canvas
- *                        but inside the viewport.
+ *   `Z.chrome`    (10)  — Canvas-relative chrome inside the content row: the
+ *                        breadcrumb, bottom-center FirstEntityTip +
+ *                        ZoomPercent, and the EC strips. (The TabStrip /
+ *                        TitleBadge / TopBar moved into the `<header>` above
+ *                        the content row in Session 138; the header is at
+ *                        `z-30`.)
  *   `Z.aside`     (20)  — Inspector (right slide-in) and SearchPanel (top
  *                        slide-down). Cover the canvas, never cover modals.
  *   `Z.menu`      (40)  — ContextMenu (right-click). Tracks the cursor;
@@ -61,16 +63,14 @@ export const Z = {
  * has best support for literal class names) — this is a navigation
  * reference, not a runtime constants module.
  *
- * Top of viewport, descending:
+ * Session 138 — the TabStrip + TitleBadge + TopBar moved out of the canvas
+ * into a real `<header>` row (`App.tsx`), so they no longer carry top-N
+ * offsets to dodge one another or the Inspector. Canvas-relative overlays
+ * now sit just inside the content row's top:
  *
- *   `top-4`   (16 px)  — TitleBadge (top-left), TopBar (top-right).
- *                        Primary app chrome. Always visible.
- *   `top-12`  (48 px)  — Multi-doc tab bar was here in the cancelled
- *                        FL-EX8 preview; currently unused. Reserved
- *                        for a future "second row" of chrome.
- *   `top-14`  (56 px)  — CreationWizardPanel default (`top-14 left-4`).
- *                        Also CompareBanner (when in diff-mode).
- *                        Injection chip on EC canvas.
+ *   `top-2`   (8 px)   — CreationWizardPanel default (`top-2 left-4`),
+ *                        CompareBanner + SpeculationBanner (top-center),
+ *                        the EC reading strip, and the injection chip.
  *
  * Bottom of viewport, ascending:
  *
