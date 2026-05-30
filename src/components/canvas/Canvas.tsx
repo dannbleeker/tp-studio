@@ -15,6 +15,7 @@ import { AssumptionAnchorOverlay } from './edges/AssumptionAnchorOverlay';
 import { JunctorOverlay } from './edges/JunctorOverlay';
 import { TPEdge } from './edges/TPEdge';
 import { useArrowKeyNodeNav } from './hooks/useArrowKeyNodeNav';
+import { useCanvasClickHandlers } from './hooks/useCanvasClickHandlers';
 import { useGraphMutations } from './hooks/useGraphMutations';
 import { useGraphView } from './hooks/useGraphView';
 import { useSearchDimming } from './hooks/useSearchDimming';
@@ -52,8 +53,6 @@ function CanvasInner() {
   // doesn't re-render on store changes that aren't `doc`. Keep state
   // reads separate (above and below) so the contract stays explicit.
   const {
-    connect,
-    clearSelection,
     selectEntity,
     selectEdge,
     selectEntities,
@@ -64,12 +63,8 @@ function CanvasInner() {
     spliceEntityIntoEdge,
     setSpliceTargetEdge,
     showToast,
-    groupAsAnd,
-    cancelEdgeJoinMode,
   } = useDocumentStore(
     useShallow((s) => ({
-      connect: s.connect,
-      clearSelection: s.clearSelection,
       selectEntity: s.selectEntity,
       selectEdge: s.selectEdge,
       selectEntities: s.selectEntities,
@@ -80,8 +75,6 @@ function CanvasInner() {
       spliceEntityIntoEdge: s.spliceEntityIntoEdge,
       setSpliceTargetEdge: s.setSpliceTargetEdge,
       showToast: s.showToast,
-      groupAsAnd: s.groupAsAnd,
-      cancelEdgeJoinMode: s.cancelEdgeJoinMode,
     }))
   );
 
@@ -95,6 +88,7 @@ function CanvasInner() {
     onEdgeMouseEnter,
     onEdgeMouseLeave,
   } = useGraphMutations();
+  const { onNodeClick, onEdgeClick, onPaneClick } = useCanvasClickHandlers();
 
   // Session 135 — canvas a11y slice 4. Arrow keys, when a node has
   // focus, walk to the connected neighbour in that direction.
@@ -245,61 +239,11 @@ function CanvasInner() {
         // edge body" and AND-group the new edge with the existing one.
         onEdgeMouseEnter={onEdgeMouseEnter}
         onEdgeMouseLeave={onEdgeMouseLeave}
-        onNodeClick={(e, n) => {
-          if (e.altKey) {
-            // Alt+click on an entity while another is selected creates an
-            // edge from the current single selection to the clicked node.
-            const cur = useDocumentStore.getState().selection;
-            if (
-              cur.kind === 'entities' &&
-              cur.ids.length === 1 &&
-              cur.ids[0] &&
-              cur.ids[0] !== n.id
-            ) {
-              if (guardWriteOrToast()) connect(cur.ids[0], n.id);
-            }
-          }
-          // Plain / Shift+click otherwise: let React Flow's own selection
-          // model run and we'll mirror via onSelectionChange below.
-        }}
-        // Session 133 — edge-join mode handler. When the user has
-        // entered join mode via the "AND-join with another edge…"
-        // verb / palette command, the next edge click is the second
-        // edge to AND-group. We intercept it here, exit join mode,
-        // and attempt the group. On success the toolbar's normal
-        // multi-edge verbs take over for further junctor tweaks.
-        // Failure modes (same source/target, duplicate, etc.) surface
-        // via the existing `groupAsAnd` reason toast.
-        onEdgeClick={(e, ed) => {
-          const mode = useDocumentStore.getState().canvasMode;
-          const joinSource = mode.kind === 'edge-join' ? mode.edgeId : null;
-          if (!joinSource) return;
-          if (joinSource === ed.id) {
-            // Clicking the source edge again cancels — gives the user
-            // an exit ramp that doesn't require Esc.
-            cancelEdgeJoinMode();
-            showToast('info', 'Join mode cancelled.');
-            return;
-          }
-          e.stopPropagation();
-          if (!guardWriteOrToast()) {
-            cancelEdgeJoinMode();
-            return;
-          }
-          const result = groupAsAnd([joinSource, ed.id]);
-          cancelEdgeJoinMode();
-          if (result.ok) {
-            showToast('success', 'AND-joined.');
-          } else {
-            showToast('info', result.reason);
-          }
-        }}
-        onPaneClick={() => {
-          // Pane click also exits join mode — same cancellation
-          // semantics as Esc / clicking the source edge again.
-          if (useDocumentStore.getState().canvasMode.kind === 'edge-join') cancelEdgeJoinMode();
-          clearSelection();
-        }}
+        onNodeClick={onNodeClick}
+        // Edge-join mode + the Alt-click / pane-deselect gestures live in
+        // `useCanvasClickHandlers` (unit-tested there).
+        onEdgeClick={onEdgeClick}
+        onPaneClick={onPaneClick}
         onSelectionChange={({ nodes: selNodes, edges: selEdges }) => {
           // React Flow drives selection during marquee-drag, ctrl/cmd-click,
           // and shift-click multi-select. Mirror its truth into the store.

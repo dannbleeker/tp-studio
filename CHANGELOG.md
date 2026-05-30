@@ -2,6 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Canvas click-handler seam (prep)
+
+Lifted the canvas's special-case click gestures — Alt-click edge-create,
+edge-join completion, and pane-deselect — out of `Canvas.tsx`'s JSX into a
+`useCanvasClickHandlers` hook. The handlers read live store state via
+`getState()`, so they're now unit-testable without mounting React Flow (9 new
+tests pin the Alt-click create + its no-op cases, the edge-join cancel/exit, and
+pane-deselect). `Canvas.tsx` sheds four now-unused store-action destructures and
+~50 lines of inline handler JSX. Behaviour-preserving; tsc + full suite green,
+and the click e2e (selection-toolbar / smoke / delete-flow) confirms the
+gestures still fire.
+
 ## Session 138 — `resolveEdgePath` extraction (prep)
 
 Pulled the edge-path priority chain (mutex › radial › smart-routed › bezier)
