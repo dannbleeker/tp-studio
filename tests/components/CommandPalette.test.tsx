@@ -93,9 +93,11 @@ describe('CommandPalette', () => {
     // `role="presentation"` so screen readers announce category transitions.
     open();
     const { container } = render(<CommandPalette />);
-    const headers = Array.from(container.querySelectorAll('li[role="presentation"]')).map(
-      (n) => n.textContent ?? ''
-    );
+    // Exclude the Edit-group sub-section headers (`data-subheader`) — this
+    // test pins the top-level GROUP order, not the intra-Edit sub-sections.
+    const headers = Array.from(
+      container.querySelectorAll('li[role="presentation"]:not([data-subheader])')
+    ).map((n) => n.textContent ?? '');
     // Every value in `headers` must come from the canonical order. The
     // canonical list is the source of truth; this test just pins that we
     // honor it.
@@ -110,6 +112,16 @@ describe('CommandPalette', () => {
       expect(found, `Header "${h}" out of order vs canonical`).toBeGreaterThanOrEqual(0);
       i = found + 1;
     }
+  });
+
+  it('renders Edit sub-section headers in the unfiltered list', () => {
+    open();
+    const { container } = render(<CommandPalette />);
+    const subheaders = Array.from(container.querySelectorAll('li[data-subheader]')).map(
+      (n) => n.textContent ?? ''
+    );
+    expect(subheaders).toContain('Clipboard & history');
+    expect(subheaders).toContain('Edges & junctors');
   });
 
   it('suppresses section headers once a query narrows the list', () => {

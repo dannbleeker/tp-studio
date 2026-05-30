@@ -146,16 +146,17 @@ export function ContextMenu() {
         });
       }
       result.push({ kind: 'separator' });
-      result.push({ kind: 'header', label: 'Convert all to' });
-      for (const type of paletteForDoc(docForPalette)) {
-        result.push({
-          kind: 'action',
+      result.push({
+        kind: 'submenu',
+        label: 'Convert all to',
+        items: paletteForDoc(docForPalette).map((type) => ({
+          kind: 'action' as const,
           label: resolveEntityTypeMeta(type, customEntityClasses).label,
           run: () => {
             for (const id of ids) updateEntity(id, { type: type as EntityType });
           },
-        });
-      }
+        })),
+      });
       result.push({ kind: 'separator' });
       result.push({
         kind: 'action',
@@ -190,13 +191,16 @@ export function ContextMenu() {
           run: () => toggleEntityCollapsed(id),
         });
       }
-      result.push({ kind: 'separator' });
-      result.push({ kind: 'header', label: 'Convert to' });
-      for (const type of convertOptions) {
+      if (convertOptions.length > 0) {
+        result.push({ kind: 'separator' });
         result.push({
-          kind: 'action',
-          label: resolveEntityTypeMeta(type, customEntityClasses).label,
-          run: () => updateEntity(id, { type: type as EntityType }),
+          kind: 'submenu',
+          label: 'Convert to',
+          items: convertOptions.map((type) => ({
+            kind: 'action' as const,
+            label: resolveEntityTypeMeta(type, customEntityClasses).label,
+            run: () => updateEntity(id, { type: type as EntityType }),
+          })),
         });
       }
       // LA5 (Session 63): pin / unpin position. Only meaningful on

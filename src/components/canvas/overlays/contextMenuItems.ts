@@ -13,7 +13,11 @@ import { useDocumentStore } from '@/store';
 export type MenuItem =
   | { kind: 'action'; label: string; destructive?: boolean; run: () => void }
   | { kind: 'separator' }
-  | { kind: 'header'; label: string };
+  | { kind: 'header'; label: string }
+  /** A row that reveals a nested flyout of (action) items on hover / click.
+   *  Used to collapse long inline lists — e.g. the entity "Convert to" type
+   *  list — into a single "Convert to ▸" row. Rendered by `ContextMenuList`. */
+  | { kind: 'submenu'; label: string; items: MenuItem[] };
 
 /**
  * Bridge a selection-verb registry entry into a ContextMenu row. For

@@ -41,8 +41,23 @@ describe('ContextMenu', () => {
     expect(labels).toContain('Add parent');
     expect(labels).toContain('Rename');
     expect(labels).toContain('Delete entity');
-    // Convert headers are not buttons, but the conversion options are.
-    expect(labels.some((l) => /Undesirable Effect|Root Cause/.test(l))).toBe(true);
+    // Type conversions are folded behind a "Convert to" submenu now.
+    expect(labels).toContain('Convert to');
+  });
+
+  it('folds type conversions into a "Convert to" submenu that opens on hover', () => {
+    const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+    openOnEntity(a.id);
+    const { container } = render(<ContextMenu />);
+    // Collapsed: the type options aren't rendered in the menu yet.
+    expect(itemLabels(container).some((l) => /Undesirable Effect|Root Cause/.test(l))).toBe(false);
+    const trigger = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+    ).find((b) => b.textContent?.trim() === 'Convert to');
+    if (!trigger?.parentElement) throw new Error('no "Convert to" submenu trigger found');
+    act(() => fireEvent.mouseEnter(trigger.parentElement as HTMLElement));
+    // Open: the type options now appear in the flyout.
+    expect(itemLabels(container).some((l) => /Undesirable Effect|Root Cause/.test(l))).toBe(true);
   });
 
   it('on an edge shows Delete edge (and Ungroup AND when applicable)', () => {
@@ -70,8 +85,8 @@ describe('ContextMenu', () => {
     const { container } = render(<ContextMenu />);
     const labels = itemLabels(container);
     expect(labels.some((l) => /Delete 2 entities/.test(l))).toBe(true);
-    // Every entity-type option appears as a "Convert all" candidate.
-    expect(labels.some((l) => /Undesirable Effect/.test(l))).toBe(true);
+    // Bulk conversions are folded behind a "Convert all to" submenu.
+    expect(labels).toContain('Convert all to');
   });
 
   it('on a multi-edge selection puts "Group as AND" as the top item', () => {
