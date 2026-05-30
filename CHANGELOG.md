@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — IT-function Goal Tree pattern
+
+Added a 6th Goal Tree to the pattern library: **Generic IT-function goals**,
+from Dann Bleeker Pedersen's 2020 article *"Generic goals for an IT
+function."* A 1 Goal · 2 CSF · 6 NC necessity tree — a **build-and-implement**
+value arm (CSF A) and an **efficient-operation** arm (CSF B), the shape where
+the classic Dev-vs-Ops conflict lives. The financial-restriction boundary from
+the article rides in the pattern hint (its cost consequences already surface as
+NCs A2 + B1, so the tree stays a clean goal/CSF/NC shape). Titles are the
+author's own work, reproduced verbatim. Reachable via `Cmd+K → Pattern
+library…` → Goal Tree filter. New `src/domain/patterns/goalTree-it-function.ts`;
+the 9-entity / 8-edge shape is pinned in `tests/domain/patterns.test.ts`.
+
 ## Session 138 — Multi-doc tabs Phases 2–5 (foundation → working tabs)
 
 Multi-document tabs (`docs/MULTI_DOC_TABS_PLAN.md`) went from data-model
