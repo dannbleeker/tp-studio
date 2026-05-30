@@ -1,3 +1,4 @@
+import { createDocument } from '@/domain/factory';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
@@ -156,6 +157,23 @@ export interface TpTestHook {
    * which is irrelevant to the PPTX-export contract under test.
    */
   openExportPicker: () => void;
+  /**
+   * Session 138 — open a fresh document of the given type in a NEW tab
+   * (the multi-doc `openTab` action — NOT `newDocument`, which replaces
+   * the active doc). The optional title is written onto the document
+   * before it opens, so the guide-screenshot spec can render a tab strip
+   * with meaningful, distinct labels regardless of activation order.
+   */
+  openTab: (
+    diagramType: 'crt' | 'frt' | 'prt' | 'tt' | 'ec' | 'goalTree' | 'st' | 'freeform',
+    title?: string
+  ) => void;
+  /**
+   * Session 138 — switch the active tab by position in `tabOrder`. Lets
+   * the guide-screenshot spec re-focus a specific tab after opening
+   * several, without leaking document ids across the test boundary.
+   */
+  switchToTabIndex: (index: number) => void;
 }
 
 /**
@@ -238,6 +256,15 @@ export const maybeInstallTestHook = (): void => {
     getEntityType: (id) => currentDoc(useDocumentStore.getState()).entities[id]?.type ?? null,
     setDocTitle: (title) => useDocumentStore.getState().setTitle(title),
     openExportPicker: () => useDocumentStore.getState().openExportPicker(),
+    openTab: (diagramType, title) => {
+      const doc = createDocument(diagramType);
+      useDocumentStore.getState().openTab(title ? { ...doc, title } : doc);
+    },
+    switchToTabIndex: (index) => {
+      const s = useDocumentStore.getState();
+      const id = s.tabOrder[index];
+      if (id) s.switchTab(id);
+    },
   };
   // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an
   // optional `TpTestHook` — no `as any` cast needed. The opt-in URL
