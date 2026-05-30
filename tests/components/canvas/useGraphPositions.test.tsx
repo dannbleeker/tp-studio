@@ -110,4 +110,23 @@ describe('useGraphPositions', () => {
     expect(typeof result.current[a.id]!.x).toBe('number');
     expect(typeof result.current[b.id]!.y).toBe('number');
   });
+
+  it('returns synchronous positions for a radial layout', () => {
+    // Radial is hand-rolled + synchronous (no dagre import) — positions
+    // should be present on the very first render, like the EC path. This is
+    // the dark corner the file's own docstring lists but never exercised.
+    useDocumentStore.setState({ doc: createDocument('crt'), layoutMode: 'radial' });
+    const { addEntity, connect } = useDocumentStore.getState();
+    const root = addEntity({ type: 'effect', title: 'Root' });
+    const child = addEntity({ type: 'effect', title: 'Child' });
+    connect(child.id, root.id);
+    const doc = useDocumentStore.getState().doc;
+    const projection = projectionFor([root.id, child.id]);
+
+    const { result } = renderHook(() => useGraphPositions(doc, projection));
+
+    expect(Object.keys(result.current).sort()).toEqual([root.id, child.id].sort());
+    expect(typeof result.current[root.id]!.x).toBe('number');
+    expect(typeof result.current[child.id]!.y).toBe('number');
+  });
 });

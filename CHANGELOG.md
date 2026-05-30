@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Canvas emission / layout / mutation coverage (prep)
+
+Three unit-coverage additions ahead of the rendering/clickability work, none
+touching production code:
+
+- **`useGraphEdgeEmission` (AND-edge aggregation)** — 5 tests pin the
+  junctor-rendering rules: a plain edge keeps its arrowhead; an AND-grouped
+  (junctor) edge drops it (the junctor circle owns the arrow) + carries
+  `andGroupId`; multiple edges on one remapped pair collapse into a
+  non-selectable `agg:` edge that keeps its arrowhead; the AND marker colour on
+  an aggregated junctor edge; and the self-loop skip. (Your stated #1 —
+  AND-rendering.)
+- **`useGraphPositions` radial branch** — the radial layout was the one path the
+  file's own docstring listed but never exercised; one test pins that it returns
+  synchronous positions.
+- **`useGraphMutations` junctor-null path** — pins the Session-138-audited
+  false-negative: an `onConnectEnd` junctor drop with no live canvas instance
+  fails open with the "group no longer exists" toast.
+
+Full suite green.
+
 ## Session 138 — Canvas drag-handler seam + splice coverage (prep)
 
 Lifted the Alt-drag-to-splice gestures (`onNodeDrag` highlight + `onNodeDragStop`

@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useGraphMutations } from '@/components/canvas/hooks/useGraphMutations';
+import { setCanvasInstance, setHoveredJunctor } from '@/services/canvasRef';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import {
   mockConnection,
@@ -86,6 +87,22 @@ describe('useGraphMutations — onConnectEnd (drop-on-node fallback)', () => {
       })
     );
     expect(Object.keys(s().doc.edges).length).toBe(before);
+  });
+
+  it('a junctor drop with no live canvas instance fails open with a "group no longer exists" toast', () => {
+    const a = seedEntity('A');
+    // JunctorOverlay sets this on hover; with no React Flow instance registered
+    // in the test, `getCanvasInstance()` is null → no member edge found → the
+    // defensive info toast fires. Pins the Session-138-audited false-negative so
+    // a future clickability refactor can't silently change it.
+    setCanvasInstance(null);
+    setHoveredJunctor({ groupId: 'g1', kind: 'AND' });
+    const { result } = renderHook(() => useGraphMutations());
+    result.current.onConnectEnd(
+      mockMouseEvent(),
+      mockFinalConnectionState({ fromId: a.id, isValid: false })
+    );
+    expect(s().toasts.some((t) => /group no longer exists/i.test(t.message))).toBe(true);
   });
 });
 
