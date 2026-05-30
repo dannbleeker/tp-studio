@@ -13,6 +13,7 @@ import { JunctorOverlay } from './edges/JunctorOverlay';
 import { TPEdge } from './edges/TPEdge';
 import { useArrowKeyNodeNav } from './hooks/useArrowKeyNodeNav';
 import { useCanvasClickHandlers } from './hooks/useCanvasClickHandlers';
+import { useCanvasContextMenuHandlers } from './hooks/useCanvasContextMenuHandlers';
 import { useCanvasDragHandlers } from './hooks/useCanvasDragHandlers';
 import { useGraphMutations } from './hooks/useGraphMutations';
 import { useGraphView } from './hooks/useGraphView';
@@ -50,22 +51,11 @@ function CanvasInner() {
   // across renders), so this selector never re-emits and the component
   // doesn't re-render on store changes that aren't `doc`. Keep state
   // reads separate (above and below) so the contract stays explicit.
-  const {
-    selectEntity,
-    selectEdge,
-    selectEntities,
-    selectEdges,
-    addEntity,
-    openContextMenu,
-    closeHistoryPanel,
-  } = useDocumentStore(
+  const { selectEntities, selectEdges, addEntity, closeHistoryPanel } = useDocumentStore(
     useShallow((s) => ({
-      selectEntity: s.selectEntity,
-      selectEdge: s.selectEdge,
       selectEntities: s.selectEntities,
       selectEdges: s.selectEdges,
       addEntity: s.addEntity,
-      openContextMenu: s.openContextMenu,
       closeHistoryPanel: s.closeHistoryPanel,
     }))
   );
@@ -82,6 +72,8 @@ function CanvasInner() {
   } = useGraphMutations();
   const { onNodeClick, onEdgeClick, onPaneClick } = useCanvasClickHandlers();
   const { onNodeDrag, onNodeDragStop } = useCanvasDragHandlers(doc, nodes);
+  const { onNodeContextMenu, onEdgeContextMenu, onPaneContextMenu } =
+    useCanvasContextMenuHandlers();
 
   // Session 135 — canvas a11y slice 4. Arrow keys, when a node has
   // focus, walk to the connected neighbour in that direction.
@@ -196,29 +188,9 @@ function CanvasInner() {
             closeHistoryPanel();
           }
         }}
-        onNodeContextMenu={(e, n) => {
-          e.preventDefault();
-          const cur = useDocumentStore.getState().selection;
-          // `n.id` arrives unbranded from React Flow; the array is
-          // `EntityId[]` after #5's narrow typing — `.some(eq)` sidesteps
-          // the brand check since equality is string-level at runtime.
-          const inCurrent =
-            cur.kind === 'entities' && cur.ids.some((id) => id === n.id) && cur.ids.length > 1;
-          if (!inCurrent) selectEntity(n.id);
-          openContextMenu({ kind: 'entity', id: n.id }, e.clientX, e.clientY);
-        }}
-        onEdgeContextMenu={(e, ed) => {
-          e.preventDefault();
-          const cur = useDocumentStore.getState().selection;
-          const inCurrent =
-            cur.kind === 'edges' && cur.ids.some((id) => id === ed.id) && cur.ids.length > 1;
-          if (!inCurrent) selectEdge(ed.id);
-          openContextMenu({ kind: 'edge', id: ed.id }, e.clientX, e.clientY);
-        }}
-        onPaneContextMenu={(e) => {
-          e.preventDefault();
-          openContextMenu({ kind: 'pane' }, e.clientX, e.clientY);
-        }}
+        onNodeContextMenu={onNodeContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
+        onPaneContextMenu={onPaneContextMenu}
         multiSelectionKeyCode="Shift"
         // Session 87 UX fix #6 — lock-mode left-click pans the canvas.
         // Outside lock, left-click drag stays a marquee selection
