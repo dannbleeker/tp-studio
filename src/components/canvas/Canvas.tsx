@@ -10,6 +10,7 @@ import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
+import { populateCentroidsInto } from './centroids';
 import { AssumptionAnchorOverlay } from './edges/AssumptionAnchorOverlay';
 import { JunctorOverlay } from './edges/JunctorOverlay';
 import { TPEdge } from './edges/TPEdge';
@@ -43,56 +44,6 @@ const edgeTypes = { tp: TPEdge };
 const FIT_VIEW_OPTIONS = { padding: 0.4, maxZoom: 1.2 };
 const miniMapNodeColor = (n: Node): string =>
   n.type === 'tpGroup' || n.type === 'tpCollapsedGroup' ? '#a5b4fc' : '#737373';
-
-/**
- * Session 135 / Perf #6 — populate a centroid buffer in-place.
- *
- * Both drag handlers need an entity-id → centre-of-node map for the
- * splice-target hit-test. Allocating a fresh `Record<>` per
- * `onNodeDrag` call (which fires per pointer frame during a drag)
- * generated ~6k small-object allocations per second on a 100-entity
- * graph.
- *
- * This helper mutates a caller-owned `buf` object: clears the prior
- * keys (only those that aren't being re-set this call), then writes
- * one entry per node. The buffer lives in a `useRef` inside
- * `CanvasInner` so React doesn't track it and the same shape is
- * reused frame-to-frame.
- *
- * Returns the same `buf` reference for chained calls (e.g.
- * `findSpliceTargetEdge({ entityPositions: populateCentroidsInto(...) })`).
- */
-type Centroid = { x: number; y: number };
-type CentroidBuf = Record<string, Centroid>;
-type CanvasNodeSlim = {
-  id: string;
-  position: { x: number; y: number };
-  measured?: { width?: number; height?: number };
-};
-
-const populateCentroidsInto = (buf: CentroidBuf, nodes: readonly CanvasNodeSlim[]): CentroidBuf => {
-  // Build a Set of the ids we'll write this call so we can drop stale
-  // entries from a previous (possibly larger) drag without
-  // re-allocating the whole object. Keeping the same buffer shape
-  // helps V8's hidden-class tracking.
-  const ids = new Set<string>();
-  for (const n of nodes) ids.add(n.id);
-  for (const key of Object.keys(buf)) {
-    if (!ids.has(key)) delete buf[key];
-  }
-  for (const n of nodes) {
-    const cx = n.position.x + (n.measured?.width ?? 0) / 2;
-    const cy = n.position.y + (n.measured?.height ?? 0) / 2;
-    const existing = buf[n.id];
-    if (existing) {
-      existing.x = cx;
-      existing.y = cy;
-    } else {
-      buf[n.id] = { x: cx, y: cy };
-    }
-  }
-  return buf;
-};
 
 function CanvasInner() {
   const doc = useDocumentStore((s) => currentDoc(s));
