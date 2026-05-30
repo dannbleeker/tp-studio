@@ -2,6 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Canvas drag-handler seam + splice coverage (prep)
+
+Lifted the Alt-drag-to-splice gestures (`onNodeDrag` highlight + `onNodeDragStop`
+splice) out of `Canvas.tsx` into a `useCanvasDragHandlers` hook that owns the
+Perf-#6 centroid buffer internally. 5 new tests pin the splice hit-test wiring —
+the highlight on an Alt-drag near an edge centerline, the clear on a plain drag,
+the splice-into-edge on an Alt-drop, and the two no-op cases (non-Alt drop, drop
+far from any edge) — without mounting React Flow. `Canvas.tsx` sheds the centroid
+ref, three now-unused imports, and three store-action destructures. Together with
+the click-handler seam, every Canvas pointer gesture is now a tested hook.
+Behaviour-preserving; tsc + full suite green.
+
 ## Session 138 — Canvas click-handler seam (prep)
 
 Lifted the canvas's special-case click gestures — Alt-click edge-create,

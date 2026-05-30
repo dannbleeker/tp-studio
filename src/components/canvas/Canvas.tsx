@@ -1,21 +1,19 @@
 import { Background, BackgroundVariant, MiniMap, type Node, ReactFlow } from '@xyflow/react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { findSpliceTargetEdge } from '@/domain/dragSplice';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
-import { edgesArray } from '@/domain/graph';
 import { GRID_DOT } from '@/domain/tokens';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
-import { populateCentroidsInto } from './centroids';
 import { AssumptionAnchorOverlay } from './edges/AssumptionAnchorOverlay';
 import { JunctorOverlay } from './edges/JunctorOverlay';
 import { TPEdge } from './edges/TPEdge';
 import { useArrowKeyNodeNav } from './hooks/useArrowKeyNodeNav';
 import { useCanvasClickHandlers } from './hooks/useCanvasClickHandlers';
+import { useCanvasDragHandlers } from './hooks/useCanvasDragHandlers';
 import { useGraphMutations } from './hooks/useGraphMutations';
 import { useGraphView } from './hooks/useGraphView';
 import { useSearchDimming } from './hooks/useSearchDimming';
@@ -60,9 +58,6 @@ function CanvasInner() {
     addEntity,
     openContextMenu,
     closeHistoryPanel,
-    spliceEntityIntoEdge,
-    setSpliceTargetEdge,
-    showToast,
   } = useDocumentStore(
     useShallow((s) => ({
       selectEntity: s.selectEntity,
@@ -72,9 +67,6 @@ function CanvasInner() {
       addEntity: s.addEntity,
       openContextMenu: s.openContextMenu,
       closeHistoryPanel: s.closeHistoryPanel,
-      spliceEntityIntoEdge: s.spliceEntityIntoEdge,
-      setSpliceTargetEdge: s.setSpliceTargetEdge,
-      showToast: s.showToast,
     }))
   );
 
@@ -89,6 +81,7 @@ function CanvasInner() {
     onEdgeMouseLeave,
   } = useGraphMutations();
   const { onNodeClick, onEdgeClick, onPaneClick } = useCanvasClickHandlers();
+  const { onNodeDrag, onNodeDragStop } = useCanvasDragHandlers(doc, nodes);
 
   // Session 135 — canvas a11y slice 4. Arrow keys, when a node has
   // focus, walk to the connected neighbour in that direction.
@@ -97,20 +90,6 @@ function CanvasInner() {
   useEffect(() => {
     return () => setCanvasInstance(null);
   }, []);
-
-  // Session 135 / Perf #6 — reuse a single object literal across
-  // `onNodeDrag` / `onNodeDragStop` invocations rather than allocating
-  // a fresh `Record<string, {x, y}>` per pointer frame. During a 60fps
-  // drag on a 100-entity graph the prior code generated ~6,000
-  // small-object allocations per second; the ref-held buffer is
-  // populated in-place (`for (const n of nodes) { buf[n.id] = ... }`)
-  // and re-cleared between drag sessions in `onNodeDragStart`.
-  //
-  // `findSpliceTargetEdge` only reads `entityPositions`, so giving it
-  // the shared buffer is safe. We never hold a reference to the
-  // buffer beyond the synchronous handler, so the mutation can't
-  // surprise an async consumer.
-  const entityCentroidsRef = useRef<Record<string, { x: number; y: number }>>({});
 
   const isEmpty = nodes.length === 0;
   const locked = useDocumentStore((s) => s.browseLocked);
@@ -165,75 +144,10 @@ function CanvasInner() {
         onConnectEnd={onConnectEnd}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        // Session 101 — drag-splice visual feedback. Per-frame during
-        // an Alt-modified node drag, run the same `findSpliceTargetEdge`
-        // hit-test that `onNodeDragStop` uses and update the store's
-        // `spliceTargetEdgeId`. `TPEdge` reads this and renders an
-        // indigo glow on the target edge so the user can see what's
-        // about to happen before they release.
-        //
-        // The hit-test is O(visible edges) per frame; cheap given
-        // typical diagram sizes (<100 edges). The slice action bails
-        // when the target hasn't changed so we don't re-render every
-        // edge on every mousemove.
-        //
-        // Clears the target on any non-Alt drag — switching modifier
-        // mid-drag (Alt down → Alt up) immediately removes the hint.
-        onNodeDrag={(e, draggedNode) => {
-          if (!e.altKey) {
-            setSpliceTargetEdge(null);
-            return;
-          }
-          const entityPositions = populateCentroidsInto(entityCentroidsRef.current, nodes);
-          const probeX = draggedNode.position.x + (draggedNode.measured?.width ?? 200) / 2;
-          const probeY = draggedNode.position.y + (draggedNode.measured?.height ?? 60) / 2;
-          const hit = findSpliceTargetEdge({
-            point: { x: probeX, y: probeY },
-            draggedEntityId: draggedNode.id,
-            edges: edgesArray(doc),
-            entityPositions,
-            tolerance: 40,
-          });
-          setSpliceTargetEdge(hit?.edgeId ?? null);
-        }}
-        onNodeDragStop={(e, draggedNode) => {
-          // Session 83 — Alt+drag-to-splice. With the Alt modifier held
-          // on drop, check whether the dragged entity landed close to
-          // the centerline of an existing edge; if so, splice the
-          // entity into that edge (drops the entity's prior connections
-          // and rewires through it). Without Alt, this is the normal
-          // drag-to-pin gesture and we leave React Flow's onNodesChange
-          // to handle the position persist.
-          if (!e.altKey) return;
-          if (!guardWriteOrToast()) return;
-          const dragged = doc.entities[draggedNode.id];
-          if (!dragged) return;
-          const entityPositions = populateCentroidsInto(entityCentroidsRef.current, nodes);
-          // Use the dragged node's centre (its new dropped position) as
-          // the hit-test probe. Tolerance is roughly half a standard
-          // node width — generous enough to forgive aim, tight enough
-          // to avoid accidental splices on dense graphs.
-          const dropX = draggedNode.position.x + (draggedNode.measured?.width ?? 200) / 2;
-          const dropY = draggedNode.position.y + (draggedNode.measured?.height ?? 60) / 2;
-          const hit = findSpliceTargetEdge({
-            point: { x: dropX, y: dropY },
-            draggedEntityId: draggedNode.id,
-            edges: edgesArray(doc),
-            entityPositions,
-            tolerance: 40,
-          });
-          // Clear the highlight unconditionally — the gesture is over
-          // whether or not it triggered a splice. (Session 101 — the
-          // glow lives only during the drag itself.)
-          setSpliceTargetEdge(null);
-          if (!hit) return;
-          const ok = spliceEntityIntoEdge(draggedNode.id, hit.edgeId);
-          if (ok) {
-            showToast('success', 'Entity spliced into edge.');
-          } else {
-            showToast('info', 'Splice rejected — entity already endpoints that edge.');
-          }
-        }}
+        // The Alt-drag-to-splice gestures (per-frame highlight + the drop
+        // splice) live in `useCanvasDragHandlers` (unit-tested there).
+        onNodeDrag={onNodeDrag}
+        onNodeDragStop={onNodeDragStop}
         // TOC-reading direct-manipulation: track hovered edge during a
         // connection drag so `onConnectEnd` can detect "released on an
         // edge body" and AND-group the new edge with the existing one.
