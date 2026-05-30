@@ -17,9 +17,13 @@ export function isStandalonePWA(): boolean {
   // iOS Safari home-screen apps expose a non-standard `navigator.standalone`.
   if ((window.navigator as { standalone?: boolean }).standalone === true) return true;
   if (typeof window.matchMedia !== 'function') return false;
-  // Any installed display mode counts — `standalone` is the common one; the
-  // others cover minimal-ui, fullscreen, and desktop window-controls-overlay.
+  // Any INSTALLED display mode counts — `standalone` is the common one;
+  // `minimal-ui` and desktop `window-controls-overlay` are the others.
+  // Deliberately NOT `fullscreen`: that media query also matches the
+  // browser's own F11 fullscreen in a normal (non-installed) tab, which
+  // would falsely enable the tab shortcuts there. The app's manifest is
+  // `display: standalone`, so a real install never reports `fullscreen`.
   return window.matchMedia(
-    '(display-mode: standalone), (display-mode: minimal-ui), (display-mode: fullscreen), (display-mode: window-controls-overlay)'
+    '(display-mode: standalone), (display-mode: minimal-ui), (display-mode: window-controls-overlay)'
   ).matches;
 }
