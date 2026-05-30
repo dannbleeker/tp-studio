@@ -51,7 +51,7 @@ export function CompareBanner() {
   const changedCount = diff.entitiesChanged.size + diff.edgesChanged.size;
 
   return (
-    <div className="absolute top-12 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-indigo-300 bg-indigo-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur-sm dark:border-indigo-700 dark:bg-indigo-950/90">
+    <div className="absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-indigo-300 bg-indigo-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur-sm dark:border-indigo-700 dark:bg-indigo-950/90">
       {/* Design audit #24 — size normalized to the text-[10px] eyebrow
           scale (kept indigo, not the neutral EYEBROW token, since the
           banner carries its own indigo identity). */}

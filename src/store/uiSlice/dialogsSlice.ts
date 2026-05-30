@@ -69,7 +69,7 @@ export type DialogsSlice = {
     /** Session 88 (S18) — drag-to-reposition. `x` / `y` are the
      *  upper-left corner of the panel in viewport pixels. `null`
      *  on a fresh wizard so the panel falls back to its
-     *  `top-14 left-4` Tailwind default. Persisted on the slice
+     *  `top-2 left-4` Tailwind default. Persisted on the slice
      *  per-session — refreshing the page resets to the default
      *  position (cheap; the wizard is per-doc-creation flow). */
     x: number | null;

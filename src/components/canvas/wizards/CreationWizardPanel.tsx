@@ -248,7 +248,7 @@ export function CreationWizardPanel() {
         type="button"
         onClick={toggleMinimised}
         data-component="creation-wizard-minimised"
-        className="absolute top-14 left-4 z-30 flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1.5 font-medium text-indigo-700 text-xs shadow-md transition hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
+        className="absolute top-2 left-4 z-30 flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1.5 font-medium text-indigo-700 text-xs shadow-md transition hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
       >
         <Sparkles className="h-3 w-3" aria-hidden />
         Continue setup ›
@@ -262,7 +262,7 @@ export function CreationWizardPanel() {
     return (
       <div
         data-component="creation-wizard"
-        className="absolute top-14 left-4 z-30 flex w-[min(360px,90vw)] flex-col gap-2 rounded-lg border border-emerald-300 bg-white p-3 shadow-lg dark:border-emerald-700 dark:bg-neutral-900"
+        className="absolute top-2 left-4 z-30 flex w-[min(360px,90vw)] flex-col gap-2 rounded-lg border border-emerald-300 bg-white p-3 shadow-lg dark:border-emerald-700 dark:bg-neutral-900"
       >
         <p className="font-medium text-emerald-700 text-sm dark:text-emerald-300">
           ✓ Wizard complete — keep building from here.
@@ -279,7 +279,7 @@ export function CreationWizardPanel() {
   }
 
   // Session 88 (S18) — resolved position from `useDraggablePanel`.
-  // `null` = no inline style → Tailwind's `top-14 left-4` default.
+  // `null` = no inline style → Tailwind's `top-2 left-4` default.
   return (
     <section
       ref={panelRef}
@@ -287,7 +287,7 @@ export function CreationWizardPanel() {
       aria-label={`${kind === 'goalTree' ? 'Goal Tree' : kind === 'crt' ? 'Current Reality Tree' : 'Evaporating Cloud'} creation wizard`}
       className={clsx(
         'absolute z-30 flex w-[min(380px,92vw)] flex-col gap-2 rounded-lg border border-indigo-200 bg-white p-3 shadow-lg dark:border-indigo-800 dark:bg-neutral-900',
-        positioned === null && 'top-14 left-4'
+        positioned === null && 'top-2 left-4'
       )}
       style={positioned ?? undefined}
     >

@@ -249,66 +249,81 @@ export function App() {
       // the canvas a11y push (slice 3).
       aria-label="TP Studio canvas"
       className={clsx(
-        'relative h-screen w-screen overflow-hidden',
+        'flex h-screen w-screen flex-col overflow-hidden',
         appMode === 'workshop' && 'app-mode-workshop',
         appMode === 'presentation' && 'app-mode-presentation'
       )}
     >
       <DocumentMeta />
       <PrintHeader />
-      {!isPresentation && <TabStrip />}
-      {!isPresentation && <TitleBadge />}
-      {!isPresentation && <TopBar />}
-      {/* Session 95 — `ReactFlowProvider` hoisted here (was inside
-          `<Canvas />` until Phase 2) so the SelectionToolbar and any
-          future canvas-aware overlay can read React Flow's state via
-          `useRFStore` from outside the Canvas component. */}
-      <ReactFlowProvider>
-        {/* Session 113 — Canvas wrapped in its own ErrorBoundary. React
+      {/* Chrome header — the tab strip + a (title · toolbar) band. A real
+          flex-column header now, not floating `absolute` overlays, so it
+          never overlaps the canvas or the Inspector. Hidden in presentation
+          mode (full-bleed canvas). */}
+      {!isPresentation && (
+        <header className="relative z-30 shrink-0" data-component="app-chrome">
+          <TabStrip />
+          <div className="flex items-center justify-between gap-2 border-neutral-200 border-b bg-white px-4 py-1.5 dark:border-neutral-800 dark:bg-neutral-950">
+            <TitleBadge />
+            <TopBar />
+          </div>
+        </header>
+      )}
+      {/* The canvas, its overlays, and the Inspector live in a flex-1
+          content row beneath the header. The Inspector is `absolute` within
+          this `relative` row, so it starts below the header — no overlap with
+          the TopBar / tab strip. */}
+      <div className="relative flex-1 overflow-hidden">
+        {/* Session 95 — `ReactFlowProvider` hoisted here so the
+            SelectionToolbar + future canvas overlays can read React Flow's
+            state via `useRFStore` from outside the Canvas component. */}
+        <ReactFlowProvider>
+          {/* Session 113 — Canvas wrapped in its own ErrorBoundary. React
             Flow is a third-party renderer; an internal crash there
             previously surfaced through the root boundary and froze the
             entire app on the crash screen. Scoped here so a Canvas
             crash leaves the TopBar / Inspector / palette usable and
             the user can at least save / export / load a different
             doc. */}
-        <ErrorBoundary label="Canvas">
-          <Canvas />
-        </ErrorBoundary>
-        {/* Session 95 — selection-anchored floating toolbar.
+          <ErrorBoundary label="Canvas">
+            <Canvas />
+          </ErrorBoundary>
+          {/* Session 95 — selection-anchored floating toolbar.
             Mounted inside the provider but outside Canvas's render
             tree so it doesn't get re-mounted on Canvas re-renders.
             ErrorBoundary scopes any crash so the canvas stays
             usable. */}
-        {!isPresentation && (
-          <ErrorBoundary label="Selection toolbar">
-            <SelectionToolbar />
-          </ErrorBoundary>
-        )}
-        {/* Session 135 / spec gap #9 Phase 1C — Presentation
+          {!isPresentation && (
+            <ErrorBoundary label="Selection toolbar">
+              <SelectionToolbar />
+            </ErrorBoundary>
+          )}
+          {/* Session 135 / spec gap #9 Phase 1C — Presentation
             step-through control. Self-gated on `appMode ===
             'presentation'` inside the component, so it only mounts
             chrome when the mode is active. Lives inside the
             ReactFlowProvider so `useReactFlow().fitView({...})` is
             available for the focus-on-step behaviour. */}
-        <ErrorBoundary label="Presentation step-through">
-          <PresentationStepThrough />
+          <ErrorBoundary label="Presentation step-through">
+            <PresentationStepThrough />
+          </ErrorBoundary>
+        </ReactFlowProvider>
+        <ErrorBoundary label="Compare banner">
+          <CompareBanner />
         </ErrorBoundary>
-      </ReactFlowProvider>
-      <ErrorBoundary label="Compare banner">
-        <CompareBanner />
-      </ErrorBoundary>
-      <ErrorBoundary label="Speculation banner">
-        <SpeculationBanner />
-      </ErrorBoundary>
-      {/* Nested ErrorBoundaries scope a crash to a single panel — the
+        <ErrorBoundary label="Speculation banner">
+          <SpeculationBanner />
+        </ErrorBoundary>
+        {/* Nested ErrorBoundaries scope a crash to a single panel — the
           canvas stays usable if (say) the Inspector blows up on a bad
           warning derivation, and vice versa. The root boundary wrapping
           all of <App /> still catches anything that escapes a panel. */}
-      {!isPresentation && (
-        <ErrorBoundary label="Inspector">
-          <Inspector />
-        </ErrorBoundary>
-      )}
+        {!isPresentation && (
+          <ErrorBoundary label="Inspector">
+            <Inspector />
+          </ErrorBoundary>
+        )}
+      </div>
       <ContextMenu />
       <Suspense fallback={null}>
         {/* Session 113 — wrap the remaining lazy dialogs / overlays in

@@ -485,14 +485,10 @@ function CanvasInner() {
                 from Session 87 (V10): at xs (< 640 px) the strip drops
                 below the TopBar; at sm+ it sits in the top band. */}
             {!ecChromeCollapsed && (
-              // Session 136 — dropped the `sm:top-2` override: at sm+,
-              // top-2 (8px) collided horizontally with the TitleBadge
-              // (`top-4 left-4`) and the TopBar buttons (`top-4
-              // right-4`), hiding the start of "Read every arrow:"
-              // behind app chrome. Pinning to `top-14` (56 px) at
-              // every viewport keeps the strip cleanly below the
-              // TopBar — the xs default was always correct.
-              <div className="pointer-events-none absolute top-14 right-0 left-0 z-10 flex flex-col items-stretch gap-1 px-4">
+              // Session 138 — the chrome moved to a real header row, so the
+              // strip no longer has to dodge floating toolbar buttons; it
+              // sits just inside the canvas top.
+              <div className="pointer-events-none absolute top-2 right-0 left-0 z-10 flex flex-col items-stretch gap-1 px-4">
                 <div className="pointer-events-auto">
                   <ECReadingInstructions />
                 </div>
@@ -501,11 +497,10 @@ function CanvasInner() {
                 </div>
               </div>
             )}
-            {/* Session 89 cleanup — injection chip now anchored BELOW
-                the TopBar at all viewport sizes (was sharing the
-                top-right band with the TopBar buttons at sm+, which
-                obscured the chip behind lock / history / help). */}
-            <div className="pointer-events-none absolute top-14 right-4 z-10 flex justify-end">
+            {/* Injection chip, top-right of the canvas. Session 138 — with
+                the chrome in a header row it no longer shares a band with the
+                toolbar buttons, so it sits just inside the canvas top. */}
+            <div className="pointer-events-none absolute top-2 right-4 z-10 flex justify-end">
               <ECInjectionChip />
             </div>
           </>

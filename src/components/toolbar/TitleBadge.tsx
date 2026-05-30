@@ -37,12 +37,10 @@ export function TitleBadge() {
   return (
     <div
       data-component={DataComponent.TitleBadge}
-      // Title region caps at viewport-minus-TopBar so a long title never
-      // collides with the toolbar buttons:
-      //   <sm  (TopBar ~120 px, icon-only Commands + Lock + Kebab)
-      //   sm   (TopBar ~150 px, full Commands + Lock + History + Help + Theme)
-      //   md+  (TopBar ~280 px, full Commands + Lock + Layout + History + Help + Theme)
-      className="pointer-events-none absolute top-12 left-4 z-10 flex max-w-[calc(100%-7rem)] xs:max-w-[calc(100%-9rem)] items-center gap-1.5 sm:max-w-[calc(100%-12rem)] sm:gap-2 md:max-w-[calc(100%-20rem)]"
+      // Lives in the header's title row (left side). `flex-1 min-w-0` lets it
+      // take the space left of the TopBar and truncate a long title rather
+      // than push the toolbar off-screen.
+      className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2"
     >
       <input
         // The width follows the title text so the badge sits close to it, but

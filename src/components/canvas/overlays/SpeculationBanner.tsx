@@ -45,7 +45,7 @@ export function SpeculationBanner() {
   const count = Object.keys(overlay).length;
 
   return (
-    <div className="absolute top-12 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-indigo-300 bg-indigo-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur-sm dark:border-indigo-700 dark:bg-indigo-950/90">
+    <div className="absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-indigo-300 bg-indigo-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur-sm dark:border-indigo-700 dark:bg-indigo-950/90">
       <span className="flex items-center gap-1.5 font-semibold text-indigo-700 uppercase tracking-wider dark:text-indigo-300">
         <FlaskConical className="h-3.5 w-3.5" />
         Speculating

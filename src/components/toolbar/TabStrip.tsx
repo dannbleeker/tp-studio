@@ -15,9 +15,9 @@ import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
  * and the Cmd+T/W/1–9 keyboard map land in a follow-up (5.2b); the store
  * already supports them (`reorderTabs`, etc.).
  *
- * The bar floats `absolute top-0` over the canvas at `z-20` (below the
- * TopBar's `z-30`); `TitleBadge` + `TopBar` are nudged down to `top-12`
- * so they clear it. Hidden in presentation mode (gated by the App).
+ * Session 138 — the strip is the top row of the chrome `<header>` (a real
+ * flex-column header in `App.tsx`), not a floating overlay; the title +
+ * toolbar band sits beneath it. Hidden in presentation mode (gated by App).
  *
  * Re-render discipline: the chip list is derived through
  * `useDocumentStoreWith` + an array-by-keys equality so a plain entity
@@ -69,7 +69,7 @@ export function TabStrip() {
       role="toolbar"
       aria-label="Open documents"
       data-component="tab-strip"
-      className="absolute inset-x-0 top-0 z-20 flex h-9 select-none items-stretch gap-0.5 overflow-x-auto border-neutral-200 border-b bg-neutral-100/95 px-1 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95"
+      className="flex h-9 select-none items-stretch gap-0.5 overflow-x-auto border-neutral-200 border-b bg-neutral-100/95 px-1 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95"
     >
       {chips.map((chip) => (
         // biome-ignore lint/a11y/noStaticElementInteractions: drag-to-reorder is a pointer-only enhancement — switching + reordering tabs is fully reachable via the chip buttons and the New/Close/Next/Previous palette commands.
