@@ -205,6 +205,27 @@ export const docMetaDefaults = (): Pick<
   'doc' | 'docs' | 'activeDocId' | 'tabOrder'
 > => activeDocState(createDocument('crt'));
 
+/**
+ * The per-doc *ephemeral* UI state that must reset whenever the active
+ * document changes. Every field keys off the *previous* doc's
+ * entities/edges — the selection's ids, the editing-entity id, the
+ * walkthrough's targetIds, the speculation overlay's entity→state map, and
+ * `searchMatchIndex` (an index into the active doc's match list) — so
+ * carrying any of it into a different document is a bug. Each doc-change
+ * action (`setDocument` / `newDocument` / `openTab` / `switchTab` /
+ * `closeTab`) spreads this, so a new action physically can't forget one.
+ *
+ * History (`past` / `future`) is deliberately NOT here — each caller swaps
+ * or pushes it differently (tab park/restore vs. a single undo entry).
+ */
+const activeDocEphemeralReset = () => ({
+  selection: { kind: 'none' as const },
+  editingEntityId: null,
+  walkthrough: { kind: 'closed' as const },
+  searchMatchIndex: 0,
+  ...speculationDefaults(),
+});
+
 export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> = (set, get) => {
   const applyDocChange = makeApplyDocChange(get, set);
 
@@ -228,11 +249,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       // behavior (Phase 5 changes this to append a tab).
       set({
         ...setActiveDoc(get(), doc),
-        selection: { kind: 'none' },
-        editingEntityId: null,
-        // Phase 6 follow-up — a replaced / new active doc invalidates any
-        // guided walkthrough (its targetIds point at the old doc's edges).
-        walkthrough: { kind: 'closed' },
+        ...activeDocEphemeralReset(),
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
         future: [],
       });
@@ -258,11 +275,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       flushPersist();
       set({
         ...setActiveDoc(get(), doc),
-        selection: { kind: 'none' },
-        editingEntityId: null,
-        // Phase 6 follow-up — a replaced / new active doc invalidates any
-        // guided walkthrough (its targetIds point at the old doc's edges).
-        walkthrough: { kind: 'closed' },
+        ...activeDocEphemeralReset(),
         past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
         future: [],
       });
@@ -340,13 +353,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         }),
         past: [],
         future: [],
-        selection: { kind: 'none' },
-        editingEntityId: null,
-        // Phase 6 — drop any guided walkthrough; its targetIds point at the
-        // previous active doc's edges/warnings.
-        walkthrough: { kind: 'closed' },
-        // Decision #5 — a fresh tab starts in normal (non-speculative) mode.
-        ...speculationDefaults(),
+        ...activeDocEphemeralReset(),
       });
       saveDocToLocalStorage(doc);
       persistTabsManifest({ activeDocId: doc.id, tabOrder });
@@ -375,12 +382,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         historyByDoc: swapped.historyByDoc,
         past: swapped.past,
         future: swapped.future,
-        selection: { kind: 'none' },
-        editingEntityId: null,
-        // Phase 6 — drop any guided walkthrough; its targetIds point at the
-        // previous active doc's edges/warnings.
-        walkthrough: { kind: 'closed' },
-        ...speculationDefaults(),
+        ...activeDocEphemeralReset(),
       });
       persistTabsManifest({ activeDocId: id, tabOrder: state.tabOrder });
       get().reloadRevisionsForActiveDoc();
@@ -403,12 +405,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
           historyByDoc: {},
           past: [],
           future: [],
-          selection: { kind: 'none' },
-          editingEntityId: null,
-          // Phase 6 — drop any guided walkthrough; its targetIds point at the
-          // previous active doc's edges/warnings.
-          walkthrough: { kind: 'closed' },
-          ...speculationDefaults(),
+          ...activeDocEphemeralReset(),
         });
         saveDocToLocalStorage(fresh);
         persistTabsManifest({ activeDocId: fresh.id, tabOrder: [fresh.id] });
@@ -440,12 +437,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         historyByDoc: historyParked,
         past: restored.past,
         future: restored.future,
-        selection: { kind: 'none' },
-        editingEntityId: null,
-        // Phase 6 — drop any guided walkthrough; its targetIds point at the
-        // previous active doc's edges/warnings.
-        walkthrough: { kind: 'closed' },
-        ...speculationDefaults(),
+        ...activeDocEphemeralReset(),
       });
       persistTabsManifest({ activeDocId: nextActiveId, tabOrder: remaining });
       removeDocFromStorage(id);
