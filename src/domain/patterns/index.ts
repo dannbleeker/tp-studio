@@ -47,6 +47,7 @@ import { buildPatternFRTPricingExperiment } from './frt-pricing-experiment';
 import { buildPatternFRTTeamOkrs } from './frt-team-okrs';
 import { buildPatternFRTWipCap } from './frt-wip-cap';
 import { buildPatternGoalTreeEffectiveSalesTeam } from './goalTree-effective-sales-team';
+import { buildPatternGoalTreeITFunction } from './goalTree-it-function';
 import { buildPatternGoalTreeSubscriptionBusiness } from './goalTree-subscription-business';
 import { buildPatternGoalTreeSustainableProductOrg } from './goalTree-sustainable-product-org';
 import { buildPatternGoalTreeTrustworthyMl } from './goalTree-trustworthy-ml';
@@ -340,6 +341,13 @@ export const PATTERNS: Pattern[] = [
     hint: 'Go-to-market Goal Tree — real pipeline, equipped reps, coaching that pays off — each NC visible on a Monday.',
     diagramType: 'goalTree',
     build: buildPatternGoalTreeEffectiveSalesTeam,
+  },
+  {
+    id: 'goalTree-it-function',
+    label: 'Generic IT-function goals',
+    hint: "IT-function Goal Tree (from Dann's 2020 article) — a build-and-implement value arm and an efficient-operation arm, under a financial-restriction boundary.",
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreeITFunction,
   },
 
   // ── S&T ───────────────────────────────────────────────────────────

@@ -112,3 +112,21 @@ describe('patternById', () => {
     expect(patternById('does-not-exist')).toBeUndefined();
   });
 });
+
+describe("goalTree-it-function (Dann's 2020 IT-function article)", () => {
+  it('builds the 1 Goal · 2 CSFs · 6 NCs · 8 necessity-edge shape', () => {
+    const p = patternById('goalTree-it-function');
+    expect(p).toBeDefined();
+    const doc = p!.build();
+    const entities = Object.values(doc.entities);
+    const edges = Object.values(doc.edges);
+
+    expect(entities).toHaveLength(9);
+    expect(edges).toHaveLength(8);
+    expect(entities.filter((e) => e.type === 'goal')).toHaveLength(1);
+    expect(entities.filter((e) => e.type === 'criticalSuccessFactor')).toHaveLength(2);
+    expect(entities.filter((e) => e.type === 'necessaryCondition')).toHaveLength(6);
+    expect(edges.every((e) => e.kind === 'necessity')).toBe(true);
+    expect(doc.diagramType).toBe('goalTree');
+  });
+});
