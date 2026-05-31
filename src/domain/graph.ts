@@ -588,6 +588,7 @@ export const pruneComments = (
   if (!comments) return comments;
   const anchorAlive = (c: Comment): boolean =>
     c.anchor.kind === 'document' ||
+    c.anchor.kind === 'point' ||
     (c.anchor.kind === 'entity' && survivingEntities[c.anchor.entityId] !== undefined) ||
     (c.anchor.kind === 'edge' && survivingEdges[c.anchor.edgeId] !== undefined);
   const next: Record<string, Comment> = {};

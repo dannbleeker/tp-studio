@@ -480,6 +480,7 @@ const isCommentAnchor = (v: unknown): v is CommentAnchor => {
   if (!isObject(v)) return false;
   if (v.kind === 'entity') return typeof v.entityId === 'string';
   if (v.kind === 'edge') return typeof v.edgeId === 'string';
+  if (v.kind === 'point') return isFiniteNumber(v.x) && isFiniteNumber(v.y);
   return v.kind === 'document';
 };
 
@@ -509,7 +510,9 @@ export const validateComment = (v: unknown, label: string): Comment => {
       ? { kind: 'entity', entityId: v.anchor.entityId }
       : v.anchor.kind === 'edge'
         ? { kind: 'edge', edgeId: v.anchor.edgeId }
-        : { kind: 'document' };
+        : v.anchor.kind === 'point'
+          ? { kind: 'point', x: v.anchor.x, y: v.anchor.y }
+          : { kind: 'document' };
   return {
     id: v.id,
     anchor,

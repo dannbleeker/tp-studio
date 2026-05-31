@@ -36,6 +36,8 @@ export function CommentsPanel() {
     authorName,
     setAuthorName,
     confirm,
+    pendingCommentAnchor,
+    clearPending,
   } = useDocumentStore(
     useShallow((s) => ({
       open: s.commentsPanelOpen,
@@ -52,6 +54,8 @@ export function CommentsPanel() {
       authorName: s.commentAuthorName,
       setAuthorName: s.setCommentAuthorName,
       confirm: s.confirm,
+      pendingCommentAnchor: s.pendingCommentAnchor,
+      clearPending: s.clearPendingCommentAnchor,
     }))
   );
 
@@ -90,7 +94,9 @@ export function CommentsPanel() {
     filter === 'all' ? true : filter === 'resolved' ? c.resolved === true : c.resolved !== true
   );
 
-  const composerAnchor = anchorFromSelection(selection);
+  // A pending "point" anchor (pane → Add comment here) wins over the
+  // selection-derived anchor so the composer targets the dropped pin.
+  const composerAnchor = pendingCommentAnchor ?? anchorFromSelection(selection);
   const composerDesc = describeAnchor(composerAnchor, doc.entities, doc.edges);
 
   const jumpToAnchor = (anchor: CommentAnchor) => {
@@ -123,6 +129,13 @@ export function CommentsPanel() {
             inst.setCenter(cx, cy, { zoom: inst.getZoom(), duration: 250 });
           });
         }
+      }
+    } else if (anchor.kind === 'point') {
+      const inst = getCanvasInstance();
+      if (inst) {
+        window.requestAnimationFrame(() => {
+          inst.setCenter(anchor.x, anchor.y, { zoom: inst.getZoom(), duration: 250 });
+        });
       }
     }
     // 'document' anchors have nothing to jump to.
@@ -176,7 +189,10 @@ export function CommentsPanel() {
           anchorDesc={composerDesc}
           authorName={authorName}
           onAuthorNameChange={setAuthorName}
-          onSubmit={(anchor, body) => addComment(anchor, body)}
+          onSubmit={(anchor, body) => {
+            addComment(anchor, body);
+            clearPending();
+          }}
         />
 
         <div className="flex items-center gap-1 border-neutral-200 border-b px-4 py-2 dark:border-neutral-800">

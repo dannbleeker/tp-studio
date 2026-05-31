@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 141 — Free-floating comment pins
+
+Closes the last open review-comments item: a comment can now be pinned to an
+arbitrary canvas coordinate (a sticky-note pin), not just an entity / edge / the
+whole document.
+
+- New `point` `CommentAnchor` variant (`{ kind: 'point', x, y }` in flow
+  coordinates) — additive within schema v9 (no version bump); validated
+  (finite x/y), prune-exempt like document anchors, labelled "Pinned note".
+- Placement: pane right-click → **Add comment here** converts the click point to
+  flow space (`screenToFlowPosition`) and opens the composer anchored to it (via
+  `startCommentAt` + a `pendingCommentAnchor` UI state, cleared on submit/close).
+- `CommentPinsOverlay` renders a pin per point comment, tracking pan/zoom but
+  staying a constant on-screen size; clicking a pin opens the panel, and a
+  thread's jump-to-anchor chip centers the canvas on its pin.
+
 ## Session 140 — Review comments: surfacing (fast-follows)
 
 Three additive fast-follows on the Session-139 comment layer — making existing

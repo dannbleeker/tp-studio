@@ -25,11 +25,18 @@ describe('validateComment', () => {
     expect(
       validateComment({ ...VALID, anchor: { kind: 'edge', edgeId: 'ed1' } }, 'l').anchor.kind
     ).toBe('edge');
+    expect(
+      validateComment({ ...VALID, anchor: { kind: 'point', x: 10, y: 20 } }, 'l').anchor.kind
+    ).toBe('point');
   });
 
   it('rejects an invalid / incomplete anchor', () => {
     expect(() => validateComment({ ...VALID, anchor: { kind: 'bogus' } }, 'l')).toThrow(/anchor/);
     expect(() => validateComment({ ...VALID, anchor: { kind: 'entity' } }, 'l')).toThrow(/anchor/);
+    // A point anchor with a non-finite / missing coordinate is rejected.
+    expect(() => validateComment({ ...VALID, anchor: { kind: 'point', x: 1 } }, 'l')).toThrow(
+      /anchor/
+    );
   });
 
   it('rejects non-string body / author and non-finite timestamps', () => {
@@ -72,6 +79,11 @@ describe('pruneComments', () => {
 
   it('always keeps document-anchored comments', () => {
     const map = { d1: mk({ id: 'd1', anchor: { kind: 'document' } }) };
+    expect(pruneComments(map, {}, {})).toBe(map);
+  });
+
+  it('always keeps point-anchored (free-floating pin) comments', () => {
+    const map = { p1: mk({ id: 'p1', anchor: { kind: 'point', x: 5, y: 6 } }) };
     expect(pruneComments(map, {}, {})).toBe(map);
   });
 

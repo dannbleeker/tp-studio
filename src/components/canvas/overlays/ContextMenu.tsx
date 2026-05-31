@@ -5,6 +5,7 @@ import { presetByTitle } from '@/domain/groupPresets';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import type { EntityType } from '@/domain/types';
 import { useEntity } from '@/hooks/useSelected';
+import { getCanvasInstance } from '@/services/canvasRef';
 import { confirmAndDeleteEntity, confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -326,6 +327,21 @@ export function ContextMenu() {
             type: defaultEntityType(diagramType),
             startEditing: true,
           }),
+      },
+      {
+        // Free-floating review comment pinned at the right-click location.
+        // Converts the screen coordinate to flow space so the pin tracks the
+        // canvas through pan/zoom; falls back to a document-level comment if
+        // the canvas instance isn't ready.
+        kind: 'action',
+        label: 'Add comment here',
+        run: () => {
+          const inst = getCanvasInstance();
+          const pos = inst?.screenToFlowPosition({ x: menu.x, y: menu.y });
+          useDocumentStore
+            .getState()
+            .startCommentAt(pos ? { kind: 'point', x: pos.x, y: pos.y } : { kind: 'document' });
+        },
       },
     ];
   })();

@@ -17,14 +17,10 @@ is one standalone item plus two parked notes:
   single-edge selections; not write-guarded, so visible under Browse Lock.
 - ~~**Jump-to-edge centers the viewport**~~ ✅ *Session 140* — the thread chip now
   centers the canvas on the edge midpoint.
-- **Free-floating canvas-pin comments** — *the one open buildable item.* Anchor a
-  comment to an `{x,y}` point rather than an entity/edge (a sticky-note pin). This
-  is its own mini-feature, not a quick follow: it needs a new `CommentAnchor`
-  variant (`{ kind: 'point', x, y }` — additive within schema v9, no version bump),
-  a placement gesture (pane context-menu "Add comment here" → `screenToFlowPosition`
-  + a pending-anchor composer state), a canvas pin overlay (mirror `JunctorOverlay`'s
-  flow→screen transform), and optional drag-to-reposition. The discriminated union
-  is ready for the new member.
+- ~~**Free-floating canvas-pin comments**~~ ✅ *Session 141* — new `point`
+  `CommentAnchor` variant, pane "Add comment here" placement, and a
+  `CommentPinsOverlay`. Drag-to-reposition a pin is the only deferred sub-item
+  (place + click-to-open shipped).
 - **Browse-Lock interaction** — comments are intentionally *not* write-guarded
   (annotating a read-only shared doc is useful). Revisit only if a reviewer wants a
   truly read-only comment view.

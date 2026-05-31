@@ -481,6 +481,8 @@ Mark up a diagram with questions and notes — for your future self or for a col
 
 **Spot comments at a glance.** Any entity or edge with open comments shows a small indigo speech-bubble badge with the count; click it to jump straight into that thread in the panel. You can also start a comment without opening the panel first — select an entity or edge and click **Add comment** on the floating selection toolbar.
 
+**Pin a comment anywhere.** Right-click an empty spot on the canvas → **Add comment here** drops a free-floating pin at that point (handy for "this whole region needs rework" notes that don't belong on any single node). The pin shows on the canvas, tracks pan/zoom, and clicking it opens the panel; its thread is anchored to the spot rather than to an entity or edge.
+
 **Filter.** The **Open / Resolved / All** tabs scope the list; the panel header shows the open count. Resolving a comment greys it out and moves it out of the default Open view.
 
 Comments anchored to an entity or edge are automatically removed if you delete that entity/edge; whole-diagram comments always stay. Everything is undoable with `Cmd/Ctrl+Z`.

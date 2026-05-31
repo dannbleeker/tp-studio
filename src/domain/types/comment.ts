@@ -9,15 +9,16 @@ import type { EdgeId, EntityId } from './ids';
  *   - `entity` / `edge` — attached to a specific node/edge. These anchors are
  *     pruned when their target is deleted (see `pruneComments` in `graph.ts`).
  *   - `document` — a general remark not tied to any one element.
- *
- * (Free-floating canvas-position comments are intentionally deferred — they'd
- * need click-to-place + drag handling; the entity/edge/document anchors cover
- * the review use case.)
+ *   - `point` — a free-floating sticky-note pin at a canvas coordinate
+ *     (`x` / `y` in flow space). Like `document`, it is never pruned — it has
+ *     no entity/edge to outlive. Placed via the pane "Add comment here"
+ *     context-menu action and rendered by `CommentPinsOverlay`.
  */
 export type CommentAnchor =
   | { readonly kind: 'entity'; readonly entityId: EntityId }
   | { readonly kind: 'edge'; readonly edgeId: EdgeId }
-  | { readonly kind: 'document' };
+  | { readonly kind: 'document' }
+  | { readonly kind: 'point'; readonly x: number; readonly y: number };
 
 /**
  * A review comment. Threads are FLAT and one level deep: a top-level comment

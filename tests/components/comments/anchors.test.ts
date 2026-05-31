@@ -46,6 +46,13 @@ describe('describeAnchor', () => {
     });
   });
 
+  it('labels a point (free-floating pin) anchor', () => {
+    expect(describeAnchor({ kind: 'point', x: 1, y: 2 }, entities, edges)).toEqual({
+      text: 'Pinned note',
+      missing: false,
+    });
+  });
+
   it('labels an entity anchor by title, with an Untitled fallback', () => {
     expect(describeAnchor({ kind: 'entity', entityId: eid('e1') }, entities, edges).text).toBe(
       'Root cause'

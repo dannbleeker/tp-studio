@@ -34,6 +34,7 @@ export function describeAnchor(
   edges: Record<string, Edge>
 ): AnchorDescription {
   if (anchor.kind === 'document') return { text: 'Whole diagram', missing: false };
+  if (anchor.kind === 'point') return { text: 'Pinned note', missing: false };
   if (anchor.kind === 'entity') {
     const e = entities[anchor.entityId];
     return e

@@ -30,6 +30,7 @@ import { TPGroupNode } from './nodes/TPGroupNode';
 import { TPNode } from './nodes/TPNode';
 import { Breadcrumb } from './overlays/Breadcrumb';
 import { CanvasNav } from './overlays/CanvasNav';
+import { CommentPinsOverlay } from './overlays/CommentPinsOverlay';
 import { ECInjectionChip } from './overlays/ECInjectionChip';
 import { ECReadingInstructions } from './overlays/ECReadingInstructions';
 import { EmptyHint } from './overlays/EmptyHint';
@@ -251,6 +252,7 @@ function CanvasInner() {
         {!isPresentation && <CanvasNav />}
         <JunctorOverlay />
         <AssumptionAnchorOverlay />
+        <CommentPinsOverlay />
         {/* Session 77: EC verbalisation strip overlays the canvas top
             edge on EC docs only. Session 87: stacked under the new
             ECReadingInstructions strip (PPT comparison item #1) and

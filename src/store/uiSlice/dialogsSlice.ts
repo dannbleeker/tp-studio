@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { DiagramType, TPDocument } from '@/domain/types';
+import type { CommentAnchor, DiagramType, TPDocument } from '@/domain/types';
 import type { RootStore } from '../types';
 import type { ContextMenuState, ContextMenuTarget } from './types';
 
@@ -111,6 +111,11 @@ export type DialogsSlice = {
    *  composer offers to anchor a new comment to whatever entity/edge is
    *  currently selected, so the selection must survive the panel opening. */
   commentsPanelOpen: boolean;
+  /** A free-floating ("point") comment anchor staged by the pane
+   *  "Add comment here" action. When set, the Comments composer anchors a
+   *  new comment to this canvas coordinate instead of the selection. Cleared
+   *  on submit or when the panel closes. */
+  pendingCommentAnchor: CommentAnchor | null;
   /** H2 — when set, the canvas is in visual-diff mode and entities/edges
    *  are tinted by their diff status against this revision (added /
    *  removed / changed / unchanged). `null` = not in compare mode. */
@@ -212,6 +217,10 @@ export type DialogsSlice = {
   openCommentsPanel: () => void;
   closeCommentsPanel: () => void;
   toggleCommentsPanel: () => void;
+  /** Stage a free-floating point comment + open the panel (pane "Add
+   *  comment here"). */
+  startCommentAt: (anchor: CommentAnchor) => void;
+  clearPendingCommentAnchor: () => void;
 
   /** Session 133 — open / close the all-at-once verbalisation dialog. */
   openReadAllAtOnce: () => void;
@@ -261,6 +270,7 @@ export type DialogsDataKeys =
   | 'patternLibraryOpen'
   | 'historyPanelOpen'
   | 'commentsPanelOpen'
+  | 'pendingCommentAnchor'
   | 'compareRevisionId'
   | 'sideBySideRevisionId';
 
@@ -286,6 +296,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   patternLibraryOpen: null,
   historyPanelOpen: false,
   commentsPanelOpen: false,
+  pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
 });
@@ -312,6 +323,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   patternLibraryOpen: null,
   historyPanelOpen: false,
   commentsPanelOpen: false,
+  pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
 
@@ -398,11 +410,17 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   // closes history. Selection is deliberately preserved (the composer
   // anchors new comments to it).
   openCommentsPanel: () => set({ commentsPanelOpen: true, historyPanelOpen: false }),
-  closeCommentsPanel: () => set({ commentsPanelOpen: false }),
+  closeCommentsPanel: () => set({ commentsPanelOpen: false, pendingCommentAnchor: null }),
   toggleCommentsPanel: () => {
     const next = !get().commentsPanelOpen;
-    set({ commentsPanelOpen: next, ...(next ? { historyPanelOpen: false } : {}) });
+    set({
+      commentsPanelOpen: next,
+      ...(next ? { historyPanelOpen: false } : { pendingCommentAnchor: null }),
+    });
   },
+  startCommentAt: (anchor) =>
+    set({ commentsPanelOpen: true, historyPanelOpen: false, pendingCommentAnchor: anchor }),
+  clearPendingCommentAnchor: () => set({ pendingCommentAnchor: null }),
 
   openReadAllAtOnce: () => set({ readAllAtOnceOpen: true }),
   closeReadAllAtOnce: () => set({ readAllAtOnceOpen: false }),
