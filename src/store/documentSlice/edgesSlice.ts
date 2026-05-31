@@ -27,6 +27,14 @@ const KIND_LABEL: Record<JunctorKind, string> = {
   xor: 'XOR',
 };
 
+/** Drop all three junctor-group memberships from an edge (immutably). Used when
+ *  an edge's TARGET is re-pointed: a junctor groups the causes converging on
+ *  ONE target, so moving the target removes the edge from that convergence. */
+const withoutJunctorGroups = (e: Edge): Edge => {
+  const { andGroupId: _a, orGroupId: _o, xorGroupId: _x, ...rest } = e;
+  return rest;
+};
+
 /**
  * Edge-level mutations: connect / update / delete / reverse plus
  * AND-grouping (a structural edge property — `andGroupId` — that lives on
@@ -41,6 +49,12 @@ export type EdgesSlice = {
   /** A6: swap an edge's source and target. Useful when a user has built the
    *  arrow in the wrong direction (mis-attributing cause to effect). */
   reverseEdge: (id: string) => void;
+  /** Re-target an existing edge — drag one endpoint onto a different entity
+   *  (React Flow reconnection). Mirrors `connect`'s guards (self-loop /
+   *  duplicate / endpoints-exist; cycles stay allowed) and is undoable. A
+   *  *target* move drops the edge's junctor membership (junctors are
+   *  per-target). Returns the updated edge, or `null` if rejected / a no-op. */
+  reconnectEdge: (edgeId: string, sourceId: string, targetId: string) => Edge | null;
 
   groupAsAnd: (edgeIds: string[]) => { ok: true; groupId: string } | { ok: false; reason: string };
   ungroupAnd: (edgeIds: string[]) => void;
@@ -168,6 +182,35 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
         const next: Edge = { ...current, sourceId: current.targetId, targetId: current.sourceId };
         return touch({ ...prev, edges: { ...prev.edges, [id]: next } });
       });
+    },
+
+    reconnectEdge: (edgeId, sourceId, targetId) => {
+      if (sourceId === targetId) return null; // self-loop
+      const { doc } = get();
+      const current = doc.edges[edgeId];
+      if (!current) return null;
+      const src = doc.entities[sourceId];
+      const tgt = doc.entities[targetId];
+      if (!src || !tgt) return null;
+      // No-op if neither endpoint actually moved.
+      if (current.sourceId === sourceId && current.targetId === targetId) return null;
+      // Refuse a move that would duplicate an existing edge between the same
+      // ordered pair — we don't model parallel edges. `hasEdge` ignores ids;
+      // the no-op guard above means it can never match `current` itself.
+      if (hasEdge(doc, sourceId, targetId)) return null;
+
+      // Use the entities' branded ids (verified present above) rather than the
+      // raw string params, so the `Edge` stays correctly typed.
+      const moved: Edge = { ...current, sourceId: src.id, targetId: tgt.id };
+      // A target move takes the edge out of any junctor it belonged to (the
+      // group is the set of causes converging on the OLD target). A source-only
+      // move keeps the target — and the membership — intact.
+      const next: Edge = current.targetId !== targetId ? withoutJunctorGroups(moved) : moved;
+
+      applyDocChange((prev) =>
+        prev.edges[edgeId] ? touch({ ...prev, edges: { ...prev.edges, [edgeId]: next } }) : prev
+      );
+      return next;
     },
 
     // ── Bundle 8: AND / OR / XOR junctors share the same shape.

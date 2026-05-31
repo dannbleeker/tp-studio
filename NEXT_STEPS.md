@@ -15,13 +15,12 @@ spacing, shipped Session 146):
    edge cues. Done in `TPNode.tsx` reusing the existing local `isHovered` — no
    store flag needed (simpler than this sketch); hover gated below selection /
    diff / connection-drop rings.
-2. **Re-target an existing connector.** Grab one end of an existing edge and drag
-   it onto a different entity to re-parent it (change source or target) without
-   delete-and-recreate. React Flow supports edge reconnection
-   (`onReconnect` / reconnectable edges); wire it to an `updateEdgeEndpoint`
-   store action with the same cycle / self-loop / duplicate guards as
-   `connect()`, and re-run pruning (assumptions/junctor membership) on the moved
-   edge.
+2. ~~**Re-target an existing connector.**~~ ✅ *Session 148* — drag an edge
+   endpoint onto another entity to re-parent it, via React Flow reconnection →
+   the guarded, undoable `reconnectEdge` action (self-loop / duplicate guards;
+   junctor membership dropped on a target move; assumptions kept). Aggregated /
+   collapsed-remapped edges emit `reconnectable: false`. Gated on Browse Lock;
+   drop-on-empty snaps back.
 
 ---
 

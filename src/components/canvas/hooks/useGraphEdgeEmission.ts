@@ -167,6 +167,11 @@ export const useGraphEdgeEmission = (
               },
             }),
         selectable: !isAggregated,
+        // Re-targeting (drag an endpoint to another node) only makes sense for a
+        // REAL edge with real endpoints. An aggregated `agg:` edge has no single
+        // underlying id, and a synthetic endpoint is a collapsed-group stand-in,
+        // not the actual entity — so neither is reconnectable.
+        reconnectable: !isAggregated && !b.isSyntheticEndpoint,
       };
       edges.push(edge);
     }

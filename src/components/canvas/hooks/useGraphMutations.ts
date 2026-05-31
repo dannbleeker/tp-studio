@@ -49,22 +49,31 @@ export const useGraphMutations = (): {
   onConnect: (c: Connection) => void;
   onConnectStart: (event: MouseEvent | TouchEvent, params: OnConnectStartParams) => void;
   onConnectEnd: (event: MouseEvent | TouchEvent, connectionState: FinalConnectionState) => void;
+  onReconnect: (oldEdge: RFEdge, connection: Connection) => void;
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onEdgeMouseEnter: (event: unknown, edge: RFEdge) => void;
   onEdgeMouseLeave: (event: unknown, edge: RFEdge) => void;
 } => {
-  const { connect, deleteEntity, deleteEdge, setEntityPosition, addCoCauseToEdge, showToast } =
-    useDocumentStore(
-      useShallow((s) => ({
-        connect: s.connect,
-        deleteEntity: s.deleteEntity,
-        deleteEdge: s.deleteEdge,
-        setEntityPosition: s.setEntityPosition,
-        addCoCauseToEdge: s.addCoCauseToEdge,
-        showToast: s.showToast,
-      }))
-    );
+  const {
+    connect,
+    reconnectEdge,
+    deleteEntity,
+    deleteEdge,
+    setEntityPosition,
+    addCoCauseToEdge,
+    showToast,
+  } = useDocumentStore(
+    useShallow((s) => ({
+      connect: s.connect,
+      reconnectEdge: s.reconnectEdge,
+      deleteEntity: s.deleteEntity,
+      deleteEdge: s.deleteEdge,
+      setEntityPosition: s.setEntityPosition,
+      addCoCauseToEdge: s.addCoCauseToEdge,
+      showToast: s.showToast,
+    }))
+  );
 
   // Track the most recently hovered edge so a drag-from-handle that
   // releases over an edge body can detect "released on edge X" — React
@@ -108,6 +117,28 @@ export const useGraphMutations = (): {
       connect(c.source, c.target);
     },
     [connect]
+  );
+
+  // Re-target an existing edge: the user grabbed one endpoint and dropped it on
+  // a different entity. React Flow fires this only when released on a valid
+  // node/handle — a drop into empty space fires `onReconnectEnd` instead, and
+  // because our edges are fully controlled from the store, a no-op there (or a
+  // store-rejected move below) simply re-emits the original edge → snap-back,
+  // no manual revert needed.
+  const onReconnect = useCallback(
+    (oldEdge: RFEdge, c: Connection) => {
+      if (!c.source || !c.target) return;
+      // Nothing actually moved — RF can fire this on a release onto the same end.
+      if (c.source === oldEdge.source && c.target === oldEdge.target) return;
+      if (!guardWriteOrToast()) return;
+      if (reconnectEdge(oldEdge.id, c.source, c.target) === null) {
+        showToast(
+          'info',
+          "Can't move the connector there — it would loop a node to itself or duplicate an edge."
+        );
+      }
+    },
+    [reconnectEdge, showToast]
   );
 
   const onConnectEnd = useCallback(
@@ -258,6 +289,7 @@ export const useGraphMutations = (): {
     onConnect,
     onConnectStart,
     onConnectEnd,
+    onReconnect,
     onNodesChange,
     onEdgesChange,
     onEdgeMouseEnter,

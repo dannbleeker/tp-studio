@@ -26,6 +26,7 @@ describe('useGraphEdgeEmission', () => {
     expect(edges).toHaveLength(1);
     expect(edges[0]?.id).toBe(e?.id);
     expect(edges[0]?.selectable).toBe(true);
+    expect(edges[0]?.reconnectable).toBe(true); // a real edge can be re-targeted
     expect(edges[0]?.markerEnd).toMatchObject({ color: EDGE_MARKER_DEFAULT });
     expect(edges[0]?.data?.andGroupId).toBeUndefined();
   });
@@ -56,6 +57,7 @@ describe('useGraphEdgeEmission', () => {
     const agg = emit(collapse).find((e) => e.id === `agg:G->${c.id}`);
     expect(agg).toBeDefined();
     expect(agg?.selectable).toBe(false);
+    expect(agg?.reconnectable).toBe(false); // synthetic agg edge has no single real endpoint to move
     expect(agg?.data?.aggregateCount).toBe(2);
     expect(agg?.markerEnd).toMatchObject({ color: EDGE_MARKER_DEFAULT });
   });

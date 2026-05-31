@@ -74,6 +74,7 @@ function CanvasInner() {
     onConnect,
     onConnectStart,
     onConnectEnd,
+    onReconnect,
     onNodesChange,
     onEdgesChange,
     onEdgeMouseEnter,
@@ -171,6 +172,13 @@ function CanvasInner() {
         // that to the same `connect()` action so dragging-over-the-box
         // works as the user expects.
         onConnectEnd={onConnectEnd}
+        // Re-target an existing edge: drag one endpoint onto a different node.
+        // The handler is OMITTED under Browse Lock (React Flow only enables the
+        // reconnection gesture when an `onReconnect` handler is present),
+        // mirroring `nodesConnectable={!locked}`. Spread rather than passing
+        // `undefined` — `exactOptionalPropertyTypes` rejects an explicit
+        // `undefined` for this prop.
+        {...(locked ? {} : { onReconnect })}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         // The Alt-drag-to-splice gestures (per-frame highlight + the drop

@@ -52,6 +52,68 @@ describe('useGraphMutations — onConnect', () => {
   });
 });
 
+describe('useGraphMutations — onReconnect (re-target an edge)', () => {
+  // The handler only reads id / source / target off the old edge.
+  type OldEdge = Parameters<ReturnType<typeof useGraphMutations>['onReconnect']>[0];
+  const oldEdge = (id: string, source: string, target: string): OldEdge =>
+    ({ id, source, target }) as unknown as OldEdge;
+
+  it('re-targets the edge via the store on a valid reconnect', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('C');
+    const id = s().connect(a.id, b.id)?.id ?? '';
+    const { result } = renderHook(() => useGraphMutations());
+    result.current.onReconnect(
+      oldEdge(id, a.id, b.id),
+      mockConnection({ source: a.id, target: c.id })
+    );
+    expect(s().doc.edges[id]?.targetId).toBe(c.id);
+  });
+
+  it('is a no-op when the endpoints are unchanged', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const id = s().connect(a.id, b.id)?.id ?? '';
+    const before = s().doc;
+    const { result } = renderHook(() => useGraphMutations());
+    result.current.onReconnect(
+      oldEdge(id, a.id, b.id),
+      mockConnection({ source: a.id, target: b.id })
+    );
+    expect(s().doc).toBe(before);
+  });
+
+  it('respects Browse Lock — a locked doc is not re-targeted', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('C');
+    const id = s().connect(a.id, b.id)?.id ?? '';
+    useDocumentStore.setState({ browseLocked: true });
+    const { result } = renderHook(() => useGraphMutations());
+    result.current.onReconnect(
+      oldEdge(id, a.id, b.id),
+      mockConnection({ source: a.id, target: c.id })
+    );
+    expect(s().doc.edges[id]?.targetId).toBe(b.id); // unchanged
+  });
+
+  it('toasts when the store rejects the move (e.g. would self-loop)', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const id = s().connect(a.id, b.id)?.id ?? '';
+    const toastsBefore = s().toasts.length;
+    const { result } = renderHook(() => useGraphMutations());
+    // Drop the source onto the target → self-loop, rejected by the store.
+    result.current.onReconnect(
+      oldEdge(id, a.id, b.id),
+      mockConnection({ source: b.id, target: b.id })
+    );
+    expect(s().doc.edges[id]?.sourceId).toBe(a.id); // unchanged
+    expect(s().toasts.length).toBeGreaterThan(toastsBefore);
+  });
+});
+
 describe('useGraphMutations — onConnectEnd (drop-on-node fallback)', () => {
   it('connects when the drag releases over a node body (no handle hit)', () => {
     const a = seedEntity('A');

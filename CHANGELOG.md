@@ -2,6 +2,34 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 148 — Re-target a connector (drag an edge endpoint to another entity)
+
+Until now the only way to change what a connector links was to delete it and
+draw a new one. You can now grab one end of an existing edge and drop it on a
+different entity to re-parent it in place — React Flow's built-in edge
+reconnection (RF 12.10.2), wired to a new guarded store action.
+
+- **`reconnectEdge(edgeId, sourceId, targetId)`** (`edgesSlice.ts`) — mutates one
+  endpoint via `applyDocChange` (so it's **undoable**), mirroring `connect`'s
+  guards: rejects a self-loop, a duplicate of an existing edge, or a missing
+  entity; a no-op when nothing moved. Cycles stay allowed (back-edges are a
+  feature). A **target** move drops the edge's AND/OR/XOR junctor membership
+  (junctors group the causes converging on one target); a source-only move keeps
+  it. Assumptions stay attached (same edge id).
+- **Wiring** — `useGraphMutations.onReconnect` diffs the endpoints, runs the
+  Browse-Lock write guard, calls the action, and toasts on a rejected move.
+  `Canvas.tsx` passes `onReconnect` to `<ReactFlow>` only when unlocked. A drop
+  on empty canvas snaps back (our edges are controlled — a no-op just re-emits
+  the original).
+- **Scope** — only **real** edges are reconnectable; aggregated `agg:` edges and
+  collapsed-group-remapped endpoints emit `reconnectable: false` (no single real
+  underlying endpoint to move).
+
+Tests: `tests/store/reconnectEdge.test.ts` (8 — source / target change,
+self-loop, duplicate, no-op, unknown / missing, junctor strip-vs-keep, undo);
+`onReconnect` handler cases (valid / no-op / Browse-Lock / reject-toast);
+emission asserts `reconnectable` true on a real edge, false on an aggregated one.
+
 ## Session 147 — Entity hover + selection affordance (canvas)
 
 Brings node hover / selection visuals to parity with the edges (Session 138).
