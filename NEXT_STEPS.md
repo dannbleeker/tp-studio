@@ -35,11 +35,19 @@ The Session-140 audit surfaced ~30 candidates; the safe, locally-verifiable,
 high-value ones shipped Session 142 (see CHANGELOG). The rest are deferred —
 most are real wins but carry correctness/CI risk not worth taking in a wind-down:
 
-- **Narrow `CanvasInner`'s whole-`doc` subscription + emission memo deps**
-  (`doc` → `doc.entities`/`doc.edges`) — the single biggest render-churn source
-  (inspector keystrokes ripple through `useGraphView`), but it risks missed
-  re-renders if a read field is dropped from the deps. Architectural; already on
-  the Session-138 deferral list. Do it behind a careful component-test pass.
+- ~~**Narrow the emission memo deps**~~ ✅ *Session 143* — `useGraphProjection`,
+  the reach-count memos, and the node + edge emission memos are now keyed on the
+  specific `doc.*` fields each reads (audited per memo + transitive callees), so
+  a non-structural doc edit (CLR-resolve, document title/description) skips the
+  whole NODE pipeline. **Still open here:** (a) narrow `CanvasInner`'s own
+  whole-`doc` subscription — it still re-renders the wrapper, though the
+  now-stable pipeline means no actual canvas work results; (b) narrow
+  `useEdgeRoutes`'s whole-`doc` dep — until then the edge-emission narrowing is
+  *inert* (`routes` re-runs on every mutation and re-triggers edge emission).
+  Both are the same audit pattern; `useEdgeRoutes` is routing-sensitive, so
+  trace its edge-source data flow first. Note: editing an *entity* title
+  legitimately re-emits (it's a structural change) — this targets non-structural
+  churn, not every keystroke.
 - **Per-node `TPNode` selector reads whole `currentDoc`** for `diagramType` /
   `customEntityClasses` (session-invariant) — hoist to a stable selector. Same
   re-render-correctness risk class.

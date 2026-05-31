@@ -54,6 +54,11 @@ export const useGraphProjection = (doc: TPDocument): GraphProjection => {
   const hoistedGroupId = useDocumentStore((s) => s.hoistedGroupId);
   const showArchivedGroups = useDocumentStore((s) => s.showArchivedGroups);
 
+  // Keyed on `doc.entities` + `doc.groups` — the only doc fields read here and
+  // in `computeCollapseProjection` (collapse/hoist is entities + groups, never
+  // edges or metadata). So a non-structural doc edit doesn't recompute the
+  // projection (or, downstream, the emission memos keyed on its result).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via entities + groups; narrowed deliberately.
   return useMemo(() => {
     const proj = computeCollapseProjection(doc);
 
@@ -152,5 +157,5 @@ export const useGraphProjection = (doc: TPDocument): GraphProjection => {
       remap,
       hiddenCountByCollapser,
     };
-  }, [doc, hoistedGroupId, showArchivedGroups]);
+  }, [doc.entities, doc.groups, hoistedGroupId, showArchivedGroups]);
 };

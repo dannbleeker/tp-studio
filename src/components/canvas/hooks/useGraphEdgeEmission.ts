@@ -40,6 +40,12 @@ export const useGraphEdgeEmission = (
   // working (tests that import this hook directly, etc.).
   routes: EdgeRouteMap = {}
 ): TPEdge[] => {
+  // Keyed on the structural doc fields this memo reads — `edges` (via
+  // `edgesArray`), `assumptions` + `comments` (badge counts), `entities` +
+  // `groups` (visible titles) — NOT the whole `doc`. So a non-structural doc
+  // edit (CLR-resolve, document title/description, customEntityClasses) doesn't
+  // rebuild the edge array. Audited: those are the only `doc.*` reads here.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via edges/assumptions/comments/entities/groups; narrowed deliberately.
   return useMemo(() => {
     const { remap } = projection;
 
@@ -166,5 +172,5 @@ export const useGraphEdgeEmission = (
     }
 
     return edges;
-  }, [doc, projection, routes]);
+  }, [doc.edges, doc.assumptions, doc.comments, doc.entities, doc.groups, projection, routes]);
 };

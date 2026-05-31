@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 143 — Canvas render-subscription narrowing (Group 1, node pipeline)
+
+Stops the canvas pipeline from re-running on NON-structural document mutations
+(resolving a CLR warning, editing the document title/description). Each affected
+memo is now keyed on exactly the `doc.*` fields it reads — audited per memo
+*including transitive callees* — instead of the whole `doc`:
+
+- `useGraphProjection` → `doc.entities`, `doc.groups` (collapse/hoist is
+  entities + groups; never edges or metadata).
+- the reach-count memos (`udeReachCounts` / `rootCauseReachCounts`) →
+  `doc.entities`, `doc.edges` (the pair they're WeakMap-cached on).
+- the node-emission memo → `doc.entities`, `doc.groups`, `doc.edges` (via
+  `actionEligibility`), `doc.customEntityClasses` (aria labels).
+- the edge-emission memo → `doc.edges`, `doc.assumptions`, `doc.comments`,
+  `doc.entities`, `doc.groups`.
+
+Net: a CLR-resolve or document-title edit on a large diagram no longer rebuilds
+every node object — `positions` (fingerprint-gated) and `derivedStates`
+(structural-stable) were already stable, so with the projection + reach + node
+memos narrowed, the whole NODE side of the pipeline now skips.
+
+Two honest caveats (follow-ups in NEXT_STEPS): (1) the common case — editing an
+*entity* title — legitimately changes `doc.entities` and must re-emit; this
+targets non-structural churn, not every keystroke. (2) The edge-emission
+narrowing is correct but currently inert: `useEdgeRoutes` still keys on the
+whole `doc`, so `routes` re-runs on any mutation and re-triggers edge emission.
+Narrowing `useEdgeRoutes` (routing-correctness-sensitive) would complete the
+edge side — deferred.
+
 ## Session 142 — Performance optimization batch
 
 A pass over the opportunities from the Session-140 optimization audit. The

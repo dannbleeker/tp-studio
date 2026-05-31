@@ -45,15 +45,30 @@ export const useGraphNodeEmission = (
   // position-sensitive memo below. The main emission memo re-runs on
   // every `positions` change (i.e. every drag frame), but the reach
   // counts depend only on the doc's topology — so computing them in a
-  // `[doc]`-keyed memo keeps the O(V·(V+E)) walk off the drag path.
+  // topology-keyed memo keeps the O(V·(V+E)) walk off the drag path.
   // (The functions are also WeakMap-cached internally, Perf #20.)
-  const reachCounts = useMemo(() => udeReachCounts(doc), [doc]);
-  const reverseReachCounts = useMemo(() => rootCauseReachCounts(doc), [doc]);
+  //
+  // Keyed on `doc.entities` + `doc.edges` — the ONLY fields `udeReachCounts` /
+  // `rootCauseReachCounts` read (both WeakMap-cached on exactly that pair). A
+  // non-structural doc edit (a CLR-resolve toggle, a document title/description
+  // change) leaves those refs intact, so the reach memos — and the emission
+  // memo that depends on their result — skip the recompute entirely.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: passes the whole `doc` but reads only its entities + edges; narrowed deliberately.
+  const reachCounts = useMemo(() => udeReachCounts(doc), [doc.entities, doc.edges]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: topology-only, same as reachCounts above.
+  const reverseReachCounts = useMemo(() => rootCauseReachCounts(doc), [doc.entities, doc.edges]);
   // Open-comment counts per entity, keyed on `doc.comments` so the badge
   // tracks comment add/resolve/delete but stays off the drag path (the
   // big emission memo re-runs on every `positions` change).
   const commentCounts = useMemo(() => openCommentCountsByAnchor(doc.comments), [doc.comments]);
 
+  // Keyed on the structural doc fields this memo actually reads —
+  // `entities` + `groups` (directly + via descendantEntityCount), `edges`
+  // (via actionEligibility), `customEntityClasses` (ariaLabel) — NOT the whole
+  // `doc`. So a non-structural mutation (CLR-resolve, document title /
+  // description) doesn't rebuild every node object. Audited: these are the only
+  // `doc.*` accesses in the memo body + its callees.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` is read whole but only via its entities/groups/edges/customEntityClasses; narrowed deliberately.
   return useMemo(() => {
     const {
       proj,
@@ -234,7 +249,10 @@ export const useGraphNodeEmission = (
 
     return nodes;
   }, [
-    doc,
+    doc.entities,
+    doc.groups,
+    doc.edges,
+    doc.customEntityClasses,
     projection,
     positions,
     compareDiff,
