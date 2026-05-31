@@ -24,6 +24,27 @@ spacing, shipped Session 146):
 
 ---
 
+## Change-resistance / buy-in tooling (reviewed Session 149)
+
+From a review of Youngman's *Advanced Efrat's Cloud & The Matrix*. The three
+change-resistance EC **patterns** shipped Session 149 (see CHANGELOG); these two
+companions were deferred:
+
+- **The Change Matrix (Goldratt's 2×2).** Pot-of-Gold (gain from changing) /
+  Alligators (risk of changing) / Mermaids (lure of staying) / Crutches (pain of
+  not changing) — the matrix that substantiates Efrat's cloud and locates the
+  layers of resistance. Two routes: (a) **pragmatic** — ship it as a `freeform`
+  pattern, four labelled quadrants of note-cards positioned in a grid beside an
+  Efrat cloud (no new code, just a positioned pattern); (b) **proper** — a
+  dedicated "Change / Buy-in Matrix" diagram type with the four quadrants as
+  first-class structure (a real feature). Start with (a) if pursued.
+- **Layers of Resistance (buy-in sequence).** Problem → direction → solvency →
+  reservations (yes-but) → obstacles → unverbalised fear. A facilitation
+  *sequence*, not a diagram shape — candidate for a "buy-in checklist" side panel
+  that walks a cloud/injection through the layers, not a pattern-library entry.
+
+---
+
 ## Review comments (Sessions 139–140)
 
 The local-first comment layer shipped Session 139 (panel + palette/TopBar entry

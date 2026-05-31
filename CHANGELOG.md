@@ -2,6 +2,34 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 149 — Pattern library: three change-resistance Evaporating Clouds
+
+The EC patterns were all operational tradeoffs (quality vs speed, build vs buy,
+centralize vs federate, specialist vs generalist) — none covered the cloud
+most-reached-for in real facilitation: the **change-resistance / buy-in**
+conflict. Added three, after Efrat Goldratt-Ashlag's generic cloud and
+Goldratt's change-resistance work (original wording, per the library's
+no-copy-paste rule):
+
+- **Resistance to change (Efrat's cloud)** — the generic shape: protect myself
+  vs let the system improve → keep the familiar way vs change. The buy-in
+  workhorse.
+- **Speak up vs stay safe** — the identity-protection instance (keep quiet vs
+  name the hard issues); the everyday face of resistance where psychological
+  safety is thin.
+- **Transformation vs this quarter** — short-term security vs long-term growth
+  (fund this quarter vs fund the transformation); the reason a sound change
+  keeps getting deferred.
+
+Each is the canonical 5-box EC (A goal · B/C needs · D/D′ wants + D↔D′ mutex),
+same builder shape as the existing EC patterns; EC now ships **8** library
+entries. A targeted test pins Efrat's-cloud structure; the registry guards (≥5
+per type, unique ids, builds-to-declared-type, schemaVersion 9) cover the rest.
+Prompted by a review of Youngman's *Advanced Efrat's Cloud & The Matrix*; the
+companion **Change Matrix** (Pot-of-Gold / Alligators / Mermaids / Crutches) and
+the **Layers of Resistance** are logged in NEXT_STEPS as larger items, not built
+here.
+
 ## Session 148 — Re-target a connector (drag an edge endpoint to another entity)
 
 Until now the only way to change what a connector links was to delete it and

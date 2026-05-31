@@ -133,3 +133,24 @@ describe("goalTree-it-function (Dann's 2020 IT-function article)", () => {
     expect(doc.diagramType).toBe('goalTree');
   });
 });
+
+describe("ec-efrats-change-cloud (Efrat's generic change cloud)", () => {
+  it('builds the canonical 5-box EC — 1 goal · 2 needs · 2 wants, with a D↔D′ mutex', () => {
+    const p = patternById('ec-efrats-change-cloud');
+    expect(p).toBeDefined();
+    const doc = p!.build();
+    const entities = Object.values(doc.entities);
+    const edges = Object.values(doc.edges);
+
+    expect(doc.diagramType).toBe('ec');
+    expect(entities).toHaveLength(5);
+    expect(entities.filter((e) => e.type === 'goal')).toHaveLength(1);
+    expect(entities.filter((e) => e.type === 'need')).toHaveLength(2);
+    expect(entities.filter((e) => e.type === 'want')).toHaveLength(2);
+    // Every box is slotted (a / b / c / d / dPrime) for the hand-positioned layout.
+    expect(entities.every((e) => e.ecSlot)).toBe(true);
+    // Four necessity links (D→B, D′→C, B→A, C→A) plus exactly one mutex (D↔D′).
+    expect(edges.filter((e) => e.kind === 'necessity')).toHaveLength(4);
+    expect(edges.filter((e) => e.isMutualExclusion)).toHaveLength(1);
+  });
+});

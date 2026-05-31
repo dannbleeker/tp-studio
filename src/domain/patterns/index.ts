@@ -40,8 +40,11 @@ import { buildPatternCRTMultiProjectBottleneck } from './crt-multi-project-bottl
 import { buildPatternCRTSalesPipelineStall } from './crt-sales-pipeline-stall';
 import { buildPatternECBuildVsBuy } from './ec-build-vs-buy';
 import { buildPatternECCentralizeVsFederate } from './ec-centralize-vs-federate';
+import { buildPatternECEfratsChangeCloud } from './ec-efrats-change-cloud';
 import { buildPatternECQualityVsSpeed } from './ec-quality-vs-speed';
+import { buildPatternECSpeakUpVsStaySafe } from './ec-speak-up-vs-stay-safe';
 import { buildPatternECSpecialistVsGeneralist } from './ec-specialist-vs-generalist';
+import { buildPatternECTransformationVsQuarter } from './ec-transformation-vs-quarter';
 import { buildPatternFRTDbrScheduling } from './frt-dbr-scheduling';
 import { buildPatternFRTPricingExperiment } from './frt-pricing-experiment';
 import { buildPatternFRTTeamOkrs } from './frt-team-okrs';
@@ -156,6 +159,27 @@ export const PATTERNS: Pattern[] = [
     hint: 'Team-composition EC — deep-tenure hire vs T-shaped hire, around "solve hard problems" vs "pivot to new ones."',
     diagramType: 'ec',
     build: buildPatternECSpecialistVsGeneralist,
+  },
+  {
+    id: 'ec-efrats-change-cloud',
+    label: "Resistance to change (Efrat's cloud)",
+    hint: 'Generic change-conflict EC after Efrat Goldratt-Ashlag — protect myself vs let the system improve; keep the familiar way vs change. The buy-in workhorse.',
+    diagramType: 'ec',
+    build: buildPatternECEfratsChangeCloud,
+  },
+  {
+    id: 'ec-speak-up-vs-stay-safe',
+    label: 'Speak up vs stay safe',
+    hint: 'Identity-protection EC — keep quiet vs name the hard issues, around standing on the team vs surfacing the real problems.',
+    diagramType: 'ec',
+    build: buildPatternECSpeakUpVsStaySafe,
+  },
+  {
+    id: 'ec-transformation-vs-quarter',
+    label: 'Transformation vs this quarter',
+    hint: 'Short-term-vs-long-term EC — fund this quarter vs fund the transformation, the reason a sound change keeps getting deferred.',
+    diagramType: 'ec',
+    build: buildPatternECTransformationVsQuarter,
   },
 
   // ── FRT ────────────────────────────────────────────────────────────
