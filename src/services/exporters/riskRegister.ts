@@ -97,8 +97,10 @@ const buildMitigationsByUde = (doc: TPDocument): Map<string, string[]> => {
     const title = m.title.trim();
     const visited = new Set<string>([m.id]);
     const queue: string[] = [m.id];
-    while (queue.length > 0) {
-      const next = queue.shift();
+    // Head-index dequeue: O(1) per step vs `queue.shift()`'s O(N) array slide.
+    let head = 0;
+    while (head < queue.length) {
+      const next = queue[head++];
       if (!next) continue;
       for (const edge of outgoingEdges(doc, next)) {
         const targetId = edge.targetId;

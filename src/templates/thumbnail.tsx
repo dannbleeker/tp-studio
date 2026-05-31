@@ -156,8 +156,10 @@ const treePrimitives = (spec: TemplateSpec): Primitive[] => {
   const level = new Map<string, number>();
   for (const s of sinks) level.set(s, 0);
   const queue = [...sinks];
-  while (queue.length > 0) {
-    const cur = queue.shift();
+  // Head-index dequeue: O(1) per step vs `queue.shift()`'s O(N) array slide.
+  let head = 0;
+  while (head < queue.length) {
+    const cur = queue[head++];
     if (!cur) break;
     const curLevel = level.get(cur) ?? 0;
     for (const child of childrenOf.get(cur) ?? []) {

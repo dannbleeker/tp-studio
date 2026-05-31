@@ -20,8 +20,11 @@ see NEXT_STEPS.
 
 **Domain algorithms**
 - BFS dequeues (`reachableForward` / `reachableBackward` / `findPath`,
-  `radialLayout`) use a head-index pointer instead of `Array.shift()`
-  (O(1) vs O(N) per step).
+  `radialLayout`, plus the risk-register exporter's reachability walk and the
+  template-thumbnail level assignment) use a head-index pointer instead of
+  `Array.shift()` (O(1) vs O(N) per step). (`edgeReading`'s topo queue is
+  deliberately left on `shift` — it re-sorts after each step, so a head-index
+  would reorder the walkthrough.)
 - `findCycles` tracks the DFS stack with an index `Map` (O(1) on-stack test +
   back-edge slice) instead of a `Set` + `Array.indexOf`.
 - `pruneComments` tracks a deletion counter instead of re-enumerating both maps'
