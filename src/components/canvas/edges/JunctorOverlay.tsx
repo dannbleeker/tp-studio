@@ -1,5 +1,6 @@
-import { useStore as useRFStore } from '@xyflow/react';
-import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS } from '@/domain/constants';
+import { useConnection, useStore as useRFStore } from '@xyflow/react';
+import { useState } from 'react';
+import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_HIT_RADIUS, JUNCTOR_RADIUS } from '@/domain/constants';
 import type { TPDocument } from '@/domain/types';
 import { setHoveredJunctor } from '@/services/canvasRef';
 import { arrayShallowEqualByKeys } from '@/store/equality';
@@ -171,6 +172,12 @@ export function JunctorOverlay() {
     (s) => computeJunctors(groups, (id) => s.nodeLookup.get(id)),
     junctorsEqual
   );
+  // Goal #2 — light up a junctor circle while a connection is dragged over it
+  // ("release to join this junctor"). `useConnection` re-renders the overlay
+  // only when the drag starts/stops; `hoveredGroup` tracks which circle the
+  // cursor is on (set by the transparent hit circle below).
+  const connecting = useConnection((c) => c.inProgress);
+  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
 
   if (junctors.length === 0) return null;
 
@@ -216,36 +223,46 @@ export function JunctorOverlay() {
                 strokeWidth={1.75}
                 markerEnd={`url(#tp-junctor-arrow-${j.kind.toLowerCase()})`}
               />
-              {/* Session 136 + 137 — circle is hit-tested during
-                  connection drag so the user can drop an edge onto an
-                  existing junctor to join its group. AND landed in
-                  Session 136; OR / XOR added Session 137 — all three
-                  kinds now dispatch through `addCoCauseToEdge(edge,
-                  source, kind)` with the right `kind` derived from
-                  the hovered junctor's label. Pointer-events is
-                  enabled on this single element (the parent SVG
-                  stays `pointer-events-none` so the rest of the
-                  overlay doesn't swallow clicks).
-                  `setHoveredJunctor` writes to the singleton ref in
-                  `canvasRef.ts`; `useGraphMutations.onConnectEnd`
-                  reads it after the hovered-edge fallback fails. The
-                  mouse-only hover dance is the drag-gesture's
-                  hit-test, not an interaction surface users discover
-                  keyboard-first — the palette commands ("Group as
-                  AND / OR / XOR", "Add co-cause to edge") cover the
-                  keyboard path, so the static-interactions rule's
-                  complaint is intentionally suppressed. */}
+              {/* Session 136 + 137 / Goal #2 — drag-to-junctor hit target.
+                  A larger TRANSPARENT circle (JUNCTOR_HIT_RADIUS) owns the
+                  pointer so dropping a connection onto the junctor (to
+                  AND/OR/XOR-join it) is forgiving. `setHoveredJunctor` writes
+                  the singleton ref in `canvasRef.ts` that
+                  `useGraphMutations.onConnectEnd` reads; `setHoveredGroup`
+                  drives the reactive highlight. The parent <svg> stays
+                  `pointer-events-none` so only this circle catches the drag.
+                  Keyboard path: the "Group as AND/OR/XOR" palette commands. */}
               {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG hit target for drag-to-junctor (AND/OR/XOR); keyboard path is the "Group as <kind>" palette commands */}
+              <circle
+                cx={j.cx}
+                cy={j.cy}
+                r={JUNCTOR_HIT_RADIUS}
+                fill="transparent"
+                style={{ pointerEvents: 'auto' }}
+                onMouseEnter={() => {
+                  setHoveredJunctor({ groupId: j.id, kind: j.kind });
+                  setHoveredGroup(j.id);
+                }}
+                onMouseLeave={() => {
+                  setHoveredJunctor(null);
+                  setHoveredGroup(null);
+                }}
+              />
+              {/* Visible circle — decorative (the hit circle above owns the
+                  pointer; visible radius is unchanged so the bezier terminus
+                  is too). Lights up while a connection is dragged over it. */}
               <circle
                 cx={j.cx}
                 cy={j.cy}
                 r={JUNCTOR_RADIUS}
                 fill="white"
                 stroke={stroke}
-                strokeWidth={1.5}
-                style={{ pointerEvents: 'auto' }}
-                onMouseEnter={() => setHoveredJunctor({ groupId: j.id, kind: j.kind })}
-                onMouseLeave={() => setHoveredJunctor(null)}
+                strokeWidth={connecting && hoveredGroup === j.id ? 3 : 1.5}
+                style={
+                  connecting && hoveredGroup === j.id
+                    ? { pointerEvents: 'none', filter: `drop-shadow(0 0 5px ${stroke}cc)` }
+                    : { pointerEvents: 'none' }
+                }
               />
               <text
                 x={j.cx}

@@ -64,6 +64,7 @@ function CanvasInner() {
   const { nodes, edges } = useSearchDimming(doc, rawNodes, rawEdges);
   const {
     onConnect,
+    onConnectStart,
     onConnectEnd,
     onNodesChange,
     onEdgesChange,
@@ -127,6 +128,7 @@ function CanvasInner() {
         edgeTypes={edgeTypes}
         onInit={(instance) => setCanvasInstance(instance)}
         onConnect={onConnect}
+        onConnectStart={onConnectStart}
         // Session 49 fallback: when the user drags a connection and
         // releases over the *body* of a target node (not its handle dot),
         // React Flow's `onConnect` doesn't fire — but `onConnectEnd`
@@ -203,6 +205,9 @@ function CanvasInner() {
         panOnDrag={locked ? [0, 1, 2] : [1, 2]}
         nodesDraggable={false}
         nodesConnectable={!locked}
+        // Goal #2 — raise React Flow's 20px snap-to-handle window so a
+        // connection released NEAR a target handle still lands on it.
+        connectionRadius={120}
         zoomOnDoubleClick={false}
         proOptions={{ hideAttribution: true }}
         fitView

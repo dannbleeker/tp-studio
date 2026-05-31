@@ -14,7 +14,7 @@
 // guarantee, move the directive inside the `TPNodeImpl` function body
 // or wrap the export differently.
 
-import { Handle, type NodeProps, NodeToolbar, Position } from '@xyflow/react';
+import { Handle, type NodeProps, NodeToolbar, Position, useConnection } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -90,6 +90,18 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       };
     })
   );
+  // Goal #2 — while a connection is dragged onto THIS node, ring it to signal
+  // "release to connect here" (rose if the drop would be rejected — self-loop
+  // / duplicate). React Flow tracks the in-progress `toNode` + `isValid`; the
+  // selector returns a stable `null` for every non-target node, so only the
+  // hovered node re-renders.
+  const connDrop = useConnection((c) =>
+    c.inProgress && c.toNode?.id === entity.id && c.fromNode?.id !== entity.id
+      ? c.isValid === false
+        ? 'invalid'
+        : 'valid'
+      : null
+  );
   // B10 — resolve through the doc-aware lookup so custom entity
   // classes pick up their label / colour / icon. Built-ins resolve
   // identically to the previous direct `ENTITY_TYPE_META[type]` lookup.
@@ -164,7 +176,10 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         // overlay surfaced in the compare banner.
         diffStatus === 'added' &&
           'ring-2 ring-emerald-400/70 ring-offset-1 dark:ring-emerald-500/70',
-        diffStatus === 'changed' && 'ring-2 ring-amber-400/70 ring-offset-1 dark:ring-amber-500/70'
+        diffStatus === 'changed' && 'ring-2 ring-amber-400/70 ring-offset-1 dark:ring-amber-500/70',
+        // Goal #2 — connection-drop target ring (indigo = will connect, rose = rejected).
+        connDrop === 'valid' && 'ring-2 ring-indigo-400/80 ring-offset-1',
+        connDrop === 'invalid' && 'ring-2 ring-rose-400/70 ring-offset-1'
       )}
       style={{ width: NODE_WIDTH, minHeight: isStFormat ? ST_NODE_HEIGHT : NODE_MIN_HEIGHT }}
       onMouseEnter={() => setIsHovered(true)}
@@ -239,7 +254,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       <Handle
         type="target"
         position={targetPosition}
-        className="!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900"
+        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-white before:content-[''] group-hover:before:border-indigo-400 dark:before:border-neutral-700 dark:before:bg-neutral-900"
       />
       <div
         className="w-1.5 shrink-0 rounded-l-lg"
@@ -398,7 +413,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       <Handle
         type="source"
         position={sourcePosition}
-        className="!h-2 !w-2 !border-neutral-300 !bg-white dark:!border-neutral-700 dark:!bg-neutral-900"
+        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-white before:content-[''] group-hover:before:border-indigo-400 dark:before:border-neutral-700 dark:before:bg-neutral-900"
       />
     </div>
   );

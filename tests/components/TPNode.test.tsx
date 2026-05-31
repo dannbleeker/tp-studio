@@ -118,11 +118,16 @@ describe('TPNode — entity-type-specific rendering', () => {
     const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
     const handles = container.querySelectorAll('.react-flow__handle');
     expect(handles.length).toBe(2);
-    // No opacity-0 / pointer-events-none — the user can hit the
-    // handle the same way they would on any causal entity.
+    // The handle box itself stays hittable (the user connects the same way
+    // as on any causal entity). Goal #2 enlarged the transparent hit box and
+    // moved the visible dot to a `before:` pseudo-element — so the className
+    // legitimately carries `before:pointer-events-none` (the dot, not the
+    // handle). Assert the HANDLE isn't hidden: no `opacity-0`, and no
+    // *standalone* `pointer-events-none` (the negative lookbehind excludes
+    // the `before:` variant).
     handles.forEach((h) => {
       expect(h.className).not.toMatch(/opacity-0/);
-      expect(h.className).not.toMatch(/pointer-events-none/);
+      expect(h.className).not.toMatch(/(?<!:)pointer-events-none/);
     });
   });
 

@@ -24,7 +24,7 @@
  * heavier.
  */
 
-import type { Connection, FinalConnectionState } from '@xyflow/react';
+import type { Connection, FinalConnectionState, OnConnectStartParams } from '@xyflow/react';
 
 /**
  * A Connection where the cancel path may pass `null` source/target.
@@ -88,4 +88,16 @@ export function mockFinalConnectionState(partial: {
  */
 export function mockMouseEvent(): MouseEvent {
   return {} as MouseEvent;
+}
+
+/**
+ * Build an `OnConnectStartParams` for `onConnectStart` tests. The hook
+ * reads only `nodeId` (the connection's drag source).
+ */
+export function mockConnectStartParams(partial: { nodeId?: string | null }): OnConnectStartParams {
+  return {
+    nodeId: partial.nodeId ?? null,
+    handleId: null,
+    handleType: null,
+  };
 }

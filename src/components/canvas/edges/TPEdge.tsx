@@ -38,10 +38,11 @@ const LABEL_INLINE_MAX = 30;
  *  edge still selects it. The halo doesn't visibly render — it's just a
  *  transparent path beneath the visible stroke.
  *  Session 133 — bumped 32 → 48 in response to user feedback that edges
- *  are still hard to grab when nodes are close together. 48 keeps the
- *  hit area generous without making adjacent edges fight each other on
- *  parallel paths. */
-const EDGE_INTERACTION_WIDTH = 48;
+ *  are still hard to grab when nodes are close together.
+ *  Goal #2 — 48 → 56 so dragging a connection onto an edge (the "drop to
+ *  AND" gesture) lands more easily; still narrow enough that adjacent
+ *  parallel edges don't fight each other on the hover. */
+const EDGE_INTERACTION_WIDTH = 56;
 
 /**
  * E6: for AND-grouped non-aggregated edges, the visible edge segment stops
@@ -140,6 +141,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         weight: edge?.weight,
         hasDescription: typeof desc === 'string' && desc.trim().length > 0,
         isSpliceTarget: s.spliceTargetEdgeId === props.id,
+        isConnectionDropTarget: s.connectionDropEdgeId === props.id,
         causalityLabel: s.causalityLabel,
         diagramType: doc.diagramType,
         isNoteEdge: sourceIsNote || targetIsNote,
@@ -153,6 +155,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     weight,
     hasDescription,
     isSpliceTarget,
+    isConnectionDropTarget,
     causalityLabel,
     diagramType,
     isNoteEdge,
@@ -351,7 +354,10 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // hue family as the project's accent so it doesn't introduce a
   // new color into the vocabulary.
   const SPLICE_TARGET_STROKE = '#6366f1';
-  const stroke = isSpliceTarget
+  // Goal #2 — the connection-drag "drop here to AND" target shares the
+  // splice-target's indigo glow (both mean "release lands on this edge").
+  const isDropTarget = isSpliceTarget || isConnectionDropTarget;
+  const stroke = isDropTarget
     ? SPLICE_TARGET_STROKE
     : isMutex
       ? MUTEX_STROKE
@@ -376,7 +382,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // existing widths even on a note edge — selection feedback still
   // wins).
   const baseWidth = props.selected ? 3 : isJunctorGroup ? 1.75 : isNoteEdge ? 1.25 : 1.5;
-  const strokeWidth = isBackEdge || isSpliceTarget ? baseWidth + 1.5 : baseWidth;
+  const strokeWidth = isBackEdge || isDropTarget ? baseWidth + 1.5 : baseWidth;
   // Back-edges render with a subtle dash pattern in addition to the
   // thicker stroke — combination of two cues so the visual reads as
   // "this is *the* tagged loop-closer" rather than "this edge is just
@@ -393,7 +399,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // Selected and splice-target both want a glow; splice-target wins
   // when both happen (the drag gesture is the more time-sensitive
   // signal and the user already knows what's selected).
-  const selectedFilter = isSpliceTarget
+  const selectedFilter = isDropTarget
     ? `drop-shadow(0 0 6px ${SPLICE_TARGET_STROKE}88)`
     : props.selected
       ? `drop-shadow(0 0 4px ${EDGE_STROKE_SELECTED}66)`

@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Easier drag-and-drop (forgiving connection/junction creation)
+
+Three connection/junction-creation drag gestures are now more forgiving and give
+live "drop here" feedback. No node repositioning (auto-layout stays authoritative
+from goal #4) — this is creation/connection only.
+
+- **Bigger hit zones**: React Flow's snap window raised from its 20px default to
+  120px (`connectionRadius`); the connect handle's HIT box enlarged to ~20px (the
+  visible 8px dot is now a `before:` pseudo-element, so only the invisible catch
+  grew); the junctor circle gains a 22px transparent catch behind the visible
+  14px circle (`JUNCTOR_HIT_RADIUS` — visible radius + bezier terminus unchanged);
+  the edge hover halo bumped 48→56px.
+- **Live drop-target feedback** while dragging a connection: the target node rings
+  indigo ("release to connect" — rose if the drop would be rejected, e.g. a
+  self-loop / duplicate), a hovered edge glows indigo ("release to AND here"), and
+  the junctor circle lights up in its kind color ("release to join"). Driven by a
+  new `connectingFromId` / `connectionDropEdgeId` store pair (mirroring the
+  splice-target highlight recipe incl. its per-frame no-op guard) + React Flow
+  v12's `useConnection()`; the validity ring falls out of `useConnection`'s
+  `isValid` for free.
+- **Discoverability**: the connect dot brightens on node hover.
+
+`onConnectStart` is now wired; `onConnectEnd` clears the feedback flags on every
+branch. Per-frame churn is avoided via guarded no-op setters + the existing
+shallow selectors + `useConnection` selectors.
+
+Tests: new `tests/store/connectionDragHighlight.test.ts` (defaults / round-trip /
+no-op-guard write count / reset) + connection-feedback cases in
+`useGraphMutations.test.tsx`. tsc + biome + full suite green (2161 passed).
+
 ## Session 138 — Balance the auto-layout map (centering pass + auto-layout authoritative)
 
 Two changes so auto-layout diagrams (CRT/FRT/PRT/TT/S&T/Goal Tree/NBR/freeform)

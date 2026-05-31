@@ -5,6 +5,7 @@ import { setCanvasInstance, setHoveredJunctor } from '@/services/canvasRef';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import {
   mockConnection,
+  mockConnectStartParams,
   mockFinalConnectionState,
   mockMouseEvent,
 } from '../../helpers/reactFlowFixtures';
@@ -192,5 +193,44 @@ describe('useGraphMutations — edge-hover ref + drop-on-edge fallback', () => {
     // Hover was cleared; drop-in-empty-space is a no-op.
     const after = Object.values(s().doc.edges).filter((e) => e.sourceId === coCause.id).length;
     expect(after).toBe(before);
+  });
+});
+
+describe('useGraphMutations — connection-drag feedback (goal #2)', () => {
+  it('onConnectStart records the drag source in connectingFromId', () => {
+    const { result } = renderHook(() => useGraphMutations());
+    expect(s().connectingFromId).toBeNull();
+    result.current.onConnectStart(mockMouseEvent(), mockConnectStartParams({ nodeId: 'node-7' }));
+    expect(s().connectingFromId).toBe('node-7');
+  });
+
+  it('onEdgeMouseEnter flags the hovered edge ONLY while a connection is in progress', () => {
+    const { result } = renderHook(() => useGraphMutations());
+    const edge = { id: 'edge-1' } as never;
+    // Not connecting → hovering an edge does not flag a drop target.
+    result.current.onEdgeMouseEnter(null, edge);
+    expect(s().connectionDropEdgeId).toBeNull();
+    // Start a connection, then hover → the edge is flagged as the drop target.
+    result.current.onConnectStart(mockMouseEvent(), mockConnectStartParams({ nodeId: 'node-7' }));
+    result.current.onEdgeMouseEnter(null, edge);
+    expect(s().connectionDropEdgeId).toBe('edge-1');
+    // Leaving the edge clears it.
+    result.current.onEdgeMouseLeave(null, edge);
+    expect(s().connectionDropEdgeId).toBeNull();
+  });
+
+  it('onConnectEnd clears both feedback flags', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const { result } = renderHook(() => useGraphMutations());
+    result.current.onConnectStart(mockMouseEvent(), mockConnectStartParams({ nodeId: a.id }));
+    s().setConnectionDropEdge('edge-1');
+    expect(s().connectingFromId).toBe(a.id);
+    result.current.onConnectEnd(
+      mockMouseEvent(),
+      mockFinalConnectionState({ fromId: a.id, toId: b.id, isValid: true })
+    );
+    expect(s().connectingFromId).toBeNull();
+    expect(s().connectionDropEdgeId).toBeNull();
   });
 });

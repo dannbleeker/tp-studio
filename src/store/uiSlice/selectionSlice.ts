@@ -53,6 +53,14 @@ export type SelectionSlice = {
    *  not persisted. */
   spliceTargetEdgeId: string | null;
 
+  /** Goal #2 — transient connection-drag feedback. `connectingFromId` is the
+   *  source entity id while a connection drag is in progress (set on
+   *  `onConnectStart`, cleared on `onConnectEnd`); `connectionDropEdgeId` is
+   *  the edge currently hovered DURING such a drag, so `TPEdge` can glow
+   *  "release to AND here". Both transient, not persisted. */
+  connectingFromId: string | null;
+  connectionDropEdgeId: string | null;
+
   /** Session 138 — the canvas interaction mode (`idle` / `edge-join` /
    *  `pending-edge`), folding the former `joinModeEdgeId` +
    *  `pendingEdgeSourceId` nullable flags into one discriminated union so
@@ -89,6 +97,12 @@ export type SelectionSlice = {
    *  the target actually changed. */
   setSpliceTargetEdge: (edgeId: string | null) => void;
 
+  /** Goal #2 — connection-drag feedback setters. Both no-op when the value
+   *  is already what's requested, so the per-frame hover during a drag
+   *  doesn't fan re-renders unless the target changed. */
+  setConnectingFrom: (id: string | null) => void;
+  setConnectionDropEdge: (edgeId: string | null) => void;
+
   /** Session 133 — enter / exit edge-join mode. `startEdgeJoinMode`
    *  remembers the source edge id; the next edge click on the canvas
    *  attempts the AND-group via the existing `groupAsAnd` action and
@@ -111,6 +125,8 @@ export type SelectionDataKeys =
   | 'editingEntityId'
   | 'hoistedGroupId'
   | 'spliceTargetEdgeId'
+  | 'connectingFromId'
+  | 'connectionDropEdgeId'
   | 'canvasMode';
 
 export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => ({
@@ -118,6 +134,8 @@ export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => 
   editingEntityId: null,
   hoistedGroupId: null,
   spliceTargetEdgeId: null,
+  connectingFromId: null,
+  connectionDropEdgeId: null,
   canvasMode: { kind: 'idle' },
 });
 
@@ -132,6 +150,8 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   editingEntityId: null,
   hoistedGroupId: null,
   spliceTargetEdgeId: null,
+  connectingFromId: null,
+  connectionDropEdgeId: null,
   canvasMode: { kind: 'idle' },
 
   select: (selection) => set({ selection }),
@@ -194,6 +214,15 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
     // `spliceTargetEdgeId === props.id`), thrashing reconciliation.
     if (get().spliceTargetEdgeId === edgeId) return;
     set({ spliceTargetEdgeId: edgeId });
+  },
+
+  setConnectingFrom: (id) => {
+    if (get().connectingFromId === id) return;
+    set({ connectingFromId: id });
+  },
+  setConnectionDropEdge: (edgeId) => {
+    if (get().connectionDropEdgeId === edgeId) return;
+    set({ connectionDropEdgeId: edgeId });
   },
 
   startEdgeJoinMode: (edgeId) =>

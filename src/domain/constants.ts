@@ -54,6 +54,12 @@ export const LAYOUT_NODE_SEPARATION = 32;
 export const JUNCTOR_CENTER_OFFSET_Y = 35;
 export const JUNCTOR_RADIUS = 14;
 export const JUNCTOR_EDGE_TERMINAL_OFFSET_Y = JUNCTOR_CENTER_OFFSET_Y + JUNCTOR_RADIUS;
+// Goal #2 — invisible drag-drop catch radius for the junctor circle. A
+// larger transparent circle behind the visible one makes "drop a connection
+// onto the junctor to join it" forgiving WITHOUT enlarging the visible
+// circle, so the bezier terminus above stays put (it depends only on the
+// visible `JUNCTOR_RADIUS`).
+export const JUNCTOR_HIT_RADIUS = 22;
 // TPNode "zoom-up" pop-out: when the viewport zoom drops below this and the
 // node is selected/hovered, render the magnified title overlay so titles
 // stay legible at low zoom. Lives here next to other canvas tunables so

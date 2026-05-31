@@ -3,6 +3,7 @@ import type {
   EdgeChange,
   FinalConnectionState,
   NodeChange,
+  OnConnectStartParams,
   Edge as RFEdge,
 } from '@xyflow/react';
 import { useCallback, useRef } from 'react';
@@ -46,6 +47,7 @@ import { useDocumentStore } from '@/store';
  */
 export const useGraphMutations = (): {
   onConnect: (c: Connection) => void;
+  onConnectStart: (event: MouseEvent | TouchEvent, params: OnConnectStartParams) => void;
   onConnectEnd: (event: MouseEvent | TouchEvent, connectionState: FinalConnectionState) => void;
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
@@ -72,10 +74,25 @@ export const useGraphMutations = (): {
   const hoveredEdgeRef = useRef<string | null>(null);
   const onEdgeMouseEnter = useCallback((_event: unknown, edge: RFEdge) => {
     hoveredEdgeRef.current = edge.id;
+    // Goal #2 — while a connection drag is in progress, glow this edge as the
+    // "drop here to AND" target. Read the flag imperatively (no subscription);
+    // the setter no-ops if unchanged so re-hovering the same edge is free.
+    const s = useDocumentStore.getState();
+    if (s.connectingFromId) s.setConnectionDropEdge(edge.id);
   }, []);
   const onEdgeMouseLeave = useCallback((_event: unknown, _edge: RFEdge) => {
     hoveredEdgeRef.current = null;
+    useDocumentStore.getState().setConnectionDropEdge(null);
   }, []);
+
+  // Goal #2 — a connection drag started; remember the source so nodes / edges
+  // / junctors can light up as drop targets while the drag is in flight.
+  const onConnectStart = useCallback(
+    (_event: MouseEvent | TouchEvent, params: OnConnectStartParams) => {
+      useDocumentStore.getState().setConnectingFrom(params.nodeId ?? null);
+    },
+    []
+  );
 
   const onConnect = useCallback(
     (c: Connection) => {
@@ -88,6 +105,11 @@ export const useGraphMutations = (): {
 
   const onConnectEnd = useCallback(
     (_event: MouseEvent | TouchEvent, connectionState: FinalConnectionState) => {
+      // Goal #2 — the drag is ending: clear the connection-drag feedback flags
+      // up front (the drop resolution below is independent of them).
+      const fb = useDocumentStore.getState();
+      fb.setConnectingFrom(null);
+      fb.setConnectionDropEdge(null);
       // Connection-drag end: priority order
       //   1. Released on a handle dot                → `onConnect` already
       //      fired; nothing to do here.
@@ -227,6 +249,7 @@ export const useGraphMutations = (): {
 
   return {
     onConnect,
+    onConnectStart,
     onConnectEnd,
     onNodesChange,
     onEdgesChange,
