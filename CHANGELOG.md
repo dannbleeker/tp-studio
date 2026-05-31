@@ -2,6 +2,64 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Code-inspection hardening (Medium-severity batch)
+
+Lands the Medium-severity inspection findings; three turned out to be non-issues
+on closer inspection (noted below).
+
+**Security / hostile-input**
+- `customEntityClass.color` is validated against a CSS-color allowlist
+  (`isSafeCssColor`, `src/domain/safeCss.ts`) at BOTH the persistence validator
+  and the HTML-export interpolation point — a value like
+  `red;background-image:url(...)` (which `escapeHtml` doesn't neutralise) can no
+  longer inject an extra CSS declaration / external-resource beacon into the
+  exported file.
+- `validateEntity` rejects non-finite numbers (`annotationNumber`,
+  `position.x/y`, timestamps) via an `isFiniteNumber` guard — defense-in-depth
+  (JSON can't carry NaN/Infinity, but the guard keeps the validator correct for
+  any non-JSON caller and clearer in its messages).
+- The risk-register CSV exporter collapses whitespace in the evidence URL too,
+  so a smuggled newline can't survive into a cell some trackers treat as a row
+  break.
+
+**Performance**
+- `usePropagatedStates` uses one `useShallow` bundle instead of three separate
+  store subscriptions.
+- `Canvas` stabilises the `onInit` + `onSelectionChange` handlers passed to
+  `<ReactFlow>` (no per-render re-subscription of React Flow's selection-change
+  effect).
+
+**React correctness**
+- `useDraggablePanel` discards the drag on `pointercancel` (was committing the
+  last tracked position + calling `releasePointerCapture`, which throws on a
+  cancelled pointer).
+- Arrow-key node navigation mirrors the new selection to the store directly
+  (`selectEntity`) rather than relying solely on React Flow's
+  `onSelectionChange` round-trip.
+
+**Type safety**
+- `PrintPreviewDialog` drops an `as never` cast (which disabled all
+  type-checking) for a precise node-id string comparison.
+
+**Maintainability**
+- `createSelectionSlice` spreads `selectionDefaults()` instead of re-declaring
+  the 8 initial fields (no drift with `resetStoreForTest`).
+- Removed two dead "reserved for future" fields: `RadialEdgeRoute.deflected`
+  and `RoutingInput.rankSpacing` (+ their tests).
+
+Assessed and confirmed NOT real issues: the live-draft write "silent swallow"
+(`writeString` already reports failures via `reportError` → the store's quota
+handler); the `useGraphPositions` async-layout "stale commit" (the `cancelled`
+flag bails the stale IIFE post-`await`); and `reduceXor`'s unknown-handling
+(XOR with an undetermined input IS genuinely undetermined — correct).
+
+Deferred (recorded in NEXT_STEPS): isolating `CanvasInner`'s doc subscription
+(an architectural render-isolation refactor) and parameterising the three
+transient-highlight test files (tests favor explicit over DRY).
+
+Tests: new `tests/domain/safeCss.test.ts` + a `validateEntity` finite-guard
+case. tsc + biome + full suite green (2195 passed).
+
 ## Session 138 — Code-inspection hardening (Low-severity batch)
 
 Follows the High-severity batch — lands the worthwhile Low-severity findings:

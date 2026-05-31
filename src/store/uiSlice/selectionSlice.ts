@@ -159,14 +159,9 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   set,
   get
 ) => ({
-  selection: { kind: 'none' },
-  editingEntityId: null,
-  hoistedGroupId: null,
-  spliceTargetEdgeId: null,
-  connectingFromId: null,
-  connectionDropEdgeId: null,
-  hoveredEdgeId: null,
-  canvasMode: { kind: 'idle' },
+  // Initial data fields come from the single source of truth, so this slice
+  // and `resetStoreForTest` (which spreads `selectionDefaults()`) can't drift.
+  ...selectionDefaults(),
 
   select: (selection) => set({ selection }),
   // The action surface still accepts plain `string` because selection

@@ -174,8 +174,12 @@ export const useArrowKeyNodeNav = (): void => {
 
       e.preventDefault();
       e.stopPropagation();
-      // Drive selection via RF's setNodes (same path selectNodeViaRF uses).
+      // Drive RF's own selection (its focus ring + the onSelectionChange
+      // mirror)…
       flow.setNodes((nodes) => nodes.map((n) => ({ ...n, selected: n.id === targetId })));
+      // …and mirror to the store directly, so the selection lands even if RF's
+      // onSelectionChange round-trip is deferred (or absent under test).
+      useDocumentStore.getState().selectEntity(targetId);
       // Move keyboard focus to the target node's wrapper.
       const targetEl = document.querySelector(`.react-flow__node[data-id="${targetId}"]`);
       if (targetEl instanceof HTMLElement) targetEl.focus();

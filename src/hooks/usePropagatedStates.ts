@@ -21,15 +21,22 @@
  */
 
 import { useMemo } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { propagateStates } from '@/domain/statePropagation';
 import type { EntityId, EntityState } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
 export function usePropagatedStates(): Record<EntityId, EntityState> {
-  const entities = useDocumentStore((s) => currentDoc(s).entities);
-  const edges = useDocumentStore((s) => currentDoc(s).edges);
-  const overlay = useDocumentStore((s) => s.speculationOverlay);
+  // One shallow-equal bundle instead of three separate subscriptions: same
+  // re-render triggers (a change to the entities / edges / overlay reference),
+  // but one store walk per update instead of three.
+  const { entities, edges, overlay } = useDocumentStore(
+    useShallow((s) => {
+      const doc = currentDoc(s);
+      return { entities: doc.entities, edges: doc.edges, overlay: s.speculationOverlay };
+    })
+  );
   return useMemo(
     () => propagateStates({ entities, edges }, overlay ?? undefined),
     [entities, edges, overlay]

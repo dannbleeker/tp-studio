@@ -158,7 +158,11 @@ const formatEvidenceItem = (e: EvidenceItem): string => {
   const desc = e.description.trim().replace(/\s+/g, ' ');
   const head = `[${e.strength}/${e.source}]`;
   const body = desc.length > 0 ? ` ${desc}` : '';
-  const tail = e.url && e.url.length > 0 ? ` (${e.url})` : '';
+  // Collapse whitespace in the URL too (matching the description above) so a
+  // newline smuggled into the url field can't survive into the CSV cell — the
+  // RFC 4180 escaper keeps embedded newlines, which some tracker imports treat
+  // as a row break.
+  const tail = e.url && e.url.length > 0 ? ` (${e.url.trim().replace(/\s+/g, ' ')})` : '';
   return `${head}${body}${tail}`;
 };
 

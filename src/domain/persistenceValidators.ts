@@ -1,4 +1,5 @@
 import { isEdgeKind, isEntityType, isObject, isStringArray } from './guards';
+import { isSafeCssColor } from './safeCss';
 import { isSafeHref } from './safeUrl';
 import type {
   Assumption,
@@ -57,6 +58,11 @@ const VALID_GROUP_COLORS: ReadonlySet<GroupColor> = new Set([
 
 const invalid = (label: string, why: string): Error =>
   new Error(`Invalid document: ${label} ${why}.`);
+
+// A finite number — rejects NaN / ±Infinity, which pass a bare
+// `typeof === 'number'` check and then poison sorts (`a - b`) and break
+// geometry/bounds math downstream.
+const isFiniteNumber = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
 /**
  * B7 — validate one AttrValue. The tagged union has four kinds, each
@@ -225,11 +231,11 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   if (typeof v.id !== 'string') throw invalid(label, 'has no id');
   if (!isEntityType(v.type)) throw invalid(label, `has invalid type "${String(v.type)}"`);
   if (typeof v.title !== 'string') throw invalid(label, 'has non-string title');
-  if (typeof v.annotationNumber !== 'number') {
-    throw invalid(label, 'has non-number annotationNumber');
+  if (!isFiniteNumber(v.annotationNumber)) {
+    throw invalid(label, 'has non-finite annotationNumber');
   }
-  if (typeof v.createdAt !== 'number') throw invalid(label, 'has non-number createdAt');
-  if (typeof v.updatedAt !== 'number') throw invalid(label, 'has non-number updatedAt');
+  if (!isFiniteNumber(v.createdAt)) throw invalid(label, 'has non-finite createdAt');
+  if (!isFiniteNumber(v.updatedAt)) throw invalid(label, 'has non-finite updatedAt');
   if (v.description !== undefined && typeof v.description !== 'string') {
     throw invalid(label, 'has non-string description');
   }
@@ -248,14 +254,14 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   if (v.collapsed !== undefined && typeof v.collapsed !== 'boolean') {
     throw invalid(label, 'has non-boolean collapsed');
   }
-  if (v.ordering !== undefined && typeof v.ordering !== 'number') {
-    throw invalid(label, 'has non-number ordering');
+  if (v.ordering !== undefined && !isFiniteNumber(v.ordering)) {
+    throw invalid(label, 'has non-finite ordering');
   }
   let position: { x: number; y: number } | undefined;
   if (v.position !== undefined) {
     if (!isObject(v.position)) throw invalid(label, 'has non-object position');
-    if (typeof v.position.x !== 'number' || typeof v.position.y !== 'number') {
-      throw invalid(label, 'has non-number position.x / position.y');
+    if (!isFiniteNumber(v.position.x) || !isFiniteNumber(v.position.y)) {
+      throw invalid(label, 'has non-finite position.x / position.y');
     }
     position = { x: v.position.x, y: v.position.y };
   }
@@ -590,7 +596,10 @@ const validateCustomEntityClass = (v: unknown): CustomEntityClass | undefined =>
   // A custom class can't shadow a built-in entity type.
   if (isEntityType(id)) return undefined;
   const out: CustomEntityClass = { id, label };
-  if (typeof v.color === 'string' && v.color.length > 0) out.color = v.color;
+  // Drop a color that isn't a safe CSS color value — an arbitrary string
+  // here would be interpolated raw into the HTML export's inline `style`
+  // attribute (CSS-injection / external-resource beacon). See `safeCss.ts`.
+  if (typeof v.color === 'string' && isSafeCssColor(v.color)) out.color = v.color;
   if (typeof v.hint === 'string' && v.hint.length > 0) out.hint = v.hint;
   // B2: icon name is stored as a plain string; the resolver
   // (`entityTypeMeta.ts → resolveEntityTypeMeta`) maps it through the

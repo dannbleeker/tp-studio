@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  validateEntity,
   validateLayoutConfig,
   validateMethodChecklist,
   validateSystemScope,
@@ -100,5 +101,39 @@ describe('validateMethodChecklist (soft)', () => {
   it('returns undefined when nothing is literal-true', () => {
     expect(validateMethodChecklist({ a: false, b: 'true' })).toBeUndefined();
     expect(validateMethodChecklist({})).toBeUndefined();
+  });
+});
+
+describe('validateEntity — finite-number guards (M-Sec2)', () => {
+  // NB: defense-in-depth — JSON can't carry NaN/Infinity (they serialize to
+  // null, already rejected), so these aren't reachable through importFromJSON.
+  // The guard keeps `validateEntity` correct for any non-JSON caller and gives
+  // clearer error messages. We exercise it directly here.
+  const base = {
+    id: 'e1',
+    type: 'effect',
+    title: 'E',
+    annotationNumber: 1,
+    createdAt: 1,
+    updatedAt: 1,
+  };
+
+  it('accepts a well-formed entity', () => {
+    expect(() => validateEntity(base, 'entities["e1"]')).not.toThrow();
+  });
+
+  it('rejects a non-finite annotationNumber', () => {
+    expect(() => validateEntity({ ...base, annotationNumber: Number.NaN }, 'e')).toThrow(
+      /annotationNumber/
+    );
+    expect(() =>
+      validateEntity({ ...base, annotationNumber: Number.POSITIVE_INFINITY }, 'e')
+    ).toThrow(/annotationNumber/);
+  });
+
+  it('rejects non-finite position coordinates', () => {
+    expect(() =>
+      validateEntity({ ...base, position: { x: Number.POSITIVE_INFINITY, y: 0 } }, 'e')
+    ).toThrow(/position/);
   });
 });

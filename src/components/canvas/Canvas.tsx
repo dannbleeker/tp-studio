@@ -1,5 +1,12 @@
-import { Background, BackgroundVariant, MiniMap, type Node, ReactFlow } from '@xyflow/react';
-import { useEffect } from 'react';
+import {
+  Background,
+  BackgroundVariant,
+  MiniMap,
+  type Node,
+  type OnSelectionChangeParams,
+  ReactFlow,
+} from '@xyflow/react';
+import { useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { GRID_DOT } from '@/domain/tokens';
@@ -103,6 +110,32 @@ function CanvasInner() {
   // anchors) stay because they're diagram structure, not chrome.
   const isPresentation = useDocumentStore((s) => s.appMode === 'presentation');
 
+  // Mirror React Flow's selection (marquee-drag, ctrl/cmd-click, shift-click)
+  // into the store. Edges win when both sets are non-empty (the inspector's
+  // single-kind contract); a new non-empty selection also closes the H1
+  // history panel so the inspector can take over.
+  //
+  // **Do NOT re-add an `else { clearSelection() }` here.** Session 136: React
+  // Flow fires `onSelectionChange` with empty sets mid-edit (while re-keying
+  // nodes on a new doc reference), which would clear the store selection on
+  // any edit. Regression coverage: `tests/store/inspectorStaysOpenOnEdit.test.ts`.
+  // The empty-deselect gesture belongs on `onPaneClick`, not here.
+  //
+  // `useCallback` keeps React Flow from re-subscribing its selection-change
+  // effect on every CanvasInner render (which fires on every doc mutation).
+  const handleSelectionChange = useCallback(
+    ({ nodes: selNodes, edges: selEdges }: OnSelectionChangeParams) => {
+      if (selEdges.length > 0) {
+        selectEdges(selEdges.map((e) => e.id));
+        closeHistoryPanel();
+      } else if (selNodes.length > 0) {
+        selectEntities(selNodes.map((n) => n.id));
+        closeHistoryPanel();
+      }
+    },
+    [selectEdges, selectEntities, closeHistoryPanel]
+  );
+
   // React Flow canvas wrapper: the double-click is a workspace gesture ("create
   // entity on empty canvas"). The canvas itself isn't a button or other interactive
   // widget; React Flow owns all keyboard navigation for entities/edges below this
@@ -126,7 +159,7 @@ function CanvasInner() {
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        onInit={(instance) => setCanvasInstance(instance)}
+        onInit={setCanvasInstance}
         onConnect={onConnect}
         onConnectStart={onConnectStart}
         // Session 49 fallback: when the user drags a connection and
@@ -152,44 +185,7 @@ function CanvasInner() {
         // `useCanvasClickHandlers` (unit-tested there).
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
-        onSelectionChange={({ nodes: selNodes, edges: selEdges }) => {
-          // React Flow drives selection during marquee-drag, ctrl/cmd-click,
-          // and shift-click multi-select. Mirror its truth into the store.
-          // Edges win when both sets are non-empty (matches inspector's
-          // single-kind contract). A new non-empty selection also closes
-          // the H1 history panel so the inspector can take over the right
-          // edge.
-          //
-          // Session 136 — the empty-arrays branch used to call
-          // `clearSelection()`. That made the inspector close on any
-          // doc edit: when the user edited an entity field, the new
-          // doc reference rebuilt the `nodes` array, React Flow
-          // re-keyed internally, and during that re-keying it fired
-          // `onSelectionChange` with empty selNodes/selEdges before
-          // settling on the new selection — which cleared the store
-          // selection mid-edit. The right "deselect" gesture is
-          // `onPaneClick` (handled separately above); we don't need
-          // to mirror empty here too. Drop the else, keep only the
-          // mirror-non-empty branches.
-          //
-          // **Do NOT re-add an `else { clearSelection() }` here.** The
-          // regression coverage that pins this lives at
-          // `tests/store/inspectorStaysOpenOnEdit.test.ts` — those
-          // tests assert that every doc-mutating action (updateEntity
-          // title / type / description / state / position / etc.)
-          // leaves the store selection intact. The browser-level
-          // round-trip through React Flow's selection state is
-          // covered by the e2e suite. If a deselect path is genuinely
-          // needed, add it to `onPaneClick` or to a focused gesture
-          // handler, not here.
-          if (selEdges.length > 0) {
-            selectEdges(selEdges.map((e) => e.id));
-            closeHistoryPanel();
-          } else if (selNodes.length > 0) {
-            selectEntities(selNodes.map((n) => n.id));
-            closeHistoryPanel();
-          }
-        }}
+        onSelectionChange={handleSelectionChange}
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
         onPaneContextMenu={onPaneContextMenu}

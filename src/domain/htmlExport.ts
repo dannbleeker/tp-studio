@@ -1,5 +1,6 @@
 import { DIAGRAM_TYPE_LABEL, resolveEntityTypeMeta } from './entityTypeMeta';
 import { entitiesOfType, structuralEntities } from './graph';
+import { isSafeCssColor } from './safeCss';
 import type { Entity, TPDocument } from './types';
 import { verbalisedECText } from './verbalisation';
 
@@ -101,8 +102,13 @@ const VIEWER_CSS = `
 
 const renderEntity = (e: Entity, doc: TPDocument): string => {
   const meta = resolveEntityTypeMeta(e.type, doc.customEntityClasses);
+  // Defense at the interpolation point: a custom-class color reaches the live
+  // app via the inspector (bypassing the import-time validator), so guard it
+  // here too. An unsafe value (CSS-injection / external-resource beacon, which
+  // `escapeHtml` does NOT neutralise) falls back to a neutral stripe.
+  const stripe = isSafeCssColor(meta.stripeColor) ? meta.stripeColor : '#e5e5e5';
   return `<div class="entity">
-    <div class="stripe" style="background:${escapeHtml(meta.stripeColor)}"></div>
+    <div class="stripe" style="background:${escapeHtml(stripe)}"></div>
     <div class="body">
       <div class="type">${escapeHtml(meta.label)}${e.ecSlot ? ` · slot ${escapeHtml(e.ecSlot)}` : ''} · #${e.annotationNumber}</div>
       <div class="title">${e.title ? escapeHtml(e.title) : '<em style="color:#a3a3a3">(empty)</em>'}</div>

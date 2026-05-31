@@ -66,12 +66,6 @@ describe('routeEdge — API contract', () => {
     expect(a.waypoints).toEqual([ORIGIN, FAR]);
   });
 
-  it('ignores `rankSpacing` (Phase C field)', () => {
-    const a = routeEdge({ source: ORIGIN, target: FAR, obstacles: [], rankSpacing: 100 });
-    const b = routeEdge({ source: ORIGIN, target: FAR, obstacles: [] });
-    expect(a.d).toBe(b.d);
-  });
-
   it('handles degenerate zero-length input without throwing', () => {
     const route = routeEdge({ source: ORIGIN, target: ORIGIN, obstacles: [] });
     expect(route.d).toContain('M0,0');

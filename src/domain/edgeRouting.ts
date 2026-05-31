@@ -63,9 +63,7 @@ export type Box = {
  * endpoints (handle positions, not node centers). Obstacles are the
  * bounding boxes of every NON-endpoint visible node — the caller has
  * already filtered out the source and target node so the router
- * doesn't accidentally treat its own endpoints as obstacles. Optional
- * `rankSpacing` is reserved for future use (multi-rank waypoint
- * placement); currently unused.
+ * doesn't accidentally treat its own endpoints as obstacles.
  *
  * `obstaclePadding` lets the caller widen each obstacle by a fixed
  * margin before hit-testing — the visible node footprint is the
@@ -77,7 +75,6 @@ export type RoutingInput = {
   readonly source: Point;
   readonly target: Point;
   readonly obstacles: readonly Box[];
-  readonly rankSpacing?: number;
   readonly obstaclePadding?: number;
 };
 

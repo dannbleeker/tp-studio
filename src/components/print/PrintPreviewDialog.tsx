@@ -153,7 +153,7 @@ export function PrintPreviewDialog() {
       // body class but applied to the PDF source instead of CSS.
       const filtered =
         selectionOnly && hasSelection && selection.kind === 'entities'
-          ? nodes.filter((n) => selection.ids.includes(n.id as never))
+          ? nodes.filter((n) => (selection.ids as string[]).includes(n.id))
           : nodes;
       const ok = await exportToVectorPdf(doc, filtered, {
         pageSize: 'a4',

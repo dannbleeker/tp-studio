@@ -86,6 +86,15 @@ export function useDraggablePanel(opts: {
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
+  const onPointerCancel = (): void => {
+    // A cancelled pointer (OS-stolen gesture, stylus lift) discards the drag
+    // rather than committing the last tracked position. Capture is already
+    // implicitly released on cancel, so don't call releasePointerCapture —
+    // it throws on a cancelled pointer in some browsers.
+    dragRef.current = null;
+    setDragPos(null);
+  };
+
   // Live drag overrides committed; committed overrides default.
   const positioned =
     dragPos !== null
@@ -96,7 +105,7 @@ export function useDraggablePanel(opts: {
 
   return {
     panelRef,
-    dragHandlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp },
+    dragHandlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel },
     positioned,
   };
 }

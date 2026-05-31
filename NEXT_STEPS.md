@@ -4,43 +4,37 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ---
 
-## Code-inspection backlog (Session 138) — Medium
+## Code-inspection follow-ups (Session 138) — deferred
 
-A six-agent inspection found ~37 issues. The **13 High-severity** and the
-worthwhile **Low-severity** findings have shipped (see CHANGELOG
-"Code-inspection hardening" batches). Remaining **Medium**, grouped:
+The High / Low / Medium inspection batches all shipped (see CHANGELOG
+"Code-inspection hardening"). What's left is a short list of items assessed and
+deliberately deferred — each is its own deliberate change, not a quick pass:
 
-**Security / hostile-input**
-- HTML export: validate `customEntityClass.color` (CSS-injection beacon via a
-  `;background-image:url(...)` value) — `persistenceValidators.ts` → `htmlExport.ts`.
-- Validators accept non-finite numbers (`annotationNumber`, `position.x/y`,
-  timestamps) — add `Number.isFinite` guards; `NaN` poisons sorts + export bounds.
-- Evidence `url` not CSV-escaped in the risk-register export (`riskRegister.ts`).
-- Live-draft write failure swallowed silently (`persistDebounced.ts`).
+- **Isolate `CanvasInner`'s doc subscription** — it subscribes to the whole
+  `doc` and re-renders on every keystroke. Downstream hooks are memoized and
+  the `onInit` / `onSelectionChange` handlers are now stabilised, but the full
+  fix (split the doc-dependent subtree into a memoized child) is architectural.
+- **Split `edgeRouting.ts` (1050 lines)** — Phase B/C share geometry + bezier
+  helpers and many functions are cross-imported (`useEdgeRoutes` / `TPEdge` /
+  `edgeSides`), so a clean split needs a geometry / detour / visibility /
+  public decomposition to avoid circular imports.
+- **Narrow the SelectionToolbar `edges` subscription** — risks stale verbs
+  (`verbsForBranch` reads full live state via `getState()`); a hand-maintained
+  edge signature would be a latent staleness trap for marginal gain on a
+  selection-only component.
+- **Parameterise the 3 transient-highlight test files** — only worth it if a
+  4th flag is added; tests currently favor explicit-over-DRY.
+- **`useOutsideAndEscape` / global-cascade Esc double-listener for Modals** —
+  the concrete walkthrough instance is fixed via the cascade; the general Modal
+  double-close is idempotent (cascade early-returns). Revisit only if a Modal
+  that ISN'T registered in the cascade surfaces an "Esc clears selection" bug.
 
-**Performance**
-- `CanvasInner` subscribes the whole `doc` (re-renders on any keystroke).
-- Inline handlers defeat memo — TPNode mouse/dblclick; Canvas `onInit`/`onSelectionChange` → `useCallback`.
-- `usePropagatedStates` two subscriptions → one `useShallow` bundle.
-
-**React correctness**
-- `useGraphPositions` async dagre effect can commit an intermediate-state layout under rapid mutations.
-- `useDraggablePanel` commits last position on `pointercancel` (should discard).
-- Arrow-key nav mirrors selection only via the RF event-chain (+ stale `flow` dep) → also `selectEntity` directly.
-
-**Type safety / domain**
-- `PrintPreviewDialog` `n.id as never` → `as EntityId`.
-- `reduceXor` returns `'unknown'` when any input is unknown even if exactly one branch is true — confirm intended semantics.
-
-**Maintainability**
-- `selectionSlice` initial values duplicated (`selectionDefaults()` vs inline) → spread the helper.
-- 3 near-identical transient-highlight test files → a parameterized helper if more get added.
-- Dead fields: `RadialEdgeRoute.deflected`, `RoutingInput.rankSpacing`.
-
-**Deferred (assessed — not worth a rushed change):**
-- Narrow the SelectionToolbar `edges` subscription — risks stale verbs since `verbsForBranch` reads full live state via `getState()`; a hand-maintained edge signature would be a latent staleness trap for marginal gain on a selection-only component.
-- Split `edgeRouting.ts` (1050 lines) — Phase B/C share the geometry + bezier helpers and many functions are cross-imported (`useEdgeRoutes`/`TPEdge`/`edgeSides`), so a clean split needs a geometry/detour/visibility/public decomposition to avoid circular imports. Do it as a deliberate refactor, not a cosmetic pass.
-- `useOutsideAndEscape` / global-cascade Esc double-listener for *Modal* surfaces — the concrete walkthrough instance was fixed via the cascade; the general Modal double-close is idempotent (cascade early-returns), so revisit only if a Modal that ISN'T registered in the cascade surfaces an "Esc clears selection" bug.
+Three findings were investigated and confirmed NOT real issues (logged so they
+don't get re-flagged): the live-draft "silent swallow" (`writeString` already
+reports failures via `reportError` → the store's quota handler); the
+`useGraphPositions` async "stale commit" (the `cancelled` flag bails the stale
+IIFE post-`await`); and `reduceXor`'s unknown-handling (correct — XOR with an
+undetermined input is genuinely undetermined).
 
 ---
 

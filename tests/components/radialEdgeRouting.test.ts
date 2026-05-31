@@ -69,7 +69,6 @@ describe('computeRadialEdgePath', () => {
 
   it('emits a straight-ish cubic bezier with no obstacles', () => {
     const route = computeRadialEdgePath(SOURCE, TARGET, []);
-    expect(route.deflected).toBe(false);
     // Path starts at source, ends at target.
     expect(route.path).toMatch(/^M0,0 C/);
     expect(route.path).toMatch(/200,0$/);
@@ -82,7 +81,6 @@ describe('computeRadialEdgePath', () => {
     // Obstacle 500 px below — Liang-Barsky says no intersection,
     // so deflection should stay zero.
     const route = computeRadialEdgePath(SOURCE, TARGET, [{ x: 100, y: 500, halfW: 50, halfH: 50 }]);
-    expect(route.deflected).toBe(false);
     expect(route.labelY).toBeCloseTo(0, 6);
   });
 
@@ -91,7 +89,6 @@ describe('computeRadialEdgePath', () => {
     // should be perpendicular (i.e. away from the obstacle along
     // the y-axis for a horizontal source-target axis).
     const route = computeRadialEdgePath(SOURCE, TARGET, [{ x: 100, y: 0, halfW: 30, halfH: 30 }]);
-    expect(route.deflected).toBe(true);
     // Label X stays at the midpoint (deflection is purely
     // perpendicular).
     expect(route.labelX).toBeCloseTo(100, 6);
@@ -107,12 +104,10 @@ describe('computeRadialEdgePath', () => {
     // y < midpoint, so projection is negative → sign = +1 → label
     // moves to positive y (below the line).
     const above = computeRadialEdgePath(SOURCE, TARGET, [{ x: 100, y: -10, halfW: 30, halfH: 30 }]);
-    expect(above.deflected).toBe(true);
     expect(above.labelY).toBeGreaterThan(0);
 
     // Mirror: obstacle BELOW the line → label deflects above it.
     const below = computeRadialEdgePath(SOURCE, TARGET, [{ x: 100, y: 10, halfW: 30, halfH: 30 }]);
-    expect(below.deflected).toBe(true);
     expect(below.labelY).toBeLessThan(0);
   });
 
@@ -162,7 +157,6 @@ describe('computeRadialEdgePath', () => {
     const route = computeRadialEdgePath({ x: 50, y: 50 }, { x: 50, y: 50 }, [
       { x: 100, y: 100, halfW: 20, halfH: 20 },
     ]);
-    expect(route.deflected).toBe(false);
     expect(route.path).toBe('M50,50 L50,50');
     expect(route.labelX).toBe(50);
     expect(route.labelY).toBe(50);

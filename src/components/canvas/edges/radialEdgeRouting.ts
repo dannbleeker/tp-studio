@@ -56,9 +56,7 @@ export type Box = {
 };
 
 /** The output of {@link computeRadialEdgePath} — drop-in compatible
- *  with React Flow's `getBezierPath` tuple shape, plus a `deflected`
- *  flag the caller can use to visually distinguish routed edges
- *  (currently unused; kept for future visual debug). */
+ *  with React Flow's `getBezierPath` tuple shape. */
 export type RadialEdgeRoute = {
   /** SVG path string ready for `<path d>`. */
   readonly path: string;
@@ -66,10 +64,6 @@ export type RadialEdgeRoute = {
   readonly labelX: number;
   /** Label centroid Y (flow coordinates). */
   readonly labelY: number;
-  /** True when the path was deflected to avoid one or more obstacles.
-   *  False when the straight bezier between source and target passes
-   *  through nothing. */
-  readonly deflected: boolean;
 };
 
 export type RoutingOptions = {
@@ -167,9 +161,8 @@ export const lineIntersectsBox = (s: Point, t: Point, box: Box): boolean => {
  *   - `source === target` (zero-length segment): emits `M sx,sy
  *     L sx,sy` so React Flow's `<BaseEdge>` renders nothing
  *     pathological; label sits at the source.
- *   - Empty obstacle list: returns a straight-ish bezier with
- *     `deflected: false` — same shape as the no-hit case in the
- *     loop above.
+ *   - Empty obstacle list: returns a straight-ish bezier (the same
+ *     shape as the no-hit case in the loop above).
  */
 export const computeRadialEdgePath = (
   source: Point,
@@ -193,7 +186,6 @@ export const computeRadialEdgePath = (
       path: `M${source.x},${source.y} L${source.x},${source.y}`,
       labelX: source.x,
       labelY: source.y,
-      deflected: false,
     };
   }
 
@@ -245,7 +237,6 @@ export const computeRadialEdgePath = (
     path,
     labelX: midX + 0.75 * cpDeflection * perpX,
     labelY: midY + 0.75 * cpDeflection * perpY,
-    deflected: hits > 0,
   };
 };
 
