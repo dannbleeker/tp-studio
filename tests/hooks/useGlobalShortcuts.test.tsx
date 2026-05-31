@@ -190,6 +190,20 @@ describe('useGlobalShortcuts — Esc cascade', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(s().selection.kind).toBe('none');
   });
+
+  it('closes an open walkthrough on Esc WITHOUT clearing the selection', () => {
+    const { edge } = seedConnectedPair();
+    useDocumentStore.getState().selectEdges([edge.id]);
+    useDocumentStore.getState().startReadThrough([edge.id]);
+    expect(s().walkthrough.kind).toBe('read-through');
+    render(<Host />);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    // Walkthrough closes as the topmost surface…
+    expect(s().walkthrough.kind).toBe('closed');
+    // …and the selection survives (the bug this fixes: the walkthrough's own
+    // Esc handler used to let the cascade fall through to clearSelection).
+    expect(s().selection.kind).toBe('edges');
+  });
 });
 
 describe('useGlobalShortcuts — tab shortcuts (installed PWA only)', () => {

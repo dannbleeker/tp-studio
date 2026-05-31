@@ -67,10 +67,13 @@ describe('WalkthroughOverlay — read-through', () => {
     }
   });
 
-  it('closes on Esc', () => {
+  it('closes when the header close button is clicked', () => {
+    // Esc is no longer handled by the overlay itself — it's owned by the
+    // global Escape cascade (`useGlobalShortcuts`) and tested there. The
+    // overlay's own close affordance is the header X button.
     seedAndStart();
     render(<WalkthroughOverlay />);
-    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: /Close walkthrough/i }));
     expect(s().walkthrough.kind).toBe('closed');
   });
 

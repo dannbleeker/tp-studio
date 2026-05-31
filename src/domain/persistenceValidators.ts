@@ -1,4 +1,5 @@
 import { isEdgeKind, isEntityType, isObject, isStringArray } from './guards';
+import { isSafeHref } from './safeUrl';
 import type {
   Assumption,
   AssumptionKind,
@@ -139,7 +140,11 @@ const validateEvidenceItem = (v: unknown, label: string): EvidenceItem => {
     description: v.description,
     source: v.source,
     strength: v.strength,
-    ...(typeof v.url === 'string' && v.url.length > 0 ? { url: v.url } : {}),
+    // Drop a citation URL carrying a dangerous scheme (javascript:/data:/…) —
+    // it would otherwise render as a clickable `<a href>` and execute in our
+    // origin when a malicious imported/shared doc is opened. Keep the rest of
+    // the evidence item; only the unsafe link is discarded.
+    ...(typeof v.url === 'string' && v.url.length > 0 && isSafeHref(v.url) ? { url: v.url } : {}),
     ...(typeof v.validatedAt === 'number' ? { validatedAt: v.validatedAt } : {}),
     ...(typeof v.validatedBy === 'string' && v.validatedBy.length > 0
       ? { validatedBy: v.validatedBy }

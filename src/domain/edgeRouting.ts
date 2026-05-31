@@ -10,14 +10,14 @@
  *     one obstacle blocks the curve, emit a smoothed two-cubic path
  *     through a waypoint placed above or below the obstacle (shorter
  *     side wins).
- *   - **Phase C** (this revision): visibility-graph + A\* router for
+ *   - **Phase C** (shipped): visibility-graph + A\* router for
  *     the multi-obstacle case. Builds a graph whose vertices are the
  *     source, target, and each obstacle's four padded corners; edges
  *     connect any vertex pair whose connecting segment doesn't hit
  *     an obstacle's interior. A\* with euclidean heuristic finds the
  *     shortest obstacle-free path; the corner list emits as a multi-
  *     cubic bezier through the waypoint sequence.
- *   - **Phase D** (planned): junctor segment integration + WeakMap
+ *   - **Phase D** (shipped): junctor segment integration + WeakMap
  *     route cache + USER_GUIDE + CHANGELOG.
  *
  * Layered intent: this is a pure-geometry domain function. It does NOT
@@ -262,7 +262,12 @@ const sideNormal = (s: Side): Point =>
       ? { x: 0, y: 1 }
       : s === 'left'
         ? { x: -1, y: 0 }
-        : { x: 1, y: 0 };
+        : s === 'right'
+          ? { x: 1, y: 0 }
+          : // Exhaustiveness guard: if `Side` ever gains a member, this
+            // `satisfies never` fails to compile rather than silently
+            // returning the right-side normal.
+            (s satisfies never);
 
 /**
  * Control-point reach as a fraction of the run. 0.5 reproduces the

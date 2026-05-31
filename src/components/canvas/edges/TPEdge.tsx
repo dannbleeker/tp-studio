@@ -4,7 +4,13 @@
 // `memo()` and skips auto-memoization for the wrapped component, so
 // the Session 105 comparator's behavior stays intact.
 
-import { BaseEdge, type EdgeProps, getBezierPath, useStore as useRFStore } from '@xyflow/react';
+import {
+  BaseEdge,
+  type EdgeProps,
+  getBezierPath,
+  type Node as RFNode,
+  useStore as useRFStore,
+} from '@xyflow/react';
 import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
@@ -32,6 +38,36 @@ import {
  *  behind a tiny "i" icon, which made scanning a diagram for context
  *  impossible without hovering each edge. */
 const LABEL_INLINE_MAX = 30;
+
+/**
+ * Equality for the radial-mode obstacle subscription. React Flow's `s.nodes`
+ * is a FRESH array reference on every store write (selection, hover, dimension
+ * churn — not just position), so subscribing to it bare re-rendered every
+ * TPEdge on every frame during any drag in radial mode. Gating on node
+ * geometry (id + position + size) means the radial router only re-runs when an
+ * obstacle actually moves. Returns the previous reference otherwise, keeping
+ * the `radialRoute` useMemo stable.
+ */
+const radialNodesEqual = (a: RFNode[] | null, b: RFNode[] | null): boolean => {
+  if (a === b) return true;
+  if (a === null || b === null || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const na = a[i];
+    const nb = b[i];
+    if (
+      !na ||
+      !nb ||
+      na.id !== nb.id ||
+      na.position.x !== nb.position.x ||
+      na.position.y !== nb.position.y ||
+      na.width !== nb.width ||
+      na.height !== nb.height
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
 
 /** E1: invisible halo around the stroke that captures clicks. React Flow's
  *  default is 20 px; we bump it so a slightly-imprecise click on a thin
@@ -279,7 +315,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // independently. Keeping the primitive selector here lets Zustand's
   // fast-path Object.is comparison short-circuit unrelated updates.
   const isRadialMode = useDocumentStore((s) => s.layoutMode === 'radial');
-  const radialNodes = useRFStore((s) => (isRadialMode ? s.nodes : null));
+  const radialNodes = useRFStore((s) => (isRadialMode ? s.nodes : null), radialNodesEqual);
   const hasMutexOverride = mutexPath !== null;
   const radialRoute = useMemo(() => {
     if (!isRadialMode || !radialNodes) return null;
@@ -314,21 +350,19 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     effectiveTargetY,
   ]);
 
-  // Phase A scaffold for obstacle-aware edge routing — `data.route.d`
-  // is the precomputed SVG path string from the dagre-mode router (see
-  // `docs/EDGE_ROUTING_PROPOSAL.md` and `useEdgeRoutes`). Phase A
-  // never stamps the field (gate is off) so this branch is dead code
-  // until Phase C; the wiring is in place now so Phase C only has to
-  // flip the gate + add the Settings UI. Order of precedence:
+  // Obstacle-aware edge routing — `data.route.d` is the precomputed SVG path
+  // string from the dagre-mode smart router (see
+  // `docs/EDGE_ROUTING_PROPOSAL.md` and `useEdgeRoutes`). The smart router is
+  // the live default for flow layouts (Settings → Display → Edge routing), so
+  // this is the primary path for most edges; the field is empty only when
+  // routing is disabled or produced no detour. Order of precedence:
   //   1. Mutex override — bidirectional conflict, always wins.
   //   2. Radial mode's perpendicular-deflection router — only fires
   //      when `layoutMode === 'radial'`.
-  //   3. Smart router's precomputed path — only fires in flow layouts
-  //      once Phase C ships.
-  //   4. Default bezier — current behavior.
-  // For now, the label position falls back to the bezier midpoint when
-  // we use the routed path; Phase C+ will compute a real midpoint
-  // along the routed waypoints.
+  //   3. Smart router's precomputed path — fires in flow layouts when present.
+  //   4. Default bezier — fallback when no routed path applies.
+  // Known limitation: the label position still uses the bezier midpoint even
+  // on a routed path (no midpoint-along-waypoints computation yet).
   const routedPath = props.data?.route?.d;
   const { path, labelX, labelY } = resolveEdgePath({
     mutex: mutexPath,

@@ -4,6 +4,50 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ---
 
+## Code-inspection backlog (Session 138) — Medium / Low
+
+A six-agent inspection found ~37 issues; the **13 High-severity** ones shipped
+(see CHANGELOG "Code-inspection hardening"). Remaining Medium/Low, grouped:
+
+**Security / hostile-input (Medium)**
+- HTML export: validate `customEntityClass.color` (CSS-injection beacon via a
+  `;background-image:url(...)` value) — `persistenceValidators.ts` → `htmlExport.ts`.
+- Validators accept non-finite numbers (`annotationNumber`, `position.x/y`,
+  timestamps) — add `Number.isFinite` guards; `NaN` poisons sorts + export bounds.
+- Evidence `url` not CSV-escaped in the risk-register export (`riskRegister.ts`).
+- Live-draft write failure swallowed silently (`persistDebounced.ts`).
+
+**Performance (Medium/Low)**
+- `CanvasInner` subscribes the whole `doc` (re-renders on any keystroke).
+- Inline handlers defeat memo — TPNode mouse/dblclick; Canvas `onInit`/`onSelectionChange` → `useCallback`.
+- `usePropagatedStates` two subscriptions → one `useShallow` bundle.
+- `useGraphProjection` `queue.shift()` O(N) dequeue; SelectionToolbar full-`edges` subscription.
+
+**React correctness (Medium/Low)**
+- `useGraphPositions` async dagre effect can commit an intermediate-state layout under rapid mutations.
+- `useDraggablePanel` commits last position on `pointercancel` (should discard).
+- Arrow-key nav mirrors selection only via the RF event-chain (+ stale `flow` dep) → also `selectEntity` directly.
+- Arrow-key sibling nav can select a collapsed-group node id as an entity (`useSelectionShortcuts`).
+
+**Type safety / domain (Medium/Low)**
+- `PrintPreviewDialog` `n.id as never` → `as EntityId`.
+- `reduceXor` returns `'unknown'` when any input is unknown even if exactly one branch is true — confirm intended semantics.
+- v6→v7 migration stores `edgeId: ''` for orphaned assumption entities (silently unlinkable).
+
+**Maintainability (Medium/Low)**
+- `selectionSlice` initial values duplicated (`selectionDefaults()` vs inline) → spread the helper.
+- 3 near-identical transient-highlight test files → a parameterized helper if more get added.
+- Dead fields: `RadialEdgeRoute.deflected`, `RoutingInput.rankSpacing`.
+- `edgeRouting.ts` is 1050 lines (could split the Phase B heuristic out); `docMetaSlice` doc-swap pattern duplicated.
+
+Noted but intentionally NOT changed in the High batch: the `useOutsideAndEscape`
+/ global-cascade Esc double-listener for *Modal* surfaces. The concrete
+walkthrough instance was fixed via the cascade; the general Modal double-close
+is idempotent (cascade early-returns), so revisit only if a Modal that ISN'T
+registered in the cascade surfaces an "Esc clears selection" bug.
+
+---
+
 ## Open major gaps from the spec analysis
 
 Source: `toc_tp_software_requirements.docx` (Session 134 review). After Sessions 134–135, **zero of ten** original major gaps remain open — every one is closed or explicitly out of scope. **Out of scope** per Dann's call (Session 135): #2 multi-user collab, #8 enterprise integration, plus AI integration (spec §5) — see won't-build section. **Closed:** #1 NBR, #3 cross-diagram traceability, **#4 confidence / propagation (Phases 1A + 1B + 1C)**, #5 risk register, #6 entity ownership + evidence, #7 task bridge (universal CSV — per-tracker formats follow if requested), #9 formal mode-switching, #10 PowerPoint export.

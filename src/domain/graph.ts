@@ -1,7 +1,7 @@
 // Pure graph queries over a TPDocument. No React, no store, no DOM —
 // safe to use from validators, store actions, services, and tests.
 
-import type { Edge, Entity, EntityId, EntityType, TPDocument } from './types';
+import type { Assumption, Edge, Entity, EntityId, EntityType, TPDocument } from './types';
 
 /**
  * Session 105 / Tier 1 #3 — cached `Object.values(doc.edges)`.
@@ -521,4 +521,54 @@ export const removeEntityFromEdges = (doc: TPDocument, entityId: string): Record
     }
   }
   return result;
+};
+
+/**
+ * Prune the first-class `doc.assumptions` map against a POST-deletion set of
+ * surviving edges + entities:
+ *   - drop any Assumption whose host edge no longer exists (an orphan — the
+ *     causal link it annotated is gone), and
+ *   - scrub any `injectionIds` entry that no longer resolves to an entity.
+ *
+ * Without this, deleting an edge or an entity (which cascades to its edges)
+ * leaves dangling Assumption records that accumulate unbounded and survive
+ * JSON export / share-link round-trips. Undo is unaffected — history stores
+ * full doc snapshots, so an undo restores the pruned records.
+ *
+ * Returns the SAME reference when nothing changed (including the
+ * no-assumptions case), so callers can spread it conditionally without
+ * forcing a needless new object.
+ */
+export const pruneAssumptions = (
+  assumptions: Record<string, Assumption> | undefined,
+  survivingEdges: Record<string, Edge>,
+  survivingEntities: Record<string, Entity>
+): Record<string, Assumption> | undefined => {
+  if (!assumptions) return assumptions;
+  let changed = false;
+  const next: Record<string, Assumption> = {};
+  for (const [id, a] of Object.entries(assumptions)) {
+    if (!survivingEdges[a.edgeId]) {
+      // Host edge gone → orphaned assumption.
+      changed = true;
+      continue;
+    }
+    if (a.injectionIds && a.injectionIds.length > 0) {
+      const filtered = a.injectionIds.filter((eid) => survivingEntities[eid]);
+      if (filtered.length !== a.injectionIds.length) {
+        changed = true;
+        if (filtered.length > 0) {
+          next[id] = { ...a, injectionIds: filtered };
+        } else {
+          // emit-or-omit: drop the field rather than store an empty array
+          // (mirrors `removeEntityFromEdges` above).
+          const { injectionIds: _drop, ...rest } = a;
+          next[id] = rest;
+        }
+        continue;
+      }
+    }
+    next[id] = a;
+  }
+  return changed ? next : assumptions;
 };

@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { CheckCircle2, ExternalLink, Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { isSafeHref } from '@/domain/safeUrl';
 import type { EvidenceItem, EvidenceSource, EvidenceStrength } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { TextArea, TextInput } from '../settings/formPrimitives';
@@ -223,7 +224,11 @@ function EvidenceRow({
           className="h-[26px] min-w-[160px] flex-1 text-xs"
           ariaLabel="Evidence URL"
         />
-        {item.url && (
+        {/* Render the citation link only for a safe scheme. The live-edit path
+            writes the raw input straight to state (bypassing the import-time
+            validator), so this guard is the runtime defense against a
+            `javascript:`/`data:` URL becoming a clickable href. */}
+        {item.url && isSafeHref(item.url) && (
           <a
             href={item.url}
             target="_blank"

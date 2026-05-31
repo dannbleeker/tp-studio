@@ -39,12 +39,12 @@ export type GraphView = {
 export const useGraphView = (doc: TPDocument): GraphView => {
   const projection = useGraphProjection(doc);
   const positions = useGraphPositions(doc, projection);
-  // Phase A scaffold for obstacle-aware edge routing. The hook is
-  // gated off and returns `{}` until Phase C flips the gate — see
-  // `docs/EDGE_ROUTING_PROPOSAL.md` and `useEdgeRoutes.SMART_ROUTING_ENABLED`.
-  // Inserted into the composition order now so the Phase C commit
-  // only has to flip the gate and add the Settings UI without
-  // re-plumbing the hook chain.
+  // Obstacle-aware edge routing — computes per-edge routed paths for flow
+  // layouts. Preference-gated with the smart router as the live default
+  // (Settings → Display → Edge routing; see `docs/EDGE_ROUTING_PROPOSAL.md`
+  // and `useEdgeRoutes`). Returns an empty map when routing is disabled or
+  // the layout is radial (which has its own router), so emission falls back
+  // to the bezier path for those edges.
   const routes = useEdgeRoutes(doc, projection, positions);
   // H2: when a compare revision is active, fetch the detailed diff so
   // emission can stamp `diffStatus` on each node. Returns null in normal

@@ -170,7 +170,13 @@ export const computeEdgeRoutes = (
   // Used inside the per-edge loop to skip the source/target boxes
   // from the visibility check on the fly.
   const allBoxIds: string[] = [];
+  // id → index into the parallel arrays. Built once so the per-edge
+  // source/target box-index lookups below are O(1); the previous
+  // `allBoxIds.indexOf(...)` inside the edge loop made the routing pass
+  // O(N·E) (N visible boxes × E edges) on large diagrams.
+  const boxIdToIndex = new Map<string, number>();
   for (const [id, box] of allBoxes) {
+    boxIdToIndex.set(id, allBoxesArr.length);
     allBoxesArr.push(box);
     allBoxIds.push(id);
   }
@@ -217,8 +223,8 @@ export const computeEdgeRoutes = (
     // they fall *inside* the visibility graph's shrunk-interior bounds.
     // Pass the source/target box indices so the visibility check skips
     // them for this edge's queries.
-    const sourceBoxIdx = allBoxIds.indexOf(s);
-    const targetBoxIdx = allBoxIds.indexOf(t);
+    const sourceBoxIdx = boxIdToIndex.get(s) ?? -1;
+    const targetBoxIdx = boxIdToIndex.get(t) ?? -1;
     const path = aStarOnGraph(
       graph,
       sel.sourceAnchor,

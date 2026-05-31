@@ -1,10 +1,11 @@
 import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { renderEdgeSentence, resolveEdgeConnector } from '@/domain/edgeReading';
 import { validationFingerprint } from '@/domain/fingerprint';
 import { validate } from '@/domain/validators';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
@@ -20,9 +21,11 @@ import { Button } from '../ui/Button';
  *   - **CLR walkthrough** — walks every open CLR warning one at a time
  *     with three actions: Resolve, Skip, Open in inspector.
  *
- * Keyboard: → / Space advance, ← go back, Esc close. The overlay catches
- * its own keys via a `useEffect`-attached listener (no global keymap
- * change needed) and cleans up on unmount.
+ * Keyboard: → / Space advance, ← go back. The overlay handles its own
+ * Arrow/Space navigation via a `useEffect`-attached listener; Esc is owned by
+ * the global Escape cascade (`useGlobalShortcuts`), which closes the
+ * walkthrough as the topmost surface without also clearing the canvas
+ * selection. Focus is trapped inside the card while open.
  */
 
 export function WalkthroughOverlay() {
@@ -38,7 +41,6 @@ function WalkthroughOverlayBody() {
     walkthroughPrev,
     closeWalkthrough,
     doc,
-    causalityLabel,
     selectEdge,
     selectEntity,
     resolveWarning,
@@ -49,20 +51,18 @@ function WalkthroughOverlayBody() {
       walkthroughPrev: s.walkthroughPrev,
       closeWalkthrough: s.closeWalkthrough,
       doc: currentDoc(s),
-      causalityLabel: s.causalityLabel,
       selectEdge: s.selectEdge,
       selectEntity: s.selectEntity,
       resolveWarning: s.resolveWarning,
     }))
   );
 
-  // Esc / Arrow / Space keys.
+  // Arrow / Space navigation only. Esc is handled by the global Escape
+  // cascade (`useGlobalShortcuts`), which closes the walkthrough as the
+  // topmost surface without also clearing the canvas selection.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        closeWalkthrough();
-      } else if (e.key === 'ArrowRight' || e.key === ' ') {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault();
         walkthroughNext();
       } else if (e.key === 'ArrowLeft') {
@@ -72,7 +72,7 @@ function WalkthroughOverlayBody() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [walkthroughNext, walkthroughPrev, closeWalkthrough]);
+  }, [walkthroughNext, walkthroughPrev]);
 
   // Recompute the live warnings only for clr-walkthrough so a Resolve action
   // immediately reflects in the position counter / completion logic. Gating
@@ -84,12 +84,19 @@ function WalkthroughOverlayBody() {
     `${validationFingerprint(doc)}|kind:${walkthrough.kind}`
   );
 
+  // Trap focus inside the modal card (WAI-ARIA dialog pattern), consistent
+  // with the `Modal` primitive. The outer `WalkthroughOverlay` only mounts
+  // this body while the walkthrough is open, so the trap is active for its
+  // whole lifetime.
+  const cardRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(cardRef, true);
+
   if (walkthrough.kind === 'closed') return null;
   const total = walkthrough.targetIds.length;
   const position = `${walkthrough.index + 1} / ${total}`;
 
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard equivalent (Esc) is wired in useEffect.
+    // biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click-to-close is a mouse affordance; the keyboard equivalent (Esc) is wired in the global Escape cascade.
     <div
       role="dialog"
       aria-modal="true"
@@ -99,7 +106,10 @@ function WalkthroughOverlayBody() {
         if (e.target === e.currentTarget) closeWalkthrough();
       }}
     >
-      <div className="flex max-w-2xl flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-6 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900">
+      <div
+        ref={cardRef}
+        className="flex max-w-2xl flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-6 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
+      >
         <header className="flex items-center justify-between">
           <h2 className="font-semibold text-neutral-500 text-xs uppercase tracking-wider dark:text-neutral-400">
             {walkthrough.kind === 'read-through' ? 'Read-through' : 'CLR walkthrough'}
@@ -157,46 +167,58 @@ function WalkthroughOverlayBody() {
       </div>
     </div>
   );
+}
 
-  function ReadThroughBody({ edgeId }: { edgeId: string }) {
-    const edge = doc.edges[edgeId];
-    if (!edge) {
-      return (
-        <p className="text-neutral-500 text-sm dark:text-neutral-400">Edge no longer exists.</p>
-      );
-    }
-    const source = doc.entities[edge.sourceId];
-    const target = doc.entities[edge.targetId];
-    if (!source || !target) {
-      return (
-        <p className="text-neutral-500 text-sm dark:text-neutral-400">
-          Edge endpoints no longer exist.
-        </p>
-      );
-    }
-    const connector = resolveEdgeConnector(edge, causalityLabel, doc.diagramType);
-    const sentence = renderEdgeSentence(source, target, connector);
+/**
+ * Read-through step body. Hoisted to module scope (not nested inside
+ * `WalkthroughOverlayBody`) so React keeps a stable component identity across
+ * parent re-renders — a nested declaration is a fresh type every render, which
+ * forced an unmount/remount and dropped focus on the "Open in inspector"
+ * button each time the step advanced. Self-subscribes to the slice it needs.
+ */
+function ReadThroughBody({ edgeId }: { edgeId: string }) {
+  const { doc, causalityLabel, selectEdge } = useDocumentStore(
+    useShallow((s) => ({
+      doc: currentDoc(s),
+      causalityLabel: s.causalityLabel,
+      selectEdge: s.selectEdge,
+    }))
+  );
+  const edge = doc.edges[edgeId];
+  if (!edge) {
+    return <p className="text-neutral-500 text-sm dark:text-neutral-400">Edge no longer exists.</p>;
+  }
+  const source = doc.entities[edge.sourceId];
+  const target = doc.entities[edge.targetId];
+  if (!source || !target) {
     return (
-      <div className="flex flex-col gap-3">
-        <p className="font-medium text-2xl text-neutral-900 leading-snug dark:text-neutral-100">
-          {sentence}
-        </p>
-        {edge.label && (
-          <p className="text-neutral-500 text-xs dark:text-neutral-400">
-            Edge label: <span className="font-mono">{edge.label}</span>
-          </p>
-        )}
-        <Button
-          variant="softNeutral"
-          size="sm"
-          onClick={() => selectEdge(edge.id)}
-          className="self-start"
-        >
-          Open this edge in the inspector
-        </Button>
-      </div>
+      <p className="text-neutral-500 text-sm dark:text-neutral-400">
+        Edge endpoints no longer exist.
+      </p>
     );
   }
+  const connector = resolveEdgeConnector(edge, causalityLabel, doc.diagramType);
+  const sentence = renderEdgeSentence(source, target, connector);
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="font-medium text-2xl text-neutral-900 leading-snug dark:text-neutral-100">
+        {sentence}
+      </p>
+      {edge.label && (
+        <p className="text-neutral-500 text-xs dark:text-neutral-400">
+          Edge label: <span className="font-mono">{edge.label}</span>
+        </p>
+      )}
+      <Button
+        variant="softNeutral"
+        size="sm"
+        onClick={() => selectEdge(edge.id)}
+        className="self-start"
+      >
+        Open this edge in the inspector
+      </Button>
+    </div>
+  );
 }
 
 function ClrWalkthroughBody({

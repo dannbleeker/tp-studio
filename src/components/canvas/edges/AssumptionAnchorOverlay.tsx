@@ -1,4 +1,4 @@
-import { useReactFlow, useStore as useRFStore } from '@xyflow/react';
+import { type InternalNode, useStore as useRFStore } from '@xyflow/react';
 import { entitiesOfType } from '@/domain/graph';
 import { arrayShallowEqualByKeys } from '@/store/equality';
 import { currentDoc } from '@/store/selectors';
@@ -51,8 +51,43 @@ const anchorTriplesEqual = arrayShallowEqualByKeys<AnchorTriple>([
   'targetId',
 ]);
 
+type LineSeg = { key: string; x1: number; y1: number; x2: number; y2: number };
+
+const centreOf = (n: InternalNode): { x: number; y: number } => ({
+  x: n.internals.positionAbsolute.x + (n.measured?.width ?? 0) / 2,
+  y: n.internals.positionAbsolute.y + (n.measured?.height ?? 0) / 2,
+});
+
+/**
+ * Build the dashed assumption→edge link segments from the live node geometry.
+ * Takes a node getter (over React Flow's `nodeLookup`) so it can run INSIDE a
+ * `useRFStore` selector — mirroring `JunctorOverlay` — making the lines react
+ * to node-position changes (dagre re-layout) rather than only refreshing on a
+ * pan/zoom re-render.
+ */
+const computeAnchorLines = (
+  anchors: AnchorTriple[],
+  getNode: (id: string) => InternalNode | undefined
+): LineSeg[] => {
+  const lines: LineSeg[] = [];
+  for (const a of anchors) {
+    const aNode = getNode(a.assumptionId);
+    const sNode = getNode(a.sourceId);
+    const tNode = getNode(a.targetId);
+    if (!aNode || !sNode || !tNode) continue;
+    const ac = centreOf(aNode);
+    const sc = centreOf(sNode);
+    const tc = centreOf(tNode);
+    lines.push({ key: a.key, x1: ac.x, y1: ac.y, x2: (sc.x + tc.x) / 2, y2: (sc.y + tc.y) / 2 });
+  }
+  return lines;
+};
+
+// Re-render only when the computed segments actually change (endpoint moved /
+// anchor added / removed), not on every React Flow store write.
+const anchorLinesEqual = arrayShallowEqualByKeys<LineSeg>(['key', 'x1', 'y1', 'x2', 'y2']);
+
 export function AssumptionAnchorOverlay() {
-  const flow = useReactFlow();
   const transform = useRFStore((s) => s.transform);
 
   // Derive (assumptionId, sourceId, targetId) triples up-front. The
@@ -79,33 +114,16 @@ export function AssumptionAnchorOverlay() {
     return out;
   }, anchorTriplesEqual);
 
-  const [tx, ty, scale] = transform;
+  // Reactive line geometry: subscribe to `nodeLookup` (gated by
+  // `anchorLinesEqual`) so the dashed links follow nodes during dagre
+  // re-layout animations, not just on pan/zoom. The equality gate keeps
+  // unrelated store writes from re-rendering this overlay.
+  const lines = useRFStore(
+    (s) => computeAnchorLines(anchors, (id) => s.nodeLookup.get(id)),
+    anchorLinesEqual
+  );
 
-  // Per render, compute screen-space line endpoints from the live
-  // React Flow instance. The instance is the source of truth for node
-  // positions (especially during dagre animations); a cached snapshot
-  // would lag the viewport.
-  const lines: { key: string; x1: number; y1: number; x2: number; y2: number }[] = [];
-  for (const a of anchors) {
-    const aNode = flow.getInternalNode(a.assumptionId);
-    const sNode = flow.getInternalNode(a.sourceId);
-    const tNode = flow.getInternalNode(a.targetId);
-    if (!aNode || !sNode || !tNode) continue;
-    const centre = (n: typeof aNode) => ({
-      x: n.internals.positionAbsolute.x + (n.measured?.width ?? 0) / 2,
-      y: n.internals.positionAbsolute.y + (n.measured?.height ?? 0) / 2,
-    });
-    const ac = centre(aNode);
-    const sc = centre(sNode);
-    const tc = centre(tNode);
-    lines.push({
-      key: a.key,
-      x1: ac.x,
-      y1: ac.y,
-      x2: (sc.x + tc.x) / 2,
-      y2: (sc.y + tc.y) / 2,
-    });
-  }
+  const [tx, ty, scale] = transform;
 
   if (lines.length === 0) return null;
 

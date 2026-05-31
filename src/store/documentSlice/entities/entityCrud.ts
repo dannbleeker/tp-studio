@@ -13,7 +13,7 @@
  */
 
 import { createEntity } from '@/domain/factory';
-import { removeEntityFromEdges } from '@/domain/graph';
+import { pruneAssumptions, removeEntityFromEdges } from '@/domain/graph';
 import type { DocumentId, Entity, EntityState, EntityType, Patch } from '@/domain/types';
 import { currentDoc } from '../../selectors';
 import { entityPatch, scrubFromGroups, touch } from '../docMutate';
@@ -113,11 +113,18 @@ export function createEntityCrudActions({
       applyDocChange((prev) => {
         if (!prev.entities[id]) return prev;
         const { [id]: _removed, ...rest } = prev.entities;
+        const edges = removeEntityFromEdges(prev, id);
+        // Prune assumptions whose host edge was just removed (the entity's
+        // edges cascade away) and scrub the deleted entity from injection
+        // back-links. Conditional spread keeps `assumptions` absent when the
+        // doc never had any.
+        const assumptions = pruneAssumptions(prev.assumptions, edges, rest);
         return touch({
           ...prev,
           entities: rest,
-          edges: removeEntityFromEdges(prev, id),
+          edges,
           groups: scrubFromGroups(prev.groups, [id]),
+          ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
         });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });
@@ -218,11 +225,13 @@ export function createEntityCrudActions({
           }
         }
         if (!changed) return prev;
+        const assumptions = pruneAssumptions(prev.assumptions, nextEdges, entities);
         return touch({
           ...prev,
           entities,
           edges: nextEdges,
           groups: scrubFromGroups(prev.groups, entityIds),
+          ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
         });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });

@@ -119,6 +119,11 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
       past: past.slice(0, -1),
       future: [...future, { doc, t: Date.now() }],
       editingEntityId: null,
+      // Clear selection: the restored doc may not contain the selected ids
+      // (e.g. undoing an add, whose id no longer exists), and a stale id
+      // would drive the toolbar / bulk actions against a missing entity.
+      // Matches how delete + document-swap already reset selection.
+      selection: { kind: 'none' },
     });
   },
 
@@ -137,6 +142,9 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
       future: future.slice(0, -1),
       past: [...past, { doc, t: Date.now() }],
       editingEntityId: null,
+      // Symmetric with undo — the redone doc may not contain the selected
+      // ids, so clear rather than leave a dangling selection.
+      selection: { kind: 'none' },
     });
   },
 });

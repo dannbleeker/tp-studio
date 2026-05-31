@@ -58,11 +58,14 @@ export function GroupInspector({ groupId }: { groupId: string }) {
   const nestCandidates = useDocumentStoreWith((s) => {
     const doc = currentDoc(s);
     if (!doc.groups[groupId]) return [];
-    const fakeDoc = { groups: doc.groups, entities: {}, edges: {} } as never;
+    // `wouldCreateCycle` only reads `.groups`, so a GroupsHost is enough — no
+    // need to fabricate empty entities/edges (the old `as never` cast
+    // suppressed all type-checking on this call).
+    const groupsHost = { groups: doc.groups };
     const out: NestCandidate[] = [];
     for (const g of Object.values(doc.groups)) {
       if (g.id === groupId) continue;
-      if (wouldCreateCycle(fakeDoc, g.id, groupId)) continue;
+      if (wouldCreateCycle(groupsHost, g.id, groupId)) continue;
       out.push({ id: g.id, title: g.title });
     }
     return out;

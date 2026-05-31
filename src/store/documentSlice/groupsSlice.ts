@@ -93,6 +93,12 @@ export const createGroupsSlice: StateCreator<RootStore, [], [], GroupsSlice> = (
         }
         return touch({ ...prev, groups: nextGroups });
       });
+      // If the deleted group was the one currently hoisted, exit hoist:
+      // `hoistedGroupId` would otherwise point at a now-missing group and
+      // `useGraphProjection` projects an empty descendant set — a stuck blank
+      // canvas the user can't navigate out of. (Deleting a *different* group
+      // leaves the hoist valid, so only clear on an exact match.)
+      if (get().hoistedGroupId === id) set({ hoistedGroupId: null });
     },
 
     renameGroup: (id, title) => {

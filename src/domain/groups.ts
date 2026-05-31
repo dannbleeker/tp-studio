@@ -12,7 +12,7 @@ import type { Group, TPDocument } from './types';
  * which subscribes to that slice rather than the whole doc) reuse the
  * same cached reverse index. A full `TPDocument` satisfies it.
  */
-type GroupsHost = Pick<TPDocument, 'groups'>;
+export type GroupsHost = Pick<TPDocument, 'groups'>;
 
 /**
  * Session 135 / Perf #28 — WeakMap-cached `memberId → parent group`
@@ -72,7 +72,7 @@ export const ancestorChain = (doc: GroupsHost, memberId: string): Group[] => {
  */
 const descendantIdsCache = new WeakMap<TPDocument['groups'], Map<string, Set<string>>>();
 
-export const descendantIds = (doc: TPDocument, groupId: string): Set<string> => {
+export const descendantIds = (doc: GroupsHost, groupId: string): Set<string> => {
   let inner = descendantIdsCache.get(doc.groups);
   if (!inner) {
     inner = new Map<string, Set<string>>();
@@ -137,7 +137,7 @@ export const descendantEntityCount = (doc: TPDocument, groupId: string): number 
  * its descendant set contains `groupId`, OR `candidateId === groupId`.
  */
 export const wouldCreateCycle = (
-  doc: TPDocument,
+  doc: GroupsHost,
   groupId: string,
   candidateId: string
 ): boolean => {

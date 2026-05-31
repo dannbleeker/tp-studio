@@ -295,6 +295,13 @@ export function useGlobalShortcuts() {
           state.closeHistoryPanel();
           return;
         }
+        // Walkthrough overlay is a modal surface — Esc closes it and must NOT
+        // also fall through to unhoist / clearSelection. Stacking dialogs are
+        // handled above, so they peel back before the walkthrough does.
+        if (state.walkthrough.kind !== 'closed') {
+          state.closeWalkthrough();
+          return;
+        }
         if (state.editingEntityId !== null) {
           // node textarea will handle its own escape; let it bubble
           return;

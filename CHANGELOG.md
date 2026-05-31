@@ -2,6 +2,64 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Code-inspection hardening (High-severity batch)
+
+A six-agent read-only inspection surfaced ~37 findings; this lands the **13
+High-severity** ones across security, state integrity, performance, React/a11y,
+and type safety. (Medium/Low findings are parked in NEXT_STEPS.)
+
+**Security**
+- Evidence citation URLs are now scheme-checked (`isSafeHref`,
+  `src/domain/safeUrl.ts`): a `javascript:`/`data:`/`vbscript:`/`file:` URL in
+  an imported or shared document can no longer render as a clickable `<a href>`
+  and execute in the app origin. Enforced at the persistence validator (drops
+  the unsafe link on import) AND at render in `EvidenceList` (the live-edit path
+  bypasses the validator). Whitespace-smuggled schemes (`java<TAB>script:`) are
+  collapsed before the check.
+
+**State integrity**
+- `undo`/`redo` now clear `selection`, so a restored doc can't leave the
+  toolbar / bulk actions pointed at an id that no longer exists.
+- Deleting the currently hoisted group exits hoist (was: a stuck blank canvas
+  pointing at a now-missing group).
+- Deleting an edge — or an entity whose edges cascade away — prunes the
+  orphaned first-class `doc.assumptions` records, and deleting an entity scrubs
+  it from surviving assumptions' `injectionIds` (`pruneAssumptions`,
+  `src/domain/graph.ts`). Stops dangling records accumulating + surviving export.
+
+**Performance**
+- `useEdgeRoutes` builds an id→index Map once instead of an `indexOf` scan per
+  edge (was O(N·E) on large diagrams).
+- `TPEdge`'s radial-mode obstacle subscription is gated by a node-geometry
+  equality fn, so edges no longer re-render on every React Flow store write
+  (i.e. every drag frame) in radial mode.
+- `AssumptionAnchorOverlay` derives its line geometry reactively from
+  `nodeLookup` (gated by equality), so the dashed links follow nodes during
+  re-layout animations instead of lagging until the next pan/zoom.
+
+**React / a11y**
+- `ReadThroughBody` hoisted out of `WalkthroughOverlayBody`'s render (was a
+  fresh component type each render → unmount/remount + focus loss).
+- The walkthrough overlay joined the global Escape cascade — Esc closes it as
+  the topmost surface without also clearing the canvas selection (or
+  double-closing a stacked dialog) — and it now traps focus inside its card
+  (`useFocusTrap`).
+
+**Type safety**
+- `wouldCreateCycle` / `descendantIds` narrowed to a `GroupsHost` param,
+  removing an `as never` cast in `GroupInspector` that silently disabled all
+  type-checking on the call.
+- `sideNormal` (`edgeRouting.ts`) gains an exhaustiveness guard so a future
+  `Side` member can't silently fall through to the right-side normal.
+
+Also corrected three stale "Phase C/D (planned)" comments that described the
+shipped smart edge-router as future/dead work.
+
+Tests: new `tests/domain/safeUrl.test.ts`, `tests/store/undoRedoSelectionReset.test.ts`,
+`tests/store/deleteCascadeCleanup.test.ts`, an Esc-closes-walkthrough case in
+`useGlobalShortcuts.test.tsx`, plus updated walkthrough/overlay coverage.
+tsc + biome + full suite green (2187 passed).
+
 ## Session 138 — Easier edge/connector selection (hover cue + clickable label + clearer selected)
 
 Edges were fiddly to click and, once selected, hard to *see* as selected — and
