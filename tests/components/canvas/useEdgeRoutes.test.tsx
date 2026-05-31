@@ -15,7 +15,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { computeEdgeRoutes, useEdgeRoutes } from '@/components/canvas/hooks/useEdgeRoutes';
 import { useGraphProjection } from '@/components/canvas/hooks/useGraphProjection';
-import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { computeCollapseProjection } from '@/domain/groups';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../../helpers/seedDoc';
@@ -225,10 +225,14 @@ describe('computeEdgeRoutes — iteration', () => {
     expect(elapsed).toBeLessThan(5000);
   }, 30000);
 
-  it('routes a junctor-member edge to the junctor bottom perimeter (Phase D)', () => {
-    // Two source entities A, B both connecting to target C. Group
-    // A→C and B→C as an AND-junctor; the edges should now route to
-    // C's junctor circle bottom rather than C's top handle.
+  it('does NOT route junctor-member edges (they render via the measured bezier)', () => {
+    // Junctor cause-edges are excluded from A* routing. Their visible path is
+    // TPEdge's bezier, redirected to the junctor circle's bottom perimeter via
+    // the target's MEASURED bottom-handle Y — so it lands exactly on the circle
+    // JunctorOverlay paints. The router only has fixed NODE_MIN_HEIGHT obstacle
+    // boxes, so a routed terminus would sit ~a node-height off the (measured)
+    // circle (the "AND/OR/XOR cause-edges miss the circle" bug). So a junctor
+    // edge must carry NO route entry and fall through to the bezier.
     const { e1: edgeA, e2: edgeB } = (() => {
       const aE = seedEntity('A');
       const bE = seedEntity('B');
@@ -243,7 +247,6 @@ describe('computeEdgeRoutes — iteration', () => {
       return { e1, e2 };
     })();
     const doc = useDocumentStore.getState().doc;
-    // Pin positions so the test is deterministic.
     const visibleIds = Object.keys(doc.entities);
     const positions: Record<string, { x: number; y: number }> = {};
     if (visibleIds[0]) positions[visibleIds[0]] = { x: 0, y: 0 };
@@ -251,19 +254,8 @@ describe('computeEdgeRoutes — iteration', () => {
     if (visibleIds[2]) positions[visibleIds[2]] = { x: 120, y: 240 };
     const projection = projectionOf(doc, visibleIds);
     const routes = computeEdgeRoutes(doc, projection, positions);
-    const routeA = routes[edgeA.id];
-    const routeB = routes[edgeB.id];
-    expect(routeA).toBeDefined();
-    expect(routeB).toBeDefined();
-    // The last waypoint of a junctor-member route should be the
-    // junctor circle's bottom perimeter, NOT C's top handle.
-    // C's top is y=240; the junctor terminal is `240 + 35 + 14 = 289`
-    // (JUNCTOR_CENTER_OFFSET_Y + JUNCTOR_RADIUS — verified in
-    // src/domain/constants.ts).
-    const lastA = routeA?.waypoints[routeA.waypoints.length - 1];
-    const lastB = routeB?.waypoints[routeB.waypoints.length - 1];
-    expect(lastA?.y).toBeGreaterThan(240);
-    expect(lastB?.y).toBeGreaterThan(240);
+    expect(routes[edgeA.id]).toBeUndefined();
+    expect(routes[edgeB.id]).toBeUndefined();
   });
 });
 
@@ -321,7 +313,9 @@ describe('computeEdgeRoutes — 4-side anchoring', () => {
     expect(wp?.[1]).toEqual({ x: 300, y: HALF_H }); // target left side
   });
 
-  it('junctor edge: source anchors on a side, terminus stays the circle bottom', () => {
+  it('junctor edge: not routed — bypasses 4-side anchoring entirely', () => {
+    // Junctor edges no longer participate in side-anchoring: they are skipped
+    // by the router and render via TPEdge's measured bezier into the circle.
     const a = seedEntity('A');
     const b = seedEntity('B');
     const c = seedEntity('C');
@@ -333,15 +327,13 @@ describe('computeEdgeRoutes — 4-side anchoring', () => {
     if (!grp.ok) throw new Error(`groupAsAnd failed: ${grp.reason}`);
     const doc = useDocumentStore.getState().doc;
     const positions = {
-      [a.id]: { x: 500, y: 200 }, // source far right + below the circle
+      [a.id]: { x: 500, y: 200 },
       [b.id]: { x: 520, y: 200 },
-      [c.id]: { x: 0, y: 0 }, // target → circle override at (HALF_W, 49)
+      [c.id]: { x: 0, y: 0 },
     };
     const projection = projectionOf(doc, [a.id, b.id, c.id]);
-    const wp = computeEdgeRoutes(doc, projection, positions)[e1.id]?.waypoints;
-    // Left side (nearer the circle) rather than the old fixed bottom-centre.
-    expect(wp?.[0]).toEqual({ x: 500, y: 200 + HALF_H });
-    // Still terminates at the junctor circle's bottom perimeter.
-    expect(wp?.[wp.length - 1]).toEqual({ x: HALF_W, y: JUNCTOR_EDGE_TERMINAL_OFFSET_Y });
+    const routes = computeEdgeRoutes(doc, projection, positions);
+    expect(routes[e1.id]).toBeUndefined();
+    expect(routes[e2.id]).toBeUndefined();
   });
 });

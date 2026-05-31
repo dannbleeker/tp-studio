@@ -111,7 +111,17 @@ const computeJunctorGroups = (edges: TPDocument['edges']): JunctorGroup[] => {
 /** The slice of a React Flow internal node `computeJunctors` reads. Kept
  *  minimal so the helper is trivially unit-testable with a plain object. */
 type TargetNodeGeometry = {
-  readonly internals: { readonly positionAbsolute: { readonly x: number; readonly y: number } };
+  readonly internals: {
+    readonly positionAbsolute: { readonly x: number; readonly y: number };
+    // React Flow's measured handle bounds. The bottom target handle's
+    // connection point (where cause-edges terminate) sits a little below the
+    // measured box, so the junctor anchors to it rather than the box bottom.
+    readonly handleBounds?: {
+      readonly target?:
+        | readonly { readonly position?: string; readonly y: number; readonly height: number }[]
+        | null;
+    } | null;
+  };
   readonly measured?: { readonly width?: number; readonly height?: number } | undefined;
 };
 
@@ -133,7 +143,15 @@ export const computeJunctors = (
     const tWidth = target.measured?.width ?? 220;
     const tHeight = target.measured?.height ?? 72;
     const tX = tPos.x + tWidth / 2;
-    const tY = tPos.y + tHeight;
+    // Anchor to the bottom target handle's ACTUAL connection point — where
+    // React Flow terminates the converging cause-edges — not the measured box
+    // bottom. The Bottom handle sits ~its own height below the box, so the
+    // box-bottom anchor left the cause-edges stopping short of the circle.
+    // Falls back to the box bottom before handle bounds are measured.
+    const bottomHandle = target.internals.handleBounds?.target?.find(
+      (h) => h.position === 'bottom'
+    );
+    const tY = bottomHandle ? tPos.y + bottomHandle.y + bottomHandle.height : tPos.y + tHeight;
     out.push({ id: g.id, kind: g.kind, cx: tX, cy: tY + JUNCTOR_CENTER_OFFSET_Y, tx: tX, ty: tY });
   }
   return out;

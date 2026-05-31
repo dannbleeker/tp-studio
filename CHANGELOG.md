@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — Fix: AND/OR/XOR junctor cause-edges now meet the circle
+
+The converging cause-edges of a junctor (the labelled `AND`/`OR`/`XOR` circle)
+stopped short of — or skirted around — the circle instead of meeting at its
+bottom. Two compounding causes, both fixed:
+
+- **Smart routing (the default) aimed junctor edges a node-height too high.**
+  `computeEdgeRoutes` redirected the junctor terminus to `targetBox.y + offset`
+  — the box *top* plus the offset — conflating React Flow's `props.targetY` (the
+  *bottom* handle) with the box's top-left `y`. Fix: exclude junctor edges from
+  the A\* router entirely (mirroring the existing radial exclusion) so they
+  render via TPEdge's bezier, which terminates at the measured bottom handle.
+
+- **The circle was anchored to the wrong bottom.** `JunctorOverlay` placed the
+  circle at the measured box bottom, but React Flow terminates the edges at the
+  bottom *handle*, which sits ~its own height (the `h-5` handle) below the box —
+  a ~20px residual gap. Fix: anchor the circle to the bottom handle's actual
+  `handleBounds` connection point (falling back to the box bottom before bounds
+  are measured).
+
+Result: cause-edges converge exactly on the circle's bottom perimeter (verified
+end-to-end in the running app — edge terminus == circle bottom, gap 0). Guards
+updated: `useEdgeRoutes.test` (junctor edges carry no route) +
+`junctorOverlay.test` (handle-anchored geometry). No schema change.
+
 ## Session 153 — Pattern library: +9 canonical TOC archetypes
 
 Filled a real gap in the curated pattern library: the Evaporating Cloud set

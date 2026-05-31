@@ -16,7 +16,10 @@ import { computeJunctors } from '@/components/canvas/edges/JunctorOverlay';
 import { JUNCTOR_CENTER_OFFSET_Y } from '@/domain/constants';
 
 type Geo = {
-  internals: { positionAbsolute: { x: number; y: number } };
+  internals: {
+    positionAbsolute: { x: number; y: number };
+    handleBounds?: { target?: { position?: string; y: number; height: number }[] | null } | null;
+  };
   measured?: { width?: number; height?: number };
 };
 
@@ -39,6 +42,26 @@ describe('computeJunctors', () => {
         cy: 272 + JUNCTOR_CENTER_OFFSET_Y,
       },
     ]);
+  });
+
+  it('anchors to the bottom handle connection point when handle bounds exist', () => {
+    // React Flow terminates the converging cause-edges at the bottom handle,
+    // which sits below the measured box (the h-5 handle). The junctor must
+    // follow that point — not the box bottom — or the cause-edges stop short of
+    // the circle (the "AND/OR/XOR edges miss the circle" bug).
+    const groups = [{ id: 'g1', kind: 'AND' as const, targetId: 't1' }];
+    const withHandle: Geo = {
+      internals: {
+        positionAbsolute: { x: 100, y: 200 },
+        handleBounds: { target: [{ position: 'bottom', y: 72, height: 20 }] },
+      },
+      measured: { width: 220, height: 72 },
+    };
+    const out = computeJunctors(groups, () => withHandle);
+    // Box bottom would be 200 + 72 = 272; the handle connection point is
+    // 200 + 72 + 20 = 292, and the circle + short-line anchor follow it.
+    expect(out[0]?.ty).toBe(292);
+    expect(out[0]?.cy).toBe(292 + JUNCTOR_CENTER_OFFSET_Y);
   });
 
   it('tracks the target when its position changes (the floating-circle fix)', () => {

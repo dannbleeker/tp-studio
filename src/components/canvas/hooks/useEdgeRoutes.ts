@@ -24,12 +24,7 @@
  */
 
 import { useMemo } from 'react';
-import {
-  JUNCTOR_EDGE_TERMINAL_OFFSET_Y,
-  NODE_MIN_HEIGHT,
-  NODE_WIDTH,
-  ST_NODE_HEIGHT,
-} from '@/domain/constants';
+import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT } from '@/domain/constants';
 import {
   aStarOnGraph,
   type Box,
@@ -85,33 +80,16 @@ const obstacleBoxFor = (doc: TPDocument, id: string, position: Point): Box | nul
  * dagre `BT` (cause below, effect above); the position-based picker
  * corrects that.
  *
- * Junctor-grouped edges still terminate at the junctor circle's BOTTOM
- * perimeter (a fixed point below the target, `targetY +
- * JUNCTOR_EDGE_TERMINAL_OFFSET_Y`) — passed as the override so only the
- * source side varies. JunctorOverlay paints the short line from the
- * circle into the target.
+ * Junctor-grouped edges are NOT routed here — `computeEdgeRoutes` skips them
+ * (see the loop comment) so they render via TPEdge's measured-exact bezier
+ * into the junctor circle. So this only ever sees non-junctor edges.
  */
 const sideSelectionFor = (
   sourceBox: Box,
   targetBox: Box,
   axis: Axis,
-  obstacles: readonly Box[],
-  isJunctorMember: boolean
-): SideSelection =>
-  selectEdgeSides({
-    sourceBox,
-    targetBox,
-    axis,
-    obstacles,
-    ...(isJunctorMember
-      ? {
-          targetAnchorOverride: {
-            x: targetBox.x + targetBox.width / 2,
-            y: targetBox.y + JUNCTOR_EDGE_TERMINAL_OFFSET_Y,
-          },
-        }
-      : {}),
-  });
+  obstacles: readonly Box[]
+): SideSelection => selectEdgeSides({ sourceBox, targetBox, axis, obstacles });
 
 /**
  * Pure helper — given the doc + projection + positions, produce the
@@ -187,22 +165,23 @@ export const computeEdgeRoutes = (
   const graph = buildVisibilityGraph(allBoxesArr);
 
   const out: Record<string, EdgeRoute> = {};
-  // Track which remapped pairs we've already routed. The pair key
-  // includes the junctor flag because a junctor-member edge ends at
-  // a different y than a regular edge between the same endpoints,
-  // and we want both keys to route independently (corner case: a
-  // doc has both an AND-junctor edge and a non-junctor edge between
-  // the same two nodes; rare, but well-defined).
+  // Track which remapped pairs we've already routed — one route per visible
+  // src→tgt pair (aggregation collapses parallels upstream).
   const seenPairs = new Set<string>();
   for (const edge of edgesArray(doc)) {
     const s = projection.remap(edge.sourceId);
     const t = projection.remap(edge.targetId);
     if (!s || !t || s === t) continue;
-    // Junctor edges route to the junctor circle's bottom perimeter,
-    // not a target side. Match TPEdge's override condition: any
-    // junctor-grouped edge that hasn't been bucket-aggregated.
-    const isJunctorMember = Boolean(edge.andGroupId || edge.orGroupId || edge.xorGroupId);
-    const pairKey = `${s}->${t}:${isJunctorMember ? 'j' : 'd'}`;
+    // Junctor-member edges are intentionally NOT routed through A*. Their
+    // visible path is TPEdge's bezier, redirected to the junctor circle's
+    // bottom perimeter via the target's MEASURED bottom-handle Y, so it lands
+    // exactly on the circle JunctorOverlay paints. The router only knows
+    // fixed NODE_MIN_HEIGHT obstacle boxes, so a routed terminus sat ~a
+    // node-height off the (measured) circle — the "AND/OR/XOR cause-edges
+    // don't meet the circle" bug. Skipping them mirrors the radial exclusion
+    // in TPEdge; one short JunctorOverlay line owns the arrow into the target.
+    if (edge.andGroupId || edge.orGroupId || edge.xorGroupId) continue;
+    const pairKey = `${s}->${t}`;
     if (seenPairs.has(pairKey)) continue;
     seenPairs.add(pairKey);
     const sBox = allBoxes.get(s);
@@ -218,7 +197,7 @@ export const computeEdgeRoutes = (
       if (!box || id === s || id === t) continue;
       obstaclesForEdge.push(box);
     }
-    const sel = sideSelectionFor(sBox, tBox, axis, obstaclesForEdge, isJunctorMember);
+    const sel = sideSelectionFor(sBox, tBox, axis, obstaclesForEdge);
     // Phase D fix — the anchor points sit on their own box boundary, so
     // they fall *inside* the visibility graph's shrunk-interior bounds.
     // Pass the source/target box indices so the visibility check skips
