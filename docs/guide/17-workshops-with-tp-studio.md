@@ -26,6 +26,7 @@ Five gestures the facilitator uses repeatedly:
 3. **Side-by-side compare.** When a structural choice is being debated ("should we group these as AND or as two separate causes?"), branch first, try option A, snapshot, restore, try option B, snapshot. Now compare the two. The right answer is often obvious; the wrong answer was a function of having only seen one.
 4. **CLR walkthrough.** Near the end of the workshop, run `Cmd+K → Start CLR walkthrough` to surface every open reservation. Address each as a group — even the dismissals are conversations.
 5. **EC Workshop Sheet PDF.** For EC workshops, generate the workshop sheet PDF and print copies before the session. Each participant gets one; they write candidate assumptions on it during the cloud-construction phase, you transcribe the best onto the canvas.
+6. **Park objections as comments.** When a participant raises a doubt the group isn't ready to resolve — "I'm not convinced that cause is *sufficient*" — drop a comment on the edge (`Cmd+K → Comments`, or the speech-bubble button) rather than stalling the build. The note pins to the exact edge and stays out of the way. At the closing CLR pass, open the Comments panel's **Open** filter and work through every parked note as a group — resolving each one is its own small conversation. Nothing real gets lost to the pace of the room.
 
 ## A 4-hour CRT workshop — example agenda
 
@@ -49,7 +50,7 @@ The EC workshop is shorter — typically 2 hours — but follows the same shape:
 
 - **One participant dominates.** The verbalisation discipline helps. So does rotating who reads aloud. If one voice is over-claiming, hand them the read-aloud job for the next five minutes.
 - **The group disagrees on a cause.** Branch the doc and explore both. Reconverge at the snapshot.
-- **A cause-claim "feels wrong" but no one can articulate why.** That's a CLR check waiting to be raised. Open the Inspector's Warnings list on the contested edge; usually a `cause-effect existence` or `cause-effect reversal` warning is already firing.
+- **A cause-claim "feels wrong" but no one can articulate why.** That's a CLR check waiting to be raised. Open the Inspector's Warnings list on the contested edge; usually a `cause-effect existence` or `cause-effect reversal` warning is already firing. If none fires, drop a comment on the edge so the doubt is captured and revisited at the closing pass rather than lost.
 - **The workshop runs long.** Snapshot, set a hard stop, schedule a follow-up. A half-finished CRT is more valuable than a forced-completion one.
 - **The CRT looks like a project plan.** You're confusing CRT (diagnosis) with PRT/TT (planning). Re-set: this diagram is *why things are the way they are now*, not *what we'll do about it*.
 
@@ -65,11 +66,13 @@ The EC workshop is shorter — typically 2 hours — but follows the same shape:
 > - **EC Workshop Sheet** — printed participant artifact.
 > - **Browse Lock** — read-only mode for demos and screen recording.
 > - **Capture snapshot** — workshop memory.
+> - **Review comments** — park objections on the exact entity/edge during the build; resolve them in the closing pass.
 
 > **💡 Practitioner tips**
 > - **Capture a snapshot every 20 minutes** in a workshop. Even unlabeled ones — you'll appreciate the rollback option.
 > - **Read the diagram aloud at least three times** in a 4-hour workshop. Once after first cause chain, once after second, once at end.
 > - **End with the exports.** Send the reasoning narrative + a PDF of the final CRT to participants within 24 hours.
+> - **Collect async review with comments.** Send the JSON or share link to stakeholders who couldn't attend; their comments come back pinned inside the file, ready to work through.
 
 > **⚠ Common mistakes**
 > - **Skipping System Scope** because "we all know what we're analysing." You don't all know. The first 15 minutes are not optional.

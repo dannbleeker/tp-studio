@@ -61,6 +61,8 @@
 | `New from template…` | Templates library |
 | `Capture snapshot` | Save a revision |
 | `Open history panel` | RevisionPanel toggle |
+| `Comments` | Review-comments panel toggle |
+| `Add comment on selection` | Comment on the selected entity / edge (or the whole diagram) |
 | `Start CLR walkthrough` | Iterate open warnings |
 | `Start read-through` | Verbalisation overlay |
 | `Find core driver(s)` | Highest-reach root cause |

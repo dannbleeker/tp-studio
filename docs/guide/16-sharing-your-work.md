@@ -94,6 +94,21 @@ Double-clicking the file opens it in any browser. No network calls. No JavaScrip
 
 Perfect for: airgapped audiences, security-conscious recipients, slides with embedded HTML, archival.
 
+## Review comments
+
+Sharing a diagram for feedback used to mean the feedback came back *somewhere else* — a reply email, a Slack thread, a track-changes Word doc — detached from the diagram it was about. **Review comments** keep the feedback inside the file.
+
+A comment is a short note pinned to one of three places: an **entity**, an **edge**, or the **whole diagram**. Open the panel with the speech-bubble button in the TopBar (or `Cmd+K → Comments`), select the thing you want to talk about, type, and post. With nothing selected the comment attaches to the diagram as a whole.
+
+Because comments live in `doc.comments` — part of the document, not a side-channel — they travel with **every** lossless route out: JSON export, the read-only share link, and the standalone HTML viewer all carry the threads with them. The async-review loop becomes: share the link (or send the JSON) → the reviewer pins objections to the causality where it's wrong → they send it back → you open it and see each note attached to the exact entity or edge in question.
+
+Each thread supports one level of **replies**, a **resolve / reopen** toggle, and inline **edit / delete**. The panel filters to **Open**, **Resolved**, or **All**, so a review pass is simply "work the Open list to zero." Click a thread's anchor chip to jump the canvas to whatever it's pinned to. Comments are signed with the name you set in the panel's *Signing as* field — a local label, not a login; TP Studio has no accounts.
+
+Two boundaries worth knowing:
+
+- **Comments are plain text.** No formatting, no `@`-mentions, no notifications — they're review notes, not a chat system.
+- **Deleting the anchor deletes the comment.** Remove an entity or edge and any comments pinned to it go with it (whole-diagram comments stay). That keeps the thread list honest — every open comment points at something that still exists.
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**
@@ -103,12 +118,14 @@ Perfect for: airgapped audiences, security-conscious recipients, slides with emb
 > - **Standalone HTML viewer** — self-contained share artifact.
 > - **EC Workshop Sheet PDF** — one-page handout for EC workshops.
 > - **Browse Lock auto-engages on share-link load** — receivers can't accidentally edit.
+> - **Review comments** — notes pinned to an entity / edge / the whole diagram, carried inside every JSON / share-link / HTML export.
 
 > **💡 Practitioner tips**
 > - **Capture a snapshot before exporting for stakeholders.** "What I showed them on Tuesday" is a revision you'll want later.
 > - **PDF for static audiences, share link for interactive ones.** Stakeholders click PDFs; analysts click links.
 > - **Use redacted JSON when sharing the shape of an analysis.** "Here's our diagnostic shape, with anonymized content" is a real workflow.
 > - **The EC Workshop Sheet is great handout material.** Print one per participant.
+> - **Use comments for async review.** Share the link, let reviewers pin objections to the exact edge, then work the Open filter to zero.
 
 > **⚠ Common mistakes**
 > - **Sharing the wrong revision.** When you send a link, the link encodes the *current* doc state — not whichever snapshot you thought it would be. Capture + restore the right revision first.

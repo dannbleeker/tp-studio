@@ -65,6 +65,7 @@ Useful for "I want to know what's new in the live doc without leaving the canvas
 > - **Snapshot before risky edits.** Cheaper than reconstructing.
 > - **Branch before exploring.** "Try this thing" is much cheaper psychologically when you know you can return to the prior branch.
 > - **Use side-by-side compare before presenting.** Comparing the "what stakeholders saw" snapshot to the live doc surfaces the changes you want to talk about.
+> - **Capture review feedback as comments, not memory.** "After CRT review with Maria" is a set of comments pinned to the edges she questioned — they travel with the file, so the feedback and the diagram never drift apart (see [Chapter 16](16-sharing-your-work.md#review-comments)).
 
 > **⚠ Common mistakes**
 > - **Snapshot drift.** Capturing 50 unlabeled snapshots; later not knowing which is which. Label.
