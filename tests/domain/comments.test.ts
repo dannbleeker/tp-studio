@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { pruneComments } from '@/domain/graph';
+import { openCommentCountsByAnchor, pruneComments } from '@/domain/graph';
 import { exportToJSON, importFromJSON } from '@/domain/persistence';
-import { validateComment } from '@/domain/persistenceValidators';
+import { validateComment, validateRecord } from '@/domain/persistenceValidators';
 import type { Comment } from '@/domain/types';
+import type { EdgeId } from '@/domain/types/ids';
 import { makeDoc, makeEdge, makeEntity } from './helpers';
 
 // validateComment takes `unknown`, so plain objects (no branded ids) are fine.
@@ -115,5 +116,58 @@ describe('comments round-trip + migration', () => {
   it('migrates a v8 document to v9 (additive, no data change)', () => {
     const restored = importFromJSON(JSON.stringify({ ...makeDoc([], []), schemaVersion: 8 }));
     expect(restored.schemaVersion).toBe(9);
+  });
+});
+
+describe('openCommentCountsByAnchor', () => {
+  const e = makeEntity({ title: 'A' });
+  const mk = (over: Partial<Comment>): Comment => ({
+    id: 'x',
+    anchor: { kind: 'document' },
+    body: 'b',
+    author: 'D',
+    createdAt: 1,
+    updatedAt: 1,
+    ...over,
+  });
+
+  it('counts open top-level comments per entity and edge', () => {
+    const { byEntity, byEdge } = openCommentCountsByAnchor({
+      c1: mk({ id: 'c1', anchor: { kind: 'entity', entityId: e.id } }),
+      c2: mk({ id: 'c2', anchor: { kind: 'entity', entityId: e.id } }),
+      c3: mk({ id: 'c3', anchor: { kind: 'edge', edgeId: 'ed1' as EdgeId } }),
+    });
+    expect(byEntity.get(e.id)).toBe(2);
+    expect(byEdge.get('ed1')).toBe(1);
+  });
+
+  it('ignores resolved threads, replies, and document anchors', () => {
+    const { byEntity } = openCommentCountsByAnchor({
+      top: mk({ id: 'top', anchor: { kind: 'entity', entityId: e.id } }),
+      done: mk({ id: 'done', anchor: { kind: 'entity', entityId: e.id }, resolved: true }),
+      reply: mk({ id: 'reply', anchor: { kind: 'entity', entityId: e.id }, parentId: 'top' }),
+      doc: mk({ id: 'doc', anchor: { kind: 'document' } }),
+    });
+    expect(byEntity.get(e.id)).toBe(1);
+  });
+
+  it('returns empty maps when there are no comments', () => {
+    const { byEntity, byEdge } = openCommentCountsByAnchor(undefined);
+    expect(byEntity.size).toBe(0);
+    expect(byEdge.size).toBe(0);
+  });
+});
+
+describe('validateRecord — prototype-pollution guard', () => {
+  it('rejects a record carrying a reserved __proto__ key', () => {
+    // JSON.parse creates an OWN enumerable `__proto__` key (unlike an object
+    // literal), so this is the realistic hostile-import shape.
+    const malicious = JSON.parse('{"__proto__":{"x":1},"good":{"x":2}}');
+    expect(() => validateRecord(malicious, (v) => v, 'rec')).toThrow(/reserved/);
+  });
+
+  it('accepts an ordinary record with normal keys', () => {
+    const out = validateRecord({ a: 1, b: 2 }, (v) => v as number, 'rec');
+    expect(out).toEqual({ a: 1, b: 2 });
   });
 });

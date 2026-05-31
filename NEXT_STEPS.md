@@ -4,29 +4,32 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ---
 
-## Review comments (Session 139) — fast-follow
+## Review comments (Sessions 139–140)
 
-The comment layer shipped scoped to the panel + palette/TopBar entry points. Each
-of these was deliberately deferred to keep v1 small — they're additive on top of
-the existing `doc.comments` data, no schema change needed:
+The local-first comment layer shipped Session 139 (panel + palette/TopBar entry
+points), and the three "surfacing" fast-follows shipped Session 140. What's left
+is one standalone item plus two parked notes:
 
-- **Comment-count badges on nodes / edges** — a small bubble showing the number of
-  open comments on an entity/edge, click-to-open the panel filtered to that anchor.
-  The data is already there (`pruneComments` keeps anchors honest); this is a
-  canvas-overlay + per-anchor count selector.
-- **Selection-toolbar verb** — an "Add comment" action on the floating selection
-  toolbar so commenting is reachable without opening the panel first.
-- **Jump-to-edge centers the viewport** — entity anchors center on the node; edge
-  anchors currently only select (edges have no node position). Compute the edge
-  midpoint from its endpoints and `setCenter` there.
-- **Free-floating canvas-position comments** — anchor a comment to an `{x,y}` point
-  rather than an entity/edge (a sticky-note pin). Needs a new anchor variant +
-  drag handling; the discriminated `CommentAnchor` union is ready for it.
+- ~~**Comment-count badges on nodes / edges**~~ ✅ *Session 140* — clickable indigo
+  speech-bubble pill (open-comment count) stamped via the emission pipeline
+  (`openCommentCountsByAnchor`), click selects the anchor + opens the panel.
+- ~~**Selection-toolbar "Add comment" verb**~~ ✅ *Session 140* — on single-entity /
+  single-edge selections; not write-guarded, so visible under Browse Lock.
+- ~~**Jump-to-edge centers the viewport**~~ ✅ *Session 140* — the thread chip now
+  centers the canvas on the edge midpoint.
+- **Free-floating canvas-pin comments** — *the one open buildable item.* Anchor a
+  comment to an `{x,y}` point rather than an entity/edge (a sticky-note pin). This
+  is its own mini-feature, not a quick follow: it needs a new `CommentAnchor`
+  variant (`{ kind: 'point', x, y }` — additive within schema v9, no version bump),
+  a placement gesture (pane context-menu "Add comment here" → `screenToFlowPosition`
+  + a pending-anchor composer state), a canvas pin overlay (mirror `JunctorOverlay`'s
+  flow→screen transform), and optional drag-to-reposition. The discriminated union
+  is ready for the new member.
 - **Browse-Lock interaction** — comments are intentionally *not* write-guarded
-  (annotating a read-only shared doc is useful). Revisit if a reviewer wants a
+  (annotating a read-only shared doc is useful). Revisit only if a reviewer wants a
   truly read-only comment view.
-- **Real-time / multi-user** — out of scope (major gap #2). Comments are
-  local-first; a future Yjs layer would sync them alongside the rest of the doc.
+- **Real-time / multi-user comments** — out of scope (won't-build #2). The shipped
+  layer is single-user / local-first; a future Yjs layer would sync it.
 
 ---
 
@@ -228,7 +231,7 @@ Open goals remaining: **none** — all five canvas goals (#1–#5) shipped this 
 
 Items explicitly dropped, in addition to the brief's own out-of-scope list:
 
-- **#2 Multi-user collaboration (spec §4)** — out of scope for this version (Dann, Session 135). Real-time editing, comments, role-based participation, workshop voting + timeboxing, stakeholder sign-off, decision log. Would flip TP Studio from local-first to cloud-backed. Not a permanent "never" — parked until a hosted product direction is on the table; revisit then.
+- **#2 Multi-user collaboration (spec §4)** — out of scope for this version (Dann, Session 135). Real-time editing, role-based participation, workshop voting + timeboxing, stakeholder sign-off, decision log. Would flip TP Studio from local-first to cloud-backed. **Carve-out (Session 139):** *local-first* review comments shipped — single-user annotations anchored to entities/edges/the document, stored in the doc and travelling with every export (see CHANGELOG). Only the *real-time / multi-user* dimension of comments remains out of scope here. Not a permanent "never" — parked until a hosted product direction is on the table; revisit then.
 - **#8 Enterprise integration (spec §8)** — dropped Session 135 (tied to #2). SSO/SAML/OIDC, M365 / Google Workspace / Slack / Teams / Confluence / SharePoint / Jira / Azure DevOps. TP Studio is a browser-local PWA.
 - **Audit trail / GDPR / data retention** — dropped Session 135 (depended on #2/#8 server-side identity model). No backend, no audit trail; persistence is local-storage + user-managed export files.
 - **Stakeholder sign-off workflow** — dropped Session 135 (depended on #2 multi-user model).

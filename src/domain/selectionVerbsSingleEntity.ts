@@ -11,6 +11,7 @@
  * (`selectionVerbs.ts` runtime-imports this builder back).
  */
 
+import { MessageSquarePlus } from 'lucide-react';
 import type { DocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import type { Verb } from './selectionVerbs';
@@ -213,6 +214,21 @@ export const verbsForSingleEntity = (id: string, state: DocumentStore): Verb[] =
       });
     }
   }
+  // Comments — annotate the selected entity. `writes: true` is for toolbar
+  // VISIBILITY only (not authorization, per the `Verb.writes` contract):
+  // under Browse Lock the selection toolbar goes quiet like every other
+  // verb, keeping the read-only canvas clean. Commenting itself is NOT
+  // write-guarded — it stays reachable under lock via the Comments panel,
+  // the TopBar button, and the `add-comment-on-selection` palette command.
+  // Inline `run` opens the panel, which anchors the composer to the selection.
+  verbs.push({
+    id: 'add-comment-on-selection',
+    label: 'Add comment',
+    shortLabel: 'Comment',
+    icon: MessageSquarePlus,
+    writes: true,
+    run: (s) => s.openCommentsPanel(),
+  });
   verbs.push({
     id: 'confirm-delete-selection',
     label: 'Delete',

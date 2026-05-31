@@ -1,4 +1,5 @@
 import { EdgeLabelRenderer } from '@xyflow/react';
+import { MessageSquare } from 'lucide-react';
 import { memo } from 'react';
 import type { EdgeWeight } from '@/domain/types';
 
@@ -133,6 +134,42 @@ export const AssumptionBadge = memo(function AssumptionBadge({
         aria-label={`${count} assumption${count === 1 ? '' : 's'} on this edge. Open the Assumption Well.`}
       >
         A{count > 1 ? count : ''}
+      </button>
+    </EdgeLabelRenderer>
+  );
+});
+
+/**
+ * Open-comment badge — below-left of the edge label. Count of OPEN
+ * (unresolved) top-level review comments anchored to this edge; clicking
+ * selects the edge and opens the Comments panel. A real button (like the
+ * assumption badge), so `stopPropagation` keeps the pane from clearing the
+ * selection.
+ */
+export const CommentBadge = memo(function CommentBadge({
+  labelX,
+  labelY,
+  edgeId,
+  count,
+  onOpen,
+}: Anchor & { edgeId: string; count: number; onOpen: () => void }) {
+  return (
+    <EdgeLabelRenderer>
+      <button
+        type="button"
+        data-component="edge-comment-badge"
+        data-edge-id={edgeId}
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpen();
+        }}
+        className="nodrag nopan pointer-events-auto absolute flex cursor-pointer select-none items-center gap-0.5 rounded-full border border-indigo-300 bg-indigo-50 px-1.5 font-semibold text-[10px] text-indigo-700 shadow-xs transition hover:bg-indigo-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-300 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
+        style={{ transform: `translate(-50%, -50%) translate(${labelX - 16}px, ${labelY + 14}px)` }}
+        title={`${count} open comment${count === 1 ? '' : 's'} on this edge — click to review`}
+        aria-label={`${count} open comment${count === 1 ? '' : 's'} on this edge. Open the Comments panel.`}
+      >
+        <MessageSquare className="h-2.5 w-2.5" aria-hidden />
+        {count}
       </button>
     </EdgeLabelRenderer>
   );

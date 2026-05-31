@@ -41,6 +41,11 @@ export type TPNodeData = {
    *  the entity is an Action with a precondition slot (status !==
    *  `'na'`); absent otherwise. The full readout lives in the inspector. */
   eligibility?: Exclude<EligibilityStatus, 'na'>;
+  /** Number of OPEN (unresolved) top-level review comments anchored to
+   *  this entity. Stamped by `useGraphNodeEmission` from
+   *  `openCommentCountsByAnchor(doc.comments)`; rendered as a clickable
+   *  speech-bubble badge that opens the Comments panel. Omitted when 0. */
+  openCommentCount?: number;
 };
 
 export type TPEdgeData = {
@@ -66,6 +71,12 @@ export type TPEdgeData = {
    *  Omitted in Phase A — the hook returns an empty map so every edge
    *  falls through to the existing bezier behavior. */
   route?: EdgeRoute;
+  /** Number of OPEN (unresolved) top-level review comments anchored to
+   *  this edge. Stamped by `useGraphEdgeEmission` from
+   *  `openCommentCountsByAnchor(doc.comments)`; rendered as a clickable
+   *  speech-bubble badge that opens the Comments panel. Real (non-
+   *  aggregated) edges only; omitted when 0. */
+  openCommentCount?: number;
 };
 
 export type TPGroupNodeData = {

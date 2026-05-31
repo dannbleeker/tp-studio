@@ -1,6 +1,6 @@
 import { MarkerType } from '@xyflow/react';
 import { useMemo } from 'react';
-import { edgesArray } from '@/domain/graph';
+import { edgesArray, openCommentCountsByAnchor } from '@/domain/graph';
 import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
 import type { TPEdge } from '../edges/flow-types';
@@ -54,6 +54,10 @@ export const useGraphEdgeEmission = (
           assumptionCountByEdge.set(a.edgeId, (assumptionCountByEdge.get(a.edgeId) ?? 0) + 1);
       }
     }
+
+    // Open-comment counts keyed by edge id — stamped into `data` below so
+    // TPEdge reads an O(1) count instead of scanning `doc.comments`.
+    const { byEdge: commentCountByEdge } = openCommentCountsByAnchor(doc.comments);
 
     type Bucket = {
       sourceId: string;
@@ -110,6 +114,10 @@ export const useGraphEdgeEmission = (
             b.sample.assumptionIds?.length ?? 0,
             assumptionCountByEdge.get(b.sample.id) ?? 0
           );
+      // Open-comment count — real (non-aggregated) edges only, same
+      // rationale as assumptions: a synthetic `agg:` edge has no single
+      // underlying edge id to badge.
+      const openCommentCount = isAggregated ? 0 : (commentCountByEdge.get(b.sample.id) ?? 0);
       // Session 135 — accessible name for screen readers. Source/target
       // are already remapped to VISIBLE node ids (real entities or
       // collapsed-root groups), so look up the user-facing title from
@@ -141,6 +149,7 @@ export const useGraphEdgeEmission = (
           ...(xorGroupId ? { xorGroupId } : {}),
           ...(b.count > 1 ? { aggregateCount: b.count } : {}),
           ...(assumptionCount > 0 ? { assumptionCount } : {}),
+          ...(openCommentCount > 0 ? { openCommentCount } : {}),
           ...(route ? { route } : {}),
         },
         ...(isJunctorEdge

@@ -30,7 +30,7 @@
  * the palette once the verb earns its keep.
  */
 
-import type { LucideIcon } from 'lucide-react';
+import { type LucideIcon, MessageSquarePlus } from 'lucide-react';
 import type { ContextMenuTarget, DocumentStore, Selection } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { verbsForSingleEntity } from './selectionVerbsSingleEntity';
@@ -208,6 +208,18 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           shortLabel: 'Splice',
           writes: true,
           paletteCommandId: 'splice-into-edge',
+        },
+        // Comments — annotate the selected edge. `writes: true` for toolbar
+        // visibility only (hidden under Browse Lock for a clean read-only
+        // toolbar); commenting stays reachable via the panel / palette. See
+        // the single-entity builder for the full rationale.
+        {
+          id: 'add-comment-on-selection',
+          label: 'Add comment',
+          shortLabel: 'Comment',
+          icon: MessageSquarePlus,
+          writes: true,
+          run: (s) => s.openCommentsPanel(),
         },
         {
           id: 'confirm-delete-selection',

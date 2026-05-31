@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Pin } from 'lucide-react';
+import { MessageSquare, Pin } from 'lucide-react';
 import { memo } from 'react';
 import type { EligibilityStatus } from '@/domain/actionEligibility';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
@@ -278,6 +278,38 @@ export const EligibilityBadge = memo(function EligibilityBadge({
     >
       {meta.glyph}
     </span>
+  );
+});
+
+/**
+ * Open-comment badge — top-left corner. Surfaces the count of OPEN
+ * (unresolved) top-level review comments anchored to this entity, and
+ * opens the Comments panel on click. Interactive (unlike the pure-render
+ * corner badges), so `pointer-events` stay on; `stopPropagation` keeps the
+ * click from also toggling node selection. Only the rare TT-action step
+ * badge shares this corner — comments-on-a-numbered-action is an edge case.
+ */
+export const CommentCountBadge = memo(function CommentCountBadge({
+  count,
+  onOpen,
+}: {
+  count: number;
+  onOpen: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen();
+      }}
+      className="absolute -top-1.5 -left-1.5 flex items-center gap-0.5 rounded-full border border-indigo-300 bg-indigo-50 px-1.5 py-0.5 font-semibold text-[10px] text-indigo-700 shadow-xs transition hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
+      aria-label={`${count} open comment${count === 1 ? '' : 's'} — open the Comments panel`}
+      title={`${count} open comment${count === 1 ? '' : 's'} — click to review`}
+    >
+      <MessageSquare className="h-2.5 w-2.5" aria-hidden />
+      {count}
+    </button>
   );
 });
 

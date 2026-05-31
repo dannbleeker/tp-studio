@@ -25,6 +25,7 @@ import {
   AggregateBadge,
   AssumptionBadge,
   BackEdgeBadge,
+  CommentBadge,
   DescriptionBadge,
   EdgeInlineLabel,
   FallbackLabel,
@@ -159,6 +160,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // change, O(E·M)). `useGraphEdgeEmission` precomputes it once and stamps
   // it into `data.assumptionCount`, read below as an O(1) prop.
   const assumptionCount = props.data?.assumptionCount ?? 0;
+  const openCommentCount = props.data?.openCommentCount ?? 0;
   const edgeView = useDocumentStore(
     useShallow((s) => {
       const doc = currentDoc(s);
@@ -532,6 +534,18 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           onOpen={() => {
             selectEdge(props.id);
             setECInspectorTab('inspector');
+          }}
+        />
+      )}
+      {openCommentCount > 0 && (
+        <CommentBadge
+          labelX={labelX}
+          labelY={labelY}
+          edgeId={props.id}
+          count={openCommentCount}
+          onOpen={() => {
+            selectEdge(props.id);
+            useDocumentStore.getState().openCommentsPanel();
           }}
         />
       )}

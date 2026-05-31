@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { actionEligibility } from '@/domain/actionEligibility';
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { rootCauseReachCounts, udeReachCounts } from '@/domain/coreDriver';
+import { openCommentCountsByAnchor } from '@/domain/graph';
 import { descendantEntityCount } from '@/domain/groups';
 import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisions';
 import { effectiveState } from '@/domain/statePropagation';
@@ -48,6 +49,10 @@ export const useGraphNodeEmission = (
   // (The functions are also WeakMap-cached internally, Perf #20.)
   const reachCounts = useMemo(() => udeReachCounts(doc), [doc]);
   const reverseReachCounts = useMemo(() => rootCauseReachCounts(doc), [doc]);
+  // Open-comment counts per entity, keyed on `doc.comments` so the badge
+  // tracks comment add/resolve/delete but stays off the drag path (the
+  // big emission memo re-runs on every `positions` change).
+  const commentCounts = useMemo(() => openCommentCountsByAnchor(doc.comments), [doc.comments]);
 
   return useMemo(() => {
     const {
@@ -140,6 +145,7 @@ export const useGraphNodeEmission = (
       const hidden = hiddenCountByCollapser.get(entity.id);
       const reach = reachCounts.get(entity.id);
       const reverseReach = reverseReachCounts.get(entity.id);
+      const openComments = commentCounts.byEntity.get(entity.id);
       // H2: resolve diff status against the compare revision when active.
       // 'removed' entities live only in the snapshot, so we skip stamping
       // here — the dialog/overlay surfaces them separately.
@@ -195,6 +201,7 @@ export const useGraphNodeEmission = (
           ...(hidden && hidden > 0 ? { hiddenDescendantCount: hidden } : {}),
           ...(reach && reach > 0 ? { udeReachCount: reach } : {}),
           ...(reverseReach && reverseReach > 0 ? { rootCauseReachCount: reverseReach } : {}),
+          ...(openComments && openComments > 0 ? { openCommentCount: openComments } : {}),
           ...(diffStatus ? { diffStatus } : {}),
           ...(effState !== 'unknown' ? { effectiveState: effState } : {}),
           ...(speculated ? { speculated: true } : {}),
@@ -234,6 +241,7 @@ export const useGraphNodeEmission = (
     speculationOverlay,
     reachCounts,
     reverseReachCounts,
+    commentCounts,
     showActionEligibility,
   ]);
 };

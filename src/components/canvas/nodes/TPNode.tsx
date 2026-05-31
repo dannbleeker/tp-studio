@@ -35,6 +35,7 @@ import { StFacetRow } from './StFacetRow';
 import {
   AnnotationBadge,
   CollapsedExpandButton,
+  CommentCountBadge,
   EligibilityBadge,
   LocusPill,
   PinBadge,
@@ -49,6 +50,7 @@ import {
 
 function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
   const { entity, hiddenDescendantCount, udeReachCount, rootCauseReachCount, diffStatus } = data;
+  const openCommentCount = data.openCommentCount;
   // Session 135 / spec gap #4 — effective state for the canvas badge
   // (stamped by emission; folds in the speculation overlay when active).
   const effectiveState = data.effectiveState;
@@ -400,6 +402,16 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       {showReverseReachBadges &&
         typeof rootCauseReachCount === 'number' &&
         rootCauseReachCount > 0 && <ReachReverseBadge count={rootCauseReachCount} />}
+      {typeof openCommentCount === 'number' && openCommentCount > 0 && (
+        <CommentCountBadge
+          count={openCommentCount}
+          onOpen={() => {
+            const st = useDocumentStore.getState();
+            st.selectEntity(entity.id);
+            st.openCommentsPanel();
+          }}
+        />
+      )}
       {isCollapsed && (
         <CollapsedExpandButton
           entity={entity}

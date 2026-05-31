@@ -557,6 +557,15 @@ export const validateRecord = <T>(
   if (!isObject(raw)) throw invalid(label, 'must be an object');
   const out: Record<string, T> = {};
   for (const [k, v] of Object.entries(raw)) {
+    // Defense-in-depth (security pass, Session 140): never treat a reserved
+    // prototype key as a record entry. A JSON-parsed `{"__proto__": …}` carries
+    // `__proto__` as an OWN enumerable key, and `out["__proto__"] = …` would
+    // invoke the inherited prototype setter. Reject any record (entities,
+    // edges, assumptions, comments, groups, …) carrying such a key — a
+    // legitimate id is never `__proto__` / `constructor` / `prototype`.
+    if (k === '__proto__' || k === 'constructor' || k === 'prototype') {
+      throw invalid(`${label}["${k}"]`, 'reserved key is not allowed');
+    }
     out[k] = validator(v, `${label}["${k}"]`);
   }
   return out;

@@ -92,6 +92,7 @@ describe('verbsForBranch', () => {
     const ids = verbs.map((v) => v.id);
     expect(ids).toContain('add-successor');
     expect(ids).toContain('add-predecessor');
+    expect(ids).toContain('add-comment-on-selection');
     expect(ids).toContain('confirm-delete-selection');
   });
 
@@ -283,6 +284,7 @@ describe('verbsForBranch', () => {
     const ids = verbs.map((v) => v.id);
     expect(ids).toContain('reverse-edge');
     expect(ids).toContain('splice-into-edge');
+    expect(ids).toContain('add-comment-on-selection');
     expect(ids).toContain('confirm-delete-selection');
   });
 

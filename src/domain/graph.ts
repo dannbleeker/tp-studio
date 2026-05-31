@@ -602,3 +602,29 @@ export const pruneComments = (
   const changed = Object.keys(next).length !== Object.keys(comments).length;
   return changed ? next : comments;
 };
+
+/**
+ * Count OPEN top-level review comments per anchor — used by the canvas to
+ * stamp a comment-count badge on entities / edges. "Open" = not
+ * `resolved`; "top-level" = not a reply (replies fold into their parent
+ * thread). Document-anchored comments aren't counted here (they have no
+ * node/edge to badge). Returns empty maps when the doc has no comments.
+ */
+export const openCommentCountsByAnchor = (
+  comments: Record<string, Comment> | undefined
+): { byEntity: Map<string, number>; byEdge: Map<string, number> } => {
+  const byEntity = new Map<string, number>();
+  const byEdge = new Map<string, number>();
+  if (comments) {
+    for (const c of Object.values(comments)) {
+      if (c.parentId !== undefined) continue;
+      if (c.resolved === true) continue;
+      if (c.anchor.kind === 'entity') {
+        byEntity.set(c.anchor.entityId, (byEntity.get(c.anchor.entityId) ?? 0) + 1);
+      } else if (c.anchor.kind === 'edge') {
+        byEdge.set(c.anchor.edgeId, (byEdge.get(c.anchor.edgeId) ?? 0) + 1);
+      }
+    }
+  }
+  return { byEntity, byEdge };
+};

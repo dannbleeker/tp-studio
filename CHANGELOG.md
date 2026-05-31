@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 140 — Review comments: surfacing (fast-follows)
+
+Three additive fast-follows on the Session-139 comment layer — making existing
+comments visible and reachable on the canvas:
+
+- **Comment-count badges** on entities and edges — a clickable indigo
+  speech-bubble pill showing the number of OPEN (unresolved) top-level comments
+  anchored there; clicking selects the anchor and opens the Comments panel.
+  Counts are computed once per doc change (`openCommentCountsByAnchor` in
+  `graph.ts`) and stamped onto node/edge `data` via the graph-view emission
+  pipeline, so the badge is reactive and stays off the drag path. Appears only
+  when an anchor has open comments — comment-free diagrams stay clean.
+- **"Add comment" selection-toolbar verb** on single-entity / single-edge
+  selections — opens the panel anchored to the selection. Deliberately not a
+  write action, so it stays available under Browse Lock (annotating a read-only
+  shared doc is a real workflow).
+- **Jump-to-edge centers the viewport** — clicking an edge-anchored thread's
+  chip now centers the canvas on the edge midpoint (entity anchors already
+  centered; edges previously only selected).
+
+Free-floating canvas-pin comments (a point anchor with its own placement UX)
+remain deferred — see NEXT_STEPS.
+
 ## Session 139 — Review comments
 
 A lightweight, local-first review-comment layer so a diagram can be marked up

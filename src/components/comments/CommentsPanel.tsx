@@ -109,6 +109,21 @@ export function CommentsPanel() {
       }
     } else if (anchor.kind === 'edge') {
       selectEdge(anchor.edgeId);
+      const edge = doc.edges[anchor.edgeId];
+      const inst = getCanvasInstance();
+      if (edge && inst) {
+        const a = inst.getNode(edge.sourceId);
+        const b = inst.getNode(edge.targetId);
+        if (a && b) {
+          // Center between the two endpoints (+ node half-size to aim at
+          // the node centers rather than their top-left corners).
+          const cx = (a.position.x + b.position.x) / 2 + 140;
+          const cy = (a.position.y + b.position.y) / 2 + 40;
+          window.requestAnimationFrame(() => {
+            inst.setCenter(cx, cy, { zoom: inst.getZoom(), duration: 250 });
+          });
+        }
+      }
     }
     // 'document' anchors have nothing to jump to.
   };
