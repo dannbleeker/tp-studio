@@ -25,6 +25,26 @@ Send-to-Kindle has accepted `.epub` natively since 2022. EPUB reflows on any Kin
 1. Go to <https://www.amazon.com/sendtokindle> (or use the desktop/mobile Send-to-Kindle app).
 2. Drag in `Causal-Thinking-with-TP-Studio.epub`, pick the target device, send.
 
+**Option C — automated from CI (the `[kindle]` flag) — Session 151:**
+
+The `Rebuild book artifacts` workflow can email the freshly-built EPUB to your Kindle whenever you want a fresh copy. One-time setup, then it's just a commit flag.
+
+*One-time setup (you, not Claude — these involve credentials):*
+1. In Amazon → *Personal Document Settings*: note your `@kindle.com` address, and add the email you'll send **from** to the *Approved Personal Document E-mail List*.
+2. Add GitHub repo secrets (*Settings → Secrets and variables → Actions*):
+   - `KINDLE_TO` — your `@kindle.com` address.
+   - `SMTP_USER` — the approved sender email (e.g. a Gmail address).
+   - `SMTP_PASS` — that account's password. For Gmail use a 16-char **App Password** (Google Account → Security → App passwords), *not* your login password.
+   - *(optional)* `SMTP_HOST` / `SMTP_PORT` — default to Gmail SSL (`smtp.gmail.com` : `465`); set these only for a non-Gmail provider.
+
+*Triggering a send:*
+- Put `[kindle]` anywhere in a commit message that also changes the book (`docs/guide/*.md` etc.) — the workflow rebuilds, then emails the EPUB. Mirrors the `[skip pdf]` convention.
+- Or send the latest as-is without editing the book: *Actions → Rebuild book artifacts → Run workflow*, tick **send_to_kindle**.
+
+*Notes:*
+- Send-to-Kindle **adds** a new document each time (it never replaces), so this is deliberately opt-in. The attachment is date-stamped (`Causal-Thinking-with-TP-Studio-YYYY-MM-DD.epub`) so the newest is obvious; delete old copies from *Manage Your Content* occasionally.
+- It skips silently until `KINDLE_TO` is set, so the flag is a harmless no-op before setup.
+
 ## What to verify on the device
 
 | ✓ | Check | Expected |

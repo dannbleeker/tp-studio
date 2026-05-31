@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 151 — Opt-in Send-to-Kindle on book updates
+
+The `Rebuild book artifacts` workflow already rebuilds the EPUB on every book
+change; it now also **emails that EPUB to a Kindle** on demand. Trigger: a
+`[kindle]` flag in the commit message (mirrors `[skip pdf]`), or a manual run
+with the new `send_to_kindle` input ticked. Deliberately **opt-in**, not
+every-push — Send-to-Kindle *adds* a personal document each time (never
+replaces), so auto-sending every edit would pile up duplicates; the attachment
+is date-stamped so the newest is obvious. Skips silently until the secrets are
+set, so the flag is a no-op before setup.
+
+Owner setup (one-time): an Amazon *approved sender* + repo secrets `KINDLE_TO` /
+`SMTP_USER` / `SMTP_PASS` (optional `SMTP_HOST` / `SMTP_PORT`, default Gmail SSL).
+Steps in [docs/KINDLE_VERIFICATION.md](docs/KINDLE_VERIFICATION.md) (Option C).
+Uses `dawidd6/action-send-mail`; no app/runtime code touched.
+
 ## Session 150 — TP completeness gap analysis (parked, no code change)
 
 Reviewed Oded Cohen's *TOC Thinking Processes — Basics* (TOCICO 2014) and mapped
