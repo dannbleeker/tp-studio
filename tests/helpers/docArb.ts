@@ -6,7 +6,7 @@
  * needed an arbitrary doc.
  *
  * Generators here produce **structurally well-formed** docs (deduped
- * ids, branded EntityId / EdgeId types, schemaVersion = 8) suitable
+ * ids, branded EntityId / EdgeId types, schemaVersion = 9) suitable
  * for downstream PB tests that want to assert "for any valid doc, X
  * holds." They do NOT exercise pathological shapes — e.g. assumptions
  * map, custom entity classes, groups, layout config. Add field-
@@ -142,7 +142,7 @@ export const docArb = fc
           nextAnnotationNumber: maxAnnotation + 1,
           createdAt: 1_700_000_000_000,
           updatedAt: 1_700_000_000_000,
-          schemaVersion: 8,
+          schemaVersion: 9,
         };
       });
   });

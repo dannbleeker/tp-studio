@@ -55,7 +55,7 @@ describe('schema migrations round-trip', () => {
 
     const doc = importFromJSON(JSON.stringify(raw));
 
-    expect(doc.schemaVersion).toBe(8);
+    expect(doc.schemaVersion).toBe(9);
     expect(doc.groups).toEqual({});
     expect(doc.nextAnnotationNumber).toBe(2); // 1 entity → next is 2
     // v1→v2 assigns annotationNumber 1 to the single entity.
@@ -83,7 +83,7 @@ describe('schema migrations round-trip', () => {
 
     const doc = importFromJSON(JSON.stringify(raw));
 
-    expect(doc.schemaVersion).toBe(8);
+    expect(doc.schemaVersion).toBe(9);
     expect(doc.groups).toEqual({});
     expect(doc.nextAnnotationNumber).toBe(2);
     expect(Object.values(doc.entities)[0]?.annotationNumber).toBe(1);
@@ -105,7 +105,7 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v3));
-    expect(doc.schemaVersion).toBe(8);
+    expect(doc.schemaVersion).toBe(9);
   });
 
   it('imports a v4 fixture → v5 doc (single version bump)', () => {
@@ -124,7 +124,7 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v4));
-    expect(doc.schemaVersion).toBe(8);
+    expect(doc.schemaVersion).toBe(9);
   });
 
   it('rejects a future-version document with a clear error', () => {
@@ -159,7 +159,7 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v5));
-    expect(doc.schemaVersion).toBe(8);
+    expect(doc.schemaVersion).toBe(9);
     // v6 added these fields but only as optional; migration doesn't
     // populate empty maps in the doc (they remain undefined).
     expect(doc.customEntityClasses).toBeUndefined();
@@ -198,7 +198,7 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v6));
-    expect(doc.schemaVersion).toBe(8);
+    expect(doc.schemaVersion).toBe(9);
     expect(doc.customEntityClasses?.['risk-event']?.label).toBe('Risk Event');
     const entity = Object.values(doc.entities)[0];
     expect(entity?.attributes?.severity).toEqual({ kind: 'int', value: 8 });
@@ -272,7 +272,7 @@ describe('schema migrations round-trip', () => {
       },
     };
     const doc = importFromJSON(JSON.stringify(v6ec));
-    expect(doc.schemaVersion).toBe(8);
+    expect(doc.schemaVersion).toBe(9);
     expect(doc.entities.a?.ecSlot).toBe('a');
     expect(doc.entities.b?.ecSlot).toBe('b');
     expect(doc.entities.c?.ecSlot).toBe('c');
@@ -303,7 +303,7 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v7));
-    expect(doc.schemaVersion).toBe(8);
+    expect(doc.schemaVersion).toBe(9);
     expect(doc.ecVerbalStyle).toBe('twoSided');
   });
 });

@@ -4,6 +4,32 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ---
 
+## Review comments (Session 139) — fast-follow
+
+The comment layer shipped scoped to the panel + palette/TopBar entry points. Each
+of these was deliberately deferred to keep v1 small — they're additive on top of
+the existing `doc.comments` data, no schema change needed:
+
+- **Comment-count badges on nodes / edges** — a small bubble showing the number of
+  open comments on an entity/edge, click-to-open the panel filtered to that anchor.
+  The data is already there (`pruneComments` keeps anchors honest); this is a
+  canvas-overlay + per-anchor count selector.
+- **Selection-toolbar verb** — an "Add comment" action on the floating selection
+  toolbar so commenting is reachable without opening the panel first.
+- **Jump-to-edge centers the viewport** — entity anchors center on the node; edge
+  anchors currently only select (edges have no node position). Compute the edge
+  midpoint from its endpoints and `setCenter` there.
+- **Free-floating canvas-position comments** — anchor a comment to an `{x,y}` point
+  rather than an entity/edge (a sticky-note pin). Needs a new anchor variant +
+  drag handling; the discriminated `CommentAnchor` union is ready for it.
+- **Browse-Lock interaction** — comments are intentionally *not* write-guarded
+  (annotating a read-only shared doc is useful). Revisit if a reviewer wants a
+  truly read-only comment view.
+- **Real-time / multi-user** — out of scope (major gap #2). Comments are
+  local-first; a future Yjs layer would sync them alongside the rest of the doc.
+
+---
+
 ## Code-inspection follow-ups (Session 138) — deferred
 
 The High / Low / Medium inspection batches all shipped (see CHANGELOG

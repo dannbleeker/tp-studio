@@ -100,6 +100,6 @@ export const buildPatternGoalTreeTrustworthyMl = (): TPDocument => {
     nextAnnotationNumber: 10,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 8,
+    schemaVersion: 9,
   };
 };

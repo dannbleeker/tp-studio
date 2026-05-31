@@ -17,6 +17,7 @@ A practitioner's walkthrough. Assumes familiarity with the Thinking Process — 
 9. [AND groups (sufficient sets of causes)](#and-groups)
 7. [Assumptions on edges](#assumptions-on-edges)
 8. [The CLR panel](#the-clr-panel)
+9. [Review comments](#review-comments)
 9. [Future Reality Trees](#future-reality-trees)
 10. [Saving, exporting, and sharing](#saving-exporting-and-sharing)
 11. [Templates library](#templates-library)
@@ -461,6 +462,26 @@ Whenever you select an entity or edge, the inspector renders any open CLR concer
 Hover a warning to reveal the Resolve / Reopen button. Resolution persists in the document and survives JSON export/import.
 
 You can also see a total count at any time: `Cmd/Ctrl+K` → **Run validation** surfaces a toast with the open / resolved breakdown.
+
+## Review comments
+
+Mark up a diagram with questions and notes — for your future self or for a colleague reviewing the same file. Comments live **inside the document**, so they travel with a JSON export, a share link, or an HTML export; nothing is sent to a server.
+
+**Open the panel.** Click the speech-bubble icon in the top bar (or `Cmd/Ctrl+K` → **Comments**). It slides in from the right, over the inspector.
+
+**Write a comment.**
+
+1. Optionally **select an entity or edge** first — the composer anchors the comment to it ("Commenting on _Root cause_"). With nothing selected (or a multi-selection), it anchors to the whole diagram. A checkbox lets you switch an anchored comment back to the whole diagram.
+2. Set your name once in the **"Signing as"** field — it's remembered for next time (blank comments are signed "Anonymous"). This is a local label, not a login.
+3. Type your note and click **Comment** (or press `Cmd/Ctrl+Enter`).
+
+**Work a thread.** Each comment shows **Reply** (one level of replies), **Resolve** (and **Reopen**), and — on hover — **Edit** / **Delete**. Deleting a comment that has replies removes the whole thread (with a confirm).
+
+**Find what a comment is about.** Click the anchor chip at the top of a thread to select that entity/edge and center the canvas on it.
+
+**Filter.** The **Open / Resolved / All** tabs scope the list; the panel header shows the open count. Resolving a comment greys it out and moves it out of the default Open view.
+
+Comments anchored to an entity or edge are automatically removed if you delete that entity/edge; whole-diagram comments always stay. Everything is undoable with `Cmd/Ctrl+Z`.
 
 ## Future Reality Trees
 

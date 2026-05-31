@@ -28,6 +28,7 @@ export type {
   WarningAction,
   WarningTarget,
 } from './clr';
+export type { Comment, CommentAnchor } from './comment';
 export type { CustomEntityClass } from './customClass';
 export type { LayoutConfig, SystemScope, TPDocument } from './document';
 export type { Edge, EdgeKind, EdgeWeight } from './edge';

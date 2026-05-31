@@ -76,6 +76,7 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     edgePalette:
       raw?.edgePalette && VALID_PALETTES.has(raw.edgePalette) ? raw.edgePalette : 'default',
     browseLocked: raw?.browseLocked === true,
+    commentAuthorName: typeof raw?.commentAuthorName === 'string' ? raw.commentAuthorName : '',
     showAnnotationNumbers: raw?.showAnnotationNumbers === true,
     showEntityIds: raw?.showEntityIds === true,
     // Reach badges OFF by default — they're meaningful only on diagrams

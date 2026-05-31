@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { createEdge, createEntity } from '@/domain/factory';
-import { hasEdge, pruneAssumptions } from '@/domain/graph';
+import { hasEdge, pruneAssumptions, pruneComments } from '@/domain/graph';
 import type { AttrValue, Edge, EdgeWeight, Entity, Patch } from '@/domain/types';
 import type { RootStore } from '../types';
 import { edgePatch, makeApplyDocChange, touch } from './docMutate';
@@ -146,10 +146,12 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
         // Drop assumptions that annotated the now-removed edge (otherwise the
         // record dangles with an edgeId that resolves to nothing).
         const assumptions = pruneAssumptions(prev.assumptions, rest, prev.entities);
+        const comments = pruneComments(prev.comments, rest, prev.entities);
         return touch({
           ...prev,
           edges: rest,
           ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
+          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
         });
       });
       set({ selection: { kind: 'none' } });

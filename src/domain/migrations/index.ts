@@ -20,11 +20,12 @@ import { v4ToV5 } from './v4ToV5';
 import { v5ToV6 } from './v5ToV6';
 import { v6ToV7 } from './v6ToV7';
 import { v7ToV8 } from './v7ToV8';
+import { v8ToV9 } from './v8ToV9';
 
 export type { Migration, RawDocument, SchemaVersion } from './shared';
 
 /** Bump this constant when a new migration is registered. */
-export const CURRENT_SCHEMA_VERSION: SchemaVersion = 8;
+export const CURRENT_SCHEMA_VERSION: SchemaVersion = 9;
 
 /** Production migration registry. Populated in version order. */
 export const MIGRATIONS: readonly Migration[] = [
@@ -35,6 +36,7 @@ export const MIGRATIONS: readonly Migration[] = [
   v5ToV6,
   v6ToV7,
   v7ToV8,
+  v8ToV9,
 ];
 
 const readVersion = (doc: RawDocument): SchemaVersion => {

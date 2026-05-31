@@ -97,6 +97,6 @@ export const buildPatternTTFeatureRollout = (): TPDocument => {
     nextAnnotationNumber: 12,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 8,
+    schemaVersion: 9,
   };
 };

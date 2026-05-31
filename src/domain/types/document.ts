@@ -5,6 +5,7 @@
 
 import type { Assumption } from './assumption';
 import type { DiagramType } from './clr';
+import type { Comment } from './comment';
 import type { CustomEntityClass } from './customClass';
 import type { Edge } from './edge';
 import type { Entity } from './entity';
@@ -110,7 +111,13 @@ export type TPDocument = {
    *  diagram types. Stored on the doc so the choice persists across
    *  reloads. */
   ecVerbalStyle?: 'neutral' | 'twoSided';
+  /** Review comments — async, in-document feedback anchored to an entity, an
+   *  edge, or the document. Keyed by comment id. Stored in the doc so they
+   *  round-trip through JSON export / share-links / the self-contained HTML
+   *  export. Empty / missing means "no comments" and the field is omitted from
+   *  JSON on persist. See {@link Comment}. */
+  comments?: Record<string, Comment>;
   createdAt: number;
   updatedAt: number;
-  schemaVersion: 8;
+  schemaVersion: 9;
 };

@@ -105,6 +105,12 @@ export type DialogsSlice = {
 
   /** H1 — revision-history panel visibility. */
   historyPanelOpen: boolean;
+  /** Review-comments side panel visibility. Shares the right-edge slot
+   *  with the history panel + inspector (opening one closes history), but
+   *  — unlike history — opening comments does NOT clear the selection: the
+   *  composer offers to anchor a new comment to whatever entity/edge is
+   *  currently selected, so the selection must survive the panel opening. */
+  commentsPanelOpen: boolean;
   /** H2 — when set, the canvas is in visual-diff mode and entities/edges
    *  are tinted by their diff status against this revision (added /
    *  removed / changed / unchanged). `null` = not in compare mode. */
@@ -201,6 +207,12 @@ export type DialogsSlice = {
   closeHistoryPanel: () => void;
   toggleHistoryPanel: () => void;
 
+  /** Review-comments panel control. Opening comments closes the history
+   *  panel (shared right-edge slot) but leaves the selection intact. */
+  openCommentsPanel: () => void;
+  closeCommentsPanel: () => void;
+  toggleCommentsPanel: () => void;
+
   /** Session 133 — open / close the all-at-once verbalisation dialog. */
   openReadAllAtOnce: () => void;
   closeReadAllAtOnce: () => void;
@@ -248,6 +260,7 @@ export type DialogsDataKeys =
   | 'whiteboardPasteOpen'
   | 'patternLibraryOpen'
   | 'historyPanelOpen'
+  | 'commentsPanelOpen'
   | 'compareRevisionId'
   | 'sideBySideRevisionId';
 
@@ -272,6 +285,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   whiteboardPasteOpen: false,
   patternLibraryOpen: null,
   historyPanelOpen: false,
+  commentsPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
 });
@@ -297,6 +311,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   whiteboardPasteOpen: false,
   patternLibraryOpen: null,
   historyPanelOpen: false,
+  commentsPanelOpen: false,
   compareRevisionId: null,
   sideBySideRevisionId: null,
 
@@ -368,11 +383,25 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   // for the same z-20 column. Picking something on the canvas while
   // history is open closes history (Canvas's onSelectionChange will call
   // `closeHistoryPanel` once a selection lands).
-  openHistoryPanel: () => set({ historyPanelOpen: true, selection: { kind: 'none' } }),
+  openHistoryPanel: () =>
+    set({ historyPanelOpen: true, commentsPanelOpen: false, selection: { kind: 'none' } }),
   closeHistoryPanel: () => set({ historyPanelOpen: false }),
   toggleHistoryPanel: () => {
     const next = !get().historyPanelOpen;
-    set({ historyPanelOpen: next, ...(next ? { selection: { kind: 'none' } } : {}) });
+    set({
+      historyPanelOpen: next,
+      ...(next ? { commentsPanelOpen: false, selection: { kind: 'none' } } : {}),
+    });
+  },
+
+  // Comments share the right-edge slot with history, so opening comments
+  // closes history. Selection is deliberately preserved (the composer
+  // anchors new comments to it).
+  openCommentsPanel: () => set({ commentsPanelOpen: true, historyPanelOpen: false }),
+  closeCommentsPanel: () => set({ commentsPanelOpen: false }),
+  toggleCommentsPanel: () => {
+    const next = !get().commentsPanelOpen;
+    set({ commentsPanelOpen: next, ...(next ? { historyPanelOpen: false } : {}) });
   },
 
   openReadAllAtOnce: () => set({ readAllAtOnceOpen: true }),

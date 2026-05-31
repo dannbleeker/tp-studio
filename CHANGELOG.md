@@ -2,6 +2,46 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 139 — Review comments
+
+A lightweight, local-first review-comment layer so a diagram can be marked up
+with questions and notes without exporting it elsewhere. Closes the
+"review-comments" feature gap from the TOC-tooling comparison.
+
+**Model**
+- New first-class `Comment` record on the document (`src/domain/types/comment.ts`):
+  an `id`, a discriminated `anchor` (entity / edge / whole-document), plain-text
+  `body`, local `author` name, optional `parentId` (one level of replies),
+  optional `resolved` flag, and `createdAt` / `updatedAt`. Stored as an optional
+  `comments?: Record<string, Comment>` map — emitted only when non-empty, so it
+  round-trips for free through JSON export/import, share links, and HTML export.
+- Schema bumped **v8 → v9** with an additive migration (`v8ToV9.ts`); the
+  persistence validator (`validateComment`) rebuilds the anchor to strip extras
+  and rejects malformed timestamps / bodies.
+- Comments are **pruned on delete** (`pruneComments`): a comment anchored to a
+  deleted entity or edge is dropped (and so are its orphaned replies), while
+  document-level comments always survive. Wired into all three delete paths.
+
+**Store**
+- `addComment` / `replyToComment` / `editComment` / `deleteComment` (cascades
+  replies) / `resolveComment` — all undoable + persisted via `applyDocChange`.
+  Author is stamped from a new `commentAuthorName` preference (blank →
+  "Anonymous"), fully wired through `StoredPrefs` / `prefs` / `preferencesSlice`.
+
+**UI**
+- New right-edge **Comments panel** (`src/components/comments/`): a composer that
+  anchors to the current selection (single entity/edge) or the whole diagram, an
+  inline "signing as" name field, an Open / Resolved / All filter, and per-thread
+  reply / resolve / edit / delete with a jump-to-anchor chip that selects + centers
+  the target on the canvas. Shares the inspector/history slot one z-layer up so a
+  commented entity can stay selected underneath; joins the Esc cascade.
+- Entry points: a TopBar comments toggle (sm+) beside History, palette commands
+  **Comments** + **Add comment on selection** (Review group). Comment-count
+  badges on nodes/edges and a selection-toolbar verb are deliberately deferred
+  (see NEXT_STEPS).
+- Bodies render as plain text (React-escaped), so a comment like `<script>` shows
+  literally.
+
 ## Session 138 — Code-inspection hardening (Medium-severity batch)
 
 Lands the Medium-severity inspection findings; three turned out to be non-issues

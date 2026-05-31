@@ -223,8 +223,8 @@ export function useGlobalShortcuts() {
       //   confirmDialog (synchronously blocking) →
       //   quickCapture → diagramPicker → exportPicker → templatePicker →
       //   printPreview → docSettings → settings → search → about → help →
-      //   palette → sideBySide compare → visual-diff compare → history →
-      //   editing (let the textarea cancel its own edit) → hoist →
+      //   palette → sideBySide compare → visual-diff compare → comments →
+      //   history → editing (let the textarea cancel its own edit) → hoist →
       //   clearSelection.
       //
       // Session 111 — `about` inserted just above `help` since the Help
@@ -289,6 +289,10 @@ export function useGlobalShortcuts() {
         }
         if (state.compareRevisionId !== null) {
           state.closeCompare();
+          return;
+        }
+        if (state.commentsPanelOpen) {
+          state.closeCommentsPanel();
           return;
         }
         if (state.historyPanelOpen) {

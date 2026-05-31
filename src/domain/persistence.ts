@@ -10,6 +10,7 @@ import { isDiagramType, isObject, isTrueMap } from './guards';
 import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from './migrations';
 import {
   validateAssumption,
+  validateComment,
   validateCustomEntityClasses,
   validateEdge,
   validateEntity,
@@ -95,6 +96,11 @@ export const importFromJSON = (raw: string): TPDocument => {
     parsed.assumptions !== undefined
       ? validateRecord(parsed.assumptions, validateAssumption, 'assumptions')
       : undefined;
+  // Review comments — optional, validated like the assumptions map.
+  const comments =
+    parsed.comments !== undefined
+      ? validateRecord(parsed.comments, validateComment, 'comments')
+      : undefined;
   // Session 87: EC verbal-style toggle. Soft validation — unrecognized
   // values fall back to `undefined` (interpreted as `'neutral'` at the
   // verbalisation layer) so a corrupt import still loads.
@@ -123,10 +129,11 @@ export const importFromJSON = (raw: string): TPDocument => {
     ...(methodChecklist ? { methodChecklist } : {}),
     ...(customEntityClasses ? { customEntityClasses } : {}),
     ...(assumptions && Object.keys(assumptions).length > 0 ? { assumptions } : {}),
+    ...(comments && Object.keys(comments).length > 0 ? { comments } : {}),
     ...(ecVerbalStyle ? { ecVerbalStyle } : {}),
     createdAt: typeof parsed.createdAt === 'number' ? parsed.createdAt : Date.now(),
     updatedAt: typeof parsed.updatedAt === 'number' ? parsed.updatedAt : Date.now(),
-    schemaVersion: 8,
+    schemaVersion: 9,
   };
 };
 

@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
+import { type CommentsSlice, createCommentsSlice } from './comments';
 import { createDocMetaSlice, type DocMetaSlice, docMetaDefaults } from './docMetaSlice';
 import { createEdgesSlice, type EdgesSlice } from './edgesSlice';
 import { createEntitiesSlice, type EntitiesSlice } from './entitiesSlice';
@@ -28,7 +29,7 @@ export { edgePatch, entityPatch, makeApplyDocChange, scrubFromGroups, touch } fr
  * shared mutation helpers live in `./docMutate` so each sub-slice can
  * build its own `applyDocChange` closure bound to the same `get` / `set`.
  */
-export type DocumentSlice = DocMetaSlice & EntitiesSlice & EdgesSlice & GroupsSlice;
+export type DocumentSlice = DocMetaSlice & EntitiesSlice & EdgesSlice & GroupsSlice & CommentsSlice;
 
 /**
  * Data-only defaults. Batch 2.1 — the document slice now carries the
@@ -46,4 +47,5 @@ export const createDocumentSlice: StateCreator<RootStore, [], [], DocumentSlice>
   ...createEntitiesSlice(...args),
   ...createEdgesSlice(...args),
   ...createGroupsSlice(...args),
+  ...createCommentsSlice(...args),
 });

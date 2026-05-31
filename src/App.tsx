@@ -51,6 +51,9 @@ const QuickCaptureDialog = lazy(() =>
 const RevisionPanel = lazy(() =>
   import('./components/history/RevisionPanel').then((m) => ({ default: m.RevisionPanel }))
 );
+const CommentsPanel = lazy(() =>
+  import('./components/comments/CommentsPanel').then((m) => ({ default: m.CommentsPanel }))
+);
 const ReadAllAtOnceDialog = lazy(() =>
   import('./components/walkthrough/ReadAllAtOnceDialog').then((m) => ({
     default: m.ReadAllAtOnceDialog,
@@ -359,6 +362,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Revision history">
           <RevisionPanel />
+        </ErrorBoundary>
+        <ErrorBoundary label="Comments panel">
+          <CommentsPanel />
         </ErrorBoundary>
         <ErrorBoundary label="Walkthrough overlay">
           <WalkthroughOverlay />

@@ -76,10 +76,10 @@ describe('pattern registry', () => {
     }
   });
 
-  it('every built doc carries the current schemaVersion (8)', () => {
+  it('every built doc carries the current schemaVersion (9)', () => {
     for (const pattern of PATTERNS) {
       const doc = pattern.build();
-      expect(doc.schemaVersion, `pattern ${pattern.id} ships an outdated schemaVersion`).toBe(8);
+      expect(doc.schemaVersion, `pattern ${pattern.id} ships an outdated schemaVersion`).toBe(9);
     }
   });
 });

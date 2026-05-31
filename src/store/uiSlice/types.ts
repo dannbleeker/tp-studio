@@ -145,6 +145,9 @@ export type StoredPrefs = {
   animationSpeed?: AnimationSpeed;
   edgePalette?: EdgePalette;
   browseLocked?: boolean;
+  /** Local display name stamped on review comments. Not authenticated —
+   *  there are no accounts (the app is local-first). */
+  commentAuthorName?: string;
   showAnnotationNumbers?: boolean;
   showEntityIds?: boolean;
   /** When true, each entity in a CRT/FRT-style diagram renders a small

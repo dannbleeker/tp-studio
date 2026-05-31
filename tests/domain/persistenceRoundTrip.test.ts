@@ -210,7 +210,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     // The validator enumerates the allowed state values; anything
     // else should throw rather than silently pass through.
     const malformed = JSON.stringify({
-      schemaVersion: 8,
+      schemaVersion: 9,
       id: 'doc-test',
       diagramType: 'crt',
       title: 'malformed-state',
@@ -240,7 +240,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     // edge + a typed assumption record, round-trip it, assert the
     // kind survives the validator's field-by-field re-emit.
     const raw = JSON.stringify({
-      schemaVersion: 8,
+      schemaVersion: 9,
       id: 'doc-test',
       diagramType: 'st',
       title: 'assumption-kind',
@@ -294,7 +294,7 @@ describe('persistence round-trip — every optional Entity field', () => {
 
   it('omits an untyped assumption kind on round-trip (no kind: undefined)', () => {
     const raw = JSON.stringify({
-      schemaVersion: 8,
+      schemaVersion: 9,
       id: 'doc-test',
       diagramType: 'st',
       title: 'untyped-assumption',
@@ -332,7 +332,7 @@ describe('persistence round-trip — every optional Entity field', () => {
 
   it('rejects an assumption with an unknown kind value', () => {
     const malformed = JSON.stringify({
-      schemaVersion: 8,
+      schemaVersion: 9,
       id: 'doc-test',
       diagramType: 'st',
       title: 'malformed-kind',
@@ -371,7 +371,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     // Session 135 medium gap — Group.archived. Only `true` is emitted;
     // an un-archived group must not grow an `archived: false` field.
     const raw = JSON.stringify({
-      schemaVersion: 8,
+      schemaVersion: 9,
       id: 'doc-test',
       diagramType: 'crt',
       title: 'archived-group',
@@ -421,7 +421,7 @@ describe('persistence round-trip — every optional Entity field', () => {
 
   it('rejects a group with a non-boolean archived field', () => {
     const malformed = JSON.stringify({
-      schemaVersion: 8,
+      schemaVersion: 9,
       id: 'doc-test',
       diagramType: 'crt',
       title: 'malformed-archived',
@@ -451,7 +451,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     // Construct a malformed doc — a ref without docId is invalid. The
     // validator should throw rather than silently drop the field.
     const malformed = JSON.stringify({
-      schemaVersion: 8,
+      schemaVersion: 9,
       id: 'doc-test',
       diagramType: 'crt',
       title: 'malformed',

@@ -13,7 +13,7 @@
  */
 
 import { createEntity } from '@/domain/factory';
-import { pruneAssumptions, removeEntityFromEdges } from '@/domain/graph';
+import { pruneAssumptions, pruneComments, removeEntityFromEdges } from '@/domain/graph';
 import type { DocumentId, Entity, EntityState, EntityType, Patch } from '@/domain/types';
 import { currentDoc } from '../../selectors';
 import { entityPatch, scrubFromGroups, touch } from '../docMutate';
@@ -119,12 +119,15 @@ export function createEntityCrudActions({
         // back-links. Conditional spread keeps `assumptions` absent when the
         // doc never had any.
         const assumptions = pruneAssumptions(prev.assumptions, edges, rest);
+        // Prune comments anchored to the removed entity or any cascaded edge.
+        const comments = pruneComments(prev.comments, edges, rest);
         return touch({
           ...prev,
           entities: rest,
           edges,
           groups: scrubFromGroups(prev.groups, [id]),
           ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
+          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
         });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });
@@ -226,12 +229,14 @@ export function createEntityCrudActions({
         }
         if (!changed) return prev;
         const assumptions = pruneAssumptions(prev.assumptions, nextEdges, entities);
+        const comments = pruneComments(prev.comments, nextEdges, entities);
         return touch({
           ...prev,
           entities,
           edges: nextEdges,
           groups: scrubFromGroups(prev.groups, entityIds),
           ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
+          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
         });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });

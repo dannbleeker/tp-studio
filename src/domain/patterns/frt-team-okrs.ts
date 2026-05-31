@@ -86,6 +86,6 @@ export const buildPatternFRTTeamOkrs = (): TPDocument => {
     nextAnnotationNumber: 7,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 8,
+    schemaVersion: 9,
   };
 };

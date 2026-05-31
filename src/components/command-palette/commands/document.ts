@@ -1,3 +1,4 @@
+import { MessageSquare, MessageSquarePlus } from 'lucide-react';
 import { importFromJSON } from '@/domain/persistence';
 import { pickFile } from '@/services/exporters/picker';
 import { currentDoc } from '@/store/selectors';
@@ -130,6 +131,25 @@ export const documentCommands: Command[] = [
       s.showToast('success', 'Snapshot captured.');
       s.openHistoryPanel();
     },
+  },
+  {
+    // Review comments — open / close the threads panel. Not write-guarded:
+    // commenting is an annotation layer, useful even on a browse-locked
+    // (read-only-shared) document.
+    id: 'toggle-comments-panel',
+    label: 'Comments',
+    group: 'Review',
+    icon: MessageSquare,
+    run: (s) => s.toggleCommentsPanel(),
+  },
+  {
+    // Opens the comments panel with the composer ready; it anchors to the
+    // current selection (a single entity/edge) or the whole diagram.
+    id: 'add-comment-on-selection',
+    label: 'Add comment on selection',
+    group: 'Review',
+    icon: MessageSquarePlus,
+    run: (s) => s.openCommentsPanel(),
   },
   {
     // Session 78 — manually reopen the creation wizard for the current

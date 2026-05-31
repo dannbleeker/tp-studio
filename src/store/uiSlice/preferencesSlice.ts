@@ -25,6 +25,8 @@ export type PreferencesSlice = {
   animationSpeed: AnimationSpeed;
   edgePalette: EdgePalette;
   browseLocked: boolean;
+  /** Local display name stamped on review comments (not authenticated). */
+  commentAuthorName: string;
   showAnnotationNumbers: boolean;
   showEntityIds: boolean;
   showReachBadges: boolean;
@@ -120,6 +122,8 @@ export type PreferencesSlice = {
   setAnimationSpeed: (speed: AnimationSpeed) => void;
   setEdgePalette: (palette: EdgePalette) => void;
   setBrowseLocked: (locked: boolean) => void;
+  /** Review comments — set the local display name stamped on new comments. */
+  setCommentAuthorName: (name: string) => void;
   setShowAnnotationNumbers: (show: boolean) => void;
   setShowEntityIds: (show: boolean) => void;
   setShowReachBadges: (show: boolean) => void;
@@ -178,6 +182,7 @@ export type PreferencesDataKeys =
   | 'animationSpeed'
   | 'edgePalette'
   | 'browseLocked'
+  | 'commentAuthorName'
   | 'showAnnotationNumbers'
   | 'showEntityIds'
   | 'showReachBadges'
@@ -213,6 +218,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   animationSpeed: 'default',
   edgePalette: 'default',
   browseLocked: false,
+  commentAuthorName: '',
   showAnnotationNumbers: false,
   showEntityIds: false,
   showReachBadges: false,
@@ -282,6 +288,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       animationSpeed: s.animationSpeed,
       edgePalette: s.edgePalette,
       browseLocked: s.browseLocked,
+      commentAuthorName: s.commentAuthorName,
       showAnnotationNumbers: s.showAnnotationNumbers,
       showEntityIds: s.showEntityIds,
       showReachBadges: s.showReachBadges,
@@ -312,6 +319,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     animationSpeed: initialPrefs.animationSpeed,
     edgePalette: initialPrefs.edgePalette,
     browseLocked: initialPrefs.browseLocked,
+    commentAuthorName: initialPrefs.commentAuthorName,
     showAnnotationNumbers: initialPrefs.showAnnotationNumbers,
     showEntityIds: initialPrefs.showEntityIds,
     showReachBadges: initialPrefs.showReachBadges,
@@ -358,6 +366,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setBrowseLocked: (locked) => {
       set({ browseLocked: locked });
+      persistPrefs();
+    },
+    setCommentAuthorName: (name) => {
+      set({ commentAuthorName: name });
       persistPrefs();
     },
     setShowAnnotationNumbers: (show) => {
@@ -484,6 +496,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         animationSpeed: d.animationSpeed,
         edgePalette: d.edgePalette,
         browseLocked: d.browseLocked,
+        commentAuthorName: d.commentAuthorName,
         showAnnotationNumbers: d.showAnnotationNumbers,
         showEntityIds: d.showEntityIds,
         showReachBadges: d.showReachBadges,

@@ -180,7 +180,7 @@ describe('entity.evidence — JSON round-trip', () => {
     // because the test only needs the persistence path's strict
     // validators to fire on the bad row.
     const malformed = JSON.stringify({
-      schemaVersion: 8,
+      schemaVersion: 9,
       id: 'doc-test',
       diagramType: 'crt',
       title: 'malformed',

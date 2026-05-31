@@ -1,4 +1,15 @@
-import { HelpCircle, History, Lock, LockOpen, Moon, Redo2, Search, Sun, Undo2 } from 'lucide-react';
+import {
+  HelpCircle,
+  History,
+  Lock,
+  LockOpen,
+  MessageSquare,
+  Moon,
+  Redo2,
+  Search,
+  Sun,
+  Undo2,
+} from 'lucide-react';
 import { SHORTCUT_BY_ID, shortcutToAria } from '@/domain/shortcuts';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
@@ -37,11 +48,13 @@ export function TopBar() {
   const {
     theme,
     historyPanelOpen,
+    commentsPanelOpen,
     canUndo,
     canRedo,
     toggleTheme,
     openHelp,
     toggleHistoryPanel,
+    toggleCommentsPanel,
     undo,
     redo,
   } = useToolbarActions();
@@ -164,6 +177,20 @@ export function TopBar() {
         aria-pressed={historyPanelOpen}
       >
         <History className="h-3.5 w-3.5" />
+      </Button>
+      {/* Review-comments panel toggle. Mirrors the history button (sm+, the
+          palette command "Comments" reaches it on phone-narrow). aria-pressed
+          reflects the open state for screen readers. */}
+      <Button
+        variant={commentsPanelOpen ? 'softViolet' : 'softNeutral'}
+        size="icon"
+        onClick={toggleCommentsPanel}
+        className="pointer-events-auto hidden sm:inline-flex"
+        aria-label={commentsPanelOpen ? 'Close comments' : 'Open comments'}
+        title={commentsPanelOpen ? 'Close comments' : 'Open review comments'}
+        aria-pressed={commentsPanelOpen}
+      >
+        <MessageSquare className="h-3.5 w-3.5" />
       </Button>
       {/* Help + Theme buttons appear from `sm` upward (640 px+). Below that
           they're hidden to keep the toolbar from wrapping; the palette

@@ -104,6 +104,6 @@ export const buildPatternFRTDbrScheduling = (): TPDocument => {
     nextAnnotationNumber: 8,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 8,
+    schemaVersion: 9,
   };
 };

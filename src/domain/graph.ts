@@ -1,7 +1,7 @@
 // Pure graph queries over a TPDocument. No React, no store, no DOM —
 // safe to use from validators, store actions, services, and tests.
 
-import type { Assumption, Edge, Entity, EntityId, EntityType, TPDocument } from './types';
+import type { Assumption, Comment, Edge, Entity, EntityId, EntityType, TPDocument } from './types';
 
 /**
  * Session 105 / Tier 1 #3 — cached `Object.values(doc.edges)`.
@@ -571,4 +571,34 @@ export const pruneAssumptions = (
     next[id] = a;
   }
   return changed ? next : assumptions;
+};
+
+/**
+ * Prune the `doc.comments` map against a POST-deletion set of surviving edges
+ * + entities: drop any comment anchored to a removed entity/edge, then drop
+ * any reply whose top-level parent went with it. `document`-anchored comments
+ * are never pruned. Returns the SAME reference when nothing changed (including
+ * the no-comments case) so callers can spread conditionally.
+ */
+export const pruneComments = (
+  comments: Record<string, Comment> | undefined,
+  survivingEdges: Record<string, Edge>,
+  survivingEntities: Record<string, Entity>
+): Record<string, Comment> | undefined => {
+  if (!comments) return comments;
+  const anchorAlive = (c: Comment): boolean =>
+    c.anchor.kind === 'document' ||
+    (c.anchor.kind === 'entity' && survivingEntities[c.anchor.entityId] !== undefined) ||
+    (c.anchor.kind === 'edge' && survivingEdges[c.anchor.edgeId] !== undefined);
+  const next: Record<string, Comment> = {};
+  for (const [id, c] of Object.entries(comments)) {
+    if (anchorAlive(c)) next[id] = c;
+  }
+  // Second pass — drop replies orphaned because their parent was removed above.
+  for (const id of Object.keys(next)) {
+    const c = next[id];
+    if (c?.parentId !== undefined && next[c.parentId] === undefined) delete next[id];
+  }
+  const changed = Object.keys(next).length !== Object.keys(comments).length;
+  return changed ? next : comments;
 };

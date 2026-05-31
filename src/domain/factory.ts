@@ -142,7 +142,7 @@ export const createDocument = (diagramType: DiagramType): TPDocument => {
     nextAnnotationNumber: seed.nextAnnotationNumber,
     createdAt: now,
     updatedAt: now,
-    schemaVersion: 8,
+    schemaVersion: 9,
   };
 };
 

@@ -6,6 +6,8 @@ import type {
   AssumptionKind,
   AssumptionStatus,
   AttrValue,
+  Comment,
+  CommentAnchor,
   CustomEntityClass,
   DocumentId,
   Edge,
@@ -469,6 +471,52 @@ export const validateAssumption = (v: unknown, label: string): Assumption => {
       : {}),
     ...(v.resolved === true ? { resolved: true as const } : {}),
     ...(v.source === 'user' || v.source === 'ai' ? { source: v.source } : {}),
+    createdAt: v.createdAt,
+    updatedAt: v.updatedAt,
+  };
+};
+
+const isCommentAnchor = (v: unknown): v is CommentAnchor => {
+  if (!isObject(v)) return false;
+  if (v.kind === 'entity') return typeof v.entityId === 'string';
+  if (v.kind === 'edge') return typeof v.edgeId === 'string';
+  return v.kind === 'document';
+};
+
+/**
+ * Review-comment validator. Strict on the required fields; the anchor is a
+ * three-way discriminated union (entity / edge / document). `body` + `author`
+ * are plain strings (rendered as escaped text, so no markup is interpreted).
+ * Optional `parentId` (a reply) and `resolved` follow the type-or-omit rule.
+ */
+export const validateComment = (v: unknown, label: string): Comment => {
+  if (!isObject(v)) throw invalid(label, 'must be an object');
+  if (typeof v.id !== 'string') throw invalid(label, 'has no id');
+  if (!isCommentAnchor(v.anchor)) throw invalid(label, 'has invalid anchor');
+  if (typeof v.body !== 'string') throw invalid(label, 'has non-string body');
+  if (typeof v.author !== 'string') throw invalid(label, 'has non-string author');
+  if (v.parentId !== undefined && typeof v.parentId !== 'string') {
+    throw invalid(label, 'has non-string parentId');
+  }
+  if (v.resolved !== undefined && typeof v.resolved !== 'boolean') {
+    throw invalid(label, 'has non-boolean resolved');
+  }
+  if (!isFiniteNumber(v.createdAt)) throw invalid(label, 'has non-finite createdAt');
+  if (!isFiniteNumber(v.updatedAt)) throw invalid(label, 'has non-finite updatedAt');
+  // Re-build the anchor so stray extra fields don't ride along on round-trip.
+  const anchor: CommentAnchor =
+    v.anchor.kind === 'entity'
+      ? { kind: 'entity', entityId: v.anchor.entityId }
+      : v.anchor.kind === 'edge'
+        ? { kind: 'edge', edgeId: v.anchor.edgeId }
+        : { kind: 'document' };
+  return {
+    id: v.id,
+    anchor,
+    body: v.body,
+    author: v.author,
+    ...(typeof v.parentId === 'string' && v.parentId.length > 0 ? { parentId: v.parentId } : {}),
+    ...(v.resolved === true ? { resolved: true as const } : {}),
     createdAt: v.createdAt,
     updatedAt: v.updatedAt,
   };
