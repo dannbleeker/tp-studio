@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 147 — Entity hover + selection affordance (canvas)
+
+Brings node hover / selection visuals to parity with the edges (Session 138).
+
+- **Hover** — a plain, unselected node now lifts on mouse-over: a subtle neutral
+  ring (`ring-1 ring-neutral-300/80`) + `shadow-md`. Reuses the node's existing
+  local `isHovered` state (already wired for the zoom-up overlay), so only the
+  hovered node re-renders — no store flag, no per-frame store churn (simpler
+  than the original `hoveredEntityId` sketch).
+- **Selected** — the ring went from a faint `ring-indigo-500/60` to a
+  full-opacity `ring-indigo-500` plus a soft indigo glow
+  (`shadow-lg shadow-indigo-500/30`), so "selected" is unmistakable and clearly
+  distinct from hover.
+- **Precedence** — the hover lift is gated *below* every other ring: selection,
+  the visual-diff tints (`added` / `changed`), and the connection-drop target
+  ring all win, so hover never fights a more specific state.
+
+TPNode-only. Tests: 3 new cases (hover ring on enter / leave, beefed selected
+ring + glow, hover suppressed while selected).
+
 ## Session 146 — Layout aesthetics: vertical-entry margin + adaptive rank spacing
 
 Two connected tweaks so tree connectors flow cleaner (Dann's call).

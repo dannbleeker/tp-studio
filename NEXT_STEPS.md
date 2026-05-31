@@ -9,12 +9,12 @@ A focused parking lot of open work — fresh items only. Historical context live
 Queued right after the layout-aesthetics batch (margin 60→150 + adaptive rank
 spacing, shipped Session 146):
 
-1. **Stronger hover + selection affordance on entities.** Make it clearer at a
-   glance when a node is hovered vs. selected. Edges already got this in Session
-   138 (hover glow + casing band); bring nodes up to parity — a hover ring /
-   raised treatment and a more unmistakable *selected* state distinct from hover.
-   Look at `TPNode.tsx` (+ a `hoveredEntityId` store flag mirroring
-   `hoveredEdgeId`) and the existing focus-ring tokens.
+1. ~~**Stronger hover + selection affordance on entities.**~~ ✅ *Session 147* —
+   a plain node now lifts on hover (neutral `ring-1` + `shadow-md`) and the
+   selected ring is beefed (full-opacity indigo + soft glow), at parity with the
+   edge cues. Done in `TPNode.tsx` reusing the existing local `isHovered` — no
+   store flag needed (simpler than this sketch); hover gated below selection /
+   diff / connection-drop rings.
 2. **Re-target an existing connector.** Grab one end of an existing edge and drag
    it onto a different entity to re-parent it (change source or target) without
    delete-and-recreate. React Flow supports edge reconnection

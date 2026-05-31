@@ -154,6 +154,19 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
     }
   }, [isEditing]);
 
+  // Feature #1 (Session 147) — node hover affordance, at parity with the
+  // edge hover cue (Session 138). Reuse the existing local `isHovered` (already
+  // wired to the card's mouse-enter/leave for the zoom-up overlay), gated so it
+  // never fights a more specific ring: selection (indigo), the visual-diff
+  // tints, and the connection-drop target ring all win. So the neutral hover
+  // lift shows only on a plain, unselected node.
+  const isHoverActive =
+    isHovered &&
+    !selected &&
+    connDrop === null &&
+    diffStatus !== 'added' &&
+    diffStatus !== 'changed';
+
   // React Flow node wrapper. React Flow owns keyboard navigation between nodes at
   // the canvas level (Tab cycles selectable elements; Enter activates). The
   // double-click here is a "begin editing" shortcut; the equivalent keyboard path
@@ -170,7 +183,10 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         isNoteEntity
           ? 'border-yellow-300 bg-yellow-50 dark:border-yellow-700/50 dark:bg-yellow-950/30'
           : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900',
-        selected && 'ring-2 ring-indigo-500/60 ring-offset-1',
+        // Feature #1 — beefed-up selection: full-opacity indigo ring + a soft
+        // indigo glow (was a faint `/60` ring), so "selected" is unmistakable
+        // and clearly distinct from the neutral hover lift below.
+        selected && 'ring-2 ring-indigo-500 ring-offset-1 shadow-indigo-500/30 shadow-lg',
         // H2 visual-diff tints. `'added'` greens the card so the user can
         // scan for "what's new since the snapshot." `'changed'` ambers
         // entities whose content drifted. Removed entities (only in the
@@ -181,7 +197,11 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         diffStatus === 'changed' && 'ring-2 ring-amber-400/70 ring-offset-1 dark:ring-amber-500/70',
         // Goal #2 — connection-drop target ring (indigo = will connect, rose = rejected).
         connDrop === 'valid' && 'ring-2 ring-indigo-400/80 ring-offset-1',
-        connDrop === 'invalid' && 'ring-2 ring-rose-400/70 ring-offset-1'
+        connDrop === 'invalid' && 'ring-2 ring-rose-400/70 ring-offset-1',
+        // Feature #1 — neutral hover lift on a plain, unselected node (lowest
+        // precedence; suppressed above whenever any other ring is active).
+        // Reads as "hover", visually distinct from the indigo "selected" ring.
+        isHoverActive && 'shadow-md ring-1 ring-neutral-300/80 dark:ring-neutral-600/80'
       )}
       style={{ width: NODE_WIDTH, minHeight: isStFormat ? ST_NODE_HEIGHT : NODE_MIN_HEIGHT }}
       onMouseEnter={() => setIsHovered(true)}

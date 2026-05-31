@@ -90,6 +90,38 @@ describe('TPNode', () => {
   });
 });
 
+describe('TPNode — hover + selection affordance (Feature #1, Session 147)', () => {
+  const card = (c: HTMLElement): string =>
+    c.querySelector('[data-component="tp-node"]')?.className ?? '';
+
+  it('an unselected node gains a neutral hover ring on enter and drops it on leave', () => {
+    const entity = createEntity({ type: 'effect', title: 'Hover me', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity }, false)} />);
+    const el = container.querySelector('[data-component="tp-node"]') as HTMLElement;
+    expect(card(container)).not.toMatch(/ring-neutral-300/);
+    fireEvent.mouseEnter(el);
+    expect(card(container)).toMatch(/ring-neutral-300/);
+    fireEvent.mouseLeave(el);
+    expect(card(container)).not.toMatch(/ring-neutral-300/);
+  });
+
+  it('a selected node shows the beefed-up indigo ring + glow', () => {
+    const entity = createEntity({ type: 'effect', title: 'Selected', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity }, true)} />);
+    expect(card(container)).toMatch(/ring-indigo-500/);
+    expect(card(container)).toMatch(/shadow-indigo-500\/30/);
+  });
+
+  it('hover ring is suppressed while selected — selection wins', () => {
+    const entity = createEntity({ type: 'effect', title: 'Both', annotationNumber: 1 });
+    const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity }, true)} />);
+    const el = container.querySelector('[data-component="tp-node"]') as HTMLElement;
+    fireEvent.mouseEnter(el);
+    expect(card(container)).not.toMatch(/ring-neutral-300/); // no neutral hover ring
+    expect(card(container)).toMatch(/ring-indigo-500/); // still the selected ring
+  });
+});
+
 /**
  * Session 134 coverage push (round 3) — deeper TPNode rendering
  * branches. The smoke tests above cover the basic mount; these target
