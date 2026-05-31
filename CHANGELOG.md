@@ -2,6 +2,30 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — Pattern library: +9 canonical TOC archetypes
+
+Filled a real gap in the curated pattern library: the Evaporating Cloud set
+skewed modern software / org, so the **classic Goldratt operations & finance
+clouds were missing**. Added seven ECs — cost-world-vs-throughput (the
+idle-worker cloud from *The Goal*), batch-size / EBQ, inventory-vs-availability
+(the distribution/retail cloud — the closest archetype to fashion retail),
+project-task-safety (the Critical Chain conflict), profit spend-vs-save,
+delegation, and pricing — each a ~20-line spec over the Session-152
+`buildECPattern` helper. EC patterns **8 → 15**.
+
+Also added the local-optimum tree archetype as a linked **CRT → FRT pair**:
+`crt-tons-per-hour` (a single local performance measure — reward the furnace on
+tons/hour — as the root cause spraying a field of UDEs: WIP pile-up, wrong mix,
+inventory balloon, late orders, with an AND on the late-orders UDE) and its
+counterpart `frt-schedule-adherence` (swap the measure for finishing-schedule
+adherence; the cascade reverses up into desirable effects). **CRT 5 → 6, FRT
+5 → 6.** Patterns are single-`TPDocument` factories, so the pair is two
+independent patterns, not one cross-referenced diagram.
+
+Skipped the proposed "resistance to change" cloud — already shipped as
+`ec-efrats-change-cloud`. Registry guards (`patterns.test.ts`) + full suite
+green; tsc + biome clean.
+
 ## Session 152 (follow-up) — Guard the Chapter-13 CLR map against silent loss
 
 Hardening prompted by a near-miss: the book's hand-built "classical CLR map" —

@@ -38,15 +38,24 @@ import { buildPatternCRTEngineeringVelocity } from './crt-engineering-velocity';
 import { buildPatternCRTInventoryTurnsFalling } from './crt-inventory-turns-falling';
 import { buildPatternCRTMultiProjectBottleneck } from './crt-multi-project-bottleneck';
 import { buildPatternCRTSalesPipelineStall } from './crt-sales-pipeline-stall';
+import { buildPatternCRTTonsPerHour } from './crt-tons-per-hour';
+import { buildPatternECBatchSize } from './ec-batch-size';
 import { buildPatternECBuildVsBuy } from './ec-build-vs-buy';
 import { buildPatternECCentralizeVsFederate } from './ec-centralize-vs-federate';
+import { buildPatternECCostVsThroughput } from './ec-cost-vs-throughput';
+import { buildPatternECDelegation } from './ec-delegation';
 import { buildPatternECEfratsChangeCloud } from './ec-efrats-change-cloud';
+import { buildPatternECInventoryVsAvailability } from './ec-inventory-vs-availability';
+import { buildPatternECPricing } from './ec-pricing';
+import { buildPatternECProfitSpendVsSave } from './ec-profit-spend-vs-save';
+import { buildPatternECProjectTaskSafety } from './ec-project-task-safety';
 import { buildPatternECQualityVsSpeed } from './ec-quality-vs-speed';
 import { buildPatternECSpeakUpVsStaySafe } from './ec-speak-up-vs-stay-safe';
 import { buildPatternECSpecialistVsGeneralist } from './ec-specialist-vs-generalist';
 import { buildPatternECTransformationVsQuarter } from './ec-transformation-vs-quarter';
 import { buildPatternFRTDbrScheduling } from './frt-dbr-scheduling';
 import { buildPatternFRTPricingExperiment } from './frt-pricing-experiment';
+import { buildPatternFRTScheduleAdherence } from './frt-schedule-adherence';
 import { buildPatternFRTTeamOkrs } from './frt-team-okrs';
 import { buildPatternFRTWipCap } from './frt-wip-cap';
 import { buildPatternGoalTreeEffectiveSalesTeam } from './goalTree-effective-sales-team';
@@ -123,6 +132,13 @@ export const PATTERNS: Pattern[] = [
     diagramType: 'crt',
     build: buildPatternCRTInventoryTurnsFalling,
   },
+  {
+    id: 'crt-tons-per-hour',
+    label: 'Local-optimum measure (tons per hour)',
+    hint: "Goldratt's archetype — one local measure (reward the furnace on tons/hour) sprays into a UDE field: WIP piles up, the wrong mix is poured, inventory balloons, orders ship late. AND on the late-orders UDE; pairs with the schedule-adherence FRT.",
+    diagramType: 'crt',
+    build: buildPatternCRTTonsPerHour,
+  },
 
   // ── EC ─────────────────────────────────────────────────────────────
   {
@@ -181,6 +197,55 @@ export const PATTERNS: Pattern[] = [
     diagramType: 'ec',
     build: buildPatternECTransformationVsQuarter,
   },
+  {
+    id: 'ec-cost-vs-throughput',
+    label: 'Cost world vs throughput world',
+    hint: "The idle-worker conflict from *The Goal* — keep every resource busy (local efficiency) vs let non-constraints idle (subordinate to the drum). TOC's foundational cloud.",
+    diagramType: 'ec',
+    build: buildPatternECCostVsThroughput,
+  },
+  {
+    id: 'ec-batch-size',
+    label: 'Batch size (EBQ)',
+    hint: 'Economic-batch-quantity conflict — amortise setup over large batches vs cut carrying cost with small batches. Broken by quick-changeover (setup-time collapse).',
+    diagramType: 'ec',
+    build: buildPatternECBatchSize,
+  },
+  {
+    id: 'ec-inventory-vs-availability',
+    label: 'Inventory vs availability',
+    hint: 'Distribution/retail cloud — high store stock to protect sales vs low stock to protect cash and margin. Broken by central holding + frequent pull replenishment.',
+    diagramType: 'ec',
+    build: buildPatternECInventoryVsAvailability,
+  },
+  {
+    id: 'ec-project-task-safety',
+    label: 'Project task safety',
+    hint: 'The Critical Chain conflict — pad every task vs strip task safety. Broken by aggregating safety into a shared project/feeding buffer managed by buffer consumption.',
+    diagramType: 'ec',
+    build: buildPatternECProjectTaskSafety,
+  },
+  {
+    id: 'ec-profit-spend-vs-save',
+    label: 'Profit: spend vs save',
+    hint: 'The simplest teaching cloud — grow value by improving the product (spend) vs reduce cost by cutting expenses (save), both to increase profit.',
+    diagramType: 'ec',
+    build: buildPatternECProfitSpendVsSave,
+  },
+  {
+    id: 'ec-delegation',
+    label: 'Delegation',
+    hint: 'Everyday-management cloud — let people do the work (develop them) vs do it myself (guarantee the result), both to lead a team that delivers and grows.',
+    diagramType: 'ec',
+    build: buildPatternECDelegation,
+  },
+  {
+    id: 'ec-pricing',
+    label: 'Pricing (discount vs hold)',
+    hint: 'Commercial cloud — win the deal by dropping price vs protect margin by holding it. Broken by competing on quantified value instead of the discount lever.',
+    diagramType: 'ec',
+    build: buildPatternECPricing,
+  },
 
   // ── FRT ────────────────────────────────────────────────────────────
   {
@@ -217,6 +282,13 @@ export const PATTERNS: Pattern[] = [
     hint: 'Commercial FRT — price change + CPQ lock jointly drive enterprise margin lift without churn.',
     diagramType: 'frt',
     build: buildPatternFRTPricingExperiment,
+  },
+  {
+    id: 'frt-schedule-adherence',
+    label: 'Local-measure swap (schedule adherence)',
+    hint: 'The FRT counterpart to the tons-per-hour CRT — swap the local measure for finishing-schedule adherence; the right mix is poured, WIP drains, inventory falls, orders ship on time. AND on the on-time effect.',
+    diagramType: 'frt',
+    build: buildPatternFRTScheduleAdherence,
   },
 
   // ── PRT ────────────────────────────────────────────────────────────
