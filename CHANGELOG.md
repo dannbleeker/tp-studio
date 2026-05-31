@@ -25,10 +25,9 @@ Each is the canonical 5-box EC (A goal · B/C needs · D/D′ wants + D↔D′ m
 same builder shape as the existing EC patterns; EC now ships **8** library
 entries. A targeted test pins Efrat's-cloud structure; the registry guards (≥5
 per type, unique ids, builds-to-declared-type, schemaVersion 9) cover the rest.
-Prompted by a review of Youngman's *Advanced Efrat's Cloud & The Matrix*; the
-companion **Change Matrix** (Pot-of-Gold / Alligators / Mermaids / Crutches) and
-the **Layers of Resistance** are logged in NEXT_STEPS as larger items, not built
-here.
+Prompted by a review of Youngman's *Advanced Efrat's Cloud & The Matrix*. The
+page's other ideas (the Change Matrix companion, the Layers of Resistance) were
+reviewed and set aside — only the three clouds were wanted.
 
 ## Session 148 — Re-target a connector (drag an edge endpoint to another entity)
 
