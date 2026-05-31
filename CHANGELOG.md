@@ -2,6 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 150 — TP completeness gap analysis (parked, no code change)
+
+Reviewed Oded Cohen's *TOC Thinking Processes — Basics* (TOCICO 2014) and mapped
+it against TP Studio. Finding: the *primitives* are essentially all present
+(9 diagram types, necessity/sufficiency + AND/OR/XOR junctors, the cloud mutex,
+**all seven CLR categories**, the UDE/DE/injection/obstacle/IO/action
+vocabulary, S&T assumption sub-types). The gaps are **workflow / meta-structure**
+— chiefly the **Cloud progression** (UDE → Consolidated → Core cloud + cloud-type
+taxonomy) and the **U-Shape linkage** that binds CRT → Core Cloud → FRT into one
+journey. Parked in [docs/TP_BASICS_GAP_ANALYSIS.md](docs/TP_BASICS_GAP_ANALYSIS.md)
+and referenced from NEXT_STEPS; nothing built.
+
 ## Session 149 — Pattern library: three change-resistance Evaporating Clouds
 
 The EC patterns were all operational tradeoffs (quality vs speed, build vs buy,

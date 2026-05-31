@@ -24,6 +24,26 @@ spacing, shipped Session 146):
 
 ---
 
+## TP completeness — gap analysis vs. Cohen's *TP Basics* (parked Session 150)
+
+Full mapping in [docs/TP_BASICS_GAP_ANALYSIS.md](docs/TP_BASICS_GAP_ANALYSIS.md)
+(against Oded Cohen's TOCICO-2014 *TP Basics*). The primitives are all present
+(incl. all seven CLR categories); the gaps are **workflow / meta-structure**:
+
+- **Cloud progression** — UDE Cloud → Consolidated → Core Cloud + a cloud-type
+  taxonomy. Cheapest slice: *UDE / Core / Firefighting* clouds as library
+  patterns + an optional `cloudType` tag. **(highest-value, low-cost start)**
+- **U-Shape linkage** — bind a CRT *core problem* ↔ Core Cloud ↔ FRT *injection*
+  across docs (cross-tree references + a guided three-questions flow). The
+  strategic centrepiece; a real feature.
+- **Smaller items:** Injection Flower (injection ↔ its DEs / NBR / plan), NBR
+  *trimming* injection, PRT → IO sequencing → plan export, a guided CLR-scrutiny
+  panel, richer Transition-Tree steps, performance-measurement gap framing.
+- **Out of scope:** the PIVOT internals (Five Focusing Steps, constraint types,
+  Buffer Management) — execution / DBR, not TP diagramming.
+
+---
+
 ## Review comments (Sessions 139–140)
 
 The local-first comment layer shipped Session 139 (panel + palette/TopBar entry
