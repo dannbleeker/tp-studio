@@ -2,6 +2,42 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 144 — Wind-down perf: edge-side narrowing + single-serialize save
+
+**1. Render-subscription narrowing — edge side complete.**
+Completes the Session-143 work (below). `useEdgeRoutes` keyed on the whole
+`doc`, so the A* obstacle-routing memo re-ran on *every* mutation — and because
+`routes` feeds `useGraphEdgeEmission`, that defeated the Session-143
+edge-emission narrowing (the edge array rebuilt anyway). Narrowed the routing
+memo to the four `doc.*` fields `computeEdgeRoutes` actually reads:
+
+- `doc.edges` (via `edgesArray` — the route set incl. junctor membership),
+- `doc.entities` + `doc.groups` (obstacle-box geometry),
+- `doc.diagramType` (radial vs. flow handle orientation).
+
+Audited every `doc.*` access in the file to confirm those four are exhaustive;
+`projection` + `positions` stay deps (they already carry the layout
+reactivity). Net: a non-structural edit (CLR-resolve, document
+title/description, `customEntityClasses`, comments, assumptions) now leaves the
+routing refs intact, so routing — and the edge emission downstream of it —
+skips entirely. With this, BOTH sides of the canvas pipeline (node + edge) skip
+on non-structural mutations. Full suite green (2238 passed). The entity-title
+caveat from Session 143 still stands — that legitimately re-emits.
+
+**2. Persistence — serialize once on the committed save path.**
+`persistActiveDoc` ran `JSON.stringify(doc)` *twice* on every committed save —
+once for the per-doc committed slot (`saveDocToLocalStorage`) and once for the
+legacy single-doc dual-write (`saveToLocalStorage`) — serializing the identical
+doc body for both. Both writers now take an optional pre-built `serialized`
+string; `persistActiveDoc` stringifies once and feeds both. ~Halves the
+serialize cost on this path (the comment notes `JSON.stringify` is ~30–50 ms at
+200 entities). Byte-identical output to both slots (pinned by the existing
+dual-write test + a new "serializes only ONCE" spy test). Standalone callers
+(`docMetaSlice` rename / create / swap) are unchanged — they omit the arg and
+serialize in place. The companion *dirty-check* (skip a no-op committed save)
+stays deferred: a content check keyed on the legacy `lastCommittedRaw` can't
+safely gate the per-doc slot, which `docMetaSlice` writes independently.
+
 ## Session 143 — Canvas render-subscription narrowing (Group 1, node pipeline)
 
 Stops the canvas pipeline from re-running on NON-structural document mutations
@@ -25,11 +61,10 @@ memos narrowed, the whole NODE side of the pipeline now skips.
 
 Two honest caveats (follow-ups in NEXT_STEPS): (1) the common case — editing an
 *entity* title — legitimately changes `doc.entities` and must re-emit; this
-targets non-structural churn, not every keystroke. (2) The edge-emission
-narrowing is correct but currently inert: `useEdgeRoutes` still keys on the
-whole `doc`, so `routes` re-runs on any mutation and re-triggers edge emission.
-Narrowing `useEdgeRoutes` (routing-correctness-sensitive) would complete the
-edge side — deferred.
+targets non-structural churn, not every keystroke. (2) the edge-emission
+narrowing was inert on its own because `useEdgeRoutes` still keyed on the whole
+`doc`, so `routes` re-ran on any mutation and re-triggered edge emission —
+**resolved in Session 144 (above)** by narrowing the routing memo too.
 
 ## Session 142 — Performance optimization batch
 

@@ -146,14 +146,17 @@ export const importFromJSON = (raw: string): TPDocument => {
  */
 let lastCommittedRaw: string | null = null;
 
-export const saveToLocalStorage = (doc: TPDocument): void => {
+export const saveToLocalStorage = (doc: TPDocument, serialized?: string): void => {
   // Perf #26 — store the COMPACT serialization (no `null, 2`
   // indentation). Pretty-printing is for human-facing file exports
   // (`exportToJSON`); the localStorage payload is machine-read only, so
   // indentation just doubles the string size and serialize time on a
   // path that runs on every committed save. `importFromJSON` parses
   // compact and pretty identically.
-  const serialized = JSON.stringify(doc);
+  // Session 144 — accept a pre-built body so `persistActiveDoc` can stringify
+  // the doc ONCE and feed both this and the per-doc writer; standalone callers
+  // omit it and serialize here (unchanged behaviour, byte-identical output).
+  const raw = serialized ?? JSON.stringify(doc);
   // FL-EX9: copy the prior committed doc into the backup slot BEFORE
   // overwriting the main slot. If the new write fails mid-flight (quota
   // error, mid-write tab kill, partial JSON), the backup still points at
@@ -161,8 +164,8 @@ export const saveToLocalStorage = (doc: TPDocument): void => {
   // a fresh slot read.
   const prior = lastCommittedRaw ?? readString(STORAGE_KEYS.doc);
   if (prior !== null) writeString(STORAGE_KEYS.docBackup, prior);
-  writeString(STORAGE_KEYS.doc, serialized);
-  lastCommittedRaw = serialized;
+  writeString(STORAGE_KEYS.doc, raw);
+  lastCommittedRaw = raw;
 };
 
 /**
@@ -332,11 +335,14 @@ export type TabsManifest = {
  * class that a per-doc `lastCommitted` map would introduce across doc
  * swaps / tab closes.
  */
-export const saveDocToLocalStorage = (doc: TPDocument): void => {
+export const saveDocToLocalStorage = (doc: TPDocument, serialized?: string): void => {
   const committedKey = docCommittedKey(doc.id);
   const prior = readString(committedKey);
   if (prior !== null) writeString(docBackupKey(doc.id), prior);
-  writeString(committedKey, JSON.stringify(doc));
+  // Session 144 — accept a pre-built body so `persistActiveDoc` serializes once
+  // for both slots; standalone callers (docMetaSlice rename / create / swap)
+  // omit it and serialize here.
+  writeString(committedKey, serialized ?? JSON.stringify(doc));
 };
 
 /**
@@ -410,8 +416,14 @@ export const persistTabsManifest = (manifest: TabsManifest): void => {
  * dropped every tab but the active one on reload (Batch 5.4 fix).
  */
 export const persistActiveDoc = (doc: TPDocument): void => {
-  saveDocToLocalStorage(doc);
-  saveToLocalStorage(doc);
+  // Serialize ONCE and feed both writers. The per-doc committed slot and the
+  // legacy single-doc slot store the byte-identical compact body, so a single
+  // `JSON.stringify` (the costly part on a large doc — ~30–50 ms at 200
+  // entities) replaces the two this used to do. Mirrors the live-draft path,
+  // which already serializes once and writes both its slots.
+  const serialized = JSON.stringify(doc);
+  saveDocToLocalStorage(doc, serialized);
+  saveToLocalStorage(doc, serialized);
 };
 
 /**

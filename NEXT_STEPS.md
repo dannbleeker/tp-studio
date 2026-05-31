@@ -39,27 +39,39 @@ most are real wins but carry correctness/CI risk not worth taking in a wind-down
   the reach-count memos, and the node + edge emission memos are now keyed on the
   specific `doc.*` fields each reads (audited per memo + transitive callees), so
   a non-structural doc edit (CLR-resolve, document title/description) skips the
-  whole NODE pipeline. **Still open here:** (a) narrow `CanvasInner`'s own
-  whole-`doc` subscription — it still re-renders the wrapper, though the
-  now-stable pipeline means no actual canvas work results; (b) narrow
-  `useEdgeRoutes`'s whole-`doc` dep — until then the edge-emission narrowing is
-  *inert* (`routes` re-runs on every mutation and re-triggers edge emission).
-  Both are the same audit pattern; `useEdgeRoutes` is routing-sensitive, so
-  trace its edge-source data flow first. Note: editing an *entity* title
-  legitimately re-emits (it's a structural change) — this targets non-structural
-  churn, not every keystroke.
+  whole NODE pipeline. **Edge side completed Session 144:** `useEdgeRoutes` is
+  now keyed on `doc.edges`/`entities`/`groups`/`diagramType` (the four fields
+  `computeEdgeRoutes` reads — audited exhaustively), so the A\* routing — and
+  the edge emission downstream of it — skips on a non-structural edit too; both
+  sides of the canvas pipeline now skip. **Still open here:** narrow
+  `CanvasInner`'s own whole-`doc` subscription — it still re-renders the
+  wrapper, though the now-stable pipeline means no actual canvas work results.
+  Note: editing an *entity* title legitimately re-emits (it's a structural
+  change) — this targets non-structural churn, not every keystroke.
 - **Per-node `TPNode` selector reads whole `currentDoc`** for `diagramType` /
   `customEntityClasses` (session-invariant) — hoist to a stable selector. Same
   re-render-correctness risk class.
 - **Narrow `SelectionToolbar`'s whole-`edges` subscription** — risks stale verbs
   (`verbsForBranch` reads live state via `getState()`); explicitly deferred
   before (Session 138 L2).
-- **A\* open-list → binary min-heap** (`edgeRouting.ts`) — O(V²)→O(V log V), but
-  only bites on very large dense graphs and touches every edge's routing path.
+- **A\* open-list `Set` linear-scan → indexed binary min-heap** (`edgeRouting.ts`,
+  the `while (open.size)` loop) — O(V²)→O(V log V), but **routing-correctness-
+  sensitive**: the linear scan breaks f-score ties by Set insertion order
+  (strict `<`), and exact ties are common in symmetric tree layouts. A heap
+  won't preserve that under decrease-key (lazy deletion re-sequences updated
+  vertices), so routes could shift to a different equal-length path → visible
+  geometry change. Only pays off on very large dense graphs (atypical here).
+  Defer unless a true decrease-key heap keyed on (f, original-insertion-seq) is
+  built to guarantee byte-identical routes.
 - **Per-edge `obstaclesForEdge` allocation → skip-indices** — needs new
   skip-index params on the routing helpers; routing-correctness-sensitive.
-- **`persistActiveDoc` double `JSON.stringify`** (legacy dual-write) + a
-  doc-unchanged dirty-check on the debounced save — both touch the save path.
+- ~~**`persistActiveDoc` double `JSON.stringify`**~~ ✅ *Session 144* — serializes
+  the doc ONCE and feeds the string to both the per-doc committed slot and the
+  legacy dual-write (was two `JSON.stringify` of the same body per committed
+  save). **Still deferred:** a doc-unchanged *dirty-check* on the debounced save
+  — a content check keyed on the legacy `lastCommittedRaw` can't safely gate the
+  per-doc committed slot, which `docMetaSlice` (rename / create / swap) writes
+  independently; would need a per-doc last-committed map.
 - **CI: build-once `dist` artifact + conditional docs-bundle prebuild** — can't
   be verified locally and restructure CI; defer to a CI-iteration session.
 - **Vitest `environment: 'node'` default + `pool: 'threads'`** — the biggest

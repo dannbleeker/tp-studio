@@ -18,7 +18,7 @@
  *     for the manual reload smoke test)
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearLocalStorage,
   loadAllTabsWithStatus,
@@ -95,6 +95,22 @@ describe('Batch 2.2 — persistActiveDoc / loadAllTabsWithStatus round-trip', ()
     // ...AND the legacy slot a pre-2.2 build reads.
     expect(localStorage.getItem(STORAGE_KEYS.doc)).toBe(JSON.stringify(doc));
     expect(loadFromLocalStorage()?.title).toBe('Legacy-too');
+  });
+
+  it('serializes the doc only ONCE for both committed slots (Session 144)', () => {
+    const doc = buildDoc('doc_once', 1000, 'Once');
+    const spy = vi.spyOn(JSON, 'stringify');
+    persistActiveDoc(doc);
+    // Count serializations OF THIS DOC inside persistActiveDoc, before the
+    // assertion below adds its own. Was 2 (one per slot); the single-serialize
+    // refactor builds one body and feeds it to both writers.
+    const callsDuringPersist = spy.mock.calls.filter((c) => c[0] === doc).length;
+    spy.mockRestore();
+    expect(callsDuringPersist).toBe(1);
+    // ...and both slots still hold the byte-identical compact body.
+    const expected = JSON.stringify(doc);
+    expect(localStorage.getItem(docCommittedKey(id('doc_once')))).toBe(expected);
+    expect(localStorage.getItem(STORAGE_KEYS.doc)).toBe(expected);
   });
 });
 

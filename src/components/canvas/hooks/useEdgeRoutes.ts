@@ -282,8 +282,17 @@ export const useEdgeRoutes = (
   positions: GraphPositions
 ): EdgeRouteMap => {
   const smartRouting = useDocumentStore((s) => s.edgeRouting === 'smart');
+  // Keyed on the structural doc fields `computeEdgeRoutes` reads — `edges`
+  // (via `edgesArray`, the route set, incl. junctor membership), `entities` +
+  // `groups` (obstacle box geometry), `diagramType` (radial vs flow) — NOT the
+  // whole `doc`. Without this the A* routing re-ran on EVERY mutation, which
+  // (since `routes` feeds edge emission) defeated the edge-emission dep
+  // narrowing. Now a non-structural edit (CLR-resolve, document title,
+  // customEntityClasses, comments, assumptions) leaves these refs intact, so
+  // routing — and the edge emission downstream of it — skips entirely.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via edges/entities/groups/diagramType; narrowed deliberately.
   return useMemo<EdgeRouteMap>(() => {
     if (!smartRouting) return {};
     return computeEdgeRoutes(doc, projection, positions);
-  }, [smartRouting, doc, projection, positions]);
+  }, [smartRouting, doc.edges, doc.entities, doc.groups, doc.diagramType, projection, positions]);
 };
