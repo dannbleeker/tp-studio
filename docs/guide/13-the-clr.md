@@ -7,6 +7,13 @@
 Before diving into how TP Studio implements them, here is the classical reference — the eight-box layout Dettmer's *The Logical Thinking Process* uses to teach the CLR, each box pairing the category's question with a tiny example diagram. Cards mirror TP Studio's canvas: amber stripe for causal nodes, neutral grey for effects, red-dashed for the missing element each category catches.
 
 <!-- CLR_MAP -->
+<!-- NOTE for editors: the placeholder above is NOT missing content. The book
+     builders (scripts/build-book-pdf.mjs and build-book-epub.mjs) expand it at
+     render time into the eight-box CLR figure, generated from the single source
+     scripts/lib/clrMapHtml.mjs — so it renders at vector quality in the PDF and
+     the Kindle EPUB. Preview locally: `node scripts/render-clr-map-native.mjs`
+     (writes a gitignored PNG under docs/guide/diagrams/). Guarded by
+     tests/scripts/clrMap.test.ts. -->
 
 This map is the territory; TP Studio's warnings are the tools that walk it. Goldratt's original six are the first six boxes; *Predicted Effect* and *Tautology* are Dettmer's additions, used mainly when a stated cause is intangible (you cannot observe it directly, only its consequences).
 
