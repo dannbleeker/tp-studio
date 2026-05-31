@@ -234,3 +234,29 @@ describe('useGraphMutations — connection-drag feedback (goal #2)', () => {
     expect(s().connectionDropEdgeId).toBeNull();
   });
 });
+
+describe('useGraphMutations — hovered-edge select cue (goal #3)', () => {
+  it('onEdgeMouseEnter sets hoveredEdgeId even when no connection is in progress', () => {
+    const { result } = renderHook(() => useGraphMutations());
+    const edge = { id: 'edge-9' } as never;
+    expect(s().hoveredEdgeId).toBeNull();
+    // No connection drag in flight — the select-hover cue still flags the
+    // edge. The store stays dumb here: the COMPONENT decides whether to
+    // suppress the cue mid-drag, not the writer.
+    result.current.onEdgeMouseEnter(null, edge);
+    expect(s().hoveredEdgeId).toBe('edge-9');
+    // ...and it did NOT also light up the connection drop-target (no drag).
+    expect(s().connectionDropEdgeId).toBeNull();
+  });
+
+  it('onEdgeMouseLeave clears hoveredEdgeId even while a connection is in progress', () => {
+    const { result } = renderHook(() => useGraphMutations());
+    const edge = { id: 'edge-9' } as never;
+    result.current.onConnectStart(mockMouseEvent(), mockConnectStartParams({ nodeId: 'node-1' }));
+    result.current.onEdgeMouseEnter(null, edge);
+    expect(s().hoveredEdgeId).toBe('edge-9');
+    result.current.onEdgeMouseLeave(null, edge);
+    // Leave always clears, regardless of the in-flight connection drag.
+    expect(s().hoveredEdgeId).toBeNull();
+  });
+});

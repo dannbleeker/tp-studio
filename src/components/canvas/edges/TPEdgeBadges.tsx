@@ -162,13 +162,28 @@ export const EdgeInlineLabel = memo(function EdgeInlineLabel({
   labelY,
   fullLabel,
   truncated,
-}: Anchor & { fullLabel: string; truncated: string }) {
+  onSelect,
+}: Anchor & { fullLabel: string; truncated: string; onSelect?: () => void }) {
   return (
     <EdgeLabelRenderer>
+      {/* Goal #3 — the inline label is a click-to-select target so the edge
+          has a bigger affordance than the thin line / tiny assumption badge.
+          `stopPropagation` is essential: without it the click bubbles to the
+          React Flow pane, which clears selection — the edge would deselect
+          the instant it's selected. Stays a <div> (not <button>): React Flow
+          edges carry their own keyboard focus + select path, so a button
+          here would add a spurious, redundant tab stop. */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: pointer-only select shortcut mirroring the junctor circle; the edge itself is the keyboard-focusable select target. */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: same — redundant pointer shortcut; selecting the edge from the keyboard goes through React Flow's focusable edge, not this label. */}
       <div
-        className="nodrag nopan pointer-events-auto absolute max-w-[220px] cursor-help select-none truncate rounded-md border border-neutral-200 bg-white/95 px-1.5 py-0.5 text-[11px] text-neutral-700 shadow-xs dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-200"
+        className="nodrag nopan pointer-events-auto absolute max-w-[220px] cursor-pointer select-none truncate rounded-md border border-neutral-200 bg-white/95 px-1.5 py-0.5 text-[11px] text-neutral-700 shadow-xs dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-200"
         style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
         title={fullLabel}
+        onClick={(e) => {
+          // Don't let the select bubble to the pane (which would clear it).
+          e.stopPropagation();
+          onSelect?.();
+        }}
       >
         {truncated}
       </div>

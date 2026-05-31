@@ -2,6 +2,40 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Easier edge/connector selection (hover cue + clickable label + clearer selected)
+
+Edges were fiddly to click and, once selected, hard to *see* as selected — and
+after goal #2 the selected indigo collided with the new indigo drop-target glow.
+Three fixes:
+
+- **Hover feedback** — hovering an edge now thickens it +1px, adds a faint
+  *neutral-grey* glow, and shows a pointer cursor, so the otherwise-invisible
+  56px hit zone is discoverable. Backed by a new `hoveredEdgeId` store flag
+  (guarded no-op setter, mirroring the splice-target / connection-drag recipe);
+  written by `onEdgeMouseEnter` / `onEdgeMouseLeave`. Suppressed while a
+  connection drag is in flight so the drop-target glow owns the visual.
+- **Bigger click target** — the inline edge label is now click-to-select (before,
+  only the tiny assumption badge was). `stopPropagation` keeps the click from
+  bubbling to the pane (which would clear the selection); it stays a `<div>`
+  since React Flow edges carry their own keyboard focus/select path, so a button
+  would add a spurious tab stop.
+- **Clearer selected state** — the selected edge gains a crisp solid-indigo
+  *casing band* underlay (distinct in *shape* from the drop-target's fuzzy blur)
+  plus a stronger glow (`0 0 5px …aa`, was `4px …66`). Hover grey vs selected
+  indigo vs drop-target indigo are now distinguishable by hue + shape, not just
+  stacked opacity.
+
+The three edge states have explicit precedence (`isHoverActive` excludes
+selected / drop-target / mutex / mid-drag; the casing band is gated
+`selected && !isDropTarget`). `TPEdge`'s palette-awareness is unchanged
+(pre-existing — it uses the default-palette constants directly).
+
+Tests: new `tests/store/hoveredEdgeHighlight.test.ts` (defaults / round-trip /
+no-op-guard write count / notify-on-change / reset) + hovered-edge cases in
+`useGraphMutations.test.tsx` + new `tests/components/TPEdgeInlineLabel.test.tsx`
+(click selects once / stopPropagation / title carries the full label / stays a
+`<div>`). tsc + biome + full suite green (2173 passed).
+
 ## Session 138 — Easier drag-and-drop (forgiving connection/junction creation)
 
 Three connection/junction-creation drag gestures are now more forgiving and give

@@ -145,6 +145,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         causalityLabel: s.causalityLabel,
         diagramType: doc.diagramType,
         isNoteEdge: sourceIsNote || targetIsNote,
+        // Goal #3 — select-hover cue. `isHovered` is this edge under the
+        // pointer; `isConnecting` is "a connection drag is in flight" (any
+        // source), used to suppress the hover cue mid-drag so the
+        // drop-target glow owns the visual.
+        isHovered: s.hoveredEdgeId === props.id,
+        isConnecting: s.connectingFromId != null,
       };
     })
   );
@@ -159,6 +165,8 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     causalityLabel,
     diagramType,
     isNoteEdge,
+    isHovered,
+    isConnecting,
   } = edgeView;
   // Actions in their own shallow bundle. They're stable refs across
   // store snapshots, so this subscription effectively never fires —
@@ -357,6 +365,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // Goal #2 — the connection-drag "drop here to AND" target shares the
   // splice-target's indigo glow (both mean "release lands on this edge").
   const isDropTarget = isSpliceTarget || isConnectionDropTarget;
+  // Goal #3 — the select-hover cue is active only when this edge is hovered
+  // and no stronger state owns the visual: not selected (casing band), not a
+  // drop-target / mutex (their own colors), and not mid-connection-drag (the
+  // drop-target glow takes over then). Keeping the exclusions here means the
+  // width / glow / cursor branches below all key off one boolean.
+  const isHoverActive = isHovered && !props.selected && !isDropTarget && !isMutex && !isConnecting;
   const stroke = isDropTarget
     ? SPLICE_TARGET_STROKE
     : isMutex
@@ -382,7 +396,8 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // existing widths even on a note edge — selection feedback still
   // wins).
   const baseWidth = props.selected ? 3 : isJunctorGroup ? 1.75 : isNoteEdge ? 1.25 : 1.5;
-  const strokeWidth = isBackEdge || isDropTarget ? baseWidth + 1.5 : baseWidth;
+  const strokeWidth =
+    isBackEdge || isDropTarget ? baseWidth + 1.5 : isHoverActive ? baseWidth + 1 : baseWidth;
   // Back-edges render with a subtle dash pattern in addition to the
   // thicker stroke — combination of two cues so the visual reads as
   // "this is *the* tagged loop-closer" rather than "this edge is just
@@ -402,8 +417,10 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const selectedFilter = isDropTarget
     ? `drop-shadow(0 0 6px ${SPLICE_TARGET_STROKE}88)`
     : props.selected
-      ? `drop-shadow(0 0 4px ${EDGE_STROKE_SELECTED}66)`
-      : undefined;
+      ? `drop-shadow(0 0 5px ${EDGE_STROKE_SELECTED}aa)`
+      : isHoverActive
+        ? 'drop-shadow(0 0 3px #73737366)'
+        : undefined;
 
   /**
    * Truncate the label for the inline render, leaving the full text on
@@ -418,6 +435,26 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
 
   return (
     <>
+      {/* Goal #3 — selected "casing band": a crisp, solid indigo halo UNDER
+          the core stroke. Distinct from the drop-target's fuzzy blur (shape,
+          not just hue, is the discriminator) and from the grey hover glow.
+          `pointer-events-none` so it never touches the 56px hit path;
+          suppressed mid-drag (`!isDropTarget`) so the two indigo cues don't
+          stack. A bare <path> has no implicit ARIA role and carries no
+          accessible name, so it's already ignored by assistive tech — no
+          `aria-hidden` needed (and Biome flags it as focusable-ish). One
+          extra path per *selected* edge (~1 on screen) — not per-frame. */}
+      {props.selected && !isDropTarget && (
+        <path
+          d={path}
+          fill="none"
+          stroke={EDGE_STROKE_SELECTED}
+          strokeWidth={8}
+          strokeOpacity={0.22}
+          strokeLinecap="round"
+          style={{ pointerEvents: 'none' }}
+        />
+      )}
       <BaseEdge
         id={props.id}
         path={path}
@@ -437,6 +474,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           strokeWidth,
           strokeDasharray,
           filter: selectedFilter,
+          cursor: isHoverActive ? 'pointer' : undefined,
           ...props.style,
         }}
       />
@@ -470,6 +508,9 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           labelY={labelY}
           fullLabel={edgeLabel}
           truncated={truncatedLabel}
+          // Goal #3 — clicking the label selects the edge (select only; unlike
+          // the assumption badge it doesn't also force the EC inspector tab).
+          onSelect={() => selectEdge(props.id)}
         />
       )}
       {fallbackLabel && <FallbackLabel labelX={labelX} labelY={labelY} text={fallbackLabel} />}

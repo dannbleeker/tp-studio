@@ -151,14 +151,14 @@ Dann's five-goal pass on how the canvas draws + how grabbable it is. **Shipped:*
 
 5. ✅ **Connectors choose the shortest path in/out (4-side anchoring)** — *Session 138* — smart-mode edges now exit/enter on the best of all four node sides ("prefer flow direction", curves kept), folded into `'smart'` (no new toggle); junctor source-legs + side-by-side mutex included; radial excluded. New `src/domain/edgeSides.ts` + side-aware emitters in `edgeRouting.ts`. Also corrected the latent dagre-`BT` away-side anchoring. Details in CHANGELOG.
 
-**Still open (Dann's goals #1–4 — do one at a time):**
+**Goals #1–4 (all addressed this session — #1 stays watch-listed for any further AND glitches):**
 
 1. **Fix AND rendering bugs** — visual glitches on AND/junctor rendering. ✅ *One fixed Session 138* — the junctor circle floated off on its own after a re-layout / drag because `JunctorOverlay` only re-rendered on pan/zoom + group changes, never on node-position changes; it now tracks its target via a live `useStore` selector (`computeJunctors`). Re-open with specifics if other AND glitches surface.
 2. ~~**Easier drag-and-drop**~~ ✅ *Session 138* — connection/junction creation by dragging is now forgiving: bigger hit zones (`connectionRadius` 20→120, ~20px handle catch, 22px junctor catch, 56px edge halo) + live drop-target feedback while dragging (target-node ring — rose if invalid; edge glow for "drop to AND"; junctor highlight for "drop to join"). Repositioning stays off (#4). Details in CHANGELOG.
-3. **Easier edge/connector selection** — connectors are still fiddly to click (the 48 px halo helped; more wanted).
+3. ~~**Easier edge/connector selection**~~ ✅ *Session 138* — edges now answer on hover (+1px stroke, neutral-grey glow, pointer cursor) so the 56px hit zone is discoverable; the inline label is click-to-select (was: only the tiny assumption badge); and the selected edge gains a crisp solid-indigo **casing band** underlay + a stronger glow, distinct in *shape* from the (also-indigo) drop-target blur from #2. New `hoveredEdgeId` store flag (guarded no-op setter, same recipe as splice-target / connection-drag); state precedence is explicit (hover excludes selected/drop/mutex/mid-drag; band gated `selected && !isDropTarget`). Details in CHANGELOG.
 4. ~~**"Balance" the map**~~ ✅ *Session 138* — auto-layout is now authoritative (stored positions ignored for auto diagrams; imports re-flow), and a post-dagre **centering pass** (`balanceFreeAxis`, `src/domain/layout.ts`) re-centers each effect over the mean of its causes, so connectors come out short + near-vertical. Edge anchoring unchanged (#5). Details in CHANGELOG.
 
-Open goals remaining: **#3 easier edge/connector selection** (+ re-open #1 if other AND glitches surface). Otherwise the backlog is drained — beyond that, new work would come from fresh spec/product direction.
+Open goals remaining: **none** — all five canvas goals (#1–#5) shipped this session. (Re-open #1 if other AND glitches surface beyond the junctor-float fix.) The backlog is otherwise drained — beyond this, new work would come from fresh spec/product direction.
 
 *(Was on the list: "Phase 1C node-chrome / canvas eligibility surfacing." Already done — `EligibilityBadge` ships on Action nodes via the `Show action-eligibility badge` Display setting, with full inspector readout retained. Code in `src/components/canvas/nodes/TPNodeBadges.tsx` + `useGraphNodeEmission.ts`; tests in `tests/components/canvas/eligibilityBadgeEmission.test.tsx`.)*
 

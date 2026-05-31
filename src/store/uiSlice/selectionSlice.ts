@@ -61,6 +61,12 @@ export type SelectionSlice = {
   connectingFromId: string | null;
   connectionDropEdgeId: string | null;
 
+  /** Goal #3 — the edge currently hovered (no drag in flight), backing the
+   *  select-hover highlight so the 56px hit zone is discoverable. `TPEdge`
+   *  reads `hoveredEdgeId === id`. Transient; the setter no-ops on an
+   *  unchanged value so moving within one edge doesn't fan re-renders. */
+  hoveredEdgeId: string | null;
+
   /** Session 138 — the canvas interaction mode (`idle` / `edge-join` /
    *  `pending-edge`), folding the former `joinModeEdgeId` +
    *  `pendingEdgeSourceId` nullable flags into one discriminated union so
@@ -103,6 +109,11 @@ export type SelectionSlice = {
   setConnectingFrom: (id: string | null) => void;
   setConnectionDropEdge: (edgeId: string | null) => void;
 
+  /** Goal #3 — set/clear the hovered edge for the select-hover highlight.
+   *  No-op when unchanged (same per-frame-safety rationale as the two
+   *  connection-drag setters above). */
+  setHoveredEdge: (edgeId: string | null) => void;
+
   /** Session 133 — enter / exit edge-join mode. `startEdgeJoinMode`
    *  remembers the source edge id; the next edge click on the canvas
    *  attempts the AND-group via the existing `groupAsAnd` action and
@@ -127,6 +138,7 @@ export type SelectionDataKeys =
   | 'spliceTargetEdgeId'
   | 'connectingFromId'
   | 'connectionDropEdgeId'
+  | 'hoveredEdgeId'
   | 'canvasMode';
 
 export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => ({
@@ -136,6 +148,7 @@ export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => 
   spliceTargetEdgeId: null,
   connectingFromId: null,
   connectionDropEdgeId: null,
+  hoveredEdgeId: null,
   canvasMode: { kind: 'idle' },
 });
 
@@ -152,6 +165,7 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   spliceTargetEdgeId: null,
   connectingFromId: null,
   connectionDropEdgeId: null,
+  hoveredEdgeId: null,
   canvasMode: { kind: 'idle' },
 
   select: (selection) => set({ selection }),
@@ -223,6 +237,14 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
   setConnectionDropEdge: (edgeId) => {
     if (get().connectionDropEdgeId === edgeId) return;
     set({ connectionDropEdgeId: edgeId });
+  },
+  setHoveredEdge: (edgeId) => {
+    // Same bail-early rationale as the connection-drag setters: edge
+    // mousemove can refire for the same id, and every visible TPEdge
+    // subscribes to `hoveredEdgeId === props.id`, so an unchanged write
+    // would thrash reconciliation across the whole canvas.
+    if (get().hoveredEdgeId === edgeId) return;
+    set({ hoveredEdgeId: edgeId });
   },
 
   startEdgeJoinMode: (edgeId) =>
