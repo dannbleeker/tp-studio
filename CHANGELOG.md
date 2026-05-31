@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 152 — Refactor: DRY the Evaporating Cloud patterns
+
+The seven EC pattern builders each repeated the identical 5-box cloud
+boilerplate — the same positions, the same five edges, the same document
+envelope — differing only in their six strings. Collapsed that into one
+`buildECPattern(spec)` helper (`patterns/ec-shared.ts`): each pattern is now
+~20 lines (a teaching docstring + its spec), down from ~70–110, and a new EC
+pattern is just its spec. Net **−360 lines**, one source of truth for the
+canonical cloud shape.
+
+Behaviour-preserving except one deliberate **normalization**: the conflict edge
+now uses the canonical `{ kind: 'necessity', isMutualExclusion: true }` form
+everywhere (matches `buildExampleEC` + 3 of the patterns; 4 newer ones had
+omitted the `kind`). The patterns-registry guards and the Efrat-cloud shape test
+(updated to count the four *structural* necessity edges, excluding the conflict)
+pass; full suite green. Next refactor target logged in NEXT_STEPS: `edgeRouting.ts`
+(1150 lines) — the codebase's largest file.
+
 ## Session 151 — Opt-in Send-to-Kindle on book updates
 
 The `Rebuild book artifacts` workflow already rebuilds the EPUB on every book

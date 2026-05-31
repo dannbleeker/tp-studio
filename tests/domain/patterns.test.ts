@@ -149,8 +149,10 @@ describe("ec-efrats-change-cloud (Efrat's generic change cloud)", () => {
     expect(entities.filter((e) => e.type === 'want')).toHaveLength(2);
     // Every box is slotted (a / b / c / d / dPrime) for the hand-positioned layout.
     expect(entities.every((e) => e.ecSlot)).toBe(true);
-    // Four necessity links (D→B, D′→C, B→A, C→A) plus exactly one mutex (D↔D′).
-    expect(edges.filter((e) => e.kind === 'necessity')).toHaveLength(4);
+    // Four structural necessity links (D→B, D′→C, B→A, C→A); the conflict edge
+    // carries the canonical `{ kind: 'necessity', isMutualExclusion }` form, so
+    // exclude it from the structural count. Exactly one mutex (D↔D′).
+    expect(edges.filter((e) => e.kind === 'necessity' && !e.isMutualExclusion)).toHaveLength(4);
     expect(edges.filter((e) => e.isMutualExclusion)).toHaveLength(1);
   });
 });

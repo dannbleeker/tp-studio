@@ -24,6 +24,23 @@ spacing, shipped Session 146):
 
 ---
 
+## Refactoring targets
+
+- **Split `src/domain/edgeRouting.ts` (~1150 lines — the largest file).** Pure
+  domain logic, heavily test-covered (`edgeRouting` + `edgeRoutingAStarParity` +
+  `edgeSides`), so a split is behaviour-preserving and well-gated. Clean seams:
+  the bezier emitters (`defaultBezierPath` + sided variants, ~260 lines) → a leaf
+  `edgeBezier.ts`; the visibility-graph + A\* engine (`buildVisibilityGraph`,
+  `AStarOpenHeap`, `aStarOnGraph`, `findVisibilityPath`, ~460 lines) →
+  `edgeVisibilityGraph.ts`; keep `routeEdge` as the orchestrator and
+  **re-export** from `edgeRouting.ts` so `@/domain/edgeRouting` stays the public
+  entry (no external import churn). Watch for value-import cycles — move shared
+  types/constants (`Point` / `Box` / `OBSTACLE_PADDING`) to a leaf first, or
+  type-only-import them. Deferred from the Session-152 refactor (did the EC DRY
+  there instead).
+
+---
+
 ## TP completeness — gap analysis vs. Cohen's *TP Basics* (parked Session 150)
 
 Full mapping in [docs/TP_BASICS_GAP_ANALYSIS.md](docs/TP_BASICS_GAP_ANALYSIS.md)
