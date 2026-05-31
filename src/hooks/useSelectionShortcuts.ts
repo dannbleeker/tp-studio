@@ -179,6 +179,11 @@ export function useSelectionShortcuts() {
             const candidates = rfNodes.filter(
               (n) =>
                 n.id !== current.id &&
+                // Only real entities are sibling-navigable: `getCanvasNodes()`
+                // also returns group / collapsed-group nodes whose ids aren't
+                // in `doc.entities`, and `selectEntity`-ing one would point the
+                // inspector at a missing entity.
+                doc.entities[n.id] !== undefined &&
                 Math.abs(n.position.y - current.position.y) <= SIBLING_Y_TOLERANCE_PX &&
                 Math.sign(n.position.x - current.position.x) === direction
             );

@@ -229,38 +229,35 @@ const activeDocEphemeralReset = () => ({
 export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> = (set, get) => {
   const applyDocChange = makeApplyDocChange(get, set);
 
+  // Shared "swap the active document" sequence used by `setDocument` and
+  // `newDocument`: snapshot the outgoing doc as a revision (suppressed on a
+  // restore swap; skipped for an empty fresh-boot doc), persist the incoming
+  // doc synchronously (explicit user intent), rebuild the single-tab
+  // map/order around it + reset ephemeral UI state, push the outgoing doc onto
+  // history, and refresh the revisions panel. Extracted so the two callers
+  // can't drift out of sync.
+  const performDocumentSwap = (doc: TPDocument, reason: string): void => {
+    const prev = currentDoc(get());
+    autoSnapshotOutgoing(prev, reason);
+    persistDebounced(doc);
+    flushPersist();
+    set({
+      ...setActiveDoc(get(), doc),
+      ...activeDocEphemeralReset(),
+      past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
+      future: [],
+    });
+    get().reloadRevisionsForActiveDoc();
+  };
+
   return {
     ...initialTabState,
 
     setDocument: (doc) => {
-      const prev = currentDoc(get());
-      // H1 — capture the outgoing doc as a revision so the user can roll
-      // back. Suppressed when the swap is itself a revision restore (the
-      // restore path captures its own safety snapshot first). Skipped
-      // when the outgoing doc is empty (no entities and the title is
-      // still "Untitled") — a brand-new fresh-boot doc has nothing
-      // worth snapshotting.
-      autoSnapshotOutgoing(prev, 'document swap');
-      // Document swap is explicit user intent — persist synchronously.
-      persistDebounced(doc);
-      flushPersist();
-      // Batch 2.1 — `activeDocState` rebuilds the single-tab map/order
-      // around the incoming doc, preserving today's replace-current-doc
-      // behavior (Phase 5 changes this to append a tab).
-      set({
-        ...setActiveDoc(get(), doc),
-        ...activeDocEphemeralReset(),
-        past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
-        future: [],
-      });
-      // Refresh the revisions panel view: it's keyed by the active doc id,
-      // and that just changed.
-      get().reloadRevisionsForActiveDoc();
+      performDocumentSwap(doc, 'document swap');
     },
 
     newDocument: (diagramType) => {
-      const prev = currentDoc(get());
-      autoSnapshotOutgoing(prev, `new ${diagramType} document`);
       const base = createDocument(diagramType);
       // FL-TO3: seed the fresh doc with the user's preferred layout
       // direction when set. `'auto'` falls back to the diagram-type
@@ -271,15 +268,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         pref && pref !== 'auto'
           ? { ...base, layoutConfig: { ...(base.layoutConfig ?? {}), direction: pref } }
           : base;
-      persistDebounced(doc);
-      flushPersist();
-      set({
-        ...setActiveDoc(get(), doc),
-        ...activeDocEphemeralReset(),
-        past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
-        future: [],
-      });
-      get().reloadRevisionsForActiveDoc();
+      performDocumentSwap(doc, `new ${diagramType} document`);
       // Session 78: open the creation wizard panel when the diagram
       // type has one AND the user hasn't turned it off. Goal Tree +
       // EC are the two that have a wizard today.

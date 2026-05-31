@@ -2,6 +2,34 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 138 — Code-inspection hardening (Low-severity batch)
+
+Follows the High-severity batch — lands the worthwhile Low-severity findings:
+
+- **`useGraphProjection`** collapser-reachability BFS advances a head index
+  instead of `queue.shift()` (O(N) dequeue → O(V²) on deep subgraphs).
+- **Arrow-key sibling navigation** filters candidates to real entities, so it
+  can no longer select a group / collapsed-group node id (which would point the
+  inspector at a missing entity).
+- **v6→v7 migration** no longer mints a dangling `Assumption` record with
+  `edgeId: ''` for an orphaned assumption-entity (referenced by no edge) — such
+  a record never resolves to an edge and is invisible in the AssumptionWell.
+- **`balanceFreeAxis`** writes node positions through `g.setNode` with a copied
+  label rather than mutating the dagre node object in place.
+- **`docMetaSlice`** `setDocument` / `newDocument` share a single
+  `performDocumentSwap` helper instead of a copy-pasted 5-step swap sequence,
+  so the two can't drift.
+
+Two Low findings were assessed and intentionally deferred (recorded in
+NEXT_STEPS): narrowing the SelectionToolbar edges subscription (risks stale
+verbs — `verbsForBranch` reads full live state) and splitting the 1050-line
+`edgeRouting.ts` (needs a careful geometry/detour/visibility/public
+decomposition to avoid circular imports — a deliberate refactor, not a cosmetic
+pass).
+
+Tests: new v6→v7 orphaned-assumption case in `migrations.test.ts`. tsc + biome
++ full suite green (2188 passed).
+
 ## Session 138 — Code-inspection hardening (High-severity batch)
 
 A six-agent read-only inspection surfaced ~37 findings; this lands the **13

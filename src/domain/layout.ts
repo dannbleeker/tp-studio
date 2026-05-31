@@ -132,8 +132,12 @@ const balanceFreeAxis = (
   };
   const setFree = (id: string, v: number): void => {
     const n = g.node(id);
-    if (vertical) n.x = v;
-    else n.y = v;
+    // Write through `setNode` with a copied label rather than mutating the
+    // dagre node object in place, so this doesn't rely on graphlib handing
+    // back a per-node label reference that's safe to mutate. (`g` is local to
+    // the component layout and discarded afterward; the copy keeps that
+    // invariant explicit.)
+    g.setNode(id, vertical ? { ...n, x: v } : { ...n, y: v });
   };
   const rankOf = (id: string): number => {
     const n = g.node(id);

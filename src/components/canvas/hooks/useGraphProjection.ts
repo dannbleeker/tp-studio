@@ -110,8 +110,13 @@ export const useGraphProjection = (doc: TPDocument): GraphProjection => {
       for (const id of entityCollapsers) {
         const reached = new Set<string>();
         const queue: string[] = [...(outAdj.get(id) ?? [])];
-        while (queue.length) {
-          const cur = queue.shift()!;
+        // Head index instead of `queue.shift()` — shift() is O(N) in V8 (it
+        // memmoves the remaining elements), degrading this BFS to O(V^2) on a
+        // deep reachable subgraph. Advancing an index keeps it O(V+E).
+        let head = 0;
+        while (head < queue.length) {
+          const cur = queue[head]!;
+          head += 1;
           if (reached.has(cur)) continue;
           if (cur === id) continue; // never hide the collapser itself
           reached.add(cur);

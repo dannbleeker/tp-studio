@@ -70,6 +70,59 @@ describe('migrateToCurrent', () => {
     expect(result.groups).toEqual(v3Doc.groups);
   });
 
+  it('mints an Assumption record only for assumption-entities attached to an edge (L4)', () => {
+    const v6Doc = {
+      schemaVersion: 6,
+      diagramType: 'crt',
+      entities: {
+        cause: {
+          id: 'cause',
+          type: 'effect',
+          title: 'Cause',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        effect: {
+          id: 'effect',
+          type: 'effect',
+          title: 'Effect',
+          annotationNumber: 2,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        asmAttached: {
+          id: 'asmAttached',
+          type: 'assumption',
+          title: 'Attached',
+          annotationNumber: 3,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        asmOrphan: {
+          id: 'asmOrphan',
+          type: 'assumption',
+          title: 'Orphan',
+          annotationNumber: 4,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      edges: {
+        e1: { id: 'e1', sourceId: 'cause', targetId: 'effect', assumptionIds: ['asmAttached'] },
+      },
+      groups: {},
+      nextAnnotationNumber: 5,
+    };
+    const result = migrateToCurrent(v6Doc) as { assumptions: Record<string, { edgeId: string }> };
+    // The attached assumption-entity mints a record pointing at its edge…
+    expect(result.assumptions.asmAttached).toBeDefined();
+    expect(result.assumptions.asmAttached!.edgeId).toBe('e1');
+    // …but an orphaned assumption-entity (referenced by no edge) does NOT mint
+    // a dangling record with edgeId='' that could never resolve to an edge.
+    expect(result.assumptions.asmOrphan).toBeUndefined();
+  });
+
   it('rejects a document with a schemaVersion newer than the app supports', () => {
     expect(() => migrateToCurrent({ schemaVersion: CURRENT_SCHEMA_VERSION + 1 })).toThrow(
       /newer than this app supports/

@@ -91,7 +91,12 @@ export const v6ToV7: Migration = {
         ([, e]) =>
           isPlainObject(e) && Array.isArray(e.assumptionIds) && e.assumptionIds.includes(id)
       );
-      const edgeId = edgeEntry ? edgeEntry[0] : '';
+      // Orphaned assumption-Entity (referenced by no edge's `assumptionIds`):
+      // skip minting a first-class record. A record with `edgeId: ''` would
+      // never match a real edge — it just dangles, invisible in the
+      // AssumptionWell. The legacy assumption-Entity is left as-is.
+      if (!edgeEntry) continue;
+      const edgeId = edgeEntry[0];
       const text = typeof ent.title === 'string' ? ent.title : '';
       const now = typeof ent.createdAt === 'number' ? ent.createdAt : Date.now();
       nextAssumptions[id] = {
