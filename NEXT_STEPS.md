@@ -54,15 +54,13 @@ most are real wins but carry correctness/CI risk not worth taking in a wind-down
 - **Narrow `SelectionToolbar`'s whole-`edges` subscription** — risks stale verbs
   (`verbsForBranch` reads live state via `getState()`); explicitly deferred
   before (Session 138 L2).
-- **A\* open-list `Set` linear-scan → indexed binary min-heap** (`edgeRouting.ts`,
-  the `while (open.size)` loop) — O(V²)→O(V log V), but **routing-correctness-
-  sensitive**: the linear scan breaks f-score ties by Set insertion order
-  (strict `<`), and exact ties are common in symmetric tree layouts. A heap
-  won't preserve that under decrease-key (lazy deletion re-sequences updated
-  vertices), so routes could shift to a different equal-length path → visible
-  geometry change. Only pays off on very large dense graphs (atypical here).
-  Defer unless a true decrease-key heap keyed on (f, original-insertion-seq) is
-  built to guarantee byte-identical routes.
+- ~~**A\* open-list `Set` linear-scan → binary min-heap**~~ ✅ *Session 145* —
+  shipped **route-identical**. `AStarOpenHeap` keys on `(fScore, insertion-seq)`;
+  each vertex's seq is assigned ONCE on first entry (so lazy decrease-key
+  re-pushes never re-sequence it), reproducing the old `Set`'s insertion-order
+  tie-break exactly. 8 golden routes through symmetric tie-prone fields prove
+  byte-identical output (`tests/domain/edgeRoutingAStarParity`, run without
+  `--update`). O(V²)→O(V log V) on the routing hot path.
 - **Per-edge `obstaclesForEdge` allocation → skip-indices** — needs new
   skip-index params on the routing helpers; routing-correctness-sensitive.
 - ~~**`persistActiveDoc` double `JSON.stringify`**~~ ✅ *Session 144* — serializes

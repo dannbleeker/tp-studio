@@ -2,6 +2,34 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 145 — A* edge-routing open-list → min-heap (route-identical)
+
+The obstacle-router's A* open list was a `Set` scanned linearly for the
+min-fScore vertex on every pop — O(V²) over a route. Replaced it with a binary
+min-heap (`AStarOpenHeap`) keyed on `(fScore, insertion-seq)`: O(V log V) on
+the routing hot path.
+
+The hard requirement was **byte-identical routes**. The old scan broke fScore
+ties by `Set` insertion order (it kept the first minimum it met, via strict
+`<`), and exact ties are common in the symmetric tree layouts this tool draws —
+so an unstable tie-break would silently reroute edges to a different
+equal-length detour. The heap reproduces the scan's pop order exactly:
+
+- each vertex carries the insertion rank it had in the old `Set` (assigned
+  once, on first entry); the heap breaks fScore ties by that rank.
+- decrease-key is lazy — an improved vertex pushes a fresh entry (same rank)
+  and the pop loop skips any entry whose vertex is already finalized. A
+  vertex's lowest-fScore entry is always popped first, so its first pop is the
+  live one — exactly the vertex the scan would have selected.
+
+Proof: `tests/domain/edgeRoutingAStarParity.test.ts` — 8 golden routes through
+symmetric, tie-prone obstacle fields (single / multi-box, diagonal, 2×2 grid),
+captured from the linear-scan implementation and reproduced point-for-point by
+the heap (the test runs *without* `--update`, so any divergence fails). The
+existing 50-trial no-crossing property test and the full routing suite pass
+unchanged. Only the open-list data structure changed — the visibility graph,
+euclidean heuristic, edge relaxation, and path reconstruction are untouched.
+
 ## Session 144 — Wind-down perf: edge-side narrowing + single-serialize save
 
 **1. Render-subscription narrowing — edge side complete.**

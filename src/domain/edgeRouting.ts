@@ -780,6 +780,94 @@ export const buildVisibilityGraph = (
 };
 
 /**
+ * Binary min-heap for the A\* open list, ordered by `(fScore, insertionSeq)`.
+ *
+ * Replaces the previous `Set` + per-pop O(V) linear scan (O(V²) overall) with
+ * O(log V) push / pop. It is a *drop-in* for that scan — it reproduces the
+ * exact same pop order, hence byte-identical routes (pinned by
+ * `tests/domain/edgeRoutingAStarParity`). Two properties make that hold:
+ *
+ *   1. **Tie-break = insertion order.** The scan kept the FIRST minimum it met
+ *      and a `Set` iterates in insertion order, so among equal fScores the
+ *      earliest-inserted vertex won. Each entry carries its vertex's insertion
+ *      sequence and ties on fScore break by it (smaller seq wins).
+ *   2. **Decrease-key via lazy deletion.** When a vertex's fScore improves the
+ *      caller pushes a fresh entry (reusing the vertex's original seq) and
+ *      leaves the stale one; on pop it skips any entry whose vertex is already
+ *      finalized. A vertex's lowest-fScore entry is always popped first, so
+ *      its first pop is the live one — exactly what the scan would select.
+ *
+ * Entries live in three parallel arrays to avoid a per-entry object on this
+ * hot path. Total pushes ≤ relaxations = O(E), so the arrays stay bounded.
+ */
+class AStarOpenHeap {
+  private readonly fs: number[] = [];
+  private readonly seqs: number[] = [];
+  private readonly idxs: number[] = [];
+
+  get size(): number {
+    return this.fs.length;
+  }
+
+  /** Does entry `a` sort before entry `b`? Lower fScore, then lower seq. */
+  private before(a: number, b: number): boolean {
+    const fa = this.fs[a]!;
+    const fb = this.fs[b]!;
+    if (fa !== fb) return fa < fb;
+    return this.seqs[a]! < this.seqs[b]!;
+  }
+
+  private swap(a: number, b: number): void {
+    const f = this.fs[a]!;
+    this.fs[a] = this.fs[b]!;
+    this.fs[b] = f;
+    const s = this.seqs[a]!;
+    this.seqs[a] = this.seqs[b]!;
+    this.seqs[b] = s;
+    const i = this.idxs[a]!;
+    this.idxs[a] = this.idxs[b]!;
+    this.idxs[b] = i;
+  }
+
+  push(f: number, seq: number, idx: number): void {
+    let c = this.fs.length;
+    this.fs.push(f);
+    this.seqs.push(seq);
+    this.idxs.push(idx);
+    while (c > 0) {
+      const p = (c - 1) >> 1;
+      if (!this.before(c, p)) break;
+      this.swap(c, p);
+      c = p;
+    }
+  }
+
+  /** Remove and return the min entry's vertex index. Caller ensures size > 0. */
+  pop(): number {
+    const top = this.idxs[0]!;
+    const lastF = this.fs.pop()!;
+    const lastSeq = this.seqs.pop()!;
+    const lastIdx = this.idxs.pop()!;
+    const n = this.fs.length;
+    if (n > 0) {
+      this.fs[0] = lastF;
+      this.seqs[0] = lastSeq;
+      this.idxs[0] = lastIdx;
+      let p = 0;
+      for (let l = 1; l < n; l = 2 * p + 1) {
+        const r = l + 1;
+        let m = this.before(l, p) ? l : p;
+        if (r < n && this.before(r, m)) m = r;
+        if (m === p) break;
+        this.swap(p, m);
+        p = m;
+      }
+    }
+    return top;
+  }
+}
+
+/**
  * Run A\* through a pre-built {@link VisibilityGraph} from `source`
  * to `target`. The graph carries only the obstacle corners; the
  * source and target are added on top as transient vertices, and
@@ -893,7 +981,21 @@ export const aStarOnGraph = (
   const cameFrom = new Int32Array(vertexCount).fill(-1);
   gScore[SOURCE_IDX] = 0;
   fScore[SOURCE_IDX] = Math.hypot(target.x - source.x, target.y - source.y);
-  const open = new Set<number>([SOURCE_IDX]);
+
+  // Open list as a (fScore, insertion-seq) min-heap — see AStarOpenHeap.
+  // `seqOf` assigns each vertex an insertion rank the first time it enters the
+  // open list, mirroring the previous `Set`'s insertion order so the tie-break
+  // — and therefore the chosen route — stays byte-identical. `finalized` lets
+  // the pop loop skip the stale duplicates a lazy decrease-key leaves behind.
+  const open = new AStarOpenHeap();
+  const seqOf = new Int32Array(vertexCount).fill(-1);
+  const finalized = new Uint8Array(vertexCount);
+  let seqCounter = 0;
+  const openPush = (idx: number): void => {
+    if (seqOf[idx] === -1) seqOf[idx] = seqCounter++;
+    open.push(fScore[idx]!, seqOf[idx]!, idx);
+  };
+  openPush(SOURCE_IDX);
 
   // Returns the iterator over (neighborIdx, weight) for vertex `v`.
   // For the source / target we splice in the side arrays + the
@@ -937,16 +1039,12 @@ export const aStarOnGraph = (
   };
 
   while (open.size > 0) {
-    let best = -1;
-    let bestF = Number.POSITIVE_INFINITY;
-    for (const idx of open) {
-      const f = fScore[idx] ?? Number.POSITIVE_INFINITY;
-      if (f < bestF) {
-        bestF = f;
-        best = idx;
-      }
-    }
-    if (best === -1) break;
+    const best = open.pop();
+    // Skip stale duplicates left by a lazy decrease-key: a vertex's live
+    // (lowest-fScore) entry is always popped first, so once it is finalized
+    // any later entry for it is obsolete. This is what keeps the pop order —
+    // and therefore the route — identical to the old linear scan over `open`.
+    if (finalized[best]) continue;
     if (best === TARGET_IDX) {
       // Reconstruct the path.
       const path: Point[] = [];
@@ -958,7 +1056,7 @@ export const aStarOnGraph = (
       path.reverse();
       return path;
     }
-    open.delete(best);
+    finalized[best] = 1;
     const gBest = gScore[best] ?? Number.POSITIVE_INFINITY;
     iterateNeighbors(best, (neighborIdx, weight) => {
       const tentativeG = gBest + weight;
@@ -968,7 +1066,7 @@ export const aStarOnGraph = (
         gScore[neighborIdx] = tentativeG;
         fScore[neighborIdx] =
           tentativeG + Math.hypot(target.x - getVx(neighborIdx), target.y - getVy(neighborIdx));
-        if (!open.has(neighborIdx)) open.add(neighborIdx);
+        openPush(neighborIdx);
       }
     });
   }
