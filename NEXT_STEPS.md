@@ -29,6 +29,44 @@ is one standalone item plus two parked notes:
 
 ---
 
+## Performance optimization candidates (Session 140 audit) — deferred
+
+The Session-140 audit surfaced ~30 candidates; the safe, locally-verifiable,
+high-value ones shipped Session 142 (see CHANGELOG). The rest are deferred —
+most are real wins but carry correctness/CI risk not worth taking in a wind-down:
+
+- **Narrow `CanvasInner`'s whole-`doc` subscription + emission memo deps**
+  (`doc` → `doc.entities`/`doc.edges`) — the single biggest render-churn source
+  (inspector keystrokes ripple through `useGraphView`), but it risks missed
+  re-renders if a read field is dropped from the deps. Architectural; already on
+  the Session-138 deferral list. Do it behind a careful component-test pass.
+- **Per-node `TPNode` selector reads whole `currentDoc`** for `diagramType` /
+  `customEntityClasses` (session-invariant) — hoist to a stable selector. Same
+  re-render-correctness risk class.
+- **Narrow `SelectionToolbar`'s whole-`edges` subscription** — risks stale verbs
+  (`verbsForBranch` reads live state via `getState()`); explicitly deferred
+  before (Session 138 L2).
+- **A\* open-list → binary min-heap** (`edgeRouting.ts`) — O(V²)→O(V log V), but
+  only bites on very large dense graphs and touches every edge's routing path.
+- **Per-edge `obstaclesForEdge` allocation → skip-indices** — needs new
+  skip-index params on the routing helpers; routing-correctness-sensitive.
+- **`persistActiveDoc` double `JSON.stringify`** (legacy dual-write) + a
+  doc-unchanged dirty-check on the debounced save — both touch the save path.
+- **CI: build-once `dist` artifact + conditional docs-bundle prebuild** — can't
+  be verified locally and restructure CI; defer to a CI-iteration session.
+- **Vitest `environment: 'node'` default + `pool: 'threads'`** — the biggest
+  suite-runtime win, but needs every component/hook test marked jsdom + verified
+  isolation; high risk of breaking the suite. Do it deliberately behind a green
+  full-suite gate.
+- **Bundle: split micromark/dompurify off the eager chunk; idle-prefetch lazy
+  panels** — verifiable via build; medium effort.
+- **`bundle-budget.json` react ceiling** — deliberately left unbudgeted (a
+  documented vendor-cost decision), so not a regression to catch.
+- **Perf-bench files out of the default `pnpm test` glob** — the Vitest
+  `exclude`-replaces-default footgun; do via a renamed `*.bench.ts` pattern.
+
+---
+
 ## Code-inspection follow-ups (Session 138) — deferred
 
 The High / Low / Medium inspection batches all shipped (see CHANGELOG

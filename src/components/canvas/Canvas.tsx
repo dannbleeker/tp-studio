@@ -93,23 +93,24 @@ function CanvasInner() {
   }, []);
 
   const isEmpty = nodes.length === 0;
-  const locked = useDocumentStore((s) => s.browseLocked);
-  const showMinimap = useDocumentStore((s) => s.showMinimap);
-  // Session 88 (V2) — combined EC chrome wrapper. Session 89 visual
-  // review found V2 had added a literal "EC CHROME" label row above
-  // the two inner strips, *increasing* vertical chrome rather than
-  // reducing it. Cleanup: the outer label row is gone; the chrome flag
-  // simply gates whether ECReadingInstructions + VerbalisationStrip
-  // render at all on EC docs. Re-show via the palette command "Show
-  // EC reading guide" (or the inverse "Hide EC reading guide" when
-  // currently shown). Default is `true` (hidden) so first-load is the
-  // cleanest possible canvas.
-  const ecChromeCollapsed = useDocumentStore((s) => s.ecChromeCollapsed);
-  // Session 135 / spec gap #9 Phase 1B — presentation mode hides
-  // the zoom-controls chip so the canvas reads as a clean read-only
-  // surface. Other CanvasNav-adjacent overlays (junctors, assumption
-  // anchors) stay because they're diagram structure, not chrome.
-  const isPresentation = useDocumentStore((s) => s.appMode === 'presentation');
+  // One shallow-equal bundle instead of four separate store subscriptions.
+  // Each value is a primitive, so the bundle re-emits only when one actually
+  // changes — vs four selector walks on every unrelated store tick.
+  //   - ecChromeCollapsed (Session 88/89): gates the EC reading-guide chrome
+  //     (ECReadingInstructions + VerbalisationStrip) on EC docs; default
+  //     `true` (hidden) for the cleanest first-load canvas. Toggle via the
+  //     "Show / Hide EC reading guide" palette command.
+  //   - isPresentation (Session 135): presentation mode hides the zoom chip so
+  //     the canvas reads as a clean read-only surface (structure overlays —
+  //     junctors / assumption anchors — stay, as they're diagram content).
+  const { locked, showMinimap, ecChromeCollapsed, isPresentation } = useDocumentStore(
+    useShallow((s) => ({
+      locked: s.browseLocked,
+      showMinimap: s.showMinimap,
+      ecChromeCollapsed: s.ecChromeCollapsed,
+      isPresentation: s.appMode === 'presentation',
+    }))
+  );
 
   // Mirror React Flow's selection (marquee-drag, ctrl/cmd-click, shift-click)
   // into the store. Edges win when both sets are non-empty (the inspector's

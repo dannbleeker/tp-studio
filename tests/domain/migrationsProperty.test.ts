@@ -34,7 +34,13 @@ import { importFromJSON } from '@/domain/persistence';
  *  generated docs readable when a property fails. */
 const idArb = fc
   .string({ minLength: 4, maxLength: 12 })
-  .map((s) => s.replace(/[^a-zA-Z0-9_-]/g, '').padEnd(4, 'x'));
+  .map((s) => s.replace(/[^a-zA-Z0-9_-]/g, '').padEnd(4, 'x'))
+  // Never generate a reserved object key: ids become record keys
+  // (`Object.fromEntries(... [e.id, e])`), and `validateRecord` rejects
+  // records keyed by `__proto__` / `constructor` / `prototype` (the
+  // prototype-pollution guard). Real ids are minted with a prefix and never
+  // collide with these; the generator honours the same invariant.
+  .map((s) => (s === '__proto__' || s === 'constructor' || s === 'prototype' ? `id-${s}` : s));
 
 // Mirror the EntityType union in `src/domain/types.ts`. Tests fail
 // fast if a future EntityType bump isn't reflected here.

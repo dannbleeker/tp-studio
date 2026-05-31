@@ -132,14 +132,27 @@ const renderECVerbal = (doc: TPDocument): string => {
   return `<section><h2>Verbalisation</h2><div class="verbal">${escapeHtml(text)}</div></section>`;
 };
 
+// Fixed allowlist mapping each known assumption status to its CSS class. The
+// class attribute is built from THIS, never from the raw `a.status` value —
+// `escapeHtml` escapes < > " ' & but NOT spaces, so a malformed status like
+// `"valid evil"` (were the `validateAssumption` allowlist ever bypassed) would
+// otherwise inject a second class name into `class="status …"`. Keying through
+// a lookup makes that structurally impossible. The display label stays escaped.
+const STATUS_CSS_CLASS: Record<string, string> = {
+  unexamined: 'unexamined',
+  valid: 'valid',
+  invalid: 'invalid',
+  challengeable: 'challengeable',
+};
+
 const renderAssumptions = (doc: TPDocument): string => {
   const list = Object.values(doc.assumptions ?? {});
   if (list.length === 0) return '';
   const rows = list
     .map((a) => {
-      const status = escapeHtml(a.status);
+      const statusClass = STATUS_CSS_CLASS[a.status] ?? 'unexamined';
       return `<div class="assumption">
-        <span class="status ${status}">${status}</span>
+        <span class="status ${statusClass}">${escapeHtml(a.status)}</span>
         <span>${a.text ? escapeHtml(a.text) : '<em style="color:#a3a3a3">(empty)</em>'}</span>
       </div>`;
     })

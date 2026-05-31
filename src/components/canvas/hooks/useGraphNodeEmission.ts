@@ -59,6 +59,7 @@ export const useGraphNodeEmission = (
       proj,
       visibleEntityIds,
       visibleCollapsedRoots,
+      visibleCollapsedRootsSet,
       hoistVisibleGroups,
       hiddenCountByCollapser,
     } = projection;
@@ -97,7 +98,7 @@ export const useGraphNodeEmission = (
         if (visibleEntityIds.has(id)) {
           w = NODE_WIDTH;
           h = NODE_MIN_HEIGHT;
-        } else if (visibleCollapsedRoots.includes(id)) {
+        } else if (visibleCollapsedRootsSet.has(id)) {
           w = COLLAPSED_WIDTH;
           h = COLLAPSED_HEIGHT;
         } else {

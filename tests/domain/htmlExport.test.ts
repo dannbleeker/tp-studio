@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exportToSelfContainedHTML } from '@/domain/htmlExport';
-import type { EntityId } from '@/domain/types';
+import type { Assumption, EntityId } from '@/domain/types';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 /**
@@ -42,6 +42,23 @@ describe('exportToSelfContainedHTML', () => {
     const html = exportToSelfContainedHTML(doc);
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+  });
+
+  it('builds the assumption status CSS class from a fixed allowlist (no class injection)', () => {
+    resetIds();
+    const a = makeEntity({ type: 'effect', title: 'E' });
+    // A malformed status (cast past the `validateAssumption` allowlist) must
+    // NOT reach the `class="status …"` attribute — `escapeHtml` escapes
+    // < > " ' & but not spaces, so a value like `valid hax` would otherwise
+    // inject a second CSS class. The lookup-table guard makes that impossible.
+    const assumptions = {
+      asm1: { id: 'asm1', edgeId: 'edge-x', text: 'maybe', status: 'valid hax' },
+    } as unknown as Record<string, Assumption>;
+    const doc = { ...makeDoc([a], [], 'crt'), assumptions };
+    const html = exportToSelfContainedHTML(doc);
+    // Class is the safe fallback; the raw value never reaches the attribute.
+    expect(html).toContain('class="status unexamined"');
+    expect(html).not.toContain('class="status valid hax"');
   });
 
   it('surfaces the verbalisation block on EC docs', () => {

@@ -1,4 +1,4 @@
-import { exportToJSON, importFromJSON } from '@/domain/persistence';
+import { importFromJSON } from '@/domain/persistence';
 import type { TPDocument } from '@/domain/types';
 import { errorMessage } from './errors';
 
@@ -99,7 +99,10 @@ export const generateShareLink = async (doc: TPDocument): Promise<string> => {
       'Share links require a browser with CompressionStream (Chrome 80+, Firefox 113+, Safari 16.4+).'
     );
   }
-  const json = exportToJSON(doc);
+  // Compact JSON (not the pretty-printed `exportToJSON`): the share payload is
+  // gzipped + base64'd and never human-read, so indentation is pure waste —
+  // smaller before AND after compression. Receiver parses via `importFromJSON`.
+  const json = JSON.stringify(doc);
   // Build the readable stream by hand (single chunk) rather than via
   // `new Blob([json]).stream()` — Blob.stream() is widely supported in
   // real browsers but missing in jsdom, and a hand-rolled stream gives

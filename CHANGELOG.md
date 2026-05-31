@@ -2,6 +2,48 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 142 — Performance optimization batch
+
+A pass over the opportunities from the Session-140 optimization audit. The
+safe, locally-verifiable, high-value ones landed; the risky/architectural ones
+(render-subscription narrowing, CI restructure, test-env swap) are deferred —
+see NEXT_STEPS.
+
+**Canvas render hot-path**
+- `useGraphProjection` exposes `visibleCollapsedRootsSet` (a Set) beside the
+  array; `remap` + the group-bbox loop use O(1) `Set.has` instead of O(N)
+  `Array.includes` (called per edge endpoint / group member, every emission).
+- `openCommentCountsByAnchor` is WeakMap-cached on the `comments` record, so the
+  node- and edge-emission hooks share one walk instead of two.
+- `CanvasInner` reads `browseLocked` / `showMinimap` / `ecChromeCollapsed` /
+  `appMode` through one `useShallow` bundle instead of four subscriptions.
+
+**Domain algorithms**
+- BFS dequeues (`reachableForward` / `reachableBackward` / `findPath`,
+  `radialLayout`) use a head-index pointer instead of `Array.shift()`
+  (O(1) vs O(N) per step).
+- `findCycles` tracks the DFS stack with an index `Map` (O(1) on-stack test +
+  back-edge slice) instead of a `Set` + `Array.indexOf`.
+- `pruneComments` tracks a deletion counter instead of re-enumerating both maps'
+  keys to detect change.
+
+**Persistence / share-link**
+- `writeJSON` (revisions, prefs) and the share-link payload serialize compact
+  (no indentation) — both are machine-read, never human-facing downloads. The
+  public JSON export stays pretty-printed.
+
+**CI**
+- Playwright's Chromium binary is cached (keyed on the lockfile), re-downloaded
+  only when the pinned version changes.
+
+**Security hardening**
+- The standalone HTML export builds the assumption-status CSS class from a fixed
+  allowlist (`STATUS_CSS_CLASS`) instead of interpolating the raw status —
+  `escapeHtml` doesn't escape spaces, so a malformed status (were the
+  `validateAssumption` allowlist ever bypassed) can no longer inject a second
+  CSS class into `class="status …"`. The display label stays escaped.
+  +regression test.
+
 ## Session 141 — Free-floating comment pins
 
 Closes the last open review-comments item: a comment can now be pinned to an

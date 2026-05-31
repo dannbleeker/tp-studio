@@ -337,8 +337,10 @@ export const reachableForward = (doc: TPDocument, from: EntityId[]): Set<EntityI
   for (const id of from) {
     for (const e of outgoingEdges(doc, id)) queue.push(e.targetId);
   }
-  while (queue.length) {
-    const id = queue.shift()!;
+  // Head-index dequeue: O(1) per step vs `queue.shift()`'s O(N) array slide.
+  let head = 0;
+  while (head < queue.length) {
+    const id = queue[head++]!;
     if (out.has(id)) continue;
     out.add(id);
     for (const e of outgoingEdges(doc, id)) queue.push(e.targetId);
@@ -353,8 +355,10 @@ export const reachableBackward = (doc: TPDocument, from: EntityId[]): Set<Entity
   for (const id of from) {
     for (const e of incomingEdges(doc, id)) queue.push(e.sourceId);
   }
-  while (queue.length) {
-    const id = queue.shift()!;
+  // Head-index dequeue: O(1) per step vs `queue.shift()`'s O(N) array slide.
+  let head = 0;
+  while (head < queue.length) {
+    const id = queue[head++]!;
     if (out.has(id)) continue;
     out.add(id);
     for (const e of incomingEdges(doc, id)) queue.push(e.sourceId);
@@ -381,8 +385,9 @@ export const findPath = (
     const cameFrom = new Map<string, { prev: string; edgeId: string }>();
     const visited = new Set<string>([fromId]);
     const queue: string[] = [fromId];
-    while (queue.length) {
-      const cur = queue.shift()!;
+    let head = 0;
+    while (head < queue.length) {
+      const cur = queue[head++]!;
       const outs = outgoingEdges(doc, cur).map((e) => ({ next: e.targetId, edge: e }));
       const ins = directed
         ? []
@@ -465,27 +470,30 @@ export const findCycles = (doc: TPDocument): string[][] => {
   };
 
   const visited = new Set<string>();
-  const onStack = new Set<string>();
+  // Maps each node currently ON the DFS stack to its stack index. Serves BOTH
+  // the on-stack membership test and the back-edge slice lookup in O(1) — the
+  // previous version paired a `Set` with `stack.indexOf` (O(depth) per back-edge).
+  const stackIdx = new Map<string, number>();
   const stack: string[] = [];
 
   const dfs = (id: string): void => {
     visited.add(id);
-    onStack.add(id);
+    stackIdx.set(id, stack.length);
     stack.push(id);
     for (const next of adj.get(id) ?? []) {
       if (!visited.has(next)) {
         dfs(next);
-      } else if (onStack.has(next)) {
+      } else {
         // Back-edge: the slice from `next` to the top of the stack is a cycle.
-        const startIdx = stack.indexOf(next);
-        if (startIdx >= 0) {
+        const startIdx = stackIdx.get(next);
+        if (startIdx !== undefined) {
           const cycle = canonicalize(stack.slice(startIdx));
           cycles.set(cycle.join('->'), cycle);
         }
       }
     }
-    onStack.delete(id);
     stack.pop();
+    stackIdx.delete(id);
   };
 
   for (const id of adj.keys()) {
@@ -592,16 +600,21 @@ export const pruneComments = (
     (c.anchor.kind === 'entity' && survivingEntities[c.anchor.entityId] !== undefined) ||
     (c.anchor.kind === 'edge' && survivingEdges[c.anchor.edgeId] !== undefined);
   const next: Record<string, Comment> = {};
+  let dropped = 0;
   for (const [id, c] of Object.entries(comments)) {
     if (anchorAlive(c)) next[id] = c;
+    else dropped++;
   }
   // Second pass — drop replies orphaned because their parent was removed above.
   for (const id of Object.keys(next)) {
     const c = next[id];
-    if (c?.parentId !== undefined && next[c.parentId] === undefined) delete next[id];
+    if (c?.parentId !== undefined && next[c.parentId] === undefined) {
+      delete next[id];
+      dropped++;
+    }
   }
-  const changed = Object.keys(next).length !== Object.keys(comments).length;
-  return changed ? next : comments;
+  // Track the deletion count instead of re-enumerating both maps' keys.
+  return dropped > 0 ? next : comments;
 };
 
 /**
@@ -611,21 +624,31 @@ export const pruneComments = (
  * thread). Document-anchored comments aren't counted here (they have no
  * node/edge to badge). Returns empty maps when the doc has no comments.
  */
+type CommentCounts = { byEntity: Map<string, number>; byEdge: Map<string, number> };
+// Cache keyed on the `comments` record reference (stable until comments mutate,
+// via the store's immutable updates). The node- and edge-emission hooks both
+// call this per emission; the cache lets the second caller reuse the first's
+// walk instead of re-scanning every comment.
+const commentCountsCache = new WeakMap<Record<string, Comment>, CommentCounts>();
+
 export const openCommentCountsByAnchor = (
   comments: Record<string, Comment> | undefined
-): { byEntity: Map<string, number>; byEdge: Map<string, number> } => {
+): CommentCounts => {
+  if (!comments) return { byEntity: new Map(), byEdge: new Map() };
+  const cached = commentCountsCache.get(comments);
+  if (cached) return cached;
   const byEntity = new Map<string, number>();
   const byEdge = new Map<string, number>();
-  if (comments) {
-    for (const c of Object.values(comments)) {
-      if (c.parentId !== undefined) continue;
-      if (c.resolved === true) continue;
-      if (c.anchor.kind === 'entity') {
-        byEntity.set(c.anchor.entityId, (byEntity.get(c.anchor.entityId) ?? 0) + 1);
-      } else if (c.anchor.kind === 'edge') {
-        byEdge.set(c.anchor.edgeId, (byEdge.get(c.anchor.edgeId) ?? 0) + 1);
-      }
+  for (const c of Object.values(comments)) {
+    if (c.parentId !== undefined) continue;
+    if (c.resolved === true) continue;
+    if (c.anchor.kind === 'entity') {
+      byEntity.set(c.anchor.entityId, (byEntity.get(c.anchor.entityId) ?? 0) + 1);
+    } else if (c.anchor.kind === 'edge') {
+      byEdge.set(c.anchor.edgeId, (byEdge.get(c.anchor.edgeId) ?? 0) + 1);
     }
   }
-  return { byEntity, byEdge };
+  const result: CommentCounts = { byEntity, byEdge };
+  commentCountsCache.set(comments, result);
+  return result;
 };

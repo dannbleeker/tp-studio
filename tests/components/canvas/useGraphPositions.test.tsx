@@ -38,6 +38,7 @@ const projectionFor = (entityIds: string[]): GraphProjection => ({
   } as unknown as GraphProjection['proj'],
   visibleEntityIds: new Set(entityIds),
   visibleCollapsedRoots: [],
+  visibleCollapsedRootsSet: new Set<string>(),
   hoistVisibleGroups: new Set<string>(),
   remap: (id: string) => id,
   hiddenCountByCollapser: new Map<string, number>(),

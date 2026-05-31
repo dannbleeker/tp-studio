@@ -142,6 +142,8 @@ export const readJSON = <T>(key: string): T | null => {
   }
 };
 
-/** Same return contract as `writeString`. */
+/** Same return contract as `writeString`. Compact (no indentation) — every
+ *  caller writes machine-read state (revisions, prefs), never a human-facing
+ *  download, so pretty-printing only doubled the stored payload. */
 export const writeJSON = <T>(key: string, value: T): boolean =>
-  writeString(key, JSON.stringify(value, null, 2));
+  writeString(key, JSON.stringify(value));

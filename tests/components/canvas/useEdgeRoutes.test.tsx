@@ -98,6 +98,7 @@ const projectionOf = (
     proj,
     visibleEntityIds,
     visibleCollapsedRoots: [] as string[],
+    visibleCollapsedRootsSet: new Set<string>(),
     hoistVisibleGroups: new Set<string>(),
     remap: (id: string) => (visibleEntityIds.has(id) ? id : null),
     hiddenCountByCollapser: new Map<string, number>(),

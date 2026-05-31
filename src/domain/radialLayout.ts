@@ -99,8 +99,10 @@ export const radialLayout = (nodes: NodeBox[], edges: EdgeRef[]): Record<string,
 
   for (const c of centers) level.set(c, 0);
   const queue: string[] = [...centers];
-  while (queue.length > 0) {
-    const cur = queue.shift();
+  // Head-index dequeue: O(1) vs `queue.shift()`'s O(N) array slide.
+  let head = 0;
+  while (head < queue.length) {
+    const cur = queue[head++];
     if (cur === undefined) break;
     const curLevel = level.get(cur) ?? 0;
     for (const prev of inFrom.get(cur) ?? []) {

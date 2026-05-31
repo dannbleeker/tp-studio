@@ -33,6 +33,11 @@ export type GraphProjection = {
   visibleEntityIds: Set<string>;
   /** Group ids that have collapsed-root cards in the visible scope. */
   visibleCollapsedRoots: string[];
+  /** Set form of {@link visibleCollapsedRoots} for O(1) membership tests on
+   *  the render hot path (`remap`, the group-bbox loop) — the array stays for
+   *  iteration. Avoids O(N) `Array.includes` called per edge endpoint / per
+   *  group member on every emission. */
+  visibleCollapsedRootsSet: Set<string>;
   /** Group ids inside the hoisted scope (includes the hoisted group itself
    *  when one is set). When nothing is hoisted, this is all groups. */
   hoistVisibleGroups: Set<string>;
@@ -131,16 +136,18 @@ export const useGraphProjection = (doc: TPDocument): GraphProjection => {
     const visibleCollapsedRoots = [...proj.collapsedRoots].filter((id) =>
       hoistVisibleGroups.has(id)
     );
+    const visibleCollapsedRootsSet = new Set(visibleCollapsedRoots);
     const remap = (id: string): string | null => {
       if (visibleEntityIds.has(id)) return id;
       const root = proj.entityToCollapsedRoot.get(id);
-      if (root && visibleCollapsedRoots.includes(root)) return root;
+      if (root && visibleCollapsedRootsSet.has(root)) return root;
       return null;
     };
     return {
       proj,
       visibleEntityIds,
       visibleCollapsedRoots,
+      visibleCollapsedRootsSet,
       hoistVisibleGroups,
       remap,
       hiddenCountByCollapser,
