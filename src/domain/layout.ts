@@ -1,7 +1,10 @@
 import dagre from 'dagre';
 import {
+  LAYOUT_FANOUT_BONUS_THRESHOLD,
   LAYOUT_NODE_SEPARATION,
   LAYOUT_RANK_SEPARATION,
+  LAYOUT_RANK_SEPARATION_FAN_STEP,
+  LAYOUT_RANK_SEPARATION_MAX_BONUS,
   NODE_MIN_HEIGHT,
   NODE_WIDTH,
 } from './constants';
@@ -394,12 +397,49 @@ export const getLayoutCacheStats = (): { hits: number; misses: number; size: num
 
 const COMPONENT_GAP = 80; // mm-ish spacing between separately-laid-out subgraphs
 
+/**
+ * Adaptive rank-spacing bonus (Session 146). Extra px to add to the base
+ * rank separation based on the widest fan in the graph — the largest
+ * in-degree (causes converging on one effect) or out-degree (one cause
+ * branching to many effects) at any node. Wide fans make vertical-entry
+ * connectors steep; more vertical room flattens the angle so the map flows
+ * better. Capped at LAYOUT_RANK_SEPARATION_MAX_BONUS so a huge fan can't blow
+ * the diagram up; fan ≤ the threshold (binary / linear trees) gets 0 — the
+ * common case stays exactly as before.
+ *
+ * Computed once over the whole edge set and applied to every component, so
+ * spacing is consistent across a multi-component diagram. Pure function of
+ * (nodes, edges), so it doesn't disturb the per-component layout cache key.
+ */
+export const fanoutRankBonus = (nodes: NodeBox[], edges: EdgeRef[]): number => {
+  const ids = new Set(nodes.map((n) => n.id));
+  const inDeg = new Map<string, number>();
+  const outDeg = new Map<string, number>();
+  for (const e of edges) {
+    if (!ids.has(e.sourceId) || !ids.has(e.targetId)) continue;
+    outDeg.set(e.sourceId, (outDeg.get(e.sourceId) ?? 0) + 1);
+    inDeg.set(e.targetId, (inDeg.get(e.targetId) ?? 0) + 1);
+  }
+  let maxFan = 0;
+  for (const d of inDeg.values()) if (d > maxFan) maxFan = d;
+  for (const d of outDeg.values()) if (d > maxFan) maxFan = d;
+  const extraBranches = Math.max(0, maxFan - LAYOUT_FANOUT_BONUS_THRESHOLD);
+  return Math.min(
+    extraBranches * LAYOUT_RANK_SEPARATION_FAN_STEP,
+    LAYOUT_RANK_SEPARATION_MAX_BONUS
+  );
+};
+
 export const computeLayout = (
   nodes: NodeBox[],
   edges: EdgeRef[],
   options: LayoutOptions = {}
 ): Record<string, Position> => {
   const opts = { ...DEFAULT_OPTIONS, ...options };
+  // Session 146 — widen rank spacing for wide-fan graphs (capped). Applied to
+  // the resolved base (incl. any per-doc rankSep override) so every component
+  // shares the same spacing.
+  opts.rankSep += fanoutRankBonus(nodes, edges);
   const components = splitIntoComponents(nodes, edges);
   // Sort components by node count desc so the largest subgraph anchors
   // the top — matches the user's mental model of "main tree first,

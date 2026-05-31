@@ -82,12 +82,13 @@ describe('selectEdgeSides — preferred pair by relative position', () => {
 
 describe('selectEdgeSides — "prefer flow direction" margin', () => {
   it('keeps the preferred pair when an alternative is shorter by LESS than the margin', () => {
-    // target(130,100): the cross/L alternatives are ~25–36px shorter than
-    // the vertical preferred (130px) — all within the 60px margin, so the
-    // flow-axis default holds.
+    // target(400,0): the cross-axis (right/left) shot is ~112px shorter than
+    // the vertical preferred (~412px). That clears the OLD 60px margin (would
+    // have cornered) but NOT the new 150px one — so the flow-axis default now
+    // holds, which is the whole point of the Session-146 bump.
     const sel = selectEdgeSides({
       sourceBox: box(0, 0),
-      targetBox: box(130, 100),
+      targetBox: box(400, 0),
       axis: 'vertical',
       obstacles: [],
     });
@@ -96,11 +97,15 @@ describe('selectEdgeSides — "prefer flow direction" margin', () => {
   });
 
   it('switches to the cross-axis pair when it is shorter by MORE than the margin', () => {
-    // target(300,100): preferred vertical len 300, cross-axis (right/left)
-    // len ~224 — shorter by ~76 > 60, so it switches.
+    // Wide 300px boxes far apart on the same level: preferred vertical len
+    // ~608px, cross-axis (right/left) len ~300 — shorter by ~308 > 150, so it
+    // still corners. (100px boxes can't beat the 150px margin on length alone,
+    // since a side-switch saves at most ~one box-width — which is exactly why
+    // normally-sized siblings now stay vertical.)
+    const wide = (x: number, y: number): Box => ({ x, y, width: 300, height: 100 });
     const sel = selectEdgeSides({
-      sourceBox: box(0, 0),
-      targetBox: box(300, 100),
+      sourceBox: wide(0, 0),
+      targetBox: wide(600, 0),
       axis: 'vertical',
       obstacles: [],
     });
@@ -109,7 +114,7 @@ describe('selectEdgeSides — "prefer flow direction" margin', () => {
   });
 
   it('exposes the margin constant', () => {
-    expect(SIDE_SWITCH_MARGIN).toBe(60);
+    expect(SIDE_SWITCH_MARGIN).toBe(150);
   });
 });
 

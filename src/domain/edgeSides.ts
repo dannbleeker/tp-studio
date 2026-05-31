@@ -68,12 +68,18 @@ export type SelectSidesInput = {
 
 /**
  * An alternative side-pair must beat the preferred pair by at least this
- * many pixels to justify leaving the layout's main axis. ~half a node's
- * short side (NODE_MIN_HEIGHT = 72): large enough that sibling jitter
- * doesn't flip sides frame-to-frame, small enough that a genuinely
- * closer side wins.
+ * many pixels to justify leaving the layout's main axis. At ~2× a node's
+ * short side (NODE_MIN_HEIGHT = 72) the flow axis (vertical for trees) wins
+ * for any normally-spaced sibling: a node one column over saves only
+ * ~100–120px by cornering to a side, which no longer clears the bar, so its
+ * connector stays vertical. A node two-plus columns offset (saving >150px)
+ * can still corner, and a *blocked* straight shot still switches regardless
+ * — that branch isn't gated by this margin, so obstacle-dodging is intact.
+ * Raised 60 → 150 (Session 146, Dann's call) to keep tree connectors
+ * entering on the flow axis; EC is unaffected (its preferred axis is
+ * horizontal).
  */
-export const SIDE_SWITCH_MARGIN = 60;
+export const SIDE_SWITCH_MARGIN = 150;
 
 const ALL_SIDES: readonly Side[] = ['top', 'bottom', 'left', 'right'];
 

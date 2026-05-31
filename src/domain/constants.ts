@@ -39,6 +39,23 @@ export const NODE_HALF_HEIGHT = NODE_MIN_HEIGHT / 2;
 export const LAYOUT_RANK_SEPARATION = 60;
 export const LAYOUT_NODE_SEPARATION = 32;
 
+// --- Adaptive rank spacing (Session 146) ---
+// When a node fans wide (many causes converging on one effect, or one cause
+// branching to many effects), vertical-entry connectors get steep. Widening
+// the gap between ranks gives those diagonals a gentler angle so the map
+// "flows better". The bonus scales with the widest fan in the graph and is
+// hard-capped so a huge fan can't blow the diagram up. Binary / linear trees
+// (fan ≤ the threshold) get NO bonus — they already read cleanly, and this
+// keeps the common case (and its layout tests) unchanged.
+//   effectiveRankSep = LAYOUT_RANK_SEPARATION
+//     + min((maxFan − THRESHOLD) × FAN_STEP, MAX_BONUS),  clamped at 0 below.
+/** Fan-out (max in/out-degree) at or below which no extra spacing is added. */
+export const LAYOUT_FANOUT_BONUS_THRESHOLD = 2;
+/** Extra px of rank gap per branch beyond the threshold. */
+export const LAYOUT_RANK_SEPARATION_FAN_STEP = 14;
+/** Hard cap on the adaptive addition (so ranksep tops out at 60 + 90 = 150). */
+export const LAYOUT_RANK_SEPARATION_MAX_BONUS = 90;
+
 // --- Junctor geometry ---
 // Session 101 — these were declared TWICE: once in `JunctorOverlay.tsx`
 // and once in `TPEdge.tsx`, with identical values. A future tweak in

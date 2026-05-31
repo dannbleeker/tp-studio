@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 146 — Layout aesthetics: vertical-entry margin + adaptive rank spacing
+
+Two connected tweaks so tree connectors flow cleaner (Dann's call).
+
+**1. Side-switch margin 60 → 150** (`edgeSides.ts`). The 4-side anchoring
+(Session 138) lets an edge corner to a node's *side* when that's the shorter
+run. A node one column over saves only ~100–120px by cornering, which used to
+clear the 60px bar — so its connector left the flow axis and entered the
+effect's side instead of from below. At 150 those normally-spaced siblings stay
+vertical (CRT convention); only a 2+-column-offset node (saving >150px) still
+corners. The *blocked-straight-shot* switch is unchanged — it isn't gated by
+the margin — so obstacle-dodging is intact. EC (horizontal axis) is unaffected.
+
+**2. Adaptive rank spacing, capped** (`layout.ts` + `constants.ts`). When a node
+fans wide — many causes converging on one effect, or one cause branching to many
+— vertical-entry connectors get steep. `fanoutRankBonus(nodes, edges)` widens
+the gap between ranks by the widest fan in the graph: `+14px` per branch beyond
+a fan of 2, hard-capped at `+90px` (so ranksep tops out at 150). Binary / linear
+trees (fan ≤ 2) get **zero** bonus — the common case is unchanged, which is why
+almost no layout tests moved. Computed once over the whole edge set and applied
+to every component for consistent spacing; a pure function of (nodes, edges), so
+it doesn't disturb the per-component layout cache.
+
+Net: the wider margin keeps connectors vertical, and the extra rank room on wide
+fans flattens their convergence angle so the map reads cleaner. Both knobs are
+plain constants (`SIDE_SWITCH_MARGIN`, `LAYOUT_RANK_SEPARATION_*`) — easy to
+re-tune by eye. Tests: `edgeSides` margin cases updated for 150; new
+`fanoutRankBonus` unit tests (threshold / step / cap / out-degree / dangling)
+plus an end-to-end wide-vs-narrow gap check.
+
 ## Session 145 — A* edge-routing open-list → min-heap (route-identical)
 
 The obstacle-router's A* open list was a `Set` scanned linearly for the
