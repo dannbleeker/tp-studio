@@ -15,10 +15,14 @@ concurrency:
 # FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 env-var hack: every JS action is
 # now pinned to a major that runs on Node 24 natively
 # (actions/checkout@v6, actions/setup-node@v6, pnpm/action-setup@v6,
-# actions/upload-artifact@v7). The env var was a workaround for the
-# v4-on-Node-20 deprecation warning; with v6+/v7+ actions the
-# deprecation is resolved at the source, so the flag is no longer
-# necessary and was removed.
+# actions/upload-artifact@v7, actions/cache@v5). The env var was a
+# workaround for the v4-on-Node-20 deprecation warning; with these
+# Node-24 action majors the deprecation is resolved at the source, so the
+# flag is no longer necessary and was removed.
+#
+# Session 153 — bumped the last straggler, actions/cache@v4 → @v5 (its v4
+# runtime was still `node20`, which kept the deprecation warning alive on
+# the Playwright-cache step below); v5 runs on `node24`.
 
 # Session 85 — split the previous monolithic `check` job into three
 # parallel jobs so the fast feedback (lint + types in ~10s) surfaces
@@ -141,7 +145,7 @@ jobs:
         # re-downloaded only when the pinned Playwright version changes. The
         # pnpm cache covers npm deps but not these browser binaries.
         id: playwright-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}

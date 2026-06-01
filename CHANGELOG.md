@@ -2,6 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — CI: actions/cache@v4 → @v5 (drop the last Node-20 runtime)
+
+A code audit confirmed the project targets Node 22 everywhere — `engines.node`
+`>=22.22.1`, `.nvmrc` `22`, `.npmrc` `engine-strict`, the preinstall guard, all
+CI `node-version: '22'`, and `@types/node@22`. The single remaining Node-20
+reference was the *bundled* runtime of `actions/cache@v4` (the Playwright-browser
+cache step in `ci.yml`) — the source of GitHub's "Node.js 20 actions are
+deprecated" CI warning, and the lone straggler after Session 135 moved every
+other action to a Node-24 major. Bumped it to `actions/cache@v5` (runtime
+`node24`; the `path` / `key` / `cache-hit` interface is unchanged, so it's a
+drop-in). No project code runs on Node 20.
+
 ## Session 153 — Fix: AND/OR/XOR junctor cause-edges now meet the circle
 
 The converging cause-edges of a junctor (the labelled `AND`/`OR`/`XOR` circle)
