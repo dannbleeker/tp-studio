@@ -4,6 +4,7 @@ import {
   LAYOUT_NODE_SEPARATION,
   LAYOUT_RANK_SEPARATION,
   LAYOUT_RANK_SEPARATION_FAN_STEP,
+  LAYOUT_RANK_SEPARATION_JUNCTOR_MIN,
   LAYOUT_RANK_SEPARATION_MAX_BONUS,
   NODE_MIN_HEIGHT,
   NODE_WIDTH,
@@ -20,6 +21,10 @@ export type NodeBox = {
 export type EdgeRef = {
   sourceId: string;
   targetId: string;
+  /** True when this edge feeds an AND/OR/XOR junctor. Drives the junctor rank
+   *  floor in `computeLayout` so the circle (which sits below the target) has
+   *  room and doesn't render behind the cause cards. */
+  isJunctor?: boolean;
 };
 
 export type Position = {
@@ -78,6 +83,7 @@ export const docToLayoutModel = (
   const edges: EdgeRef[] = Object.values(doc.edges).map((e) => ({
     sourceId: e.sourceId,
     targetId: e.targetId,
+    isJunctor: Boolean(e.andGroupId || e.orGroupId || e.xorGroupId),
   }));
   return { nodes, edges };
 };
@@ -440,6 +446,12 @@ export const computeLayout = (
   // the resolved base (incl. any per-doc rankSep override) so every component
   // shares the same spacing.
   opts.rankSep += fanoutRankBonus(nodes, edges);
+  // Junctor circles sit ~69 px below their target node; ensure the rank gap
+  // clears the circle so it doesn't render behind the cause cards (the
+  // occlusion report). A floor, not an add — fanout-boosted spacing still wins.
+  if (edges.some((e) => e.isJunctor)) {
+    opts.rankSep = Math.max(opts.rankSep, LAYOUT_RANK_SEPARATION_JUNCTOR_MIN);
+  }
   const components = splitIntoComponents(nodes, edges);
   // Sort components by node count desc so the largest subgraph anchors
   // the top — matches the user's mental model of "main tree first,

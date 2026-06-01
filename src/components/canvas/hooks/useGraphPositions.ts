@@ -82,7 +82,7 @@ const buildLayoutInputs = (
   projection: GraphProjection
 ): {
   nodes: { id: string; width: number; height: number }[];
-  edges: { sourceId: string; targetId: string }[];
+  edges: { sourceId: string; targetId: string; isJunctor: boolean }[];
 } => {
   const { visibleEntityIds, visibleCollapsedRoots, remap } = projection;
   const nodes = [
@@ -102,7 +102,7 @@ const buildLayoutInputs = (
   // discrepancies if the algorithm ever starts caring about edge
   // multiplicity.
   const seen = new Set<string>();
-  const edges: { sourceId: string; targetId: string }[] = [];
+  const edges: { sourceId: string; targetId: string; isJunctor: boolean }[] = [];
   for (const e of edgesArray(doc)) {
     const s = remap(e.sourceId);
     const t = remap(e.targetId);
@@ -110,7 +110,11 @@ const buildLayoutInputs = (
     const k = `${s}->${t}`;
     if (seen.has(k)) continue;
     seen.add(k);
-    edges.push({ sourceId: s, targetId: t });
+    edges.push({
+      sourceId: s,
+      targetId: t,
+      isJunctor: Boolean(e.andGroupId || e.orGroupId || e.xorGroupId),
+    });
   }
   return { nodes, edges };
 };

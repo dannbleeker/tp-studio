@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — Fix: AND/OR/XOR junctor circle no longer occluded by cause cards
+
+The junctor circle renders ~69 px below its target node, but the layout's rank
+separation (`LAYOUT_RANK_SEPARATION` = 60) didn't account for it, so on tighter
+diagrams the circle drew **behind the cause cards** — the "AND doesn't render in
+some instances" / "very bad AND rendering" reports from the backlog. The layout
+was junctor-unaware.
+
+Added a junctor rank floor: `EdgeRef` now carries an `isJunctor` flag (set by
+both layout-input builders), and `computeLayout` floors `rankSep` to
+`LAYOUT_RANK_SEPARATION_JUNCTOR_MIN` (90) whenever any junctor edge is present —
+a floor on top of the fanout bonus, not an add. The circle now clears the cause
+rank (verified live: **0 overlaps, ~41 px clearance** on the inventory-turns
+CRT), and the extra vertical room doubles as the "more space between entities"
+backlog item. (Honest note: today's earlier handle-anchor change had moved the
+circle ~20 px lower, tightening this — the floor resolves it.)
+
+Guard: `layoutJunctorSpacing.test`. Full suite green; tsc + biome clean.
+
 ## Session 153 — Backlog quick wins: inspector toggle, double-click-to-inspect, oval AND
 
 Three small UX items from Dann's backlog review:
