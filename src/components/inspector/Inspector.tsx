@@ -24,7 +24,19 @@ const EMPTY: Warning[] = [];
 export function Inspector() {
   const doc = useDocumentStore((s) => currentDoc(s));
   const clearSelection = useDocumentStore((s) => s.clearSelection);
-  const { selection, open, singleId, isSingleGroup, isMulti, headerLabel } = useSelectionShape();
+  const {
+    selection,
+    open: hasSelection,
+    singleId,
+    isSingleGroup,
+    isMulti,
+    headerLabel,
+  } = useSelectionShape();
+  // The TopBar "inspector" toggle force-hides the panel even with a live
+  // selection. Fold it into `open` so the slide-out / backdrop / inert wiring
+  // below treats "hidden" exactly like "nothing selected".
+  const inspectorHidden = useDocumentStore((s) => s.inspectorHidden);
+  const open = hasSelection && !inspectorHidden;
   // Session 77 — EC-only tab bar. The "Inspector" tab is the existing
   // selection-driven content; the two others are doc-level (always
   // visible on any selection so the user can swap views freely).

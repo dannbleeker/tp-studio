@@ -81,6 +81,19 @@ describe('useCanvasClickHandlers — onEdgeClick', () => {
   });
 });
 
+describe('useCanvasClickHandlers — onEdgeDoubleClick', () => {
+  it('selects the edge and force-shows the inspector', () => {
+    const { edge } = seedConnectedPair();
+    s().toggleInspector(); // hide the inspector first
+    expect(s().inspectorHidden).toBe(true);
+    handlers().onEdgeDoubleClick(evt(), edgeArg(edge.id));
+    const sel = s().selection;
+    expect(sel.kind).toBe('edges');
+    expect(sel.kind === 'edges' ? sel.ids : []).toContain(edge.id);
+    expect(s().inspectorHidden).toBe(false);
+  });
+});
+
 describe('useCanvasClickHandlers — onPaneClick', () => {
   it('clears the selection', () => {
     const a = seedEntity('A');

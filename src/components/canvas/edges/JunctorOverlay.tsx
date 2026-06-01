@@ -1,6 +1,11 @@
 import { useConnection, useStore as useRFStore } from '@xyflow/react';
 import { useState } from 'react';
-import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_HIT_RADIUS, JUNCTOR_RADIUS } from '@/domain/constants';
+import {
+  JUNCTOR_CENTER_OFFSET_Y,
+  JUNCTOR_HIT_RADIUS,
+  JUNCTOR_RADIUS,
+  JUNCTOR_RADIUS_X,
+} from '@/domain/constants';
 import type { TPDocument } from '@/domain/types';
 import { setHoveredJunctor } from '@/services/canvasRef';
 import { arrayShallowEqualByKeys } from '@/store/equality';
@@ -266,13 +271,16 @@ export function JunctorOverlay() {
                   setHoveredGroup(null);
                 }}
               />
-              {/* Visible circle — decorative (the hit circle above owns the
-                  pointer; visible radius is unchanged so the bezier terminus
-                  is too). Lights up while a connection is dragged over it. */}
-              <circle
+              {/* Visible marker — an ELLIPSE (classic TP / Flying-Logic
+                  AND-connector shape). Decorative: the hit circle above owns
+                  the pointer, and the vertical radius (`ry`) is unchanged so
+                  the bezier terminus still lands on it. Lights up while a
+                  connection is dragged over it. */}
+              <ellipse
                 cx={j.cx}
                 cy={j.cy}
-                r={JUNCTOR_RADIUS}
+                rx={JUNCTOR_RADIUS_X}
+                ry={JUNCTOR_RADIUS}
                 fill="white"
                 stroke={stroke}
                 strokeWidth={connecting && hoveredGroup === j.id ? 3 : 1.5}

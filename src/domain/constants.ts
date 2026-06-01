@@ -70,6 +70,12 @@ export const LAYOUT_RANK_SEPARATION_MAX_BONUS = 90;
 // is the circle's radius. The sum is the bezier terminus offset.
 export const JUNCTOR_CENTER_OFFSET_Y = 35;
 export const JUNCTOR_RADIUS = 14;
+// The junctor marker renders as a horizontal ELLIPSE (the classic TP /
+// Flying-Logic AND-connector shape), so its visible half-width is
+// `JUNCTOR_RADIUS_X` while the vertical radius stays `JUNCTOR_RADIUS`. Keeping
+// the vertical radius unchanged means the bezier terminus (center + RADIUS)
+// and the short arrow line are untouched — only the marker looks oval.
+export const JUNCTOR_RADIUS_X = 19;
 export const JUNCTOR_EDGE_TERMINAL_OFFSET_Y = JUNCTOR_CENTER_OFFSET_Y + JUNCTOR_RADIUS;
 // Goal #2 — invisible drag-drop catch radius for the junctor circle. A
 // larger transparent circle behind the visible one makes "drop a connection

@@ -5,6 +5,7 @@ import {
   LockOpen,
   MessageSquare,
   Moon,
+  PanelRight,
   Redo2,
   Search,
   Sun,
@@ -49,12 +50,14 @@ export function TopBar() {
     theme,
     historyPanelOpen,
     commentsPanelOpen,
+    inspectorHidden,
     canUndo,
     canRedo,
     toggleTheme,
     openHelp,
     toggleHistoryPanel,
     toggleCommentsPanel,
+    toggleInspector,
     undo,
     redo,
   } = useToolbarActions();
@@ -191,6 +194,20 @@ export function TopBar() {
         aria-pressed={commentsPanelOpen}
       >
         <MessageSquare className="h-3.5 w-3.5" />
+      </Button>
+      {/* Backlog quick-win — show/hide the Inspector panel. Mirrors the
+          history / comments toggles (sm+; the double-click-edge gesture
+          re-shows it otherwise). `aria-pressed` reflects the hidden state. */}
+      <Button
+        variant={inspectorHidden ? 'softViolet' : 'softNeutral'}
+        size="icon"
+        onClick={toggleInspector}
+        className="pointer-events-auto hidden sm:inline-flex"
+        aria-label={inspectorHidden ? 'Show inspector' : 'Hide inspector'}
+        title={inspectorHidden ? 'Show inspector panel' : 'Hide inspector panel'}
+        aria-pressed={inspectorHidden}
+      >
+        <PanelRight className="h-3.5 w-3.5" />
       </Button>
       {/* Help + Theme buttons appear from `sm` upward (640 px+). Below that
           they're hidden to keep the toolbar from wrapping; the palette

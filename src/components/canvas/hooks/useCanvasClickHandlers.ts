@@ -56,5 +56,17 @@ export const useCanvasClickHandlers = () => {
     s.clearSelection();
   }, []);
 
-  return { onNodeClick, onEdgeClick, onPaneClick };
+  // Double-clicking an edge is a deliberate "inspect this connector" gesture:
+  // select it and force the Inspector panel open (even if the user toggled it
+  // off via the TopBar). The first click of the double already selects via
+  // React Flow's selection model; re-selecting here is idempotent and keeps the
+  // gesture self-contained + unit-testable.
+  const onEdgeDoubleClick = useCallback((e: ReactMouseEvent, ed: TPEdge) => {
+    e.stopPropagation();
+    const s = useDocumentStore.getState();
+    s.selectEdge(ed.id);
+    s.showInspector();
+  }, []);
+
+  return { onNodeClick, onEdgeClick, onEdgeDoubleClick, onPaneClick };
 };

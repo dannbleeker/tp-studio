@@ -21,7 +21,7 @@ export function SearchPanel() {
   // Inspector occupies up to 320 px on the right when anything is selected.
   // We shift the find-panel center left and tighten the width so the panel
   // never lands underneath the inspector at narrower viewports.
-  const inspectorOpen = useDocumentStore((s) => s.selection.kind !== 'none');
+  const inspectorOpen = useDocumentStore((s) => s.selection.kind !== 'none' && !s.inspectorHidden);
   const {
     query,
     options,

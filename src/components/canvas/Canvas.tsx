@@ -80,7 +80,7 @@ function CanvasInner() {
     onEdgeMouseEnter,
     onEdgeMouseLeave,
   } = useGraphMutations();
-  const { onNodeClick, onEdgeClick, onPaneClick } = useCanvasClickHandlers();
+  const { onNodeClick, onEdgeClick, onEdgeDoubleClick, onPaneClick } = useCanvasClickHandlers();
   const { onNodeDrag, onNodeDragStop } = useCanvasDragHandlers(doc, nodes);
   const { onNodeContextMenu, onEdgeContextMenu, onPaneContextMenu } =
     useCanvasContextMenuHandlers();
@@ -194,6 +194,7 @@ function CanvasInner() {
         // Edge-join mode + the Alt-click / pane-deselect gestures live in
         // `useCanvasClickHandlers` (unit-tested there).
         onEdgeClick={onEdgeClick}
+        onEdgeDoubleClick={onEdgeDoubleClick}
         onPaneClick={onPaneClick}
         onSelectionChange={handleSelectionChange}
         onNodeContextMenu={onNodeContextMenu}

@@ -125,6 +125,12 @@ export type DialogsSlice = {
    *  (the user can choose either flavor of comparison per revision). */
   sideBySideRevisionId: string | null;
 
+  /** Force-hide the Inspector panel even when something is selected (frees
+   *  canvas width). Toggled from the TopBar; a double-click on an edge
+   *  re-shows it. Independent of the selection-driven `open` derivation in
+   *  `useSelectionShape`. */
+  inspectorHidden: boolean;
+
   openPalette: () => void;
   openPaletteWithQuery: (query: string) => void;
   closePalette: () => void;
@@ -222,6 +228,12 @@ export type DialogsSlice = {
   startCommentAt: (anchor: CommentAnchor) => void;
   clearPendingCommentAnchor: () => void;
 
+  /** Show/hide the Inspector panel independently of the selection.
+   *  `toggleInspector` flips it; `showInspector` force-shows it (used by the
+   *  double-click-edge gesture). */
+  toggleInspector: () => void;
+  showInspector: () => void;
+
   /** Session 133 — open / close the all-at-once verbalisation dialog. */
   openReadAllAtOnce: () => void;
   closeReadAllAtOnce: () => void;
@@ -270,6 +282,7 @@ export type DialogsDataKeys =
   | 'patternLibraryOpen'
   | 'historyPanelOpen'
   | 'commentsPanelOpen'
+  | 'inspectorHidden'
   | 'pendingCommentAnchor'
   | 'compareRevisionId'
   | 'sideBySideRevisionId';
@@ -296,6 +309,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   patternLibraryOpen: null,
   historyPanelOpen: false,
   commentsPanelOpen: false,
+  inspectorHidden: false,
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -323,6 +337,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   patternLibraryOpen: null,
   historyPanelOpen: false,
   commentsPanelOpen: false,
+  inspectorHidden: false,
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -421,6 +436,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   startCommentAt: (anchor) =>
     set({ commentsPanelOpen: true, historyPanelOpen: false, pendingCommentAnchor: anchor }),
   clearPendingCommentAnchor: () => set({ pendingCommentAnchor: null }),
+
+  toggleInspector: () => set({ inspectorHidden: !get().inspectorHidden }),
+  showInspector: () => set({ inspectorHidden: false }),
 
   openReadAllAtOnce: () => set({ readAllAtOnceOpen: true }),
   closeReadAllAtOnce: () => set({ readAllAtOnceOpen: false }),

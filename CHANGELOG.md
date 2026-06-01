@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — Backlog quick wins: inspector toggle, double-click-to-inspect, oval AND
+
+Three small UX items from Dann's backlog review:
+
+- **Inspector show/hide toggle** in the TopBar (the `PanelRight` button beside
+  history / comments). A new `inspectorHidden` UI flag force-hides the Inspector
+  panel even with a live selection, freeing canvas width; the find-panel
+  re-centres when it's hidden. Verified live — the aside flips to `aria-hidden`
+  on toggle.
+- **Double-click an edge → open the Inspector.** `onEdgeDoubleClick` selects the
+  edge and force-shows the Inspector (re-showing it if it was toggled off) — a
+  reliable "inspect this connector" gesture layered on top of the finicky
+  single-click select.
+- **The AND / OR / XOR junctor marker is now an ellipse** (the classic TP /
+  Flying-Logic connector shape) instead of a circle — `rx` 19 / `ry` 14. The
+  vertical radius is unchanged, so the cause-edge terminus + arrow geometry from
+  the earlier junctor fix are untouched; only the marker looks oval.
+
+Guards: `inspectorToggle.test` (store flag) + an `onEdgeDoubleClick` case in
+`useCanvasClickHandlers.test`. Full suite green; tsc + biome clean.
+
 ## Session 153 — CI: actions/cache@v4 → @v5 (drop the last Node-20 runtime)
 
 A code audit confirmed the project targets Node 22 everywhere — `engines.node`
