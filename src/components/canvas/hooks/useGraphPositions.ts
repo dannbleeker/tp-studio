@@ -206,7 +206,7 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
         // the per-doc setting) wins as-is. Note the lowercase dagre-style
         // field names on `LayoutConfig` (per `types/document.ts`).
         if (doc.layoutConfig?.ranksep === undefined) {
-          opts.rankSep = (opts.rankSep ?? 60) * densityMultiplier;
+          opts.rankSep = (opts.rankSep ?? 80) * densityMultiplier;
         }
         if (doc.layoutConfig?.nodesep === undefined) {
           opts.nodeSep = (opts.nodeSep ?? 32) * densityMultiplier;

@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — Edge re-drag ease, source-side flow axis, roomier spacing
+
+Three backlog polish items:
+
+- **Sources exit on the flow axis too** — the sibling of the "enters in the
+  side" fix. `selectEdgeSides` now keeps BOTH ends of a different-rank (tree
+  parent/child) edge on the flow axis: the source exits AND the target enters on
+  the flow direction, only cornering to a side for same-rank neighbours or to
+  dodge a blocked path. Source-side assertion added to the guard test.
+
+- **Easier edge re-drag** — two changes so re-targeting a connector is both
+  discoverable AND forgiving: (1) a SELECTED edge now paints small white knobs on
+  its two endpoints, advertising "grab an end and drop it on another entity"; (2)
+  React Flow's `reconnectRadius` bumped 10 → 24 so the catch zone behind each knob
+  is generous. The knobs are gated to genuinely reconnectable edges (real, non-
+  aggregated, not junctor/mutex) and hidden under Browse Lock — a pure
+  `reconnectHandlesVisible` predicate, unit-tested. (The reconnect feature itself
+  shipped earlier; this is the "make it easier" follow-up the plan anticipated.)
+
+- **Roomier vertical spacing** — `LAYOUT_RANK_SEPARATION` 60 → 80 (Dann's "the
+  vertical space between entities should be higher to make it look nice"). The
+  density presets still scale it ×0.75 / ×1.5 and junctor diagrams floor at 90;
+  layout tests use relative assertions, so they stay green.
+
+tsc + biome clean; full suite green.
+
 ## Session 153 — Fix: edges enter the target on the flow axis, not the side
 
 Backlog item ("it just looks wrong that this enters in the side"): edges into a
@@ -13,8 +39,8 @@ side** when a far-offset child made a cross-axis entry shorter than the flow-axi
 cross-axis side only when the two boxes **share a rank** (same-level neighbours,
 where the cross axis is the genuine facing). For different-rank edges — the usual
 tree parent/child — the receiving node stays entered on the flow axis. A blocked
-preferred still dodges to any side (obstacle avoidance intact); the source side
-is unchanged.
+preferred still dodges to any side (obstacle avoidance intact). (The source end
+gets the same flow-axis treatment — see the follow-up entry above.)
 
 Guards: two new `edgeSides.test` cases (different-rank → flow-axis entry;
 same-rank → still corners) + all existing side/route tests still pass. Full

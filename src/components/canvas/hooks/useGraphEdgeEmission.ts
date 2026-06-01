@@ -97,6 +97,13 @@ export const useGraphEdgeEmission = (
     const edges: TPEdge[] = [];
     for (const b of buckets.values()) {
       const isAggregated = b.count > 1 || b.isSyntheticEndpoint;
+      // Re-targeting (drag an endpoint to another node) only makes sense for a
+      // REAL edge with real endpoints. An aggregated `agg:` edge has no single
+      // underlying id, and a synthetic endpoint is a collapsed-group stand-in,
+      // not the actual entity — so neither is reconnectable. Stamped both as the
+      // top-level RF flag (enables the gesture) and into `data` (lets `TPEdge`
+      // gate the visible re-target knobs without re-deriving this).
+      const reconnectable = !isAggregated && !b.isSyntheticEndpoint;
       const andGroupId = b.sample.andGroupId;
       const orGroupId = b.sample.orGroupId;
       const xorGroupId = b.sample.xorGroupId;
@@ -157,6 +164,7 @@ export const useGraphEdgeEmission = (
           ...(assumptionCount > 0 ? { assumptionCount } : {}),
           ...(openCommentCount > 0 ? { openCommentCount } : {}),
           ...(route ? { route } : {}),
+          ...(reconnectable ? { reconnectable: true } : {}),
         },
         ...(isJunctorEdge
           ? {}
@@ -167,11 +175,7 @@ export const useGraphEdgeEmission = (
               },
             }),
         selectable: !isAggregated,
-        // Re-targeting (drag an endpoint to another node) only makes sense for a
-        // REAL edge with real endpoints. An aggregated `agg:` edge has no single
-        // underlying id, and a synthetic endpoint is a collapsed-group stand-in,
-        // not the actual entity — so neither is reconnectable.
-        reconnectable: !isAggregated && !b.isSyntheticEndpoint,
+        reconnectable,
       };
       edges.push(edge);
     }

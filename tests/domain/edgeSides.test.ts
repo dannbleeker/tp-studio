@@ -117,11 +117,12 @@ describe('selectEdgeSides — "prefer flow direction" margin', () => {
     expect(SIDE_SWITCH_MARGIN).toBe(150);
   });
 
-  it('keeps a different-rank child entered on the flow axis (no side-entry)', () => {
+  it('keeps a different-rank edge on the flow axis at BOTH ends (no side entry/exit)', () => {
     // Goal-tree shape: a wide child sits BELOW + far to the right of its parent
-    // (different ranks — no vertical overlap). A cross-side entry into the
-    // parent's RIGHT would be shorter, but the parent must still be entered on
-    // its flow-axis BOTTOM (Dann: "it looks wrong that this enters in the side").
+    // (different ranks — no vertical overlap). A cross-side entry/exit would be
+    // shorter, but the source exits its TOP and the parent is entered on its
+    // BOTTOM — the flow direction (Dann: "it looks wrong that this enters/exits
+    // on the side").
     const wide = (x: number, y: number): Box => ({ x, y, width: 300, height: 100 });
     const sel = selectEdgeSides({
       sourceBox: wide(600, 300),
@@ -129,6 +130,7 @@ describe('selectEdgeSides — "prefer flow direction" margin', () => {
       axis: 'vertical',
       obstacles: [],
     });
+    expect(sel.sourceSide).toBe('top');
     expect(sel.targetSide).toBe('bottom');
   });
 

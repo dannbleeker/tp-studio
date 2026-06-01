@@ -179,6 +179,11 @@ function CanvasInner() {
         // `undefined` — `exactOptionalPropertyTypes` rejects an explicit
         // `undefined` for this prop.
         {...(locked ? {} : { onReconnect })}
+        // Backlog — make grabbing an edge endpoint to re-target it far more
+        // forgiving (React Flow's default catch radius is 10px). Pairs with the
+        // wider per-edge interaction band so edges are easier to both select
+        // and re-drag.
+        reconnectRadius={24}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         // The Alt-drag-to-splice gestures (per-frame highlight + the drop

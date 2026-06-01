@@ -77,6 +77,12 @@ export type TPEdgeData = {
    *  speech-bubble badge that opens the Comments panel. Real (non-
    *  aggregated) edges only; omitted when 0. */
   openCommentCount?: number;
+  /** True when this edge can be re-targeted by dragging an endpoint (a real,
+   *  non-aggregated edge with real endpoints). Mirrors the top-level React Flow
+   *  `reconnectable` flag so `TPEdge` can gate the visible re-target knobs
+   *  without re-deriving aggregation / synthetic-endpoint state. Omitted (falsy)
+   *  for aggregated and collapsed-group-synthetic edges. */
+  reconnectable?: boolean;
 };
 
 export type TPGroupNodeData = {

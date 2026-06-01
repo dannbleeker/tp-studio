@@ -220,20 +220,18 @@ export const selectEdgeSides = (input: SelectSidesInput): SideSelection => {
   const preferred = scored[0];
   if (!preferred) throw new Error('selectEdgeSides: no candidates');
 
-  // An alternative qualifies only when it is unblocked AND either the preferred
-  // shot is blocked or it's meaningfully shorter. PLUS: a different-rank edge —
-  // the usual tree parent/child — must ENTER the target on the flow axis. A
-  // far-offset parent entered on its left/right "just because it's shorter"
-  // reads as wrong (Dann: "it looks wrong that this enters in the side"), so a
-  // cross-axis TARGET side is allowed for a shortness switch only when the two
-  // boxes share a rank (same-level neighbours, where the cross axis IS the real
-  // facing). A blocked preferred still dodges to any side.
+  // An alternative qualifies only when it is unblocked AND meaningfully shorter,
+  // AND only when the two boxes SHARE A RANK — same-level neighbours, where a
+  // cross-axis side is the genuine facing direction. Different-rank edges (the
+  // usual tree parent/child) keep BOTH ends on the flow axis: the source exits
+  // and the target enters on the flow direction, never cornering to a side just
+  // to save a few px (Dann: "it looks wrong that this enters/exits on the side").
+  // A blocked preferred still dodges to any side, so obstacle-avoidance is intact.
   const sameRank = overlapsOnAxis(sourceBox, targetBox, axis);
   const qualifying = scored.filter((c) => {
     if (c === preferred || c.blocked) return false;
     if (preferred.blocked) return true;
-    const targetSwitchOk = c.targetSide === preferred.targetSide || sameRank;
-    return targetSwitchOk && c.len + SIDE_SWITCH_MARGIN < preferred.len;
+    return sameRank && c.len + SIDE_SWITCH_MARGIN < preferred.len;
   });
   const winner = qualifying.length > 0 ? [...qualifying].sort(compareScored)[0]! : preferred;
 

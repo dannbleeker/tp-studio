@@ -36,7 +36,10 @@ export const NODE_HALF_HEIGHT = NODE_MIN_HEIGHT / 2;
 // be tighter" axis. If a future use-case wants the looser layout
 // (high-density EC walls, projector mode), the doc-level
 // `layoutConfig.rankSep` / `.nodeSep` override these per document.
-export const LAYOUT_RANK_SEPARATION = 60;
+// Raised 60 → 80 (Dann's "the vertical space between entities should be higher
+// to make it look nice"). Junctor diagrams floor higher still — see
+// LAYOUT_RANK_SEPARATION_JUNCTOR_MIN; density presets scale this ×0.75 / ×1.5.
+export const LAYOUT_RANK_SEPARATION = 80;
 export const LAYOUT_NODE_SEPARATION = 32;
 
 // --- Adaptive rank spacing (Session 146) ---
@@ -53,7 +56,7 @@ export const LAYOUT_NODE_SEPARATION = 32;
 export const LAYOUT_FANOUT_BONUS_THRESHOLD = 2;
 /** Extra px of rank gap per branch beyond the threshold. */
 export const LAYOUT_RANK_SEPARATION_FAN_STEP = 14;
-/** Hard cap on the adaptive addition (so ranksep tops out at 60 + 90 = 150). */
+/** Hard cap on the adaptive addition (so ranksep tops out at 80 + 90 = 170). */
 export const LAYOUT_RANK_SEPARATION_MAX_BONUS = 90;
 // Minimum rank separation when the diagram contains AND/OR/XOR junctors. The
 // junctor circle sits ~69 px below its target node (JUNCTOR_EDGE_TERMINAL_OFFSET_Y
@@ -91,6 +94,14 @@ export const JUNCTOR_EDGE_TERMINAL_OFFSET_Y = JUNCTOR_CENTER_OFFSET_Y + JUNCTOR_
 // circle, so the bezier terminus above stays put (it depends only on the
 // visible `JUNCTOR_RADIUS`).
 export const JUNCTOR_HIT_RADIUS = 22;
+
+// --- Edge re-target handles ---
+// Radius of the two small white knobs painted on a SELECTED edge's endpoints to
+// advertise "grab an end and drop it on another entity". Purely visual — React
+// Flow's own reconnect catch zone (the `reconnectRadius` prop on <ReactFlow>, 24)
+// is what actually captures the drag, so this stays small and sits inside it.
+export const EDGE_RECONNECT_HANDLE_RADIUS = 5;
+
 // TPNode "zoom-up" pop-out: when the viewport zoom drops below this and the
 // node is selected/hovered, render the magnified title overlay so titles
 // stay legible at low zoom. Lives here next to other canvas tunables so

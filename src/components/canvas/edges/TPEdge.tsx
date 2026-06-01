@@ -13,7 +13,12 @@ import {
 } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { JUNCTOR_EDGE_TERMINAL_OFFSET_Y, NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import {
+  EDGE_RECONNECT_HANDLE_RADIUS,
+  JUNCTOR_EDGE_TERMINAL_OFFSET_Y,
+  NODE_MIN_HEIGHT,
+  NODE_WIDTH,
+} from '@/domain/constants';
 import { selectEdgeSides } from '@/domain/edgeSides';
 import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
@@ -108,6 +113,7 @@ const EDGE_INTERACTION_WIDTH = 56;
  * comparator's source rather than importing through a render-laden
  * component. No behavior change.
  */
+import { reconnectHandlesVisible } from './reconnectHandles';
 import { shallowEqualObject, tpEdgePropsEqual } from './tpEdgeComparator';
 
 export { shallowEqualObject, tpEdgePropsEqual };
@@ -189,6 +195,9 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         // drop-target glow owns the visual.
         isHovered: s.hoveredEdgeId === props.id,
         isConnecting: s.connectingFromId != null,
+        // Browse Lock disables the reconnect gesture (Canvas omits onReconnect),
+        // so the visible re-target knobs hide too — no dangling affordance.
+        browseLocked: s.browseLocked,
       };
     })
   );
@@ -205,6 +214,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     isNoteEdge,
     isHovered,
     isConnecting,
+    browseLocked,
   } = edgeView;
   // Actions in their own shallow bundle. They're stable refs across
   // store snapshots, so this subscription effectively never fires —
@@ -469,6 +479,18 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       ? `${edgeLabel.slice(0, LABEL_INLINE_MAX - 1).trimEnd()}…`
       : edgeLabel;
 
+  // Backlog — paint the two visible "re-target" knobs only on a SELECTED,
+  // genuinely reconnectable edge that isn't a junctor / mutex special-case,
+  // isn't mid connection-drag, and isn't under Browse Lock.
+  const showReconnectHandles = reconnectHandlesVisible({
+    selected: props.selected === true,
+    reconnectable: props.data?.reconnectable === true,
+    isJunctorEdge,
+    isMutex,
+    isConnecting,
+    locked: browseLocked,
+  });
+
   return (
     <>
       {/* Goal #3 — selected "casing band": a crisp, solid indigo halo UNDER
@@ -514,6 +536,37 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           ...props.style,
         }}
       />
+      {/* Backlog — visible "re-target" knobs on a SELECTED reconnectable edge's
+          two endpoints, so it's discoverable that an end can be grabbed and
+          dropped on another entity. Purely decorative (`pointerEvents: none`):
+          React Flow's own reconnect updaters (radius = the `reconnectRadius`
+          prop, bumped to 24) sit at the same spots and capture the drag. The
+          source handle is `Position.Top` and the target `Position.Bottom` — the
+          same flow-axis anchors `selectEdgeSides` prefers — so for the common
+          tree edge each knob lands on the visible path end. */}
+      {showReconnectHandles && (
+        // Bare <g>/<circle> with no role or accessible name is already ignored by
+        // assistive tech (and `pointerEvents: none` keeps them off the hit path),
+        // so no `aria-hidden` — which Biome flags as focusable-ish anyway.
+        <g style={{ pointerEvents: 'none' }}>
+          <circle
+            cx={props.sourceX}
+            cy={props.sourceY}
+            r={EDGE_RECONNECT_HANDLE_RADIUS}
+            fill="#ffffff"
+            stroke={EDGE_STROKE_SELECTED}
+            strokeWidth={2}
+          />
+          <circle
+            cx={props.targetX}
+            cy={props.targetY}
+            r={EDGE_RECONNECT_HANDLE_RADIUS}
+            fill="#ffffff"
+            stroke={EDGE_STROKE_SELECTED}
+            strokeWidth={2}
+          />
+        </g>
+      )}
       {/* Session 135 — mid-edge badges extracted to `TPEdgeBadges.tsx`.
           Each renders its own `<EdgeLabelRenderer>`; the conditions +
           placement deltas are unchanged. */}
