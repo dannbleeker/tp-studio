@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — Fix: adding a duplicate edge now explains why (no silent fail)
+
+Backlog ("I'm not able to add a new edge from #2 to #6 — why?"): dragging a
+connection between two entities that were ALREADY linked silently did nothing —
+`connect()` returns null on a duplicate, and both `onConnect` and the drop-on-node
+`onConnectEnd` bridge discarded that result without telling the user.
+
+`useGraphMutations` now routes both paths through a `connectOrExplain` helper: on
+a confirmed duplicate (directional `hasEdge`) it shows an info toast — "Those two
+are already linked in that direction." — matching the existing reconnect / co-
+cause reject-toast pattern. Accidental self-loops stay quiet (no toast noise), and
+an ambiguous refusal (e.g. a drop onto a non-entity node) says nothing rather than
+guessing a wrong reason. The directional check means the reverse link is still
+addable.
+
+Guards: two new `useGraphMutations.test` cases (duplicate → toast; self-loop →
+quiet). Full suite green; tsc + biome clean.
+
 ## Session 153 — Edge re-drag ease, source-side flow axis, roomier spacing
 
 Three backlog polish items:

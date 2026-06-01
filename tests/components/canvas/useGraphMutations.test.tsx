@@ -50,6 +50,37 @@ describe('useGraphMutations — onConnect', () => {
     result.current.onConnect(mockConnection({ source: null, target: null }));
     expect(Object.keys(s().doc.edges).length).toBe(before);
   });
+
+  it('toasts "already linked" on a duplicate instead of failing silently', () => {
+    // Dann's "I can't add a new edge from #2 to #6 — why?": the pair was already
+    // connected, so connect() refused and the edge silently never appeared.
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    s().connect(a.id, b.id); // the link already exists
+    const edgesBefore = Object.keys(s().doc.edges).length;
+    const { result } = renderHook(() => useGraphMutations());
+    result.current.onConnect({
+      source: a.id,
+      target: b.id,
+      sourceHandle: null,
+      targetHandle: null,
+    });
+    expect(Object.keys(s().doc.edges).length).toBe(edgesBefore); // no duplicate
+    expect(s().toasts.some((t) => /already linked/i.test(t.message))).toBe(true);
+  });
+
+  it('stays quiet on an accidental self-loop (no toast noise)', () => {
+    const a = seedEntity('A');
+    const toastsBefore = s().toasts.length;
+    const { result } = renderHook(() => useGraphMutations());
+    result.current.onConnect({
+      source: a.id,
+      target: a.id,
+      sourceHandle: null,
+      targetHandle: null,
+    });
+    expect(s().toasts.length).toBe(toastsBefore);
+  });
 });
 
 describe('useGraphMutations — onReconnect (re-target an edge)', () => {

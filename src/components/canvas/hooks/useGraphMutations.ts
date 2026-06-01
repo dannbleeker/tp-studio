@@ -8,6 +8,7 @@ import type {
 } from '@xyflow/react';
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { hasEdge } from '@/domain/graph';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasInstance, getHoveredJunctor, setHoveredJunctor } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -110,13 +111,32 @@ export const useGraphMutations = (): {
     []
   );
 
+  // Run `connect()` and, when it refuses, say WHY instead of failing silently.
+  // `connect()` returns null on a self-loop, a missing entity, or a duplicate.
+  // A self-loop is almost always an accidental release back on the start node,
+  // so swallow it quietly (no toast noise). Otherwise, only when it's a CONFIRMED
+  // duplicate do we explain it — the rest (e.g. a drop onto a non-entity node)
+  // stays quiet rather than guessing a wrong reason. This is the fix for Dann's
+  // "I'm not able to add a new edge from #2 to #6 — why?": the edge silently
+  // didn't appear because one already existed and nothing said so.
+  const connectOrExplain = useCallback(
+    (sourceId: string, targetId: string) => {
+      if (sourceId === targetId) return;
+      if (connect(sourceId, targetId) !== null) return;
+      if (hasEdge(useDocumentStore.getState().doc, sourceId, targetId)) {
+        showToast('info', 'Those two are already linked in that direction.');
+      }
+    },
+    [connect, showToast]
+  );
+
   const onConnect = useCallback(
     (c: Connection) => {
       if (!c.source || !c.target) return;
       if (!guardWriteOrToast()) return;
-      connect(c.source, c.target);
+      connectOrExplain(c.source, c.target);
     },
-    [connect]
+    [connectOrExplain]
   );
 
   // Re-target an existing edge: the user grabbed one endpoint and dropped it on
@@ -172,7 +192,7 @@ export const useGraphMutations = (): {
           return;
         }
         if (!guardWriteOrToast()) return;
-        connect(sourceId, targetId);
+        connectOrExplain(sourceId, targetId);
         hoveredEdgeRef.current = null;
         setHoveredJunctor(null);
         return;
@@ -237,7 +257,7 @@ export const useGraphMutations = (): {
         showToast('info', 'Cannot AND here — same source/target, or duplicate edge.');
       }
     },
-    [connect, addCoCauseToEdge, showToast]
+    [connectOrExplain, addCoCauseToEdge, showToast]
   );
 
   const onNodesChange = useCallback(
