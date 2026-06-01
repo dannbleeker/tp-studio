@@ -116,6 +116,34 @@ describe('selectEdgeSides — "prefer flow direction" margin', () => {
   it('exposes the margin constant', () => {
     expect(SIDE_SWITCH_MARGIN).toBe(150);
   });
+
+  it('keeps a different-rank child entered on the flow axis (no side-entry)', () => {
+    // Goal-tree shape: a wide child sits BELOW + far to the right of its parent
+    // (different ranks — no vertical overlap). A cross-side entry into the
+    // parent's RIGHT would be shorter, but the parent must still be entered on
+    // its flow-axis BOTTOM (Dann: "it looks wrong that this enters in the side").
+    const wide = (x: number, y: number): Box => ({ x, y, width: 300, height: 100 });
+    const sel = selectEdgeSides({
+      sourceBox: wide(600, 300),
+      targetBox: wide(0, 0),
+      axis: 'vertical',
+      obstacles: [],
+    });
+    expect(sel.targetSide).toBe('bottom');
+  });
+
+  it('still allows the cross-axis entry for SAME-rank neighbours', () => {
+    // The wide same-level case from above stays cornered — when the boxes share
+    // a rank the cross axis IS the natural facing, so the guard doesn't apply.
+    const wide = (x: number, y: number): Box => ({ x, y, width: 300, height: 100 });
+    const sel = selectEdgeSides({
+      sourceBox: wide(0, 0),
+      targetBox: wide(600, 0),
+      axis: 'vertical',
+      obstacles: [],
+    });
+    expect(sel.targetSide).toBe('left');
+  });
 });
 
 describe('selectEdgeSides — obstacle avoidance', () => {

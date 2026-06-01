@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — Fix: edges enter the target on the flow axis, not the side
+
+Backlog item ("it just looks wrong that this enters in the side"): edges into a
+tree parent (e.g. a Goal Tree goal) could anchor on the parent's **left/right
+side** when a far-offset child made a cross-axis entry shorter than the flow-axis
+(bottom) one — which reads as wrong in a vertical-flow tree.
+
+`edgeSides.selectEdgeSides` now lets a shortness switch move the TARGET onto a
+cross-axis side only when the two boxes **share a rank** (same-level neighbours,
+where the cross axis is the genuine facing). For different-rank edges — the usual
+tree parent/child — the receiving node stays entered on the flow axis. A blocked
+preferred still dodges to any side (obstacle avoidance intact); the source side
+is unchanged.
+
+Guards: two new `edgeSides.test` cases (different-rank → flow-axis entry;
+same-rank → still corners) + all existing side/route tests still pass. Full
+suite green; tsc + biome clean.
+
 ## Session 153 — Fix: AND/OR/XOR junctor circle no longer occluded by cause cards
 
 The junctor circle renders ~69 px below its target node, but the layout's rank

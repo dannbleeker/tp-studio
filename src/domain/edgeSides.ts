@@ -182,6 +182,14 @@ const compareScored = (a: Scored, b: Scored): number => {
   return SIDE_ORDER[a.sourceSide] - SIDE_ORDER[b.sourceSide];
 };
 
+/** Do the two boxes overlap along the given axis (i.e. share a rank)? When they
+ *  don't — the usual tree parent/child case — the flow-axis facing is the real
+ *  one, so we keep the target entered on it rather than cornering to a side. */
+const overlapsOnAxis = (a: Box, b: Box, axis: Axis): boolean =>
+  axis === 'vertical'
+    ? a.y < b.y + b.height && b.y < a.y + a.height
+    : a.x < b.x + b.width && b.x < a.x + a.width;
+
 /**
  * Choose the source/target sides + anchor points for one edge. See the
  * module header for the policy. Always returns a usable selection — if
@@ -212,14 +220,21 @@ export const selectEdgeSides = (input: SelectSidesInput): SideSelection => {
   const preferred = scored[0];
   if (!preferred) throw new Error('selectEdgeSides: no candidates');
 
-  // An alternative qualifies only when it is unblocked AND either the
-  // preferred shot is blocked or the alternative is meaningfully shorter.
-  const qualifying = scored.filter(
-    (c) =>
-      c !== preferred &&
-      !c.blocked &&
-      (preferred.blocked || c.len + SIDE_SWITCH_MARGIN < preferred.len)
-  );
+  // An alternative qualifies only when it is unblocked AND either the preferred
+  // shot is blocked or it's meaningfully shorter. PLUS: a different-rank edge —
+  // the usual tree parent/child — must ENTER the target on the flow axis. A
+  // far-offset parent entered on its left/right "just because it's shorter"
+  // reads as wrong (Dann: "it looks wrong that this enters in the side"), so a
+  // cross-axis TARGET side is allowed for a shortness switch only when the two
+  // boxes share a rank (same-level neighbours, where the cross axis IS the real
+  // facing). A blocked preferred still dodges to any side.
+  const sameRank = overlapsOnAxis(sourceBox, targetBox, axis);
+  const qualifying = scored.filter((c) => {
+    if (c === preferred || c.blocked) return false;
+    if (preferred.blocked) return true;
+    const targetSwitchOk = c.targetSide === preferred.targetSide || sameRank;
+    return targetSwitchOk && c.len + SIDE_SWITCH_MARGIN < preferred.len;
+  });
   const winner = qualifying.length > 0 ? [...qualifying].sort(compareScored)[0]! : preferred;
 
   return {
