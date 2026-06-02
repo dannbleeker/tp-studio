@@ -17,6 +17,15 @@ tsc + biome + knip + full suite + build — and reverted on any doubt):
   stays the single import site for `persistence.ts` + the tests. Bodies verbatim;
   136 persistence/round-trip tests pass unchanged.
 
+- **Split `graph.ts` into a re-export barrel** (654 → 36 lines). The pure graph
+  queries now live in three focused modules — `graphCore.ts` (322; the cached
+  array / edge-index / by-type lookups + entity predicates, a dependency-free
+  leaf), `graphReach.ts` (193; reachability / path / cycle traversals), and
+  `graphPrune.ts` (158; cascade-delete cleanup + the comment-count aggregation)
+  — and `graph.ts` re-exports their public surface, so the 40+ importers across
+  validators / store / exporters / layout are unchanged. Bodies verbatim; full
+  suite green.
+
 ## Session 164 — Split edgeRouting.ts (maintainability refactor)
 
 Behaviour-preserving split of the project's largest file
