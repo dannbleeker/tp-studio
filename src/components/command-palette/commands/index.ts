@@ -1,7 +1,9 @@
+import { isFileAccessSupported } from '@/services/fileSystemAccess';
 import { analysisCommands } from './analysis';
 import { documentCommands } from './document';
 import { edgeCommands } from './edges';
 import { exportCommands } from './export';
+import { fileAccessCommands } from './fileAccess';
 import { groupCommands } from './groups';
 import { helpCommands } from './help';
 import { navigateCommands } from './navigate';
@@ -24,6 +26,9 @@ export type { Command };
  */
 export const COMMANDS: Command[] = [
   ...documentCommands,
+  // Additive: "Save to file… / Open from file…" only where the File System
+  // Access API exists (Chromium). Elsewhere the Export/Import pickers remain.
+  ...(isFileAccessSupported() ? fileAccessCommands : []),
   ...exportCommands,
   ...edgeCommands,
   ...viewCommands,

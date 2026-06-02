@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — Save to file / Open from file (File System Access → OneDrive)
+
+Backlog: store trees on OneDrive, cross-device. Chose the simple-file-access route
+— **purely additive**, no Microsoft auth / Azure app / new dependency, and it
+works in locked-down corporate tenants where a Graph/OAuth app would be blocked.
+Two new "File" palette commands use the browser File System Access API:
+
+- **"Save to file…"** writes the current document's JSON to a file you choose
+  (suggested name `*.tps.json`).
+- **"Open from file…"** reads a `.json` back into a new tab.
+
+Drop the file in a synced `OneDrive\…` folder and the OneDrive client syncs it
+across devices. **Nothing existing changes** — localStorage auto-save, the tabs,
+and the Export/Import (download/upload) pickers behave exactly as before; the two
+commands only appear on Chromium (Chrome/Edge), and elsewhere the existing
+download/upload remains the path.
+
+New `src/services/fileSystemAccess.ts` (feature-detect + save/open; AbortError →
+cancel; always closes the writable) and `commands/fileAccess.ts` (the two
+commands, gated by `isFileAccessSupported()` in `commands/index.ts`). Tests:
+`fileSystemAccess.test.ts` (mocked picker + handle) + `fileAccessCommands.test.ts`.
+tsc + biome + knip clean; full suite green.
+
 ## Session 153 — The "?" button is a real Help hub, not just shortcuts
 
 Backlog ("review what the canvas help button should open"). The "?" (HelpCircle)

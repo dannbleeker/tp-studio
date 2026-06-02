@@ -56,6 +56,12 @@ The PDF route is the most polished for static layout. Use Print Preview for the 
 
 Going the other direction — opening someone else's file — uses the single **Import…** picker (`Cmd+K → Import…`). The dialog fans out five sources as cards: **TP Studio JSON** (full round-trip), **Flying Logic file** (`.fll`), **Mermaid diagram** (`.mmd`), **Entities CSV** (append rather than replace), and **Paste from whiteboard** — the last is the escape hatch for Miro / Mural / FigJam / any text source. Copy stickies from the source board, paste into the textarea, one entity is minted per non-empty line. Bullet markers (`-` `*` `•` `1.` `1)`) are stripped, tab-separated content keeps only the first column. Connectors aren't inferred — Miro / Mural don't expose arrow structure in client-accessible exports, so this path gets the entities into the canvas; you wire causality after.
 
+## Save to file / Open from file
+
+On Chromium browsers (Chrome / Edge), two extra commands let you work with a *real file on disk*: **`Cmd+K → Save to file…`** writes the current document's `.tps.json` to a location you choose, and **`Open from file…`** reads one back into a new tab. These are purely additive — the localStorage auto-save, the tabs, and the Export/Import pickers all behave exactly as before; this just adds a file on disk as a target for the same JSON.
+
+> **💡 Put your trees on OneDrive.** Save into your synced `OneDrive\…` folder and the OneDrive client backs the file up and syncs it across your devices — no account linking, no setup. **Open from file…** the same file on another machine to carry on where you left off. (On Firefox / Safari, the pair of commands is hidden — use **Export → JSON** and **Import…** for the same file, downloaded and uploaded.)
+
 ## Generating a diagram with an AI assistant
 
 Sometimes the fastest first draft isn't drawing — it's *describing*. TP Studio ships a Claude **skill**, `tp-studio-import`, that turns a problem, goal, conflict or plan written in plain language into an importable TP Studio document. Tell Claude what you're looking at — "*a Current Reality Tree for why onboarding churns*", "*turn this dilemma into an Evaporating Cloud*" — and it emits a schema-valid `.json` for any of the nine diagram types, which you load through the same **Import… → TP Studio JSON** doorway above.
