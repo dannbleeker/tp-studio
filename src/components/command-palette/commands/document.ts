@@ -93,6 +93,27 @@ export const documentCommands: Command[] = [
       s.openImportEntityPicker(sourceDoc);
     },
   }),
+  // Phase 2a (TP completeness #2 — U-Shape linkage) — link the selected entity
+  // to one in another OPEN tab, creating a navigable reciprocal cross-doc link.
+  // Distinct from "Import entity…" above (which copies an entity from a file);
+  // this threads two existing entities across tabs without copying.
+  withWriteGuard({
+    id: 'link-entity-cross-tab',
+    label: 'Link to entity in another tab…',
+    group: 'File',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity first, then link it across tabs.');
+        return;
+      }
+      if (s.tabOrder.length < 2) {
+        s.showToast('info', 'Open another document in a second tab first, then link across.');
+        return;
+      }
+      s.openLinkEntityPicker();
+    },
+  }),
   withWriteGuard({
     id: 'open-quick-capture',
     label: 'Quick Capture…',

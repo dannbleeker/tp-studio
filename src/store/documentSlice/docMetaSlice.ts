@@ -14,6 +14,9 @@ import type {
   CustomEntityClass,
   DiagramType,
   DocumentId,
+  Entity,
+  EntityId,
+  EntityLink,
   LayoutConfig,
   Patch,
   SystemScope,
@@ -144,6 +147,19 @@ export type DocMetaSlice = {
   setCloudType: (cloudType: CloudType | undefined) => void;
 
   /**
+   * Phase 2a (TP completeness #2 — U-Shape linkage) — link the currently
+   * selected entity (active tab) to `targetEntityId` in another open tab
+   * `targetDocId`. Writes a **reciprocal** link on both entities (the partner
+   * carries the mirror) and persists both docs. No-op unless exactly one entity
+   * is selected and the target is a *different* open tab. Links are reference
+   * metadata — deliberately not pushed to undo history.
+   */
+  linkSelectedEntityTo: (targetDocId: DocumentId, targetEntityId: EntityId) => void;
+  /** Phase 2a — remove `link` from entity `sourceEntityId` (active doc) and its
+   *  mirror from the target entity when that tab is open. */
+  unlinkEntity: (sourceEntityId: EntityId, link: EntityLink) => void;
+
+  /**
    * B10 — add or replace a custom entity class on the active doc. The
    * `id` field on the class is the map key; passing an existing id
    * overwrites that class (label / color / supersetOf update in place).
@@ -234,6 +250,14 @@ const activeDocEphemeralReset = () => ({
   searchMatchIndex: 0,
   ...speculationDefaults(),
 });
+
+/** Phase 2a — set an entity's cross-doc `links`, dropping the field entirely
+ *  when the list is empty so an unlinked entity round-trips without it. */
+const withLinks = (entity: Entity, links: EntityLink[]): Entity => {
+  if (links.length > 0) return { ...entity, links };
+  const { links: _drop, ...rest } = entity;
+  return rest;
+};
 
 export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> = (set, get) => {
   const applyDocChange = makeApplyDocChange(get, set);
@@ -609,6 +633,100 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         },
         { coalesceKey: 'doc-cloud-type' }
       );
+    },
+
+    linkSelectedEntityTo: (targetDocId, targetEntityId) => {
+      const state = get();
+      const sel = state.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) return;
+      const sourceEntityId = sel.ids[0];
+      if (!sourceEntityId) return;
+      const sourceDocId = state.activeDocId;
+      if (targetDocId === sourceDocId) return; // cross-tab links only
+      const sourceDoc = state.doc;
+      const targetDoc = state.docs[targetDocId];
+      if (!targetDoc) return;
+      const sourceEntity = sourceDoc.entities[sourceEntityId];
+      const targetEntity = targetDoc.entities[targetEntityId];
+      if (!sourceEntity || !targetEntity) return;
+
+      // Dedup — don't double-link the same pair.
+      const already = (sourceEntity.links ?? []).some(
+        (l) => l.docId === targetDocId && l.entityId === targetEntityId
+      );
+      if (already) {
+        get().showToast('info', `Already linked to "${targetEntity.title || 'that entity'}".`);
+        return;
+      }
+
+      const sourceLink: EntityLink = { docId: targetDocId, entityId: targetEntityId };
+      const mirrorLink: EntityLink = { docId: sourceDocId, entityId: sourceEntityId };
+      const nextSource = touch({
+        ...sourceDoc,
+        entities: {
+          ...sourceDoc.entities,
+          [sourceEntityId]: { ...sourceEntity, links: [...(sourceEntity.links ?? []), sourceLink] },
+        },
+      });
+      const nextTarget = touch({
+        ...targetDoc,
+        entities: {
+          ...targetDoc.entities,
+          [targetEntityId]: { ...targetEntity, links: [...(targetEntity.links ?? []), mirrorLink] },
+        },
+      });
+
+      // Reciprocal write: merge the background target into `docs` first so
+      // `setActiveDoc` preserves it while replacing the active source doc. No
+      // history entry on either side — links are metadata (cf.
+      // `markSystemScopeNudgeShown`).
+      set(
+        setActiveDoc({ ...state, docs: { ...state.docs, [targetDocId]: nextTarget } }, nextSource)
+      );
+      saveDocToLocalStorage(nextSource);
+      saveDocToLocalStorage(nextTarget);
+      get().showToast(
+        'success',
+        `Linked to "${targetEntity.title || 'entity'}" in ${targetDoc.title}.`
+      );
+    },
+
+    unlinkEntity: (sourceEntityId, link) => {
+      const state = get();
+      const sourceDoc = state.doc;
+      const sourceEntity = sourceDoc.entities[sourceEntityId];
+      if (!sourceEntity?.links) return;
+      const remaining = sourceEntity.links.filter(
+        (l) => !(l.docId === link.docId && l.entityId === link.entityId)
+      );
+      if (remaining.length === sourceEntity.links.length) return; // no such link
+      const nextSource = touch({
+        ...sourceDoc,
+        entities: { ...sourceDoc.entities, [sourceEntityId]: withLinks(sourceEntity, remaining) },
+      });
+
+      // Drop the mirror from the target entity when its tab is open.
+      let nextDocs = state.docs;
+      const targetDoc = state.docs[link.docId];
+      const targetEntity = targetDoc?.entities[link.entityId];
+      if (targetDoc && targetEntity?.links) {
+        const mirrorRemaining = targetEntity.links.filter(
+          (l) => !(l.docId === state.activeDocId && l.entityId === sourceEntityId)
+        );
+        if (mirrorRemaining.length !== targetEntity.links.length) {
+          const nextTarget = touch({
+            ...targetDoc,
+            entities: {
+              ...targetDoc.entities,
+              [link.entityId]: withLinks(targetEntity, mirrorRemaining),
+            },
+          });
+          nextDocs = { ...state.docs, [link.docId]: nextTarget };
+          saveDocToLocalStorage(nextTarget);
+        }
+      }
+      set(setActiveDoc({ ...state, docs: nextDocs }, nextSource));
+      saveDocToLocalStorage(nextSource);
     },
 
     setMethodStep: (stepId, done) => {

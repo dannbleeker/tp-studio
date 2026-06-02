@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 155 — Navigable cross-document links (U-Shape linkage, Phase 2a)
+
+Phase 2a of the TP-completeness roadmap — the keystone of Cohen's U-Shape. The
+one-way `importedFrom` snapshot is generalized into a **live, reciprocal,
+clickable link** between entities in different open tabs. Select an entity →
+**"Link to entity in another tab…"** (palette) → pick another tab + an entity →
+both entities get the link. In the Entity Inspector a **"Linked to"** chip lists
+each link; clicking it **jumps to that tab and selects the target** (the journey,
+walkable in one click). A × removes the link (and its reciprocal mirror); targets
+whose tab is closed render muted.
+
+Purely additive: a new optional `Entity.links?: EntityLink[]` (`{docId, entityId}`),
+strictly validated on import (malformed entries dropped, never fatal), **no schema
+migration** (stays v9). The reciprocal write updates both docs in the `docs` map
+and persists each; links are reference metadata, so they're deliberately **not**
+pushed to undo history. The command is guarded (one entity selected + ≥2 tabs).
+
+New: `LinkEntityPickerDialog` (mirrors the import-entity picker, but the source is
+a live tab and the action *links* rather than copies), `linkSelectedEntityTo` +
+`unlinkEntity` store actions, the `linkEntityPickerOpen` dialog flag, the inspector
+chips, and the "Link to entity in another tab…" command. Tests: `entityLinks`
+(persistence) + store (reciprocal link/unlink + command guards). tsc + biome +
+knip clean; coverage green. Sets up Phase 2b (the guided "build the next step"
+helpers).
+
 ## Session 154 — Cloud progression: the EC "cloud type" tag + 3 library clouds (TP Basics #1)
 
 First slice of the TP-completeness roadmap (Cohen's *TP Basics* gap #1). An

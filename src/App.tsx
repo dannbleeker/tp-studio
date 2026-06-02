@@ -115,6 +115,11 @@ const ImportEntityPickerDialog = lazy(() =>
     default: m.ImportEntityPickerDialog,
   }))
 );
+const LinkEntityPickerDialog = lazy(() =>
+  import('./components/import/LinkEntityPickerDialog').then((m) => ({
+    default: m.LinkEntityPickerDialog,
+  }))
+);
 const WhiteboardPasteDialog = lazy(() =>
   import('./components/import/WhiteboardPasteDialog').then((m) => ({
     default: m.WhiteboardPasteDialog,
@@ -392,6 +397,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Import-entity picker">
           <ImportEntityPickerDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Link-entity picker">
+          <LinkEntityPickerDialog />
         </ErrorBoundary>
         <ErrorBoundary label="Whiteboard paste dialog">
           <WhiteboardPasteDialog />

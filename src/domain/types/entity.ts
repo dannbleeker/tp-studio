@@ -229,6 +229,20 @@ export type ImportedFromRef = {
   importedAt?: string;
 };
 
+/**
+ * Phase 2a (TP completeness #2 — U-Shape linkage) — a navigable cross-document
+ * reference from this entity to an entity in ANOTHER document/tab. Unlike
+ * `importedFrom` (a one-way provenance snapshot of a *copied* entity), a link is
+ * a live, reciprocal pointer used to walk the U-Shape across trees — a CRT core
+ * problem ↔ its Core Cloud ↔ an FRT injection. Both entities carry the link (the
+ * partner stores the mirror), so navigation works in either direction. Persisted;
+ * round-trips through JSON. Branded ids keep cross-doc operations type-safe.
+ */
+export type EntityLink = {
+  docId: DocumentId;
+  entityId: EntityId;
+};
+
 export type Entity = {
   id: EntityId;
   type: EntityType;
@@ -299,6 +313,10 @@ export type Entity = {
    *  layer on top (Phase 1B/1C). Persisted across JSON export +
    *  share-link reload. See {@link ImportedFromRef}. */
   importedFrom?: ImportedFromRef;
+  /** Phase 2a (TP completeness #2) — navigable cross-document links to entities
+   *  in other open tabs (the U-Shape thread). Reciprocal: the partner entity
+   *  carries the mirror link. Omitted when empty. See {@link EntityLink}. */
+  links?: EntityLink[];
   /** Session 135 / spec major gap #4 Phase 1A — entity-state tag.
    *  Four values: `'true'` / `'false'` / `'unknown'` / `'disputed'`.
    *  Unset on the persisted entity means the user hasn't claimed

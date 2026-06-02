@@ -14,6 +14,7 @@ import type {
   EdgeId,
   Entity,
   EntityId,
+  EntityLink,
   EntityState,
   EntityType,
   EvidenceItem,
@@ -201,6 +202,26 @@ const validateImportedFromRef = (v: unknown, label: string): ImportedFromRef | u
 };
 
 /**
+ * Phase 2a — validate the `links` array (navigable cross-doc references). Each
+ * entry needs the two id strings; a malformed entry is dropped (rather than
+ * failing the whole import) so a partially-corrupt link list still loads what's
+ * valid — links are navigation metadata, not load-bearing structure. Empty /
+ * absent → undefined.
+ */
+const validateEntityLinks = (v: unknown, label: string): EntityLink[] | undefined => {
+  if (v === undefined || v === null) return undefined;
+  if (!Array.isArray(v)) throw invalid(label, 'must be an array');
+  const out: EntityLink[] = [];
+  for (const raw of v) {
+    if (!isObject(raw)) continue;
+    if (typeof raw.docId !== 'string' || raw.docId.length === 0) continue;
+    if (typeof raw.entityId !== 'string' || raw.entityId.length === 0) continue;
+    out.push({ docId: raw.docId as DocumentId, entityId: raw.entityId as EntityId });
+  }
+  return out.length > 0 ? out : undefined;
+};
+
+/**
  * Session 134 — validate the `evidence` array on an entity. Strict per
  * item (see {@link validateEvidenceItem}). Empty / absent → undefined
  * so entities without evidence don't carry an empty array on round-trip.
@@ -314,6 +335,7 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   // Session 135 / spec gap #3 Phase 1A — cross-diagram traceability
   // reference. Absent on most entities; round-trips when set.
   const importedFrom = validateImportedFromRef(v.importedFrom, `${label}.importedFrom`);
+  const links = validateEntityLinks(v.links, `${label}.links`);
   return {
     id: v.id as EntityId,
     type: v.type,
@@ -343,6 +365,7 @@ export const validateEntity = (v: unknown, label: string): Entity => {
     ...(attributes ? { attributes } : {}),
     ...(evidence ? { evidence } : {}),
     ...(importedFrom ? { importedFrom } : {}),
+    ...(links ? { links } : {}),
     ...(v.state === 'true' || v.state === 'false' || v.state === 'unknown' || v.state === 'disputed'
       ? { state: v.state as EntityState }
       : {}),

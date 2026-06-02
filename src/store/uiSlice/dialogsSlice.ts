@@ -55,6 +55,8 @@ export type DialogsSlice = {
    *  source doc isn't persisted — it lives in memory only for the
    *  picker's lifetime. */
   importEntityPicker: null | { sourceDoc: TPDocument };
+  /** Phase 2a — "Link to entity in another tab…" cross-doc link picker visibility. */
+  linkEntityPickerOpen: boolean;
   /** Session 78 / brief §5 + §6 — creation-wizard panel for the
    *  diagram type the user just opened. `null` when closed; carries
    *  `step` (0-based) and `minimised` so the user can collapse the
@@ -161,6 +163,10 @@ export type DialogsSlice = {
   /** Session 79 — templates picker. */
   openTemplatePicker: () => void;
   closeTemplatePicker: () => void;
+
+  /** Phase 2a — "Link to entity in another tab…" cross-doc link picker. */
+  openLinkEntityPicker: () => void;
+  closeLinkEntityPicker: () => void;
 
   /** Session 90 — diagram-type picker (replaces the 14 per-diagram
    *  palette commands). Mode determines the action on card click:
@@ -275,6 +281,7 @@ export type DialogsDataKeys =
   | 'exportPickerOpen'
   | 'importPickerOpen'
   | 'importEntityPicker'
+  | 'linkEntityPickerOpen'
   | 'creationWizard'
   | 'ecInspectorTab'
   | 'readAllAtOnceOpen'
@@ -302,6 +309,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   exportPickerOpen: false,
   importPickerOpen: false,
   importEntityPicker: null,
+  linkEntityPickerOpen: false,
   creationWizard: null,
   ecInspectorTab: 'inspector',
   readAllAtOnceOpen: false,
@@ -330,6 +338,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   exportPickerOpen: false,
   importPickerOpen: false,
   importEntityPicker: null,
+  linkEntityPickerOpen: false,
   creationWizard: null,
   ecInspectorTab: 'inspector',
   readAllAtOnceOpen: false,
@@ -382,6 +391,9 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openImportEntityPicker: (sourceDoc) => set({ importEntityPicker: { sourceDoc } }),
   closeImportEntityPicker: () => set({ importEntityPicker: null }),
+
+  openLinkEntityPicker: () => set({ linkEntityPickerOpen: true }),
+  closeLinkEntityPicker: () => set({ linkEntityPickerOpen: false }),
 
   openCreationWizard: (kind) =>
     set({ creationWizard: { kind, step: 0, minimised: false, x: null, y: null } }),

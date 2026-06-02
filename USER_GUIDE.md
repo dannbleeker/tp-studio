@@ -70,6 +70,8 @@ Each tab is fully independent: its own undo/redo history, its own autosave, its 
 
 **Keyboard shortcuts (installed app only).** When you install TP Studio as a desktop / mobile app, the native tab keys work: **`Cmd/Ctrl+T`** new tab, **`Cmd/Ctrl+W`** close tab, **`Cmd/Ctrl+1`–`9`** jump to a tab (9 = last). In a normal browser tab those keys belong to the browser, so use the palette commands instead.
 
+**Linking entities across tabs (Session 155).** Select an entity, then `Cmd/Ctrl+K` → **Link to entity in another tab…**, pick another open document and one of its entities — both entities get a *reciprocal* cross-document link. Each then shows a **"Linked to"** chip in the inspector; click it to jump to that tab and select the partner entity (walk a CRT core problem → its Core Cloud → an FRT injection in single clicks). The **×** on a chip removes the link and its mirror. It's purely a navigation aid — a link adds no causal edge and changes nothing about either diagram; if the partner's tab is closed, the chip greys out until you reopen it. (This is the first half of the "U-Shape" linkage from Cohen's *TP Basics* — the guided "build the next step" helpers come next.)
+
 ## Building a Current Reality Tree
 
 The fastest way to feel the tool out: open the palette with `Cmd/Ctrl+K` and pick **Load example Current Reality Tree**. You'll get six entities, five edges, and one AND group illustrating the convention. Click around, then start a new one with `Cmd/Ctrl+K` → **New Current Reality Tree** when you're ready.

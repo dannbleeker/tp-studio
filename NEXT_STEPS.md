@@ -56,11 +56,12 @@ schema migration), and each affordance is invisible until invoked.
   / Firefighting). Mirrors `ecVerbalStyle`; `src/domain/cloudType.ts`.
 - **Phase 2 — U-Shape linkage (#2)** *(guided — Dann's pick)* — the strategic
   centrepiece, in two opt-in steps:
-  - **2a — navigable cross-doc link primitive:** generalize the shipped one-way
-    `importedFrom` snapshot into a live, clickable, reciprocal link between
-    entities in open tabs (`Entity.links?`, reuse `validateImportedFromRef`; a
-    "Link to entity in another tab…" command; a clickable "Linked" inspector chip
-    → `switchTab` + select). The keystone — unlocks the U-Shape and feeds #3/#4.
+  - ~~**2a — navigable cross-doc link primitive**~~ ✅ *Session 155* — optional
+    `Entity.links?` ({docId, entityId}, validated like `importedFrom`); a
+    reciprocal "Link to entity in another tab…" command + `LinkEntityPickerDialog`;
+    a clickable "Linked to" inspector chip → `switchTab` + `selectEntity` (+ ×
+    unlink). `linkSelectedEntityTo` / `unlinkEntity` in `docMetaSlice`. The
+    keystone is in — it unlocks the U-Shape and feeds #3/#4.
   - **2b — core-problem marker + guided "build-next-step" helpers:** optional
     `coreProblem?` flag + "Mark as core problem"; then "Create the Core Cloud"
     (spawns a linked EC, `cloudType:'core'`) and "Carry the injection into an FRT"

@@ -36,6 +36,7 @@ export type {
   AttrKind,
   AttrValue,
   Entity,
+  EntityLink,
   EntityState,
   EntityTitleSize,
   EntityType,
