@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 158 — TT per-step Need + Working Assumption (Phase 3 #8)
+
+A second Phase 3 slice. A Transition-Tree **Action** now carries two optional
+free-text fields in the inspector — **Need** ("why is this step needed?") and
+**Working assumption** ("the belief that makes this action sufficient") —
+completing the canonical TT triple (Action ← Need ← Working Assumption) alongside
+the existing Step # input. Action-only, optional, absent on a fresh step.
+
+Purely additive: optional `Entity.need?` + `Entity.workingAssumption?` (validated
+like the other entity strings — non-string rejected, empty dropped, no migration),
+two inspector TextAreas via the existing `updateEntity`. Test in
+`tests/domain/ttStepFields.test.ts`. tsc + biome + knip clean; coverage green.
+
 ## Session 157 — NBR "Trim this branch" (Phase 3 #4)
 
 First slice of Phase 3 (TP Basics smaller gaps). A new palette verb **"Trim this

@@ -261,6 +261,13 @@ export type Entity = {
    *  surfaces this for `action` entities today, but the field is generic so
    *  any entity can carry an integer sort hint for future TT polish. */
   ordering?: number;
+  /** Phase 3 #8 (TT richness) — per-step Need + Working Assumption, completing
+   *  the Transition-Tree triple (Action ← Need ← Working Assumption): why the
+   *  step is needed, and the belief that makes the action sufficient. Optional
+   *  free text; surfaced in the inspector for `action` entities. Omitted from
+   *  JSON when empty. */
+  need?: string;
+  workingAssumption?: string;
   /** Hand-positioned coordinate for diagrams whose `LayoutStrategy` is
    *  `'manual'` (Evaporating Cloud will be the first user). For `'auto'`
    *  diagrams (CRT / FRT / PRT / TT today) the field is ignored — dagre owns

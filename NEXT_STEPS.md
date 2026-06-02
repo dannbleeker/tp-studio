@@ -74,9 +74,12 @@ schema migration), and each affordance is invisible until invoked.
     `injection` + a **negative-weight** edge to the selected undesirable effect
     (atomic `trimBranch` in `edgesSlice`; `trim-branch` command). Reuses the
     `injection` type + `EdgeWeight` model, no schema change.
-  - #7 a guided CLR-scrutiny panel over the existing validators; #8 optional
-    per-step Need + Working-Assumption on TT; #3 Injection Flower; #6 PRT → IO
-    sequencing → plan export; #5 performance-measurement anchors.
+  - ~~#8 per-step Need + Working-Assumption on TT~~ ✅ *Session 158* — optional
+    `Entity.need?` + `Entity.workingAssumption?` (action-only inspector fields,
+    validated like the other entity strings; no schema change).
+  - #7 a guided CLR-scrutiny panel over the existing validators; #3 Injection
+    Flower; #6 PRT → IO sequencing → plan export; #5 performance-measurement
+    anchors.
 - **Out of scope:** the PIVOT internals (Five Focusing Steps, constraint types,
   Buffer Management) — execution / DBR, not TP diagramming.
 

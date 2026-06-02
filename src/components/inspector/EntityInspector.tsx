@@ -194,6 +194,32 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         </Field>
       )}
 
+      {/* Phase 3 #8 (TT richness) — per-step Need + Working Assumption, the
+          rest of the Transition-Tree triple (Action ← Need ← Working
+          Assumption). Action-only, like Step # above; optional free text. */}
+      {entity.type === 'action' && (
+        <>
+          <Field label="Need">
+            <TextArea
+              rows={2}
+              value={entity.need ?? ''}
+              placeholder="Why is this step needed — the need it satisfies. Optional."
+              disabled={locked}
+              onChange={(next) => updateEntity(entityId, { need: next || undefined })}
+            />
+          </Field>
+          <Field label="Working assumption">
+            <TextArea
+              rows={2}
+              value={entity.workingAssumption ?? ''}
+              placeholder="The belief that makes this action sufficient to meet the need. Optional."
+              disabled={locked}
+              onChange={(next) => updateEntity(entityId, { workingAssumption: next || undefined })}
+            />
+          </Field>
+        </>
+      )}
+
       {/* Action eligibility (medium gap) — folds the action's
           preconditions' effective states. Renders only when there's a
           precondition slot to judge (status !== 'na'). Green = ready to

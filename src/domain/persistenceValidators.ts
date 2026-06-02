@@ -294,6 +294,13 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   if (v.attestation !== undefined && typeof v.attestation !== 'string') {
     throw invalid(label, 'has non-string attestation');
   }
+  // Phase 3 #8 — TT per-step Need + Working Assumption (optional free text).
+  if (v.need !== undefined && typeof v.need !== 'string') {
+    throw invalid(label, 'has non-string need');
+  }
+  if (v.workingAssumption !== undefined && typeof v.workingAssumption !== 'string') {
+    throw invalid(label, 'has non-string workingAssumption');
+  }
   // Session 134 / spec major gap #6 — entity-level ownership +
   // last-validated audit timestamp. Round-tripped so JSON exports and
   // share-link reloads carry the same accountability metadata the
@@ -355,6 +362,10 @@ export const validateEntity = (v: unknown, label: string): Entity => {
     ...(typeof v.ordering === 'number' ? { ordering: v.ordering } : {}),
     ...(position ? { position } : {}),
     ...(typeof v.attestation === 'string' ? { attestation: v.attestation } : {}),
+    ...(typeof v.need === 'string' && v.need.length > 0 ? { need: v.need } : {}),
+    ...(typeof v.workingAssumption === 'string' && v.workingAssumption.length > 0
+      ? { workingAssumption: v.workingAssumption }
+      : {}),
     ...(typeof v.owner === 'string' && v.owner.length > 0 ? { owner: v.owner } : {}),
     ...(typeof v.lastValidatedAt === 'number' ? { lastValidatedAt: v.lastValidatedAt } : {}),
     ...(v.unspecified === true ? { unspecified: true as const } : {}),

@@ -556,6 +556,7 @@ A Transition Tree is a sequenced injection plan — the chain of actions that mo
 - Start one with `Cmd/Ctrl+K` → **New Transition Tree** (or load the example via **Load example Transition Tree**).
 - The palette types are: **Action** (cyan, the step you take), **Effect** (grey, intermediate states the plan passes through, optional), **Desired Effect** (indigo, the outcome at the top), and **Assumption** (violet, edge side-attachments).
 - Select an Action in the inspector to see a **Step #** numeric input. Set a step number and a small "Step N" badge appears at the node's top-left. Leave it blank to hide the badge — the step field is action-only today.
+- The same Action inspector also has optional **Need** and **Working assumption** fields (Session 158) — *why* the step is needed, and the belief that makes the action sufficient. With the Action and its Step #, they form the canonical Transition-Tree step (Action ← Need ← Working Assumption). Both are free text and optional; leave them blank and nothing changes.
 - Layout is regular dagre. If you connect the actions in order (Tab from action 1 to action 2 etc.), the flow naturally reads top-to-bottom; the step badges then act as a visible cross-check rather than the layout driver.
 - No TT-specific CLR rules yet. The CRT/FRT heuristics simply don't fire on a TT.
 
