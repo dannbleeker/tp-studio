@@ -1,7 +1,17 @@
-import { BookOpen, Code2, ExternalLink, FileText, Scale, Shield, X } from 'lucide-react';
+import { Shield, X } from 'lucide-react';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
+import {
+  BOOK_EPUB_LINK,
+  BOOK_PDF_LINK,
+  GITHUB_LINK,
+  type LinkRow,
+  LinkRowItem,
+  NOTICES_LINK,
+  NOTICES_PATH,
+  USER_GUIDE_LINK,
+} from './docLinks';
 
 /**
  * Session 111 — About TP Studio dialog.
@@ -14,110 +24,37 @@ import { Modal } from '../ui/Modal';
  *   - where the source code lives (one explicit GitHub link, intentional)
  *   - copyright + nominative-use trademark notice
  *
- * Why a dedicated dialog instead of a HelpDialog subsection: the
- * HelpDialog is keyboard-shortcut-and-gesture-shaped — book links
- * buried in there read as footnotes. This dialog gives those
- * surfaces a discoverable home and gives the NOTICE.md /
- * SECURITY.md docs an in-app surface (they had no entry point
- * before).
+ * Session 153 — the doc links + their `LinkRowItem` renderer moved to
+ * `./docLinks` so the Help dialog ("Learn TP Studio" section) and this dialog
+ * share one source of truth. Build-path rationale lives there.
  *
- * Why links go to `/...` not `github.com/...`: the markdown source
- * for NOTICE / SECURITY / USER_GUIDE is rendered to HTML at build
- * time by `scripts/build-docs-bundle.mjs`, and the book PDF is
- * copied into `public/` at the same time. Vite bundles all of them
- * into `dist/`, so they serve from the branded subdomain
- * (tp-studio.struktureretsundfornuft.dk/notices.html etc.) instead
- * of leaking the underlying GitHub hosting. Service worker picks
- * them up for offline reading.
- *
- * Build metadata (version, date, copyright string) is injected via
- * Vite `define` — see `vite.config.ts`. The copyright string
- * auto-rolls forward: "2026" today, "2026–2027" once we're in 2027,
- * etc. No code edit needed at year-rollover.
+ * Build metadata (version, date, copyright string) is injected via Vite
+ * `define` — see `vite.config.ts`. The copyright string auto-rolls forward.
  */
 
-const BOOK_PATH = '/Causal-Thinking-with-TP-Studio.pdf';
-// Session 135 — EPUB shipped alongside the PDF. Reflowable format
-// for e-readers; Send-to-Kindle accepts it natively.
-const BOOK_EPUB_PATH = '/Causal-Thinking-with-TP-Studio.epub';
-const USER_GUIDE_PATH = '/user-guide.html';
+// The security link carries the build-time audit label, so it stays here rather
+// than in the shared `docLinks` module (which deliberately avoids build-define
+// globals so any consumer can import it cleanly).
 const SECURITY_PATH = '/security.html';
-const NOTICES_PATH = '/notices.html';
-const GITHUB_URL = 'https://github.com/dannbleeker/tp-studio';
-
-type LinkRow = {
-  href: string;
-  Icon: typeof BookOpen;
-  label: string;
-  hint?: string;
-  external?: boolean;
+const SECURITY_LINK: LinkRow = {
+  href: SECURITY_PATH,
+  Icon: Shield,
+  label: 'Security & threat model',
+  // Session 136 — surface the latest audit pointer here so it's visible without
+  // clicking through (refreshes automatically when SECURITY.md's `Last
+  // reviewed:` line moves forward).
+  hint: `Last audit: ${__SECURITY_AUDIT_LABEL__}.`,
 };
 
 const READ_MORE: LinkRow[] = [
-  {
-    href: BOOK_PATH,
-    Icon: BookOpen,
-    label: 'Causal Thinking with TP Studio (PDF)',
-    hint: 'The practitioner book — ~50,000 words, 17 chapters. Best for desktop reading.',
-  },
-  {
-    href: BOOK_EPUB_PATH,
-    Icon: BookOpen,
-    label: 'Causal Thinking with TP Studio (EPUB)',
-    hint: 'Same book, reflowable. Email to your Kindle or open in any e-reader app.',
-  },
-  {
-    href: USER_GUIDE_PATH,
-    Icon: FileText,
-    label: 'User Guide',
-    hint: 'Reference for every feature and shortcut.',
-  },
-  {
-    href: SECURITY_PATH,
-    Icon: Shield,
-    label: 'Security & threat model',
-    // Session 136 — surface the latest audit pointer here so it's
-    // visible without clicking through (and refreshes automatically
-    // when SECURITY.md's `Last reviewed:` line moves forward).
-    hint: `Last audit: ${__SECURITY_AUDIT_LABEL__}.`,
-  },
-  {
-    href: NOTICES_PATH,
-    Icon: Scale,
-    label: 'Third-party notices & trademarks',
-  },
+  BOOK_PDF_LINK,
+  BOOK_EPUB_LINK,
+  USER_GUIDE_LINK,
+  SECURITY_LINK,
+  NOTICES_LINK,
 ];
 
-const PROJECT: LinkRow[] = [
-  {
-    href: GITHUB_URL,
-    Icon: Code2,
-    label: 'Source code on GitHub',
-    external: true,
-  },
-];
-
-function LinkRowItem({ href, Icon, label, hint, external }: LinkRow) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group -mx-2 flex items-start gap-3 rounded-md px-2 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-    >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-neutral-500 group-hover:text-indigo-500 dark:text-neutral-400" />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 font-medium text-neutral-900 text-sm dark:text-neutral-100">
-          {label}
-          {external ? (
-            <ExternalLink className="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
-          ) : null}
-        </div>
-        {hint ? <div className="text-neutral-500 text-xs dark:text-neutral-400">{hint}</div> : null}
-      </div>
-    </a>
-  );
-}
+const PROJECT: LinkRow[] = [GITHUB_LINK];
 
 export function AboutDialog() {
   const open = useDocumentStore((s) => s.aboutOpen);

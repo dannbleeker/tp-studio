@@ -23,15 +23,27 @@ describe('HelpDialog', () => {
     expect(container.querySelector('dialog')).toBeNull();
   });
 
-  it('renders the title and the four sections when open', () => {
+  it('renders the title and the four shortcut sections when open', () => {
     open();
     const { getByText } = render(<HelpDialog />);
-    expect(getByText('Keyboard shortcuts')).toBeTruthy();
+    expect(getByText('Help')).toBeTruthy();
     // Section headings as they appear in `SECTIONS` above.
     expect(getByText('Global')).toBeTruthy();
     expect(getByText('On a selected entity')).toBeTruthy();
     expect(getByText('On a selected group')).toBeTruthy();
     expect(getByText('Canvas')).toBeTruthy();
+  });
+
+  it('leads with a "Learn TP Studio" section linking the User Guide + book', () => {
+    // Session 153 — the "?" is now a real Help entry, not just a shortcuts list.
+    open();
+    const { getByText, container } = render(<HelpDialog />);
+    expect(getByText('Learn TP Studio')).toBeTruthy();
+    const hrefs = Array.from(container.querySelectorAll('a[href]')).map((a) =>
+      a.getAttribute('href')
+    );
+    expect(hrefs).toContain('/user-guide.html');
+    expect(hrefs).toContain('/Causal-Thinking-with-TP-Studio.pdf');
   });
 
   it('renders representative shortcut rows', () => {

@@ -74,7 +74,7 @@ describe('KebabMenu', () => {
     openMenu(container);
     const helpItem = Array.from(
       container.querySelectorAll('[role="menuitem"], [role="menuitemcheckbox"]')
-    ).find((b) => b.textContent?.includes('Keyboard shortcuts')) as HTMLButtonElement;
+    ).find((b) => b.textContent?.includes('Help')) as HTMLButtonElement;
     expect(helpItem).toBeTruthy();
     expect(useDocumentStore.getState().helpOpen).toBe(false);
     click(helpItem);
@@ -121,7 +121,7 @@ describe('KebabMenu', () => {
     expect(labels.some((t) => t.includes('Radial layout'))).toBe(false);
     expect(labels.some((t) => t.includes('Flow layout'))).toBe(false);
     // Help/Theme/History still present.
-    expect(labels.some((t) => t.includes('Keyboard shortcuts'))).toBe(true);
+    expect(labels.some((t) => t.includes('Help'))).toBe(true);
   });
 
   it('closes when Escape is pressed', () => {

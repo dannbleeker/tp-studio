@@ -219,7 +219,8 @@ export function TopBar() {
         size="icon"
         onClick={openHelp}
         className="pointer-events-auto hidden sm:inline-flex"
-        aria-label="Keyboard shortcuts"
+        aria-label="Help"
+        title="Help"
       >
         <HelpCircle className="h-3.5 w-3.5" />
       </Button>

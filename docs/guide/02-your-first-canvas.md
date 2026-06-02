@@ -31,7 +31,7 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 | **Commands button** | Top-right | Opens the command palette. Same as `Cmd/Ctrl+K`. |
 | **Lock button** | Top-right | Toggles Browse Lock — read-only mode. Use it before screen-sharing or demoing. |
 | **History button** | Top-right (sm+ screens) | Toggles the Revision Panel slide-in. |
-| **Help button (?)** | Top-right | Opens the keyboard-shortcuts dialog. |
+| **Help button (?)** | Top-right | Opens **Help** — the User Guide and practitioner book, plus keyboard shortcuts & gestures. |
 | **Theme toggle** | Top-right | Light ↔ dark. (High-contrast variants live in Settings.) |
 | **Canvas** | Center | The infinite dot-grid where your diagram lives. Pan with middle-click drag or two-finger scroll; zoom with the wheel or `+` / `-`. |
 | **Zoom controls** | Bottom-left | Zoom in, zoom out, fit-to-view. |

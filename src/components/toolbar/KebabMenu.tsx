@@ -218,7 +218,7 @@ export function KebabMenu() {
             onClick={runAndClose(openHelp)}
           >
             <HelpCircle className="h-3.5 w-3.5" />
-            <span>Keyboard shortcuts</span>
+            <span>Help</span>
           </button>
           <button
             type="button"

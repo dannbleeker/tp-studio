@@ -69,9 +69,7 @@ describe('TopBar', () => {
 
   it('Help button opens the help dialog', () => {
     const { container } = render(<TopBar />);
-    const helpBtn = container.querySelector(
-      'button[aria-label="Keyboard shortcuts"]'
-    ) as HTMLButtonElement;
+    const helpBtn = container.querySelector('button[aria-label="Help"]') as HTMLButtonElement;
     expect(helpBtn).toBeTruthy();
     expect(useDocumentStore.getState().helpOpen).toBe(false);
     click(helpBtn);

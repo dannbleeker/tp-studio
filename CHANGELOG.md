@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — The "?" button is a real Help hub, not just shortcuts
+
+Backlog ("review what the canvas help button should open"). The "?" (HelpCircle)
+button opened only the keyboard-shortcuts dialog — but the universal "?" icon
+makes people expect "how do I use this", and the User Guide + practitioner book
+sat two clicks deeper in About.
+
+The Help dialog now **leads with a "Learn TP Studio" section** linking the User
+Guide + the book, then the keyboard shortcuts + gestures, then the About link.
+The "?" button, the kebab entry, and the palette command are relabelled **"Help"**
+(palette: "Help & keyboard shortcuts", so it's still findable by either term).
+
+Refactor: the doc links + their `LinkRowItem` renderer moved to a shared
+`components/about/docLinks.tsx` so About and Help can't drift on URLs or copy
+(the security link, which carries a build-time audit label, stays local to
+About). `02-your-first-canvas.md` updated to match. Tests updated; a new
+`HelpDialog` test pins the Learn section + guide links.
+
+Full suite green; tsc + biome clean.
+
 ## Session 153 — Import-generator skill: staleness guard + book reference
 
 Two follow-ups so the `tp-studio-import` skill stays correct and discoverable:

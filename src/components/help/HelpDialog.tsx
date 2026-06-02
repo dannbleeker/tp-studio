@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { SHORTCUT_GROUP_TITLE, SHORTCUTS_BY_GROUP, type ShortcutGroup } from '@/domain/shortcuts';
 import { useDocumentStore } from '@/store';
+import { LEARN_LINKS, LinkRowItem } from '../about/docLinks';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 
@@ -67,13 +68,27 @@ export function HelpDialog() {
           id="help-title"
           className="font-semibold text-neutral-900 text-sm dark:text-neutral-100"
         >
-          Keyboard shortcuts
+          Help
         </h2>
         <Button variant="ghost" size="icon" onClick={close} aria-label="Close help">
           <X className="h-4 w-4" />
         </Button>
       </header>
       <div className="max-h-[70vh] space-y-4 overflow-y-auto px-4 py-3">
+        {/* Session 153 — "?" is now a real Help entry, not just a shortcuts
+            list: lead with the User Guide + practitioner book, then the keyboard
+            and gesture reference below. Links shared with the About dialog via
+            `docLinks` so the two can't drift. */}
+        <section>
+          <h3 className="mb-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
+            Learn TP Studio
+          </h3>
+          <div className="-mx-2">
+            {LEARN_LINKS.map((row) => (
+              <LinkRowItem key={row.href} {...row} />
+            ))}
+          </div>
+        </section>
         {GROUP_ORDER.map((group) => {
           const rows = SHORTCUTS_BY_GROUP[group];
           if (rows.length === 0) return null;
