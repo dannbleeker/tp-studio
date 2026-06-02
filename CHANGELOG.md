@@ -2,6 +2,34 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — New: TP Studio import-file generator skill (+ NBR persistence fix)
+
+Backlog ("create a skill that can create files for import in TP Studio in all
+types of trees/maps"). Added a Claude skill at `.claude/skills/tp-studio-import/`
+that turns a problem / goal / conflict described in words into an importable TP
+Studio JSON document for any of the 9 diagram types (CRT, FRT, PRT, TT, EC, Goal
+Tree, S&T, NBR, freeform):
+
+- `SKILL.md` — workflow, the minimal document shape, the sufficiency-vs-necessity
+  edge grammar, a per-type cheat-sheet, junctors, and the EC 5-box special case.
+- `reference/format.md` — the complete field-by-field schema + every enum,
+  mirroring `persistenceValidators.ts`.
+- `examples/*.json` — one CI-validated template per diagram type.
+- `tests/skills/tpStudioImport.test.ts` imports every example through the REAL
+  `importFromJSON` and asserts a byte-stable round-trip, so the skill can never
+  silently drift from the app. Generated files can be checked ad-hoc with
+  `TP_VALIDATE_FILE=… node ./node_modules/vitest/vitest.mjs run tests/skills/tpStudioImport.test.ts`.
+
+**Bug found + fixed while building it:** the `DiagramType` union has included
+`'nbr'` since Session 134 (factory, palettes, type picker, and 4 patterns all
+support it), but the runtime `isDiagramType` guard set never did — so a
+user-created Negative Branch diagram failed `importFromJSON` and was **silently
+dropped on reload / import / share-link** (data loss). Added `'nbr'` to the guard
+plus an exhaustive `Record<DiagramType, true>` sync test that fails to compile (or
+run) if the guard and the union ever drift again.
+
+Full suite green; tsc + biome + knip clean.
+
 ## Session 153 — Fix: adding a duplicate edge now explains why (no silent fail)
 
 Backlog ("I'm not able to add a new edge from #2 to #6 — why?"): dragging a

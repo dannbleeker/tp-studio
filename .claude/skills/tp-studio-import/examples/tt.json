@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 9,
+  "id": "tt-example",
+  "diagramType": "tt",
+  "title": "Support response time — Transition Tree",
+  "nextAnnotationNumber": 5,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "de": {
+      "id": "de",
+      "type": "desiredEffect",
+      "title": "Support resolves tickets in under 1 hour",
+      "annotationNumber": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "a1": {
+      "id": "a1",
+      "type": "action",
+      "title": "Map the current ticket-intake steps",
+      "annotationNumber": 2,
+      "ordering": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "o1": {
+      "id": "o1",
+      "type": "effect",
+      "title": "Bottlenecks are visible to the team",
+      "annotationNumber": 3,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "a2": {
+      "id": "a2",
+      "type": "action",
+      "title": "Add an auto-triage routing rule",
+      "annotationNumber": 4,
+      "ordering": 2,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1": { "id": "e1", "sourceId": "a1", "targetId": "o1", "kind": "sufficiency" },
+    "e2": {
+      "id": "e2",
+      "sourceId": "o1",
+      "targetId": "de",
+      "kind": "sufficiency",
+      "andGroupId": "and-de"
+    },
+    "e3": {
+      "id": "e3",
+      "sourceId": "a2",
+      "targetId": "de",
+      "kind": "sufficiency",
+      "andGroupId": "and-de"
+    }
+  }
+}

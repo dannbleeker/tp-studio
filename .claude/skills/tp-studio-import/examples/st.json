@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 9,
+  "id": "st-example",
+  "diagramType": "st",
+  "title": "Annual-plan growth — Strategy & Tactics Tree",
+  "nextAnnotationNumber": 7,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "apex": {
+      "id": "apex",
+      "type": "goal",
+      "title": "Grow recurring revenue 20% YoY",
+      "annotationNumber": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "t1": {
+      "id": "t1",
+      "type": "injection",
+      "title": "Launch an annual-plan upgrade campaign",
+      "annotationNumber": 2,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "sub": {
+      "id": "sub",
+      "type": "goal",
+      "title": "Convert 30% of monthly users to annual",
+      "annotationNumber": 3,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "t2": {
+      "id": "t2",
+      "type": "injection",
+      "title": "Offer a 2-month-free upgrade incentive",
+      "annotationNumber": 4,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "na": {
+      "id": "na",
+      "type": "necessaryCondition",
+      "title": "Users have been on the monthly plan for at least 6 months",
+      "annotationNumber": 5,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "sa": {
+      "id": "sa",
+      "type": "necessaryCondition",
+      "title": "Incentive economics break even within 12 months",
+      "annotationNumber": 6,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1": { "id": "e1", "sourceId": "t1", "targetId": "apex", "kind": "sufficiency" },
+    "e2": { "id": "e2", "sourceId": "sub", "targetId": "t1", "kind": "sufficiency" },
+    "e3": { "id": "e3", "sourceId": "t2", "targetId": "sub", "kind": "sufficiency" },
+    "e4": { "id": "e4", "sourceId": "na", "targetId": "t2", "kind": "sufficiency" },
+    "e5": { "id": "e5", "sourceId": "sa", "targetId": "t2", "kind": "sufficiency" }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 9,
+  "id": "ec-example",
+  "diagramType": "ec",
+  "title": "Work / family balance — Evaporating Cloud",
+  "nextAnnotationNumber": 6,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "a": {
+      "id": "a",
+      "type": "goal",
+      "title": "Be present for my family AND deliver at work",
+      "annotationNumber": 1,
+      "ecSlot": "a",
+      "position": { "x": 100, "y": 250 },
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "b": {
+      "id": "b",
+      "type": "need",
+      "title": "Spend evening time with my family",
+      "annotationNumber": 2,
+      "ecSlot": "b",
+      "position": { "x": 450, "y": 100 },
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "c": {
+      "id": "c",
+      "type": "need",
+      "title": "Hit my quarterly performance targets",
+      "annotationNumber": 3,
+      "ecSlot": "c",
+      "position": { "x": 450, "y": 400 },
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "d": {
+      "id": "d",
+      "type": "want",
+      "title": "Leave the office at 5pm every day",
+      "annotationNumber": 4,
+      "ecSlot": "d",
+      "position": { "x": 800, "y": 100 },
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "dPrime": {
+      "id": "dPrime",
+      "type": "want",
+      "title": "Stay late to finish the feature on time",
+      "annotationNumber": 5,
+      "ecSlot": "dPrime",
+      "position": { "x": 800, "y": 400 },
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1": { "id": "e1", "sourceId": "d", "targetId": "b", "kind": "necessity" },
+    "e2": { "id": "e2", "sourceId": "dPrime", "targetId": "c", "kind": "necessity" },
+    "e3": { "id": "e3", "sourceId": "b", "targetId": "a", "kind": "necessity" },
+    "e4": { "id": "e4", "sourceId": "c", "targetId": "a", "kind": "necessity" },
+    "e5": {
+      "id": "e5",
+      "sourceId": "d",
+      "targetId": "dPrime",
+      "kind": "necessity",
+      "isMutualExclusion": true
+    }
+  }
+}

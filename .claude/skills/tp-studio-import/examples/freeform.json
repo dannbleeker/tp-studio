@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 9,
+  "id": "freeform-example",
+  "diagramType": "freeform",
+  "title": "Support-load brainstorm — Freeform map",
+  "nextAnnotationNumber": 5,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "e1": {
+      "id": "e1",
+      "type": "effect",
+      "title": "Run weekly customer office hours",
+      "annotationNumber": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "e2": {
+      "id": "e2",
+      "type": "effect",
+      "title": "Publish a searchable FAQ",
+      "annotationNumber": 2,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "goal": {
+      "id": "goal",
+      "type": "effect",
+      "title": "Fewer repeat support questions",
+      "annotationNumber": 3,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "n1": {
+      "id": "n1",
+      "type": "note",
+      "title": "Brainstorm — not yet prioritized",
+      "annotationNumber": 4,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1e": { "id": "e1e", "sourceId": "e1", "targetId": "goal", "kind": "sufficiency" },
+    "e2e": { "id": "e2e", "sourceId": "e2", "targetId": "goal", "kind": "sufficiency" }
+  }
+}

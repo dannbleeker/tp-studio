@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 9,
+  "id": "prt-example",
+  "diagramType": "prt",
+  "title": "Product launch — Prerequisite Tree",
+  "nextAnnotationNumber": 6,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "goal": {
+      "id": "goal",
+      "type": "goal",
+      "title": "Launch the new product line in Q3",
+      "annotationNumber": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "obs1": {
+      "id": "obs1",
+      "type": "obstacle",
+      "title": "Engineering lacks the new tech stack",
+      "annotationNumber": 2,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "io1": {
+      "id": "io1",
+      "type": "intermediateObjective",
+      "title": "Run a two-week paired-training sprint",
+      "annotationNumber": 3,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "obs2": {
+      "id": "obs2",
+      "type": "obstacle",
+      "title": "QA team is at capacity",
+      "annotationNumber": 4,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "io2": {
+      "id": "io2",
+      "type": "intermediateObjective",
+      "title": "Hire two contract testers for the launch window",
+      "annotationNumber": 5,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1": { "id": "e1", "sourceId": "io1", "targetId": "obs1", "kind": "sufficiency" },
+    "e2": { "id": "e2", "sourceId": "obs1", "targetId": "goal", "kind": "sufficiency" },
+    "e3": { "id": "e3", "sourceId": "io2", "targetId": "obs2", "kind": "sufficiency" },
+    "e4": { "id": "e4", "sourceId": "obs2", "targetId": "goal", "kind": "sufficiency" }
+  }
+}

@@ -14,6 +14,14 @@ const DIAGRAM_TYPES: ReadonlySet<DiagramType> = new Set<DiagramType>([
   'freeform', // Free-form diagram (FL-DT5)
   // Session 77 (brief §5):
   'goalTree',
+  // Session 134 added 'nbr' (Negative Branch Reservation) to the DiagramType
+  // union, the factory, the entity palettes and the type picker — but this
+  // runtime guard was never updated to match. Because `importFromJSON` (and so
+  // the localStorage loader) rejects any diagramType this set doesn't contain,
+  // a user-created NBR diagram failed to parse and was silently dropped on
+  // reload / import / share-link. Kept in sync now; the guard↔union sync test
+  // in `tests/skills/tpStudioImport.test.ts` fails if a future type drifts again.
+  'nbr',
 ]);
 export const isDiagramType = (v: unknown): v is DiagramType =>
   typeof v === 'string' && DIAGRAM_TYPES.has(v as DiagramType);

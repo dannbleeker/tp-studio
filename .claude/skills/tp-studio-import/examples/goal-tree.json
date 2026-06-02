@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 9,
+  "id": "goal-tree-example",
+  "diagramType": "goalTree",
+  "title": "Regional supplier — Goal Tree",
+  "nextAnnotationNumber": 6,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "goal": {
+      "id": "goal",
+      "type": "goal",
+      "title": "Become the #1 supplier in our region",
+      "annotationNumber": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "csf1": {
+      "id": "csf1",
+      "type": "criticalSuccessFactor",
+      "title": "Reliable on-time delivery",
+      "annotationNumber": 2,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "csf2": {
+      "id": "csf2",
+      "type": "criticalSuccessFactor",
+      "title": "Competitive total cost of ownership",
+      "annotationNumber": 3,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "nc1": {
+      "id": "nc1",
+      "type": "necessaryCondition",
+      "title": "Accurate demand forecasting",
+      "annotationNumber": 4,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "nc2": {
+      "id": "nc2",
+      "type": "necessaryCondition",
+      "title": "Lean warehouse operations",
+      "annotationNumber": 5,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1": { "id": "e1", "sourceId": "csf1", "targetId": "goal", "kind": "necessity" },
+    "e2": { "id": "e2", "sourceId": "csf2", "targetId": "goal", "kind": "necessity" },
+    "e3": { "id": "e3", "sourceId": "nc1", "targetId": "csf1", "kind": "necessity" },
+    "e4": { "id": "e4", "sourceId": "nc2", "targetId": "csf2", "kind": "necessity" }
+  }
+}

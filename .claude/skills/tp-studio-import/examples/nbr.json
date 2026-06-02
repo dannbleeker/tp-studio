@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 9,
+  "id": "nbr-example",
+  "diagramType": "nbr",
+  "title": "Free-trial side effect — Negative Branch Reservation",
+  "nextAnnotationNumber": 5,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "inj": {
+      "id": "inj",
+      "type": "injection",
+      "title": "Offer unlimited free trials to boost signups",
+      "annotationNumber": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "ef1": {
+      "id": "ef1",
+      "type": "effect",
+      "title": "Signup volume spikes sharply",
+      "annotationNumber": 2,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "ef2": {
+      "id": "ef2",
+      "type": "effect",
+      "title": "Support is flooded with low-intent users",
+      "annotationNumber": 3,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "ude": {
+      "id": "ude",
+      "type": "ude",
+      "title": "Paying customers get slow support and churn",
+      "annotationNumber": 4,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1": { "id": "e1", "sourceId": "inj", "targetId": "ef1", "kind": "sufficiency" },
+    "e2": { "id": "e2", "sourceId": "ef1", "targetId": "ef2", "kind": "sufficiency" },
+    "e3": { "id": "e3", "sourceId": "ef2", "targetId": "ude", "kind": "sufficiency" }
+  }
+}

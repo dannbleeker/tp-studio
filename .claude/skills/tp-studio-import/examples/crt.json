@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 9,
+  "id": "crt-example",
+  "diagramType": "crt",
+  "title": "Customer churn — Current Reality Tree",
+  "nextAnnotationNumber": 5,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "ude": {
+      "id": "ude",
+      "type": "ude",
+      "title": "Customers churn within 30 days of signing up",
+      "annotationNumber": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "eff": {
+      "id": "eff",
+      "type": "effect",
+      "title": "New users cannot complete setup on their own",
+      "annotationNumber": 2,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "rc1": {
+      "id": "rc1",
+      "type": "rootCause",
+      "title": "Setup requires 12 manual configuration steps",
+      "annotationNumber": 3,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "rc2": {
+      "id": "rc2",
+      "type": "rootCause",
+      "title": "There is no in-product guidance",
+      "annotationNumber": 4,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1": {
+      "id": "e1",
+      "sourceId": "rc1",
+      "targetId": "eff",
+      "kind": "sufficiency",
+      "andGroupId": "and-eff"
+    },
+    "e2": {
+      "id": "e2",
+      "sourceId": "rc2",
+      "targetId": "eff",
+      "kind": "sufficiency",
+      "andGroupId": "and-eff"
+    },
+    "e3": { "id": "e3", "sourceId": "eff", "targetId": "ude", "kind": "sufficiency" }
+  }
+}

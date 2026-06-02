@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 9,
+  "id": "frt-example",
+  "diagramType": "frt",
+  "title": "Onboarding fix — Future Reality Tree",
+  "nextAnnotationNumber": 5,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "inj": {
+      "id": "inj",
+      "type": "injection",
+      "title": "Ship a guided in-product setup wizard",
+      "annotationNumber": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "ef1": {
+      "id": "ef1",
+      "type": "effect",
+      "title": "New users complete setup unaided",
+      "annotationNumber": 2,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "ef2": {
+      "id": "ef2",
+      "type": "effect",
+      "title": "Time-to-first-value drops below 10 minutes",
+      "annotationNumber": 3,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "de": {
+      "id": "de",
+      "type": "desiredEffect",
+      "title": "Customers stay past the first 30 days",
+      "annotationNumber": 4,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1": { "id": "e1", "sourceId": "inj", "targetId": "ef1", "kind": "sufficiency" },
+    "e2": { "id": "e2", "sourceId": "ef1", "targetId": "ef2", "kind": "sufficiency" },
+    "e3": { "id": "e3", "sourceId": "ef2", "targetId": "de", "kind": "sufficiency" }
+  }
+}
