@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 159 — Extract shared EntityPickerGrid (DRY refactor)
+
+Pure refactor, no behaviour change. The entity-card grid — a filtered,
+annotation-number-sorted list of `isNonCausal`-filtered entities rendered as
+type-striped cards — was duplicated (~40 lines of card JSX + the candidates/visible
+filter logic) across `ImportEntityPickerDialog` and `LinkEntityPickerDialog`.
+Extracted into a shared **`EntityPickerGrid`** (`src/components/import/EntityPickerGrid.tsx`)
+that owns the filter input + grid; each dialog keeps its own chrome (the import
+subtitle count via the exported `causalEntities` helper; the link dialog's
+tab-selector) and pick action. Per-card `data-component` + aria verb are props, so
+the DOM hooks + accessible names are byte-identical. tsc + biome + knip clean; full
+suite (2385) green.
+
 ## Session 158 — TT per-step Need + Working Assumption (Phase 3 #8)
 
 A second Phase 3 slice. A Transition-Tree **Action** now carries two optional
