@@ -47,6 +47,7 @@ export const EDIT_SUBGROUP: Record<string, EditSubgroup> = {
   'mark-as-outcome': 'Type',
   'mark-as-obstacle': 'Type',
   'mark-as-io': 'Type',
+  'mark-core-problem': 'Type',
   // Edges & junctors
   'reverse-edge': 'Edges & junctors',
   'cycle-edge-polarity': 'Edges & junctors',

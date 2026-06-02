@@ -62,10 +62,13 @@ schema migration), and each affordance is invisible until invoked.
     a clickable "Linked to" inspector chip → `switchTab` + `selectEntity` (+ ×
     unlink). `linkSelectedEntityTo` / `unlinkEntity` in `docMetaSlice`. The
     keystone is in — it unlocks the U-Shape and feeds #3/#4.
-  - **2b — core-problem marker + guided "build-next-step" helpers:** optional
-    `coreProblem?` flag + "Mark as core problem"; then "Create the Core Cloud"
-    (spawns a linked EC, `cloudType:'core'`) and "Carry the injection into an FRT"
-    (spawns a linked FRT). The journey assembles itself on command.
+  - ~~**2b — core-problem marker + guided "build-next-step" helpers**~~ ✅
+    *Session 156* — optional `Entity.coreProblem?` flag + "Mark / unmark as core
+    problem" (palette + inspector toggle); **"Create the Core Cloud from this
+    entity…"** (spawns a linked EC, `cloudType:'core'`) and **"Carry this into a
+    new FRT…"** (spawns a linked FRT). Pure builders in `src/domain/uShape.ts`;
+    `spawnLinkedFromSelection` bakes the reciprocal link + opens the new tab.
+    **Phase 2 (the U-Shape) is complete.**
 - **Phase 3 — smaller gaps, each opt-in:** #4 NBR "Trim this branch" → a linked
   trimming injection (small, high value); #7 a guided CLR-scrutiny panel over the
   existing validators; #8 optional per-step Need + Working-Assumption on TT; #3

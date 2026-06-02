@@ -277,6 +277,9 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   if (v.collapsed !== undefined && typeof v.collapsed !== 'boolean') {
     throw invalid(label, 'has non-boolean collapsed');
   }
+  if (v.coreProblem !== undefined && typeof v.coreProblem !== 'boolean') {
+    throw invalid(label, 'has non-boolean coreProblem');
+  }
   if (v.ordering !== undefined && !isFiniteNumber(v.ordering)) {
     throw invalid(label, 'has non-finite ordering');
   }
@@ -348,6 +351,7 @@ export const validateEntity = (v: unknown, label: string): Entity => {
       ? { titleSize: v.titleSize }
       : {}),
     ...(v.collapsed === true ? { collapsed: true as const } : {}),
+    ...(v.coreProblem === true ? { coreProblem: true as const } : {}),
     ...(typeof v.ordering === 'number' ? { ordering: v.ordering } : {}),
     ...(position ? { position } : {}),
     ...(typeof v.attestation === 'string' ? { attestation: v.attestation } : {}),

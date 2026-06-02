@@ -22,6 +22,7 @@ import type {
   SystemScope,
   TPDocument,
 } from '@/domain/types';
+import { buildCoreCloudSeed, buildInjectionFRTSeed } from '@/domain/uShape';
 import { flushPersist, persistDebounced } from '@/services/storage/persistDebounced';
 import { type ActiveDocFields, activeDocState, setActiveDoc } from '../activeDoc';
 import { applyTabSwitchHistory, pushHistoryEntry, stashHistory } from '../historySlice';
@@ -160,6 +161,18 @@ export type DocMetaSlice = {
   unlinkEntity: (sourceEntityId: EntityId, link: EntityLink) => void;
 
   /**
+   * Phase 2b (TP completeness #2 — U-Shape) — toggle the user-set "core
+   * problem" marker on an entity (the U-Shape hinge; undoable).
+   */
+  toggleCoreProblem: (entityId: EntityId) => void;
+  /** Phase 2b — guided helper: spawn a Core Cloud (EC, `cloudType:'core'`) from
+   *  the selected entity, opened in a new tab and reciprocally linked back. */
+  createCoreCloudFromSelection: () => void;
+  /** Phase 2b — guided helper: carry the selected entity into a new FRT as an
+   *  injection, opened in a new tab and reciprocally linked back. */
+  carryInjectionToFRT: () => void;
+
+  /**
    * B10 — add or replace a custom entity class on the active doc. The
    * `id` field on the class is the map key; passing an existing id
    * overwrites that class (label / color / supersetOf update in place).
@@ -281,6 +294,44 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       future: [],
     });
     get().reloadRevisionsForActiveDoc();
+  };
+
+  // Phase 2b (U-Shape) — shared spawn: bake a reciprocal link onto the seed's
+  // anchor entity, add the mirror to the source, persist the source, and open
+  // the seed in a NEW tab (always — the whole point is both docs open + linked,
+  // so this bypasses the `openDocsInNewTab` pref). Links are metadata → no
+  // history entry (cf. `linkSelectedEntityTo`). Returns false if the source /
+  // anchor entity is missing.
+  const spawnLinkedFromSelection = (
+    seed: { doc: TPDocument; anchorId: EntityId },
+    sourceEntityId: EntityId
+  ): boolean => {
+    const state = get();
+    const sourceDocId = state.activeDocId;
+    const sourceEntity = state.doc.entities[sourceEntityId];
+    const anchor = seed.doc.entities[seed.anchorId];
+    if (!sourceEntity || !anchor) return false;
+    const seedWithLink: TPDocument = {
+      ...seed.doc,
+      entities: {
+        ...seed.doc.entities,
+        [seed.anchorId]: { ...anchor, links: [{ docId: sourceDocId, entityId: sourceEntityId }] },
+      },
+    };
+    const nextSource = touch({
+      ...state.doc,
+      entities: {
+        ...state.doc.entities,
+        [sourceEntityId]: {
+          ...sourceEntity,
+          links: [...(sourceEntity.links ?? []), { docId: seed.doc.id, entityId: seed.anchorId }],
+        },
+      },
+    });
+    set(setActiveDoc(state, nextSource));
+    saveDocToLocalStorage(nextSource);
+    get().openTab(seedWithLink);
+    return true;
   };
 
   return {
@@ -727,6 +778,58 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       }
       set(setActiveDoc({ ...state, docs: nextDocs }, nextSource));
       saveDocToLocalStorage(nextSource);
+    },
+
+    toggleCoreProblem: (entityId) => {
+      applyDocChange((prev) => {
+        const e = prev.entities[entityId];
+        if (!e) return prev;
+        if (e.coreProblem) {
+          const { coreProblem: _drop, ...rest } = e;
+          return touch({ ...prev, entities: { ...prev.entities, [entityId]: rest } });
+        }
+        return touch({
+          ...prev,
+          entities: { ...prev.entities, [entityId]: { ...e, coreProblem: true } },
+        });
+      });
+    },
+
+    createCoreCloudFromSelection: () => {
+      const state = get();
+      const sel = state.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        get().showToast('info', 'Select a single entity (your core problem) first.');
+        return;
+      }
+      const sourceEntityId = sel.ids[0];
+      if (!sourceEntityId) return;
+      const sourceEntity = state.doc.entities[sourceEntityId];
+      if (!sourceEntity) return;
+      const problem = sourceEntity.title.trim() || 'this problem';
+      if (spawnLinkedFromSelection(buildCoreCloudSeed(problem), sourceEntityId)) {
+        get().showToast(
+          'success',
+          `Created a Core Cloud for "${problem}" — linked back to your tree.`
+        );
+      }
+    },
+
+    carryInjectionToFRT: () => {
+      const state = get();
+      const sel = state.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        get().showToast('info', 'Select the entity to carry into an FRT first.');
+        return;
+      }
+      const sourceEntityId = sel.ids[0];
+      if (!sourceEntityId) return;
+      const sourceEntity = state.doc.entities[sourceEntityId];
+      if (!sourceEntity) return;
+      const injection = sourceEntity.title.trim() || 'this injection';
+      if (spawnLinkedFromSelection(buildInjectionFRTSeed(injection), sourceEntityId)) {
+        get().showToast('success', `Carried "${injection}" into a new FRT — linked back.`);
+      }
     },
 
     setMethodStep: (stepId, done) => {

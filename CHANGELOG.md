@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 156 — Guided U-Shape helpers (Phase 2b) — the journey is complete
+
+Completes the U-Shape (TP Basics #2). Building on the 2a link primitive, three
+opt-in moves assemble Cohen's journey on command:
+
+- **Mark / unmark as core problem** — an optional `Entity.coreProblem` flag (the
+  U-Shape hinge), set from the palette or an inspector toggle (a rose "Core
+  problem" chip). Distinct from the *computed* `findCoreDrivers` suggestion — this
+  is the user's call.
+- **"Create the Core Cloud from this entity…"** — spawns a new EC tab seeded as a
+  Core Cloud (`cloudType:'core'`, titled after the problem), opened and
+  **reciprocally linked** back to the source entity.
+- **"Carry this into a new FRT…"** — spawns a new FRT tab with the selected entity
+  as an injection, opened and linked back.
+
+Each helper opens the next doc in a *new* tab (always — the point is both docs open
++ linked) and writes the reciprocal link on both sides, so you can immediately walk
+CRT problem → Core Cloud → FRT injection via the "Linked to" chips.
+
+Purely additive: optional `coreProblem?: boolean` on Entity (validated like
+`collapsed`, no migration). New pure builders `src/domain/uShape.ts`
+(`buildCoreCloudSeed` / `buildInjectionFRTSeed`), store actions `toggleCoreProblem`
+/ `createCoreCloudFromSelection` / `carryInjectionToFRT` (the shared
+`spawnLinkedFromSelection` bakes the reciprocal link + opens the tab — metadata, no
+undo entry), three guarded commands, the inspector toggle, and the
+`mark-core-problem` Edit sub-section entry. Tests: `uShape` (builders + coreProblem
+round-trip) + store (the three helpers). tsc + biome + knip clean; coverage green.
+**Phase 2 (the U-Shape) is complete.**
+
 ## Session 155 — Navigable cross-document links (U-Shape linkage, Phase 2a)
 
 Phase 2a of the TP-completeness roadmap — the keystone of Cohen's U-Shape. The

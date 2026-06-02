@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Link2, Trash2, X } from 'lucide-react';
+import { Link2, Target, Trash2, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { actionEligibility } from '@/domain/actionEligibility';
 import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL, type ECSlot } from '@/domain/ecGuiding';
@@ -59,6 +59,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   const switchTab = useDocumentStore((s) => s.switchTab);
   const selectEntity = useDocumentStore((s) => s.selectEntity);
   const unlinkEntity = useDocumentStore((s) => s.unlinkEntity);
+  const toggleCoreProblem = useDocumentStore((s) => s.toggleCoreProblem);
   // Session 135 / spec gap #4 Phase 1B — propagated state for the
   // currently selected entity. Computed once per entities/edges
   // snapshot; the lookup against the returned record is O(1).
@@ -225,6 +226,27 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
             </InsetCard>
           )}
         </Field>
+      )}
+
+      {/* Phase 2b (U-Shape) — the user's "core problem" marker (the hinge of
+          Cohen's U-Shape). A rose chip when set; stays visible read-only under
+          Browse Lock, toggles otherwise. "Create the Core Cloud…" (palette)
+          spawns its linked cloud. */}
+      {(entity.coreProblem || !locked) && (
+        <button
+          type="button"
+          disabled={locked}
+          onClick={() => toggleCoreProblem(entity.id)}
+          className={clsx(
+            'flex w-full items-center justify-center gap-1.5 rounded-md border px-2 py-1.5 font-medium text-xs transition disabled:cursor-default disabled:opacity-80',
+            entity.coreProblem
+              ? 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300'
+              : 'border-neutral-200 text-neutral-500 hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800'
+          )}
+        >
+          <Target aria-hidden className="h-3.5 w-3.5" />
+          {entity.coreProblem ? 'Core problem — marked' : 'Mark as core problem'}
+        </button>
       )}
 
       {/* Session 135 / spec major gap #3 Phase 1B — cross-diagram

@@ -317,6 +317,12 @@ export type Entity = {
    *  in other open tabs (the U-Shape thread). Reciprocal: the partner entity
    *  carries the mirror link. Omitted when empty. See {@link EntityLink}. */
   links?: EntityLink[];
+  /** Phase 2b (TP completeness #2 — U-Shape) — user-set marker for the CRT
+   *  "core problem" (the U-Shape hinge). Distinct from the *computed*
+   *  `findCoreDrivers` suggestion — this is the user's decision. Optional,
+   *  true-or-absent; drives discoverability of the "Create the Core Cloud"
+   *  helper. */
+  coreProblem?: boolean;
   /** Session 135 / spec major gap #4 Phase 1A — entity-state tag.
    *  Four values: `'true'` / `'false'` / `'unknown'` / `'disputed'`.
    *  Unset on the persisted entity means the user hasn't claimed

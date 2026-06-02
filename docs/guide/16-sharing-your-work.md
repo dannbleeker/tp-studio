@@ -70,6 +70,18 @@ The skill lives in the repository at `.claude/skills/tp-studio-import/`, so it's
 
 Treat the output as a *first draft*. The assistant gets the entities and the causal skeleton onto the canvas in seconds; you still apply the CLR scrutiny of [Chapter 13](13-the-clr.md) that turns a plausible-looking tree into sound logic.
 
+## The U-Shape — linking trees into one journey
+
+A folder of separate trees isn't a Thinking Process; the *journey* is. Cohen's spine is the **U-Shape**: pinpoint the **core problem** on a Current Reality Tree, surface the conflict underneath it as a **Core Cloud**, break the cloud with an **injection**, and check that injection's consequences in a **Future Reality Tree**. TP Studio stitches those separate documents into that one reasoning flow — without changing how any single tree is drawn.
+
+Three opt-in moves, all on the palette (`Cmd+K`):
+
+1. **Mark as core problem.** Select the CRT entity you've concluded is the core problem and mark it (also a one-click toggle in the inspector). This is *your* call — distinct from the app's computed "core driver" suggestion; it's the hinge the rest of the journey pivots on.
+2. **Create the Core Cloud from this entity.** Opens a fresh Evaporating Cloud in a new tab, pre-tagged as a *Core cloud* and titled after the problem, already **linked back** to the CRT entity. Fill the five boxes, find the breakable assumption, draft the injection.
+3. **Carry this into a new FRT.** From the injection, open a Future Reality Tree in a new tab with the injection seeded in, again linked back. Now grow the desired effects and trim any negative branch.
+
+At every hop you get a new tab plus a reciprocal **"Linked to"** chip in the inspector. Click a chip to jump straight to the partner entity in its tab — so you can walk **CRT problem → Core Cloud → FRT injection** (and back) one click at a time, the U-Shape made navigable. The links are pure navigation: they add no causal arrows and change nothing about any individual diagram.
+
 ## Share links
 
 `Cmd+K → Copy read-only share link`. Generates a URL that:

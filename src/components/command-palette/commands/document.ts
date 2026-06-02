@@ -114,6 +114,35 @@ export const documentCommands: Command[] = [
       s.openLinkEntityPicker();
     },
   }),
+  // Phase 2b (U-Shape) — the core-problem marker + guided "build the next step"
+  // helpers. Mark spawns nothing; the two builders spawn + reciprocally link the
+  // next doc in Cohen's journey (CRT core problem → Core Cloud → FRT injection).
+  withWriteGuard({
+    id: 'mark-core-problem',
+    label: 'Mark / unmark as core problem',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity to mark as the core problem.');
+        return;
+      }
+      const id = sel.ids[0];
+      if (id) s.toggleCoreProblem(id);
+    },
+  }),
+  withWriteGuard({
+    id: 'create-core-cloud',
+    label: 'Create the Core Cloud from this entity…',
+    group: 'File',
+    run: (s) => s.createCoreCloudFromSelection(),
+  }),
+  withWriteGuard({
+    id: 'carry-injection-to-frt',
+    label: 'Carry this into a new FRT…',
+    group: 'File',
+    run: (s) => s.carryInjectionToFRT(),
+  }),
   withWriteGuard({
     id: 'open-quick-capture',
     label: 'Quick Capture…',
