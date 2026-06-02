@@ -345,7 +345,13 @@ Items explicitly dropped, in addition to the brief's own out-of-scope list:
 - **Audit trail / GDPR / data retention** — dropped Session 135 (depended on #2/#8 server-side identity model). No backend, no audit trail; persistence is local-storage + user-managed export files.
 - **Stakeholder sign-off workflow** — dropped Session 135 (depended on #2 multi-user model).
 - **Pattern library sub-item C — portfolio-view across multiple docs** — dropped Session 135 (depended on FL-EX8 multi-document tabs, which is already won't-build).
-- Cloud sync, accounts, auth (covered by #2 above)
+- Cloud sync, accounts, auth (covered by #2 above) — **note:** the auth-free
+  *local-file* alternative shipped **Session 153**: **Save to file / Open from
+  file** (File System Access API → a locally synced `OneDrive\…` folder). Purely
+  additive (localStorage auto-save, tabs, and Export/Import are unchanged) and
+  Chromium-only; Firefox/Safari keep the download/upload path. Deferred opt-in
+  add-on (not built): persist the `FileSystemFileHandle` in IndexedDB for
+  one-click re-save without re-picking the location.
 - Project management, calendars, resources, MS Project export
 - Bayesian / evidence-based propagation
 - Course-of-action (COA) analysis features
