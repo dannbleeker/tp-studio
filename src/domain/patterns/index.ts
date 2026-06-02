@@ -203,7 +203,7 @@ export const PATTERNS: Pattern[] = [
   {
     id: 'ec-efrats-change-cloud',
     label: "Resistance to change (Efrat's cloud)",
-    hint: 'Generic change-conflict EC after Efrat Goldratt-Ashlag — protect myself vs let the system improve; keep the familiar way vs change. The buy-in workhorse.',
+    hint: 'The buy-in workhorse after Efrat Goldratt-Ashlag (1995) — happiness at work needs both satisfaction (which pulls you to embrace change) and security (which pulls you to resist it), so the same person wants and fears the change at once.',
     diagramType: 'ec',
     build: buildPatternECEfratsChangeCloud,
   },

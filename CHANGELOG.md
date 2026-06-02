@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 166 — Efrat's resistance-to-change cloud (pattern + book)
+
+Integrated Efrat Goldratt-Ashlag's 1995 model (*Embracing Change vs. Resistance
+to Change*) — purely additive, no schema or functionality change.
+
+- **Refined the `ec-efrats-change-cloud` pattern** to the paper's cleaner,
+  more canonical framing: goal *be happy at work*; the two needs are
+  **satisfaction** (a sense of achievement → pulls you to *embrace* change) and
+  **security** (confidence in the reliability of your predictions → pulls you to
+  *resist* change); the two wants are the near-perfect mutex *embrace* ↔
+  *resist*. Stays a clean 5-box cloud via `buildECPattern` (same id + label, so
+  the `patterns.test.ts` structural guard and every consumer are unchanged); the
+  registry hint was updated to match. Original/paraphrased wording — no text
+  lifted from the copyrighted paper.
+
+- **New EC book section** (`docs/guide/05-evaporating-cloud.md`) — *"The
+  resistance cloud — why people both want and fear change."* Teaches the
+  security-vs-satisfaction model, the doubt sweet-spot, the content-blindness of
+  security, and the two cloud-breaking **channels as injections** (protect
+  prediction reliability; give an owning role), pointing at the refined pattern.
+  Fills the chapter's one real gap: it taught cloud *mechanics* but not the
+  psychology of resistance or how to break a resistance cloud. Paraphrased +
+  attributed.
+
+  Decision note: the two channels are taught in the book as injections rather
+  than shipped as floating entities on the EC starter — injections aren't
+  natural inhabitants of an EC *canvas* in TP Studio's model (they emerge from
+  scrutiny; the Injection Flower develops them across linked docs), and all 16
+  EC patterns are deliberately clean 5-box clouds.
+
 ## Session 165 — Autonomous optimization batch
 
 A run of self-contained, behaviour-preserving optimizations (each gated green —

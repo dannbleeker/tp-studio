@@ -162,6 +162,39 @@ A fourth turns up constantly in practice: the **Firefighting** (Lieutenant) clou
 
 In TP Studio this is an optional **Cloud type** label (Document panel → *Cloud type*, on EC documents): Dilemma, Conflict, UDE, Consolidated, Core, or Firefighting. It's just a label — nothing about drawing or reading the cloud changes — but tagging one drops a small chip by the title so a folder of clouds reads as a progression rather than a pile. The **Pattern library…** ships a *UDE cloud*, a *Core cloud*, and a *Firefighting cloud* as pre-tagged starting points.
 
+## The resistance cloud — why people both want and fear change
+
+There's one cloud every change effort eventually walks into, and it's worth drawing *before* you need it. Ask a manager how people react to change and you'll hear a contradiction: employees **want** it — they're bored by routine, they chase variety, autonomy, promotion — and they **resist** it, often in the same breath ("happy and scared" about the very same promotion). The organizational psychologist Efrat Goldratt-Ashlag mapped that contradiction as a cloud, and it explains a great deal of what otherwise looks like irrational foot-dragging.
+
+The goal both sides serve is plain: **be happy at work**. What makes the cloud bite is that this goal rests on two *different* needs, and each one pulls the opposite way on change:
+
+- **Satisfaction** — a sense of achievement. And achievement, by definition, means pulling off something you weren't certain you could. No novelty, no challenge, no achievement. So *to get satisfaction, you have to embrace change.*
+- **Security** — and here's the sharp redefinition: security is **confidence in the reliability of your own predictions**, not their content. You feel secure when you can foresee what's coming in the areas you care about. Change injects unfamiliar elements, which lowers that reliability. So *to protect security, you resist change.*
+
+| Slot | The resistance cloud |
+| --- | --- |
+| **A** — goal | Be happy at work |
+| **B** — need → **D** — want | Get satisfaction (a sense of achievement) → **embrace the change** |
+| **C** — need → **D′** — want | Feel secure (trust my predictions hold) → **resist the change** |
+
+The two wants are *embrace change* and *resist change* — a near-perfect mutex, and both are legitimate. That symmetry is why the same person feels both pulls at once, and why "just explain the benefits again" so reliably fails.
+
+Two facets sharpen it:
+
+- **The doubt sweet-spot.** Achievement needs *some* doubt, but not too much. Too little and the task is a foregone conclusion (no pride in clearing it); too much and people give up before they start. Satisfaction lives in the narrow band between "trivial" and "hopeless."
+- **Security is content-blind.** You can confidently predict something *bad* and still feel secure in the prediction itself — the dread you feel then is lost *satisfaction*, not lost security. Insecurity only creeps back when the bad prediction starts undermining your *other* predictions ("if the budget's cut, can I still predict I'll keep my team?").
+
+### Breaking it — the two channels
+
+The payoff of drawing this cloud is that it tells you exactly where the injections live. You don't argue people out of resisting; you address the *need* their resistance is serving. There are two channels, one per need:
+
+1. **Protect security.** Resistance is a rational defense of prediction reliability — so don't let it crash. Find the areas the person genuinely cares about, then supply the information and training that keep them able to forecast *through* the change. Someone who still feels they can predict what's happening doesn't experience the change as a threat.
+2. **Offer satisfaction.** Give people a real, owning role in the change itself — a decision, a piece of the plan, something that's theirs — in an area they value. Now the change *is* the achievement, and the satisfaction need flips from fighting the change to driving it.
+
+In TP Studio terms, each channel is an **injection** that breaks an assumption on the cloud: channel 1 attacks *"this change must reduce my ability to predict"* (the assumption under the D′→C arrow); channel 2 attacks *"this change is something done to me, not by me"* (under D→B). Open the **Pattern library…** and drop in *Resistance to change — Efrat's cloud*, list those assumptions on the two arrows, and the injections almost write themselves. From there it's the standard chain: carry each injection into an FRT and check it actually buys cooperation without spawning a negative branch — change-fatigue is the usual one.
+
+> **💡 Why this matters in the room:** when you hit resistance, the instinct is to push harder or sell the benefits louder. This cloud says both instincts miss — resistance is defending *security* (prediction reliability), while benefits speak only to *satisfaction*. Naming which need is in play tells you which of the two channels to reach for.
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**
