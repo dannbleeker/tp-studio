@@ -32,7 +32,7 @@
  * The radial layout keeps its own router and does NOT use this.
  */
 
-import { type Box, OBSTACLE_PADDING, type Point, segmentIntersectsBox } from './edgeRouting';
+import { type Box, OBSTACLE_PADDING, type Point, segmentIntersectsBox } from './edgeGeometry';
 
 /** Which side of a node box an edge endpoint attaches to. */
 export type Side = 'top' | 'bottom' | 'left' | 'right';

@@ -26,18 +26,15 @@ spacing, shipped Session 146):
 
 ## Refactoring targets
 
-- **Split `src/domain/edgeRouting.ts` (~1150 lines — the largest file).** Pure
-  domain logic, heavily test-covered (`edgeRouting` + `edgeRoutingAStarParity` +
-  `edgeSides`), so a split is behaviour-preserving and well-gated. Clean seams:
-  the bezier emitters (`defaultBezierPath` + sided variants, ~260 lines) → a leaf
-  `edgeBezier.ts`; the visibility-graph + A\* engine (`buildVisibilityGraph`,
-  `AStarOpenHeap`, `aStarOnGraph`, `findVisibilityPath`, ~460 lines) →
-  `edgeVisibilityGraph.ts`; keep `routeEdge` as the orchestrator and
-  **re-export** from `edgeRouting.ts` so `@/domain/edgeRouting` stays the public
-  entry (no external import churn). Watch for value-import cycles — move shared
-  types/constants (`Point` / `Box` / `OBSTACLE_PADDING`) to a leaf first, or
-  type-only-import them. Deferred from the Session-152 refactor (did the EC DRY
-  there instead).
+- ~~**Split `src/domain/edgeRouting.ts` (~1150 lines — the largest file).**~~ ✅
+  *Session 164* — split into `edgeGeometry.ts` (193; types + constants +
+  box/segment primitives, a dependency-free leaf), `edgeBezier.ts` (287; emitters
+  + samplers), and `edgeVisibilityGraph.ts` (480; visibility-graph + A\*).
+  `edgeRouting.ts` is now 271 lines (orchestrator + re-export hub), so
+  `@/domain/edgeRouting` stays the single public entry and no consumer import
+  changed. The leaf also **dissolved the old `edgeSides` ↔ `edgeRouting` value
+  cycle**. Byte-identical routes (the `edgeRoutingAStarParity` golden tests pass
+  unchanged). The backlog's only standing refactor target is now done.
 
 ---
 
@@ -203,10 +200,10 @@ deliberately deferred — each is its own deliberate change, not a quick pass:
   `doc` and re-renders on every keystroke. Downstream hooks are memoized and
   the `onInit` / `onSelectionChange` handlers are now stabilised, but the full
   fix (split the doc-dependent subtree into a memoized child) is architectural.
-- **Split `edgeRouting.ts` (1050 lines)** — Phase B/C share geometry + bezier
-  helpers and many functions are cross-imported (`useEdgeRoutes` / `TPEdge` /
-  `edgeSides`), so a clean split needs a geometry / detour / visibility /
-  public decomposition to avoid circular imports.
+- ~~**Split `edgeRouting.ts` (1050 lines)**~~ ✅ *Session 164* — done via the
+  geometry-leaf + bezier + visibility-graph decomposition (see Refactoring
+  targets above). The circular-import worry was resolved by the dependency-free
+  `edgeGeometry.ts` leaf, which `edgeSides` now imports directly.
 - **Narrow the SelectionToolbar `edges` subscription** — risks stale verbs
   (`verbsForBranch` reads full live state via `getState()`); a hand-maintained
   edge signature would be a latent staleness trap for marginal gain on a

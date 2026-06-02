@@ -2,6 +2,34 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 164 — Split edgeRouting.ts (maintainability refactor)
+
+Behaviour-preserving split of the project's largest file
+(`src/domain/edgeRouting.ts`, 1150 lines) into focused leaf modules — gated by
+the existing **byte-identical A\* parity** tests (`edgeRoutingAStarParity`) so the
+routes are provably unchanged:
+
+- **`edgeGeometry.ts`** (193 lines) — shared types (`Point` / `Box`), constants
+  (`OBSTACLE_PADDING` / `DETOUR_CLEARANCE`), and the box/segment primitives
+  (`segmentIntersectsBox`, `segmentCrossesBoxBounds`, `padBox`). A dependency-free
+  leaf — which **dissolves the old `edgeSides` ↔ `edgeRouting` value cycle**:
+  `edgeSides` now imports the geometry leaf directly instead of reaching back into
+  the router (the apologetic "type-only import to avoid a runtime cycle" comment
+  is gone).
+- **`edgeBezier.ts`** (287 lines) — the SVG bezier emitters + samplers (legacy +
+  side-aware).
+- **`edgeVisibilityGraph.ts`** (480 lines) — the visibility-graph + A\* engine
+  (`VisibilityGraph`, `buildVisibilityGraph`, `aStarOnGraph`, `findVisibilityPath`,
+  the `AStarOpenHeap`).
+
+`edgeRouting.ts` is now **271 lines** (down from 1150) — it keeps `routeEdge` (the
+orchestrator), the blocking-obstacle hit-test, and the single-obstacle detour
+heuristic, and **re-exports** the sub-modules' public surface so
+`@/domain/edgeRouting` stays the single import site. No consumer (the
+`useEdgeRoutes` hook, `flow-types`, the tests) changed an import. Pure code
+movement — bodies verbatim; tsc + biome + knip clean; the full edge-routing suite
+(105 tests incl. the golden A\* routes) and the full suite stay green.
+
 ## Session 163 — Performance-measurement anchors (Phase 3 #5)
 
 The final Phase-3 slice — **Phase 3 is now complete.** A document can carry two
