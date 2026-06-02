@@ -114,6 +114,16 @@ export const importFromJSON = (raw: string): TPDocument => {
   const cloudType: CloudType | undefined = isCloudType(parsed.cloudType)
     ? parsed.cloudType
     : undefined;
+  // TP Basics #5 — gap-analysis performance anchors. Soft validation: keep a
+  // non-blank string, otherwise drop (an absent / corrupt value still loads).
+  const performanceLow =
+    typeof parsed.performanceLow === 'string' && parsed.performanceLow.trim().length > 0
+      ? parsed.performanceLow
+      : undefined;
+  const performanceHigh =
+    typeof parsed.performanceHigh === 'string' && parsed.performanceHigh.trim().length > 0
+      ? parsed.performanceHigh
+      : undefined;
 
   return {
     id: parsed.id as DocumentId,
@@ -138,6 +148,8 @@ export const importFromJSON = (raw: string): TPDocument => {
     ...(comments && Object.keys(comments).length > 0 ? { comments } : {}),
     ...(ecVerbalStyle ? { ecVerbalStyle } : {}),
     ...(cloudType ? { cloudType } : {}),
+    ...(performanceLow ? { performanceLow } : {}),
+    ...(performanceHigh ? { performanceHigh } : {}),
     createdAt: typeof parsed.createdAt === 'number' ? parsed.createdAt : Date.now(),
     updatedAt: typeof parsed.updatedAt === 'number' ? parsed.updatedAt : Date.now(),
     schemaVersion: 9,

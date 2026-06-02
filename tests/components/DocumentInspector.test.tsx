@@ -184,3 +184,45 @@ describe('DocumentInspector — Cloud type (EC only)', () => {
     expect(useDocumentStore.getState().doc.cloudType).toBeUndefined();
   });
 });
+
+describe('DocumentInspector — Performance frame (Phase 3 #5)', () => {
+  const perfDetails = (root: ParentNode): HTMLDetailsElement =>
+    Array.from(root.querySelectorAll('details')).find((d) =>
+      d.textContent?.includes('Performance frame')
+    ) as HTMLDetailsElement;
+
+  it('renders two anchor textareas with a 0/2 summary by default', () => {
+    open(); // default doc is CRT — the frame is diagram-agnostic
+    const { container } = render(<DocumentInspector />);
+    const details = perfDetails(container);
+    expect(details).toBeTruthy();
+    expect(details.textContent).toContain('0/2 anchors');
+    act(() => {
+      details.open = true;
+    });
+    expect(details.querySelectorAll('textarea').length).toBe(2);
+  });
+
+  it('typing into the anchors writes through the setters', () => {
+    open();
+    const { container } = render(<DocumentInspector />);
+    const details = perfDetails(container);
+    act(() => {
+      details.open = true;
+    });
+    const [low, high] = Array.from(details.querySelectorAll('textarea')) as HTMLTextAreaElement[];
+    act(() => fireEvent.change(low!, { target: { value: 'At 60%' } }));
+    act(() => fireEvent.change(high!, { target: { value: 'Reach 98%' } }));
+    expect(useDocumentStore.getState().doc.performanceLow).toBe('At 60%');
+    expect(useDocumentStore.getState().doc.performanceHigh).toBe('Reach 98%');
+  });
+
+  it('auto-opens and shows an accurate count when an anchor is already filled', () => {
+    act(() => useDocumentStore.getState().setPerformanceLow('Existing'));
+    open();
+    const { container } = render(<DocumentInspector />);
+    const details = perfDetails(container);
+    expect(details.open).toBe(true);
+    expect(details.textContent).toContain('1/2 anchors');
+  });
+});

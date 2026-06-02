@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 163 — Performance-measurement anchors (Phase 3 #5)
+
+The final Phase-3 slice — **Phase 3 is now complete.** A document can carry two
+optional **performance anchors** that frame the gap it addresses: a **Low**
+(current / unacceptable) and a **High** (target / desired) measurement note.
+They live in a collapsible **"Performance frame"** section of the Document panel
+(collapsed by default, auto-opens when either is filled, with an "N/2 anchors"
+count) — a facilitation note, general to every diagram type, that travels with
+the document.
+
+Purely additive: optional `performanceLow?` / `performanceHigh?` strings on
+`TPDocument` (soft-validated on import — a non-blank string is kept, else dropped
+— so no migration; stays `schemaVersion 9`), `setPerformanceLow` /
+`setPerformanceHigh` store actions (coalesce-and-drop-blank, mirroring
+`setCloudType`), and two textareas in `DocumentInspector`. Nothing keys off them.
+Tests in `tests/store/performanceAnchors.test.ts` (setters + JSON round-trip +
+soft validation) and `tests/components/DocumentInspector.test.tsx`. tsc + biome +
+knip clean; full suite green.
+
+**Phase 3 (the TP-Basics smaller-gaps menu) is complete: #4 NBR trim, #8 TT step
+fields, #7 CLR scrutiny, #3 Injection Flower, #6 PRT plan export, #5 performance
+anchors — all shipped, all additive, no schema migration.**
+
 ## Session 162 — PRT ordered-plan export (Phase 3 #6)
 
 A Phase 3 slice. A new **"Prerequisite plan (CSV)"** export turns a Prerequisite

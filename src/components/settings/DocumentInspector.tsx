@@ -92,12 +92,16 @@ export function DocumentInspector() {
     methodChecklist,
     ecVerbalStyle,
     cloudType,
+    performanceLow,
+    performanceHigh,
     setTitle,
     setMeta,
     setSystemScope,
     setMethodStep,
     setECVerbalStyle,
     setCloudType,
+    setPerformanceLow,
+    setPerformanceHigh,
   } = useDocumentStore(
     useShallow((s) => ({
       title: currentDoc(s).title,
@@ -110,12 +114,16 @@ export function DocumentInspector() {
       methodChecklist: currentDoc(s).methodChecklist ?? EMPTY_CHECKLIST,
       ecVerbalStyle: currentDoc(s).ecVerbalStyle ?? 'neutral',
       cloudType: currentDoc(s).cloudType,
+      performanceLow: currentDoc(s).performanceLow ?? '',
+      performanceHigh: currentDoc(s).performanceHigh ?? '',
       setTitle: s.setTitle,
       setMeta: s.setDocumentMeta,
       setSystemScope: s.setSystemScope,
       setMethodStep: s.setMethodStep,
       setECVerbalStyle: s.setECVerbalStyle,
       setCloudType: s.setCloudType,
+      setPerformanceLow: s.setPerformanceLow,
+      setPerformanceHigh: s.setPerformanceHigh,
     }))
   );
 
@@ -194,6 +202,52 @@ export function DocumentInspector() {
                 />
               </Field>
             ))}
+          </div>
+        </details>
+
+        {/*
+          Performance frame (TP Basics gap #5) — optional gap-analysis anchors:
+          where the measure sits now (low) and where you want it (high).
+          Collapsed by default; auto-opens when either anchor is filled.
+          General to every diagram type — a facilitation note, nothing keys
+          off it. Mirrors the System Scope collapsible above.
+        */}
+        <details
+          className="rounded-md border border-neutral-200 dark:border-neutral-800"
+          {...(performanceLow || performanceHigh ? { open: true } : {})}
+        >
+          <summary className="cursor-pointer select-none px-3 py-2 font-semibold text-neutral-600 text-xs uppercase tracking-wider dark:text-neutral-300">
+            Performance frame
+            <span className="ml-2 font-normal text-neutral-400 normal-case tracking-normal">
+              {[performanceLow, performanceHigh].filter((v) => v.trim().length > 0).length}/2
+              anchors
+            </span>
+          </summary>
+          <div className="space-y-3 border-neutral-200 border-t px-3 py-3 dark:border-neutral-800">
+            <p className="text-neutral-500 text-xs dark:text-neutral-400">
+              Frame the gap this diagram closes: the measure's current (unacceptable) level and its
+              target (desired) level. Optional — a facilitation note that travels with the document.
+            </p>
+            <Field label="Low — current / unacceptable">
+              <textarea
+                rows={2}
+                value={performanceLow}
+                placeholder="e.g. On-time delivery sits at 60%."
+                onChange={(e) => setPerformanceLow(e.target.value)}
+                disabled={locked}
+                className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+              />
+            </Field>
+            <Field label="High — target / desired">
+              <textarea
+                rows={2}
+                value={performanceHigh}
+                placeholder="e.g. Reach 98% on-time delivery within two quarters."
+                onChange={(e) => setPerformanceHigh(e.target.value)}
+                disabled={locked}
+                className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+              />
+            </Field>
           </div>
         </details>
 

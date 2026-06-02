@@ -97,7 +97,16 @@ schema migration), and each affordance is invisible until invoked.
     (step / objective / overcomes / depends_on / owner / due / status / notes),
     extending the TT task-bridge. Pure `services/exporters/prtPlan.ts`; gated to
     docs with IOs; no schema change.
-  - **Remaining Phase 3:** #5 performance-measurement anchors (small).
+  - ~~#5 performance-measurement anchors~~ ✅ *Session 163* — optional
+    `performanceLow?` / `performanceHigh?` strings on `TPDocument` (current vs
+    target measurement notes), edited in a collapsible **"Performance frame"**
+    section of the Document panel; soft-validated, coalesce-and-drop-blank
+    setters mirroring `setCloudType`. Diagram-agnostic facilitation note, no
+    schema migration.
+  - **Phase 3 is COMPLETE** — #4 NBR trim, #8 TT step fields, #7 CLR scrutiny,
+    #3 Injection Flower, #6 PRT plan export, #5 performance anchors all shipped.
+    With Phases 1 (Cloud progression) + 2 (the U-Shape) already done, the whole
+    additive TP-completeness arc vs Cohen's *TP Basics* is delivered.
 - **Out of scope:** the PIVOT internals (Five Focusing Steps, constraint types,
   Buffer Management) — execution / DBR, not TP diagramming.
 

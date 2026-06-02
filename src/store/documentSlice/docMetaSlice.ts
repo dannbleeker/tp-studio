@@ -148,6 +148,17 @@ export type DocMetaSlice = {
   setCloudType: (cloudType: CloudType | undefined) => void;
 
   /**
+   * Phase 3 (TP completeness #5) — set the gap-analysis performance anchors on
+   * the active doc: `performanceLow` (current / unacceptable level) and
+   * `performanceHigh` (target / desired level). A blank value clears the field
+   * so an untouched doc round-trips through JSON unchanged. Each coalesces under
+   * its own key (`doc-perf-low` / `doc-perf-high`) so typing collapses to one
+   * undo step per field.
+   */
+  setPerformanceLow: (value: string) => void;
+  setPerformanceHigh: (value: string) => void;
+
+  /**
    * Phase 2a (TP completeness #2 — U-Shape linkage) — link the currently
    * selected entity (active tab) to `targetEntityId` in another open tab
    * `targetDocId`. Writes a **reciprocal** link on both entities (the partner
@@ -683,6 +694,38 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
           return touch({ ...prev, cloudType });
         },
         { coalesceKey: 'doc-cloud-type' }
+      );
+    },
+
+    setPerformanceLow: (value) => {
+      applyDocChange(
+        (prev) => {
+          // Blank clears the anchor (implicit "unset") — drop the field rather
+          // than persisting an empty string.
+          if (value.trim().length === 0) {
+            if (prev.performanceLow === undefined) return prev;
+            const { performanceLow: _drop, ...rest } = prev;
+            return touch(rest as TPDocument);
+          }
+          if (prev.performanceLow === value) return prev;
+          return touch({ ...prev, performanceLow: value });
+        },
+        { coalesceKey: 'doc-perf-low' }
+      );
+    },
+
+    setPerformanceHigh: (value) => {
+      applyDocChange(
+        (prev) => {
+          if (value.trim().length === 0) {
+            if (prev.performanceHigh === undefined) return prev;
+            const { performanceHigh: _drop, ...rest } = prev;
+            return touch(rest as TPDocument);
+          }
+          if (prev.performanceHigh === value) return prev;
+          return touch({ ...prev, performanceHigh: value });
+        },
+        { coalesceKey: 'doc-perf-high' }
       );
     },
 

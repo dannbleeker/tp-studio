@@ -126,6 +126,13 @@ export type TPDocument = {
    *  EC docs; purely a label, nothing keys off it. Omitted from JSON when unset.
    *  See {@link CloudType}. */
   cloudType?: CloudType;
+  /** Gap-analysis performance anchors (TP Basics gap #5) — optional facilitation
+   *  notes that frame the gap a diagram addresses. `performanceLow` records the
+   *  current / unacceptable level of the measure in question; `performanceHigh`
+   *  the target / desired level. Free text, doc-level, diagram-agnostic — nothing
+   *  keys off them. Each is omitted from JSON when unset / blank. */
+  performanceLow?: string;
+  performanceHigh?: string;
   /** Review comments — async, in-document feedback anchored to an entity, an
    *  edge, or the document. Keyed by comment id. Stored in the doc so they
    *  round-trip through JSON export / share-links / the self-contained HTML
