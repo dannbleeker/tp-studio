@@ -1,9 +1,10 @@
-import { Info } from 'lucide-react';
+import { Info, Link2 } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { DataComponent } from '@/components/dataComponentNames';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
+import { useLinkedFileName } from './useLinkedFileName';
 
 /**
  * Editable doc-title at the top-left of the canvas, paired with the
@@ -21,10 +22,11 @@ export function TitleBadge() {
   // compare. All values are primitives (string / boolean) or stable
   // action refs, so `useShallow` correctly avoids re-renders unless
   // the relevant primitives actually change.
-  const { title, setTitle, diagramType, locked, openDocSettings } = useDocumentStore(
+  const { id, title, setTitle, diagramType, locked, openDocSettings } = useDocumentStore(
     useShallow((s) => {
       const doc = currentDoc(s);
       return {
+        id: doc.id,
         title: doc.title,
         setTitle: s.setTitle,
         diagramType: doc.diagramType,
@@ -33,6 +35,10 @@ export function TitleBadge() {
       };
     })
   );
+  // Additive (File System Access): the on-disk file this doc re-saves to, or
+  // null. Renders nothing when unlinked / unsupported, so it never affects
+  // viewports that have never saved to a file.
+  const linkedName = useLinkedFileName(id);
 
   return (
     <div
@@ -75,6 +81,19 @@ export function TitleBadge() {
       <span className="hidden truncate rounded-full bg-neutral-200/70 px-2 py-0.5 font-medium text-[10px] text-neutral-600 sm:inline-block dark:bg-neutral-800 dark:text-neutral-300">
         {DIAGRAM_TYPE_LABEL[diagramType]}
       </span>
+      {/* Additive: shows when this doc is linked to an on-disk file (File
+          System Access). The link icon + filename signal that "Save to file"
+          re-writes this file in one click; "Save to file as…" picks a new one.
+          Hidden below `sm:` like the type badge so narrow viewports stay tidy. */}
+      {linkedName && (
+        <span
+          className="hidden max-w-[18ch] items-center gap-1 truncate rounded-full bg-emerald-100/80 px-2 py-0.5 font-medium text-[10px] text-emerald-700 sm:inline-flex dark:bg-emerald-900/40 dark:text-emerald-300"
+          title={`Linked to ${linkedName} — “Save to file” writes here; “Save to file as…” picks a new file.`}
+        >
+          <Link2 aria-hidden className="h-3 w-3 shrink-0" />
+          <span className="truncate">{linkedName}</span>
+        </span>
+      )}
       <button
         type="button"
         onClick={openDocSettings}

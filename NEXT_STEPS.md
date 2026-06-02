@@ -346,12 +346,14 @@ Items explicitly dropped, in addition to the brief's own out-of-scope list:
 - **Stakeholder sign-off workflow** — dropped Session 135 (depended on #2 multi-user model).
 - **Pattern library sub-item C — portfolio-view across multiple docs** — dropped Session 135 (depended on FL-EX8 multi-document tabs, which is already won't-build).
 - Cloud sync, accounts, auth (covered by #2 above) — **note:** the auth-free
-  *local-file* alternative shipped **Session 153**: **Save to file / Open from
-  file** (File System Access API → a locally synced `OneDrive\…` folder). Purely
-  additive (localStorage auto-save, tabs, and Export/Import are unchanged) and
-  Chromium-only; Firefox/Safari keep the download/upload path. Deferred opt-in
-  add-on (not built): persist the `FileSystemFileHandle` in IndexedDB for
-  one-click re-save without re-picking the location.
+  *local-file* alternative shipped **Session 153**: **Save to file / Save to
+  file as… / Open from file** (File System Access API → a locally synced
+  `OneDrive\…` folder), plus **one-click re-save** — a save/open links the file
+  (`FileSystemFileHandle` persisted in IndexedDB, `services/storage/fileHandles.ts`)
+  so "Save to file" re-writes it without re-picking, with a link-chip on the
+  title. Purely additive (localStorage auto-save, tabs, `Cmd/Ctrl+S`, and
+  Export/Import are unchanged) and Chromium-only; Firefox/Safari keep the
+  download/upload path.
 - Project management, calendars, resources, MS Project export
 - Bayesian / evidence-based propagation
 - Course-of-action (COA) analysis features

@@ -2,6 +2,30 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — One-click re-save to the linked file (File System Access)
+
+Follow-up to the Save/Open-to-file feature below: a save or open now **links** the
+chosen file to the document, so **"Save to file" re-writes that same file in one
+click** — no re-picking. A new **"Save to file as…"** always opens the picker (save
+a copy elsewhere), and **"Open from file…"** links what it opened so subsequent
+edits save straight back. A small link-chip beside the title shows the bound
+filename.
+
+Still purely additive: localStorage auto-save, the tabs, and Export/Import are
+untouched, and `Cmd/Ctrl+S` still flushes to local storage exactly as before. The
+file handle is persisted in a **new IndexedDB store** (`services/storage/fileHandles.ts`)
+— a `FileSystemFileHandle` isn't JSON-serialisable, so localStorage can't hold it;
+this is the app's only IndexedDB use, and it degrades to an in-memory map where
+IndexedDB is absent (jsdom / Firefox / Safari). Re-save re-verifies write
+permission (`queryPermission` / `requestPermission`); a moved or deleted file
+clears the link and points the user at "Save to file as…".
+
+New: `services/storage/fileHandles.ts`, `toolbar/useLinkedFileName.ts` + the
+TitleBadge chip; `fileSystemAccess.ts` gains `ensureWritePermission` +
+`writeTextToHandle` and returns the handle from save/open. Tests: `fileHandles`,
+`useLinkedFileName`, expanded `fileSystemAccess` + `fileAccessCommands`. tsc +
+biome + knip clean; coverage green.
+
 ## Session 153 — Save to file / Open from file (File System Access → OneDrive)
 
 Backlog: store trees on OneDrive, cross-device. Chose the simple-file-access route

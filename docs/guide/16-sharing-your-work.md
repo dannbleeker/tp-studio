@@ -58,9 +58,9 @@ Going the other direction — opening someone else's file — uses the single **
 
 ## Save to file / Open from file
 
-On Chromium browsers (Chrome / Edge), two extra commands let you work with a *real file on disk*: **`Cmd+K → Save to file…`** writes the current document's `.tps.json` to a location you choose, and **`Open from file…`** reads one back into a new tab. These are purely additive — the localStorage auto-save, the tabs, and the Export/Import pickers all behave exactly as before; this just adds a file on disk as a target for the same JSON.
+On Chromium browsers (Chrome / Edge), a trio of commands lets you work with a *real file on disk*. **`Cmd+K → Open from file…`** reads a `.tps.json` into a new tab. **Save to file** writes the current document back — and the first save (or an open) *remembers* the file, so every **Save to file** after that re-writes the same file **in one click, no dialog**. **Save to file as…** always opens the picker, for stashing a copy somewhere new. A small link-chip beside the document title shows which file you're bound to. It's all purely additive — the localStorage auto-save, the tabs, `Cmd/Ctrl+S`, and the Export/Import pickers behave exactly as before; this just adds a file on disk as a target for the same JSON.
 
-> **💡 Put your trees on OneDrive.** Save into your synced `OneDrive\…` folder and the OneDrive client backs the file up and syncs it across your devices — no account linking, no setup. **Open from file…** the same file on another machine to carry on where you left off. (On Firefox / Safari, the pair of commands is hidden — use **Export → JSON** and **Import…** for the same file, downloaded and uploaded.)
+> **💡 Put your trees on OneDrive.** Save into your synced `OneDrive\…` folder and the OneDrive client backs the file up and syncs it across your devices — no account linking, no setup. **Open from file…** the same file on another machine, edit, then **Save to file** to write straight back where you left off. (On Firefox / Safari, the commands are hidden — use **Export → JSON** and **Import…** for the same file, downloaded and uploaded.)
 
 ## Generating a diagram with an AI assistant
 
