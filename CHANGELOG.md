@@ -26,6 +26,14 @@ tsc + biome + knip + full suite + build — and reverted on any doubt):
   validators / store / exporters / layout are unchanged. Bodies verbatim; full
   suite green.
 
+- **Split `persistence.ts` into a re-export barrel** (538 → 30 lines) along its
+  natural concern boundary: `persistenceJson.ts` (138; the pure `string ↔
+  TPDocument` transform — `exportToJSON` / `importFromJSON`) and
+  `persistenceStorage.ts` (386; localStorage read/write + the multi-doc tab
+  slots). `persistence.ts` re-exports both, so `@/domain/persistence` stays the
+  single import site. Bodies verbatim; 62 persistence/storage tests + full suite
+  green.
+
 ## Session 164 — Split edgeRouting.ts (maintainability refactor)
 
 Behaviour-preserving split of the project's largest file
