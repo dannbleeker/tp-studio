@@ -47,7 +47,7 @@ test.describe('dialog visual regression', () => {
     await page.goto('/?test=1');
     // No direct keyboard shortcut for Help — open via the palette.
     // (`useGlobalShortcuts.ts` exposes Cmd+K → openPalette.) Query
-    // "shortcuts" is unique to "Show keyboard shortcuts"; previously
+    // "shortcuts" still uniquely matches the Help command; previously
     // "Keyboard" tied with the slice-5 edge-creation commands ("Start
     // edge from selected entity… (keyboard)" / "Complete edge to
     // selected entity (keyboard)") at score 50 and the Enter selected
@@ -56,8 +56,11 @@ test.describe('dialog visual regression', () => {
     await page.getByPlaceholder(/command/i).fill('shortcuts');
     await page.keyboard.press('Enter');
     // The dialog header carries the title — wait for it before
-    // screenshotting so we capture a fully-painted modal.
-    await page.waitForSelector('h2:has-text("Keyboard shortcuts")');
+    // screenshotting so we capture a fully-painted modal. Session 153 —
+    // the "?" is now a Help hub (title "Help"; leads with a "Learn TP
+    // Studio" links section above the shortcuts + gestures), so the
+    // baseline was refreshed via the Update-visual-snapshots workflow.
+    await page.waitForSelector('h2:has-text("Help")');
     await expect(page).toHaveScreenshot('dialog-help.png', {
       maxDiffPixelRatio: 0.02,
       mask: [page.locator('[data-component="toaster"]')],
