@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Lightbulb, Trash2 } from 'lucide-react';
+import { Lightbulb, ListChecks, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import type { EdgeWeight, Entity, Warning } from '@/domain/types';
 import { useEdge, useEntity } from '@/hooks/useSelected';
@@ -49,6 +49,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
     setEdgeWeight,
     updateEdge,
     addAssumptionToEdge,
+    openEdgeScrutiny,
     entities,
     diagramType,
     locked,
@@ -61,6 +62,8 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
       setEdgeWeight: s.setEdgeWeight,
       updateEdge: s.updateEdge,
       addAssumptionToEdge: s.addAssumptionToEdge,
+      // Phase 3 #7 — launch the guided CLR-scrutiny dialog for this edge.
+      openEdgeScrutiny: s.openEdgeScrutiny,
       // Session 136 — setEdgeAttribute / removeEdgeAttribute dropped
       // here because the AttributesSection UI is gone (user-custom
       // attributes feature removed). Store actions remain available
@@ -265,6 +268,20 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
       <AssumptionWell edgeId={edgeId} assumptions={assumptions} />
 
       <WarningsList warnings={warnings} />
+
+      {/* Phase 3 #7 — guided CLR scrutiny. A read-only review surface, so
+          it stays enabled under Browse Lock (unlike the editing controls
+          above). Walks the eight canonical reservations one at a time for
+          this single edge. */}
+      <Button
+        variant="softNeutral"
+        size="sm"
+        onClick={() => openEdgeScrutiny(edgeId)}
+        className="mt-1"
+      >
+        <ListChecks className="h-3.5 w-3.5" />
+        Scrutinize against the CLR
+      </Button>
 
       <Button
         variant="destructive"

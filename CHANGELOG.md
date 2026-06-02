@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 160 — Guided CLR scrutiny per edge (Phase 3 #7)
+
+A Phase 3 slice. A new **"Scrutinize this edge"** review surface walks the eight
+canonical Categories of Legitimate Reservation — **one question at a time, for a
+single selected edge** — and surfaces any auto-flagged validator warnings under
+the matching question. Distinct from the existing *Start CLR walkthrough* (which
+steps the warnings that already fired across the whole doc): scrutiny walks
+**every** category, including the ones nothing flagged, so you exercise the full
+reservation discipline on the link in front of you. Reached from the palette
+("Scrutinize this edge (walk the CLR questions)") or a **"Scrutinize against the
+CLR"** button in the edge Inspector — the latter stays enabled under Browse Lock
+since it's read-only.
+
+Purely additive and ephemeral — **no schema change**. New
+`src/domain/clrScrutiny.ts` (the static `CLR_SCRUTINY` category list, tiers
+matched to the validator registry), an `edgeScrutinyId` flag + open/close on
+`dialogsSlice`, the `scrutinize-edge` command (Review group), and the
+`EdgeScrutinyDialog` stepper (an outer gate + an inner body remounted per edge so
+its "reviewed" ticks reset). The ticks are session-only; nothing persists. Tests
+in `tests/domain/clrScrutiny.test.ts` + `tests/components/EdgeScrutinyDialog.test.tsx`
+(+ command-guard and inspector-button coverage). tsc + biome + knip clean; full
+suite green.
+
 ## Session 159 — Extract shared EntityPickerGrid (DRY refactor)
 
 Pure refactor, no behaviour change. The entity-card grid — a filtered,

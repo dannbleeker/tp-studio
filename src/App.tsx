@@ -120,6 +120,11 @@ const LinkEntityPickerDialog = lazy(() =>
     default: m.LinkEntityPickerDialog,
   }))
 );
+const EdgeScrutinyDialog = lazy(() =>
+  import('./components/inspector/EdgeScrutinyDialog').then((m) => ({
+    default: m.EdgeScrutinyDialog,
+  }))
+);
 const WhiteboardPasteDialog = lazy(() =>
   import('./components/import/WhiteboardPasteDialog').then((m) => ({
     default: m.WhiteboardPasteDialog,
@@ -400,6 +405,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Link-entity picker">
           <LinkEntityPickerDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Edge scrutiny dialog">
+          <EdgeScrutinyDialog />
         </ErrorBoundary>
         <ErrorBoundary label="Whiteboard paste dialog">
           <WhiteboardPasteDialog />

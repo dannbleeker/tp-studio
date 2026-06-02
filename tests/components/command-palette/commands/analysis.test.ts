@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { analysisCommands } from '@/components/command-palette/commands/analysis';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { seedChain, seedEntity } from '../../../helpers/seedDoc';
+import { seedChain, seedConnectedPair, seedEntity } from '../../../helpers/seedDoc';
 import { findCommand, runCommand } from './helpers';
 
 beforeEach(resetStoreForTest);
@@ -79,6 +79,21 @@ describe('analysisCommands — start-clr-walkthrough', () => {
     await runCommand(findCommand(analysisCommands, 'start-clr-walkthrough'));
     // Fresh empty doc -> no warnings -> success toast.
     expect(s().toasts.some((t) => /no open CLR/i.test(t.message))).toBe(true);
+  });
+});
+
+describe('analysisCommands — scrutinize-edge (Phase 3 #7)', () => {
+  it('opens the CLR-scrutiny dialog for a single selected edge', async () => {
+    const { edge } = seedConnectedPair();
+    s().selectEdge(edge.id);
+    await runCommand(findCommand(analysisCommands, 'scrutinize-edge'));
+    expect(s().edgeScrutinyId).toBe(edge.id);
+  });
+
+  it('toasts info and opens nothing when no single edge is selected', async () => {
+    await runCommand(findCommand(analysisCommands, 'scrutinize-edge'));
+    expect(s().edgeScrutinyId).toBeNull();
+    expect(s().toasts.some((t) => /single edge/i.test(t.message))).toBe(true);
   });
 });
 

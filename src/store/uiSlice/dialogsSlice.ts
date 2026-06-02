@@ -127,6 +127,12 @@ export type DialogsSlice = {
    *  (the user can choose either flavor of comparison per revision). */
   sideBySideRevisionId: string | null;
 
+  /** Phase 3 #7 — guided CLR-scrutiny dialog. The id of the edge being
+   *  scrutinised, or `null` when closed. A read-only review surface that
+   *  walks the eight canonical CLR questions for this one edge; it mutates
+   *  nothing and persists nothing (no schema change). */
+  edgeScrutinyId: string | null;
+
   /** Force-hide the Inspector panel even when something is selected (frees
    *  canvas width). Toggled from the TopBar; a double-click on an edge
    *  re-shows it. Independent of the selection-driven `open` derivation in
@@ -264,6 +270,10 @@ export type DialogsSlice = {
   /** H4 — open / close the side-by-side dialog. */
   openSideBySide: (revisionId: string) => void;
   closeSideBySide: () => void;
+
+  /** Phase 3 #7 — open / close the per-edge CLR-scrutiny dialog. */
+  openEdgeScrutiny: (edgeId: string) => void;
+  closeEdgeScrutiny: () => void;
 };
 
 export type DialogsDataKeys =
@@ -292,7 +302,8 @@ export type DialogsDataKeys =
   | 'inspectorHidden'
   | 'pendingCommentAnchor'
   | 'compareRevisionId'
-  | 'sideBySideRevisionId';
+  | 'sideBySideRevisionId'
+  | 'edgeScrutinyId';
 
 export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   paletteOpen: false,
@@ -321,6 +332,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
+  edgeScrutinyId: null,
 });
 
 export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> = (set, get) => ({
@@ -350,6 +362,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
+  edgeScrutinyId: null,
 
   openPalette: () => set({ paletteOpen: true, paletteInitialQuery: '' }),
   openPaletteWithQuery: (query) => set({ paletteOpen: true, paletteInitialQuery: query }),
@@ -466,4 +479,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openSideBySide: (revisionId) => set({ sideBySideRevisionId: revisionId }),
   closeSideBySide: () => set({ sideBySideRevisionId: null }),
+
+  openEdgeScrutiny: (edgeId) => set({ edgeScrutinyId: edgeId }),
+  closeEdgeScrutiny: () => set({ edgeScrutinyId: null }),
 });

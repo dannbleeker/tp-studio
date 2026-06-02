@@ -471,6 +471,8 @@ Hover a warning to reveal the Resolve / Reopen button. Resolution persists in th
 
 You can also see a total count at any time: `Cmd/Ctrl+K` → **Run validation** surfaces a toast with the open / resolved breakdown.
 
+**Scrutinize a single link.** Select an edge and click **Scrutinize against the CLR** in its inspector (or `Cmd/Ctrl+K` → **Scrutinize this edge**). A guided stepper walks the eight canonical Categories of Legitimate Reservation — Clarity, Entity existence, Causality existence, Cause sufficiency, Additional cause, Cause–effect reversal, Predicted-effect existence, Tautology — **one question at a time** for that single cause→effect arrow. Any warning the validators already flagged on the edge appears under the matching question; the rest are prompts for your own judgment, with a checkbox to tick each as you consider it (the ticks are a session aid — nothing is saved). This is the complement to **Start CLR walkthrough**: the walkthrough clears the warnings that *did* fire across the whole diagram, while scrutiny makes you ask *every* reservation of the link in front of you, including the ones nothing flagged. It's read-only, so it stays available under Browse Lock.
+
 ## Review comments
 
 Mark up a diagram with questions and notes — for your future self or for a colleague reviewing the same file. Comments live **inside the document**, so they travel with a JSON export, a share link, or an HTML export; nothing is sent to a server.

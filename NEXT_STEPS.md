@@ -77,9 +77,16 @@ schema migration), and each affordance is invisible until invoked.
   - ~~#8 per-step Need + Working-Assumption on TT~~ ✅ *Session 158* — optional
     `Entity.need?` + `Entity.workingAssumption?` (action-only inspector fields,
     validated like the other entity strings; no schema change).
-  - #7 a guided CLR-scrutiny panel over the existing validators; #3 Injection
-    Flower; #6 PRT → IO sequencing → plan export; #5 performance-measurement
-    anchors.
+  - ~~#7 guided per-edge CLR scrutiny~~ ✅ *Session 160* — a **"Scrutinize this
+    edge"** stepper walks all eight canonical CLR questions for one selected edge
+    (palette command + a "Scrutinize against the CLR" button in the edge
+    inspector), surfacing any auto-flagged warnings under the matching question.
+    Distinct from *Start CLR walkthrough* (which only steps warnings that already
+    fired). Ephemeral review surface over the existing validators —
+    `src/domain/clrScrutiny.ts` + `EdgeScrutinyDialog`, `edgeScrutinyId` on
+    `dialogsSlice`, no schema change.
+  - **Remaining Phase 3:** #3 Injection Flower; #6 PRT → IO sequencing → plan
+    export; #5 performance-measurement anchors.
 - **Out of scope:** the PIVOT internals (Five Focusing Steps, constraint types,
   Buffer Management) — execution / DBR, not TP diagramming.
 

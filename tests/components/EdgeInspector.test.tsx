@@ -92,6 +92,27 @@ describe('EdgeInspector', () => {
     expect(del.disabled).toBe(true);
   });
 
+  it('"Scrutinize against the CLR" opens the scrutiny dialog for this edge', () => {
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const btn = Array.from(container.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Scrutinize against the CLR')
+    ) as HTMLButtonElement | undefined;
+    expect(btn).toBeTruthy();
+    act(() => fireEvent.click(btn!));
+    expect(useDocumentStore.getState().edgeScrutinyId).toBe(edge.id);
+  });
+
+  it('keeps the Scrutinize button enabled under Browse Lock (read-only review)', () => {
+    const { edge } = seedConnectedPair();
+    act(() => useDocumentStore.getState().setBrowseLocked(true));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const btn = Array.from(container.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Scrutinize against the CLR')
+    ) as HTMLButtonElement | undefined;
+    expect(btn?.disabled).toBe(false);
+  });
+
   it('renders nothing when the edge id no longer exists', () => {
     const { container } = render(<EdgeInspector edgeId="missing-edge-id" warnings={[]} />);
     expect(container.firstChild).toBeNull();

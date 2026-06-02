@@ -156,4 +156,23 @@ export const analysisCommands: Command[] = [
       s.startClrWalkthrough(warnings.map((w) => w.id));
     },
   },
+  // Phase 3 #7 — per-edge CLR scrutiny. Distinct from the walkthrough
+  // above (which steps the warnings that already fired across the whole
+  // doc): this walks ALL eight canonical CLR questions for one selected
+  // edge, including the ones nothing flagged, so the practitioner
+  // exercises the full reservation discipline. Read-only review surface
+  // (opens a dialog, mutates nothing) → a plain command, no write guard.
+  {
+    id: 'scrutinize-edge',
+    label: 'Scrutinize this edge (walk the CLR questions)',
+    group: 'Review',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'edges' || sel.ids.length !== 1 || !sel.ids[0]) {
+        s.showToast('info', 'Select a single edge (a cause→effect arrow) to scrutinize.');
+        return;
+      }
+      s.openEdgeScrutiny(sel.ids[0]);
+    },
+  },
 ];
