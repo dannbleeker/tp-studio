@@ -38,6 +38,20 @@ export type ECPatternSpec = {
   /** Optional Cloud progression tag (TP Basics #1) — set by the cloud-type
    *  patterns (UDE / Core / Firefighting); omitted for the generic clouds. */
   readonly cloudType?: CloudType;
+  /** Optional non-causal annotations pinned to a cloud box — e.g. the two
+   *  "breaking channels" on Efrat's resistance cloud. Each rides as a `note`
+   *  entity joined to its anchor box by a note-edge: dotted on the canvas and
+   *  excluded from the CLR rules (an endpoint is a note), exactly like the
+   *  boundary note on the IT-function Goal Tree. Zero-default — omit it and the
+   *  cloud is the bare 5 boxes, byte-for-byte as before. */
+  readonly notes?: ReadonlyArray<{
+    /** The annotation text. */
+    readonly text: string;
+    /** Which cloud box the note hangs off (its non-causal edge endpoint). */
+    readonly anchor: 'a' | 'b' | 'c' | 'd' | 'dPrime';
+    /** Hand-placed canvas position — EC layout is positional, like the boxes. */
+    readonly position: { readonly x: number; readonly y: number };
+  }>;
 };
 
 /**
@@ -58,7 +72,16 @@ export const buildECPattern = (spec: ECPatternSpec): TPDocument => {
     ecSlot: 'dPrime',
   });
 
-  const entities = [a, b, c, d, dPrime];
+  // Optional non-causal annotation notes (zero-default). Each note + its
+  // note-edge are built together so the index access stays sound under
+  // `noUncheckedIndexedAccess`. Annotation numbers continue after the 5 boxes.
+  const boxBySlot = { a, b, c, d, dPrime } as const;
+  const noteParts = (spec.notes ?? []).map((n, i) => {
+    const note = buildEntity('note', n.text, t, 6 + i, { position: n.position });
+    return { note, edge: buildEdge(boxBySlot[n.anchor].id, note.id) };
+  });
+
+  const entities = [a, b, c, d, dPrime, ...noteParts.map((p) => p.note)];
   const edges = [
     // Wants → the needs they serve.
     buildEdge(d.id, b.id, { kind: 'necessity' }),
@@ -68,6 +91,8 @@ export const buildECPattern = (spec: ECPatternSpec): TPDocument => {
     buildEdge(c.id, a.id, { kind: 'necessity' }),
     // The conflict — only one of D / D′ can hold at once.
     buildEdge(d.id, dPrime.id, { kind: 'necessity', isMutualExclusion: true }),
+    // Non-causal note-edges (dotted, CLR-excluded — a note endpoint).
+    ...noteParts.map((p) => p.edge),
   ];
 
   return {
@@ -79,7 +104,7 @@ export const buildECPattern = (spec: ECPatternSpec): TPDocument => {
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},
     resolvedWarnings: {},
-    nextAnnotationNumber: 6,
+    nextAnnotationNumber: 6 + noteParts.length,
     createdAt: t,
     updatedAt: t,
     schemaVersion: 9,

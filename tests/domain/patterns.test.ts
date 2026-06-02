@@ -134,8 +134,8 @@ describe("goalTree-it-function (Dann's 2020 IT-function article)", () => {
   });
 });
 
-describe("ec-efrats-change-cloud (Efrat's generic change cloud)", () => {
-  it('builds the canonical 5-box EC — 1 goal · 2 needs · 2 wants, with a D↔D′ mutex', () => {
+describe("ec-efrats-change-cloud (Efrat's change cloud + breaking channels)", () => {
+  it('builds the 5-box cloud + 2 non-causal channel notes, with a D↔D′ mutex', () => {
     const p = patternById('ec-efrats-change-cloud');
     expect(p).toBeDefined();
     const doc = p!.build();
@@ -143,16 +143,23 @@ describe("ec-efrats-change-cloud (Efrat's generic change cloud)", () => {
     const edges = Object.values(doc.edges);
 
     expect(doc.diagramType).toBe('ec');
-    expect(entities).toHaveLength(5);
+    // The 5 cloud boxes plus the two breaking-channel annotation notes.
+    expect(entities).toHaveLength(7);
     expect(entities.filter((e) => e.type === 'goal')).toHaveLength(1);
     expect(entities.filter((e) => e.type === 'need')).toHaveLength(2);
     expect(entities.filter((e) => e.type === 'want')).toHaveLength(2);
-    // Every box is slotted (a / b / c / d / dPrime) for the hand-positioned layout.
-    expect(entities.every((e) => e.ecSlot)).toBe(true);
+    // The two channels ride as non-causal notes (protect security / offer satisfaction).
+    expect(entities.filter((e) => e.type === 'note')).toHaveLength(2);
+    // The 5 cloud boxes are slotted (a / b / c / d / dPrime) for the hand-positioned
+    // layout; the notes are free-positioned annotations, so they carry no slot.
+    expect(entities.filter((e) => e.type !== 'note').every((e) => e.ecSlot)).toBe(true);
+    expect(entities.filter((e) => e.type === 'note').every((e) => !e.ecSlot)).toBe(true);
     // Four structural necessity links (D→B, D′→C, B→A, C→A); the conflict edge
     // carries the canonical `{ kind: 'necessity', isMutualExclusion }` form, so
     // exclude it from the structural count. Exactly one mutex (D↔D′).
     expect(edges.filter((e) => e.kind === 'necessity' && !e.isMutualExclusion)).toHaveLength(4);
     expect(edges.filter((e) => e.isMutualExclusion)).toHaveLength(1);
+    // Two non-causal note-edges (default sufficiency kind), one per channel.
+    expect(edges.filter((e) => e.kind !== 'necessity')).toHaveLength(2);
   });
 });

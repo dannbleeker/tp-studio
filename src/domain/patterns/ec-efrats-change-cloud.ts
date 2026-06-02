@@ -15,6 +15,12 @@ import { buildECPattern } from './ec-shared';
  * reliability; give an owning role in the change) by naming the need each side
  * is defending. D (embrace) serves B (satisfaction); D′ (resist) serves C
  * (security) — the same wiring `buildECPattern` applies to every cloud.
+ *
+ * The two breaking channels ship as non-causal **notes** pinned to the need
+ * each one protects — dotted on the canvas and excluded from the CLR rules, so
+ * they read as facilitation hints, not cloud structure. (Injections proper
+ * aren't EC-canvas citizens — they emerge from scrutiny and develop across
+ * linked docs via the Injection Flower; a note is the right primitive here.)
  */
 export const buildPatternECEfratsChangeCloud = (): TPDocument =>
   buildECPattern({
@@ -24,4 +30,17 @@ export const buildPatternECEfratsChangeCloud = (): TPDocument =>
     need2: 'Feel secure — trust that my predictions hold',
     want1: 'Embrace the change',
     want2: 'Resist the change',
+    notes: [
+      // Channel 1 hangs off C (security); Channel 2 hangs off B (satisfaction).
+      {
+        text: 'Channel 1 — protect security: supply the information + training people need to forecast through the change.',
+        anchor: 'c',
+        position: { x: 380, y: 560 },
+      },
+      {
+        text: 'Channel 2 — offer satisfaction: give an owning role in the change so it becomes an achievement.',
+        anchor: 'b',
+        position: { x: 380, y: -90 },
+      },
+    ],
   });

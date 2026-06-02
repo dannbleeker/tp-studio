@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 167 — Efrat cloud: ship the two breaking channels as canvas notes
+
+Follow-up to Session 166. The two cloud-breaking channels now ride *on the
+canvas* of the `ec-efrats-change-cloud` starter — not just in the book — as
+non-causal **notes** pinned to the need each one protects (Channel 1 → security,
+Channel 2 → satisfaction). Notes render dotted and are excluded from the CLR
+rules (an endpoint is a note), exactly like the boundary note on the IT-function
+Goal Tree, so they read as facilitation hints without disturbing the cloud's
+logic or verbalisation. Injections proper stay off the EC canvas — they emerge
+from scrutiny and develop across linked docs via the Injection Flower; a note is
+the right primitive for a pre-drawn hint.
+
+- **`buildECPattern` gained an optional, zero-default `notes` field** (text +
+  anchor box + canvas position). The other 15 EC patterns pass nothing and build
+  byte-for-byte as before. The `ec-efrats-change-cloud` structural guard moved
+  with the pattern — 5 slotted cloud boxes + 2 unslotted notes, 4 necessity
+  links + 1 mutex + 2 non-causal note-edges. EC book section updated to note that
+  the starter now ships the channels.
+
 ## Session 166 — Efrat's resistance-to-change cloud (pattern + book)
 
 Integrated Efrat Goldratt-Ashlag's 1995 model (*Embracing Change vs. Resistance
