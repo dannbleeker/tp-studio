@@ -10,6 +10,7 @@ import {
   type TabsLoadResult,
 } from '@/domain/persistence';
 import type {
+  CloudType,
   CustomEntityClass,
   DiagramType,
   DocumentId,
@@ -133,6 +134,14 @@ export type DocMetaSlice = {
    * sequence collapses to a single undo step.
    */
   setECVerbalStyle: (style: 'neutral' | 'twoSided') => void;
+
+  /**
+   * Phase 1 (TP completeness #1) — set the Cloud progression label on the
+   * active EC doc. Passing `undefined` clears it (the implicit "untyped"
+   * default), so a doc that hasn't tagged its cloud round-trips through JSON
+   * unchanged. Coalesces under `doc-cloud-type`.
+   */
+  setCloudType: (cloudType: CloudType | undefined) => void;
 
   /**
    * B10 — add or replace a custom entity class on the active doc. The
@@ -582,6 +591,23 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
           return touch({ ...prev, ecVerbalStyle: style });
         },
         { coalesceKey: 'doc-ec-verbal' }
+      );
+    },
+
+    setCloudType: (cloudType) => {
+      applyDocChange(
+        (prev) => {
+          // `undefined` clears the tag (implicit "untyped") — drop the field
+          // rather than persisting it.
+          if (cloudType === undefined) {
+            if (prev.cloudType === undefined) return prev;
+            const { cloudType: _drop, ...rest } = prev;
+            return touch(rest as TPDocument);
+          }
+          if (prev.cloudType === cloudType) return prev;
+          return touch({ ...prev, cloudType });
+        },
+        { coalesceKey: 'doc-cloud-type' }
       );
     },
 

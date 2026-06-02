@@ -7,9 +7,10 @@ import { TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
 import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '@/components/ui/buttonClasses';
 import { Modal } from '@/components/ui/Modal';
+import { CLOUD_TYPE_LABEL, CLOUD_TYPES } from '@/domain/cloudType';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { METHOD_BY_DIAGRAM, type MethodStep } from '@/domain/methodChecklist';
-import type { DiagramType, SystemScope } from '@/domain/types';
+import type { CloudType, DiagramType, SystemScope } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -90,11 +91,13 @@ export function DocumentInspector() {
     systemScope,
     methodChecklist,
     ecVerbalStyle,
+    cloudType,
     setTitle,
     setMeta,
     setSystemScope,
     setMethodStep,
     setECVerbalStyle,
+    setCloudType,
   } = useDocumentStore(
     useShallow((s) => ({
       title: currentDoc(s).title,
@@ -106,11 +109,13 @@ export function DocumentInspector() {
       systemScope: currentDoc(s).systemScope ?? EMPTY_SCOPE,
       methodChecklist: currentDoc(s).methodChecklist ?? EMPTY_CHECKLIST,
       ecVerbalStyle: currentDoc(s).ecVerbalStyle ?? 'neutral',
+      cloudType: currentDoc(s).cloudType,
       setTitle: s.setTitle,
       setMeta: s.setDocumentMeta,
       setSystemScope: s.setSystemScope,
       setMethodStep: s.setMethodStep,
       setECVerbalStyle: s.setECVerbalStyle,
+      setCloudType: s.setCloudType,
     }))
   );
 
@@ -253,6 +258,31 @@ export function DocumentInspector() {
               Switches the verbalisation strip between the workshop-default neutral voice ("In order
               to A, we must B") and the BESTSELLER PPT's two-party framing ("they want to" / "I want
               to") that surfaces the felt negotiation.
+            </p>
+          </Field>
+        )}
+
+        {diagramType === 'ec' && (
+          <Field label="Cloud type">
+            <select
+              aria-label="Cloud type"
+              value={cloudType ?? ''}
+              disabled={locked}
+              onChange={(e) =>
+                setCloudType(e.target.value === '' ? undefined : (e.target.value as CloudType))
+              }
+              className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+            >
+              <option value="">— Untyped</option>
+              {CLOUD_TYPES.map((ct) => (
+                <option key={ct} value={ct}>
+                  {CLOUD_TYPE_LABEL[ct]}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+              Optional — marks this cloud's role in the progression (UDE → Consolidated → Core), per
+              Cohen's <em>TP Basics</em>. Purely a label; nothing else changes.
             </p>
           </Field>
         )}

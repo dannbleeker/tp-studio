@@ -57,6 +57,16 @@ export type SystemScope = {
   inputsOutputs?: string;
 };
 
+/**
+ * Cloud progression role — Oded Cohen's *TP Basics* (gap analysis #1). An
+ * optional label marking which kind of cloud an Evaporating Cloud is in the
+ * escalation UDE → Consolidated → Core. The six cloud types from the source:
+ * Dilemma, Conflict, UDE, Consolidated, Core, Firefighting. Purely a label —
+ * nothing keys off it; unset = untyped (today's behaviour). Only meaningful on
+ * EC docs. Display labels + ordering live in `src/domain/cloudType.ts`.
+ */
+export type CloudType = 'dilemma' | 'conflict' | 'ude' | 'consolidated' | 'core' | 'firefighting';
+
 export type TPDocument = {
   id: DocumentId;
   diagramType: DiagramType;
@@ -111,6 +121,11 @@ export type TPDocument = {
    *  diagram types. Stored on the doc so the choice persists across
    *  reloads. */
   ecVerbalStyle?: 'neutral' | 'twoSided';
+  /** Cloud progression role (TP Basics gap #1) — optional label for which kind
+   *  of cloud this EC is (UDE → Consolidated → Core, etc.). Only meaningful on
+   *  EC docs; purely a label, nothing keys off it. Omitted from JSON when unset.
+   *  See {@link CloudType}. */
+  cloudType?: CloudType;
   /** Review comments — async, in-document feedback anchored to an entity, an
    *  edge, or the document. Keyed by comment id. Stored in the doc so they
    *  round-trip through JSON export / share-links / the self-contained HTML

@@ -533,6 +533,8 @@ Open **Document settings** (the doc-title menu, or palette command "Document set
 
 The toggle persists on the document (round-trips through save/load) and updates the verbalisation strip live.
 
+**Cloud type (Session 154).** Below the verbal-style toggle, an EC document also has an optional **Cloud type** dropdown — *Dilemma, Conflict, UDE, Consolidated, Core,* or *Firefighting* — that labels the cloud's role in Cohen's *TP Basics* progression (UDE cloud → Consolidated → Core). It's purely a label: pick one and a small sky-blue chip appears next to the title; leave it "— Untyped" (the default) and nothing shows. Three ready-made clouds — **UDE cloud**, **Core cloud**, and **Firefighting cloud** — live in the **Pattern library…** picker, each pre-tagged. Nothing about drawing or reading an EC changes; the tag is just a way to record "this is the Core Cloud of my analysis."
+
 ### Reverse-direction wizard walk (Session 87)
 
 When the EC creation wizard is open, look at the top of the panel for the **A → D′ / D → A** toggle. The default walks the structural top-down order (A → B → C → D → D′). The D-first option flips to the PPT's "start from the felt conflict" order (D → D′ → C → B → A) — closer to how practitioners actually experience a conflict. Either order leaves the canvas in a useful state at every step.

@@ -1,6 +1,6 @@
 import { buildEdge, buildEntity } from '../examples/shared';
 import { newDocumentId } from '../ids';
-import type { TPDocument } from '../types';
+import type { CloudType, TPDocument } from '../types';
 
 /**
  * Shared builder for the curated Evaporating Cloud patterns.
@@ -35,6 +35,9 @@ export type ECPatternSpec = {
   readonly want1: string;
   /** D′ — the want serving C (bottom right); in direct conflict with D. */
   readonly want2: string;
+  /** Optional Cloud progression tag (TP Basics #1) — set by the cloud-type
+   *  patterns (UDE / Core / Firefighting); omitted for the generic clouds. */
+  readonly cloudType?: CloudType;
 };
 
 /**
@@ -71,6 +74,7 @@ export const buildECPattern = (spec: ECPatternSpec): TPDocument => {
     id: newDocumentId(),
     diagramType: 'ec',
     title: spec.title,
+    ...(spec.cloudType ? { cloudType: spec.cloudType } : {}),
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
     groups: {},

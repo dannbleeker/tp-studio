@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 154 — Cloud progression: the EC "cloud type" tag + 3 library clouds (TP Basics #1)
+
+First slice of the TP-completeness roadmap (Cohen's *TP Basics* gap #1). An
+Evaporating Cloud can now carry an optional **cloud-type** label marking its role
+in the progression — Dilemma / Conflict / UDE / Consolidated / Core / Firefighting
+— set from the Document panel (ⓘ) on EC docs and shown as a small sky-blue chip by
+the title. Plus three ready-made **library clouds**: a **UDE cloud**, a **Core
+cloud**, and a **Firefighting cloud** (original illustrative content), each
+pre-tagged.
+
+Purely additive — drawing a plain EC is unchanged; the tag is optional, unset by
+default (omitted from JSON), and nothing keys off it. Mirrors the `ecVerbalStyle`
+precedent: optional `cloudType` field on `TPDocument`, a `setCloudType` store
+action (coalesced; drops the field on clear), soft import validation (`isCloudType`
+— an unrecognized value drops to untyped), and **no schema migration** (stays
+`schemaVersion 9`).
+
+New: `src/domain/cloudType.ts` (labels + guard), `patterns/cloud-{ude,core,firefighting}.ts`;
+`ec-shared.ts`'s `buildECPattern` gains an optional `cloudType`. Tests: `cloudType`
+(guard + patterns + round-trip), `setCloudType` store, the DocumentInspector
+dropdown. tsc + biome + knip clean; coverage green. First step of the phased plan
+in NEXT_STEPS — basic tools unchanged.
+
 ## Session 153 — One-click re-save to the linked file (File System Access)
 
 Follow-up to the Save/Open-to-file feature below: a save or open now **links** the

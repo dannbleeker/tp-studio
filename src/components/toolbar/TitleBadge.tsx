@@ -1,6 +1,7 @@
 import { Info, Link2 } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { DataComponent } from '@/components/dataComponentNames';
+import { CLOUD_TYPE_LABEL } from '@/domain/cloudType';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -22,7 +23,7 @@ export function TitleBadge() {
   // compare. All values are primitives (string / boolean) or stable
   // action refs, so `useShallow` correctly avoids re-renders unless
   // the relevant primitives actually change.
-  const { id, title, setTitle, diagramType, locked, openDocSettings } = useDocumentStore(
+  const { id, title, setTitle, diagramType, cloudType, locked, openDocSettings } = useDocumentStore(
     useShallow((s) => {
       const doc = currentDoc(s);
       return {
@@ -30,6 +31,7 @@ export function TitleBadge() {
         title: doc.title,
         setTitle: s.setTitle,
         diagramType: doc.diagramType,
+        cloudType: doc.cloudType,
         locked: s.browseLocked,
         openDocSettings: s.openDocSettings,
       };
@@ -81,6 +83,17 @@ export function TitleBadge() {
       <span className="hidden truncate rounded-full bg-neutral-200/70 px-2 py-0.5 font-medium text-[10px] text-neutral-600 sm:inline-block dark:bg-neutral-800 dark:text-neutral-300">
         {DIAGRAM_TYPE_LABEL[diagramType]}
       </span>
+      {/* Additive (TP Basics #1): the cloud's progression role, when tagged on
+          an EC doc via the Document panel. Hidden until set; below `sm:` like
+          the type badge so narrow viewports stay tidy. */}
+      {cloudType && (
+        <span
+          className="hidden truncate rounded-full bg-sky-100/80 px-2 py-0.5 font-medium text-[10px] text-sky-700 sm:inline-block dark:bg-sky-900/40 dark:text-sky-300"
+          title="Cloud type — its role in the UDE → Consolidated → Core progression (TP Basics)."
+        >
+          {CLOUD_TYPE_LABEL[cloudType]}
+        </span>
+      )}
       {/* Additive: shows when this doc is linked to an on-disk file (File
           System Access). The link icon + filename signal that "Save to file"
           re-writes this file in one click; "Save to file as…" picks a new one.

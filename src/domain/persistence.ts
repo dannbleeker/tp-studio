@@ -6,6 +6,7 @@ import {
   tabsManifestKey,
 } from '@/services/storage/keys';
 import { readString, removeKey, STORAGE_KEYS, writeString } from '@/services/storage/storage';
+import { isCloudType } from './cloudType';
 import { isDiagramType, isObject, isTrueMap } from './guards';
 import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from './migrations';
 import {
@@ -20,7 +21,7 @@ import {
   validateRecord,
   validateSystemScope,
 } from './persistenceValidators';
-import type { DocumentId, TPDocument } from './types';
+import type { CloudType, DocumentId, TPDocument } from './types';
 
 /**
  * Document I/O — JSON round-trip and localStorage read/write. The
@@ -108,6 +109,11 @@ export const importFromJSON = (raw: string): TPDocument => {
     parsed.ecVerbalStyle === 'neutral' || parsed.ecVerbalStyle === 'twoSided'
       ? parsed.ecVerbalStyle
       : undefined;
+  // TP Basics #1 — Cloud progression label. Soft validation: an unrecognized
+  // value drops to undefined (untyped) so a corrupt import still loads.
+  const cloudType: CloudType | undefined = isCloudType(parsed.cloudType)
+    ? parsed.cloudType
+    : undefined;
 
   return {
     id: parsed.id as DocumentId,
@@ -131,6 +137,7 @@ export const importFromJSON = (raw: string): TPDocument => {
     ...(assumptions && Object.keys(assumptions).length > 0 ? { assumptions } : {}),
     ...(comments && Object.keys(comments).length > 0 ? { comments } : {}),
     ...(ecVerbalStyle ? { ecVerbalStyle } : {}),
+    ...(cloudType ? { cloudType } : {}),
     createdAt: typeof parsed.createdAt === 'number' ? parsed.createdAt : Date.now(),
     updatedAt: typeof parsed.updatedAt === 'number' ? parsed.updatedAt : Date.now(),
     schemaVersion: 9,

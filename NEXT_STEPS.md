@@ -41,21 +41,35 @@ spacing, shipped Session 146):
 
 ---
 
-## TP completeness — gap analysis vs. Cohen's *TP Basics* (parked Session 150)
+## TP completeness — phased roadmap vs. Cohen's *TP Basics* (Session 154+)
 
 Full mapping in [docs/TP_BASICS_GAP_ANALYSIS.md](docs/TP_BASICS_GAP_ANALYSIS.md)
-(against Oded Cohen's TOCICO-2014 *TP Basics*). The primitives are all present
-(incl. all seven CLR categories); the gaps are **workflow / meta-structure**:
+(against Oded Cohen's TOCICO-2014 *TP Basics*). The primitives are all present; the
+gaps are the **connective tissue** of Cohen's journey — Cloud progression and the
+U-Shape. **Approved phased plan, additive throughout**: the basic CRT/EC/FRT/Goal
+Tree tools stay exactly as simple as today, every new field is optional (→ no
+schema migration), and each affordance is invisible until invoked.
 
-- **Cloud progression** — UDE Cloud → Consolidated → Core Cloud + a cloud-type
-  taxonomy. Cheapest slice: *UDE / Core / Firefighting* clouds as library
-  patterns + an optional `cloudType` tag. **(highest-value, low-cost start)**
-- **U-Shape linkage** — bind a CRT *core problem* ↔ Core Cloud ↔ FRT *injection*
-  across docs (cross-tree references + a guided three-questions flow). The
-  strategic centrepiece; a real feature.
-- **Smaller items:** Injection Flower (injection ↔ its DEs / NBR / plan), NBR
-  *trimming* injection, PRT → IO sequencing → plan export, a guided CLR-scrutiny
-  panel, richer Transition-Tree steps, performance-measurement gap framing.
+- ~~**Phase 1 — Cloud progression (#1)**~~ ✅ *Session 154* — optional `cloudType`
+  tag on EC docs (Dilemma / Conflict / UDE / Consolidated / Core / Firefighting),
+  set in the Document panel, shown as a title chip; + 3 library clouds (UDE / Core
+  / Firefighting). Mirrors `ecVerbalStyle`; `src/domain/cloudType.ts`.
+- **Phase 2 — U-Shape linkage (#2)** *(guided — Dann's pick)* — the strategic
+  centrepiece, in two opt-in steps:
+  - **2a — navigable cross-doc link primitive:** generalize the shipped one-way
+    `importedFrom` snapshot into a live, clickable, reciprocal link between
+    entities in open tabs (`Entity.links?`, reuse `validateImportedFromRef`; a
+    "Link to entity in another tab…" command; a clickable "Linked" inspector chip
+    → `switchTab` + select). The keystone — unlocks the U-Shape and feeds #3/#4.
+  - **2b — core-problem marker + guided "build-next-step" helpers:** optional
+    `coreProblem?` flag + "Mark as core problem"; then "Create the Core Cloud"
+    (spawns a linked EC, `cloudType:'core'`) and "Carry the injection into an FRT"
+    (spawns a linked FRT). The journey assembles itself on command.
+- **Phase 3 — smaller gaps, each opt-in:** #4 NBR "Trim this branch" → a linked
+  trimming injection (small, high value); #7 a guided CLR-scrutiny panel over the
+  existing validators; #8 optional per-step Need + Working-Assumption on TT; #3
+  Injection Flower; #6 PRT → IO sequencing → plan export; #5 performance-measurement
+  anchors.
 - **Out of scope:** the PIVOT internals (Five Focusing Steps, constraint types,
   Buffer Management) — execution / DBR, not TP diagramming.
 

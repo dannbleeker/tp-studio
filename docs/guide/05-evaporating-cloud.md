@@ -150,12 +150,25 @@ The EC is done when:
 - One assumption has emerged as **the breakable one**, with an injection drafted that resolves the conflict.
 - You can describe the resolution in one sentence without rationalizing: *"Once we have two L2 agents who can handle the hard tickets, the lead can take protected drafting time without queue slippage."*
 
+## Cloud progression — the same tool, escalating roles
+
+Cohen frames the cloud not as a single artifact but as a *progression*. The same five-box structure does different jobs as the analysis deepens:
+
+- A **UDE cloud** sits behind a single undesirable effect — the dilemma that keeps *this* problem alive.
+- A **Consolidated cloud** merges several UDE clouds that share a shape.
+- A **Core cloud** is the recurring conflict underneath many UDEs at once — the one at the base of the CRT, and the one worth breaking.
+
+A fourth turns up constantly in practice: the **Firefighting** (Lieutenant) cloud — *patch the symptom now* vs. *stop it coming back* — the trap that keeps an organisation reacting instead of improving.
+
+In TP Studio this is an optional **Cloud type** label (Document panel → *Cloud type*, on EC documents): Dilemma, Conflict, UDE, Consolidated, Core, or Firefighting. It's just a label — nothing about drawing or reading the cloud changes — but tagging one drops a small chip by the title so a folder of clouds reads as a progression rather than a pile. The **Pattern library…** ships a *UDE cloud*, a *Core cloud*, and a *Firefighting cloud* as pre-tagged starting points.
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**
 > - `Cmd+K → New Evaporating Cloud` → opens the **Creation Wizard** which guides A / B / C / D / D′ in order.
 > - **Reading-direction toggle** in the Wizard for A-first (default) vs. D-first (when the conflict surfaced first).
 > - **EC Verbal Style** toggle in the Document Inspector: `neutral` ("we must") or `twoSided` ("they want / I want") for two-party framing.
+> - **Cloud type** label in the Document Inspector — tag an EC as a UDE / Consolidated / Core / Firefighting cloud (the *TP Basics* progression); a chip by the title records the role. Three pre-tagged clouds ship in the Pattern library.
 > - **VerbalisationStrip** above the canvas — renders the cloud as a paragraph, updates live as you edit.
 > - **AssumptionWell** in the EC inspector — first-class assumption records with `open` / `valid` / `invalid` status and links to injection entities.
 > - **InjectionWorkbench** in the EC inspector — list every proposed injection with `implemented` toggles for FRT carry-forward.

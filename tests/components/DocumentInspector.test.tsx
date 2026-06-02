@@ -159,3 +159,28 @@ describe('DocumentInspector — Method Checklist section', () => {
     for (const c of Array.from(checkboxes)) expect((c as HTMLInputElement).disabled).toBe(true);
   });
 });
+
+describe('DocumentInspector — Cloud type (EC only)', () => {
+  const cloudSelect = (root: ParentNode): HTMLSelectElement | null =>
+    root.querySelector('select[aria-label="Cloud type"]');
+
+  it('does not render the cloud-type select for a non-EC doc', () => {
+    open(); // default doc is CRT
+    const { container } = render(<DocumentInspector />);
+    expect(cloudSelect(container)).toBeNull();
+  });
+
+  it('renders the select on an EC doc and writes the choice through setCloudType', () => {
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    open();
+    const { container } = render(<DocumentInspector />);
+    const select = cloudSelect(container) as HTMLSelectElement;
+    expect(select).toBeTruthy();
+    expect(select.value).toBe(''); // untyped by default
+    act(() => fireEvent.change(select, { target: { value: 'core' } }));
+    expect(useDocumentStore.getState().doc.cloudType).toBe('core');
+    // Selecting "untyped" again clears the field.
+    act(() => fireEvent.change(select, { target: { value: '' } }));
+    expect(useDocumentStore.getState().doc.cloudType).toBeUndefined();
+  });
+});

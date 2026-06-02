@@ -34,6 +34,9 @@ import { buildExamplePRT } from '../examples/prt';
 import { buildExampleST } from '../examples/st';
 import { buildExampleTT } from '../examples/tt';
 import type { DiagramType, TPDocument } from '../types';
+import { buildPatternCloudCore } from './cloud-core';
+import { buildPatternCloudFirefighting } from './cloud-firefighting';
+import { buildPatternCloudUDE } from './cloud-ude';
 import { buildPatternCRTEngineeringVelocity } from './crt-engineering-velocity';
 import { buildPatternCRTInventoryTurnsFalling } from './crt-inventory-turns-falling';
 import { buildPatternCRTMultiProjectBottleneck } from './crt-multi-project-bottleneck';
@@ -147,6 +150,27 @@ export const PATTERNS: Pattern[] = [
     hint: 'Teaching-classic personal EC — "leave at 5" vs "stay late", with the explicit D↔D′ mutex arrow.',
     diagramType: 'ec',
     build: buildExampleEC,
+  },
+  {
+    id: 'ec-cloud-ude',
+    label: 'UDE cloud',
+    hint: 'TP Basics cloud progression — the conflict behind one undesirable effect (missed delivery dates). Pre-tagged cloud-type "UDE".',
+    diagramType: 'ec',
+    build: buildPatternCloudUDE,
+  },
+  {
+    id: 'ec-cloud-core',
+    label: 'Core cloud',
+    hint: 'TP Basics cloud progression — the recurring conflict under many UDEs (produce now vs. protect the future). Pre-tagged cloud-type "Core".',
+    diagramType: 'ec',
+    build: buildPatternCloudCore,
+  },
+  {
+    id: 'ec-cloud-firefighting',
+    label: 'Firefighting cloud',
+    hint: 'TP Basics cloud progression — the symptom-vs-cause trap (fix now vs. fix the cause). Pre-tagged cloud-type "Firefighting".',
+    diagramType: 'ec',
+    build: buildPatternCloudFirefighting,
   },
   {
     id: 'ec-quality-vs-speed',
