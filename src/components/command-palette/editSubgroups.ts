@@ -38,6 +38,7 @@ export const EDIT_SUBGROUP: Record<string, EditSubgroup> = {
   'add-prerequisite-need': 'Build',
   'add-precondition': 'Build',
   'add-io-for-obstacle': 'Build',
+  'trim-branch': 'Build',
   // Type (mark / promote entity type)
   'mark-as-ude': 'Type',
   'mark-as-rootcause': 'Type',

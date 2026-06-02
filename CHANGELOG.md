@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 157 — NBR "Trim this branch" (Phase 3 #4)
+
+First slice of Phase 3 (TP Basics smaller gaps). A new palette verb **"Trim this
+branch (add a trimming injection)"** — select the undesirable effect at the tip of
+a negative branch and it mints a **trimming injection** wired to that effect with a
+**negative-weight** edge (the injection works against the effect), then selects it
+so you can name what breaks the branch. One atomic, undoable step.
+
+Purely additive: a new `trimBranch` action in `edgesSlice` (mints the injection +
+the negative edge in one `applyDocChange`), the `trim-branch` command (Edit /
+"Build" sub-section), reusing the existing `injection` type + `EdgeWeight` model —
+no schema change. Test in `tests/store/trimBranch.test.ts`. tsc + biome + knip
+clean; coverage green.
+
 ## Session 156 — Guided U-Shape helpers (Phase 2b) — the journey is complete
 
 Completes the U-Shape (TP Basics #2). Building on the 2a link primitive, three

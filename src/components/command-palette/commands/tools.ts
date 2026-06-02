@@ -89,6 +89,28 @@ export const toolCommands: Command[] = [
       s.connect(fresh.id, childId);
     },
   }),
+  // Phase 3 #4 (TP completeness — NBR trimming) — add a trimming injection that
+  // negatively-causes the selected undesirable effect, breaking the negative
+  // branch. One undoable step via the atomic `trimBranch` action.
+  withWriteGuard({
+    id: 'trim-branch',
+    label: 'Trim this branch (add a trimming injection)',
+    group: 'Edit',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select the undesirable effect to trim a branch from.');
+        return;
+      }
+      const inj = s.trimBranch(sel.ids[0]!);
+      if (inj) {
+        s.showToast(
+          'success',
+          'Added a trimming injection (negative edge) — name it to say what breaks the branch.'
+        );
+      }
+    },
+  }),
   // Session 95 — palette entry for the Delete-key behaviour. Routes
   // through the same confirmation flow the keyboard shortcut uses.
   withWriteGuard({

@@ -44,6 +44,12 @@ const withoutJunctorGroups = (e: Edge): Edge => {
  */
 export type EdgesSlice = {
   connect: (sourceId: string, targetId: string) => Edge | null;
+  /** Phase 3 #4 (TP completeness — NBR trimming) — "Trim this branch": mint a
+   *  *trimming injection* and connect it to `effectId` with a NEGATIVE-weight
+   *  edge (the injection works against the undesirable effect), in one undoable
+   *  step. Returns the new injection (selected, ready to name), or null if the
+   *  effect entity is gone. */
+  trimBranch: (effectId: string) => Entity | null;
   updateEdge: (id: string, patch: Patch<Omit<Edge, 'id'>>) => void;
   deleteEdge: (id: string) => void;
   /** A6: swap an edge's source and target. Useful when a user has built the
@@ -147,6 +153,33 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       const edge = createEdge({ sourceId, targetId });
       applyDocChange((prev) => touch({ ...prev, edges: { ...prev.edges, [edge.id]: edge } }));
       return edge;
+    },
+
+    trimBranch: (effectId) => {
+      const { doc } = get();
+      const effect = doc.entities[effectId];
+      if (!effect) return null;
+      const injection = createEntity({
+        type: 'injection',
+        title: 'Trimming injection — what would break this branch?',
+        annotationNumber: doc.nextAnnotationNumber,
+      });
+      // injection (cause) → effect, with NEGATIVE weight: the injection works
+      // against the undesirable effect. One applyDocChange = one undo step.
+      const edge: Edge = {
+        ...createEdge({ sourceId: injection.id, targetId: effectId }),
+        weight: 'negative',
+      };
+      applyDocChange((prev) =>
+        touch({
+          ...prev,
+          entities: { ...prev.entities, [injection.id]: injection },
+          edges: { ...prev.edges, [edge.id]: edge },
+          nextAnnotationNumber: prev.nextAnnotationNumber + 1,
+        })
+      );
+      get().selectEntity(injection.id);
+      return injection;
     },
 
     updateEdge: (id, patch) => {

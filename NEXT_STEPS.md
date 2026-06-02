@@ -69,11 +69,14 @@ schema migration), and each affordance is invisible until invoked.
     new FRT…"** (spawns a linked FRT). Pure builders in `src/domain/uShape.ts`;
     `spawnLinkedFromSelection` bakes the reciprocal link + opens the new tab.
     **Phase 2 (the U-Shape) is complete.**
-- **Phase 3 — smaller gaps, each opt-in:** #4 NBR "Trim this branch" → a linked
-  trimming injection (small, high value); #7 a guided CLR-scrutiny panel over the
-  existing validators; #8 optional per-step Need + Working-Assumption on TT; #3
-  Injection Flower; #6 PRT → IO sequencing → plan export; #5 performance-measurement
-  anchors.
+- **Phase 3 — smaller gaps, each opt-in:**
+  - ~~#4 NBR "Trim this branch"~~ ✅ *Session 157* — palette verb mints a trimming
+    `injection` + a **negative-weight** edge to the selected undesirable effect
+    (atomic `trimBranch` in `edgesSlice`; `trim-branch` command). Reuses the
+    `injection` type + `EdgeWeight` model, no schema change.
+  - #7 a guided CLR-scrutiny panel over the existing validators; #8 optional
+    per-step Need + Working-Assumption on TT; #3 Injection Flower; #6 PRT → IO
+    sequencing → plan export; #5 performance-measurement anchors.
 - **Out of scope:** the PIVOT internals (Five Focusing Steps, constraint types,
   Buffer Management) — execution / DBR, not TP diagramming.
 
