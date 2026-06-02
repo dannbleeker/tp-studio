@@ -91,8 +91,13 @@ schema migration), and each affordance is invisible until invoked.
     with a "N of 3 sides developed" completeness summary and prompts for the
     missing petals. Palette command + an inspector button; `injectionFlower.ts`
     pure helper + `InjectionFlowerDialog`, no schema change.
-  - **Remaining Phase 3:** #6 PRT → IO sequencing → plan export; #5
-    performance-measurement anchors.
+  - ~~#6 PRT → IO sequencing → plan export~~ ✅ *Session 162* — a
+    **"Prerequisite plan (CSV)"** export topologically orders a PRT's
+    Intermediate Objectives (prerequisite-first) and emits one row per IO
+    (step / objective / overcomes / depends_on / owner / due / status / notes),
+    extending the TT task-bridge. Pure `services/exporters/prtPlan.ts`; gated to
+    docs with IOs; no schema change.
+  - **Remaining Phase 3:** #5 performance-measurement anchors (small).
 - **Out of scope:** the PIVOT internals (Five Focusing Steps, constraint types,
   Buffer Management) — execution / DBR, not TP diagramming.
 

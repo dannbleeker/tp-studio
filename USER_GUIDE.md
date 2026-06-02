@@ -572,6 +572,7 @@ A PRT (Prerequisite Tree) surfaces what's between you and a goal — the obstacl
 - The palette types are: **Goal** (sky-500, the ambitious target at the top), **Obstacle** (rose-500, what's in the way), **Intermediate Objective** (blue-600, the steps that defeat each obstacle), and **Assumption** (violet, edge side-attachments).
 - The canvas mechanics are identical to CRT — drag-to-connect, `Tab` for child, right-click for actions. Layout is the same dagre flow; nothing about PRT requires hand-positioning.
 - No PRT-specific CLR rules yet. The CRT-only and FRT-only heuristics simply don't fire on a PRT.
+- **Export an ordered plan (Session 162).** `Cmd/Ctrl+K` → **Export…** → **Prerequisite plan (CSV)** turns the tree into a sequenced to-do list: it topologically sorts the dependency edges and emits one row per Intermediate Objective, *prerequisite-first* (an IO that another IO depends on comes earlier). Columns: step / objective / **overcomes** (the obstacle it targets) / **depends on** (earlier IOs) / owner / due date / status / notes — ready to paste into Jira, Trello, or a spreadsheet. Where a Transition Tree's task export reads explicit step numbers, the PRT has none, so the order comes from the dependencies you've drawn. The option only appears on a doc that has Intermediate Objectives.
 
 ## Creation wizards (Goal Tree + EC)
 

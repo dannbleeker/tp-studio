@@ -21,6 +21,7 @@ export {
   pickMermaid,
 } from './markup';
 export { exportPPTX } from './pptxExport';
+export { buildPrtPlanCsv, exportPrtPlan, orderedIntermediateObjectives } from './prtPlan';
 export { buildRiskRegisterCsv, exportRiskRegister } from './riskRegister';
 export { slug } from './shared';
 export {

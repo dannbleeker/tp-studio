@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 162 — PRT ordered-plan export (Phase 3 #6)
+
+A Phase 3 slice. A new **"Prerequisite plan (CSV)"** export turns a Prerequisite
+Tree into an ordered implementation plan. Where the Transition-Tree task export
+sorts by an explicit step field, a PRT has no step numbers — its order is implied
+by the dependency edges — so this exporter **topologically sorts** the tree and
+emits the Intermediate Objectives prerequisite-first (an IO that another IO
+depends on comes earlier). One row per IO: step / objective / **overcomes** (the
+obstacle it targets) / **depends_on** (prerequisite IOs) / owner / due_date /
+status / notes. Drops into Jira / Trello / a spreadsheet, like the TT task bridge
+it extends.
+
+Lives in the **Export…** picker, gated by `requiresEntityType:
+'intermediateObjective'` so it only appears on docs that actually have IOs (no
+empty-CSV trap elsewhere). Purely additive: a pure
+`src/services/exporters/prtPlan.ts` (`orderedIntermediateObjectives` Kahn-sorts
+then filters; `buildPrtPlanCsv` builds the rows; cycles fall back to annotation
+order so nothing is dropped). No schema change. Tests in
+`tests/services/prtPlan.test.ts` (dependency ordering, overcomes / depends-on
+columns, owner / status / due / notes, RFC-4180 escaping, cycle safety). tsc +
+biome + knip clean; full suite green.
+
 ## Session 161 — Injection Flower (Phase 3 #3)
 
 A Phase 3 slice. A new **"Injection flower"** view gathers one injection's

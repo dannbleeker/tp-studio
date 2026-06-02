@@ -15,6 +15,7 @@ import {
   exportOPML,
   exportPNG,
   exportPPTX,
+  exportPrtPlan,
   exportReasoningNarrativeMd,
   exportReasoningOutlineMd,
   exportRiskRegister,
@@ -55,8 +56,9 @@ type ExportAction = {
   /** Optional predicate — only render when the doc contains at least one
    *  entity matching the filter (e.g. `'ude'` for the risk-register
    *  export, which would otherwise produce an empty CSV; `'action'`
-   *  for the TT-task export added Session 135). */
-  requiresEntityType?: 'ude' | 'action';
+   *  for the TT-task export added Session 135; `'intermediateObjective'`
+   *  for the PRT-plan export added Session 162). */
+  requiresEntityType?: 'ude' | 'action' | 'intermediateObjective';
   run: (s: RootStore) => void | Promise<void>;
 };
 
@@ -177,6 +179,26 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         run: (s) => {
           const n = exportTtTasks(currentDoc(s));
           s.showToast('success', `Exported ${n} action${n === 1 ? '' : 's'} to CSV.`);
+        },
+      },
+      {
+        // Phase 3 #6 — PRT ordered-plan CSV. Topologically sorts a
+        // Prerequisite Tree and emits its Intermediate Objectives in
+        // dependency order (a prerequisite IO precedes the one that needs
+        // it); columns: step / objective / overcomes / depends_on / owner /
+        // due_date / status / notes. Gated by `requiresEntityType:
+        // 'intermediateObjective'` so non-PRT docs don't see the empty-CSV
+        // trap.
+        id: 'prt-plan',
+        label: 'Prerequisite plan (CSV)',
+        hint: 'One row per Intermediate Objective in dependency order: step / objective / overcomes / depends on / owner / due / status / notes.',
+        requiresEntityType: 'intermediateObjective',
+        run: (s) => {
+          const n = exportPrtPlan(currentDoc(s));
+          s.showToast(
+            'success',
+            `Exported ${n} objective${n === 1 ? '' : 's'} in dependency order.`
+          );
         },
       },
     ],
