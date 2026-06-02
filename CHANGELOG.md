@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 165 — Autonomous optimization batch
+
+A run of self-contained, behaviour-preserving optimizations (each gated green —
+tsc + biome + knip + full suite + build — and reverted on any doubt):
+
+- **Split `persistenceValidators.ts`** (733 → 433 lines). The strict member
+  validators (entity / edge / assumption / comment / group) stay; the file now
+  draws on three leaves — `persistenceValidatorsShared.ts` (18; the `invalid` /
+  `isFiniteNumber` helpers), `persistenceFieldValidators.ts` (208; the strict
+  attribute / evidence / importedFrom / links sub-field validators), and
+  `persistenceValidatorsSoft.ts` (132; the drop-bad-fields preference
+  validators) — and re-exports the soft set so `@/domain/persistenceValidators`
+  stays the single import site for `persistence.ts` + the tests. Bodies verbatim;
+  136 persistence/round-trip tests pass unchanged.
+
 ## Session 164 — Split edgeRouting.ts (maintainability refactor)
 
 Behaviour-preserving split of the project's largest file

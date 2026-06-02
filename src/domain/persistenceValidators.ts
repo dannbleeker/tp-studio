@@ -1,39 +1,44 @@
 import { isEdgeKind, isEntityType, isObject, isStringArray } from './guards';
-import { isSafeCssColor } from './safeCss';
-import { isSafeHref } from './safeUrl';
+import {
+  validateAttributes,
+  validateEntityLinks,
+  validateEvidenceArray,
+  validateImportedFromRef,
+} from './persistenceFieldValidators';
+import { invalid, isFiniteNumber } from './persistenceValidatorsShared';
 import type {
   Assumption,
   AssumptionKind,
   AssumptionStatus,
-  AttrValue,
   Comment,
   CommentAnchor,
-  CustomEntityClass,
-  DocumentId,
   Edge,
   EdgeId,
   Entity,
   EntityId,
-  EntityLink,
   EntityState,
-  EntityType,
-  EvidenceItem,
-  EvidenceSource,
-  EvidenceStrength,
   Group,
   GroupColor,
   GroupId,
-  ImportedFromRef,
-  TPDocument,
 } from './types';
 
 /**
  * Recursive JSON-shape validators for `TPDocument` and its members. Lives
  * separately from `persistence.ts` so the I/O surface (importFromJSON,
- * loadFromLocalStorage) stays compact and the ~200 lines of "did this
- * field arrive as the expected primitive" guards are isolated.
+ * loadFromLocalStorage) stays compact and the "did this field arrive as the
+ * expected primitive" guards are isolated.
  *
- * Every validator follows the same contract:
+ * Session 164 — split into leaf modules to tame the file size, keeping this as
+ * the strict *member* validators (entity / edge / assumption / comment / group)
+ * + `validateRecord`, and the single import site (`@/domain/persistenceValidators`)
+ * for `persistence.ts` + the tests:
+ *   - `persistenceValidatorsShared.ts` — the `invalid` / `isFiniteNumber` helpers.
+ *   - `persistenceFieldValidators.ts` — the strict entity/edge sub-field
+ *     validators (attributes / evidence / importedFrom / links).
+ *   - `persistenceValidatorsSoft.ts` — the drop-bad-fields preference validators,
+ *     re-exported below.
+ *
+ * Every strict validator follows the same contract:
  *   - Takes `(v: unknown, label: string)` — label is a JSON-path
  *     fragment used in error messages so the user sees
  *     `Invalid document: entities["abc"] has no id` instead of a bare
@@ -43,11 +48,6 @@ import type {
  *   - Returns the narrowed value with branded ids cast in. Callers
  *     receive a `Entity` / `Edge` / `Group` ready to slot into a
  *     `TPDocument`.
- *
- * The single-field utilities (validateLayoutConfig, validateSystemScope,
- * validateMethodChecklist) follow a softer contract: malformed
- * sub-fields are dropped rather than throwing, because losing a
- * preference shouldn't fail the whole document import.
  */
 
 const VALID_GROUP_COLORS: ReadonlySet<GroupColor> = new Set([
@@ -58,196 +58,6 @@ const VALID_GROUP_COLORS: ReadonlySet<GroupColor> = new Set([
   'rose',
   'violet',
 ]);
-
-const invalid = (label: string, why: string): Error =>
-  new Error(`Invalid document: ${label} ${why}.`);
-
-// A finite number — rejects NaN / ±Infinity, which pass a bare
-// `typeof === 'number'` check and then poison sorts (`a - b`) and break
-// geometry/bounds math downstream.
-const isFiniteNumber = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
-
-/**
- * B7 — validate one AttrValue. The tagged union has four kinds, each
- * with a tightly-typed `value` field. We're strict here (throws on
- * unknown kind / wrong value shape) because attribute data is
- * user-supplied and a silently-coerced value would surface much later
- * as a render bug.
- */
-const validateAttrValue = (v: unknown, label: string): AttrValue => {
-  if (!isObject(v)) throw invalid(label, 'must be an object');
-  const kind = v.kind;
-  const value = v.value;
-  if (kind === 'string') {
-    if (typeof value !== 'string') throw invalid(label, 'string attr has non-string value');
-    return { kind: 'string', value };
-  }
-  if (kind === 'int') {
-    if (typeof value !== 'number' || !Number.isInteger(value)) {
-      throw invalid(label, 'int attr has non-integer value');
-    }
-    return { kind: 'int', value };
-  }
-  if (kind === 'real') {
-    if (typeof value !== 'number' || !Number.isFinite(value)) {
-      throw invalid(label, 'real attr has non-finite-number value');
-    }
-    return { kind: 'real', value };
-  }
-  if (kind === 'bool') {
-    if (typeof value !== 'boolean') throw invalid(label, 'bool attr has non-boolean value');
-    return { kind: 'bool', value };
-  }
-  throw invalid(label, `has invalid kind "${String(kind)}"`);
-};
-
-/**
- * Session 134 — validate one `EvidenceItem`. The five-way source +
- * three-way strength taxonomies are closed sets; unrecognised values
- * throw rather than fall through, so a corrupt import surfaces clearly
- * rather than silently downgrading to a default. Optional fields
- * (`url`, `validatedAt`, `validatedBy`) follow the type-or-omit rule:
- * present-but-wrong-type throws; absent passes; only well-typed values
- * round-trip.
- */
-const EVIDENCE_SOURCES: readonly EvidenceSource[] = [
-  'observed',
-  'stakeholder',
-  'metric',
-  'policy',
-  'assumption',
-];
-const EVIDENCE_STRENGTHS: readonly EvidenceStrength[] = ['weak', 'moderate', 'strong'];
-const isEvidenceSource = (v: unknown): v is EvidenceSource =>
-  typeof v === 'string' && (EVIDENCE_SOURCES as readonly string[]).includes(v);
-const isEvidenceStrength = (v: unknown): v is EvidenceStrength =>
-  typeof v === 'string' && (EVIDENCE_STRENGTHS as readonly string[]).includes(v);
-
-const validateEvidenceItem = (v: unknown, label: string): EvidenceItem => {
-  if (!isObject(v)) throw invalid(label, 'must be an object');
-  if (typeof v.id !== 'string') throw invalid(label, 'has no id');
-  if (typeof v.description !== 'string') throw invalid(label, 'has non-string description');
-  if (!isEvidenceSource(v.source)) {
-    throw invalid(label, `has invalid source "${String(v.source)}"`);
-  }
-  if (!isEvidenceStrength(v.strength)) {
-    throw invalid(label, `has invalid strength "${String(v.strength)}"`);
-  }
-  if (v.url !== undefined && typeof v.url !== 'string') {
-    throw invalid(label, 'has non-string url');
-  }
-  if (v.validatedAt !== undefined && typeof v.validatedAt !== 'number') {
-    throw invalid(label, 'has non-number validatedAt');
-  }
-  if (v.validatedBy !== undefined && typeof v.validatedBy !== 'string') {
-    throw invalid(label, 'has non-string validatedBy');
-  }
-  if (typeof v.createdAt !== 'number') throw invalid(label, 'has non-number createdAt');
-  if (typeof v.updatedAt !== 'number') throw invalid(label, 'has non-number updatedAt');
-  return {
-    id: v.id,
-    description: v.description,
-    source: v.source,
-    strength: v.strength,
-    // Drop a citation URL carrying a dangerous scheme (javascript:/data:/…) —
-    // it would otherwise render as a clickable `<a href>` and execute in our
-    // origin when a malicious imported/shared doc is opened. Keep the rest of
-    // the evidence item; only the unsafe link is discarded.
-    ...(typeof v.url === 'string' && v.url.length > 0 && isSafeHref(v.url) ? { url: v.url } : {}),
-    ...(typeof v.validatedAt === 'number' ? { validatedAt: v.validatedAt } : {}),
-    ...(typeof v.validatedBy === 'string' && v.validatedBy.length > 0
-      ? { validatedBy: v.validatedBy }
-      : {}),
-    createdAt: v.createdAt,
-    updatedAt: v.updatedAt,
-  };
-};
-
-/**
- * Session 135 — validate an `ImportedFromRef`. Strict on the two
- * required string fields (`docId`, `entityId`); the optional
- * `sourceTitle` + `importedAt` follow the type-or-omit rule.
- * Absent → undefined so entities without an import-ref don't carry
- * the field on round-trip.
- */
-const validateImportedFromRef = (v: unknown, label: string): ImportedFromRef | undefined => {
-  if (v === undefined || v === null) return undefined;
-  if (!isObject(v)) throw invalid(label, 'must be an object');
-  if (typeof v.docId !== 'string' || v.docId.length === 0) {
-    throw invalid(label, 'has missing or non-string docId');
-  }
-  if (typeof v.entityId !== 'string' || v.entityId.length === 0) {
-    throw invalid(label, 'has missing or non-string entityId');
-  }
-  if (v.sourceTitle !== undefined && typeof v.sourceTitle !== 'string') {
-    throw invalid(label, 'has non-string sourceTitle');
-  }
-  if (v.importedAt !== undefined && typeof v.importedAt !== 'string') {
-    throw invalid(label, 'has non-string importedAt');
-  }
-  return {
-    // Session 137 — Batch 1 tightened the field types to the branded
-    // `DocumentId` / `EntityId`. Validator-emitted values are
-    // structurally valid id strings; the `as` cast affirms the brand
-    // at the trust boundary.
-    docId: v.docId as DocumentId,
-    entityId: v.entityId as EntityId,
-    ...(typeof v.sourceTitle === 'string' && v.sourceTitle.length > 0
-      ? { sourceTitle: v.sourceTitle }
-      : {}),
-    ...(typeof v.importedAt === 'string' && v.importedAt.length > 0
-      ? { importedAt: v.importedAt }
-      : {}),
-  };
-};
-
-/**
- * Phase 2a — validate the `links` array (navigable cross-doc references). Each
- * entry needs the two id strings; a malformed entry is dropped (rather than
- * failing the whole import) so a partially-corrupt link list still loads what's
- * valid — links are navigation metadata, not load-bearing structure. Empty /
- * absent → undefined.
- */
-const validateEntityLinks = (v: unknown, label: string): EntityLink[] | undefined => {
-  if (v === undefined || v === null) return undefined;
-  if (!Array.isArray(v)) throw invalid(label, 'must be an array');
-  const out: EntityLink[] = [];
-  for (const raw of v) {
-    if (!isObject(raw)) continue;
-    if (typeof raw.docId !== 'string' || raw.docId.length === 0) continue;
-    if (typeof raw.entityId !== 'string' || raw.entityId.length === 0) continue;
-    out.push({ docId: raw.docId as DocumentId, entityId: raw.entityId as EntityId });
-  }
-  return out.length > 0 ? out : undefined;
-};
-
-/**
- * Session 134 — validate the `evidence` array on an entity. Strict per
- * item (see {@link validateEvidenceItem}). Empty / absent → undefined
- * so entities without evidence don't carry an empty array on round-trip.
- */
-const validateEvidenceArray = (v: unknown, label: string): EvidenceItem[] | undefined => {
-  if (v === undefined || v === null) return undefined;
-  if (!Array.isArray(v)) throw invalid(label, 'must be an array');
-  if (v.length === 0) return undefined;
-  return v.map((item, i) => validateEvidenceItem(item, `${label}[${i}]`));
-};
-
-/**
- * B7 — validate the `attributes` map on an entity. Strict: any
- * invalid value throws (with the offending key in the label). Returns
- * undefined when the input is absent or empty — entities without
- * attributes don't carry an empty map.
- */
-const validateAttributes = (v: unknown, label: string): Record<string, AttrValue> | undefined => {
-  if (v === undefined || v === null) return undefined;
-  if (!isObject(v)) throw invalid(label, 'must be an object');
-  const out: Record<string, AttrValue> = {};
-  for (const [k, raw] of Object.entries(v)) {
-    out[k] = validateAttrValue(raw, `${label}["${k}"]`);
-  }
-  return Object.keys(out).length > 0 ? out : undefined;
-};
 
 export const validateEntity = (v: unknown, label: string): Entity => {
   if (!isObject(v)) throw invalid(label, 'must be an object');
@@ -612,122 +422,12 @@ export const validateRecord = <T>(
   return out;
 };
 
-// ---- Soft (drop-bad-fields) validators ----------------------------------
-
-const VALID_LAYOUT_DIRECTIONS: ReadonlySet<string> = new Set(['BT', 'TB', 'LR', 'RL']);
-const VALID_LAYOUT_ALIGNS: ReadonlySet<string> = new Set(['UL', 'UR', 'DL', 'DR']);
-
-export const validateLayoutConfig = (v: unknown): TPDocument['layoutConfig'] | undefined => {
-  if (v === undefined || v === null) return undefined;
-  if (!isObject(v)) return undefined;
-  const out: NonNullable<TPDocument['layoutConfig']> = {};
-  if (typeof v.direction === 'string' && VALID_LAYOUT_DIRECTIONS.has(v.direction)) {
-    // Concrete narrow rather than `NonNullable<...>['direction']`
-    // which under exactOptionalPropertyTypes still includes
-    // `undefined` (the field is optional on the parent).
-    out.direction = v.direction as 'BT' | 'TB' | 'LR' | 'RL';
-  }
-  if (typeof v.nodesep === 'number' && Number.isFinite(v.nodesep) && v.nodesep > 0) {
-    out.nodesep = v.nodesep;
-  }
-  if (typeof v.ranksep === 'number' && Number.isFinite(v.ranksep) && v.ranksep > 0) {
-    out.ranksep = v.ranksep;
-  }
-  if (typeof v.align === 'string' && VALID_LAYOUT_ALIGNS.has(v.align)) {
-    // Same concrete narrow as `direction` above.
-    out.align = v.align as 'UL' | 'UR' | 'DL' | 'DR';
-  }
-  return Object.keys(out).length > 0 ? out : undefined;
-};
-
-const SYSTEM_SCOPE_KEYS = [
-  'goal',
-  'necessaryConditions',
-  'successMeasures',
-  'boundaries',
-  'containingSystem',
-  'interactingSystems',
-  'inputsOutputs',
-] as const;
-
-export const validateSystemScope = (v: unknown): TPDocument['systemScope'] | undefined => {
-  if (v === undefined || v === null) return undefined;
-  if (!isObject(v)) return undefined;
-  const out: NonNullable<TPDocument['systemScope']> = {};
-  for (const key of SYSTEM_SCOPE_KEYS) {
-    const raw = v[key];
-    if (typeof raw === 'string' && raw.length > 0) {
-      out[key] = raw;
-    }
-  }
-  return Object.keys(out).length > 0 ? out : undefined;
-};
-
-export const validateMethodChecklist = (v: unknown): Record<string, boolean> | undefined => {
-  if (v === undefined || v === null) return undefined;
-  if (!isObject(v)) return undefined;
-  const out: Record<string, boolean> = {};
-  for (const key of Object.keys(v)) {
-    if (v[key] === true) out[key] = true;
-  }
-  return Object.keys(out).length > 0 ? out : undefined;
-};
-
-/**
- * B10 — validate one CustomEntityClass entry. Soft on optional fields
- * (drops bad ones rather than throwing), strict on the required
- * `id` + `label`. Returns undefined when the entry can't be salvaged
- * — the caller filters those out.
- *
- * `id` slug rule: lowercased, [a-z0-9-]+, at least one character. Must
- * NOT collide with a built-in EntityType id; collisions are dropped
- * (the built-in wins).
- */
-const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
-
-const validateCustomEntityClass = (v: unknown): CustomEntityClass | undefined => {
-  if (!isObject(v)) return undefined;
-  const id = typeof v.id === 'string' ? v.id : null;
-  const label = typeof v.label === 'string' ? v.label : null;
-  if (!id || !label) return undefined;
-  if (!SLUG_RE.test(id)) return undefined;
-  // A custom class can't shadow a built-in entity type.
-  if (isEntityType(id)) return undefined;
-  const out: CustomEntityClass = { id, label };
-  // Drop a color that isn't a safe CSS color value — an arbitrary string
-  // here would be interpolated raw into the HTML export's inline `style`
-  // attribute (CSS-injection / external-resource beacon). See `safeCss.ts`.
-  if (typeof v.color === 'string' && isSafeCssColor(v.color)) out.color = v.color;
-  if (typeof v.hint === 'string' && v.hint.length > 0) out.hint = v.hint;
-  // B2: icon name is stored as a plain string; the resolver
-  // (`entityTypeMeta.ts → resolveEntityTypeMeta`) maps it through the
-  // curated catalogue, falling back to Box for unknown names. We
-  // accept any non-empty string here so a doc carrying a future
-  // icon name (added in a later version) round-trips intact.
-  if (typeof v.icon === 'string' && v.icon.length > 0) out.icon = v.icon;
-  if (typeof v.supersetOf === 'string' && isEntityType(v.supersetOf)) {
-    out.supersetOf = v.supersetOf as EntityType;
-  }
-  return out;
-};
-
-/**
- * B10 — validate the doc's `customEntityClasses` map. Soft: invalid
- * entries are dropped rather than failing the whole import. Returns
- * undefined when the map is absent / empty after filtering.
- */
-export const validateCustomEntityClasses = (
-  v: unknown
-): Record<string, CustomEntityClass> | undefined => {
-  if (v === undefined || v === null) return undefined;
-  if (!isObject(v)) return undefined;
-  const out: Record<string, CustomEntityClass> = {};
-  for (const [key, raw] of Object.entries(v)) {
-    const entry = validateCustomEntityClass(raw);
-    // The key in the persisted map MUST match the entry's `id`. Drop
-    // mismatched keys quietly (corrupt import) rather than silently
-    // re-keying.
-    if (entry && entry.id === key) out[key] = entry;
-  }
-  return Object.keys(out).length > 0 ? out : undefined;
-};
+// The soft (drop-bad-fields) preference validators moved to their own module
+// (Session 164); re-export them so `@/domain/persistenceValidators` stays the
+// single import site for `persistence.ts` + the tests.
+export {
+  validateCustomEntityClasses,
+  validateLayoutConfig,
+  validateMethodChecklist,
+  validateSystemScope,
+} from './persistenceValidatorsSoft';
