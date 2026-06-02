@@ -56,6 +56,14 @@ The PDF route is the most polished for static layout. Use Print Preview for the 
 
 Going the other direction — opening someone else's file — uses the single **Import…** picker (`Cmd+K → Import…`). The dialog fans out five sources as cards: **TP Studio JSON** (full round-trip), **Flying Logic file** (`.fll`), **Mermaid diagram** (`.mmd`), **Entities CSV** (append rather than replace), and **Paste from whiteboard** — the last is the escape hatch for Miro / Mural / FigJam / any text source. Copy stickies from the source board, paste into the textarea, one entity is minted per non-empty line. Bullet markers (`-` `*` `•` `1.` `1)`) are stripped, tab-separated content keeps only the first column. Connectors aren't inferred — Miro / Mural don't expose arrow structure in client-accessible exports, so this path gets the entities into the canvas; you wire causality after.
 
+## Generating a diagram with an AI assistant
+
+Sometimes the fastest first draft isn't drawing — it's *describing*. TP Studio ships a Claude **skill**, `tp-studio-import`, that turns a problem, goal, conflict or plan written in plain language into an importable TP Studio document. Tell Claude what you're looking at — "*a Current Reality Tree for why onboarding churns*", "*turn this dilemma into an Evaporating Cloud*" — and it emits a schema-valid `.json` for any of the nine diagram types, which you load through the same **Import… → TP Studio JSON** doorway above.
+
+The skill lives in the repository at `.claude/skills/tp-studio-import/`, so it's available automatically to anyone using Claude Code inside the project; it can also be installed into Claude.ai or a personal Claude setup (its `SKILL.md` explains the format, `reference/format.md` the full schema). A guard test (`tests/skills/tpStudioImport.test.ts`) imports every bundled example through the real validator on each CI run — and fails if a new diagram or entity type is added without updating the skill — so the generated shape can't drift from what the app actually accepts.
+
+Treat the output as a *first draft*. The assistant gets the entities and the causal skeleton onto the canvas in seconds; you still apply the CLR scrutiny of [Chapter 13](13-the-clr.md) that turns a plausible-looking tree into sound logic.
+
 ## Share links
 
 `Cmd+K → Copy read-only share link`. Generates a URL that:
@@ -119,6 +127,7 @@ Two boundaries worth knowing:
 > - **EC Workshop Sheet PDF** — one-page handout for EC workshops.
 > - **Browse Lock auto-engages on share-link load** — receivers can't accidentally edit.
 > - **Review comments** — notes pinned to an entity / edge / the whole diagram, carried inside every JSON / share-link / HTML export.
+> - **`tp-studio-import` Claude skill** — describe a problem in words; get an importable JSON for any of the nine diagram types.
 
 > **💡 Practitioner tips**
 > - **Capture a snapshot before exporting for stakeholders.** "What I showed them on Tuesday" is a revision you'll want later.

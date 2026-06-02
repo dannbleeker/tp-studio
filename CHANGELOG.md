@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 153 — Import-generator skill: staleness guard + book reference
+
+Two follow-ups so the `tp-studio-import` skill stays correct and discoverable:
+
+- **Staleness guard.** `tests/skills/tpStudioImport.test.ts` now pins the skill to
+  the domain model with exhaustive `Record<DiagramType | EntityType | EdgeKind,
+  true>` maps. Adding a new member to any of those unions fails to COMPILE until
+  it's listed here, then fails the run until `SKILL.md` / `reference/format.md`
+  document it and (for diagram types) a validated example exists. A schema change
+  therefore can't leave the skill stale — it surfaces as a red CI run.
+- **Book reference.** Chapter 16 (*Sharing your work*) gains a "Generating a
+  diagram with an AI assistant" section pointing readers at the skill and the
+  Import → TP Studio JSON flow, plus a "How TP Studio helps" sidebar bullet.
+
+Full suite green; tsc + biome clean.
+
 ## Session 153 — New: TP Studio import-file generator skill (+ NBR persistence fix)
 
 Backlog ("create a skill that can create files for import in TP Studio in all
