@@ -175,4 +175,23 @@ export const analysisCommands: Command[] = [
       s.openEdgeScrutiny(sel.ids[0]);
     },
   },
+  // Phase 3 #3 — the "Injection Flower". Read-only composite view that groups
+  // a single injection's cross-doc links into Cohen's petals (Desired Effects
+  // / Negative Branch / Plan) so the user can see whether it's fully vetted.
+  // A dialog over the existing `Entity.links` — no mutation, no write guard.
+  {
+    id: 'view-injection-flower',
+    label: 'View the injection flower (desired effects · negative branch · plan)',
+    group: 'Review',
+    run: (s) => {
+      const sel = s.selection;
+      const id = sel.kind === 'entities' && sel.ids.length === 1 ? sel.ids[0] : undefined;
+      const entity = id ? currentDoc(s).entities[id] : undefined;
+      if (!id || entity?.type !== 'injection') {
+        s.showToast('info', 'Select a single injection entity to open its flower.');
+        return;
+      }
+      s.openInjectionFlower(id);
+    },
+  },
 ];

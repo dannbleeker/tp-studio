@@ -125,6 +125,11 @@ const EdgeScrutinyDialog = lazy(() =>
     default: m.EdgeScrutinyDialog,
   }))
 );
+const InjectionFlowerDialog = lazy(() =>
+  import('./components/inspector/InjectionFlowerDialog').then((m) => ({
+    default: m.InjectionFlowerDialog,
+  }))
+);
 const WhiteboardPasteDialog = lazy(() =>
   import('./components/import/WhiteboardPasteDialog').then((m) => ({
     default: m.WhiteboardPasteDialog,
@@ -408,6 +413,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Edge scrutiny dialog">
           <EdgeScrutinyDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Injection flower dialog">
+          <InjectionFlowerDialog />
         </ErrorBoundary>
         <ErrorBoundary label="Whiteboard paste dialog">
           <WhiteboardPasteDialog />

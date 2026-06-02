@@ -85,8 +85,14 @@ schema migration), and each affordance is invisible until invoked.
     fired). Ephemeral review surface over the existing validators —
     `src/domain/clrScrutiny.ts` + `EdgeScrutinyDialog`, `edgeScrutinyId` on
     `dialogsSlice`, no schema change.
-  - **Remaining Phase 3:** #3 Injection Flower; #6 PRT → IO sequencing → plan
-    export; #5 performance-measurement anchors.
+  - ~~#3 Injection Flower~~ ✅ *Session 161* — a read-only **"Injection flower"**
+    view groups one injection's Phase-2a cross-doc links into Cohen's petals
+    (Desired effects / Negative branch / Plan, by the linked doc's diagram type)
+    with a "N of 3 sides developed" completeness summary and prompts for the
+    missing petals. Palette command + an inspector button; `injectionFlower.ts`
+    pure helper + `InjectionFlowerDialog`, no schema change.
+  - **Remaining Phase 3:** #6 PRT → IO sequencing → plan export; #5
+    performance-measurement anchors.
 - **Out of scope:** the PIVOT internals (Five Focusing Steps, constraint types,
   Buffer Management) — execution / DBR, not TP diagramming.
 

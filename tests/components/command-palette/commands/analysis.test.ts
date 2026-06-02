@@ -97,6 +97,25 @@ describe('analysisCommands — scrutinize-edge (Phase 3 #7)', () => {
   });
 });
 
+describe('analysisCommands — view-injection-flower (Phase 3 #3)', () => {
+  it('opens the flower for a single selected injection', async () => {
+    const inj = useDocumentStore
+      .getState()
+      .addEntity({ type: 'injection', title: 'Run a bootcamp' });
+    s().selectEntity(inj.id);
+    await runCommand(findCommand(analysisCommands, 'view-injection-flower'));
+    expect(s().injectionFlowerEntityId).toBe(inj.id);
+  });
+
+  it('toasts info when the selection is not a single injection', async () => {
+    const e = seedEntity('A', 'effect');
+    s().selectEntity(e.id);
+    await runCommand(findCommand(analysisCommands, 'view-injection-flower'));
+    expect(s().injectionFlowerEntityId).toBeNull();
+    expect(s().toasts.some((t) => /single injection/i.test(t.message))).toBe(true);
+  });
+});
+
 describe('analysisCommands — speculation (Phase 1C)', () => {
   it('begin-speculation enters speculation mode', async () => {
     await runCommand(findCommand(analysisCommands, 'begin-speculation'));

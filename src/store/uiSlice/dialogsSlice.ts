@@ -133,6 +133,12 @@ export type DialogsSlice = {
    *  nothing and persists nothing (no schema change). */
   edgeScrutinyId: string | null;
 
+  /** Phase 3 #3 — "Injection Flower" dialog. The id of the injection entity
+   *  whose cross-doc links are being grouped into Desired-Effect / Negative-
+   *  Branch / Plan petals, or `null` when closed. Read-only lens over the
+   *  existing `Entity.links`; no schema change. */
+  injectionFlowerEntityId: string | null;
+
   /** Force-hide the Inspector panel even when something is selected (frees
    *  canvas width). Toggled from the TopBar; a double-click on an edge
    *  re-shows it. Independent of the selection-driven `open` derivation in
@@ -274,6 +280,10 @@ export type DialogsSlice = {
   /** Phase 3 #7 — open / close the per-edge CLR-scrutiny dialog. */
   openEdgeScrutiny: (edgeId: string) => void;
   closeEdgeScrutiny: () => void;
+
+  /** Phase 3 #3 — open / close the per-injection "flower" dialog. */
+  openInjectionFlower: (entityId: string) => void;
+  closeInjectionFlower: () => void;
 };
 
 export type DialogsDataKeys =
@@ -303,7 +313,8 @@ export type DialogsDataKeys =
   | 'pendingCommentAnchor'
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
-  | 'edgeScrutinyId';
+  | 'edgeScrutinyId'
+  | 'injectionFlowerEntityId';
 
 export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   paletteOpen: false,
@@ -333,6 +344,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   compareRevisionId: null,
   sideBySideRevisionId: null,
   edgeScrutinyId: null,
+  injectionFlowerEntityId: null,
 });
 
 export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> = (set, get) => ({
@@ -363,6 +375,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   compareRevisionId: null,
   sideBySideRevisionId: null,
   edgeScrutinyId: null,
+  injectionFlowerEntityId: null,
 
   openPalette: () => set({ paletteOpen: true, paletteInitialQuery: '' }),
   openPaletteWithQuery: (query) => set({ paletteOpen: true, paletteInitialQuery: query }),
@@ -482,4 +495,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openEdgeScrutiny: (edgeId) => set({ edgeScrutinyId: edgeId }),
   closeEdgeScrutiny: () => set({ edgeScrutinyId: null }),
+
+  openInjectionFlower: (entityId) => set({ injectionFlowerEntityId: entityId }),
+  closeInjectionFlower: () => set({ injectionFlowerEntityId: null }),
 });

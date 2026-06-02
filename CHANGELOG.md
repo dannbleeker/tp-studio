@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 161 — Injection Flower (Phase 3 #3)
+
+A Phase 3 slice. A new **"Injection flower"** view gathers one injection's
+Phase-2a cross-doc links into Oded Cohen's three vetting petals — **Desired
+effects** (a linked FRT), **Negative branch** (a linked NBR), and **Plan** (a
+linked PRT) — plus an "Other links" catch-all, so you can see at a glance whether
+an injection is fully developed or still missing a side. Empty canonical petals
+show a prompt ("No negative branch linked yet — ask 'what could go wrong?'…")
+and the header summarises "N of 3 sides developed". Each row jumps to the linked
+entity (switch tab + select) and closes.
+
+Reached from the palette ("View the injection flower…") or a **"View the
+injection flower"** button on an injection's inspector — both read-only, so they
+stay available under Browse Lock. Purely additive: a pure
+`src/domain/injectionFlower.ts` (`buildInjectionFlower` buckets `Entity.links` by
+the linked document's diagram type), an `injectionFlowerEntityId` flag on
+`dialogsSlice`, the `view-injection-flower` command (Review group), and the
+`InjectionFlowerDialog`. **No schema change** — a read-only lens over the existing
+links. Tests in `tests/domain/injectionFlower.test.ts` +
+`tests/components/InjectionFlowerDialog.test.tsx` (+ command-guard coverage). tsc +
+biome + knip clean; full suite green.
+
 ## Session 160 — Guided CLR scrutiny per edge (Phase 3 #7)
 
 A Phase 3 slice. A new **"Scrutinize this edge"** review surface walks the eight

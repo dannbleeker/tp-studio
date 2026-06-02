@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Link2, Target, Trash2, X } from 'lucide-react';
+import { Link2, Syringe, Target, Trash2, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { actionEligibility } from '@/domain/actionEligibility';
 import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL, type ECSlot } from '@/domain/ecGuiding';
@@ -60,6 +60,9 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   const selectEntity = useDocumentStore((s) => s.selectEntity);
   const unlinkEntity = useDocumentStore((s) => s.unlinkEntity);
   const toggleCoreProblem = useDocumentStore((s) => s.toggleCoreProblem);
+  // Phase 3 #3 — open the per-injection "flower" (a read-only composite of its
+  // linked desired effects / negative branch / plan).
+  const openInjectionFlower = useDocumentStore((s) => s.openInjectionFlower);
   // Session 135 / spec gap #4 Phase 1B — propagated state for the
   // currently selected entity. Computed once per entities/edges
   // snapshot; the lookup against the returned record is O(1).
@@ -367,6 +370,17 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
               );
             })}
           </div>
+        </Field>
+      )}
+
+      {/* Phase 3 #3 — the "Injection Flower". Injection-only, read-only review
+          surface (opens a dialog), so it stays enabled under Browse Lock. */}
+      {entity.type === 'injection' && (
+        <Field label="Injection flower" as="group">
+          <Button variant="softNeutral" size="sm" onClick={() => openInjectionFlower(entity.id)}>
+            <Syringe className="h-3.5 w-3.5" />
+            View the injection flower
+          </Button>
         </Field>
       )}
 
