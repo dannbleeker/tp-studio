@@ -53,6 +53,12 @@ Click any entity with an open warning. The Inspector's Warnings section lists th
 
 The walkthrough is scope-limited to *open* warnings — once you dismiss a warning, it doesn't reappear unless the underlying condition changes. That makes the walkthrough a *clearing* gesture: run it before declaring a diagram done; if it's empty, you've considered every reservation.
 
+## Scrutinizing a single edge
+
+The walkthrough clears what the validators *fired*. But absence of a warning is not absence of a reservation — a rule fires only when it can detect its trigger condition, and most of the CLR is too contextual for a predicate to catch. An edge can be warning-free and still be sloppy. The complementary move is to take one claim and interrogate it against the whole CLR by hand.
+
+Select an edge and run **"Scrutinize this edge (walk the CLR questions)"** from the palette, or press the **"Scrutinize against the CLR"** button in the edge inspector. Either opens a walk through all eight canonical categories — Clarity, Entity existence, Causality existence, Cause sufficiency, Additional cause, Cause–effect reversal, Predicted-effect existence, Tautology — one at a time, *including the categories nothing flagged*. Each step states the category as a question, shows any warning the validators did raise on that edge, and gives you a checkbox to tick as you genuinely consider it. The button is read-only, so it works under Browse Lock — you can scrutinize a colleague's diagram in a review without touching it. Where the walkthrough is a clearing gesture across the diagram, scrutiny is a *deepening* gesture on one edge: it forces you to ask every reservation of a single claim, not just the ones a rule happened to notice.
+
 ## Dismissing warnings
 
 Two ways to dismiss:
@@ -70,6 +76,7 @@ Don't dismiss without writing the explanation. A dismissed warning with no ratio
 > - **One-click actions** on a subset of warnings (e.g., `convert-extra-goals-to-csfs`).
 > - **Tier-color coding** in the warnings list: clarity (yellow) → sufficiency (amber) → causality (orange) → predicted-effect (red).
 > - **Dismissibility** — every warning can be dismissed; dismissals don't recur until the underlying state changes.
+> - **`Scrutinize this edge (walk the CLR questions)`** — walks one edge through all eight CLR categories as questions, including the ones nothing flagged; read-only, so it works under Browse Lock.
 
 > **💡 Practitioner tips**
 > - **Walk-through *before* you present.** A reader will hit the warnings if you don't.

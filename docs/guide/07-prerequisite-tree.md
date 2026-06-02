@@ -48,6 +48,12 @@ Some IOs depend on others:
 
 Add those dependency edges. The PRT now reads as a *sequenced plan* — the lowest IOs first, the injection last.
 
+## Exporting an ordered plan
+
+A PRT carries no explicit step numbers. Its order lives entirely in the dependency edges — the IO another IO depends on *is* the earlier step, even though nothing on the canvas says "1, 2, 3." That's correct for thinking, but it's awkward to hand to someone who just wants the to-do list. **Export… → "Prerequisite plan (CSV)"** does the translation: it topologically sorts the tree so that every IO appears *prerequisite-first* (an IO that others depend on comes before them) and writes one row per Intermediate Objective — step / objective / overcomes (the obstacle it targets) / depends on / owner / due / status / notes.
+
+That row shape is deliberately spreadsheet- and tracker-shaped: paste it straight into Jira, Trello, or a sheet and you have a backlog ordered the way the analysis says it must be done, with each item still tied to the obstacle that justifies it. It's the bridge from the PRT-as-analysis to the PRT-as-execution-plan. (The export only appears on a document that actually has Intermediate Objectives — there's nothing to order otherwise.)
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**
@@ -56,6 +62,7 @@ Add those dependency edges. The PRT now reads as a *sequenced plan* — the lowe
 > - **Necessity edges by default** for PRT diagrams — the verbaliser reads "In order to / we must" wording.
 > - **Dagre top-down layout** — PRT lays itself out with the injection at top, IOs descending.
 > - **Span-of-control** flags help you triage IOs by who owns them. Mark each `control` / `influence` / `external`.
+> - **`Export… → Prerequisite plan (CSV)`** — topologically sorts the IOs prerequisite-first into a step / objective / overcomes / depends-on / owner / due / status / notes row, ready to paste into Jira, Trello, or a spreadsheet. (Appears only when the doc has IOs.)
 
 > **💡 Practitioner tips**
 > - **Pair every obstacle with an IO.** An obstacle without an IO is a complaint. The IO turns "we can't" into "we will, once X."

@@ -63,6 +63,10 @@ The FRT now has 3 injections (one primary, two for negative branches), 5 desired
 1. *Inside this FRT:* `Start Negative Branch from this entity` palette command (also right-click context menu) creates a "Negative Branch" group preset (slate-coloured) rooted at the entity you select. Useful for keeping NB sub-trees visually separated *within* the FRT.
 2. *As its own document:* `Cmd+K → New diagram… → NBR` creates a dedicated **Negative Branch Reservation** diagram. The NBR diagram type carries its own palette (`injection` / `effect` / `ude` / `desiredEffect` / `assumption` / `note`), a 7-step method checklist (state the injection → trace forward to desired effects → identify turning point → articulate UDEs → choose reactive vs proactive mitigation → apply CLR → decide adopt/modify/reject), and feeds the **Risk Register (CSV)** export described in Chapter 16. Use it when the negative branch is the *centrepiece* of the analysis (e.g. a contentious injection that needs a deeper consequence-mapping) rather than a sub-branch of an FRT.
 
+### Trimming a negative branch
+
+Finding a negative branch is only half the move. Once you've drawn the unintended UDE that your injection would also cause, the corrective answer in Goldratt's grammar is to *trim* it — to add a second injection whose whole job is to break the link so the bad effect won't follow. TP Studio makes that a single gesture. Select the undesirable effect at the tip of the branch and run **"Trim this branch (add a trimming injection)"** from the palette: it mints a **trimming injection** wired to that effect with a *negative* edge — the formal "inject this, and the bad effect doesn't follow" construction, rendered so the polarity is unmistakable. It's one undoable step, so trimming costs you nothing to try. All that's left is to name the new injection to say *what* breaks the branch — the contractor backfill, the shadowing programme — turning a spotted risk into a concrete countermeasure on the canvas.
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**
@@ -71,6 +75,7 @@ The FRT now has 3 injections (one primary, two for negative branches), 5 desired
 > - **Back-edge tagging** for reinforcing loops — Edge Inspector → Back-edge toggle.
 > - **Edge polarity** matters in FRTs more than CRTs. If a chain has a negative edge halfway up, the eventual desired effect is *suppressed*, not produced. The polarity badge catches it.
 > - **InjectionWorkbench carry-forward** — if you started in an EC and drafted injections there, the injections (entities of type `Injection`) carry to the FRT through the JSON model. Copy-paste between docs preserves them.
+> - **`Trim this branch (add a trimming injection)`** — select the UDE at a negative branch's tip; mints a trimming injection wired to it with a negative edge, in one undoable step.
 
 > **💡 Practitioner tips**
 > - **Look for Negative Branches actively, not passively.** The FRT's value is mostly in catching them. Walk through each desired effect and ask "what else?" Don't accept the first answer.

@@ -58,6 +58,12 @@ The TT now reads, top to bottom, as four executable steps, each with a precondit
 
 🛠 **How TP Studio helps:** The `complete-step` validator (CLR tier `sufficiency`, TT-only) fires on any Action whose outgoing edge to its Outcome lacks a non-action sibling (the precondition role). It nudges you toward the triple structure rather than letting you draw a chain of bare actions.
 
+## Need and working assumption
+
+The action / precondition / outcome triple is the *structural* unit on the canvas. The classical Transition Tree carries a second triple that lives inside the action itself — the reasoning that justifies it. Besides its Step # ordering, a TT **Action** exposes two optional fields in the inspector: a **Need** ("why is this step needed?") and a **Working assumption** ("the belief that makes this action sufficient"). Read together with the action they spell out the canonical Transition-Tree triple — Action ← Need ← Working Assumption — which is the discipline that stops a TT from degrading into an unexamined checklist: every step should be able to say *why* it's there and *what it's betting on*.
+
+Both are free text and both are optional; a fresh step shows neither. Fill them when a step's rationale isn't self-evident — especially the working assumption, which is exactly the place a reviewer will push ("are we sure that's enough?") and exactly the kind of belief worth writing down before the rollout proves it right or wrong.
+
 ## Action eligibility
 
 Once your steps carry entity states ([Chapter 3](03-reading-a-diagram.md)), the TT stops being a static plan and starts telling you *what's runnable right now*. Select an action and the Entity Inspector shows an **eligibility readout** that folds the effective states of that action's preconditions:

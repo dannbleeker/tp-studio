@@ -58,12 +58,19 @@ Two Inspector flags worth knowing:
 - **`implemented`**: a per-injection toggle. The **InjectionWorkbench** lists all injections in a doc; toggling `implemented` marks one as "done", visually distinct. Useful for tracking rollout progress against an FRT.
 - **Linked assumption**: when an injection was drafted as a response to a `valid: false` assumption, the link is stored explicitly so the AssumptionWell and the InjectionWorkbench cross-reference.
 
+### The injection flower
+
+In Cohen's *TP Basics* an injection is never vetted from one angle. You probe it from three sides: the **Desired effects** it should produce (a Future Reality Tree), the **Negative branch** it might trigger (an NBR), and the **Plan** to implement it (a Prerequisite Tree). In TP Studio those three live as separate documents, stitched together with the "Link to entity in another tab…" cross-document links you met above — which is faithful to the method but scatters one injection's vetting across tabs, where it's easy to lose track of which side you haven't done yet.
+
+**"View the injection flower"** gathers it back up. From an injection's inspector (or the palette command "View the injection flower…") it pulls that injection's cross-document links into the three petals — Desired effects, Negative branch, Plan — plus an "Other links" catch-all, and reads its development at a glance: the header says "N of 3 sides developed," and any side you've left empty shows a prompt rather than a blank ("No negative branch linked yet — ask 'what could go wrong?'"). Each row jumps to the linked entity, so the flower doubles as a launchpad back into whichever tab needs more work. It's the one view that answers "is this injection actually finished?" without your having to remember where you put the pieces.
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**
 > - **Group presets** (`Cmd+K → Group inspector → Preset`).
 > - **AssumptionWell** in the EC Inspector — first-class assumption records with status + injection links.
 > - **InjectionWorkbench** in the EC Inspector — listing + status of all injections in the doc.
+> - **`View the injection flower`** — gathers one injection's cross-document links into Desired effects / Negative branch / Plan petals (+ Other links) and shows "N of 3 sides developed."
 > - **`A` shortcut** with an edge selected — adds an assumption.
 
 > **💡 Practitioner tips**

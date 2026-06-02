@@ -19,6 +19,12 @@ This sounds obvious until you actually try to make the obvious version stick in 
 
 The Thinking Processes are the toolset for finding and addressing constraints that aren't physical — and that's almost all of them, in the modern white-collar economy. A constraint of "we don't have enough drilling machines" is something a budget solves. A constraint of "our incentive structure rewards individual heroics and punishes the documentation that would prevent them" needs a Thinking Process. That's most of what we do in real organizations, and that's the gap the trees in Part 2 are built for.
 
+## Naming the gap
+
+A constraint is only worth analyzing because it holds some measure short of where it should be. That distance — between where a measure sits today and where you want it — is the *gap*, and every tree in this book is ultimately in service of closing one. It pays to name the gap out loud before you draw anything, so the whole analysis has an anchor to be measured against.
+
+TP Studio gives the gap a home on the document itself. The **"Performance frame"** section of the Document panel holds two optional anchors: a **Low** note — the measure's current, unacceptable level — and a **High** note — its target or desired level. "On-time delivery at 60%" → "Reach 98% within two quarters." It's general to every diagram type, not tied to any particular tree, and it travels with the document, so whoever opens the file later sees the gap the analysis was built to close stated in plain numbers rather than implied by the diagram. Filling it in is a small facilitation discipline that keeps a long investigation honest about what "done" would mean.
+
 ## The Five Focusing Steps
 
 Goldratt's canonical sequence for working with constraints. Worth keeping in mind throughout the rest of the book, because *every* thinking-process tree is in service of one of these steps.
