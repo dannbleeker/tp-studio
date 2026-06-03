@@ -35,8 +35,13 @@ each gated green.
   speculation-aware state buttons + propagation-derived callout) into
   `EntityStateSection.tsx`; the parent wraps the store writes so the section takes
   plain `onSetState` / `onSetSpeculative` callbacks. Behaviour-preserving — the 88
-  inspector tests + the full suite pass unchanged. (Further sections — ActionFields /
-  EntityLinksSection / EntityProvenanceSection — remain for a follow-up.)
+  inspector tests + the full suite pass unchanged. Then extracted **`ActionFields`**
+  (the TT Step # / Need / Working-Assumption / eligibility group; the parent wraps
+  `updateEntity` into a plain `onUpdate`). Guarded by a new real-browser
+  `e2e/inspector.spec.ts` — it drives React Flow selection via the `__TP_TEST__`
+  hook and asserts each extracted section renders, the verification the headless
+  jsdom + preview path can't do. (Remaining sections: `EntityLinksSection` /
+  `EntityProvenanceSection`.)
 
 ## Session 168 — Rendering maintainability batch (from the canvas sweep)
 

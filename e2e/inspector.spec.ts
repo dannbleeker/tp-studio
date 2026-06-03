@@ -40,4 +40,21 @@ test.describe('EntityInspector sections e2e', () => {
     await expect(picker.getByRole('button', { name: /^false$/i })).toBeVisible();
     await expect(picker.getByRole('button', { name: /^disputed$/i })).toBeVisible();
   });
+
+  test('an Action entity surfaces ActionFields (Step # / Working assumption)', async ({ page }) => {
+    const id = await page.evaluate(
+      () => window.__TP_TEST__!.seed({ type: 'action', titles: ['Do X'] })[0]!
+    );
+    await page.waitForSelector(`.react-flow__node[data-id="${id}"]`);
+    await page.waitForFunction((eid) => window.__TP_TEST__!.selectNodeViaRF(eid), id, {
+      timeout: 5000,
+    });
+    await page.waitForFunction(() => {
+      const sel = window.__TP_TEST__!.getSelection();
+      return sel.kind === 'entities' && sel.ids.length === 1;
+    });
+    // The action-only fields render (gated on `entity.type === 'action'`).
+    await expect(page.getByText('Step #')).toBeVisible();
+    await expect(page.getByText('Working assumption')).toBeVisible();
+  });
 });
