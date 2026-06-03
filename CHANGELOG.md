@@ -42,6 +42,13 @@ bundle-size) and landed in small independently-gated batches.
     re-allocated inside `recentCommands` on every keystroke.
   All behaviour-preserving; pinned by the existing component suites.
 
+- **Compile-time exhaustiveness guard on `petalRoleForDiagram`** (`injectionFlower.ts`).
+  The diagram-type → flower-petal switch had a `default: return 'related'` that
+  silently absorbed every unhandled `DiagramType`. Now every member is an explicit
+  case and the `default` is a `satisfies never` guard — so adding a future diagram
+  type fails to compile until it's deliberately classified. Runtime behaviour is
+  identical for every current input.
+
 ## Session 171 — AND/OR/XOR junctor follows its causes
 
 - **Junctor circles now center over their causes, not under the target.** A

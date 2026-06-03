@@ -73,8 +73,18 @@ export const petalRoleForDiagram = (dt: DiagramType | null): FlowerPetalRole => 
       return 'negativeBranch';
     case 'prt':
       return 'plan';
-    default:
+    case 'crt':
+    case 'tt':
+    case 'ec':
+    case 'st':
+    case 'freeform':
+    case 'goalTree':
+    case null:
       return 'related';
+    default:
+      // Exhaustiveness guard: a new DiagramType must be classified above
+      // (or explicitly added to the `related` catch-all) or this won't compile.
+      return dt satisfies never;
   }
 };
 
