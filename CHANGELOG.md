@@ -29,6 +29,15 @@ each gated green.
   path selector), testable without mounting the edge. Behaviour identical; new
   `computeMutexPath.test.ts`.
 
+- **EntityInspector decomposition (started).** Began carving the 718-line inspector —
+  the most-used editing surface — into sections. Moved the file-private
+  `StFacetsSection` to its own file, and extracted the inline **State picker** (the
+  speculation-aware state buttons + propagation-derived callout) into
+  `EntityStateSection.tsx`; the parent wraps the store writes so the section takes
+  plain `onSetState` / `onSetSpeculative` callbacks. Behaviour-preserving — the 88
+  inspector tests + the full suite pass unchanged. (Further sections — ActionFields /
+  EntityLinksSection / EntityProvenanceSection — remain for a follow-up.)
+
 ## Session 168 — Rendering maintainability batch (from the canvas sweep)
 
 Three findings from a rendering/flow/clickability sweep — one unify + two fixes,

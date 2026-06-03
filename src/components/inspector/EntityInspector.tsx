@@ -4,9 +4,7 @@ import { useMemo } from 'react';
 import { actionEligibility } from '@/domain/actionEligibility';
 import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL, type ECSlot } from '@/domain/ecGuiding';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
-import { ST_FACET_KEYS } from '@/domain/graph';
-import { effectiveState } from '@/domain/statePropagation';
-import type { EntityState, EntityType, Warning } from '@/domain/types';
+import type { EntityType, Warning } from '@/domain/types';
 import { usePropagatedStates } from '@/hooks/usePropagatedStates';
 import { useEntity } from '@/hooks/useSelected';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
@@ -22,6 +20,7 @@ import {
 } from '../ui/buttonClasses';
 import { InsetCard } from '../ui/InsetCard';
 import { AttachedEdgesList } from './AttachedEdgesList';
+import { EntityStateSection } from './EntityStateSection';
 // Session 136 — EntityAttributesSection removed (user-custom
 // attributes dropped per Dann's usage feedback). The `attributes`
 // field on Entity stays in the data model because the S&T 5-facet
@@ -30,6 +29,7 @@ import { AttachedEdgesList } from './AttachedEdgesList';
 import { EvidenceList } from './EvidenceList';
 import { Field } from './Field';
 import { MarkdownField } from './MarkdownField';
+import { StFacetsSection } from './StFacetsSection';
 import { WarningsList } from './WarningsList';
 
 export function EntityInspector({ entityId, warnings }: { entityId: string; warnings: Warning[] }) {
@@ -505,111 +505,15 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         </div>
       </Field>
 
-      {/* Session 135 / spec gap #4 Phase 1B — entity-state picker +
-          propagation-derived state callout. The four buttons set
-          `entity.state` (or clear it for "Unknown"); the small
-          caption beneath surfaces what the graph itself implies via
-          {@link propagateStates}. When the user's claim disagrees
-          with propagation, the caption turns amber so the conflict
-          reads at a glance. */}
-      <Field label="State" as="group">
-        {/* Phase 1C — in speculation mode the picker writes to the
-            overlay (hypothetical), the highlight reflects the
-            speculative value, and a hint reminds the user nothing is
-            committed. Outside speculation it edits `entity.state`. */}
-        {speculationOverlay !== null && (
-          <p className="mb-1.5 text-[11px] text-indigo-700 dark:text-indigo-300">
-            Speculating — picking a state explores the cascade without saving.
-          </p>
-        )}
-        <div data-component="entity-state-picker" className="grid grid-cols-4 gap-1.5 text-xs">
-          {(
-            [
-              { id: undefined, label: 'Unknown' },
-              { id: 'true', label: 'True' },
-              { id: 'false', label: 'False' },
-              { id: 'disputed', label: 'Disputed' },
-            ] as const
-          ).map((opt) => {
-            const speculating = speculationOverlay !== null;
-            // In speculation mode the highlight tracks the overlay
-            // value (falling back to the manual state if no override
-            // is set for this entity yet); otherwise it tracks the
-            // persisted manual state. Persisted `'unknown'` is treated
-            // as "no claim" so the "Unknown" button highlights for both
-            // `undefined` and the explicit `'unknown'` value.
-            const overlayVal = speculating ? speculationOverlay[entityId] : undefined;
-            const base = overlayVal ?? entity.state;
-            const current: EntityState | undefined = base === 'unknown' ? undefined : base;
-            const selected = (current ?? null) === (opt.id ?? null);
-            return (
-              <button
-                key={opt.label}
-                type="button"
-                disabled={locked && !speculating}
-                onClick={() => {
-                  const next = opt.id as EntityState | undefined;
-                  if (speculating) {
-                    setSpeculativeState(entityId, next);
-                  } else {
-                    updateEntity(entityId, { state: next });
-                  }
-                }}
-                className={clsx(
-                  TOGGLE_BUTTON_BASE,
-                  selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
-                )}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-        {(() => {
-          // Surface propagation only when the graph has something
-          // meaningful to say. Hide when:
-          //   - derived is `'unknown'` AND the user hasn't claimed
-          //     anything either (nothing to report).
-          //   - derived === manual (they agree — uninteresting).
-          const derived = derivedStates[entity.id] ?? 'unknown';
-          const manual = entity.state;
-          const effective = effectiveState(entity, derivedStates);
-          if (derived === 'unknown' && manual === undefined) return null;
-          if (derived === manual) return null;
-          // Conflict: a manual claim disagrees with what propagation
-          // computed (and propagation has signal — not 'unknown').
-          const conflicts =
-            manual !== undefined &&
-            manual !== 'unknown' &&
-            derived !== 'unknown' &&
-            derived !== manual;
-          return (
-            <p
-              className={clsx(
-                'mt-1.5 text-[11px]',
-                conflicts
-                  ? 'text-amber-700 dark:text-amber-300'
-                  : 'text-neutral-600 dark:text-neutral-400'
-              )}
-              data-component="entity-state-derived"
-              data-conflicts={conflicts ? 'true' : undefined}
-            >
-              {conflicts ? (
-                <>
-                  Graph implies <span className="font-semibold">{derived}</span>; your claim is{' '}
-                  <span className="font-semibold">{manual}</span>.
-                </>
-              ) : (
-                <>
-                  Graph implies <span className="font-semibold">{derived}</span>
-                  {manual === undefined ? ' (no manual claim yet).' : '.'}
-                </>
-              )}
-              <span className="sr-only"> Effective state: {effective}.</span>
-            </p>
-          );
-        })()}
-      </Field>
+      <EntityStateSection
+        entity={entity}
+        entityId={entityId}
+        locked={locked}
+        speculationOverlay={speculationOverlay}
+        derivedStates={derivedStates}
+        onSetState={(next) => updateEntity(entityId, { state: next })}
+        onSetSpeculative={(next) => setSpeculativeState(entityId, next)}
+      />
 
       {entity.type === 'assumption' && <AttachedEdgesList assumptionId={entityId} />}
 
@@ -634,85 +538,5 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         Delete entity
       </Button>
     </div>
-  );
-}
-
-/**
- * Session 76 — first-class S&T 5-facet inputs. Surfaces only on an
- * injection entity inside an `'st'` diagram. The four reserved
- * attribute keys (Strategy, NA, PA, SA) round-trip through JSON via
- * the existing B7 attribute machinery; the tactic itself is the
- * entity's `title`. Filling any of the four facets flips the canvas
- * card into the tall 5-row layout.
- */
-function StFacetsSection({
-  entity,
-  locked,
-  onSet,
-  onClear,
-}: {
-  entity: { attributes?: Record<string, { kind: string; value: unknown }> };
-  locked: boolean;
-  onSet: (key: string, value: string) => void;
-  onClear: (key: string) => void;
-}) {
-  const readFacet = (key: string): string => {
-    const v = entity.attributes?.[key];
-    return v?.kind === 'string' && typeof v.value === 'string' ? v.value : '';
-  };
-  const rows: { label: string; key: string; placeholder: string }[] = [
-    {
-      label: 'Strategy',
-      key: ST_FACET_KEYS.strategy,
-      placeholder: 'What this tactic achieves (the parent objective).',
-    },
-    {
-      label: 'Necessary Assumption',
-      key: ST_FACET_KEYS.necessaryAssumption,
-      placeholder: 'Why the strategy itself matters.',
-    },
-    {
-      label: 'Parallel Assumption',
-      key: ST_FACET_KEYS.parallelAssumption,
-      placeholder: 'Why THIS tactic is the right approach (vs. alternatives).',
-    },
-    {
-      label: 'Sufficiency Assumption',
-      key: ST_FACET_KEYS.sufficiencyAssumption,
-      placeholder: 'Why the tactic actually achieves the strategy.',
-    },
-  ];
-  return (
-    <Field label="S&T facets" as="group">
-      <div className="flex flex-col gap-2">
-        <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-          Goldratt's S&T pattern: the entity title is the <b>tactic</b>. Fill in the four companion
-          facets to render the node as a first-class S&T card.
-        </p>
-        {rows.map((row) => {
-          const value = readFacet(row.key);
-          const fieldId = `st-facet-${row.key}`;
-          return (
-            <div key={row.key} className="flex flex-col gap-0.5 text-xs">
-              <label htmlFor={fieldId} className="text-neutral-600 dark:text-neutral-300">
-                {row.label}
-              </label>
-              <TextArea
-                id={fieldId}
-                value={value}
-                rows={2}
-                placeholder={row.placeholder}
-                disabled={locked}
-                onChange={(next) => {
-                  if (next === '') onClear(row.key);
-                  else onSet(row.key, next);
-                }}
-                className="text-xs"
-              />
-            </div>
-          );
-        })}
-      </div>
-    </Field>
   );
 }
