@@ -19,9 +19,38 @@
  * string — to preserve the exact `routedPath ?? bezierPath` semantics of the
  * original (only `null` / `undefined` fall through).
  */
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { type Point, waypointMidpoint } from '@/domain/edgeGeometry';
+import { selectEdgeSides } from '@/domain/edgeSides';
 
 export type EdgePathCandidate = { path: string; labelX: number; labelY: number };
+
+/**
+ * The mutex (D ↔ D′) straight-line override — a dead-straight segment between
+ * the facing sides of the two Wants, given their raw entity positions. Returns
+ * `null` when the two basically overlap (no clean facing pair, so the default
+ * bezier reads better). The facing sides come from `selectEdgeSides`: stacked
+ * Wants connect top↔bottom, side-by-side Wants left↔right. Pulled out of
+ * TPEdge's render (Session 87 UX #5) so the geometry is unit-testable without
+ * mounting the component.
+ */
+export const computeMutexPath = (srcPos: Point, tgtPos: Point): EdgePathCandidate | null => {
+  const verticalGap = Math.abs(srcPos.y - tgtPos.y);
+  const horizontalGap = Math.abs(srcPos.x - tgtPos.x);
+  if (verticalGap <= NODE_MIN_HEIGHT && horizontalGap <= NODE_WIDTH) return null;
+  const axis = horizontalGap >= verticalGap ? 'horizontal' : 'vertical';
+  const { sourceAnchor: a, targetAnchor: t } = selectEdgeSides({
+    sourceBox: { x: srcPos.x, y: srcPos.y, width: NODE_WIDTH, height: NODE_MIN_HEIGHT },
+    targetBox: { x: tgtPos.x, y: tgtPos.y, width: NODE_WIDTH, height: NODE_MIN_HEIGHT },
+    axis,
+    obstacles: [],
+  });
+  return {
+    path: `M ${a.x},${a.y} L ${t.x},${t.y}`,
+    labelX: (a.x + t.x) / 2,
+    labelY: (a.y + t.y) / 2,
+  };
+};
 
 export const resolveEdgePath = (input: {
   mutex: EdgePathCandidate | null;

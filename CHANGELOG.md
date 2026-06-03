@@ -23,6 +23,12 @@ each gated green.
   rather than a five-chain edit. The `MUTEX_STROKE` / `SPLICE_TARGET_STROKE`
   literals moved with it. Behaviour identical; new `edgeVisuals.test.ts`.
 
+- **Extract `computeMutexPath` from TPEdge.** The EC mutex (D ↔ D′) straight-line
+  override was a 26-line IIFE doing geometry + a `selectEdgeSides` call inside the
+  render. Pulled into a pure function in `resolveEdgePath.ts` (the home of the
+  path selector), testable without mounting the edge. Behaviour identical; new
+  `computeMutexPath.test.ts`.
+
 ## Session 168 — Rendering maintainability batch (from the canvas sweep)
 
 Three findings from a rendering/flow/clickability sweep — one unify + two fixes,

@@ -19,14 +19,13 @@ import {
   NODE_MIN_HEIGHT,
   NODE_WIDTH,
 } from '@/domain/constants';
-import { selectEdgeSides } from '@/domain/edgeSides';
 import { EDGE_PALETTES } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { type Box, computeRadialEdgePath, nodeBoxOf } from './radialEdgeRouting';
-import { resolveEdgePath } from './resolveEdgePath';
+import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
 import {
   AggregateBadge,
   AssumptionBadge,
@@ -273,37 +272,13 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         }
       : null;
 
-  // Mutex override (Session 87 UX fix #5). Uses raw entity positions
-  // to draw a clean vertical line between the bottom of the topmost
-  // want and the top of the bottommost want. Skipped if endpoints
-  // aren't resolvable or if the two entities aren't actually stacked
-  // (horizontal layout would look worse with a forced straight line).
-  const mutexPath = (() => {
-    if (!isMutex || !mutexEndpoints) return null;
-    const { srcPos, tgtPos } = mutexEndpoints;
-    const verticalGap = Math.abs(srcPos.y - tgtPos.y);
-    const horizontalGap = Math.abs(srcPos.x - tgtPos.x);
-    // Bail only when the two Wants basically overlap — there's no clean
-    // facing pair then, so the default bezier reads better. Feature #5
-    // dropped the old "too far horizontally" cap so side-by-side Wants
-    // now connect on their facing left/right sides instead of looping.
-    if (verticalGap <= NODE_MIN_HEIGHT && horizontalGap <= NODE_WIDTH) return null;
-    // Axis by the dominant gap: stacked Wants connect top↔bottom, side-by-
-    // side Wants connect left↔right. `selectEdgeSides` picks the facing
-    // anchors; the mutex line stays dead-straight between them.
-    const axis = horizontalGap >= verticalGap ? 'horizontal' : 'vertical';
-    const { sourceAnchor: a, targetAnchor: t } = selectEdgeSides({
-      sourceBox: { x: srcPos.x, y: srcPos.y, width: NODE_WIDTH, height: NODE_MIN_HEIGHT },
-      targetBox: { x: tgtPos.x, y: tgtPos.y, width: NODE_WIDTH, height: NODE_MIN_HEIGHT },
-      axis,
-      obstacles: [],
-    });
-    return {
-      path: `M ${a.x},${a.y} L ${t.x},${t.y}`,
-      labelX: (a.x + t.x) / 2,
-      labelY: (a.y + t.y) / 2,
-    };
-  })();
+  // Mutex override (Session 87 UX #5) — a dead-straight line between the two
+  // Wants' facing sides, from their raw entity positions. `mutexEndpoints` is
+  // already null unless this is a mutex edge with both positions resolved, so
+  // the call only fires when relevant. See `computeMutexPath`.
+  const mutexPath = mutexEndpoints
+    ? computeMutexPath(mutexEndpoints.srcPos, mutexEndpoints.tgtPos)
+    : null;
   // Session 99 — obstacle-aware routing for the radial layout.
   // The radial / sunburst layout places nodes on concentric rings;
   // the default React Flow bezier between source / target handles
