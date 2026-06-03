@@ -21,6 +21,42 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ---
 
+## Bundle-size backlog (Session 172 audit — needs greenlight; lazy-loading is user-visible)
+
+A read-only bundle sweep found ~27–37 KB gz of eager-chunk savings (the `index`
+chunk is ~95 KB gz / 351 KB raw → could drop to ~58–68 KB). **Deliberately NOT
+landed in the Session-172 optimization pass:** unlike the dead-code / perf / type
+batches (which were provably behaviour-preserving), these are `React.lazy` +
+Suspense + prefetch changes that add **user-visible loading states**, so they want
+Dann's review. Heavy export libs (`html-to-image`, `jspdf`, `svg2pdf`, `pptxgenjs`)
++ ExportPickerDialog + pattern/template libraries + HelpDialog + CommandPalette are
+**already correctly lazy** — no action. Safest sequencing 4 → 6 → 2 → 3 → 7 → 1 → 5 → 8:
+
+- **#4 TopBar shortcut import** *(None risk · S · ~2 KB)* — `TopBar.tsx` pulls the
+  whole 386-line `domain/shortcuts` registry for one `aria-keyshortcuts` string.
+  Inline the palette key + the small `shortcutToAria` helper. ⚠️ FIRST verify
+  `useGlobalShortcuts` isn't already eager-importing `shortcuts` (would zero the win).
+- **#6 shareLink dynamic import** *(Low · S · ~1.5 KB)* — `App.tsx` eager-imports
+  `services/shareLink` (CompressionStream) for the <1% `#!share=` boot path → move to
+  `await import()` inside the hash guard.
+- **#2 VerbalisationStrip + `domain/verbalisation`** *(Low · S · ~2–3 KB)* — EC-only,
+  Canvas imports it eagerly. `React.lazy` + prefetch on `diagramType === 'ec'`.
+- **#3 EC canvas overlays** *(Low · S · ~2 KB)* — ECReadingInstructions / ECInjectionChip
+  / ECSlotIndicator / `ecGuiding.ts`, all EC-only + eager. Lazy each, null fallback.
+- **#7 CreationWizardPanel** *(Low · S · ~3 KB)* — 506-line wizard, opens only on
+  explicit action. `React.lazy` + prefetch on first `addEntity`.
+- **#1 Gate validators behind inspector `open`** *(Low · M · ~7–10 KB)* — the 1400-line
+  validators suite runs at mount via `Inspector`'s `useFingerprintMemo(validate)` even
+  when the panel is closed. Split an `InspectorBody` rendered only when open. PAIR W/ #5.
+- **#5 Lazy-load `Inspector`** *(Medium · M · ~10–15 KB — biggest single win)* —
+  Inspector + all sub-inspectors are eager though closed at boot. `React.lazy` + 500 ms
+  prefetch. MUST pair with #1 or `validate()` silently stops running.
+- **#8 actionEligibility eager for a TT-only badge** *(Medium · M · ~2–3 KB)* — gate the
+  `statePropagation` + `actionEligibility` import behind `diagramType === 'tt'`.
+  Low-confidence saving (`statePropagation` is also used by `usePropagatedStates`).
+
+---
+
 ## Up next (Dann, Session 146 — canvas interaction)
 
 Queued right after the layout-aesthetics batch (margin 60→150 + adaptive rank
