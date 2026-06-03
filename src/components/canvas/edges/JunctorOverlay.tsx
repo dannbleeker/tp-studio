@@ -264,14 +264,14 @@ export function JunctorOverlay() {
           <marker
             key={kind}
             id={`tp-junctor-arrow-${kind.toLowerCase()}`}
-            markerWidth="12"
-            markerHeight="12"
-            refX="10"
-            refY="6"
+            markerWidth="30"
+            markerHeight="20"
+            refX="20"
+            refY="8"
             orient="auto"
             markerUnits="userSpaceOnUse"
           >
-            <path d="M 0 0 L 10 6 L 0 12 z" fill={kindStroke[kind]} />
+            <path d="M 0 0 L 13 8 L 0 16 z" fill={kindStroke[kind]} />
           </marker>
         ))}
       </defs>

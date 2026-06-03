@@ -367,6 +367,27 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     locked: browseLocked,
   });
 
+  // Cause→effect arrowhead geometry (see the BaseEdge comment for why it's a
+  // custom <path>, not a marker). Oriented to the source→target direction so it
+  // sits flush on the line, and positioned a few units before the target so the
+  // stroke runs straight out of its tip into the box. Junctor edges carry no
+  // arrow (emission drops `markerEnd`), so the junctor target offset never
+  // applies here; `effectiveTargetX/Y` are the real endpoint.
+  const arrowHead = (() => {
+    if (isMutex || !props.markerEnd) return null;
+    const dx = effectiveTargetX - props.sourceX;
+    const dy = effectiveTargetY - props.sourceY;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len;
+    const uy = dy / len;
+    const TIP_GAP = 11; // stroke continues this far past the tip into the box
+    return {
+      tipX: effectiveTargetX - ux * TIP_GAP,
+      tipY: effectiveTargetY - uy * TIP_GAP,
+      angle: (Math.atan2(uy, ux) * 180) / Math.PI,
+    };
+  })();
+
   return (
     <>
       {/* Goal #3 — selected "casing band": a crisp, solid indigo halo UNDER
@@ -401,7 +422,13 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         // than pass `undefined` to React Flow's `BaseEdge` (whose
         // optional prop rejects explicit undefined under
         // exactOptionalPropertyTypes).
-        {...(isMutex ? {} : { markerEnd: props.markerEnd })}
+        // The cause→effect arrowhead is a custom oriented <path> rendered below
+        // — NOT React Flow's `markerEnd`. A marker orients to the path's
+        // ENDPOINT tangent (the target handle's fixed normal, e.g. vertical for
+        // a Position.Bottom handle), but the routed/bezier curve approaches the
+        // box diagonally, so an offset marker pointed the wrong way ("not on the
+        // line"). Rendering it ourselves lets it follow the actual source→target
+        // direction. Mutex edges stay arrow-less (symmetric conflict).
         interactionWidth={EDGE_INTERACTION_WIDTH}
         style={{
           stroke,
@@ -412,6 +439,18 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           ...props.style,
         }}
       />
+      {arrowHead && (
+        // Triangle with its tip at the local origin, base 15 units back; the
+        // `rotate(angle)` aligns the tip with the source→target direction and
+        // the `translate` drops it a touch before the box. `pointerEvents:none`
+        // keeps it off the 56px hit path. Colour tracks the edge stroke.
+        <path
+          d="M 0 0 L -15 -8 L -15 8 z"
+          transform={`translate(${arrowHead.tipX} ${arrowHead.tipY}) rotate(${arrowHead.angle})`}
+          fill={stroke}
+          style={{ pointerEvents: 'none' }}
+        />
+      )}
       {/* Backlog — visible "re-target" knobs on a SELECTED reconnectable edge's
           two endpoints, so it's discoverable that an end can be grabbed and
           dropped on another entity. Purely decorative (`pointerEvents: none`):

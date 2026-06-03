@@ -25,6 +25,19 @@ crash fix that surfaced mid-session (first bullet below).
   render), mirroring the existing `JunctorOverlay` guard for this same
   `useSyncExternalStore` trap.
 
+- **Cause→effect arrowheads now sit flush on the edge and read clearly.** The
+  Session-171 arrowheads used React Flow's SVG `markerEnd`, which orients to the
+  path's ENDPOINT tangent — the target handle's fixed normal (vertical for a
+  `Position.Bottom` handle). But the routed/bezier edge approaches the box
+  *diagonally*, so an offset marker pointed the wrong way and tucked under the
+  card. `TPEdge` now renders the arrowhead itself as a custom oriented `<path>`,
+  aligned to the source→target direction and positioned a few units before the
+  target so the stroke runs straight out of its tip into the entity — bigger and
+  on-the-line, per Dann's review. The AND/OR/XOR junction output arrow (a
+  straight `<line>` in `JunctorOverlay`, where a marker *does* align) was enlarged
+  to match. The now-unused `EdgeArrowMarkers` `<marker>` defs + canvas mount were
+  removed; the two ids stay as the emission↔render "has arrowhead" contract.
+
 - **Dead-code removal — 7 unused exports + 1 unused type deleted; knip now reports
   zero unused exports** (was 7). All were stranded when `CustomEntityClassesSection`
   was removed in Session 136, or were test-only hooks nothing calls:
