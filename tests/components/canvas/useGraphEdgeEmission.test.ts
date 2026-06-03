@@ -1,8 +1,11 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  EDGE_ARROW_AND_MARKER_ID,
+  EDGE_ARROW_MARKER_ID,
+} from '@/components/canvas/edges/EdgeArrowMarkers';
 import { useGraphEdgeEmission } from '@/components/canvas/hooks/useGraphEdgeEmission';
 import type { GraphProjection } from '@/components/canvas/hooks/useGraphProjection';
-import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../../helpers/seedDoc';
 
@@ -27,7 +30,9 @@ describe('useGraphEdgeEmission', () => {
     expect(edges[0]?.id).toBe(e?.id);
     expect(edges[0]?.selectable).toBe(true);
     expect(edges[0]?.reconnectable).toBe(true); // a real edge can be re-targeted
-    expect(edges[0]?.markerEnd).toMatchObject({ color: EDGE_MARKER_DEFAULT });
+    // Bare custom-marker id — React Flow wraps it as url('#…'); colour lives in
+    // the live-palette marker def (EdgeArrowMarkers), not on the edge.
+    expect(edges[0]?.markerEnd).toBe(EDGE_ARROW_MARKER_ID);
     expect(edges[0]?.data?.andGroupId).toBeUndefined();
   });
 
@@ -59,7 +64,7 @@ describe('useGraphEdgeEmission', () => {
     expect(agg?.selectable).toBe(false);
     expect(agg?.reconnectable).toBe(false); // synthetic agg edge has no single real endpoint to move
     expect(agg?.data?.aggregateCount).toBe(2);
-    expect(agg?.markerEnd).toMatchObject({ color: EDGE_MARKER_DEFAULT });
+    expect(agg?.markerEnd).toBe(EDGE_ARROW_MARKER_ID);
   });
 
   it('uses the AND marker colour for an aggregated junctor edge', () => {
@@ -73,7 +78,7 @@ describe('useGraphEdgeEmission', () => {
       remap: (id: string) => (id === a.id || id === b.id ? 'G' : id),
     } as unknown as GraphProjection;
     const agg = emit(collapse).find((e) => e.id === `agg:G->${c.id}`);
-    expect(agg?.markerEnd).toMatchObject({ color: EDGE_MARKER_AND });
+    expect(agg?.markerEnd).toBe(EDGE_ARROW_AND_MARKER_ID);
   });
 
   it('skips edges whose endpoints remap to the same node (self-loop)', () => {

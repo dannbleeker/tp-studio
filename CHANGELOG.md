@@ -67,6 +67,27 @@ Reverse chronological. Entries are grouped by build session, not by release — 
   it at a readable angle — a proper converge-from-below fountain. Only junctor
   diagrams pay the larger gap; the visual-snapshot suite (no junctor) is unaffected.
 
+- **Every causal / necessity connector now shows a clear cause→effect arrowhead.**
+  The arrowhead *is* the TP logic — it tells the reader which end is the cause and
+  which the effect (sufficiency / necessity direction) — but it was effectively
+  invisible: React Flow's built-in `ArrowClosed` scales with the thin ~1.5 px edge
+  stroke (so it rendered tiny) and can't be offset (no `refX`), so its tip landed
+  *on* the target handle and hid under the handle dot. New custom SVG markers
+  (`EdgeArrowMarkers`) fix both: a real fixed-size triangle (`userSpaceOnUse`, so
+  it doesn't shrink with the stroke), `orient="auto"` to follow the edge, and a
+  `refX` set *past* the tip so the whole arrowhead is pulled a few units back along
+  the edge — clear of the handle dot that was burying it. Verified in real Chromium
+  on `crt-tons-per-hour` (the cause→effect direction reads at a glance).
+  - **Exceptions preserved.** Junctor (AND/OR/XOR) edges still drop their arrowhead
+    — the junctor circle owns the single shared output arrow into the effect, so
+    siblings don't pile arrowheads onto one point; an *aggregated* junctor edge
+    (a collapsed group with nothing to converge with) keeps its arrowhead, in the
+    AND colour. Mutex and note edges are unchanged.
+  - **Palette-stable.** Colour lives in the marker def, read from the LIVE edge
+    palette (`EDGE_PALETTES[edgePalette]`), so a Settings → Appearance switch to the
+    colourblind-safe or mono palette recolours the arrowheads in place without
+    re-emitting any edges; the emission layer just stamps a stable bare marker id.
+
 ## Session 170 — Deeper TPEdge + connect-end resolver (from the canvas sweep)
 
 - **Subscription hygiene — the sweep's last micro-opts.** Two real fixes + one

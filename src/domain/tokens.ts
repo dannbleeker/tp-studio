@@ -79,13 +79,6 @@ export const EDGE_PALETTES: Record<EdgePaletteId, EdgePaletteTokens> = {
   },
 };
 
-// Default-palette marker colors — used by the edge-emission test to assert the
-// default `markerEnd` color. Runtime edge rendering reads the LIVE palette
-// (`EDGE_PALETTES[edgePalette]` in TPEdge / useGraphEdgeEmission / JunctorOverlay)
-// so the colorblind-safe and mono palettes actually recolor strokes + markers.
-export const EDGE_MARKER_DEFAULT = EDGE_PALETTES.default.marker;
-export const EDGE_MARKER_AND = EDGE_PALETTES.default.markerAnd;
-
 // Canvas background grid color
 export const GRID_DOT = '#d4d4d4'; // neutral-300
 

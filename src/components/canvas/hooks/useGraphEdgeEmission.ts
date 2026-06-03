@@ -1,9 +1,7 @@
-import { MarkerType } from '@xyflow/react';
 import { useMemo } from 'react';
 import { edgesArray, openCommentCountsByAnchor } from '@/domain/graph';
-import { EDGE_PALETTES } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
-import { useDocumentStore } from '@/store';
+import { EDGE_ARROW_AND_MARKER_ID, EDGE_ARROW_MARKER_ID } from '../edges/EdgeArrowMarkers';
 import type { TPEdge } from '../edges/flow-types';
 import { edgeAriaLabel } from './nodeAriaLabels';
 import type { EdgeRouteMap } from './useEdgeRoutes';
@@ -27,7 +25,7 @@ import type { GraphProjection } from './useGraphProjection';
  *     two parallel edges to/from a collapsed-root) collapse into one
  *     synthetic `agg:src->tgt` edge that's not selectable.
  *   - AND-grouped non-aggregated edges drop their arrowhead — the junctor
- *     circle (ANDOverlay) owns the arrow into the target. Aggregated AND
+ *     circle (JunctorOverlay) owns the arrow into the target. Aggregated AND
  *     edges keep their arrowhead because they don't get junctor treatment.
  */
 export const useGraphEdgeEmission = (
@@ -46,13 +44,8 @@ export const useGraphEdgeEmission = (
   // `groups` (visible titles) — NOT the whole `doc`. So a non-structural doc
   // edit (CLR-resolve, document title/description, customEntityClasses) doesn't
   // rebuild the edge array. Audited: those are the only `doc.*` reads here.
-  // Edge-color palette (Settings → Appearance) — drives the arrowhead marker
-  // color so the colorblind-safe / mono palettes recolor markers too, not just
-  // strokes. A stable primitive selector (the string changes only on switch).
-  const edgePalette = useDocumentStore((s) => s.edgePalette);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via edges/assumptions/comments/entities/groups (+ edgePalette); narrowed deliberately.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via edges/assumptions/comments/entities/groups; narrowed deliberately.
   return useMemo(() => {
-    const pal = EDGE_PALETTES[edgePalette];
     const { remap } = projection;
 
     // Session 135 / Perf #17 — one pass over the first-class assumption
@@ -175,10 +168,13 @@ export const useGraphEdgeEmission = (
         ...(isJunctorEdge
           ? {}
           : {
-              markerEnd: {
-                type: MarkerType.ArrowClosed,
-                color: anyJunctorGroup ? pal.markerAnd : pal.marker,
-              },
+              // The arrowhead IS the TP logic — it shows which end is the cause
+              // and which the effect (sufficiency / necessity direction). Custom
+              // markers (`EdgeArrowMarkers`) so it reads clearly where React
+              // Flow's built-in ArrowClosed didn't; aggregated junctor edges use
+              // the AND-coloured one. Colour tracks the palette in the marker def.
+              // Bare marker id — React Flow wraps it as `url('#<id>')` itself.
+              markerEnd: anyJunctorGroup ? EDGE_ARROW_AND_MARKER_ID : EDGE_ARROW_MARKER_ID,
             }),
         selectable: !isAggregated,
         reconnectable,
@@ -187,14 +183,5 @@ export const useGraphEdgeEmission = (
     }
 
     return edges;
-  }, [
-    doc.edges,
-    doc.assumptions,
-    doc.comments,
-    doc.entities,
-    doc.groups,
-    projection,
-    routes,
-    edgePalette,
-  ]);
+  }, [doc.edges, doc.assumptions, doc.comments, doc.entities, doc.groups, projection, routes]);
 };

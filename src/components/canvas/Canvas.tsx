@@ -16,6 +16,7 @@ import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
 import { AssumptionAnchorOverlay } from './edges/AssumptionAnchorOverlay';
+import { EdgeArrowMarkers } from './edges/EdgeArrowMarkers';
 import { JunctorOverlay } from './edges/JunctorOverlay';
 import { TPEdge } from './edges/TPEdge';
 import { useArrowKeyNodeNav } from './hooks/useArrowKeyNodeNav';
@@ -265,6 +266,7 @@ function CanvasInner() {
           />
         )}
         {!isPresentation && <CanvasNav />}
+        <EdgeArrowMarkers />
         <JunctorOverlay />
         <AssumptionAnchorOverlay />
         <CommentPinsOverlay />
