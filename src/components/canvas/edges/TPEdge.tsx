@@ -25,6 +25,7 @@ import {
   MutexBadge,
   WeightBadge,
 } from './TPEdgeBadges';
+import { useJunctorCenterX } from './useJunctorCenterX';
 import { useRadialRoute } from './useRadialRoute';
 
 /** E5: maximum characters shown inline on an edge label before truncating
@@ -96,6 +97,19 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const effectiveTargetY = isJunctorEdge
     ? props.targetY + JUNCTOR_EDGE_TERMINAL_OFFSET_Y
     : props.targetY;
+  // Session 171 — and redirect the endpoint's X to the junctor's CENTER, which
+  // now sits over the group's causes (not pinned under the target). That's what
+  // makes each cause rise into the circle from below instead of sweeping in from
+  // the side. `useJunctorCenterX` mirrors `JunctorOverlay`'s placement off the
+  // same live node positions, so the edge terminus and the circle always agree;
+  // it returns null for non-junctor edges, leaving React Flow's target-handle X.
+  const junctorCenter = useJunctorCenterX({
+    isJunctorEdge,
+    groupField: isAnd ? 'andGroupId' : isOr ? 'orGroupId' : isXor ? 'xorGroupId' : null,
+    groupId: props.data?.andGroupId ?? props.data?.orGroupId ?? props.data?.xorGroupId,
+    targetX: props.targetX,
+  });
+  const effectiveTargetX = junctorCenter ?? props.targetX;
 
   // Default bezier — what React Flow's source/target handle positions
   // produce. The mutex special-case below overrides this when both
@@ -103,7 +117,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const [bezierPath, bezierLabelX, bezierLabelY] = getBezierPath({
     sourceX: props.sourceX,
     sourceY: props.sourceY,
-    targetX: props.targetX,
+    targetX: effectiveTargetX,
     targetY: effectiveTargetY,
     sourcePosition: props.sourcePosition,
     targetPosition: props.targetPosition,

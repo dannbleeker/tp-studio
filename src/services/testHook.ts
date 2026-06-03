@@ -1,4 +1,5 @@
 import { createDocument } from '@/domain/factory';
+import { patternById } from '@/domain/patterns';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
@@ -174,6 +175,14 @@ export interface TpTestHook {
    * several, without leaking document ids across the test boundary.
    */
   switchToTabIndex: (index: number) => void;
+  /**
+   * Session 171 — open a library pattern by registry id in a new tab (builds it
+   * via `patternById(id).build()` + `openDocInTab`). Lets the e2e / preview
+   * harness load a known multi-node diagram (e.g. an AND-junctor CRT) to pin
+   * canvas geometry deterministically, instead of driving the PatternLibrary UI.
+   * No-op for an unknown id.
+   */
+  loadPattern: (id: string) => void;
 }
 
 /**
@@ -264,6 +273,10 @@ export const maybeInstallTestHook = (): void => {
       const s = useDocumentStore.getState();
       const id = s.tabOrder[index];
       if (id) s.switchTab(id);
+    },
+    loadPattern: (id) => {
+      const pattern = patternById(id);
+      if (pattern) useDocumentStore.getState().openDocInTab(pattern.build());
     },
   };
   // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an

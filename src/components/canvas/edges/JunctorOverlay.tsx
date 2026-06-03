@@ -13,6 +13,7 @@ import { useDocumentStore } from '@/store';
 import { arrayShallowEqualByKeys } from '@/store/equality';
 import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
+import { junctorCenterX } from './junctorGeometry';
 
 /**
  * E6 (AND) + Bundle 8 / FL-ED3 + FL-ED4 — Flying-Logic-style junctors.
@@ -77,12 +78,28 @@ const KIND_FIELDS: { kind: JunctorKind; field: 'andGroupId' | 'orGroupId' | 'xor
   { kind: 'XOR', field: 'xorGroupId' },
 ];
 
-type JunctorGroup = { id: string; kind: JunctorKind; targetId: string };
+// `sourceIds` — the cause entities feeding this group, so the circle can center
+// over them (see `junctorCenterX`). `sourceKey` is their sorted join, a scalar
+// the equality fn can compare cheaply without deep-walking the array.
+type JunctorGroup = {
+  id: string;
+  kind: JunctorKind;
+  targetId: string;
+  sourceIds: string[];
+  sourceKey: string;
+};
 
 // Session 135 / Perf #7 — equality fn skips re-renders when the
 // junctor group set is unchanged. Unrelated edge mutations (label,
 // weight, attestation, assumptionIds) no longer churn this overlay.
-const junctorGroupsEqual = arrayShallowEqualByKeys<JunctorGroup>(['id', 'kind', 'targetId']);
+// `sourceKey` is included so adding/removing a cause to an existing group (same
+// id/kind/target) still re-derives the geometry.
+const junctorGroupsEqual = arrayShallowEqualByKeys<JunctorGroup>([
+  'id',
+  'kind',
+  'targetId',
+  'sourceKey',
+]);
 
 /**
  * Session 135 / Perf #39 — WeakMap-cached on the `edges` reference.
@@ -98,19 +115,25 @@ const junctorGroupsCache = new WeakMap<TPDocument['edges'], JunctorGroup[]>();
 const computeJunctorGroups = (edges: TPDocument['edges']): JunctorGroup[] => {
   const cached = junctorGroupsCache.get(edges);
   if (cached) return cached;
-  const byGroup = new Map<string, { kind: JunctorKind; targetId: string }>();
+  const byGroup = new Map<string, { kind: JunctorKind; targetId: string; sourceIds: string[] }>();
   for (const edge of Object.values(edges)) {
     for (const { kind, field } of KIND_FIELDS) {
       const gid = edge[field];
-      if (gid && !byGroup.has(gid)) {
-        byGroup.set(gid, { kind, targetId: edge.targetId });
-      }
+      if (!gid) continue;
+      // All edges in a junctor group share the target; the first edge fixes
+      // kind + targetId, and every edge contributes its source so the circle
+      // can center over the causes.
+      const existing = byGroup.get(gid);
+      if (existing) existing.sourceIds.push(edge.sourceId);
+      else byGroup.set(gid, { kind, targetId: edge.targetId, sourceIds: [edge.sourceId] });
     }
   }
   const result = [...byGroup.entries()].map(([id, v]) => ({
     id,
     kind: v.kind,
     targetId: v.targetId,
+    sourceIds: v.sourceIds,
+    sourceKey: [...v.sourceIds].sort().join(','),
   }));
   junctorGroupsCache.set(edges, result);
   return result;
@@ -160,7 +183,17 @@ export const computeJunctors = (
       (h) => h.position === 'bottom'
     );
     const tY = bottomHandle ? tPos.y + bottomHandle.y + bottomHandle.height : tPos.y + tHeight;
-    out.push({ id: g.id, kind: g.kind, cx: tX, cy: tY + JUNCTOR_CENTER_OFFSET_Y, tx: tX, ty: tY });
+    // Center the circle over the group's CAUSES (not pinned under the target),
+    // so each cause rises into it from below instead of sweeping in from the
+    // side. `tx`/`ty` stay at the target, so the short line up to the effect
+    // becomes a clean diagonal. Falls back to `tX` until the sources measure.
+    const sourceXs: number[] = [];
+    for (const sid of g.sourceIds) {
+      const sn = getNode(sid);
+      if (sn) sourceXs.push(sn.internals.positionAbsolute.x + (sn.measured?.width ?? 220) / 2);
+    }
+    const cx = junctorCenterX(sourceXs, tX);
+    out.push({ id: g.id, kind: g.kind, cx, cy: tY + JUNCTOR_CENTER_OFFSET_Y, tx: tX, ty: tY });
   }
   return out;
 };

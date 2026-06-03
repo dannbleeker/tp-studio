@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 171 — AND/OR/XOR junctor follows its causes
+
+- **Junctor circles now center over their causes, not under the target.** A
+  recurring complaint ("it enters from the side"): an AND junctor was pinned at
+  its *target's* X, so when one cause sat far off-axis — e.g. a CRT effect that
+  also feeds a second effect, which dagre pulls sideways — that cause-edge swept a
+  long way across and entered the circle horizontally instead of rising into it
+  from below. Past fixes only moved the circle *vertically*; the sideways entry is
+  a *horizontal* problem. Now the circle sits over the mean of its causes' X
+  (slid a configurable `JUNCTOR_NUDGE_TOWARD_TARGET = 0.25` back toward the
+  target), so every cause converges into it from below and the single line up to
+  the effect becomes a clean diagonal — the classic Flying-Logic look.
+  - **Coordinated, single source of truth.** The placement math lives in one pure
+    helper (`junctorCenterX`, `junctorGeometry.ts`); `JunctorOverlay` uses it for
+    the circle and a new `useJunctorCenterX` hook uses it for each cause-edge
+    terminus in `TPEdge`, both reading the SAME live React Flow node positions —
+    so the circle and the edges can never drift apart, and both track a re-layout.
+  - Gated to junctor edges (ordinary edges register no extra subscription and are
+    untouched). New `junctorGeometry.test.ts` (9) + extended `junctorOverlay.test.ts`
+    pin the centroid placement + the under-target fallback; verified in real
+    Chromium on the `crt-tons-per-hour` pattern. Added a `loadPattern(id)` test
+    hook so the e2e/preview harness can load a library diagram deterministically.
+
 ## Session 170 — Deeper TPEdge + connect-end resolver (from the canvas sweep)
 
 - **Subscription hygiene — the sweep's last micro-opts.** Two real fixes + one

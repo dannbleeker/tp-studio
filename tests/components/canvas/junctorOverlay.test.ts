@@ -29,14 +29,24 @@ const node = (x: number, y: number, w = 220, h = 72): Geo => ({
 });
 
 describe('computeJunctors', () => {
-  it('centers the circle below the target — (x + w/2, bottom + offset)', () => {
-    const groups = [{ id: 'g1', kind: 'AND' as const, targetId: 't1' }];
+  // Groups now carry their cause source ids so the circle can center over the
+  // causes (Session 171). `grp` fills the sortable `sourceKey`. Empty sources →
+  // the helper falls back to sitting under the target (first paint / unmeasured).
+  const grp = (
+    id: string,
+    kind: 'AND' | 'OR' | 'XOR',
+    targetId: string,
+    sourceIds: string[] = []
+  ) => ({ id, kind, targetId, sourceIds, sourceKey: [...sourceIds].sort().join(',') });
+
+  it('falls back to under the target when no causes are measured — (x + w/2, bottom + offset)', () => {
+    const groups = [grp('g1', 'AND', 't1')];
     const lookup = new Map<string, Geo>([['t1', node(100, 200)]]);
     expect(computeJunctors(groups, (id) => lookup.get(id))).toEqual([
       {
         id: 'g1',
         kind: 'AND',
-        cx: 210, // 100 + 220/2
+        cx: 210, // 100 + 220/2 — no causes yet → fall back to the target's X
         tx: 210,
         ty: 272, // 200 + 72
         cy: 272 + JUNCTOR_CENTER_OFFSET_Y,
@@ -44,12 +54,29 @@ describe('computeJunctors', () => {
     ]);
   });
 
+  it('centers over its causes (nudged toward the target) when sources are offset', () => {
+    // Two causes far to the left of the target: centers 10 and 110 (midpoint 60);
+    // target center 210. Default nudge 0.25 → 60 + 0.25·(210−60) = 97.5. The
+    // circle sits over the causes so they rise into it from below, while the line
+    // up to the effect (`tx`/`ty`) still ends at the target → a clean diagonal.
+    const groups = [grp('g1', 'AND', 't1', ['s1', 's2'])];
+    const lookup = new Map<string, Geo>([
+      ['t1', node(100, 200)], // center X 210
+      ['s1', node(-100, 400)], // center X 10
+      ['s2', node(0, 400)], // center X 110
+    ]);
+    const out = computeJunctors(groups, (id) => lookup.get(id));
+    expect(out[0]?.cx).toBeCloseTo(97.5, 6);
+    expect(out[0]?.tx).toBe(210); // line still terminates at the target
+    expect(out[0]?.ty).toBe(272);
+  });
+
   it('anchors to the bottom handle connection point when handle bounds exist', () => {
     // React Flow terminates the converging cause-edges at the bottom handle,
     // which sits below the measured box (the h-5 handle). The junctor must
     // follow that point — not the box bottom — or the cause-edges stop short of
     // the circle (the "AND/OR/XOR edges miss the circle" bug).
-    const groups = [{ id: 'g1', kind: 'AND' as const, targetId: 't1' }];
+    const groups = [grp('g1', 'AND', 't1')];
     const withHandle: Geo = {
       internals: {
         positionAbsolute: { x: 100, y: 200 },
@@ -65,7 +92,7 @@ describe('computeJunctors', () => {
   });
 
   it('tracks the target when its position changes (the floating-circle fix)', () => {
-    const groups = [{ id: 'g1', kind: 'AND' as const, targetId: 't1' }];
+    const groups = [grp('g1', 'AND', 't1')];
     const before = computeJunctors(groups, () => node(0, 0));
     const after = computeJunctors(groups, () => node(400, 300));
     expect(before[0]?.cx).toBe(110);
@@ -74,12 +101,12 @@ describe('computeJunctors', () => {
   });
 
   it('skips a group whose target is not (yet) in the lookup', () => {
-    const groups = [{ id: 'g1', kind: 'OR' as const, targetId: 'missing' }];
+    const groups = [grp('g1', 'OR', 'missing')];
     expect(computeJunctors(groups, () => undefined)).toEqual([]);
   });
 
   it('falls back to the default node size when measured is absent', () => {
-    const groups = [{ id: 'g1', kind: 'XOR' as const, targetId: 't1' }];
+    const groups = [grp('g1', 'XOR', 't1')];
     const lookup = new Map<string, Geo>([
       ['t1', { internals: { positionAbsolute: { x: 0, y: 0 } } }],
     ]);
@@ -90,10 +117,7 @@ describe('computeJunctors', () => {
   });
 
   it('emits one junctor per group, preserving kind', () => {
-    const groups = [
-      { id: 'a', kind: 'AND' as const, targetId: 't1' },
-      { id: 'b', kind: 'XOR' as const, targetId: 't2' },
-    ];
+    const groups = [grp('a', 'AND', 't1'), grp('b', 'XOR', 't2')];
     const lookup = new Map<string, Geo>([
       ['t1', node(0, 0)],
       ['t2', node(500, 0)],
