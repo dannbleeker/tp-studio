@@ -25,6 +25,14 @@ Reverse chronological. Entries are grouped by build session, not by release — 
     Chromium on the `crt-tons-per-hour` pattern. Added a `loadPattern(id)` test
     hook so the e2e/preview harness can load a library diagram deterministically.
 
+- **More vertical room below a junctor (`LAYOUT_RANK_SEPARATION_JUNCTOR_MIN`
+  90 → 160).** Centering the circle fixed the *horizontal* sweep, but the cause
+  rank still sat only ~40 px below the circle, so an off-axis cause still entered
+  almost flat ("there should be more space below the AND"). The junctor rank-sep
+  floor now drops the cause rank ~110 px below the circle, so each cause rises into
+  it at a readable angle — a proper converge-from-below fountain. Only junctor
+  diagrams pay the larger gap; the visual-snapshot suite (no junctor) is unaffected.
+
 ## Session 170 — Deeper TPEdge + connect-end resolver (from the canvas sweep)
 
 - **Subscription hygiene — the sweep's last micro-opts.** Two real fixes + one

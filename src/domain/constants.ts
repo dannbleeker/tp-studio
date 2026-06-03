@@ -59,13 +59,16 @@ export const LAYOUT_RANK_SEPARATION_FAN_STEP = 14;
 /** Hard cap on the adaptive addition (so ranksep tops out at 80 + 90 = 170). */
 export const LAYOUT_RANK_SEPARATION_MAX_BONUS = 90;
 // Minimum rank separation when the diagram contains AND/OR/XOR junctors. The
-// junctor circle sits ~69 px below its target node (JUNCTOR_EDGE_TERMINAL_OFFSET_Y
-// = 49 below the bottom handle, which is itself ~20 px below the card), so the
-// gap down to the cause rank must clear that plus a margin — otherwise the
-// circle renders behind the cause cards (the occlusion / "AND doesn't render"
-// report). Applied as a FLOOR on the (possibly fanout-boosted) rank separation;
-// doubles as the extra vertical room junctor layouts want anyway.
-export const LAYOUT_RANK_SEPARATION_JUNCTOR_MIN = 90;
+// junctor circle sits ~49 px below its target's bottom handle (the cause-edges
+// terminate at the circle's bottom). At 90 px the cause rank cleared the circle
+// but sat barely below it, so a cause that's horizontally offset from the circle
+// entered almost flat — "it enters from the side" / "more space below the AND".
+// Now the circle sits over its causes (Session 171), so the remaining fix is
+// vertical: open enough gap below the circle that each cause rises into it at a
+// readable angle. 160 leaves ~110 px of rise below the circle — the causes
+// "converge from below" instead of sweeping in horizontally. Applied as a FLOOR
+// on the (possibly fanout-boosted) rank separation; only junctor diagrams pay it.
+export const LAYOUT_RANK_SEPARATION_JUNCTOR_MIN = 160;
 
 // --- Junctor geometry ---
 // Session 101 — these were declared TWICE: once in `JunctorOverlay.tsx`
