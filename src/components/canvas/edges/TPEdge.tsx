@@ -23,6 +23,7 @@ import { selectEdgeSides } from '@/domain/edgeSides';
 import { EDGE_PALETTES } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
+import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { type Box, computeRadialEdgePath, nodeBoxOf } from './radialEdgeRouting';
 import { resolveEdgePath } from './resolveEdgePath';
@@ -408,74 +409,33 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     resolvedCausalityLabel === 'in-order-to' ? 'in order to' : resolvedCausalityLabel;
   const fallbackLabel = !edgeLabel && !isAggregated ? displayCausality : undefined;
 
-  // Mutex edges paint red regardless of AND/selection — the red is the
-  // *semantic* signal ("these two Wants conflict") and dominates the
-  // diagram's color vocabulary on the rare edges that carry it.
-  const MUTEX_STROKE = '#dc2626';
-  // Session 101 — splice-target indigo. Bright enough to read as
-  // "drop here happens" against both light + dark themes; the same
-  // hue family as the project's accent so it doesn't introduce a
-  // new color into the vocabulary.
-  const SPLICE_TARGET_STROKE = '#6366f1';
   // Goal #2 — the connection-drag "drop here to AND" target shares the
   // splice-target's indigo glow (both mean "release lands on this edge").
   const isDropTarget = isSpliceTarget || isConnectionDropTarget;
-  // Goal #3 — the select-hover cue is active only when this edge is hovered
-  // and no stronger state owns the visual: not selected (casing band), not a
-  // drop-target / mutex (their own colors), and not mid-connection-drag (the
-  // drop-target glow takes over then). Keeping the exclusions here means the
-  // width / glow / cursor branches below all key off one boolean.
+  // Goal #3 — the select-hover cue is active only when this edge is hovered and
+  // no stronger state owns the visual: not selected (casing band), not a
+  // drop-target / mutex (their own colors), and not mid-connection-drag.
   const isHoverActive = isHovered && !props.selected && !isDropTarget && !isMutex && !isConnecting;
-  const stroke = isDropTarget
-    ? SPLICE_TARGET_STROKE
-    : isMutex
-      ? MUTEX_STROKE
-      : props.selected
-        ? palette.strokeSelected
-        : isJunctorGroup
-          ? palette.strokeAnd
-          : palette.stroke;
-  // E4: selection feedback. Bumping the stroke width is the readable
-  // signal — combined with the color change it's hard to miss which edge
-  // is selected. A drop-shadow filter adds a faint glow that works on
-  // both light and dark backgrounds without needing theme-specific tokens.
-  // Back-edges (TOC-reading) get an extra +1.5 px on top of the base so a
-  // tagged loop-closer reads as deliberate even in dense diagrams.
-  // Splice-target gets the same +1.5 bump so the gesture preview reads
-  // as deliberate without competing with the selected-edge stroke (which
-  // already gets +1.5).
-  // Session 136 — note-touching edges paint thinner so they read as
-  // ancillary annotation rather than competing with the causal
-  // backbone. Stroke width drops a hair below the default 1.5 instead
-  // of stacking with `selected` / `back-edge` bumps (which keep their
-  // existing widths even on a note edge — selection feedback still
-  // wins).
-  const baseWidth = props.selected ? 3 : isJunctorGroup ? 1.75 : isNoteEdge ? 1.25 : 1.5;
-  const strokeWidth =
-    isBackEdge || isDropTarget ? baseWidth + 1.5 : isHoverActive ? baseWidth + 1 : baseWidth;
-  // Back-edges render with a subtle dash pattern in addition to the
-  // thicker stroke — combination of two cues so the visual reads as
-  // "this is *the* tagged loop-closer" rather than "this edge is just
-  // selected" in a quick scan.
-  //
-  // Session 136 — note-touching edges also render dotted ("2 3", a
-  // tighter pattern than back-edge's "6 4") so the visual differs
-  // from both default-solid and back-edge-dashed. Selection still
-  // bumps the stroke width so a selected note-edge stays
-  // distinguishable from an unselected one. Back-edge takes
-  // precedence over note-edge if both flags happen — back-edges are
-  // the more semantically loaded signal.
-  const strokeDasharray = isBackEdge ? '6 4' : isNoteEdge ? '2 3' : undefined;
-  // Selected and splice-target both want a glow; splice-target wins
-  // when both happen (the drag gesture is the more time-sensitive
-  // signal and the user already knows what's selected).
-  const selectedFilter = isDropTarget
-    ? `drop-shadow(0 0 6px ${SPLICE_TARGET_STROKE}88)`
-    : props.selected
-      ? `drop-shadow(0 0 5px ${palette.strokeSelected}aa)`
-      : isHoverActive
-        ? 'drop-shadow(0 0 3px #73737366)'
-        : undefined;
+  // Stroke colour / width / dash / glow resolve from the edge's state + the live
+  // palette in one declarative place (`resolveEdgeVisuals`), so a new edge style
+  // is a single case there rather than five entangled conditional chains here.
+  const {
+    stroke,
+    strokeWidth,
+    strokeDasharray,
+    filter: selectedFilter,
+  } = resolveEdgeVisuals(
+    {
+      isDropTarget,
+      isMutex,
+      selected: props.selected ?? false,
+      isJunctorGroup,
+      isBackEdge,
+      isNoteEdge,
+      isHoverActive,
+    },
+    palette
+  );
 
   /**
    * Truncate the label for the inline render, leaving the full text on

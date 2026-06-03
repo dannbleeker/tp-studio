@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 169 — Structural tier (from the canvas sweep)
+
+The higher-value structural refactors the sweep surfaced — behaviour-preserving,
+each gated green.
+
+- **`memo` TPGroupNode + drop its render-time subscription.** The per-group node
+  component wasn't memoized (unlike TPNode / TPEdge), so it re-rendered on every
+  nodes-array change. Wrapped in `memo` with a custom comparator that compares
+  the `data` *contents* (group ref + bbox dimensions + `selected`) — the emission
+  pass rebuilds `data` every run, so a reference compare wouldn't help. The
+  `selectGroup` action is now read imperatively via `getState()` at click time
+  rather than as a render-time store subscription.
+
+- **Extract `resolveEdgeVisuals` from TPEdge.** The edge's stroke colour / width /
+  dash / glow were five entangled inline conditional chains in the render. Pulled
+  into a pure `edgeVisuals.ts` (`resolveEdgeVisuals(flags, palette)`) with the
+  priority order in one declarative, unit-tested place (drop-target → mutex →
+  selected → junctor → default) — so a new edge style is a single case there
+  rather than a five-chain edit. The `MUTEX_STROKE` / `SPLICE_TARGET_STROKE`
+  literals moved with it. Behaviour identical; new `edgeVisuals.test.ts`.
+
 ## Session 168 — Rendering maintainability batch (from the canvas sweep)
 
 Three findings from a rendering/flow/clickability sweep — one unify + two fixes,
