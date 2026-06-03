@@ -12,6 +12,7 @@ import { hasEdge } from '@/domain/graph';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasInstance, getHoveredJunctor, setHoveredJunctor } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
+import { resolveConnectEndTarget } from './resolveConnectEndTarget';
 
 /**
  * React Flow → store bridge for canvas mutations.
@@ -168,93 +169,66 @@ export const useGraphMutations = (): {
       const fb = useDocumentStore.getState();
       fb.setConnectingFrom(null);
       fb.setConnectionDropEdge(null);
-      // Connection-drag end: priority order
-      //   1. Released on a handle dot                → `onConnect` already
-      //      fired; nothing to do here.
-      //   2. Released over a node body (Session 49)  → bridge to `connect`.
-      //   3. Released over a JUNCTOR circle (Session 136) → join the
-      //      group via `addCoCauseToEdge` on any of its member edges.
-      //      Picked up before the edge-body fallback so a hover that
-      //      sat on a junctor and an underlying edge body resolves to
-      //      the junctor (more specific gesture).
-      //   4. Released over an edge body (TOC-reading)→ add co-cause via
-      //      AND junctor on that edge's target.
-      //   5. Released in empty space                 → drop the connection.
+      // Guard clauses (unchanged): a handle hit means `onConnect` already fired;
+      // no `fromNode` means there's nothing to attach. Neither consumes the
+      // hover channels — those are cleared only once we're past these.
       if (connectionState.toHandle !== null) return;
       if (!connectionState.fromNode) return;
       const sourceId = connectionState.fromNode.id;
 
-      if (connectionState.toNode) {
-        const targetId = connectionState.toNode.id;
-        if (sourceId === targetId) {
-          hoveredEdgeRef.current = null;
-          setHoveredJunctor(null);
-          return;
-        }
-        if (!guardWriteOrToast()) return;
-        connectOrExplain(sourceId, targetId);
-        hoveredEdgeRef.current = null;
-        setHoveredJunctor(null);
-        return;
-      }
-
-      // No `toNode`. Check if the cursor was over a junctor circle.
-      // `JunctorOverlay`'s circles set `setHoveredJunctor({...})` on
-      // mouseEnter; we consume + clear it here so a stale hover from
-      // an earlier drag doesn't trigger on the next.
+      // Snapshot + clear the two hover channels. `JunctorOverlay` / `onEdgeMouse*`
+      // write them during the drag; every drop branch below consumes them, so
+      // clearing both up-front once is behaviour-equivalent to the old per-branch
+      // clears AND keeps the decision pure. (It also drops a latent stale-ref
+      // carryover the old code left when a junctor drop was Browse-Lock-blocked.)
       const hoveredJunctor = getHoveredJunctor();
+      const hoveredEdgeId = hoveredEdgeRef.current;
       setHoveredJunctor(null);
-      if (hoveredJunctor) {
-        if (!guardWriteOrToast()) return;
-        // Map the overlay's display label ('AND' / 'OR' / 'XOR') to the
-        // store's lowercase kind enum + the matching `*GroupId` field
-        // on `TPEdgeData`. The three are isomorphic; keeping the
-        // mapping explicit lets the type checker catch any future
-        // junctor-kind addition.
-        const kindLower: 'and' | 'or' | 'xor' =
-          hoveredJunctor.kind === 'AND' ? 'and' : hoveredJunctor.kind === 'OR' ? 'or' : 'xor';
-        const groupIdField: 'andGroupId' | 'orGroupId' | 'xorGroupId' =
-          kindLower === 'and' ? 'andGroupId' : kindLower === 'or' ? 'orGroupId' : 'xorGroupId';
-        // Find any edge in this junctor's group so `addCoCauseToEdge`
-        // has a host edge to attach to. Group membership is by the
-        // matching `*GroupId` field on the edge; picking any member is
-        // fine since they all share the same target.
-        const flow = getCanvasInstance();
-        const rfEdges = flow?.getEdges() ?? [];
-        const memberEdge = rfEdges.find((e) => e.data?.[groupIdField] === hoveredJunctor.groupId);
-        if (!memberEdge) {
-          // Group disappeared mid-drag (rare; e.g. user undid an edge
-          // while dragging). Fail open with an info toast.
-          showToast('info', `${hoveredJunctor.kind} group no longer exists — try again.`);
-          hoveredEdgeRef.current = null;
+      hoveredEdgeRef.current = null;
+
+      // Decide what the release means (priority: node body → junctor → edge body
+      // → empty). All the imperative precedence lives in `resolveConnectEndTarget`
+      // now, unit-tested; this handler just executes the verdict.
+      const target = resolveConnectEndTarget({
+        sourceId,
+        toNodeId: connectionState.toNode?.id ?? null,
+        hoveredJunctor,
+        hoveredEdgeId,
+        rfEdges: getCanvasInstance()?.getEdges() ?? [],
+      });
+
+      switch (target.kind) {
+        case 'noop':
+          return;
+        case 'connect':
+          if (!guardWriteOrToast()) return;
+          connectOrExplain(target.sourceId, target.targetId);
+          return;
+        case 'junctor': {
+          if (!guardWriteOrToast()) return;
+          const result = addCoCauseToEdge(target.memberEdgeId, target.sourceId, target.junctorKind);
+          showToast(
+            result ? 'success' : 'info',
+            result
+              ? `Added as a co-cause (${target.label}-grouped).`
+              : `Cannot ${target.label} here — same source/target, or duplicate edge.`
+          );
           return;
         }
-        const result = addCoCauseToEdge(memberEdge.id, sourceId, kindLower);
-        if (result) {
-          showToast('success', `Added as a co-cause (${hoveredJunctor.kind}-grouped).`);
-        } else {
+        case 'junctor-missing':
+          showToast('info', `${target.label} group no longer exists — try again.`);
+          return;
+        case 'edge-andcause': {
+          if (!guardWriteOrToast()) return;
+          const result = addCoCauseToEdge(target.edgeId, target.sourceId);
           showToast(
-            'info',
-            `Cannot ${hoveredJunctor.kind} here — same source/target, or duplicate edge.`
+            result ? 'success' : 'info',
+            result
+              ? 'Added as a co-cause (AND-grouped).'
+              : 'Cannot AND here — same source/target, or duplicate edge.'
           );
+          return;
         }
-        hoveredEdgeRef.current = null;
-        return;
-      }
-
-      // No `toNode` and no junctor. Check the hovered-edge ref next.
-      // The edge-body drop is always AND (the canonical "add a
-      // sufficient co-cause" gesture from the book); OR / XOR only fire
-      // when the user explicitly drops on an existing junctor circle.
-      const hoveredEdgeId = hoveredEdgeRef.current;
-      hoveredEdgeRef.current = null;
-      if (!hoveredEdgeId) return;
-      if (!guardWriteOrToast()) return;
-      const result = addCoCauseToEdge(hoveredEdgeId, sourceId);
-      if (result) {
-        showToast('success', 'Added as a co-cause (AND-grouped).');
-      } else {
-        showToast('info', 'Cannot AND here — same source/target, or duplicate edge.');
       }
     },
     [connectOrExplain, addCoCauseToEdge, showToast]

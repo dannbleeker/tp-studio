@@ -76,13 +76,19 @@ with the full local gate (tsc/biome/knip/vitest/build) → commit → CI green.
    there would break drag-tracking or force per-drag re-emission of every edge;
    the subscriptions removed are primitives that effectively never fire. Net perf
    ≈ nil vs. real regression risk — not worth it.
-3. **Hover / clickability consolidation.** Unify the 3 hover channels
-   (`hoveredEdgeRef` + `hoveredEdgeId` + the `hoveredJunctor` module singleton in
-   `services/canvasRef.ts`) into the store; extract a pure `resolveConnectEndTarget`
-   (discriminated union) from the ~90-line `onConnectEnd` so a new drop-target is
-   "add a variant + a case." **Verify via a Playwright drag-to-connect spec** across
-   all 5 drop-targets (handle / node / junctor / edge / empty) — NOT jsdom-testable,
-   so this is where the e2e harness earns its keep.
+3. **Hover / clickability consolidation.**
+   - ~~*Extract a pure `resolveConnectEndTarget` from the ~90-line `onConnectEnd`.*~~
+     ✅ *Session 170* — discriminated union (`noop` / `connect` / `junctor` /
+     `junctor-missing` / `edge-andcause`); the handler is now snapshot-then-`switch`.
+     Unit-tested (precedence matrix, 10 cases) + the 9 existing `useGraphMutations`
+     integration tests pin the rewired side effects. A new drop-target is "a variant
+     + a case."
+   - *Remaining (deferred — needs a real-browser drag spec):* unify the 3 hover
+     channels (`hoveredEdgeRef` + `hoveredEdgeId` + the `hoveredJunctor` module
+     singleton in `services/canvasRef.ts`) into the store. This is the STATEFUL half
+     — it touches live drag feedback, so verify via a **Playwright drag-to-connect
+     spec** across all 5 drop-targets (handle / node / junctor / edge / empty), NOT
+     jsdom-testable. Lower value than the resolver was; pick up in a focused session.
 4. **Subscription hygiene (deprioritized — marginal vs React Flow's own memo).**
    `CanvasInner` whole-`doc` sub; `SelectionToolbar` whole-`doc.edges` → a
    junctor-topology hash; `CommentCountBadge` `onOpen` → `useCallback`.

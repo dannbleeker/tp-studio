@@ -2,7 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 170 — Deeper TPEdge (from the canvas sweep)
+## Session 170 — Deeper TPEdge + connect-end resolver (from the canvas sweep)
+
+- **Extract `resolveConnectEndTarget` from `onConnectEnd`.** The connection-drag
+  release handler was a ~90-line imperative chain that interleaved the drop-target
+  *decision* (node body? junctor circle? edge body? empty?) with its *side effects*
+  (Browse-Lock guard, store mutation, toast, clearing two hover channels). Pulled
+  the decision into a pure `resolveConnectEndTarget` returning a discriminated
+  union (`noop` / `connect` / `junctor` / `junctor-missing` / `edge-andcause`), so
+  the priority order — node body beats junctor beats edge body beats empty — is now
+  declarative and unit-tested (`resolveConnectEndTarget.test.ts`, 10 cases incl. the
+  cross-kind member-lookup guard). `onConnectEnd` shrank to a snapshot-then-`switch`:
+  it reads the verdict and executes. Adding a drop-target is now "a variant + a
+  case." The handler's behaviour is pinned unchanged by the existing 9
+  `useGraphMutations` integration tests (drop-on-body / self-loop / toHandle /
+  Browse-Lock / junctor-missing / edge-body / ref-clearing / feedback-flags), all
+  still green. (One incidental tidy: both hover channels now clear up-front in every
+  past-the-guards path, dropping a latent stale-`hoveredEdgeRef` carryover the old
+  code left on a Browse-Lock-blocked junctor drop.)
 
 - **Extract `useRadialRoute` from TPEdge.** The radial obstacle-router was ~65
   lines inline in the edge body: two store subscriptions (`layoutMode` + React
