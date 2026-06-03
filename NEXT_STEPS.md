@@ -38,6 +38,50 @@ spacing, shipped Session 146):
 
 ---
 
+## Canvas structural tier — remaining (from the Session 168 sweep)
+
+The Session 168 4-agent sweep mapped the rendering/flow/clickability layer.
+**Landed (CI-green, Sessions 168–169):** `nodeSizeFor`, `waypointMidpoint`,
+edge-palette a11y fix, `openRightPanel`, `markEntityAs`, TPGroupNode `memo`,
+`resolveEdgeVisuals`, `computeMutexPath`, and EntityInspector's first two
+sections (`StFacetsSection` + `EntityStateSection`). Remaining items below — each
+behaviour-preserving.
+
+**The verification loop (important — this is how to continue safely):** extract
+the pure core *first* and unit-test it (vitest), then run/extend the relevant
+**Playwright e2e** spec in `e2e/` — real Chromium drives React Flow selection /
+drag-to-connect, which jsdom (and the headless preview MCP) cannot. Local run:
+start the preview yourself (`pnpm` is AppLocker-blocked, but `reuseExistingServer`
+picks up your own server):
+`node ./node_modules/vite/bin/vite.js preview --port 4173 --strictPort` &, then
+`node ./node_modules/@playwright/test/cli.js test e2e/<spec> --reporter=list`.
+The `visual-*` specs and `smoke › Cmd+K` are env-sensitive locally (Linux-only
+snapshots / Windows Meta-key) — **CI's e2e job is the authoritative run.** Finish
+with the full local gate (tsc/biome/knip/vitest/build) → commit → CI green.
+
+1. **EntityInspector — remaining sections.** Extract `ActionFields`
+   (Step#/Need/WorkingAssumption/Eligibility, gated on `type==='action'`),
+   `EntityLinksSection` (cross-doc links), `EntityProvenanceSection`
+   (Attestation/Owner/Evidence) — same verbatim-lift + typed-props + wrap-store-
+   writes-in-parent pattern as `EntityStateSection`. Guard: extend
+   `e2e/inspector.spec.ts` to assert each section renders for the right entity.
+2. **Deeper TPEdge.** Extract `useRadialRoute` (the radial obstacle-router hook);
+   stamp ephemeral flags (`isRadialMode` / `mutexPath` / `isNoteEdge`) into
+   `TPEdgeData` at emission to kill 3 per-edge store subscriptions. Guard: the
+   `edgeRoutingAStarParity` golden tests + `visual-canvas.spec.ts`.
+3. **Hover / clickability consolidation.** Unify the 3 hover channels
+   (`hoveredEdgeRef` + `hoveredEdgeId` + the `hoveredJunctor` module singleton in
+   `services/canvasRef.ts`) into the store; extract a pure `resolveConnectEndTarget`
+   (discriminated union) from the ~90-line `onConnectEnd` so a new drop-target is
+   "add a variant + a case." **Verify via a Playwright drag-to-connect spec** across
+   all 5 drop-targets (handle / node / junctor / edge / empty) — NOT jsdom-testable,
+   so this is where the e2e harness earns its keep.
+4. **Subscription hygiene (deprioritized — marginal vs React Flow's own memo).**
+   `CanvasInner` whole-`doc` sub; `SelectionToolbar` whole-`doc.edges` → a
+   junctor-topology hash; `CommentCountBadge` `onOpen` → `useCallback`.
+
+---
+
 ## TP completeness — phased roadmap vs. Cohen's *TP Basics* (Session 154+)
 
 Full mapping in [docs/TP_BASICS_GAP_ANALYSIS.md](docs/TP_BASICS_GAP_ANALYSIS.md)
