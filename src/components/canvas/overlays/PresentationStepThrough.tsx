@@ -1,7 +1,6 @@
 import { useReactFlow } from '@xyflow/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
-import { useShallow } from 'zustand/shallow';
 import { isNonCausal } from '@/domain/graph';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -38,42 +37,49 @@ import { currentDoc } from '@/store/selectors';
 export function PresentationStepThrough() {
   const isPresentation = useDocumentStore((s) => s.appMode === 'presentation');
 
-  // Subscribe via `useShallow` so the chip re-renders only when the
-  // ordered-id list or the current selection actually shifts.
-  // Recomputing `orderedIds` per snapshot is cheap (one pass over
-  // doc.entities), and the shallow comparison on the returned
-  // record means snapshot churn that doesn't change ids / selection
-  // is free.
-  const { orderedIds, currentId } = useDocumentStore(
-    useShallow((s) => {
-      const list: { id: string; ordering: number | undefined; annotation: number }[] = [];
-      for (const e of Object.values(currentDoc(s).entities)) {
-        // Drop assumptions + notes — they're conceptually outside
-        // the causal walk and would be confusing to step through.
-        if (isNonCausal(e)) continue;
-        list.push({ id: e.id, ordering: e.ordering, annotation: e.annotationNumber });
-      }
-      // Sort: explicit-ordering first (ascending), then no-ordering
-      // by annotation (ascending). Tie-break on annotation so two
-      // entities with identical ordering still sort deterministically.
-      list.sort((a, b) => {
-        const aHas = typeof a.ordering === 'number';
-        const bHas = typeof b.ordering === 'number';
-        if (aHas && !bHas) return -1;
-        if (!aHas && bHas) return 1;
-        if (aHas && bHas) {
-          const diff = (a.ordering as number) - (b.ordering as number);
-          if (diff !== 0) return diff;
-        }
-        return a.annotation - b.annotation;
-      });
-      const sel = s.selection;
-      const cur = sel.kind === 'entities' && sel.ids.length > 0 ? (sel.ids[0] as string) : null;
-      return { orderedIds: list.map((x) => x.id), currentId: cur };
-    })
-  );
+  // A store selector must return STABLE references. Building a fresh array
+  // here on every call made Zustand's `useSyncExternalStore` see an uncached
+  // snapshot each render and loop forever ("The result of getSnapshot should
+  // be cached to avoid an infinite loop" → React error #185, "Maximum update
+  // depth exceeded"). `useShallow` did NOT save it: it shallow-compares the
+  // returned object, and `orderedIds` was a freshly-`.map()`-ed array, so the
+  // comparison never matched. And because these hooks run unconditionally
+  // (above the `!isPresentation` early-return), the loop fired in every mode,
+  // not just presentation. Fix: subscribe only to stable values — the entities
+  // map (same ref until an entity changes) + the current selection id (a
+  // primitive) — and derive the ordered walk in a component-level `useMemo`.
+  const entities = useDocumentStore((s) => currentDoc(s).entities);
+  const currentId = useDocumentStore((s) => {
+    const sel = s.selection;
+    return sel.kind === 'entities' && sel.ids.length > 0 ? (sel.ids[0] as string) : null;
+  });
   const selectEntities = useDocumentStore((s) => s.selectEntities);
   const flow = useReactFlow();
+
+  // Causally-meaningful entities (drops notes + assumptions) in a stable walk
+  // order: explicit `ordering` first (ascending), then the rest by
+  // `annotationNumber` (ascending), tie-broken on annotation so identical
+  // orderings still sort deterministically. Recomputed only when the entities
+  // map actually changes.
+  const orderedIds = useMemo(() => {
+    const list: { id: string; ordering: number | undefined; annotation: number }[] = [];
+    for (const e of Object.values(entities)) {
+      if (isNonCausal(e)) continue;
+      list.push({ id: e.id, ordering: e.ordering, annotation: e.annotationNumber });
+    }
+    list.sort((a, b) => {
+      const aHas = typeof a.ordering === 'number';
+      const bHas = typeof b.ordering === 'number';
+      if (aHas && !bHas) return -1;
+      if (!aHas && bHas) return 1;
+      if (aHas && bHas) {
+        const diff = (a.ordering as number) - (b.ordering as number);
+        if (diff !== 0) return diff;
+      }
+      return a.annotation - b.annotation;
+    });
+    return list.map((x) => x.id);
+  }, [entities]);
 
   const currentIndex = useMemo(() => {
     if (!currentId) return -1;

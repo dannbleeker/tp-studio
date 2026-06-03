@@ -6,7 +6,24 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 
 A self-directed maintainability/performance sweep (no user-facing change), driven
 by four parallel read-only audit agents (dead-code, non-canvas perf, type-safety,
-bundle-size) and landed in small independently-gated batches.
+bundle-size) and landed in small independently-gated batches. Plus one user-reported
+crash fix that surfaced mid-session (first bullet below).
+
+- **Fixed a React #185 ("Maximum update depth exceeded") infinite-render crash in
+  `PresentationStepThrough`.** A pre-existing latent bug (since Session 135) surfaced from
+  a user's console. Its Zustand selector built a fresh `orderedIds` array on every call
+  inside `useShallow` — but `useShallow` shallow-compares the *returned object*, so the
+  always-new array reference never matched, and `useSyncExternalStore` saw an uncached
+  snapshot every render and looped ("The result of getSnapshot should be cached to avoid
+  an infinite loop"). Because the subscription runs *above* the component's
+  `!isPresentation` early-return, it looped in **every** mode, not just presentation; the
+  error boundary isolated it (the canvas itself renders fine), but it spammed the console
+  and burned render cycles on every load. Fix: subscribe only to stable values — the
+  `entities` map reference + the selection-id primitive — and derive the ordered walk in a
+  component-level `useMemo`. Reproduced + verified gone via a dev-server console capture;
+  new `overlaySmoke` regression tests mount the component (which the pre-fix code threw on
+  render), mirroring the existing `JunctorOverlay` guard for this same
+  `useSyncExternalStore` trap.
 
 - **Dead-code removal — 7 unused exports + 1 unused type deleted; knip now reports
   zero unused exports** (was 7). All were stranded when `CustomEntityClassesSection`

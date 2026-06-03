@@ -6,6 +6,7 @@ import { CanvasNav } from '@/components/canvas/overlays/CanvasNav';
 import { CompareBanner } from '@/components/canvas/overlays/CompareBanner';
 import { EmptyHint } from '@/components/canvas/overlays/EmptyHint';
 import { FirstEntityTip } from '@/components/canvas/overlays/FirstEntityTip';
+import { PresentationStepThrough } from '@/components/canvas/overlays/PresentationStepThrough';
 import { QuickCaptureDialog } from '@/components/quick-capture/QuickCaptureDialog';
 import { SearchPanel } from '@/components/search/SearchPanel';
 import { Toaster } from '@/components/toast/Toaster';
@@ -138,5 +139,38 @@ describe('JunctorOverlay', () => {
       </ReactFlowProvider>
     );
     expect(container.textContent ?? '').not.toMatch(/AND|OR|XOR/);
+  });
+});
+
+describe('PresentationStepThrough', () => {
+  it('mounts in presentation mode without looping (regression: React #185)', () => {
+    // Same useSyncExternalStore trap the JunctorOverlay test above documents:
+    // the store selector must NOT build a fresh array each tick, or React loops
+    // ("The result of getSnapshot should be cached" → "Maximum update depth
+    // exceeded"). The pre-fix selector `.map()`-ed a new array inside
+    // `useShallow`, so it threw on mount — rendering the chip at all is the
+    // regression guard. Two causal entities + presentation mode → chip shows.
+    seedEntity('A');
+    seedEntity('B');
+    act(() => useDocumentStore.getState().setAppMode('presentation'));
+    const { container } = render(
+      <ReactFlowProvider>
+        <PresentationStepThrough />
+      </ReactFlowProvider>
+    );
+    expect(container.querySelector('[aria-label="Next entity"]')).not.toBeNull();
+  });
+
+  it('renders nothing outside presentation mode', () => {
+    // Expert mode (default) → returns null. The subscription still runs
+    // unconditionally (above the early-return), so this also exercises the
+    // once-looping selector on the normal-mode path.
+    seedEntity('A');
+    const { container } = render(
+      <ReactFlowProvider>
+        <PresentationStepThrough />
+      </ReactFlowProvider>
+    );
+    expect(container.textContent ?? '').toBe('');
   });
 });
