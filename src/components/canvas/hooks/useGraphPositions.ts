@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT } from '@/domain/constants';
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { layoutFingerprint } from '@/domain/fingerprint';
-import { edgesArray, isStNodeFormat } from '@/domain/graph';
+import { edgesArray } from '@/domain/graph';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { radialLayout } from '@/domain/radialLayout';
 import type { TPDocument } from '@/domain/types';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useDocumentStore } from '@/store';
-import { COLLAPSED_HEIGHT, COLLAPSED_WIDTH } from './graphViewConstants';
+import { COLLAPSED_HEIGHT, COLLAPSED_WIDTH, nodeSizeFor } from './graphViewConstants';
 import type { GraphProjection } from './useGraphProjection';
 
 /**
@@ -87,15 +87,19 @@ const buildLayoutInputs = (
   const { visibleEntityIds, visibleCollapsedRoots, remap } = projection;
   const nodes = [
     ...[...visibleEntityIds].map((id) => {
-      const entity = doc.entities[id];
-      const height = entity && isStNodeFormat(entity) ? ST_NODE_HEIGHT : NODE_MIN_HEIGHT;
-      return { id, width: NODE_WIDTH, height };
+      const { width, height } = nodeSizeFor(doc, id) ?? {
+        width: NODE_WIDTH,
+        height: NODE_MIN_HEIGHT,
+      };
+      return { id, width, height };
     }),
-    ...visibleCollapsedRoots.map((id) => ({
-      id,
-      width: COLLAPSED_WIDTH,
-      height: COLLAPSED_HEIGHT,
-    })),
+    ...visibleCollapsedRoots.map((id) => {
+      const { width, height } = nodeSizeFor(doc, id) ?? {
+        width: COLLAPSED_WIDTH,
+        height: COLLAPSED_HEIGHT,
+      };
+      return { id, width, height };
+    }),
   ];
   // Remap + dedupe edges. dagre dedups silently, but keeping the set
   // we feed to the layout in sync with what we render avoids surprise

@@ -14,6 +14,7 @@ import {
   COLLAPSED_WIDTH,
   GROUP_PADDING,
   GROUP_TITLE_TOP,
+  nodeSizeFor,
 } from './graphViewConstants';
 import { collapsedGroupAriaLabel, entityAriaLabel, groupAriaLabel } from './nodeAriaLabels';
 import type { GraphPositions } from './useGraphPositions';
@@ -108,17 +109,14 @@ export const useGraphNodeEmission = (
       for (const id of group.memberIds) {
         const p = positions[id];
         if (!p) continue;
-        let w: number;
-        let h: number;
-        if (visibleEntityIds.has(id)) {
-          w = NODE_WIDTH;
-          h = NODE_MIN_HEIGHT;
-        } else if (visibleCollapsedRootsSet.has(id)) {
-          w = COLLAPSED_WIDTH;
-          h = COLLAPSED_HEIGHT;
-        } else {
-          continue;
-        }
+        // Only visible members (an entity or a collapsed-root) contribute to
+        // the group rect; members hidden inside a collapse are skipped. Size
+        // via the shared `nodeSizeFor` rule so an S&T-format member contributes
+        // its true (taller) height to the bbox.
+        if (!visibleEntityIds.has(id) && !visibleCollapsedRootsSet.has(id)) continue;
+        const size = nodeSizeFor(doc, id);
+        if (!size) continue;
+        const { width: w, height: h } = size;
         hasMembers = true;
         if (p.x < minX) minX = p.x;
         if (p.y < minY) minY = p.y;
@@ -210,8 +208,10 @@ export const useGraphNodeEmission = (
         // box in TPNode, so this is purely a measurement hint for the
         // MiniMap; downstream consumers that need real measurements
         // (e.g. the splice-target hit test) still read the live DOM.
-        width: NODE_WIDTH,
-        height: NODE_MIN_HEIGHT,
+        // S&T-format entities render taller — size via the shared `nodeSizeFor`
+        // rule so this hint matches the layout/router box rather than being a
+        // flat NODE_MIN_HEIGHT (which under-sized S&T cards in the MiniMap).
+        ...(nodeSizeFor(doc, entity.id) ?? { width: NODE_WIDTH, height: NODE_MIN_HEIGHT }),
         data: {
           entity,
           ...(hidden && hidden > 0 ? { hiddenDescendantCount: hidden } : {}),

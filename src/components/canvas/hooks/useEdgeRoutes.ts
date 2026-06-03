@@ -24,7 +24,6 @@
  */
 
 import { useMemo } from 'react';
-import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT } from '@/domain/constants';
 import {
   aStarOnGraph,
   type Box,
@@ -36,11 +35,11 @@ import {
   sideBezierSegment,
 } from '@/domain/edgeRouting';
 import { type Axis, type SideSelection, selectEdgeSides } from '@/domain/edgeSides';
-import { edgesArray, isStNodeFormat } from '@/domain/graph';
+import { edgesArray } from '@/domain/graph';
 import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { COLLAPSED_HEIGHT, COLLAPSED_WIDTH } from './graphViewConstants';
+import { nodeSizeFor } from './graphViewConstants';
 import type { GraphPositions } from './useGraphPositions';
 import type { GraphProjection } from './useGraphProjection';
 
@@ -50,25 +49,15 @@ export type EdgeRouteMap = Readonly<Record<string, EdgeRoute>>;
 
 /**
  * Compute the obstacle bounding box for a visible node (entity or
- * collapsed-root) given its top-left position from
- * {@link GraphPositions}. Uses the same width/height heuristics as
- * `useGraphPositions.buildLayoutInputs`: entities default to
- * `NODE_WIDTH × NODE_MIN_HEIGHT`, S&T-format entities use
- * `ST_NODE_HEIGHT`, and collapsed-roots use `COLLAPSED_WIDTH ×
- * COLLAPSED_HEIGHT`. Keeping the same per-kind switch keeps the
- * router's obstacle picture in lockstep with what dagre laid out.
+ * collapsed-root) given its top-left position from {@link GraphPositions}.
+ * The size comes from the shared {@link nodeSizeFor} rule, so the router's
+ * obstacle picture stays in lockstep with what dagre laid out; `null` for an
+ * id that is neither a known entity nor a group (skip it as an obstacle).
  */
 const obstacleBoxFor = (doc: TPDocument, id: string, position: Point): Box | null => {
-  const entity = doc.entities[id];
-  if (entity) {
-    const height = isStNodeFormat(entity) ? ST_NODE_HEIGHT : NODE_MIN_HEIGHT;
-    return { x: position.x, y: position.y, width: NODE_WIDTH, height };
-  }
-  // Group-collapsed root — uses the dedicated COLLAPSED_* dimensions.
-  if (doc.groups[id]) {
-    return { x: position.x, y: position.y, width: COLLAPSED_WIDTH, height: COLLAPSED_HEIGHT };
-  }
-  return null;
+  const size = nodeSizeFor(doc, id);
+  if (!size) return null;
+  return { x: position.x, y: position.y, width: size.width, height: size.height };
 };
 
 /**
