@@ -47,6 +47,20 @@ import { nodeSizeFor } from './graphViewConstants';
  *  visible ellipse rather than grazing it. */
 const JUNCTOR_OBSTACLE_MARGIN = 8;
 
+/** Extra padding added to every obstacle box FOR ROUTING ONLY (anchoring still
+ *  uses the exact `allBoxes`), so a routed edge that passes a card it isn't
+ *  attached to keeps a visible gap instead of grazing the card and reading as if
+ *  it were connected to it. */
+const NODE_OBSTACLE_MARGIN = 10;
+
+/** Grow a box by `margin` on every side. */
+const inflateBox = (box: Box, margin: number): Box => ({
+  x: box.x - margin,
+  y: box.y - margin,
+  width: box.width + margin * 2,
+  height: box.height + margin * 2,
+});
+
 import type { GraphPositions } from './useGraphPositions';
 import type { GraphProjection } from './useGraphProjection';
 
@@ -204,7 +218,9 @@ export const computeEdgeRoutes = (
   const boxIdToIndex = new Map<string, number>();
   for (const [id, box] of allBoxes) {
     boxIdToIndex.set(id, allBoxesArr.length);
-    allBoxesArr.push(box);
+    // The graph + per-edge obstacle sets use the INFLATED box (clearance); the
+    // `allBoxes` map keeps the exact box for source/target anchoring below.
+    allBoxesArr.push(inflateBox(box, NODE_OBSTACLE_MARGIN));
     allBoxIds.push(id);
   }
 

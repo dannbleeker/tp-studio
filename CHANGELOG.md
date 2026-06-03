@@ -25,6 +25,15 @@ Reverse chronological. Entries are grouped by build session, not by release — 
     Chromium on the `crt-tons-per-hour` pattern. Added a `loadPattern(id)` test
     hook so the e2e/preview harness can load a library diagram deterministically.
 
+- **Routed edges keep clearance from cards they pass (`NODE_OBSTACLE_MARGIN`).**
+  The smart router's obstacle boxes were the exact node size, so a routed edge
+  that detoured around a card it isn't attached to could graze the card's edge and
+  read as if it connected to it. The graph + per-edge obstacle sets now use the
+  node box inflated by 10 px (anchoring still uses the exact box, so edges connect
+  to their own nodes precisely), so a passing edge keeps a visible gap. Only the
+  routing obstacle picture changed — clean layouts and the visual-snapshot suite
+  (A→B, no third-node obstacle) are unaffected.
+
 - **A junctor with one input auto-collapses to a plain edge.** AND/OR/XOR are
   multi-operand connectives — a group left with a single member is logically
   vacuous (one cause is just a direct sufficiency/necessity arrow, not a
