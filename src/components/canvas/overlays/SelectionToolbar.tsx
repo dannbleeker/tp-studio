@@ -92,11 +92,27 @@ export function SelectionToolbar() {
   const tipDismissed = useDocumentStore((s) => s.selectionToolbarTipDismissed);
   const dismissTip = useDocumentStore((s) => s.dismissSelectionToolbarTip);
   const selection = useDocumentStore((s) => s.selection);
-  // Edge presence — when the selection mode changes we want to
-  // re-compute the verb list. The actual selection IDs are inside
-  // `selection`; this re-subscribes us on edge-graph mutations so the
-  // conditional ungroup-* verbs flip in lockstep.
-  const edges = useDocumentStore((s) => currentDoc(s).edges);
+  // Junctor-topology hash — the verb list reads `edges` in exactly ONE place:
+  // `verbsForBranch`'s `multi-edges` branch, whose `any{And,Or,Xor}Grouped` checks
+  // look only at each selected edge's `andGroupId` / `orGroupId` / `xorGroupId`.
+  // (`verbsForSingleEntity` reads no edges, the `single-edge` verbs are static, and
+  // `branchFor` is pure.) So the conditional ungroup-* verbs flip only when some
+  // edge's junctor-group membership changes — not on label / weight / polarity /
+  // description edits. Subscribing to a string hash of the group memberships (a
+  // primitive → Object.is-stable) re-renders the toolbar only on the edge changes
+  // that can actually flip a verb, instead of on every `doc.edges` identity bump.
+  // Sorted so the hash is independent of object key order.
+  const edgeJunctorTopology = useDocumentStore((s) => {
+    const edges = currentDoc(s).edges;
+    const parts: string[] = [];
+    for (const id of Object.keys(edges)) {
+      const e = edges[id];
+      if (e && (e.andGroupId || e.orGroupId || e.xorGroupId)) {
+        parts.push(`${id}:${e.andGroupId ?? ''}:${e.orGroupId ?? ''}:${e.xorGroupId ?? ''}`);
+      }
+    }
+    return parts.sort().join('|');
+  });
   // Session 96 — re-subscribe on diagramType so the per-diagram
   // verbs (Mark as UDE / Mark as rootCause for CRT; Add NC + Promote
   // to Goal for Goal Tree) flip when the user loads a different
@@ -126,13 +142,13 @@ export function SelectionToolbar() {
   // verbsForBranch reads edges + doc.diagramType + entity.type for
   // conditional checks. Reading `useDocumentStore.getState()` here
   // gives us the live state at render time without an additional
-  // subscription. The `edges` / `diagramType` deps retrigger the
+  // subscription. The `edgeJunctorTopology` / `diagramType` deps retrigger the
   // recompute when those change — biome can't see they're used
   // transitively through getState().
-  // biome-ignore lint/correctness/useExhaustiveDependencies: edges + diagramType retrigger the verb recompute via getState()
+  // biome-ignore lint/correctness/useExhaustiveDependencies: edgeJunctorTopology + diagramType retrigger the verb recompute via getState()
   const verbsBeforeLockFilter = useMemo(
     () => verbsForBranch(branch, useDocumentStore.getState()),
-    [branch, edges, diagramType]
+    [branch, edgeJunctorTopology, diagramType]
   );
   // Session 96 — when Browse Lock is on, hide write-verbs (which
   // would just produce the standard "Browse Lock is on" toast on

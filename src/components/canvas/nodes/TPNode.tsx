@@ -16,7 +16,7 @@
 
 import { Handle, type NodeProps, NodeToolbar, Position, useConnection } from '@xyflow/react';
 import clsx from 'clsx';
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT, ZOOM_UP_THRESHOLD } from '@/domain/constants';
 import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
@@ -51,6 +51,16 @@ import {
 function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
   const { entity, hiddenDescendantCount, udeReachCount, rootCauseReachCount, diffStatus } = data;
   const openCommentCount = data.openCommentCount;
+  // Stable callback for the open-comment badge. `CommentCountBadge` is `memo`'d,
+  // so an inline arrow here would give it a fresh `onOpen` on every TPNode render
+  // and defeat the memo (the badge would re-render on every node re-render, not
+  // just when its count changes). `entity.id` is the only dependency; the store
+  // actions are read imperatively via `getState()`.
+  const handleOpenComments = useCallback(() => {
+    const st = useDocumentStore.getState();
+    st.selectEntity(entity.id);
+    st.openCommentsPanel();
+  }, [entity.id]);
   // Session 135 / spec gap #4 — effective state for the canvas badge
   // (stamped by emission; folds in the speculation overlay when active).
   const effectiveState = data.effectiveState;
@@ -423,14 +433,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         typeof rootCauseReachCount === 'number' &&
         rootCauseReachCount > 0 && <ReachReverseBadge count={rootCauseReachCount} />}
       {typeof openCommentCount === 'number' && openCommentCount > 0 && (
-        <CommentCountBadge
-          count={openCommentCount}
-          onOpen={() => {
-            const st = useDocumentStore.getState();
-            st.selectEntity(entity.id);
-            st.openCommentsPanel();
-          }}
-        />
+        <CommentCountBadge count={openCommentCount} onOpen={handleOpenComments} />
       )}
       {isCollapsed && (
         <CollapsedExpandButton

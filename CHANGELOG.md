@@ -4,6 +4,29 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 
 ## Session 170 — Deeper TPEdge + connect-end resolver (from the canvas sweep)
 
+- **Subscription hygiene — the sweep's last micro-opts.** Two real fixes + one
+  honest "won't fix":
+  - **`CommentCountBadge` `onOpen` → `useCallback`.** The badge is `memo`'d, but
+    `TPNode` passed it a fresh inline-arrow `onOpen` every render, defeating the
+    memo so the badge re-rendered on *every* node re-render. The callback now has a
+    stable identity keyed on `entity.id` (store actions read via `getState()`), so
+    the badge re-renders only when its count actually changes.
+  - **`SelectionToolbar` whole-`doc.edges` sub → junctor-topology hash.** The
+    toolbar subscribed to the entire `edges` record purely as a verb-recompute
+    trigger, re-rendering on *any* edge mutation (label / weight / polarity /
+    description). Audit of `verbsForBranch` shows the verb list reads edges in
+    exactly one place — the `multi-edges` branch's `any{And,Or,Xor}Grouped` checks
+    on `andGroupId`/`orGroupId`/`xorGroupId` (`verbsForSingleEntity` reads none;
+    `single-edge` verbs are static; `branchFor` is pure). Now it subscribes to a
+    sorted string hash of just those group memberships — a primitive, so it
+    re-renders only on the changes that can flip a verb. Behaviour identical (107
+    toolbar/verb/junctor/node tests + the full suite green).
+  - **`CanvasInner` whole-`doc` sub — assessed, left as-is.** This is the projection
+    host: `doc` feeds `useGraphView` / `useSearchDimming` / the drag handlers, all
+    of which legitimately need the whole document, and the expensive work is already
+    gated by sub-field-keyed `useMemo`s downstream. Re-rendering on a doc edit is
+    correct here — there's no sound narrowing, so it stays.
+
 - **Extract `resolveConnectEndTarget` from `onConnectEnd`.** The connection-drag
   release handler was a ~90-line imperative chain that interleaved the drop-target
   *decision* (node body? junctor circle? edge body? empty?) with its *side effects*

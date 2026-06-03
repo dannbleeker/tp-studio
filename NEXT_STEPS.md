@@ -41,12 +41,16 @@ spacing, shipped Session 146):
 ## Canvas structural tier — remaining (from the Session 168 sweep)
 
 The Session 168 4-agent sweep mapped the rendering/flow/clickability layer.
-**Landed (CI-green, Sessions 168–169):** `nodeSizeFor`, `waypointMidpoint`,
+**Landed (CI-green, Sessions 168–170):** `nodeSizeFor`, `waypointMidpoint`,
 edge-palette a11y fix, `openRightPanel`, `markEntityAs`, TPGroupNode `memo`,
-`resolveEdgeVisuals`, `computeMutexPath`, and the **full EntityInspector
-decomposition** — all five sections out (`StFacetsSection` / `EntityStateSection`
-/ `ActionFields` / `EntityLinksSection` / `EntityProvenanceSection`), shrinking the
-inspector from 718 → 363 lines. Remaining items below — each behaviour-preserving.
+`resolveEdgeVisuals`, `computeMutexPath`, the **full EntityInspector
+decomposition** (all five sections out — `StFacetsSection` / `EntityStateSection`
+/ `ActionFields` / `EntityLinksSection` / `EntityProvenanceSection`, 718 → 363
+lines), `useRadialRoute`, `resolveConnectEndTarget`, and the **subscription-hygiene
+micro-opts** (`CommentCountBadge` `useCallback`, `SelectionToolbar` junctor-topology
+hash, `CanvasInner` assessed-no-change). **The only thing left in this tier is the
+STATEFUL hover-channel unification (item 3 below) — it needs a real-browser drag
+spec.** Everything else is shipped.
 
 **The verification loop (important — this is how to continue safely):** extract
 the pure core *first* and unit-test it (vitest), then run/extend the relevant
@@ -89,9 +93,15 @@ with the full local gate (tsc/biome/knip/vitest/build) → commit → CI green.
      — it touches live drag feedback, so verify via a **Playwright drag-to-connect
      spec** across all 5 drop-targets (handle / node / junctor / edge / empty), NOT
      jsdom-testable. Lower value than the resolver was; pick up in a focused session.
-4. **Subscription hygiene (deprioritized — marginal vs React Flow's own memo).**
-   `CanvasInner` whole-`doc` sub; `SelectionToolbar` whole-`doc.edges` → a
-   junctor-topology hash; `CommentCountBadge` `onOpen` → `useCallback`.
+4. ~~**Subscription hygiene (the sweep's last micro-opts).**~~ ✅ *Session 170* —
+   `CommentCountBadge` `onOpen` → `useCallback` (the `memo`'d badge was getting a
+   fresh inline arrow per `TPNode` render); `SelectionToolbar` whole-`doc.edges` →
+   a sorted junctor-topology hash (verb list depends on edges only via the
+   `multi-edges` `any{And,Or,Xor}Grouped` group-field checks — audited). `CanvasInner`
+   whole-`doc` sub **assessed + left as-is** — it's the projection host (`doc` feeds
+   `useGraphView`/`useSearchDimming`/drag handlers), so the whole-doc dependency is
+   intrinsic and downstream `useMemo`s already gate the expensive work; no sound
+   narrowing exists.
 
 ---
 
