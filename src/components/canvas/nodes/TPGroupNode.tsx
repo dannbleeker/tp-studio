@@ -1,6 +1,7 @@
 import type { NodeProps } from '@xyflow/react';
 import clsx from 'clsx';
 import { Archive } from 'lucide-react';
+import { memo } from 'react';
 import { GROUP_COLOR_CLASSES } from '@/domain/groupColors';
 import { useDocumentStore } from '@/store';
 import type { TPGroupNode as TPGroupNodeType } from '../edges/flow-types';
@@ -10,11 +11,18 @@ import type { TPGroupNode as TPGroupNodeType } from '../edges/flow-types';
  * member entities. Clicks on a group's body select the group; clicks on
  * member entities (rendered above) still register normally because the
  * group node has `pointerEvents: none` on its inner area except the title.
+ *
+ * `memo`'d like the other per-node components (TPNode / TPEdge): the emission
+ * pass rebuilds the `data` object every run (incl. every drag frame), so the
+ * custom comparator below compares its *contents* — the group ref (captures any
+ * title/color/archived change) + the bbox dimensions + `selected` — so an
+ * unrelated drag or a far-off store change doesn't re-render every group. The
+ * `selectGroup` action is read imperatively via `getState()` at click time
+ * rather than as a render-time subscription.
  */
-export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
+function TPGroupNodeImpl({ data, selected }: NodeProps<TPGroupNodeType>) {
   const { group, width, height } = data;
   const colors = GROUP_COLOR_CLASSES[group.color];
-  const selectGroup = useDocumentStore((s) => s.selectGroup);
 
   return (
     <div
@@ -38,10 +46,10 @@ export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
         )}
         onClick={(e) => {
           e.stopPropagation();
-          // Session 85 (#1) — `Selection` has a dedicated `groups`
-          // variant now. `selectGroup` brands the id correctly; no
-          // `as unknown as EntityId` cast needed.
-          selectGroup(group.id);
+          // `Selection` has a dedicated `groups` variant; `selectGroup` brands
+          // the id correctly. Read imperatively at click time so this component
+          // carries no render-time store subscription.
+          useDocumentStore.getState().selectGroup(group.id);
         }}
       >
         {group.archived && <Archive className="h-3 w-3" aria-label="Archived" />}
@@ -50,3 +58,12 @@ export function TPGroupNode({ data, selected }: NodeProps<TPGroupNodeType>) {
     </div>
   );
 }
+
+export const TPGroupNode = memo(
+  TPGroupNodeImpl,
+  (prev, next) =>
+    prev.selected === next.selected &&
+    prev.data.group === next.data.group &&
+    prev.data.width === next.data.width &&
+    prev.data.height === next.data.height
+);
