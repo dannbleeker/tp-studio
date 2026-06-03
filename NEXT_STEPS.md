@@ -65,10 +65,17 @@ with the full local gate (tsc/biome/knip/vitest/build) → commit → CI green.
    `EntityLinksSection` / `EntityProvenanceSection`) via verbatim-lift + typed-props
    + wrap-store-writes-in-parent; 718 → 363 lines. Guarded by `e2e/inspector.spec.ts`
    (real-Chromium State-picker + ActionFields assertions).
-2. **Deeper TPEdge.** Extract `useRadialRoute` (the radial obstacle-router hook);
-   stamp ephemeral flags (`isRadialMode` / `mutexPath` / `isNoteEdge`) into
-   `TPEdgeData` at emission to kill 3 per-edge store subscriptions. Guard: the
-   `edgeRoutingAStarParity` golden tests + `visual-canvas.spec.ts`.
+2. ~~**Deeper TPEdge — extract `useRadialRoute`.**~~ ✅ *Session 170* — the
+   radial obstacle-router (two subscriptions + the position-keyed memo + the
+   `radialNodesEqual` comparator) now lives in `useRadialRoute.ts`, with a pure
+   `radialRouteForEdge` core (`useRadialRoute.test.ts`, 4 cases). TPEdge dropped
+   ~65 lines. **The other half — stamping `mutexPath` / `isRadialMode` into edge
+   `data` at emission to kill the subscriptions — was deliberately declined:**
+   `useGraphEdgeEmission` is intentionally position-independent (its header
+   documents that drags don't re-run it), so moving position-dependent routing
+   there would break drag-tracking or force per-drag re-emission of every edge;
+   the subscriptions removed are primitives that effectively never fire. Net perf
+   ≈ nil vs. real regression risk — not worth it.
 3. **Hover / clickability consolidation.** Unify the 3 hover channels
    (`hoveredEdgeRef` + `hoveredEdgeId` + the `hoveredJunctor` module singleton in
    `services/canvasRef.ts`) into the store; extract a pure `resolveConnectEndTarget`

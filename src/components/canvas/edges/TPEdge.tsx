@@ -4,27 +4,15 @@
 // `memo()` and skips auto-memoization for the wrapped component, so
 // the Session 105 comparator's behavior stays intact.
 
-import {
-  BaseEdge,
-  type EdgeProps,
-  getBezierPath,
-  type Node as RFNode,
-  useStore as useRFStore,
-} from '@xyflow/react';
-import { memo, useMemo } from 'react';
+import { BaseEdge, type EdgeProps, getBezierPath } from '@xyflow/react';
+import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import {
-  EDGE_RECONNECT_HANDLE_RADIUS,
-  JUNCTOR_EDGE_TERMINAL_OFFSET_Y,
-  NODE_MIN_HEIGHT,
-  NODE_WIDTH,
-} from '@/domain/constants';
+import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/domain/constants';
 import { EDGE_PALETTES } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
-import { type Box, computeRadialEdgePath, nodeBoxOf } from './radialEdgeRouting';
 import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
 import {
   AggregateBadge,
@@ -37,6 +25,7 @@ import {
   MutexBadge,
   WeightBadge,
 } from './TPEdgeBadges';
+import { useRadialRoute } from './useRadialRoute';
 
 /** E5: maximum characters shown inline on an edge label before truncating
  *  with an ellipsis. The full text remains available via the native HTML
@@ -44,36 +33,6 @@ import {
  *  behind a tiny "i" icon, which made scanning a diagram for context
  *  impossible without hovering each edge. */
 const LABEL_INLINE_MAX = 30;
-
-/**
- * Equality for the radial-mode obstacle subscription. React Flow's `s.nodes`
- * is a FRESH array reference on every store write (selection, hover, dimension
- * churn — not just position), so subscribing to it bare re-rendered every
- * TPEdge on every frame during any drag in radial mode. Gating on node
- * geometry (id + position + size) means the radial router only re-runs when an
- * obstacle actually moves. Returns the previous reference otherwise, keeping
- * the `radialRoute` useMemo stable.
- */
-const radialNodesEqual = (a: RFNode[] | null, b: RFNode[] | null): boolean => {
-  if (a === b) return true;
-  if (a === null || b === null || a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    const na = a[i];
-    const nb = b[i];
-    if (
-      !na ||
-      !nb ||
-      na.id !== nb.id ||
-      na.position.x !== nb.position.x ||
-      na.position.y !== nb.position.y ||
-      na.width !== nb.width ||
-      na.height !== nb.height
-    ) {
-      return false;
-    }
-  }
-  return true;
-};
 
 /** E1: invisible halo around the stroke that captures clicks. React Flow's
  *  default is 20 px; we bump it so a slightly-imprecise click on a thin
@@ -279,31 +238,6 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const mutexPath = mutexEndpoints
     ? computeMutexPath(mutexEndpoints.srcPos, mutexEndpoints.tgtPos)
     : null;
-  // Session 99 — obstacle-aware routing for the radial layout.
-  // The radial / sunburst layout places nodes on concentric rings;
-  // the default React Flow bezier between source / target handles
-  // often passes through cousin or sibling node boxes, especially
-  // on trees deeper than two rings. When `layoutMode === 'radial'`
-  // we read all OTHER node positions via React Flow's store and let
-  // `computeRadialEdgePath` deflect the bezier perpendicular to its
-  // axis enough to clear the obstacles.
-  //
-  // The subscription is gated on `isRadialMode` — the selector
-  // returns a stable `null` in flow / manual modes so unrelated
-  // node drags don't fan re-renders into every edge.
-  //
-  // Junctor and mutex edges keep their existing special-case paths
-  // (the junctor terminus already redirects to the circle perimeter;
-  // the mutex straight-line override is more useful than routing
-  // around boxes for vertically-stacked Wants).
-  // `isRadialMode` could have lived in the `edgeView` bundle above,
-  // but routing it through that bundle would mean every edge re-renders
-  // when ANY edge view-field changes — and we want the radial-mode
-  // flag to gate the React Flow store subscription (`radialNodes`)
-  // independently. Keeping the primitive selector here lets Zustand's
-  // fast-path Object.is comparison short-circuit unrelated updates.
-  const isRadialMode = useDocumentStore((s) => s.layoutMode === 'radial');
-  const radialNodes = useRFStore((s) => (isRadialMode ? s.nodes : null), radialNodesEqual);
   // Edge-color palette (Settings → Appearance → Edge palette). Reading the live
   // selection here is what makes the colorblind-safe / mono palettes actually
   // recolor edges; a stable primitive selector that changes only when the user
@@ -311,38 +245,22 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const edgePalette = useDocumentStore((s) => s.edgePalette);
   const palette = EDGE_PALETTES[edgePalette];
   const hasMutexOverride = mutexPath !== null;
-  const radialRoute = useMemo(() => {
-    if (!isRadialMode || !radialNodes) return null;
-    if (isJunctorEdge) return null;
-    if (hasMutexOverride) return null;
-    const obstacles: Box[] = [];
-    for (const node of radialNodes) {
-      if (node.id === props.source || node.id === props.target) continue;
-      // The width / height in the emitted node objects (set in
-      // `useGraphNodeEmission`) are the canonical box sizes; fall
-      // back to the constants if a future emission path forgets to
-      // set them.
-      const w = node.width ?? NODE_WIDTH;
-      const h = node.height ?? NODE_MIN_HEIGHT;
-      obstacles.push(nodeBoxOf(node.position, w, h));
-    }
-    return computeRadialEdgePath(
-      { x: props.sourceX, y: props.sourceY },
-      { x: props.targetX, y: effectiveTargetY },
-      obstacles
-    );
-  }, [
-    isRadialMode,
-    radialNodes,
+  // Session 99 — obstacle-aware routing for the radial layout. `useRadialRoute`
+  // owns the two subscriptions (layout mode + React Flow's `nodes`) and the
+  // position-keyed memo; it returns `null` in every non-radial / junctor / mutex
+  // case so the resolver below falls through to the routed path or the default
+  // bezier. (See the hook for the full rationale on why the flag gates the
+  // React Flow `nodes` subscription independently.)
+  const radialRoute = useRadialRoute({
+    source: props.source,
+    target: props.target,
+    sourceX: props.sourceX,
+    sourceY: props.sourceY,
+    targetX: props.targetX,
+    effectiveTargetY,
     isJunctorEdge,
     hasMutexOverride,
-    props.source,
-    props.target,
-    props.sourceX,
-    props.sourceY,
-    props.targetX,
-    effectiveTargetY,
-  ]);
+  });
 
   // Obstacle-aware edge routing — `data.route.d` is the precomputed SVG path
   // string from the dagre-mode smart router (see

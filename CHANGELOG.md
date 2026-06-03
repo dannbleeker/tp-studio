@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 170 — Deeper TPEdge (from the canvas sweep)
+
+- **Extract `useRadialRoute` from TPEdge.** The radial obstacle-router was ~65
+  lines inline in the edge body: two store subscriptions (`layoutMode` + React
+  Flow's `nodes`, the latter behind a custom `radialNodesEqual` comparator) plus a
+  position-keyed `useMemo` that collected obstacle boxes and called
+  `computeRadialEdgePath`. Pulled the whole thing into a self-contained
+  `useRadialRoute.ts` hook, with the obstacle-collection glue (source/target
+  filtering + node-size fallback) split out as a pure `radialRouteForEdge` so it's
+  unit-testable without a React Flow store or a mounted edge. TPEdge now calls one
+  `useRadialRoute({ … })`. **Same two subscriptions, same memo deps, same guard
+  order** — behaviour identical; new `useRadialRoute.test.ts` (4 cases) pins the
+  extracted glue, and the 47 existing edge tests + full suite stay green.
+  - *Deliberately NOT done:* the sweep also floated "stamp `mutexPath` /
+    `isRadialMode` into edge `data` at emission to kill the subscriptions."
+    `useGraphEdgeEmission` is **intentionally position-independent** (its header
+    documents that a drag doesn't re-run it), so moving position-dependent routing
+    into it would either break drag-tracking or force every edge to re-emit on
+    every drag — the exact churn the memo comparator exists to prevent. The
+    subscriptions it would remove are primitive selectors that effectively never
+    fire, so the perf win is nil against real regression risk. Left as-is by design.
+
 ## Session 169 — Structural tier (from the canvas sweep)
 
 The higher-value structural refactors the sweep surfaced — behaviour-preserving,
