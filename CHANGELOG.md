@@ -26,6 +26,22 @@ bundle-size) and landed in small independently-gated batches.
   Also fixed the stale `CustomEntityClassesSection` references those symbols' doc comments
   still named. Behaviour-preserving — full suite unchanged.
 
+- **Memoised side-panel work that recomputed on every store mutation.** Four
+  recompute-while-open hot spots now skip when their inputs are unchanged (the doc
+  store re-refs `doc` on every keystroke, so an open panel that reads it re-ran this
+  work on every edit):
+  - `RevisionRow` ran `computeRevisionDiff(revision.doc, liveDoc)` per row, per
+    render — with the History panel open, every keystroke re-diffed *every* snapshot
+    against the live doc (O(rows × doc size)). Now `useMemo`'d on `[revision.doc,
+    liveDoc]` (the snapshot is a frozen ref, so only `liveDoc` moves).
+  - `RevisionPanel`'s branch bucket-and-sort is `useMemo`'d on `[revisions]` (was
+    rebuilt every render) and finds each branch's latest capture with `reduce`
+    instead of `Math.max(...spread)` (drops a per-comparison argument-array alloc).
+  - `CommentsPanel`'s `visibleThreads` filter is `useMemo`'d on `[threads, filter]`.
+  - `CommandPalette`'s id→command `Map` is built once at module scope instead of
+    re-allocated inside `recentCommands` on every keystroke.
+  All behaviour-preserving; pinned by the existing component suites.
+
 ## Session 171 — AND/OR/XOR junctor follows its causes
 
 - **Junctor circles now center over their causes, not under the target.** A

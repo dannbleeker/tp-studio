@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { Columns2, Eye, GitBranch, Pencil, RotateCcw, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Revision } from '@/domain/revisions';
 import { computeRevisionDiff, summarizeRevisionDiff } from '@/domain/revisions';
 import { formatRelativeTime } from './formatTime';
@@ -46,8 +46,13 @@ export function RevisionRow({
 
   // Diff *to* the live doc, framed as "go from this revision to current."
   // The summary string reads as "what's changed since this snapshot."
-  const diff = computeRevisionDiff(revision.doc, liveDoc);
-  const summary = summarizeRevisionDiff(diff);
+  // `revision.doc` is a frozen snapshot (a stable ref for the life of the
+  // revision); only `liveDoc` changes, so memoise to avoid re-diffing every
+  // revision row on every store mutation while the History panel is open.
+  const summary = useMemo(
+    () => summarizeRevisionDiff(computeRevisionDiff(revision.doc, liveDoc)),
+    [revision.doc, liveDoc]
+  );
 
   return (
     <li

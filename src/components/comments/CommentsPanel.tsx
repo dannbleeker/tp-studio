@@ -90,8 +90,12 @@ export function CommentsPanel() {
     };
   }, [comments]);
 
-  const visibleThreads = threads.filter((c) =>
-    filter === 'all' ? true : filter === 'resolved' ? c.resolved === true : c.resolved !== true
+  const visibleThreads = useMemo(
+    () =>
+      threads.filter((c) =>
+        filter === 'all' ? true : filter === 'resolved' ? c.resolved === true : c.resolved !== true
+      ),
+    [threads, filter]
   );
 
   // A pending "point" anchor (pane → Add comment here) wins over the

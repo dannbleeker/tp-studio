@@ -20,6 +20,13 @@ import { EDIT_SUBGROUP, sortEditItems } from './editSubgroups';
  */
 const GROUP_ORDER: CommandGroup[] = ['File', 'Edit', 'View', 'Review', 'Export', 'Help'];
 
+/**
+ * Stable id→command lookup. `COMMANDS` is a module constant, so this Map is
+ * built once at import time instead of re-allocated inside `recentCommands`
+ * on every keystroke / recent-list change.
+ */
+const COMMANDS_BY_ID = new Map(COMMANDS.map((c) => [c.id, c]));
+
 export function CommandPalette() {
   const open = useDocumentStore((s) => s.paletteOpen);
   const initialQuery = useDocumentStore((s) => s.paletteInitialQuery);
@@ -65,10 +72,9 @@ export function CommandPalette() {
   const recentCommands = useMemo<Command[]>(() => {
     if (query) return [];
     if (recentIds.length === 0) return [];
-    const byId = new Map(COMMANDS.map((c) => [c.id, c]));
     const list: Command[] = [];
     for (const id of recentIds) {
-      const cmd = byId.get(id);
+      const cmd = COMMANDS_BY_ID.get(id);
       if (cmd) list.push(cmd);
     }
     return list;

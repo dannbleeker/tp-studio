@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { Clock, GitBranch, History, X } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import type { Revision } from '@/domain/revisions';
 import { useDocumentStore } from '@/store';
@@ -183,23 +183,27 @@ function RevisionList({
   onSideBySide: (r: Revision) => void;
   onBranch: (r: Revision) => void;
 }) {
-  // Bucket by branchName.
-  const groups = new Map<string, Revision[]>();
-  for (const r of revisions) {
-    const key = r.branchName?.trim() || 'Main';
-    const list = groups.get(key) ?? [];
-    list.push(r);
-    groups.set(key, list);
-  }
-  // Stable ordering: Main first; then named branches by their latest
-  // capture descending (newest experiments float up).
-  const entries = Array.from(groups.entries()).sort(([a, ra], [b, rb]) => {
-    if (a === 'Main') return -1;
-    if (b === 'Main') return 1;
-    const aLatest = Math.max(...ra.map((r) => r.capturedAt));
-    const bLatest = Math.max(...rb.map((r) => r.capturedAt));
-    return bLatest - aLatest;
-  });
+  // Bucket by branchName, then order: Main first; named branches by their
+  // latest capture descending (newest experiments float up). Memoised on
+  // `revisions` — its only input — so a store mutation that re-renders the
+  // panel (every keystroke while History is open) doesn't re-bucket + re-sort.
+  // `reduce` finds the latest timestamp without the `Math.max(...spread)`
+  // argument-array allocation per comparison.
+  const entries = useMemo(() => {
+    const groups = new Map<string, Revision[]>();
+    for (const r of revisions) {
+      const key = r.branchName?.trim() || 'Main';
+      const list = groups.get(key) ?? [];
+      list.push(r);
+      groups.set(key, list);
+    }
+    const latest = (rs: Revision[]) => rs.reduce((m, r) => Math.max(m, r.capturedAt), 0);
+    return Array.from(groups.entries()).sort(([a, ra], [b, rb]) => {
+      if (a === 'Main') return -1;
+      if (b === 'Main') return 1;
+      return latest(rb) - latest(ra);
+    });
+  }, [revisions]);
   return (
     <div className="flex flex-col">
       {entries.map(([branchName, group]) => (
