@@ -38,7 +38,7 @@ spacing, shipped Session 146):
 
 ---
 
-## Canvas structural tier — remaining (from the Session 168 sweep)
+## Canvas structural tier — complete (from the Session 168 sweep)
 
 The Session 168 4-agent sweep mapped the rendering/flow/clickability layer.
 **Landed (CI-green, Sessions 168–170):** `nodeSizeFor`, `waypointMidpoint`,
@@ -48,9 +48,8 @@ decomposition** (all five sections out — `StFacetsSection` / `EntityStateSecti
 / `ActionFields` / `EntityLinksSection` / `EntityProvenanceSection`, 718 → 363
 lines), `useRadialRoute`, `resolveConnectEndTarget`, and the **subscription-hygiene
 micro-opts** (`CommentCountBadge` `useCallback`, `SelectionToolbar` junctor-topology
-hash, `CanvasInner` assessed-no-change). **The only thing left in this tier is the
-STATEFUL hover-channel unification (item 3 below) — it needs a real-browser drag
-spec.** Everything else is shipped.
+hash, `CanvasInner` assessed-no-change). **The tier is complete — every sweep
+finding is shipped or consciously closed** (item 3 records the one we declined).
 
 **The verification loop (important — this is how to continue safely):** extract
 the pure core *first* and unit-test it (vitest), then run/extend the relevant
@@ -87,12 +86,19 @@ with the full local gate (tsc/biome/knip/vitest/build) → commit → CI green.
      Unit-tested (precedence matrix, 10 cases) + the 9 existing `useGraphMutations`
      integration tests pin the rewired side effects. A new drop-target is "a variant
      + a case."
-   - *Remaining (deferred — needs a real-browser drag spec):* unify the 3 hover
-     channels (`hoveredEdgeRef` + `hoveredEdgeId` + the `hoveredJunctor` module
-     singleton in `services/canvasRef.ts`) into the store. This is the STATEFUL half
-     — it touches live drag feedback, so verify via a **Playwright drag-to-connect
-     spec** across all 5 drop-targets (handle / node / junctor / edge / empty), NOT
-     jsdom-testable. Lower value than the resolver was; pick up in a focused session.
+   - *Decided against (Session 170) — the 3-hover-channel unification.* The sweep
+     floated unifying `hoveredEdgeRef` + `hoveredEdgeId` + the `hoveredJunctor`
+     singleton (`services/canvasRef.ts`) into the store. On inspection the premise is
+     weak: two of the three are deliberately **non-reactive** (a `useRef` + a module
+     singleton) so cursor movement over edges / junctors *during a drag* doesn't fan
+     re-renders — they're read imperatively in `onConnectEnd`, not subscribed. Forcing
+     them into the reactive store risks regressing drag perf for a change with **zero
+     user-facing effect**, and the only safe variant (drop the ref → read
+     `hoveredEdgeId` via `getState()`; move the junctor to a non-subscribed store
+     field) is timing-sensitive enough to need a brand-new real-browser
+     drag-to-connect spec. Lowest value × highest regression surface × most new test
+     infra of anything the sweep surfaced → **not worth doing.** Removed by decision,
+     not deferral; re-open only if the hover channels cause a concrete bug.
 4. ~~**Subscription hygiene (the sweep's last micro-opts).**~~ ✅ *Session 170* —
    `CommentCountBadge` `onOpen` → `useCallback` (the `memo`'d badge was getting a
    fresh inline arrow per `TPNode` render); `SelectionToolbar` whole-`doc.edges` →
