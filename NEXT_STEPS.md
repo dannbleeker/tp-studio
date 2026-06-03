@@ -43,9 +43,10 @@ spacing, shipped Session 146):
 The Session 168 4-agent sweep mapped the rendering/flow/clickability layer.
 **Landed (CI-green, Sessions 168–169):** `nodeSizeFor`, `waypointMidpoint`,
 edge-palette a11y fix, `openRightPanel`, `markEntityAs`, TPGroupNode `memo`,
-`resolveEdgeVisuals`, `computeMutexPath`, and EntityInspector's first two
-sections (`StFacetsSection` + `EntityStateSection`). Remaining items below — each
-behaviour-preserving.
+`resolveEdgeVisuals`, `computeMutexPath`, and the **full EntityInspector
+decomposition** — all five sections out (`StFacetsSection` / `EntityStateSection`
+/ `ActionFields` / `EntityLinksSection` / `EntityProvenanceSection`), shrinking the
+inspector from 718 → 363 lines. Remaining items below — each behaviour-preserving.
 
 **The verification loop (important — this is how to continue safely):** extract
 the pure core *first* and unit-test it (vitest), then run/extend the relevant
@@ -59,12 +60,11 @@ The `visual-*` specs and `smoke › Cmd+K` are env-sensitive locally (Linux-only
 snapshots / Windows Meta-key) — **CI's e2e job is the authoritative run.** Finish
 with the full local gate (tsc/biome/knip/vitest/build) → commit → CI green.
 
-1. **EntityInspector — remaining sections.** Extract `ActionFields`
-   (Step#/Need/WorkingAssumption/Eligibility, gated on `type==='action'`),
-   `EntityLinksSection` (cross-doc links), `EntityProvenanceSection`
-   (Attestation/Owner/Evidence) — same verbatim-lift + typed-props + wrap-store-
-   writes-in-parent pattern as `EntityStateSection`. Guard: extend
-   `e2e/inspector.spec.ts` to assert each section renders for the right entity.
+1. ~~**EntityInspector — section decomposition.**~~ ✅ *Session 169* — all five
+   sections extracted (`StFacetsSection` / `EntityStateSection` / `ActionFields` /
+   `EntityLinksSection` / `EntityProvenanceSection`) via verbatim-lift + typed-props
+   + wrap-store-writes-in-parent; 718 → 363 lines. Guarded by `e2e/inspector.spec.ts`
+   (real-Chromium State-picker + ActionFields assertions).
 2. **Deeper TPEdge.** Extract `useRadialRoute` (the radial obstacle-router hook);
    stamp ephemeral flags (`isRadialMode` / `mutexPath` / `isNoteEdge`) into
    `TPEdgeData` at emission to kill 3 per-edge store subscriptions. Guard: the

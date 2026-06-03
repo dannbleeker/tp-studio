@@ -42,8 +42,12 @@ each gated green.
   hook and asserts each extracted section renders, the verification the headless
   jsdom + preview path can't do. Then extracted **`EntityLinksSection`** (the
   navigable cross-doc "Linked to" chips; the parent wraps switchTab / selectEntity /
-  unlinkEntity). So four sections are now out (StFacets / State / Action / Links);
-  the inspector + both e2e specs stay green. (Remaining: `EntityProvenanceSection`.)
+  unlinkEntity). Finally extracted **`EntityProvenanceSection`** (the paired
+  Attestation / Owner + Mark-validated / Evidence-list block; the parent wraps
+  `updateEntity` into a plain `onUpdate`). All five sections are now out
+  (StFacets / State / Action / Links / Provenance) — the inspector shrank from 718
+  to 363 lines, each section self-contained and behaviour-preserving, the
+  decomposition complete; the inspector tests + both e2e specs stay green.
 
 ## Session 168 — Rendering maintainability batch (from the canvas sweep)
 
