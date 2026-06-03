@@ -1,8 +1,9 @@
 import { MarkerType } from '@xyflow/react';
 import { useMemo } from 'react';
 import { edgesArray, openCommentCountsByAnchor } from '@/domain/graph';
-import { EDGE_MARKER_AND, EDGE_MARKER_DEFAULT } from '@/domain/tokens';
+import { EDGE_PALETTES } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
+import { useDocumentStore } from '@/store';
 import type { TPEdge } from '../edges/flow-types';
 import { edgeAriaLabel } from './nodeAriaLabels';
 import type { EdgeRouteMap } from './useEdgeRoutes';
@@ -45,8 +46,13 @@ export const useGraphEdgeEmission = (
   // `groups` (visible titles) — NOT the whole `doc`. So a non-structural doc
   // edit (CLR-resolve, document title/description, customEntityClasses) doesn't
   // rebuild the edge array. Audited: those are the only `doc.*` reads here.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via edges/assumptions/comments/entities/groups; narrowed deliberately.
+  // Edge-color palette (Settings → Appearance) — drives the arrowhead marker
+  // color so the colorblind-safe / mono palettes recolor markers too, not just
+  // strokes. A stable primitive selector (the string changes only on switch).
+  const edgePalette = useDocumentStore((s) => s.edgePalette);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via edges/assumptions/comments/entities/groups (+ edgePalette); narrowed deliberately.
   return useMemo(() => {
+    const pal = EDGE_PALETTES[edgePalette];
     const { remap } = projection;
 
     // Session 135 / Perf #17 — one pass over the first-class assumption
@@ -171,7 +177,7 @@ export const useGraphEdgeEmission = (
           : {
               markerEnd: {
                 type: MarkerType.ArrowClosed,
-                color: anyJunctorGroup ? EDGE_MARKER_AND : EDGE_MARKER_DEFAULT,
+                color: anyJunctorGroup ? pal.markerAnd : pal.marker,
               },
             }),
         selectable: !isAggregated,
@@ -181,5 +187,14 @@ export const useGraphEdgeEmission = (
     }
 
     return edges;
-  }, [doc.edges, doc.assumptions, doc.comments, doc.entities, doc.groups, projection, routes]);
+  }, [
+    doc.edges,
+    doc.assumptions,
+    doc.comments,
+    doc.entities,
+    doc.groups,
+    projection,
+    routes,
+    edgePalette,
+  ]);
 };

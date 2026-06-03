@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 168 — Rendering maintainability batch (from the canvas sweep)
+
+Three findings from a rendering/flow/clickability sweep — one unify + two fixes,
+each gated green (tsc + biome + knip + full suite + build).
+
+- **Unify node sizing into `nodeSizeFor`** (`graphViewConstants.ts`). The "how big
+  is this node?" rule (entity → `NODE_WIDTH × NODE_MIN_HEIGHT`, S&T-format →
+  `ST_NODE_HEIGHT`, collapsed-root → `COLLAPSED_*`, unknown → `null`) was
+  copy-pasted across four pipeline stages; now one helper feeds `useGraphPositions`
+  (dagre inputs), `useEdgeRoutes` (A\* obstacle boxes), and `useGraphNodeEmission`
+  (group bbox + the MiniMap measurement hint). Adding a new sized node type is a
+  one-line change. **Fixes** the S&T MiniMap / group-bbox hint, which was a flat
+  `NODE_MIN_HEIGHT` (72 px) for cards that render at `ST_NODE_HEIGHT` (220 px).
+
+- **Routed-edge labels ride the route** (`waypointMidpoint` in `edgeGeometry.ts`,
+  consumed by `resolveEdgePath`). A bent (A\*-routed) edge's mid-label was anchored
+  at the straight bezier midpoint, which can sit far from the path — even inside an
+  obstacle the route bends around. The label now sits at the 50%-arc-length point
+  along the route's waypoints (bezier fallback when waypoints are absent).
+
+- **Edge palette actually applies (a11y fix).** Settings → Appearance → Edge palette
+  (default / colorblind-safe / mono) was stored, validated, persisted, and had a UI
+  — but every edge-color consumer read the hardcoded *default*-palette constants, so
+  the colorblind-safe and mono palettes recolored nothing on the canvas. `TPEdge`
+  (stroke / selected glow / reconnect handles), `useGraphEdgeEmission` (arrowhead
+  marker), and `JunctorOverlay` (AND junctor) now read the live `edgePalette` from
+  the store, so the palettes recolor strokes + markers as intended. Removed the
+  now-dead `EDGE_STROKE_*` back-compat token exports (knip baseline unchanged).
+
 ## Session 167 — Efrat cloud: ship the two breaking channels as canvas notes
 
 Follow-up to Session 166. The two cloud-breaking channels now ride *on the

@@ -9,28 +9,40 @@
  *   1. `mutex`      — the bidirectional-conflict straight-line override.
  *   2. `radial`     — the radial-layout obstacle-deflection route.
  *   3. `routedPath` — the dagre-mode smart router's precomputed `d` string. It
- *                     carries no label anchor, so the label borrows the bezier
- *                     midpoint (matching the prior chain, which never sourced a
- *                     label from the routed path).
+ *                     carries no label anchor, so the label is anchored at the
+ *                     midpoint *along its waypoints* when those are supplied
+ *                     (the routed path can bend far from the straight bezier
+ *                     midpoint), falling back to the bezier midpoint otherwise.
  *   4. `bezier`     — React Flow's default bezier between the handles.
  *
  * `routedPath` is kept when it is a non-null string — INCLUDING the empty
  * string — to preserve the exact `routedPath ?? bezierPath` semantics of the
  * original (only `null` / `undefined` fall through).
  */
+import { type Point, waypointMidpoint } from '@/domain/edgeGeometry';
+
 export type EdgePathCandidate = { path: string; labelX: number; labelY: number };
 
 export const resolveEdgePath = (input: {
   mutex: EdgePathCandidate | null;
   radial: EdgePathCandidate | null;
   routedPath: string | undefined;
+  routeWaypoints?: readonly Point[] | undefined;
   bezier: EdgePathCandidate;
 }): EdgePathCandidate => {
-  const { mutex, radial, routedPath, bezier } = input;
+  const { mutex, radial, routedPath, routeWaypoints, bezier } = input;
   if (mutex) return mutex;
   if (radial) return radial;
   if (routedPath != null) {
-    return { path: routedPath, labelX: bezier.labelX, labelY: bezier.labelY };
+    // The smart router carries no label anchor. Prefer the midpoint along the
+    // routed waypoints (a bent route's visual middle can sit far from — even
+    // inside an obstacle near — the straight bezier midpoint); fall back to the
+    // bezier midpoint when waypoints are absent or degenerate.
+    const mid =
+      routeWaypoints && routeWaypoints.length >= 2
+        ? waypointMidpoint(routeWaypoints)
+        : { x: bezier.labelX, y: bezier.labelY };
+    return { path: routedPath, labelX: mid.x, labelY: mid.y };
   }
   return bezier;
 };

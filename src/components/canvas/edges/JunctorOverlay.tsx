@@ -6,8 +6,10 @@ import {
   JUNCTOR_RADIUS,
   JUNCTOR_RADIUS_X,
 } from '@/domain/constants';
+import { EDGE_PALETTES } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
 import { setHoveredJunctor } from '@/services/canvasRef';
+import { useDocumentStore } from '@/store';
 import { arrayShallowEqualByKeys } from '@/store/equality';
 import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
@@ -48,13 +50,14 @@ import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
 
 type JunctorKind = 'AND' | 'OR' | 'XOR';
 
-/** Visual treatment per junctor kind. AND keeps the existing violet
- *  (matches the historical `EDGE_STROKE_AND` token to avoid churning
- *  every existing AND test snapshot). OR uses indigo (matches the app's
- *  accent), XOR uses rose (warm, exclusionary — pairs visually with the
- *  mutex edge stroke without colliding with it). */
+/** Default visual treatment per junctor kind. The AND color is overridden at
+ *  render time by the live edge palette (`EDGE_PALETTES[edgePalette].strokeAnd`)
+ *  so it tracks Settings → Appearance; OR (indigo, the app accent) and XOR
+ *  (rose, exclusionary — pairs with the mutex stroke) stay fixed. The AND
+ *  default below equals the default palette's AND, so untouched diagrams look
+ *  identical. */
 const KIND_STROKE: Record<JunctorKind, string> = {
-  AND: '#8b5cf6', // violet-500 — same as EDGE_STROKE_AND
+  AND: '#8b5cf6', // violet-500 — default-palette AND (assumption stripe)
   OR: '#6366f1', // indigo-500
   XOR: '#f43f5e', // rose-500
 };
@@ -201,6 +204,14 @@ export function JunctorOverlay() {
   // cursor is on (set by the transparent hit circle below).
   const connecting = useConnection((c) => c.inProgress);
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
+  // Edge-color palette (Settings → Appearance). The AND junctor shares the AND
+  // edge color, so it follows the live palette (colorblind-safe / mono); OR and
+  // XOR keep their fixed semantic hues — the palette only defines an AND color.
+  const edgePalette = useDocumentStore((s) => s.edgePalette);
+  const kindStroke: Record<JunctorKind, string> = {
+    ...KIND_STROKE,
+    AND: EDGE_PALETTES[edgePalette].strokeAnd,
+  };
 
   if (junctors.length === 0) return null;
 
@@ -227,13 +238,13 @@ export function JunctorOverlay() {
             orient="auto"
             markerUnits="userSpaceOnUse"
           >
-            <path d="M 0 0 L 10 6 L 0 12 z" fill={KIND_STROKE[kind]} />
+            <path d="M 0 0 L 10 6 L 0 12 z" fill={kindStroke[kind]} />
           </marker>
         ))}
       </defs>
       <g style={{ transform: `translate(${tx}px, ${ty}px) scale(${scale})` }}>
         {junctors.map((j) => {
-          const stroke = KIND_STROKE[j.kind];
+          const stroke = kindStroke[j.kind];
           return (
             <g key={j.id}>
               {/* Short line from junctor center to target top handle. */}

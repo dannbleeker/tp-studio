@@ -20,7 +20,7 @@ import {
   NODE_WIDTH,
 } from '@/domain/constants';
 import { selectEdgeSides } from '@/domain/edgeSides';
-import { EDGE_STROKE_AND, EDGE_STROKE_DEFAULT, EDGE_STROKE_SELECTED } from '@/domain/tokens';
+import { EDGE_PALETTES } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import type { TPEdge as TPEdgeType } from './flow-types';
@@ -328,6 +328,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // fast-path Object.is comparison short-circuit unrelated updates.
   const isRadialMode = useDocumentStore((s) => s.layoutMode === 'radial');
   const radialNodes = useRFStore((s) => (isRadialMode ? s.nodes : null), radialNodesEqual);
+  // Edge-color palette (Settings → Appearance → Edge palette). Reading the live
+  // selection here is what makes the colorblind-safe / mono palettes actually
+  // recolor edges; a stable primitive selector that changes only when the user
+  // switches palette.
+  const edgePalette = useDocumentStore((s) => s.edgePalette);
+  const palette = EDGE_PALETTES[edgePalette];
   const hasMutexOverride = mutexPath !== null;
   const radialRoute = useMemo(() => {
     if (!isRadialMode || !radialNodes) return null;
@@ -373,13 +379,16 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   //      when `layoutMode === 'radial'`.
   //   3. Smart router's precomputed path — fires in flow layouts when present.
   //   4. Default bezier — fallback when no routed path applies.
-  // Known limitation: the label position still uses the bezier midpoint even
-  // on a routed path (no midpoint-along-waypoints computation yet).
+  // The mid-label on a routed path is anchored at the midpoint *along the
+  // route's waypoints* (see `resolveEdgePath`), so it rides a bent detour
+  // instead of sitting at the straight bezier midpoint (which can land inside
+  // an obstacle the route bends around).
   const routedPath = props.data?.route?.d;
   const { path, labelX, labelY } = resolveEdgePath({
     mutex: mutexPath,
     radial: radialRoute,
     routedPath,
+    routeWaypoints: props.data?.route?.waypoints,
     bezier: { path: bezierPath, labelX: bezierLabelX, labelY: bezierLabelY },
   });
 
@@ -422,10 +431,10 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     : isMutex
       ? MUTEX_STROKE
       : props.selected
-        ? EDGE_STROKE_SELECTED
+        ? palette.strokeSelected
         : isJunctorGroup
-          ? EDGE_STROKE_AND
-          : EDGE_STROKE_DEFAULT;
+          ? palette.strokeAnd
+          : palette.stroke;
   // E4: selection feedback. Bumping the stroke width is the readable
   // signal — combined with the color change it's hard to miss which edge
   // is selected. A drop-shadow filter adds a faint glow that works on
@@ -463,7 +472,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const selectedFilter = isDropTarget
     ? `drop-shadow(0 0 6px ${SPLICE_TARGET_STROKE}88)`
     : props.selected
-      ? `drop-shadow(0 0 5px ${EDGE_STROKE_SELECTED}aa)`
+      ? `drop-shadow(0 0 5px ${palette.strokeSelected}aa)`
       : isHoverActive
         ? 'drop-shadow(0 0 3px #73737366)'
         : undefined;
@@ -506,7 +515,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         <path
           d={path}
           fill="none"
-          stroke={EDGE_STROKE_SELECTED}
+          stroke={palette.strokeSelected}
           strokeWidth={8}
           strokeOpacity={0.22}
           strokeLinecap="round"
@@ -554,7 +563,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
             cy={props.sourceY}
             r={EDGE_RECONNECT_HANDLE_RADIUS}
             fill="#ffffff"
-            stroke={EDGE_STROKE_SELECTED}
+            stroke={palette.strokeSelected}
             strokeWidth={2}
           />
           <circle
@@ -562,7 +571,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
             cy={props.targetY}
             r={EDGE_RECONNECT_HANDLE_RADIUS}
             fill="#ffffff"
-            stroke={EDGE_STROKE_SELECTED}
+            stroke={palette.strokeSelected}
             strokeWidth={2}
           />
         </g>

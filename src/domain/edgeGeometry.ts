@@ -46,6 +46,47 @@ export const OBSTACLE_PADDING = 8;
 export const DETOUR_CLEARANCE = 16;
 
 /**
+ * The point at the 50% mark along a polyline's total arc length.
+ *
+ * Used to anchor an edge's mid-label on a *routed* (bent) path: the straight
+ * bezier midpoint between the two handles can land far from the visible middle
+ * of a detoured route — even inside an obstacle the route bends around — so a
+ * label placed there reads as misplaced. Walking the waypoint arc length puts
+ * the label on the path itself. Degenerate inputs are handled: an empty list
+ * returns the origin, a single point returns itself, and a zero-length path
+ * (all points coincident) returns the first point.
+ */
+export const waypointMidpoint = (waypoints: readonly Point[]): Point => {
+  const first = waypoints[0];
+  if (!first) return { x: 0, y: 0 };
+  if (waypoints.length === 1) return first;
+
+  let total = 0;
+  for (let i = 1; i < waypoints.length; i++) {
+    const a = waypoints[i - 1];
+    const b = waypoints[i];
+    if (a && b) total += Math.hypot(b.x - a.x, b.y - a.y);
+  }
+  if (total === 0) return first;
+
+  const half = total / 2;
+  let acc = 0;
+  for (let i = 1; i < waypoints.length; i++) {
+    const a = waypoints[i - 1];
+    const b = waypoints[i];
+    if (!a || !b) continue;
+    const segLen = Math.hypot(b.x - a.x, b.y - a.y);
+    if (acc + segLen >= half) {
+      const t = segLen === 0 ? 0 : (half - acc) / segLen;
+      return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+    }
+    acc += segLen;
+  }
+  // Floating-point slack — the running sum can fall a hair short of `half`.
+  return waypoints[waypoints.length - 1] ?? first;
+};
+
+/**
  * Exact line-segment-vs-axis-aligned-box intersection test (Liang-
  * Barsky parametric clipping). Returns `true` when the segment from
  * `s` to `t` enters and exits the box's interior at some t ∈ [0, 1].

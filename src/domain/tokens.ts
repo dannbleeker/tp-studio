@@ -79,11 +79,10 @@ export const EDGE_PALETTES: Record<EdgePaletteId, EdgePaletteTokens> = {
   },
 };
 
-// Backwards-compat exports used by existing components. They point at the
-// default palette; runtime components should prefer the slice-driven values.
-export const EDGE_STROKE_DEFAULT = EDGE_PALETTES.default.stroke;
-export const EDGE_STROKE_SELECTED = EDGE_PALETTES.default.strokeSelected;
-export const EDGE_STROKE_AND = EDGE_PALETTES.default.strokeAnd;
+// Default-palette marker colors — used by the edge-emission test to assert the
+// default `markerEnd` color. Runtime edge rendering reads the LIVE palette
+// (`EDGE_PALETTES[edgePalette]` in TPEdge / useGraphEdgeEmission / JunctorOverlay)
+// so the colorblind-safe and mono palettes actually recolor strokes + markers.
 export const EDGE_MARKER_DEFAULT = EDGE_PALETTES.default.marker;
 export const EDGE_MARKER_AND = EDGE_PALETTES.default.markerAnd;
 
