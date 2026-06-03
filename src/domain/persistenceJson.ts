@@ -1,5 +1,6 @@
 import { errorMessage } from '@/services/errors';
 import { isCloudType } from './cloudType';
+import { pruneSingletonJunctors } from './graphPrune';
 import { isDiagramType, isObject, isTrueMap } from './guards';
 import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from './migrations';
 import {
@@ -48,7 +49,9 @@ export const importFromJSON = (raw: string): TPDocument => {
     throw new Error('Invalid document: bad diagramType.');
   }
   const entities = validateRecord(parsed.entities, validateEntity, 'entities');
-  const edges = validateRecord(parsed.edges, validateEdge, 'edges');
+  // Tidy any junctor group left with a single input — an older doc or import
+  // can carry a logically-vacuous "AND of one"; collapse it to a plain edge.
+  const edges = pruneSingletonJunctors(validateRecord(parsed.edges, validateEdge, 'edges'));
   const groups = validateRecord(parsed.groups ?? {}, validateGroup, 'groups');
 
   let resolvedWarnings: Record<string, true> = {};

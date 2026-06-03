@@ -31,6 +31,7 @@ export {
   openCommentCountsByAnchor,
   pruneAssumptions,
   pruneComments,
+  pruneSingletonJunctors,
   removeEntityFromEdges,
 } from './graphPrune';
 export { findCycles, findPath, reachableBackward, reachableForward } from './graphReach';

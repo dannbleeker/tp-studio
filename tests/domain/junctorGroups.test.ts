@@ -133,3 +133,29 @@ describe('setEdgeWeight (FL-ED1)', () => {
     expect(json.edges[e1.id].weight).toBe('zero');
   });
 });
+
+// Session 171 — a junctor needs ≥2 inputs; dropping to one auto-collapses to a
+// plain direct edge (no lonely "AND of one"). Enforced on the delete paths.
+describe('auto-collapse single-member junctors', () => {
+  it('ungroups the survivor when one co-cause edge is deleted', () => {
+    const { e1, e2 } = seedAndGroupable();
+    const grp = useDocumentStore.getState().groupAsAnd([e1.id, e2.id]);
+    expect(grp.ok).toBe(true);
+    expect(useDocumentStore.getState().doc.edges[e2.id]?.andGroupId).toBeTruthy();
+    // Delete one co-cause → group has a single input left → auto-ungroup.
+    useDocumentStore.getState().deleteEdge(e1.id);
+    const after = useDocumentStore.getState().doc.edges;
+    expect(after[e1.id]).toBeUndefined();
+    expect(after[e2.id]?.andGroupId).toBeUndefined();
+  });
+
+  it('ungroups the survivor when a cause entity is deleted (edge cascade)', () => {
+    const { a, e1, e2 } = seedAndGroupable();
+    useDocumentStore.getState().groupAsAnd([e1.id, e2.id]);
+    // Deleting cause A cascades its edge e1 away → group drops to e2 alone.
+    useDocumentStore.getState().deleteEntity(a.id);
+    const after = useDocumentStore.getState().doc.edges;
+    expect(after[e1.id]).toBeUndefined();
+    expect(after[e2.id]?.andGroupId).toBeUndefined();
+  });
+});

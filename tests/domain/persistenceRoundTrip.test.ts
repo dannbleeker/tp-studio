@@ -483,6 +483,10 @@ describe('persistence round-trip — every optional Entity field', () => {
     resetIds();
     const a = makeEntity({ title: 'Cause' });
     const b = makeEntity({ title: 'Effect' });
+    // A junctor needs ≥2 inputs, so a lone member is auto-ungrouped on load
+    // (Session 171). Give the AND group a second member so `andGroupId` is a
+    // valid, surviving field to assert on.
+    const c = makeEntity({ title: 'Co-cause' });
     const edge = makeEdge(a.id, b.id, {
       kind: 'sufficiency',
       label: 'leads to',
@@ -492,7 +496,8 @@ describe('persistence round-trip — every optional Entity field', () => {
       isBackEdge: false, // omitted on round-trip per "emit only true"
       isMutualExclusion: true,
     });
-    const doc = makeDoc([a, b], [edge]);
+    const coEdge = makeEdge(c.id, b.id, { andGroupId: 'and-grp-1' });
+    const doc = makeDoc([a, b, c], [edge, coEdge]);
     const reimported = importFromJSON(exportToJSON(doc));
     const survived = reimported.edges[edge.id];
     expect(survived).toBeDefined();

@@ -36,6 +36,42 @@ export const removeEntityFromEdges = (doc: TPDocument, entityId: string): Record
 };
 
 /**
+ * Enforce the "a junctor needs ≥ 2 inputs" invariant. An AND/OR/XOR group with
+ * fewer than two member edges is logically vacuous — a single cause is just a
+ * direct sufficiency / necessity arrow, not a junction — so clear the junctor
+ * field on any such edge. It then renders as a normal direct edge instead of a
+ * lonely "AND of one" circle.
+ *
+ * A group can only DROP below two members (deleting a co-cause edge, or a cause
+ * entity whose edges cascade away); `groupAs*` already refuses to CREATE a group
+ * from fewer than two. So this runs after the delete paths, and once on load to
+ * tidy imports / older docs. Returns the SAME `edges` reference when nothing
+ * changed, so callers can spread it conditionally.
+ */
+export const pruneSingletonJunctors = (edges: Record<string, Edge>): Record<string, Edge> => {
+  const memberCount = new Map<string, number>();
+  for (const edge of Object.values(edges)) {
+    const gid = edge.andGroupId ?? edge.orGroupId ?? edge.xorGroupId;
+    if (gid) memberCount.set(gid, (memberCount.get(gid) ?? 0) + 1);
+  }
+  let changed = false;
+  const next: Record<string, Edge> = {};
+  for (const [id, edge] of Object.entries(edges)) {
+    const gid = edge.andGroupId ?? edge.orGroupId ?? edge.xorGroupId;
+    if (gid && (memberCount.get(gid) ?? 0) < 2) {
+      // Omit all three junctor fields (an edge carries at most one) rather than
+      // setting `undefined` — exactOptionalPropertyTypes rejects that.
+      const { andGroupId: _a, orGroupId: _o, xorGroupId: _x, ...rest } = edge;
+      next[id] = rest;
+      changed = true;
+    } else {
+      next[id] = edge;
+    }
+  }
+  return changed ? next : edges;
+};
+
+/**
  * Prune the first-class `doc.assumptions` map against a POST-deletion set of
  * surviving edges + entities:
  *   - drop any Assumption whose host edge no longer exists (an orphan — the

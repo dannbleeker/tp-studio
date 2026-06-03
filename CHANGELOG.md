@@ -25,6 +25,19 @@ Reverse chronological. Entries are grouped by build session, not by release — 
     Chromium on the `crt-tons-per-hour` pattern. Added a `loadPattern(id)` test
     hook so the e2e/preview harness can load a library diagram deterministically.
 
+- **A junctor with one input auto-collapses to a plain edge.** AND/OR/XOR are
+  multi-operand connectives — a group left with a single member is logically
+  vacuous (one cause is just a direct sufficiency/necessity arrow, not a
+  junction), and it rendered as a lonely "AND of one" circle. `groupAs*` already
+  refuses to *create* a group from <2 edges, so a singleton only arises by
+  deleting one side of a pair; new pure `pruneSingletonJunctors` clears the
+  junctor field on any sub-2-member group, wired into both delete paths
+  (`deleteEdge`, `deleteEntity`) and the load/import chokepoint (`importFromJSON`,
+  which every load — localStorage, file-open, share-link, clone — flows through),
+  so existing/older docs get tidied on reload too. Reversible (re-group anytime);
+  supersedes the old deliberate "AND of one" tolerance. New `graphPrune.test.ts`
+  (5) + store-level delete tests in `junctorGroups.test.ts`.
+
 - **Junctor circles are now obstacles for the edge router.** The AND/OR/XOR
   circle is a rendered overlay the smart router (visibility-graph + A\*) couldn't
   see, so an unrelated edge — typically a cause node's OTHER outgoing edge — could

@@ -13,7 +13,12 @@
  */
 
 import { createEntity } from '@/domain/factory';
-import { pruneAssumptions, pruneComments, removeEntityFromEdges } from '@/domain/graph';
+import {
+  pruneAssumptions,
+  pruneComments,
+  pruneSingletonJunctors,
+  removeEntityFromEdges,
+} from '@/domain/graph';
 import type { DocumentId, Entity, EntityState, EntityType, Patch } from '@/domain/types';
 import { currentDoc } from '../../selectors';
 import { entityPatch, scrubFromGroups, touch } from '../docMutate';
@@ -113,7 +118,9 @@ export function createEntityCrudActions({
       applyDocChange((prev) => {
         if (!prev.entities[id]) return prev;
         const { [id]: _removed, ...rest } = prev.entities;
-        const edges = removeEntityFromEdges(prev, id);
+        // Cascade the entity's edges away, then collapse any junctor group the
+        // cascade left with a single input ("AND of one") back to a plain edge.
+        const edges = pruneSingletonJunctors(removeEntityFromEdges(prev, id));
         // Prune assumptions whose host edge was just removed (the entity's
         // edges cascade away) and scrub the deleted entity from injection
         // back-links. Conditional spread keeps `assumptions` absent when the
