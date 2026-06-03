@@ -45,12 +45,13 @@ Dann's review. Heavy export libs (`html-to-image`, `jspdf`, `svg2pdf`, `pptxgenj
   / ECSlotIndicator / `ecGuiding.ts`, all EC-only + eager. Lazy each, null fallback.
 - **#7 CreationWizardPanel** *(Low · S · ~3 KB)* — 506-line wizard, opens only on
   explicit action. `React.lazy` + prefetch on first `addEntity`.
-- **#1 Gate validators behind inspector `open`** *(Low · M · ~7–10 KB)* — the 1400-line
-  validators suite runs at mount via `Inspector`'s `useFingerprintMemo(validate)` even
-  when the panel is closed. Split an `InspectorBody` rendered only when open. PAIR W/ #5.
-- **#5 Lazy-load `Inspector`** *(Medium · M · ~10–15 KB — biggest single win)* —
-  Inspector + all sub-inspectors are eager though closed at boot. `React.lazy` + 500 ms
-  prefetch. MUST pair with #1 or `validate()` silently stops running.
+- ~~**#1 Gate validators behind inspector `open`.**~~ ❌ **Discarded (Dann, Session 172)** —
+  not doing this one. (Was: the 1400-line validators suite runs at mount via `Inspector`'s
+  `useFingerprintMemo(validate)` even when closed; the `InspectorBody` split carried a real
+  `validate()`-regression risk for a modest win.)
+- ~~**#5 Lazy-load `Inspector`.**~~ ❌ **Off the table with #1** — it was the biggest single
+  win (~10–15 KB) but MUST pair with #1 (or `validate()` silently stops running), so
+  discarding #1 takes #5 too.
 - **#8 actionEligibility eager for a TT-only badge** *(Medium · M · ~2–3 KB)* — gate the
   `statePropagation` + `actionEligibility` import behind `diagramType === 'tt'`.
   Low-confidence saving (`statePropagation` is also used by `usePropagatedStates`).
