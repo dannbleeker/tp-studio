@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Link2, Syringe, Target, Trash2, X } from 'lucide-react';
+import { Syringe, Target, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { actionEligibility } from '@/domain/actionEligibility';
 import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL, type ECSlot } from '@/domain/ecGuiding';
@@ -21,6 +21,7 @@ import {
 import { InsetCard } from '../ui/InsetCard';
 import { ActionFields } from './ActionFields';
 import { AttachedEdgesList } from './AttachedEdgesList';
+import { EntityLinksSection } from './EntityLinksSection';
 import { EntityStateSection } from './EntityStateSection';
 // Session 136 — EntityAttributesSection removed (user-custom
 // attributes dropped per Dann's usage feedback). The `attributes`
@@ -238,68 +239,16 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         </Field>
       )}
 
-      {/* Phase 2a (TP completeness #2) — navigable cross-document links. Each
-          chip jumps to the linked entity in its tab (switchTab + select);
-          targets whose tab is closed render muted + disabled. The × removes the
-          link (and its reciprocal mirror when that tab is open). */}
-      {entity.links && entity.links.length > 0 && (
-        <Field label="Linked to" as="group">
-          <div className="flex flex-col gap-1.5">
-            {entity.links.map((link) => {
-              const targetDoc = docs[link.docId];
-              const targetEntity = targetDoc?.entities[link.entityId];
-              const reachable = Boolean(targetDoc && targetEntity);
-              return (
-                <div key={`${link.docId}:${link.entityId}`} className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={!reachable}
-                    onClick={() => {
-                      switchTab(link.docId);
-                      selectEntity(link.entityId);
-                    }}
-                    title={
-                      reachable
-                        ? `Go to "${targetEntity?.title || 'entity'}" in ${targetDoc?.title}`
-                        : 'That document is not open — reopen its tab to follow this link.'
-                    }
-                    className={clsx(
-                      'flex min-w-0 flex-1 items-center gap-1.5 rounded-md border px-2 py-1 text-left text-xs transition',
-                      reachable
-                        ? 'border-indigo-200 bg-indigo-50/60 text-indigo-800 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-900/50'
-                        : 'cursor-not-allowed border-neutral-200 text-neutral-400 dark:border-neutral-800 dark:text-neutral-500'
-                    )}
-                  >
-                    <Link2 aria-hidden className="h-3 w-3 shrink-0" />
-                    <span className="truncate">
-                      {reachable ? (
-                        <>
-                          {targetEntity?.title || '(untitled)'}
-                          <span className="ml-1 text-indigo-500/70 dark:text-indigo-300/60">
-                            · {targetDoc?.title}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="italic">Linked entity (tab closed)</span>
-                      )}
-                    </span>
-                  </button>
-                  {!locked && (
-                    <button
-                      type="button"
-                      onClick={() => unlinkEntity(entity.id, link)}
-                      aria-label="Remove link"
-                      className="shrink-0 rounded-sm p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-rose-600 dark:hover:bg-neutral-800"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </Field>
-      )}
+      <EntityLinksSection
+        entity={entity}
+        docs={docs}
+        locked={locked}
+        onNavigate={(docId, entityId) => {
+          switchTab(docId);
+          selectEntity(entityId);
+        }}
+        onUnlink={(link) => unlinkEntity(entity.id, link)}
+      />
 
       {/* Phase 3 #3 — the "Injection Flower". Injection-only, read-only review
           surface (opens a dialog), so it stays enabled under Browse Lock. */}

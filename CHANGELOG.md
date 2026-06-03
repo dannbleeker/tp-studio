@@ -40,8 +40,10 @@ each gated green.
   `updateEntity` into a plain `onUpdate`). Guarded by a new real-browser
   `e2e/inspector.spec.ts` — it drives React Flow selection via the `__TP_TEST__`
   hook and asserts each extracted section renders, the verification the headless
-  jsdom + preview path can't do. (Remaining sections: `EntityLinksSection` /
-  `EntityProvenanceSection`.)
+  jsdom + preview path can't do. Then extracted **`EntityLinksSection`** (the
+  navigable cross-doc "Linked to" chips; the parent wraps switchTab / selectEntity /
+  unlinkEntity). So four sections are now out (StFacets / State / Action / Links);
+  the inspector + both e2e specs stay green. (Remaining: `EntityProvenanceSection`.)
 
 ## Session 168 — Rendering maintainability batch (from the canvas sweep)
 
