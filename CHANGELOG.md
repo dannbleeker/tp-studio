@@ -31,6 +31,17 @@ each gated green (tsc + biome + knip + full suite + build).
   the store, so the palettes recolor strokes + markers as intended. Removed the
   now-dead `EDGE_STROKE_*` back-compat token exports (knip baseline unchanged).
 
+- **`openRightPanel` helper** (`dialogsSlice.ts`). The "History + Comments share the
+  right-edge slot, only one is open, and opening History clears the selection so the
+  Inspector yields the column" rule was duplicated across four open/toggle actions;
+  one helper now owns it, so adding a third right-slot panel is a one-line change.
+  Behaviour-preserving; new store test pins the exclusion + selection contract.
+
+- **`markEntityAs` helper** (`commands/tools.ts`). The five identical `mark-as-*`
+  palette verbs (UDE / root cause / CSF / Action / Outcome) each inlined the same
+  11-line select-single-entity → retype body; collapsed to one-liners over a shared
+  guard. Behaviour-preserving.
+
 ## Session 167 — Efrat cloud: ship the two breaking channels as canvas notes
 
 Follow-up to Session 166. The two cloud-breaking channels now ride *on the

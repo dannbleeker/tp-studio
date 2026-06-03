@@ -1,10 +1,30 @@
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { GROUP_COLORS_ORDER } from '@/domain/groupColors';
+import type { EntityType } from '@/domain/types';
 import { validate } from '@/domain/validators';
 import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboard';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
+
+/**
+ * Shared body for the `mark-as-*` palette verbs: retype the single selected
+ * entity to `type`. Nudges with a toast when the selection isn't a single
+ * entity, and is a silent no-op when it's already that type — matching what
+ * each command inlined before. Mirrors the Inspector's Type picker.
+ */
+const markEntityAs = (s: Parameters<Command['run']>[0], type: EntityType): void => {
+  const sel = s.selection;
+  if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+    s.showToast('info', 'Select a single entity first.');
+    return;
+  }
+  const id = sel.ids[0]!;
+  const e = currentDoc(s).entities[id];
+  if (!e) return;
+  if (e.type === type) return;
+  s.updateEntity(id, { type });
+};
 
 export const toolCommands: Command[] = [
   {
@@ -130,35 +150,13 @@ export const toolCommands: Command[] = [
     id: 'mark-as-ude',
     label: 'Mark entity as UDE',
     group: 'Edit',
-    run: (s) => {
-      const sel = s.selection;
-      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
-        s.showToast('info', 'Select a single entity first.');
-        return;
-      }
-      const id = sel.ids[0]!;
-      const e = currentDoc(s).entities[id];
-      if (!e) return;
-      if (e.type === 'ude') return;
-      s.updateEntity(id, { type: 'ude' });
-    },
+    run: (s) => markEntityAs(s, 'ude'),
   }),
   withWriteGuard({
     id: 'mark-as-rootcause',
     label: 'Mark entity as root cause',
     group: 'Edit',
-    run: (s) => {
-      const sel = s.selection;
-      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
-        s.showToast('info', 'Select a single entity first.');
-        return;
-      }
-      const id = sel.ids[0]!;
-      const e = currentDoc(s).entities[id];
-      if (!e) return;
-      if (e.type === 'rootCause') return;
-      s.updateEntity(id, { type: 'rootCause' });
-    },
+    run: (s) => markEntityAs(s, 'rootCause'),
   }),
   // Goal Tree — promote a CSF (or any non-goal entity in a Goal
   // Tree) to the top-level Goal. The existing entity keeps its
@@ -190,18 +188,7 @@ export const toolCommands: Command[] = [
     id: 'mark-as-csf',
     label: 'Mark entity as Critical Success Factor',
     group: 'Edit',
-    run: (s) => {
-      const sel = s.selection;
-      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
-        s.showToast('info', 'Select a single entity first.');
-        return;
-      }
-      const id = sel.ids[0]!;
-      const e = currentDoc(s).entities[id];
-      if (!e) return;
-      if (e.type === 'criticalSuccessFactor') return;
-      s.updateEntity(id, { type: 'criticalSuccessFactor' });
-    },
+    run: (s) => markEntityAs(s, 'criticalSuccessFactor'),
   }),
   // Goal Tree — add a necessaryCondition child of the selected
   // entity (typically a CSF or Goal) connected via a necessity
@@ -273,35 +260,13 @@ export const toolCommands: Command[] = [
     id: 'mark-as-action',
     label: 'Mark entity as Action (TT)',
     group: 'Edit',
-    run: (s) => {
-      const sel = s.selection;
-      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
-        s.showToast('info', 'Select a single entity first.');
-        return;
-      }
-      const id = sel.ids[0]!;
-      const e = currentDoc(s).entities[id];
-      if (!e) return;
-      if (e.type === 'action') return;
-      s.updateEntity(id, { type: 'action' });
-    },
+    run: (s) => markEntityAs(s, 'action'),
   }),
   withWriteGuard({
     id: 'mark-as-outcome',
     label: 'Mark entity as desired Outcome (TT)',
     group: 'Edit',
-    run: (s) => {
-      const sel = s.selection;
-      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
-        s.showToast('info', 'Select a single entity first.');
-        return;
-      }
-      const id = sel.ids[0]!;
-      const e = currentDoc(s).entities[id];
-      if (!e) return;
-      if (e.type === 'desiredEffect') return;
-      s.updateEntity(id, { type: 'desiredEffect' });
-    },
+    run: (s) => markEntityAs(s, 'desiredEffect'),
   }),
   // TT step-completion verb. The `complete-step` validator (Session 53)
   // fires on Actions whose outgoing edge to an Outcome lacks a non-

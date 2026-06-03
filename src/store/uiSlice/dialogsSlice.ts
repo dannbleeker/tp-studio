@@ -347,6 +347,22 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   injectionFlowerEntityId: null,
 });
 
+/**
+ * The right-edge panel slot is shared by History and Comments (and the
+ * Inspector, which reads `selection`). Single source of truth for "only one of
+ * them is open": opening either closes the other, and opening History also
+ * clears the selection so the Inspector doesn't race it for the column. Callers
+ * layer on panel-specific extras (e.g. `pendingCommentAnchor`). Adding a third
+ * right-slot panel becomes a one-line change here instead of an audit of every
+ * open/toggle action.
+ */
+const openRightPanel = (
+  panel: 'history' | 'comments'
+): Partial<Pick<RootStore, 'historyPanelOpen' | 'commentsPanelOpen' | 'selection'>> =>
+  panel === 'history'
+    ? { historyPanelOpen: true, commentsPanelOpen: false, selection: { kind: 'none' } }
+    : { historyPanelOpen: false, commentsPanelOpen: true };
+
 export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> = (set, get) => ({
   paletteOpen: false,
   paletteInitialQuery: '',
@@ -443,36 +459,27 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   setECInspectorTab: (tab) => set({ ecInspectorTab: tab }),
   requestECInjectionsView: () => set({ ecInspectorTab: 'injections' }),
 
-  // History panel and Inspector share the right-edge slot — opening
-  // history clears any selection so the Inspector doesn't visually race
-  // for the same z-20 column. Picking something on the canvas while
-  // history is open closes history (Canvas's onSelectionChange will call
+  // History + Comments + the Inspector share the right-edge slot; `openRightPanel`
+  // owns the "only one open" rule (opening History also clears selection so the
+  // Inspector doesn't race it for the same z-20 column). Picking something on the
+  // canvas while history is open closes it (Canvas's onSelectionChange calls
   // `closeHistoryPanel` once a selection lands).
-  openHistoryPanel: () =>
-    set({ historyPanelOpen: true, commentsPanelOpen: false, selection: { kind: 'none' } }),
+  openHistoryPanel: () => set(openRightPanel('history')),
   closeHistoryPanel: () => set({ historyPanelOpen: false }),
-  toggleHistoryPanel: () => {
-    const next = !get().historyPanelOpen;
-    set({
-      historyPanelOpen: next,
-      ...(next ? { commentsPanelOpen: false, selection: { kind: 'none' } } : {}),
-    });
-  },
+  toggleHistoryPanel: () =>
+    set(get().historyPanelOpen ? { historyPanelOpen: false } : openRightPanel('history')),
 
-  // Comments share the right-edge slot with history, so opening comments
-  // closes history. Selection is deliberately preserved (the composer
-  // anchors new comments to it).
-  openCommentsPanel: () => set({ commentsPanelOpen: true, historyPanelOpen: false }),
+  // Comments preserve the selection (the composer anchors new comments to it);
+  // closing clears the pending anchor.
+  openCommentsPanel: () => set(openRightPanel('comments')),
   closeCommentsPanel: () => set({ commentsPanelOpen: false, pendingCommentAnchor: null }),
-  toggleCommentsPanel: () => {
-    const next = !get().commentsPanelOpen;
-    set({
-      commentsPanelOpen: next,
-      ...(next ? { historyPanelOpen: false } : { pendingCommentAnchor: null }),
-    });
-  },
-  startCommentAt: (anchor) =>
-    set({ commentsPanelOpen: true, historyPanelOpen: false, pendingCommentAnchor: anchor }),
+  toggleCommentsPanel: () =>
+    set(
+      get().commentsPanelOpen
+        ? { commentsPanelOpen: false, pendingCommentAnchor: null }
+        : openRightPanel('comments')
+    ),
+  startCommentAt: (anchor) => set({ ...openRightPanel('comments'), pendingCommentAnchor: anchor }),
   clearPendingCommentAnchor: () => set({ pendingCommentAnchor: null }),
 
   toggleInspector: () => set({ inspectorHidden: !get().inspectorHidden }),
