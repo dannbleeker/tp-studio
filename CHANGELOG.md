@@ -25,6 +25,18 @@ Reverse chronological. Entries are grouped by build session, not by release — 
     Chromium on the `crt-tons-per-hour` pattern. Added a `loadPattern(id)` test
     hook so the e2e/preview harness can load a library diagram deterministically.
 
+- **Junctor circles are now obstacles for the edge router.** The AND/OR/XOR
+  circle is a rendered overlay the smart router (visibility-graph + A\*) couldn't
+  see, so an unrelated edge — typically a cause node's OTHER outgoing edge — could
+  pass behind it and read as if it connected to the junction ("this edge goes
+  through the AND"). `useEdgeRoutes` now adds each junctor circle as an obstacle
+  box (new pure `junctorObstacleBoxes`, geometry mirroring `JunctorOverlay` /
+  `useJunctorCenterX` — centred over the causes, `JUNCTOR_CENTER_OFFSET_Y` below
+  the target, + an 8 px margin), so those edges route AROUND the circle. The
+  junctor's own cause-edges are still skipped by the router, so they're unaffected.
+  New `junctorObstacleBoxes` tests pin the box geometry; the 89 existing routing
+  tests stay green (clean layouts unchanged).
+
 - **More vertical room below a junctor (`LAYOUT_RANK_SEPARATION_JUNCTOR_MIN`
   90 → 160).** Centering the circle fixed the *horizontal* sweep, but the cause
   rank still sat only ~40 px below the circle, so an off-axis cause still entered

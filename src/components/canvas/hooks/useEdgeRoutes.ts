@@ -24,6 +24,7 @@
  */
 
 import { useMemo } from 'react';
+import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS, JUNCTOR_RADIUS_X } from '@/domain/constants';
 import {
   aStarOnGraph,
   type Box,
@@ -39,7 +40,13 @@ import { edgesArray } from '@/domain/graph';
 import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { junctorCenterX } from '../edges/junctorGeometry';
 import { nodeSizeFor } from './graphViewConstants';
+
+/** Padding around a junctor circle's obstacle box, so routed edges clear the
+ *  visible ellipse rather than grazing it. */
+const JUNCTOR_OBSTACLE_MARGIN = 8;
+
 import type { GraphPositions } from './useGraphPositions';
 import type { GraphProjection } from './useGraphProjection';
 
@@ -58,6 +65,52 @@ const obstacleBoxFor = (doc: TPDocument, id: string, position: Point): Box | nul
   const size = nodeSizeFor(doc, id);
   if (!size) return null;
   return { x: position.x, y: position.y, width: size.width, height: size.height };
+};
+
+/**
+ * Obstacle boxes for the AND/OR/XOR junctor circles in `doc` (one per group,
+ * keyed `junctor:<groupId>`). The router adds these so unrelated edges route
+ * AROUND a junctor instead of passing behind its circle. Geometry mirrors
+ * `JunctorOverlay` / `useJunctorCenterX`: the circle centres over its causes
+ * (`junctorCenterX`), `JUNCTOR_CENTER_OFFSET_Y` below the target's bottom, with a
+ * small margin so edges clear the visible ellipse. Skips a group whose target
+ * has no known position/size yet. Exported for unit testing.
+ */
+export const junctorObstacleBoxes = (
+  doc: TPDocument,
+  positions: GraphPositions
+): Map<string, Box> => {
+  const groups = new Map<string, { targetId: string; sourceIds: string[] }>();
+  for (const edge of edgesArray(doc)) {
+    const gid = edge.andGroupId ?? edge.orGroupId ?? edge.xorGroupId;
+    if (!gid) continue;
+    const g = groups.get(gid);
+    if (g) g.sourceIds.push(edge.sourceId);
+    else groups.set(gid, { targetId: edge.targetId, sourceIds: [edge.sourceId] });
+  }
+  const boxes = new Map<string, Box>();
+  for (const [gid, g] of groups) {
+    const tPos = positions[g.targetId];
+    const tSize = nodeSizeFor(doc, g.targetId);
+    if (!tPos || !tSize) continue;
+    const causeXs: number[] = [];
+    for (const sid of g.sourceIds) {
+      const sPos = positions[sid];
+      const sSize = nodeSizeFor(doc, sid);
+      if (sPos && sSize) causeXs.push(sPos.x + sSize.width / 2);
+    }
+    const cx = junctorCenterX(causeXs, tPos.x + tSize.width / 2);
+    const cy = tPos.y + tSize.height + JUNCTOR_CENTER_OFFSET_Y;
+    const halfW = JUNCTOR_RADIUS_X + JUNCTOR_OBSTACLE_MARGIN;
+    const halfH = JUNCTOR_RADIUS + JUNCTOR_OBSTACLE_MARGIN;
+    boxes.set(`junctor:${gid}`, {
+      x: cx - halfW,
+      y: cy - halfH,
+      width: halfW * 2,
+      height: halfH * 2,
+    });
+  }
+  return boxes;
 };
 
 /**
@@ -132,6 +185,13 @@ export const computeEdgeRoutes = (
     const box = obstacleBoxFor(doc, id, pos);
     if (box) allBoxes.set(id, box);
   }
+  // Junctor circles are overlays the router otherwise can't see, so an unrelated
+  // edge — e.g. a cause node's OTHER outgoing edge — can pass behind an AND/OR/XOR
+  // circle and read as if it connects to it. Add each junctor's circle as an
+  // obstacle box (synthetic `junctor:<gid>` id — never an edge endpoint, so it
+  // blocks every routed edge) so those edges route AROUND it. The junctor's own
+  // cause edges are skipped below, so they're unaffected.
+  for (const [id, box] of junctorObstacleBoxes(doc, positions)) allBoxes.set(id, box);
   const allBoxesArr: Box[] = [];
   // Parallel array of box ids in the same order as `allBoxesArr`.
   // Used inside the per-edge loop to skip the source/target boxes

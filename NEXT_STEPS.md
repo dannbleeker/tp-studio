@@ -4,6 +4,25 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ---
 
+## Open product questions (Session 171 — Dann, "remember the questions")
+
+- **Direction arrows on causal connectors — DECISION PENDING.** Should every
+  causal / necessity connector carry a clear cause→effect arrowhead? **My
+  recommendation: yes** — in the TP, the arrowhead *is* the logic (sufficiency /
+  necessity direction); it's the Goldratt / Flying-Logic convention and the only
+  thing that disambiguates reading direction once edges cross, a back-edge loops,
+  nodes sit side-by-side, or a diagram is exported and read cold. **Current state
+  (verified at 200%):** the junctor output draws a clean arrowhead but plain causal
+  connectors draw none — `useGraphEdgeEmission` *does* set `markerEnd: ArrowClosed`
+  on every non-junctor edge, so it's being occluded at the handle or rendering too
+  faint; likely a small fix to surface, not a new feature. Keep the three deliberate
+  exceptions: junctor groups share one output arrow (no per-cause arrows), mutex
+  (EC D↔D′) stays symmetric/arrow-less, note edges stay dotted/arrow-less.
+  **Sub-question for Dann:** default-on for everyone, or a Settings → Appearance
+  toggle (default on)? I lean default-on, no toggle.
+
+---
+
 ## Up next (Dann, Session 146 — canvas interaction)
 
 Queued right after the layout-aesthetics batch (margin 60→150 + adaptive rank

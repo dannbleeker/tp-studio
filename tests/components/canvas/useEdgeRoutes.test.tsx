@@ -13,9 +13,20 @@
 
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { computeEdgeRoutes, useEdgeRoutes } from '@/components/canvas/hooks/useEdgeRoutes';
+import { junctorCenterX } from '@/components/canvas/edges/junctorGeometry';
+import {
+  computeEdgeRoutes,
+  junctorObstacleBoxes,
+  useEdgeRoutes,
+} from '@/components/canvas/hooks/useEdgeRoutes';
 import { useGraphProjection } from '@/components/canvas/hooks/useGraphProjection';
-import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import {
+  JUNCTOR_CENTER_OFFSET_Y,
+  JUNCTOR_RADIUS,
+  JUNCTOR_RADIUS_X,
+  NODE_MIN_HEIGHT,
+  NODE_WIDTH,
+} from '@/domain/constants';
 import { computeCollapseProjection } from '@/domain/groups';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../../helpers/seedDoc';
@@ -335,5 +346,55 @@ describe('computeEdgeRoutes — 4-side anchoring', () => {
     const routes = computeEdgeRoutes(doc, projection, positions);
     expect(routes[e1.id]).toBeUndefined();
     expect(routes[e2.id]).toBeUndefined();
+  });
+});
+
+// -- Junctor circles as obstacles (Session 171) ----------------------------
+// The junctor circle is an overlay the router otherwise can't see, so an
+// unrelated edge could pass behind it ("edge going through the AND"). These pin
+// the obstacle box the router now adds so such edges route around the circle.
+describe('junctorObstacleBoxes', () => {
+  it('returns one box per group, centred over the causes', () => {
+    const a = seedEntity('A'); // cause
+    const b = seedEntity('B'); // cause
+    const c = seedEntity('C'); // target / effect
+    const store = useDocumentStore.getState();
+    const e1 = store.connect(a.id, c.id);
+    const e2 = store.connect(b.id, c.id);
+    if (!e1 || !e2) throw new Error('edges not created');
+    const grp = store.groupAsAnd([e1.id, e2.id]);
+    if (!grp.ok) throw new Error(`groupAsAnd failed: ${grp.reason}`);
+    const doc = useDocumentStore.getState().doc;
+    const positions = {
+      [a.id]: { x: 0, y: 400 },
+      [b.id]: { x: 400, y: 400 },
+      [c.id]: { x: 200, y: 0 },
+    };
+    const boxes = junctorObstacleBoxes(doc, positions);
+    expect(boxes.size).toBe(1);
+    const [key, box] = [...boxes.entries()][0] ?? ['', null];
+    expect(key.startsWith('junctor:')).toBe(true);
+    if (!box) throw new Error('no box');
+    // Box centre = the junctor circle centre (over the causes, nudged toward the
+    // target); the line up to the effect is what becomes diagonal.
+    const cx = junctorCenterX([NODE_WIDTH / 2, 400 + NODE_WIDTH / 2], 200 + NODE_WIDTH / 2);
+    const cy = NODE_MIN_HEIGHT + JUNCTOR_CENTER_OFFSET_Y;
+    expect(box.x + box.width / 2).toBeCloseTo(cx, 6);
+    expect(box.y + box.height / 2).toBeCloseTo(cy, 6);
+    // Size = the visible ellipse + an 8 px margin so edges clear it.
+    expect(box.width).toBe(2 * (JUNCTOR_RADIUS_X + 8));
+    expect(box.height).toBe(2 * (JUNCTOR_RADIUS + 8));
+  });
+
+  it('returns no boxes for a junctor-free doc', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    useDocumentStore.getState().connect(a.id, b.id);
+    const doc = useDocumentStore.getState().doc;
+    const boxes = junctorObstacleBoxes(doc, {
+      [a.id]: { x: 0, y: 0 },
+      [b.id]: { x: 0, y: 200 },
+    });
+    expect(boxes.size).toBe(0);
   });
 });
