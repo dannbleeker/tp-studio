@@ -33,7 +33,6 @@ export type { CustomEntityClass } from './customClass';
 export type { CloudType, LayoutConfig, SystemScope, TPDocument } from './document';
 export type { Edge, EdgeKind, EdgeWeight } from './edge';
 export type {
-  AttrKind,
   AttrValue,
   Entity,
   EntityLink,

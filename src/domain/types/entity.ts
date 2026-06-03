@@ -81,9 +81,6 @@ export type AttrValue =
   | { kind: 'real'; value: number }
   | { kind: 'bool'; value: boolean };
 
-/** Discriminator for `AttrValue.kind`, exported for UI consumers. */
-export type AttrKind = AttrValue['kind'];
-
 /**
  * Session 134 — spec major gap #6 (structured half).
  *

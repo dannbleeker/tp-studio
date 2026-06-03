@@ -28,7 +28,6 @@
 export type {
   Assumption,
   AssumptionStatus,
-  AttrKind,
   AttrValue,
   Brand,
   ClrRuleId,

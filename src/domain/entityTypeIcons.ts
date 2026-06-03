@@ -152,4 +152,3 @@ export const CUSTOM_CLASS_ICONS: Record<string, LucideIcon> = {
   X,
 };
 export type CustomClassIconName = keyof typeof CUSTOM_CLASS_ICONS;
-export const CUSTOM_CLASS_ICON_NAMES = Object.keys(CUSTOM_CLASS_ICONS) as CustomClassIconName[];

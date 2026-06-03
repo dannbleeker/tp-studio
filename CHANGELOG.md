@@ -2,6 +2,30 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 172 — autonomous under-the-hood optimization pass
+
+A self-directed maintainability/performance sweep (no user-facing change), driven
+by four parallel read-only audit agents (dead-code, non-canvas perf, type-safety,
+bundle-size) and landed in small independently-gated batches.
+
+- **Dead-code removal — 7 unused exports + 1 unused type deleted; knip now reports
+  zero unused exports** (was 7). All were stranded when `CustomEntityClassesSection`
+  was removed in Session 136, or were test-only hooks nothing calls:
+  - `SELECTED_BUTTON_CLASS_ICON` / `UNSELECTED_BUTTON_CLASS_ICON` (`ui/buttonClasses.ts`) —
+    the icon-scale button pair; the plain `SELECTED_BUTTON_CLASS` / `UNSELECTED_BUTTON_CLASS`
+    stay (live in `RadioGroup`, EdgeInspector, DocumentInspector, …).
+  - `Select` + `SelectProps` + `SelectOption` (`settings/formPrimitives.tsx`) — the third
+    form primitive; every call site only ever imported `TextInput` / `TextArea`.
+  - `chipClass` (`inspector/chipColors.ts`) — a one-line `CHIP_SCHEME[scheme]` wrapper no
+    consumer used (they index the pre-built dictionaries directly).
+  - `CUSTOM_CLASS_ICON_NAMES` (`domain/entityTypeIcons.ts` + its `entityTypeMeta` re-export).
+  - `__resetValidatorCacheForTests` / `__resetSimilarityCacheForTests` (`domain/validators/`) —
+    test-only cache resets with zero callers (the WeakMap/LRU caches isolate naturally).
+  - `type AttrKind` (`domain/types/entity.ts` + the `types` / `domain` barrel re-exports) —
+    a `AttrValue['kind']` alias nothing imported.
+  Also fixed the stale `CustomEntityClassesSection` references those symbols' doc comments
+  still named. Behaviour-preserving — full suite unchanged.
+
 ## Session 171 — AND/OR/XOR junctor follows its causes
 
 - **Junctor circles now center over their causes, not under the target.** A

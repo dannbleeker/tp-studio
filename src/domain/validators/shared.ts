@@ -165,13 +165,3 @@ export const similarity = (a: string, b: string): number => {
   }
   return score;
 };
-
-/**
- * Test-only cache reset. Lets benches and unit tests start from a
- * cold cache when measuring the cold-path cost, and prevents
- * cross-test contamination when one test asserts cache behaviour
- * directly. Production code never calls this.
- */
-export const __resetSimilarityCacheForTests = (): void => {
-  similarityCache.clear();
-};

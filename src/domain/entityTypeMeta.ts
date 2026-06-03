@@ -38,11 +38,7 @@ export {
   paletteForDoc,
 } from './entityPalettes';
 // Re-exports — keep `@/domain/entityTypeMeta` the single import surface.
-export {
-  CUSTOM_CLASS_ICON_NAMES,
-  CUSTOM_CLASS_ICONS,
-  type CustomClassIconName,
-} from './entityTypeIcons';
+export { CUSTOM_CLASS_ICONS, type CustomClassIconName } from './entityTypeIcons';
 
 export type EntityTypeMeta = {
   // Session 85 (#1) — widened from `EntityType` to `EntityType | string`

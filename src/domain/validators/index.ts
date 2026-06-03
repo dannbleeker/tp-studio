@@ -229,14 +229,6 @@ export const validate = (doc: TPDocument): Warning[] => {
 };
 
 /**
- * Test-only cache reset. Lets unit tests / benches start from a cold
- * cache when measuring the cold-path cost. Production never calls this.
- */
-export const __resetValidatorCacheForTests = (): void => {
-  fingerprintCache.clear();
-};
-
-/**
  * `validate()` grouped by tier. Tiers with no warnings keep an empty
  * array entry so consumers iterating `Object.entries` see a stable
  * shape regardless of which tiers produced output. Today the WarningsList

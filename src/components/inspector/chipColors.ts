@@ -16,8 +16,8 @@
  *   2. Three pre-built dictionaries that map the closed enums used
  *      by current consumers (`AssumptionStatus`,
  *      `EvidenceSource`, `EvidenceStrength`) to palette names.
- *   3. The `chipClass(scheme)` helper for the rare consumer that
- *      wants the raw className for an arbitrary palette.
+ *   3. The exported `CHIP_SCHEME` map itself, for the rare consumer
+ *      that wants the raw className for an arbitrary palette.
  *
  * Future consumers add a new palette here (one place to design),
  * then map their domain enum to a palette name in their own file.
@@ -64,13 +64,6 @@ export const CHIP_SCHEME: Record<ChipScheme, string> = {
   yellow:
     'border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200',
 };
-
-/**
- * Look up the className for a palette name. Equivalent to indexing
- * the `CHIP_SCHEME` map directly but reads more naturally at call
- * sites and keeps the dictionary access path in one place.
- */
-export const chipClass = (scheme: ChipScheme): string => CHIP_SCHEME[scheme];
 
 /**
  * Assumption-status → chip palette mapping. The four statuses come

@@ -3,9 +3,9 @@
  *
  * The two strings below were inlined in 10+ places (EntityInspector
  * type/size buttons, MultiInspector, EdgeInspector polarity buttons,
- * PrintPreviewDialog mode picker, CustomEntityClassesSection icon
- * picker, DocumentInspector diagram-type buttons, `RadioGroup` in
- * formPrimitives). Every callsite hand-coded the same indigo / neutral
+ * PrintPreviewDialog mode picker, DocumentInspector diagram-type
+ * buttons, `RadioGroup` in formPrimitives). Every callsite hand-coded
+ * the same indigo / neutral
  * combo for selected vs unselected states; a single design-token
  * tweak (e.g. swapping the accent hue) required 10 manual edits.
  *
@@ -54,22 +54,6 @@ export const SELECTED_BUTTON_CLASS_PLAIN =
 
 export const UNSELECTED_BUTTON_CLASS_PLAIN =
   'border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900';
-
-/**
- * Session 135 — sister pair for icon-only buttons where the text
- * colour drives the icon's `currentColor` stroke. The default
- * `text-indigo-900` reads too bold for small (h-3.5 w-3.5) Lucide
- * glyphs — the lighter `text-indigo-700` matches the design intent
- * at icon-picker scale (CustomEntityClassesSection).
- *
- * Use these when the button's inner element is an icon, not a text
- * label.
- */
-export const SELECTED_BUTTON_CLASS_ICON =
-  'border-indigo-400 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950 dark:text-indigo-200';
-
-export const UNSELECTED_BUTTON_CLASS_ICON =
-  'border-neutral-200 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800';
 
 /**
  * Session 135 (design audit #4) — the shared *shape* of a toggle /
