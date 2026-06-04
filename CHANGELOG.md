@@ -2,6 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 176 (cont.) — distinct colour for tagged back-edges
+
+- **Back-edges now paint a distinct amber-orange** (`#ea580c`) instead of the default
+  grey, so a feedback-loop closer stands out from the grey causal edges and the junctor
+  purple. Slots into `resolveEdgeVisuals`' stroke priority (drop-target → mutex →
+  selected → **back-edge** → junctor → default); the custom arrowhead (fill = stroke)
+  follows. Hardcoded like the mutex red — the colour is the semantic signal — so it shows
+  in every palette. The existing back-edge dash ("6 4") + extra width are unchanged. **Note:**
+  `isBackEdge` is a manual tag (right-click an edge → "Tag as back-edge"); the colour applies
+  once tagged — auto-detecting loop-closers is a separate backlog item. +1 unit test, verified
+  in-browser. (`edgeVisuals.ts`.)
+
 ## Session 176 (cont.) — Z batch wave 2: assumption placement (Z-3); Z-4 was stale cache
 
 - **Z-3 — an anchored assumption now renders beside the edge it annotates** instead of

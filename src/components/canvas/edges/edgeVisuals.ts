@@ -7,6 +7,10 @@ const MUTEX_STROKE = '#dc2626';
 /** Splice-target indigo (the "release lands on this edge" cue) — the same hue
  *  family as the app accent, so it introduces no new colour. */
 const SPLICE_TARGET_STROKE = '#6366f1';
+/** A TOC back-edge (feedback-loop closer) paints a distinct amber-orange so the
+ *  loop stands apart from the grey causal edges and the junctor purple. Hardcoded
+ *  (palette-independent) like the mutex red — the colour is the semantic signal. */
+const BACK_EDGE_STROKE = '#ea580c';
 
 /** The boolean edge states that drive its stroke / width / dash / glow, in the
  *  priority order {@link resolveEdgeVisuals} applies them. */
@@ -40,7 +44,7 @@ export type EdgeVisualStyle = {
  * new edge style is a single case here rather than five entangled conditional
  * chains in the component. Behaviour identical to the inlined version.
  *
- * Priority: drop-target → mutex → selected → junctor → default.
+ * Priority: drop-target → mutex → selected → back-edge → junctor → default.
  */
 export const resolveEdgeVisuals = (
   flags: EdgeStyleFlags,
@@ -55,9 +59,11 @@ export const resolveEdgeVisuals = (
       ? MUTEX_STROKE
       : selected
         ? palette.strokeSelected
-        : isJunctorGroup
-          ? palette.strokeAnd
-          : palette.stroke;
+        : isBackEdge
+          ? BACK_EDGE_STROKE
+          : isJunctorGroup
+            ? palette.strokeAnd
+            : palette.stroke;
 
   // Selected 3 · junctor 1.75 · note 1.25 · default 1.5; back-edge / drop-target
   // add +1.5, an active hover adds +1 (selection feedback wins over both).

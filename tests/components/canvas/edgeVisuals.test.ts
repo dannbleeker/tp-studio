@@ -5,6 +5,7 @@ import { EDGE_PALETTES } from '@/domain/tokens';
 const PAL = EDGE_PALETTES.default;
 const MUTEX = '#dc2626';
 const SPLICE = '#6366f1';
+const BACK_EDGE = '#ea580c';
 
 const base: EdgeStyleFlags = {
   isDropTarget: false,
@@ -36,6 +37,17 @@ describe('resolveEdgeVisuals', () => {
       PAL.strokeSelected
     );
     expect(resolveEdgeVisuals(f({ isJunctorGroup: true }), PAL).stroke).toBe(PAL.strokeAnd);
+  });
+
+  it('back-edge gets a distinct stroke colour (below selected, above junctor)', () => {
+    expect(resolveEdgeVisuals(f({ isBackEdge: true }), PAL).stroke).toBe(BACK_EDGE);
+    // Selection still wins; a back-edge that's also a junctor keeps the back-edge colour.
+    expect(resolveEdgeVisuals(f({ isBackEdge: true, selected: true }), PAL).stroke).toBe(
+      PAL.strokeSelected
+    );
+    expect(resolveEdgeVisuals(f({ isBackEdge: true, isJunctorGroup: true }), PAL).stroke).toBe(
+      BACK_EDGE
+    );
   });
 
   it('sizes the stroke width: selected 3, junctor 1.75, note 1.25, default 1.5', () => {
