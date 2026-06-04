@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { anchoredAssumptionIds, placeAssumptionsNearEdges } from '@/domain/assumptionPlacement';
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { layoutFingerprint } from '@/domain/fingerprint';
 import { edgesArray } from '@/domain/graph';
@@ -85,8 +86,13 @@ const buildLayoutInputs = (
   edges: { sourceId: string; targetId: string; isJunctor: boolean }[];
 } => {
   const { visibleEntityIds, visibleCollapsedRoots, remap } = projection;
+  // Z-3 — anchored assumptions are excluded from dagre (they're edge metadata,
+  // not structural nodes; left in, each is an isolated component dagre dumps in
+  // a far corner). `placeAssumptionsNearEdges` adds them back beside their edge.
+  const skipAssumptions = anchoredAssumptionIds(doc);
+  const entityIds = [...visibleEntityIds].filter((id) => !skipAssumptions.has(id));
   const nodes = [
-    ...[...visibleEntityIds].map((id) => {
+    ...entityIds.map((id) => {
       const { width, height } = nodeSizeFor(doc, id) ?? {
         width: NODE_WIDTH,
         height: NODE_MIN_HEIGHT,
@@ -231,7 +237,30 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
     };
   }, [fp, layoutDensity]);
 
+  // Signature of the assumption→edge anchor set — changes only when an
+  // assumption is attached / detached / re-anchored (which don't advance the
+  // structural layout fingerprint), so the placement memo re-runs on those.
+  const assumptionAnchorSig = useMemo(() => {
+    const parts: string[] = [];
+    for (const e of edgesArray(doc)) {
+      if (e.assumptionIds?.length) parts.push(`${e.id}:${e.assumptionIds.join(',')}`);
+    }
+    return parts.sort().join('|');
+  }, [doc]);
+
+  // Z-3 — augment the auto-layout (dagre/radial) with anchored-assumption cards
+  // placed beside their edges. Manual diagrams (EC) already position assumptions
+  // via `entity.position`, so they fall through untouched below.
+  const autoBase = radialPositions ?? dagreState.data;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: recompute only when the laid-out base map or the anchor signature changes; doc is read at compute time, and keying on it would re-run on title-only edits that move nothing — defeating the layout fingerprint gate.
+  const withAssumptions = useMemo(() => {
+    if (Object.keys(autoBase).length === 0) return autoBase;
+    const sizeOf = (id: string) =>
+      nodeSizeFor(doc, id) ?? { width: NODE_WIDTH, height: NODE_MIN_HEIGHT };
+    const placed = placeAssumptionsNearEdges(doc, autoBase, sizeOf);
+    return Object.keys(placed).length > 0 ? { ...autoBase, ...placed } : autoBase;
+  }, [autoBase, assumptionAnchorSig]);
+
   if (manualPositions) return manualPositions;
-  if (radialPositions) return radialPositions;
-  return dagreState.data;
+  return withAssumptions;
 };

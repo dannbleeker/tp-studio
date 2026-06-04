@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 176 (cont.) — Z batch wave 2: assumption placement (Z-3); Z-4 was stale cache
+
+- **Z-3 — an anchored assumption now renders beside the edge it annotates** instead of
+  dumped in a far corner. An assumption-typed entity shows as a card but has no causal
+  edges (it links to an edge via `Edge.assumptionIds`, drawn as a dashed connector), so
+  dagre treated it as an isolated 1-node component and packed it into the corner with a
+  long diagonal dashed line across the whole diagram (Dann: "rendered very very far
+  away"). New pure `src/domain/assumptionPlacement.ts` (`anchoredAssumptionIds` /
+  `placeAssumptionsNearEdges`): anchored assumptions are excluded from the dagre input
+  (they contribute nothing structural → the real graph stays byte-identical) and placed
+  after layout beside their edge's midpoint, pushed perpendicular on the side farther
+  from the structural centroid (into open space). Wired through `useGraphPositions`
+  (filtered out of `buildLayoutInputs`; the position map is augmented, memoised on the
+  laid-out base + an anchor signature so re-anchoring re-runs without re-running dagre).
+  **+7 unit tests**; verified in-browser (every structural card sits exactly where it
+  did; the dashed connector is now short). Manual diagrams (EC) — which position
+  assumptions via `entity.position` — are untouched.
+- **Z-4 — "forward edges have no arrows" was a stale bundle, not a bug.** A real-browser
+  load of Dann's exact fixture showed every direct-forward edge already carrying a
+  correctly-placed arrowhead, byte-identical to the back-edge's (emission stamps the same
+  `markerEnd` on every non-junctor edge). The Wave-1 deploy refreshed the asset hashes;
+  Dann reloaded and confirmed the arrows are back. No code change.
+
 ## Session 176 — Z batch wave 1: editable zoom + F2-to-rename
 
 Two small UX wins from Dann's "Z batch". The basic drawing flow is unchanged.

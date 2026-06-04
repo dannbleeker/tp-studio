@@ -4,16 +4,15 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ---
 
-## "Z BATCH" — Dann's backlog (planned + prep done Session 175; build next session)
+## "Z BATCH" — Dann's backlog (Wave 1 + 2 shipped Session 176; Wave 3 remains)
 
 Six items from Dann's review. Repro fixture committed at
 `e2e/fixtures/inventory-turns-crt.tps.json` ("Inventory turns falling CRT") — load it
 deterministically with the new `window.__TP_TEST__.loadDoc(json)` hook. Prep shipped
 this session: the `loadDoc` / `setEntityPosition` / `fitView` test hooks + the fixture.
 
-- **Z-1 — Editable zoom %.** Click the zoom factor (the `−  NN%  +  ⛶` strip, bottom
-  centre) → inline number input → `zoomTo(n/100)` clamped to React Flow's min/max.
-  Self-contained, no diagram needed. Control lives near `Canvas.tsx`.
+- **Z-1 — Editable zoom %. ✅ SHIPPED Session 176 (wave 1).** Click the `{n}%` chip in
+  `CanvasNav` → inline number input → `flow.zoomTo(n/100)` (clamped); Escape cancels.
 - **Z-2 + Z-5 + behind-entities — causal back-edge routing.** The diagram has a real
   feedback loop `#4 ⇄ #6` (`q36o` = #4→#6 forward; **`DJJo` = #6→#4 is the
   back-edge**, `isBackEdge`). Today it routes ~straight up, overlapping the forward
@@ -24,36 +23,31 @@ this session: the `loadDoc` / `setEntityPosition` / `fitView` test hooks + the f
   → tests-first. Pointers: `edge.isBackEdge` (set during cycle-break in
   layout/`graphCore`); `TPEdge` (`isBackEdge` → `BackEdgeBadge`); `useEdgeRoutes`
   (back-edges currently take the normal A\* path with no special exit/loop rule).
-- **Z-3 — assumption rendered very far away. DIAGNOSED.** The assumption (#10) is an
-  entity node with **no graph edges** — it annotates EDGE `9sys` (#6→#8) via
-  `assumptionIds`, not a node — so dagre has nothing to rank it by and dumps it in an
-  isolated slot at the canvas bottom-left, with a long dashed connector to anchor "A".
-  Fix: position the assumption node near its annotated edge (edge midpoint / near
-  source `#6`), not via dagre's isolated-node placement. Pointers:
-  `AssumptionAnchorOverlay`, the assumption entity in `useGraphPositions` / projection,
-  `assumptions[].edgeId`.
-- **Z-4 — direct entity→entity FORWARD edges have no arrows. CONFIRMED REAL BUG.**
-  Dann unregistered the SW and the arrows are STILL missing — but ONLY on direct
-  (non-junction) forward edges; the AND-junctor output arrow and the back-edge arrow
-  render fine. PUZZLE: a fresh `loadDoc` of his exact diagram + a DOM sweep found the
-  arrowhead `<path>` element present on every regular edge (incl. the direct
-  forward ones `3z7h`/`6O6K`/`q36o`), `hasArrow:true`. So the bug is subtle —
-  present-in-DOM but not VISIBLE for direct forward edges (degenerate placement /
-  zero-size / occluded), OR the DOM check was a false positive. Wave-2 diagnosis:
-  at a readable zoom, compare the rendered arrowhead (position/size/opacity) on a
-  direct forward edge vs the back-edge `DJJo`; inspect `arrowheadOnPath` placement +
-  whether the routed path's terminal tangent is degenerate for these edges. Pointers:
-  `TPEdge` arrowhead (`arrowheadOnPath`, `edgeArrowhead.ts`), `useGraphEdgeEmission`
-  (`markerEnd` stamp).
-- **Z-6 — F2 = edit, Delete = delete (selected entity).** When an entity node is
-  selected (not editing its text): `F2` → `beginEditing(id)`; `Delete` →
-  `confirmAndDeleteEntity(id)` (reuse the confirm-on-edges flow). Canvas-level keyboard
-  handler; self-contained. Mind the selection-mirror race the test hook documents.
+- **Z-3 — assumption rendered very far away. ✅ SHIPPED Session 176 (wave 2).** The
+  assumption (#10) is an entity node with no causal edges (it annotates EDGE `9sys`
+  #6→#8 via `assumptionIds`), so dagre dumped it as an isolated node in the bottom-left
+  corner. Fix: new pure `src/domain/assumptionPlacement.ts` excludes anchored
+  assumptions from the dagre input (structural layout byte-identical) and places each
+  beside its edge's midpoint, perpendicular-offset toward open space; wired through
+  `useGraphPositions` (augmented + memoised on base + anchor signature). +7 unit tests,
+  in-browser verified.
+- **Z-4 — direct FORWARD edges have no arrows. ✅ RESOLVED — stale bundle, not a bug.**
+  A real-browser load of Dann's exact fixture showed every direct-forward edge already
+  carrying a correctly-placed arrowhead, byte-identical to the back-edge's (emission
+  stamps the same `markerEnd` on every non-junctor edge; `arrowheadOnPath` places it
+  identically). The Wave-1 deploy bumped the asset hashes; Dann reloaded and confirmed
+  the arrows are back. No code change. (If it ever recurs on a FRESH bundle, the geometry
+  dump recipe — `loadDoc` + read each arrowhead `<path>`'s transform/rect — is the way to
+  reopen it.)
+- **Z-6 — F2 = edit, Delete = delete (selected entity). ✅ SHIPPED Session 176 (wave 1).**
+  `F2` added to the rename branch in `useSelectionShortcuts` (Delete/Backspace already
+  deleted the selection). F2 edits an entity title; a no-op on a group.
 
-**Sequence:** Wave 1 quick wins (Z-1, Z-6 — no diagram, low risk) → Wave 2 confirm Z-4
-(SW unregister) + fix Z-3 (assumption placement) → Wave 3 back-edge routing (Z-2 + Z-5
-+ behind-entities, tests-first). **Friction:** until `biome.exe` is AppLocker-unblocked
-(email drafted for Tech Support), every commit needs the PowerShell + `--no-verify`
+**Sequence:** ✅ Wave 1 (Z-1, Z-6) + ✅ Wave 2 (Z-3 fixed; Z-4 was stale cache) shipped
+Session 176. **REMAINING = Wave 3: Z-2 + Z-5 back-edge routing** (exit source top, loop
+around the source, then normal rules to target, never cross behind an entity; folds in
+the parked edge-behind-card item) — delicate, tests-first. **Friction:** until
+`biome.exe` is AppLocker-unblocked, every commit needs the PowerShell + `--no-verify`
 bypass and a by-hand biome check.
 
 ---
