@@ -286,7 +286,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       <Handle
         type="target"
         position={targetPosition}
-        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-white before:content-[''] group-hover:before:border-indigo-400 dark:before:border-neutral-700 dark:before:bg-neutral-900"
+        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-transparent before:content-[''] group-hover:before:border-indigo-400 dark:before:border-neutral-700"
       />
       <div
         className="w-1.5 shrink-0 rounded-l-lg"
@@ -448,7 +448,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       <Handle
         type="source"
         position={sourcePosition}
-        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-white before:content-[''] group-hover:before:border-indigo-400 dark:before:border-neutral-700 dark:before:bg-neutral-900"
+        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-transparent before:content-[''] group-hover:before:border-indigo-400 dark:before:border-neutral-700"
       />
     </div>
   );

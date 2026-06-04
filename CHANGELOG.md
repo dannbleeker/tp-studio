@@ -2,6 +2,39 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 173 — edge & arrow rendering polish
+
+Visual refinement of the causal arrowheads + the AND/OR/XOR junctor, from Dann's
+review. Geometry-only; the gate stays green.
+
+- **Arrowheads now follow the edge's actual curve, not the straight chord.** The
+  arrowhead was placed + oriented along the straight source→target line, but the
+  rendered edge is a bezier — so on a bent or converging edge the arrowhead floated
+  *beside* the stroke instead of on it (worst where two causes converge on one
+  effect). `arrowheadOnPath` (`edgeArrowhead.ts`) now reads the rendered path's
+  terminal tangent (its last cubic's `end − c2`) and sits the arrowhead on that, so
+  the tip rides the line as it enters the card. Falls back to the straight chord when
+  a path has no parseable cubic; `terminalTangent` + `arrowheadOnPath` are pure +
+  unit-tested (8 new cases).
+- **Arrowheads sit closer to the entity.** `ARROW_TIP_GAP` 11 → 6 (Dann: the tip sat
+  too far from the card on a straight edge).
+- **The AND/OR/XOR output arrow no longer crowds the junctor circle.** On a short
+  output line (effect directly above the circle) the marker's base landed right on the
+  circle. The marker `refX` 20 → 15 pulls the arrowhead up toward the effect, opening
+  clear space above the circle (`JunctorOverlay`).
+- **Cause-edges connect flush to their cards.** The connection handle's dot was an 8px
+  *white-filled* circle centred on the card border, so it hid the first ~4px of every
+  edge — the edge read as starting a few px *off* the card. Dropped the fill: the dot
+  is now a ring (the edge shows through it to the border), so edges connect flush while
+  the ring stays a discoverable connection marker (`TPNode`). Against the white card
+  the dot already read as a ring, so the only visible change is edges no longer being
+  clipped by it.
+
+Deferred to its own focused task: **edge-crossing reroute** — when a manual node move
+makes two edges cross, the smart router (per-edge A\* over node obstacles) doesn't
+avoid edge–edge crossings. That's a separate crossing-aware routing enhancement
+(plan in NEXT_STEPS).
+
 ## Session 172 — autonomous under-the-hood optimization pass
 
 A self-directed maintainability/performance sweep (no user-facing change), driven

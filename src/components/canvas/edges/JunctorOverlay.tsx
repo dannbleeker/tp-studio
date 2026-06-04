@@ -257,16 +257,19 @@ export function JunctorOverlay() {
     >
       <title>Junctors</title>
       <defs>
-        {/* One arrowhead marker per kind (different fill colors).
-            `refX=10` puts the tip a couple of units short of the line
-            endpoint so it doesn't pierce the target node's border. */}
+        {/* One arrowhead marker per kind (different fill colors). `refX` sits the
+            arrowhead just short of the target so its tip nears the effect while
+            its base keeps clear space above the AND/OR/XOR circle. 20 → 15 pulls
+            the arrow up off the circle (Dann: "needs a bit of space there"); the
+            short output line into a directly-above effect is only ~21px, so the
+            arrow base was landing right on the circle. */}
         {(['AND', 'OR', 'XOR'] as JunctorKind[]).map((kind) => (
           <marker
             key={kind}
             id={`tp-junctor-arrow-${kind.toLowerCase()}`}
             markerWidth="30"
             markerHeight="20"
-            refX="20"
+            refX="15"
             refY="8"
             orient="auto"
             markerUnits="userSpaceOnUse"

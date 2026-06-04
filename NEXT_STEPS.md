@@ -4,6 +4,26 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ---
 
+## Edge-crossing reroute (Session 173 — Dann, "do #5 next")
+
+When a user **manually moves** a node and two edges end up crossing in an X, the smart
+router doesn't undo it: `computeEdgeRoutes` (`useEdgeRoutes.ts`) runs A\* per edge over
+**node** obstacles only — it's edge-crossing-blind by design. Making it crossing-aware
+is the ask ("reroute one the opposite way around, if possible").
+
+**Scoped approach (own focused task + tests):**
+- After the per-edge A\* pass, detect crossing pairs (segment-intersection over the
+  routed waypoint polylines; O(E²), E small per diagram).
+- For a crossing pair sharing no endpoint, reroute the cheaper-to-move edge: re-run its
+  A\* with the *other* edge's polyline added as a soft obstacle corridor, or flip its
+  `selectEdgeSides` choice. Accept the reroute only if it removes the crossing without
+  introducing a new crossing / obstacle hit.
+- Cap at 1–2 passes for perf; stay behind the existing `'smart'` routing pref.
+- Risk: touches the working router — needs careful before/after verification on dense +
+  manually-moved layouts.
+
+---
+
 ## Open product questions (Session 171 — Dann, "remember the questions")
 
 - ~~**Direction arrows on causal connectors.**~~ ✅ *Session 171* — every causal /

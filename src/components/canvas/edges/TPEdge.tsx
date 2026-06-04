@@ -11,7 +11,7 @@ import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/
 import { EDGE_PALETTES } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
-import { ARROW_TRIANGLE_D, arrowheadPlacement, arrowheadTransform } from './edgeArrowhead';
+import { ARROW_TRIANGLE_D, arrowheadOnPath, arrowheadTransform } from './edgeArrowhead';
 import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
@@ -370,13 +370,16 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
 
   // Cause→effect arrowhead placement — a custom oriented `<path>` (not React
   // Flow's `markerEnd`, which can't follow a curved approach); `edgeArrowhead.ts`
-  // holds the full rationale + the tuning constants. `show` folds in the gate:
-  // mutex edges (symmetric conflict) and note edges (dotted annotations) are
-  // arrow-less by design, as are edges with no `markerEnd` tag. `effectiveTargetX/Y`
-  // are the real endpoint (junctor edges carry no arrow, so the junctor offset
-  // never applies here).
-  const arrowHead = arrowheadPlacement({
+  // holds the full rationale + the tuning constants. It orients to the rendered
+  // `path`'s terminal tangent so the tip stays ON the curve where the edge meets
+  // the card (a bent / converging edge diverges from the straight chord). `show`
+  // folds in the gate: mutex edges (symmetric conflict) and note edges (dotted
+  // annotations) are arrow-less, as are edges with no `markerEnd` tag.
+  // `effectiveTargetX/Y` are the real endpoint (junctor edges carry no arrow, so
+  // the junctor offset never applies here).
+  const arrowHead = arrowheadOnPath({
     show: Boolean(props.markerEnd) && !isMutex && !isNoteEdge,
+    path,
     sourceX: props.sourceX,
     sourceY: props.sourceY,
     targetX: effectiveTargetX,
@@ -422,8 +425,8 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         // ENDPOINT tangent (the target handle's fixed normal, e.g. vertical for
         // a Position.Bottom handle), but the routed/bezier curve approaches the
         // box diagonally, so an offset marker pointed the wrong way ("not on the
-        // line"). Rendering it ourselves lets it follow the actual source→target
-        // direction. Mutex edges stay arrow-less (symmetric conflict).
+        // line"). Rendering it ourselves lets it follow the rendered path's
+        // terminal tangent. Mutex edges stay arrow-less (symmetric conflict).
         interactionWidth={EDGE_INTERACTION_WIDTH}
         style={{
           stroke,
