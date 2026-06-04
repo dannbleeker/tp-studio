@@ -9,9 +9,7 @@ const mkDoc = (
   edges: Record<string, { sourceId: string; targetId: string; isBackEdge?: boolean }>
 ): TPDocument =>
   ({
-    entities: Object.fromEntries(
-      entityIds.map((id) => [id, { id, type: 'rootCause', title: id }])
-    ),
+    entities: Object.fromEntries(entityIds.map((id) => [id, { id, type: 'rootCause', title: id }])),
     edges: Object.fromEntries(
       Object.entries(edges).map(([id, e]) => [id, { id, kind: 'sufficiency', ...e }])
     ),
