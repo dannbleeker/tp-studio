@@ -79,9 +79,7 @@ export const useJunctorSourceAnchor = (params: {
   const topLeft = useRFStore((s) => {
     if (!isJunctorEdge) return null;
     const n = s.nodeLookup.get(sourceId);
-    return n
-      ? { x: n.internals.positionAbsolute.x, y: n.internals.positionAbsolute.y }
-      : null;
+    return n ? { x: n.internals.positionAbsolute.x, y: n.internals.positionAbsolute.y } : null;
   }, xyEqual);
   return useMemo(
     () => junctorSourceAnchor(axis, sourceX, sourceY, topLeft),
