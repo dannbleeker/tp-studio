@@ -64,6 +64,14 @@ export type SelectSidesInput = {
    * side is chosen.
    */
   readonly targetAnchorOverride?: Point;
+  /**
+   * Force both endpoints onto specific sides, bypassing the position-based pick +
+   * scoring. The seam for back-edge routing (Wave 3): a loop-closer exits the
+   * source's top and enters the target on the flow-facing side regardless of the
+   * boxes' relative position. Ignored for junctor edges (`targetAnchorOverride`
+   * wins). Unset → normal position-based selection.
+   */
+  readonly forceSides?: { readonly source: Side; readonly target: Side };
 };
 
 /**
@@ -197,7 +205,17 @@ const overlapsOnAxis = (a: Box, b: Box, axis: Axis): boolean =>
  * preferred pair and lets A\* detour.
  */
 export const selectEdgeSides = (input: SelectSidesInput): SideSelection => {
-  const { sourceBox, targetBox, axis, obstacles, targetAnchorOverride } = input;
+  const { sourceBox, targetBox, axis, obstacles, targetAnchorOverride, forceSides } = input;
+  // Forced sides (the back-edge routing seam) bypass the position-based pick — but
+  // a junctor's circle override always wins (its target isn't a box side).
+  if (forceSides && !targetAnchorOverride) {
+    return {
+      sourceSide: forceSides.source,
+      sourceAnchor: sideAnchor(sourceBox, forceSides.source),
+      targetSide: forceSides.target,
+      targetAnchor: sideAnchor(targetBox, forceSides.target),
+    };
+  }
   const sc = boxCenter(sourceBox);
   const tc = targetAnchorOverride ?? boxCenter(targetBox);
   const isJunctor = targetAnchorOverride != null;

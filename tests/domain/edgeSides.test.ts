@@ -28,6 +28,37 @@ describe('sideAnchor', () => {
   });
 });
 
+describe('selectEdgeSides — forced sides (back-edge routing seam)', () => {
+  it('returns the forced sides + their anchors, overriding the position pick', () => {
+    // Source ABOVE target → the position pick would choose source-bottom / target-top;
+    // forceSides overrides that to top / bottom.
+    const sel = selectEdgeSides({
+      sourceBox: box(0, 0),
+      targetBox: box(0, 300),
+      axis: 'vertical',
+      obstacles: [],
+      forceSides: { source: 'top', target: 'bottom' },
+    });
+    expect(sel.sourceSide).toBe('top');
+    expect(sel.targetSide).toBe('bottom');
+    expect(sel.sourceAnchor).toEqual({ x: 50, y: 0 }); // source top mid
+    expect(sel.targetAnchor).toEqual({ x: 50, y: 400 }); // target bottom mid (box is 100 tall)
+  });
+
+  it('is ignored when a junctor target override is present (the override wins)', () => {
+    const override = { x: 50, y: 280 };
+    const sel = selectEdgeSides({
+      sourceBox: box(0, 0),
+      targetBox: box(0, 300),
+      axis: 'vertical',
+      obstacles: [],
+      targetAnchorOverride: override,
+      forceSides: { source: 'top', target: 'bottom' },
+    });
+    expect(sel.targetAnchor).toEqual(override);
+  });
+});
+
 describe('selectEdgeSides — preferred pair by relative position', () => {
   it('vertical axis, target below → source bottom / target top', () => {
     const sel = selectEdgeSides({
