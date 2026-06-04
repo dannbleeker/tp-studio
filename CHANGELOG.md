@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 174 — CI: action-send-mail@v4 → @v17 (the actual last Node-20 runtime)
+
+`dawidd6/action-send-mail` — the "Email the EPUB to Kindle" step in
+`rebuild-book-pdf.yml` — was pinned to `@v4`, whose bundled runtime is `node20`,
+the source of a recurring "Node.js 20 actions are deprecated" warning on every
+book-send run. Bumped to `@v17` (runtime `node24`); all ten inputs the step uses
+(`server_address` / `server_port` / `secure` / `username` / `password` / `from` /
+`to` / `subject` / `body` / `attachments`) are unchanged, so it's a drop-in.
+
+This is the genuine completion of the Node-24 migration. Both Session 135 ("every
+JS action pinned to a major that runs on Node 24 natively") and Session 153 ("drop
+the last Node-20 runtime") over-claimed — `send-mail@v4` slipped through both
+sweeps because its `v4` tag *looks* current, but the series actually runs to v17,
+so the pin was many majors behind. Verified against every other `uses:` across all
+six workflows: each is already on a Node-24 major (`actions/*@v5`–`v7`,
+`pnpm/action-setup@v6`, `create-pull-request@v8`). With this, no action in any
+workflow runs on Node 20.
+
 ## Session 173 — edge & arrow rendering polish
 
 Visual refinement of the causal arrowheads + the AND/OR/XOR junctor, from Dann's
