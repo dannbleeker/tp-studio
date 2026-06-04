@@ -50,6 +50,13 @@ crash fix that surfaced mid-session (first bullet below).
   added an "Arrowheads" section to `docs/RENDER_ENGINE_NOTES.md` mapping the
   causal-path vs junction-marker split.
 
+- **Note edges are arrow-less again.** The now-visible custom arrowhead was
+  rendering on dotted note edges (emission stamps `markerEnd` on every
+  non-junctor edge; the `TPEdge` arrow gate only excluded mutex). The Session-171
+  marker was invisible so this never showed — the visible `<path>` exposed it.
+  Added the missing `!isNoteEdge` to the gate, so notes (annotations) and mutex
+  edges (symmetric conflict) are both arrow-less by design.
+
 - **Dead-code removal — 7 unused exports + 1 unused type deleted; knip now reports
   zero unused exports** (was 7). All were stranded when `CustomEntityClassesSection`
   was removed in Session 136, or were test-only hooks nothing calls:

@@ -371,11 +371,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // Cause→effect arrowhead placement — a custom oriented `<path>` (not React
   // Flow's `markerEnd`, which can't follow a curved approach); `edgeArrowhead.ts`
   // holds the full rationale + the tuning constants. `show` folds in the gate:
-  // mutex edges and arrow-less edges (no `markerEnd`) get none. `effectiveTargetX/Y`
+  // mutex edges (symmetric conflict) and note edges (dotted annotations) are
+  // arrow-less by design, as are edges with no `markerEnd` tag. `effectiveTargetX/Y`
   // are the real endpoint (junctor edges carry no arrow, so the junctor offset
   // never applies here).
   const arrowHead = arrowheadPlacement({
-    show: Boolean(props.markerEnd) && !isMutex,
+    show: Boolean(props.markerEnd) && !isMutex && !isNoteEdge,
     sourceX: props.sourceX,
     sourceY: props.sourceY,
     targetX: effectiveTargetX,
