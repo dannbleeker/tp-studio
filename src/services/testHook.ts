@@ -1,5 +1,6 @@
 import { createDocument } from '@/domain/factory';
 import { patternById } from '@/domain/patterns';
+import { importFromJSON } from '@/domain/persistence';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
@@ -115,6 +116,23 @@ export interface TpTestHook {
    * the ids returned by the most-recent `seed()` call.
    */
   listEntityIds: () => string[];
+  /**
+   * Pin an entity's position via the production `setEntityPosition` action (the
+   * same one a user drag fires), so a layout-dependent repro / regression test is
+   * deterministic. `seed` / `connect` otherwise leave placement to auto-layout.
+   */
+  setEntityPosition: (id: string, x: number, y: number) => void;
+  /**
+   * Fit the viewport to the current nodes — a manually built (seed +
+   * setEntityPosition) diagram doesn't auto-frame the way a pattern load does.
+   */
+  fitView: () => void;
+  /**
+   * Load an exported document (full TPDocument JSON) via the production import
+   * path (`importFromJSON` → `openDocInTab`), so a repro spec can render a user's
+   * EXACT diagram deterministically (e.g. a layout / routing bug report).
+   */
+  loadDoc: (json: string) => void;
   /**
    * Session 121 — deterministically open the Help / About / Settings
    * dialogs from e2e. Session 116 dropped the dialog axe-scan tests
@@ -258,6 +276,15 @@ export const maybeInstallTestHook = (): void => {
       useDocumentStore.getState().updateEntity(id, { title });
     },
     listEntityIds: () => Object.keys(currentDoc(useDocumentStore.getState()).entities),
+    setEntityPosition: (id, x, y) => {
+      useDocumentStore.getState().setEntityPosition(id, { x, y });
+    },
+    fitView: () => {
+      getCanvasInstance()?.fitView({ padding: 0.2, duration: 0 });
+    },
+    loadDoc: (json) => {
+      useDocumentStore.getState().openDocInTab(importFromJSON(json));
+    },
     openHelp: () => useDocumentStore.getState().openHelp(),
     openAbout: () => useDocumentStore.getState().openAbout(),
     openSettings: () => useDocumentStore.getState().openSettings(),

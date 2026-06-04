@@ -1,0 +1,159 @@
+{
+  "id": "crSmOp9KhSa6Fwwr9g4bR",
+  "title": "Inventory turns falling CRT",
+  "diagramType": "crt",
+  "entities": {
+    "QwtIJTf2HaA0QhXl89BXH": {
+      "id": "QwtIJTf2HaA0QhXl89BXH",
+      "type": "rootCause",
+      "title": "Production runs are sized to absorb changeover cost, not demand",
+      "annotationNumber": 1,
+      "createdAt": 1780327162362,
+      "updatedAt": 1780327162362
+    },
+    "vRcd5Zqqu_V6T_Ee4VojO": {
+      "id": "vRcd5Zqqu_V6T_Ee4VojO",
+      "type": "rootCause",
+      "title": "Each warehouse holds its own safety stock to protect its KPI",
+      "annotationNumber": 2,
+      "createdAt": 1780327162362,
+      "updatedAt": 1780327162362
+    },
+    "eyh7jcxLJT3ebL5R96lf3": {
+      "id": "eyh7jcxLJT3ebL5R96lf3",
+      "type": "rootCause",
+      "title": "Maintenance over-orders spare parts to avoid line stoppages",
+      "annotationNumber": 3,
+      "createdAt": 1780327162362,
+      "updatedAt": 1780327162362
+    },
+    "FCYTcEpLmJtxHDhWxl3zX": {
+      "id": "FCYTcEpLmJtxHDhWxl3zX",
+      "type": "rootCause",
+      "title": "Demand forecast lags actual orders by ≥6 weeks",
+      "annotationNumber": 4,
+      "createdAt": 1780327162362,
+      "updatedAt": 1780327162362
+    },
+    "3gKnaE6gyuqO77YyZyGCf": {
+      "id": "3gKnaE6gyuqO77YyZyGCf",
+      "type": "effect",
+      "title": "Raw material WIP grows faster than sales",
+      "annotationNumber": 5,
+      "createdAt": 1780327162362,
+      "updatedAt": 1780327162362
+    },
+    "JDV6LWxDIlxlnVkNZjnkN": {
+      "id": "JDV6LWxDIlxlnVkNZjnkN",
+      "type": "effect",
+      "title": "Spare-parts inventory grows 12% YoY without throughput increase",
+      "annotationNumber": 6,
+      "createdAt": 1780327162362,
+      "updatedAt": 1780327162362
+    },
+    "z1DIUs2ap1v1QlMIGnyyn": {
+      "id": "z1DIUs2ap1v1QlMIGnyyn",
+      "type": "effect",
+      "title": "Stock written off as obsolete climbs each quarter",
+      "annotationNumber": 7,
+      "createdAt": 1780327162362,
+      "updatedAt": 1780327162362
+    },
+    "ocXX5ANQgLJeqpatwPri-": {
+      "id": "ocXX5ANQgLJeqpatwPri-",
+      "type": "ude",
+      "title": "Inventory turns drop below the plan-of-record",
+      "annotationNumber": 8,
+      "createdAt": 1780327162362,
+      "updatedAt": 1780327162362
+    },
+    "gso4Qixneztt9ldMa1OOQ": {
+      "id": "gso4Qixneztt9ldMa1OOQ",
+      "type": "assumption",
+      "title": "teststasfasf",
+      "annotationNumber": 10,
+      "createdAt": 1780327421175,
+      "updatedAt": 1780579478705
+    }
+  },
+  "edges": {
+    "DWbH-B2QRQTzY8NiR4x66": {
+      "id": "DWbH-B2QRQTzY8NiR4x66",
+      "sourceId": "QwtIJTf2HaA0QhXl89BXH",
+      "targetId": "3gKnaE6gyuqO77YyZyGCf",
+      "kind": "sufficiency",
+      "andGroupId": "6-X6mN8O"
+    },
+    "LFBJ-vQZAVbJ4m86SzQ3F": {
+      "id": "LFBJ-vQZAVbJ4m86SzQ3F",
+      "sourceId": "vRcd5Zqqu_V6T_Ee4VojO",
+      "targetId": "3gKnaE6gyuqO77YyZyGCf",
+      "kind": "sufficiency",
+      "andGroupId": "6-X6mN8O"
+    },
+    "3z7hawu5Ya05scEyeiEEJ": {
+      "id": "3z7hawu5Ya05scEyeiEEJ",
+      "sourceId": "eyh7jcxLJT3ebL5R96lf3",
+      "targetId": "JDV6LWxDIlxlnVkNZjnkN",
+      "kind": "sufficiency"
+    },
+    "6O6KaAYMQ3gU98sSb9RSF": {
+      "id": "6O6KaAYMQ3gU98sSb9RSF",
+      "sourceId": "FCYTcEpLmJtxHDhWxl3zX",
+      "targetId": "z1DIUs2ap1v1QlMIGnyyn",
+      "kind": "sufficiency"
+    },
+    "EF4XaTy6oR0YylrPZMTyj": {
+      "id": "EF4XaTy6oR0YylrPZMTyj",
+      "sourceId": "3gKnaE6gyuqO77YyZyGCf",
+      "targetId": "ocXX5ANQgLJeqpatwPri-",
+      "kind": "sufficiency",
+      "andGroupId": "AacElY7z"
+    },
+    "9sysgwo4nThWpO994q26L": {
+      "id": "9sysgwo4nThWpO994q26L",
+      "sourceId": "JDV6LWxDIlxlnVkNZjnkN",
+      "targetId": "ocXX5ANQgLJeqpatwPri-",
+      "kind": "sufficiency",
+      "assumptionIds": [
+        "gso4Qixneztt9ldMa1OOQ"
+      ]
+    },
+    "yTdcUhTnUBLrtyNS2rgfu": {
+      "id": "yTdcUhTnUBLrtyNS2rgfu",
+      "sourceId": "z1DIUs2ap1v1QlMIGnyyn",
+      "targetId": "ocXX5ANQgLJeqpatwPri-",
+      "kind": "sufficiency",
+      "andGroupId": "AacElY7z"
+    },
+    "q36ob1n9FRh-ke-joIAcN": {
+      "id": "q36ob1n9FRh-ke-joIAcN",
+      "sourceId": "FCYTcEpLmJtxHDhWxl3zX",
+      "targetId": "JDV6LWxDIlxlnVkNZjnkN",
+      "kind": "sufficiency"
+    },
+    "DJJoFOPIffuHFtr-lpj_y": {
+      "id": "DJJoFOPIffuHFtr-lpj_y",
+      "sourceId": "JDV6LWxDIlxlnVkNZjnkN",
+      "targetId": "FCYTcEpLmJtxHDhWxl3zX",
+      "kind": "sufficiency"
+    }
+  },
+  "groups": {},
+  "resolvedWarnings": {},
+  "nextAnnotationNumber": 13,
+  "systemScopeNudgeShown": true,
+  "assumptions": {
+    "gso4Qixneztt9ldMa1OOQ": {
+      "id": "gso4Qixneztt9ldMa1OOQ",
+      "edgeId": "9sysgwo4nThWpO994q26L",
+      "text": "teststasfasf",
+      "status": "unexamined",
+      "createdAt": 1780327421175,
+      "updatedAt": 1780579478705
+    }
+  },
+  "createdAt": 1780327162362,
+  "updatedAt": 1780579478705,
+  "schemaVersion": 9
+}

@@ -4,6 +4,55 @@ A focused parking lot of open work — fresh items only. Historical context live
 
 ---
 
+## "Z BATCH" — Dann's backlog (planned + prep done Session 175; build next session)
+
+Six items from Dann's review. Repro fixture committed at
+`e2e/fixtures/inventory-turns-crt.tps.json` ("Inventory turns falling CRT") — load it
+deterministically with the new `window.__TP_TEST__.loadDoc(json)` hook. Prep shipped
+this session: the `loadDoc` / `setEntityPosition` / `fitView` test hooks + the fixture.
+
+- **Z-1 — Editable zoom %.** Click the zoom factor (the `−  NN%  +  ⛶` strip, bottom
+  centre) → inline number input → `zoomTo(n/100)` clamped to React Flow's min/max.
+  Self-contained, no diagram needed. Control lives near `Canvas.tsx`.
+- **Z-2 + Z-5 + behind-entities — causal back-edge routing.** The diagram has a real
+  feedback loop `#4 ⇄ #6` (`q36o` = #4→#6 forward; **`DJJo` = #6→#4 is the
+  back-edge**, `isBackEdge`). Today it routes ~straight up, overlapping the forward
+  edge and crossing / passing BEHIND other entities. Dann wants it to **exit the TOP
+  of the source, loop around the source entity, then reach its target by the normal
+  rules — and never cross behind an entity** (this folds in the parked
+  "edge-behind-card" item, scoped to back-edges). Delicate routing change (#5 history)
+  → tests-first. Pointers: `edge.isBackEdge` (set during cycle-break in
+  layout/`graphCore`); `TPEdge` (`isBackEdge` → `BackEdgeBadge`); `useEdgeRoutes`
+  (back-edges currently take the normal A\* path with no special exit/loop rule).
+- **Z-3 — assumption rendered very far away. DIAGNOSED.** The assumption (#10) is an
+  entity node with **no graph edges** — it annotates EDGE `9sys` (#6→#8) via
+  `assumptionIds`, not a node — so dagre has nothing to rank it by and dumps it in an
+  isolated slot at the canvas bottom-left, with a long dashed connector to anchor "A".
+  Fix: position the assumption node near its annotated edge (edge midpoint / near
+  source `#6`), not via dagre's isolated-node placement. Pointers:
+  `AssumptionAnchorOverlay`, the assumption entity in `useGraphPositions` / projection,
+  `assumptions[].edgeId`.
+- **Z-4 — flow edges "have no arrows." LIKELY NOT A CODE BUG (stale SW).** A fresh load
+  of Dann's exact diagram shows ALL arrows correct: every regular edge has its arrow;
+  the only arrowless edges are the AND-junctor cause-edges (`#1,#2→#5`, `#5,#7→#8`),
+  which correctly have none (the AND circle owns the shared output arrow). "Hard refresh
+  didn't help" is the classic `registerType:'prompt'` SW symptom — a normal refresh
+  can't beat the cached `sw.js`. **Action before building anything: Dann does DevTools →
+  Application → Service Workers → Unregister → reload (or the next deploy bumps the SW
+  hash). Arrows back → no code change. Still missing → re-diagnose as a real bug.**
+- **Z-6 — F2 = edit, Delete = delete (selected entity).** When an entity node is
+  selected (not editing its text): `F2` → `beginEditing(id)`; `Delete` →
+  `confirmAndDeleteEntity(id)` (reuse the confirm-on-edges flow). Canvas-level keyboard
+  handler; self-contained. Mind the selection-mirror race the test hook documents.
+
+**Sequence:** Wave 1 quick wins (Z-1, Z-6 — no diagram, low risk) → Wave 2 confirm Z-4
+(SW unregister) + fix Z-3 (assumption placement) → Wave 3 back-edge routing (Z-2 + Z-5
++ behind-entities, tests-first). **Friction:** until `biome.exe` is AppLocker-unblocked
+(email drafted for Tech Support), every commit needs the PowerShell + `--no-verify`
+bypass and a by-hand biome check.
+
+---
+
 ## ~~Edge-crossing reroute (#5)~~ — ✅ SHIPPED Session 173
 
 A manual node move could leave two unrelated edges crossing in an "X"; the smart router
