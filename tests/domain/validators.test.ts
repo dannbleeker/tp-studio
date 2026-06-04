@@ -252,40 +252,6 @@ describe('CLR: indirect-effect (Block C / E2)', () => {
   });
 });
 
-describe('CLR: cycle (Block C / E3)', () => {
-  it('warns when a 2-node cycle exists, targeting the closing edge', () => {
-    const a = makeEntity({ title: 'A' });
-    const b = makeEntity({ title: 'B' });
-    const ab = makeEdge(a.id, b.id);
-    const ba = makeEdge(b.id, a.id);
-    const warnings = validate(makeDoc([a, b], [ab, ba]));
-    const cycles = warnings.filter((w) => w.ruleId === 'cycle');
-    expect(cycles).toHaveLength(1);
-    expect(cycles[0]?.target.kind).toBe('edge');
-    expect(cycles[0]?.message).toMatch(/reversed/);
-  });
-
-  it('warns on a 3-node cycle with a length-aware message', () => {
-    const a = makeEntity({ title: 'A' });
-    const b = makeEntity({ title: 'B' });
-    const c = makeEntity({ title: 'C' });
-    const edges = [makeEdge(a.id, b.id), makeEdge(b.id, c.id), makeEdge(c.id, a.id)];
-    const warnings = validate(makeDoc([a, b, c], edges));
-    const cycles = warnings.filter((w) => w.ruleId === 'cycle');
-    expect(cycles).toHaveLength(1);
-    expect(cycles[0]?.message).toMatch(/3 entities/);
-  });
-
-  it('does not warn on an acyclic graph', () => {
-    const a = makeEntity({ title: 'A' });
-    const b = makeEntity({ title: 'B' });
-    const c = makeEntity({ title: 'C' });
-    const edges = [makeEdge(a.id, b.id), makeEdge(b.id, c.id)];
-    const warnings = validate(makeDoc([a, b, c], edges));
-    expect(hasRule(warnings, 'cycle')).toBe(false);
-  });
-});
-
 describe('warning tier stamping (Block C / E5)', () => {
   it('every warning carries a tier', () => {
     const a = makeEntity({ title: 'Sales declined this quarter.' });

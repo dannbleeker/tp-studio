@@ -2,6 +2,15 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 176 (cont.) — remove the cycle CLR warning (superseded by auto-detect)
+
+- **Deleted the cycle CLR warning rule** (`validators/cycle.ts` + its registration in the
+  validator index + its unit tests + the perf-bench line). With Wave-3-0 auto-detection, every
+  cycle's loop-closer now renders as a distinct orange/dashed back-edge — a far more direct signal
+  than a text warning — so the warning was redundant (Dann's call). `'cycle'` is kept in the
+  `WarningRuleId` union (a WarningsList test fixture references it); no other rule emits it. Stale
+  `findCycles` comments now point at `effectiveBackEdgeIds`.
+
 ## Session 176 (cont.) — auto-detect back-edges (Wave 3-0)
 
 - **A cycle's loop-closer is now auto-detected as a back-edge** — it renders distinct

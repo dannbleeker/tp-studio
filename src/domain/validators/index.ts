@@ -6,7 +6,6 @@ import { causeEffectReversalRule } from './causeEffectReversal';
 import { causeSufficiencyRule } from './causeSufficiency';
 import { clarityRule } from './clarity';
 import { completeStepRule } from './completeStep';
-import { cycleRule } from './cycle';
 import { ecCompletenessRule } from './ecCompleteness';
 import { ecMissingConflictRule } from './ecMissingConflict';
 import { entityExistenceRule } from './entityExistence';
@@ -42,8 +41,8 @@ const STRUCTURAL_RULES: TieredRule[] = [
   tieredRule('existence', 'entity-existence', entityExistenceRule),
   tieredRule('existence', 'causality-existence', causalityExistenceRule),
   tieredRule('clarity', 'tautology', tautologyRule),
-  // Block C additions (E3 + E2):
-  tieredRule('existence', 'cycle', cycleRule),
+  // Block C addition (E2). (The E3 cycle rule was removed Session 176 — the
+  // auto-detected back-edge colour now signals a loop, so the warning was redundant.)
   tieredRule('existence', 'indirect-effect', indirectEffectRule),
 ];
 
@@ -252,7 +251,6 @@ export { completeStepRule } from './completeStep';
 // that no consumer references were dropped — tests can still target a
 // single rule via direct `./clarity` imports if needed later, with no
 // boilerplate cost.
-export { cycleRule } from './cycle';
 export { ecMissingConflictRule } from './ecMissingConflict';
 export { externalRootCauseRule } from './externalRootCause';
 export type { UntieredWarning, ValidatorRule } from './shared';

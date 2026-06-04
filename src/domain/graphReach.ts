@@ -119,14 +119,14 @@ export const findPath = (
  * smallest entity id as the starting point) so `[a, b, c]` and `[b, c, a]`
  * count as one cycle.
  *
- * Used by Block C / E3 to surface back-edge warnings; the rule emits one
- * warning per cycle targeting the edge that closes it.
+ * Used by `effectiveBackEdgeIds` (`backEdges.ts`) to auto-detect each cycle's
+ * loop-closer (the edge from the last entity in the cycle back to the first).
  */
 // Session 135 / Perf #9 — WeakMap-cached on `doc.edges`. Cycle
 // membership is a pure function of the edge topology, so it's stable
 // until the edge map gets a new reference (any add / remove / re-point).
-// `cycleRule` runs this on every validate-cache miss; the cache turns
-// the DFS into a one-time cost per edge-set.
+// Callers (e.g. `effectiveBackEdgeIds`) run this on each cache miss; the
+// cache turns the DFS into a one-time cost per edge-set.
 const findCyclesCache = new WeakMap<TPDocument['edges'], string[][]>();
 
 export const findCycles = (doc: TPDocument): string[][] => {

@@ -26,10 +26,10 @@ rule), `edgeSides`/`resolveEdgePath`, `TPEdge`.
 A cycle's loop-closer auto-styles as a back-edge (colour + dash) without a manual tag, via pure
 `effectiveBackEdgeIds(doc)` (`src/domain/backEdges.ts` — manual ∪ each cycle's closing edge,
 derived + WeakMap-cached) wired into the canvas rendering; Wave-3 routing reads the same set.
-**OPEN DECISION for Dann:** the cycle CLR warning still fires on a loop until it's manually
-tagged — auto-detection styles the loop-closer but does NOT silence the warning. Decide: should
-auto-detection also suppress the cycle warning (treat every detected loop as intentional — the
-orange edge becomes the cycle signal), or keep the warning as the "confirm or fix" nudge?
+**Cycle CLR warning REMOVED (Dann, Session 176):** the auto-detected orange loop-closer now
+signals the cycle, so the redundant cycle warning rule was deleted (`validators/cycle.ts` + its
+registration in the validator index + its tests). `'cycle'` stays in the warning-type union (a
+WarningsList test fixture references it); the auto-detection itself is unchanged.
 
 ### Overlapping edges into one entity — can't grab/redirect one (Dann)
 PROBLEM: when 2+ edges converge on one entity, you can't reliably select/drag ONE to re-route

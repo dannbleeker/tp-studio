@@ -23,7 +23,6 @@ import { causalityExistenceRule } from '@/domain/validators/causalityExistence';
 import { causeEffectReversalRule } from '@/domain/validators/causeEffectReversal';
 import { causeSufficiencyRule } from '@/domain/validators/causeSufficiency';
 import { clarityRule } from '@/domain/validators/clarity';
-import { cycleRule } from '@/domain/validators/cycle';
 import { entityExistenceRule } from '@/domain/validators/entityExistence';
 import { externalRootCauseRule } from '@/domain/validators/externalRootCause';
 import { indirectEffectRule } from '@/domain/validators/indirectEffect';
@@ -87,7 +86,6 @@ describe('Per-rule validator perf — 100-entity CRT', () => {
       measure('entity-existence', iters, () => entityExistenceRule(doc)),
       measure('causality-existence', iters, () => causalityExistenceRule(doc)),
       measure('tautology', iters, () => tautologyRule(doc)),
-      measure('cycle', iters, () => cycleRule(doc)),
       measure('indirect-effect', iters, () => indirectEffectRule(doc)),
       measure('cause-sufficiency', iters, () => causeSufficiencyRule(doc)),
       measure('additional-cause (ude)', iters, () => additionalCauseRuleFor('ude')(doc)),
