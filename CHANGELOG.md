@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 176 (cont.) — auto-detect back-edges (Wave 3-0)
+
+- **A cycle's loop-closer is now auto-detected as a back-edge** — it renders distinct
+  (amber-orange + dashed) without a manual "Tag as back-edge", and Wave-3 routing will read
+  the same set. New pure `src/domain/backEdges.ts`: `effectiveBackEdgeIds(doc)` = manually
+  tagged edges ∪ each cycle's closing edge (the `cycle[last]→cycle[first]` convention shared
+  with the cycle CLR rule), WeakMap-cached, **derived only** — it never touches the persisted
+  `isBackEdge` flag, so the manual tag and the cycle CLR warning are unaffected. Wired into the
+  canvas rendering (`TPEdge` visual selector + `useGraphEdgeEmission` a11y label). +4 unit
+  tests; verified in-browser (the untagged loop-closer `DJJo` in Dann's CRT now paints orange,
+  and auto-detection correctly picks the #6→#4 closer). **Open decision:** the cycle CLR warning
+  still fires on a loop until it's manually tagged — auto-detection styles the loop-closer but
+  does not (yet) silence that warning.
+
 ## Session 176 (cont.) — distinct colour for tagged back-edges
 
 - **Back-edges now paint a distinct amber-orange** (`#ea580c`) instead of the default

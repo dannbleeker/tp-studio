@@ -22,13 +22,14 @@ Delicate routing change (the #5 history) → tests-first. Pointers: `edge.isBack
 tag, see next item), `useEdgeRoutes` (back-edges take the normal A* path today, no exit/loop
 rule), `edgeSides`/`resolveEdgePath`, `TPEdge`.
 
-### Auto-detect / suggest back-edges (loop-closers)
-`isBackEdge` is currently a manual right-click tag (ContextMenu "Tag as back-edge"), so a
-cycle's loop-closer renders as a plain grey edge until tagged — Dann's fixture's `DJJo` is
-untagged, which is why the new back-edge colour/dash didn't show on it. Consider auto-detecting
-each cycle's back-edge (the colour + dash + Wave-3 routing all key on the flag) and/or a
-one-click "mark the loop-closer" suggestion. Cycle detection already exists (`findCycles` in
-`graphReach`). Opt-in so it never surprises.
+### Auto-detect back-edges (loop-closers) — ✅ SHIPPED Session 176 (Wave 3-0)
+A cycle's loop-closer auto-styles as a back-edge (colour + dash) without a manual tag, via pure
+`effectiveBackEdgeIds(doc)` (`src/domain/backEdges.ts` — manual ∪ each cycle's closing edge,
+derived + WeakMap-cached) wired into the canvas rendering; Wave-3 routing reads the same set.
+**OPEN DECISION for Dann:** the cycle CLR warning still fires on a loop until it's manually
+tagged — auto-detection styles the loop-closer but does NOT silence the warning. Decide: should
+auto-detection also suppress the cycle warning (treat every detected loop as intentional — the
+orange edge becomes the cycle signal), or keep the warning as the "confirm or fix" nudge?
 
 ### Overlapping edges into one entity — can't grab/redirect one (Dann)
 PROBLEM: when 2+ edges converge on one entity, you can't reliably select/drag ONE to re-route

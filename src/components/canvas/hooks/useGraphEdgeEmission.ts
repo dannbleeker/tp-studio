@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { effectiveBackEdgeIds } from '@/domain/backEdges';
 import { edgesArray, openCommentCountsByAnchor } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
 import { EDGE_ARROW_AND_MARKER_ID, EDGE_ARROW_MARKER_ID } from '../edges/edgeArrowhead';
@@ -94,6 +95,8 @@ export const useGraphEdgeEmission = (
     }
 
     const edges: TPEdge[] = [];
+    // Wave 3-0 — auto-detected loop-closers (+ manual tags) render as back-edges.
+    const backEdgeIds = effectiveBackEdgeIds(doc);
     for (const b of buckets.values()) {
       const isAggregated = b.count > 1 || b.isSyntheticEndpoint;
       // Re-targeting (drag an endpoint to another node) only makes sense for a
@@ -140,7 +143,7 @@ export const useGraphEdgeEmission = (
         sourceTitle: visibleTitle(b.sourceId),
         targetTitle: visibleTitle(b.targetId),
         ...(b.count > 1 ? { aggregateCount: b.count } : {}),
-        ...(b.sample.isBackEdge ? { isBackEdge: true } : {}),
+        ...(backEdgeIds.has(b.sample.id) ? { isBackEdge: true } : {}),
         ...(b.sample.isMutualExclusion ? { isMutex: true } : {}),
         ...(assumptionCount > 0 ? { assumptionCount } : {}),
       });

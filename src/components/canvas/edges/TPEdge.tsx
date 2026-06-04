@@ -7,6 +7,7 @@
 import { BaseEdge, type EdgeProps, getBezierPath, Position } from '@xyflow/react';
 import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { effectiveBackEdgeIds } from '@/domain/backEdges';
 import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/domain/constants';
 import { EDGE_PALETTES } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
@@ -172,7 +173,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       const targetIsNote = edge ? doc.entities[edge.targetId]?.type === 'note' : false;
       return {
         edgeLabel: edge?.label,
-        isBackEdge: edge?.isBackEdge === true,
+        isBackEdge: effectiveBackEdgeIds(doc).has(props.id),
         isMutex: edge?.isMutualExclusion === true,
         weight: edge?.weight,
         hasDescription: typeof desc === 'string' && desc.trim().length > 0,
