@@ -2,6 +2,17 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 176 (cont.) — Wave 3 item 1: back-edge attaches in the flow direction
+
+- **A back-edge now exits the source's TOP and enters the target's BOTTOM** (the flow-facing
+  side in a bottom-up tree), overriding the position-based side pick — via the `forceSides` seam
+  (prep) + `effectiveBackEdgeIds` threaded through the router (`routeOneEdge` / `RoutedEdge` / the
+  `computeEdgeRoutes` loop / the de-cross reroute). Only the vertical (tree) axis is forced; EC
+  keeps the normal pick. This is the attach-direction foundation for the loop-around-source
+  routing (item 2): on a diagram whose loop-closer already exits the top (source below target —
+  e.g. the inventory CRT) it's a visual no-op; it fixes the direction when a back-edge's source
+  sits above its target. +1 router test.
+
 ## Session 176 (cont.) — remove the cycle CLR warning (superseded by auto-detect)
 
 - **Deleted the cycle CLR warning rule** (`validators/cycle.ts` + its registration in the

@@ -135,6 +135,28 @@ describe('computeEdgeRoutes — iteration', () => {
     expect(routes[edge.id]?.waypoints).toHaveLength(2);
   });
 
+  it('routes a back-edge out the source top and into the target bottom', () => {
+    // B (back-edge source) sits ABOVE A (target), so the position-based pick would be
+    // bottom/top; the back-edge override forces top/bottom — exit the source top, enter
+    // the target bottom (the flow direction). Item 1.
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const state = useDocumentStore.getState();
+    state.connect(a.id, b.id);
+    const back = state.connect(b.id, a.id);
+    if (!back) throw new Error('back-edge not created');
+    state.updateEdge(back.id, { isBackEdge: true });
+    const doc = useDocumentStore.getState().doc;
+    const positions = {
+      [b.id]: { x: 0, y: 0 },
+      [a.id]: { x: 0, y: 300 },
+    };
+    const projection = projectionOf(doc, [a.id, b.id]);
+    const wp = computeEdgeRoutes(doc, projection, positions)[back.id]?.waypoints ?? [];
+    expect(wp[0]?.y).toBe(0); // source B top
+    expect(wp[wp.length - 1]?.y).toBe(300 + NODE_MIN_HEIGHT); // target A bottom
+  });
+
   it('routes a colinear 3-node case via interior waypoint(s)', () => {
     // A directly above B directly above C. The A→C edge should route
     // around B; A* yields at least one interior waypoint.

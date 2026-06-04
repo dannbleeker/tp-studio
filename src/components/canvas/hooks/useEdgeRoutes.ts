@@ -24,6 +24,7 @@
  */
 
 import { useMemo } from 'react';
+import { effectiveBackEdgeIds } from '@/domain/backEdges';
 import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS, JUNCTOR_RADIUS_X } from '@/domain/constants';
 import { polylinesCross } from '@/domain/edgeGeometry';
 import {
@@ -36,7 +37,7 @@ import {
   type Point,
   sideBezierSegment,
 } from '@/domain/edgeRouting';
-import { type Axis, type SideSelection, selectEdgeSides } from '@/domain/edgeSides';
+import { type Axis, type Side, type SideSelection, selectEdgeSides } from '@/domain/edgeSides';
 import { edgesArray } from '@/domain/graph';
 import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import type { TPDocument } from '@/domain/types';
@@ -145,8 +146,17 @@ const sideSelectionFor = (
   sourceBox: Box,
   targetBox: Box,
   axis: Axis,
-  obstacles: readonly Box[]
-): SideSelection => selectEdgeSides({ sourceBox, targetBox, axis, obstacles });
+  obstacles: readonly Box[],
+  forceSides?: { source: Side; target: Side }
+): SideSelection =>
+  selectEdgeSides({ sourceBox, targetBox, axis, obstacles, ...(forceSides ? { forceSides } : {}) });
+
+/** Item 1 — a back-edge (loop-closer) exits the source's TOP and enters the target's
+ *  BOTTOM (the flow-facing side in a bottom-up tree), so it reads as a loop instead of
+ *  overlapping the forward edge. Only the vertical (tree) axis is forced; EC (horizontal)
+ *  back-edges keep the normal position-based pick. */
+const backEdgeForcedSides = (axis: Axis): { source: Side; target: Side } | undefined =>
+  axis === 'vertical' ? { source: 'top', target: 'bottom' } : undefined;
 
 /**
  * The per-layout routing context shared by every edge in one `computeEdgeRoutes`
@@ -175,7 +185,14 @@ type RouteContext = {
  * excluded from this edge's obstacle set (an edge can't be blocked by its own
  * endpoints) and skipped in the A\* visibility check via their box indices.
  */
-const routeOneEdge = (s: string, t: string, sBox: Box, tBox: Box, ctx: RouteContext): EdgeRoute => {
+const routeOneEdge = (
+  s: string,
+  t: string,
+  sBox: Box,
+  tBox: Box,
+  ctx: RouteContext,
+  isBackEdge: boolean
+): EdgeRoute => {
   // Per-edge obstacle set — every visible box except this edge's own two
   // endpoints. Shared by the side picker (which sides are clear?) and the
   // curvature-dip check below.
@@ -186,7 +203,10 @@ const routeOneEdge = (s: string, t: string, sBox: Box, tBox: Box, ctx: RouteCont
     if (!box || id === s || id === t) continue;
     obstaclesForEdge.push(box);
   }
-  const sel = sideSelectionFor(sBox, tBox, ctx.axis, obstaclesForEdge);
+  // Item 1 — a back-edge exits the source's top + enters the target's bottom (flow
+  // direction), overriding the position-based pick; non-back-edges are unchanged.
+  const forceSides = isBackEdge ? backEdgeForcedSides(ctx.axis) : undefined;
+  const sel = sideSelectionFor(sBox, tBox, ctx.axis, obstaclesForEdge, forceSides);
   // The anchor points sit on their own box boundary, so they fall *inside* the
   // visibility graph's shrunk-interior bounds. Pass the source/target box indices
   // so the visibility check skips them for this edge's queries.
@@ -254,6 +274,7 @@ type RoutedEdge = {
   sBox: Box;
   tBox: Box;
   route: EdgeRoute;
+  isBackEdge: boolean;
 };
 
 /** Cap on reroute ATTEMPTS (each rebuilds a visibility graph) per layout pass, so
@@ -339,7 +360,7 @@ const rerouteAround = (
     allBoxIds,
     boxIdToIndex,
   };
-  return routeOneEdge(move.s, move.t, move.sBox, move.tBox, extCtx);
+  return routeOneEdge(move.s, move.t, move.sBox, move.tBox, extCtx, move.isBackEdge);
 };
 
 /** Curve overshoot allowed before a waypoint counts as leaving the flow band. */
@@ -495,6 +516,9 @@ export const computeEdgeRoutes = (
   // Track which remapped pairs we've already routed — one route per visible
   // src→tgt pair (aggregation collapses parallels upstream).
   const seenPairs = new Set<string>();
+  // Item 1 — back-edges (auto-detected loop-closers + manual tags) get the
+  // flow-direction side override in routeOneEdge below.
+  const backEdgeIds = effectiveBackEdgeIds(doc);
   for (const edge of edgesArray(doc)) {
     const s = projection.remap(edge.sourceId);
     const t = projection.remap(edge.targetId);
@@ -514,9 +538,10 @@ export const computeEdgeRoutes = (
     const sBox = allBoxes.get(s);
     const tBox = allBoxes.get(t);
     if (!sBox || !tBox) continue;
-    const route = routeOneEdge(s, t, sBox, tBox, ctx);
+    const isBackEdge = backEdgeIds.has(edge.id);
+    const route = routeOneEdge(s, t, sBox, tBox, ctx, isBackEdge);
     out[edge.id] = route;
-    routed.push({ edgeId: edge.id, s, t, sBox, tBox, route });
+    routed.push({ edgeId: edge.id, s, t, sBox, tBox, route, isBackEdge });
   }
   // Crossing-aware second pass — reroute the cheaper of any crossing pair around
   // the other. Beyond the O(E²) scan it's a no-op when nothing crosses.
