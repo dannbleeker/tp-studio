@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ASSUMPTION_EDGE_OFFSET,
   anchoredAssumptionEdges,
   anchoredAssumptionIds,
-  ASSUMPTION_EDGE_OFFSET,
   placeAssumptionsNearEdges,
 } from '@/domain/assumptionPlacement';
 import type { TPDocument } from '@/domain/types';
