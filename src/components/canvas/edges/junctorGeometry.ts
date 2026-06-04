@@ -42,6 +42,31 @@ export const junctorCenterX = (
 };
 
 /**
+ * Re-anchor a junctor cause-edge's SOURCE onto its node's real edge.
+ *
+ * Junctor cause-edges bypass the smart router (which anchors every other edge on
+ * the node's BOX boundary), so they fall back to React Flow's raw handle position
+ * — and React Flow reports that at the OUTER edge of the 20px (`!h-5`) handle,
+ * ~10px off the card. That left a visible gap at the cause ("the AND edges don't
+ * touch the sender entity"; routed edges are flush, junctor ones float). Swap the
+ * off-flow-axis coordinate for the node's true edge while keeping the handle's
+ * on-axis center:
+ *   - vertical trees  → source handle is Top  → use the node TOP (`topLeft.y`);
+ *   - horizontal (EC) → source handle is Left → use the node LEFT (`topLeft.x`).
+ * `topLeft` is the source node's absolute top-left; `null` (node not measured
+ * yet, or a non-junctor edge) leaves the handle point untouched.
+ */
+export const junctorSourceAnchor = (
+  axis: 'vertical' | 'horizontal',
+  handleX: number,
+  handleY: number,
+  topLeft: { x: number; y: number } | null
+): { x: number; y: number } => {
+  if (!topLeft) return { x: handleX, y: handleY };
+  return axis === 'vertical' ? { x: handleX, y: topLeft.y } : { x: topLeft.x, y: handleY };
+};
+
+/**
  * The source-entity ids of every edge in a given junctor group. Used by TPEdge
  * to gather the cause positions it needs for {@link junctorCenterX} (the same
  * set JunctorOverlay derives per group). Order follows iteration order; callers

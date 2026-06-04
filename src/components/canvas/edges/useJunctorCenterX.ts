@@ -3,9 +3,14 @@ import { useMemo } from 'react';
 import { NODE_WIDTH } from '@/domain/constants';
 import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
-import { collectGroupSourceIds, junctorCenterX } from './junctorGeometry';
+import { collectGroupSourceIds, junctorCenterX, junctorSourceAnchor } from './junctorGeometry';
 
 const EMPTY_IDS: string[] = [];
+
+type XY = { x: number; y: number };
+
+const xyEqual = (a: XY | null, b: XY | null): boolean =>
+  a === b || (!!a && !!b && a.x === b.x && a.y === b.y);
 
 const stringArrayEqual = (a: string[], b: string[]): boolean =>
   a === b || (a.length === b.length && a.every((v, i) => v === b[i]));
@@ -51,5 +56,35 @@ export const useJunctorCenterX = (params: {
   return useMemo(
     () => (isJunctorEdge && sourceXs ? junctorCenterX(sourceXs, targetX) : null),
     [isJunctorEdge, sourceXs, targetX]
+  );
+};
+
+/**
+ * The bezier SOURCE point a junctor cause-edge should depart from — re-anchored
+ * onto the source node's real edge (see {@link junctorSourceAnchor}). Junctor
+ * cause-edges skip the smart router, so without this they start at React Flow's
+ * raw handle position (~10px off the card, leaving a gap at the cause). Reads the
+ * source node's live absolute top-left from React Flow so the anchor tracks drags
+ * / re-layout; returns the unchanged handle point for non-junctor edges (the
+ * subscription is a stable no-op then).
+ */
+export const useJunctorSourceAnchor = (params: {
+  isJunctorEdge: boolean;
+  sourceId: string;
+  axis: 'vertical' | 'horizontal';
+  sourceX: number;
+  sourceY: number;
+}): XY => {
+  const { isJunctorEdge, sourceId, axis, sourceX, sourceY } = params;
+  const topLeft = useRFStore((s) => {
+    if (!isJunctorEdge) return null;
+    const n = s.nodeLookup.get(sourceId);
+    return n
+      ? { x: n.internals.positionAbsolute.x, y: n.internals.positionAbsolute.y }
+      : null;
+  }, xyEqual);
+  return useMemo(
+    () => junctorSourceAnchor(axis, sourceX, sourceY, topLeft),
+    [axis, sourceX, sourceY, topLeft]
   );
 };

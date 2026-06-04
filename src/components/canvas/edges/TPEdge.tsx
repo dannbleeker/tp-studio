@@ -4,7 +4,7 @@
 // `memo()` and skips auto-memoization for the wrapped component, so
 // the Session 105 comparator's behavior stays intact.
 
-import { BaseEdge, type EdgeProps, getBezierPath } from '@xyflow/react';
+import { BaseEdge, type EdgeProps, getBezierPath, Position } from '@xyflow/react';
 import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/domain/constants';
@@ -26,7 +26,7 @@ import {
   MutexBadge,
   WeightBadge,
 } from './TPEdgeBadges';
-import { useJunctorCenterX } from './useJunctorCenterX';
+import { useJunctorCenterX, useJunctorSourceAnchor } from './useJunctorCenterX';
 import { useRadialRoute } from './useRadialRoute';
 
 /** E5: maximum characters shown inline on an edge label before truncating
@@ -112,12 +112,30 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   });
   const effectiveTargetX = junctorCenter ?? props.targetX;
 
+  // Junctor cause-edges skip the smart router, so their SOURCE would otherwise sit
+  // at React Flow's raw handle point — the outer edge of the 20px handle, ~10px
+  // off the card, leaving a visible gap at the cause. Re-anchor it on the source
+  // node's real edge (routed edges already do this via the router), so the AND/OR/
+  // XOR cause-edges meet their sender cards flush. A no-op for non-junctor edges
+  // (returns the handle point unchanged), so the default bezier is unaffected.
+  const sourceAxis: 'vertical' | 'horizontal' =
+    props.sourcePosition === Position.Left || props.sourcePosition === Position.Right
+      ? 'horizontal'
+      : 'vertical';
+  const sourceAnchor = useJunctorSourceAnchor({
+    isJunctorEdge,
+    sourceId: props.source,
+    axis: sourceAxis,
+    sourceX: props.sourceX,
+    sourceY: props.sourceY,
+  });
+
   // Default bezier — what React Flow's source/target handle positions
   // produce. The mutex special-case below overrides this when both
   // endpoints resolve to vertically-stacked entity positions.
   const [bezierPath, bezierLabelX, bezierLabelY] = getBezierPath({
-    sourceX: props.sourceX,
-    sourceY: props.sourceY,
+    sourceX: sourceAnchor.x,
+    sourceY: sourceAnchor.y,
     targetX: effectiveTargetX,
     targetY: effectiveTargetY,
     sourcePosition: props.sourcePosition,

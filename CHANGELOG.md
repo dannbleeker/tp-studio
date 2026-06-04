@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 175 — AND/OR/XOR cause-edges meet their sender cards flush
+
+Two edge-rendering issues from Dann's screenshot — one fixed, one investigated and
+left as-is by his call.
+
+- **Junctor cause-edges now connect flush to the sender card** (was a ~10px gap).
+  The AND/OR/XOR cause-edges skip the smart router (they terminate at the junctor
+  circle, which the router can't see), so they fall back to React Flow's raw handle
+  position — which sits at the OUTER edge of the 20px (`!h-5`) handle, ~10px off the
+  card. Routed edges anchor on the node's box boundary (flush); the junctor ones
+  floated above it ("the AND edges don't touch the sender entities"). New pure
+  `junctorSourceAnchor(axis, handleX, handleY, topLeft)` (`junctorGeometry.ts`) +
+  a `useJunctorSourceAnchor` hook (`useJunctorCenterX.ts`) re-anchor the cause-edge's
+  source onto the node's real edge (top for the vertical trees, left for EC), read
+  from the live React Flow position so it tracks drags / re-layout. `TPEdge` feeds
+  the corrected source to the bezier; a no-op for non-junctor edges, so the default
+  bezier is unaffected. Verified: measured source gap **6px → 0** (flush with the
+  routed greys), **+3 unit tests**, 67 edge/junctor tests green.
+
+- **Edge crossing (#5 follow-up) — investigated; kept the crossing (Dann's call).**
+  Dann flagged an X that "could have gone right around the entity." Reconstructed his
+  layout and reproduced it, then confirmed the decross pass *can* make it
+  crossing-free — but every crossing-free route for that symmetric X fights the chart
+  flow: it either loops over the top (entering a card from above) or dips far below
+  its source to clear a vertical edge. That's exactly the "against the flow" shape the
+  Session-173 flow guard rejects in favour of keeping the crossing. Given the tension
+  between "go around it" and "a crossing beats a backward detour," Dann chose to keep
+  the crossing — which the existing conservative logic already does. No code change.
+
 ## Session 174 — CI: action-send-mail@v4 → @v17 (the actual last Node-20 runtime)
 
 `dawidd6/action-send-mail` — the "Email the EPUB to Kindle" step in

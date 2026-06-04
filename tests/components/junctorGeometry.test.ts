@@ -10,6 +10,7 @@ import {
   collectGroupSourceIds,
   JUNCTOR_NUDGE_TOWARD_TARGET,
   junctorCenterX,
+  junctorSourceAnchor,
 } from '@/components/canvas/edges/junctorGeometry';
 import type { TPDocument } from '@/domain/types';
 
@@ -64,5 +65,29 @@ describe('collectGroupSourceIds', () => {
 
   it('returns empty for an unknown group', () => {
     expect(collectGroupSourceIds(edges, 'andGroupId', 'nope')).toEqual([]);
+  });
+});
+
+describe('junctorSourceAnchor', () => {
+  it('leaves the handle point untouched when the node edge is unknown', () => {
+    // null topLeft (node not measured yet / non-junctor edge) → no change.
+    expect(junctorSourceAnchor('vertical', 120, 222, null)).toEqual({ x: 120, y: 222 });
+    expect(junctorSourceAnchor('horizontal', 120, 222, null)).toEqual({ x: 120, y: 222 });
+  });
+
+  it('snaps a vertical-tree source onto the node TOP, keeping the handle X', () => {
+    // The handle sits ~10px above the card (React Flow reports the outer edge of
+    // the 20px handle); the real top is topLeft.y. X (the on-axis center) stays.
+    expect(junctorSourceAnchor('vertical', 120, 222.67, { x: 50, y: 232 })).toEqual({
+      x: 120,
+      y: 232,
+    });
+  });
+
+  it('snaps a horizontal-EC source onto the node LEFT, keeping the handle Y', () => {
+    expect(junctorSourceAnchor('horizontal', 222.67, 300, { x: 410, y: 280 })).toEqual({
+      x: 410,
+      y: 300,
+    });
   });
 });

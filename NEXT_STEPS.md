@@ -20,6 +20,18 @@ detours AGAINST the chart flow reads worse than the crossing) is now enforced by
 so #5 reroutes only when it can do so cleanly in-flow and otherwise keeps the X. Verified
 on a K2,2 — it now keeps the clean crossing instead of sweeping an edge backward.
 
+**Re-examined (Session 175) — kept the crossing, Dann's call.** Dann flagged a specific
+X that "could have gone right around the entity." Reconstructed the layout and confirmed
+the decross pass *can* make it crossing-free, but for that symmetric X every crossing-free
+route fights the flow (loops over the top → enters a card from above, or dips far below
+the source to clear a vertical edge) — exactly what `respectsFlow` rejects. Prototyped a
+smarter reroute (try BOTH edges of the pair; route clear of ALL other edges) but it had no
+in-flow win here and the all-edge-corridor variant is a perf risk on crossing-heavy
+diagrams, so it was reverted. Dann chose to keep the crossing. **Lesson: a symmetric X
+where each edge spans the other's flow band is genuinely unfixable without an against-flow
+detour — `respectsFlow` is doing the right thing.** Re-open only with a concrete layout
+that has a clean in-flow sideways route.
+
 ---
 
 ## Open product questions (Session 171 — Dann, "remember the questions")
