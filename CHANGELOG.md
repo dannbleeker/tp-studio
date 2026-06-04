@@ -57,6 +57,28 @@ crash fix that surfaced mid-session (first bullet below).
   Added the missing `!isNoteEdge` to the gate, so notes (annotations) and mutex
   edges (symmetric conflict) are both arrow-less by design.
 
+- **Test coverage — three focused suites for previously-thin pure-logic + glue.**
+  A coverage-driven pass (`vitest --coverage`, picks ranked by uncovered × ease)
+  added 28 cases across the lowest-covered *testable* units. No source changes —
+  behaviour-preserving:
+  - The `quickCapture` **service** (`applyQuickCapture`) went from ~4 % to fully
+    exercised: the store glue that turns a parsed capture tree into entities +
+    parent→child edges, anchors free roots to a target, and re-selects the whole
+    pasted set (`tests/services/quickCapture.test.ts`). The pure *parser*
+    (`parseQuickCapture`) was already tested; the apply step never was.
+  - The `contextMenuItems` verb→`MenuItem` bridge — `toMenuItem`'s three dispatch
+    branches (registered palette command / inline run / safe no-op) + the
+    `exactOptionalPropertyTypes` conditional `destructive` spread, and
+    `leadingVerbItems`' non-destructive filter
+    (`tests/components/canvas/contextMenuItems.test.ts`).
+  - The edge-routing geometry hot-path primitives previously reached only
+    *transitively* through the full router: `segmentCrossesBoxBounds` (the inlined,
+    allocation-free A\* slab test — easy to break with an off-by-one, invisible at
+    the router level), `padBox`, and the 3+-point `bezierThroughWaypoints`
+    composition (`tests/domain/edgeGeometryPrimitives.test.ts`).
+  Whole-project coverage sits at ~83 % statements / 72 % branches / 86 % lines; the
+  local gate (tsc + biome + knip + full vitest + build) stays green.
+
 - **Dead-code removal — 7 unused exports + 1 unused type deleted; knip now reports
   zero unused exports** (was 7). All were stranded when `CustomEntityClassesSection`
   was removed in Session 136, or were test-only hooks nothing calls:
