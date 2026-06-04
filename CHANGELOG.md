@@ -31,6 +31,19 @@ left as-is by his call.
   between "go around it" and "a crossing beats a backward detour," Dann chose to keep
   the crossing — which the existing conservative logic already does. No code change.
 
+- **AND/OR/XOR output arrow now enters the effect vertically.** The junctor sits
+  over its causes (offset from the effect's center), so the straight output line —
+  and its `orient="auto"` arrowhead — came in on a diagonal that read as pointing at
+  a neighbouring edge, not into the card (Dann). New pure `junctorOutputPath`
+  (`junctorGeometry.ts`) draws a rounded "L": sideways at the junctor's level, then
+  STRAIGHT UP into the effect's bottom-center — the long vertical final approach is
+  what makes the arrowhead read as perpendicular. (A curve that only straightened at
+  the very end wasn't enough; the junctor gap is only ~35px.) This complements the
+  layout's existing `balanceFreeAxis` node-centering pass — which already re-centers
+  each effect over its causes to avoid diagonals, but is constrained (no rank-reorder
+  / overlap) so it can't fully align a junctor when a shared cause is pulled aside by
+  dagre. +1 unit test (`junctorOutputPath`); visually verified.
+
 ## Session 174 — CI: action-send-mail@v4 → @v17 (the actual last Node-20 runtime)
 
 `dawidd6/action-send-mail` — the "Email the EPUB to Kindle" step in

@@ -10,6 +10,7 @@ import {
   collectGroupSourceIds,
   JUNCTOR_NUDGE_TOWARD_TARGET,
   junctorCenterX,
+  junctorOutputPath,
   junctorSourceAnchor,
 } from '@/components/canvas/edges/junctorGeometry';
 import type { TPDocument } from '@/domain/types';
@@ -89,5 +90,14 @@ describe('junctorSourceAnchor', () => {
       x: 410,
       y: 300,
     });
+  });
+});
+
+describe('junctorOutputPath', () => {
+  it('rises straight up into the effect (last control point shares the endpoint X)', () => {
+    // Circle at (100,200), effect bottom-center at (160,150). The 2nd control
+    // point + the endpoint share x=160, so the end tangent is vertical and the
+    // `orient="auto"` arrowhead points perpendicular into the card.
+    expect(junctorOutputPath(100, 200, 160, 150)).toBe('M 100 200 C 130 200, 160 200, 160 150');
   });
 });

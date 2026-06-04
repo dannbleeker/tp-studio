@@ -67,6 +67,19 @@ export const junctorSourceAnchor = (
 };
 
 /**
+ * SVG path for a junctor's OUTPUT arrow — from the circle center (`cx,cy`) up into
+ * the effect's bottom-center (`tx,ty`). A rounded "L": both control points sit at
+ * the circle's Y, so the curve traverses sideways at the junctor's level then rises
+ * STRAIGHT UP into the effect. The long vertical final approach — the 2nd control
+ * point shares the endpoint's X (`tx`) — makes the `orient="auto"` arrowhead read as
+ * perpendicular INTO the card, not along the offset diagonal a straight line drew
+ * (which looked like it pointed at a neighbouring edge). The junctor gap is only
+ * ~35px, so a SHORT vertical run wasn't enough for the arrowhead to look vertical.
+ */
+export const junctorOutputPath = (cx: number, cy: number, tx: number, ty: number): string =>
+  `M ${cx} ${cy} C ${(cx + tx) / 2} ${cy}, ${tx} ${cy}, ${tx} ${ty}`;
+
+/**
  * The source-entity ids of every edge in a given junctor group. Used by TPEdge
  * to gather the cause positions it needs for {@link junctorCenterX} (the same
  * set JunctorOverlay derives per group). Order follows iteration order; callers

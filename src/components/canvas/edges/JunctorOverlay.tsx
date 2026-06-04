@@ -13,7 +13,7 @@ import { useDocumentStore } from '@/store';
 import { arrayShallowEqualByKeys } from '@/store/equality';
 import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
-import { junctorCenterX } from './junctorGeometry';
+import { junctorCenterX, junctorOutputPath } from './junctorGeometry';
 
 /**
  * E6 (AND) + Bundle 8 / FL-ED3 + FL-ED4 — Flying-Logic-style junctors.
@@ -281,14 +281,16 @@ export function JunctorOverlay() {
       <g style={{ transform: `translate(${tx}px, ${ty}px) scale(${scale})` }}>
         {junctors.map((j) => {
           const stroke = kindStroke[j.kind];
+          // Output arrow from the junctor up into the effect — a rounded "L" that
+          // rises STRAIGHT UP into the card so the arrowhead reads as perpendicular,
+          // not along the offset diagonal a straight line drew (Dann). Full
+          // rationale + the geometry live in `junctorOutputPath`.
+          const outPath = junctorOutputPath(j.cx, j.cy, j.tx, j.ty);
           return (
             <g key={j.id}>
-              {/* Short line from junctor center to target top handle. */}
-              <line
-                x1={j.cx}
-                y1={j.cy}
-                x2={j.tx}
-                y2={j.ty}
+              <path
+                d={outPath}
+                fill="none"
                 stroke={stroke}
                 strokeWidth={1.75}
                 markerEnd={`url(#tp-junctor-arrow-${j.kind.toLowerCase()})`}
