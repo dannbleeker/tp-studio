@@ -96,14 +96,17 @@ export function useSelectionShortcuts() {
       }
 
       // reg: rename / hoist-group
-      if (e.key === 'Enter' && !inField && single?.kind === 'entities') {
-        // Group → hoist; entity → begin-editing. Distinguish by id lookup.
-        if (doc.groups[single.id]) {
-          e.preventDefault();
+      // Enter OR F2 on a single selected entity → begin editing its title (F2 is
+      // the conventional rename key — Z-6). Enter on a GROUP hoists it; F2 ignores
+      // groups (they have no title to rename).
+      if ((e.key === 'Enter' || e.key === 'F2') && !inField && single?.kind === 'entities') {
+        const isGroup = doc.groups[single.id] != null;
+        if (isGroup && e.key !== 'Enter') return; // F2 on a group: no-op
+        e.preventDefault();
+        if (isGroup) {
           useDocumentStore.getState().hoistGroup(single.id);
           return;
         }
-        e.preventDefault();
         if (!guardWriteOrToast()) return;
         beginEditing(single.id);
         return;

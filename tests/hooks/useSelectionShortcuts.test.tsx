@@ -51,7 +51,7 @@ describe('useSelectionShortcuts — Tab / Shift+Tab (add-child / add-parent)', (
   });
 });
 
-describe('useSelectionShortcuts — Enter (rename / hoist)', () => {
+describe('useSelectionShortcuts — Enter / F2 (rename / hoist)', () => {
   it('Enter on a single entity begins editing it', () => {
     const e = seedEntity('To rename');
     useDocumentStore.getState().selectEntities([e.id]);
@@ -69,6 +69,25 @@ describe('useSelectionShortcuts — Enter (rename / hoist)', () => {
     render(<Host />);
     fireEvent.keyDown(window, { key: 'Enter' });
     expect(s().hoistedGroupId).toBe(g.id);
+  });
+
+  it('F2 on a single entity begins editing it', () => {
+    const e = seedEntity('Rename via F2');
+    useDocumentStore.getState().selectEntities([e.id]);
+    render(<Host />);
+    fireEvent.keyDown(window, { key: 'F2' });
+    expect(s().editingEntityId).toBe(e.id);
+  });
+
+  it('F2 on a single group is a no-op (only Enter hoists)', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const g = useDocumentStore.getState().createGroupFromSelection([a.id, b.id]);
+    if (!g) throw new Error('createGroupFromSelection failed');
+    useDocumentStore.getState().selectEntities([g.id]);
+    render(<Host />);
+    fireEvent.keyDown(window, { key: 'F2' });
+    expect(s().hoistedGroupId).not.toBe(g.id);
   });
 });
 

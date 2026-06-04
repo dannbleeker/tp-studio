@@ -183,7 +183,7 @@ export const SHORTCUTS: Shortcut[] = [
   },
 
   // On a selected entity ----------------------------------------------------
-  { id: 'rename', keys: 'Enter', label: 'Rename', group: 'entity', bindsAt: 'hook' },
+  { id: 'rename', keys: 'Enter / F2', label: 'Rename', group: 'entity', bindsAt: 'hook' },
   {
     id: 'newline-in-title',
     keys: 'Alt+Enter',

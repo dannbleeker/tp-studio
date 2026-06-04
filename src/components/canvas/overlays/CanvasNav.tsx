@@ -1,5 +1,6 @@
 import { useReactFlow } from '@xyflow/react';
 import { Maximize2, Minus, Plus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { DataComponent } from '@/components/dataComponentNames';
 import { useZoomLevel } from '@/hooks/useZoomLevel';
 
@@ -28,6 +29,24 @@ export function CanvasNav() {
   const zoom = useZoomLevel();
   const pct = Math.round(zoom * 100);
   const flow = useReactFlow();
+  // Z-1 — click the percent to type an exact zoom. `zoomTo` clamps to React
+  // Flow's configured minZoom/maxZoom, so an out-of-range number just lands at
+  // the nearest allowed zoom; an unparseable value is ignored.
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const commit = (raw: string) => {
+    const n = Number.parseFloat(raw.replace('%', '').trim());
+    if (Number.isFinite(n) && n > 0) flow.zoomTo(n / 100, { duration: 200 });
+    setEditing(false);
+  };
+  // Focus + select the inline editor when it opens (no `autoFocus` — avoids the
+  // a11y lint; same pattern as TPNode's title editor).
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
 
   return (
     <div
@@ -43,13 +62,40 @@ export function CanvasNav() {
       >
         <Minus className="h-3 w-3" />
       </button>
-      {/* Session 135 — `aria-label` removed: the visible "{pct}%" text
-          IS the accessible name; biome's `useAriaPropsSupportedByRole`
-          flagged the redundant label on a plain `<span>`. Screen
-          readers announce the text content directly. */}
-      <span className="px-1.5 font-mono text-[10px] text-neutral-600 tabular-nums dark:text-neutral-300">
-        {pct}%
-      </span>
+      {/* Z-1 — click the percent to type an exact zoom. The visible text is the
+          accessible name (Session 135 dropped a redundant aria-label on the
+          read-only span). */}
+      {editing ? (
+        <input
+          ref={inputRef}
+          type="text"
+          inputMode="numeric"
+          defaultValue={String(pct)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              commit(e.currentTarget.value);
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              setEditing(false);
+            }
+            // Don't let the canvas +/-/0 zoom shortcuts fire while typing.
+            e.stopPropagation();
+          }}
+          onBlur={(e) => commit(e.currentTarget.value)}
+          aria-label="Set zoom percent"
+          className="w-9 rounded-sm bg-neutral-100 px-1 text-center font-mono text-[10px] text-neutral-700 tabular-nums outline-hidden ring-1 ring-indigo-400 dark:bg-neutral-800 dark:text-neutral-200"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="rounded-sm px-1.5 font-mono text-[10px] text-neutral-600 tabular-nums hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-400 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          title="Set zoom % (click to type)"
+        >
+          {pct}%
+        </button>
+      )}
       <button
         type="button"
         onClick={() => flow.zoomIn()}

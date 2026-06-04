@@ -32,14 +32,19 @@ this session: the `loadDoc` / `setEntityPosition` / `fitView` test hooks + the f
   source `#6`), not via dagre's isolated-node placement. Pointers:
   `AssumptionAnchorOverlay`, the assumption entity in `useGraphPositions` / projection,
   `assumptions[].edgeId`.
-- **Z-4 — flow edges "have no arrows." LIKELY NOT A CODE BUG (stale SW).** A fresh load
-  of Dann's exact diagram shows ALL arrows correct: every regular edge has its arrow;
-  the only arrowless edges are the AND-junctor cause-edges (`#1,#2→#5`, `#5,#7→#8`),
-  which correctly have none (the AND circle owns the shared output arrow). "Hard refresh
-  didn't help" is the classic `registerType:'prompt'` SW symptom — a normal refresh
-  can't beat the cached `sw.js`. **Action before building anything: Dann does DevTools →
-  Application → Service Workers → Unregister → reload (or the next deploy bumps the SW
-  hash). Arrows back → no code change. Still missing → re-diagnose as a real bug.**
+- **Z-4 — direct entity→entity FORWARD edges have no arrows. CONFIRMED REAL BUG.**
+  Dann unregistered the SW and the arrows are STILL missing — but ONLY on direct
+  (non-junction) forward edges; the AND-junctor output arrow and the back-edge arrow
+  render fine. PUZZLE: a fresh `loadDoc` of his exact diagram + a DOM sweep found the
+  arrowhead `<path>` element present on every regular edge (incl. the direct
+  forward ones `3z7h`/`6O6K`/`q36o`), `hasArrow:true`. So the bug is subtle —
+  present-in-DOM but not VISIBLE for direct forward edges (degenerate placement /
+  zero-size / occluded), OR the DOM check was a false positive. Wave-2 diagnosis:
+  at a readable zoom, compare the rendered arrowhead (position/size/opacity) on a
+  direct forward edge vs the back-edge `DJJo`; inspect `arrowheadOnPath` placement +
+  whether the routed path's terminal tangent is degenerate for these edges. Pointers:
+  `TPEdge` arrowhead (`arrowheadOnPath`, `edgeArrowhead.ts`), `useGraphEdgeEmission`
+  (`markerEnd` stamp).
 - **Z-6 — F2 = edit, Delete = delete (selected entity).** When an entity node is
   selected (not editing its text): `F2` → `beginEditing(id)`; `Delete` →
   `confirmAndDeleteEntity(id)` (reuse the confirm-on-edges flow). Canvas-level keyboard

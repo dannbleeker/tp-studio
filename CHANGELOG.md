@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 176 — Z batch wave 1: editable zoom + F2-to-rename
+
+Two small UX wins from Dann's "Z batch". The basic drawing flow is unchanged.
+
+- **The zoom-percent chip is now click-to-edit.** Clicking the "{n}%" readout in the
+  bottom-centre `CanvasNav` swaps it for a numeric input; type a value + Enter and the
+  canvas zooms to that percentage (`flow.zoomTo`, which clamps to React Flow's 50–200%
+  range), Escape cancels. The `+` / `−` / fit buttons and the `+` / `−` / `0` keyboard
+  shortcuts are untouched — this just makes the readout itself an input. Focus + select
+  on open via a ref (no `autoFocus`, per the a11y lint). (`CanvasNav.tsx`.)
+- **F2 renames a selected entity** — the conventional rename key, alongside the existing
+  Enter. F2 only edits entity titles; on a group it's a no-op (Enter still hoists). Delete
+  / Backspace already deleted the selection. (`useSelectionShortcuts.ts`; the help dialog's
+  rename row now reads "Enter / F2".)
+
+Verified: tsc + knip clean, production build green, **+2 unit tests** (F2 edits an entity;
+F2 on a group is a no-op) plus a new **e2e spec** driving the click → type → zoom → Escape
+flow (green on system Edge locally; CI runs it on Chromium). 90 hook + 17 overlay/registry
+tests green.
+
 ## Session 175 — AND/OR/XOR cause-edges meet their sender cards flush
 
 Two edge-rendering issues from Dann's screenshot — one fixed, one investigated and
