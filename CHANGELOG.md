@@ -38,6 +38,18 @@ crash fix that surfaced mid-session (first bullet below).
   to match. The now-unused `EdgeArrowMarkers` `<marker>` defs + canvas mount were
   removed; the two ids stay as the emission↔render "has arrowhead" contract.
 
+- **Refactor — the causal arrowhead is now one tested module (`edgeArrowhead.ts`).**
+  After the direction fix, the arrowhead's geometry (an inline IIFE in `TPEdge`),
+  its tuning constants, and the emission↔render id tags were scattered across
+  `TPEdge` + a now-misnamed `EdgeArrowMarkers.tsx` (it held no markers). All
+  consolidated into `edgeArrowhead.ts`: a pure, unit-tested `arrowheadPlacement`
+  (`edgeArrowhead.test.ts`, 7 cases) + the size / tip-gap / silhouette constants
+  + the two id tags. `TPEdge` calls the module; `EdgeArrowMarkers.tsx` is deleted.
+  So the anticipated next round of arrow tweaks (bigger / different offset /
+  different shape) is a one-line, type-safe, tested change. Behaviour-preserving;
+  added an "Arrowheads" section to `docs/RENDER_ENGINE_NOTES.md` mapping the
+  causal-path vs junction-marker split.
+
 - **Dead-code removal — 7 unused exports + 1 unused type deleted; knip now reports
   zero unused exports** (was 7). All were stranded when `CustomEntityClassesSection`
   was removed in Session 136, or were test-only hooks nothing calls:

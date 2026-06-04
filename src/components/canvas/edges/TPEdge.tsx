@@ -11,6 +11,7 @@ import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/
 import { EDGE_PALETTES } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
+import { ARROW_TRIANGLE_D, arrowheadPlacement, arrowheadTransform } from './edgeArrowhead';
 import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
@@ -367,26 +368,19 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     locked: browseLocked,
   });
 
-  // Cause→effect arrowhead geometry (see the BaseEdge comment for why it's a
-  // custom <path>, not a marker). Oriented to the source→target direction so it
-  // sits flush on the line, and positioned a few units before the target so the
-  // stroke runs straight out of its tip into the box. Junctor edges carry no
-  // arrow (emission drops `markerEnd`), so the junctor target offset never
-  // applies here; `effectiveTargetX/Y` are the real endpoint.
-  const arrowHead = (() => {
-    if (isMutex || !props.markerEnd) return null;
-    const dx = effectiveTargetX - props.sourceX;
-    const dy = effectiveTargetY - props.sourceY;
-    const len = Math.hypot(dx, dy) || 1;
-    const ux = dx / len;
-    const uy = dy / len;
-    const TIP_GAP = 11; // stroke continues this far past the tip into the box
-    return {
-      tipX: effectiveTargetX - ux * TIP_GAP,
-      tipY: effectiveTargetY - uy * TIP_GAP,
-      angle: (Math.atan2(uy, ux) * 180) / Math.PI,
-    };
-  })();
+  // Cause→effect arrowhead placement — a custom oriented `<path>` (not React
+  // Flow's `markerEnd`, which can't follow a curved approach); `edgeArrowhead.ts`
+  // holds the full rationale + the tuning constants. `show` folds in the gate:
+  // mutex edges and arrow-less edges (no `markerEnd`) get none. `effectiveTargetX/Y`
+  // are the real endpoint (junctor edges carry no arrow, so the junctor offset
+  // never applies here).
+  const arrowHead = arrowheadPlacement({
+    show: Boolean(props.markerEnd) && !isMutex,
+    sourceX: props.sourceX,
+    sourceY: props.sourceY,
+    targetX: effectiveTargetX,
+    targetY: effectiveTargetY,
+  });
 
   return (
     <>
@@ -440,13 +434,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         }}
       />
       {arrowHead && (
-        // Triangle with its tip at the local origin, base 15 units back; the
-        // `rotate(angle)` aligns the tip with the source→target direction and
-        // the `translate` drops it a touch before the box. `pointerEvents:none`
-        // keeps it off the 56px hit path. Colour tracks the edge stroke.
+        // `ARROW_TRIANGLE_D` + `arrowheadTransform` (edgeArrowhead.ts) place +
+        // orient the triangle along the edge; `pointerEvents:none` keeps it off
+        // the 56px hit path and the fill tracks the edge stroke.
         <path
-          d="M 0 0 L -15 -8 L -15 8 z"
-          transform={`translate(${arrowHead.tipX} ${arrowHead.tipY}) rotate(${arrowHead.angle})`}
+          d={ARROW_TRIANGLE_D}
+          transform={arrowheadTransform(arrowHead)}
           fill={stroke}
           style={{ pointerEvents: 'none' }}
         />

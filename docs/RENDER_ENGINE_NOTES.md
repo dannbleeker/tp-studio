@@ -68,6 +68,33 @@ short line continues from circle into target's bottom handle (only place an arro
 - **Single-source junctors render anyway** — looks slightly silly
   ("AND of one") but never leaves an edge ending in mid-air.
 
+### Arrowheads (cause→effect direction)
+
+Two mechanisms, chosen by edge shape:
+
+- **Plain causal / necessity edges → a custom oriented `<path>` in `TPEdge`.**
+  Geometry, tuning constants, and the emission↔render id tags all live in one
+  place: [`edgeArrowhead.ts`](../src/components/canvas/edges/edgeArrowhead.ts)
+  (`arrowheadPlacement` is pure + unit-tested). It orients to the source→target
+  direction and sits `ARROW_TIP_GAP` units before the box so the stroke runs
+  straight out of the tip. **Why not React Flow's `markerEnd`:** an SVG marker
+  always orients to the path's *endpoint tangent* — the target handle's fixed
+  normal (vertical for a `Position.Bottom` handle) — but the routed/bezier edge
+  approaches *diagonally*, so a marker pointed the wrong way and tucked under the
+  card. `useGraphEdgeEmission` still stamps `markerEnd` with a tag id, but only
+  as the "this edge gets an arrowhead" signal `TPEdge` reads (never a real marker
+  anymore).
+- **Junction (AND / OR / XOR) output → a `<marker>` in `JunctorOverlay`.** That
+  arrow rides the short *straight* line from the circle to the target, where a
+  marker orients correctly, so it keeps the simpler marker path.
+- **Arrow-less by design:** mutex edges (symmetric conflict) and note edges
+  (annotation) carry none; the per-cause edges feeding a junctor circle carry
+  none either (the circle's single output arrow owns the direction).
+
+**To tune every causal arrowhead** (size / offset / silhouette), edit the
+constants at the top of `edgeArrowhead.ts` — one place, with the geometry test
+pinning the result.
+
 ---
 
 ## What still needs a dedicated session

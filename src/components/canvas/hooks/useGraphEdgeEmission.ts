@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { edgesArray, openCommentCountsByAnchor } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
-import { EDGE_ARROW_AND_MARKER_ID, EDGE_ARROW_MARKER_ID } from '../edges/EdgeArrowMarkers';
+import { EDGE_ARROW_AND_MARKER_ID, EDGE_ARROW_MARKER_ID } from '../edges/edgeArrowhead';
 import type { TPEdge } from '../edges/flow-types';
 import { edgeAriaLabel } from './nodeAriaLabels';
 import type { EdgeRouteMap } from './useEdgeRoutes';
@@ -169,11 +169,12 @@ export const useGraphEdgeEmission = (
           ? {}
           : {
               // The arrowhead IS the TP logic — it shows which end is the cause
-              // and which the effect (sufficiency / necessity direction). Custom
-              // markers (`EdgeArrowMarkers`) so it reads clearly where React
-              // Flow's built-in ArrowClosed didn't; aggregated junctor edges use
-              // the AND-coloured one. Colour tracks the palette in the marker def.
-              // Bare marker id — React Flow wraps it as `url('#<id>')` itself.
+              // and which the effect (sufficiency / necessity direction). This
+              // `markerEnd` is the "render an arrowhead" signal that `TPEdge`
+              // reads; it draws the arrowhead itself as a custom oriented `<path>`
+              // (see `edgeArrowhead.ts`) so it follows the curved edge instead of
+              // a marker's fixed endpoint tangent. The `_AND_` tag marks an
+              // aggregated junctor edge; junctor edges themselves carry none.
               markerEnd: anyJunctorGroup ? EDGE_ARROW_AND_MARKER_ID : EDGE_ARROW_MARKER_ID,
             }),
         selectable: !isAggregated,

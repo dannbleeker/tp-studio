@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   EDGE_ARROW_AND_MARKER_ID,
   EDGE_ARROW_MARKER_ID,
-} from '@/components/canvas/edges/EdgeArrowMarkers';
+} from '@/components/canvas/edges/edgeArrowhead';
 import { useGraphEdgeEmission } from '@/components/canvas/hooks/useGraphEdgeEmission';
 import type { GraphProjection } from '@/components/canvas/hooks/useGraphProjection';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -30,8 +30,8 @@ describe('useGraphEdgeEmission', () => {
     expect(edges[0]?.id).toBe(e?.id);
     expect(edges[0]?.selectable).toBe(true);
     expect(edges[0]?.reconnectable).toBe(true); // a real edge can be re-targeted
-    // Bare custom-marker id — React Flow wraps it as url('#…'); colour lives in
-    // the live-palette marker def (EdgeArrowMarkers), not on the edge.
+    // `markerEnd` is the "has arrowhead" signal `TPEdge` reads to draw a custom
+    // oriented `<path>` (see `edgeArrowhead.ts`); it's no longer a React Flow marker.
     expect(edges[0]?.markerEnd).toBe(EDGE_ARROW_MARKER_ID);
     expect(edges[0]?.data?.andGroupId).toBeUndefined();
   });
