@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { bezierThroughWaypoint, bezierThroughWaypoints } from '@/domain/edgeBezier';
-import { padBox, segmentCrossesBoxBounds } from '@/domain/edgeGeometry';
+import { padBox, segmentCrossesBoxBounds, segmentsCross } from '@/domain/edgeGeometry';
 
-// These three primitives live in the edge-routing geometry leaves but are only
-// exercised *transitively* by `edgeRouting.test.ts` (through the full router /
-// A* path). Pinning them directly guards the hot-path Liang-Barsky math, the
-// padding arithmetic, and the multi-waypoint bezier composition against silent
-// regressions — each is easy to break with an off-by-one and invisible at the
-// router level until a curve visibly clips a node.
+// These edge-routing geometry primitives are otherwise exercised only
+// *transitively* by `edgeRouting.test.ts` (through the full router / A* path).
+// Pinning them directly guards the hot-path Liang-Barsky math, the padding
+// arithmetic, the multi-waypoint bezier composition, and the segment-crossing
+// predicate against silent regressions — each is easy to break with an
+// off-by-one and invisible at the router level.
 
 describe('segmentCrossesBoxBounds (inlined strict-interior A* hot path)', () => {
   // Canonical box: x ∈ [10, 30], y ∈ [10, 30].
@@ -96,5 +96,50 @@ describe('bezierThroughWaypoints (multi-waypoint composition)', () => {
     expect(path.match(/C/g)?.length).toBe(3);
     expect(path.startsWith('M0,0')).toBe(true);
     expect(path.endsWith('150,50')).toBe(true);
+  });
+});
+
+describe('segmentsCross (transversal crossing predicate for #5)', () => {
+  const p = (x: number, y: number) => ({ x, y });
+
+  it('is true for a clean diagonal X', () => {
+    expect(segmentsCross(p(0, 0), p(10, 10), p(0, 10), p(10, 0))).toBe(true);
+  });
+
+  it('is true for a perpendicular cross away from the origin', () => {
+    expect(segmentsCross(p(0, 5), p(10, 5), p(5, 0), p(5, 10))).toBe(true);
+  });
+
+  it('is FALSE for a shared endpoint (two edges leaving the same node)', () => {
+    expect(segmentsCross(p(0, 0), p(10, 10), p(0, 0), p(10, -10))).toBe(false);
+  });
+
+  it('is FALSE for a T-touch (one endpoint lands on the other segment)', () => {
+    expect(segmentsCross(p(0, 0), p(10, 0), p(5, 0), p(5, 10))).toBe(false);
+  });
+
+  it('is FALSE for parallel segments', () => {
+    expect(segmentsCross(p(0, 0), p(10, 0), p(0, 5), p(10, 5))).toBe(false);
+  });
+
+  it('is FALSE for collinear overlapping segments', () => {
+    expect(segmentsCross(p(0, 0), p(10, 0), p(5, 0), p(15, 0))).toBe(false);
+  });
+
+  it('is FALSE for disjoint segments', () => {
+    expect(segmentsCross(p(0, 0), p(1, 1), p(10, 0), p(11, 1))).toBe(false);
+  });
+
+  it('is FALSE when the supporting lines cross but the segments do not reach', () => {
+    // Lines y=x and y=10−x meet at (5,5), but segment 1 only runs to (2,2).
+    expect(segmentsCross(p(0, 0), p(2, 2), p(0, 10), p(10, 0))).toBe(false);
+  });
+
+  it('is symmetric in the two segments', () => {
+    const a = p(0, 0);
+    const b = p(10, 10);
+    const c = p(0, 10);
+    const d = p(10, 0);
+    expect(segmentsCross(a, b, c, d)).toBe(segmentsCross(c, d, a, b));
   });
 });

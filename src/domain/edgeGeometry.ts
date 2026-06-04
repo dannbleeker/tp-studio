@@ -232,3 +232,33 @@ export const padBox = (box: Box, margin: number): Box => ({
   width: box.width + 2 * margin,
   height: box.height + 2 * margin,
 });
+
+/** 2D cross product of (b−a) × (c−a) — its sign is the orientation of a→b→c
+ *  (positive = counter-clockwise, negative = clockwise, zero = collinear). */
+const orient = (a: Point, b: Point, c: Point): number =>
+  (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+
+/**
+ * Do segments `p1→p2` and `p3→p4` **properly cross** — i.e. intersect
+ * transversally at a single interior point (a clean "X")?
+ *
+ * Deliberately strict: this returns `true` ONLY when each segment straddles the
+ * other's supporting line (all four orientation tests are non-zero with the
+ * opposite-sign pattern). Everything that merely *touches* is `false`:
+ *   - a **shared endpoint** (two edges leaving the same node) — touch, not a cross;
+ *   - a **T-touch** (one segment's endpoint lands on the other's interior);
+ *   - **parallel** or **collinear / overlapping** segments.
+ * That's exactly the predicate the edge-crossing reroute wants — it's looking for
+ * the visual "X" between two unrelated edges, not the expected meeting at a shared
+ * entity. Pure integer-ish arithmetic, no division, so no epsilon/NaN hazard.
+ */
+export const segmentsCross = (p1: Point, p2: Point, p3: Point, p4: Point): boolean => {
+  const d1 = orient(p3, p4, p1);
+  const d2 = orient(p3, p4, p2);
+  const d3 = orient(p1, p2, p3);
+  const d4 = orient(p1, p2, p4);
+  // p1,p2 strictly on opposite sides of line p3p4 AND p3,p4 strictly on opposite
+  // sides of line p1p2. A zero in any term means an endpoint lies on the other
+  // line (touch / collinear) — not a transversal crossing.
+  return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+};

@@ -148,6 +148,92 @@ const sideSelectionFor = (
 ): SideSelection => selectEdgeSides({ sourceBox, targetBox, axis, obstacles });
 
 /**
+ * The per-layout routing context shared by every edge in one `computeEdgeRoutes`
+ * pass: the cached visibility graph + the inflated obstacle arrays + the flow
+ * axis. Bundled so {@link routeOneEdge} can be re-invoked (e.g. a future
+ * crossing-aware reroute) without rebuilding the graph.
+ */
+type RouteContext = {
+  graph: ReturnType<typeof buildVisibilityGraph>;
+  axis: Axis;
+  /** Inflated obstacle boxes (clearance applied), parallel to {@link RouteContext.allBoxIds}. */
+  allBoxesArr: readonly Box[];
+  allBoxIds: readonly string[];
+  boxIdToIndex: ReadonlyMap<string, number>;
+};
+
+/**
+ * Route a single non-junctor edge between two boxes through the shared visibility
+ * graph: pick the facing sides (dodging obstacles), run A\* on the cached graph,
+ * and compose the waypoint list into a side-aware bezier (or a dead-straight
+ * segment when the curve would dip into an obstacle a straight line clears).
+ *
+ * Extracted verbatim from `computeEdgeRoutes`' per-edge loop (behaviour-preserving
+ * — the `useEdgeRoutes` waypoint tests pin it) so a crossing-aware reroute can call
+ * it again for one edge without duplicating the body. The endpoint boxes are
+ * excluded from this edge's obstacle set (an edge can't be blocked by its own
+ * endpoints) and skipped in the A\* visibility check via their box indices.
+ */
+const routeOneEdge = (s: string, t: string, sBox: Box, tBox: Box, ctx: RouteContext): EdgeRoute => {
+  // Per-edge obstacle set — every visible box except this edge's own two
+  // endpoints. Shared by the side picker (which sides are clear?) and the
+  // curvature-dip check below.
+  const obstaclesForEdge: Box[] = [];
+  for (let i = 0; i < ctx.allBoxesArr.length; i++) {
+    const id = ctx.allBoxIds[i];
+    const box = ctx.allBoxesArr[i];
+    if (!box || id === s || id === t) continue;
+    obstaclesForEdge.push(box);
+  }
+  const sel = sideSelectionFor(sBox, tBox, ctx.axis, obstaclesForEdge);
+  // The anchor points sit on their own box boundary, so they fall *inside* the
+  // visibility graph's shrunk-interior bounds. Pass the source/target box indices
+  // so the visibility check skips them for this edge's queries.
+  const sourceBoxIdx = ctx.boxIdToIndex.get(s) ?? -1;
+  const targetBoxIdx = ctx.boxIdToIndex.get(t) ?? -1;
+  const path = aStarOnGraph(
+    ctx.graph,
+    sel.sourceAnchor,
+    sel.targetAnchor,
+    sourceBoxIdx,
+    targetBoxIdx
+  );
+  // The A\*-failed and direct-visibility branches both emit the same side-aware
+  // curve between the chosen anchors — keep it in one place.
+  const sidedCurve = () =>
+    sideBezierSegment(sel.sourceAnchor, sel.sourceSide, sel.targetAnchor, sel.targetSide);
+  const directWaypoints = [sel.sourceAnchor, sel.targetAnchor];
+  if (!path || path.length < 2) {
+    // A\* failed — likely source/target inside an obstacle. Fall back to the
+    // side-aware bezier between the chosen anchors.
+    return { d: sidedCurve(), waypoints: directWaypoints };
+  }
+  if (path.length === 2) {
+    // Direct visibility. Emit the side-aware curve unless its curvature dips into
+    // an obstacle a straight line would clear — in which case use the dead-straight
+    // segment (cannot dip).
+    const dips =
+      findBlockingObstaclesSided(
+        sel.sourceAnchor,
+        sel.sourceSide,
+        sel.targetAnchor,
+        sel.targetSide,
+        obstaclesForEdge
+      ).length > 0;
+    return {
+      d: dips
+        ? `M${sel.sourceAnchor.x},${sel.sourceAnchor.y} L${sel.targetAnchor.x},${sel.targetAnchor.y}`
+        : sidedCurve(),
+      waypoints: directWaypoints,
+    };
+  }
+  return {
+    d: bezierThroughWaypointsSided(path, sel.sourceSide, sel.targetSide),
+    waypoints: path,
+  };
+};
+
+/**
  * Pure helper — given the doc + projection + positions, produce the
  * per-edge route map. Phase D optimization: build the visibility
  * graph ONCE for the full obstacle set and call A\* per edge against
@@ -228,6 +314,7 @@ export const computeEdgeRoutes = (
   // O(n² m) work amortised across all edges in this `computeEdgeRoutes`
   // call (typically dozens to hundreds of edges per pass).
   const graph = buildVisibilityGraph(allBoxesArr);
+  const ctx: RouteContext = { graph, axis, allBoxesArr, allBoxIds, boxIdToIndex };
 
   const out: Record<string, EdgeRoute> = {};
   // Track which remapped pairs we've already routed — one route per visible
@@ -252,65 +339,7 @@ export const computeEdgeRoutes = (
     const sBox = allBoxes.get(s);
     const tBox = allBoxes.get(t);
     if (!sBox || !tBox) continue;
-    // Per-edge obstacle set — every visible box except this edge's own
-    // two endpoints. Shared by the side picker (which sides are clear?)
-    // and the curvature-dip check below.
-    const obstaclesForEdge: Box[] = [];
-    for (let i = 0; i < allBoxesArr.length; i++) {
-      const id = allBoxIds[i];
-      const box = allBoxesArr[i];
-      if (!box || id === s || id === t) continue;
-      obstaclesForEdge.push(box);
-    }
-    const sel = sideSelectionFor(sBox, tBox, axis, obstaclesForEdge);
-    // Phase D fix — the anchor points sit on their own box boundary, so
-    // they fall *inside* the visibility graph's shrunk-interior bounds.
-    // Pass the source/target box indices so the visibility check skips
-    // them for this edge's queries.
-    const sourceBoxIdx = boxIdToIndex.get(s) ?? -1;
-    const targetBoxIdx = boxIdToIndex.get(t) ?? -1;
-    const path = aStarOnGraph(
-      graph,
-      sel.sourceAnchor,
-      sel.targetAnchor,
-      sourceBoxIdx,
-      targetBoxIdx
-    );
-    // The A\*-failed and direct-visibility branches both emit the same
-    // side-aware curve between the chosen anchors — keep it in one place.
-    const sidedCurve = () =>
-      sideBezierSegment(sel.sourceAnchor, sel.sourceSide, sel.targetAnchor, sel.targetSide);
-    const directWaypoints = [sel.sourceAnchor, sel.targetAnchor];
-    if (!path || path.length < 2) {
-      // A\* failed — likely source/target inside an obstacle. Fall back
-      // to the side-aware bezier between the chosen anchors.
-      out[edge.id] = { d: sidedCurve(), waypoints: directWaypoints };
-      continue;
-    }
-    if (path.length === 2) {
-      // Direct visibility. Emit the side-aware curve unless its curvature
-      // dips into an obstacle a straight line would clear — in which case
-      // use the dead-straight segment (cannot dip).
-      const dips =
-        findBlockingObstaclesSided(
-          sel.sourceAnchor,
-          sel.sourceSide,
-          sel.targetAnchor,
-          sel.targetSide,
-          obstaclesForEdge
-        ).length > 0;
-      out[edge.id] = {
-        d: dips
-          ? `M${sel.sourceAnchor.x},${sel.sourceAnchor.y} L${sel.targetAnchor.x},${sel.targetAnchor.y}`
-          : sidedCurve(),
-        waypoints: directWaypoints,
-      };
-      continue;
-    }
-    out[edge.id] = {
-      d: bezierThroughWaypointsSided(path, sel.sourceSide, sel.targetSide),
-      waypoints: path,
-    };
+    out[edge.id] = routeOneEdge(s, t, sBox, tBox, ctx);
   }
   return out;
 };
