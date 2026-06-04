@@ -9,18 +9,24 @@ CHANGELOG.
 
 ## Active backlog (Session 176 — Dann's review batch)
 
-### Canvas — back-edge routing (Z-2 / Z-5 / behind-entities) — Wave 3
-The Z-batch's one remaining item (Z-1 editable zoom, Z-3 assumption placement, Z-4 [was
-stale cache], Z-6 F2-rename, **and** the back-edge colour all shipped Session 176). Repro
-fixture: `e2e/fixtures/inventory-turns-crt.tps.json`, loaded via `__TP_TEST__.loadDoc(json)`.
-The feedback loop is `#4 ⇄ #6` (`q36o` #4→#6 forward; `DJJo` #6→#4 the loop-closer). Wanted:
-- A back-edge should **enter its target in the FLOW direction** — in a bottom-up CRT, from
-  the BOTTOM (like every causal edge), not the side/top.
-- It should **exit the source's top, loop around the source**, then reach the target by the
-  normal rules, and **never cross behind an entity** (folds in the parked edge-behind-card item).
-Delicate routing change (the #5 history) → tests-first. Pointers: `edge.isBackEdge` (a MANUAL
-tag, see next item), `useEdgeRoutes` (back-edges take the normal A* path today, no exit/loop
-rule), `edgeSides`/`resolveEdgePath`, `TPEdge`.
+### Canvas — back-edge routing (Z-2 / Z-5 / behind-entities) — Wave 3 (item 1 ✅; items 2–3 OPEN)
+Repro fixture: `e2e/fixtures/inventory-turns-crt.tps.json`, loaded via `__TP_TEST__.loadDoc(json)`.
+The feedback loop is `#4 ⇄ #6` (`q36o` #4→#6 forward; `DJJo` #6→#4 the loop-closer, auto-detected).
+- ✅ **Item 1 (Session 176) — flow-direction attach.** A back-edge now exits the source's TOP and
+  enters the target's BOTTOM, via the `forceSides` seam + `effectiveBackEdgeIds` threaded through the
+  router. NOTE: a visual no-op on the inventory CRT (its loop-closer already exits the top — `#6`
+  sits below `#4`); it fixes the direction when a back-edge's source sits above its target.
+- **Item 2 (OPEN · HIGH risk) — loop around the source.** Between the top-exit and bottom-entry, arc
+  around one side of the source so it reads as a loop instead of sharing the forward edge's corridor.
+  Reuse `corridorBoxes`/`rerouteAround`; the loop-side heuristic is the #5-class judgment call.
+  Estimate: ~half a day build + 2–3 visual rounds with Dann (least-predictable item in the wave).
+- **Item 3 (OPEN) — never cross behind an entity.** Ensure the RENDERED bezier (not just the A*
+  polyline) stays out from behind cards (folds in the parked edge-behind-card item). Estimate:
+  ~30–60 min; often falls out of item 2's waypoints.
+Delicate (the #5 history) → tests-first. Pointers: `useEdgeRoutes` (`routeOneEdge` now carries an
+`isBackEdge` flag + `backEdgeForcedSides`), `edgeSides` (`forceSides`), `backEdges.ts`, `TPEdge`.
+Fallback if no clean loop satisfies all constraints: lean on the shipped colour + dash, don't force
+an ugly detour (the #5 "I'd rather they cross" precedent).
 
 ### Auto-detect back-edges (loop-closers) — ✅ SHIPPED Session 176 (Wave 3-0)
 A cycle's loop-closer auto-styles as a back-edge (colour + dash) without a manual tag, via pure
