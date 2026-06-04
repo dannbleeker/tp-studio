@@ -14,10 +14,11 @@ small AABBs), kept only when it strictly reduces crossings. Conservative + cappe
 behind the `'smart'` pref. Pre-work: `segmentsCross`/`polylinesCross` primitives +
 `routeOneEdge` extraction. Details in CHANGELOG (Session 173).
 
-**Open follow-up (only if a real layout reveals it):** the reroute's *aesthetic* on
-diagonal crossings — a corridor detour can be longer than the crossing it removes. Tune
-`CORRIDOR_MARGIN` / `CORRIDOR_STEP` or add a detour-length guard if a reroute ever looks
-worse than the X. Best judged on a real manually-tangled layout.
+**Refined (Session 173) — aesthetic follow-up resolved.** Dann's rule (a reroute that
+detours AGAINST the chart flow reads worse than the crossing) is now enforced by
+`respectsFlow`: the reroute is kept only if it stays within the source→target flow band,
+so #5 reroutes only when it can do so cleanly in-flow and otherwise keeps the X. Verified
+on a K2,2 — it now keeps the clean crossing instead of sweeping an edge backward.
 
 ---
 

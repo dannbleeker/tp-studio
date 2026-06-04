@@ -17,6 +17,7 @@ import { junctorCenterX } from '@/components/canvas/edges/junctorGeometry';
 import {
   computeEdgeRoutes,
   junctorObstacleBoxes,
+  respectsFlow,
   useEdgeRoutes,
 } from '@/components/canvas/hooks/useEdgeRoutes';
 import { useGraphProjection } from '@/components/canvas/hooks/useGraphProjection';
@@ -402,7 +403,7 @@ describe('junctorObstacleBoxes', () => {
 
 // -- Crossing-aware reroute (#5) -------------------------------------------
 describe('computeEdgeRoutes — crossing-aware reroute', () => {
-  it('reroutes one of two crossing edges so they no longer cross', () => {
+  it('keeps a crossing rather than routing an edge against the chart flow', () => {
     const a = seedEntity('A');
     const b = seedEntity('B');
     const c = seedEntity('C');
@@ -426,9 +427,10 @@ describe('computeEdgeRoutes — crossing-aware reroute', () => {
     const wp2 = routes[e2.id]?.waypoints ?? [];
     expect(wp1.length).toBeGreaterThanOrEqual(2);
     expect(wp2.length).toBeGreaterThanOrEqual(2);
-    // Crossed before the decross pass; one edge must have been rerouted so they
-    // no longer do.
-    expect(polylinesCross(wp1, wp2)).toBe(false);
+    // These two diagonals can only be uncrossed by sending an edge backward (out
+    // of its source→target flow band) — so #5 keeps the crossing instead of
+    // routing against the chart flow (Dann's rule).
+    expect(polylinesCross(wp1, wp2)).toBe(true);
   });
 
   it('leaves a clean (non-crossing) layout untouched — two straight 2-waypoint routes', () => {
@@ -452,5 +454,27 @@ describe('computeEdgeRoutes — crossing-aware reroute', () => {
     const routes = computeEdgeRoutes(doc, projection, positions);
     expect(routes[e1.id]?.waypoints).toHaveLength(2);
     expect(routes[e2.id]?.waypoints).toHaveLength(2);
+  });
+});
+
+describe('respectsFlow (decross flow guard)', () => {
+  const p = (x: number, y: number) => ({ x, y });
+
+  it('passes a vertical-flow route that only swings sideways within the band', () => {
+    expect(respectsFlow([p(0, 0), p(80, 50), p(0, 100)], 'vertical')).toBe(true);
+  });
+
+  it('rejects a route that backtracks behind the source (against an upward flow)', () => {
+    // Endpoints span y 0..100; the middle waypoint at y 160 dips out of the band.
+    expect(respectsFlow([p(0, 100), p(0, 160), p(0, 0)], 'vertical')).toBe(false);
+  });
+
+  it('rejects a route that overshoots past the target', () => {
+    expect(respectsFlow([p(0, 0), p(0, -40), p(0, 100)], 'vertical')).toBe(false);
+  });
+
+  it('uses the X axis as the flow direction for a horizontal (EC) layout', () => {
+    expect(respectsFlow([p(0, 0), p(-40, 0), p(100, 0)], 'horizontal')).toBe(false);
+    expect(respectsFlow([p(0, 0), p(50, 30), p(100, 0)], 'horizontal')).toBe(true);
   });
 });

@@ -37,13 +37,17 @@ review. Geometry-only; the gate stays green.
   cheaper edge AROUND the other — feeding the other edge's polyline to A\* as a thin
   obstacle corridor (a chain of small AABBs that stays tight on diagonals, where a
   segment's bbox would engulf the quadrant). It's conservative: a reroute is kept only
-  when it STRICTLY lowers that edge's crossing count, so it can never trade one crossing
-  for another or worsen a clean diagram; reroute attempts (each a local visibility-graph
+  when it STRICTLY lowers that edge's crossing count **AND stays within the chart's flow
+  band** (`respectsFlow`) — Dann's rule: an edge that detours *backward against the flow*
+  reads worse than the crossing, so a reroute that would leave the source→target band is
+  rejected and the crossing is kept. (So #5 reroutes only when it can be done cleanly
+  in-flow; otherwise the X stays.) Reroute attempts (each a local visibility-graph
   rebuild) are capped, and the whole pass stays behind the `'smart'` routing pref.
   Pre-work landed first as a separate behaviour-preserving refactor: the `segmentsCross`
   / `polylinesCross` primitives + extracting `routeOneEdge` so the reroute reuses the
-  routing body. New tests pin the primitives, "two crossing edges end up uncrossed", and
-  "a clean layout is untouched"; the 50-edge perf ceiling holds.
+  routing body. New tests pin the primitives, `respectsFlow`, "a crossing only undoable
+  against the flow is kept", and "a clean layout is untouched"; the 50-edge perf ceiling
+  holds.
 
 ## Session 172 — autonomous under-the-hood optimization pass
 

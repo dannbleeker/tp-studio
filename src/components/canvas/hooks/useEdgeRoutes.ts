@@ -342,11 +342,37 @@ const rerouteAround = (
   return routeOneEdge(move.s, move.t, move.sBox, move.tBox, extCtx);
 };
 
+/** Curve overshoot allowed before a waypoint counts as leaving the flow band. */
+const FLOW_BAND_MARGIN = 12;
+
+/**
+ * Does a route "respect the chart flow" — stay within the source→target band
+ * along the layout's flow axis (Y for the dagre trees, X for EC)? It may swing
+ * sideways, but must not backtrack behind the source or overshoot past the
+ * target. Dann's rule: a reroute that goes AGAINST the flow (e.g. an upward tree
+ * edge dipping below its source) reads worse than the crossing — so such a
+ * reroute is rejected and the crossing is kept.
+ */
+export const respectsFlow = (waypoints: readonly Point[], axis: Axis): boolean => {
+  if (waypoints.length < 2) return true;
+  const first = waypoints[0];
+  const last = waypoints[waypoints.length - 1];
+  if (!first || !last) return true;
+  const k = axis === 'vertical' ? 'y' : 'x';
+  const lo = Math.min(first[k], last[k]) - FLOW_BAND_MARGIN;
+  const hi = Math.max(first[k], last[k]) + FLOW_BAND_MARGIN;
+  for (const p of waypoints) {
+    if (p[k] < lo || p[k] > hi) return false;
+  }
+  return true;
+};
+
 /**
  * In-place crossing-aware reroute. Mutates each rerouted edge's `route` and the
  * caller's `out` map. Greedy + conservative: for each crossing pair it tries to
  * move the edge with the simpler current path around the other, keeping the
- * reroute only when it strictly reduces that edge's crossing count.
+ * reroute only when it strictly reduces that edge's crossing count AND stays with
+ * the chart flow (never sends an edge backward — see {@link respectsFlow}).
  */
 const decrossRoutes = (
   routed: RoutedEdge[],
@@ -371,6 +397,9 @@ const decrossRoutes = (
       const before = crossingCount(move.route.waypoints, move, routed);
       const after = crossingCount(rerouted.waypoints, move, routed);
       if (after >= before) continue; // no net improvement — keep the original
+      // Dann's rule: prefer the crossing over an edge that detours against the
+      // chart flow (e.g. dipping below its source in an upward tree).
+      if (!respectsFlow(rerouted.waypoints, ctx.axis)) continue;
       move.route = rerouted;
       out[move.edgeId] = rerouted;
     }
