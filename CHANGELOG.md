@@ -30,10 +30,20 @@ review. Geometry-only; the gate stays green.
   the dot already read as a ring, so the only visible change is edges no longer being
   clipped by it.
 
-Deferred to its own focused task: **edge-crossing reroute** — when a manual node move
-makes two edges cross, the smart router (per-edge A\* over node obstacles) doesn't
-avoid edge–edge crossings. That's a separate crossing-aware routing enhancement
-(plan in NEXT_STEPS).
+- **Edge-crossing reroute (#5).** The smart router is per-edge / crossing-blind by
+  design, so a manual node move could leave two unrelated edges crossing in an "X". A
+  second pass in `computeEdgeRoutes` now detects crossing pairs (`polylinesCross` over
+  the routed waypoint lists, skipping pairs that share an entity) and re-routes the
+  cheaper edge AROUND the other — feeding the other edge's polyline to A\* as a thin
+  obstacle corridor (a chain of small AABBs that stays tight on diagonals, where a
+  segment's bbox would engulf the quadrant). It's conservative: a reroute is kept only
+  when it STRICTLY lowers that edge's crossing count, so it can never trade one crossing
+  for another or worsen a clean diagram; reroute attempts (each a local visibility-graph
+  rebuild) are capped, and the whole pass stays behind the `'smart'` routing pref.
+  Pre-work landed first as a separate behaviour-preserving refactor: the `segmentsCross`
+  / `polylinesCross` primitives + extracting `routeOneEdge` so the reroute reuses the
+  routing body. New tests pin the primitives, "two crossing edges end up uncrossed", and
+  "a clean layout is untouched"; the 50-edge perf ceiling holds.
 
 ## Session 172 — autonomous under-the-hood optimization pass
 

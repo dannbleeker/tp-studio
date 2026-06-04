@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { bezierThroughWaypoint, bezierThroughWaypoints } from '@/domain/edgeBezier';
-import { padBox, segmentCrossesBoxBounds, segmentsCross } from '@/domain/edgeGeometry';
+import {
+  padBox,
+  polylinesCross,
+  segmentCrossesBoxBounds,
+  segmentsCross,
+} from '@/domain/edgeGeometry';
 
 // These edge-routing geometry primitives are otherwise exercised only
 // *transitively* by `edgeRouting.test.ts` (through the full router / A* path).
@@ -141,5 +146,30 @@ describe('segmentsCross (transversal crossing predicate for #5)', () => {
     const c = p(0, 10);
     const d = p(10, 0);
     expect(segmentsCross(a, b, c, d)).toBe(segmentsCross(c, d, a, b));
+  });
+});
+
+describe('polylinesCross', () => {
+  const p = (x: number, y: number) => ({ x, y });
+
+  it('is true for two crossing single-segment polylines', () => {
+    expect(polylinesCross([p(0, 0), p(10, 10)], [p(0, 10), p(10, 0)])).toBe(true);
+  });
+
+  it('finds a crossing on a later segment of a multi-segment polyline', () => {
+    // a's second segment (5,0)→(10,0) crosses the vertical b at (7,0).
+    expect(polylinesCross([p(0, 0), p(5, 0), p(10, 0)], [p(7, -5), p(7, 5)])).toBe(true);
+  });
+
+  it('is false for non-crossing polylines', () => {
+    expect(polylinesCross([p(0, 0), p(10, 0)], [p(0, 5), p(10, 5)])).toBe(false);
+  });
+
+  it('is false when the polylines merely share a waypoint (touch, not cross)', () => {
+    expect(polylinesCross([p(0, 0), p(5, 5)], [p(5, 5), p(10, 0)])).toBe(false);
+  });
+
+  it('is false for a degenerate single-point polyline (no segments)', () => {
+    expect(polylinesCross([p(0, 0)], [p(0, 0), p(10, 10)])).toBe(false);
   });
 });

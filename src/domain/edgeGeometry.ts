@@ -262,3 +262,25 @@ export const segmentsCross = (p1: Point, p2: Point, p3: Point, p4: Point): boole
   // line (touch / collinear) — not a transversal crossing.
   return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
 };
+
+/**
+ * Do two polylines (each ≥2 points) properly cross — does any segment of `a`
+ * transversally cross any segment of `b`? Applies {@link segmentsCross} to every
+ * segment pair, so a shared waypoint / touch never counts (only a clean interior
+ * X). O(|a|·|b|); both polylines are short (2–6 points) in practice. The crossing-
+ * aware reroute uses this over routed edges' waypoint lists.
+ */
+export const polylinesCross = (a: readonly Point[], b: readonly Point[]): boolean => {
+  for (let i = 0; i + 1 < a.length; i++) {
+    const a1 = a[i];
+    const a2 = a[i + 1];
+    if (!a1 || !a2) continue;
+    for (let j = 0; j + 1 < b.length; j++) {
+      const b1 = b[j];
+      const b2 = b[j + 1];
+      if (!b1 || !b2) continue;
+      if (segmentsCross(a1, a2, b1, b2)) return true;
+    }
+  }
+  return false;
+};

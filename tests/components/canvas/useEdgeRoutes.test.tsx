@@ -27,6 +27,7 @@ import {
   NODE_MIN_HEIGHT,
   NODE_WIDTH,
 } from '@/domain/constants';
+import { polylinesCross } from '@/domain/edgeGeometry';
 import { computeCollapseProjection } from '@/domain/groups';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../../helpers/seedDoc';
@@ -396,5 +397,60 @@ describe('junctorObstacleBoxes', () => {
       [b.id]: { x: 0, y: 200 },
     });
     expect(boxes.size).toBe(0);
+  });
+});
+
+// -- Crossing-aware reroute (#5) -------------------------------------------
+describe('computeEdgeRoutes — crossing-aware reroute', () => {
+  it('reroutes one of two crossing edges so they no longer cross', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('C');
+    const d = seedEntity('D');
+    const store = useDocumentStore.getState();
+    const e1 = store.connect(a.id, c.id); // A→C — main diagonal
+    const e2 = store.connect(b.id, d.id); // B→D — anti-diagonal, crosses e1
+    if (!e1 || !e2) throw new Error('edges not created');
+    const doc = useDocumentStore.getState().doc;
+    // Four corners, generous spacing — the two diagonals cross in the middle and
+    // there's room to route one around the other.
+    const positions = {
+      [a.id]: { x: 0, y: 0 },
+      [b.id]: { x: 500, y: 0 },
+      [c.id]: { x: 500, y: 500 },
+      [d.id]: { x: 0, y: 500 },
+    };
+    const projection = projectionOf(doc, [a.id, b.id, c.id, d.id]);
+    const routes = computeEdgeRoutes(doc, projection, positions);
+    const wp1 = routes[e1.id]?.waypoints ?? [];
+    const wp2 = routes[e2.id]?.waypoints ?? [];
+    expect(wp1.length).toBeGreaterThanOrEqual(2);
+    expect(wp2.length).toBeGreaterThanOrEqual(2);
+    // Crossed before the decross pass; one edge must have been rerouted so they
+    // no longer do.
+    expect(polylinesCross(wp1, wp2)).toBe(false);
+  });
+
+  it('leaves a clean (non-crossing) layout untouched — two straight 2-waypoint routes', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('C');
+    const d = seedEntity('D');
+    const store = useDocumentStore.getState();
+    const e1 = store.connect(a.id, b.id);
+    const e2 = store.connect(c.id, d.id);
+    if (!e1 || !e2) throw new Error('edges not created');
+    const doc = useDocumentStore.getState().doc;
+    // Two parallel vertical edges, far apart — never cross, so decross is a no-op.
+    const positions = {
+      [a.id]: { x: 0, y: 0 },
+      [b.id]: { x: 0, y: 300 },
+      [c.id]: { x: 400, y: 0 },
+      [d.id]: { x: 400, y: 300 },
+    };
+    const projection = projectionOf(doc, [a.id, b.id, c.id, d.id]);
+    const routes = computeEdgeRoutes(doc, projection, positions);
+    expect(routes[e1.id]?.waypoints).toHaveLength(2);
+    expect(routes[e2.id]?.waypoints).toHaveLength(2);
   });
 });

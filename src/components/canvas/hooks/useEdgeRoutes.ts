@@ -25,6 +25,7 @@
 
 import { useMemo } from 'react';
 import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS, JUNCTOR_RADIUS_X } from '@/domain/constants';
+import { polylinesCross } from '@/domain/edgeGeometry';
 import {
   aStarOnGraph,
   type Box,
@@ -233,6 +234,149 @@ const routeOneEdge = (s: string, t: string, sBox: Box, tBox: Box, ctx: RouteCont
   };
 };
 
+// -- Edge-crossing reroute -------------------------------------------------
+//
+// The per-edge router above is crossing-BLIND by design — each edge takes its own
+// shortest obstacle-avoiding path with no knowledge of the others, so a manual
+// node move can leave two unrelated edges crossing in an "X". This second pass
+// detects such crossings and re-routes the cheaper edge AROUND the other, by
+// feeding the other edge's polyline to A* as a thin obstacle corridor. It is
+// conservative: a reroute is kept only when it STRICTLY lowers that edge's
+// crossing count, so it can never trade one crossing for another or worsen a
+// clean diagram. (The whole module is already gated behind the `'smart'` pref.)
+
+/** A routed edge + the identity the decross pass needs: endpoints (to skip pairs
+ *  that share a node — they're meant to meet) and boxes (to re-route). */
+type RoutedEdge = {
+  edgeId: string;
+  s: string;
+  t: string;
+  sBox: Box;
+  tBox: Box;
+  route: EdgeRoute;
+};
+
+/** Cap on reroute ATTEMPTS (each rebuilds a visibility graph) per layout pass, so
+ *  the routing budget holds even on a pathologically tangled diagram. */
+const MAX_DECROSS_ATTEMPTS = 8;
+/** Half-width of each corridor box (→ a 2·CORRIDOR_MARGIN square). */
+const CORRIDOR_MARGIN = 10;
+/** Spacing between corridor boxes along the avoided edge — kept below the box
+ *  width so the chain forms a CONTINUOUS barrier with no gap a routed edge could
+ *  slip through. */
+const CORRIDOR_STEP = 16;
+/** Bound on boxes per segment, so a very long edge's corridor can't blow up the
+ *  per-reroute visibility-graph rebuild. */
+const MAX_CORRIDOR_BOXES_PER_SEGMENT = 32;
+
+/** A chain of small obstacle boxes tracing a polyline — evenly spaced along each
+ *  segment. Following the line with small AABBs (not one bounding box per segment)
+ *  keeps the corridor tight on DIAGONAL edges instead of blocking a whole quadrant
+ *  (a diagonal segment's bbox engulfs the area it spans, endpoints included).
+ *  Feeding these to A* makes a rerouted edge detour around the polyline. */
+const corridorBoxes = (waypoints: readonly Point[]): Box[] => {
+  const boxes: Box[] = [];
+  for (let i = 0; i + 1 < waypoints.length; i++) {
+    const a = waypoints[i];
+    const b = waypoints[i + 1];
+    if (!a || !b) continue;
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    const steps = Math.min(
+      MAX_CORRIDOR_BOXES_PER_SEGMENT,
+      Math.max(1, Math.ceil(len / CORRIDOR_STEP))
+    );
+    for (let k = 0; k <= steps; k++) {
+      const u = k / steps;
+      boxes.push({
+        x: a.x + (b.x - a.x) * u - CORRIDOR_MARGIN,
+        y: a.y + (b.y - a.y) * u - CORRIDOR_MARGIN,
+        width: 2 * CORRIDOR_MARGIN,
+        height: 2 * CORRIDOR_MARGIN,
+      });
+    }
+  }
+  return boxes;
+};
+
+/** Two edges share an entity endpoint — they meet at a node, never a crossing to
+ *  fix. */
+const sharesEndpoint = (a: RoutedEdge, b: RoutedEdge): boolean =>
+  a.s === b.s || a.s === b.t || a.t === b.s || a.t === b.t;
+
+/** How many OTHER (non-shared-endpoint) routed edges this waypoint list crosses. */
+const crossingCount = (
+  waypoints: readonly Point[],
+  self: RoutedEdge,
+  all: readonly RoutedEdge[]
+): number => {
+  let n = 0;
+  for (const other of all) {
+    if (other === self || sharesEndpoint(self, other)) continue;
+    if (polylinesCross(waypoints, other.route.waypoints)) n++;
+  }
+  return n;
+};
+
+/** Re-route `move` with `avoid`'s polyline added to the obstacle set as a
+ *  corridor, so A* goes around it. `null` if the corridor is empty. */
+const rerouteAround = (
+  move: RoutedEdge,
+  avoid: readonly Point[],
+  ctx: RouteContext
+): EdgeRoute | null => {
+  const corridors = corridorBoxes(avoid);
+  if (corridors.length === 0) return null;
+  const allBoxesArr = [...ctx.allBoxesArr, ...corridors];
+  const allBoxIds = [...ctx.allBoxIds, ...corridors.map((_, k) => `corridor:${k}`)];
+  const boxIdToIndex = new Map(ctx.boxIdToIndex);
+  corridors.forEach((_, k) => {
+    boxIdToIndex.set(`corridor:${k}`, ctx.allBoxesArr.length + k);
+  });
+  const extCtx: RouteContext = {
+    graph: buildVisibilityGraph(allBoxesArr),
+    axis: ctx.axis,
+    allBoxesArr,
+    allBoxIds,
+    boxIdToIndex,
+  };
+  return routeOneEdge(move.s, move.t, move.sBox, move.tBox, extCtx);
+};
+
+/**
+ * In-place crossing-aware reroute. Mutates each rerouted edge's `route` and the
+ * caller's `out` map. Greedy + conservative: for each crossing pair it tries to
+ * move the edge with the simpler current path around the other, keeping the
+ * reroute only when it strictly reduces that edge's crossing count.
+ */
+const decrossRoutes = (
+  routed: RoutedEdge[],
+  ctx: RouteContext,
+  out: Record<string, EdgeRoute>
+): void => {
+  let attempts = 0;
+  for (let i = 0; i < routed.length; i++) {
+    for (let j = i + 1; j < routed.length; j++) {
+      if (attempts >= MAX_DECROSS_ATTEMPTS) return;
+      const a = routed[i];
+      const b = routed[j];
+      if (!a || !b || sharesEndpoint(a, b)) continue;
+      if (!polylinesCross(a.route.waypoints, b.route.waypoints)) continue;
+      // Move the edge with the simpler current path — it has the most room to
+      // detour without disturbing a hard-won multi-waypoint route.
+      const move = a.route.waypoints.length <= b.route.waypoints.length ? a : b;
+      const avoid = move === a ? b : a;
+      attempts++;
+      const rerouted = rerouteAround(move, avoid.route.waypoints, ctx);
+      if (!rerouted) continue;
+      const before = crossingCount(move.route.waypoints, move, routed);
+      const after = crossingCount(rerouted.waypoints, move, routed);
+      if (after >= before) continue; // no net improvement — keep the original
+      move.route = rerouted;
+      out[move.edgeId] = rerouted;
+    }
+  }
+};
+
 /**
  * Pure helper — given the doc + projection + positions, produce the
  * per-edge route map. Phase D optimization: build the visibility
@@ -317,6 +461,8 @@ export const computeEdgeRoutes = (
   const ctx: RouteContext = { graph, axis, allBoxesArr, allBoxIds, boxIdToIndex };
 
   const out: Record<string, EdgeRoute> = {};
+  // Routed edges + their identity, fed to the crossing-aware reroute pass below.
+  const routed: RoutedEdge[] = [];
   // Track which remapped pairs we've already routed — one route per visible
   // src→tgt pair (aggregation collapses parallels upstream).
   const seenPairs = new Set<string>();
@@ -339,8 +485,13 @@ export const computeEdgeRoutes = (
     const sBox = allBoxes.get(s);
     const tBox = allBoxes.get(t);
     if (!sBox || !tBox) continue;
-    out[edge.id] = routeOneEdge(s, t, sBox, tBox, ctx);
+    const route = routeOneEdge(s, t, sBox, tBox, ctx);
+    out[edge.id] = route;
+    routed.push({ edgeId: edge.id, s, t, sBox, tBox, route });
   }
+  // Crossing-aware second pass — reroute the cheaper of any crossing pair around
+  // the other. Beyond the O(E²) scan it's a no-op when nothing crosses.
+  decrossRoutes(routed, ctx, out);
   return out;
 };
 
