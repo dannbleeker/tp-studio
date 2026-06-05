@@ -32,7 +32,13 @@
  * The radial layout keeps its own router and does NOT use this.
  */
 
-import { type Box, OBSTACLE_PADDING, type Point, segmentIntersectsBox } from './edgeGeometry';
+import {
+  type Box,
+  OBSTACLE_PADDING,
+  type Point,
+  padBox,
+  segmentIntersectsBox,
+} from './edgeGeometry';
 
 /** Which side of a node box an edge endpoint attaches to. */
 export type Side = 'top' | 'bottom' | 'left' | 'right';
@@ -132,16 +138,8 @@ const facingSides = (from: Point, to: Point, axis: Axis): { source: Side; target
   return to.x >= from.x ? { source: 'right', target: 'left' } : { source: 'left', target: 'right' };
 };
 
-/** Widen a box by `pad` on every side (no-fly margin for the block test). */
-const inflate = (b: Box, pad: number): Box => ({
-  x: b.x - pad,
-  y: b.y - pad,
-  width: b.width + 2 * pad,
-  height: b.height + 2 * pad,
-});
-
 const isBlocked = (a: Point, t: Point, obstacles: readonly Box[]): boolean =>
-  obstacles.some((o) => segmentIntersectsBox(a, t, inflate(o, OBSTACLE_PADDING)));
+  obstacles.some((o) => segmentIntersectsBox(a, t, padBox(o, OBSTACLE_PADDING)));
 
 type Candidate = { readonly sourceSide: Side; readonly targetSide: Side };
 

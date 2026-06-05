@@ -32,12 +32,22 @@ tangent; junctor source re-anchored on `positionAbsolute`; positions map is TOP-
 placement; back-edge rules; live edge palette; `markerEnd` can't follow a curve; biome nested-ternary
 + case-sensitive import-sort). Touch points: `TPEdge`, `useEdgeRoutes`, `edgeVisuals`, `edgeArrowhead`,
 `edgeBezier`/`edgeGeometry`/`edgeVisibilityGraph`, `layout.ts`, `useGraphPositions`, `useGraphEdgeEmission`.
+**Progress (Session 177):** a read-only analysis produced a sequenced 9-item behavior-preserving plan;
+landed the 2 safest (private `inflate`/`inflateBox` → the shared `padBox`). Remaining, queued for a
+dedicated pass WITH visual verification: `junctorGroupId` + `junctorKindField` extraction, `Point`-type
+consolidation (`dragSplice`), unreachable `nodeSizeFor` fallback removal, a `nodeAbsoluteCenter` helper
+(touches the 220/72 visual fallbacks — verify), `lineIntersectsBox` cross-ref, mark `routeEdge` internal.
 
 ### Security review
 Full pass (last refresh ~Session 98 + the M-Sec batch; see SECURITY.md). Cover: evidence URL-scheme
 allowlist (XSS), import/persistence trust boundary (hostile JSON), localStorage + IndexedDB handling,
 File System Access API, PWA/service-worker, dependency CVEs, no secrets in the bundle, the share-link
 compression path.
+**Progress (Session 177):** full refresh — verified CLEAN across all 8 areas (DOMPurify/markdown,
+prototype-pollution defense, share-link decompression cap, evidence URL filtering, CSP, PWA scope, no
+secrets). Fixed **F1** (revision restore now validates through `importFromJSON`). Accepted no-action:
+dagre unmaintained (no exploit path under nanoid IDs — monitor `@dagrejs/dagre`) + deprecated `unescape()`
+in `htmlExport` (no security impact).
 
 ### Test-coverage review + raise coverage
 `vitest --coverage`, rank uncovered × value, add high-value tests (exporters, `.tsx` components, edge
@@ -49,6 +59,10 @@ members (incl. prototype-pollution rejection). NEXT (bigger gaps, need render/st
 for an attended pass): `useGraphNodeEmission` 38%, `useGraphProjection` 54%, `canvasRef` 30%,
 `selectionSlice` 74%, `CreationWizardPanel` 58%, and the heavy exporters `pdfExport` 30% /
 `pptxExport` 26% (jspdf/pptxgenjs mocks). Run `coverage:pin` to ratchet the floor once happy.
+**Progress (Session 177):** raised lines 90.5→90.9 / branches 76.2→76.7 via pure/store targets
+(`revisions` detailed-diff, edge attrs, selection-mode, flyingLogic exporter, delete-confirmation
+branches) + ratcheted the floor (functions 84→85, branches 73→74). Still open (heavy mocks): the
+emission/projection hooks, `canvasRef`, `CreationWizardPanel`, `pdfExport`/`pptxExport`.
 
 ### Print functionality (Dann, Session 176)
 Add / expand print support — scope to confirm with Dann. Current state: a `PrintPreviewDialog`,
@@ -61,6 +75,11 @@ print the reasoning read-out alongside the canvas.
 Sweep for stale/dead code beyond knip: unreachable branches, orphaned helpers, stale comments vs
 current reality (the "clean up stale comments" rule), obsolete flags, dead CSS/Tailwind, commented-out
 blocks. (knip already reports 0 unused exports.)
+**Progress (Session 177):** a read-only sweep landed the HIGH-confidence batch — a `print.css` cascade
+BUG (the print-only header was hidden in print) + stale comments (false "Not wired up yet" on storage
+keys; "Phase A — routes always {}" on live routing; deleted-`EdgeAssumptions` refs). Remaining
+(MED/cosmetic): the "Phase C —" API-doc labels in `preferencesSlice`/`types.ts`, the `selectors.ts`
+"migrate in Phase 4" note (needs a data-model check), and the unreachable `onNodesChange` drag branch.
 
 ### Book — deeper per-type descriptions
 Expand the book with more in-depth descriptions of each tree/map type (CRT, FRT, PRT, TT, EC/cloud,

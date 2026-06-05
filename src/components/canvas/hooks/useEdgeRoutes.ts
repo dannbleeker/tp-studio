@@ -27,7 +27,7 @@ import { useMemo } from 'react';
 import { backEdgeLoopPlan, backEdgeLoopRoute } from '@/domain/backEdgeLoop';
 import { effectiveBackEdgeIds } from '@/domain/backEdges';
 import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS, JUNCTOR_RADIUS_X } from '@/domain/constants';
-import { polylinesCross } from '@/domain/edgeGeometry';
+import { padBox, polylinesCross } from '@/domain/edgeGeometry';
 import {
   aStarOnGraph,
   type Box,
@@ -55,14 +55,6 @@ const JUNCTOR_OBSTACLE_MARGIN = 8;
  *  attached to keeps a visible gap instead of grazing the card and reading as if
  *  it were connected to it. */
 const NODE_OBSTACLE_MARGIN = 10;
-
-/** Grow a box by `margin` on every side. */
-const inflateBox = (box: Box, margin: number): Box => ({
-  x: box.x - margin,
-  y: box.y - margin,
-  width: box.width + margin * 2,
-  height: box.height + margin * 2,
-});
 
 import type { GraphPositions } from './useGraphPositions';
 import type { GraphProjection } from './useGraphProjection';
@@ -523,7 +515,7 @@ export const computeEdgeRoutes = (
     boxIdToIndex.set(id, allBoxesArr.length);
     // The graph + per-edge obstacle sets use the INFLATED box (clearance); the
     // `allBoxes` map keeps the exact box for source/target anchoring below.
-    allBoxesArr.push(inflateBox(box, NODE_OBSTACLE_MARGIN));
+    allBoxesArr.push(padBox(box, NODE_OBSTACLE_MARGIN));
     allBoxIds.push(id);
   }
 

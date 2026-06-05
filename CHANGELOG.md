@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — backlog bundles #1 (refactor + cleanup) + #3 (verification + hardening)
+
+A four-slice pass (each its own commit), driven by four parallel read-only analyses:
+
+- **Coverage raise.** Covered the lowest-cost gaps from a coverage analysis, weighted to the
+  weak branch axis: `revisions` detailed-diff + status helpers, edge custom-attribute actions,
+  selection-mode toggles / cancel guards / `completePendingEdge`, the Flying Logic exporter,
+  and the bulk-entity / edge delete-confirmation branches. lines 90.5→90.9, branches 76.2→76.7;
+  CI floor ratcheted (functions 84→85, branches 73→74).
+- **Print bug + stale comments.** Fixed a `print.css` cascade bug — a second `.print-only {
+  display: none }` inside `@media print` was HIDING the print-only header (title / author /
+  description) in print. Plus refreshed stale comments a dead-code sweep flagged (the false
+  "Not wired up yet" on the per-doc storage keys; "Phase A — routes always {}" on now-live
+  routing; references to the long-deleted `EdgeAssumptions`).
+- **Security refresh (F1).** A full audit found the codebase in strong shape; the one
+  actionable item: revision restore loaded a snapshot straight into `setDocument`, bypassing
+  the `importFromJSON` validation every other load path runs. Now validated on restore (also
+  migrates a stale-schema revision). dagre-unmaintained + a deprecated `unescape()` accepted
+  as no-action.
+- **Rendering dedup.** Folded two private box-inflate helpers (`inflate`, `inflateBox`) onto
+  the canonical `padBox`. The fuller rendering-refactor plan (junctor-field + Point-type
+  consolidations) is queued for a dedicated pass with visual verification.
+
+Full suite 2752 green throughout.
+
 ## Session 177 (cont.) — back-edge loop: wider + rounder corners + compact clearance (Dann)
 
 - **Wider, rounder loop (Dann picked from rendered variants).** The side swing widened
