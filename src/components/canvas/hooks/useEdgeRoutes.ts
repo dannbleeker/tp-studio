@@ -161,7 +161,12 @@ const backEdgeForcedSides = (axis: Axis): { source: Side; target: Side } | undef
 
 /** Item 2 — how far PAST the wider endpoint box a back-edge's loop bows out to the
  *  side, so the bulge clears the node instead of grazing it. Tunable. */
-const BACK_EDGE_LOOP_CLEARANCE = 56;
+const BACK_EDGE_LOOP_CLEARANCE = 90;
+/** Extra side-swing per pixel of vertical span — a taller loop (spanning more
+ *  ranks) bows wider so it clears the entities it passes. Capped below. */
+const BACK_EDGE_LOOP_SPAN_FACTOR = 0.15;
+/** Cap on the span-scaled swing, so a very tall loop doesn't bow off-canvas. */
+const BACK_EDGE_LOOP_MAX_SPAN_REACH = 200;
 
 /**
  * The per-layout routing context shared by every edge in one `computeEdgeRoutes`
@@ -217,7 +222,9 @@ const routeOneEdge = (
   // straight through both node boxes). Falls through to the straight A* route when
   // both sides are blocked, so we never force an ugly detour (Dann's rule).
   if (isBackEdge && ctx.axis === 'vertical') {
-    const reach = Math.max(sBox.width, tBox.width) / 2 + BACK_EDGE_LOOP_CLEARANCE;
+    const span = Math.abs(sel.sourceAnchor.y - sel.targetAnchor.y);
+    const spanReach = Math.min(BACK_EDGE_LOOP_MAX_SPAN_REACH, span * BACK_EDGE_LOOP_SPAN_FACTOR);
+    const reach = Math.max(sBox.width, tBox.width) / 2 + BACK_EDGE_LOOP_CLEARANCE + spanReach;
     const loopSide = backEdgeLoopSide(sel.sourceAnchor, sel.targetAnchor, obstaclesForEdge, reach);
     if (loopSide) return backEdgeLoopRoute(sel.sourceAnchor, sel.targetAnchor, loopSide, reach);
   }

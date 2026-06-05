@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — back-edge review fixes, round 1 (Dann)
+
+- **Manual tag wins per cycle.** Auto-detection no longer marks a SECOND (often forward) edge of a
+  loop the user already tagged. Dann's report: tagging the real `effect → cause` back-edge spuriously
+  styled the forward `root cause → effect` edge of the same cycle as a back-edge too — the auto-picker
+  chose a cycle member by entity-id order, blind to the manual tag. Now a cycle containing any
+  manually-tagged edge is left to that tag (`backEdges.ts`: `cycleEdgeIds` + the manual set threaded
+  into `autoBackEdgeIds`). Fixes review point #1. +1 test.
+- **Wider back-edge loop swing** — base clearance 56 → 90, plus a span-scaled term so a tall loop
+  (spanning more ranks) bows wider and clears the entities it passes (`BACK_EDGE_LOOP_SPAN_FACTOR`,
+  capped). Partial fix for #3; the flow-aware auto-pick (#2) + full obstacle-aware swing land next.
+- Full suite green.
+
 ## Session 177 (cont.) — Wave 3 item 2: back-edge loops around the source (first cut)
 
 - **A vertical-axis back-edge now bows out to one side into a visible feedback LOOP** instead of running

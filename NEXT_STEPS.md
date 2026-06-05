@@ -16,13 +16,19 @@ The feedback loop is `#4 ⇄ #6` (`q36o` #4→#6 forward; `DJJo` #6→#4 the loo
   enters the target's BOTTOM, via the `forceSides` seam + `effectiveBackEdgeIds` threaded through the
   router. NOTE: a visual no-op on the inventory CRT (its loop-closer already exits the top — `#6`
   sits below `#4`); it fixes the direction when a back-edge's source sits above its target.
-- **Item 2 (FIRST CUT shipped — pending Dann's visual review) — loop around the source.** A vertical
-  back-edge now bows out to one side into a visible loop (`domain/backEdgeLoop.ts`: `backEdgeLoopSide`
-  obstacle-aware side pick + `backEdgeLoopRoute` single side-bowed cubic), wired into `routeOneEdge`;
-  decross never reroutes a back-edge away. Falls back to the straight route when both sides are blocked.
-  **Tunable dials:** `BACK_EDGE_LOOP_CLEARANCE` (56, horizontal bow past the box) + `VERTICAL_REACH_FACTOR`
-  (0.4, shoulder height) in `useEdgeRoutes.ts` / `backEdgeLoop.ts`. Open review qs: bow magnitude? side
-  heuristic (clear-side-else-right) good, or prefer away-from-forward-edge? Loop on a real cyclic CRT.
+- **Item 2 — loop around the source (in review with Dann).** A vertical back-edge bows out to one
+  side into a visible loop (`domain/backEdgeLoop.ts` + `routeOneEdge`). Round 1 of Dann's review fixes
+  landed: **manual-tag-wins** detection (`backEdges.ts`) so a tagged loop stops auto-marking its forward
+  edge (his #1); **wider swing** (clearance 90 + span-scaled, his #3 partial). **Still open (round 2):**
+  - **#2 flow-aware auto-detect** — pick the against-flow (downward in a bottom-up CRT) cycle edge as the
+    back-edge, not the id-canonical one. Needs node positions in `effectiveBackEdgeIds` (today id-only) →
+    compute once in `useGraphView`, pass to routing + emission, stamp `data.isBackEdge` for `TPEdge`
+    (it can't see all positions). Files: backEdges + useGraphView + useEdgeRoutes + useGraphEmission/Edge
+    + TPEdge + flow-types. Heuristic: in a cycle, the back-edge = the edge with the max |flow-axis Δ|
+    (the chain-spanning closer); manual still wins.
+  - **#3 obstacle-aware swing** — widen the bow until it clears entities in its path (not a fixed reach);
+    folds in the old Item 3 ("never cross behind an entity").
+  Dials: `BACK_EDGE_LOOP_CLEARANCE` (90) / `BACK_EDGE_LOOP_SPAN_FACTOR` (0.15) / `VERTICAL_REACH_FACTOR` (0.4).
 - **Item 3 (OPEN) — never cross behind an entity.** Ensure the RENDERED bezier (not just the A*
   polyline) stays out from behind cards (folds in the parked edge-behind-card item). Estimate:
   ~30–60 min; often falls out of item 2's waypoints.

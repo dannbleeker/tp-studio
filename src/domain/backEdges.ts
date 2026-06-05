@@ -33,11 +33,33 @@ export const cycleClosingEdgeId = (
   return outgoingEdges(doc, closing).find((e) => e.targetId === first)?.id;
 };
 
-/** Auto-detected back-edges: each cycle's closing edge. Deterministic — `findCycles`
- *  canonicalizes each cycle to start at its smallest entity id. */
-const autoBackEdgeIds = (doc: TPDocument): Set<string> => {
+/** Every edge id forming a cycle — each consecutive entity pair, incl. last→first. */
+const cycleEdgeIds = (doc: TPDocument, cycle: readonly string[]): string[] => {
+  const ids: string[] = [];
+  for (let i = 0; i < cycle.length; i++) {
+    const from = cycle[i];
+    const to = cycle[(i + 1) % cycle.length];
+    if (!from || !to) continue;
+    const e = outgoingEdges(doc, from).find((ed) => ed.targetId === to);
+    if (e) ids.push(e.id);
+  }
+  return ids;
+};
+
+/**
+ * Auto-detected back-edges: each cycle's closing edge. Deterministic — `findCycles`
+ * canonicalizes each cycle to start at its smallest entity id.
+ *
+ * Manual tag wins: if the user has tagged ANY edge in a cycle, that edge IS the
+ * designated back-edge for that loop — so we don't auto-mark a different (often
+ * forward) edge of the same cycle. Without this, tagging the real back-edge can
+ * light up an unrelated forward edge of the loop (Dann's report: tagging the
+ * `effect → cause` closer spuriously styled the forward `root cause → effect`).
+ */
+const autoBackEdgeIds = (doc: TPDocument, manual: ReadonlySet<string>): Set<string> => {
   const out = new Set<string>();
   for (const cycle of findCycles(doc)) {
+    if (cycleEdgeIds(doc, cycle).some((id) => manual.has(id))) continue;
     const id = cycleClosingEdgeId(doc, cycle);
     if (id) out.add(id);
   }
@@ -57,10 +79,14 @@ const cache = new WeakMap<TPDocument['edges'], Set<string>>();
 export const effectiveBackEdgeIds = (doc: TPDocument): Set<string> => {
   const memo = cache.get(doc.edges);
   if (memo) return memo;
-  const ids = autoBackEdgeIds(doc);
+  // Manual tags first — `autoBackEdgeIds` needs them to apply the manual-tag-wins
+  // rule per cycle; they're then unioned in as always-included overrides.
+  const manual = new Set<string>();
   for (const e of Object.values(doc.edges)) {
-    if (e.isBackEdge === true) ids.add(e.id);
+    if (e.isBackEdge === true) manual.add(e.id);
   }
+  const ids = autoBackEdgeIds(doc, manual);
+  for (const id of manual) ids.add(id);
   cache.set(doc.edges, ids);
   return ids;
 };

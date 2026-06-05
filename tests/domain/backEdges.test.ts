@@ -34,6 +34,18 @@ describe('effectiveBackEdgeIds', () => {
     expect(effectiveBackEdgeIds(doc)).toEqual(new Set(['back', 'tagged']));
   });
 
+  it('lets a manual tag in a cycle suppress auto-detection of other edges in that loop', () => {
+    // Dann's report: tagging an edge of a loop must NOT also auto-mark a DIFFERENT
+    // (forward) edge of the same cycle. Here `ab` carries the manual tag; the
+    // auto-detector must not add the canonical closer `ca` on top.
+    const doc = mkDoc(['A', 'B', 'C'], {
+      ab: { sourceId: 'A', targetId: 'B', isBackEdge: true },
+      bc: { sourceId: 'B', targetId: 'C' },
+      ca: { sourceId: 'C', targetId: 'A' },
+    });
+    expect(effectiveBackEdgeIds(doc)).toEqual(new Set(['ab']));
+  });
+
   it('returns an empty set for an acyclic, untagged doc', () => {
     const doc = mkDoc(['A', 'B', 'C'], {
       e1: { sourceId: 'A', targetId: 'B' },
