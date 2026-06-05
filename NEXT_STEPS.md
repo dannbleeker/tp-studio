@@ -9,30 +9,6 @@ CHANGELOG.
 
 ## Active backlog (Session 176 — Dann's review batch)
 
-### Canvas — back-edge routing — Wave 3 (items 1–3 ✅; awaiting Dann's visual confirm)
-- ✅ **Item 1** — a back-edge exits the source's TOP, enters the target's BOTTOM (the `forceSides` seam).
-- ✅ **Item 2** — a vertical back-edge rails around one side into a visible loop (`backEdgeLoop.ts`
-  rail/bracket: out → straight side rail clear of the chain → in; obstacle-aware reach).
-- ✅ **Item 3** — the rail's reach widens so its vertical run clears every card the loop spans (+ a
-  `CLEAR_MARGIN` gap); pinned by a clearance test + self-verified by a render.
-- ✅ **Dann's review (Session 177):** #1 manual-tag-wins (a tagged loop no longer auto-marks its
-  forward edge); #2 flow-aware auto-detect (the against-flow / max-|flow-Δ| cycle edge auto-detects,
-  computed once in `useGraphView` with positions + stamped to `TPEdge` via `data.isBackEdge`); #3 the
-  rail clears entities; the loop is rounded/organic, wider + with corners clear of the cards, and the
-  compact colinear case clamps each rail end to a between-card's edge so its sweep clears too (#3).
-  **Approved by Dann** (wider+rounder picked from rendered variants). Dials in `backEdgeLoop.ts`:
-  `CLEAR_MARGIN` (110, side swing / width) + `LOOP_END_CLEAR` (120, dome height / roundness). If loops
-  look stale after a deploy, hard-reload (the PWA may cache an old build).
-
-### Auto-detect back-edges (loop-closers) — ✅ SHIPPED Session 176 (Wave 3-0)
-A cycle's loop-closer auto-styles as a back-edge (colour + dash) without a manual tag, via pure
-`effectiveBackEdgeIds(doc)` (`src/domain/backEdges.ts` — manual ∪ each cycle's closing edge,
-derived + WeakMap-cached) wired into the canvas rendering; Wave-3 routing reads the same set.
-**Cycle CLR warning REMOVED (Dann, Session 176):** the auto-detected orange loop-closer now
-signals the cycle, so the redundant cycle warning rule was deleted (`validators/cycle.ts` + its
-registration in the validator index + its tests). `'cycle'` stays in the warning-type union (a
-WarningsList test fixture references it); the auto-detection itself is unchanged.
-
 ### Overlapping edges into one entity — can't grab/redirect one (Dann)
 PROBLEM: when 2+ edges converge on one entity, you can't reliably select/drag ONE to re-route
 it — a click always grabs whichever edge is on top. Two paths (Dann; both make sense — recommend
