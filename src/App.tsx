@@ -84,6 +84,9 @@ const PrintPreviewDialog = lazy(() =>
 const PrintAppendix = lazy(() =>
   import('./components/print/PrintAppendix').then((m) => ({ default: m.PrintAppendix }))
 );
+const PrintReasoning = lazy(() =>
+  import('./components/print/PrintReasoning').then((m) => ({ default: m.PrintReasoning }))
+);
 const TemplatePickerDialog = lazy(() =>
   import('./components/templates/TemplatePickerDialog').then((m) => ({
     default: m.TemplatePickerDialog,
@@ -430,6 +433,7 @@ export function App() {
       <Toaster />
       <Suspense fallback={null}>
         <PrintAppendix />
+        <PrintReasoning />
       </Suspense>
       <PrintFooter />
     </main>

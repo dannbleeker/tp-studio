@@ -4,7 +4,7 @@ import { toSvg } from 'html-to-image';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { exportToVectorPdf } from '@/services/exporters/pdfExport';
 import { triggerDownload } from '@/services/exporters/shared';
-import { makeDoc, makeEntity, resetIds } from '../domain/helpers';
+import { makeDoc, makeEdge, makeEntity, resetIds } from '../domain/helpers';
 
 /**
  * Session 177 — integration coverage for the `exportToVectorPdf` entry point.
@@ -131,6 +131,21 @@ describe('exportToVectorPdf — full pipeline', () => {
     expect(firstPdf().texts.some((t) => t.includes('Cause'))).toBe(true);
     // The appendix starts on its own page — a single-page diagram + appendix
     // is 2 physical pages, not 1 overlaid page (Session 177 pagination fix).
+    expect(firstPdf().pages).toBeGreaterThanOrEqual(2);
+  });
+
+  it('renders the reasoning companion when includeReasoning is set', async () => {
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const doc = makeDoc([a, b], [makeEdge(a.id, b.id)]);
+
+    const ok = await exportToVectorPdf(doc, nodes, { includeReasoning: true });
+
+    expect(ok).toBe(true);
+    expect(firstPdf().texts).toContain('Reasoning');
+    // The cause→effect read-out (CRT 'auto' → effect "because" cause) is rendered.
+    expect(firstPdf().texts.some((t) => t.includes('because'))).toBe(true);
+    // Starts on its own page after the diagram.
     expect(firstPdf().pages).toBeGreaterThanOrEqual(2);
   });
 

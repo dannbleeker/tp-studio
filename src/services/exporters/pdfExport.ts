@@ -1,6 +1,7 @@
 import { getNodesBounds, getViewportForBounds, type Node } from '@xyflow/react';
 import { PNG_PADDING } from '@/domain/constants';
 import { structuralEntities } from '@/domain/graph';
+import { buildReasoningSentences } from '@/domain/reasoningExport';
 import { SURFACE_DARK, SURFACE_LIGHT } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
 import { loadJsPdf } from '@/services/exporters/pdfShared';
@@ -53,6 +54,9 @@ export interface PdfExportOptions {
   mode?: PdfMode;
   /** When true, append a numbered list of every entity's description. */
   includeAppendix?: boolean;
+  /** When true, append the cause→effect reasoning read-out (one numbered
+   *  sentence per link in topological order). */
+  includeReasoning?: boolean;
   /** Free text rendered at the top of every page. Merge fields are
    * resolved by the caller — pdfExport itself does no templating. */
   header?: string;
@@ -348,6 +352,62 @@ const renderAppendix = (
 };
 
 /**
+ * Render the reasoning companion as one or more PDF pages — the cause→effect
+ * read-out, one numbered sentence per link in topological order (the same
+ * `buildReasoningSentences` the on-screen verbalisation + the Markdown export
+ * use). Mirrors {@link renderAppendix}.
+ */
+const renderReasoning = (
+  pdf: import('jspdf').jsPDF,
+  sentences: readonly string[],
+  geometry: { pageWidthMm: number; pageHeightMm: number },
+  headerText: string,
+  footerText: string,
+  startPageNumber: number,
+  totalPageCount: number
+): { pagesUsed: number } => {
+  if (sentences.length === 0) return { pagesUsed: 0 };
+  let pagesUsed = 0;
+  const startNewPage = (): void => {
+    pdf.addPage();
+    pagesUsed += 1;
+    drawHeaderFooter(
+      pdf,
+      headerText,
+      footerText,
+      geometry,
+      startPageNumber + pagesUsed - 1,
+      totalPageCount
+    );
+  };
+
+  startNewPage();
+  pdf.setFontSize(APPENDIX_TITLE_FONT_PT);
+  pdf.text('Reasoning', MARGIN_MM, MARGIN_MM + HEADER_BAND_MM + 4);
+
+  let cursorY = MARGIN_MM + HEADER_BAND_MM + 14;
+  const usableWidthMm = geometry.pageWidthMm - MARGIN_MM * 2;
+  const bottomCutoff = geometry.pageHeightMm - MARGIN_MM - FOOTER_BAND_MM;
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(APPENDIX_BODY_FONT_PT);
+
+  sentences.forEach((sentence, i) => {
+    const bodyLines = pdf.splitTextToSize(`${i + 1}. ${sentence}`, usableWidthMm);
+    const blockHeight = APPENDIX_LINE_HEIGHT_MM * bodyLines.length + 2;
+    if (cursorY + blockHeight > bottomCutoff) {
+      startNewPage();
+      cursorY = MARGIN_MM + HEADER_BAND_MM + 4;
+    }
+    for (const line of bodyLines) {
+      pdf.text(line, MARGIN_MM, cursorY);
+      cursorY += APPENDIX_LINE_HEIGHT_MM;
+    }
+    cursorY += 2;
+  });
+  return { pagesUsed };
+};
+
+/**
  * Main entry point. Captures the live canvas, builds a multi-page PDF
  * with optional appendix + header/footer, triggers a download.
  *
@@ -412,7 +472,11 @@ export const exportToVectorPdf = async (
     const appendixPageEstimate = options.includeAppendix
       ? estimateAppendixPages(doc, pageHeightMm, usableWidthMm)
       : 0;
-    const totalPageCount = diagramPageCount + appendixPageEstimate;
+    const reasoningSentences = options.includeReasoning ? buildReasoningSentences(doc) : [];
+    const reasoningPageEstimate = options.includeReasoning
+      ? estimateReasoningPages(reasoningSentences, pageHeightMm, usableWidthMm)
+      : 0;
+    const totalPageCount = diagramPageCount + appendixPageEstimate + reasoningPageEstimate;
     await renderDiagramPages(
       pdf,
       svgRenderable,
@@ -428,14 +492,27 @@ export const exportToVectorPdf = async (
       totalPageCount,
       1
     );
+    let extraPages = 0;
     if (options.includeAppendix) {
-      renderAppendix(
+      const { pagesUsed } = renderAppendix(
         pdf,
         doc,
         { pageWidthMm, pageHeightMm },
         options.header ?? '',
         options.footer ?? '',
         diagramPageCount + 1,
+        totalPageCount
+      );
+      extraPages += pagesUsed;
+    }
+    if (options.includeReasoning) {
+      renderReasoning(
+        pdf,
+        reasoningSentences,
+        { pageWidthMm, pageHeightMm },
+        options.header ?? '',
+        options.footer ?? '',
+        diagramPageCount + extraPages + 1,
         totalPageCount
       );
     }
@@ -475,4 +552,25 @@ export const estimateAppendixPages = (
   }
   const totalHeightMm = totalLines * lineHeightMm;
   return Math.max(1, Math.ceil(totalHeightMm / usablePerPage));
+};
+
+/**
+ * Estimate how many pages the reasoning companion will occupy — one numbered
+ * sentence per link, conservatively line-counted at the usable width (+1 line of
+ * gap each). Exported for direct test coverage.
+ */
+export const estimateReasoningPages = (
+  sentences: readonly string[],
+  pageHeightMm: number,
+  usableWidthMm: number
+): number => {
+  if (sentences.length === 0) return 0;
+  const usablePerPage = pageHeightMm - MARGIN_MM * 2 - HEADER_BAND_MM - FOOTER_BAND_MM - 14;
+  const charsPerLine = Math.max(40, Math.floor(usableWidthMm * 5));
+  let totalLines = 0;
+  for (const s of sentences) {
+    // +4 for the "N. " numbering prefix.
+    totalLines += Math.max(1, Math.ceil((s.length + 4) / charsPerLine)) + 1;
+  }
+  return Math.max(1, Math.ceil((totalLines * APPENDIX_LINE_HEIGHT_MM) / usablePerPage));
 };

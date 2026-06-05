@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { exportReasoningNarrative, exportReasoningOutline } from '@/domain/reasoningExport';
+import {
+  buildReasoningSentences,
+  exportReasoningNarrative,
+  exportReasoningOutline,
+} from '@/domain/reasoningExport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedChain, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
@@ -7,6 +11,17 @@ beforeEach(resetStoreForTest);
 afterEach(resetStoreForTest);
 
 const doc = () => useDocumentStore.getState().doc;
+
+describe('buildReasoningSentences', () => {
+  it('returns the ordered cause→effect sentences (causes first)', () => {
+    seedChain(['A', 'B', 'C']);
+    expect(buildReasoningSentences(doc())).toEqual(['"B" because "A".', '"C" because "B".']);
+  });
+
+  it('returns an empty array for a doc with no edges', () => {
+    expect(buildReasoningSentences(doc())).toEqual([]);
+  });
+});
 
 describe('exportReasoningNarrative — common shape', () => {
   it('renders the title + diagram-type subtitle in the preamble', () => {

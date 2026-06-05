@@ -195,6 +195,16 @@
     page-break-before: always;
   }
 
+  /* Reasoning companion — the cause→effect read-out, printed after the diagram
+     (and after the appendix, when both are on). Gated on `print-include-reasoning`. */
+  [data-component="print-reasoning"] {
+    display: none;
+  }
+  body.print-include-reasoning [data-component="print-reasoning"] {
+    display: block;
+    page-break-before: always;
+  }
+
   /* Session 79 / brief §10 — print selection only. Sets `visibility: hidden`
      on every node + edge that isn't part of the React Flow selection;
      the selected items stay visible. `visibility: hidden` (rather than
@@ -218,6 +228,7 @@
    it, which masked the missing rule. */
 .print-only,
 .print-footer,
-[data-component="print-appendix"] {
+[data-component="print-appendix"],
+[data-component="print-reasoning"] {
   display: none;
 }

@@ -180,6 +180,30 @@ const appendCoreDriverSection = (lines: string[], doc: TPDocument): void => {
 };
 
 /**
+ * The ordered cause→effect read-out — one sentence per structural edge in
+ * topological order (TT uses the AND-junctor triple form when the structure
+ * supports it). The shared primitive behind both the Markdown narrative export
+ * and the print / PDF "reasoning companion". Assumption endpoints are skipped.
+ */
+export const buildReasoningSentences = (
+  doc: TPDocument,
+  label: CausalityLabel = DEFAULT_LABEL
+): string[] => {
+  if (doc.diagramType === 'tt') return ttTriples(doc, label);
+  const sentences: string[] = [];
+  for (const eid of topologicalEdgeOrder(doc)) {
+    const e = doc.edges[eid];
+    if (!e) continue;
+    const src = doc.entities[e.sourceId];
+    const tgt = doc.entities[e.targetId];
+    if (!src || !tgt || isAssumption(src) || isAssumption(tgt)) continue;
+    const connector = resolveEdgeConnector(e, label, doc.diagramType);
+    sentences.push(renderEdgeSentence(src, tgt, connector));
+  }
+  return sentences;
+};
+
+/**
  * Narrative form — one sentence per edge in topological order, with
  * per-diagram-type preamble + appendix. TT uses the AND-junctor triple
  * form ("In order to obtain X, do Y given Z.") when the structure
@@ -192,26 +216,9 @@ export const exportReasoningNarrative = (
   const lines = renderPreamble(doc);
   lines.push('', '## Reasoning');
 
-  if (doc.diagramType === 'tt') {
-    const triples = ttTriples(doc, label);
-    if (triples.length === 0) lines.push('*No edges drawn yet.*');
-    else for (const s of triples) lines.push(s);
-  } else {
-    const order = topologicalEdgeOrder(doc);
-    if (order.length === 0) {
-      lines.push('*No edges drawn yet.*');
-    } else {
-      for (const eid of order) {
-        const e = doc.edges[eid];
-        if (!e) continue;
-        const src = doc.entities[e.sourceId];
-        const tgt = doc.entities[e.targetId];
-        if (!src || !tgt || isAssumption(src) || isAssumption(tgt)) continue;
-        const connector = resolveEdgeConnector(e, label, doc.diagramType);
-        lines.push(renderEdgeSentence(src, tgt, connector));
-      }
-    }
-  }
+  const sentences = buildReasoningSentences(doc, label);
+  if (sentences.length === 0) lines.push('*No edges drawn yet.*');
+  else for (const s of sentences) lines.push(s);
 
   appendCoreDriverSection(lines, doc);
   return `${lines.join('\n').trimEnd()}\n`;

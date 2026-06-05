@@ -637,6 +637,7 @@ A **Freeform Diagram** is the non-TOC mode: no built-in type pattern matching, n
 
 - **Mode**: Standard, Workshop (high-contrast, large font, group rectangles bordered), Ink-saving (group shading removed, edges thinned, blacks softened).
 - **Annotation appendix** (checkbox): when on, the output includes a numbered list of every entity's description as an appendix after the diagram.
+- **Reasoning narrative** (checkbox): when on, the diagram's cause→effect read-out — one numbered sentence per link in reading order, the same narrative the on-screen verbalisation and the Markdown reasoning export produce — prints after the diagram (and after the annotation appendix when both are on). Works in both the browser-print and vector-PDF paths.
 - **Selection only** (checkbox, Session 79): when on, only selected entities + edges appear in the output. The rest of the canvas is hidden (via `visibility: hidden` for browser-print so layout positions stay intact, or by filtering the source node list for the vector PDF). Disabled when there's no selection.
 - **Header / footer templates**: free text with merge fields `{title}` / `{date}` / `{author}` / `{diagramType}`. The PDF path also resolves `{pageNumber}` / `{pageCount}` per page; browser-print leaves them blank and relies on the browser's running headers.
 

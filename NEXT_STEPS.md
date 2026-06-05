@@ -37,11 +37,15 @@ hooks, `canvasRef`, `CreationWizardPanel`, `pdfExport`/`pptxExport`). Revisit on
 lands undertested.
 
 ### Print functionality (Dann, Session 176)
-Add / expand print support — scope to confirm with Dann. Current state: a `PrintPreviewDialog`,
-a `Cmd/Ctrl+P` "Print / Save as PDF" shortcut, and a minimal `src/styles/print.css` exist; "full
-one-page print designs" were previously parked (see Out-of-scope — won't build). Clarify the
-target: better print layouts / per-diagram-type print templates / a dedicated print-or-PDF flow /
-print the reasoning read-out alongside the canvas.
+Print is mature: a `PrintPreviewDialog` (3 modes · annotation appendix · selection-only · header/footer
+templates), `Cmd/Ctrl+P`, `print.css`, and a true multi-page vector PDF.
+**Session 177:** shipped the **reasoning companion** (Dann's pick) — the cause→effect read-out as a
+print + PDF section (`PrintReasoning` + `buildReasoningSentences` + `renderReasoning`). Remaining smaller
+enhancements (not yet built): **page setup** — the dialog hard-codes A4 + portrait for the PDF even
+though the exporter supports Letter, so add A4/Letter + portrait/landscape pickers (a US-Letter user
+currently always gets A4); **fit-to-one-page** scaling (the parked "one-page overview"); and bespoke
+per-diagram-type print templates (bigger). The "full one-page print designs" line stays parked (see
+Out-of-scope — won't build).
 
 ### Book — deeper per-type descriptions
 Expand the book with more in-depth descriptions of each tree/map type (CRT, FRT, PRT, TT, EC/cloud,

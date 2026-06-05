@@ -3,6 +3,7 @@ import {
   computePageCount,
   decodeSvgDataUrl,
   estimateAppendixPages,
+  estimateReasoningPages,
   resolvePagePlaceholders,
 } from '@/services/exporters/pdfExport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -100,5 +101,21 @@ describe('estimateAppendixPages', () => {
     }
     const doc = useDocumentStore.getState().doc;
     expect(estimateAppendixPages(doc, 297, 186)).toBeGreaterThan(1);
+  });
+});
+
+describe('estimateReasoningPages', () => {
+  it('returns 0 when there are no sentences', () => {
+    expect(estimateReasoningPages([], 297, 186)).toBe(0);
+  });
+
+  it('returns at least 1 page for a handful of sentences', () => {
+    const pages = estimateReasoningPages(['"B" because "A".', '"C" because "B".'], 297, 186);
+    expect(pages).toBeGreaterThanOrEqual(1);
+  });
+
+  it('grows with the number + length of sentences', () => {
+    const many = Array.from({ length: 80 }, (_, i) => `Step ${i}: ${'cause '.repeat(10)}`);
+    expect(estimateReasoningPages(many, 297, 186)).toBeGreaterThan(1);
   });
 });

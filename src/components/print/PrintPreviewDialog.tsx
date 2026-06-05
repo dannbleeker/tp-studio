@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { FileDown, Printer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { structuralEntities } from '@/domain/graph';
+import { buildReasoningSentences } from '@/domain/reasoningExport';
 import type { TPDocument } from '@/domain/types';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { exportToVectorPdf } from '@/services/exporters/pdfExport';
@@ -43,7 +44,8 @@ import { MODE_HINT, MODE_LABEL, ModeThumbnail, type PrintMode } from './PrintMod
 const setBodyPrintMode = (
   mode: PrintMode,
   includeAppendix: boolean,
-  selectionOnly: boolean
+  selectionOnly: boolean,
+  includeReasoning: boolean
 ): void => {
   if (typeof document === 'undefined') return;
   const body = document.body;
@@ -51,6 +53,7 @@ const setBodyPrintMode = (
   body.classList.add(`print-mode-${mode}`);
   body.classList.toggle('print-include-appendix', includeAppendix);
   body.classList.toggle('print-selection-only', selectionOnly);
+  body.classList.toggle('print-include-reasoning', includeReasoning);
 };
 
 const clearBodyPrintMode = (): void => {
@@ -61,7 +64,8 @@ const clearBodyPrintMode = (): void => {
     'print-mode-workshop',
     'print-mode-inksaving',
     'print-include-appendix',
-    'print-selection-only'
+    'print-selection-only',
+    'print-include-reasoning'
   );
 };
 
@@ -89,6 +93,7 @@ export function PrintPreviewDialog() {
 
   const [mode, setMode] = useState<PrintMode>('standard');
   const [includeAppendix, setIncludeAppendix] = useState(false);
+  const [includeReasoning, setIncludeReasoning] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
   // Session 79 / brief §10 — "Print selection only" toggle. Only
   // surfaced when something is selected; otherwise the option is
@@ -110,10 +115,10 @@ export function PrintPreviewDialog() {
   // dialog is open. The classes only affect `@media print` rules, so
   // the canvas behind the dialog isn't visually disturbed.
   useEffect(() => {
-    if (open) setBodyPrintMode(mode, includeAppendix, selectionOnly);
+    if (open) setBodyPrintMode(mode, includeAppendix, selectionOnly, includeReasoning);
     else clearBodyPrintMode();
     return clearBodyPrintMode;
-  }, [open, mode, includeAppendix, selectionOnly]);
+  }, [open, mode, includeAppendix, selectionOnly, includeReasoning]);
 
   // Stash the resolved header/footer text into `data-` attributes
   // print.css reads via `content: attr(...)`. Easier than injecting
@@ -159,6 +164,7 @@ export function PrintPreviewDialog() {
         pageSize: 'a4',
         mode,
         includeAppendix,
+        includeReasoning,
         header: resolveMergeFields(headerTemplate, doc),
         footer: resolveMergeFields(footerTemplate, doc),
       });
@@ -180,6 +186,7 @@ export function PrintPreviewDialog() {
   };
 
   const annotationCount = structuralEntities(doc).filter((e) => e.description).length;
+  const reasoningCount = buildReasoningSentences(doc).length;
 
   return (
     <LargeDialog
@@ -232,6 +239,22 @@ export function PrintPreviewDialog() {
               ({annotationCount} entit{annotationCount === 1 ? 'y' : 'ies'} with descriptions)
             </span>{' '}
             — a numbered list of every entity's description rendered after the diagram.
+          </span>
+        </label>
+
+        <label className="flex items-start gap-2 text-xs">
+          <input
+            type="checkbox"
+            checked={includeReasoning}
+            onChange={(e) => setIncludeReasoning(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            Include <b>reasoning narrative</b>{' '}
+            <span className="text-neutral-500 dark:text-neutral-400">
+              ({reasoningCount} step{reasoningCount === 1 ? '' : 's'})
+            </span>{' '}
+            — the cause→effect read-out, one sentence per link in reading order.
           </span>
         </label>
 

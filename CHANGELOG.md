@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — print: reasoning companion (cause→effect read-out in print + PDF)
+
+The print/PDF "reasoning companion" the backlog asked for. Tick **Include reasoning narrative** in the
+Print / Save-as-PDF dialog and the diagram's cause→effect read-out — one numbered sentence per link in
+topological order (the same `buildReasoningSentences` the on-screen verbalisation + the Markdown export
+produce) — prints after the diagram (and after the annotation appendix when both are on), in BOTH the
+browser-print path and the vector PDF.
+
+- Extracted the shared `buildReasoningSentences(doc, label?)` primitive in `reasoningExport`; the
+  Markdown narrative export now wraps it too (behaviour-identical).
+- Browser print: new `PrintReasoning` print-only DOM block + a `print-include-reasoning` body class in
+  `print.css`, mirroring `PrintAppendix`.
+- Vector PDF: `renderReasoning` + `estimateReasoningPages` mirror the appendix's pagination, so the
+  `{pageCount}` header/footer stays honest; the dialog passes the new `includeReasoning` option to
+  `exportToVectorPdf`.
+
+Tests: `buildReasoningSentences` (2), `estimateReasoningPages` (3), the PDF pipeline (renders a
+Reasoning page after the diagram), and the `PrintReasoning` render (numbered list + empty-state). Full
+suite green; tsc + knip clean; coverage 91.2% lines / 77.2% branches.
+
 ## Session 177 (cont.) — security review re-verified clean (backlog item closed)
 
 Re-verified the threat model after this session's new code (cross-doc links + `stripMirrorLinks` /
