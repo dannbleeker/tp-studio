@@ -17,7 +17,6 @@ import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { useGlobalKeyboard } from './hooks/useGlobalKeyboard';
 import { useThemeClass } from './hooks/useThemeClass';
-import { clearShareHash, parseShareHash } from './services/shareLink';
 import { useDocumentStore } from './store';
 import { bootRecoveryStatus } from './store/documentSlice/docMetaSlice';
 import { currentDoc } from './store/selectors';
@@ -239,6 +238,9 @@ export function App() {
     if (!hash.startsWith('#!share=')) return;
     let cancelled = false;
     void (async () => {
+      // Lazy — `shareLink` (CompressionStream + the doc decoder) only loads on the
+      // <1% `#!share=` boot path, so it leaves the main `index` chunk (bundle #6).
+      const { clearShareHash, parseShareHash } = await import('./services/shareLink');
       try {
         const shared = await parseShareHash(hash);
         if (cancelled || !shared) return;

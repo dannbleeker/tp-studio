@@ -93,7 +93,6 @@ completeness arc — so we don't re-derive shipped work.
 
 ## Smaller still-open items (carried over)
 
-- **`TPNode` per-node whole-`currentDoc` read** — reads `currentDoc(s)` then extracts `diagramType`/`customEntityClasses`. Low-value narrowing; React Flow already memoizes. Low priority.
 - **Reactive vs proactive NBR mitigation** — optional `mitigation.kind` field on negative-branch handling. Policy-parked; re-open only if practitioners ask.
 - **Manual a11y keyboard walkthrough (needs Dann's hands):** run the keyboard-only walkthrough against the checklist in `docs/`.
 
@@ -107,14 +106,10 @@ pass:** unlike the dead-code / perf / type batches (provably behaviour-preservin
 `React.lazy` + Suspense + prefetch changes that add **user-visible loading states**, so they want
 Dann's review. Heavy export libs (`html-to-image`, `jspdf`, `svg2pdf`, `pptxgenjs`) + ExportPickerDialog
 + pattern/template libraries + HelpDialog + CommandPalette are **already correctly lazy** — no action.
-Remaining sequencing: 4 → 6 → 8. (The EC chrome + wizard lazy-loads — #2 VerbalisationStrip,
-#3 EC overlays, #7 CreationWizardPanel — shipped Session 177: ~8.5 KB gz now in on-demand chunks.)
+Only **#8 actionEligibility** is left. (Shipped Session 177: EC chrome + wizard #2/#3/#7 lazy-loaded;
+shareLink #6 dynamic-imported. Closed: TopBar #4 — the shortcut registry is needed eagerly by
+`SelectionToolbar`, so there's nothing to split out.)
 
-- **#4 TopBar shortcut import** *(None risk · S · ~2 KB)* — ⚠️ **RE-VERIFY: may already be done** —
-  `TopBar.tsx` imports `shortcutToAria` from `@/domain/shortcuts`; the intended decoupling appears at
-  least partially landed. Confirm whether the full 386-line registry still gets pulled.
-- **#6 shareLink dynamic import** *(Low · S · ~1.5 KB)* — `App.tsx` eager-imports `services/shareLink`
-  (CompressionStream) for the <1% `#!share=` boot path → move to `await import()` inside the hash guard.
 - **#8 actionEligibility eager for a TT-only badge** *(Medium · M · ~2–3 KB)* — gate the `statePropagation`
   + `actionEligibility` import behind `diagramType === 'tt'`. Low-confidence (`statePropagation` is also
   used by `usePropagatedStates`).

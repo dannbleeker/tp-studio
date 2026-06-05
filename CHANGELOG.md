@@ -2,6 +2,17 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — backlog clear-up: shareLink lazy-load + two perf items closed
+
+- **shareLink dynamic-imported (bundle #6).** `App.tsx` no longer eager-imports
+  `services/shareLink` (CompressionStream + the doc decoder); it loads via `await import()` inside
+  the `#!share=` boot guard, so it leaves the main chunk for the <1% share-link path. `vite build`
+  confirms a ~1.0 KB gz `shareLink` chunk; index 95.25 → 94.58 gz.
+- **Closed two no-action items.** TPNode's whole-`currentDoc` read is already optimal — the
+  `useShallow` selector pulls only `diagramType`/`customEntityClasses` and shallow-compares, and React
+  Flow memoises the node. The TopBar shortcut-registry import (bundle #4) can't split — the registry
+  is needed eagerly by `SelectionToolbar` (a core shell component) too. Both pruned from the backlog.
+
 ## Session 177 (cont.) — backlog clear-up: #6/#9 closed + EC/wizard lazy-loads
 
 - **Closed #6 (stale-code hunt) + #9 (CanvasInner watch item).** Finished the stale-comment
