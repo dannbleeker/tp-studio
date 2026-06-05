@@ -107,9 +107,7 @@ const autoBackEdgeIds = (
   const out = new Set<string>();
   for (const cycle of findCycles(doc)) {
     if (cycleEdgeIds(doc, cycle).some((id) => manual.has(id))) continue;
-    const id = layout
-      ? flowAwareCycleBackEdge(doc, cycle, layout)
-      : cycleClosingEdgeId(doc, cycle);
+    const id = layout ? flowAwareCycleBackEdge(doc, cycle, layout) : cycleClosingEdgeId(doc, cycle);
     if (id) out.add(id);
   }
   return out;

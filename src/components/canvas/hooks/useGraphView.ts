@@ -48,6 +48,7 @@ export const useGraphView = (doc: TPDocument): GraphView => {
   // they never disagree. `TPEdge` reads the stamp — it can't see all positions to
   // make the against-flow pick itself.
   const axis = HANDLE_ORIENTATION[doc.diagramType];
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via `doc.edges` (the cycle structure) — narrowed deliberately, like the routing / emission memos.
   const rawBackEdgeIds = useMemo(
     () => effectiveBackEdgeIds(doc, { positions, axis }),
     [doc.edges, positions, axis]
