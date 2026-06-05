@@ -1,5 +1,6 @@
 import type { ReactFlowInstance } from '@xyflow/react';
 import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/edges/flow-types';
+import type { Point } from '@/domain/edgeGeometry';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -45,6 +46,34 @@ export const getHoveredJunctor = (): HoveredJunctor | null => hoveredJunctor;
 
 export const getSelectedEdges = (): TPEdge[] =>
   cached?.getEdges().filter((e) => e.selected === true) ?? [];
+
+/**
+ * Flow-space hit geometry for every rendered edge — its smart-routed polyline
+ * (`data.route.waypoints`) when present, else a straight line between its source
+ * and target node centres. The canvas edge-picker (#1) hit-tests a click against
+ * these to enumerate overlapping edges. Empty when the instance isn't ready.
+ */
+export const getEdgeHitCandidates = (): { id: string; points: Point[] }[] => {
+  if (!cached) return [];
+  const centerById = new Map<string, Point>();
+  for (const n of cached.getNodes()) {
+    const w = n.measured?.width ?? n.width ?? 0;
+    const h = n.measured?.height ?? n.height ?? 0;
+    centerById.set(n.id, { x: n.position.x + w / 2, y: n.position.y + h / 2 });
+  }
+  const out: { id: string; points: Point[] }[] = [];
+  for (const e of cached.getEdges()) {
+    const waypoints = e.data?.route?.waypoints;
+    if (waypoints && waypoints.length >= 2) {
+      out.push({ id: e.id, points: waypoints.map((p) => ({ x: p.x, y: p.y })) });
+      continue;
+    }
+    const s = centerById.get(e.source);
+    const t = centerById.get(e.target);
+    if (s && t) out.push({ id: e.id, points: [s, t] });
+  }
+  return out;
+};
 
 /**
  * Session 95 — viewport-coords bounding rect of the current selection.

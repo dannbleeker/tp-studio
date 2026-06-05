@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { findSpliceTargetEdge, pointToSegmentDistanceSq } from '@/domain/dragSplice';
+import {
+  findOverlappingEdgeIds,
+  findSpliceTargetEdge,
+  pointToSegmentDistanceSq,
+} from '@/domain/dragSplice';
 import type { Edge } from '@/domain/types';
 
 /**
@@ -118,5 +122,62 @@ describe('findSpliceTargetEdge', () => {
       tolerance: 20,
     });
     expect(result).toBeNull();
+  });
+});
+
+describe('findOverlappingEdgeIds', () => {
+  it('returns EVERY edge whose polyline passes within tolerance (a stack)', () => {
+    // Two horizontal lines 10 apart; a click at y=5 is 5 from each → both hit.
+    const hits = findOverlappingEdgeIds({
+      point: { x: 50, y: 5 },
+      candidates: [
+        { id: 'top', points: [{ x: 0, y: 0 }, { x: 100, y: 0 }] },
+        { id: 'bottom', points: [{ x: 0, y: 10 }, { x: 100, y: 10 }] },
+      ],
+      tolerance: 8,
+    });
+    expect(hits.sort()).toEqual(['bottom', 'top']);
+  });
+
+  it('excludes edges outside the tolerance', () => {
+    const hits = findOverlappingEdgeIds({
+      point: { x: 50, y: 5 },
+      candidates: [
+        { id: 'near', points: [{ x: 0, y: 0 }, { x: 100, y: 0 }] },
+        { id: 'far', points: [{ x: 0, y: 200 }, { x: 100, y: 200 }] },
+      ],
+      tolerance: 8,
+    });
+    expect(hits).toEqual(['near']);
+  });
+
+  it('walks multi-segment polylines — any segment within tolerance counts once', () => {
+    // L-shaped polyline; the click sits near its vertical second segment only.
+    const hits = findOverlappingEdgeIds({
+      point: { x: 100, y: 50 },
+      candidates: [
+        { id: 'L', points: [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 100 }] },
+      ],
+      tolerance: 5,
+    });
+    expect(hits).toEqual(['L']);
+  });
+
+  it('returns an empty array when nothing is within tolerance', () => {
+    const hits = findOverlappingEdgeIds({
+      point: { x: 500, y: 500 },
+      candidates: [{ id: 'e', points: [{ x: 0, y: 0 }, { x: 10, y: 0 }] }],
+      tolerance: 8,
+    });
+    expect(hits).toEqual([]);
+  });
+
+  it('ignores degenerate candidates with fewer than two points', () => {
+    const hits = findOverlappingEdgeIds({
+      point: { x: 0, y: 0 },
+      candidates: [{ id: 'pt', points: [{ x: 0, y: 0 }] }],
+      tolerance: 8,
+    });
+    expect(hits).toEqual([]);
   });
 });

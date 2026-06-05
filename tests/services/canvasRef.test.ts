@@ -4,6 +4,7 @@ import type { AnyTPNode, TPEdge, TPNode } from '@/components/canvas/edges/flow-t
 import {
   getCanvasInstance,
   getCanvasNodes,
+  getEdgeHitCandidates,
   getSelectedEdges,
   setCanvasInstance,
 } from '@/services/canvasRef';
@@ -77,5 +78,46 @@ describe('canvasRef', () => {
   it('returns empty arrays when no canvas instance is set', () => {
     expect(getCanvasNodes()).toEqual([]);
     expect(getSelectedEdges()).toEqual([]);
+  });
+});
+
+describe('getEdgeHitCandidates', () => {
+  const tpNode = (id: string, x: number, y: number): AnyTPNode =>
+    ({
+      id,
+      type: 'tp',
+      position: { x, y },
+      measured: { width: 100, height: 50 },
+      data: {} as TPNode['data'],
+    }) as AnyTPNode;
+
+  it('uses the smart-router waypoints when the edge has a route', () => {
+    const edge = {
+      id: 'e1',
+      source: 'a',
+      target: 'b',
+      data: { route: { d: '', waypoints: [{ x: 0, y: 0 }, { x: 50, y: 50 }] } },
+    } as unknown as TPEdge;
+    setCanvasInstance(fakeInstance([], [edge]));
+    const cands = getEdgeHitCandidates();
+    expect(cands).toHaveLength(1);
+    expect(cands[0]).toEqual({ id: 'e1', points: [{ x: 0, y: 0 }, { x: 50, y: 50 }] });
+  });
+
+  it('falls back to source/target node centres when there is no route', () => {
+    const edge = { id: 'e1', source: 'a', target: 'b', data: {} } as TPEdge;
+    setCanvasInstance(fakeInstance([tpNode('a', 0, 0), tpNode('b', 200, 100)], [edge]));
+    // Centres: a = (0+50, 0+25) = (50, 25); b = (200+50, 100+25) = (250, 125).
+    expect(getEdgeHitCandidates()[0]?.points).toEqual([{ x: 50, y: 25 }, { x: 250, y: 125 }]);
+  });
+
+  it('skips an edge whose endpoint node is missing (no route, no centre)', () => {
+    const edge = { id: 'e1', source: 'a', target: 'b', data: {} } as TPEdge;
+    setCanvasInstance(fakeInstance([], [edge]));
+    expect(getEdgeHitCandidates()).toEqual([]);
+  });
+
+  it('returns empty when no instance is set', () => {
+    expect(getEdgeHitCandidates()).toEqual([]);
   });
 });

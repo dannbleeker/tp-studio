@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — canvas edge-picker for overlapping edges (#1 canvas path)
+
+The on-canvas half of #1: clicking where several edges converge on one entity used to grab whichever
+edge React Flow put on top. Now a left-click that lands within hit distance of 2+ edges opens a small
+menu listing them ("Cause → Effect") so you pick which one to select — no more fighting the stack. A
+click on a lone edge still selects it directly.
+
+- New pure `findOverlappingEdgeIds` (a multi-hit variant of the splice hit-test) + `getEdgeHitCandidates`
+  reading the live React Flow instance — the smart-router `waypoints` when present, else source/target
+  node centres. `onEdgeClick` intercepts a ≥2-edge hit and opens the picker; a single hit falls through
+  to normal selection. Reuses the fully-accessible `ContextMenuList` via a new `edge-picker` target
+  kind, so keyboard + screen-reader nav comes for free.
+- Pairs with the inspector re-wire (above): the picker chooses *which* edge on the canvas; the inspector
+  dropdowns then redirect its endpoints.
+
+Tests: `findOverlappingEdgeIds` (5), `getEdgeHitCandidates` (4 — waypoints, node-centre fallback,
+missing node, no instance), and the picker menu branch (lists the edges + selects on click). Full
+suite green; tsc + knip clean; coverage 91.2% lines / 77.2% branches. The remaining #1 polish — the
+hover-fan (spread converging edges on hover for a direct grab) — stays the documented next slice
+("picker now, fan later").
+
 ## Session 177 (cont.) — Edge Inspector cause/effect re-wire dropdowns (#1, primary path)
 
 The "can't grab one of N overlapping edges to re-route it" problem, solved the clean way: the Edge

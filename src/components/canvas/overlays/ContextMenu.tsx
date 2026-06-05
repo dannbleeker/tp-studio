@@ -53,6 +53,7 @@ export function ContextMenu() {
     showToast,
     setDocument,
     createGroupFromSelection,
+    selectEdge,
     diagramType,
     edges,
     customEntityClasses,
@@ -74,6 +75,7 @@ export function ContextMenu() {
         showToast: s.showToast,
         setDocument: s.setDocument,
         createGroupFromSelection: s.createGroupFromSelection,
+        selectEdge: s.selectEdge,
         diagramType: doc.diagramType,
         edges: doc.edges,
         customEntityClasses: doc.customEntityClasses,
@@ -110,6 +112,24 @@ export function ContextMenu() {
   // doc-shaped state per call — the indirection cost outweighs the
   // line-count win. The branches below are clearly labeled instead.
   const items: MenuItem[] = (() => {
+    // ── BRANCH 0: edge-picker — left-click landed on a stack of overlapping
+    //    edges; list them so the user chooses which one to select. ──────
+    if (menu.target.kind === 'edge-picker') {
+      const ids = menu.target.ids;
+      const edgeLabel = (edgeId: string): string => {
+        const edge = docForPalette.edges[edgeId];
+        if (!edge) return 'Edge';
+        const src = docForPalette.entities[edge.sourceId]?.title?.trim() || '(untitled)';
+        const tgt = docForPalette.entities[edge.targetId]?.title?.trim() || '(untitled)';
+        return `${src} → ${tgt}`;
+      };
+      const result: MenuItem[] = [{ kind: 'header', label: `${ids.length} edges here` }];
+      for (const id of ids) {
+        result.push({ kind: 'action', label: edgeLabel(id), run: () => selectEdge(id) });
+      }
+      return result;
+    }
+
     // ── BRANCH 1: multi-edge selection ────────────────────────────────
     if (isMultiEdges && selection.kind === 'edges') {
       const ids = selection.ids;

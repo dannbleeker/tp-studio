@@ -1,7 +1,17 @@
 import { type MouseEvent as ReactMouseEvent, useCallback } from 'react';
+import { findOverlappingEdgeIds } from '@/domain/dragSplice';
 import { guardWriteOrToast } from '@/services/browseLock';
+import { getCanvasInstance, getEdgeHitCandidates } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import type { AnyTPNode, TPEdge } from '../edges/flow-types';
+
+/**
+ * Half the 56-flow-unit edge interaction width. A left-click within this of 2+
+ * edges is genuinely ambiguous (React Flow would just grab whichever is on top),
+ * so we open a picker instead. Flow units — the click is converted to flow coords
+ * and the hit geometry (waypoints / node centres) is flow-space too.
+ */
+const EDGE_PICK_TOLERANCE = 28;
 
 /**
  * Session 138 — the canvas's special-case click handlers, lifted out of
@@ -31,21 +41,38 @@ export const useCanvasClickHandlers = () => {
   const onEdgeClick = useCallback((e: ReactMouseEvent, ed: TPEdge) => {
     const s = useDocumentStore.getState();
     const joinSource = s.canvasMode.kind === 'edge-join' ? s.canvasMode.edgeId : null;
-    if (!joinSource) return;
-    if (joinSource === ed.id) {
+    if (joinSource) {
+      if (joinSource === ed.id) {
+        s.cancelEdgeJoinMode();
+        s.showToast('info', 'Join mode cancelled.');
+        return;
+      }
+      e.stopPropagation();
+      if (!guardWriteOrToast()) {
+        s.cancelEdgeJoinMode();
+        return;
+      }
+      const result = s.groupAsAnd([joinSource, ed.id]);
       s.cancelEdgeJoinMode();
-      s.showToast('info', 'Join mode cancelled.');
+      if (result.ok) s.showToast('success', 'AND-joined.');
+      else s.showToast('info', result.reason);
       return;
     }
-    e.stopPropagation();
-    if (!guardWriteOrToast()) {
-      s.cancelEdgeJoinMode();
-      return;
+    // Overlapping-edge picker (#1): when the click lands within hit distance of
+    // 2+ edges, open a menu to choose which one instead of letting React Flow
+    // select whichever is topmost. A single hit falls through to RF selection.
+    const inst = getCanvasInstance();
+    if (!inst) return;
+    const point = inst.screenToFlowPosition({ x: e.clientX, y: e.clientY });
+    const hits = findOverlappingEdgeIds({
+      point,
+      candidates: getEdgeHitCandidates(),
+      tolerance: EDGE_PICK_TOLERANCE,
+    });
+    if (hits.length >= 2) {
+      e.stopPropagation();
+      s.openContextMenu({ kind: 'edge-picker', ids: hits }, e.clientX, e.clientY);
     }
-    const result = s.groupAsAnd([joinSource, ed.id]);
-    s.cancelEdgeJoinMode();
-    if (result.ok) s.showToast('success', 'AND-joined.');
-    else s.showToast('info', result.reason);
   }, []);
 
   // Pane click deselects, and exits edge-join mode first (same cancel

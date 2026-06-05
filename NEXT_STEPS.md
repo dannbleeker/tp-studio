@@ -17,11 +17,17 @@ it — a click always grabs whichever edge is on top.
   pick a different source/target to redirect via `reconnectEdge` — no canvas drag. Opposite endpoint
   disabled (no self-loop), duplicate declined with a toast, a junctor effect-move drops the group,
   note-edges stay read-only. New reusable `Select` primitive. See CHANGELOG.
-- **Drag-and-drop affordances (still open) — on-canvas ergonomics.** Make stacked edges individually
-  grabbable on the CANVAS: fan out / offset the parallel edges at the shared endpoint so each gets
-  its own hit-zone; an edge-picker popover when a click lands on N overlapping edges; hover-cycle
-  (click-again / Tab to cycle the stack); widen the per-edge interaction band away from the shared
-  handle. The inspector re-wire already gives an exact, a11y-friendly redirect; this is the canvas feel.
+- ✅ **Canvas edge-picker (Session 177).** A left-click on a stack of 2+ overlapping edges opens a
+  menu listing them ("Cause → Effect") to choose which to select — `findOverlappingEdgeIds` +
+  `getEdgeHitCandidates` (RF waypoints / node-centre fallback) + an `edge-picker` ContextMenu kind.
+  See CHANGELOG.
+- **Hover-fan (chosen next slice — researched, not yet built).** Spread converging edges apart on
+  hover of the shared endpoint so you grab one directly, snapping back on leave — the
+  direct-manipulation polish on top of the picker (Dann: "picker now, fan later"). Researched feasible
+  (moderate, ~5–7 files: stamp `fanRank`/`fanCount` at emission, offset `effectiveTargetX` in `TPEdge`
+  on hover, CSS `transition: d`). Main risk: the routed-vs-bezier "pop" on obstacle-routed diagrams
+  (gate it — only fan when the routed path ≈ a direct bezier); it's also mouse-only. Alternatives
+  parked: always-fan (highest visual risk), click/Tab-cycle, widen-band.
 
 ### Security review
 Full pass (last refresh ~Session 98 + the M-Sec batch; see SECURITY.md). Cover: evidence URL-scheme

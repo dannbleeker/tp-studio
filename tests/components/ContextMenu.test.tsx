@@ -26,6 +26,10 @@ const openOnPane = (): void => {
   act(() => useDocumentStore.getState().openContextMenu({ kind: 'pane' }, 100, 100));
 };
 
+const openOnEdgePicker = (ids: string[]): void => {
+  act(() => useDocumentStore.getState().openContextMenu({ kind: 'edge-picker', ids }, 100, 100));
+};
+
 describe('ContextMenu', () => {
   it('renders nothing when closed', () => {
     const { container } = render(<ContextMenu />);
@@ -75,6 +79,32 @@ describe('ContextMenu', () => {
     const labels = itemLabels(container);
     expect(labels).toContain('Delete edge');
     expect(labels).toContain('Ungroup AND');
+  });
+
+  it('on an edge-picker lists the overlapping edges and selects one on click (#1)', () => {
+    const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+    const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
+    const c = useDocumentStore.getState().addEntity({ type: 'effect', title: 'C' });
+    const e1 = useDocumentStore.getState().connect(a.id, c.id);
+    const e2 = useDocumentStore.getState().connect(b.id, c.id);
+    if (!e1 || !e2) throw new Error('edges missing');
+
+    openOnEdgePicker([e1.id, e2.id]);
+    const { container } = render(<ContextMenu />);
+    const labels = itemLabels(container);
+    expect(labels).toContain('A → C');
+    expect(labels).toContain('B → C');
+    // The "N edges here" header is a non-interactive label, not a menuitem.
+    expect(container.textContent).toContain('2 edges here');
+
+    const item = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+    ).find((btn) => btn.textContent?.trim() === 'A → C');
+    if (!item) throw new Error('picker item not found');
+    act(() => fireEvent.click(item));
+    const sel = useDocumentStore.getState().selection;
+    expect(sel.kind).toBe('edges');
+    expect(sel.kind === 'edges' && sel.ids[0]).toBe(e1.id);
   });
 
   it('on a multi-entity selection shows bulk Convert-all + bulk Delete', () => {

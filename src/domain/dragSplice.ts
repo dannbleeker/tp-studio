@@ -94,6 +94,37 @@ export const findSpliceTargetEdge = (opts: {
   return best;
 };
 
+/**
+ * Every edge whose rendered polyline passes within `tolerance` of `point` (flow
+ * coords). Unlike {@link findSpliceTargetEdge} (the single nearest), this returns
+ * ALL hits — the canvas edge-picker (#1) uses it to enumerate a click that lands
+ * on a stack of overlapping edges so the user can choose which one to select.
+ *
+ * Each candidate carries its already-resolved polyline (`points`): the smart
+ * router's waypoints when present, else a straight `[source, target]` pair. Order
+ * of the returned ids follows `candidates`. Exported for direct test coverage.
+ */
+export const findOverlappingEdgeIds = (opts: {
+  point: Point;
+  candidates: ReadonlyArray<{ id: string; points: readonly Point[] }>;
+  tolerance: number;
+}): string[] => {
+  const toleranceSq = opts.tolerance * opts.tolerance;
+  const hits: string[] = [];
+  for (const candidate of opts.candidates) {
+    const { points } = candidate;
+    for (let i = 0; i < points.length - 1; i++) {
+      const a = points[i];
+      const b = points[i + 1];
+      if (a && b && pointToSegmentDistanceSq(opts.point, a, b) <= toleranceSq) {
+        hits.push(candidate.id);
+        break;
+      }
+    }
+  }
+  return hits;
+};
+
 /** Marker re-export so the canvas wiring doesn't need to know about the
  * geometry helpers individually. */
 export type { Entity };

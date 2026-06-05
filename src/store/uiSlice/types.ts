@@ -74,6 +74,9 @@ export type CausalityLabel = 'none' | 'because' | 'therefore' | 'in-order-to' | 
 export type ContextMenuTarget =
   | { kind: 'entity'; id: string }
   | { kind: 'edge'; id: string }
+  // Left-click landed on a stack of 2+ overlapping edges — the menu lists them
+  // so the user picks which one to select (the canvas edge-picker, #1).
+  | { kind: 'edge-picker'; ids: string[] }
   | { kind: 'pane' };
 
 export type ContextMenuState =
