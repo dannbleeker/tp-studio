@@ -129,6 +129,9 @@ describe('exportToVectorPdf — full pipeline', () => {
     expect(ok).toBe(true);
     expect(firstPdf().texts).toContain('Annotation appendix');
     expect(firstPdf().texts.some((t) => t.includes('Cause'))).toBe(true);
+    // The appendix starts on its own page — a single-page diagram + appendix
+    // is 2 physical pages, not 1 overlaid page (Session 177 pagination fix).
+    expect(firstPdf().pages).toBeGreaterThanOrEqual(2);
   });
 
   it('draws header and footer with resolved page placeholders', async () => {

@@ -9,16 +9,6 @@ CHANGELOG.
 
 ## Active backlog (Session 176 — Dann's review batch)
 
-### pdfExport — appendix overlaps the last diagram page (bug, found Session 177)
-`exportToVectorPdf` with `includeAppendix: true` on a **single-page** diagram draws the
-appendix on top of the diagram instead of on its own page. `renderAppendix`'s
-`startNewPage(true)` skips `pdf.addPage()` on its first call, but `renderDiagramPages` has
-already left the cursor on the last diagram page — so the appendix title + first entries overlay
-it. Fix: have the appendix's first page add a page when the diagram already occupies the current
-one (or always `addPage()` at the appendix boundary), then verify page count = diagram pages +
-appendix pages. Covered indirectly by `pdfExportPipeline.test.ts` (asserts the appendix text
-renders, not its page) — add a page-count assertion with the fix. Low risk, ~30 min.
-
 ### Canvas — back-edge routing (Z-2 / Z-5 / behind-entities) — Wave 3 (item 1 ✅; items 2–3 OPEN)
 Repro fixture: `e2e/fixtures/inventory-turns-crt.tps.json`, loaded via `__TP_TEST__.loadDoc(json)`.
 The feedback loop is `#4 ⇄ #6` (`q36o` #4→#6 forward; `DJJo` #6→#4 the loop-closer, auto-detected).

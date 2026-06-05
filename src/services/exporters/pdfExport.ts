@@ -299,8 +299,13 @@ const renderAppendix = (
   if (items.length === 0) return { pagesUsed: 0 };
 
   let pagesUsed = 0;
-  const startNewPage = (firstPage: boolean): void => {
-    if (!firstPage) pdf.addPage();
+  // Always begin a fresh page. A diagram page is always rendered before the
+  // appendix, so the FIRST appendix page must add one too — otherwise the
+  // appendix overlays the diagram's last page on a single-page diagram.
+  // (Session 177 bug fix; keeps `{pageCount}` honest since the appendix now
+  // occupies the physical pages its estimate already reserved.)
+  const startNewPage = (): void => {
+    pdf.addPage();
     pagesUsed += 1;
     drawHeaderFooter(
       pdf,
@@ -312,7 +317,7 @@ const renderAppendix = (
     );
   };
 
-  startNewPage(true);
+  startNewPage();
   pdf.setFontSize(APPENDIX_TITLE_FONT_PT);
   pdf.text('Annotation appendix', MARGIN_MM, MARGIN_MM + HEADER_BAND_MM + 4);
 
@@ -326,7 +331,7 @@ const renderAppendix = (
     const bodyLines = pdf.splitTextToSize(entity.description ?? '', usableWidthMm);
     const blockHeight = APPENDIX_LINE_HEIGHT_MM * (bodyLines.length + 1) + 2;
     if (cursorY + blockHeight > bottomCutoff) {
-      startNewPage(false);
+      startNewPage();
       cursorY = MARGIN_MM + HEADER_BAND_MM + 4;
     }
     pdf.setFont('helvetica', 'bold');

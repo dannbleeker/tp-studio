@@ -19,11 +19,15 @@ Reverse chronological. Entries are grouped by build session, not by release — 
   - **Store-connected** `EvidenceList` + `GroupInspector` — real-store round-trip (add / edit / cycle /
     validate / remove evidence; rename / recolor / preset / collapse / archive a group). +10.
 - **Re-pinned the CI coverage floor** (`coverage:pin`) to lines 88 / statements 85 / functions 84 / branches 73.
-- **Found while testing:** a latent `pdfExport` appendix-pagination bug (the first appendix page reuses
-  the diagram's last page instead of adding one) — logged in NEXT_STEPS for a follow-up. Remaining
-  coverage gaps left as a deliberate call: `CreationWizardPanel` (multi-step; has smoke tests), several
-  canvas overlays (`ContextMenu`, `CanvasNav`, `StFacetRow`), and DOM/keyboard hooks (`useDraggablePanel`,
-  `useArrowKeyNodeNav`).
+- **Found + fixed while testing:** a latent `pdfExport` appendix-pagination bug — the first appendix
+  page reused the diagram's last page (overlaying it) instead of starting fresh, because
+  `renderAppendix`'s `startNewPage` skipped `addPage()` on its first call. It now always adds a page at
+  the appendix boundary (a diagram page always precedes it), which also makes `{pageCount}` honest since
+  the appendix occupies the physical pages its estimate already reserved. Pinned by a page-count
+  assertion in `pdfExportPipeline.test.ts` (1-page diagram + appendix = 2 physical pages).
+- Remaining coverage gaps left as a deliberate call: `CreationWizardPanel` step-flow now covered;
+  still open are several canvas overlays (`ContextMenu`, `CanvasNav`, `StFacetRow`) and DOM/keyboard
+  hooks (`useDraggablePanel`, `useArrowKeyNodeNav`).
 
 ## Session 176 (cont.) — test-coverage sweep (autonomous, 8 batches)
 
