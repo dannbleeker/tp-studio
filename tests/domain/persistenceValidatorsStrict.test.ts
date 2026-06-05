@@ -198,7 +198,7 @@ describe('validateGroup', () => {
 describe('validateRecord', () => {
   it('validates each value + returns a keyed record', () => {
     const out = validateRecord({ e1: entity }, validateEntity, 'entities');
-    expect(out.e1.id).toBe('e1');
+    expect(out.e1?.id).toBe('e1');
   });
 
   it('rejects a non-object', () => {

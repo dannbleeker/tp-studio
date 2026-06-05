@@ -2,6 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 176 (cont.) — autonomous test-coverage pass
+
+- **Raised coverage on the lowest-covered pure modules** (test-only, behaviour-preserving;
+  baseline 86.1% lines / 72.2% branches):
+  - `services/exporters/text.ts` + `markup.ts` — the browser-download wrappers (were fn 0% /
+    ~22% lines): each export's filename, MIME type, and emitted content, by mocking only
+    `shared.triggerDownload` and running the real `slug` + domain transforms. +10 tests.
+  - `domain/persistenceValidators.ts` — the strict member validators (`validateEdge` /
+    `Assumption` / `Comment` / `Group` / `Record` were untested), including the
+    prototype-pollution key rejection (`__proto__` / `constructor` / `prototype`) and the
+    `validateEntity` enum + optional-field branches. +16 tests.
+
 ## Session 176 (cont.) — Wave 3 item 1: back-edge attaches in the flow direction
 
 - **A back-edge now exits the source's TOP and enters the target's BOTTOM** (the flow-facing

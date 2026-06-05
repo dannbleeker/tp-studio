@@ -70,7 +70,20 @@ compression path.
 ### Test-coverage review + raise coverage
 `vitest --coverage`, rank uncovered × value, add high-value tests (exporters, `.tsx` components, edge
 cases). Mirror the Session-172 coverage pass. Gotcha: never run two `--coverage` processes at once
-(shared `coverage/.tmp`).
+(shared `coverage/.tmp`); `pnpm coverage:pin` ratchets the CI floor after a batch lands.
+**Progress (Session 176, autonomous):** baselined 86.1% lines / 72.2% branches; covered the lowest
+PURE files — `exporters/text.ts`+`markup.ts` (22%→~90%) and the strict `persistenceValidators.ts`
+members (incl. prototype-pollution rejection). NEXT (bigger gaps, need render/store/mocks, so left
+for an attended pass): `useGraphNodeEmission` 38%, `useGraphProjection` 54%, `canvasRef` 30%,
+`selectionSlice` 74%, `CreationWizardPanel` 58%, and the heavy exporters `pdfExport` 30% /
+`pptxExport` 26% (jspdf/pptxgenjs mocks). Run `coverage:pin` to ratchet the floor once happy.
+
+### Print functionality (Dann, Session 176)
+Add / expand print support — scope to confirm with Dann. Current state: a `PrintPreviewDialog`,
+a `Cmd/Ctrl+P` "Print / Save as PDF" shortcut, and a minimal `src/styles/print.css` exist; "full
+one-page print designs" were previously parked (see Out-of-scope — won't build). Clarify the
+target: better print layouts / per-diagram-type print templates / a dedicated print-or-PDF flow /
+print the reasoning read-out alongside the canvas.
 
 ### Stale-code hunt
 Sweep for stale/dead code beyond knip: unreachable branches, orphaned helpers, stale comments vs
