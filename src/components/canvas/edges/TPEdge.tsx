@@ -14,6 +14,7 @@ import { currentDoc } from '@/store/selectors';
 import { ARROW_TRIANGLE_D, arrowheadOnPath, arrowheadTransform } from './edgeArrowhead';
 import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
+import { junctorKindField } from './junctorGeometry';
 import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
 import {
   AggregateBadge,
@@ -26,7 +27,6 @@ import {
   MutexBadge,
   WeightBadge,
 } from './TPEdgeBadges';
-import { junctorKindField } from './junctorGeometry';
 import { useJunctorCenterX, useJunctorSourceAnchor } from './useJunctorCenterX';
 import { useRadialRoute } from './useRadialRoute';
 
