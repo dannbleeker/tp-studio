@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { createDocument } from '@/domain/factory';
-import { computeRevisionDiff, isEmptyDiff, summarizeRevisionDiff } from '@/domain/revisions';
+import {
+  computeDetailedRevisionDiff,
+  computeRevisionDiff,
+  edgeStatusFromDiff,
+  entityStatusFromDiff,
+  isEmptyDiff,
+  summarizeRevisionDiff,
+} from '@/domain/revisions';
 import type { Edge, EdgeId, Entity, EntityId, TPDocument } from '@/domain/types';
 
 /**
@@ -124,5 +131,79 @@ describe('summarizeRevisionDiff', () => {
       entities: { e1: baseEntity('e1'), e2: baseEntity('e2'), e3: baseEntity('e3') },
     });
     expect(summarizeRevisionDiff(computeRevisionDiff(a, b))).toBe('+3 entities');
+  });
+});
+
+describe('computeDetailedRevisionDiff', () => {
+  it('returns the actual id sets for added / removed / changed entities', () => {
+    const e1 = baseEntity('e1', 'before');
+    const e2 = baseEntity('e2');
+    const e3 = baseEntity('e3');
+    const a = docWith({ entities: { e1, e2 } });
+    const b = docWith({ entities: { e1: baseEntity('e1', 'after'), e3 } });
+    const d = computeDetailedRevisionDiff(a, b);
+    expect([...d.entitiesAdded]).toEqual(['e3']);
+    expect([...d.entitiesRemoved]).toEqual(['e2']);
+    expect([...d.entitiesChanged]).toEqual(['e1']);
+  });
+
+  it('tracks edge add / remove / endpoint-change id sets', () => {
+    const e1 = baseEntity('e1');
+    const e2 = baseEntity('e2');
+    const e3 = baseEntity('e3');
+    const a = docWith({
+      entities: { e1, e2, e3 },
+      edges: { ed1: baseEdge('ed1', 'e1', 'e2'), ed2: baseEdge('ed2', 'e2', 'e3') },
+    });
+    const b = docWith({
+      entities: { e1, e2, e3 },
+      edges: { ed1: baseEdge('ed1', 'e1', 'e3'), ed3: baseEdge('ed3', 'e1', 'e2') },
+    });
+    const d = computeDetailedRevisionDiff(a, b);
+    expect(d.edgesAdded.has('ed3')).toBe(true);
+    expect(d.edgesRemoved.has('ed2')).toBe(true);
+    expect(d.edgesChanged.has('ed1')).toBe(true); // ed1's target moved e2 → e3
+  });
+
+  it('returns the same cached object for an unchanged (prev, next) reference pair', () => {
+    const a = docWith({ entities: { e1: baseEntity('e1') } });
+    const b = docWith({ entities: { e1: baseEntity('e1'), e2: baseEntity('e2') } });
+    const first = computeDetailedRevisionDiff(a, b);
+    const second = computeDetailedRevisionDiff(a, b);
+    expect(second).toBe(first); // two-level WeakMap cache hit
+  });
+});
+
+describe('entityStatusFromDiff / edgeStatusFromDiff', () => {
+  it('resolves each entity id to its diff status', () => {
+    const e1 = baseEntity('e1', 'before');
+    const e2 = baseEntity('e2');
+    const e3 = baseEntity('e3');
+    const a = docWith({ entities: { e1, e2 } });
+    const b = docWith({ entities: { e1: baseEntity('e1', 'after'), e3 } });
+    const d = computeDetailedRevisionDiff(a, b);
+    expect(entityStatusFromDiff(d, 'e3')).toBe('added');
+    expect(entityStatusFromDiff(d, 'e2')).toBe('removed');
+    expect(entityStatusFromDiff(d, 'e1')).toBe('changed');
+    expect(entityStatusFromDiff(d, 'missing')).toBe('unchanged');
+  });
+
+  it('resolves each edge id to its diff status', () => {
+    const e1 = baseEntity('e1');
+    const e2 = baseEntity('e2');
+    const e3 = baseEntity('e3');
+    const a = docWith({
+      entities: { e1, e2, e3 },
+      edges: { ed1: baseEdge('ed1', 'e1', 'e2'), ed2: baseEdge('ed2', 'e2', 'e3') },
+    });
+    const b = docWith({
+      entities: { e1, e2, e3 },
+      edges: { ed1: baseEdge('ed1', 'e1', 'e3'), ed3: baseEdge('ed3', 'e1', 'e2') },
+    });
+    const d = computeDetailedRevisionDiff(a, b);
+    expect(edgeStatusFromDiff(d, 'ed3')).toBe('added');
+    expect(edgeStatusFromDiff(d, 'ed2')).toBe('removed');
+    expect(edgeStatusFromDiff(d, 'ed1')).toBe('changed');
+    expect(edgeStatusFromDiff(d, 'missing')).toBe('unchanged');
   });
 });

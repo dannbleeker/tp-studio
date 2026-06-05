@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { confirmAndDeleteEntity } from '@/services/confirmations';
+import { confirmAndDeleteEntity, confirmAndDeleteSelection } from '@/services/confirmations';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 
@@ -109,5 +109,77 @@ describe('confirmAndDeleteEntity', () => {
     await pending;
 
     expect(prompt).toContain('this entity');
+  });
+});
+
+describe('confirmAndDeleteSelection', () => {
+  it('does nothing when the selection is empty', async () => {
+    await confirmAndDeleteSelection();
+    expect(useDocumentStore.getState().confirmDialog).toBeNull();
+  });
+
+  it('delegates a single-entity selection to the per-entity helper', async () => {
+    const a = addEntity('Solo');
+    useDocumentStore.getState().selectEntities([a.id]);
+    await confirmAndDeleteSelection();
+    expect(useDocumentStore.getState().doc.entities[a.id]).toBeUndefined();
+    expect(useDocumentStore.getState().confirmDialog).toBeNull();
+  });
+
+  it('bulk-deletes multiple entities with one cascade prompt', async () => {
+    const a = addEntity('A');
+    const b = addEntity('B');
+    const c = addEntity('C');
+    connect(a.id, b.id);
+    useDocumentStore.getState().selectEntities([a.id, b.id, c.id]);
+
+    const pending = confirmAndDeleteSelection();
+    const prompt = await settleNextConfirm(true);
+    await pending;
+
+    expect(prompt).toContain('3 entities');
+    expect(prompt).toContain('1 connection');
+    expect(useDocumentStore.getState().doc.entities[a.id]).toBeUndefined();
+    expect(useDocumentStore.getState().doc.entities[b.id]).toBeUndefined();
+    expect(useDocumentStore.getState().doc.entities[c.id]).toBeUndefined();
+  });
+
+  it('omits the connection clause when no edges cascade', async () => {
+    const a = addEntity('A');
+    const b = addEntity('B');
+    useDocumentStore.getState().selectEntities([a.id, b.id]);
+
+    const pending = confirmAndDeleteSelection();
+    const prompt = await settleNextConfirm(true);
+    await pending;
+
+    expect(prompt).toBe('Delete 2 entities?');
+  });
+
+  it('keeps everything when the bulk prompt is cancelled', async () => {
+    const a = addEntity('A');
+    const b = addEntity('B');
+    useDocumentStore.getState().selectEntities([a.id, b.id]);
+
+    const pending = confirmAndDeleteSelection();
+    await settleNextConfirm(false);
+    await pending;
+
+    expect(useDocumentStore.getState().doc.entities[a.id]).toBeDefined();
+  });
+
+  it('deletes a selected edge after its own prompt', async () => {
+    const a = addEntity('A');
+    const b = addEntity('B');
+    const edge = connect(a.id, b.id);
+    if (!edge) throw new Error('edge not created');
+    useDocumentStore.getState().selectEdges([edge.id]);
+
+    const pending = confirmAndDeleteSelection();
+    const prompt = await settleNextConfirm(true);
+    await pending;
+
+    expect(prompt).toBe('Delete 1 edge?');
+    expect(useDocumentStore.getState().doc.edges[edge.id]).toBeUndefined();
   });
 });
