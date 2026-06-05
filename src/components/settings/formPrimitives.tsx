@@ -220,6 +220,48 @@ export function TextInput({
   );
 }
 
+export type SelectOption = { value: string; label: string; disabled?: boolean };
+
+/**
+ * Native `<select>` sharing the inspector field chrome (border / focus ring /
+ * disabled fade). Native on purpose — keyboard + screen-reader behaviour comes
+ * free, which matters for the a11y-first surfaces that use it (e.g. the Edge
+ * Inspector's cause/effect re-wire dropdowns). Pass `ariaLabel` when no visible
+ * `<label>`/`<Field>` wraps it.
+ */
+export function Select({
+  value,
+  onChange,
+  options,
+  disabled,
+  ariaLabel,
+  id,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: readonly SelectOption[];
+  disabled?: boolean;
+  ariaLabel?: string;
+  id?: string;
+}) {
+  return (
+    <select
+      id={id}
+      aria-label={ariaLabel}
+      value={value}
+      disabled={disabled}
+      onChange={(e) => onChange(e.target.value)}
+      className={clsx(FIELD_BASE, FIELD_SIZE_MD, INPUT_FOCUS, 'cursor-pointer')}
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value} disabled={o.disabled}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export type TextAreaProps = {
   value: string;
   onChange: (v: string) => void;

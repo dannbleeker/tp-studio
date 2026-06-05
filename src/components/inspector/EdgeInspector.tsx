@@ -1,11 +1,12 @@
 import clsx from 'clsx';
 import { Lightbulb, ListChecks, Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import type { EdgeWeight, Entity, Warning } from '@/domain/types';
 import { useEdge, useEntity } from '@/hooks/useSelected';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
-import { TextInput } from '../settings/formPrimitives';
+import { Select, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import {
   SELECTED_BUTTON_CLASS,
@@ -48,8 +49,10 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
     ungroupXor,
     setEdgeWeight,
     updateEdge,
+    reconnectEdge,
     addAssumptionToEdge,
     openEdgeScrutiny,
+    showToast,
     entities,
     diagramType,
     locked,
@@ -61,9 +64,11 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
       ungroupXor: s.ungroupXor,
       setEdgeWeight: s.setEdgeWeight,
       updateEdge: s.updateEdge,
+      reconnectEdge: s.reconnectEdge,
       addAssumptionToEdge: s.addAssumptionToEdge,
       // Phase 3 #7 — launch the guided CLR-scrutiny dialog for this edge.
       openEdgeScrutiny: s.openEdgeScrutiny,
+      showToast: s.showToast,
       // Session 136 — setEdgeAttribute / removeEdgeAttribute dropped
       // here because the AttributesSection UI is gone (user-custom
       // attributes feature removed). Store actions remain available
@@ -75,24 +80,76 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
     }))
   );
 
+  // #1 (recommended primary) — options for the cause/effect re-wire dropdowns:
+  // every structural entity (not assumptions/notes), labelled by title and
+  // live-updating as entities are renamed. Built before the early return below
+  // so the hook order stays stable.
+  const entityOptions = useMemo(() => {
+    const label = (e: Entity): string => e.title.trim() || `(untitled #${e.annotationNumber})`;
+    return Object.values(entities)
+      .filter((e) => e.type !== 'assumption' && e.type !== 'note')
+      .map((e) => ({ value: e.id, label: label(e) }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [entities]);
+
   if (!edge) return null;
 
   const assumptions = (edge.assumptionIds ?? [])
     .map((id) => entities[id])
     .filter((e): e is Entity => e?.type === 'assumption');
 
+  // Re-wire is offered only for a normal causal cause→effect edge. A note-edge
+  // (one endpoint a note) keeps the read-only display — its semantics aren't a
+  // cause/effect pair. `reconnectEdge` itself guards self-loops + duplicates.
+  const canRewire =
+    source != null && target != null && source.type !== 'note' && target.type !== 'note';
+  const rewire = (sourceId: string, targetId: string): void => {
+    if (reconnectEdge(edgeId, sourceId, targetId) === null) {
+      showToast('info', "Couldn't redirect — an edge between those two already exists.");
+    }
+  };
+  // Disable the opposite endpoint in each list so the obvious self-loop can't be
+  // picked; `reconnectEdge` still guards duplicates + missing endpoints.
+  const causeOptions = entityOptions.map((o) => ({ ...o, disabled: o.value === edge.targetId }));
+  const effectOptions = entityOptions.map((o) => ({ ...o, disabled: o.value === edge.sourceId }));
+
   return (
     <div className="flex flex-col gap-4">
-      <Field label="Cause" as="group">
-        <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-neutral-700 text-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
-          {source?.title || <span className="text-neutral-400 italic">Untitled</span>}
-        </p>
-      </Field>
-      <Field label="Effect" as="group">
-        <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-neutral-700 text-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
-          {target?.title || <span className="text-neutral-400 italic">Untitled</span>}
-        </p>
-      </Field>
+      {canRewire ? (
+        <>
+          <Field label="Cause">
+            <Select
+              ariaLabel="Cause (edge source)"
+              value={edge.sourceId}
+              disabled={locked}
+              onChange={(next) => rewire(next, edge.targetId)}
+              options={causeOptions}
+            />
+          </Field>
+          <Field label="Effect">
+            <Select
+              ariaLabel="Effect (edge target)"
+              value={edge.targetId}
+              disabled={locked}
+              onChange={(next) => rewire(edge.sourceId, next)}
+              options={effectOptions}
+            />
+          </Field>
+        </>
+      ) : (
+        <>
+          <Field label="Cause" as="group">
+            <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-neutral-700 text-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
+              {source?.title || <span className="text-neutral-400 italic">Untitled</span>}
+            </p>
+          </Field>
+          <Field label="Effect" as="group">
+            <p className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-neutral-700 text-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
+              {target?.title || <span className="text-neutral-400 italic">Untitled</span>}
+            </p>
+          </Field>
+        </>
+      )}
       <Field label="Kind" as="group">
         <p className="text-neutral-500 text-xs uppercase tracking-wider">{edge.kind}</p>
       </Field>

@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — Edge Inspector cause/effect re-wire dropdowns (#1, primary path)
+
+The "can't grab one of N overlapping edges to re-route it" problem, solved the clean way: the Edge
+Inspector's **Cause** and **Effect** read-outs are now editable dropdowns of the doc's entities (by
+title). Pick a different one → the edge re-points via `reconnectEdge` — no canvas drag, no fighting
+the stack. Select ANY edge in a converging pile and redirect its endpoints exactly.
+
+- Reactive entity list (live-updates on rename); the opposite endpoint is disabled (no self-loop); a
+  redirect that would duplicate an existing edge is declined with a toast. Re-pointing the *effect*
+  of a junctor edge drops its group membership (junctors are per shared target) — matches the canvas
+  drag-reconnect gesture, which this pairs with (same `reconnectEdge` validation).
+- Note-edges keep the read-only display (a note endpoint isn't a causal cause→effect pair).
+- New reusable `Select` form primitive (shared inspector chrome; native `<select>` for free keyboard
+  + screen-reader support).
+
+Tests: 6 EdgeInspector cases (render, re-wire source + target, self-loop disabled, Browse-Lock
+disabled, note-edge read-only fallback); `reconnectEdge`'s own guards stay store-tested. Full suite
+2803 green; tsc + knip clean. The remaining #1 sub-path — on-canvas drag affordances for stacked
+edges (fan-out / picker / hover-cycle) — stays open as a separate slice.
+
 ## Session 177 (cont.) — dangling cross-doc link prune (U-Shape 2a hygiene)
 
 Cross-tab entity links (Phase 2a) are reciprocal, but deleting a linked entity left the OTHER

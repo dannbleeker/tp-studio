@@ -11,18 +11,17 @@ CHANGELOG.
 
 ### Overlapping edges into one entity — can't grab/redirect one (Dann)
 PROBLEM: when 2+ edges converge on one entity, you can't reliably select/drag ONE to re-route
-it — a click always grabs whichever edge is on top. Two paths (Dann; both make sense — recommend
-doing BOTH):
-1. **Drag-and-drop affordances** — make stacked edges individually grabbable: fan out / offset
-   the parallel edges at the shared endpoint so each gets its own hit-zone; an edge-picker
-   popover when a click lands on N overlapping edges; hover-cycle (click-again / Tab to cycle
-   the stack); widen the per-edge interaction band away from the shared handle.
-2. **Inspector-driven re-wire (recommended primary)** — make the edge's cause/effect
-   (source/target) editable as DROPDOWNS in the Edge Inspector, each listing the doc's entities
-   by title and **live-updating when an entity is renamed**. Redirect an edge by picking a
-   different source/target — no canvas drag. Cleaner, a11y-friendly, exact; pairs with the
-   existing on-canvas reconnect gesture. (Pointers: `EdgeInspector`, `reconnectEdge`/`updateEdge`
-   store actions, the `currentDoc` entity list.)
+it — a click always grabs whichever edge is on top.
+- ✅ **Inspector-driven re-wire (Session 177, the recommended-primary path).** The Edge Inspector's
+  Cause/Effect are now editable dropdowns of the doc's entities (by title, live-updating on rename);
+  pick a different source/target to redirect via `reconnectEdge` — no canvas drag. Opposite endpoint
+  disabled (no self-loop), duplicate declined with a toast, a junctor effect-move drops the group,
+  note-edges stay read-only. New reusable `Select` primitive. See CHANGELOG.
+- **Drag-and-drop affordances (still open) — on-canvas ergonomics.** Make stacked edges individually
+  grabbable on the CANVAS: fan out / offset the parallel edges at the shared endpoint so each gets
+  its own hit-zone; an edge-picker popover when a click lands on N overlapping edges; hover-cycle
+  (click-again / Tab to cycle the stack); widen the per-edge interaction band away from the shared
+  handle. The inspector re-wire already gives an exact, a11y-friendly redirect; this is the canvas feel.
 
 ### Security review
 Full pass (last refresh ~Session 98 + the M-Sec batch; see SECURITY.md). Cover: evidence URL-scheme

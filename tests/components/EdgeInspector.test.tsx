@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { EdgeInspector } from '@/components/inspector/EdgeInspector';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { seedAndGroupable, seedConnectedPair } from '../helpers/seedDoc';
+import { seedAndGroupable, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);
@@ -156,6 +156,74 @@ describe('EdgeInspector', () => {
     // the JSON export clean.
     act(() => fireEvent.click(checkbox!));
     expect(useDocumentStore.getState().doc.edges[edge.id]?.isBackEdge).toBeUndefined();
+  });
+});
+
+describe('EdgeInspector — cause/effect re-wire dropdowns (#1)', () => {
+  it('renders the cause and effect as entity dropdowns', () => {
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(container.querySelector('select[aria-label="Cause (edge source)"]')).toBeTruthy();
+    expect(container.querySelector('select[aria-label="Effect (edge target)"]')).toBeTruthy();
+  });
+
+  it('re-wires the edge target by picking a different effect', () => {
+    const { edge, a } = seedConnectedPair();
+    const c = seedEntity('Effect C');
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const sel = container.querySelector(
+      'select[aria-label="Effect (edge target)"]'
+    ) as HTMLSelectElement;
+    act(() => fireEvent.change(sel, { target: { value: c.id } }));
+    const moved = useDocumentStore.getState().doc.edges[edge.id];
+    expect(moved?.targetId).toBe(c.id);
+    expect(moved?.sourceId).toBe(a.id); // source untouched
+  });
+
+  it('re-wires the edge source by picking a different cause', () => {
+    const { edge, b } = seedConnectedPair();
+    const c = seedEntity('Cause C');
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const sel = container.querySelector(
+      'select[aria-label="Cause (edge source)"]'
+    ) as HTMLSelectElement;
+    act(() => fireEvent.change(sel, { target: { value: c.id } }));
+    const moved = useDocumentStore.getState().doc.edges[edge.id];
+    expect(moved?.sourceId).toBe(c.id);
+    expect(moved?.targetId).toBe(b.id); // target untouched
+  });
+
+  it('disables the current effect in the cause dropdown (blocks a self-loop)', () => {
+    const { edge, b } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const sel = container.querySelector(
+      'select[aria-label="Cause (edge source)"]'
+    ) as HTMLSelectElement;
+    const opt = Array.from(sel.options).find((o) => o.value === b.id);
+    expect(opt?.disabled).toBe(true);
+  });
+
+  it('Browse Lock disables the re-wire dropdowns', () => {
+    const { edge } = seedConnectedPair();
+    act(() => useDocumentStore.getState().setBrowseLocked(true));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const sel = container.querySelector(
+      'select[aria-label="Cause (edge source)"]'
+    ) as HTMLSelectElement;
+    expect(sel.disabled).toBe(true);
+  });
+
+  it('keeps the read-only cause/effect display for a note-edge (no dropdowns)', () => {
+    // A note endpoint isn't a causal cause/effect — the re-wire dropdowns are
+    // suppressed and the plain title read-out stays.
+    const anchor = seedEntity('Anchor');
+    const note = seedEntity('A note', 'note');
+    const edge = useDocumentStore.getState().connect(anchor.id, note.id);
+    if (!edge) throw new Error('connect failed for note-edge');
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(container.querySelector('select[aria-label="Cause (edge source)"]')).toBeNull();
+    expect(container.querySelector('select[aria-label="Effect (edge target)"]')).toBeNull();
+    expect(container.textContent).toContain('A note');
   });
 });
 
