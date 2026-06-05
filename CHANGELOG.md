@@ -2,6 +2,23 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — Wave 3 item 2: back-edge loops around the source (first cut)
+
+- **A vertical-axis back-edge now bows out to one side into a visible feedback LOOP** instead of running
+  straight between the source's top and the target's bottom — where it overlapped the forward edge's
+  corridor (source below target) or ran straight through both node boxes (source above target). New pure
+  `domain/backEdgeLoop.ts`:
+  - `backEdgeLoopSide` — obstacle-aware side pick: prefer a clear side (right by default), `null` when
+    BOTH bulge regions are blocked → the router keeps the straight A\* route (the "don't force an ugly
+    detour" fallback).
+  - `backEdgeLoopRoute` — a single side-bowed cubic between the top/bottom anchors + a coarse 3-point
+    polyline for crossing / hit-testing.
+  Wired into `routeOneEdge` (vertical axis only — EC unaffected); the decross pass now never reroutes a
+  back-edge away from its deliberate loop. Tunable: `BACK_EDGE_LOOP_CLEARANCE` (56) + `VERTICAL_REACH_FACTOR`
+  (0.4). +11 tests (geometry both ways + the bow integration); full suite green.
+- **First cut — pending Dann's visual review** (item 2's expected rounds): is the bow the right magnitude
+  and side, and does it read as a loop on a real cyclic CRT? The two constants above are the dials.
+
 ## Session 177 — attended coverage recommendations (exporters + component harness)
 
 - **Lines 87.8% → 90.2%, statements 85.0% → 87.2%, functions 83.6% → 86.3%, branches 73.8% → 75.8%**

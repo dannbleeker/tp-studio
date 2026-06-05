@@ -24,6 +24,7 @@
  */
 
 import { useMemo } from 'react';
+import { backEdgeLoopRoute, backEdgeLoopSide } from '@/domain/backEdgeLoop';
 import { effectiveBackEdgeIds } from '@/domain/backEdges';
 import { JUNCTOR_CENTER_OFFSET_Y, JUNCTOR_RADIUS, JUNCTOR_RADIUS_X } from '@/domain/constants';
 import { polylinesCross } from '@/domain/edgeGeometry';
@@ -158,6 +159,10 @@ const sideSelectionFor = (
 const backEdgeForcedSides = (axis: Axis): { source: Side; target: Side } | undefined =>
   axis === 'vertical' ? { source: 'top', target: 'bottom' } : undefined;
 
+/** Item 2 — how far PAST the wider endpoint box a back-edge's loop bows out to the
+ *  side, so the bulge clears the node instead of grazing it. Tunable. */
+const BACK_EDGE_LOOP_CLEARANCE = 56;
+
 /**
  * The per-layout routing context shared by every edge in one `computeEdgeRoutes`
  * pass: the cached visibility graph + the inflated obstacle arrays + the flow
@@ -207,6 +212,15 @@ const routeOneEdge = (
   // direction), overriding the position-based pick; non-back-edges are unchanged.
   const forceSides = isBackEdge ? backEdgeForcedSides(ctx.axis) : undefined;
   const sel = sideSelectionFor(sBox, tBox, ctx.axis, obstaclesForEdge, forceSides);
+  // Item 2 — a vertical-axis back-edge bows out to one side so it reads as a
+  // feedback LOOP instead of overlapping the forward edge's corridor (or running
+  // straight through both node boxes). Falls through to the straight A* route when
+  // both sides are blocked, so we never force an ugly detour (Dann's rule).
+  if (isBackEdge && ctx.axis === 'vertical') {
+    const reach = Math.max(sBox.width, tBox.width) / 2 + BACK_EDGE_LOOP_CLEARANCE;
+    const loopSide = backEdgeLoopSide(sel.sourceAnchor, sel.targetAnchor, obstaclesForEdge, reach);
+    if (loopSide) return backEdgeLoopRoute(sel.sourceAnchor, sel.targetAnchor, loopSide, reach);
+  }
   // The anchor points sit on their own box boundary, so they fall *inside* the
   // visibility graph's shrunk-interior bounds. Pass the source/target box indices
   // so the visibility check skips them for this edge's queries.
@@ -410,8 +424,15 @@ const decrossRoutes = (
       if (!polylinesCross(a.route.waypoints, b.route.waypoints)) continue;
       // Move the edge with the simpler current path — it has the most room to
       // detour without disturbing a hard-won multi-waypoint route.
-      const move = a.route.waypoints.length <= b.route.waypoints.length ? a : b;
-      const avoid = move === a ? b : a;
+      let move = a.route.waypoints.length <= b.route.waypoints.length ? a : b;
+      let avoid = move === a ? b : a;
+      // A back-edge's loop shape is deliberate (Item 2) — never reroute it away;
+      // it can still be the `avoid` others detour around. Move the non-back-edge,
+      // or skip the pair when both are back-edges.
+      if (move.isBackEdge) {
+        if (avoid.isBackEdge) continue;
+        [move, avoid] = [avoid, move];
+      }
       attempts++;
       const rerouted = rerouteAround(move, avoid.route.waypoints, ctx);
       if (!rerouted) continue;

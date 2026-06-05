@@ -157,6 +157,29 @@ describe('computeEdgeRoutes — iteration', () => {
     expect(wp[wp.length - 1]?.y).toBe(300 + NODE_MIN_HEIGHT); // target A bottom
   });
 
+  it('bows a back-edge out to one side so it reads as a loop (item 2)', () => {
+    // Same B-above-A back-edge: the route now bows sideways into a 3-point loop
+    // instead of running straight down through both boxes / the forward corridor.
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const state = useDocumentStore.getState();
+    state.connect(a.id, b.id);
+    const back = state.connect(b.id, a.id);
+    if (!back) throw new Error('back-edge not created');
+    state.updateEdge(back.id, { isBackEdge: true });
+    const doc = useDocumentStore.getState().doc;
+    const positions = {
+      [b.id]: { x: 0, y: 0 },
+      [a.id]: { x: 0, y: 300 },
+    };
+    const projection = projectionOf(doc, [a.id, b.id]);
+    const wp = computeEdgeRoutes(doc, projection, positions)[back.id]?.waypoints ?? [];
+    expect(wp).toHaveLength(3);
+    // The anchors share an x (vertically aligned); the apex sits well off it.
+    const anchorX = wp[0]?.x ?? 0;
+    expect(Math.abs((wp[1]?.x ?? anchorX) - anchorX)).toBeGreaterThan(50);
+  });
+
   it('routes a colinear 3-node case via interior waypoint(s)', () => {
     // A directly above B directly above C. The A→C edge should route
     // around B; A* yields at least one interior waypoint.

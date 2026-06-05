@@ -16,10 +16,13 @@ The feedback loop is `#4 ⇄ #6` (`q36o` #4→#6 forward; `DJJo` #6→#4 the loo
   enters the target's BOTTOM, via the `forceSides` seam + `effectiveBackEdgeIds` threaded through the
   router. NOTE: a visual no-op on the inventory CRT (its loop-closer already exits the top — `#6`
   sits below `#4`); it fixes the direction when a back-edge's source sits above its target.
-- **Item 2 (OPEN · HIGH risk) — loop around the source.** Between the top-exit and bottom-entry, arc
-  around one side of the source so it reads as a loop instead of sharing the forward edge's corridor.
-  Reuse `corridorBoxes`/`rerouteAround`; the loop-side heuristic is the #5-class judgment call.
-  Estimate: ~half a day build + 2–3 visual rounds with Dann (least-predictable item in the wave).
+- **Item 2 (FIRST CUT shipped — pending Dann's visual review) — loop around the source.** A vertical
+  back-edge now bows out to one side into a visible loop (`domain/backEdgeLoop.ts`: `backEdgeLoopSide`
+  obstacle-aware side pick + `backEdgeLoopRoute` single side-bowed cubic), wired into `routeOneEdge`;
+  decross never reroutes a back-edge away. Falls back to the straight route when both sides are blocked.
+  **Tunable dials:** `BACK_EDGE_LOOP_CLEARANCE` (56, horizontal bow past the box) + `VERTICAL_REACH_FACTOR`
+  (0.4, shoulder height) in `useEdgeRoutes.ts` / `backEdgeLoop.ts`. Open review qs: bow magnitude? side
+  heuristic (clear-side-else-right) good, or prefer away-from-forward-edge? Loop on a real cyclic CRT.
 - **Item 3 (OPEN) — never cross behind an entity.** Ensure the RENDERED bezier (not just the A*
   polyline) stays out from behind cards (folds in the parked edge-behind-card item). Estimate:
   ~30–60 min; often falls out of item 2's waypoints.
