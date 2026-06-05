@@ -135,8 +135,10 @@ Specific to the Windows + corporate-AppLocker box this was built on.
   `node ./node_modules/<pkg>/bin/...`. **Workarounds:** e2e via `test.use({ channel: 'msedge' })` (system Edge);
   **biome has none** → commit via the **PowerShell tool** with `git commit --no-verify -F <msgfile>` (the
   Bash-only `pre-bash-gate.cjs` hook ignores non-Bash tools) and **push via Bash** so the `vite build` push-gate
-  still runs. By-hand biome checks miss things (import-sort is case-SENSITIVE = uppercase-first; biome collapses
-  short multi-line exprs) → expect CI to occasionally catch a format nit + budget a one-line fixup commit. Get
+  still runs. By-hand biome checks miss things (import-sort is case-INSENSITIVE / natural — letters ranked
+  together regardless of case, NOT uppercase-first [verified S177: `TPEdgeBadges` sorts in the `t` slot, after
+  `resolveEdgePath`, not first]; `@/` alias group sorts before `./` relative; biome collapses short multi-line
+  exprs) → expect CI to occasionally catch a format nit + budget a one-line fixup commit. Get
   biome unblocked (Tech-Support email drafted) to end this friction.
 - **Background Bash lacks `node` on PATH** (exit 127) and starts in the OneDrive Desktop dir, not the repo. Run
   long-lived node tasks (preview server, vitest) via the **PowerShell tool** (`run_in_background`), and prefix
