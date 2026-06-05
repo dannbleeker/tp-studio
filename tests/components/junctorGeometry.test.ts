@@ -10,6 +10,7 @@ import {
   collectGroupSourceIds,
   JUNCTOR_NUDGE_TOWARD_TARGET,
   junctorCenterX,
+  junctorKindField,
   junctorOutputPath,
   junctorSourceAnchor,
 } from '@/components/canvas/edges/junctorGeometry';
@@ -99,5 +100,38 @@ describe('junctorOutputPath', () => {
     // point + the endpoint share x=160, so the end tangent is vertical and the
     // `orient="auto"` arrowhead points perpendicular into the card.
     expect(junctorOutputPath(100, 200, 160, 150)).toBe('M 100 200 C 130 200, 160 200, 160 150');
+  });
+});
+
+describe('junctorKindField', () => {
+  it('returns null for a plain edge (no junctor group)', () => {
+    expect(junctorKindField(undefined, undefined, undefined)).toBeNull();
+  });
+
+  it('resolves an AND edge to its andGroupId field + id', () => {
+    expect(junctorKindField('g1', undefined, undefined)).toEqual({
+      field: 'andGroupId',
+      groupId: 'g1',
+    });
+  });
+
+  it('resolves an OR edge to its orGroupId field + id', () => {
+    expect(junctorKindField(undefined, 'g2', undefined)).toEqual({
+      field: 'orGroupId',
+      groupId: 'g2',
+    });
+  });
+
+  it('resolves a XOR edge to its xorGroupId field + id', () => {
+    expect(junctorKindField(undefined, undefined, 'g3')).toEqual({
+      field: 'xorGroupId',
+      groupId: 'g3',
+    });
+  });
+
+  it('precedence AND → OR → XOR when more than one is somehow set', () => {
+    // An edge carries at most one in practice; pin the deterministic order anyway.
+    expect(junctorKindField('a', 'o', 'x')).toEqual({ field: 'andGroupId', groupId: 'a' });
+    expect(junctorKindField(undefined, 'o', 'x')).toEqual({ field: 'orGroupId', groupId: 'o' });
   });
 });

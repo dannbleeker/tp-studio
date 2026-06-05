@@ -26,6 +26,7 @@ import {
   MutexBadge,
   WeightBadge,
 } from './TPEdgeBadges';
+import { junctorKindField } from './junctorGeometry';
 import { useJunctorCenterX, useJunctorSourceAnchor } from './useJunctorCenterX';
 import { useRadialRoute } from './useRadialRoute';
 
@@ -80,14 +81,16 @@ import { shallowEqualObject, tpEdgePropsEqual } from './tpEdgeComparator';
 export { shallowEqualObject, tpEdgePropsEqual };
 
 function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
-  const isAnd = Boolean(props.data?.andGroupId);
-  // Bundle 8: OR and XOR junctors render via the same JunctorOverlay
-  // pipeline, so TPEdge redirects the bezier endpoint identically for
-  // all three kinds. The visual differentiation lives in the overlay
-  // (circle color + label), not in the edge body.
-  const isOr = Boolean(props.data?.orGroupId);
-  const isXor = Boolean(props.data?.xorGroupId);
-  const isJunctorGroup = isAnd || isOr || isXor;
+  // OR and XOR junctors render via the same JunctorOverlay pipeline as AND, so
+  // TPEdge redirects the bezier endpoint identically for all three; the kind only
+  // changes the overlay (circle colour + label), not the edge body.
+  // `junctorKindField` resolves the active group field + id (AND → OR → XOR), or null.
+  const junctor = junctorKindField(
+    props.data?.andGroupId,
+    props.data?.orGroupId,
+    props.data?.xorGroupId
+  );
+  const isJunctorGroup = junctor !== null;
   const aggregateCount = props.data?.aggregateCount ?? 0;
   const isJunctorEdge = isJunctorGroup && aggregateCount <= 1;
 
@@ -106,8 +109,8 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // it returns null for non-junctor edges, leaving React Flow's target-handle X.
   const junctorCenter = useJunctorCenterX({
     isJunctorEdge,
-    groupField: isAnd ? 'andGroupId' : isOr ? 'orGroupId' : isXor ? 'xorGroupId' : null,
-    groupId: props.data?.andGroupId ?? props.data?.orGroupId ?? props.data?.xorGroupId,
+    groupField: junctor?.field ?? null,
+    groupId: junctor?.groupId,
     targetX: props.targetX,
   });
   const effectiveTargetX = junctorCenter ?? props.targetX;

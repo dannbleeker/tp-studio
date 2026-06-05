@@ -96,3 +96,25 @@ export const collectGroupSourceIds = (
   }
   return ids;
 };
+
+/** The `*GroupId` field name. */
+export type JunctorField = 'andGroupId' | 'orGroupId' | 'xorGroupId';
+
+/**
+ * Resolve which junctor kind (AND / OR / XOR) an edge belongs to — the matching
+ * `*GroupId` field name + the id — or `null` for a plain edge. Precedence
+ * AND → OR → XOR (an edge carries at most one). Folds TPEdge's `isAnd/isOr/isXor`
+ * + the field ternary into one place. The three kinds drive the SAME redirect /
+ * overlay pipeline (the visual difference is the circle's colour + label, not the
+ * edge body), so callers branch on presence, not kind.
+ */
+export const junctorKindField = (
+  andGroupId: string | undefined,
+  orGroupId: string | undefined,
+  xorGroupId: string | undefined
+): { field: JunctorField; groupId: string } | null => {
+  if (andGroupId) return { field: 'andGroupId', groupId: andGroupId };
+  if (orGroupId) return { field: 'orGroupId', groupId: orGroupId };
+  if (xorGroupId) return { field: 'xorGroupId', groupId: xorGroupId };
+  return null;
+};

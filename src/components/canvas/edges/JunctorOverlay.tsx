@@ -5,6 +5,8 @@ import {
   JUNCTOR_HIT_RADIUS,
   JUNCTOR_RADIUS,
   JUNCTOR_RADIUS_X,
+  NODE_MIN_HEIGHT,
+  NODE_WIDTH,
 } from '@/domain/constants';
 import { EDGE_PALETTES } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
@@ -171,8 +173,8 @@ export const computeJunctors = (
     const target = getNode(g.targetId);
     if (!target) continue;
     const tPos = target.internals.positionAbsolute;
-    const tWidth = target.measured?.width ?? 220;
-    const tHeight = target.measured?.height ?? 72;
+    const tWidth = target.measured?.width ?? NODE_WIDTH;
+    const tHeight = target.measured?.height ?? NODE_MIN_HEIGHT;
     const tX = tPos.x + tWidth / 2;
     // Anchor to the bottom target handle's ACTUAL connection point — where
     // React Flow terminates the converging cause-edges — not the measured box
@@ -190,7 +192,8 @@ export const computeJunctors = (
     const sourceXs: number[] = [];
     for (const sid of g.sourceIds) {
       const sn = getNode(sid);
-      if (sn) sourceXs.push(sn.internals.positionAbsolute.x + (sn.measured?.width ?? 220) / 2);
+      if (!sn) continue;
+      sourceXs.push(sn.internals.positionAbsolute.x + (sn.measured?.width ?? NODE_WIDTH) / 2);
     }
     const cx = junctorCenterX(sourceXs, tX);
     out.push({ id: g.id, kind: g.kind, cx, cy: tY + JUNCTOR_CENTER_OFFSET_Y, tx: tX, ty: tY });

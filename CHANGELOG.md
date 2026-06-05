@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — rendering refactor pass complete (#2 closed)
+
+The last safe extractions from the 9-item plan — behaviour-preserving, with the visual fallbacks
+now reading as named dims:
+- **`junctorKindField(and, or, xor)`** in `junctorGeometry` resolves an edge's junctor field + id
+  (precedence AND → OR → XOR) in one place. `TPEdge` drops its `isAnd/isOr/isXor` derivation, the
+  field ternary, and the `?? ?? ` groupId lookup — it branches on `junctor !== null` and reads
+  `junctor.field` / `.groupId`. Directly unit-tested.
+- **JunctorOverlay magic numbers → named constants** — `220`→`NODE_WIDTH`, `72`→`NODE_MIN_HEIGHT`
+  (numerically identical; the junctor-geometry tests pin the result), so the source-X / height
+  fallbacks read as the node dimensions they are.
+- **`Point` consolidated** onto `edgeGeometry.Point` in `dragSplice` (re-exported to keep the
+  module's `pointToSegmentDistanceSq` / `findSpliceTargetEdge` signature surface).
+
+Declined with reason, so #2 can close: the `nodeAbsoluteCenter` helper dedup (the 3 call-sites have
+different fallbacks and some need only X — a parameterized helper is more complex than the 1-line
+inline calc) and removing the `nodeSizeFor` fallback (defensive, not dead). `lineIntersectsBox`
+already carries its cross-reference. tsc + knip clean; full suite green. The rendering-refactor
+backlog item is fully shipped.
+
 ## Session 177 (cont.) — coverage raise (heavy-mock targets) + bundle #8 closed
 
 - **Coverage raise.** +24 tests on the harder targets (a sub-agent drafted them; I fixed the

@@ -1,4 +1,5 @@
 import type { Edge, Entity } from '@/domain/types';
+import type { Point } from './edgeGeometry';
 
 /**
  * Session 83 — geometry helpers for the drag-to-splice gesture.
@@ -13,7 +14,10 @@ import type { Edge, Entity } from '@/domain/types';
  * mounting React Flow.
  */
 
-export type Point = { x: number; y: number };
+// Canonical `Point` lives in `edgeGeometry`; re-exported here so this module's
+// public signatures (`pointToSegmentDistanceSq`, `findSpliceTargetEdge`) keep their
+// existing `Point` export surface.
+export type { Point };
 
 /**
  * Squared distance from point `p` to the line segment running from `a`
