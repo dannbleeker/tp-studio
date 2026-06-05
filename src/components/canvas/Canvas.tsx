@@ -6,7 +6,7 @@ import {
   type OnSelectionChangeParams,
   ReactFlow,
 } from '@xyflow/react';
-import { useCallback, useEffect } from 'react';
+import { lazy, Suspense, useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { GRID_DOT } from '@/domain/tokens';
@@ -14,7 +14,6 @@ import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
-import { VerbalisationStrip } from '../inspector/VerbalisationStrip';
 import { AssumptionAnchorOverlay } from './edges/AssumptionAnchorOverlay';
 import { JunctorOverlay } from './edges/JunctorOverlay';
 import { TPEdge } from './edges/TPEdge';
@@ -31,12 +30,26 @@ import { TPNode } from './nodes/TPNode';
 import { Breadcrumb } from './overlays/Breadcrumb';
 import { CanvasNav } from './overlays/CanvasNav';
 import { CommentPinsOverlay } from './overlays/CommentPinsOverlay';
-import { ECInjectionChip } from './overlays/ECInjectionChip';
-import { ECReadingInstructions } from './overlays/ECReadingInstructions';
 import { EmptyHint } from './overlays/EmptyHint';
 import { FirstEntityTip } from './overlays/FirstEntityTip';
 import { StatusStrip } from './overlays/StatusStrip';
-import { CreationWizardPanel } from './wizards/CreationWizardPanel';
+
+// Lazy-loaded so the EC-only chrome + the creation wizard split OUT of the main
+// `index` chunk — they render only on EC docs / on an explicit wizard action
+// (bundle-size backlog #15 / #16 / #17). Each render site wraps its own Suspense
+// with a null fallback, so a non-EC diagram never pays for them.
+const VerbalisationStrip = lazy(() =>
+  import('../inspector/VerbalisationStrip').then((m) => ({ default: m.VerbalisationStrip }))
+);
+const ECReadingInstructions = lazy(() =>
+  import('./overlays/ECReadingInstructions').then((m) => ({ default: m.ECReadingInstructions }))
+);
+const ECInjectionChip = lazy(() =>
+  import('./overlays/ECInjectionChip').then((m) => ({ default: m.ECInjectionChip }))
+);
+const CreationWizardPanel = lazy(() =>
+  import('./wizards/CreationWizardPanel').then((m) => ({ default: m.CreationWizardPanel }))
+);
 
 const nodeTypes = {
   tp: TPNode,
@@ -295,10 +308,14 @@ function CanvasInner() {
               // sits just inside the canvas top.
               <div className="pointer-events-none absolute top-2 right-0 left-0 z-10 flex flex-col items-stretch gap-1 px-4">
                 <div className="pointer-events-auto">
-                  <ECReadingInstructions />
+                  <Suspense fallback={null}>
+                    <ECReadingInstructions />
+                  </Suspense>
                 </div>
                 <div className="pointer-events-auto w-full">
-                  <VerbalisationStrip />
+                  <Suspense fallback={null}>
+                    <VerbalisationStrip />
+                  </Suspense>
                 </div>
               </div>
             )}
@@ -306,7 +323,9 @@ function CanvasInner() {
                 the chrome in a header row it no longer shares a band with the
                 toolbar buttons, so it sits just inside the canvas top. */}
             <div className="pointer-events-none absolute top-2 right-4 z-10 flex justify-end">
-              <ECInjectionChip />
+              <Suspense fallback={null}>
+                <ECInjectionChip />
+              </Suspense>
             </div>
           </>
         )}
@@ -318,8 +337,10 @@ function CanvasInner() {
       {/* Session 78 — Goal Tree / EC creation wizard panel. The
           component returns null when no wizard is active, so the
           unconditional mount is safe; renders top-left over the
-          canvas otherwise. */}
-      <CreationWizardPanel />
+          canvas otherwise. Lazy-loaded (bundle #17) — null until first opened. */}
+      <Suspense fallback={null}>
+        <CreationWizardPanel />
+      </Suspense>
     </div>
   );
 }

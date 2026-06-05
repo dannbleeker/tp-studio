@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { X } from 'lucide-react';
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { validationFingerprint } from '@/domain/fingerprint';
 import type { Warning } from '@/domain/types';
 import { validate } from '@/domain/validators';
@@ -15,9 +15,15 @@ import { EntityInspector } from './EntityInspector';
 import { GroupInspector } from './GroupInspector';
 import { InjectionWorkbench } from './InjectionWorkbench';
 import { MultiInspector } from './MultiInspector';
-import { VerbalisationStrip } from './VerbalisationStrip';
 
 type ECTab = 'inspector' | 'verbalisation' | 'injections';
+
+// Lazy-loaded so VerbalisationStrip + `domain/verbalisation` split out of the main
+// chunk; it renders only on the EC "Verbalisation" tab (bundle-size backlog #15).
+// Canvas.tsx lazy-loads the same module, so the two share one chunk.
+const VerbalisationStrip = lazy(() =>
+  import('./VerbalisationStrip').then((m) => ({ default: m.VerbalisationStrip }))
+);
 
 const EMPTY: Warning[] = [];
 
@@ -168,7 +174,11 @@ export function Inspector() {
             />
           )}
           <div className="flex-1 overflow-y-auto p-4">
-            {isEC && ecTab === 'verbalisation' && <VerbalisationStrip compact={false} />}
+            {isEC && ecTab === 'verbalisation' && (
+              <Suspense fallback={null}>
+                <VerbalisationStrip compact={false} />
+              </Suspense>
+            )}
             {isEC && ecTab === 'injections' && <InjectionWorkbench />}
             {(!isEC || ecTab === 'inspector') && (
               <>

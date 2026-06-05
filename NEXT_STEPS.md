@@ -107,19 +107,14 @@ pass:** unlike the dead-code / perf / type batches (provably behaviour-preservin
 `React.lazy` + Suspense + prefetch changes that add **user-visible loading states**, so they want
 Dann's review. Heavy export libs (`html-to-image`, `jspdf`, `svg2pdf`, `pptxgenjs`) + ExportPickerDialog
 + pattern/template libraries + HelpDialog + CommandPalette are **already correctly lazy** — no action.
-Safest sequencing 4 → 6 → 2 → 3 → 7 → 8:
+Remaining sequencing: 4 → 6 → 8. (The EC chrome + wizard lazy-loads — #2 VerbalisationStrip,
+#3 EC overlays, #7 CreationWizardPanel — shipped Session 177: ~8.5 KB gz now in on-demand chunks.)
 
 - **#4 TopBar shortcut import** *(None risk · S · ~2 KB)* — ⚠️ **RE-VERIFY: may already be done** —
   `TopBar.tsx` imports `shortcutToAria` from `@/domain/shortcuts`; the intended decoupling appears at
   least partially landed. Confirm whether the full 386-line registry still gets pulled.
 - **#6 shareLink dynamic import** *(Low · S · ~1.5 KB)* — `App.tsx` eager-imports `services/shareLink`
   (CompressionStream) for the <1% `#!share=` boot path → move to `await import()` inside the hash guard.
-- **#2 VerbalisationStrip + `domain/verbalisation`** *(Low · S · ~2–3 KB)* — EC-only, Canvas imports it
-  eagerly. `React.lazy` + prefetch on `diagramType === 'ec'`.
-- **#3 EC canvas overlays** *(Low · S · ~2 KB)* — ECReadingInstructions / ECInjectionChip / ECSlotIndicator
-  / `ecGuiding.ts`, all EC-only + eager. Lazy each, null fallback.
-- **#7 CreationWizardPanel** *(Low · S · ~3 KB)* — 506-line wizard, opens only on explicit action.
-  `React.lazy` + prefetch on first `addEntity`.
 - **#8 actionEligibility eager for a TT-only badge** *(Medium · M · ~2–3 KB)* — gate the `statePropagation`
   + `actionEligibility` import behind `diagramType === 'tt'`. Low-confidence (`statePropagation` is also
   used by `usePropagatedStates`).

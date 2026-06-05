@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — backlog clear-up: #6/#9 closed + EC/wizard lazy-loads
+
+- **Closed #6 (stale-code hunt) + #9 (CanvasInner watch item).** Finished the stale-comment
+  sweep — rewrote the `selectors.ts` header (multi-doc tabs shipped by swapping `state.doc`, not
+  the planned `state.docs[activeDocId]` flip, so `currentDoc` stays a thin alias) and dropped the
+  bare "Phase C —" labels from the edge-routing API docs. Documented why `CanvasInner` reads the
+  whole doc (it's the projection host; no sound narrowing exists). Both pruned from the backlog.
+- **EC chrome + creation wizard now lazy-load (bundle #15 / #16 / #17).** `React.lazy` + per-site
+  `Suspense` (null fallback) for `VerbalisationStrip` (+ `domain/verbalisation`),
+  `ECReadingInstructions`, `ECInjectionChip` (Canvas), and `CreationWizardPanel` — they split OUT
+  of the main `index` chunk and load only on EC docs / on a wizard action. `vite build` confirms 5
+  new on-demand chunks (~8.5 KB gz off the initial load). Full suite 2752 green; tsc + knip clean.
+
 ## Session 177 (cont.) — backlog bundles #1 (refactor + cleanup) + #3 (verification + hardening)
 
 A four-slice pass (each its own commit), driven by four parallel read-only analyses:
