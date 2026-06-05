@@ -22,6 +22,7 @@ export {
   isNonCausal,
   isNote,
   isStNodeFormat,
+  junctorGroupId,
   outgoingEdges,
   pinnedEntities,
   ST_FACET_KEYS,

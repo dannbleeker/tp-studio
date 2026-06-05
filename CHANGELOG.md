@@ -2,6 +2,17 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — rendering dedup: junctorGroupId helper + routeEdge @internal
+
+More of the rendering-refactor plan (the safe, test-covered extractions; the visual + bigger-touch
+items stay deferred to a dedicated render-verify pass):
+- **`junctorGroupId(edge)`** in `graphCore` folds the `andGroupId ?? orGroupId ?? xorGroupId` lookup
+  (repeated in the prune pass + the router) into one generic helper that preserves each caller's id type.
+- **`routeEdge` marked `@internal`** — the live canvas path is `computeEdgeRoutes` (one visibility
+  graph per layout); the single-edge entry stays the pure, test-pinned API, no new callers.
+
+Behaviour-preserving; tsc + knip clean, full suite 2752 green.
+
 ## Session 177 (cont.) — backlog clear-up: shareLink lazy-load + two perf items closed
 
 - **shareLink dynamic-imported (bundle #6).** `App.tsx` no longer eager-imports

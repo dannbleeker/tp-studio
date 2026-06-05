@@ -41,6 +41,19 @@ export const edgesArray = (doc: TPDocument): readonly Edge[] => {
 };
 
 /**
+ * The junctor (AND/OR/XOR) group id an edge belongs to, or undefined for a plain
+ * edge. Folds the `andGroupId ?? orGroupId ?? xorGroupId` lookup that recurred across
+ * the router, the canvas edge, and the prune pass into one place. Structural +
+ * generic, so it accepts both a domain `Edge` (branded `GroupId`) and the canvas
+ * `TPEdgeData` (plain string) while preserving each caller's id type.
+ */
+export const junctorGroupId = <T extends string>(edge: {
+  andGroupId?: T;
+  orGroupId?: T;
+  xorGroupId?: T;
+}): T | undefined => edge.andGroupId ?? edge.orGroupId ?? edge.xorGroupId;
+
+/**
  * Symmetric helper for entities. Identical caching strategy.
  * See `edgesArray` for the full rationale.
  */

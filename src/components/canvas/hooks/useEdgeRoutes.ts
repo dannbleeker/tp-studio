@@ -39,7 +39,7 @@ import {
   sideBezierSegment,
 } from '@/domain/edgeRouting';
 import { type Axis, type Side, type SideSelection, selectEdgeSides } from '@/domain/edgeSides';
-import { edgesArray } from '@/domain/graph';
+import { edgesArray, junctorGroupId } from '@/domain/graph';
 import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
@@ -91,7 +91,7 @@ export const junctorObstacleBoxes = (
 ): Map<string, Box> => {
   const groups = new Map<string, { targetId: string; sourceIds: string[] }>();
   for (const edge of edgesArray(doc)) {
-    const gid = edge.andGroupId ?? edge.orGroupId ?? edge.xorGroupId;
+    const gid = junctorGroupId(edge);
     if (!gid) continue;
     const g = groups.get(gid);
     if (g) g.sourceIds.push(edge.sourceId);

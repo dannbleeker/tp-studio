@@ -193,7 +193,11 @@ export const pickDetourWaypoint = (
 };
 
 /**
- * Phase C implementation: route the edge using visibility-graph + A\*
+ * @internal — the LIVE canvas path is `computeEdgeRoutes` (in `useEdgeRoutes`), which
+ * builds the visibility graph ONCE per layout and calls `routeOneEdge` per edge. This
+ * single-edge entry stays as the pure, test-pinned API; don't add new production callers.
+ *
+ * Routes one edge using a visibility-graph + A\*
  * over obstacle corners. Falls back to the default bezier when no
  * obstacle is on the path or when A\* fails (source/target inside an
  * obstacle).

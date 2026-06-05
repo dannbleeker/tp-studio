@@ -32,11 +32,14 @@ tangent; junctor source re-anchored on `positionAbsolute`; positions map is TOP-
 placement; back-edge rules; live edge palette; `markerEnd` can't follow a curve; biome nested-ternary
 + case-sensitive import-sort). Touch points: `TPEdge`, `useEdgeRoutes`, `edgeVisuals`, `edgeArrowhead`,
 `edgeBezier`/`edgeGeometry`/`edgeVisibilityGraph`, `layout.ts`, `useGraphPositions`, `useGraphEdgeEmission`.
-**Progress (Session 177):** a read-only analysis produced a sequenced 9-item behavior-preserving plan;
-landed the 2 safest (private `inflate`/`inflateBox` → the shared `padBox`). Remaining, queued for a
-dedicated pass WITH visual verification: `junctorGroupId` + `junctorKindField` extraction, `Point`-type
-consolidation (`dragSplice`), unreachable `nodeSizeFor` fallback removal, a `nodeAbsoluteCenter` helper
-(touches the 220/72 visual fallbacks — verify), `lineIntersectsBox` cross-ref, mark `routeEdge` internal.
+**Progress (Session 177):** a read-only analysis produced a sequenced 9-item behavior-preserving plan.
+Landed: `inflate`/`inflateBox` → shared `padBox`; `junctorGroupId` helper (`graphCore`) deduping the
+`andGroupId ?? orGroupId ?? xorGroupId` lookup across the prune pass + router; `routeEdge` marked
+`@internal` (live path is `computeEdgeRoutes`). **Remaining, deferred to a dedicated pass WITH visual
+verification** (mostly marginal-value, multi-file, or visual): `junctorKindField` extraction in `TPEdge`
++ adopting `junctorGroupId` there; a `nodeAbsoluteCenter` helper (touches the 220/72 → NODE_WIDTH/
+NODE_MIN_HEIGHT visual fallbacks — render-verify); `Point`-type consolidation (`dragSplice`); the
+unreachable `nodeSizeFor` fallback (kept — it's defensive); `lineIntersectsBox` cross-ref.
 
 ### Security review
 Full pass (last refresh ~Session 98 + the M-Sec batch; see SECURITY.md). Cover: evidence URL-scheme

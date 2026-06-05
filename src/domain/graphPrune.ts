@@ -1,4 +1,4 @@
-import { edgesArray } from './graphCore';
+import { edgesArray, junctorGroupId } from './graphCore';
 import type { Assumption, Comment, Edge, Entity, EntityId, TPDocument } from './types';
 
 /**
@@ -51,13 +51,13 @@ export const removeEntityFromEdges = (doc: TPDocument, entityId: string): Record
 export const pruneSingletonJunctors = (edges: Record<string, Edge>): Record<string, Edge> => {
   const memberCount = new Map<string, number>();
   for (const edge of Object.values(edges)) {
-    const gid = edge.andGroupId ?? edge.orGroupId ?? edge.xorGroupId;
+    const gid = junctorGroupId(edge);
     if (gid) memberCount.set(gid, (memberCount.get(gid) ?? 0) + 1);
   }
   let changed = false;
   const next: Record<string, Edge> = {};
   for (const [id, edge] of Object.entries(edges)) {
-    const gid = edge.andGroupId ?? edge.orGroupId ?? edge.xorGroupId;
+    const gid = junctorGroupId(edge);
     if (gid && (memberCount.get(gid) ?? 0) < 2) {
       // Omit all three junctor fields (an edge carries at most one) rather than
       // setting `undefined` — exactOptionalPropertyTypes rejects that.
