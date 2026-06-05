@@ -38,7 +38,11 @@ export const useGraphEdgeEmission = (
   // precomputed path string from the map and stamps it into `data.route`.
   // Defaulting to `{}` keeps the existing two-argument call sites
   // working (tests that import this hook directly, etc.).
-  routes: EdgeRouteMap = {}
+  routes: EdgeRouteMap = {},
+  // Wave 3 — the back-edge id set, computed once (flow-aware, with positions) in
+  // `useGraphView`. Defaults to the layout-free id-based set for direct callers
+  // (tests). Drives the back-edge colour/dash via the stamped `data.isBackEdge`.
+  backEdgeIds?: ReadonlySet<string>
 ): TPEdge[] => {
   // Keyed on the structural doc fields this memo reads — `edges` (via
   // `edgesArray`), `assumptions` + `comments` (badge counts), `entities` +
@@ -95,8 +99,10 @@ export const useGraphEdgeEmission = (
     }
 
     const edges: TPEdge[] = [];
-    // Wave 3-0 — auto-detected loop-closers (+ manual tags) render as back-edges.
-    const backEdgeIds = effectiveBackEdgeIds(doc);
+    // Wave 3 — back-edge set (manual ∪ flow-aware auto-detected). Passed in from
+    // `useGraphView` (computed with positions); the layout-free id-based set is the
+    // fallback for direct callers (tests).
+    const backEdges = backEdgeIds ?? effectiveBackEdgeIds(doc);
     for (const b of buckets.values()) {
       const isAggregated = b.count > 1 || b.isSyntheticEndpoint;
       // Re-targeting (drag an endpoint to another node) only makes sense for a
@@ -143,7 +149,7 @@ export const useGraphEdgeEmission = (
         sourceTitle: visibleTitle(b.sourceId),
         targetTitle: visibleTitle(b.targetId),
         ...(b.count > 1 ? { aggregateCount: b.count } : {}),
-        ...(backEdgeIds.has(b.sample.id) ? { isBackEdge: true } : {}),
+        ...(backEdges.has(b.sample.id) ? { isBackEdge: true } : {}),
         ...(b.sample.isMutualExclusion ? { isMutex: true } : {}),
         ...(assumptionCount > 0 ? { assumptionCount } : {}),
       });
@@ -167,6 +173,7 @@ export const useGraphEdgeEmission = (
           ...(openCommentCount > 0 ? { openCommentCount } : {}),
           ...(route ? { route } : {}),
           ...(reconnectable ? { reconnectable: true } : {}),
+          ...(backEdges.has(b.sample.id) ? { isBackEdge: true } : {}),
         },
         ...(isJunctorEdge
           ? {}
@@ -187,5 +194,14 @@ export const useGraphEdgeEmission = (
     }
 
     return edges;
-  }, [doc.edges, doc.assumptions, doc.comments, doc.entities, doc.groups, projection, routes]);
+  }, [
+    doc.edges,
+    doc.assumptions,
+    doc.comments,
+    doc.entities,
+    doc.groups,
+    projection,
+    routes,
+    backEdgeIds,
+  ]);
 };

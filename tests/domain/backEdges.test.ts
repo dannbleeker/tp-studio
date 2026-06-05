@@ -55,6 +55,51 @@ describe('effectiveBackEdgeIds', () => {
   });
 });
 
+describe('effectiveBackEdgeIds — layout-aware (flow direction)', () => {
+  it('picks the against-flow edge (max flow-axis span) as the back-edge', () => {
+    // CS(bottom) → F → RC → OF(top) forward chain; OF → CS closes the loop downward.
+    // Dann's case: the downward closer must win, not an arbitrary id-canonical edge.
+    const doc = mkDoc(['CS', 'F', 'RC', 'OF'], {
+      e1: { sourceId: 'CS', targetId: 'F' },
+      e2: { sourceId: 'F', targetId: 'RC' },
+      e3: { sourceId: 'RC', targetId: 'OF' },
+      e4: { sourceId: 'OF', targetId: 'CS' },
+    });
+    const layout = {
+      axis: 'vertical' as const,
+      positions: {
+        CS: { x: 0, y: 600 },
+        F: { x: 0, y: 400 },
+        RC: { x: 0, y: 200 },
+        OF: { x: 0, y: 0 },
+      },
+    };
+    expect(effectiveBackEdgeIds(doc, layout)).toEqual(new Set(['e4']));
+  });
+
+  it('lets a manual tag still win over the flow-aware auto-pick', () => {
+    const doc = mkDoc(['A', 'B', 'C'], {
+      ab: { sourceId: 'A', targetId: 'B', isBackEdge: true },
+      bc: { sourceId: 'B', targetId: 'C' },
+      ca: { sourceId: 'C', targetId: 'A' },
+    });
+    const layout = {
+      axis: 'vertical' as const,
+      positions: { A: { x: 0, y: 0 }, B: { x: 0, y: 100 }, C: { x: 0, y: 200 } },
+    };
+    expect(effectiveBackEdgeIds(doc, layout)).toEqual(new Set(['ab']));
+  });
+
+  it('falls back to the id-based closer when an endpoint position is missing', () => {
+    const doc = mkDoc(['A', 'B'], {
+      fwd: { sourceId: 'A', targetId: 'B' },
+      back: { sourceId: 'B', targetId: 'A' },
+    });
+    const layout = { axis: 'vertical' as const, positions: { A: { x: 0, y: 0 } } };
+    expect(effectiveBackEdgeIds(doc, layout)).toEqual(new Set(['back']));
+  });
+});
+
 describe('cycleClosingEdgeId', () => {
   it('returns the edge from the last cycle entity back to the first', () => {
     const doc = mkDoc(['A', 'B'], {

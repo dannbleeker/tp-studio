@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — back-edge review fixes, round 2: flow-aware auto-detect (Dann #2)
+
+- **Auto-detection now picks the against-flow edge as the back-edge** — the cycle edge spanning the
+  most along the layout's flow axis (the chain-spanning closer, i.e. the downward one in a bottom-up
+  CRT), not the arbitrary id-canonical edge. So the feedback edge a user draws auto-detects as the
+  loop-closer (orange/dash + looped) without a manual tag, and the *forward* edges stay forward. Fixes
+  review point #2. Manual tags still win per cycle (round 1).
+- **Plumbing:** `effectiveBackEdgeIds(doc, layout?)` gains a positions+axis-aware path (`backEdges.ts`);
+  the set is computed ONCE in `useGraphView` (where positions live), content-stabilized so the
+  position-independent edge-emission memo still holds across drags, then handed to BOTH routing
+  (`useEdgeRoutes`) and emission (`useGraphEmission` → `useGraphEdgeEmission`, which stamps
+  `data.isBackEdge`). `TPEdge` reads the stamp instead of re-deriving — a per-edge component can't see
+  all node positions to make the against-flow pick. The id-based path stays as the no-layout default.
+- +3 tests (against-flow pick / manual-wins-with-layout / missing-position fallback); full suite green.
+- Still open: #3 full obstacle-aware swing (round 1's wider swing may already suffice — pending review).
+
 ## Session 177 (cont.) — back-edge review fixes, round 1 (Dann)
 
 - **Manual tag wins per cycle.** Auto-detection no longer marks a SECOND (often forward) edge of a

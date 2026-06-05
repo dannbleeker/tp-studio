@@ -71,6 +71,12 @@ export type TPEdgeData = {
    *  Omitted in Phase A — the hook returns an empty map so every edge
    *  falls through to the existing bezier behavior. */
   route?: EdgeRoute;
+  /** Wave 3 — true when this edge is a back-edge (manual tag ∪ the flow-aware
+   *  auto-detected loop-closer). Stamped centrally by `useGraphEdgeEmission` from
+   *  the set `useGraphView` computes with positions, so `TPEdge` reads it here
+   *  rather than re-deriving (a per-edge component can't see the whole graph's
+   *  positions to make the against-flow pick). Omitted (falsy) when not a back-edge. */
+  isBackEdge?: boolean;
   /** Number of OPEN (unresolved) top-level review comments anchored to
    *  this edge. Stamped by `useGraphEdgeEmission` from
    *  `openCommentCountsByAnchor(doc.comments)`; rendered as a clickable

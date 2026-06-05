@@ -7,7 +7,6 @@
 import { BaseEdge, type EdgeProps, getBezierPath, Position } from '@xyflow/react';
 import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { effectiveBackEdgeIds } from '@/domain/backEdges';
 import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/domain/constants';
 import { EDGE_PALETTES } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
@@ -160,6 +159,11 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // it into `data.assumptionCount`, read below as an O(1) prop.
   const assumptionCount = props.data?.assumptionCount ?? 0;
   const openCommentCount = props.data?.openCommentCount ?? 0;
+  // Wave 3 — the back-edge flag is stamped onto `data` by `useGraphEdgeEmission`
+  // (flow-aware, computed centrally with positions in `useGraphView`) rather than
+  // re-derived here: a per-edge component can't see all node positions to make the
+  // against-flow pick. Omitted (falsy) on `data` for a non-back-edge.
+  const isBackEdge = props.data?.isBackEdge === true;
   const edgeView = useDocumentStore(
     useShallow((s) => {
       const doc = currentDoc(s);
@@ -173,7 +177,6 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       const targetIsNote = edge ? doc.entities[edge.targetId]?.type === 'note' : false;
       return {
         edgeLabel: edge?.label,
-        isBackEdge: effectiveBackEdgeIds(doc).has(props.id),
         isMutex: edge?.isMutualExclusion === true,
         weight: edge?.weight,
         hasDescription: typeof desc === 'string' && desc.trim().length > 0,
@@ -196,7 +199,6 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   );
   const {
     edgeLabel,
-    isBackEdge,
     isMutex,
     weight,
     hasDescription,

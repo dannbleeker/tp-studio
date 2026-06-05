@@ -487,7 +487,8 @@ const decrossRoutes = (
 export const computeEdgeRoutes = (
   doc: TPDocument,
   projection: GraphProjection,
-  positions: GraphPositions
+  positions: GraphPositions,
+  backEdgeIds?: ReadonlySet<string>
 ): EdgeRouteMap => {
   // Feature #5 — the layout's main flow axis drives the "prefer flow
   // direction" side choice: vertical for the dagre trees, horizontal
@@ -544,9 +545,10 @@ export const computeEdgeRoutes = (
   // Track which remapped pairs we've already routed — one route per visible
   // src→tgt pair (aggregation collapses parallels upstream).
   const seenPairs = new Set<string>();
-  // Item 1 — back-edges (auto-detected loop-closers + manual tags) get the
-  // flow-direction side override in routeOneEdge below.
-  const backEdgeIds = effectiveBackEdgeIds(doc);
+  // Item 1/2 — back-edges (manual ∪ flow-aware auto-detected) get the loop route
+  // in routeOneEdge below. Passed in from `useGraphView` (flow-aware, with
+  // positions); the layout-free id-based set is the fallback for direct callers.
+  const backEdges = backEdgeIds ?? effectiveBackEdgeIds(doc);
   for (const edge of edgesArray(doc)) {
     const s = projection.remap(edge.sourceId);
     const t = projection.remap(edge.targetId);
@@ -566,7 +568,7 @@ export const computeEdgeRoutes = (
     const sBox = allBoxes.get(s);
     const tBox = allBoxes.get(t);
     if (!sBox || !tBox) continue;
-    const isBackEdge = backEdgeIds.has(edge.id);
+    const isBackEdge = backEdges.has(edge.id);
     const route = routeOneEdge(s, t, sBox, tBox, ctx, isBackEdge);
     out[edge.id] = route;
     routed.push({ edgeId: edge.id, s, t, sBox, tBox, route, isBackEdge });
@@ -585,7 +587,8 @@ export const computeEdgeRoutes = (
 export const useEdgeRoutes = (
   doc: TPDocument,
   projection: GraphProjection,
-  positions: GraphPositions
+  positions: GraphPositions,
+  backEdgeIds?: ReadonlySet<string>
 ): EdgeRouteMap => {
   const smartRouting = useDocumentStore((s) => s.edgeRouting === 'smart');
   // Keyed on the structural doc fields `computeEdgeRoutes` reads — `edges`
@@ -599,6 +602,15 @@ export const useEdgeRoutes = (
   // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via edges/entities/groups/diagramType; narrowed deliberately.
   return useMemo<EdgeRouteMap>(() => {
     if (!smartRouting) return {};
-    return computeEdgeRoutes(doc, projection, positions);
-  }, [smartRouting, doc.edges, doc.entities, doc.groups, doc.diagramType, projection, positions]);
+    return computeEdgeRoutes(doc, projection, positions, backEdgeIds);
+  }, [
+    smartRouting,
+    doc.edges,
+    doc.entities,
+    doc.groups,
+    doc.diagramType,
+    projection,
+    positions,
+    backEdgeIds,
+  ]);
 };

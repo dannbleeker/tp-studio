@@ -38,7 +38,10 @@ export const useGraphEmission = (
   // Phase A — empty by default; `useGraphView` threads the real map in
   // from `useEdgeRoutes`. Tests that mount `useGraphEmission` directly
   // continue to work with the existing positional argument list.
-  routes: EdgeRouteMap = {}
+  routes: EdgeRouteMap = {},
+  // Wave 3 — flow-aware back-edge set from `useGraphView`; threaded to edge
+  // emission for the back-edge colour/dash + `data.isBackEdge` stamp.
+  backEdgeIds?: ReadonlySet<string>
 ): GraphEmission => {
   const nodes = useGraphNodeEmission(
     doc,
@@ -49,6 +52,6 @@ export const useGraphEmission = (
     speculationOverlay,
     showActionEligibility
   );
-  const edges = useGraphEdgeEmission(doc, projection, routes);
+  const edges = useGraphEdgeEmission(doc, projection, routes, backEdgeIds);
   return { nodes, edges };
 };

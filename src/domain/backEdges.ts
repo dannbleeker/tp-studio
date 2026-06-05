@@ -13,8 +13,15 @@
  * the persisted flag for its exemption) are unaffected.
  */
 
+import type { Point } from './edgeGeometry';
+import type { Axis } from './edgeSides';
 import { findCycles, outgoingEdges } from './graph';
 import type { TPDocument } from './types';
+
+/** Node positions + flow axis — when supplied, auto-detection picks the cycle's
+ *  against-flow edge (the layout-backward one the user reads as the feedback edge)
+ *  instead of the arbitrary id-canonical closer. */
+type BackEdgeLayout = { positions: Record<string, Point>; axis: Axis };
 
 /**
  * The edge that closes a cycle — from the LAST entity in the canonicalized cycle
@@ -46,9 +53,45 @@ const cycleEdgeIds = (doc: TPDocument, cycle: readonly string[]): string[] => {
   return ids;
 };
 
+const flowPos = (layout: BackEdgeLayout, nodeId: string): number | null => {
+  const p = layout.positions[nodeId];
+  if (!p) return null;
+  return layout.axis === 'vertical' ? p.y : p.x;
+};
+
 /**
- * Auto-detected back-edges: each cycle's closing edge. Deterministic — `findCycles`
- * canonicalizes each cycle to start at its smallest entity id.
+ * The cycle's back-edge under a known layout: the edge spanning the most along the
+ * flow axis — the chain-closer that jumps across all the forward ranks, i.e. the
+ * one running *against* the layout flow (downward in a bottom-up CRT). That matches
+ * what a user reads as the feedback edge, where the id-canonical closer is arbitrary.
+ * Falls back to the id-based closer if any endpoint lacks a position.
+ */
+const flowAwareCycleBackEdge = (
+  doc: TPDocument,
+  cycle: readonly string[],
+  layout: BackEdgeLayout
+): string | undefined => {
+  let best: string | undefined;
+  let bestSpan = -1;
+  for (const id of cycleEdgeIds(doc, cycle)) {
+    const e = doc.edges[id];
+    if (!e) continue;
+    const s = flowPos(layout, e.sourceId);
+    const t = flowPos(layout, e.targetId);
+    if (s === null || t === null) return cycleClosingEdgeId(doc, cycle);
+    const span = Math.abs(t - s);
+    if (span > bestSpan) {
+      bestSpan = span;
+      best = id;
+    }
+  }
+  return best ?? cycleClosingEdgeId(doc, cycle);
+};
+
+/**
+ * Auto-detected back-edges: one per cycle. With a `layout` it's the against-flow
+ * (chain-spanning) edge; without one it's the deterministic id-canonical closer
+ * (`findCycles` starts each cycle at its smallest entity id).
  *
  * Manual tag wins: if the user has tagged ANY edge in a cycle, that edge IS the
  * designated back-edge for that loop — so we don't auto-mark a different (often
@@ -56,11 +99,17 @@ const cycleEdgeIds = (doc: TPDocument, cycle: readonly string[]): string[] => {
  * light up an unrelated forward edge of the loop (Dann's report: tagging the
  * `effect → cause` closer spuriously styled the forward `root cause → effect`).
  */
-const autoBackEdgeIds = (doc: TPDocument, manual: ReadonlySet<string>): Set<string> => {
+const autoBackEdgeIds = (
+  doc: TPDocument,
+  manual: ReadonlySet<string>,
+  layout?: BackEdgeLayout
+): Set<string> => {
   const out = new Set<string>();
   for (const cycle of findCycles(doc)) {
     if (cycleEdgeIds(doc, cycle).some((id) => manual.has(id))) continue;
-    const id = cycleClosingEdgeId(doc, cycle);
+    const id = layout
+      ? flowAwareCycleBackEdge(doc, cycle, layout)
+      : cycleClosingEdgeId(doc, cycle);
     if (id) out.add(id);
   }
   return out;
@@ -76,17 +125,22 @@ const cache = new WeakMap<TPDocument['edges'], Set<string>>();
  * cycle's closing edge renders (distinct colour + dash) and — Wave 3 — routes (looped)
  * as a back-edge without a manual tag.
  */
-export const effectiveBackEdgeIds = (doc: TPDocument): Set<string> => {
-  const memo = cache.get(doc.edges);
-  if (memo) return memo;
+export const effectiveBackEdgeIds = (doc: TPDocument, layout?: BackEdgeLayout): Set<string> => {
+  // Cache only the layout-free (id-based) result — it depends solely on `doc.edges`.
+  // The layout-aware result also depends on positions, so its caller (`useGraphView`)
+  // memoizes it (on edges + positions) instead.
+  if (!layout) {
+    const memo = cache.get(doc.edges);
+    if (memo) return memo;
+  }
   // Manual tags first — `autoBackEdgeIds` needs them to apply the manual-tag-wins
   // rule per cycle; they're then unioned in as always-included overrides.
   const manual = new Set<string>();
   for (const e of Object.values(doc.edges)) {
     if (e.isBackEdge === true) manual.add(e.id);
   }
-  const ids = autoBackEdgeIds(doc, manual);
+  const ids = autoBackEdgeIds(doc, manual, layout);
   for (const id of manual) ids.add(id);
-  cache.set(doc.edges, ids);
+  if (!layout) cache.set(doc.edges, ids);
   return ids;
 };
