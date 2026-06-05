@@ -126,13 +126,17 @@ describe('findSpliceTargetEdge', () => {
 });
 
 describe('findOverlappingEdgeIds', () => {
+  // `pt()` (a call, not an object literal) keeps the point arrays inline — biome
+  // force-breaks an array whose elements are bare object literals one-per-line.
+  const pt = (x: number, y: number) => ({ x, y });
+
   it('returns EVERY edge whose polyline passes within tolerance (a stack)', () => {
     // Two horizontal lines 10 apart; a click at y=5 is 5 from each → both hit.
     const hits = findOverlappingEdgeIds({
-      point: { x: 50, y: 5 },
+      point: pt(50, 5),
       candidates: [
-        { id: 'top', points: [{ x: 0, y: 0 }, { x: 100, y: 0 }] },
-        { id: 'bottom', points: [{ x: 0, y: 10 }, { x: 100, y: 10 }] },
+        { id: 'top', points: [pt(0, 0), pt(100, 0)] },
+        { id: 'bottom', points: [pt(0, 10), pt(100, 10)] },
       ],
       tolerance: 8,
     });
@@ -141,10 +145,10 @@ describe('findOverlappingEdgeIds', () => {
 
   it('excludes edges outside the tolerance', () => {
     const hits = findOverlappingEdgeIds({
-      point: { x: 50, y: 5 },
+      point: pt(50, 5),
       candidates: [
-        { id: 'near', points: [{ x: 0, y: 0 }, { x: 100, y: 0 }] },
-        { id: 'far', points: [{ x: 0, y: 200 }, { x: 100, y: 200 }] },
+        { id: 'near', points: [pt(0, 0), pt(100, 0)] },
+        { id: 'far', points: [pt(0, 200), pt(100, 200)] },
       ],
       tolerance: 8,
     });
@@ -154,10 +158,8 @@ describe('findOverlappingEdgeIds', () => {
   it('walks multi-segment polylines — any segment within tolerance counts once', () => {
     // L-shaped polyline; the click sits near its vertical second segment only.
     const hits = findOverlappingEdgeIds({
-      point: { x: 100, y: 50 },
-      candidates: [
-        { id: 'L', points: [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 100 }] },
-      ],
+      point: pt(100, 50),
+      candidates: [{ id: 'L', points: [pt(0, 0), pt(100, 0), pt(100, 100)] }],
       tolerance: 5,
     });
     expect(hits).toEqual(['L']);
@@ -165,8 +167,8 @@ describe('findOverlappingEdgeIds', () => {
 
   it('returns an empty array when nothing is within tolerance', () => {
     const hits = findOverlappingEdgeIds({
-      point: { x: 500, y: 500 },
-      candidates: [{ id: 'e', points: [{ x: 0, y: 0 }, { x: 10, y: 0 }] }],
+      point: pt(500, 500),
+      candidates: [{ id: 'e', points: [pt(0, 0), pt(10, 0)] }],
       tolerance: 8,
     });
     expect(hits).toEqual([]);
@@ -174,8 +176,8 @@ describe('findOverlappingEdgeIds', () => {
 
   it('ignores degenerate candidates with fewer than two points', () => {
     const hits = findOverlappingEdgeIds({
-      point: { x: 0, y: 0 },
-      candidates: [{ id: 'pt', points: [{ x: 0, y: 0 }] }],
+      point: pt(0, 0),
+      candidates: [{ id: 'pt', points: [pt(0, 0)] }],
       tolerance: 8,
     });
     expect(hits).toEqual([]);

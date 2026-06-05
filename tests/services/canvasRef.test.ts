@@ -82,6 +82,10 @@ describe('canvasRef', () => {
 });
 
 describe('getEdgeHitCandidates', () => {
+  // `pt()` (a call, not an object literal) keeps the coordinate arrays inline —
+  // biome force-breaks an array of bare object literals one-per-line.
+  const pt = (x: number, y: number) => ({ x, y });
+
   const tpNode = (id: string, x: number, y: number): AnyTPNode =>
     ({
       id,
@@ -96,19 +100,19 @@ describe('getEdgeHitCandidates', () => {
       id: 'e1',
       source: 'a',
       target: 'b',
-      data: { route: { d: '', waypoints: [{ x: 0, y: 0 }, { x: 50, y: 50 }] } },
+      data: { route: { d: '', waypoints: [pt(0, 0), pt(50, 50)] } },
     } as unknown as TPEdge;
     setCanvasInstance(fakeInstance([], [edge]));
     const cands = getEdgeHitCandidates();
     expect(cands).toHaveLength(1);
-    expect(cands[0]).toEqual({ id: 'e1', points: [{ x: 0, y: 0 }, { x: 50, y: 50 }] });
+    expect(cands[0]).toEqual({ id: 'e1', points: [pt(0, 0), pt(50, 50)] });
   });
 
   it('falls back to source/target node centres when there is no route', () => {
     const edge = { id: 'e1', source: 'a', target: 'b', data: {} } as TPEdge;
     setCanvasInstance(fakeInstance([tpNode('a', 0, 0), tpNode('b', 200, 100)], [edge]));
     // Centres: a = (0+50, 0+25) = (50, 25); b = (200+50, 100+25) = (250, 125).
-    expect(getEdgeHitCandidates()[0]?.points).toEqual([{ x: 50, y: 25 }, { x: 250, y: 125 }]);
+    expect(getEdgeHitCandidates()[0]?.points).toEqual([pt(50, 25), pt(250, 125)]);
   });
 
   it('skips an edge whose endpoint node is missing (no route, no centre)', () => {
