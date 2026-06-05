@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — back-edge loop: rail/bracket that clears entities (Dann #3)
+
+- **The back-edge loop is now a rail/bracket** — out from the source, a straight vertical run down a
+  side rail CLEAR of the chain, then back in to the target — replacing the single bulging cubic. A
+  single cubic is widest at its middle and pinches toward the ends, so an obstacle near the source /
+  target could still be crossed; a rail is equidistant from the chain along the whole span. It's
+  obstacle-aware: the reach widens so the rail clears every card the loop passes (plus a `CLEAR_MARGIN`
+  gap), and the side needing the smaller rail is chosen. Fixes review #3 ("crosses behind an entity /
+  needs more swing"). Replaces the `BACK_EDGE_LOOP_*` span-scaling with `backEdgeLoopPlan` /
+  `backEdgeLoopRoute` (`backEdgeLoop.ts`).
+- **Self-verified with a rendered screenshot** (route geometry → Pillow draw + a programmatic
+  crossing check): the loop crosses no middle card on even / tight / obstacle-near-the-end layouts. A
+  permanent clearance test in `useEdgeRoutes.test.tsx` pins it — the rail's vertical run sits outside a
+  spanned entity's box. Full suite green (2720).
+
 ## Session 177 (cont.) — back-edge review fixes, round 2: flow-aware auto-detect (Dann #2)
 
 - **Auto-detection now picks the against-flow edge as the back-edge** — the cycle edge spanning the

@@ -174,10 +174,36 @@ describe('computeEdgeRoutes — iteration', () => {
     };
     const projection = projectionOf(doc, [a.id, b.id]);
     const wp = computeEdgeRoutes(doc, projection, positions)[back.id]?.waypoints ?? [];
-    expect(wp).toHaveLength(3);
-    // The anchors share an x (vertically aligned); the apex sits well off it.
+    expect(wp).toHaveLength(4); // rail: source → out → down → in → target
+    // The anchors share an x (vertically aligned); the rail sits well off it.
     const anchorX = wp[0]?.x ?? 0;
     expect(Math.abs((wp[1]?.x ?? anchorX) - anchorX)).toBeGreaterThan(50);
+  });
+
+  it('rails a back-edge clear of the entity it spans (item 3)', () => {
+    // A (top) — B (middle) — C (bottom); the A→C back-edge must rail AROUND B,
+    // so the rail's vertical run sits entirely outside B's box.
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('C');
+    const state = useDocumentStore.getState();
+    state.connect(c.id, b.id);
+    state.connect(b.id, a.id);
+    const back = state.connect(a.id, c.id);
+    if (!back) throw new Error('back-edge not created');
+    state.updateEdge(back.id, { isBackEdge: true });
+    const doc = useDocumentStore.getState().doc;
+    const positions = {
+      [a.id]: { x: 0, y: 0 },
+      [b.id]: { x: 0, y: 150 },
+      [c.id]: { x: 0, y: 300 },
+    };
+    const projection = projectionOf(doc, [a.id, b.id, c.id]);
+    const wp = computeEdgeRoutes(doc, projection, positions)[back.id]?.waypoints ?? [];
+    // B's box spans x [0, NODE_WIDTH]; the rail (interior points 1 & 2) is clear of it.
+    const railX = wp[1]?.x ?? 0;
+    expect(wp[2]?.x).toBe(railX); // a straight vertical rail
+    expect(railX < 0 || railX > NODE_WIDTH).toBe(true);
   });
 
   it('routes a colinear 3-node case via interior waypoint(s)', () => {

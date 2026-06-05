@@ -9,30 +9,17 @@ CHANGELOG.
 
 ## Active backlog (Session 176 — Dann's review batch)
 
-### Canvas — back-edge routing (Z-2 / Z-5 / behind-entities) — Wave 3 (item 1 ✅; items 2–3 OPEN)
-Repro fixture: `e2e/fixtures/inventory-turns-crt.tps.json`, loaded via `__TP_TEST__.loadDoc(json)`.
-The feedback loop is `#4 ⇄ #6` (`q36o` #4→#6 forward; `DJJo` #6→#4 the loop-closer, auto-detected).
-- ✅ **Item 1 (Session 176) — flow-direction attach.** A back-edge now exits the source's TOP and
-  enters the target's BOTTOM, via the `forceSides` seam + `effectiveBackEdgeIds` threaded through the
-  router. NOTE: a visual no-op on the inventory CRT (its loop-closer already exits the top — `#6`
-  sits below `#4`); it fixes the direction when a back-edge's source sits above its target.
-- **Item 2 — loop around the source (in review with Dann).** A vertical back-edge bows out to one side
-  into a visible loop (`domain/backEdgeLoop.ts` + `routeOneEdge`). Review fixes landed: **#1
-  manual-tag-wins** detection (round 1); **#2 flow-aware auto-detect** (round 2) — the against-flow
-  (max |flow-axis Δ|, chain-spanning) cycle edge auto-detects as the back-edge, computed once in
-  `useGraphView` with positions + stamped to `TPEdge` via `data.isBackEdge`; **#3 wider swing**
-  (clearance 90 + span-scaled, partial). **Still open:** #3 full obstacle-aware swing — widen the bow
-  until it clears entities in its path (not a fixed reach), folding in the old Item 3 ("never cross
-  behind an entity"). **Gauge first:** round 1's wider swing may already settle #3 on a real CRT — check
-  before adding obstacle-awareness. Dials: `BACK_EDGE_LOOP_CLEARANCE` (90) / `BACK_EDGE_LOOP_SPAN_FACTOR`
-  (0.15) / `VERTICAL_REACH_FACTOR` (0.4).
-- **Item 3 (OPEN) — never cross behind an entity.** Ensure the RENDERED bezier (not just the A*
-  polyline) stays out from behind cards (folds in the parked edge-behind-card item). Estimate:
-  ~30–60 min; often falls out of item 2's waypoints.
-Delicate (the #5 history) → tests-first. Pointers: `useEdgeRoutes` (`routeOneEdge` now carries an
-`isBackEdge` flag + `backEdgeForcedSides`), `edgeSides` (`forceSides`), `backEdges.ts`, `TPEdge`.
-Fallback if no clean loop satisfies all constraints: lean on the shipped colour + dash, don't force
-an ugly detour (the #5 "I'd rather they cross" precedent).
+### Canvas — back-edge routing — Wave 3 (items 1–3 ✅; awaiting Dann's visual confirm)
+- ✅ **Item 1** — a back-edge exits the source's TOP, enters the target's BOTTOM (the `forceSides` seam).
+- ✅ **Item 2** — a vertical back-edge rails around one side into a visible loop (`backEdgeLoop.ts`
+  rail/bracket: out → straight side rail clear of the chain → in; obstacle-aware reach).
+- ✅ **Item 3** — the rail's reach widens so its vertical run clears every card the loop spans (+ a
+  `CLEAR_MARGIN` gap); pinned by a clearance test + self-verified by a render.
+- ✅ **Dann's review (Session 177):** #1 manual-tag-wins (a tagged loop no longer auto-marks its
+  forward edge); #2 flow-aware auto-detect (the against-flow / max-|flow-Δ| cycle edge auto-detects,
+  computed once in `useGraphView` with positions + stamped to `TPEdge` via `data.isBackEdge`); #3 the
+  rail clears entities. **Awaiting Dann's visual confirm** — if loops look stale, hard-reload (the PWA
+  may cache an old build). Dial: `CLEAR_MARGIN` (60) in `backEdgeLoop.ts`.
 
 ### Auto-detect back-edges (loop-closers) — ✅ SHIPPED Session 176 (Wave 3-0)
 A cycle's loop-closer auto-styles as a back-edge (colour + dash) without a manual tag, via pure
