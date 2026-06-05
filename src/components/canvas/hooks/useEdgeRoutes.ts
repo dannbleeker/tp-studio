@@ -159,7 +159,6 @@ const sideSelectionFor = (
 const backEdgeForcedSides = (axis: Axis): { source: Side; target: Side } | undefined =>
   axis === 'vertical' ? { source: 'top', target: 'bottom' } : undefined;
 
-
 /**
  * The per-layout routing context shared by every edge in one `computeEdgeRoutes`
  * pass: the cached visibility graph + the inflated obstacle arrays + the flow

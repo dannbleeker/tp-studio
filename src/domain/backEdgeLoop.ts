@@ -49,8 +49,7 @@ const reachForSide = (
   let reach = floor;
   for (const o of obstacles) {
     if (!spanOverlaps(o, top, bot)) continue;
-    const need =
-      side === 'left' ? midX - o.x + CLEAR_MARGIN : o.x + o.width - midX + CLEAR_MARGIN;
+    const need = side === 'left' ? midX - o.x + CLEAR_MARGIN : o.x + o.width - midX + CLEAR_MARGIN;
     if (need > reach) reach = need;
   }
   return reach;
