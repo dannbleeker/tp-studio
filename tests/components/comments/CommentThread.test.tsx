@@ -65,13 +65,7 @@ describe('CommentThread', () => {
   it('disables the anchor chip (and never jumps) when the anchor is missing', () => {
     const h = handlers();
     const { getByText } = render(
-      <CommentThread
-        top={comment()}
-        replies={[]}
-        anchorText="(deleted)"
-        anchorMissing
-        {...h}
-      />
+      <CommentThread top={comment()} replies={[]} anchorText="(deleted)" anchorMissing {...h} />
     );
     const btn = getByText('(deleted)').closest('button') as HTMLButtonElement;
     expect(btn.disabled).toBe(true);
