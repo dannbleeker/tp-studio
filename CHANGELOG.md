@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 — attended coverage recommendations (exporters + component harness)
+
+- **Lines 87.8% → 90.2%, statements 85.0% → 87.2%, functions 83.6% → 86.3%, branches 73.8% → 75.8%**
+  (+59 tests, test-only / behaviour-preserving; full suite green) — the deferred "attended" half of
+  the Session 176 coverage assessment, picked up when Dann said "do all your recommendations":
+  - **Heavy exporters** `pptxExport.ts` (~26%) + `pdfExport.ts` (~30%) — the full `exportPPTX` /
+    `exportToVectorPdf` pipelines, mocking the lib + capture boundaries (pptxgenjs, jspdf via
+    `loadJsPdf`, `html-to-image`, `svg2pdf.js`, the download). Every deck-slide branch + the
+    multi-page / appendix / header-footer / page-size / no-op paths. +15.
+  - **Comments** `CommentThread.tsx` (16%) + `CommentComposer.tsx` — direct render with spy callbacks:
+    reply, edit-in-place, delete, resolve/reopen, jump-to-anchor; the composer's whole-diagram toggle,
+    Cmd/Ctrl+Enter, and empty-body guard. +18.
+  - **Inspector sections** `StFacetsSection` (0%), `EntityLinksSection`, `ActionFields` — prop-driven
+    render (S&T facets, cross-doc link chips, TT action fields + eligibility callouts). +16.
+  - **Store-connected** `EvidenceList` + `GroupInspector` — real-store round-trip (add / edit / cycle /
+    validate / remove evidence; rename / recolor / preset / collapse / archive a group). +10.
+- **Re-pinned the CI coverage floor** (`coverage:pin`) to lines 88 / statements 85 / functions 84 / branches 73.
+- **Found while testing:** a latent `pdfExport` appendix-pagination bug (the first appendix page reuses
+  the diagram's last page instead of adding one) — logged in NEXT_STEPS for a follow-up. Remaining
+  coverage gaps left as a deliberate call: `CreationWizardPanel` (multi-step; has smoke tests), several
+  canvas overlays (`ContextMenu`, `CanvasNav`, `StFacetRow`), and DOM/keyboard hooks (`useDraggablePanel`,
+  `useArrowKeyNodeNav`).
+
 ## Session 176 (cont.) — test-coverage sweep (autonomous, 8 batches)
 
 - **Lines 86.5% → 87.8%, statements 83.7% → 85.0%, branches 72.7% → 73.8%, functions 83.1% → 83.6%**
