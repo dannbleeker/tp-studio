@@ -18,7 +18,6 @@
  * the smaller required reach is chosen.
  */
 
-import { bezierThroughWaypointsSided } from './edgeBezier';
 import type { Box, Point } from './edgeGeometry';
 
 export type LoopSide = 'left' | 'right';
@@ -26,9 +25,9 @@ export type LoopSide = 'left' | 'right';
 /** Visible gap the rail keeps past the cards it clears (and past the endpoints'
  *  own half-width). Dann's "go a bit further to the side" dial. */
 const CLEAR_MARGIN = 60;
-/** How far the rail extends past the top/bottom anchors, so the sweep into the
- *  source / target clears their near corners instead of grazing them. */
-const END_OVERSHOOT = 28;
+/** Rounded-corner radius as a fraction of the reach — bigger reads more organic /
+ *  less square. Clamped to half the loop's span so the two corners can't overlap. */
+const LOOP_CORNER_FACTOR = 0.7;
 
 const spanOverlaps = (box: Box, top: number, bot: number): boolean =>
   box.y < bot && box.y + box.height > top;
@@ -89,14 +88,20 @@ export const backEdgeLoopRoute = (
   reach: number
 ): { d: string; waypoints: Point[] } => {
   const dir = side === 'right' ? 1 : -1;
-  const railX = (sourceAnchor.x + targetAnchor.x) / 2 + dir * reach;
-  const top = Math.min(sourceAnchor.y, targetAnchor.y) - END_OVERSHOOT;
-  const bot = Math.max(sourceAnchor.y, targetAnchor.y) + END_OVERSHOOT;
-  // Rail corners ordered from the source end to the target end.
-  const sourceIsTop = sourceAnchor.y <= targetAnchor.y;
-  const railNearSource = { x: railX, y: sourceIsTop ? top : bot };
-  const railNearTarget = { x: railX, y: sourceIsTop ? bot : top };
-  const waypoints = [sourceAnchor, railNearSource, railNearTarget, targetAnchor];
-  const d = bezierThroughWaypointsSided(waypoints, 'top', 'bottom');
+  const { x: sx, y: sy } = sourceAnchor;
+  const { x: tx, y: ty } = targetAnchor;
+  const railX = (sx + tx) / 2 + dir * reach;
+  const dirY = ty >= sy ? 1 : -1; // rail runs toward the target end
+  const r = Math.min(Math.abs(reach) * LOOP_CORNER_FACTOR, Math.abs(ty - sy) / 2);
+  const p1y = sy + dirY * r; // rail point near the source (after the rounded corner)
+  const p2y = ty - dirY * r; // rail point near the target (before the rounded corner)
+  // Source exits 'top' (up) and eases into the rail; rail runs straight (clear of
+  // the chain); the bottom eases off the rail into the target 'bottom' (from below).
+  // Smooth (C1-ish) at both rail joins, so the loop reads round, not square.
+  const toRail = `C${sx},${sy - r} ${railX},${sy} ${railX},${p1y}`;
+  const rail = `L${railX},${p2y}`;
+  const toTarget = `C${railX},${ty} ${tx},${ty + r} ${tx},${ty}`;
+  const d = `M${sx},${sy} ${toRail} ${rail} ${toTarget}`;
+  const waypoints = [sourceAnchor, { x: railX, y: p1y }, { x: railX, y: p2y }, targetAnchor];
   return { d, waypoints };
 };

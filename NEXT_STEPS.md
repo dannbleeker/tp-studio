@@ -19,7 +19,8 @@ CHANGELOG.
   forward edge); #2 flow-aware auto-detect (the against-flow / max-|flow-Δ| cycle edge auto-detects,
   computed once in `useGraphView` with positions + stamped to `TPEdge` via `data.isBackEdge`); #3 the
   rail clears entities. **Awaiting Dann's visual confirm** — if loops look stale, hard-reload (the PWA
-  may cache an old build). Dial: `CLEAR_MARGIN` (60) in `backEdgeLoop.ts`.
+  may cache an old build). Dials in `backEdgeLoop.ts`: `CLEAR_MARGIN` (60, side gap) +
+  `LOOP_CORNER_FACTOR` (0.7, corner roundness — higher = more organic).
 
 ### Auto-detect back-edges (loop-closers) — ✅ SHIPPED Session 176 (Wave 3-0)
 A cycle's loop-closer auto-styles as a back-edge (colour + dash) without a manual tag, via pure

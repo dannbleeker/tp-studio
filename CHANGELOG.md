@@ -2,6 +2,15 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — back-edge loop: rounded corners (organic, not square — Dann)
+
+- **The rail loop now has rounded corners.** The source eases out into the rail and the rail eases
+  into the target via cubic corners (radius = `LOOP_CORNER_FACTOR` × reach, clamped to half the span),
+  so the loop reads as a smooth organic parenthesis instead of a square bracket — while the straight
+  middle still guarantees the obstacle clearance. `backEdgeLoopRoute` now builds the path directly
+  (dropped the `bezierThroughWaypointsSided` waypoint emitter). Self-verified clear by render; full
+  suite green.
+
 ## Session 177 (cont.) — back-edge loop: rail/bracket that clears entities (Dann #3)
 
 - **The back-edge loop is now a rail/bracket** — out from the source, a straight vertical run down a
