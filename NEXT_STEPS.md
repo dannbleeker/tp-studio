@@ -76,7 +76,6 @@ completeness arc — so we don't re-derive shipped work.
 
 ## Smaller still-open items (carried over)
 
-- **Manual a11y keyboard walkthrough (needs Dann's hands):** run the keyboard-only walkthrough against the checklist in `docs/`.
 - **Eager cross-doc link prune on doc *forget* (small follow-up):** Session 177 swept dangling mirror
   links on entity *delete* (`stripMirrorLinks`) and hides dead links at render. A doc that's
   permanently *forgotten* (not just closed) still leaves its inbound mirror links as muted "tab
