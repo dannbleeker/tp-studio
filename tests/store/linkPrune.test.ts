@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DocumentId, Entity, EntityId, EntityLink, TPDocument } from '@/domain/types';
-import { stripMirrorLinks } from '@/store/documentSlice/linkPrune';
+import { stripLinksToDoc, stripMirrorLinks } from '@/store/documentSlice/linkPrune';
 
 /**
  * Pure-helper tests for the cross-doc dangling-link sweep. When an entity that is
@@ -92,5 +92,28 @@ describe('stripMirrorLinks', () => {
     expect(docs[did('doc-b')]?.entities.b1?.links).toBeUndefined();
     expect(docs[did('doc-c')]?.entities.c1?.links).toBeUndefined();
     expect(changed).toHaveLength(2);
+  });
+});
+
+describe('stripLinksToDoc', () => {
+  it('removes every link pointing into the forgotten doc, dropping the empty field', () => {
+    const a = doc('doc-a', [entity('a1', [link('doc-b', 'b1')])]);
+    const { docs, changed } = stripLinksToDoc(mapOf(a), did('doc-b'));
+    expect(docs[did('doc-a')]?.entities.a1?.links).toBeUndefined();
+    expect(changed).toHaveLength(1);
+  });
+
+  it('keeps links that point into OTHER docs', () => {
+    const a = doc('doc-a', [entity('a1', [link('doc-b', 'b1'), link('doc-c', 'c1')])]);
+    const { docs } = stripLinksToDoc(mapOf(a), did('doc-b'));
+    expect(docs[did('doc-a')]?.entities.a1?.links).toEqual([link('doc-c', 'c1')]);
+  });
+
+  it('returns the same map reference and no changes when nothing points into the doc', () => {
+    const a = doc('doc-a', [entity('a1', [link('doc-c', 'c1')])]);
+    const input = mapOf(a);
+    const { docs, changed } = stripLinksToDoc(input, did('doc-b'));
+    expect(docs).toBe(input);
+    expect(changed).toHaveLength(0);
   });
 });

@@ -31,6 +31,7 @@ import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
 import { speculationDefaults } from '../uiSlice/speculationSlice';
 import { makeApplyDocChange, touch } from './docMutate';
+import { stripLinksToDoc } from './linkPrune';
 
 /**
  * Top-level document state: the `doc` field itself plus the actions that
@@ -481,6 +482,13 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       const { [id]: _closedHist, ...historyRest } = state.historyByDoc;
       flushPersist();
 
+      // Forgetting this doc (closeTab also removes it from storage) — sweep any
+      // cross-doc links pointing INTO it out of the other open tabs so they don't
+      // linger as dead "tab closed" chips. Persist whichever docs changed. A no-op
+      // (empty `docsRest`) for the last-tab case below.
+      const { docs: sweptDocs, changed: sweptLinkDocs } = stripLinksToDoc(docsRest, id);
+      for (const d of sweptLinkDocs) saveDocToLocalStorage(d);
+
       // Last tab closed → never zero tabs; replace with a fresh blank CRT.
       if (remaining.length === 0) {
         const fresh = createDocument('crt');
@@ -498,9 +506,12 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         return;
       }
 
-      // Closing a background tab → active tab untouched.
+      // Closing a background tab → active tab untouched (except a link sweep).
       if (id !== state.activeDocId) {
-        set({ docs: docsRest, tabOrder: remaining, historyByDoc: historyRest });
+        // Keep the active doc in lockstep with `docs` — it may itself have held a
+        // link into the just-forgotten tab, which the sweep above removed.
+        const liveActive = sweptDocs[state.activeDocId] ?? state.doc;
+        set({ doc: liveActive, docs: sweptDocs, tabOrder: remaining, historyByDoc: historyRest });
         persistTabsManifest({ activeDocId: state.activeDocId, tabOrder: remaining });
         removeDocFromStorage(id);
         return;
@@ -509,13 +520,13 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       // Closing the active tab → activate the right-hand neighbour (clamped
       // to the new last tab when the closed tab was rightmost).
       const nextActiveId = remaining[Math.min(idx, remaining.length - 1)];
-      const target = nextActiveId ? docsRest[nextActiveId] : undefined;
+      const target = nextActiveId ? sweptDocs[nextActiveId] : undefined;
       if (!nextActiveId || !target) return;
       const restored = historyRest[nextActiveId] ?? { past: [], future: [] };
       const { [nextActiveId]: _nowLive, ...historyParked } = historyRest;
       set({
         doc: target,
-        docs: docsRest,
+        docs: sweptDocs,
         activeDocId: nextActiveId,
         tabOrder: remaining,
         historyByDoc: historyParked,

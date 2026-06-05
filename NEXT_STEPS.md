@@ -29,17 +29,6 @@ it — a click always grabs whichever edge is on top.
   (gate it — only fan when the routed path ≈ a direct bezier); it's also mouse-only. Alternatives
   parked: always-fan (highest visual risk), click/Tab-cycle, widen-band.
 
-### Security review
-Full pass (last refresh ~Session 98 + the M-Sec batch; see SECURITY.md). Cover: evidence URL-scheme
-allowlist (XSS), import/persistence trust boundary (hostile JSON), localStorage + IndexedDB handling,
-File System Access API, PWA/service-worker, dependency CVEs, no secrets in the bundle, the share-link
-compression path.
-**Progress (Session 177):** full refresh — verified CLEAN across all 8 areas (DOMPurify/markdown,
-prototype-pollution defense, share-link decompression cap, evidence URL filtering, CSP, PWA scope, no
-secrets). Fixed **F1** (revision restore now validates through `importFromJSON`). Accepted no-action:
-dagre unmaintained (no exploit path under nanoid IDs — monitor `@dagrejs/dagre`) + deprecated `unescape()`
-in `htmlExport` (no security impact).
-
 ### Test-coverage — healthy (reference; no open target)
 ~91% lines / 77% branches. CI floor auto-ratchets via `node ./scripts/pin-coverage-thresholds.mjs`
 (run once happy; never run two `--coverage` processes at once — shared `coverage/.tmp`). All the
@@ -71,16 +60,6 @@ completeness arc — so we don't re-derive shipped work.
 - Scribd "Building a Current Reality Tree": https://www.scribd.com/document/380825791/BuildingCurrentRealityTree-pdf
 - Scribd "CRT" presentation: https://www.scribd.com/presentation/254672332/Crt
 - TOCICO 2013 Mabin "TP Basics" (PDF): https://cdn.ymaws.com/www.tocico.org/resource/collection/B6E9C93D-AFC5-407E-9D8B-AD70D0AEAFE0/Mabin,_Vicky_TOCICO_2013_TP_Basics_English_Final_plus_bio(FINAL2).pdf
-
----
-
-## Smaller still-open items (carried over)
-
-- **Eager cross-doc link prune on doc *forget* (small follow-up):** Session 177 swept dangling mirror
-  links on entity *delete* (`stripMirrorLinks`) and hides dead links at render. A doc that's
-  permanently *forgotten* (not just closed) still leaves its inbound mirror links as muted "tab
-  closed" chips in other docs — harmless and handled by the render guard, but an eager sweep in the
-  forget-doc action would scrub them from persisted data too.
 
 ---
 

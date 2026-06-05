@@ -118,6 +118,25 @@ describe('deleteEntity / deleteEntitiesAndEdges — sweep reciprocal mirror link
   });
 });
 
+describe('closeTab — sweep links into the forgotten doc', () => {
+  it('sweeps links pointing into a forgotten BACKGROUND tab', () => {
+    setupTwoTabs();
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    expect(s().doc.entities.a1?.links).toHaveLength(1);
+    s().closeTab(did('doc-b'));
+    expect(s().doc.entities.a1?.links).toBeUndefined();
+    expect(s().docs[did('doc-a')]?.entities.a1?.links).toBeUndefined();
+  });
+
+  it('sweeps links when the forgotten doc is the ACTIVE tab', () => {
+    setupTwoTabs();
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    s().closeTab(did('doc-a')); // close the active doc → doc-b becomes active
+    expect(s().activeDocId).toBe(did('doc-b'));
+    expect(s().doc.entities.b1?.links).toBeUndefined();
+  });
+});
+
 describe('"Link to entity in another tab…" command guards', () => {
   const linkCmd = documentCommands.find((c) => c.id === 'link-entity-cross-tab');
   if (!linkCmd) throw new Error('link-entity-cross-tab command not found');

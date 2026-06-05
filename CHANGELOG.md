@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — security review re-verified clean (backlog item closed)
+
+Re-verified the threat model after this session's new code (cross-doc links + `stripMirrorLinks` /
+`stripLinksToDoc`, `cloudType`, edge re-wire `reconnectEdge`, the edge-picker). CLEAN across all 8
+SECURITY.md areas — `pnpm audit --prod` reports no known vulnerabilities; the import/persistence trust
+boundary holds for every new optional field (`links` / `cloudType` / `coreProblem` strictly validated,
+malformed entries dropped, prototype-pollution keys rejected); cross-doc `links` are inert navigation
+metadata (resolve only against already-open tabs via no-op-guarded `switchTab` / `selectEntity` — not a
+read/write vector). No new findings. SECURITY.md's "Last reviewed" bumped to Session 177; the two
+standing accepted-no-action items remain its monitoring tail (dagre unmaintained → watch
+`@dagrejs/dagre`; deprecated `unescape()` in `htmlExport` — no security impact). Backlog item closed.
+
+## Session 177 (cont.) — eager link prune on doc-forget (U-Shape 2a hygiene, cont.)
+
+Closes the small follow-up to the dangling-link work. When a document is *forgotten* (`closeTab` also
+removes it from storage), its inbound cross-doc links in the OTHER open tabs are now swept too — not
+just hidden at render. `closeTab` calls the new `stripLinksToDoc(docs, closedDocId)` and persists the
+changed docs (no history; the active doc is kept in lockstep with `docs` in every close branch).
+`linkPrune.ts` refactored to a shared `pruneLinks(docs, keep, skipDocId?)` core that both
+`stripMirrorLinks` (keys on the deleted entity) and `stripLinksToDoc` (keys on the whole forgotten
+doc) wrap. Tests: `stripLinksToDoc` unit (3) + closeTab integration for a forgotten background tab
+and a forgotten active tab. tsc + knip clean; full suite green.
+
 ## Session 177 (cont.) — canvas edge-picker for overlapping edges (#1 canvas path)
 
 The on-canvas half of #1: clicking where several edges converge on one entity used to grab whichever

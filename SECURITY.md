@@ -7,12 +7,17 @@ business — and for future maintainers landing security-relevant
 changes (so the trade-offs already considered don't have to be
 re-derived from scratch).
 
-Last reviewed: Session 135 (2026-05-25) — refreshed against ~213 commits
-of new surface (Phase 1A/B/C state propagation + what-if speculation,
-action eligibility, importedFrom cross-doc, perf #26/#27 persistence
-changes, lazy command catalogue, PWA Check-for-updates, canvas a11y push).
-Findings + walked-clean list in section 6 below. See CHANGELOG for full
-history.
+Last reviewed: Session 177 (2026-06-05) — full refresh verified CLEAN across all 8 areas
+(import/persistence trust boundary, evidence URL-scheme allowlist, markdown/HTML sanitization,
+share-link decompression cap, localStorage/IndexedDB/File-System-Access, PWA scope + CSP, no secrets,
+dependency CVEs); fixed F1 (revision restore now validates through `importFromJSON`). Re-verified clean
+after the cross-doc links / `cloudType` / edge-rewire / edge-picker work — the import trust boundary
+holds for every new optional field (`links` / `cloudType` / `coreProblem` strictly validated, malformed
+entries dropped, prototype-pollution keys rejected), and cross-doc `links` are inert navigation metadata
+(resolve only against already-open tabs via no-op-guarded `switchTab`/`selectEntity`, not a read/write
+vector). `pnpm audit --prod`: no known vulnerabilities. Standing accepted-no-action: dagre unmaintained
+(monitor `@dagrejs/dagre`), deprecated `unescape()` in `htmlExport` (no security impact). Findings +
+walked-clean list in section 6 below. See CHANGELOG for full history.
 
 ---
 
