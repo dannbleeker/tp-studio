@@ -118,9 +118,7 @@ describe('CreationWizardPanel — empty-submit / skip-on-empty behaviour', () =>
     fillNext('The Goal');
     expect(s().creationWizard?.step).toBe(1);
     // Now submit empty text via Next button — should still advance
-    act(() =>
-      fireEvent.click(screen.getByText(/Next/).closest('button') as HTMLButtonElement)
-    );
+    act(() => fireEvent.click(screen.getByText(/Next/).closest('button') as HTMLButtonElement));
     expect(s().creationWizard?.step).toBe(2);
   });
 
@@ -128,7 +126,9 @@ describe('CreationWizardPanel — empty-submit / skip-on-empty behaviour', () =>
     openWizard('crt');
     render(<CreationWizardPanel />);
     // Advance to the last step (step index 2 of 3)
-    act(() => { for (let i = 0; i < 2; i++) s().advanceCreationWizardStep(); });
+    act(() => {
+      for (let i = 0; i < 2; i++) s().advanceCreationWizardStep();
+    });
     // CRT has 3 steps (index 0-2). Now click Skip step on the final step.
     act(() =>
       fireEvent.click(screen.getByText('Skip step').closest('button') as HTMLButtonElement)

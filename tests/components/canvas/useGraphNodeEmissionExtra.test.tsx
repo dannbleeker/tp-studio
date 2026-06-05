@@ -64,7 +64,7 @@ describe('useGraphNodeEmission — extra data fields', () => {
     const doc = makeDoc([a], []);
     // Attach a comment anchored to entity `a`
     doc.comments = {
-      'c1': {
+      c1: {
         id: 'c1',
         anchor: { kind: 'entity', entityId: a.id },
         body: 'Is this causal?',
@@ -82,7 +82,7 @@ describe('useGraphNodeEmission — extra data fields', () => {
     const a = makeEntity();
     const doc = makeDoc([a], []);
     doc.comments = {
-      'c1': {
+      c1: {
         id: 'c1',
         anchor: { kind: 'entity', entityId: a.id },
         body: 'Resolved feedback',
@@ -113,9 +113,13 @@ describe('useGraphNodeEmission — extra data fields', () => {
   it('stamps effectiveState from derivedStates', () => {
     const a = makeEntity(); // no manual state set
     const doc = makeDoc([a], []);
-    const nodes = emit(doc, { [a.id]: { x: 0, y: 0 } }, {
-      derivedStates: { [a.id]: 'true' as EntityState },
-    });
+    const nodes = emit(
+      doc,
+      { [a.id]: { x: 0, y: 0 } },
+      {
+        derivedStates: { [a.id]: 'true' as EntityState },
+      }
+    );
     const node = nodes.find((n) => n.id === a.id);
     expect((node?.data as { effectiveState?: EntityState }).effectiveState).toBe('true');
   });
@@ -123,9 +127,13 @@ describe('useGraphNodeEmission — extra data fields', () => {
   it('stamps speculated = true when the entity is in the speculationOverlay', () => {
     const a = makeEntity();
     const doc = makeDoc([a], []);
-    const nodes = emit(doc, { [a.id]: { x: 0, y: 0 } }, {
-      speculationOverlay: { [a.id]: 'false' as EntityState },
-    });
+    const nodes = emit(
+      doc,
+      { [a.id]: { x: 0, y: 0 } },
+      {
+        speculationOverlay: { [a.id]: 'false' as EntityState },
+      }
+    );
     const node = nodes.find((n) => n.id === a.id);
     expect((node?.data as { speculated?: boolean }).speculated).toBe(true);
     // effectiveState comes from the overlay

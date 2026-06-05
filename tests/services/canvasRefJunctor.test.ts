@@ -1,8 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import {
-  getHoveredJunctor,
-  setHoveredJunctor,
-} from '@/services/canvasRef';
+import { getHoveredJunctor, setHoveredJunctor } from '@/services/canvasRef';
 
 /**
  * Additional canvasRef tests covering all three junctor kinds (OR + XOR)
