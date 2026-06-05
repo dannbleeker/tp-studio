@@ -106,7 +106,7 @@ completeness arc — so we don't re-derive shipped work.
 - **Isolate `CanvasInner`'s whole-`doc` subscription** (`Canvas.tsx` `useDocumentStore((s) => currentDoc(s))`) — the projection host re-renders on every doc mutation; assessed Session 170 as "no sound narrowing exists," so it's a low-priority watch item, not clearly actionable.
 - **`TPNode` per-node whole-`currentDoc` read** — reads `currentDoc(s)` then extracts `diagramType`/`customEntityClasses`. Low-value narrowing; React Flow already memoizes. Low priority.
 - **Reactive vs proactive NBR mitigation** — optional `mitigation.kind` field on negative-branch handling. Policy-parked; re-open only if practitioners ask.
-- **Hardware/hands-dependent handoffs (need Dann):** manual a11y keyboard walkthrough (checklist in `docs/`) + Kindle device verification of the EPUB.
+- **Manual a11y keyboard walkthrough (needs Dann's hands):** run the keyboard-only walkthrough against the checklist in `docs/`.
 
 ---
 
