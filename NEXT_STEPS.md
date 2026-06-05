@@ -35,20 +35,12 @@ secrets). Fixed **F1** (revision restore now validates through `importFromJSON`)
 dagre unmaintained (no exploit path under nanoid IDs — monitor `@dagrejs/dagre`) + deprecated `unescape()`
 in `htmlExport` (no security impact).
 
-### Test-coverage review + raise coverage
-`vitest --coverage`, rank uncovered × value, add high-value tests (exporters, `.tsx` components, edge
-cases). Mirror the Session-172 coverage pass. Gotcha: never run two `--coverage` processes at once
-(shared `coverage/.tmp`); `pnpm coverage:pin` ratchets the CI floor after a batch lands.
-**Progress (Session 176, autonomous):** baselined 86.1% lines / 72.2% branches; covered the lowest
-PURE files — `exporters/text.ts`+`markup.ts` (22%→~90%) and the strict `persistenceValidators.ts`
-members (incl. prototype-pollution rejection). NEXT (bigger gaps, need render/store/mocks, so left
-for an attended pass): `useGraphNodeEmission` 38%, `useGraphProjection` 54%, `canvasRef` 30%,
-`selectionSlice` 74%, `CreationWizardPanel` 58%, and the heavy exporters `pdfExport` 30% /
-`pptxExport` 26% (jspdf/pptxgenjs mocks). Run `coverage:pin` to ratchet the floor once happy.
-**Progress (Session 177):** raised lines 90.5→90.9 / branches 76.2→76.7 via pure/store targets
-(`revisions` detailed-diff, edge attrs, selection-mode, flyingLogic exporter, delete-confirmation
-branches) + ratcheted the floor (functions 84→85, branches 73→74). Still open (heavy mocks): the
-emission/projection hooks, `canvasRef`, `CreationWizardPanel`, `pdfExport`/`pptxExport`.
+### Test-coverage — healthy (reference; no open target)
+~91% lines / 77% branches. CI floor auto-ratchets via `node ./scripts/pin-coverage-thresholds.mjs`
+(run once happy; never run two `--coverage` processes at once — shared `coverage/.tmp`). All the
+Session-176/177 named gaps are closed (pure exporters, `persistenceValidators`, the emission/projection
+hooks, `canvasRef`, `CreationWizardPanel`, `pdfExport`/`pptxExport`). Revisit only if a big new module
+lands undertested.
 
 ### Print functionality (Dann, Session 176)
 Add / expand print support — scope to confirm with Dann. Current state: a `PrintPreviewDialog`,

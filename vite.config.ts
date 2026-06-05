@@ -380,7 +380,7 @@ export default defineConfig(({ command, mode }) => ({
         lines: 89,
         statements: 86,
         functions: 85,
-        branches: 74,
+        branches: 75,
       },
     },
   },

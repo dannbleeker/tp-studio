@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — exporter pipeline coverage: pdfExport 93% / pptxExport 83% branches (#4 closed)
+
+The last open coverage target — the heavy jspdf / pptxgenjs exporters — built on the existing mock
+harnesses (no new machinery):
+- **pdfExport** 95→**99% lines, 100% functions, 78→93% branches**: dark-surface capture, the viewBox
+  and default dimension fallbacks, and the appendix page-break + "(untitled)" entity path.
+- **pptxExport** 97→**100% lines, 100% functions, 76→83% branches**: the **Likely Core Driver** slide
+  (CRT root cause reaching ≥1 UDE — previously untested), the untitled-diagram cover, and the
+  single-chunk "Reasoning" title.
+
+The remaining uncovered branches are unreachable-defensive (the EC `?? '—'` fallbacks sit behind a
+`wants/needs length === 2` guard; a couple of DOMParser null-root guards). Floor ratcheted branches
+74→75. With the emission/projection hooks, `canvasRef`, and `CreationWizardPanel` covered last pass,
+the coverage backlog item is closed (~91% lines / 77% branches overall).
+
 ## Session 177 (cont.) — rendering refactor pass complete (#2 closed)
 
 The last safe extractions from the 9-item plan — behaviour-preserving, with the visual fallbacks

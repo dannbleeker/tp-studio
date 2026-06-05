@@ -191,4 +191,44 @@ describe('exportPPTX — deck pipeline', () => {
 
     expect(allText()).toContain('No edges drawn yet');
   });
+
+  it('shows the untitled-diagram cover when the doc has no title', async () => {
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+    doc.title = '';
+
+    await exportPPTX(doc, NODES, 'auto');
+
+    expect(allText()).toContain('Untitled diagram');
+  });
+
+  it('adds a Core Driver slide for a CRT whose root cause reaches UDEs', async () => {
+    // A structural leaf (no incoming) of an effect feeding two UDEs is the
+    // Core Driver — exercises the CRT-only `findCoreDrivers().length > 0` slide
+    // and the plural "UDEs" branch.
+    const root = makeEntity({ title: 'Bottleneck' });
+    const ude1 = makeEntity({ title: 'UDE one', type: 'ude' });
+    const ude2 = makeEntity({ title: 'UDE two', type: 'ude' });
+    const doc = makeDoc(
+      [root, ude1, ude2],
+      [makeEdge(root.id, ude1.id), makeEdge(root.id, ude2.id)]
+    );
+
+    await exportPPTX(doc, NODES, 'auto');
+
+    expect(allText()).toContain('Likely Core Driver');
+    expect(allText()).toContain('reaches 2 UDEs');
+  });
+
+  it('titles the reasoning slide "Reasoning" when it fits a single chunk', async () => {
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const c = makeEntity({ title: 'C' });
+    const doc = makeDoc([a, b, c], [makeEdge(a.id, b.id), makeEdge(b.id, c.id)]);
+
+    await exportPPTX(doc, NODES, 'auto');
+
+    const text = allText();
+    expect(text).toContain('Reasoning');
+    expect(text).not.toContain('Reasoning (');
+  });
 });

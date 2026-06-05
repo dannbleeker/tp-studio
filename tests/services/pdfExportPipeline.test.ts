@@ -173,4 +173,57 @@ describe('exportToVectorPdf — full pipeline', () => {
 
     expect(ok).toBe(false);
   });
+
+  it('uses the dark surface colour when the document is in dark mode', async () => {
+    // captureCanvasSvg reads `documentElement.classList.contains('dark')` to
+    // pick SURFACE_DARK vs SURFACE_LIGHT — exercise the dark branch.
+    document.documentElement.classList.add('dark');
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+    try {
+      const ok = await exportToVectorPdf(doc, nodes);
+      expect(ok).toBe(true);
+      expect(firstPdf().pages).toBe(1);
+    } finally {
+      document.documentElement.classList.remove('dark');
+    }
+  });
+
+  it('falls back to the viewBox when the SVG has no width/height attributes', async () => {
+    mockToSvg.mockResolvedValueOnce(
+      `data:image/svg+xml;charset=utf-8,<svg xmlns="${SVG_NS}" viewBox="0 0 800 600"></svg>`
+    );
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+
+    const ok = await exportToVectorPdf(doc, nodes);
+
+    expect(ok).toBe(true);
+    expect(firstPdf().pages).toBe(1);
+  });
+
+  it('falls back to default dimensions when the SVG carries neither size nor viewBox', async () => {
+    mockToSvg.mockResolvedValueOnce(
+      `data:image/svg+xml;charset=utf-8,<svg xmlns="${SVG_NS}"></svg>`
+    );
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+
+    const ok = await exportToVectorPdf(doc, nodes);
+
+    expect(ok).toBe(true);
+    expect(firstPdf().pages).toBe(1);
+  });
+
+  it('breaks the appendix across pages and labels an untitled entity', async () => {
+    // Many described entities force the in-loop page break; a blank title
+    // exercises the "(untitled)" fallback in the appendix header line.
+    const entities = Array.from({ length: 40 }, (_, i) =>
+      makeEntity({ title: i === 0 ? '' : `E${i}`, description: 'x'.repeat(400) })
+    );
+    const doc = makeDoc(entities, []);
+
+    const ok = await exportToVectorPdf(doc, nodes, { includeAppendix: true });
+
+    expect(ok).toBe(true);
+    expect(firstPdf().pages).toBeGreaterThan(2);
+    expect(firstPdf().texts.some((t) => t.includes('(untitled)'))).toBe(true);
+  });
 });
