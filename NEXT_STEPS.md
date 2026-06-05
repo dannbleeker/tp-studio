@@ -93,7 +93,6 @@ completeness arc — so we don't re-derive shipped work.
 
 ## Smaller still-open items (carried over)
 
-- **Reactive vs proactive NBR mitigation** — optional `mitigation.kind` field on negative-branch handling. Policy-parked; re-open only if practitioners ask.
 - **Manual a11y keyboard walkthrough (needs Dann's hands):** run the keyboard-only walkthrough against the checklist in `docs/`.
 
 ---
@@ -143,6 +142,9 @@ Items explicitly dropped, in addition to the brief's own out-of-scope list:
   this "FL-EX8" line refers to the *original* cancelled design.
 - **FL-IN5 tabs per element type**, **FL-AN4 styled text in titles** — won't build (sectioned inspector +
   plain titles by design).
+- **Reactive vs proactive NBR mitigation** — an optional `mitigation.kind` (`'reactive'` / `'proactive'`)
+  label on negative-branch mitigation injections. Closed (Dann, Session 177): speculative, label-only
+  (nothing would key off it), no practitioner demand. Re-open if a real workshop needs to tag the kind.
 
 ---
 
