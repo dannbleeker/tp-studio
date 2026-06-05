@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand';
 import { newRevisionId } from '@/domain/ids';
-import { removeDocFromStorage } from '@/domain/persistence';
+import { importFromJSON, removeDocFromStorage } from '@/domain/persistence';
 import type { Revision } from '@/domain/revisions';
 import type { DocumentId, TPDocument } from '@/domain/types';
 import { readJSON, STORAGE_KEYS, writeJSON } from '@/services/storage/storage';
@@ -207,6 +207,16 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
       const list = byDoc[docId] ?? [];
       const target = list.find((r) => r.id === revisionId);
       if (!target) return;
+      // F1 (security + robustness) — pass the snapshot through the same import
+      // boundary every other load path uses, so a tampered `revisions:v1`
+      // localStorage entry can't bypass the schema guards (and a stale-schema
+      // revision gets migrated). Abort the restore (no swap) if it won't validate.
+      let restored: TPDocument;
+      try {
+        restored = importFromJSON(JSON.stringify(target.doc));
+      } catch {
+        return;
+      }
       // Safety net: capture the current doc first so the user can undo via
       // the panel. Label references the revision being restored to so the
       // history reads as a clear pair of events.
@@ -236,7 +246,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
       // but we already captured the safety snapshot — set the suppression
       // flag so docMetaSlice skips its hook for this one swap.
       suppressNextAutoSnapshot = true;
-      get().setDocument(cloneDoc(target.doc));
+      get().setDocument(restored);
       set({ revisions: nextList });
     },
 
