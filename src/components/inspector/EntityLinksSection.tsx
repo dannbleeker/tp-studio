@@ -25,10 +25,20 @@ export function EntityLinksSection({
   onUnlink: (link: NonNullable<Entity['links']>[number]) => void;
 }) {
   if (!entity.links || entity.links.length === 0) return null;
+  // A link whose target doc is OPEN but whose entity is gone was DELETED — drop
+  // it (rendering it as "tab closed" would mislead). A link whose target doc is
+  // merely CLOSED stays as a muted, unreachable chip (reopening its tab revives
+  // it). The store prunes most of these eagerly on delete; this also covers the
+  // case where the source doc's own tab was closed when the target was removed.
+  const visibleLinks = entity.links.filter((link) => {
+    const targetDoc = docs[link.docId];
+    return !targetDoc || Boolean(targetDoc.entities[link.entityId]);
+  });
+  if (visibleLinks.length === 0) return null;
   return (
     <Field label="Linked to" as="group">
       <div className="flex flex-col gap-1.5">
-        {entity.links.map((link) => {
+        {visibleLinks.map((link) => {
           const targetDoc = docs[link.docId];
           const targetEntity = targetDoc?.entities[link.entityId];
           const reachable = Boolean(targetDoc && targetEntity);

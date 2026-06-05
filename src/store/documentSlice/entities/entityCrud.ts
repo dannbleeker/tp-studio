@@ -19,9 +19,11 @@ import {
   pruneSingletonJunctors,
   removeEntityFromEdges,
 } from '@/domain/graph';
+import { saveDocToLocalStorage } from '@/domain/persistence';
 import type { DocumentId, Entity, EntityState, EntityType, Patch } from '@/domain/types';
 import { currentDoc } from '../../selectors';
 import { entityPatch, scrubFromGroups, touch } from '../docMutate';
+import { stripMirrorLinks } from '../linkPrune';
 import type { EntityFactoryDeps } from './shared';
 
 export type EntityCrudActions = {
@@ -52,6 +54,19 @@ export function createEntityCrudActions({
   set,
   applyDocChange,
 }: EntityFactoryDeps): EntityCrudActions {
+  // After deleting entities from the active doc, sweep the reciprocal cross-doc
+  // links those entities had out of the OTHER open tabs (see `stripMirrorLinks`).
+  // No-op unless a mirror actually matched; persists exactly the docs that
+  // changed. Links are navigation metadata, so this rides OUTSIDE the delete's
+  // history entry and never touches the active doc — same as `unlinkEntity`.
+  const sweepMirrorLinks = (deletedIds: ReadonlySet<string>): void => {
+    const { docs, activeDocId } = get();
+    const result = stripMirrorLinks(docs, activeDocId, deletedIds);
+    if (result.changed.length === 0) return;
+    set({ docs: result.docs });
+    for (const d of result.changed) saveDocToLocalStorage(d);
+  };
+
   return {
     addEntity: ({ type, title, startEditing }) => {
       const annotationNumber = currentDoc(get()).nextAnnotationNumber;
@@ -115,6 +130,9 @@ export function createEntityCrudActions({
     },
 
     deleteEntity: (id) => {
+      // Cheap guard — almost no entity carries cross-doc links; capture before
+      // the delete removes it so we can sweep its reciprocal mirrors after.
+      const hadLinks = Boolean(currentDoc(get()).entities[id]?.links?.length);
       applyDocChange((prev) => {
         if (!prev.entities[id]) return prev;
         const { [id]: _removed, ...rest } = prev.entities;
@@ -138,6 +156,7 @@ export function createEntityCrudActions({
         });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });
+      if (hadLinks) sweepMirrorLinks(new Set([id]));
     },
 
     toggleEntityCollapsed: (id) => {
@@ -216,6 +235,8 @@ export function createEntityCrudActions({
     // Assumption ids are scrubbed by `removeEntityFromEdges`.
     deleteEntitiesAndEdges: (entityIds, edgeIds) => {
       if (entityIds.length === 0 && edgeIds.length === 0) return;
+      const before = currentDoc(get());
+      const hadLinks = entityIds.some((id) => before.entities[id]?.links?.length);
       applyDocChange((prev) => {
         let edges = prev.edges;
         const entities = { ...prev.entities };
@@ -247,6 +268,7 @@ export function createEntityCrudActions({
         });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });
+      if (hadLinks) sweepMirrorLinks(new Set(entityIds));
     },
 
     setEntityStates: (entries) => {

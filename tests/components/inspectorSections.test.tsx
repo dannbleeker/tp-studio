@@ -128,6 +128,24 @@ describe('EntityLinksSection', () => {
     expect(onNavigate).not.toHaveBeenCalled();
   });
 
+  it('hides a dead link when the target tab is open but the entity was deleted', () => {
+    const { targetDoc, link } = buildTarget();
+    // Target doc OPEN but its entity is gone (deleted) — the link is dead and
+    // must be dropped, not shown as a misleading "tab closed" chip.
+    const emptied = { ...targetDoc, entities: {} };
+    const { container, queryByText } = render(
+      <EntityLinksSection
+        entity={makeEntity({ links: [link] })}
+        docs={{ [linkedDocId]: emptied }}
+        locked={false}
+        onNavigate={vi.fn()}
+        onUnlink={vi.fn()}
+      />
+    );
+    expect(queryByText(/tab closed/)).toBeNull();
+    expect(container.firstChild).toBeNull();
+  });
+
   it('removes a link via the × button, and hides it when locked', () => {
     const { targetDoc, link } = buildTarget();
     const onUnlink = vi.fn();

@@ -93,6 +93,31 @@ describe('unlinkEntity — reciprocal removal', () => {
   });
 });
 
+describe('deleteEntity / deleteEntitiesAndEdges — sweep reciprocal mirror links', () => {
+  it('removes the mirror from the other tab when a linked entity is deleted', () => {
+    setupTwoTabs();
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    expect(s().docs[did('doc-b')]?.entities.b1?.links).toHaveLength(1);
+    s().deleteEntity('a1');
+    expect(s().docs[did('doc-b')]?.entities.b1?.links).toBeUndefined();
+  });
+
+  it('bulk delete sweeps mirror links too', () => {
+    setupTwoTabs();
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    s().deleteEntitiesAndEdges(['a1'], []);
+    expect(s().docs[did('doc-b')]?.entities.b1?.links).toBeUndefined();
+  });
+
+  it('sweeps in the reverse direction (delete the entity in the target tab)', () => {
+    setupTwoTabs();
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    s().switchTab(did('doc-b'));
+    s().deleteEntity('b1');
+    expect(s().docs[did('doc-a')]?.entities.a1?.links).toBeUndefined();
+  });
+});
+
 describe('"Link to entity in another tab…" command guards', () => {
   const linkCmd = documentCommands.find((c) => c.id === 'link-entity-cross-tab');
   if (!linkCmd) throw new Error('link-entity-cross-tab command not found');

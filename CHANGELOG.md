@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — dangling cross-doc link prune (U-Shape 2a hygiene)
+
+Cross-tab entity links (Phase 2a) are reciprocal, but deleting a linked entity left the OTHER
+entity's mirror link behind as a tombstone — it rendered as a misleading "tab closed" chip and rode
+along in exports. Two complementary fixes:
+
+- **Eager sweep on delete.** `deleteEntity` / `deleteEntitiesAndEdges` now call the new pure
+  `stripMirrorLinks(docs, fromDocId, deletedIds)` to drop the reciprocal mirror from every OTHER open
+  tab. A cheap link-presence guard makes it a no-op for the (almost all) entities that carry no
+  links; no history entry, never touches the active doc — mirrors `unlinkEntity`'s cross-doc write.
+- **Lazy render guard.** `EntityLinksSection` now distinguishes a DELETED target (target tab open,
+  entity gone → hide the dead link) from a merely-CLOSED tab (unreachable muted chip, reopen to
+  revive). Covers the case where the source doc's tab was closed when the target was deleted, so the
+  eager sweep couldn't reach it.
+
+Tests: `stripMirrorLinks` unit (6), delete-sweep store integration incl. the reverse direction (3),
+and the dead-link-hidden render case. Full suite 2797 green; tsc + knip clean; 91.2% lines / 77.2%
+branches. (The U-Shape roadmap itself — cloud-type tag + cross-doc links + guided helpers — was
+already fully shipped in Sessions 154–156; this closes the one remaining hygiene gap.)
+
 ## Session 177 (cont.) — exporter pipeline coverage: pdfExport 93% / pptxExport 83% branches (#4 closed)
 
 The last open coverage target — the heavy jspdf / pptxgenjs exporters — built on the existing mock
