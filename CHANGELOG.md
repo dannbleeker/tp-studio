@@ -2,6 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — coverage raise (heavy-mock targets) + bundle #8 closed
+
+- **Coverage raise.** +24 tests on the harder targets (a sub-agent drafted them; I fixed the
+  branded-id casts + verified): `canvasRef` OR/XOR/overwrite/clear, the `useGraphProjection`
+  hoist-filter path, `useGraphNodeEmission` data fields (openCommentCount, hiddenDescendantCount,
+  effectiveState, speculated, diffStatus), and `CreationWizardPanel` branches (don't-show-again,
+  Goal-Tree step 4, minimise/close, skip-on-empty). lines 90.9→91.0, branches 76.7→76.9; floor
+  ratcheted (lines 88→89, statements 85→86).
+- **Bundle #8 actionEligibility closed** — can't gate behind `diagramType === 'tt'`: `statePropagation`
+  runs for every diagram via `usePropagatedStates` (`useGraphView`), and `actionEligibility` is eager
+  via `EntityInspector`. The bundle-size backlog is now fully cleared.
+
 ## Session 177 (cont.) — rendering dedup: junctorGroupId helper + routeEdge @internal
 
 More of the rendering-refactor plan (the safe, test-covered extractions; the visual + bigger-touch

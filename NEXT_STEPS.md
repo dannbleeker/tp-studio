@@ -108,13 +108,12 @@ pass:** unlike the dead-code / perf / type batches (provably behaviour-preservin
 `React.lazy` + Suspense + prefetch changes that add **user-visible loading states**, so they want
 Dann's review. Heavy export libs (`html-to-image`, `jspdf`, `svg2pdf`, `pptxgenjs`) + ExportPickerDialog
 + pattern/template libraries + HelpDialog + CommandPalette are **already correctly lazy** — no action.
-Only **#8 actionEligibility** is left. (Shipped Session 177: EC chrome + wizard #2/#3/#7 lazy-loaded;
-shareLink #6 dynamic-imported. Closed: TopBar #4 — the shortcut registry is needed eagerly by
-`SelectionToolbar`, so there's nothing to split out.)
+All actionable items are now shipped or closed (Session 177): EC chrome + wizard #2/#3/#7 lazy-loaded;
+shareLink #6 dynamic-imported. Closed as can't-split — the modules are needed EAGERLY by core shell
+components: TopBar #4 (`@/domain/shortcuts` via `SelectionToolbar`) and #8 actionEligibility
+(`statePropagation` runs for EVERY diagram via `usePropagatedStates` in `useGraphView`; `actionEligibility`
+is eager via `EntityInspector` too).
 
-- **#8 actionEligibility eager for a TT-only badge** *(Medium · M · ~2–3 KB)* — gate the `statePropagation`
-  + `actionEligibility` import behind `diagramType === 'tt'`. Low-confidence (`statePropagation` is also
-  used by `usePropagatedStates`).
 - ~~#1 Gate validators behind inspector `open` / #5 Lazy-load Inspector~~ — ❌ discarded (Dann, Session 172):
   `validate()`-regression risk for a modest win.
 
