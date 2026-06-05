@@ -2,13 +2,18 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 177 (cont.) — back-edge loop: rounded corners (organic, not square — Dann)
+## Session 177 (cont.) — back-edge loop: rounded corners, clear of the cards (Dann)
 
-- **The rail loop now has rounded corners.** The source eases out into the rail and the rail eases
-  into the target via cubic corners (radius = `LOOP_CORNER_FACTOR` × reach, clamped to half the span),
-  so the loop reads as a smooth organic parenthesis instead of a square bracket — while the straight
-  middle still guarantees the obstacle clearance. `backEdgeLoopRoute` now builds the path directly
-  (dropped the `bezierThroughWaypointsSided` waypoint emitter). Self-verified clear by render; full
+- **The rail loop is rounded AND no longer corners against the entities.** Each rail END is
+  pulled a fixed clearance (`LOOP_END_CLEAR`, 84px) OFF the card it meets — up off the source's
+  top, down off the target's bottom, derived from the fixed back-edge exit convention rather than
+  the relative position. So the loop turns onto the rail well clear of the card — a rounded dome
+  above the source, a rounded bowl below the target — instead of bending right at the card edge,
+  while the straight middle still guarantees the obstacle clearance. Short tangent handles keep the
+  turn UP near the rail end, not back down at the card's own level (the bug that made the earlier
+  corner hug the entity). Handles both the WRAP loop (source above target — the reported case) and
+  the COMPACT loop (source below target; clearance clamped to keep a straight rail). Self-verified
+  by render: corners sit 84px off the cards, the rail 60px off a spanned card, no crossings. Full
   suite green.
 
 ## Session 177 (cont.) — back-edge loop: rail/bracket that clears entities (Dann #3)

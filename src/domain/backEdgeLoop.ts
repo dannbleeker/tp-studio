@@ -25,9 +25,19 @@ export type LoopSide = 'left' | 'right';
 /** Visible gap the rail keeps past the cards it clears (and past the endpoints'
  *  own half-width). Dann's "go a bit further to the side" dial. */
 const CLEAR_MARGIN = 60;
-/** Rounded-corner radius as a fraction of the reach — bigger reads more organic /
- *  less square. Clamped to half the loop's span so the two corners can't overlap. */
-const LOOP_CORNER_FACTOR = 0.7;
+/** How far each rail END is pulled OFF the card it meets — up off the source's top,
+ *  down off the target's bottom — so the loop turns onto the rail well clear of the
+ *  entity instead of cornering against the card edge. Dann's "don't corner so close
+ *  to the entities" dial. */
+const LOOP_END_CLEAR = 84;
+/** In the COMPACT case (the whole loop fits in the gap between the cards), cap the
+ *  end-clearance at this fraction of the gap so the two rail ends can't cross and
+ *  reverse the rail. < 0.5 always leaves a straight rail between them. */
+const LOOP_END_CLEAR_MAX_FRACTION = 0.42;
+/** Tangent-handle length as a fraction of the end-clearance. Short enough that the
+ *  curve turns onto the rail UP near the rail end (clear of the card), not back down
+ *  at the card's own level — the bug that made the old corner hug the entity. */
+const LOOP_TANGENT_FRACTION = 0.55;
 
 const spanOverlaps = (box: Box, top: number, bot: number): boolean =>
   box.y < bot && box.y + box.height > top;
@@ -76,10 +86,19 @@ export const backEdgeLoopPlan = (
 };
 
 /**
- * Build the bowed back-edge path: source → out to the rail → straight down the
- * clear rail → in to the target. The rail overshoots the anchors by
- * {@link END_OVERSHOOT} so the in/out sweeps clear the source / target corners.
- * Returns the SVG `d` plus the 4-point polyline for crossing / hit-testing.
+ * Build the bowed back-edge path: source → out to the rail → straight along the
+ * clear rail → in to the target, with rounded joins so it reads organic.
+ *
+ * The rail's two ends are pulled a clear margin OFF the cards they meet — up off
+ * the source's TOP, down off the target's BOTTOM (the fixed back-edge exit
+ * convention, NOT the relative position). So the loop always turns onto the rail
+ * well clear of the entity rather than cornering against the card edge — whether
+ * the loop sits compactly in the gap between the cards (source below target) or
+ * wraps the long way around (source above target). The short tangent handles keep
+ * the turn UP near the rail end, not back down at the card's own level.
+ *
+ * Returns the SVG `d` plus the 4-point polyline (source, two rail ends, target)
+ * for crossing / hit-testing.
  */
 export const backEdgeLoopRoute = (
   sourceAnchor: Point,
@@ -91,17 +110,22 @@ export const backEdgeLoopRoute = (
   const { x: sx, y: sy } = sourceAnchor;
   const { x: tx, y: ty } = targetAnchor;
   const railX = (sx + tx) / 2 + dir * reach;
-  const dirY = ty >= sy ? 1 : -1; // rail runs toward the target end
-  const r = Math.min(Math.abs(reach) * LOOP_CORNER_FACTOR, Math.abs(ty - sy) / 2);
-  const p1y = sy + dirY * r; // rail point near the source (after the rounded corner)
-  const p2y = ty - dirY * r; // rail point near the target (before the rounded corner)
-  // Source exits 'top' (up) and eases into the rail; rail runs straight (clear of
-  // the chain); the bottom eases off the rail into the target 'bottom' (from below).
-  // Smooth (C1-ish) at both rail joins, so the loop reads round, not square.
-  const toRail = `C${sx},${sy - r} ${railX},${sy} ${railX},${p1y}`;
-  const rail = `L${railX},${p2y}`;
-  const toTarget = `C${railX},${ty} ${tx},${ty + r} ${tx},${ty}`;
+  // `span > 0` ⇒ the source's top sits below the target's bottom: the loop fits
+  // COMPACTLY in the gap, so the clearance is capped to keep a straight rail. Else
+  // the loop WRAPS around and the full clearance is always available.
+  const span = sy - ty;
+  const clr =
+    span > 0 ? Math.min(LOOP_END_CLEAR, span * LOOP_END_CLEAR_MAX_FRACTION) : LOOP_END_CLEAR;
+  const sJoin = sy - clr; // rail end up off the source's TOP
+  const tJoin = ty + clr; // rail end down off the target's BOTTOM
+  const railDir = tJoin >= sJoin ? 1 : -1; // the rail's onward y-direction (source → target end)
+  const h = clr * LOOP_TANGENT_FRACTION;
+  // Source exits straight UP (its top), eases onto the rail end; rail runs straight;
+  // off the rail it eases straight DOWN into the target (entering its bottom).
+  const toRail = `C${sx},${sy - h} ${railX},${sJoin - railDir * h} ${railX},${sJoin}`;
+  const rail = `L${railX},${tJoin}`;
+  const toTarget = `C${railX},${tJoin + railDir * h} ${tx},${ty + h} ${tx},${ty}`;
   const d = `M${sx},${sy} ${toRail} ${rail} ${toTarget}`;
-  const waypoints = [sourceAnchor, { x: railX, y: p1y }, { x: railX, y: p2y }, targetAnchor];
+  const waypoints = [sourceAnchor, { x: railX, y: sJoin }, { x: railX, y: tJoin }, targetAnchor];
   return { d, waypoints };
 };
