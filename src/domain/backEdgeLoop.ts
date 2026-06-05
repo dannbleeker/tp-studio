@@ -23,13 +23,14 @@ import type { Box, Point } from './edgeGeometry';
 export type LoopSide = 'left' | 'right';
 
 /** Visible gap the rail keeps past the cards it clears (and past the endpoints'
- *  own half-width). Dann's "go a bit further to the side" dial. */
-const CLEAR_MARGIN = 60;
+ *  own half-width). The WIDTH dial — how far the loop swings out to the side; a wider
+ *  swing reads as a broader, rounder corner (Dann's "more round / wider"). */
+const CLEAR_MARGIN = 110;
 /** How far each rail END is pulled OFF the card it meets — up off the source's top,
- *  down off the target's bottom — so the loop turns onto the rail well clear of the
- *  entity instead of cornering against the card edge. Dann's "don't corner so close
- *  to the entities" dial. */
-const LOOP_END_CLEAR = 84;
+ *  down off the target's bottom — so the loop domes over WELL clear of the entity
+ *  instead of cornering against the card edge. The ROUNDNESS dial — a taller dome /
+ *  deeper bowl reads as a gentler, rounder loop top & bottom (Dann's "more round"). */
+const LOOP_END_CLEAR = 120;
 /** In the COMPACT case (the whole loop fits in the gap between the cards), cap the
  *  end-clearance at this fraction of the gap so the two rail ends can't cross and
  *  reverse the rail. < 0.5 always leaves a straight rail between them. */
@@ -37,7 +38,7 @@ const LOOP_END_CLEAR_MAX_FRACTION = 0.42;
 /** Tangent-handle length as a fraction of the end-clearance. Short enough that the
  *  curve turns onto the rail UP near the rail end (clear of the card), not back down
  *  at the card's own level — the bug that made the old corner hug the entity. */
-const LOOP_TANGENT_FRACTION = 0.55;
+const LOOP_TANGENT_FRACTION = 0.6;
 
 const spanOverlaps = (box: Box, top: number, bot: number): boolean =>
   box.y < bot && box.y + box.height > top;
@@ -97,6 +98,11 @@ export const backEdgeLoopPlan = (
  * wraps the long way around (source above target). The short tangent handles keep
  * the turn UP near the rail end, not back down at the card's own level.
  *
+ * `obstacles` (the spanned cards, optional) matters only in the COMPACT case: the
+ * diagonal sweep from an anchor to its rail end can graze a card sitting colinear
+ * between source and target, so each rail end is pulled to that card's near edge —
+ * the sweep then reaches the rail clear of it (the rail itself clears it by `reach`).
+ *
  * Returns the SVG `d` plus the 4-point polyline (source, two rail ends, target)
  * for crossing / hit-testing.
  */
@@ -104,7 +110,8 @@ export const backEdgeLoopRoute = (
   sourceAnchor: Point,
   targetAnchor: Point,
   side: LoopSide,
-  reach: number
+  reach: number,
+  obstacles: readonly Box[] = []
 ): { d: string; waypoints: Point[] } => {
   const dir = side === 'right' ? 1 : -1;
   const { x: sx, y: sy } = sourceAnchor;
@@ -116,15 +123,33 @@ export const backEdgeLoopRoute = (
   const span = sy - ty;
   const clr =
     span > 0 ? Math.min(LOOP_END_CLEAR, span * LOOP_END_CLEAR_MAX_FRACTION) : LOOP_END_CLEAR;
-  const sJoin = sy - clr; // rail end up off the source's TOP
-  const tJoin = ty + clr; // rail end down off the target's BOTTOM
+  let sJoin = sy - clr; // rail end up off the source's TOP
+  let tJoin = ty + clr; // rail end down off the target's BOTTOM
+  // COMPACT only: pull each rail end to the near edge of a card sitting colinear
+  // between the endpoints, so the diagonal sweep clears it rather than grazing its
+  // corner. (Whole `o.x..o.x+width` between the rail and the anchors ⇒ the sweep
+  // passes it.) The wrap case skips this — its sweeps are clear above / below.
+  if (span > 0) {
+    const lo = Math.min(sx, railX);
+    const hi = Math.max(sx, railX);
+    for (const o of obstacles) {
+      if (o.x + o.width <= lo || o.x >= hi) continue; // not under the sweep span
+      const oTop = o.y;
+      const oBot = o.y + o.height;
+      if (oBot <= sy && oBot > sJoin) sJoin = oBot; // source sweep stays at/below its bottom
+      if (oTop >= ty && oTop < tJoin) tJoin = oTop; // target sweep stays at/above its top
+    }
+  }
   const railDir = tJoin >= sJoin ? 1 : -1; // the rail's onward y-direction (source → target end)
-  const h = clr * LOOP_TANGENT_FRACTION;
+  // Per-end tangent handles, sized to the ACTUAL dome height after any clamp, so a
+  // shortened end (compact clamp) eases in without overshooting past its rail end.
+  const hs = Math.abs(sy - sJoin) * LOOP_TANGENT_FRACTION;
+  const ht = Math.abs(tJoin - ty) * LOOP_TANGENT_FRACTION;
   // Source exits straight UP (its top), eases onto the rail end; rail runs straight;
   // off the rail it eases straight DOWN into the target (entering its bottom).
-  const toRail = `C${sx},${sy - h} ${railX},${sJoin - railDir * h} ${railX},${sJoin}`;
+  const toRail = `C${sx},${sy - hs} ${railX},${sJoin - railDir * hs} ${railX},${sJoin}`;
   const rail = `L${railX},${tJoin}`;
-  const toTarget = `C${railX},${tJoin + railDir * h} ${tx},${ty + h} ${tx},${ty}`;
+  const toTarget = `C${railX},${tJoin + railDir * ht} ${tx},${ty + ht} ${tx},${ty}`;
   const d = `M${sx},${sy} ${toRail} ${rail} ${toTarget}`;
   const waypoints = [sourceAnchor, { x: railX, y: sJoin }, { x: railX, y: tJoin }, targetAnchor];
   return { d, waypoints };

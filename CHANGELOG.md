@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 177 (cont.) — back-edge loop: wider + rounder corners + compact clearance (Dann)
+
+- **Wider, rounder loop (Dann picked from rendered variants).** The side swing widened
+  (`CLEAR_MARGIN` 60→110) and the dome/bowl raised (`LOOP_END_CLEAR` 84→120, tangent 0.55→0.60), so
+  the corner reads as a broad, organic arc with a gentle rounded top & bottom. Options were rendered
+  side by side and picked before shipping.
+- **Compact colinear clearance (#3 fix).** A back-edge whose source sits below its target (the loop
+  fits in the gap) with a card sitting colinear between them used to graze that card (~10px) where the
+  diagonal sweep cut its corner. `backEdgeLoopRoute` now takes the spanned obstacles and pulls each
+  rail end to the near edge of such a card, so the sweep reaches the rail clear of it (~29px now;
+  pinned by a test). Per-end tangent handles keep a clamped end from overshooting. The wrap case is
+  unchanged. Self-verified by render (wrap + compact both clear); full suite green.
+
 ## Session 177 (cont.) — back-edge loop: rounded corners, clear of the cards (Dann)
 
 - **The rail loop is rounded AND no longer corners against the entities.** Each rail END is

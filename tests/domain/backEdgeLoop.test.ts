@@ -40,7 +40,7 @@ describe('backEdgeLoopPlan', () => {
   it('ignores obstacles outside the vertical span', () => {
     const above: Box = { x: -60, y: -400, width: 320, height: 72 };
     const plan = backEdgeLoopPlan(sourceAnchor, targetAnchor, [above], HALF);
-    expect(plan.reach).toBe(HALF + 60); // floor only — the far card doesn't widen it
+    expect(plan.reach).toBe(HALF + 110); // floor only — the far card doesn't widen it
   });
 });
 
@@ -68,5 +68,16 @@ describe('backEdgeLoopRoute', () => {
     const { d } = backEdgeLoopRoute(sourceAnchor, targetAnchor, 'left', 200);
     expect(d.startsWith('M100,300')).toBe(true);
     expect(d.endsWith('100,100')).toBe(true);
+  });
+
+  it('clamps a rail end to a colinear card so the compact sweep clears it (item 3)', () => {
+    // Source (y=300) below target (y=100) — a COMPACT loop. A card sits between them,
+    // colinear and under the sweep, with its BOTTOM (260) above the unclamped source
+    // rail end (216) — so the diagonal sweep would graze it. The source rail end is
+    // pulled DOWN to the card's bottom edge, letting the sweep reach the rail clear of it.
+    const between: Box = { x: -40, y: 200, width: 280, height: 60 }; // bottom = 260
+    const { waypoints } = backEdgeLoopRoute(sourceAnchor, targetAnchor, 'left', 200, [between]);
+    expect(waypoints[1]!.y).toBe(260); // source rail end pulled to the card's bottom
+    expect(waypoints[2]!.x).toBe(waypoints[1]!.x); // still a straight vertical rail
   });
 });

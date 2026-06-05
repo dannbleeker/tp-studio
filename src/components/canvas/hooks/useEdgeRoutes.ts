@@ -220,7 +220,7 @@ const routeOneEdge = (
       obstaclesForEdge,
       half
     );
-    return backEdgeLoopRoute(sel.sourceAnchor, sel.targetAnchor, side, reach);
+    return backEdgeLoopRoute(sel.sourceAnchor, sel.targetAnchor, side, reach, obstaclesForEdge);
   }
   // The anchor points sit on their own box boundary, so they fall *inside* the
   // visibility graph's shrunk-interior bounds. Pass the source/target box indices

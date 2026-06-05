@@ -18,10 +18,11 @@ CHANGELOG.
 - ✅ **Dann's review (Session 177):** #1 manual-tag-wins (a tagged loop no longer auto-marks its
   forward edge); #2 flow-aware auto-detect (the against-flow / max-|flow-Δ| cycle edge auto-detects,
   computed once in `useGraphView` with positions + stamped to `TPEdge` via `data.isBackEdge`); #3 the
-  rail clears entities; the loop is rounded/organic and its corners sit clear of the cards (each rail
-  end pulled `LOOP_END_CLEAR` off the entity). **Awaiting Dann's visual confirm** — if loops look
-  stale, hard-reload (the PWA may cache an old build). Dials in `backEdgeLoop.ts`: `CLEAR_MARGIN`
-  (60, side gap) + `LOOP_END_CLEAR` (84, how far each corner sits OFF the card — higher = more clearance).
+  rail clears entities; the loop is rounded/organic, wider + with corners clear of the cards, and the
+  compact colinear case clamps each rail end to a between-card's edge so its sweep clears too (#3).
+  **Approved by Dann** (wider+rounder picked from rendered variants). Dials in `backEdgeLoop.ts`:
+  `CLEAR_MARGIN` (110, side swing / width) + `LOOP_END_CLEAR` (120, dome height / roundness). If loops
+  look stale after a deploy, hard-reload (the PWA may cache an old build).
 
 ### Auto-detect back-edges (loop-closers) — ✅ SHIPPED Session 176 (Wave 3-0)
 A cycle's loop-closer auto-styles as a back-edge (colour + dash) without a manual tag, via pure
