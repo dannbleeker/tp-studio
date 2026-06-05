@@ -160,9 +160,9 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // Session 135 medium gap — archived groups hidden by default; the
     // whole point of archiving is to declutter, so reveal is opt-in.
     showArchivedGroups: raw?.showArchivedGroups === true,
-    // Phase C edge routing — `'smart'` is the locked default per the
+    // Edge routing — `'smart'` is the locked default per the routing
     // proposal. The `'direct'` opt-out exists as an escape hatch for
-    // users who specifically want the pre-Phase-C behavior. Unknown
+    // users who specifically want React Flow's default curves. Unknown
     // values (stale / corrupt) fall back to smart rather than
     // throwing.
     edgeRouting:

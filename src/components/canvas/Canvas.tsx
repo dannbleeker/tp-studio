@@ -54,6 +54,11 @@ const miniMapNodeColor = (n: Node): string =>
   n.type === 'tpGroup' || n.type === 'tpCollapsedGroup' ? '#a5b4fc' : '#737373';
 
 function CanvasInner() {
+  // Projection HOST: the whole doc feeds `useGraphView`, whose projection depends
+  // on entities + edges + groups + diagramType + assumptions — effectively the
+  // entire doc. There's no sound narrowing here (assessed S170/S177); it re-renders
+  // per doc mutation by design, and the cost is absorbed downstream (the hoisted
+  // props below + the memoised projection + React Flow's node memo). Accepted.
   const doc = useDocumentStore((s) => currentDoc(s));
   // Action-only bundle: every field below is a store-action ref (stable
   // across renders), so this selector never re-emits and the component

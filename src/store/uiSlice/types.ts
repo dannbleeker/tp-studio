@@ -36,10 +36,10 @@ export type AnimationSpeed = 'instant' | 'slow' | 'default' | 'fast';
 export type EdgePalette = 'default' | 'colorblindSafe' | 'mono';
 /**
  * Edge routing mode. `'smart'` runs the visibility-graph + A\* router
- * (default — see `docs/EDGE_ROUTING_PROPOSAL.md` Phase C). Routed edges
- * avoid passing through non-endpoint node bodies. `'direct'` is the
- * opt-out — every edge renders as React Flow's default curve, the
- * pre-Phase-C behavior. Stored in `StoredPrefs.edgeRouting`.
+ * (default — see `docs/EDGE_ROUTING_PROPOSAL.md`). Routed edges avoid
+ * passing through non-endpoint node bodies. `'direct'` is the opt-out —
+ * every edge renders as React Flow's default curve. Stored in
+ * `StoredPrefs.edgeRouting`.
  */
 export type EdgeRouting = 'smart' | 'direct';
 /** F5: alternate-view toggle. `'flow'` runs dagre top-down (the default);
@@ -188,9 +188,9 @@ export type StoredPrefs = {
    *  (compact / balanced / spacious). Per-doc `layoutConfig.rankSep`
    *  / `.nodeSep` overrides still win when set explicitly. */
   layoutDensity?: 'compact' | 'balanced' | 'spacious';
-  /** Edge routing mode. Default `'smart'` from Phase C — see
+  /** Edge routing mode. Default `'smart'` — see
    *  `docs/EDGE_ROUTING_PROPOSAL.md`. `'direct'` falls back to React
-   *  Flow's default bezier (the pre-routing behavior). */
+   *  Flow's default bezier. */
   edgeRouting?: EdgeRouting;
   /** Session 87 — EC verbalisation strip collapse state. Default
    *  `true` (collapsed) so the canvas reclaims vertical space on EC

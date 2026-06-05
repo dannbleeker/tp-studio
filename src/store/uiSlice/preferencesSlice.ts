@@ -111,10 +111,9 @@ export type PreferencesSlice = {
   /** Session 135 medium gap — reveal archived groups (preserve rejected
    *  logic) on the canvas. Default `false`. */
   showArchivedGroups: boolean;
-  /** Edge routing mode (Phase C of the obstacle-aware routing project).
-   *  `'smart'` runs the visibility-graph + A\* router so edges avoid
-   *  passing through non-endpoint node bodies; `'direct'` is the
-   *  opt-out (the pre-Phase-C behavior). Default `'smart'`. */
+  /** Edge routing mode. `'smart'` runs the visibility-graph + A\* router so
+   *  edges avoid passing through non-endpoint node bodies; `'direct'` is the
+   *  opt-out (React Flow's default curve). Default `'smart'`. */
   edgeRouting: EdgeRouting;
 
   setTheme: (theme: Theme) => void;
@@ -165,7 +164,7 @@ export type PreferencesSlice = {
   setAppMode: (mode: AppMode) => void;
   /** Session 135 — reveal / hide archived groups on the canvas. */
   setShowArchivedGroups: (show: boolean) => void;
-  /** Phase C — toggle the edge-routing mode preference. */
+  /** Toggle the edge-routing mode preference (smart ↔ direct). */
   setEdgeRouting: (mode: EdgeRouting) => void;
   /** Session 136 — reset every persisted preference back to its
    *  factory default, including theme. Per Dann's usage-feedback ask
@@ -269,7 +268,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   appMode: 'expert',
   // Session 135 — archived groups hidden by default; reveal is opt-in.
   showArchivedGroups: false,
-  // Phase C — smart routing is the locked default per the proposal.
+  // Smart routing is the locked default per the routing proposal.
   // The `'direct'` opt-out is exposed in Settings → Display.
   edgeRouting: 'smart',
   // Session 138 — loaded documents open in a new tab by default;

@@ -4,22 +4,14 @@
  * Session 137 / multi-doc tabs Batch 1 — see
  * `docs/MULTI_DOC_TABS_PLAN.md`.
  *
- * Today this module exports a single selector, `currentDoc(state)`, which
- * is an alias for `state.doc`. Behaviour is unchanged.
- *
- * The reason this seam exists *before* multi-doc tabs ship: Phase 2 of
- * the plan introduces `state.docs: Record<DocumentId, TPDocument>` +
- * `state.activeDocId: DocumentId`. At that point `currentDoc(state)`
- * becomes `state.docs[state.activeDocId]`. Store-internal callers
- * (slice actions, `applyDocChange`, history / revisions) route through
- * this selector now so the data-model flip in Phase 2 is a one-line
- * edit on the selector body rather than a 200-site mechanical refactor.
- *
- * Component-tree consumers (Canvas, Inspector, dialogs, palette
- * commands) keep reading `s.doc` directly for now — they migrate in
- * Phase 4 once the data model has been flipped behind the alias. The
- * derived-alias strategy is what lets us phase the rollout without
- * breaking the test suite at any intermediate step.
+ * `currentDoc(state)` is the active-document seam. It still returns `state.doc`:
+ * multi-doc tabs (Session 138) shipped by SWAPPING `state.doc` on a tab switch,
+ * not via the originally-planned `state.docs[state.activeDocId]` flip — so the
+ * data model never changed and this stays a thin alias. Store-internal callers
+ * (slice actions, `applyDocChange`, history / revisions) still route through the
+ * seam, so if a future model ever keeps all open docs resident, swapping this one
+ * body is the only edit — not a wide mechanical refactor. Some component-tree
+ * consumers read `s.doc` directly; harmless while the two are identical.
  *
  * Adding a new selector here: prefer the function-call shape over a
  * field alias so the eventual multi-doc form (`state.docs[state.activeDocId].x`)

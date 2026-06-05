@@ -71,16 +71,6 @@ one-page print designs" were previously parked (see Out-of-scope — won't build
 target: better print layouts / per-diagram-type print templates / a dedicated print-or-PDF flow /
 print the reasoning read-out alongside the canvas.
 
-### Stale-code hunt
-Sweep for stale/dead code beyond knip: unreachable branches, orphaned helpers, stale comments vs
-current reality (the "clean up stale comments" rule), obsolete flags, dead CSS/Tailwind, commented-out
-blocks. (knip already reports 0 unused exports.)
-**Progress (Session 177):** a read-only sweep landed the HIGH-confidence batch — a `print.css` cascade
-BUG (the print-only header was hidden in print) + stale comments (false "Not wired up yet" on storage
-keys; "Phase A — routes always {}" on live routing; deleted-`EdgeAssumptions` refs). Remaining
-(MED/cosmetic): the "Phase C —" API-doc labels in `preferencesSlice`/`types.ts`, the `selectors.ts`
-"migrate in Phase 4" note (needs a data-model check), and the unreachable `onNodesChange` drag branch.
-
 ### Book — deeper per-type descriptions
 Expand the book with more in-depth descriptions of each tree/map type (CRT, FRT, PRT, TT, EC/cloud,
 Goal Tree, S&T, Transition Tree…): when to use it, its structure, reading rules, a worked example.
@@ -103,7 +93,6 @@ completeness arc — so we don't re-derive shipped work.
 
 ## Smaller still-open items (carried over)
 
-- **Isolate `CanvasInner`'s whole-`doc` subscription** (`Canvas.tsx` `useDocumentStore((s) => currentDoc(s))`) — the projection host re-renders on every doc mutation; assessed Session 170 as "no sound narrowing exists," so it's a low-priority watch item, not clearly actionable.
 - **`TPNode` per-node whole-`currentDoc` read** — reads `currentDoc(s)` then extracts `diagramType`/`customEntityClasses`. Low-value narrowing; React Flow already memoizes. Low priority.
 - **Reactive vs proactive NBR mitigation** — optional `mitigation.kind` field on negative-branch handling. Policy-parked; re-open only if practitioners ask.
 - **Manual a11y keyboard walkthrough (needs Dann's hands):** run the keyboard-only walkthrough against the checklist in `docs/`.
