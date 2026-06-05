@@ -2,6 +2,23 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 176 (cont.) — test-coverage sweep (autonomous, 8 batches)
+
+- **Lines 86.5% → 87.8%, statements 83.7% → 85.0%, branches 72.7% → 73.8%, functions 83.1% → 83.6%**
+  (≈150 newly-covered lines, +43 tests, all behaviour-preserving / test-only; full suite green):
+  - `services/canvasRef.ts` (~30% → ~95%) — the hovered-junctor registry + `getSelectionViewportRect`
+    (DOM rect union across entities / edge-endpoints / group, in jsdom).
+  - `useGraphProjection` (54% → ~90%) — hoist / collapse / archived / F7 entity-collapse branches (renderHook).
+  - `useGraphNodeEmission` (38% → ~80%) — entity / group-rect / collapsed-card emission + diffStatus + eligibility.
+  - The palette command groups `tools.ts` / `groups.ts` / `document.ts` — invoke each command, assert the store
+    effect (retype / structure / polarity / group / hoist / archive / dialog-openers).
+  - `domain/flyingLogic/writer.ts` (85% → ~98%) — header / junctors / groups / XML escaping.
+  - `services/exporters/image.ts` (51% → ~90%) — the PNG / JPEG / SVG success path (html-to-image mocked).
+- **Re-pinned the CI coverage floor** (`coverage:pin`) to lines 85 / statements 83 / functions 81 / branches 71.
+- Remaining big gaps (need lib-mocks or render harnesses — left for an attended pass): the heavy exporters
+  `pdfExport` / `pptxExport` (jspdf / pptxgenjs), the render-heavy components (`CommentThread`, `CommentsPanel`,
+  `CreationWizardPanel`, inspectors), and the DOM/keyboard hooks (`useGlobalShortcuts`, `useDraggablePanel`).
+
 ## Session 176 (cont.) — autonomous test-coverage pass
 
 - **Raised coverage on the lowest-covered pure modules** (test-only, behaviour-preserving;
