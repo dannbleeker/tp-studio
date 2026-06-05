@@ -32,12 +32,10 @@ import type { GraphProjection } from './useGraphProjection';
 export const useGraphEdgeEmission = (
   doc: TPDocument,
   projection: GraphProjection,
-  // Phase A — `routes` is always `{}` because `useEdgeRoutes` short-
-  // circuits behind a hard-coded gate. Phase C flips that gate; when
-  // populated, each real (non-aggregated) edge picks up its
-  // precomputed path string from the map and stamps it into `data.route`.
-  // Defaulting to `{}` keeps the existing two-argument call sites
-  // working (tests that import this hook directly, etc.).
+  // The smart-routing map from `useEdgeRoutes` (threaded in by `useGraphView`):
+  // each real (non-aggregated) edge picks up its precomputed path string and
+  // stamps it into `data.route`. Defaults to `{}` so direct callers (tests) that
+  // don't supply the routing pipeline keep working.
   routes: EdgeRouteMap = {},
   // Wave 3 — the back-edge id set, computed once (flow-aware, with positions) in
   // `useGraphView`. Defaults to the layout-free id-based set for direct callers

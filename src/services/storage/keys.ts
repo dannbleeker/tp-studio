@@ -4,13 +4,9 @@
  * Session 137 / multi-doc tabs Batch 1 — see
  * `docs/MULTI_DOC_TABS_PLAN.md`.
  *
- * **Not wired up yet.** This module exports the key helpers the
- * Phase 2 persistence rewrite will use, but no call site reads them
- * today. Existing storage code (`persistDebounced.ts`, `persistence.ts`,
- * `storage.ts`) still writes to the single-doc slots in `STORAGE_KEYS`.
- * Shipping the helpers as dormant infrastructure means Phase 2 doesn't
- * have to introduce both the key shape AND the new persistence logic
- * in the same commit.
+ * Wired into the per-doc persistence layer (`persistenceStorage.ts`,
+ * `persistDebounced.ts`), which writes each open doc to its own committed /
+ * live / backup slot plus the tab manifest.
  *
  * Today's single-doc keys (in `storage.ts`):
  *   - `tp-studio:active-document:v1`        (committed, debounced)

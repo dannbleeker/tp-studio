@@ -11,8 +11,7 @@ import { Field } from './Field';
 /**
  * Session 77 / brief §6 — Assumption Well.
  *
- * Enhanced replacement for the legacy `EdgeAssumptions` panel. Renders
- * each assumption with a status chip (unexamined / valid / invalid /
+ * Renders each assumption with a status chip (unexamined / valid / invalid /
  * challengeable) so the user can track the lifecycle of every
  * "we're assuming X" claim attached to an edge.
  *

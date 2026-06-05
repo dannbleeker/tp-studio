@@ -2,11 +2,10 @@
  * Session 135 — shared chip-color palette + helpers.
  *
  * Inspector pills (status chips, source pills, strength pills, etc.)
- * historically lived next to their consumers as inline
- * `Record<…, string>` maps in `AssumptionWell.tsx`, `EvidenceList.tsx`,
- * and the legacy `EdgeAssumptions.tsx`. Three nearly-identical
- * dark-mode palettes is two too many: when the design tokens change,
- * three files have to change in lockstep.
+ * historically lived next to their consumers as inline `Record<…, string>`
+ * maps in `AssumptionWell.tsx` and `EvidenceList.tsx`. Duplicated dark-mode
+ * palettes are a maintenance hazard: when the design tokens change, every
+ * copy has to change in lockstep.
  *
  * This module centralizes:
  *   1. A typed `ChipScheme` record carrying the eight semantic

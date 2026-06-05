@@ -35,9 +35,9 @@ export const useGraphEmission = (
   derivedStates: Record<EntityId, EntityState>,
   speculationOverlay: Record<string, EntityState> | null,
   showActionEligibility = false,
-  // Phase A — empty by default; `useGraphView` threads the real map in
-  // from `useEdgeRoutes`. Tests that mount `useGraphEmission` directly
-  // continue to work with the existing positional argument list.
+  // The routed-path map from `useEdgeRoutes`, threaded in by `useGraphView`.
+  // Defaults to `{}` so tests that mount `useGraphEmission` directly keep
+  // working with the existing positional argument list.
   routes: EdgeRouteMap = {},
   // Wave 3 — flow-aware back-edge set from `useGraphView`; threaded to edge
   // emission for the back-edge colour/dash + `data.isBackEdge` stamp.

@@ -64,12 +64,10 @@ export type TPEdgeData = {
    *  count from `data` instead of iterating `doc.assumptions` inside its
    *  per-edge store selector on every store change. Omitted when 0. */
   assumptionCount?: number;
-  /** Phase A scaffold for obstacle-aware edge routing. When present,
-   *  `TPEdge` consumes the precomputed SVG path instead of computing a
-   *  bezier from React Flow's source / target handles. Stamped per edge
-   *  by `useEdgeRoutes` once the smart-routing gate flips in Phase C.
-   *  Omitted in Phase A — the hook returns an empty map so every edge
-   *  falls through to the existing bezier behavior. */
+  /** Obstacle-aware routed path. When present, `TPEdge` consumes this precomputed
+   *  SVG path instead of computing a bezier from React Flow's source / target
+   *  handles. Stamped per edge by `useEdgeRoutes` (smart routing); omitted when the
+   *  user opts into `'direct'` routing, so the edge falls back to the bezier. */
   route?: EdgeRoute;
   /** Wave 3 — true when this edge is a back-edge (manual tag ∪ the flow-aware
    *  auto-detected loop-closer). Stamped centrally by `useGraphEdgeEmission` from

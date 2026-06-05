@@ -66,9 +66,6 @@
   [data-component="title-badge"] {
     display: none;
   }
-  .print-only {
-    display: block;
-  }
 
   /* Expand React Flow's container. The viewport's transform is locked at
      export-time by `fitView`; we lean on the browser to draw what's there. */
@@ -81,10 +78,10 @@
     transform: none;
   }
 
-  /* Print-only header block (document title + author + description). The
-     element is hidden in normal view; the `display: block` above flips it on. */
+  /* Print-only header block (document title + author + description). Hidden in
+     normal view by the base styles; shown here so it prints. */
   .print-only {
-    display: none;
+    display: block;
     margin-bottom: 0.5in;
   }
   .print-only h1 {
