@@ -16,6 +16,7 @@ import { TopBar } from './components/toolbar/TopBar';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { useGlobalKeyboard } from './hooks/useGlobalKeyboard';
+import { usePrintCanvas } from './hooks/usePrintCanvas';
 import { useThemeClass } from './hooks/useThemeClass';
 import { useDocumentStore } from './store';
 import { bootRecoveryStatus } from './store/documentSlice/docMetaSlice';
@@ -196,6 +197,7 @@ let shareLinkBootHandled = false;
 export function App() {
   useThemeClass();
   useGlobalKeyboard();
+  usePrintCanvas();
   const showToast = useDocumentStore((s) => s.showToast);
   const openDocInTab = useDocumentStore((s) => s.openDocInTab);
   const setBrowseLocked = useDocumentStore((s) => s.setBrowseLocked);
@@ -295,8 +297,9 @@ export function App() {
       {/* The canvas, its overlays, and the Inspector live in a flex-1
           content row beneath the header. The Inspector is `absolute` within
           this `relative` row, so it starts below the header — no overlap with
-          the TopBar / tab strip. */}
-      <div className="relative flex-1 overflow-hidden">
+          the TopBar / tab strip. `data-print-canvas` lets print.css pin this
+          row to a fixed box while `body.printing` is set (see usePrintCanvas). */}
+      <div className="relative flex-1 overflow-hidden" data-print-canvas>
         {/* Session 95 — `ReactFlowProvider` hoisted here so the
             SelectionToolbar + future canvas overlays can read React Flow's
             state via `useRFStore` from outside the Canvas component. */}

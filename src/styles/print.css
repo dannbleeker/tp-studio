@@ -57,7 +57,15 @@
   [data-component="search-panel"],
   [data-component="empty-hint"],
   [data-component="first-entity-tip"],
-  [data-component="canvas-nav"] {
+  [data-component="canvas-nav"],
+  /* The whole top chrome band — tab strip + title + toolbar. Without
+     this the tab strip printed across the top of the page (Session 178). */
+  [data-component="app-chrome"],
+  /* Selection-anchored floating toolbar + the review-comments side panel
+     both render outside the Inspector aside, so the `.inspector-aside`
+     rule above doesn't catch them — they leaked into print until named. */
+  [data-component="selection-toolbar"],
+  [data-component="comments-panel"] {
     display: none;
   }
 
@@ -67,16 +75,38 @@
     display: none;
   }
 
-  /* Expand React Flow's container. The viewport's transform is locked at
-     export-time by `fitView`; we lean on the browser to draw what's there. */
-  .react-flow,
-  .react-flow__renderer,
-  .react-flow__viewport {
-    position: static;
-    width: 100%;
-    height: auto;
-    transform: none;
+  /* Leave React Flow's own structure intact. The diagram is framed for
+     print by `usePrintCanvas` — a `beforeprint` listener that computes a
+     transform fitting the whole tree into a fixed box and applies it via
+     `setViewport`, then restores the user's pan/zoom on `afterprint`. The
+     previous approach (`transform: none` + flattening to static) wiped the
+     viewport transform with nothing re-framing the diagram, so every node
+     landed off-page and the canvas printed blank. */
+
+  /* Session 178 — `body.printing` (added by usePrintCanvas during print).
+     Pin the canvas row to the SAME fixed box the hook fits the diagram into,
+     so the computed framing is exact, and let <main> flow at its natural
+     height so the title header sits above the diagram and the footer +
+     appendix + reasoning flow below (across pages). The Tailwind
+     `h-screen` / `overflow-hidden` utilities on <main> and the `flex-1`
+     canvas row out-rank a bare element selector, so these need `!important`.
+     Keep these `width`/`height` in sync with `PRINT_BOX` in usePrintCanvas. */
+  body.printing main {
+    height: auto !important;
+    overflow: visible !important;
   }
+  body.printing [data-print-canvas] {
+    flex: none !important;
+    width: 648px !important;
+    height: 760px !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+  }
+
+  /* NOTE: the MiniMap is hidden for print imperatively in `usePrintCanvas`
+     (inline `display:none !important`), not here. Its Tailwind `sm:!block`
+     is a *layered* `!important` utility that beats any rule this unlayered
+     stylesheet can write — only an inline `!important` out-ranks it. */
 
   /* Print-only header block (document title + author + description). Hidden in
      normal view by the base styles; shown here so it prints. */
@@ -225,10 +255,19 @@
    two: Session 138's app shell is a flex column, so a visible appendix would
    claim real flow space and shrink the canvas row. Before that refactor the
    full-height canvas pushed it below the fold where `overflow-hidden` clipped
-   it, which masked the missing rule. */
-.print-only,
-.print-footer,
-[data-component="print-appendix"],
-[data-component="print-reasoning"] {
-  display: none;
+   it, which masked the missing rule.
+
+   CRITICAL (Session 178): this rule MUST be scoped to `@media screen`. As an
+   unconditional rule it also matched during print, and since it appears
+   *after* the `@media print { .print-only { display: block } }` block above,
+   equal specificity meant source-order made `display: none` win in print too
+   — silently hiding the title header, footer, appendix and reasoning on every
+   printed page. Scoping it to screen lets the print rules stand. */
+@media screen {
+  .print-only,
+  .print-footer,
+  [data-component="print-appendix"],
+  [data-component="print-reasoning"] {
+    display: none;
+  }
 }

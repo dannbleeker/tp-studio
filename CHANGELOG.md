@@ -2,6 +2,42 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 178 — fix: browser print (Ctrl+P) rendered a blank page
+
+`Cmd/Ctrl+P` (and the Print dialog's **Open print dialog** button) handed off to `window.print()`, but the
+printed page came out **blank** — only the tab strip survived. Two independent, long-standing bugs:
+
+1. **The diagram never made it onto the page.** `print.css` neutralised React Flow's viewport with
+   `transform: none`, assuming a `fitView` had "locked" the viewport at export time — but nothing re-framed
+   the diagram for a bare `window.print()`, so every node rendered off-page. And the `<main>` print rules
+   (`height: auto; overflow: visible`) were a bare element selector that the Tailwind `h-screen
+   overflow-hidden` utility classes (higher specificity) out-ranked, so the page stayed clamped to one
+   viewport with overflow clipped.
+2. **The title header + footer (+ appendix + reasoning) were hidden in print too.** Their screen-default
+   `display: none` rule sat *after* the `@media print { … display: block }` block; equal specificity meant
+   source order won, so `display: none` also applied in print.
+
+The fix:
+- New `usePrintCanvas` hook: on `beforeprint` it frames the whole diagram into a fixed print box
+  (648 × 760, computed from node bounds via `setViewport` — deterministic regardless of screen size or
+  print-reflow timing) and restores the user's exact pan/zoom on `afterprint`. Covers native Ctrl+P and the
+  dialog's **Open print dialog** button (both dispatch `beforeprint`); an empty canvas is a no-op.
+- `print.css`: dropped the `transform: none` flatten; `body.printing` pins the canvas row to the same box
+  and lets `<main>` flow at natural height (header → diagram → footer stack, footer no longer orphaned to a
+  second page); scoped the screen-default `display: none` to `@media screen` so the print rules win; added
+  the chrome band (`app-chrome` = tab strip + title + toolbar), the selection toolbar, and the comments
+  panel to the hide list.
+- The MiniMap carries Tailwind's `sm:!block` — a *layered* `!important` that out-ranks any rule the
+  (unlayered) print stylesheet can write — so it's hidden imperatively in the hook (inline `!important`),
+  cleared on `afterprint`.
+
+Result: Ctrl+P now prints a clean one-page diagram — title header, the whole tree fit to the page, dated
+footer, no leaked chrome. Verified against a real Chromium print-to-PDF.
+
+Tests: `tests/hooks/usePrintCanvas.test.ts` (framing math · `body.printing` toggle · MiniMap hide ·
+viewport restore · empty-canvas no-op · listener unbind) and `e2e/print-canvas.spec.ts` (real React Flow:
+`beforeprint` frames + hides the MiniMap, `afterprint` restores). Full suite green; tsc + knip clean.
+
 ## Session 177 (cont.) — print: reasoning companion (cause→effect read-out in print + PDF)
 
 The print/PDF "reasoning companion" the backlog asked for. Tick **Include reasoning narrative** in the
