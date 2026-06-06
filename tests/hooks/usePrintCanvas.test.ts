@@ -15,12 +15,22 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PrintOrientation, PrintPaper, PrintScale } from '@/store/uiSlice/types';
 
-type Layout = { paper: PrintPaper; orientation: PrintOrientation; scale: PrintScale };
+type Layout = {
+  paper: PrintPaper;
+  orientation: PrintOrientation;
+  scale: PrintScale;
+  showLegend: boolean;
+};
 
 const { getCanvasInstanceMock, storeState } = vi.hoisted(() => ({
   getCanvasInstanceMock: vi.fn(),
   storeState: {
-    printLayout: { paper: 'a4', orientation: 'portrait', scale: 'fit-page' } as Layout,
+    printLayout: {
+      paper: 'a4',
+      orientation: 'portrait',
+      scale: 'fit-page',
+      showLegend: true,
+    } as Layout,
   },
 }));
 
@@ -36,6 +46,7 @@ import { usePrintCanvas } from '@/hooks/usePrintCanvas';
 const PX_PER_MM = 96 / 25.4;
 const MARGIN_PX = 0.75 * 96;
 const RESERVE = 215;
+const LEGEND_RESERVE = 90;
 const PAD = 0.92;
 const BOUNDS = { w: 100, h: 250 };
 const PAGE_MM: Record<PrintPaper, { w: number; h: number }> = {
@@ -68,12 +79,12 @@ function setupDom(): { row: HTMLElement; minimap: HTMLElement } {
 }
 
 function setLayout(paper: PrintPaper, orientation: PrintOrientation, scale: PrintScale): void {
-  storeState.printLayout = { paper, orientation, scale };
+  storeState.printLayout = { paper, orientation, scale, showLegend: true };
 }
 
 afterEach(() => {
   cleanup();
-  document.body.classList.remove('printing');
+  document.body.classList.remove('printing', 'print-include-legend');
   document.body.innerHTML = '';
   document.getElementById('tp-print-page-size')?.remove();
   getCanvasInstanceMock.mockReset();
@@ -91,10 +102,13 @@ describe('usePrintCanvas', () => {
     act(() => window.dispatchEvent(new Event('beforeprint')));
 
     const c = content('a4', 'portrait');
-    const fitH = c.h - RESERVE;
+    // The mock layout has showLegend: true, so the fit-one-page box reserves
+    // the legend room as well as the header/footer.
+    const fitH = c.h - RESERVE - LEGEND_RESERVE;
     const zoom = Math.min(c.w / BOUNDS.w, fitH / BOUNDS.h) * PAD;
 
     expect(document.body.classList.contains('printing')).toBe(true);
+    expect(document.body.classList.contains('print-include-legend')).toBe(true);
     expect(minimap.style.display).toBe('none');
     expect(row.style.width).toBe(`${Math.round(c.w)}px`);
     expect(row.style.height).toBe(`${Math.round(fitH)}px`);
@@ -154,6 +168,7 @@ describe('usePrintCanvas', () => {
     act(() => window.dispatchEvent(new Event('afterprint')));
 
     expect(document.body.classList.contains('printing')).toBe(false);
+    expect(document.body.classList.contains('print-include-legend')).toBe(false);
     expect(minimap.style.display).toBe('');
     expect(row.style.width).toBe('');
     expect(row.style.height).toBe('');

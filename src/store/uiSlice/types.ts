@@ -154,6 +154,9 @@ export type PrintLayout = {
   paper: PrintPaper;
   orientation: PrintOrientation;
   scale: PrintScale;
+  /** Session 178 — print a one-line, type-specific "how to read this" legend
+   *  under the title so a shared printout explains itself. Default on. */
+  showLegend: boolean;
 };
 
 /** Subset of UI state that gets persisted via `prefs.ts`. */

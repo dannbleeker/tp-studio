@@ -305,6 +305,22 @@ export function PrintPreviewDialog() {
         <label className="flex items-start gap-2 text-xs">
           <input
             type="checkbox"
+            checked={printLayout.showLegend}
+            onChange={(e) => setPrintLayout({ showLegend: e.target.checked })}
+            className="mt-0.5"
+          />
+          <span>
+            Include <b>how-to-read legend</b>{' '}
+            <span className="text-neutral-500 dark:text-neutral-400">
+              — a one-line reading rule for this diagram type, printed under the title (also applied
+              to a bare Ctrl/Cmd+P).
+            </span>
+          </span>
+        </label>
+
+        <label className="flex items-start gap-2 text-xs">
+          <input
+            type="checkbox"
             checked={includeAppendix}
             onChange={(e) => setIncludeAppendix(e.target.checked)}
             className="mt-0.5"

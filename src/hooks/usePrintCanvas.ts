@@ -33,6 +33,9 @@ const MARGIN_PX = 0.75 * 96;
 /** Header (title H1 + spacing) + footer band kept off the fit-one-page box
  *  so they sit above / below the diagram on a single page. */
 const HEADER_FOOTER_RESERVE_PX = 215;
+/** Extra fit-one-page reserve when the how-to-read legend is on — a few lines
+ *  of caption under the title. */
+const LEGEND_RESERVE_PX = 90;
 const PRINT_PADDING = 0.92;
 
 const PAGE_MM: Record<'a4' | 'letter', { w: number; h: number }> = {
@@ -67,7 +70,7 @@ export function usePrintCanvas(): void {
       const bounds = getNodesBounds(nodes);
       if (bounds.width === 0 || bounds.height === 0) return;
 
-      const { paper, orientation, scale } = useDocumentStore.getState().printLayout;
+      const { paper, orientation, scale, showLegend } = useDocumentStore.getState().printLayout;
       const content = contentBoxPx(paper, orientation);
       savedViewport = rf.getViewport();
 
@@ -100,8 +103,10 @@ export function usePrintCanvas(): void {
         x = content.w / 2 - cx * zoom;
         y = 8 - bounds.y * zoom;
       } else {
-        // Fit the whole tree onto one page (header above, footer below).
-        const fitH = content.h - HEADER_FOOTER_RESERVE_PX;
+        // Fit the whole tree onto one page (header above, footer below). When
+        // the how-to-read legend is on it adds a few lines under the title, so
+        // reserve room for it too or the footer spills onto a second page.
+        const fitH = content.h - HEADER_FOOTER_RESERVE_PX - (showLegend ? LEGEND_RESERVE_PX : 0);
         zoom = Math.min(content.w / bounds.width, fitH / bounds.height) * PRINT_PADDING;
         boxW = content.w;
         boxH = Math.round(fitH);
@@ -120,6 +125,7 @@ export function usePrintCanvas(): void {
         row.style.setProperty('margin', '0 auto', 'important');
       }
       document.body.classList.add('printing');
+      document.body.classList.toggle('print-include-legend', showLegend);
       rf.setViewport({ x, y, zoom });
 
       // The MiniMap carries Tailwind's `sm:!block` — a layered `!important`
@@ -133,6 +139,7 @@ export function usePrintCanvas(): void {
     const handleAfterPrint = (): void => {
       const rf = getCanvasInstance();
       document.body.classList.remove('printing');
+      document.body.classList.remove('print-include-legend');
       if (sizedRow) {
         for (const prop of BOX_STYLE_PROPS) sizedRow.style.removeProperty(prop);
         sizedRow = null;

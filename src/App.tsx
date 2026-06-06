@@ -9,6 +9,7 @@ import { SelectionToolbar } from './components/canvas/overlays/SelectionToolbar'
 import { SpeculationBanner } from './components/canvas/overlays/SpeculationBanner';
 import { DocumentMeta } from './components/DocumentMeta';
 import { Inspector } from './components/inspector/Inspector';
+import { PrintLegend } from './components/print/PrintLegend';
 import { Toaster } from './components/toast/Toaster';
 import { TabStrip } from './components/toolbar/TabStrip';
 import { TitleBadge } from './components/toolbar/TitleBadge';
@@ -281,6 +282,7 @@ export function App() {
     >
       <DocumentMeta />
       <PrintHeader />
+      <PrintLegend />
       {/* Chrome header — the tab strip + a (title · toolbar) band. A real
           flex-column header now, not floating `absolute` overlays, so it
           never overlaps the canvas or the Inspector. Hidden in presentation

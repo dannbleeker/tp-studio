@@ -284,7 +284,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   openDocsInNewTab: true,
   // Session 178 — A4 · portrait · fit-to-one-page is today's browser-print
   // behaviour, so the default is a no-op for existing users.
-  printLayout: { paper: 'a4', orientation: 'portrait', scale: 'fit-page' },
+  printLayout: { paper: 'a4', orientation: 'portrait', scale: 'fit-page', showLegend: true },
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (

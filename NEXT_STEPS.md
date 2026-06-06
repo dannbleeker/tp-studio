@@ -49,8 +49,14 @@ printed a *blank* page (the diagram never made it on, and a CSS source-order bug
 Scale (Fit-page / Fit-width-multi-page), persisted as the `printLayout` pref so bare Ctrl+P honours it.
 Size + orientation drive `@page` + the print box + the vector PDF (the A4 hard-code is gone); Fit-width
 gives readable multi-page browser-print. So the page-setup, landscape/Letter, and multi-page-browser-print
-items are all **done**. Remaining (bigger, not yet built): bespoke **per-diagram-type print templates**.
-The "full one-page print designs" line stays parked (see Out-of-scope — won't build).
+items are all **done**.
+**Session 178 (cont.):** shipped the **per-type print "how to read this" legend** (Dann's pick for the
+"per-diagram-type print templates" item) — `printLegendFor` + `PrintLegend`, a one-line type-specific reading
+rule under the title, persisted via `printLayout.showLegend` (default on) so Ctrl+P honours it. Remaining
+print follow-up (small): **legend parity in the vector PDF** — the browser-print legend isn't yet woven into
+`pdfExport`'s per-page header band. The bigger "bespoke per-type layouts" idea is **closed** as
+over-engineering (Dann, Session 178 — the canvas is the layout; the legend covers the per-type need). The
+"full one-page print designs" line stays parked (see Out-of-scope — won't build).
 
 ### Book — deeper per-type descriptions
 Expand the book with more in-depth descriptions of each tree/map type (CRT, FRT, PRT, TT, EC/cloud,

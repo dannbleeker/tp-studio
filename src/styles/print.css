@@ -231,6 +231,16 @@
     page-break-before: always;
   }
 
+  /* How-to-read legend — a one-line, type-specific reading rule under the
+     title. Gated on `print-include-legend`, which `usePrintCanvas` sets from
+     the persisted `printLayout.showLegend` pref (so bare Ctrl+P honours it). */
+  [data-component="print-legend"] {
+    display: none;
+  }
+  body.print-include-legend [data-component="print-legend"] {
+    display: block;
+  }
+
   /* Session 79 / brief §10 — print selection only. Sets `visibility: hidden`
      on every node + edge that isn't part of the React Flow selection;
      the selected items stay visible. `visibility: hidden` (rather than
@@ -263,7 +273,8 @@
   .print-only,
   .print-footer,
   [data-component="print-appendix"],
-  [data-component="print-reasoning"] {
+  [data-component="print-reasoning"],
+  [data-component="print-legend"] {
     display: none;
   }
 }

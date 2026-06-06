@@ -179,6 +179,9 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
       paper: raw?.printLayout?.paper === 'letter' ? 'letter' : 'a4',
       orientation: raw?.printLayout?.orientation === 'landscape' ? 'landscape' : 'portrait',
       scale: raw?.printLayout?.scale === 'fit-width' ? 'fit-width' : 'fit-page',
+      // Default on (`!== false`): any non-`false` value, including `undefined`
+      // on a first-run / pre-Session-178 stored pref, keeps the legend on.
+      showLegend: raw?.printLayout?.showLegend !== false,
     },
   };
 };

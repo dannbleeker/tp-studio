@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 178 (cont.) — print: per-type "how to read this" legend
+
+Backlog #2 (per-diagram-type print templates), scoped to a **how-to-read legend**: a one-line, type-specific
+reading rule printed under the title so a shared printout explains itself to a reader who doesn't know the
+Thinking Process. A CRT prints "Read bottom-up — each arrow means 'because…, therefore…'; the core driver is
+the root cause that feeds the most UDEs"; an EC prints the in-order-to / we-must / because conflict reading; a
+Goal Tree prints the Goal → CSF → NC necessity chain; and so on for all eight structured types.
+
+- `printLegendFor(diagramType)` (pure, in `domain/printLegend`) returns the line per type; freeform has no
+  fixed reading rule and prints nothing.
+- A new `PrintLegend` print-only block renders it under the title, gated on `body.print-include-legend` —
+  which `usePrintCanvas` sets from the persisted `printLayout.showLegend` pref, so a bare Ctrl+P honours it
+  (default on). The fit-one-page box reserves a few extra lines when the legend is on so the footer doesn't
+  spill to a second page.
+- A "Include how-to-read legend" toggle in the Print dialog flips the pref.
+
+Browser-print only for now — weaving the legend into the vector PDF's per-page header band is a small
+follow-up (noted in NEXT_STEPS). Tests: `printLegend.test.ts` (every type's line + freeform empty) and the
+`usePrintCanvas` suite extended for the legend class. Verified with a real print-to-PDF (legend under the
+title, one page). Full suite green; tsc + knip clean.
+
 ## Session 178 (cont.) — print page setup: size · orientation · multi-page
 
 Follow-up to the browser-print fix, adding the page-setup controls the backlog asked for. The Print /
