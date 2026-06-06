@@ -138,7 +138,9 @@ describe('usePrintCanvas', () => {
     act(() => window.dispatchEvent(new Event('beforeprint')));
 
     const c = content('letter', 'landscape');
-    expect(document.getElementById('tp-print-page-size')?.textContent).toContain('letter landscape');
+    expect(document.getElementById('tp-print-page-size')?.textContent).toContain(
+      'letter landscape'
+    );
     expect(row.style.width).toBe(`${Math.round(c.w)}px`);
   });
 
