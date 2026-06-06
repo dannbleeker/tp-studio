@@ -1,9 +1,10 @@
 import { getNodesBounds, getViewportForBounds, type Node } from '@xyflow/react';
 import { PNG_PADDING } from '@/domain/constants';
 import { structuralEntities } from '@/domain/graph';
+import { printLegendFor } from '@/domain/printLegend';
 import { buildReasoningSentences } from '@/domain/reasoningExport';
 import { SURFACE_DARK, SURFACE_LIGHT } from '@/domain/tokens';
-import type { TPDocument } from '@/domain/types';
+import type { DiagramType, TPDocument } from '@/domain/types';
 import { loadJsPdf } from '@/services/exporters/pdfShared';
 import { slug, triggerDownload } from '@/services/exporters/shared';
 
@@ -60,6 +61,11 @@ export interface PdfExportOptions {
   /** When true, append the cause→effect reasoning read-out (one numbered
    *  sentence per link in topological order). */
   includeReasoning?: boolean;
+  /** When true, print the diagram's one-line, type-specific "how to read this"
+   *  legend under the header on every diagram page (parity with the
+   *  browser-print `PrintLegend`). Freeform diagrams have no rule, so nothing
+   *  is reserved or drawn for them. */
+  includeLegend?: boolean;
   /** Free text rendered at the top of every page. Merge fields are
    * resolved by the caller — pdfExport itself does no templating. */
   header?: string;
@@ -98,11 +104,22 @@ const PAGE_DIMENSIONS_MM: Record<PdfPageSize, { width: number; height: number }>
 const MARGIN_MM = 12; // generous breathing room on all sides
 const HEADER_BAND_MM = 8; // top band reserved for the header text
 const FOOTER_BAND_MM = 8; // bottom band reserved for the footer text
+// Y of the first row below the header band: the legend draws here and the
+// diagram's drawable area starts here (+ the legend band, when present). One
+// name so `drawLegend` and `drawableTopMm` can't drift apart.
+const HEADER_BAND_BOTTOM_MM = MARGIN_MM + HEADER_BAND_MM;
 const HEADER_FONT_PT = 8;
 const FOOTER_FONT_PT = 8;
 const APPENDIX_TITLE_FONT_PT = 14;
 const APPENDIX_BODY_FONT_PT = 10;
 const APPENDIX_LINE_HEIGHT_MM = 4.5;
+// How-to-read legend (Session 179) — a touch smaller than the appendix body so
+// it reads as a caption; italic + the same #525252 gray as the browser-print
+// `PrintLegend` block.
+const LEGEND_FONT_PT = 9;
+const LEGEND_LINE_HEIGHT_MM = 4;
+// Breathing room between the legend band and the diagram below it.
+const LEGEND_GAP_MM = 2;
 
 /**
  * Capture the live React Flow viewport's SVG by running the same DOM
@@ -236,7 +253,8 @@ const renderDiagramPages = async (
   footerText: string,
   pageCount: number,
   totalPageCount: number,
-  startPageNumber: number
+  startPageNumber: number,
+  legendLines: readonly string[]
 ): Promise<void> => {
   const { svg, widthPx, heightPx } = renderable;
   const usableWidthMm = geometry.pageWidthMm - MARGIN_MM * 2;
@@ -246,7 +264,25 @@ const renderDiagramPages = async (
   for (let i = 0; i < pageCount; i++) {
     if (i > 0) pdf.addPage();
     drawHeaderFooter(pdf, headerText, footerText, geometry, startPageNumber + i, totalPageCount);
+    // Legend on every diagram page (not just the first) so each physical sheet
+    // of a multi-page export stays self-explanatory. The band it sits in is
+    // already reserved out of `drawableTopMm`, so the diagram below never
+    // collides with it.
+    drawLegend(pdf, legendLines);
     const yOriginMm = geometry.drawableTopMm - i * geometry.drawableHeightMm;
+    // Clip each page to its drawable band before drawing the diagram. The full
+    // SVG is drawn on every page (shifted up by i slices), so without a clip a
+    // multi-page diagram bleeds over the header/footer/legend bands AND
+    // duplicates the bottom of page i at the top of page i+1. Clipping to one
+    // drawable-height band fixes both — the slices tile seamlessly. svg2pdf
+    // renders inside this graphics state, so its output is clipped too.
+    // `rect(…, null)` + `clip()` + `discardPath()` defines a clip region, not a
+    // stroked border (a bare `rect` would paint one); save/restore scopes the
+    // clip to this page.
+    pdf.saveGraphicsState();
+    pdf.rect(MARGIN_MM, geometry.drawableTopMm, usableWidthMm, geometry.drawableHeightMm, null);
+    pdf.clip();
+    pdf.discardPath();
     // svg2pdf draws starting at (x, y) and continues downward — we
     // shift the origin up by i full drawable-heights so that page i
     // shows the i-th slice of the diagram.
@@ -256,6 +292,7 @@ const renderDiagramPages = async (
       width: usableWidthMm,
       height: scaledHeightMm,
     });
+    pdf.restoreGraphicsState();
   }
 };
 
@@ -280,6 +317,54 @@ const drawHeaderFooter = (
       geometry.pageHeightMm - MARGIN_MM
     );
   }
+  pdf.setTextColor(0, 0, 0);
+};
+
+/** Apply the legend's font (family + size). Shared by the measure pass
+ *  (`resolveLegendLines`) and the draw pass (`drawLegend`) so the width the
+ *  band is sized against always matches the width it's wrapped to when drawn. */
+const setLegendFont = (pdf: import('jspdf').jsPDF): void => {
+  pdf.setFont('helvetica', 'italic');
+  pdf.setFontSize(LEGEND_FONT_PT);
+};
+
+/**
+ * Wrap the how-to-read legend for `diagramType` to the usable page width using
+ * the live jsPDF instance, so the band we reserve matches the text we draw
+ * exactly (no estimate/draw drift). Returns `[]` when there's nothing to draw
+ * — the toggle is off (`diagramType` is `null`) or it's a freeform diagram,
+ * which has no fixed reading rule. Restores helvetica-normal afterwards.
+ */
+const resolveLegendLines = (
+  pdf: import('jspdf').jsPDF,
+  diagramType: DiagramType | null,
+  usableWidthMm: number
+): string[] => {
+  if (!diagramType) return [];
+  const legend = printLegendFor(diagramType);
+  if (!legend) return [];
+  setLegendFont(pdf);
+  const lines = pdf.splitTextToSize(legend, usableWidthMm) as string[];
+  pdf.setFont('helvetica', 'normal');
+  return lines;
+};
+
+/**
+ * Draw the wrapped legend lines in the band reserved just below the page
+ * header (italic + #525252 gray, mirroring the browser-print `PrintLegend`).
+ * No-op when there's nothing to draw. Restores helvetica-normal + black so the
+ * diagram render that follows is unaffected.
+ */
+const drawLegend = (pdf: import('jspdf').jsPDF, legendLines: readonly string[]): void => {
+  if (legendLines.length === 0) return;
+  setLegendFont(pdf);
+  pdf.setTextColor(82, 82, 82); // #525252 — matches PrintLegend on screen/print
+  let y = HEADER_BAND_BOTTOM_MM + LEGEND_LINE_HEIGHT_MM;
+  for (const line of legendLines) {
+    pdf.text(line, MARGIN_MM, y);
+    y += LEGEND_LINE_HEIGHT_MM;
+  }
+  pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(0, 0, 0);
 };
 
@@ -453,19 +538,14 @@ export const exportToVectorPdf = async (
     // header/footer bands and vertical slicing all follow for free.
     const pageWidthMm = orientation === 'landscape' ? base.height : base.width;
     const pageHeightMm = orientation === 'landscape' ? base.width : base.height;
-    const drawableTopMm = MARGIN_MM + HEADER_BAND_MM;
-    const drawableHeightMm = pageHeightMm - MARGIN_MM * 2 - HEADER_BAND_MM - FOOTER_BAND_MM;
     const usableWidthMm = pageWidthMm - MARGIN_MM * 2;
-    const diagramPageCount = computePageCount(
-      svgRenderable.widthPx,
-      svgRenderable.heightPx,
-      usableWidthMm,
-      drawableHeightMm
-    );
+
     // jspdf needs to be imported lazily — the entire pdf bundle is
     // ~150 KB gzipped and we don't want it on the critical path.
     // Session 94 (Top-30 #4) — routed through `loadJsPdf` so the
-    // dynamic-import sits in one shared module.
+    // dynamic-import sits in one shared module. Created before the
+    // page-count math so the how-to-read legend can be wrapped with the
+    // real `splitTextToSize` and the band it needs reserved exactly.
     const jsPDF = await loadJsPdf();
     const pdf = new jsPDF({
       orientation,
@@ -473,6 +553,28 @@ export const exportToVectorPdf = async (
       format: pageSize,
       compress: true,
     });
+
+    // How-to-read legend band — reserved out of the drawable height on every
+    // diagram page (parity with the browser-print `PrintLegend`). Empty when
+    // the toggle is off or the diagram is freeform (no fixed reading rule).
+    const legendLines = resolveLegendLines(
+      pdf,
+      options.includeLegend ? doc.diagramType : null,
+      usableWidthMm
+    );
+    const legendBandMm = legendLines.length
+      ? legendLines.length * LEGEND_LINE_HEIGHT_MM + LEGEND_GAP_MM
+      : 0;
+
+    const drawableTopMm = HEADER_BAND_BOTTOM_MM + legendBandMm;
+    const drawableHeightMm =
+      pageHeightMm - MARGIN_MM * 2 - HEADER_BAND_MM - FOOTER_BAND_MM - legendBandMm;
+    const diagramPageCount = computePageCount(
+      svgRenderable.widthPx,
+      svgRenderable.heightPx,
+      usableWidthMm,
+      drawableHeightMm
+    );
     // Estimate appendix page count up front so header/footer
     // placeholders ({pageCount}) resolve correctly. The estimate
     // matches the real loop logic byte-for-byte except that real
@@ -499,7 +601,8 @@ export const exportToVectorPdf = async (
       options.footer ?? '',
       diagramPageCount,
       totalPageCount,
-      1
+      1,
+      legendLines
     );
     let extraPages = 0;
     if (options.includeAppendix) {

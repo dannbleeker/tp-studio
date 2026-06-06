@@ -212,6 +212,7 @@ export function PrintPreviewDialog() {
         mode,
         includeAppendix,
         includeReasoning,
+        includeLegend: printLayout.showLegend,
         header: resolveMergeFields(headerTemplate, doc),
         footer: resolveMergeFields(footerTemplate, doc),
       });
@@ -312,8 +313,8 @@ export function PrintPreviewDialog() {
           <span>
             Include <b>how-to-read legend</b>{' '}
             <span className="text-neutral-500 dark:text-neutral-400">
-              — a one-line reading rule for this diagram type, printed under the title (also applied
-              to a bare Ctrl/Cmd+P).
+              — a one-line reading rule for this diagram type, printed under the title (applied to
+              the vector PDF and a bare Ctrl/Cmd+P too).
             </span>
           </span>
         </label>

@@ -2,6 +2,40 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 179 — print: how-to-read legend in the vector PDF + multi-page clip fix
+
+Closes backlog #2 (legend parity in the vector PDF) and fixes a latent multi-page rendering bug it
+surfaced.
+
+**Legend parity.** The per-type "how to read this" legend (Session 178) printed only on the
+browser-print path; the vector **Save as PDF** ignored it. The same `printLayout.showLegend` toggle
+now drives both. `exportToVectorPdf` gains an `includeLegend` option; when on, the diagram's
+one-line reading rule (`printLegendFor(doc.diagramType)`) is wrapped to the usable page width with
+the real `pdf.splitTextToSize` and printed in italic #525252 — matching the on-screen `PrintLegend`
+— under the header on **every** diagram page. The band it occupies is reserved out of the drawable
+height (so the diagram never collides with it); freeform diagrams (no reading rule) reserve and draw
+nothing. The jsPDF instance is now created *before* the page-count math so the legend is measured
+against real font metrics — the reserved band matches the drawn text exactly, no estimate/draw
+drift. Per-page (vs the browser's once-under-the-title) is deliberate: each physical sheet of a
+multi-page export stays self-explanatory.
+
+**Multi-page clip fix.** The diagram SVG is drawn at full height on every page, shifted up by one
+drawable-height per page, relying on the page edge to clip. But within a page nothing constrained
+it, so a genuinely multi-page diagram (a) painted over the header/footer/legend bands and (b)
+duplicated the bottom of page *i* at the top of page *i+1*. Each page now clips to its drawable band
+before the SVG draws (`saveGraphicsState` → `rect(…, null)` → `clip` → `discardPath` → svg2pdf →
+`restoreGraphicsState`). Passing `null` as the rect style adds the clip path *without* stroking a
+visible border (a bare `rect` emits an `S`); svg2pdf renders inside that graphics state, so its
+output is constrained too. Verified against the real jspdf@4.2.1 + svg2pdf.js@2.7.0 at the
+content-stream level: the clip rect lands on the drawable region, the SVG fills nest inside it,
+header/footer/legend sit outside, and `q`/`Q` stays balanced per page (no clip leak onto the
+appendix/reasoning pages). The slices now tile seamlessly — a bonus correctness win beyond the
+furniture overlap.
+
+Tests: 5 new cases in `pdfExportPipeline.test.ts` (legend on/off, freeform draws none, legend
+repeats per page, clip-rect geometry + one clip per diagram page). Full suite **2840 passing**; tsc
++ build + bundle-size all green. (Biome left to CI — the native binary is AppLocker-blocked locally.)
+
 ## Session 178 (cont.) — book: deepen the five concise per-type chapters
 
 Backlog #3 (deeper per-type book descriptions). The CRT and EC chapters were already flagship-depth; this

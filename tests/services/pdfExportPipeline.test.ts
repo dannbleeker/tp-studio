@@ -18,7 +18,13 @@ import { makeDoc, makeEdge, makeEntity, resetIds } from '../domain/helpers';
  */
 
 const pdfMock = vi.hoisted(() => ({
-  instances: [] as Array<{ opts: { format?: string }; pages: number; texts: string[] }>,
+  instances: [] as Array<{
+    opts: { format?: string };
+    pages: number;
+    texts: string[];
+    clips: number;
+    rects: Array<{ x: number; y: number; w: number; h: number; style: string | null }>;
+  }>,
 }));
 
 vi.mock('@/services/exporters/pdfShared', () => {
@@ -26,6 +32,8 @@ vi.mock('@/services/exporters/pdfShared', () => {
     opts: { format?: string };
     pages = 1;
     texts: string[] = [];
+    clips = 0;
+    rects: Array<{ x: number; y: number; w: number; h: number; style: string | null }> = [];
     constructor(opts: { format?: string }) {
       this.opts = opts;
       pdfMock.instances.push(this);
@@ -42,6 +50,15 @@ vi.mock('@/services/exporters/pdfShared', () => {
     splitTextToSize(s: string): string[] {
       return String(s).split('\n');
     }
+    saveGraphicsState(): void {}
+    restoreGraphicsState(): void {}
+    rect(x: number, y: number, w: number, h: number, style: string | null = null): void {
+      this.rects.push({ x, y, w, h, style });
+    }
+    clip(): void {
+      this.clips += 1;
+    }
+    discardPath(): void {}
     output(): Blob {
       return new Blob(['pdf'], { type: 'application/pdf' });
     }
@@ -147,6 +164,98 @@ describe('exportToVectorPdf — full pipeline', () => {
     expect(firstPdf().texts.some((t) => t.includes('because'))).toBe(true);
     // Starts on its own page after the diagram.
     expect(firstPdf().pages).toBeGreaterThanOrEqual(2);
+  });
+
+  it('prints the how-to-read legend on the diagram page when includeLegend is set', async () => {
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+
+    const ok = await exportToVectorPdf(doc, nodes, { includeLegend: true });
+
+    expect(ok).toBe(true);
+    // The CRT reading rule is wrapped + drawn under the page header.
+    const { texts } = firstPdf();
+    expect(texts.some((t) => t.includes('How to read this Current Reality Tree'))).toBe(true);
+    expect(texts.some((t) => t.includes('bottom-up'))).toBe(true);
+  });
+
+  it('omits the legend by default', async () => {
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+
+    const ok = await exportToVectorPdf(doc, nodes);
+
+    expect(ok).toBe(true);
+    expect(firstPdf().texts.some((t) => t.includes('How to read this'))).toBe(false);
+  });
+
+  it('draws no legend for a freeform diagram even when includeLegend is set', async () => {
+    // Freeform has no fixed reading rule — `printLegendFor` returns '' — so no
+    // band is reserved and nothing is drawn.
+    const doc = makeDoc([makeEntity({ title: 'A' })], [], 'freeform');
+
+    const ok = await exportToVectorPdf(doc, nodes, { includeLegend: true });
+
+    expect(ok).toBe(true);
+    expect(firstPdf().texts.some((t) => t.includes('How to read this'))).toBe(false);
+  });
+
+  it('repeats the legend on every page of a multi-page diagram', async () => {
+    // Per-page (not just first-page) so each physical sheet is self-explanatory.
+    mockToSvg.mockResolvedValueOnce(svgDataUrl(800, 4000));
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+
+    const ok = await exportToVectorPdf(doc, nodes, { includeLegend: true });
+
+    expect(ok).toBe(true);
+    const legendHits = firstPdf().texts.filter((t) => t.includes('How to read this')).length;
+    expect(firstPdf().pages).toBeGreaterThan(1);
+    // No appendix/reasoning here, so every physical page is a diagram page.
+    expect(legendHits).toBe(firstPdf().pages);
+  });
+
+  it('clips every diagram page to the drawable band so the diagram never bleeds over the header/footer', async () => {
+    // Without the clip, a multi-page diagram's full-height SVG paints over the
+    // header/footer/legend bands and duplicates content across the page seam.
+    mockToSvg.mockResolvedValueOnce(svgDataUrl(800, 4000));
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+
+    const ok = await exportToVectorPdf(doc, nodes);
+    expect(ok).toBe(true);
+
+    const pdf = firstPdf();
+    expect(pdf.pages).toBeGreaterThan(1);
+    // One clip per diagram page (no appendix/reasoning pages in this run).
+    expect(pdf.clips).toBe(pdf.pages);
+    // The clip rect is the drawable band: x = left margin (12mm), y = below the
+    // header (margin + header = 20mm), a positive height shorter than full A4.
+    // `style === null` is what makes `rect()` a clip path (no stroked border).
+    const clipRect = pdf.rects.find((r) => r.style === null);
+    expect(clipRect).toBeDefined();
+    expect(clipRect?.x).toBe(12);
+    expect(clipRect?.y).toBe(20);
+    expect(clipRect?.w).toBe(210 - 24);
+    expect(clipRect?.h).toBeGreaterThan(0);
+    expect(clipRect?.h).toBeLessThan(297);
+  });
+
+  it('reserves a legend band so the diagram is pushed below it when the legend is on', async () => {
+    // Guards the band math directly: with the legend ON, the clip rect's top
+    // shifts DOWN from the bare 20mm (margin 12 + header 8) and its height
+    // shrinks by the SAME band. Without this, a regression in the
+    // drawableTop/drawableHeight subtraction would let the legend overprint the
+    // diagram while every text/count assertion still passed.
+    mockToSvg.mockResolvedValueOnce(svgDataUrl(800, 4000));
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+
+    const ok = await exportToVectorPdf(doc, nodes, { includeLegend: true });
+    expect(ok).toBe(true);
+
+    const clipRect = firstPdf().rects.find((r) => r.style === null);
+    expect(clipRect).toBeDefined();
+    const HEADER_BOTTOM = 20; // margin 12 + header band 8
+    const BARE_DRAWABLE_H = 297 - 24 - 8 - 8; // A4 minus margins + header + footer
+    expect(clipRect?.y).toBeGreaterThan(HEADER_BOTTOM); // band reserved → pushed down
+    // top shifts down and height shrinks by exactly the same reserved band:
+    expect((clipRect?.y ?? 0) - HEADER_BOTTOM).toBe(BARE_DRAWABLE_H - (clipRect?.h ?? 0));
   });
 
   it('draws header and footer with resolved page placeholders', async () => {

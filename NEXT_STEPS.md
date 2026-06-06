@@ -52,9 +52,12 @@ gives readable multi-page browser-print. So the page-setup, landscape/Letter, an
 items are all **done**.
 **Session 178 (cont.):** shipped the **per-type print "how to read this" legend** (Dann's pick for the
 "per-diagram-type print templates" item) — `printLegendFor` + `PrintLegend`, a one-line type-specific reading
-rule under the title, persisted via `printLayout.showLegend` (default on) so Ctrl+P honours it. Remaining
-print follow-up (small): **legend parity in the vector PDF** — the browser-print legend isn't yet woven into
-`pdfExport`'s per-page header band. The bigger "bespoke per-type layouts" idea is **closed** as
+rule under the title, persisted via `printLayout.showLegend` (default on) so Ctrl+P honours it.
+**Session 179:** **legend parity in the vector PDF** shipped — the same `showLegend` toggle now prints the
+legend on every diagram page of the vector PDF (wrapped with real font metrics, italic #525252, band reserved
+out of the drawable height). Fixed a latent multi-page bug it surfaced: the diagram SVG now clips to its
+drawable band per page, so it no longer bleeds over the header/footer/legend or duplicates content across the
+page seam. The print thread is now **fully closed**. The bigger "bespoke per-type layouts" idea is **closed** as
 over-engineering (Dann, Session 178 — the canvas is the layout; the legend covers the per-type need). The
 "full one-page print designs" line stays parked (see Out-of-scope — won't build).
 
