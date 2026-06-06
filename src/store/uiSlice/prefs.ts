@@ -172,6 +172,14 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // `undefined` for existing users with no stored value) keeps the
     // new-tab default. Opt out via Settings → Behavior.
     openDocsInNewTab: raw?.openDocsInNewTab !== false,
+    // Session 178 — print page setup. Each field is validated independently
+    // so a stale / tampered value falls back to today's default (A4 ·
+    // portrait · fit-to-one-page) rather than throwing.
+    printLayout: {
+      paper: raw?.printLayout?.paper === 'letter' ? 'letter' : 'a4',
+      orientation: raw?.printLayout?.orientation === 'landscape' ? 'landscape' : 'portrait',
+      scale: raw?.printLayout?.scale === 'fit-width' ? 'fit-width' : 'fit-page',
+    },
   };
 };
 

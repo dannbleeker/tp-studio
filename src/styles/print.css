@@ -89,19 +89,15 @@
      height so the title header sits above the diagram and the footer +
      appendix + reasoning flow below (across pages). The Tailwind
      `h-screen` / `overflow-hidden` utilities on <main> and the `flex-1`
-     canvas row out-rank a bare element selector, so these need `!important`.
-     Keep these `width`/`height` in sync with `PRINT_BOX` in usePrintCanvas. */
+     canvas row out-rank a bare element selector, so these need `!important`. */
   body.printing main {
     height: auto !important;
     overflow: visible !important;
   }
-  body.printing [data-print-canvas] {
-    flex: none !important;
-    width: 648px !important;
-    height: 760px !important;
-    margin: 0 auto !important;
-    overflow: hidden !important;
-  }
+  /* The canvas row's print box (width / height / overflow / centering) is set
+     INLINE by `usePrintCanvas` per the chosen paper · orientation · scale, so
+     it isn't hard-coded here. `body.printing main { height:auto }` above lets
+     the row + header + footer flow — and paginate down, for fit-to-width. */
 
   /* NOTE: the MiniMap is hidden for print imperatively in `usePrintCanvas`
      (inline `display:none !important`), not here. Its Tailwind `sm:!block`

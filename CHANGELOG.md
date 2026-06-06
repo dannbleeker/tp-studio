@@ -2,6 +2,33 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 178 (cont.) — print page setup: size · orientation · multi-page
+
+Follow-up to the browser-print fix, adding the page-setup controls the backlog asked for. The Print /
+Save-as-PDF dialog grows a **Page setup** row — **Size** (A4 / Letter), **Orientation** (Portrait /
+Landscape), and **Scale** (Fit page / Fit width) — persisted as a UI preference so bare `Cmd/Ctrl+P`
+honours the last choice.
+
+- **Size + orientation** drive an injected `@page { size }` (so the browser dialog defaults to the chosen
+  paper) and the print box, and pass through to the vector **Save as PDF** (which previously hard-coded A4
+  portrait — landscape is a clean page-dimension swap, so all the existing pagination math follows for free).
+- **Scale** is browser-print only: *Fit page* fits the whole tree onto one page (the overview, default);
+  *Fit width* scales the tree to the page width and lets it flow down across as many pages as needed (the
+  readable, multi-page detail view — nodes split at page edges, which the vector PDF still slices cleanly).
+- `usePrintCanvas` reads the `printLayout` pref on `beforeprint`, sizes the print box from the chosen page's
+  content area, frames the diagram (fit-page centres it; fit-width scales-to-width + flows), and restores
+  everything on `afterprint`. The box is set inline per-layout, so `print.css` no longer hard-codes it.
+
+The persisted `printLayout` pref (paper · orientation · scale) threads through the standard `StoredPrefs` /
+`readInitialPrefs` / `preferencesSlice` machinery with a strict per-field validator (stale / tampered values
+fall back to A4 · portrait · fit-page). Default = today's behaviour, so existing users see no change until
+they pick something.
+
+Tests: `usePrintCanvas.test.ts` extended to 6 cases (box dims per paper/orientation · fit-width pagination
+geometry · `@page` injection · restore). Verified with real Chromium print-to-PDF: fit-width paginates a
+14-node tree across 6 readable pages; A4 landscape + Letter render correctly. Full suite green; tsc + knip
+clean.
+
 ## Session 178 — fix: browser print (Ctrl+P) rendered a blank page
 
 `Cmd/Ctrl+P` (and the Print dialog's **Open print dialog** button) handed off to `window.print()`, but the

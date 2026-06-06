@@ -9,6 +9,7 @@ import { exportToVectorPdf } from '@/services/exporters/pdfExport';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
+import type { PrintOrientation, PrintPaper, PrintScale } from '@/store/uiSlice/types';
 import { TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
 import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '../ui/buttonClasses';
@@ -84,12 +85,57 @@ const resolveMergeFields = (template: string, doc: TPDocument): string => {
     .replace(/\{diagramType\}/g, doc.diagramType);
 };
 
+type SegOption = { value: string; label: string };
+const SIZE_OPTIONS: readonly SegOption[] = [
+  { value: 'a4', label: 'A4' },
+  { value: 'letter', label: 'Letter' },
+];
+const ORIENTATION_OPTIONS: readonly SegOption[] = [
+  { value: 'portrait', label: 'Portrait' },
+  { value: 'landscape', label: 'Landscape' },
+];
+const SCALE_OPTIONS: readonly SegOption[] = [
+  { value: 'fit-page', label: 'Fit page' },
+  { value: 'fit-width', label: 'Fit width' },
+];
+
+/** Compact segmented control for the page-setup fields. */
+function Segmented(props: {
+  label: string;
+  value: string;
+  options: readonly SegOption[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-[10px] text-neutral-500 dark:text-neutral-400">{props.label}</span>
+      <div className="flex gap-1">
+        {props.options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => props.onChange(o.value)}
+            className={clsx(
+              'flex-1 rounded-md border px-2 py-1.5 text-xs font-medium transition',
+              props.value === o.value ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function PrintPreviewDialog() {
   const open = useDocumentStore((s) => s.printOpen);
   const close = useDocumentStore((s) => s.closePrintPreview);
   const doc = useDocumentStore((s) => currentDoc(s));
   const selection = useDocumentStore((s) => s.selection);
   const showToast = useDocumentStore((s) => s.showToast);
+  const printLayout = useDocumentStore((s) => s.printLayout);
+  const setPrintLayout = useDocumentStore((s) => s.setPrintLayout);
 
   const [mode, setMode] = useState<PrintMode>('standard');
   const [includeAppendix, setIncludeAppendix] = useState(false);
@@ -161,7 +207,8 @@ export function PrintPreviewDialog() {
           ? nodes.filter((n) => (selection.ids as string[]).includes(n.id))
           : nodes;
       const ok = await exportToVectorPdf(doc, filtered, {
-        pageSize: 'a4',
+        pageSize: printLayout.paper,
+        orientation: printLayout.orientation,
         mode,
         includeAppendix,
         includeReasoning,
@@ -223,6 +270,35 @@ export function PrintPreviewDialog() {
           </div>
           <p className="text-[11px] text-neutral-500 italic dark:text-neutral-400">
             {MODE_HINT[mode]}
+          </p>
+        </fieldset>
+
+        <fieldset className="flex flex-col gap-2 text-sm">
+          <legend className={EYEBROW}>Page setup</legend>
+          <div className="grid grid-cols-3 gap-2">
+            <Segmented
+              label="Size"
+              value={printLayout.paper}
+              options={SIZE_OPTIONS}
+              onChange={(v) => setPrintLayout({ paper: v as PrintPaper })}
+            />
+            <Segmented
+              label="Orientation"
+              value={printLayout.orientation}
+              options={ORIENTATION_OPTIONS}
+              onChange={(v) => setPrintLayout({ orientation: v as PrintOrientation })}
+            />
+            <Segmented
+              label="Scale"
+              value={printLayout.scale}
+              options={SCALE_OPTIONS}
+              onChange={(v) => setPrintLayout({ scale: v as PrintScale })}
+            />
+          </div>
+          <p className="text-[11px] text-neutral-500 italic dark:text-neutral-400">
+            {printLayout.scale === 'fit-width'
+              ? 'Browser print (Ctrl+P) scales to the page width and flows across pages — nodes may split at page edges. Size + orientation also apply to the vector PDF.'
+              : 'Browser print (Ctrl+P) fits the whole diagram on one page. Size + orientation also apply to the vector PDF.'}
           </p>
         </fieldset>
 

@@ -9,6 +9,7 @@ import type {
   EdgePalette,
   EdgeRouting,
   LayoutMode,
+  PrintLayout,
   Theme,
 } from './types';
 
@@ -115,6 +116,10 @@ export type PreferencesSlice = {
    *  edges avoid passing through non-endpoint node bodies; `'direct'` is the
    *  opt-out (React Flow's default curve). Default `'smart'`. */
   edgeRouting: EdgeRouting;
+  /** Session 178 — print page setup (paper / orientation / fit scale).
+   *  Read by `usePrintCanvas` on `beforeprint` so native Ctrl+P honours it,
+   *  and by the Print dialog for the vector PDF. */
+  printLayout: PrintLayout;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
@@ -166,6 +171,8 @@ export type PreferencesSlice = {
   setShowArchivedGroups: (show: boolean) => void;
   /** Toggle the edge-routing mode preference (smart ↔ direct). */
   setEdgeRouting: (mode: EdgeRouting) => void;
+  /** Session 178 — patch the print page-setup pref (merges with current). */
+  setPrintLayout: (patch: Partial<PrintLayout>) => void;
   /** Session 136 — reset every persisted preference back to its
    *  factory default, including theme. Per Dann's usage-feedback ask
    *  ("all settings should be able to restore to defaults"). The
@@ -205,7 +212,8 @@ export type PreferencesDataKeys =
   | 'appMode'
   | 'showArchivedGroups'
   | 'openDocsInNewTab'
-  | 'edgeRouting';
+  | 'edgeRouting'
+  | 'printLayout';
 
 /**
  * Data-only defaults used by `resetStoreForTest`. The theme + persisted
@@ -274,6 +282,9 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   // Session 138 — loaded documents open in a new tab by default;
   // opt out (replace the active doc) in Settings → Behavior.
   openDocsInNewTab: true,
+  // Session 178 — A4 · portrait · fit-to-one-page is today's browser-print
+  // behaviour, so the default is a no-op for existing users.
+  printLayout: { paper: 'a4', orientation: 'portrait', scale: 'fit-page' },
 });
 
 export const createPreferencesSlice: StateCreator<RootStore, [], [], PreferencesSlice> = (
@@ -310,6 +321,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       showArchivedGroups: s.showArchivedGroups,
       edgeRouting: s.edgeRouting,
       openDocsInNewTab: s.openDocsInNewTab,
+      printLayout: s.printLayout,
     });
   };
 
@@ -343,6 +355,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     showArchivedGroups: initialPrefs.showArchivedGroups,
     edgeRouting: initialPrefs.edgeRouting,
     openDocsInNewTab: initialPrefs.openDocsInNewTab,
+    printLayout: initialPrefs.printLayout,
 
     setTheme: (theme) => {
       writeTheme(theme);
@@ -444,6 +457,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setOpenDocsInNewTab: (open) => {
       set({ openDocsInNewTab: open });
+      persistPrefs();
+    },
+    setPrintLayout: (patch) => {
+      set({ printLayout: { ...get().printLayout, ...patch } });
       persistPrefs();
     },
     dismissSelectionToolbarTip: () => {

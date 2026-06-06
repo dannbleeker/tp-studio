@@ -51,6 +51,9 @@ export type PdfMode = 'standard' | 'workshop' | 'inksaving';
 
 export interface PdfExportOptions {
   pageSize?: PdfPageSize;
+  /** Session 178 — page orientation. Defaults to portrait; landscape swaps
+   *  the page width/height so the existing pagination math just works. */
+  orientation?: 'portrait' | 'landscape';
   mode?: PdfMode;
   /** When true, append a numbered list of every entity's description. */
   includeAppendix?: boolean;
@@ -443,7 +446,13 @@ export const exportToVectorPdf = async (
   };
   try {
     const pageSize = options.pageSize ?? 'a4';
-    const { width: pageWidthMm, height: pageHeightMm } = PAGE_DIMENSIONS_MM[pageSize];
+    const orientation = options.orientation ?? 'portrait';
+    const base = PAGE_DIMENSIONS_MM[pageSize];
+    // Landscape simply swaps the page's width/height; every downstream
+    // calculation reads `pageWidthMm` / `pageHeightMm`, so the pagination,
+    // header/footer bands and vertical slicing all follow for free.
+    const pageWidthMm = orientation === 'landscape' ? base.height : base.width;
+    const pageHeightMm = orientation === 'landscape' ? base.width : base.height;
     const drawableTopMm = MARGIN_MM + HEADER_BAND_MM;
     const drawableHeightMm = pageHeightMm - MARGIN_MM * 2 - HEADER_BAND_MM - FOOTER_BAND_MM;
     const usableWidthMm = pageWidthMm - MARGIN_MM * 2;
@@ -459,7 +468,7 @@ export const exportToVectorPdf = async (
     // dynamic-import sits in one shared module.
     const jsPDF = await loadJsPdf();
     const pdf = new jsPDF({
-      orientation: 'portrait',
+      orientation,
       unit: 'mm',
       format: pageSize,
       compress: true,

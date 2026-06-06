@@ -43,16 +43,14 @@ templates), `Cmd/Ctrl+P`, `print.css`, and a true multi-page vector PDF.
 print + PDF section (`PrintReasoning` + `buildReasoningSentences` + `renderReasoning`).
 **Session 178:** fixed the **browser-print path** — `Cmd/Ctrl+P` (and the dialog's "Open print dialog")
 printed a *blank* page (the diagram never made it on, and a CSS source-order bug hid the header/footer too).
-`usePrintCanvas` now frames the whole diagram to a fixed print box on `beforeprint` and restores the
-viewport on `afterprint`; `print.css` fixed (chrome hidden, header/footer shown). Ctrl+P now prints a clean
-one-page diagram. Remaining smaller enhancements (not yet built): **page setup** — the dialog hard-codes A4
-+ portrait for the PDF even though the exporter supports Letter, so add A4/Letter + portrait/landscape
-pickers (a US-Letter user currently always gets A4); the browser-print box is also fixed at ~A4 portrait
-(648 × 760 px → `PRINT_BOX` in `usePrintCanvas` + the pinned size in `print.css`), so a landscape/Letter
-option would want to flow through both paths; **multi-page browser-print** (today Ctrl+P fits the whole
-tree onto one page — fine for an overview; big trees that want detail should use the vector **Save as
-PDF**, which paginates); and bespoke per-diagram-type print templates (bigger). The "full one-page print
-designs" line stays parked (see Out-of-scope — won't build).
+`usePrintCanvas` now frames the diagram for the page on `beforeprint` and restores the viewport on
+`afterprint`; `print.css` fixed (chrome hidden, header/footer shown).
+**Session 178 (cont.):** shipped **page setup** — Size (A4/Letter) · Orientation (Portrait/Landscape) ·
+Scale (Fit-page / Fit-width-multi-page), persisted as the `printLayout` pref so bare Ctrl+P honours it.
+Size + orientation drive `@page` + the print box + the vector PDF (the A4 hard-code is gone); Fit-width
+gives readable multi-page browser-print. So the page-setup, landscape/Letter, and multi-page-browser-print
+items are all **done**. Remaining (bigger, not yet built): bespoke **per-diagram-type print templates**.
+The "full one-page print designs" line stays parked (see Out-of-scope — won't build).
 
 ### Book — deeper per-type descriptions
 Expand the book with more in-depth descriptions of each tree/map type (CRT, FRT, PRT, TT, EC/cloud,

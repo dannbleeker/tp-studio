@@ -143,6 +143,19 @@ export type DefaultLayoutDirection = 'auto' | 'BT' | 'TB' | 'LR' | 'RL';
  */
 export type AppMode = 'expert' | 'guided' | 'workshop' | 'presentation';
 
+/** Print page setup (Session 178). `paper` + `orientation` size the print
+ *  box + the `@page` rule for browser-print (and the page format for the
+ *  vector PDF); `scale` chooses whether browser-print fits the whole tree
+ *  onto one page or fits it to the page width and paginates down. */
+export type PrintPaper = 'a4' | 'letter';
+export type PrintOrientation = 'portrait' | 'landscape';
+export type PrintScale = 'fit-page' | 'fit-width';
+export type PrintLayout = {
+  paper: PrintPaper;
+  orientation: PrintOrientation;
+  scale: PrintScale;
+};
+
 /** Subset of UI state that gets persisted via `prefs.ts`. */
 export type StoredPrefs = {
   animationSpeed?: AnimationSpeed;
@@ -229,4 +242,7 @@ export type StoredPrefs = {
    *  first-run, keeps the new-tab default). Opt out (replace the
    *  active doc instead) via Settings → Behavior. */
   openDocsInNewTab?: boolean;
+  /** Session 178 — print page setup (paper / orientation / fit scale).
+   *  Defaults to A4 · portrait · fit-to-one-page (today's behaviour). */
+  printLayout?: PrintLayout;
 };
