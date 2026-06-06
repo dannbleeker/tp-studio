@@ -63,8 +63,16 @@ Run via the **`/session-end`** command, which encodes this without freelancing:
 4. **Commit** — Conventional Commits (`feat:`/`fix:`/`docs:`/`refactor:`/`chore:`/`test:`), **ask Dann first, don't commit silently**, one commit per session via heredoc. Footer:
    `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
 5. **Push** to `origin/main`.
-6. **Watch CI** — both `CI` (lint+types+tests+build) and `Deploy to GitHub Pages` must return `success` (`gh run watch <id> --exit-status`). **main must never stay red.**
+6. **Watch CI** — both `CI` (lint+types+tests+build) and `Deploy to GitHub Pages` must return `success`. Use `gh run watch <id>` to keep busy while waiting, but **do NOT rely on `--exit-status`** — it follows one job and can report green while another job is red. After the watch returns, cross-check ALL runs for the HEAD sha:
+   ```bash
+   SHA=$(git rev-parse HEAD)
+   gh run list --branch main --limit 12 --json headSha,conclusion,name \
+     --jq ".[] | select(.headSha==\"$SHA\") | \"\(.name): \(.conclusion)\""
+   ```
+   Every line must say `success`. Pull failure traces with `gh run view <id> --log-failed`. **main must never stay red.**
 7. **Goal-seek** failures from real evidence (`gh run view <id> --log-failed`, `gh run download <id> -n playwright-report`), not guesses. Fire `PushNotification` on a real blocker or on green.
+
+Also at session end: **prune `NEXT_STEPS.md`** — delete any item that shipped this session (it now lives in CHANGELOG). Keep only genuinely-open items + the reference tail. Don't ask; just do it.
 
 A `PreToolUse` hook (`.claude/hooks/pre-bash-gate.cjs`) already blocks `git commit` unless tsc+biome pass and `git push origin main` unless `vite build` passes. **`/gate`** runs the whole gate on demand mid-session (no commit).
 
@@ -78,6 +86,17 @@ A `PreToolUse` hook (`.claude/hooks/pre-bash-gate.cjs`) already blocks `git comm
 ## Multi-area research — use parallel sub-agents
 
 When the next step is "look at how X works here" and X spans 2+ modules/directories, send parallel sub-agents in a **single message** rather than searching serially — the per-prompt cost is far less than the conversation-context cost of inline grep round-trips. A single agent is fine when the question is scoped to one place. Rule of thumb: **about to do 2+ grep/glob round-trips in different areas → send parallel sub-agents instead.** (This pattern has paid off repeatedly — e.g. the 4-agent canvas sweeps in Sessions 168/172.)
+
+## Visual / canvas changes — self-verify before asking Dann
+
+For any change to how the canvas **looks** (edge routing, layout, node rendering, overlaps): produce a rendered image and verify it yourself **before** asking Dann to review. His review is for taste/polish, not catching a bug you could have caught.
+
+**Headless verification harness (no browser needed — Playwright Chromium is AppLocker-blocked):**
+1. Write a throwaway vitest test that builds a doc + positions, calls the real pure helper (e.g. `computeEdgeRoutes`), and `writeFileSync`s the geometry as JSON (node boxes from `nodeSizeFor` + positions; edge `route.d` strings).
+2. A Python script (**Pillow is installed**; use `ImageDraw`) reads the JSON, parses each `d` (M/L/C tokens), samples cubics, draws boxes + polylines, and programmatically reports any sample point inside a non-endpoint box ("CROSSES BEHIND" vs "CLEAR"). Read the PNG to view.
+3. Stress-test multiple layouts (even spacing, tight, obstacle-near-an-end). Delete the throwaway test before commit; keep a permanent geometric clearance assertion in the real suite instead.
+
+Key: `nodeSizeFor` returns a fixed `NODE_WIDTH` (220) — the obstacle box equals the visible card exactly.
 
 ## Plan mode for L-effort features
 
@@ -94,8 +113,10 @@ These bite often — work around them, don't fight them:
 - **Working-directory drift (the #1 recurring tax).** This repo lives at `C:\dev\tp-studio` (off OneDrive). Bash commands — especially background ones — often start in the OneDrive session dir instead, so `git`, `node …/bin/…`, and Playwright fail with `Cannot find module C:\…\Desktop\node_modules\…` / "not a git repository". **Prefix every shell command with `cd /c/dev/tp-studio &&`** (or launch Claude from the repo). cwd *does* persist after a `cd …&&`, but stay explicit.
 - **`pnpm` / `npx` are AppLocker-blocked** and PowerShell is in Constrained Language Mode (`npm.ps1`/`pnpm.ps1` break). Run tools via their node entry points:
   - `node ./node_modules/typescript/bin/tsc --noEmit`
-  - `node ./node_modules/@biomejs/biome/bin/biome check [--write] <files>`
-  - `node ./node_modules/knip/bin/knip.js` (passes on exit 0 even when it lists exports)
+  - **Biome cannot run locally** — AppLocker blocks the native biome binary even via node. Don't attempt it; rely on CI: `gh run view <id> --log-failed` shows biome's exact expected diff — apply it verbatim. Two recurring traps:
+    - **Import sort is case-insensitive / natural order** (not uppercase-first). `@/` alias group sorts before `./` relative.
+    - **Array of ≥2 bare object literals is force-expanded one-per-line.** Fix: wrap elements in a call — `const pt = (x: number, y: number) => ({ x, y }); [pt(0,0), pt(1,0)]` — arrays of calls are not expanded.
+  - `node ./node_modules/knip/bin/knip.js` (exits 0 even when it lists exports — a new unused export fails CI, not the local run)
   - `node ./node_modules/vitest/vitest.mjs run [substring]` (`--coverage` for coverage)
   - `node ./node_modules/vite/bin/vite.js build`
 
