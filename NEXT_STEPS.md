@@ -58,12 +58,6 @@ print follow-up (small): **legend parity in the vector PDF** — the browser-pri
 over-engineering (Dann, Session 178 — the canvas is the layout; the legend covers the per-type need). The
 "full one-page print designs" line stays parked (see Out-of-scope — won't build).
 
-### Book — deeper per-type descriptions
-Expand the book with more in-depth descriptions of each tree/map type (CRT, FRT, PRT, TT, EC/cloud,
-Goal Tree, S&T, Transition Tree…): when to use it, its structure, reading rules, a worked example.
-Markdown only under `docs/guide/**`; the rebuild-book GH Actions bot regenerates the PDF/EPUB — don't
-build by hand.
-
 ### External reviews — TOC/TP sources (review for new features + suggestions)
 For each: read, extract what TP Studio could add/improve, and propose suggestions for Dann to review.
 Cross-check against `docs/TP_BASICS_GAP_ANALYSIS.md` (Cohen) — which already drove the Session-154+

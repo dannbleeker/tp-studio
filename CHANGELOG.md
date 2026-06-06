@@ -2,6 +2,30 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 178 (cont.) — book: deepen the five concise per-type chapters
+
+Backlog #3 (deeper per-type book descriptions). The CRT and EC chapters were already flagship-depth; this
+brings the other five structured-type chapters — **FRT, Prerequisite Tree, Transition Tree, Goal Tree, and
+Strategy & Tactics** — up to the same bar. Each now carries the full arc: a *why this tree exists* premise,
+the tool-neutral method, **two** worked examples (the original plus a second from a different domain), fuller
+practitioner-tips / common-mistakes sidebars, and type-specific sections — the FRT's prediction-vs-hope
+distinction, the PRT's necessity-vs-sufficiency framing and ordered-plan export, the TT's
+need→action→expected-effect reasoning layer and action-eligibility readout, the Goal-Tree/CRT overlap and
+multi-goal diagnosis, the S&T facet semantics and decomposition-across-levels.
+
+Every TP-Studio gesture cited in the new prose was grep-verified against `src/` (palette labels, entity types,
+validators, export options, wizards, method checklists). An editor pass over all five then caught and fixed a
+handful of factual slips against the code: the PRT pattern count (five, not four) and Goal Tree count (six — the
+IT-function starter was omitted); a wrong export label in the Goal-Tree chapter (the option is **Reasoning as
+narrative (Markdown)**); a TT tip that credited the narrative export with the numbered, owner-tagged handoff
+that's actually the **Task tracker CSV** (`step / action / precondition / outcome / owner / due_date / status /
+success_criteria`); and a PRT reading-direction claim that said the PRT "reads top-down, unlike CRT/FRT" —
+contradicting the app's own layout model, where the PRT shares the CRT/FRT bottom-up (`BT`) vertical flow (apex
+at top, leaf prerequisites at the bottom).
+
+Markdown only under `docs/guide/**`; the rebuild-book GH Actions bot regenerates the PDF/EPUB on push. No app
+code changed.
+
 ## Session 178 (cont.) — print: per-type "how to read this" legend
 
 Backlog #2 (per-diagram-type print templates), scoped to a **how-to-read legend**: a one-line, type-specific
