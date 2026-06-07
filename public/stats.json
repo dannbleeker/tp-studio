@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-07T16:12:41.690Z",
-  "commit": "b1e485a",
+  "generatedAt": "2026-06-07T16:25:36.636Z",
+  "commit": "49651f3",
   "headline": {
     "linesTsJs": 107133,
     "tests": 2944,
     "lineCoveragePct": 91.17,
-    "commits": 610,
+    "commits": 612,
     "ageDays": 27,
     "trackedFiles": 963
   },
@@ -58,35 +58,35 @@
       "total": 2746
     },
     "branches": {
-      "pct": 77.17,
-      "covered": 7153,
+      "pct": 77.19,
+      "covered": 7154,
       "total": 9268
     }
   },
   "tests": {
     "unit": 2856,
     "e2e": 88,
-    "durationMs": 187887,
+    "durationMs": 188589,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 9645
+        "ms": 10069
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4347
+        "ms": 4451
       },
       {
         "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 1445
+        "ms": 1478
       },
       {
         "file": "tests/components/canvas/useEdgeRoutes.test.tsx",
-        "ms": 1232
+        "ms": 1428
       },
       {
         "file": "tests/components/SelectionToolbar.test.tsx",
-        "ms": 1231
+        "ms": 1227
       }
     ]
   },
@@ -201,16 +201,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 610,
-    "commits7d": 206,
+    "commits": 612,
+    "commits7d": 208,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 551
+        "count": 552
       },
       {
         "name": "github-actions[bot]",
-        "count": 48
+        "count": 49
       },
       {
         "name": "dannbleeker",
@@ -218,8 +218,8 @@
       }
     ],
     "churn30d": {
-      "added": 172812,
-      "removed": 32420
+      "added": 172869,
+      "removed": 32483
     },
     "changelogEntries": 314
   }
