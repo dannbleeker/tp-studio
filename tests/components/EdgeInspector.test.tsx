@@ -229,6 +229,327 @@ describe('EdgeInspector — cause/effect re-wire dropdowns (#1)', () => {
   });
 });
 
+describe('EdgeInspector — delay checkbox', () => {
+  it('delay checkbox is unchecked by default', () => {
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const checkbox = container.querySelector(
+      'input[aria-label="Mark edge as delayed"]'
+    ) as HTMLInputElement | null;
+    expect(checkbox).toBeTruthy();
+    expect(checkbox!.checked).toBe(false);
+  });
+
+  it('checking the delay checkbox sets delay:true on the edge', () => {
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const checkbox = container.querySelector(
+      'input[aria-label="Mark edge as delayed"]'
+    ) as HTMLInputElement;
+    act(() => fireEvent.click(checkbox));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.delay).toBe(true);
+  });
+
+  it('unchecking the delay checkbox clears delay to undefined (not false)', () => {
+    const { edge } = seedConnectedPair();
+    act(() => useDocumentStore.getState().updateEdge(edge.id, { delay: true }));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const checkbox = container.querySelector(
+      'input[aria-label="Mark edge as delayed"]'
+    ) as HTMLInputElement;
+    expect(checkbox.checked).toBe(true);
+    act(() => fireEvent.click(checkbox));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.delay).toBeUndefined();
+  });
+
+  it('delay checkbox is disabled under Browse Lock', () => {
+    const { edge } = seedConnectedPair();
+    act(() => useDocumentStore.getState().setBrowseLocked(true));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const checkbox = container.querySelector(
+      'input[aria-label="Mark edge as delayed"]'
+    ) as HTMLInputElement;
+    expect(checkbox.disabled).toBe(true);
+  });
+});
+
+describe('EdgeInspector — polarity buttons', () => {
+  it('renders four polarity options (Default, Positive, Negative, Zero)', () => {
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const labels = ['Default', 'Positive', 'Negative', 'Zero'];
+    for (const label of labels) {
+      const btn = Array.from(container.querySelectorAll('button')).find(
+        (b) => b.textContent?.trim() === label
+      );
+      expect(btn, `Expected polarity button "${label}"`).toBeTruthy();
+    }
+  });
+
+  it('clicking Negative sets weight to "negative"', () => {
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const negBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Negative'
+    ) as HTMLButtonElement;
+    act(() => fireEvent.click(negBtn));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.weight).toBe('negative');
+  });
+
+  it('clicking Positive sets weight to "positive"', () => {
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const posBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Positive'
+    ) as HTMLButtonElement;
+    act(() => fireEvent.click(posBtn));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.weight).toBe('positive');
+  });
+
+  it('clicking Zero sets weight to "zero"', () => {
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const zeroBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Zero'
+    ) as HTMLButtonElement;
+    act(() => fireEvent.click(zeroBtn));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.weight).toBe('zero');
+  });
+
+  it('clicking Default clears weight to undefined', () => {
+    const { edge } = seedConnectedPair();
+    act(() => useDocumentStore.getState().setEdgeWeight(edge.id, 'negative'));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const defBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Default'
+    ) as HTMLButtonElement;
+    act(() => fireEvent.click(defBtn));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.weight).toBeUndefined();
+  });
+
+  it('polarity buttons are disabled under Browse Lock', () => {
+    const { edge } = seedConnectedPair();
+    act(() => useDocumentStore.getState().setBrowseLocked(true));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const negBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Negative'
+    ) as HTMLButtonElement;
+    expect(negBtn.disabled).toBe(true);
+  });
+});
+
+describe('EdgeInspector — loop name and narrative (back-edge only)', () => {
+  it('loop name and loop narrative fields do NOT render for a non-back-edge', () => {
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(container.textContent).not.toContain('Loop name');
+    expect(container.textContent).not.toContain('Loop behaviour over time');
+  });
+
+  it('loop name and loop narrative fields render once isBackEdge is set', () => {
+    const { edge } = seedConnectedPair();
+    act(() => useDocumentStore.getState().updateEdge(edge.id, { isBackEdge: true }));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(container.textContent).toContain('Loop name');
+    expect(container.textContent).toContain('Loop behaviour over time');
+  });
+
+  it('typing in the loop name input writes through updateEdge', () => {
+    const { edge } = seedConnectedPair();
+    act(() => useDocumentStore.getState().updateEdge(edge.id, { isBackEdge: true }));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    // Find the loop name input by its placeholder text.
+    const input = Array.from(container.querySelectorAll('input[type="text"]')).find((i) =>
+      (i as HTMLInputElement).placeholder?.includes('Burnout spiral')
+    ) as HTMLInputElement | undefined;
+    expect(input, 'Expected loop name input with burnout spiral placeholder').toBeTruthy();
+    act(() => fireEvent.change(input!, { target: { value: 'Burnout loop' } }));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.loopName).toBe('Burnout loop');
+  });
+
+  it('clearing the loop name sets it to undefined (not empty string)', () => {
+    const { edge } = seedConnectedPair();
+    act(() =>
+      useDocumentStore.getState().updateEdge(edge.id, { isBackEdge: true, loopName: 'Growth' })
+    );
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const input = Array.from(container.querySelectorAll('input[type="text"]')).find((i) =>
+      (i as HTMLInputElement).placeholder?.includes('Burnout spiral')
+    ) as HTMLInputElement;
+    act(() => fireEvent.change(input, { target: { value: '' } }));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.loopName).toBeUndefined();
+  });
+
+  it('typing into the loop narrative textarea writes through updateEdge', () => {
+    const { edge } = seedConnectedPair();
+    act(() => useDocumentStore.getState().updateEdge(edge.id, { isBackEdge: true }));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const textarea = Array.from(container.querySelectorAll('textarea')).find((t) =>
+      t.placeholder.includes('how this loop plays out')
+    ) as HTMLTextAreaElement | undefined;
+    expect(textarea, 'Expected loop narrative textarea').toBeTruthy();
+    act(() => fireEvent.change(textarea!, { target: { value: 'escalates over months' } }));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.loopNarrative).toBe(
+      'escalates over months'
+    );
+  });
+
+  it('clearing the loop narrative sets it to undefined', () => {
+    const { edge } = seedConnectedPair();
+    act(() =>
+      useDocumentStore.getState().updateEdge(edge.id, {
+        isBackEdge: true,
+        loopNarrative: 'some story',
+      })
+    );
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const textarea = Array.from(container.querySelectorAll('textarea')).find((t) =>
+      t.placeholder.includes('how this loop plays out')
+    ) as HTMLTextAreaElement;
+    act(() => fireEvent.change(textarea, { target: { value: '' } }));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.loopNarrative).toBeUndefined();
+  });
+});
+
+describe('EdgeInspector — mutual exclusion checkbox', () => {
+  it('mutex field does NOT render when source is not a want', () => {
+    // Default seedConnectedPair creates 'effect' entities.
+    const { edge } = seedConnectedPair();
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(container.textContent).not.toContain('Mutual exclusion');
+  });
+
+  it('mutex field does NOT render when only one endpoint is a want', () => {
+    const want = seedEntity('My Want', 'want');
+    const effect = seedEntity('Not a Want', 'effect');
+    const edge = useDocumentStore.getState().connect(want.id, effect.id);
+    if (!edge) throw new Error('connect failed');
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(container.textContent).not.toContain('Mutual exclusion');
+  });
+
+  it('mutex field renders when both source and target are wants', () => {
+    const wantA = seedEntity('Want A', 'want');
+    const wantB = seedEntity('Want B', 'want');
+    const edge = useDocumentStore.getState().connect(wantA.id, wantB.id);
+    if (!edge) throw new Error('connect failed');
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(container.textContent).toContain('Mutual exclusion');
+  });
+
+  it('checking the mutex checkbox sets isMutualExclusion:true on the edge', () => {
+    const wantA = seedEntity('Want A', 'want');
+    const wantB = seedEntity('Want B', 'want');
+    const edge = useDocumentStore.getState().connect(wantA.id, wantB.id);
+    if (!edge) throw new Error('connect failed');
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    // The mutex checkbox has no aria-label; find it by the nearby label text.
+    const mutexLabel = Array.from(container.querySelectorAll('label')).find((l) =>
+      l.textContent?.includes('mutually exclusive')
+    );
+    expect(mutexLabel, 'Expected mutex label element').toBeTruthy();
+    const mutexCheckbox = mutexLabel!.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    expect(mutexCheckbox).toBeTruthy();
+    act(() => fireEvent.click(mutexCheckbox));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.isMutualExclusion).toBe(true);
+  });
+
+  it('unchecking the mutex checkbox clears isMutualExclusion to undefined', () => {
+    const wantA = seedEntity('Want A', 'want');
+    const wantB = seedEntity('Want B', 'want');
+    const edge = useDocumentStore.getState().connect(wantA.id, wantB.id);
+    if (!edge) throw new Error('connect failed');
+    act(() => useDocumentStore.getState().updateEdge(edge.id, { isMutualExclusion: true }));
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    const mutexLabel = Array.from(container.querySelectorAll('label')).find((l) =>
+      l.textContent?.includes('mutually exclusive')
+    );
+    const mutexCheckbox = mutexLabel!.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    expect(mutexCheckbox.checked).toBe(true);
+    act(() => fireEvent.click(mutexCheckbox));
+    expect(useDocumentStore.getState().doc.edges[edge.id]?.isMutualExclusion).toBeUndefined();
+  });
+});
+
+describe('EdgeInspector — OR and XOR junctor groups', () => {
+  it('OR-group field only appears when the edge has an orGroupId', () => {
+    const { edge } = seedConnectedPair();
+    const single = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(single.container.textContent).not.toContain('OR group');
+    single.unmount();
+    act(() => useDocumentStore.getState().updateEdge(edge.id, { orGroupId: 'or-grp-1234abcd' }));
+    const grouped = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(grouped.container.textContent).toContain('OR group');
+    expect(grouped.container.textContent).toContain('#or-g');
+  });
+
+  it('XOR-group field only appears when the edge has an xorGroupId', () => {
+    const { edge } = seedConnectedPair();
+    const single = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(single.container.textContent).not.toContain('XOR group');
+    single.unmount();
+    act(() => useDocumentStore.getState().updateEdge(edge.id, { xorGroupId: 'xor-grp-1234abcd' }));
+    const grouped = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(grouped.container.textContent).toContain('XOR group');
+    expect(grouped.container.textContent).toContain('#xor-');
+  });
+
+  it('Ungroup button in OR-group field clears orGroupId', () => {
+    const { e1, e2 } = seedAndGroupable();
+    // Use updateEdge to directly assign an orGroupId to both edges (mimic store behavior).
+    act(() => {
+      useDocumentStore.getState().updateEdge(e1.id, { orGroupId: 'test-or-abcd' });
+      useDocumentStore.getState().updateEdge(e2.id, { orGroupId: 'test-or-abcd' });
+    });
+    const { container } = render(<EdgeInspector edgeId={e1.id} warnings={[]} />);
+    const ungroupBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Ungroup'
+    ) as HTMLButtonElement | undefined;
+    expect(ungroupBtn).toBeTruthy();
+    act(() => fireEvent.click(ungroupBtn!));
+    expect(useDocumentStore.getState().doc.edges[e1.id]?.orGroupId).toBeUndefined();
+  });
+
+  it('Ungroup button in XOR-group field clears xorGroupId', () => {
+    const { e1, e2 } = seedAndGroupable();
+    act(() => {
+      useDocumentStore.getState().updateEdge(e1.id, { xorGroupId: 'test-xor-abcd' });
+      useDocumentStore.getState().updateEdge(e2.id, { xorGroupId: 'test-xor-abcd' });
+    });
+    const { container } = render(<EdgeInspector edgeId={e1.id} warnings={[]} />);
+    const ungroupBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim() === 'Ungroup'
+    ) as HTMLButtonElement | undefined;
+    expect(ungroupBtn).toBeTruthy();
+    act(() => fireEvent.click(ungroupBtn!));
+    expect(useDocumentStore.getState().doc.edges[e1.id]?.xorGroupId).toBeUndefined();
+  });
+});
+
+describe('EdgeInspector — duplicate-edge toast on rewire', () => {
+  it('re-wiring to an already-connected pair triggers a toast (not a crash)', () => {
+    // Seed A → B and A → C; then try to rewire A→C to target B (which already has an edge from A).
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('C');
+    const state = useDocumentStore.getState();
+    const edgeAB = state.connect(a.id, b.id);
+    const edgeAC = state.connect(a.id, c.id);
+    if (!edgeAB || !edgeAC) throw new Error('connect failed');
+    const { container } = render(<EdgeInspector edgeId={edgeAC.id} warnings={[]} />);
+    const sel = container.querySelector(
+      'select[aria-label="Effect (edge target)"]'
+    ) as HTMLSelectElement;
+    // Try to change the target of A→C to B (already connected).
+    act(() => fireEvent.change(sel, { target: { value: b.id } }));
+    // The edge should remain A→C (no reconnect happened).
+    const unchanged = useDocumentStore.getState().doc.edges[edgeAC.id];
+    expect(unchanged?.targetId).toBe(c.id);
+    // A toast should have been queued.
+    expect(useDocumentStore.getState().toasts.length).toBeGreaterThan(0);
+  });
+});
+
 describe('AssumptionWell — EC "…because" prefix', () => {
   it('seeds new EC assumptions with "…because " and leaves CRT assumptions empty', () => {
     // Set up an EC doc with an edge.
