@@ -118,7 +118,7 @@ These bite often — work around them, don't fight them:
   - `node ./node_modules/vitest/vitest.mjs run [substring]` (`--coverage` for coverage)
   - `node ./node_modules/vite/bin/vite.js build`
   - `node ./scripts/check-bundle-size.mjs` (after a build) — fails CI if a chunk exceeds `bundle-budget.json` + 10% slop; re-pin the budget deliberately when a feature legitimately grows a chunk.
-  - **Before every push, run the whole gate in one shot: `node scripts/preflight.mjs`** (tsc → biome → knip → vitest → build → bundle-size, fail-fast; `--fast` = static checks only, ~15s). It mirrors CI, so green here ⇒ green CI — don't run the checks piecemeal (that's how two red-CI rounds shipped E6).
+  - **Before every push, run the whole gate in one shot: `node scripts/preflight.mjs`** (tsc → biome → knip → vitest → build → bundle-size, fail-fast; `--fast` = static checks only, ~15s). It mirrors CI's lint-types + tests-build jobs; add **`--coverage`** for CI's gated coverage thresholds and **`--e2e`** for the Playwright job (not in the default run). Don't run the checks piecemeal — that's how two red-CI rounds shipped E6.
 
   `gh` on PATH works (full path `"/c/Program Files/GitHub CLI/gh.exe"`).
 - **Playwright runs locally** (Session 169): `node ./node_modules/vite/bin/vite.js preview --port 4173 --strictPort` (background) → `node ./node_modules/@playwright/test/cli.js test e2e/<spec> --reporter=list` (`reuseExistingServer` reuses the preview). `window.__TP_TEST__` (on `?test=1`) exposes `seed` / `selectNodeViaRF` / `loadPattern`. `visual-*` snapshots are Linux-only (fail on Windows); **CI's `e2e` job is authoritative**.

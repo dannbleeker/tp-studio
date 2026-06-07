@@ -41,7 +41,9 @@ export default defineConfig({
   // to respond before starting tests. Local devs can run `pnpm dev` in
   // another terminal — webServer.reuseExistingServer picks that up.
   webServer: {
-    command: 'pnpm preview --port 4173 --strictPort',
+    // Node entry point (not `pnpm preview`) so it also starts on the AppLocker
+    // box where `pnpm` is blocked — lets `preflight.mjs --e2e` run locally.
+    command: 'node ./node_modules/vite/bin/vite.js preview --port 4173 --strictPort',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
