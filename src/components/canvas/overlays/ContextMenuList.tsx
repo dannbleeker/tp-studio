@@ -109,18 +109,24 @@ function ContextSubmenuRow({
             }
           }}
         >
-          {actions.map((sub) => (
-            <button
-              key={sub.label}
-              type="button"
-              role="menuitem"
-              data-submenu-item=""
-              onClick={() => onRun(sub.run)}
-              className={rowClass(sub.destructive)}
-            >
-              <span>{sub.label}</span>
-            </button>
-          ))}
+          {actions.map((sub, i) => {
+            // Positional + ephemeral like the parent list — index is the correct
+            // identity (type labels are distinct today, but a future submenu
+            // could repeat one). Local var keeps `key={key}` lint-clean.
+            const key = `${i}:${sub.label}`;
+            return (
+              <button
+                key={key}
+                type="button"
+                role="menuitem"
+                data-submenu-item=""
+                onClick={() => onRun(sub.run)}
+                className={rowClass(sub.destructive)}
+              >
+                <span>{sub.label}</span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
@@ -204,16 +210,20 @@ export function ContextMenuList({
       onKeyDown={onMenuKeyDown}
     >
       {items.map((item, idx) => {
+        // Menu items are positional and ephemeral — the items array is rebuilt
+        // fresh on every open and never reordered, so the array index is the
+        // correct React identity. A label-based key collides when two items
+        // share a label (several untitled edges in the edge-picker, or two
+        // "Delete" rows). Binding to a local keeps `key={key}` correct without
+        // tripping the index-key lint.
+        const key = `${item.kind}:${idx}`;
         if (item.kind === 'separator') {
-          return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: separators are positional, with no stable identity of their own.
-            <div key={`sep:${idx}`} className="my-1 h-px bg-neutral-200 dark:bg-neutral-800" />
-          );
+          return <div key={key} className="my-1 h-px bg-neutral-200 dark:bg-neutral-800" />;
         }
         if (item.kind === 'header') {
           return (
             <div
-              key={`hdr:${item.label}`}
+              key={key}
               className="px-3 pt-1.5 pb-1 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400"
             >
               {item.label}
@@ -223,7 +233,7 @@ export function ContextMenuList({
         if (item.kind === 'submenu') {
           return (
             <ContextSubmenuRow
-              key={`sub:${item.label}`}
+              key={key}
               label={item.label}
               items={item.items}
               flipLeft={flipLeft}
@@ -233,7 +243,7 @@ export function ContextMenuList({
         }
         return (
           <button
-            key={`act:${item.label}`}
+            key={key}
             type="button"
             role="menuitem"
             onClick={() => runAction(item.run)}
