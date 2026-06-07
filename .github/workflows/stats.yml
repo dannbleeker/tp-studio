@@ -9,6 +9,10 @@ on:
     branches: [main]
     paths-ignore:
       - "public/stats.json"
+  schedule:
+    # Weekly refresh (Mon 06:17 UTC) so the dashboard stays current during quiet
+    # weeks with no pushes — the git-story + feature-coverage numbers keep moving.
+    - cron: "17 6 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -45,6 +49,11 @@ jobs:
       # Production build so the stats script can read dist/ for bundle sizes.
       - name: Build
         run: pnpm build
+
+      # Fail loudly on a malformed feature catalogue rather than letting
+      # build-stats emit a null featureCoverage via its safe() guard.
+      - name: Validate feature catalogue
+        run: node ./scripts/check-feature-coverage.mjs
 
       - name: Build stats.json
         run: node ./scripts/build-stats.mjs

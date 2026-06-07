@@ -44,6 +44,12 @@ const steps = [
   },
   { label: 'knip', argv: ['./node_modules/knip/bin/knip.js', '--no-progress'], fast: true },
   {
+    label: 'feature catalogue',
+    argv: ['./scripts/check-feature-coverage.mjs'],
+    fast: true,
+    fixHint: 'docs/features.json failed validation — fix the listed integrity errors',
+  },
+  {
     label: withCoverage ? 'vitest (coverage)' : 'vitest',
     argv: ['./node_modules/vitest/vitest.mjs', 'run', ...(withCoverage ? ['--coverage'] : [])],
     fast: false,
