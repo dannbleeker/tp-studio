@@ -103,7 +103,8 @@ Specific to the Windows + corporate-AppLocker box this was built on.
   doesn't surface only on CI. (The old hand-match-biome-by-eye workflow is obsolete now the node bin runs.)
 - **Background Bash lacks `node` on PATH** (exit 127) and starts in the OneDrive Desktop dir, not the repo. Run
   long-lived node tasks (preview server, vitest) via the **PowerShell tool** (`run_in_background`), and prefix
-  every foreground Bash `node`/`git`/`gh` with `cd /c/dev/tp-studio &&`.
+  every foreground Bash command with `cd /c/dev/tp-studio &&` (unconditionally) — or, for git/gh, use
+  `git -C /c/dev/tp-studio …`, which is robust to cwd drift with nothing to forget.
 - **`pnpm dlx` is blocked**; `pnpm install` from `package.json` works. **PowerShell Constrained Language Mode**
   breaks `npm.ps1` — invoke npm/pnpm from Bash or `.cmd` shims.
 - **OneDrive sync + `node_modules`** is slow/lock-prone → project lives at `C:\dev\tp-studio`.
