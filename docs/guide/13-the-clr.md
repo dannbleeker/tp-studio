@@ -59,6 +59,16 @@ The walkthrough clears what the validators *fired*. But absence of a warning is 
 
 Select an edge and run **"Scrutinize this edge (walk the CLR questions)"** from the palette, or press the **"Scrutinize against the CLR"** button in the edge inspector. Either opens a walk through all eight canonical categories — Clarity, Entity existence, Causality existence, Cause sufficiency, Additional cause, Cause–effect reversal, Predicted-effect existence, Tautology — one at a time, *including the categories nothing flagged*. Each step states the category as a question, shows any warning the validators did raise on that edge, and gives you a checkbox to tick as you genuinely consider it. The button is read-only, so it works under Browse Lock — you can scrutinize a colleague's diagram in a review without touching it. Where the walkthrough is a clearing gesture across the diagram, scrutiny is a *deepening* gesture on one edge: it forces you to ask every reservation of a single claim, not just the ones a rule happened to notice.
 
+## The long-arrow check and the missing-step prompt
+
+One failure mode doesn't look like a failure: a clean arrow with no warnings, running across too many causal levels at once. An arrow from "we cut the QA budget" straight to "customers churn" is technically an existence claim — it asserts a cause–effect link — but it's almost certainly hiding one or more unstated intermediate effects. Goldratt called these *long arrows*, and Dettmer flags them as the classic *additional cause / missing step* concern: the stated cause may be necessary, but the path from it to the stated effect passes through at least one step nobody wrote down.
+
+A new EXISTENCE-tier validator flags sufficiency arrows that skip three or more causal levels — measured by the shortest path between the two entities through any already-drawn intermediate nodes. When it fires, the Inspector shows an amber **"Arrow may skip intermediate steps"** warning on the edge. A **"Insert a step"** one-click action is available: it splices a blank intermediate entity into the middle of the over-long edge, wires the two shorter arrows in its place, and leaves the new entity selected and ready to name. You're not told what the missing step is — that's your job — but the seam is opened for you.
+
+For the QA budget example, the check flags the single arrow and you insert the missing middle. A plausible fill: *"Escaped defects rise"* sits between the budget cut and *"customer trust erodes"*, which then connects forward to churn. Two shorter, more defensible arrows replace the one long leap.
+
+**Companion check — reinforcing loop with no delay.** A second validator in the same tier watches for reinforcing feedback loops (A → B → A cycles, or longer) where no edge in the loop is marked as delayed. A reinforcing loop with no time lag reads as escalating instantly — which is almost never true and almost always a sign that one of the links needs a delay marker. When the check fires it flags the loop with a **"Reinforcing loop — consider adding a delay"** warning and highlights the edges involved. Mark one edge as delayed (the delay toggle is in the edge inspector) to resolve it.
+
 ## Dismissing warnings
 
 Two ways to dismiss:
@@ -77,6 +87,8 @@ Don't dismiss without writing the explanation. A dismissed warning with no ratio
 > - **Tier-color coding** in the warnings list: clarity (yellow) → sufficiency (amber) → causality (orange) → predicted-effect (red).
 > - **Dismissibility** — every warning can be dismissed; dismissals don't recur until the underlying state changes.
 > - **`Scrutinize this edge (walk the CLR questions)`** — walks one edge through all eight CLR categories as questions, including the ones nothing flagged; read-only, so it works under Browse Lock.
+> - **Long-arrow check** — EXISTENCE-tier validator flags sufficiency arrows spanning ≥3 causal levels; "Insert a step" action splices a blank intermediate entity into the over-long edge.
+> - **Reinforcing-loop delay check** — flags reinforcing loops where no edge carries a delay marker.
 
 > **💡 Practitioner tips**
 > - **Walk-through *before* you present.** A reader will hit the warnings if you don't.

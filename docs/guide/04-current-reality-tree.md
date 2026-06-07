@@ -111,6 +111,48 @@ How do you know the CRT is done?
 
 When all four are true, the CRT is ready for the next step — which is usually [Chapter 5](05-evaporating-cloud.md), where you ask why the core driver has persisted.
 
+## Feedback loops, the R/B badge, and system archetypes
+
+A CRT is usually a directed acyclic graph — causes flow upward to effects and stop. But some systems bite back. A cause produces an effect that loops around and *amplifies the original cause*. When that happens, you have a feedback loop, and your CRT has a cycle. TP Studio detects the back-edge closing the cycle, classifies the loop, and tells you what kind of trouble you're in.
+
+### Building the loop — a "Fixes that Fail" example
+
+Return to the support team scenario, and add one more cause chain that the team mentions almost in passing: "Whenever a major ticket causes a production outage, the on-call engineer restarts the affected service. That gets things working again in under ten minutes, so everyone moves on."
+
+Add two new entities: **Production outage occurs** (mark it UDE) and **On-call engineer restarts service**. Connect **Production outage occurs → On-call engineer restarts service** (the immediate response), then connect **On-call engineer restarts service → Root fault goes uninvestigated** (the restart buys time but masks the underlying defect), and finally connect **Root fault goes uninvestigated → Production outage occurs** (the fault persists and triggers the next outage). That last arrow closes the cycle — it is the back-edge.
+
+The moment you draw it, TP Studio decorates that edge with a small badge: **R**. That badge means *Reinforcing*. TP Studio derives it by multiplying the polarities of every edge around the loop — if the product is positive, the loop amplifies whatever is already happening. Here, each restart relieves the outage *and* prevents the fix, so outages accumulate over time. The R badge is the diagram telling you: this loop will not self-correct.
+
+> **R vs B at a glance.** A Reinforcing loop has no governor — it compounds. A Balancing loop has a target it steers toward; it self-corrects (though it may hunt, overshoot, or oscillate with a delay). Neither is inherently good or bad. A B loop can trap a system in a suboptimal equilibrium; an R loop can be the engine of growth or a death spiral. The badge just names what the structure does.
+
+### Running the CLR check for the loop
+
+Open the CLR walkthrough (`Cmd+K → Start CLR walkthrough`). If the loop is recognized, you'll see a **Loop polarity** entry in the clarity tier: *"Loop 'unnamed' is Reinforcing (R). Check whether this escalation is intentional."* That's the validator acknowledging the cycle and confirming its classification. If the loop spans a long chain, the walkthrough also flags any edge whose polarity you haven't explicitly set — because a mismarked polarity silently flips the R/B determination.
+
+### Naming the loop and noting its behaviour over time
+
+Click the back-edge (the arrow from **Root fault goes uninvestigated** back to **Production outage occurs**). The Edge Inspector panel opens on the right. In the **Loop name** field, type `Restart spiral`. In the **Behaviour over time** note field, write: *"Outage frequency and severity escalate over time; each quick restart erodes the team's incentive to invest in a real fix."* These two fields travel with the back-edge — they become the loop's identity in any export or review.
+
+### Marking the delay
+
+The fault doesn't cause the next outage instantly — there's typically a lag of days or weeks before the latent defect degrades enough to fire again. Select the edge from **Root fault goes uninvestigated → Production outage occurs** and toggle **Delayed** in the Inspector. TP Studio renders a `//` glyph on that edge, the conventional delay marker.
+
+Before you mark the delay, the CLR walkthrough may have surfaced a warning: *"A reinforcing loop with no delay would escalate instantly — is a time lag missing?"* That warning goes quiet once a delay is marked. This matters practically: a reinforcing loop with a short delay looks like steady escalation; one with a long delay looks like isolated incidents with no obvious connection. The `//` glyph makes the lag visible to everyone who reads the diagram.
+
+### System-archetype patterns
+
+What you just drew is one of five classical feedback patterns — *system archetypes* — that Peter Senge catalogued in *The Fifth Discipline*. TP Studio ships them as ready-to-load starters in the Pattern library (`Cmd+K → Pattern library → Load archetype`):
+
+- **Fixes that Fail** — a symptomatic fix relieves pressure, masking the root cause, so the problem returns worse. *Counter-intuitive lesson: treat the root cause, not the symptom.*
+- **Escalation** — two parties each respond to the other's actions by raising the stakes, amplifying the conflict. *Lesson: change the measure both sides are reacting to.*
+- **Shifting the Burden** — a symptomatic solution crowds out investment in the fundamental solution, making the system dependent on the symptom-fix. *Lesson: invest in the fundamental solution before the dependency sets in.*
+- **Eroding Goals** — when a gap between goal and performance is closed by lowering the goal rather than raising performance. *Lesson: hold the goal.*
+- **Limits to Growth** — a reinforcing growth engine hits a limiting factor that slows and eventually stops growth. *Lesson: lift the limit, not the growth rate.*
+
+Load "Fixes that Fail" as a starting point when your situation smells like the restart spiral above. The loaded archetype drops a pre-wired loop onto the canvas; replace its placeholder labels with your own entities, and the R/B badges and CLR checks carry over automatically.
+
+The support team's restart spiral is a textbook Fixes that Fail: the restart is the symptomatic fix, the outage recurrence is the delayed consequence, and the real fix — a mandatory post-incident root-cause investigation protected from the next incoming ticket — is the fundamental solution that never gets funded because the restarts keep the pain just bearable enough to defer it. Sound familiar?
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**

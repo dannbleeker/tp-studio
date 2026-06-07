@@ -166,6 +166,10 @@ The canvas re-flows automatically after each change, with a 300 ms ease-out anim
 
 **Tagging a back-edge (acknowledged loop).** Sometimes a causal loop is *the point* — a vicious circle in a CRT, a positive reinforcing loop in an FRT. Right-click the loop-closing edge → **Tag as back-edge** (or use the **Back-edge** checkbox in the Edge Inspector). The edge renders with a thicker dashed stroke and a `↻` glyph; the cycle CLR rule stops flagging that cycle as a defect. You can untag any time from the same menu / checkbox.
 
+**Naming a loop and recording behaviour over time.** Once an edge is tagged as a back-edge, the Edge Inspector gains a **Loop name** field and a **Behaviour over time** textarea. Type a short name (e.g. "Delay spiral") and it renders as a label beside the R / B badge on the canvas. Use the behaviour-over-time field to note the expected system archetype or dynamic — a free-text memo that travels with the document. You can also reach the name field via right-click → **Name this loop…** on the back-edge.
+
+**Delay markers on edges.** Mark any edge as delayed to signal a time lag between cause and effect — common in feedback loops where the response arrives after a gap. Toggle the marker with right-click → **Mark as delayed** (or the **Delayed** checkbox in the Edge Inspector). A `//` glyph appears at the edge midpoint; removing the marker restores the plain edge. Delay markers are purely documentary — they don't affect layout or CLR logic type-checks — but they feed the **reinforcing-loop-with-no-delay** CLR validator described below.
+
 **Marking the conflict on an Evaporating Cloud.** An EC's diagnostic depends on its two Wants being mutually exclusive. Draw an edge between the two `want` entities (start a drag from one Want's handle, release on the other), select it, and tick the **Mutual exclusion (EC)** checkbox in the Edge Inspector. The edge renders red with a ⚡ lightning-bolt glyph, and the `ec-missing-conflict` CLR rule stops firing. The checkbox only appears in the inspector when both endpoints are Wants.
 
 **EC inspector tabs (Session 77).** When the open document is an Evaporating Cloud, the right inspector grows a three-tab bar at the top:
@@ -481,6 +485,10 @@ You can also see a total count at any time: `Cmd/Ctrl+K` → **Run validation** 
 
 **CRT build-quality checks (Session 179).** On a Current Reality Tree the validators add a set of soft construction nudges drawn from the classic CRT method: an entity that **leads to no UDE** (prune it, or connect it into the chain); a **UDE with no cause feeding it** (the tree is incomplete there); the **leading root cause explaining fewer than half the UDEs** (the tree may have two independent clusters); **two root causes tied** for the most UDEs (a hidden conflict may sit beneath — consider an Evaporating Cloud); a UDE phrased as the **absence of a solution** ("lack of…", a leading "No…") rather than an observable effect; and a **UDE count** outside the rough 3–15 range. All are dismissible like any other CLR warning.
 
+**Reinforcing-loop-with-no-delay warning.** A CLR validator fires on any reinforcing loop (R badge) where *none* of the loop's edges carries a delay marker. Real reinforcing dynamics almost always contain a lag — if every edge in the loop is instantaneous, the structure may be missing a step or the delay is simply unacknowledged. The warning appears on the back-edge in the CLR panel; resolve it by marking at least one edge in the loop as delayed, or dismiss it if the instantaneous reading is intentional.
+
+**Long-arrow / missing-step warning (EXISTENCE tier).** A sufficiency edge that skips three or more causal levels — judged by the topological distance between its source and target — triggers an EXISTENCE-tier CLR warning. The diagnostic: a large skip usually means intermediate causes are assumed rather than shown, which makes the arrow hard to challenge. The warning surfaces in the CLR panel with a one-click **Insert a step** action that splices a blank entity into the middle of the edge (identical to right-click → **Splice entity into this edge**), leaving you to name the missing step.
+
 **Logic-type and loop checks (Session 179).** A **logic-type** nudge flags an edge whose kind contradicts the diagram's primary logic (sufficiency for CRT/FRT/TT/NBR; necessity for a Goal Tree). And for diagrams with a feedback loop, a **loop-polarity** check reads the loop as **Reinforcing (R)** or **Balancing (B)** — the product of the edge polarities around it — and flags a balancing (self-correcting) loop where a reinforcing (self-amplifying) one is expected. The loop-closing back-edge also carries a small **R / B badge** on the canvas, so you can see at a glance whether a cycle is a vicious/virtuous spiral (R) or a goal-seeking damper (B).
 
 **Scrutinize a single link.** Select an edge and click **Scrutinize against the CLR** in its inspector (or `Cmd/Ctrl+K` → **Scrutinize this edge**). A guided stepper walks the eight canonical Categories of Legitimate Reservation — Clarity, Entity existence, Causality existence, Cause sufficiency, Additional cause, Cause–effect reversal, Predicted-effect existence, Tautology — **one question at a time** for that single cause→effect arrow. Any warning the validators already flagged on the edge appears under the matching question; the rest are prompts for your own judgment, with a checkbox to tick each as you consider it (the ticks are a session aid — nothing is saved). This is the complement to **Start CLR walkthrough**: the walkthrough clears the warnings that *did* fire across the whole diagram, while scrutiny makes you ask *every* reservation of the link in front of you, including the ones nothing flagged. It's read-only, so it stays available under Browse Lock.
@@ -767,6 +775,21 @@ While locked:
 - Each blocked attempt shows a single toast: "Browse Lock is on — unlock to make changes."
 
 Read-only operations still work: panning, zooming, selection, the help dialog, validation, and JSON / PNG export.
+
+## Reader / trainee mode
+
+Reader mode is a fifth app mode alongside Expert, Guided, Workshop, and Presentation. It is designed for someone encountering a finished diagram for the first time — a stakeholder review, a training session, or a self-study pass through an archived analysis.
+
+Enter it via the command palette (`Cmd/Ctrl+K` → **Switch to Reader mode**) or the app-mode switch in the toolbar.
+
+While in Reader mode:
+
+- **Edit chrome is hidden.** The selection toolbar, drag handles, inline-edit affordances, and destructive inspector buttons are suppressed — the canvas looks clean, not locked.
+- **Coaching tooltips on hover.** Hovering any entity or edge surfaces a short explanation of *what that element type is and how to read it* (e.g. "Root Cause — a terminal driver at the bottom of the tree; this is where leverage lives"). The tooltips are type-specific, not entity-specific, so they teach the method rather than paraphrase the title.
+- **"How to read this" banner.** A dismissible banner across the top of the canvas gives a one-sentence diagram-type reading rule (the same text as the print legend). Dismiss it for the session with the × or leave it visible for new readers.
+- **"Challenge this arrow" flow.** Right-clicking an edge in Reader mode offers **Challenge this arrow** instead of the usual edit options. It opens the comment composer pre-configured in CLR-reservation-first mode — the reservation category dropdown is mandatory before the text field activates, prompting the reader to name *which* Category of Legitimate Reservation they're raising rather than just writing a freeform objection. The resulting comment is tagged with the reservation and anchored to the edge, ready for the diagram author to review.
+
+Switching away from Reader mode (back to any other app mode) restores all edit chrome immediately.
 
 ## Using TP Studio offline
 

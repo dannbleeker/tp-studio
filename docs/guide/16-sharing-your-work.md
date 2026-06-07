@@ -120,6 +120,22 @@ Double-clicking the file opens it in any browser. No network calls. No JavaScrip
 
 Perfect for: airgapped audiences, security-conscious recipients, slides with embedded HTML, archival.
 
+## Reader mode: sharing a diagram with non-experts
+
+Browse Lock keeps a reviewer from accidentally editing your diagram. Reader mode goes further: it reshapes the whole interface for someone who doesn't know TP notation at all.
+
+Switch into it before handing a diagram to a manager, a client, or a domain expert who wasn't in the room when the tree was built: `Cmd+K → Enter Reader mode`. Reader mode is a fifth app mode — alongside Expert, Guided, Workshop, and Presentation — that wraps a distraction-free, read-only shell on top of Browse Lock. The toolbar collapses to a single close button; the palette, inspector, and edit chrome all disappear. What remains is the diagram, a slim reading-hint banner across the top, and the canvas.
+
+The banner shows the diagram-type reading rule in one sentence — for a CRT, that's something like *"Read bottom to top: lower nodes cause upper ones"*. For an EC it shows the five-box convention. The right framing in eight words is worth more than a four-paragraph email.
+
+**Coaching tooltips.** Every entity and every edge gets a plain-language hover card. Hover a cloud box labelled "UDE" and the card says: *"Undesirable Effect — a symptom of the core problem."* Hover a causal arrow and it says: *"Cause–effect link: the lower node is claimed to produce the upper one."* The tooltips don't require any setup; they derive from element type and diagram context automatically.
+
+**"Challenge this arrow."** Non-experts often sense that something is wrong before they can articulate it. Each edge in reader mode shows a small **Challenge this arrow** affordance — a flag icon on hover. Clicking it opens the comment composer in *reservation-first mode*: before the reviewer types a free-text note, the composer offers a short menu of reservation types drawn from the CLR taxonomy — *Causality existence*, *Cause sufficiency*, *Additional cause*, and so on — with a one-line plain-language gloss on each. They don't need to know the CLR; they just pick the closest match. The reservation type pre-fills the comment, and the comment lands in the diagram's thread list exactly like any other review comment.
+
+**Worked example.** You've built a CRT explaining why customer churn is rising. You want a sign-off from the VP of Sales, who has never seen a tree before. You enter Reader mode and paste the share link into an email. She opens it. The banner tells her to read from the bottom up. She hovers a node marked *"UDE"* — the tooltip tells her it's a symptom, not a root cause. She follows the arrows upward and hits a jump that bothers her: an arrow running from *"sales cycle lengthened"* straight to *"renewal pipeline dried up"* with nothing in between. She clicks Challenge this arrow, scans the reservation menu, picks *"Cause–effect existence — does this link really hold?",* and types *"We lengthened cycles on purpose to land bigger contracts. Is churn the actual outcome?"* The comment arrives in your Open list, pinned to that exact edge, already labelled with the CLR category she chose. You have a precise, actionable objection — not a vague "I'm not sure about this bit."
+
+Exit Reader mode at any time with the **X** in the top-right corner; the diagram reopens exactly as you left it.
+
 ## Review comments
 
 Sharing a diagram for feedback used to mean the feedback came back *somewhere else* — a reply email, a Slack thread, a track-changes Word doc — detached from the diagram it was about. **Review comments** keep the feedback inside the file.
@@ -144,6 +160,7 @@ Two boundaries worth knowing:
 > - **Standalone HTML viewer** — self-contained share artifact.
 > - **EC Workshop Sheet PDF** — one-page handout for EC workshops.
 > - **Browse Lock auto-engages on share-link load** — receivers can't accidentally edit.
+> - **`Cmd+K → Enter Reader mode`** — distraction-free shell for non-expert reviewers: reading-hint banner, coaching tooltips, and "Challenge this arrow" affordance.
 > - **Review comments** — notes pinned to an entity / edge / the whole diagram, carried inside every JSON / share-link / HTML export.
 > - **`tp-studio-import` Claude skill** — describe a problem in words; get an importable JSON for any of the nine diagram types.
 
@@ -152,6 +169,7 @@ Two boundaries worth knowing:
 > - **PDF for static audiences, share link for interactive ones.** Stakeholders click PDFs; analysts click links.
 > - **Use redacted JSON when sharing the shape of an analysis.** "Here's our diagnostic shape, with anonymized content" is a real workflow.
 > - **The EC Workshop Sheet is great handout material.** Print one per participant.
+> - **Enter Reader mode before sending to a domain expert.** They shouldn't need to learn TP notation to give you useful feedback.
 > - **Use comments for async review.** Share the link, let reviewers pin objections to the exact edge, then work the Open filter to zero.
 
 > **⚠ Common mistakes**

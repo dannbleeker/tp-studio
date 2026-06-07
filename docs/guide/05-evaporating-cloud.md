@@ -195,6 +195,71 @@ In TP Studio terms, each channel is an **injection** that breaks an assumption o
 
 > **💡 Why this matters in the room:** when you hit resistance, the instinct is to push harder or sell the benefits louder. This cloud says both instincts miss — resistance is defending *security* (prediction reliability), while benefits speak only to *satisfaction*. Naming which need is in play tells you which of the two channels to reach for.
 
+## Rapid 3-cloud diagnosis
+
+Sometimes you're nowhere near a finished Current Reality Tree — the team is standing around a whiteboard, three problems are bouncing off each other, and someone says "what is actually going on here?" That's the moment for the **Rapid 3-cloud diagnosis** wizard: a two-step guided overlay that builds a Core Cloud from raw frustrations in a single sitting, without a full CRT.
+
+Invoke it from the command palette: `Cmd+K → "Rapid 3-cloud diagnosis…"`. An overlay opens, separate from whatever you already have on screen; nothing you were working on is touched.
+
+### Step 1 — Capture three UDE conflicts
+
+The first step of the overlay presents three side-by-side slots. For each of the three undesirable effects (UDEs) you want to explain, you give it two things: a brief label for the UDE itself, and the conflict you feel underneath it — specifically, **what you DO** (D) versus **what you feel you should do instead** (D′).
+
+Suppose your team's three UDEs are:
+
+1. *Releases slip* — every quarter, the ship date slides by two or three weeks, and leadership scrambles to explain it to stakeholders.
+2. *Quality bugs recur* — the same categories of defects appear in successive releases, even after postmortems.
+3. *People are burning out* — two strong engineers left in the past year; the rest are running on fumes.
+
+For each, you identify the do-vs-should-do tension:
+
+| # | UDE | What you DO (D) | What you feel you should do instead (D′) |
+|---|-----|-----------------|------------------------------------------|
+| 1 | Releases slip | Push on every deadline regardless of state | Hold capacity back; fix the process before pushing harder |
+| 2 | Quality bugs recur | Ship as soon as the hot path is green | Reserve a structured integration window before every release |
+| 3 | People are burning out | Load the team fully to hit commitments | Actively protect slack so the team can invest in themselves and the system |
+
+Fill in the six fields. The wizard doesn't ask you to resolve anything yet — it just records the three tensions. Click "Next".
+
+### Step 2 — Consolidate to a single Core Cloud
+
+The second step shows the three do-vs-should-do pairs side by side and asks you to find the one cloud underneath all of them. This is the consolidation move at the heart of the method: multiple UDE clouds that share a shape collapse into one Core Cloud.
+
+Look at the D column — *push hard on every deadline*, *skip the integration window*, *load the team fully*. What need does that pattern serve? Something like: **Hit commitments this quarter**. There's real pressure behind it — contracts, stakeholders, sprint goals.
+
+Now look at the D′ column — *protect capacity*, *reserve integration time*, *protect slack for investment*. What need does that serve? Something like: **Keep the team and the system healthy**. Also real — without this, the machine that makes commitments possible eventually seizes.
+
+Both needs are legitimate. Both serve the same shared objective. Type it in the top field: **Deliver reliably and sustainably**. Then name the two needs and confirm the two wants the wizard has already inferred from your D/D′ entries.
+
+When you click "Create Core Cloud", TP Studio:
+
+- opens a new Evaporating Cloud document in its own tab, tagged as **Cloud type: Core**,
+- pre-fills the five boxes (A / B / C / D / D′) from the values you entered,
+- writes the three UDE labels and their D/D′ pairs into the document description as the source conflicts — preserved for reference, invisible on the canvas itself.
+
+You land on a fully formed, tag-annotated cloud ready to work:
+
+```
+A  — Deliver reliably and sustainably
+B  — Hit commitments this quarter          →  D  — Push hard on every deadline
+C  — Keep the team and the system healthy  →  D′ — Hold capacity back to invest
+```
+
+The three UDEs — slipping releases, recurring bugs, burnout — all fall out of the same core tension: D and D′ can't both be maximized at once, so the team alternates between them (or freezes, unable to choose), and each UDE is just a different symptom of that oscillation.
+
+### From here, it's a standard cloud
+
+The resulting document is an ordinary Evaporating Cloud. Nothing about reading, editing, or breaking it changes:
+
+- Open the **VerbalisationStrip** and read it aloud. Does it sound like the organization talking? If not, adjust the wording in the boxes.
+- Mark the **mutex** on the D ↔ D′ edge (Inspector → Mutual exclusion).
+- Add **assumptions** to the B→D and C→D′ arrows in the AssumptionWell. On D→B ("to hit commitments, we must push on every deadline") you'll quickly find: *Any capacity held back is capacity that doesn't ship*. That assumption is breakable — a team with slack may ship more sustainably than one burning on every sprint.
+- Draft the **injection** in the InjectionWorkbench. Mark the assumption invalid and write the resolution: *"If we establish a sustainable pace with explicit recovery cycles, we can hit commitments more reliably than by pushing every deadline — because we stop losing delivery capacity to turnover and technical debt."*
+
+The Rapid 3-cloud diagnosis is not a shortcut that skips the rigor — it's a faster **on-ramp**. You're still doing the same cloud work; you're just starting from raw frustrations rather than a finished CRT. Once the Core Cloud is evaporated, carry the injection forward into a Future Reality Tree to check it actually delivers the good effects you want, and that it doesn't spawn new problems of its own.
+
+> **🛠 How TP Studio helps:** `Cmd+K → "Rapid 3-cloud diagnosis…"` opens the two-step overlay. Step 1 takes three UDE labels and their D/D′ pairs. Step 2 shows the pairs side by side and prompts for A / B / C. On completion, a new EC document tagged as a Core cloud opens in its own tab; the three source conflicts are preserved in the document description. Nothing on your current canvas is affected.
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**

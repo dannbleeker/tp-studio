@@ -436,6 +436,42 @@ const timing = safe(() => {
 	return { durationMs, slowest };
 }, { durationMs: null, slowest: [] });
 
+// --- feature coverage (reads docs/features.json) -------------------------------
+// The user-facing-feature catalogue + how much of it the docs cover. `manual` =
+// documented in USER_GUIDE.md; `book` = documented in a docs/guide chapter;
+// `bookExample` = that chapter carries a worked example. Catalogue is curated
+// (one row per capability); coverage flags are maintained alongside it.
+const featureCoverage = safe(() => {
+	const reg = JSON.parse(readFileSync(join(ROOT, "docs/features.json"), "utf8"));
+	const feats = Array.isArray(reg.features) ? reg.features : [];
+	const total = feats.length;
+	const pct = (n) => (total ? Math.round((n / total) * 1000) / 10 : 0);
+	const manual = feats.filter((f) => f.manual).length;
+	const book = feats.filter((f) => f.book).length;
+	const bookExample = feats.filter((f) => f.bookExample).length;
+	const byArea = {};
+	for (const f of feats) {
+		const a = (byArea[f.area] ||= { total: 0, manual: 0, book: 0 });
+		a.total++;
+		if (f.manual) a.manual++;
+		if (f.book) a.book++;
+	}
+	const newestFirst = (arr) => [...arr].sort((a, b) => (b.since ?? 0) - (a.since ?? 0));
+	const gap = (pred) =>
+		newestFirst(feats.filter(pred)).map((f) => ({ id: f.id, name: f.name, since: f.since }));
+	return {
+		total,
+		manual,
+		manualPct: pct(manual),
+		book,
+		bookPct: pct(book),
+		bookExample,
+		bookExamplePct: pct(bookExample),
+		byArea,
+		gaps: { noManual: gap((f) => !f.manual), noBook: gap((f) => !f.book) },
+	};
+}, null);
+
 // --- assemble + write ----------------------------------------------------------
 const stats = {
 	generatedAt: new Date().toISOString(),
@@ -447,6 +483,8 @@ const stats = {
 		commits,
 		ageDays,
 		trackedFiles: tracked.length,
+		featureManualPct: featureCoverage ? featureCoverage.manualPct : null,
+		featureBookPct: featureCoverage ? featureCoverage.bookPct : null,
 	},
 	code,
 	coverage,
@@ -457,6 +495,7 @@ const stats = {
 	hygiene,
 	bundle,
 	docs,
+	featureCoverage,
 	git: { born, ageDays, commits, commits7d, authors, churn30d, changelogEntries },
 };
 
@@ -476,6 +515,8 @@ const point = {
 	tests: unitTests + e2eTests,
 	bundleKb: bundle.totalGzipKb,
 	mutationScore: quality.mutationScore,
+	featureManualPct: featureCoverage ? featureCoverage.manualPct : null,
+	featureBookPct: featureCoverage ? featureCoverage.bookPct : null,
 };
 history = history.filter((h) => h.date !== today);
 history.push(point);
