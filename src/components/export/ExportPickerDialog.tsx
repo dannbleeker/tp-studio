@@ -344,6 +344,14 @@ export function ExportPickerDialog() {
   // Session 135 / spec major gap #7 — parallel guard for the TT-task
   // CSV export. Same O(1) cached lookup pattern as `hasAnyUde`.
   const hasAnyAction = useDocumentStore((s) => entitiesOfType(currentDoc(s), 'action').length > 0);
+  // Parallel guard for the PRT ordered-plan CSV export. The
+  // `requiresEntityType: 'intermediateObjective'` flag was declared when the
+  // export shipped (Session 162) but never wired into the filter below, so the
+  // option surfaced on every document — the empty-CSV trap it was meant to
+  // avoid. Same O(1) cached lookup as `hasAnyUde` / `hasAnyAction`.
+  const hasAnyIntermediateObjective = useDocumentStore(
+    (s) => entitiesOfType(currentDoc(s), 'intermediateObjective').length > 0
+  );
 
   if (!open) return null;
 
@@ -371,6 +379,9 @@ export function ExportPickerDialog() {
             if (it.onlyOnECDoc && diagramType !== 'ec') return false;
             if (it.requiresEntityType === 'ude' && !hasAnyUde) return false;
             if (it.requiresEntityType === 'action' && !hasAnyAction) return false;
+            if (it.requiresEntityType === 'intermediateObjective' && !hasAnyIntermediateObjective) {
+              return false;
+            }
             return true;
           });
           if (visible.length === 0) return null;
