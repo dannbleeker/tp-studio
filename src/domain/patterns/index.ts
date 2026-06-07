@@ -37,6 +37,7 @@ import type { DiagramType, TPDocument } from '../types';
 import { buildPatternCloudCore } from './cloud-core';
 import { buildPatternCloudFirefighting } from './cloud-firefighting';
 import { buildPatternCloudUDE } from './cloud-ude';
+import { buildPatternCRTCostAccounting } from './crt-cost-accounting';
 import { buildPatternCRTEngineeringVelocity } from './crt-engineering-velocity';
 import { buildPatternCRTErodingGoals } from './crt-eroding-goals';
 import { buildPatternCRTEscalation } from './crt-escalation';
@@ -146,6 +147,13 @@ export const PATTERNS: Pattern[] = [
     hint: "Goldratt's archetype — one local measure (reward the furnace on tons/hour) sprays into a UDE field: WIP piles up, the wrong mix is poured, inventory balloons, orders ship late. AND on the late-orders UDE; pairs with the schedule-adherence FRT.",
     diagramType: 'crt',
     build: buildPatternCRTTonsPerHour,
+  },
+  {
+    id: 'crt-cost-accounting',
+    label: 'Cost-accounting / product-costing trap',
+    hint: "Goldratt's cost-world trap as a CRT — a fully-loaded product cost sprays UDEs (profitable products dropped, good orders rejected, inventory built to absorb overhead, net profit stalls while local metrics look healthy). ABC inherits the same root cause; pairs with the Cost-vs-Throughput cloud.",
+    diagramType: 'crt',
+    build: buildPatternCRTCostAccounting,
   },
   // System archetypes (Session 179) — Senge's recurring dynamics as CRTs, each a
   // feedback loop the R/B badge reads. See docs/EXTERNAL_TP_SOURCE_REVIEW.md (E1).
@@ -259,7 +267,7 @@ export const PATTERNS: Pattern[] = [
   {
     id: 'ec-cost-vs-throughput',
     label: 'Cost world vs throughput world',
-    hint: "The idle-worker conflict from *The Goal* — keep every resource busy (local efficiency) vs let non-constraints idle (subordinate to the drum). TOC's foundational cloud.",
+    hint: "The idle-worker conflict from *The Goal* — keep every resource busy (local efficiency) vs let non-constraints idle (subordinate to the drum). TOC's foundational cloud; pairs with the cost-accounting CRT.",
     diagramType: 'ec',
     build: buildPatternECCostVsThroughput,
   },
