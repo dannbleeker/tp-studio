@@ -56,7 +56,19 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add public/stats.json public/stats-history.json
             git commit -m "chore(stats): refresh stats [skip ci]"
-            git push
+            # A concurrent workflow (e.g. the book-artifact rebuild) may push to
+            # main between our checkout and push. Rebase our stats-only commit on
+            # top and retry rather than failing the whole run on a benign race.
+            pushed=false
+            for attempt in 1 2 3 4 5; do
+              if git pull --rebase --autostash origin main && git push; then
+                pushed=true; echo "pushed on attempt $attempt"; break
+              fi
+              echo "push attempt $attempt rejected; retrying in 5s…"; sleep 5
+            done
+            if [[ "$pushed" != true ]]; then
+              echo "::error::stats push failed after 5 attempts"; exit 1
+            fi
           else
             echo "stats unchanged."
           fi
