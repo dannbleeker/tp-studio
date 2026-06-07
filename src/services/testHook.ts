@@ -1,5 +1,4 @@
 import { createDocument } from '@/domain/factory';
-import { patternById } from '@/domain/patterns';
 import { importFromJSON } from '@/domain/persistence';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { confirmAndDeleteEntity } from '@/services/confirmations';
@@ -198,9 +197,10 @@ export interface TpTestHook {
    * via `patternById(id).build()` + `openDocInTab`). Lets the e2e / preview
    * harness load a known multi-node diagram (e.g. an AND-junctor CRT) to pin
    * canvas geometry deterministically, instead of driving the PatternLibrary UI.
-   * No-op for an unknown id.
+   * No-op for an unknown id. Async because the pattern library is loaded on
+   * demand (see the impl) — await it if a caller needs the diagram in place.
    */
-  loadPattern: (id: string) => void;
+  loadPattern: (id: string) => Promise<void>;
 }
 
 /**
@@ -301,7 +301,12 @@ export const maybeInstallTestHook = (): void => {
       const id = s.tabOrder[index];
       if (id) s.switchTab(id);
     },
-    loadPattern: (id) => {
+    loadPattern: async (id) => {
+      // Dynamic import keeps the (sizeable) pattern library out of the eager
+      // `index` chunk — testHook is installed at boot from main.tsx, so a
+      // static import would drag every pattern build file into the main bundle.
+      // PatternLibraryDialog already lazy-loads the registry the same way.
+      const { patternById } = await import('@/domain/patterns');
       const pattern = patternById(id);
       if (pattern) useDocumentStore.getState().openDocInTab(pattern.build());
     },
