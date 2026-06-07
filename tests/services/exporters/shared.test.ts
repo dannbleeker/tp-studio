@@ -62,7 +62,7 @@ describe('slug', () => {
 
   it('a 60-char input with non-alphanumeric suffix is trimmed + hyphens stripped', () => {
     // 58 'a's + '!!' — after processing "aaa…aaa" (58 chars) → no trailing hyphen
-    const result = slug('a'.repeat(58) + '!!');
+    const result = slug(`${'a'.repeat(58)}!!`);
     expect(result).toHaveLength(58);
   });
 

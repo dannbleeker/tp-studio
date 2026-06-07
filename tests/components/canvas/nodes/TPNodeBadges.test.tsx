@@ -439,7 +439,7 @@ describe('CommentCountBadge', () => {
     const onOpen = vi.fn();
     const parentClick = vi.fn();
     const { container } = render(
-      <div onClick={parentClick}>
+      <div onClick={parentClick} onKeyDown={parentClick}>
         <CommentCountBadge count={2} onOpen={onOpen} />
       </div>
     );
@@ -552,7 +552,7 @@ describe('CollapsedExpandButton', () => {
     const onToggle = vi.fn();
     const parentClick = vi.fn();
     const { container } = render(
-      <div onClick={parentClick}>
+      <div onClick={parentClick} onKeyDown={parentClick}>
         <CollapsedExpandButton entity={entity} hiddenDescendantCount={2} onToggle={onToggle} />
       </div>
     );

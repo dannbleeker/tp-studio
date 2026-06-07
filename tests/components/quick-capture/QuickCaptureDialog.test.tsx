@@ -192,7 +192,7 @@ describe('submit via button', () => {
     expect(allEdges()).toHaveLength(2);
 
     const entityByTitle = Object.fromEntries(allEntities().map((e) => [e.title, e]));
-    const parent = entityByTitle['Parent'];
+    const parent = entityByTitle.Parent;
     const childA = entityByTitle['Child A'];
     const childB = entityByTitle['Child B'];
     expect(parent).toBeTruthy();

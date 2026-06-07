@@ -78,7 +78,6 @@ function SymptomsStep({
         you'll consolidate them into one core conflict.
       </p>
       {conflicts.map((c, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length positional slots, never reordered.
         <fieldset
           key={i}
           className="flex flex-col gap-2 rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"

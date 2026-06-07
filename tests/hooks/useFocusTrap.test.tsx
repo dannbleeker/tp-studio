@@ -115,8 +115,8 @@ describe('useFocusTrap — inactive (active=false)', () => {
 
     render(
       <Harness active={false}>
-        <button>A</button>
-        <button>B</button>
+        <button type="button">A</button>
+        <button type="button">B</button>
       </Harness>
     );
 
@@ -127,8 +127,8 @@ describe('useFocusTrap — inactive (active=false)', () => {
   it('does not intercept Tab when inactive', () => {
     render(
       <Harness active={false}>
-        <button>A</button>
-        <button>B</button>
+        <button type="button">A</button>
+        <button type="button">B</button>
       </Harness>
     );
     const trap = getTrap();
@@ -159,8 +159,12 @@ describe('useFocusTrap — initialFocus', () => {
   it('focuses the first focusable element on mount by default (initialFocus=true)', () => {
     render(
       <Harness active={true}>
-        <button data-testid="first">First</button>
-        <button data-testid="second">Second</button>
+        <button type="button" data-testid="first">
+          First
+        </button>
+        <button type="button" data-testid="second">
+          Second
+        </button>
       </Harness>
     );
     expect(document.activeElement).toBe(document.querySelector('[data-testid="first"]'));
@@ -173,7 +177,7 @@ describe('useFocusTrap — initialFocus', () => {
 
     render(
       <Harness active={true} initialFocus={false}>
-        <button>Inside</button>
+        <button type="button">Inside</button>
       </Harness>
     );
 
@@ -205,9 +209,9 @@ describe('useFocusTrap — Tab wrapping', () => {
   it('wraps Tab from last element to first element', () => {
     render(
       <Harness active={true} initialFocus={false}>
-        <button>First</button>
-        <button>Middle</button>
-        <button>Last</button>
+        <button type="button">First</button>
+        <button type="button">Middle</button>
+        <button type="button">Last</button>
       </Harness>
     );
     const trap = getTrap();
@@ -224,9 +228,9 @@ describe('useFocusTrap — Tab wrapping', () => {
   it('wraps Shift+Tab from first element to last element', () => {
     render(
       <Harness active={true} initialFocus={false}>
-        <button>First</button>
-        <button>Middle</button>
-        <button>Last</button>
+        <button type="button">First</button>
+        <button type="button">Middle</button>
+        <button type="button">Last</button>
       </Harness>
     );
     const trap = getTrap();
@@ -243,9 +247,9 @@ describe('useFocusTrap — Tab wrapping', () => {
   it('does NOT wrap Tab when focus is on an intermediate element', () => {
     render(
       <Harness active={true} initialFocus={false}>
-        <button>First</button>
-        <button>Middle</button>
-        <button>Last</button>
+        <button type="button">First</button>
+        <button type="button">Middle</button>
+        <button type="button">Last</button>
       </Harness>
     );
     const trap = getTrap();
@@ -261,9 +265,9 @@ describe('useFocusTrap — Tab wrapping', () => {
   it('does NOT wrap Shift+Tab when focus is on an intermediate element', () => {
     render(
       <Harness active={true} initialFocus={false}>
-        <button>First</button>
-        <button>Middle</button>
-        <button>Last</button>
+        <button type="button">First</button>
+        <button type="button">Middle</button>
+        <button type="button">Last</button>
       </Harness>
     );
     const trap = getTrap();
@@ -278,7 +282,7 @@ describe('useFocusTrap — Tab wrapping', () => {
   it('stays on a single element when Tab is pressed (wraps to itself)', () => {
     render(
       <Harness active={true}>
-        <button>Only</button>
+        <button type="button">Only</button>
       </Harness>
     );
     const trap = getTrap();
@@ -330,8 +334,8 @@ describe('useFocusTrap — focus escaped container', () => {
 
     render(
       <Harness active={true} initialFocus={false}>
-        <button>First</button>
-        <button>Last</button>
+        <button type="button">First</button>
+        <button type="button">Last</button>
       </Harness>
     );
     const trap = getTrap();
@@ -352,8 +356,8 @@ describe('useFocusTrap — focus escaped container', () => {
 
     render(
       <Harness active={true} initialFocus={false}>
-        <button>First</button>
-        <button>Last</button>
+        <button type="button">First</button>
+        <button type="button">Last</button>
       </Harness>
     );
     const trap = getTrap();
@@ -376,7 +380,7 @@ describe('useFocusTrap — non-Tab keys ignored', () => {
   it('does not call preventDefault for non-Tab keys', () => {
     render(
       <Harness active={true}>
-        <button>Only</button>
+        <button type="button">Only</button>
       </Harness>
     );
     const trap = getTrap();
@@ -388,7 +392,7 @@ describe('useFocusTrap — non-Tab keys ignored', () => {
   it('does not call preventDefault for Escape', () => {
     render(
       <Harness active={true}>
-        <button>Only</button>
+        <button type="button">Only</button>
       </Harness>
     );
     const trap = getTrap();
@@ -412,7 +416,7 @@ describe('useFocusTrap — focus restoration on unmount', () => {
 
     const { unmount } = render(
       <Harness active={true}>
-        <button>Inside</button>
+        <button type="button">Inside</button>
       </Harness>
     );
 
@@ -433,7 +437,7 @@ describe('useFocusTrap — focus restoration on unmount', () => {
 
     const { unmount } = render(
       <Harness active={true}>
-        <button>Inside</button>
+        <button type="button">Inside</button>
       </Harness>
     );
 
@@ -456,8 +460,10 @@ describe('useFocusTrap — active toggle', () => {
 
     const { rerender } = render(
       <Harness active={false}>
-        <button data-testid="first">First</button>
-        <button>Last</button>
+        <button type="button" data-testid="first">
+          First
+        </button>
+        <button type="button">Last</button>
       </Harness>
     );
 
@@ -465,8 +471,10 @@ describe('useFocusTrap — active toggle', () => {
 
     rerender(
       <Harness active={true}>
-        <button data-testid="first">First</button>
-        <button>Last</button>
+        <button type="button" data-testid="first">
+          First
+        </button>
+        <button type="button">Last</button>
       </Harness>
     );
 
@@ -482,8 +490,10 @@ describe('useFocusTrap — active toggle', () => {
 
     const { rerender, unmount } = render(
       <Harness active={true}>
-        <button data-testid="first">First</button>
-        <button>Last</button>
+        <button type="button" data-testid="first">
+          First
+        </button>
+        <button type="button">Last</button>
       </Harness>
     );
 
@@ -492,8 +502,10 @@ describe('useFocusTrap — active toggle', () => {
 
     rerender(
       <Harness active={false}>
-        <button data-testid="first">First</button>
-        <button>Last</button>
+        <button type="button" data-testid="first">
+          First
+        </button>
+        <button type="button">Last</button>
       </Harness>
     );
 
@@ -507,15 +519,15 @@ describe('useFocusTrap — active toggle', () => {
   it('Tab is no longer trapped after active switches to false', () => {
     const { rerender } = render(
       <Harness active={true} initialFocus={false}>
-        <button>First</button>
-        <button>Last</button>
+        <button type="button">First</button>
+        <button type="button">Last</button>
       </Harness>
     );
 
     rerender(
       <Harness active={false} initialFocus={false}>
-        <button>First</button>
-        <button>Last</button>
+        <button type="button">First</button>
+        <button type="button">Last</button>
       </Harness>
     );
 
