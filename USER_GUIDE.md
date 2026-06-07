@@ -12,6 +12,7 @@ A practitioner's walkthrough. Assumes familiarity with the Thinking Process — 
 5. [Connecting causes to effects](#connecting-causes-to-effects)
 6. [Working with multiple entities](#working-with-multiple-entities)
 7. [Finding and navigating](#finding-and-navigating)
+8. [Entity state and what-if analysis](#entity-state-and-what-if-analysis)
 8. [Quick Capture and CSV import](#quick-capture-and-csv-import)
 9. [Groups (organize a region of the diagram)](#groups)
 9. [AND groups (sufficient sets of causes)](#and-groups)
@@ -20,9 +21,11 @@ A practitioner's walkthrough. Assumes familiarity with the Thinking Process — 
 9. [Review comments](#review-comments)
 9. [Future Reality Trees](#future-reality-trees)
 10. [Saving, exporting, and sharing](#saving-exporting-and-sharing)
+11. [Importing](#importing)
 11. [Templates library](#templates-library)
 12. [Multi-goal Goal Trees](#multi-goal-goal-trees)
 13. [Settings & themes](#settings--themes)
+14. [App modes](#app-modes)
 12. [Browse Lock](#browse-lock)
 13. [Document details](#document-details)
 14. [Accessibility](#accessibility)
@@ -51,6 +54,8 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 | Zoom controls | Bottom-center | Zoom in, zoom out, fit-to-view. |
 | Inspector | Right panel | Slides in when you select an entity or edge. Holds title, type, description, CLR warnings, and delete. |
 | Toasts | Bottom-center, overlay | Brief confirmations: "Saved", "Loaded example CRT", "3 open CLR concerns", etc. |
+
+**The command palette.** The Commands button — or `Cmd/Ctrl+K` from anywhere — opens the palette, the fastest route to any action. Before you type, commands are grouped into labelled sections (**File / Edit / View / Review / Export / Help**) with your **five most-recent** commands pinned in a "Recent" group at the top; start typing and that structure gives way to a ranked search across every command. `Cmd/Ctrl+E` opens the palette pre-filtered to Export.
 
 ## Working with multiple documents (tabs)
 
@@ -88,6 +93,8 @@ To build from scratch:
 6. Type the cause, press `Enter`. Repeat.
 
 You can also drag from the small handle on the bottom edge of a node onto another node to connect them manually.
+
+**System-scope nudge.** The first time you open a Current Reality Tree whose **System Scope** is still empty, a one-time toast points you at the Document Inspector's [System Scope](#document-details) section — Goldratt's CRT method opens by naming the system's goal, boundaries, and measures before you draw effects. Dismiss it and it won't return for that document; fill in any scope answer and it's satisfied. (CRT only.)
 
 ## Working with entities
 
@@ -238,7 +245,7 @@ Selecting more than one thing turns the right Inspector into a **bulk-actions** 
 
 ## Finding and navigating
 
-Once a diagram has a couple of dozen entities, getting around becomes a separate skill from drawing. The tool ships four assists for that:
+Once a diagram has a couple of dozen entities, getting around becomes a separate skill from drawing. The tool ships several assists for that:
 
 **Find (`Cmd/Ctrl+F`).** Opens a Find panel pinned near the top of the canvas. Type a query — entity titles, entity descriptions, and group titles match live. Toggle case-sensitive, whole-word, or regex modes from the icons on the right; the regex toggle also accepts the `/pattern/flags` shorthand. Press `Enter` to jump to the next match, `Shift+Enter` for the previous. The canvas pans to center each match, and any collapsed groups in the way are automatically expanded; if you're hoisted somewhere else, the tool unhoists so the match is reachable. While the panel is open and the query has at least one hit, non-matching nodes and edges fade to ~18% opacity so the matches stand out without losing the surrounding causal context.
 
@@ -256,7 +263,7 @@ Once a diagram has a couple of dozen entities, getting around becomes a separate
 
 **Pinning entities (drag-to-pin).** On any diagram, dragging an entity now persists its position — that entity becomes pinned in place. Auto-layout (dagre on CRT/FRT/PRT/TT, the radial sunburst, etc.) routes around the pin: it lays out every other entity normally and overwrites the dagre coords for pinned ones with your saved values. A small violet pin glyph appears at the bottom-right of pinned entities so you can spot them at a glance. To free a pin, right-click → **Unpin position (let layout reclaim)**, or run **Palette → Reset layout — unpin all entities** to clear every pin in the doc. Manual-layout diagrams (Evaporating Cloud) don't show the pin glyph because every entity is implicitly pinned to its slot there.
 
-**Smart edge routing.** Edges that would otherwise vanish behind a non-endpoint node now route around it. A visibility-graph + A\* pathfinder computes a corner-by-corner detour through the layout; the resulting curve still uses smooth beziers so the visual identity stays organic (no orthogonal Manhattan polylines). The router runs only when dagre re-lays-out the diagram (entity adds / removes / drags), so prose edits don't trigger a re-route. Toggle from **Settings → Display → Edge routing**: **Smart** (default) routes around obstacles; **Direct** restores the pre-routing behavior where every edge is a plain bezier between its source and target handles. The Direct option is the escape hatch for users who prefer the simpler look on small diagrams or want to see exactly where a "hidden" edge passes through.
+**Smart edge routing.** Edges that would otherwise vanish behind a non-endpoint node now route around it. A visibility-graph + A\* pathfinder computes a corner-by-corner detour through the layout; the resulting curve still uses smooth beziers so the visual identity stays organic (no orthogonal Manhattan polylines). The router runs only when dagre re-lays-out the diagram (entity adds / removes / drags), so prose edits don't trigger a re-route. Toggle from **Settings → Display → Edge routing**: **Smart** (default) routes around obstacles; **Direct** restores the pre-routing behavior where every edge is a plain bezier between its source and target handles. The Direct option is the escape hatch for users who prefer the simpler look on small diagrams or want to see exactly where a "hidden" edge passes through. Smart mode also chooses **which side of each node** an edge meets — top, bottom, left, or right — taking whichever pairing gives the shortest unobstructed line rather than always running bottom-to-top, and it makes a second **crossing-reduction** pass: when two unrelated edges cross, it reroutes the cheaper one around the other, but only when that strictly lowers the crossing count and doesn't push the edge against the diagram's flow direction.
 
 ## Verbalizing a diagram (read-through + CLR walkthrough)
 
@@ -287,6 +294,16 @@ Drawing a CRT is half the job. The point of the diagram is to find the **Core Dr
 **Settings → Display → Show action-eligibility badge.** Surfaces the Transition Tree action-eligibility readout (otherwise inspector-only) as an at-a-glance pill on the right edge of each Action node: emerald `✓` (eligible — every precondition is true), rose `✗` (blocked — a precondition is false), or amber `…` (pending — preconditions undecided). It folds the same effective entity states the inspector uses, so it tracks what-if speculation live. Off by default because on a fresh Transition Tree — where no states are set yet — every action reads "pending", which is noise; turn it on once you've started marking states. Only Action nodes with a precondition slot show the badge.
 
 **Right-click any CRT entity → Spawn Evaporating Cloud from this entity** (also Palette → **Spawn Evaporating Cloud from selected entity**). Once you've identified the Core Driver, the book's prescription is to recast it as the Core Conflict and explore it with an EC. This action opens a fresh Evaporating Cloud document seeded with the source entity's title in the **Want 1** slot, plus blank placeholders for Goal, Need 1, Need 2, and Want 2. Your CRT isn't lost — it's auto-snapshotted to the revisions panel as part of the document swap, and you can roll back to it any time. The new EC's title is prefixed `EC from "..."` so it's identifiable in the revision list.
+
+## Entity state and what-if analysis
+
+Beyond drawing the structure, you can record **what you believe is true** about each entity and let the tool propagate that belief through the causal graph.
+
+**Set an entity's state.** Select any entity and the inspector's **State** section offers four choices — **Unknown** (the default), **True**, **False**, or **Disputed**. Use it to claim presence or absence: "this root cause is present today", "that desired effect isn't here yet". The state round-trips through JSON export and share links.
+
+**Read the propagated state.** From the states you've set, TP Studio derives a state for every other entity by following the edges — a True cause on a sufficiency edge implies a True effect, a negative edge flips it, AND / OR / XOR junctors merge their inputs, and tagged back-edges are skipped so a feedback loop can't spin forever. When the derived state disagrees with the claim you typed, a caption under the picker says so (e.g. *"Graph implies False; your claim is True"*) — a prompt to reconsider either the claim or the causal links between them. On a Transition Tree the same propagation drives the on-canvas **action-eligibility badge** (**Settings → Display → Show action-eligibility badge**, described under [Analysis](#analysis-finding-the-core-driver-and-recasting-it-as-a-cloud)); on other diagram types the derived state lives in the inspector caption.
+
+**Test a change without committing — Speculate.** `Cmd/Ctrl+K` → **Speculate: what changes if… (what-if overlay)** turns on a hypothesis sandbox. Pick a state for any entity and the downstream cascade updates live on the canvas, but **nothing is written to the document** — a banner across the top reads "Speculating" with a count of hypothetical changes and two buttons: **Commit** writes the overrides into the document as a single undo step, and **Revert** (or `Esc`) discards them. Use it to answer "if we fix this one cause, what clears?" before touching the real diagram.
 
 ## Transition-Tree discipline
 
@@ -459,6 +476,8 @@ Edges carry three distinct kinds of attached text — each fills a different rol
 - **Description** — long-form markdown explanation that opens in the inspector. The "why this edge holds" prose for context that doesn't deserve a separate Assumption entity but is too long for the label. Renders with bold/italic/lists/links/`#N` cross-references. When set, a small `📝` indicator appears mid-edge so you can spot annotated edges at a glance.
 - **Assumptions** — linked Assumption entities for explicit CLR challenges (see below). Use these when an assumption is substantive enough to deserve its own entity that can be referenced from multiple edges.
 
+Beyond these three, an edge can also carry **custom key/value attributes** — a hidden metadata channel with no dedicated editor on the canvas. It exists so foreign-format fields survive a round-trip (for example data carried in from Flying Logic) and is preserved through JSON export.
+
 ## Assumptions on edges
 
 The CLR are challenges to your causality. The tool models them as **assumptions** attached to edges — first-class entities you can name, describe, and reference.
@@ -590,6 +609,7 @@ A Transition Tree is a sequenced injection plan — the chain of actions that mo
 - Select an Action in the inspector to see a **Step #** numeric input. Set a step number and a small "Step N" badge appears at the node's top-left. Leave it blank to hide the badge — the step field is action-only today.
 - The same Action inspector also has optional **Need** and **Working assumption** fields (Session 158) — *why* the step is needed, and the belief that makes the action sufficient. With the Action and its Step #, they form the canonical Transition-Tree step (Action ← Need ← Working Assumption). Both are free text and optional; leave them blank and nothing changes.
 - Layout is regular dagre. If you connect the actions in order (Tab from action 1 to action 2 etc.), the flow naturally reads top-to-bottom; the step badges then act as a visible cross-check rather than the layout driver.
+- **Export the plan as a task list.** `Cmd/Ctrl+K` → **Export…** → **Task tracker CSV** turns the actions into a sequenced to-do list — one row per Action, ordered by step number (annotation-number tie-break), with columns step / action / precondition / outcome / owner / due date / status / success criteria, ready to paste into Jira, Trello, Planner, or Asana. The option only appears on a document that has Action entities (a Transition Tree is the canonical case, but any diagram with Actions exports).
 - No TT-specific CLR rules yet. The CRT/FRT heuristics simply don't fire on a TT.
 
 ## Prerequisite Trees
@@ -636,6 +656,7 @@ A **Strategy & Tactics (S&T) Tree** is Goldratt's later-work pattern for cascadi
 - **First-class 5-facet card.** Select any injection (tactic) on an S&T diagram; the inspector grows a new **S&T facets** section with four textareas — Strategy, Necessary Assumption, Parallel Assumption, Sufficiency Assumption. Filling any one of them flips the canvas card into a tall 5-row layout with the four facets stacked beneath the tactic title. The Strategy row gets an indigo accent so it stands out from the three assumption rows. Empty rows render as italic `(unset)` placeholders so the structural slot stays visible. This is the optional alternative to modeling each facet as its own entity — pick whichever style fits the level of detail you want.
 - **Inline canvas editing (Session 81).** You can now edit any of the four facet rows directly on the card without opening the inspector — **double-click** a row's value to swap it for a textarea, type, then Enter (or click outside) to commit. Esc cancels and reverts to the previous value. Shift+Enter inserts a newline. An empty input clears the facet entirely. Browse Lock blocks the edit gesture, same as for the title.
 - **CLR rules.** Structural set plus the S&T-specific **`st-tactic-assumptions`** rule: fires (clarity tier) on any tactic with fewer than three incoming `necessaryCondition` entities. The nudge prescribes Goldratt's three-facet pattern; resolve individual warnings if a tactic legitimately doesn't need all three.
+- **Typing an assumption's role.** Any assumption attached to an edge carries a small **kind chip** in its row of the Assumption Well that cycles untyped → **N**ecessary → **P**arallel → **S**ufficient — the three assumption roles the S&T pattern distinguishes (NA / PA / SA), each colour-coded. It's optional and works on every diagram type, but it's most useful here for labelling which facet an assumption fills; leave it untyped and nothing shows.
 
 ## Freeform diagrams
 
@@ -673,6 +694,8 @@ Two export paths:
 
 - **Save as PDF** (primary, Session 80) downloads a true **vector PDF** built with `jspdf` + `svg2pdf.js`. Text stays text (selectable + searchable), strokes stay resolution-independent, multi-page when the diagram exceeds one page-height (sliced vertically, scaled to page-width). The annotation appendix is paginated automatically. **Font note**: the embedded fall-back is Helvetica (Latin-1 only). Diagrams containing CJK / Cyrillic / accented characters should use the browser-print path below for accurate glyph rendering.
 - **Open print dialog** hands off to the browser's print / Save-as-PDF flow with the chosen mode applied. Use this when you need system-font Unicode coverage or want to print to a real printer rather than a PDF.
+
+**The Export picker.** Everything below is reachable from one dialog: `Cmd/Ctrl+K` → **Export…** (or `Cmd/Ctrl+E`) opens a picker that groups every export by category — Images, Documents, Data, Annotations & reasoning, and Share. A few options surface only when they apply: **Risk Register CSV** when the document has UDEs, **Task tracker CSV** when it has Actions, **Prerequisite plan CSV** when it has Intermediate Objectives, and the **EC Workshop Sheet** on Evaporating Clouds. The individual `Export as …` commands below still work if you know the name; the picker is just the one-stop entry point.
 
 **Export as JSON.** `Cmd/Ctrl+K` → **Export as JSON** downloads `<your-title>.tps.json`. The format is human-readable, version-stamped, and round-trip stable.
 
@@ -720,6 +743,22 @@ Both are one-way Markdown — paste them into a doc / wiki / chat. Pairs with th
 **Sharing.** Two practical paths today: send the `.tps.json` file (recipient runs **Import from JSON…**) or send the `.png`.
 
 If the browser's storage quota is exceeded — usually because of an exceptionally large document or browser-wide storage pressure — you'll get a destructive toast: `Couldn't save to this browser: ...`. The in-memory document keeps working; export to JSON to preserve it.
+
+## Importing
+
+Most ways into the canvas live behind one command: `Cmd/Ctrl+K` → **Import…** opens a picker of sources —
+
+- **TP Studio JSON** — a `.tps.json` file you (or a colleague) exported.
+- **Flying Logic file** — `.logicx` / `.logic` / `.xlogic` (the mapping is detailed under [Flying Logic interop](#saving-exporting-and-sharing) above).
+- **Mermaid diagram** — the `graph` syntax our Mermaid export emits.
+- **Entities CSV** — the header-row format described under [CSV import](#quick-capture-and-csv-import).
+- **Paste from whiteboard** — sticky-note text from Miro / Mural / FigJam / a transcript.
+
+All but CSV open the result in a **new tab**, leaving your current work untouched; CSV appends its rows to the current document. The detailed mechanics of each format are covered in the sections cross-referenced above — the picker just gathers them in one place.
+
+**Import a single entity from another document.** `Cmd/Ctrl+K` → **Import entity from another doc…** opens a file picker for a `.tps.json`, then lets you choose **one** entity from it to copy into the current diagram. The copy keeps a read-only **"Imported from"** card in its inspector recording the source document's title and the date — provenance that travels with the entity, so months later you can still see where a borrowed UDE or injection came from. (This one-way provenance is distinct from the live cross-tab [**"Linked to"** chips](#working-with-multiple-documents-tabs) that navigate between open documents.)
+
+**Draft a diagram from a description (AI).** If you have access to Claude, the **`tp-studio-import`** skill turns a plain-language description — a problem, a goal, a conflict, a plan — into a valid TP Studio document. Describe what you're working through (e.g. "a Current Reality Tree for why onboarding churns"), run the skill, and it produces a `.json` you load with **Import… → TP Studio JSON** and edit from there. It covers every diagram type and is a fast way past the blank canvas; the structure it emits is checked against the same importer the app uses, so it can't drift from the schema.
 
 ## Templates library
 
@@ -776,11 +815,23 @@ While locked:
 
 Read-only operations still work: panning, zooming, selection, the help dialog, validation, and JSON / PNG export.
 
+## App modes
+
+TP Studio runs in one of **five app modes** — a persisted preference that retunes the whole interface for a task. Switch from the command palette: `Cmd/Ctrl+K` → **Switch to Expert / Guided / Workshop / Presentation / Reader mode**, and a toast confirms the change. (There's no mode switcher in the toolbar — the palette is the way in. In Reader and Presentation mode the chrome is minimal, but an **Exit** affordance is always shown.)
+
+- **Expert** *(default)* — every affordance available. The full editing experience the tool ships with.
+- **Guided** — for a first-time author. The creation wizard for a new **Goal Tree** or **Evaporating Cloud** always appears, even if you previously ticked "don't show this again" (see [Creation wizards](#creation-wizards-goal-tree--ec)). Otherwise identical to Expert.
+- **Workshop** — for projecting to a room. Node text is enlarged so entity titles stay legible on a shared screen.
+- **Presentation** — for read-only projection. The top bar, inspector, selection toolbar, and zoom controls are hidden, and **Browse Lock auto-engages** so a stray click can't edit the projected diagram (leaving the mode does *not* auto-unlock). A **step-through** control appears bottom-centre: the **‹** / **›** buttons — or the `←` / `→` arrow keys — walk the diagram's entities one at a time, by explicit step order first then annotation number, centring each in turn, so you can lead an audience through the causal chain without speaker notes.
+- **Reader** — a distraction-free teaching mode with coaching tooltips; it has its own section ([Reader / trainee mode](#reader--trainee-mode)) below.
+
+Switching modes is non-destructive — it changes only what's shown and (for Presentation / Reader) the lock state, never the document.
+
 ## Reader / trainee mode
 
 Reader mode is a fifth app mode alongside Expert, Guided, Workshop, and Presentation. It is designed for someone encountering a finished diagram for the first time — a stakeholder review, a training session, or a self-study pass through an archived analysis.
 
-Enter it via the command palette (`Cmd/Ctrl+K` → **Switch to Reader mode**) or the app-mode switch in the toolbar.
+Enter it from the command palette (`Cmd/Ctrl+K` → **Switch to Reader mode**) — see [App modes](#app-modes) above. While you're in it the top bar collapses to a **Reader mode** pill, an **Exit** button, and the help icon.
 
 While in Reader mode:
 
@@ -808,6 +859,8 @@ Your documents live in the browser's `localStorage`, exactly where they were bef
 - *"Update checks aren't available here (the service worker isn't running)."* — info toast; happens on plain `http://`, in private windows that block service workers, or during a fresh first visit before the worker has registered.
 
 iOS Safari has weaker PWA support; Install adds the icon to the home screen but offline support and update prompts are best-effort. macOS / Windows / Android Chrome and Edge are the supported install targets today.
+
+**About, and the practitioner book.** `Cmd/Ctrl+K` → **About TP Studio…** opens an info panel with the build version and links to everything around the app: the User Guide, the security audit, third-party notices, the source repository, and the companion book *Causal Thinking with TP Studio* in two formats — a **PDF** and an **EPUB**. The EPUB reflows for e-readers, so you can email it to your Kindle or open it in any reading app; both are cached for offline reading once you've opened the app online.
 
 ## Document details
 
