@@ -485,6 +485,7 @@ const stats = {
 		trackedFiles: tracked.length,
 		featureManualPct: featureCoverage ? featureCoverage.manualPct : null,
 		featureBookPct: featureCoverage ? featureCoverage.bookPct : null,
+		featureExamplePct: featureCoverage ? featureCoverage.bookExamplePct : null,
 	},
 	code,
 	coverage,
@@ -517,6 +518,7 @@ const point = {
 	mutationScore: quality.mutationScore,
 	featureManualPct: featureCoverage ? featureCoverage.manualPct : null,
 	featureBookPct: featureCoverage ? featureCoverage.bookPct : null,
+	featureExamplePct: featureCoverage ? featureCoverage.bookExamplePct : null,
 };
 history = history.filter((h) => h.date !== today);
 history.push(point);
