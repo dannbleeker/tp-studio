@@ -2,6 +2,39 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Docs: user-manual feature coverage → 100%
+
+Documented the last **23 user-facing features** that the catalogue (`docs/features.json`) had
+marked `manual:false`, taking USER_GUIDE.md coverage from 170/193 (88.1%) to **193/193 (100%)**.
+The `manual` flag is judgment-maintained — the guard (`scripts/check-feature-coverage.mjs`) only
+validates structure + freshness, never the prose — so each flag was flipped only after the real
+section was written.
+
+Three new guide sections:
+
+- **App modes** — the five-mode model (Expert / Guided / Workshop / Presentation / Reader) and
+  palette-only switching; Guided force-shows the Goal Tree / EC creation wizard, Workshop enlarges
+  node text, Presentation hides the chrome + auto-engages Browse Lock + adds the bottom-centre
+  step-through control.
+- **Entity state and what-if analysis** — the inspector State picker (Unknown / True / False /
+  Disputed), the state propagated through the causal graph + the "graph implies…" caption, and the
+  **Speculate** what-if overlay with its Commit / Revert banner.
+- **Importing** — the unified **Import…** picker, **Import entity from another doc…** + the
+  read-only "Imported from" provenance card, and the `tp-studio-import` AI skill.
+
+Extensions to existing sections: the command palette's grouped + Recent structure, the CRT
+system-scope nudge, 4-side edge anchoring + crossing-reroute under Smart edge routing, the S&T
+assumption-kind chip, the TT task-tracker CSV export, the **Export…** picker framing, the About
+dialog + EPUB book download, and the edge custom-attributes round-trip note.
+
+Two corrections surfaced while documenting (and fixed in the docs): the Reader section claimed a
+toolbar app-mode switch that doesn't exist (entry is palette-only), and the Prerequisite-plan CSV
+export was described as gated to docs with Intermediate Objectives, but that guard was never wired
+up — the docs now match actual behaviour, and the code bug is flagged for a separate fix.
+
+Docs-only (`USER_GUIDE.md` + `docs/features.json`); done in an isolated git worktree to stay clear
+of a parallel test-coverage session. Gate green — the feature catalogue reports manual 193 (100%).
+
 ## Session 180 (cont.) — E3: 3-Cloud rapid-diagnosis wizard
 
 A fast on-ramp alternative to a full Current Reality Tree (a-dato source; Theme E). A
