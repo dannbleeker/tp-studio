@@ -4,7 +4,9 @@
     "scripts/*.{mjs,cjs}",
     "tests/**/*.test.{ts,tsx}",
     "src/**/*.stories.{ts,tsx}",
-    "e2e/**/*.spec.ts"
+    "e2e/**/*.spec.ts",
+    "stryker.mutation.config.mjs",
+    "vitest.mutation.config.ts"
   ],
   "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}", "e2e/**/*.ts", "scripts/**/*.{mjs,cjs}"],
   "ignore": ["e2e/global.d.ts", "tests/stubs/virtual-pwa-register.ts"],

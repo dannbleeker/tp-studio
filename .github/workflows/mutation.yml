@@ -1,0 +1,56 @@
+name: Mutation
+
+# Weekly mutation testing of the CLR validator suite (src/domain/validators) with
+# Stryker, scoped to the fast domain-only test set (stryker.mutation.config.mjs +
+# vitest.mutation.config.ts) so a real pass runs in ~1-2h instead of the hours a
+# full-suite mutation pass would take. Distills the result to a tiny
+# reports/mutation/score.json that the per-push Stats workflow reads into
+# stats.quality.mutationScore. NEVER runs in the per-push path.
+
+on:
+  schedule:
+    - cron: "17 4 * * 0" # Sundays 04:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mutation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Stryker (validator suite)
+        run: pnpm exec stryker run stryker.mutation.config.mjs
+
+      - name: Distill score
+        run: node ./scripts/mutation-score.mjs "src/domain/validators"
+
+      - name: Commit mutation score
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f reports/mutation/score.json
+          if git diff --cached --quiet; then
+            echo "mutation score unchanged."
+          else
+            git commit -m "chore(stats): refresh mutation score [skip ci]"
+            git push
+          fi

@@ -301,13 +301,18 @@ const bundle = safe(() => {
 }, { jsGzipKb: null, cssGzipKb: null, totalGzipKb: null, budgetKb: null, withinBudget: true });
 
 // --- quality (mutation score, least-covered, churn hotspots, risky) ------------
-// mutationScore: read a committed Stryker JSON report if one exists. Stryker is
-// NOT run in the per-push workflow — a full `pnpm mutation` over src/domain takes
-// hours (see stryker.config.mjs) — so this stays null until a JSON report is
-// produced (`pnpm mutation --reporter json` writes reports/mutation/mutation.json)
-// and committed, at which point it populates automatically.
+// mutationScore: read the committed mutation summary. The weekly mutation.yml
+// (.github/workflows/mutation.yml) runs Stryker over src/domain/validators against
+// the fast domain-only test set (stryker.mutation.config.mjs + vitest.mutation.
+// config.ts) and commits a tiny reports/mutation/score.json ({ mutationScore }) —
+// distilled from the large (gitignored) Stryker report by scripts/mutation-score.mjs.
+// Falls back to a full Stryker JSON report if present; null when neither exists.
 const mutationScore = safe(() => {
-	for (const p of ["reports/mutation/mutation.json", "reports/mutation/mutation-report.json"]) {
+	for (const p of [
+		"reports/mutation/score.json",
+		"reports/mutation/mutation.json",
+		"reports/mutation/mutation-report.json",
+	]) {
 		if (!existsSync(join(ROOT, p))) continue;
 		const r = JSON.parse(readFileSync(join(ROOT, p), "utf8"));
 		if (typeof r.mutationScore === "number") return r.mutationScore;

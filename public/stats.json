@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-07T14:19:45.675Z",
-  "commit": "ffb6234",
+  "generatedAt": "2026-06-07T14:43:44.875Z",
+  "commit": "8acbecb",
   "headline": {
-    "linesTsJs": 105998,
+    "linesTsJs": 106003,
     "tests": 2916,
-    "lineCoveragePct": 91.22,
-    "commits": 604,
+    "lineCoveragePct": 91.31,
+    "commits": 605,
     "ageDays": 27,
     "trackedFiles": 951
   },
@@ -28,7 +28,7 @@
     {
       "category": "Build scripts",
       "files": 18,
-      "lines": 4025
+      "lines": 4030
     },
     {
       "category": "Styles (CSS)",
@@ -43,50 +43,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 91.22,
-      "covered": 11199,
+      "pct": 91.31,
+      "covered": 11210,
       "total": 12276
     },
     "statements": {
-      "pct": 88.33,
-      "covered": 12688,
+      "pct": 88.41,
+      "covered": 12700,
       "total": 14364
     },
     "functions": {
-      "pct": 87.06,
-      "covered": 2350,
+      "pct": 87.21,
+      "covered": 2354,
       "total": 2699
     },
     "branches": {
-      "pct": 77.2,
-      "covered": 7074,
+      "pct": 77.24,
+      "covered": 7078,
       "total": 9163
     }
   },
   "tests": {
     "unit": 2828,
     "e2e": 88,
-    "durationMs": 184715,
+    "durationMs": 160349,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 9632
+        "ms": 8854
+      },
+      {
+        "file": "tests/components/canvas/useGraphPositions.test.tsx",
+        "ms": 5371
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4458
-      },
-      {
-        "file": "tests/components/SelectionToolbar.test.tsx",
-        "ms": 1629
+        "ms": 4279
       },
       {
         "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 1524
+        "ms": 2092
       },
       {
         "file": "tests/components/Inspector.test.tsx",
-        "ms": 1081
+        "ms": 2037
       }
     ]
   },
@@ -128,7 +128,7 @@
     ]
   },
   "quality": {
-    "mutationScore": null,
+    "mutationScore": 77.59,
     "leastCovered": [
       {
         "file": "components/canvas/edges/ChallengeButton.tsx",
@@ -201,7 +201,7 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 604,
+    "commits": 605,
     "commits7d": 204,
     "authors": [
       {
@@ -210,7 +210,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 45
+        "count": 46
       },
       {
         "name": "dannbleeker",
@@ -218,8 +218,8 @@
       }
     ],
     "churn30d": {
-      "added": 171357,
-      "removed": 32286
+      "added": 171384,
+      "removed": 32313
     },
     "changelogEntries": 312
   }
