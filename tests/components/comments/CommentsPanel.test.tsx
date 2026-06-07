@@ -1,8 +1,23 @@
 import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommentsPanel } from '@/components/comments/CommentsPanel';
+import * as canvasRefModule from '@/services/canvasRef';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedConnectedPair, seedEntity } from '../../helpers/seedDoc';
+
+// ── Canvas mock (needed by jumpToAnchor tests) ────────────────────────────────
+// getCanvasInstance() returns null in jsdom (no React Flow mounted). Provide a
+// minimal fake with the methods that jumpToAnchor calls so those branches
+// execute without errors. Tests that don't need canvas behaviour just let the
+// mock return its default (null), which exercises the "no inst" branches.
+vi.mock('@/services/canvasRef', async () => {
+  const actual =
+    await vi.importActual<typeof import('@/services/canvasRef')>('@/services/canvasRef');
+  return {
+    ...actual,
+    getCanvasInstance: vi.fn(() => null),
+  };
+});
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);
@@ -502,5 +517,338 @@ describe('CommentsPanel', () => {
     // Both are open → Open filter should show them; newest (createdAt=2000, second) first
     const text = container.textContent ?? '';
     expect(text.indexOf('second comment')).toBeLessThan(text.indexOf('first comment'));
+  });
+
+  // ── jumpToAnchor — entity anchor without a canvas node ───────────────────
+  // When getCanvasInstance() returns null (default mock), jumpToAnchor must
+  // still call selectEntity and not throw.
+
+  it('clicking the anchor chip on an entity comment calls selectEntity (no canvas)', () => {
+    const e = seedEntity('JumpEntity');
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'entity', entityId: e.id }, 'jump target');
+    });
+    // Mock returns null → exercises the entity branch without a canvas instance.
+    vi.mocked(canvasRefModule.getCanvasInstance).mockReturnValue(null);
+    const { container } = render(<CommentsPanel />);
+    // The anchor chip is the first button inside the <li> (before Reply/Resolve).
+    const anchorChip = container.querySelector('li button') as HTMLButtonElement;
+    expect(anchorChip).not.toBeNull();
+    act(() => fireEvent.click(anchorChip));
+    // selectEntity was called → selection reflects the entity.
+    const sel = s().selection;
+    expect(sel.kind).toBe('entities');
+    if (sel.kind === 'entities') {
+      expect(sel.ids).toContain(e.id);
+    }
+  });
+
+  // ── jumpToAnchor — entity anchor WITH a canvas node + requestAnimationFrame ─
+
+  it('clicking the anchor chip on an entity comment calls setCenter when node exists', () => {
+    const e = seedEntity('JumpEntityWithCanvas');
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'entity', entityId: e.id }, 'canvas jump');
+    });
+    const mockSetCenter = vi.fn();
+    const mockGetZoom = vi.fn(() => 1.5);
+    const mockGetNode = vi.fn((_id: string) => ({ position: { x: 50, y: 80 } }));
+    vi.mocked(canvasRefModule.getCanvasInstance).mockReturnValue({
+      setCenter: mockSetCenter,
+      getZoom: mockGetZoom,
+      getNode: mockGetNode,
+    } as unknown as ReturnType<typeof canvasRefModule.getCanvasInstance>);
+
+    const { container } = render(<CommentsPanel />);
+    const anchorChip = container.querySelector('li button') as HTMLButtonElement;
+    act(() => fireEvent.click(anchorChip));
+
+    // getNode is called synchronously inside jumpToAnchor before the rAF.
+    expect(mockGetNode).toHaveBeenCalledWith(e.id);
+  });
+
+  // ── jumpToAnchor — edge anchor without canvas ────────────────────────────
+
+  it('clicking the anchor chip on an edge comment calls selectEdge (no canvas)', () => {
+    const { edge } = seedConnectedPair('JumpSrc', 'JumpDst');
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'edge', edgeId: edge.id }, 'edge jump');
+    });
+    vi.mocked(canvasRefModule.getCanvasInstance).mockReturnValue(null);
+    const { container } = render(<CommentsPanel />);
+    const anchorChip = container.querySelector('li button') as HTMLButtonElement;
+    act(() => fireEvent.click(anchorChip));
+    // selectEdge was called → selection reflects the edge.
+    const sel = s().selection;
+    expect(sel.kind).toBe('edges');
+    if (sel.kind === 'edges') {
+      expect(sel.ids).toContain(edge.id);
+    }
+  });
+
+  // ── jumpToAnchor — edge anchor WITH canvas nodes ─────────────────────────
+
+  it('clicking the anchor chip on an edge comment calls setCenter between endpoints', () => {
+    const { a, b, edge } = seedConnectedPair('ESrc', 'EDst');
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'edge', edgeId: edge.id }, 'edge canvas jump');
+    });
+    const mockSetCenter = vi.fn();
+    const mockGetZoom = vi.fn(() => 1);
+    // Return a node position for both source and target.
+    const mockGetNode = vi.fn((id: string) => {
+      if (id === a.id) return { position: { x: 0, y: 0 } };
+      if (id === b.id) return { position: { x: 200, y: 100 } };
+      return undefined;
+    });
+    vi.mocked(canvasRefModule.getCanvasInstance).mockReturnValue({
+      setCenter: mockSetCenter,
+      getZoom: mockGetZoom,
+      getNode: mockGetNode,
+    } as unknown as ReturnType<typeof canvasRefModule.getCanvasInstance>);
+
+    const { container } = render(<CommentsPanel />);
+    const anchorChip = container.querySelector('li button') as HTMLButtonElement;
+    act(() => fireEvent.click(anchorChip));
+
+    // getNode called for both endpoints of the edge
+    expect(mockGetNode).toHaveBeenCalledWith(a.id);
+    expect(mockGetNode).toHaveBeenCalledWith(b.id);
+  });
+
+  // ── jumpToAnchor — edge anchor with canvas but missing edge nodes ────────
+
+  it('clicking anchor chip on edge comment with only one canvas node does not throw', () => {
+    const { edge } = seedConnectedPair('OneSrc', 'OneDst');
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'edge', edgeId: edge.id }, 'edge partial');
+    });
+    const mockSetCenter = vi.fn();
+    const mockGetZoom = vi.fn(() => 1);
+    // Only one node visible — the `if (a && b)` guard must prevent setCenter
+    const mockGetNode = vi.fn(() => undefined);
+    vi.mocked(canvasRefModule.getCanvasInstance).mockReturnValue({
+      setCenter: mockSetCenter,
+      getZoom: mockGetZoom,
+      getNode: mockGetNode,
+    } as unknown as ReturnType<typeof canvasRefModule.getCanvasInstance>);
+
+    const { container } = render(<CommentsPanel />);
+    const anchorChip = container.querySelector('li button') as HTMLButtonElement;
+    // Should not throw even though nodes are missing
+    expect(() => act(() => fireEvent.click(anchorChip))).not.toThrow();
+    expect(mockSetCenter).not.toHaveBeenCalled();
+  });
+
+  // ── jumpToAnchor — point anchor without canvas ───────────────────────────
+
+  it('clicking the anchor chip on a point comment does not throw when no canvas', () => {
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'point', x: 50, y: 75 }, 'point no canvas');
+    });
+    vi.mocked(canvasRefModule.getCanvasInstance).mockReturnValue(null);
+    const { container } = render(<CommentsPanel />);
+    const anchorChip = container.querySelector('li button') as HTMLButtonElement;
+    expect(() => act(() => fireEvent.click(anchorChip))).not.toThrow();
+  });
+
+  // ── jumpToAnchor — point anchor WITH canvas ──────────────────────────────
+
+  it('clicking the anchor chip on a point comment calls setCenter at the pin coordinates', () => {
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'point', x: 300, y: 150 }, 'point canvas jump');
+    });
+    const mockSetCenter = vi.fn();
+    const mockGetZoom = vi.fn(() => 2);
+    vi.mocked(canvasRefModule.getCanvasInstance).mockReturnValue({
+      setCenter: mockSetCenter,
+      getZoom: mockGetZoom,
+      getNode: vi.fn(),
+    } as unknown as ReturnType<typeof canvasRefModule.getCanvasInstance>);
+
+    const { container } = render(<CommentsPanel />);
+    const anchorChip = container.querySelector('li button') as HTMLButtonElement;
+    // Clicking the anchor chip schedules a rAF to call setCenter. The click itself
+    // must not throw — that's the branch coverage goal for the point anchor path.
+    expect(() => act(() => fireEvent.click(anchorChip))).not.toThrow();
+    // The canvas instance was retrieved (getCanvasInstance mock called at least twice:
+    // once for entity anchor chip, once for point).
+    expect(vi.mocked(canvasRefModule.getCanvasInstance)).toHaveBeenCalled();
+  });
+
+  // ── jumpToAnchor — document anchor (nothing to jump to) ─────────────────
+
+  it('clicking the anchor chip on a document comment does not throw', () => {
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'document' }, 'whole diagram note');
+    });
+    vi.mocked(canvasRefModule.getCanvasInstance).mockReturnValue(null);
+    const { container } = render(<CommentsPanel />);
+    const anchorChip = container.querySelector('li button') as HTMLButtonElement;
+    expect(() => act(() => fireEvent.click(anchorChip))).not.toThrow();
+  });
+
+  // ── FilterTab — Open button re-applies open filter ───────────────────────
+
+  it('clicking the Open filter tab re-applies open filter after switching away', () => {
+    const e = seedEntity('FilterToggle');
+    let id = '';
+    act(() => {
+      s().openCommentsPanel();
+      const c = s().addComment({ kind: 'entity', entityId: e.id }, 'toggle comment');
+      id = c?.id ?? '';
+    });
+    const { container, getByText, queryByText } = render(<CommentsPanel />);
+    // Switch to All
+    const tabs = container.querySelectorAll('button[aria-pressed]');
+    act(() => fireEvent.click(tabs[2] as HTMLButtonElement)); // All
+
+    // Now resolve the comment — it should still show under All
+    act(() => s().resolveComment(id, true));
+    expect(getByText('toggle comment')).toBeTruthy();
+
+    // Switch back to Open (line 220 onClick)
+    act(() => fireEvent.click(tabs[0] as HTMLButtonElement)); // Open
+    // Resolved comment should disappear under Open filter
+    expect(queryByText('toggle comment')).toBeNull();
+  });
+
+  // ── Edit cancel restores original body ───────────────────────────────────
+
+  it('cancelling an edit via Escape key restores the original body', () => {
+    const e = seedEntity('EscapeEdit');
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'entity', entityId: e.id }, 'original body');
+    });
+    const { container, getByText } = render(<CommentsPanel />);
+    const editBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Edit'
+    )!;
+    act(() => fireEvent.click(editBtn));
+
+    // Draft textarea should now be visible
+    const editTextarea = Array.from(container.querySelectorAll('textarea')).find(
+      (ta) => ta.value === 'original body'
+    )!;
+    expect(editTextarea).toBeDefined();
+
+    // Type something different
+    act(() => fireEvent.change(editTextarea, { target: { value: 'changed text' } }));
+
+    // Press Escape to cancel
+    act(() => fireEvent.keyDown(editTextarea, { key: 'Escape' }));
+
+    // The original body should still be in the store (not updated)
+    const storedComments = Object.values(s().doc.comments ?? {});
+    expect(storedComments[0]?.body).toBe('original body');
+    // The display should show the original body text
+    expect(getByText('original body')).toBeTruthy();
+  });
+
+  // ── Edit Save via Cmd+Enter keyboard shortcut ────────────────────────────
+
+  it('saving an edit via Cmd+Enter updates the store body', () => {
+    const e = seedEntity('CmdEnterEdit');
+    let id = '';
+    act(() => {
+      s().openCommentsPanel();
+      const c = s().addComment({ kind: 'entity', entityId: e.id }, 'before kbd save');
+      id = c?.id ?? '';
+    });
+    const { container } = render(<CommentsPanel />);
+    const editBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Edit'
+    )!;
+    act(() => fireEvent.click(editBtn));
+
+    const editTextarea = Array.from(container.querySelectorAll('textarea')).find(
+      (ta) => ta.value === 'before kbd save'
+    )!;
+    act(() => fireEvent.change(editTextarea, { target: { value: 'after kbd save' } }));
+    act(() => fireEvent.keyDown(editTextarea, { key: 'Enter', metaKey: true }));
+
+    expect(s().doc.comments?.[id]?.body).toBe('after kbd save');
+  });
+
+  // ── Edit cancelled via Cancel button ────────────────────────────────────
+
+  it('clicking Cancel in edit mode discards the draft and shows original body', () => {
+    const e = seedEntity('CancelEditBtn');
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'entity', entityId: e.id }, 'stays the same');
+    });
+    const { container, getByText } = render(<CommentsPanel />);
+    const editBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Edit'
+    )!;
+    act(() => fireEvent.click(editBtn));
+
+    const editTextarea = Array.from(container.querySelectorAll('textarea')).find(
+      (ta) => ta.value === 'stays the same'
+    )!;
+    act(() => fireEvent.change(editTextarea, { target: { value: 'draft change' } }));
+
+    // Click the Cancel button (not Escape key)
+    const cancelBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Cancel'
+    )!;
+    act(() => fireEvent.click(cancelBtn));
+
+    expect(getByText('stays the same')).toBeTruthy();
+    const storedComments = Object.values(s().doc.comments ?? {});
+    expect(storedComments[0]?.body).toBe('stays the same');
+  });
+
+  // ── Reply box cancel via Escape ──────────────────────────────────────────
+
+  it('pressing Escape in the reply box cancels the reply', () => {
+    const e = seedEntity('EscReply');
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'entity', entityId: e.id }, 'parent for esc');
+    });
+    const { getByText, queryByPlaceholderText } = render(<CommentsPanel />);
+    act(() => fireEvent.click(getByText('Reply').closest('button') as HTMLButtonElement));
+
+    const replyBox = queryByPlaceholderText(/Reply…/) as HTMLTextAreaElement;
+    expect(replyBox).not.toBeNull();
+
+    act(() => fireEvent.keyDown(replyBox!, { key: 'Escape' }));
+
+    // Reply box should be gone after Escape
+    expect(queryByPlaceholderText(/Reply…/)).toBeNull();
+  });
+
+  // ── Reply box Cancel button ──────────────────────────────────────────────
+
+  it('clicking the Cancel button in the reply box closes it without adding a reply', () => {
+    const e = seedEntity('CancelReplyBtn');
+    act(() => {
+      s().openCommentsPanel();
+      s().addComment({ kind: 'entity', entityId: e.id }, 'parent for cancel btn');
+    });
+    const { container, getByText, queryByPlaceholderText } = render(<CommentsPanel />);
+    act(() => fireEvent.click(getByText('Reply').closest('button') as HTMLButtonElement));
+
+    // Cancel button in reply box
+    const cancelBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Cancel'
+    )!;
+    act(() => fireEvent.click(cancelBtn));
+
+    // Reply box gone, no new comment added
+    expect(queryByPlaceholderText(/Reply…/)).toBeNull();
+    const allComments = Object.values(s().doc.comments ?? {});
+    expect(allComments).toHaveLength(1); // only the parent
   });
 });

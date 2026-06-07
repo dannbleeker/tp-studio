@@ -1,7 +1,8 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ContextMenu } from '@/components/canvas/overlays/ContextMenu';
 import type { EntityId } from '@/domain/types';
+import { setCanvasInstance } from '@/services/canvasRef';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);
@@ -647,6 +648,327 @@ describe('ContextMenu', () => {
       openOnEntity(a.id);
       const { container } = render(<ContextMenu />);
       expect(container.textContent).toContain('3 entities');
+    });
+  });
+
+  // ── Pane run callbacks ────────────────────────────────────────────────────
+
+  describe('pane — clicking "New entity here" calls addEntity', () => {
+    it('clicking "New entity here" adds a new entity to the store', () => {
+      openOnPane();
+      const { container } = render(<ContextMenu />);
+      const countBefore = Object.keys(useDocumentStore.getState().doc.entities).length;
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'New entity here');
+      if (!btn) throw new Error('"New entity here" button not found');
+      act(() => fireEvent.click(btn));
+      const countAfter = Object.keys(useDocumentStore.getState().doc.entities).length;
+      expect(countAfter).toBe(countBefore + 1);
+    });
+  });
+
+  describe('pane — "Add comment here" with no canvas instance (fallback to document anchor)', () => {
+    it('clicking "Add comment here" when canvas is null sets document-level pendingCommentAnchor', () => {
+      // Ensure no canvas instance is registered
+      setCanvasInstance(null);
+      openOnPane();
+      const { container } = render(<ContextMenu />);
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Add comment here');
+      if (!btn) throw new Error('"Add comment here" button not found');
+      act(() => fireEvent.click(btn));
+      const anchor = useDocumentStore.getState().pendingCommentAnchor;
+      expect(anchor).toEqual({ kind: 'document' });
+    });
+  });
+
+  describe('pane — "Add comment here" with live canvas instance (point anchor)', () => {
+    it('clicking "Add comment here" when canvas has screenToFlowPosition sets point anchor', () => {
+      // Provide a mock canvas instance whose screenToFlowPosition maps to flow coords.
+      const mockInstance = {
+        screenToFlowPosition: vi.fn(() => ({ x: 42, y: 99 })),
+      };
+      // Cast to unknown first to avoid strict type mismatch on the full ReactFlowInstance type.
+      setCanvasInstance(mockInstance as unknown as Parameters<typeof setCanvasInstance>[0]);
+      openOnPane();
+      const { container } = render(<ContextMenu />);
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Add comment here');
+      if (!btn) throw new Error('"Add comment here" button not found');
+      act(() => fireEvent.click(btn));
+      const anchor = useDocumentStore.getState().pendingCommentAnchor;
+      expect(anchor).toEqual({ kind: 'point', x: 42, y: 99 });
+      // Clean up global canvas ref.
+      setCanvasInstance(null);
+    });
+  });
+
+  // ── Single edge — Delete edge run callback ────────────────────────────────
+
+  describe('single edge — clicking "Delete edge" initiates deletion', () => {
+    it('clicking "Delete edge" triggers confirmAndDeleteSelection (edge removed after confirm)', async () => {
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
+      const e = useDocumentStore.getState().connect(a.id, b.id);
+      if (!e) throw new Error('connect failed');
+      // Select the edge so confirmAndDeleteSelection has something to act on.
+      act(() => useDocumentStore.getState().selectEdge(e.id));
+      openOnEdge(e.id);
+      const { container } = render(<ContextMenu />);
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Delete edge');
+      if (!btn) throw new Error('"Delete edge" button not found');
+      // Fire the click (confirmAndDeleteSelection is async; it opens a confirm dialog).
+      act(() => fireEvent.click(btn));
+      // Settle the confirm dialog that confirmAndDeleteSelection opens.
+      await act(async () => {
+        await new Promise<void>((resolve, reject) => {
+          const start = Date.now();
+          const tick = () => {
+            const cur = useDocumentStore.getState().confirmDialog;
+            if (cur) {
+              useDocumentStore.getState().resolveConfirm(true);
+              resolve();
+              return;
+            }
+            if (Date.now() - start > 1000) {
+              reject(new Error('Timeout waiting for ConfirmDialog'));
+              return;
+            }
+            setTimeout(tick, 5);
+          };
+          tick();
+        });
+      });
+      expect(useDocumentStore.getState().doc.edges[e.id]).toBeUndefined();
+    });
+  });
+
+  // ── Multi-entity — Swap entities run callback ─────────────────────────────
+
+  describe('multi-entity — clicking "Swap entities" swaps the two entities', () => {
+    it('clicking "Swap entities" calls swapEntities and changes positions', () => {
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
+      act(() => useDocumentStore.getState().selectEntities([a.id, b.id]));
+      openOnEntity(a.id);
+      const { container } = render(<ContextMenu />);
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Swap entities');
+      if (!btn) throw new Error('"Swap entities" button not found');
+      const posABefore = useDocumentStore.getState().doc.entities[a.id]?.position;
+      const posBBefore = useDocumentStore.getState().doc.entities[b.id]?.position;
+      act(() => fireEvent.click(btn));
+      const posAAfter = useDocumentStore.getState().doc.entities[a.id]?.position;
+      const posBAfter = useDocumentStore.getState().doc.entities[b.id]?.position;
+      // After swap the two entities should have exchanged positions.
+      expect(posAAfter).toEqual(posBBefore);
+      expect(posBAfter).toEqual(posABefore);
+    });
+  });
+
+  // ── Multi-entity — Delete N entities run callback ─────────────────────────
+
+  describe('multi-entity — clicking "Delete N entities" initiates bulk deletion', () => {
+    it('clicking "Delete 2 entities" triggers confirmAndDeleteSelection', async () => {
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
+      act(() => useDocumentStore.getState().selectEntities([a.id, b.id]));
+      openOnEntity(a.id);
+      const { container } = render(<ContextMenu />);
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Delete 2 entities');
+      if (!btn) throw new Error('"Delete 2 entities" button not found');
+      act(() => fireEvent.click(btn));
+      // Confirm the resulting dialog.
+      await act(async () => {
+        await new Promise<void>((resolve, reject) => {
+          const start = Date.now();
+          const tick = () => {
+            const cur = useDocumentStore.getState().confirmDialog;
+            if (cur) {
+              useDocumentStore.getState().resolveConfirm(true);
+              resolve();
+              return;
+            }
+            if (Date.now() - start > 1000) {
+              reject(new Error('Timeout waiting for ConfirmDialog'));
+              return;
+            }
+            setTimeout(tick, 5);
+          };
+          tick();
+        });
+      });
+      expect(useDocumentStore.getState().doc.entities[a.id]).toBeUndefined();
+      expect(useDocumentStore.getState().doc.entities[b.id]).toBeUndefined();
+    });
+  });
+
+  // ── Multi-entity — "Convert all to" submenu run callback ─────────────────
+
+  describe('multi-entity — clicking a "Convert all to" submenu item updates all types', () => {
+    it('clicking a type in the "Convert all to" submenu updates all selected entities', () => {
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
+      act(() => useDocumentStore.getState().selectEntities([a.id, b.id]));
+      openOnEntity(a.id);
+      const { container } = render(<ContextMenu />);
+      // Open the "Convert all to" submenu.
+      const submenuTrigger = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Convert all to');
+      if (!submenuTrigger?.parentElement) throw new Error('no "Convert all to" submenu trigger');
+      act(() => fireEvent.mouseEnter(submenuTrigger.parentElement as HTMLElement));
+      // Click the "Root Cause" option to convert both entities.
+      const rootCauseBtn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Root Cause');
+      if (!rootCauseBtn) throw new Error('"Root Cause" type option not found in submenu');
+      act(() => fireEvent.click(rootCauseBtn));
+      expect(useDocumentStore.getState().doc.entities[a.id]?.type).toBe('rootCause');
+      expect(useDocumentStore.getState().doc.entities[b.id]?.type).toBe('rootCause');
+    });
+  });
+
+  // ── Single entity — "Convert to" submenu run callback ────────────────────
+
+  describe('single entity — clicking a "Convert to" submenu item updates the entity type', () => {
+    it('clicking a type in the "Convert to" submenu updates the entity type', () => {
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      openOnEntity(a.id);
+      const { container } = render(<ContextMenu />);
+      // Open the "Convert to" submenu.
+      const submenuTrigger = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Convert to');
+      if (!submenuTrigger?.parentElement) throw new Error('no "Convert to" submenu trigger');
+      act(() => fireEvent.mouseEnter(submenuTrigger.parentElement as HTMLElement));
+      // Pick "Root Cause" to convert the entity.
+      const rootCauseBtn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Root Cause');
+      if (!rootCauseBtn) throw new Error('"Root Cause" type option not found in submenu');
+      act(() => fireEvent.click(rootCauseBtn));
+      expect(useDocumentStore.getState().doc.entities[a.id]?.type).toBe('rootCause');
+    });
+  });
+
+  // ── FRT — "Start Negative Branch" run callback ───────────────────────────
+
+  describe('FRT — clicking "Start Negative Branch" creates group and shows toast', () => {
+    it('clicking "Start Negative Branch" creates a group and shows success toast', () => {
+      act(() => useDocumentStore.getState().newDocument('frt'));
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      openOnEntity(a.id);
+      const { container } = render(<ContextMenu />);
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Start Negative Branch from this entity');
+      if (!btn) throw new Error('"Start Negative Branch" button not found');
+      const groupCountBefore = Object.keys(useDocumentStore.getState().doc.groups).length;
+      act(() => fireEvent.click(btn));
+      const groupCountAfter = Object.keys(useDocumentStore.getState().doc.groups).length;
+      expect(groupCountAfter).toBe(groupCountBefore + 1);
+      // A success toast should have been queued.
+      expect(useDocumentStore.getState().toasts.length).toBeGreaterThan(0);
+    });
+  });
+
+  // ── Edge-picker — fallback "Edge" label when edge not in doc ─────────────
+
+  describe('edge-picker — fallback label "Edge" when id is not found in doc', () => {
+    it('shows "Edge" label when the edge-picker id does not match any doc edge', () => {
+      // Open a picker with a made-up id that isn't in the store.
+      openOnEdgePicker(['ghost-id-1', 'ghost-id-2']);
+      const { container } = render(<ContextMenu />);
+      const labels = itemLabels(container);
+      expect(labels.filter((l) => l === 'Edge').length).toBe(2);
+    });
+  });
+
+  // ── Single entity — "Delete entity" run callback ─────────────────────────
+
+  describe('single entity — clicking "Delete entity" initiates deletion', () => {
+    it('clicking "Delete entity" on an isolated entity deletes it immediately (no confirm needed)', async () => {
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      openOnEntity(a.id);
+      const { container } = render(<ContextMenu />);
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Delete entity');
+      if (!btn) throw new Error('"Delete entity" button not found');
+      // Isolated entity has 0 connections → confirmAndDeleteEntity skips the dialog.
+      await act(async () => {
+        fireEvent.click(btn);
+        // Give the async delete a tick to complete.
+        await Promise.resolve();
+      });
+      expect(useDocumentStore.getState().doc.entities[a.id]).toBeUndefined();
+    });
+
+    it('clicking "Delete entity" on a connected entity opens a confirm dialog', async () => {
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
+      const e = useDocumentStore.getState().connect(a.id, b.id);
+      if (!e) throw new Error('connect failed');
+      openOnEntity(a.id);
+      const { container } = render(<ContextMenu />);
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Delete entity');
+      if (!btn) throw new Error('"Delete entity" button not found');
+      act(() => fireEvent.click(btn));
+      // Confirm the dialog.
+      await act(async () => {
+        await new Promise<void>((resolve, reject) => {
+          const start = Date.now();
+          const tick = () => {
+            const cur = useDocumentStore.getState().confirmDialog;
+            if (cur) {
+              useDocumentStore.getState().resolveConfirm(true);
+              resolve();
+              return;
+            }
+            if (Date.now() - start > 1000) {
+              reject(new Error('Timeout waiting for ConfirmDialog'));
+              return;
+            }
+            setTimeout(tick, 5);
+          };
+          tick();
+        });
+      });
+      expect(useDocumentStore.getState().doc.entities[a.id]).toBeUndefined();
+    });
+  });
+
+  // ── Single edge — Ungroup AND run callback ────────────────────────────────
+
+  describe('single edge — clicking "Ungroup AND" removes the AND group', () => {
+    it('clicking "Ungroup AND" removes andGroupId from the edge', () => {
+      const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
+      const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
+      const c = useDocumentStore.getState().addEntity({ type: 'effect', title: 'C' });
+      const e1 = useDocumentStore.getState().connect(a.id, c.id);
+      const e2 = useDocumentStore.getState().connect(b.id, c.id);
+      if (!e1 || !e2) throw new Error('edges missing');
+      const result = useDocumentStore.getState().groupAsAnd([e1.id, e2.id]);
+      if (!result.ok) throw new Error('AND grouping failed');
+      openOnEdge(e1.id);
+      const { container } = render(<ContextMenu />);
+      const btn = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      ).find((b) => b.textContent?.trim() === 'Ungroup AND');
+      if (!btn) throw new Error('"Ungroup AND" button not found');
+      act(() => fireEvent.click(btn));
+      expect(useDocumentStore.getState().doc.edges[e1.id]?.andGroupId).toBeUndefined();
     });
   });
 });

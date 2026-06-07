@@ -75,3 +75,63 @@ describe('navigateCommands — zoom-fit', () => {
     await expect(runCommand(findCommand(navigateCommands, 'zoom-fit'))).resolves.toBeUndefined();
   });
 });
+
+describe('navigateCommands — select-path-between (no-path branch)', () => {
+  it('toasts info when no path exists between the two selected entities', async () => {
+    // Two disconnected entities — there is no path between them.
+    const a = s().addEntity({ type: 'effect', title: 'Island A' });
+    const b = s().addEntity({ type: 'effect', title: 'Island B' });
+    s().selectEntities([a.id, b.id]);
+    await runCommand(findCommand(navigateCommands, 'select-path-between'));
+    expect(s().toasts.some((t) => /no path found/i.test(t.message))).toBe(true);
+  });
+
+  it('toasts info when no entities are selected at all', async () => {
+    // kind === 'none' — neither 'entities' nor any ids
+    await runCommand(findCommand(navigateCommands, 'select-path-between'));
+    expect(s().toasts.some((t) => /exactly two entities/i.test(t.message))).toBe(true);
+  });
+});
+
+describe('navigateCommands — select-successors (non-entity selection)', () => {
+  it('toasts info when selection kind is not entities (edges selected)', async () => {
+    const { edge } = seedConnectedPair();
+    s().selectEdges([edge.id]);
+    await runCommand(findCommand(navigateCommands, 'select-successors'));
+    expect(s().toasts.some((t) => /select one or more/i.test(t.message))).toBe(true);
+  });
+});
+
+describe('navigateCommands — select-predecessors (toast branch)', () => {
+  it('toasts info when nothing is selected', async () => {
+    await runCommand(findCommand(navigateCommands, 'select-predecessors'));
+    expect(s().toasts.some((t) => /select one or more/i.test(t.message))).toBe(true);
+  });
+});
+
+describe('navigateCommands — re-layout', () => {
+  it('clears pinned entity positions', async () => {
+    const e = s().addEntity({ type: 'effect', title: 'Pinned' });
+    s().setEntityPosition(e.id, { x: 99, y: 42 });
+    const before = s().doc.entities[e.id]?.position;
+    expect(before).toBeDefined();
+
+    await runCommand(findCommand(navigateCommands, 're-layout'));
+
+    const after = s().doc.entities[e.id]?.position;
+    expect(after).toBeUndefined();
+  });
+
+  it('runs without throwing on an empty document (no entities)', async () => {
+    await expect(runCommand(findCommand(navigateCommands, 're-layout'))).resolves.toBeUndefined();
+  });
+
+  it('clears pinned positions for every entity in a multi-node graph', async () => {
+    const { entities } = seedChain(['X', 'Y', 'Z']);
+    for (const e of entities) s().setEntityPosition(e.id, { x: 10, y: 10 });
+    await runCommand(findCommand(navigateCommands, 're-layout'));
+    for (const e of entities) {
+      expect(s().doc.entities[e.id]?.position).toBeUndefined();
+    }
+  });
+});
