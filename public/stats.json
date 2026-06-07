@@ -1,13 +1,15 @@
 {
-  "generatedAt": "2026-06-07T16:25:36.636Z",
-  "commit": "49651f3",
+  "generatedAt": "2026-06-07T17:18:55.864Z",
+  "commit": "913fd40",
   "headline": {
-    "linesTsJs": 107133,
+    "linesTsJs": 107174,
     "tests": 2944,
     "lineCoveragePct": 91.17,
-    "commits": 612,
+    "commits": 616,
     "ageDays": 27,
-    "trackedFiles": 963
+    "trackedFiles": 964,
+    "featureManualPct": 88.1,
+    "featureBookPct": 76.7
   },
   "code": [
     {
@@ -28,7 +30,7 @@
     {
       "category": "Build scripts",
       "files": 19,
-      "lines": 4078
+      "lines": 4119
     },
     {
       "category": "Styles (CSS)",
@@ -38,7 +40,7 @@
     {
       "category": "Docs (Markdown)",
       "files": 42,
-      "lines": 6318
+      "lines": 6455
     }
   ],
   "coverage": {
@@ -58,35 +60,35 @@
       "total": 2746
     },
     "branches": {
-      "pct": 77.19,
-      "covered": 7154,
+      "pct": 77.17,
+      "covered": 7153,
       "total": 9268
     }
   },
   "tests": {
     "unit": 2856,
     "e2e": 88,
-    "durationMs": 188589,
+    "durationMs": 193624,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10069
+        "ms": 10174
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4451
+        "ms": 4756
       },
       {
         "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 1478
+        "ms": 1594
       },
       {
-        "file": "tests/components/canvas/useEdgeRoutes.test.tsx",
-        "ms": 1428
+        "file": "tests/components/Inspector.test.tsx",
+        "ms": 1361
       },
       {
         "file": "tests/components/SelectionToolbar.test.tsx",
-        "ms": 1227
+        "ms": 1337
       }
     ]
   },
@@ -193,24 +195,511 @@
     "withinBudget": true
   },
   "docs": {
-    "bookWords": 45517,
+    "bookWords": 48483,
     "chapters": 24,
     "appLoc": 62105,
-    "docToCodeRatio": 0.73
+    "docToCodeRatio": 0.78
+  },
+  "featureCoverage": {
+    "total": 193,
+    "manual": 170,
+    "manualPct": 88.1,
+    "book": 148,
+    "bookPct": 76.7,
+    "bookExample": 57,
+    "bookExamplePct": 29.5,
+    "byArea": {
+      "CRT": {
+        "total": 8,
+        "manual": 7,
+        "book": 6
+      },
+      "FRT": {
+        "total": 2,
+        "manual": 2,
+        "book": 2
+      },
+      "EC": {
+        "total": 17,
+        "manual": 17,
+        "book": 16
+      },
+      "PRT": {
+        "total": 2,
+        "manual": 2,
+        "book": 2
+      },
+      "TT": {
+        "total": 5,
+        "manual": 4,
+        "book": 5
+      },
+      "GoalTree": {
+        "total": 3,
+        "manual": 3,
+        "book": 3
+      },
+      "ST": {
+        "total": 3,
+        "manual": 2,
+        "book": 3
+      },
+      "NBR": {
+        "total": 2,
+        "manual": 2,
+        "book": 0
+      },
+      "Canvas": {
+        "total": 16,
+        "manual": 15,
+        "book": 8
+      },
+      "Editing": {
+        "total": 10,
+        "manual": 10,
+        "book": 8
+      },
+      "Entities": {
+        "total": 18,
+        "manual": 17,
+        "book": 12
+      },
+      "Edges": {
+        "total": 19,
+        "manual": 17,
+        "book": 11
+      },
+      "CLR": {
+        "total": 9,
+        "manual": 9,
+        "book": 8
+      },
+      "Layout": {
+        "total": 6,
+        "manual": 5,
+        "book": 3
+      },
+      "Export": {
+        "total": 12,
+        "manual": 11,
+        "book": 12
+      },
+      "Import": {
+        "total": 7,
+        "manual": 4,
+        "book": 5
+      },
+      "Print": {
+        "total": 5,
+        "manual": 5,
+        "book": 2
+      },
+      "Comments": {
+        "total": 4,
+        "manual": 4,
+        "book": 3
+      },
+      "Revisions": {
+        "total": 3,
+        "manual": 3,
+        "book": 3
+      },
+      "Search": {
+        "total": 2,
+        "manual": 2,
+        "book": 1
+      },
+      "Palette": {
+        "total": 3,
+        "manual": 1,
+        "book": 1
+      },
+      "Settings": {
+        "total": 7,
+        "manual": 6,
+        "book": 7
+      },
+      "Workshop": {
+        "total": 5,
+        "manual": 1,
+        "book": 5
+      },
+      "Reader": {
+        "total": 4,
+        "manual": 4,
+        "book": 4
+      },
+      "Patterns": {
+        "total": 3,
+        "manual": 3,
+        "book": 3
+      },
+      "General": {
+        "total": 18,
+        "manual": 14,
+        "book": 15
+      }
+    },
+    "gaps": {
+      "noManual": [
+        {
+          "id": "layout-crossing-reroute",
+          "name": "Edge-crossing reroute",
+          "since": 173
+        },
+        {
+          "id": "import-ai-skill",
+          "name": "AI import-generator skill",
+          "since": 153
+        },
+        {
+          "id": "edge-4side-anchor",
+          "name": "4-side edge anchoring",
+          "since": 138
+        },
+        {
+          "id": "tt-task-csv",
+          "name": "TT task-tracker CSV export",
+          "since": 135
+        },
+        {
+          "id": "st-assumption-subtyping",
+          "name": "S&T assumption sub-typing",
+          "since": 135
+        },
+        {
+          "id": "canvas-state-badge",
+          "name": "Entity state badge on nodes",
+          "since": 135
+        },
+        {
+          "id": "entity-import-traceability",
+          "name": "Imported-from traceability",
+          "since": 135
+        },
+        {
+          "id": "import-cross-doc",
+          "name": "Import entity from another doc",
+          "since": 135
+        },
+        {
+          "id": "settings-app-mode",
+          "name": "App-mode switching",
+          "since": 135
+        },
+        {
+          "id": "workshop-presentation",
+          "name": "Presentation mode",
+          "since": 135
+        },
+        {
+          "id": "workshop-step-through",
+          "name": "Presentation step-through",
+          "since": 135
+        },
+        {
+          "id": "workshop-large-text",
+          "name": "Workshop large-text mode",
+          "since": 135
+        },
+        {
+          "id": "workshop-guided",
+          "name": "Guided mode",
+          "since": 135
+        },
+        {
+          "id": "general-speculation",
+          "name": "What-if speculation overlay",
+          "since": 135
+        },
+        {
+          "id": "general-state-propagation",
+          "name": "Entity state propagation",
+          "since": 135
+        },
+        {
+          "id": "general-epub",
+          "name": "EPUB book download",
+          "since": 135
+        },
+        {
+          "id": "export-picker",
+          "name": "Export picker dialog",
+          "since": 134
+        },
+        {
+          "id": "import-picker",
+          "name": "Import picker dialog",
+          "since": 133
+        },
+        {
+          "id": "general-about",
+          "name": "About dialog",
+          "since": 111
+        },
+        {
+          "id": "palette-recent",
+          "name": "Recent palette commands",
+          "since": 88
+        },
+        {
+          "id": "crt-scope-nudge",
+          "name": "System-scope nudge on CRT load",
+          "since": 83
+        },
+        {
+          "id": "edge-attributes",
+          "name": "Edge custom attributes",
+          "since": 71
+        },
+        {
+          "id": "palette-sections",
+          "name": "Palette grouped sections",
+          "since": 45
+        }
+      ],
+      "noBook": [
+        {
+          "id": "crt-spawn-ec-tied",
+          "name": "Spawn EC from tied core drivers",
+          "since": 179
+        },
+        {
+          "id": "entity-custom-icon",
+          "name": "Per-entity custom icon",
+          "since": 179
+        },
+        {
+          "id": "clr-logic-mismatch",
+          "name": "Logic-type mismatch lint",
+          "since": 179
+        },
+        {
+          "id": "comments-clr-category",
+          "name": "CLR category on comments",
+          "since": 179
+        },
+        {
+          "id": "print-page-setup",
+          "name": "Print page setup",
+          "since": 178
+        },
+        {
+          "id": "print-legend",
+          "name": "Print how-to-read legend",
+          "since": 178
+        },
+        {
+          "id": "canvas-back-edge-routing",
+          "name": "Back-edge loop routing",
+          "since": 177
+        },
+        {
+          "id": "edge-picker",
+          "name": "Edge picker for overlapping edges",
+          "since": 177
+        },
+        {
+          "id": "edge-inspector-rewire",
+          "name": "Edge Inspector cause/effect rewire",
+          "since": 177
+        },
+        {
+          "id": "print-reasoning",
+          "name": "Print reasoning companion",
+          "since": 177
+        },
+        {
+          "id": "canvas-zoom-edit",
+          "name": "Click-to-edit zoom percent",
+          "since": 176
+        },
+        {
+          "id": "edit-rename-f2",
+          "name": "F2 / Enter to rename",
+          "since": 176
+        },
+        {
+          "id": "layout-crossing-reroute",
+          "name": "Edge-crossing reroute",
+          "since": 173
+        },
+        {
+          "id": "nbr-trim-branch",
+          "name": "NBR trim-branch injection",
+          "since": 157
+        },
+        {
+          "id": "entity-cross-doc-link",
+          "name": "Cross-document entity links",
+          "since": 155
+        },
+        {
+          "id": "edge-reconnect",
+          "name": "Re-target a connector",
+          "since": 148
+        },
+        {
+          "id": "edge-4side-anchor",
+          "name": "4-side edge anchoring",
+          "since": 138
+        },
+        {
+          "id": "layout-obstacle-routing",
+          "name": "Obstacle-aware edge routing",
+          "since": 137
+        },
+        {
+          "id": "canvas-keyboard-edge",
+          "name": "Keyboard edge-creation gesture",
+          "since": 135
+        },
+        {
+          "id": "canvas-a11y-names",
+          "name": "Screen-reader accessible names",
+          "since": 135
+        },
+        {
+          "id": "canvas-state-badge",
+          "name": "Entity state badge on nodes",
+          "since": 135
+        },
+        {
+          "id": "entity-import-traceability",
+          "name": "Imported-from traceability",
+          "since": 135
+        },
+        {
+          "id": "import-cross-doc",
+          "name": "Import entity from another doc",
+          "since": 135
+        },
+        {
+          "id": "general-epub",
+          "name": "EPUB book download",
+          "since": 135
+        },
+        {
+          "id": "nbr-diagram",
+          "name": "Negative Branch Reservation",
+          "since": 134
+        },
+        {
+          "id": "general-about",
+          "name": "About dialog",
+          "since": 111
+        },
+        {
+          "id": "palette-recent",
+          "name": "Recent palette commands",
+          "since": 88
+        },
+        {
+          "id": "ec-injection-chip",
+          "name": "EC injections chip",
+          "since": 87
+        },
+        {
+          "id": "crt-scope-nudge",
+          "name": "System-scope nudge on CRT load",
+          "since": 83
+        },
+        {
+          "id": "edge-attributes",
+          "name": "Edge custom attributes",
+          "since": 71
+        },
+        {
+          "id": "canvas-pin",
+          "name": "Drag-to-pin on auto-layout",
+          "since": 63
+        },
+        {
+          "id": "edge-description",
+          "name": "Edge description field",
+          "since": 60
+        },
+        {
+          "id": "palette-sections",
+          "name": "Palette grouped sections",
+          "since": 45
+        },
+        {
+          "id": "layout-radial",
+          "name": "Radial / sunburst layout",
+          "since": 27
+        },
+        {
+          "id": "canvas-entity-collapse",
+          "name": "Per-entity collapse/expand",
+          "since": 19
+        },
+        {
+          "id": "entity-title-size",
+          "name": "Per-entity title font size",
+          "since": 19
+        },
+        {
+          "id": "edge-reverse",
+          "name": "Reverse edge direction",
+          "since": 19
+        },
+        {
+          "id": "entity-multiline-title",
+          "name": "Multi-line titles",
+          "since": 13
+        },
+        {
+          "id": "entity-internal-links",
+          "name": "Internal entity cross-links",
+          "since": 13
+        },
+        {
+          "id": "edge-labels",
+          "name": "Edge labels",
+          "since": 13
+        },
+        {
+          "id": "import-csv",
+          "name": "CSV import",
+          "since": 12
+        },
+        {
+          "id": "search-regex",
+          "name": "Regex / case / whole-word search",
+          "since": 11
+        },
+        {
+          "id": "edit-swap",
+          "name": "Swap two entities",
+          "since": 8
+        },
+        {
+          "id": "canvas-arrow-nav",
+          "name": "Arrow-key node navigation",
+          "since": 1
+        },
+        {
+          "id": "general-help",
+          "name": "Help dialog",
+          "since": 1
+        }
+      ]
+    }
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 612,
-    "commits7d": 208,
+    "commits": 616,
+    "commits7d": 211,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 552
+        "count": 554
       },
       {
         "name": "github-actions[bot]",
-        "count": 49
+        "count": 51
       },
       {
         "name": "dannbleeker",
@@ -218,8 +707,8 @@
       }
     ],
     "churn30d": {
-      "added": 172869,
-      "removed": 32483
+      "added": 173313,
+      "removed": 32502
     },
     "changelogEntries": 314
   }
