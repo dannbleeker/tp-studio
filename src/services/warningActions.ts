@@ -1,3 +1,4 @@
+import { defaultEntityType } from '@/domain/entityPalettes';
 import { entitiesOfType } from '@/domain/graph';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import type { TPDocument, Warning } from '@/domain/types';
@@ -52,9 +53,25 @@ const spawnEcFromConflict: WarningActionHandler = (store, doc, warning) => {
   store.openDocInTab(spawnECFromConflict(doc, warning.target.id));
 };
 
+/**
+ * Action: splice a blank intermediate entity into the flagged edge and open
+ * it for editing, so the user can name the missing step. Used by the
+ * `long-arrow` (E5) warning. Mirrors the `splice-into-edge` palette command:
+ * add a fresh default-typed entity, splice it onto the edge, and roll the
+ * entity back if the splice fails (self-loop / unknown edge — neither
+ * reachable from a real warning, but defensive).
+ */
+const insertStep: WarningActionHandler = (store, doc, warning) => {
+  if (warning.target.kind !== 'edge') return;
+  const fresh = store.addEntity({ type: defaultEntityType(doc.diagramType), startEditing: true });
+  const ok = store.spliceEntityIntoEdge(fresh.id, warning.target.id);
+  if (!ok) store.deleteEntity(fresh.id);
+};
+
 export const WARNING_ACTIONS: Record<string, WarningActionHandler> = {
   'convert-extra-goals-to-csfs': convertExtraGoalsToCsfs,
   'spawn-ec-from-conflict': spawnEcFromConflict,
+  'insert-step': insertStep,
 };
 
 /**

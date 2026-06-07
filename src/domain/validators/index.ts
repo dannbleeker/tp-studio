@@ -18,6 +18,7 @@ import { externalRootCauseRule } from './externalRootCause';
 import { goalTreeMultipleGoalsRule } from './goalTreeMultipleGoals';
 import { indirectEffectRule } from './indirectEffect';
 import { logicTypeMismatchRule } from './logicTypeMismatch';
+import { longArrowRule } from './longArrow';
 import { loopPolarityRule } from './loopPolarity';
 import { predictedEffectExistenceRule } from './predictedEffectExistence';
 import { type TieredRule, tieredRule } from './shared';
@@ -81,6 +82,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('clarity', 'crt-ude-wording', crtUdeWordingRule),
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
     tieredRule('clarity', 'loop-polarity', loopPolarityRule),
+    // Session 180 (E5) — long-arrow / missing-step (depth-twin of indirect-effect).
+    tieredRule('existence', 'long-arrow', longArrowRule),
   ],
   frt: [
     ...STRUCTURAL_RULES,
@@ -90,6 +93,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // Session 179 — logic-type lint + loop-polarity (Theme C2 + A2).
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
     tieredRule('clarity', 'loop-polarity', loopPolarityRule),
+    // Session 180 (E5) — long-arrow / missing-step.
+    tieredRule('existence', 'long-arrow', longArrowRule),
   ],
   // PRT (A2): the structural rules apply; the PRT-specific rules
   // ("a goal with no IOs feeding obstacles below") are parked.
@@ -109,6 +114,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('clarity', 'tt-action-locus-unset', ttActionLocusUnsetRule),
     // Session 179 — logic-type lint (Theme C2).
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
+    // Session 180 (E5) — long-arrow / missing-step.
+    tieredRule('existence', 'long-arrow', longArrowRule),
   ],
   // EC (A1): structural rules plus the missing-conflict check. The book
   // makes the conflict between the two Wants explicit via an edge; without
@@ -170,6 +177,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // Session 179 — logic-type lint + loop-polarity (Theme C2 + A2).
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
     tieredRule('clarity', 'loop-polarity', loopPolarityRule),
+    // Session 180 (E5) — long-arrow / missing-step.
+    tieredRule('existence', 'long-arrow', longArrowRule),
   ],
 };
 

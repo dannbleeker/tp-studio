@@ -2,6 +2,27 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — E5: long-arrow / missing-step warning
+
+A new CLR validator (`long-arrow`, EXISTENCE tier) flags a sufficiency edge that jumps past
+≥2 causal levels — the depth-twin of `indirect-effect` (which flags breadth: too many causes
+converging). Detection is structural and layout-independent: each entity gets a causal level =
+the longest chain of forward sufficiency edges ending at it (back-edges excluded via
+`effectiveBackEdgeIds`, so feedback loops can't make the longest path infinite), and an edge
+whose endpoints differ by ≥3 levels is flagged. Conservative by design — silent on shallow
+trees, only fires where the tree is deep enough for "skipping" to be meaningful, every warning
+dismissible via `resolvedWarnings`, and the message is framed as a question.
+
+Carries a one-click **Insert a step** action (`WARNING_ACTIONS['insert-step']`): splices a
+blank intermediate entity into the flagged edge and opens it for editing, reusing
+`spliceEntityIntoEdge` (the same path as the `splice-into-edge` palette command). Scoped to the
+four sufficiency diagrams (CRT/FRT/TT/NBR); off for Goal Tree (necessity), EC/PRT/S&T/Freeform.
+
+New `src/domain/validators/longArrow.ts` + registration on the four sufficiency diagrams;
+`'long-arrow'` added to `ClrRuleId`; the `insert-step` handler in `services/warningActions.ts`.
+`tests/domain/longArrow.test.ts` covers the span threshold, cycle termination, sufficiency-only
+filtering, the EXISTENCE tier, registration scoping, and the action. Full suite green.
+
 ## Session 180 — E6: Reader / Trainee Mode
 
 **E6** ships all three slices together: a distraction-free `'reader'` AppMode, per-element coaching

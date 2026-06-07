@@ -97,7 +97,10 @@ export type ClrRuleId =
   // Theme C2 — logic-type consistency:
   | 'logic-type-mismatch' // an edge whose kind contradicts the diagram's primary logic
   // Theme A2 — loop semantics (the System-Dynamics lens):
-  | 'loop-polarity'; // a balancing loop where a reinforcing one is expected
+  | 'loop-polarity' // a balancing loop where a reinforcing one is expected
+  // Session 180 (E5) — long-arrow / missing-step (a Causality-Existence
+  // reservation): a sufficiency edge that jumps past ≥ 2 causal levels.
+  | 'long-arrow';
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each

@@ -46,8 +46,7 @@ tied-core-drivers Spawn-EC action — all **shipped Session 179** (see CHANGELOG
 - **A4. Delay markers on edges** (S) — `//` glyph + "a reinforcing loop with no delay escalates instantly" hint.
 - **E3. 3-Cloud rapid-diagnosis wizard** (S–M) — guided 3 UDEs → 3 ECs → consolidate to a core cloud; a fast
   on-ramp alternative to a full CRT, reusing the EC wizard + cloud-progression.
-- **E5. Long-arrow / missing-step warning** (M) — flag a sufficiency edge that skips too many logical levels
-  (a dismissible hint; higher false-positive risk).
+- **E5. Long-arrow / missing-step warning** — ✅ shipped Session 180 (`long-arrow` validator, EXISTENCE tier, "Insert a step" action; flags a sufficiency edge spanning ≥3 causal levels on CRT/FRT/TT/NBR; see CHANGELOG).
 - **E6. Reader / trainee mode** — ✅ shipped Session 180 (reader AppMode, per-element coaching tooltips, challenge-arrow CLR comment flow; see CHANGELOG).
 
 ---
