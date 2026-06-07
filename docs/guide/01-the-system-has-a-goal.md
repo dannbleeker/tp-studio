@@ -25,6 +25,18 @@ A constraint is only worth analyzing because it holds some measure short of wher
 
 TP Studio gives the gap a home on the document itself. The **"Performance frame"** section of the Document panel holds two optional anchors: a **Low** note — the measure's current, unacceptable level — and a **High** note — its target or desired level. "On-time delivery at 60%" → "Reach 98% within two quarters." It's general to every diagram type, not tied to any particular tree, and it travels with the document, so whoever opens the file later sees the gap the analysis was built to close stated in plain numbers rather than implied by the diagram. Filling it in is a small facilitation discipline that keeps a long investigation honest about what "done" would mean.
 
+## Closing the loop — knowing it worked
+
+Naming the gap is the *before*; the analysis isn't finished until you've checked the *after*. A Thinking-Process investigation makes a falsifiable promise: *eliminate this constraint and this measure will move.* The discipline is to go back, once the injections have landed, and see whether it did.
+
+That return trip is concrete, not ceremonial:
+
+- **Re-read the CRT.** The UDEs you started from were observable effects. Weeks later, are they still observable? Re-open the original CRT — it's a revision, or a separate tab — and walk the UDEs. The ones that have gone quiet are your evidence; the ones that haven't point at a cause you missed or an injection that didn't take.
+- **Re-measure the gap.** The Performance frame's Low note was the unacceptable level you started from; the High note was the target. Put the new number beside them. "On-time delivery 60% → 98%" is either true now or it isn't, and the frame makes the comparison impossible to fudge.
+- **Compare the diagrams.** Capture a fresh snapshot of reality and use side-by-side compare ([Chapter 14](14-iteration-revisions-branches.md)) against the original — what the FRT predicted versus what actually happened.
+
+A constraint that's been elevated has *moved*, not vanished — Step 5 of the Five Focusing Steps sends you back to Step 1. Closing the loop is how you find out where it went.
+
 ## The Five Focusing Steps
 
 Goldratt's canonical sequence for working with constraints. Worth keeping in mind throughout the rest of the book, because *every* thinking-process tree is in service of one of these steps.
@@ -48,6 +60,22 @@ The Thinking Processes map cleanly onto these steps:
 | Strategy & Tactics Tree | Elevate (when the elevation is itself a large program) | Deployment-grade decomposition of strategy into tactics. |
 
 You will not use all of these every time. Most analyses center on a CRT, dissolve one or two clouds, draft an FRT, and stop there. The PRT and TT come out only when implementation needs sequencing. The Goal Tree is usually the *frame* you draw around the whole investigation, not a separate analysis. S&T is for larger programs — multi-team rollouts, strategy decomposition, the kind of thing you don't sit and draw on a Tuesday afternoon.
+
+## Which tree, when? — a starting map
+
+The table above maps the trees onto Goldratt's focusing steps. But you rarely start from "which step am I on" — you start from a felt problem. This map runs the other way, from the problem in front of you to the tree that fits it:
+
+| You're staring at… | Start with | Because |
+| --- | --- | --- |
+| Symptoms everywhere, no agreement on the cause | **Current Reality Tree** (Ch 4) | It traces the symptoms back to the one or two root causes that produce most of them. |
+| A chronic tug-of-war that never resolves | **Evaporating Cloud** (Ch 5) | It surfaces the real conflict holding the situation in place, and the assumption you can break. In a hurry, the **Rapid 3-cloud diagnosis** gets you to the core conflict from three symptoms. |
+| A fix you like, but you're worried about side-effects | **Future Reality Tree** (Ch 6) | It checks the injection actually delivers — and hunts the negative branches before they bite. |
+| A goal you're blocked from reaching | **Prerequisite Tree** (Ch 7) → **Transition Tree** (Ch 8) | The PRT names the obstacles and the intermediate objectives that clear them; the TT sequences the actions. |
+| Disagreement about what "good" even means | **Goal Tree** (Ch 9) | It pins the goal and the critical success factors that have to hold for it. |
+| A multi-team strategy that has to land operationally | **Strategy & Tactics Tree** (Ch 10) | It decomposes strategy into tactics, level by level, each carrying its assumptions. |
+| Something that isn't a TOC shape at all | **Freeform** (Ch 11) | Argument maps, decision records, dependency sketches — the canvas without the method's scaffolding. |
+
+Most real analyses are a *chain*, not a single tree: a CRT finds the core problem, an EC dissolves the conflict under it, an FRT checks the fix. That chain — the **U-Shape** — is covered in [Chapter 16](16-sharing-your-work.md) and walked end-to-end in [Appendix A](appendix-a-case-study.md). When in doubt, start with a CRT.
 
 ## Vocabulary you'll need
 

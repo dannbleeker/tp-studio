@@ -193,6 +193,8 @@ The practical tell: if you find yourself writing the same precondition into the 
 > - The reasoning-narrative export reads as a runnable plan that a new team member could execute without additional briefing.
 > - You've run what-if speculation to confirm that completing each IO's terminal outcome correctly unblocks the next IO's first step.
 
+> **✏️ Now you try.** Take one Intermediate Objective from your PRT. Open a TT (`Cmd+K → New Transition Tree`) and sequence the actions as Outcome ← Precondition + Action triples, numbering each step. Set an owner on each Action, then run `Export… → Task tracker CSV` and paste it into your tracker. If a step's precondition slot is empty, the `complete-step` warning will say so — what existing condition does that action rely on?
+
 🔁 **Chain to next:** the TT is the operational plan. The Goal Tree (next chapter) is a *strategic* decomposition — the frame around the entire CRT→TT process when the constraint is the goal itself.
 
 ---

@@ -158,6 +158,8 @@ Mark the CFO sign-off IO as `external`. Mark the legal review as `external` (it 
 > - **Drawing the PRT before the FRT is stable.** The PRT derives its injection from the FRT. If the FRT still has open negative branches or unchecked desired effects, the injection it hands you may change — and with it, the obstacles change. Stabilize the FRT first, then draw the PRT. Doing it the other way around creates rework you'll blame on "the analysis process" when the real culprit was sequencing.
 > - **Conflating obstacle and IO.** The obstacle is what is currently preventing you. The IO is the state you need to reach. If they look the same, one of them is wrong. "No training curriculum" is an obstacle. "Training curriculum drafted and approved" is the IO. They are inverses: the obstacle describes the absence; the IO describes the presence. When you can't tell them apart, re-read aloud: "We don't have X" is an obstacle; "We have X" is the IO.
 
+> **✏️ Now you try.** Pick a goal you're genuinely blocked on. Open a PRT (`Cmd+K → New Prerequisite Tree`), put the goal at the top, and list the obstacles honestly. Under each obstacle, write the Intermediate Objective that overcomes it. Export the plan (`Cmd+K → Export… → Prerequisite plan (CSV)`) and read the dependency order — which IO has to come first?
+
 🔁 **Chain to next:** the PRT shows *what's in the way*. The TT shows *the concrete actions that dismantle each obstacle, in order*, with explicit preconditions and expected outcomes at each step.
 
 ---

@@ -2,6 +2,30 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Book: practitioner improvements
+
+Six additions to the practitioner book (`docs/guide/`) that turn it from "explains the method"
+into a "do the method" companion — leaning on the fact that the tool is open while you read.
+
+- **"Now you try" exercises** — a hands-on block closing each Part-2 chapter (CRT → Freeform),
+  sending the reader into TP Studio with their *own* problem and the right gestures for that
+  diagram type. New `✏️ Now you try` sidebar convention, documented in AUTHORING.
+- **"Which tree, when?" navigator** (ch1) — a problem → tree starting map ("symptoms with no
+  agreed cause → CRT; chronic tug-of-war → EC; …") complementing the existing focusing-steps table.
+- **Troubleshooting your diagram** — new **Appendix G**: a smell → CLR-rule → fix reverse index
+  ("it reads like a to-do list", "the two Wants don't conflict", …) built on the corrected
+  validator registry. Wired into the chapter manifest + README.
+- **"Starting from a real problem"** (ch2) — orchestrates the on-ramps (Rapid 3-cloud diagnosis,
+  Quick Capture, CSV import, templates / pattern library, the AI skill) by starting state, for the
+  "blank canvas, vague problem" moment.
+- **"After the workshop — from diagram to commitment"** (ch17) — closing on the next tree, assigning
+  owners + exporting the plan CSV, distributing the reasoning, scheduling the re-measure.
+- **"Closing the loop — knowing it worked"** (ch1) — the verification half of measurement: re-read
+  the CRT for surviving UDEs, re-measure the Performance frame's Low/High, compare against the FRT's
+  prediction.
+
+Docs-only (`docs/guide/*` + the chapter manifest). EPUB builds clean (25 chapters); fast gate green.
+
 ## Session 180 (cont.) — Book: accuracy + depth pass
 
 An audit-driven refresh of the practitioner book (*Causal Thinking with TP Studio*, `docs/guide/`).

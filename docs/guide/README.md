@@ -48,6 +48,7 @@ This is the book-length companion to TP Studio. Where the [USER_GUIDE](../../USE
 - [D. Settings reference](appendix-d-settings.md)
 - [E. Glossary](appendix-e-glossary.md)
 - [F. Further reading](appendix-f-further-reading.md)
+- [G. Troubleshooting your diagram](appendix-g-troubleshooting.md) — smells → CLR rule → fix
 
 ## Authoring notes
 

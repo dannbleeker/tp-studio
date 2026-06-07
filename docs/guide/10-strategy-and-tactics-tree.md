@@ -213,6 +213,8 @@ Facet-level disagreements cluster, and the clustering tells you something useful
 > - Every PA names the alternatives that were rejected and why.
 > - You can hand the tree to a deployment lead and they build a rollout calendar from it without coming back with structural questions.
 
+> **✏️ Now you try.** Take a strategy you're rolling out. Open an S&T tree (`Cmd+K → New Strategy & Tactics Tree`), place the apex strategy as a Goal and its tactic below as an Injection, then fill the tactic's **S&T facets** in the inspector — Necessary Assumption, Strategy, Parallel Assumption, Sufficiency Assumption. Writing the Parallel Assumption (the alternatives you rejected) *before* the Tactic is the move that sharpens the choice.
+
 🔁 **Chain to next:** the seven structured TPs (CRT, EC, FRT, PRT, TT, Goal Tree, S&T) are the canonical kit. The freeform diagram is for *when the structure doesn't fit*.
 
 ---

@@ -221,6 +221,8 @@ The Document Inspector's "System Scope" section lets you write a short statement
 > - Verbalisation reads as a plausible future, not a wish-list. You'd be comfortable presenting each edge as a prediction to a skeptical colleague.
 > - The desired future state you wrote in the Document Inspector's System Scope section is visible somewhere in the top layer of desired effects.
 
+> **✏️ Now you try.** Take an injection you believe in — from the cloud above, or any "we should just…". Open an FRT (`Cmd+K → New Future Reality Tree`), seed the injection, and grow the desired effects forward until you reach the UDEs it should eliminate. Then hunt one **negative branch** (right-click → *Start Negative Branch*): what could this fix break? Trim it (*Trim this branch*). An FRT with no negative branches usually means you haven't looked hard enough.
+
 🔁 **Chain to next:** the FRT tells you *what* will happen if the injections land. The Prerequisite Tree tells you *what is in the way of making them land* — the obstacles between here and there.
 
 ---

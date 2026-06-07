@@ -51,6 +51,7 @@ export const CHAPTER_FILES = [
   'appendix-d-settings.md',
   'appendix-e-glossary.md',
   'appendix-f-further-reading.md',
+  'appendix-g-troubleshooting.md',
 ];
 
 /**
