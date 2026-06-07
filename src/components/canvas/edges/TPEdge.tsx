@@ -22,9 +22,11 @@ import {
   AssumptionBadge,
   BackEdgeBadge,
   CommentBadge,
+  DelayBadge,
   DescriptionBadge,
   EdgeInlineLabel,
   FallbackLabel,
+  LoopNameBadge,
   LoopPolarityBadge,
   MutexBadge,
   WeightBadge,
@@ -170,6 +172,9 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // against-flow pick. Omitted (falsy) on `data` for a non-back-edge.
   const isBackEdge = props.data?.isBackEdge === true;
   const loopPolarity = props.data?.loopPolarity;
+  // Theme A — A4 delay marker (`//`) + A3 loop name label (back-edges only).
+  const delay = props.data?.delay === true;
+  const loopName = props.data?.loopName;
   const edgeView = useDocumentStore(
     useShallow((s) => {
       const doc = currentDoc(s);
@@ -518,6 +523,8 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       {loopPolarity && loopPolarity !== 'unknown' && (
         <LoopPolarityBadge labelX={labelX} labelY={labelY} polarity={loopPolarity} />
       )}
+      {delay && <DelayBadge labelX={labelX} labelY={labelY} />}
+      {isBackEdge && loopName && <LoopNameBadge labelX={labelX} labelY={labelY} name={loopName} />}
       {isMutex && <MutexBadge labelX={labelX} labelY={labelY} />}
       {weight && weight !== 'positive' && (
         <WeightBadge labelX={labelX} labelY={labelY} weight={weight} />

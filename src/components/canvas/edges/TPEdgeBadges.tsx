@@ -122,6 +122,46 @@ export const LoopPolarityBadge = memo(function LoopPolarityBadge({
   );
 });
 
+/** `//` mark — System-Dynamics delay marker (Theme A / A4): this cause's effect
+ *  is lagged in time. Sits just below the edge label. Annotation only. */
+export const DelayBadge = memo(function DelayBadge({ labelX, labelY }: Anchor) {
+  return (
+    <EdgeLabelRenderer>
+      <div
+        className="nodrag nopan pointer-events-none absolute select-none rounded-full border border-slate-300 bg-slate-50 px-1.5 font-semibold text-[10px] text-slate-600 shadow-xs dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300"
+        style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY + 14}px)` }}
+        title="Delayed effect — this cause's effect is lagged in time"
+        role="img"
+        aria-label="Delayed effect (time lag)"
+      >
+        {'//'}
+      </div>
+    </EdgeLabelRenderer>
+  );
+});
+
+/** Small label naming the feedback loop a back-edge closes (Theme A / A3). Sits
+ *  above the badge row near the R/B pill; truncates long names (full on hover). */
+export const LoopNameBadge = memo(function LoopNameBadge({
+  labelX,
+  labelY,
+  name,
+}: Anchor & { name: string }) {
+  return (
+    <EdgeLabelRenderer>
+      <div
+        className="nodrag nopan pointer-events-none absolute max-w-[160px] select-none truncate rounded-md border border-amber-300 bg-amber-50/95 px-1.5 py-px font-medium text-[10px] text-amber-800 shadow-xs dark:border-amber-700 dark:bg-amber-950/95 dark:text-amber-200"
+        style={{ transform: `translate(-50%, -50%) translate(${labelX + 24}px, ${labelY - 30}px)` }}
+        title={`Loop: ${name}`}
+        role="img"
+        aria-label={`Loop name: ${name}`}
+      >
+        {name}
+      </div>
+    </EdgeLabelRenderer>
+  );
+});
+
 /** ×N pill — count of edges aggregated across a collapsed boundary. */
 export const AggregateBadge = memo(function AggregateBadge({
   labelX,

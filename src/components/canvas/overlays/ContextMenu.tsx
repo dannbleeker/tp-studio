@@ -329,6 +329,27 @@ export function ContextMenu() {
             .updateEdge(id, { isBackEdge: edge.isBackEdge ? undefined : true });
         },
       });
+      // Theme A / A4 — delay marker toggle (`//` glyph mid-edge).
+      result.push({
+        kind: 'action',
+        label: edge?.delay ? 'Clear delay (//)' : 'Mark as delayed (//)',
+        run: () => {
+          if (!edge) return;
+          useDocumentStore.getState().updateEdge(id, { delay: edge.delay ? undefined : true });
+        },
+      });
+      // Theme A / A3 — name the loop a back-edge closes (typed in the inspector).
+      if (edge?.isBackEdge) {
+        result.push({
+          kind: 'action',
+          label: edge.loopName ? 'Rename loop…' : 'Name this loop…',
+          run: () => {
+            const s = useDocumentStore.getState();
+            s.selectEdge(id);
+            s.showInspector();
+          },
+        });
+      }
       result.push({ kind: 'separator' });
       result.push({
         kind: 'action',

@@ -21,6 +21,7 @@ import { logicTypeMismatchRule } from './logicTypeMismatch';
 import { longArrowRule } from './longArrow';
 import { loopPolarityRule } from './loopPolarity';
 import { predictedEffectExistenceRule } from './predictedEffectExistence';
+import { reinforcingNoDelayRule } from './reinforcingNoDelay';
 import { type TieredRule, tieredRule } from './shared';
 import { stTacticAssumptionsRule } from './stTacticAssumptions';
 import { stTacticRollupRule } from './stTacticRollup';
@@ -84,6 +85,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('clarity', 'loop-polarity', loopPolarityRule),
     // Session 180 (E5) — long-arrow / missing-step (depth-twin of indirect-effect).
     tieredRule('existence', 'long-arrow', longArrowRule),
+    // Session 180 (Theme A / A4) — reinforcing loop with no delay.
+    tieredRule('clarity', 'reinforcing-no-delay', reinforcingNoDelayRule),
   ],
   frt: [
     ...STRUCTURAL_RULES,
@@ -95,6 +98,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('clarity', 'loop-polarity', loopPolarityRule),
     // Session 180 (E5) — long-arrow / missing-step.
     tieredRule('existence', 'long-arrow', longArrowRule),
+    // Session 180 (Theme A / A4) — reinforcing loop with no delay.
+    tieredRule('clarity', 'reinforcing-no-delay', reinforcingNoDelayRule),
   ],
   // PRT (A2): the structural rules apply; the PRT-specific rules
   // ("a goal with no IOs feeding obstacles below") are parked.
@@ -179,6 +184,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('clarity', 'loop-polarity', loopPolarityRule),
     // Session 180 (E5) — long-arrow / missing-step.
     tieredRule('existence', 'long-arrow', longArrowRule),
+    // Session 180 (Theme A / A4) — reinforcing loop with no delay.
+    tieredRule('clarity', 'reinforcing-no-delay', reinforcingNoDelayRule),
   ],
 };
 

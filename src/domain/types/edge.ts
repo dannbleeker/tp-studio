@@ -88,6 +88,26 @@ export type Edge = {
    *  EC-specific CLR rule fires when a 2-want EC has no such edge ("is
    *  this really a conflict?"). */
   isMutualExclusion?: boolean;
+  /** Theme A / A4 (Session 180) — System-Dynamics delay marker. When true the
+   *  edge renders a `//` glyph mid-arc to signal that the cause's effect is
+   *  LAGGED (it arrives later in time). Delay is what governs how a feedback
+   *  loop behaves: a reinforcing loop with no delay escalates instantly, a
+   *  delayed one builds slowly (and hides its cause), and a delayed balancing
+   *  loop oscillates. Annotation only — never simulated. Omitted from JSON when
+   *  unset. */
+  delay?: boolean;
+  /** Theme A / A3 (Session 180) — a name for the feedback loop this edge closes.
+   *  Only meaningful on a back-edge (the loop's canonical anchor). Systems
+   *  thinking names loops ("Burnout spiral") so a group can refer to the pattern
+   *  instead of re-tracing the arrows. Rendered as a small label by the
+   *  back-edge, alongside the R/B polarity badge. Omitted from JSON when unset. */
+  loopName?: string;
+  /** Theme A / A3 (Session 180) — free-text behavior-over-time note for the loop
+   *  this back-edge closes ("escalates over 3–6 months, then morale collapses").
+   *  Captures the qualitative temporal dynamic the acyclic sufficiency structure
+   *  can't express — without any simulation. Surfaces in the EdgeInspector.
+   *  Omitted from JSON when unset. */
+  loopNarrative?: string;
   /** B1 — user-defined attributes on edges, mirroring `Entity.attributes`.
    *  Same `AttrValue` shape and the same Inspector key/value editor.
    *  Use for ad-hoc edge metadata (a source URL on a citation edge, a

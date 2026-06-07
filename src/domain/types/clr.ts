@@ -100,7 +100,10 @@ export type ClrRuleId =
   | 'loop-polarity' // a balancing loop where a reinforcing one is expected
   // Session 180 (E5) — long-arrow / missing-step (a Causality-Existence
   // reservation): a sufficiency edge that jumps past ≥ 2 causal levels.
-  | 'long-arrow';
+  | 'long-arrow'
+  // Session 180 (Theme A / A4) — a reinforcing loop none of whose edges carries
+  // a delay (it would escalate instantly — a lag is probably un-modelled).
+  | 'reinforcing-no-delay';
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each

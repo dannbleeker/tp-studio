@@ -2,6 +2,30 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Theme A: loop delay markers (A4) + loop naming (A3)
+
+Completes the System-Dynamics-lens theme (A1 R/B badge + A2 diagram-aware loop CLR shipped S179).
+Both ride additive-optional `Edge` fields — no schema bump.
+
+**A4 — delay markers.** `Edge.delay` renders a `//` mark mid-edge (the SD delay glyph) signalling that
+a cause's effect is lagged in time — the variable that governs how a feedback loop behaves. Togglable
+from the edge context menu ("Mark as delayed") and the EdgeInspector. A new `reinforcing-no-delay`
+validator (CLARITY tier; CRT/FRT/NBR) flags a reinforcing loop none of whose edges carries a delay (it
+would escalate instantly — "is a time lag missing?") and goes silent once any loop edge is delayed.
+
+**A3 — loop naming.** `Edge.loopName` + `Edge.loopNarrative` on a back-edge: name the feedback loop
+("Burnout spiral") and record a free-text behavior-over-time note ("escalates over 3–6 months, then
+morale collapses") — the qualitative temporal story the acyclic sufficiency structure can't hold. The
+name renders as a small label by the back-edge (alongside the R/B badge); both edit in the EdgeInspector
+(reachable via the context-menu "Name this loop…"). Annotation only — never simulation (stocks/flows
+stay explicitly out of bounds).
+
+Touch points: `Edge` type + `validateEdge` + the validation fingerprint (now encodes
+weight/isBackEdge/delay so the loop rules re-validate on toggle — also fixes latent loop-polarity
+staleness); `TPEdgeBadges` (DelayBadge + LoopNameBadge) + `useGraphEdgeEmission` stamping + `TPEdge`
+render; `ContextMenu` + `EdgeInspector` (with `aria-label`'d checkboxes); the `reinforcingNoDelay`
+validator + registration. Tests in `tests/domain/themeA.test.ts`. Full suite 2950 passing.
+
 ## Session 180 (cont.) — E5: long-arrow / missing-step warning
 
 A new CLR validator (`long-arrow`, EXISTENCE tier) flags a sufficiency edge that jumps past

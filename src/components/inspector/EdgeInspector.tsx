@@ -252,11 +252,31 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
         </div>
       </Field>
 
+      <Field label="Delay" as="group">
+        <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
+          <input
+            type="checkbox"
+            className="mt-0.5"
+            aria-label="Mark edge as delayed"
+            checked={edge.delay === true}
+            disabled={locked}
+            onChange={(e) => updateEdge(edgeId, { delay: e.target.checked ? true : undefined })}
+          />
+          <span>
+            Mark this cause's effect as <strong>lagged</strong> — it arrives later in time. Renders
+            a <code>{'//'}</code> marker mid-edge. Delay shapes loop behaviour: a reinforcing loop
+            with no delay escalates instantly; a delayed one builds slowly; a delayed balancing loop
+            oscillates.
+          </span>
+        </label>
+      </Field>
+
       <Field label="Back-edge" as="group">
         <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
           <input
             type="checkbox"
             className="mt-0.5"
+            aria-label="Tag as back-edge"
             checked={edge.isBackEdge === true}
             disabled={locked}
             onChange={(e) =>
@@ -270,6 +290,28 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
           </span>
         </label>
       </Field>
+
+      {/* Theme A / A3 — name the loop a back-edge closes + an optional
+          behavior-over-time narrative. Only meaningful on a back-edge. */}
+      {edge.isBackEdge === true && (
+        <>
+          <Field label="Loop name">
+            <TextInput
+              value={edge.loopName ?? ''}
+              placeholder='e.g. "Burnout spiral"'
+              onChange={(next) => updateEdge(edgeId, { loopName: next || undefined })}
+              disabled={locked}
+            />
+          </Field>
+          <MarkdownField
+            label="Loop behaviour over time"
+            value={edge.loopNarrative ?? ''}
+            onChange={(next) => updateEdge(edgeId, { loopNarrative: next || undefined })}
+            placeholder="Optional — how this loop plays out in time (e.g. “escalates over 3–6 months, then morale collapses”). Annotation only; never simulated."
+            locked={locked}
+          />
+        </>
+      )}
 
       {source?.type === 'want' && target?.type === 'want' && (
         <Field label="Mutual exclusion (EC)" as="group">

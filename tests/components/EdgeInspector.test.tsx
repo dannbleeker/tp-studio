@@ -147,7 +147,9 @@ describe('EdgeInspector', () => {
   it('Back-edge checkbox toggles the isBackEdge flag on the edge', () => {
     const { edge } = seedConnectedPair();
     const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
-    const checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement | null;
+    const checkbox = container.querySelector(
+      'input[aria-label="Tag as back-edge"]'
+    ) as HTMLInputElement | null;
     expect(checkbox).toBeTruthy();
     expect(checkbox!.checked).toBe(false);
     act(() => fireEvent.click(checkbox!));

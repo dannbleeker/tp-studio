@@ -94,6 +94,14 @@ export type TPEdgeData = {
    *  `useGraphEdgeEmission` from `loopsWithPolarity(doc)`; drives the R/B badge
    *  in `TPEdge`. Omitted on non-closing edges and on loops we can't classify. */
   loopPolarity?: LoopPolarity;
+  /** Theme A / A4 (Session 180) — true when `Edge.delay` is set; drives the `//`
+   *  delay marker in `TPEdge`. Stamped by `useGraphEdgeEmission`. Omitted when
+   *  the edge carries no delay. */
+  delay?: boolean;
+  /** Theme A / A3 (Session 180) — the name of the loop this back-edge closes
+   *  (`Edge.loopName`); drives the loop-name label in `TPEdge`. Stamped by
+   *  `useGraphEdgeEmission`. Omitted when unnamed. */
+  loopName?: string;
 };
 
 export type TPGroupNodeData = {

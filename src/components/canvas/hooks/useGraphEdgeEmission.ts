@@ -171,6 +171,9 @@ export const useGraphEdgeEmission = (
       const route = isAggregated ? undefined : routes[b.sample.id];
       // R/B badge only on the loop-closing back-edge (a real, non-aggregated edge).
       const loopPolarity = isAggregated ? undefined : loopPolarityByEdge.get(b.sample.id);
+      // Theme A — A4 delay marker + A3 loop name (real, non-aggregated edges only).
+      const delay = isAggregated ? false : b.sample.delay === true;
+      const loopName = isAggregated ? undefined : b.sample.loopName;
       const edge: TPEdge = {
         id: isAggregated ? `agg:${b.sourceId}->${b.targetId}` : b.sample.id,
         source: b.sourceId,
@@ -188,6 +191,8 @@ export const useGraphEdgeEmission = (
           ...(reconnectable ? { reconnectable: true } : {}),
           ...(backEdges.has(b.sample.id) ? { isBackEdge: true } : {}),
           ...(loopPolarity ? { loopPolarity } : {}),
+          ...(delay ? { delay: true } : {}),
+          ...(loopName ? { loopName } : {}),
         },
         ...(isJunctorEdge
           ? {}

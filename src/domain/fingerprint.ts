@@ -92,15 +92,17 @@ const computeLayoutFingerprint = (doc: TPDocument): string => {
  *   - per-entity: id, type, title, unspecified, spanOfControl,
  *     ecSlot, S&T facet presence (via the `:st` suffix used by
  *     `layoutFingerprint` so toggling a facet attribute counts)
- *   - per-edge: id, source, target, andGroupId
+ *   - per-edge: id, source, target, andGroupId, weight, isBackEdge,
+ *     delay (the loop-polarity + reinforcing-no-delay rules read these)
  *   - resolved-warning ids (so "resolve" / "un-resolve" flips
  *     re-validate)
  *
  * NOT encoded (mutating these is free):
  *   - position, attestation, owner, lastValidatedAt, evidence,
  *     description, attributes other than S&T facets, collapsed,
- *     titleSize, ordering, annotationNumber, edge weights / labels /
- *     descriptions / assumptionIds, OR/XOR group ids, group memberships.
+ *     titleSize, ordering, annotationNumber, edge labels /
+ *     descriptions / assumptionIds / loopName / loopNarrative, OR/XOR
+ *     group ids, group memberships.
  *
  * Note: a future rule that reads any of the "free" fields needs to
  * either add the field here or invalidate the cache another way.
@@ -158,7 +160,13 @@ const computeValidationFingerprint = (doc: TPDocument): string => {
     .sort()
     .join('|');
   const edgeSig = edgesArray(doc)
-    .map((e) => `${e.id}:${e.sourceId}>${e.targetId}:${e.andGroupId ?? ''}`)
+    // weight + isBackEdge feed the loop-polarity rule; delay feeds the
+    // reinforcing-no-delay rule (Theme A / A4) — so toggling any of them must
+    // re-run validation rather than hit a stale fingerprint.
+    .map(
+      (e) =>
+        `${e.id}:${e.sourceId}>${e.targetId}:${e.andGroupId ?? ''}:${e.weight ?? ''}:${e.isBackEdge ? 'b' : ''}:${e.delay ? 'd' : ''}`
+    )
     .sort()
     .join('|');
   const resolvedSig = Object.keys(doc.resolvedWarnings).sort().join(',');

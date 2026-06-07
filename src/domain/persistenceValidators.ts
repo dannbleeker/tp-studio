@@ -246,6 +246,16 @@ export const validateEdge = (v: unknown, label: string): Edge => {
   if (v.isMutualExclusion !== undefined && typeof v.isMutualExclusion !== 'boolean') {
     throw invalid(label, 'has non-boolean isMutualExclusion');
   }
+  // Theme A (Session 180) — A4 delay marker + A3 loop name / behavior narrative.
+  if (v.delay !== undefined && typeof v.delay !== 'boolean') {
+    throw invalid(label, 'has non-boolean delay');
+  }
+  if (v.loopName !== undefined && typeof v.loopName !== 'string') {
+    throw invalid(label, 'has non-string loopName');
+  }
+  if (v.loopNarrative !== undefined && typeof v.loopNarrative !== 'string') {
+    throw invalid(label, 'has non-string loopNarrative');
+  }
   const edgeAttributes = validateAttributes(v.attributes, `${label}.attributes`);
   // Bundle 8: enforce cross-kind exclusivity. AND wins; if AND is set
   // we drop OR + XOR. Otherwise OR wins over XOR. The store actions
@@ -269,6 +279,11 @@ export const validateEdge = (v: unknown, label: string): Edge => {
     ...(typeof v.description === 'string' ? { description: v.description } : {}),
     ...(v.isBackEdge === true ? { isBackEdge: true as const } : {}),
     ...(v.isMutualExclusion === true ? { isMutualExclusion: true as const } : {}),
+    ...(v.delay === true ? { delay: true as const } : {}),
+    ...(typeof v.loopName === 'string' && v.loopName !== '' ? { loopName: v.loopName } : {}),
+    ...(typeof v.loopNarrative === 'string' && v.loopNarrative !== ''
+      ? { loopNarrative: v.loopNarrative }
+      : {}),
     ...(edgeAttributes ? { attributes: edgeAttributes } : {}),
   };
 };
