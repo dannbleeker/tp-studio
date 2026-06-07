@@ -113,12 +113,11 @@ These bite often — work around them, don't fight them:
 - **Working-directory drift (the #1 recurring tax).** This repo lives at `C:\dev\tp-studio` (off OneDrive). Bash commands — especially background ones — often start in the OneDrive session dir instead, so `git`, `node …/bin/…`, and Playwright fail with `Cannot find module C:\…\Desktop\node_modules\…` / "not a git repository". **Prefix every shell command with `cd /c/dev/tp-studio &&`** (or launch Claude from the repo). cwd *does* persist after a `cd …&&`, but stay explicit.
 - **`pnpm` / `npx` are AppLocker-blocked** and PowerShell is in Constrained Language Mode (`npm.ps1`/`pnpm.ps1` break). Run tools via their node entry points:
   - `node ./node_modules/typescript/bin/tsc --noEmit`
-  - **Biome cannot run locally** — AppLocker blocks the native biome binary even via node. Don't attempt it; rely on CI: `gh run view <id> --log-failed` shows biome's exact expected diff — apply it verbatim. Two recurring traps:
-    - **Import sort is case-insensitive / natural order** (not uppercase-first). `@/` alias group sorts before `./` relative.
-    - **Array of ≥2 bare object literals is force-expanded one-per-line.** Fix: wrap elements in a call — `const pt = (x: number, y: number) => ({ x, y }); [pt(0,0), pt(1,0)]` — arrays of calls are not expanded.
+  - **Biome runs via the node bin** — `node ./node_modules/@biomejs/biome/bin/biome check src tests` works (only the `biome.exe` shim that `pnpm lint` calls is AppLocker-blocked, NOT the node-invoked binary; confirmed Session 180 after two avoidable red-CI rounds). Autofix with `--write` (formatter + organizeImports) and `--write --unsafe` (Tailwind `useSortedClasses` class sorting). **Run it locally before every push** — no more hand-matching from the CI diff. If CI lint still goes red, `gh run view <id> --log-failed` shows the exact diff.
   - `node ./node_modules/knip/bin/knip.js` (exits 0 even when it lists exports — a new unused export fails CI, not the local run)
   - `node ./node_modules/vitest/vitest.mjs run [substring]` (`--coverage` for coverage)
   - `node ./node_modules/vite/bin/vite.js build`
+  - `node ./scripts/check-bundle-size.mjs` (after a build) — fails CI if a chunk exceeds `bundle-budget.json` + 10% slop; re-pin the budget deliberately when a feature legitimately grows a chunk.
 
   `gh` on PATH works (full path `"/c/Program Files/GitHub CLI/gh.exe"`).
 - **Playwright runs locally** (Session 169): `node ./node_modules/vite/bin/vite.js preview --port 4173 --strictPort` (background) → `node ./node_modules/@playwright/test/cli.js test e2e/<spec> --reporter=list` (`reuseExistingServer` reuses the preview). `window.__TP_TEST__` (on `?test=1`) exposes `seed` / `selectNodeViaRF` / `loadPattern`. `visual-*` snapshots are Linux-only (fail on Windows); **CI's `e2e` job is authoritative**.
