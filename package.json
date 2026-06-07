@@ -23,6 +23,7 @@
     "format": "biome format --write src tests",
     "knip": "knip",
     "verify": "pnpm lint && tsc --noEmit && pnpm knip && pnpm test && pnpm build",
+    "preflight": "node ./scripts/preflight.mjs",
     "mutation": "stryker run",
     "visualize": "vite build --mode analyze",
     "check:bundle-size": "node ./scripts/check-bundle-size.mjs",
