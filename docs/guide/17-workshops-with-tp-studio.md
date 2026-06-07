@@ -60,6 +60,7 @@ The EC workshop is shorter — typically 2 hours — but follows the same shape:
 > - **System Scope dialog** (Document Inspector) — "Step 0" for any analysis.
 > - **Method Checklist** — the canonical recipe per diagram type, always visible.
 > - **Zoom-up annotation** — readable titles at any zoom.
+> - **App modes for the room** — `Cmd+K → Switch to Workshop mode` enlarges node text for a projector while you keep editing; **Presentation mode** gives a read-only, chrome-free projection with a bottom-centre **step-through** control (‹ / › or the arrow keys) for walking a finished tree past an audience without speaker notes.
 > - **Walkthrough overlay** — re-centers the group on the diagram's reading.
 > - **Side-by-side compare** — for structural disagreements.
 > - **CLR walkthrough** — final discipline pass.

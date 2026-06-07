@@ -159,7 +159,7 @@ The practical tell: if you find yourself writing the same precondition into the 
 
 > **🛠 How TP Studio helps**
 > - `Cmd+K → New diagram…` → select **Transition Tree** to start fresh.
-> - `Cmd+K → Load example…` → select **Transition Tree** to load a worked example with the canonical triple structure. Five TT pattern templates also ship in `Cmd+K → Open Pattern Library…`: Support triage, Engineer onboarding, Incident response, Feature-flag rollout, Enterprise deal close — each demonstrating a different domain shape.
+> - `Cmd+K → Load example…` → select **Transition Tree** to load a worked example with the canonical triple structure. Five TT pattern templates also ship in `Cmd+K → Pattern library…`: Support triage Transition Tree, Engineer onboarding, Incident response, Feature-flag rollout, Enterprise deal close — each demonstrating a different domain shape.
 > - **Inspector Type grid** — click `action` (cyan stripe) to mark an entity as an Action. `Cmd+K → Mark entity as Action (TT)` and `Cmd+K → Mark entity as desired Outcome (TT)` are the palette shortcuts.
 > - `Cmd+K → Add precondition to Action (TT)` — select a bare Action and run this command to auto-create a precondition entity wired into the same Outcome. Faster than building the triple by hand.
 > - **`complete-step` validator** (CLR tier `sufficiency`, TT-only) — flags any Action whose outgoing edge to an Outcome has no non-action sibling (unpaired precondition slot).

@@ -188,6 +188,7 @@ Facet-level disagreements cluster, and the clustering tells you something useful
 > - **5-facet card rendering**: an `injection` entity in an `st` diagram with any of the four reserved attribute keys (`stStrategy` / `stNecessaryAssumption` / `stParallelAssumption` / `stSufficiencyAssumption`) filled in renders as a tall 5-row card with labeled rows. Click any row on the canvas to inline-edit it. The entity title is always the Tactic row.
 > - **S&T facets section** in the Entity Inspector — surfaces automatically for injection entities in `st` diagrams. The four input fields map to the four reserved attribute keys; filling any one triggers the tall-card layout.
 > - **`st-tactic-assumptions` validator** (CLR clarity tier) fires on any `injection` entity in an S&T diagram with fewer than three incoming `necessaryCondition` edges — one for NA, one for PA, one for SA. The warning message names how many facets are missing.
+> - **`st-tactic-rollup` validator** (CLR sufficiency tier) fires on a non-apex tactic (`injection`) with no child tactics feeding up into it — a layer that should decompose into the next level down but doesn't. Add its children, or accept it as a genuine leaf.
 > - **6-step method checklist** in the Document Inspector (`st.apex` → `st.tactic` → `st.na` → `st.pa` → `st.sa` → `st.decompose`) — tick each step as you complete it. Tracks progress on the prescribed build sequence and surfaces in any PPTX export.
 
 > **💡 Practitioner tips**

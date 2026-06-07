@@ -30,6 +30,8 @@ The setup: VP of Customer Success calls you in. "We're losing customers. Support
 
 Three UDEs to start. You write them down in TP Studio.
 
+> **Scope before you draw.** Open a fresh CRT with an empty System Scope and TP Studio drops a one-time toast pointing you to the Document Inspector's **System Scope** section — Goldratt's Step 1 (name the system, its boundary, its measures) *before* the effects. Fill any answer and the nudge is satisfied for that document; dismiss it and it won't return. We jump straight to the UDEs to keep the example moving, but in real work, scope first.
+
 ### Step 1 — The first UDE
 
 Open TP Studio. `Cmd+K → New diagram → Current Reality Tree`. Empty CRT canvas opens.

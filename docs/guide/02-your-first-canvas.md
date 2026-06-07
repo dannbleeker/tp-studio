@@ -69,7 +69,7 @@ Read the arrow aloud: *"Resolution time exceeds 8h" causes "Customers churn".* T
 
 ## The command palette
 
-`Cmd+K` (Mac) or `Ctrl+K` (Windows / Linux) opens the command palette — the canonical way to do anything in TP Studio that isn't a direct canvas gesture. Try it now. You'll see a search box and a list of commands grouped by category: File, Edit, Diagram, Layout, Export, Settings.
+`Cmd+K` (Mac) or `Ctrl+K` (Windows / Linux) opens the command palette — the canonical way to do anything in TP Studio that isn't a direct canvas gesture. Try it now. You'll see a search box and a list of commands grouped by category: File, Edit, View, Review, Export, Help. Your five most-recent commands pin to the top in a Recent group.
 
 Type **Help** to filter. The top result is "Show keyboard shortcuts". Press Enter to open the Help dialog — that's the reference for every shortcut the application exposes.
 

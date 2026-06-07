@@ -2,6 +2,44 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Book: accuracy + depth pass
+
+An audit-driven refresh of the practitioner book (*Causal Thinking with TP Studio*, `docs/guide/`).
+Six parallel chapter auditors flagged drift against the now-100% USER_GUIDE and the validator
+registry; this pass fixes it. No `book` flags flipped — this is content accuracy + depth, not a
+coverage-% exercise.
+
+**CLR overhaul (the centerpiece).** Appendix C ("The CLR rules in detail") was badly stale: it
+promised "one entry per implemented validator" but described a non-existent 4-tier taxonomy and
+listed ~12 rules (several renamed or fictional) while ~14 implemented validators were missing.
+Rewrote it against `src/domain/validators/` as the authoritative reference — the real **three
+tiers** (`clarity` / `existence` / `sufficiency`), all 26 active rules grouped by tier, and a
+corrected diagram-type scoping matrix. Fixed Chapter 13's matching 4-tier errors (4 spots), added a
+depth subsection on the rule families the classical CLR never named (CRT build-quality + the
+system-dynamics lint), and corrected the `cycle`-rule note (retired S176) + `predicted-effect-existence`
+scoping (FRT/NBR, not CRT).
+
+**Command / label / shortcut drift.** ~15 "the book says X but the app does Y" fixes: palette
+command groups (File / Edit / **View / Review** / Export / Help); "Begin speculation" → "Speculate:
+what changes if…"; "Enter Reader mode" → "Switch to Reader mode" (×3); "Open Pattern Library…" →
+"Pattern library…"; the Flying Logic extension (`.logicx` / `.logic` / `.xlogic`, not `.fll`);
+appendix B's Redo (`Cmd+Shift+Z`) + the missing Save / Print / Swap shortcuts + removal of a
+fictional `Cmd+\`; appendix D's `root-cause-reach` badge + the missing action-eligibility / ink-saving
+toggles + removal of a fictional "System scope nudge" *setting* (it's an automatic one-time toast);
+"Span-of-ctrl" → "Locus"; schema v8 → v9 and 13 → 14 screenshots in AUTHORING; the README
+"seven thinking processes" count.
+
+**Method gaps filled.** The CRT system-scope nudge (ch4), the `st-tactic-rollup` validator (ch10),
+the Causality-reading setting (ch15), the workshop / presentation app modes + step-through (ch17),
+and the conditional **Task tracker CSV** / **Prerequisite plan CSV** exports (ch16).
+
+**Depth.** Deepened the CLR chapter (above) and added a "CLR check" beat to the end-to-end case
+study (appendix A) so the worked example *shows* the discipline, not just the CRT → EC → FRT
+structure.
+
+Docs-only (`docs/guide/*.md` + this entry); the PDF/EPUB artifacts rebuild on merge via the
+Rebuild-book CI workflow. EPUB builds clean locally (24 chapters, 14 images resolved); fast gate green.
+
 ## Session 180 (cont.) — Docs: user-manual feature coverage → 100%
 
 Documented the last **23 user-facing features** that the catalogue (`docs/features.json`) had

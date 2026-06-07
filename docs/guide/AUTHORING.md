@@ -127,7 +127,7 @@ Requirements: `marked` + `@playwright/test`. Chromium binary
 installed via `pnpm exec playwright install chromium`.
 
 Output: `docs/guide/Causal-Thinking-with-TP-Studio.pdf`. Typically
-~1.5 MB with the 13 chapter screenshots embedded.
+~1.5 MB with the 14 chapter screenshots embedded.
 
 ### EPUB (`scripts/build-book-epub.mjs`)
 
@@ -159,4 +159,4 @@ markdown change.
 
 ## Versioning
 
-When TP Studio's schema version bumps (currently v8), or a major UI change lands, mark the affected chapter with a `> *Last reviewed against TP Studio v…*` note near the top. Helps readers calibrate whether the screenshots they see are current.
+When TP Studio's schema version bumps (currently v9), or a major UI change lands, mark the affected chapter with a `> *Last reviewed against TP Studio v…*` note near the top. Helps readers calibrate whether the screenshots they see are current.
