@@ -16,7 +16,12 @@ export const buildPatternCRTEscalation = (): TPDocument => {
 
   const aActs = buildEntity('rootCause', 'Party A acts to get ahead', t, 1);
   const bResponds = buildEntity('effect', 'Party B feels threatened and responds in kind', t, 2);
-  const threat = buildEntity('ude', "Each side's response threatens the other, driving more action", t, 3);
+  const threat = buildEntity(
+    'ude',
+    "Each side's response threatens the other, driving more action",
+    t,
+    3
+  );
 
   const entities = [aActs, bResponds, threat];
   const edges: Edge[] = [

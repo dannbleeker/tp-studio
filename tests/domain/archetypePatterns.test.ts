@@ -16,7 +16,12 @@ import { buildPatternFRTLimitsToGrowth } from '@/domain/patterns/frt-limits-to-g
  * covered by `patterns.test.ts`.)
  */
 const CASES = [
-  { name: 'Fixes that Fail', build: buildPatternCRTFixesThatFail, type: 'crt', polarity: 'reinforcing' },
+  {
+    name: 'Fixes that Fail',
+    build: buildPatternCRTFixesThatFail,
+    type: 'crt',
+    polarity: 'reinforcing',
+  },
   { name: 'Escalation', build: buildPatternCRTEscalation, type: 'crt', polarity: 'reinforcing' },
   {
     name: 'Shifting the Burden',
@@ -24,7 +29,12 @@ const CASES = [
     type: 'crt',
     polarity: 'reinforcing',
   },
-  { name: 'Eroding Goals', build: buildPatternCRTErodingGoals, type: 'crt', polarity: 'reinforcing' },
+  {
+    name: 'Eroding Goals',
+    build: buildPatternCRTErodingGoals,
+    type: 'crt',
+    polarity: 'reinforcing',
+  },
   {
     name: 'Limits to Growth',
     build: buildPatternFRTLimitsToGrowth,

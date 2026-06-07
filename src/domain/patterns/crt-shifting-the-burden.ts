@@ -15,7 +15,12 @@ import type { Edge, TPDocument } from '../types';
 export const buildPatternCRTShiftingTheBurden = (): TPDocument => {
   const t = Date.now();
 
-  const symptom = buildEntity('rootCause', 'An underlying problem produces a visible symptom', t, 1);
+  const symptom = buildEntity(
+    'rootCause',
+    'An underlying problem produces a visible symptom',
+    t,
+    1
+  );
   const quickFix = buildEntity('effect', 'We apply the symptomatic quick fix', t, 2);
   const atrophy = buildEntity(
     'effect',

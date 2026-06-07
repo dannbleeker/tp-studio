@@ -17,7 +17,12 @@ export const buildPatternCRTErodingGoals = (): TPDocument => {
   const gap = buildEntity('rootCause', 'A gap opens between the goal and actual performance', t, 1);
   const pressure = buildEntity('effect', 'Pressure builds to close the gap', t, 2);
   const lower = buildEntity('effect', 'We lower the goal instead of lifting performance', t, 3);
-  const drift = buildEntity('ude', 'The standard drifts down; the gap reopens at a lower bar', t, 4);
+  const drift = buildEntity(
+    'ude',
+    'The standard drifts down; the gap reopens at a lower bar',
+    t,
+    4
+  );
 
   const entities = [gap, pressure, lower, drift];
   const edges: Edge[] = [
