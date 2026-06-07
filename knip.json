@@ -11,14 +11,14 @@
   "ignoreExportsUsedInFile": true,
   "ignoreDependencies": ["tailwindcss"],
   "rules": {
-    "files": "warn",
+    "files": "error",
     "dependencies": "warn",
     "unlisted": "warn",
     "binaries": "warn",
     "unresolved": "warn",
-    "exports": "warn",
-    "types": "warn",
-    "duplicates": "warn",
-    "enumMembers": "warn"
+    "exports": "error",
+    "types": "error",
+    "duplicates": "error",
+    "enumMembers": "error"
   }
 }

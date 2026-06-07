@@ -63,11 +63,11 @@ jobs:
         run: pnpm exec tsc --noEmit
 
       - name: Dead-code check (knip)
-        # Session 112 — knip surfaces unused files, exports, types,
-        # and duplicate exports. Configured via `knip.json`; current
-        # baseline is 4 retained exports + 2 retained types
-        # (documented at their declaration sites). New unused code
-        # added in a PR fails this step.
+        # Session 112 / 180 — knip gates unused files, exports, types,
+        # duplicate exports, and enum members at "error" (see knip.json);
+        # the dependency/resolution rules stay "warn" (they false-positive
+        # on the AppLocker box). New dead code fails this step. Run the same
+        # check locally as part of `node scripts/preflight.mjs`.
         run: pnpm knip --no-progress
 
   tests-build:
