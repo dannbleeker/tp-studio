@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-07T13:51:40.586Z",
-  "commit": "78c2783",
+  "generatedAt": "2026-06-07T14:14:11.826Z",
+  "commit": "18cd30f",
   "headline": {
-    "linesTsJs": 105747,
+    "linesTsJs": 105998,
     "tests": 2916,
-    "lineCoveragePct": 91.22,
-    "commits": 602,
+    "lineCoveragePct": 91.31,
+    "commits": 603,
     "ageDays": 27,
     "trackedFiles": 950
   },
@@ -28,7 +28,7 @@
     {
       "category": "Build scripts",
       "files": 18,
-      "lines": 3774
+      "lines": 4025
     },
     {
       "category": "Styles (CSS)",
@@ -43,29 +43,52 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 91.22,
-      "covered": 11199,
+      "pct": 91.31,
+      "covered": 11210,
       "total": 12276
     },
     "statements": {
-      "pct": 88.33,
-      "covered": 12688,
+      "pct": 88.41,
+      "covered": 12700,
       "total": 14364
     },
     "functions": {
-      "pct": 87.06,
-      "covered": 2350,
+      "pct": 87.21,
+      "covered": 2354,
       "total": 2699
     },
     "branches": {
-      "pct": 77.2,
-      "covered": 7074,
+      "pct": 77.24,
+      "covered": 7078,
       "total": 9163
     }
   },
   "tests": {
     "unit": 2828,
-    "e2e": 88
+    "e2e": 88,
+    "durationMs": 160349,
+    "slowest": [
+      {
+        "file": "tests/perf/tier1.bench.test.ts",
+        "ms": 8854
+      },
+      {
+        "file": "tests/components/canvas/useGraphPositions.test.tsx",
+        "ms": 5371
+      },
+      {
+        "file": "tests/perf/validators.bench.test.ts",
+        "ms": 4279
+      },
+      {
+        "file": "tests/components/CommandPalette.test.tsx",
+        "ms": 2092
+      },
+      {
+        "file": "tests/components/Inspector.test.tsx",
+        "ms": 2037
+      }
+    ]
   },
   "domain": {
     "components": 106,
@@ -75,7 +98,8 @@
     "exporters": 13,
     "diagramTypes": 9,
     "clrCategories": 7,
-    "libraryPatterns": 62
+    "libraryPatterns": 62,
+    "commands": 96
   },
   "footprint": {
     "depsProd": 15,
@@ -103,10 +127,81 @@
       }
     ]
   },
+  "quality": {
+    "mutationScore": null,
+    "leastCovered": [
+      {
+        "file": "components/canvas/edges/ChallengeButton.tsx",
+        "pct": 0
+      },
+      {
+        "file": "components/canvas/nodes/EntityCoachingTooltip.tsx",
+        "pct": 0
+      },
+      {
+        "file": "store/index.ts",
+        "pct": 20.75
+      },
+      {
+        "file": "components/canvas/wizards/useDraggablePanel.ts",
+        "pct": 27.5
+      },
+      {
+        "file": "components/canvas/nodes/StFacetRow.tsx",
+        "pct": 27.77
+      }
+    ],
+    "churnHotspots": [
+      {
+        "file": "components/canvas/Canvas.tsx",
+        "commits": 62
+      },
+      {
+        "file": "App.tsx",
+        "commits": 39
+      },
+      {
+        "file": "components/inspector/EntityInspector.tsx",
+        "commits": 34
+      },
+      {
+        "file": "components/canvas/edges/TPEdge.tsx",
+        "commits": 31
+      },
+      {
+        "file": "store/uiSlice/dialogsSlice.ts",
+        "commits": 26
+      }
+    ],
+    "risky": []
+  },
+  "hygiene": {
+    "todo": 14,
+    "fixme": 0,
+    "hack": 2,
+    "anyCount": 12,
+    "tsIgnore": 0,
+    "tsExpectError": 0,
+    "biomeIgnore": 38,
+    "nonNull": 95
+  },
+  "bundle": {
+    "jsGzipKb": 780.6,
+    "cssGzipKb": 17.6,
+    "totalGzipKb": 798.2,
+    "budgetKb": 193.4,
+    "withinBudget": true
+  },
+  "docs": {
+    "bookWords": 45517,
+    "chapters": 24,
+    "appLoc": 61399,
+    "docToCodeRatio": 0.74
+  },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 602,
+    "commits": 603,
     "commits7d": 203,
     "authors": [
       {
@@ -115,7 +210,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 44
+        "count": 45
       },
       {
         "name": "dannbleeker",
@@ -123,8 +218,8 @@
       }
     ],
     "churn30d": {
-      "added": 170944,
-      "removed": 32236
+      "added": 170964,
+      "removed": 32256
     },
     "changelogEntries": 312
   }

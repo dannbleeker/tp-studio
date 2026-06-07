@@ -1,6 +1,8 @@
 node_modules
 dist
 coverage
+# Scratch dir for the stats pipeline's Vitest run report (.tmp/vitest-report.json).
+.tmp
 # Transient stdout/stderr dumps from manual `vitest` / `tsc` runs (we
 # captured these to a file during early sessions to work around
 # Windows PowerShell quirks; they're never part of the build).

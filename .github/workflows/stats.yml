@@ -35,23 +35,28 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Produce coverage/coverage-summary.json. continue-on-error so a flaky test
-      # never blocks the stats refresh — partial coverage is still written.
-      - name: Tests with coverage summary
+      # Produce coverage (summary + per-file json) and the Vitest run report
+      # (test timing). continue-on-error so a flaky test never blocks the stats
+      # refresh — partial coverage / timing is still written.
+      - name: Tests with coverage + run report
         continue-on-error: true
-        run: pnpm exec vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=text-summary
+        run: pnpm exec vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=json --coverage.reporter=text-summary --reporter=json --outputFile=.tmp/vitest-report.json
+
+      # Production build so the stats script can read dist/ for bundle sizes.
+      - name: Build
+        run: pnpm build
 
       - name: Build stats.json
         run: node ./scripts/build-stats.mjs
 
       - name: Commit refreshed stats
         run: |
-          if [[ -n "$(git status --porcelain public/stats.json)" ]]; then
+          if [[ -n "$(git status --porcelain public/stats.json public/stats-history.json)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add public/stats.json
-            git commit -m "chore(stats): refresh public/stats.json [skip ci]"
+            git add public/stats.json public/stats-history.json
+            git commit -m "chore(stats): refresh stats [skip ci]"
             git push
           else
-            echo "stats.json unchanged."
+            echo "stats unchanged."
           fi

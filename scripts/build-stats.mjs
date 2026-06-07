@@ -13,8 +13,9 @@
 // -----------------------------------------------------------------------------
 
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { join, basename } from "node:path";
+import { gzipSync } from "node:zlib";
 
 const ROOT = process.cwd();
 const sh = (cmd) =>
@@ -143,6 +144,24 @@ const countLibraryPatterns = safe(() => {
 	const m = src.match(/\bid:\s*'/g);
 	return m ? m.length : null;
 }, null);
+// Command-palette commands: count the `id:` entries across the per-group command
+// files (COMMANDS is assembled from these). Best-effort static count — a handful
+// of commands are generated from a `.map()` template and so count as one.
+const countCommands = safe(() => {
+	const cmdFiles = tracked.filter(
+		(f) =>
+			f.startsWith("src/components/command-palette/commands/") &&
+			f.endsWith(".ts") &&
+			!f.endsWith("/index.ts") &&
+			!f.endsWith("/types.ts"),
+	);
+	let n = 0;
+	for (const f of cmdFiles) {
+		const m = readSrc(f).match(/^\s*id:\s*['`]/gm);
+		if (m) n += m.length;
+	}
+	return n || null;
+}, null);
 
 const domain = {
 	components: inDir("src/components/").filter((f) => f.endsWith(".tsx")).length,
@@ -154,6 +173,7 @@ const domain = {
 	diagramTypes: countDiagramTypes,
 	clrCategories: countClrCategories,
 	libraryPatterns: countLibraryPatterns,
+	commands: countCommands,
 };
 
 // --- footprint -----------------------------------------------------------------
@@ -206,6 +226,211 @@ if (existsSync(join(ROOT, "CHANGELOG.md"))) {
 
 const headSha = safe(() => sh("git rev-parse --short HEAD"), null);
 
+// --- per-file coverage (drives leastCovered + risky) --------------------------
+// Reads the per-file entries in coverage-summary.json (paths are absolute and
+// platform-specific, so we slice from the last `/src/`). Test files and files
+// with no executable lines are excluded.
+const perFileCov = safe(() => {
+	const c = JSON.parse(readFileSync(join(ROOT, "coverage/coverage-summary.json"), "utf8"));
+	const out = [];
+	for (const [k, v] of Object.entries(c)) {
+		if (k === "total" || !v?.lines) continue;
+		const rel = k.replace(/\\/g, "/");
+		const i = rel.lastIndexOf("/src/");
+		if (i === -1) continue;
+		const file = rel.slice(i + 5);
+		if (/\.(test|spec)\.tsx?$/.test(file)) continue;
+		if (v.lines.total === 0) continue;
+		out.push({ file, pct: v.lines.pct });
+	}
+	return out;
+}, []);
+
+// --- bundle size (sum gzip of built dist/ assets) ------------------------------
+const round1 = (n) => Math.round((n / 1024) * 10) / 10;
+const bundle = safe(() => {
+	const distDir = join(ROOT, "dist");
+	if (!existsSync(distDir)) {
+		return { jsGzipKb: null, cssGzipKb: null, totalGzipKb: null, budgetKb: null, withinBudget: true };
+	}
+	let jsBytes = 0;
+	let cssBytes = 0;
+	for (const e of readdirSync(distDir, { recursive: true })) {
+		const rel = String(e).replace(/\\/g, "/");
+		if (!/\.(js|css)$/.test(rel)) continue;
+		const buf = safe(() => readFileSync(join(distDir, rel)), null);
+		if (!buf) continue;
+		const gz = gzipSync(buf).length;
+		if (rel.endsWith(".css")) cssBytes += gz;
+		else jsBytes += gz;
+	}
+	// budgetKb / withinBudget mirror scripts/check-bundle-size.mjs: budgetKb is the
+	// sum of the per-chunk ceilings in bundle-budget.json, and withinBudget is
+	// whether every BUDGETED chunk is under its ceiling (unbudgeted vendor chunks
+	// count toward the totals but aren't gated — same as the CI bundle-size job).
+	let budgetKb = null;
+	let withinBudget = true;
+	const bb = safe(() => JSON.parse(readFileSync(join(ROOT, "bundle-budget.json"), "utf8")), null);
+	if (bb?.chunks) {
+		budgetKb = round1(Object.values(bb.chunks).reduce((a, b) => a + b, 0));
+		const slop = (bb.slopPercent ?? 10) / 100;
+		const keys = Object.keys(bb.chunks);
+		const matchKey = (name) => {
+			const parts = name.replace(/\.js$/, "").split("-");
+			for (let i = parts.length; i >= 1; i--) {
+				const candidate = parts.slice(0, i).join("-");
+				if (keys.includes(candidate)) return candidate;
+			}
+			return null;
+		};
+		const assets = safe(() => readdirSync(join(distDir, "assets")).filter((f) => f.endsWith(".js")), []);
+		for (const a of assets) {
+			const k = matchKey(a);
+			if (!k) continue;
+			const gz = gzipSync(readFileSync(join(distDir, "assets", a))).length;
+			if (gz > bb.chunks[k] * (1 + slop)) withinBudget = false;
+		}
+	}
+	return {
+		jsGzipKb: round1(jsBytes),
+		cssGzipKb: round1(cssBytes),
+		totalGzipKb: round1(jsBytes + cssBytes),
+		budgetKb,
+		withinBudget,
+	};
+}, { jsGzipKb: null, cssGzipKb: null, totalGzipKb: null, budgetKb: null, withinBudget: true });
+
+// --- quality (mutation score, least-covered, churn hotspots, risky) ------------
+// mutationScore: read a committed Stryker JSON report if one exists. Stryker is
+// NOT run in the per-push workflow — a full `pnpm mutation` over src/domain takes
+// hours (see stryker.config.mjs) — so this stays null until a JSON report is
+// produced (`pnpm mutation --reporter json` writes reports/mutation/mutation.json)
+// and committed, at which point it populates automatically.
+const mutationScore = safe(() => {
+	for (const p of ["reports/mutation/mutation.json", "reports/mutation/mutation-report.json"]) {
+		if (!existsSync(join(ROOT, p))) continue;
+		const r = JSON.parse(readFileSync(join(ROOT, p), "utf8"));
+		if (typeof r.mutationScore === "number") return r.mutationScore;
+		if (r.files) {
+			let killed = 0;
+			let total = 0;
+			for (const f of Object.values(r.files)) {
+				for (const m of f.mutants ?? []) {
+					if (["Ignored", "CompileError", "RuntimeError"].includes(m.status)) continue;
+					total++;
+					if (m.status === "Killed" || m.status === "Timeout") killed++;
+				}
+			}
+			return total > 0 ? Math.round((killed / total) * 10000) / 100 : null;
+		}
+	}
+	return null;
+}, null);
+
+const leastCovered = perFileCov
+	.filter((f) => f.pct < 100)
+	.sort((a, b) => a.pct - b.pct)
+	.slice(0, 5);
+
+// Commit count per src file over the last 90 days (top of list = churn hotspot).
+const churn = safe(() => {
+	const out = sh('git log --since="90 days ago" --name-only --format= -- src');
+	const counts = new Map();
+	for (const line of out.split("\n")) {
+		const f = line.trim();
+		if (!f.startsWith("src/")) continue;
+		const file = f.replace(/^src\//, "");
+		counts.set(file, (counts.get(file) ?? 0) + 1);
+	}
+	return [...counts.entries()]
+		.map(([file, commits]) => ({ file, commits }))
+		.sort((a, b) => b.commits - a.commits);
+}, []);
+const churnHotspots = churn.slice(0, 5);
+
+// risky = high-change × low-coverage: files in the churn top-15 whose line
+// coverage is under 70%. The "test these next" list.
+const lowCov = new Set(perFileCov.filter((f) => f.pct < 70).map((f) => f.file));
+const covByFile = new Map(perFileCov.map((f) => [f.file, f.pct]));
+const risky = churn
+	.slice(0, 15)
+	.filter((c) => lowCov.has(c.file))
+	.map((c) => ({ file: c.file, pct: covByFile.get(c.file) ?? null, commits: c.commits }))
+	.slice(0, 5);
+
+const quality = { mutationScore, leastCovered, churnHotspots, risky };
+
+// --- code hygiene (escape-hatch + marker counts over src) ----------------------
+const hygiene = safe(() => {
+	const h = {
+		todo: 0,
+		fixme: 0,
+		hack: 0,
+		anyCount: 0,
+		tsIgnore: 0,
+		tsExpectError: 0,
+		biomeIgnore: 0,
+		nonNull: 0,
+	};
+	const n = (s, re) => (s.match(re) || []).length;
+	for (const f of srcFiles) {
+		const s = safe(() => readFileSync(join(ROOT, f), "utf8"), "");
+		h.todo += n(s, /TODO/gi);
+		h.fixme += n(s, /FIXME/gi);
+		h.hack += n(s, /HACK/gi);
+		h.anyCount += n(s, /:\s*any\b/g) + n(s, /\bas\s+any\b/g);
+		h.tsIgnore += n(s, /@ts-ignore/g);
+		h.tsExpectError += n(s, /@ts-expect-error/g);
+		h.biomeIgnore += n(s, /biome-ignore/g);
+		// Best-effort: a `!` non-null assertion after an identifier / `)` / `]`, not
+		// part of `!=`. Approximate — may catch a stray `!` in a string or regex.
+		h.nonNull += n(s, /[\w)\]]!(?!=)/g);
+	}
+	return h;
+}, null);
+
+// --- docs: book size vs app code ----------------------------------------------
+// The manuscript is docs/guide/*.md (chapters + appendices); README / AUTHORING
+// are scaffolding, excluded.
+const guideFiles = tracked.filter(
+	(f) => f.startsWith("docs/guide/") && f.endsWith(".md") && !/\/(README|AUTHORING)\.md$/.test(f),
+);
+const docs = safe(() => {
+	let words = 0;
+	for (const f of guideFiles) {
+		const s = safe(() => readFileSync(join(ROOT, f), "utf8"), "").trim();
+		if (s) words += s.split(/\s+/).length;
+	}
+	const appLoc = buckets.app.lines;
+	return {
+		bookWords: words,
+		chapters: guideFiles.length,
+		appLoc,
+		docToCodeRatio: appLoc > 0 ? Math.round((words / appLoc) * 100) / 100 : null,
+	};
+}, { bookWords: null, chapters: guideFiles.length, appLoc: buckets.app.lines, docToCodeRatio: null });
+
+// --- test-suite timing (Vitest JSON report from the run, if present) -----------
+const timing = safe(() => {
+	const r = JSON.parse(readFileSync(join(ROOT, ".tmp/vitest-report.json"), "utf8"));
+	const results = Array.isArray(r.testResults) ? r.testResults : [];
+	if (results.length === 0) return { durationMs: null, slowest: [] };
+	const ends = results.map((t) => t.endTime).filter((x) => typeof x === "number");
+	const starts = results.map((t) => t.startTime).filter((x) => typeof x === "number");
+	const durationMs =
+		ends.length && starts.length ? Math.round(Math.max(...ends) - Math.min(...starts)) : null;
+	const slowest = results
+		.map((t) => ({
+			file: String(t.name || "")
+				.replace(/\\/g, "/")
+				.replace(/^.*\/((?:tests|e2e)\/)/, "$1"),
+			ms: Math.round((t.endTime ?? 0) - (t.startTime ?? 0)),
+		}))
+		.sort((a, b) => b.ms - a.ms)
+		.slice(0, 5);
+	return { durationMs, slowest };
+}, { durationMs: null, slowest: [] });
+
 // --- assemble + write ----------------------------------------------------------
 const stats = {
 	generatedAt: new Date().toISOString(),
@@ -220,11 +445,37 @@ const stats = {
 	},
 	code,
 	coverage,
-	tests: { unit: unitTests, e2e: e2eTests },
+	tests: { unit: unitTests, e2e: e2eTests, durationMs: timing.durationMs, slowest: timing.slowest },
 	domain,
 	footprint: { depsProd, depsDev, biggestFiles },
+	quality,
+	hygiene,
+	bundle,
+	docs,
 	git: { born, ageDays, commits, commits7d, authors, churn30d, changelogEntries },
 };
 
 writeFileSync(join(ROOT, "public/stats.json"), `${JSON.stringify(stats, null, 2)}\n`);
+
+// --- trends: append today's point to public/stats-history.json -----------------
+// One entry per calendar day (today overwrites today's existing point), capped to
+// the most recent 180 entries. The dashboard reads this for sparkline trends.
+const histPath = join(ROOT, "public/stats-history.json");
+let history = safe(() => JSON.parse(readFileSync(histPath, "utf8")), []);
+if (!Array.isArray(history)) history = [];
+const today = new Date().toISOString().slice(0, 10);
+const point = {
+	date: today,
+	linesTsJs,
+	coveragePct: coverage ? coverage.lines.pct : null,
+	tests: unitTests + e2eTests,
+	bundleKb: bundle.totalGzipKb,
+	mutationScore: quality.mutationScore,
+};
+history = history.filter((h) => h.date !== today);
+history.push(point);
+if (history.length > 180) history = history.slice(-180);
+writeFileSync(histPath, `${JSON.stringify(history, null, 2)}\n`);
+
 console.log("Wrote public/stats.json —", JSON.stringify(stats.headline));
+console.log("Wrote public/stats-history.json —", `${history.length} points`);
