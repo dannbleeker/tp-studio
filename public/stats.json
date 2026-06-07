@@ -1,0 +1,131 @@
+{
+  "generatedAt": "2026-06-07T13:43:22.942Z",
+  "commit": "81903e1",
+  "headline": {
+    "linesTsJs": 105517,
+    "tests": 2916,
+    "lineCoveragePct": 91.3,
+    "commits": 601,
+    "ageDays": 27,
+    "trackedFiles": 947
+  },
+  "code": [
+    {
+      "category": "App code (src, excl. tests)",
+      "files": 458,
+      "lines": 61399
+    },
+    {
+      "category": "Unit tests",
+      "files": 322,
+      "lines": 38586
+    },
+    {
+      "category": "E2E tests (Playwright)",
+      "files": 13,
+      "lines": 1988
+    },
+    {
+      "category": "Build scripts",
+      "files": 17,
+      "lines": 3544
+    },
+    {
+      "category": "Styles (CSS)",
+      "files": 2,
+      "lines": 759
+    },
+    {
+      "category": "Docs (Markdown)",
+      "files": 42,
+      "lines": 6318
+    }
+  ],
+  "coverage": {
+    "lines": {
+      "pct": 91.3,
+      "covered": 11209,
+      "total": 12276
+    },
+    "statements": {
+      "pct": 88.4,
+      "covered": 12699,
+      "total": 14364
+    },
+    "functions": {
+      "pct": 87.21,
+      "covered": 2354,
+      "total": 2699
+    },
+    "branches": {
+      "pct": 77.22,
+      "covered": 7076,
+      "total": 9163
+    }
+  },
+  "tests": {
+    "unit": 2828,
+    "e2e": 88
+  },
+  "domain": {
+    "components": 106,
+    "hooks": 17,
+    "storeSlices": 14,
+    "validators": 4,
+    "exporters": 13,
+    "diagramTypes": 9,
+    "clrCategories": 7,
+    "libraryPatterns": 62
+  },
+  "footprint": {
+    "depsProd": 15,
+    "depsDev": 32,
+    "biggestFiles": [
+      {
+        "name": "store/documentSlice/docMetaSlice.ts",
+        "lines": 950
+      },
+      {
+        "name": "services/exporters/pdfExport.ts",
+        "lines": 688
+      },
+      {
+        "name": "components/canvas/edges/TPEdge.tsx",
+        "lines": 602
+      },
+      {
+        "name": "components/canvas/hooks/useEdgeRoutes.ts",
+        "lines": 602
+      },
+      {
+        "name": "domain/patterns/index.ts",
+        "lines": 568
+      }
+    ]
+  },
+  "git": {
+    "born": "2026-05-11T13:45:43+02:00",
+    "ageDays": 27,
+    "commits": 601,
+    "commits7d": 202,
+    "authors": [
+      {
+        "name": "Dann Bleeker Pedersen",
+        "count": 546
+      },
+      {
+        "name": "github-actions[bot]",
+        "count": 44
+      },
+      {
+        "name": "dannbleeker",
+        "count": 3
+      }
+    ],
+    "churn30d": {
+      "added": 170526,
+      "removed": 32236
+    },
+    "changelogEntries": 312
+  }
+}
