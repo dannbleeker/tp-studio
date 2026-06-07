@@ -85,6 +85,22 @@ Full suite **2924 passing** (1 pre-existing todo); tsc, build, and docs-bundle a
 
 ---
 
+## Session 179 (cont.) — pattern library: cost-accounting / product-costing CRT
+
+Researched the TOC critique of cost / Activity-Based-Costing "product costing" (Goldratt's "cost
+accounting is the number-one enemy of productivity"; Corbett's *Throughput Accounting*; Noreen's
+conditions on when ABC costs are relevant) and turned it into a curated CRT starter. The costing
+paradigm — assigning every product a fully-loaded cost (truly-variable cost + allocated fixed
+overhead) — is the **core-problem root cause**, fanning out into the canonical UDEs: profitable
+products dropped, good marginal orders rejected, cost-plus mispricing, inventory built to "absorb"
+overhead, capex that adds no throughput, and net profit stalling while local metrics look healthy.
+ABC inherits the same root cause (it refines the allocation drivers but still spreads fixed cost onto
+products). The root cause is flagged `coreProblem`, so the U-Shape "Create the Core Cloud" flow can
+spawn the paired `ec-cost-vs-throughput` cloud; the two now cross-reference each other in the library
+(like the tons-per-hour CRT ↔ schedule-adherence FRT pair). Pure content — one build file +
+registration; `costAccountingPattern.test.ts` pins the single-core-driver fan-out, acyclic tree, and
+completeness. Full suite green; tsc + build + bundle clean.
+
 ## Session 179 (cont.) — pattern library: 5 system-archetype starters (external-review E1)
 
 External-review candidate **E1**. Five of Senge's system archetypes join the pattern library as curated
