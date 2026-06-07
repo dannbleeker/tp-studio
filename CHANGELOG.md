@@ -2,6 +2,14 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 179 (cont.) — crt-tied-core-drivers: one-click "Spawn Evaporating Cloud"
+
+Follow-up to the build batch below. The `crt-tied-core-drivers` warning (two root causes tied for the most
+UDEs) was a message-only nudge; it now carries a one-click **Spawn Evaporating Cloud** action via the
+`WARNING_ACTIONS` registry. The handler reuses `spawnECFromConflict` + `openDocInTab` — the same flow as the
+`spawn-ec-from-selection` palette command — seeding a fresh EC from the tied root cause and opening it in a
+new tab (the CRT stays in its own). A store-integration test + the action assertion; full suite green.
+
 ## Session 179 (cont.) — external-source build batch: CRT quality + loop polarity + logic-type lint + CLR comments + entity icons
 
 The first build batch from the external-source review (`docs/EXTERNAL_TP_SOURCE_REVIEW.md`). Five themes,

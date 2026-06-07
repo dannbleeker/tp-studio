@@ -50,11 +50,16 @@ export const crtTiedCoreDriversRule = (doc: TPDocument): UntieredWarning[] => {
   if (first.reachedUdeCount !== second.reachedUdeCount) return [];
   if (first.reachedUdeCount < 2) return [];
   return [
-    makeWarning(
-      doc,
-      'crt-tied-core-drivers',
-      { kind: 'entity', id: first.entity.id },
-      `Two root causes each reach ${first.reachedUdeCount} UDEs — no single core driver has emerged. A hidden conflict may sit beneath the tree; consider surfacing it as an Evaporating Cloud.`
-    ),
+    {
+      ...makeWarning(
+        doc,
+        'crt-tied-core-drivers',
+        { kind: 'entity', id: first.entity.id },
+        `Two root causes each reach ${first.reachedUdeCount} UDEs — no single core driver has emerged. A hidden conflict may sit beneath the tree; spawn an Evaporating Cloud to surface it.`
+      ),
+      // One-click remedy: seed an EC from this conflict candidate (handled by
+      // the WARNING_ACTIONS registry, reusing the spawn-EC flow).
+      action: { actionId: 'spawn-ec-from-conflict', label: 'Spawn Evaporating Cloud' },
+    },
   ];
 };

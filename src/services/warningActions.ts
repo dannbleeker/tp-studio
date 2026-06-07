@@ -1,4 +1,5 @@
 import { entitiesOfType } from '@/domain/graph';
+import { spawnECFromConflict } from '@/domain/spawnEC';
 import type { TPDocument, Warning } from '@/domain/types';
 import type { RootStore } from '@/store/types';
 
@@ -39,8 +40,21 @@ const convertExtraGoalsToCsfs: WarningActionHandler = (store, doc) => {
   }
 };
 
+/**
+ * Action: seed a fresh Evaporating Cloud from the warning's anchor entity and
+ * open it in a new tab. Used by `crt-tied-core-drivers` — when two root causes
+ * tie for the most UDEs, a conflict often sits beneath the tree; this surfaces
+ * it via the same `spawnECFromConflict` the palette command uses. `openDocInTab`
+ * is a store action (it adds + activates a tab); the CRT stays in its own tab.
+ */
+const spawnEcFromConflict: WarningActionHandler = (store, doc, warning) => {
+  if (warning.target.kind !== 'entity') return;
+  store.openDocInTab(spawnECFromConflict(doc, warning.target.id));
+};
+
 export const WARNING_ACTIONS: Record<string, WarningActionHandler> = {
   'convert-extra-goals-to-csfs': convertExtraGoalsToCsfs,
+  'spawn-ec-from-conflict': spawnEcFromConflict,
 };
 
 /**

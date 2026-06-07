@@ -7,6 +7,8 @@ import { crtDeadBranchRule } from '@/domain/validators/crtDeadBranch';
 import { crtUdeCountRule } from '@/domain/validators/crtUdeCount';
 import { crtUdeNoUpstreamRule } from '@/domain/validators/crtUdeNoUpstream';
 import { crtUdeWordingRule } from '@/domain/validators/crtUdeWording';
+import { runWarningAction } from '@/services/warningActions';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 /**
@@ -139,6 +141,7 @@ describe('crtTiedCoreDriversRule', () => {
     const w = crtTiedCoreDriversRule(doc);
     expect(w).toHaveLength(1);
     expect(w[0]?.message).toMatch(/Two root causes/);
+    expect(w[0]?.action?.actionId).toBe('spawn-ec-from-conflict');
   });
 
   it('does not fire when one root cause leads', () => {
@@ -245,5 +248,33 @@ describe('crtUdeCountRule', () => {
   it('does not fire on non-CRT diagrams', () => {
     // A single UDE would trip "fewer than 3" on a CRT; the guard suppresses it on FRT.
     expect(crtUdeCountRule(makeDoc([makeEntity({ type: 'ude' })], [], 'frt'))).toEqual([]);
+  });
+});
+
+describe('crt-tied-core-drivers — spawn Evaporating Cloud action', () => {
+  beforeEach(resetStoreForTest);
+
+  it('seeds and opens an EC tab when the action runs', () => {
+    const s = useDocumentStore.getState();
+    s.newDocument('crt');
+    const rc1 = s.addEntity({ type: 'rootCause', title: 'RC1' });
+    const rc2 = s.addEntity({ type: 'rootCause', title: 'RC2' });
+    const u1 = s.addEntity({ type: 'ude', title: 'U1' });
+    const u2 = s.addEntity({ type: 'ude', title: 'U2' });
+    s.connect(rc1.id, u1.id);
+    s.connect(rc1.id, u2.id);
+    s.connect(rc2.id, u1.id);
+    s.connect(rc2.id, u2.id);
+
+    const [w] = crtTiedCoreDriversRule(useDocumentStore.getState().doc);
+    expect(w?.action?.actionId).toBe('spawn-ec-from-conflict');
+
+    const ok = runWarningAction(useDocumentStore.getState(), useDocumentStore.getState().doc, {
+      ...w!,
+      tier: 'clarity',
+    });
+    expect(ok).toBe(true);
+    // The remedy seeds a fresh Evaporating Cloud and opens it as the active doc.
+    expect(useDocumentStore.getState().doc.diagramType).toBe('ec');
   });
 });
