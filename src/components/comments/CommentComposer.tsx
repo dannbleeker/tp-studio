@@ -93,7 +93,7 @@ export function CommentComposer({
 
       {/* Session 180 / E6 — challenge mode heading (reader + edge anchor) */}
       {challengeMode ? (
-        <p className="mb-2 font-semibold text-sm text-indigo-700 dark:text-indigo-400">
+        <p className="mb-2 font-semibold text-indigo-700 text-sm dark:text-indigo-400">
           What's your reservation about this arrow?
         </p>
       ) : (

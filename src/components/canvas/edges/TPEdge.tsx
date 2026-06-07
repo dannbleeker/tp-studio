@@ -11,12 +11,12 @@ import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/
 import { EDGE_PALETTES } from '@/domain/tokens';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
+import { ChallengeButton } from './ChallengeButton';
 import { ARROW_TRIANGLE_D, arrowheadOnPath, arrowheadTransform } from './edgeArrowhead';
 import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { junctorKindField } from './junctorGeometry';
 import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
-import { ChallengeButton } from './ChallengeButton';
 import {
   AggregateBadge,
   AssumptionBadge,
@@ -566,12 +566,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           Only shown in reader mode on hover. Note edges (dotted annotations)
           and mutex edges don't carry logical semantics, so we skip them. */}
       {isReaderMode && isHovered && !isNoteEdge && !isMutex && (
-        <ChallengeButton
-          edgeId={props.id}
-          edgeKind={edgeKind}
-          labelX={labelX}
-          labelY={labelY}
-        />
+        <ChallengeButton edgeId={props.id} edgeKind={edgeKind} labelX={labelX} labelY={labelY} />
       )}
     </>
   );

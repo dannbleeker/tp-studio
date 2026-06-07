@@ -116,7 +116,7 @@ function Segmented(props: {
             type="button"
             onClick={() => props.onChange(o.value)}
             className={clsx(
-              'flex-1 rounded-md border px-2 py-1.5 text-xs font-medium transition',
+              'flex-1 rounded-md border px-2 py-1.5 font-medium text-xs transition',
               props.value === o.value ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
             )}
           >

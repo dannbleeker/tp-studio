@@ -23,16 +23,16 @@ import { CUSTOM_CLASS_ICONS, type CustomClassIconName } from '@/domain/entityTyp
 import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { isStNodeFormat, ST_FACET_KEYS } from '@/domain/graph';
 import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
-import { useZoomLevel } from '@/hooks/useZoomLevel';
-import { guardWriteOrToast } from '@/services/browseLock';
-import { useDocumentStore } from '@/store';
-import { currentDoc } from '@/store/selectors';
-import type { TPNode as TPNodeType } from '../edges/flow-types';
 // Session 135 — sibling-file extractions of the StFacetRow sub-component
 // and the corner-badge JSX. Pulled out of TPNode.tsx to keep this file
 // focused on the everyday-card render + edit machinery; see those
 // files for the per-piece rationale.
 import { ENTITY_TYPE_COACHING } from '@/domain/readerModeCoaching';
+import { useZoomLevel } from '@/hooks/useZoomLevel';
+import { guardWriteOrToast } from '@/services/browseLock';
+import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
+import type { TPNode as TPNodeType } from '../edges/flow-types';
 import { EntityCoachingTooltip } from './EntityCoachingTooltip';
 import { StFacetRow } from './StFacetRow';
 import {
@@ -206,7 +206,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         // Feature #1 — beefed-up selection: full-opacity indigo ring + a soft
         // indigo glow (was a faint `/60` ring), so "selected" is unmistakable
         // and clearly distinct from the neutral hover lift below.
-        selected && 'ring-2 ring-indigo-500 ring-offset-1 shadow-indigo-500/30 shadow-lg',
+        selected && 'shadow-indigo-500/30 shadow-lg ring-2 ring-indigo-500 ring-offset-1',
         // H2 visual-diff tints. `'added'` greens the card so the user can
         // scan for "what's new since the snapshot." `'changed'` ambers
         // entities whose content drifted. Removed entities (only in the

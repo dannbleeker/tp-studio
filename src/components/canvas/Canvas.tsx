@@ -123,17 +123,16 @@ function CanvasInner() {
   //   - isPresentation (Session 135): presentation mode hides the zoom chip so
   //     the canvas reads as a clean read-only surface (structure overlays —
   //     junctors / assumption anchors — stay, as they're diagram content).
-  const { locked, showMinimap, ecChromeCollapsed, isPresentation, isReaderMode } =
-    useDocumentStore(
-      useShallow((s) => ({
-        locked: s.browseLocked,
-        showMinimap: s.showMinimap,
-        ecChromeCollapsed: s.ecChromeCollapsed,
-        isPresentation: s.appMode === 'presentation',
-        // Session 180 / E6 — reader mode orientation banner.
-        isReaderMode: s.appMode === 'reader',
-      }))
-    );
+  const { locked, showMinimap, ecChromeCollapsed, isPresentation, isReaderMode } = useDocumentStore(
+    useShallow((s) => ({
+      locked: s.browseLocked,
+      showMinimap: s.showMinimap,
+      ecChromeCollapsed: s.ecChromeCollapsed,
+      isPresentation: s.appMode === 'presentation',
+      // Session 180 / E6 — reader mode orientation banner.
+      isReaderMode: s.appMode === 'reader',
+    }))
+  );
 
   // Mirror React Flow's selection (marquee-drag, ctrl/cmd-click, shift-click)
   // into the store. Edges win when both sets are non-empty (the inspector's

@@ -45,7 +45,7 @@ export function ChallengeButton({
         className="flex flex-col items-center gap-1"
       >
         {/* Edge-kind orientation label */}
-        <span className="pointer-events-none rounded-full border border-indigo-200/70 bg-white/90 px-2 py-0.5 text-indigo-600 text-[10px] shadow-xs dark:border-indigo-800/50 dark:bg-neutral-900/90 dark:text-indigo-300">
+        <span className="pointer-events-none rounded-full border border-indigo-200/70 bg-white/90 px-2 py-0.5 text-[10px] text-indigo-600 shadow-xs dark:border-indigo-800/50 dark:bg-neutral-900/90 dark:text-indigo-300">
           {coaching.label}
         </span>
         {/* Challenge button */}

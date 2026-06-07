@@ -78,7 +78,7 @@ export const ENTITY_TYPE_COACHING: Record<EntityType, CoachingEntry> = {
   },
   need: {
     label: 'Need',
-    tip: "In an Evaporating Cloud, a Need is what each Want is trying to satisfy. The tension lives in the needs, not the wants themselves.",
+    tip: 'In an Evaporating Cloud, a Need is what each Want is trying to satisfy. The tension lives in the needs, not the wants themselves.',
   },
   want: {
     label: 'Want',

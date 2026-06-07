@@ -31,7 +31,7 @@ export function EntityCoachingTooltip({
           {coaching.label}
         </span>
       </span>
-      <p className="text-neutral-600 text-[11px] leading-relaxed dark:text-neutral-300">
+      <p className="text-[11px] text-neutral-600 leading-relaxed dark:text-neutral-300">
         {coaching.tip}
       </p>
     </div>

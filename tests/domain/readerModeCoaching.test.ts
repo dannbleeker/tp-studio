@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { printLegendFor } from '@/domain/printLegend';
-import {
-  EDGE_KIND_COACHING,
-  ENTITY_TYPE_COACHING,
-} from '@/domain/readerModeCoaching';
+import { EDGE_KIND_COACHING, ENTITY_TYPE_COACHING } from '@/domain/readerModeCoaching';
 import type { DiagramType, EdgeKind, EntityType } from '@/domain/types';
 
 /**
