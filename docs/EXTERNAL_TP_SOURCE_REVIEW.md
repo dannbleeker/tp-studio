@@ -125,6 +125,12 @@ scrutiny stepper, but comments can't carry a CLR category.
 These are genuinely novel but larger or more debatable in scope — present for
 Dann's pick, not recommended as a first slice.
 
+> **Decision (Session 179):** **E2** (Layers-of-Resistance panel), **E4** (T/I/OE
+> tags + heatmap), and **E7** (leverage-point flag) were dropped to won't-build —
+> E2 is facilitation scaffolding beyond the tool's scope, E4 drifts toward
+> financial modelling, E7 is redundant with the core-driver analysis. **E1, E3,
+> E5, E6** remain greenlight-pending candidates. See NEXT_STEPS.md.
+
 | Candidate | Tag | Size | Source | Notes |
 |---|---|---|---|---|
 | **E1. System-archetype pattern library** | GAP | **L** | Wiley #2 | 5–6 named CRT/FRT archetypes — "Fixes that Fail", "Escalation", "Limits to Growth", "Shifting the Burden", "Eroding Goals". Cross-methodology diagnostic vocabulary; pairs with Theme A. Content-heavy. |

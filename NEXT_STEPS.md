@@ -12,15 +12,8 @@ CHANGELOG.
 ### Overlapping edges into one entity — can't grab/redirect one (Dann)
 PROBLEM: when 2+ edges converge on one entity, you can't reliably select/drag ONE to re-route
 it — a click always grabs whichever edge is on top.
-- ✅ **Inspector-driven re-wire (Session 177, the recommended-primary path).** The Edge Inspector's
-  Cause/Effect are now editable dropdowns of the doc's entities (by title, live-updating on rename);
-  pick a different source/target to redirect via `reconnectEdge` — no canvas drag. Opposite endpoint
-  disabled (no self-loop), duplicate declined with a toast, a junctor effect-move drops the group,
-  note-edges stay read-only. New reusable `Select` primitive. See CHANGELOG.
-- ✅ **Canvas edge-picker (Session 177).** A left-click on a stack of 2+ overlapping edges opens a
-  menu listing them ("Cause → Effect") to choose which to select — `findOverlappingEdgeIds` +
-  `getEdgeHitCandidates` (RF waypoints / node-centre fallback) + an `edge-picker` ContextMenu kind.
-  See CHANGELOG.
+- ✅ **Shipped (Session 177, see CHANGELOG):** the inspector-driven re-wire (Cause/Effect dropdowns →
+  `reconnectEdge`) and the canvas edge-picker (click a stack of overlapping edges → a menu to choose one).
 - **Hover-fan (chosen next slice — researched, not yet built).** Spread converging edges apart on
   hover of the shared endpoint so you grab one directly, snapping back on leave — the
   direct-manipulation polish on top of the picker (Dann: "picker now, fan later"). Researched feasible
@@ -36,51 +29,33 @@ Session-176/177 named gaps are closed (pure exporters, `persistenceValidators`, 
 hooks, `canvasRef`, `CreationWizardPanel`, `pdfExport`/`pptxExport`). Revisit only if a big new module
 lands undertested.
 
-### Print functionality (Dann, Session 176)
-Print is mature: a `PrintPreviewDialog` (3 modes · annotation appendix · selection-only · header/footer
-templates), `Cmd/Ctrl+P`, `print.css`, and a true multi-page vector PDF.
-**Session 177:** shipped the **reasoning companion** (Dann's pick) — the cause→effect read-out as a
-print + PDF section (`PrintReasoning` + `buildReasoningSentences` + `renderReasoning`).
-**Session 178:** fixed the **browser-print path** — `Cmd/Ctrl+P` (and the dialog's "Open print dialog")
-printed a *blank* page (the diagram never made it on, and a CSS source-order bug hid the header/footer too).
-`usePrintCanvas` now frames the diagram for the page on `beforeprint` and restores the viewport on
-`afterprint`; `print.css` fixed (chrome hidden, header/footer shown).
-**Session 178 (cont.):** shipped **page setup** — Size (A4/Letter) · Orientation (Portrait/Landscape) ·
-Scale (Fit-page / Fit-width-multi-page), persisted as the `printLayout` pref so bare Ctrl+P honours it.
-Size + orientation drive `@page` + the print box + the vector PDF (the A4 hard-code is gone); Fit-width
-gives readable multi-page browser-print. So the page-setup, landscape/Letter, and multi-page-browser-print
-items are all **done**.
-**Session 178 (cont.):** shipped the **per-type print "how to read this" legend** (Dann's pick for the
-"per-diagram-type print templates" item) — `printLegendFor` + `PrintLegend`, a one-line type-specific reading
-rule under the title, persisted via `printLayout.showLegend` (default on) so Ctrl+P honours it.
-**Session 179:** **legend parity in the vector PDF** shipped — the same `showLegend` toggle now prints the
-legend on every diagram page of the vector PDF (wrapped with real font metrics, italic #525252, band reserved
-out of the drawable height). Fixed a latent multi-page bug it surfaced: the diagram SVG now clips to its
-drawable band per page, so it no longer bleeds over the header/footer/legend or duplicates content across the
-page seam. The print thread is now **fully closed**. The bigger "bespoke per-type layouts" idea is **closed** as
-over-engineering (Dann, Session 178 — the canvas is the layout; the legend covers the per-type need). The
-"full one-page print designs" line stays parked (see Out-of-scope — won't build).
+### Print — ✅ fully closed (Sessions 77–179, see CHANGELOG)
+Mature and complete: `PrintPreviewDialog` (3 modes · annotation appendix · reasoning companion ·
+selection-only · header/footer templates · page setup — A4/Letter, portrait/landscape, fit-page/fit-width),
+`Cmd/Ctrl+P`, `print.css`, a true multi-page vector PDF, and the per-type "how to read this" legend in
+**both** the browser-print and vector-PDF paths. The "bespoke per-type one-page layouts" idea is closed as
+over-engineering (see Out-of-scope — won't build).
 
-### External reviews — TOC/TP sources → `docs/EXTERNAL_TP_SOURCE_REVIEW.md` (research done Session 179)
-All seven sources mined + cross-checked against the codebase + Cohen gap analysis. TP Studio is extremely
-complete (whole Cohen arc + guided CLR scrutiny stepper + `Entity.attributes` + back-edges already shipped).
+### External reviews — TOC/TP sources → `docs/EXTERNAL_TP_SOURCE_REVIEW.md`
+Seven sources mined + cross-checked against the codebase + Cohen gap analysis (the doc is retained for the
+full rationale). Themes A1/A2, B, C1/C2 and D — plus the tied-core-drivers Spawn-EC action — all **shipped
+Session 179** (see CHANGELOG).
 
-**✅ Shipped Session 179 (cont.) — see CHANGELOG:** loop polarity (A1 R/B back-edge badge + A2 type-aware loop
-CLR); Theme B (6 CRT build-quality warnings — dead-branch, ude-no-upstream, low-core-driver-coverage,
-tied-core-drivers, ude-wording, ude-count); Theme C (CLR-labelled review comments + logic-type mismatch lint);
-Theme D (select successors/predecessors surfaced on the context menu/toolbar — the commands already existed;
-per-entity icon override). ~50 new tests; full suite 2891 green.
-
-**Remaining candidates — greenlight pending** (full rationale in the doc):
+**Remaining candidates — greenlight pending** (no code yet; full rationale in the doc):
 - **A3. Loop naming + behavior-over-time note** (M) — name a detected loop + an optional dynamic narrative.
 - **A4. Delay markers on edges** (S) — `//` glyph + "a reinforcing loop with no delay escalates instantly" hint.
-- **E1. System-archetype pattern library** (L) — "Fixes that Fail", "Escalation", "Limits to Growth", etc.
-- **E2. Layers-of-Resistance review panel** (M) — the 6 buy-in layers, each linked to the TP tool that addresses it.
-- **E3. 3-Cloud rapid-diagnosis wizard** (S–M) — 3 UDEs → 3 ECs → consolidate to a core cloud.
-- **E4. T/I/OE impact tags + heatmap** (S/M) — Throughput/Inventory/Operating-Expense directional tags on entities.
-- **E5. Long-arrow / missing-step warning** (M) — flag a sufficiency edge that skips too many logical levels.
-- **E6. Reader / trainee mode** (M) — simplified edit-hidden view + "how to read this" coaching prompts.
-- **E7. Leverage-point flag** (S) — `entity.isLeveragePoint` badge (marginal; the constraint is already implicit).
+- **E1. System-archetype pattern library** (L — scalable; 2–3 to start) — new `PATTERNS` entries (id/label/hint/
+  build, no schema change): curated CRT/FRT templates for "Fixes that Fail", "Escalation", "Limits to Growth",
+  "Shifting the Burden", "Eroding Goals". Each archetype's feedback loop rides a back-edge + the shipped R/B loop
+  badge. The L is authoring (each is a hand-built TP tree), not infrastructure.
+- **E3. 3-Cloud rapid-diagnosis wizard** (S–M) — guided 3 UDEs → 3 ECs → consolidate to a core cloud; a fast
+  on-ramp alternative to a full CRT, reusing the EC wizard + cloud-progression.
+- **E5. Long-arrow / missing-step warning** (M) — flag a sufficiency edge that skips too many logical levels
+  (a dismissible hint; higher false-positive risk).
+- **E6. Reader / trainee mode** (M, incremental) — a distraction-free read-only view for non-experts: hide the
+  edit chrome, add "how to read this" entity/arrow coaching, and a guided "challenge this arrow" that files a
+  CLR-tagged comment (pairs with the shipped CLR comments). The new parts over Browse Lock / presentation /
+  scrutiny are the coaching tooltips + the challenge→comment flow.
 
 ---
 
@@ -112,6 +87,11 @@ Items explicitly dropped, in addition to the brief's own out-of-scope list:
 - **Reactive vs proactive NBR mitigation** — an optional `mitigation.kind` (`'reactive'` / `'proactive'`)
   label on negative-branch mitigation injections. Closed (Dann, Session 177): speculative, label-only
   (nothing would key off it), no practitioner demand. Re-open if a real workshop needs to tag the kind.
+- **External-review candidates E2 / E4 / E7** — dropped (Dann, Session 179). **E2** Layers-of-Resistance
+  review panel: facilitation scaffolding beyond a diagramming tool's scope. **E4** T/I/OE impact tags +
+  heatmap: drifts toward financial/measurement modelling (ad-hoc T/I/OE notes can still ride
+  `Entity.attributes`). **E7** leverage-point flag: redundant — the constraint / core driver already IS the
+  leverage point, surfaced by the core-driver analysis. Full rationale in `docs/EXTERNAL_TP_SOURCE_REVIEW.md`.
 
 ---
 
@@ -147,7 +127,7 @@ Specific to the Windows + corporate-AppLocker box this was built on.
 ## When picking this up next
 
 1. **Pull the project state.** `cd C:\dev\tp-studio && git status` (clean). `pnpm install` (preinstall verifies
-   Node `>=22` + pnpm `^10`). `pnpm dev` to start. `pnpm test` reports 2560+ tests passing.
+   Node `>=22` + pnpm `^10`). `pnpm dev` to start. `pnpm test` reports 2890+ tests passing.
 2. **Open the durable docs** — README.md (architecture), USER_GUIDE.md (features), CHANGELOG.md (history),
    SECURITY.md (threat model), docs/RENDER_ENGINE_NOTES.md (canvas rendering).
 3. **Pick from the Active backlog above**, or take a fresh product direction (the original spec gaps are all
