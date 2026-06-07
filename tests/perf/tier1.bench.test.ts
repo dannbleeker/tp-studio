@@ -12,12 +12,20 @@
  * so it copies cleanly into a CHANGELOG entry.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
 import { edgesArray, entitiesArray, incomingEdges, outgoingEdges } from '@/domain/graph';
 import { computeDetailedRevisionDiff } from '@/domain/revisions';
 import type { Edge, Entity, TPDocument } from '@/domain/types';
 import { buildRiskRegisterCsv } from '@/services/exporters/riskRegister';
 import { makeDoc, makeEdge, makeEntity, resetIds } from '../domain/helpers';
+
+// These microbenchmarks run their target loops 100k–1M times. Under V8 coverage
+// instrumentation every call is far slower, so the heavier sizes blow past
+// vitest 4's 5 s default test timeout (same reason `validators.bench` extends
+// its own budget). Give the whole file a generous ceiling so the report stays
+// deterministic — and the coverage gate stays green — whether or not coverage
+// is active. The benches still complete in well under a second uninstrumented.
+vi.setConfig({ testTimeout: 60_000 });
 
 const buildDoc = (entityCount: number): TPDocument => {
   resetIds();
