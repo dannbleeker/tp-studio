@@ -305,7 +305,11 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           {/* B3: per-type icon. Stripe colour duplicated on the icon so the
               two visual cues read together rather than competing. `aria-hidden`
               because the label text already announces the type. */}
-          <EntityIcon className="h-3 w-3 shrink-0" style={{ color: meta.stripeColor }} aria-hidden />
+          <EntityIcon
+            className="h-3 w-3 shrink-0"
+            style={{ color: meta.stripeColor }}
+            aria-hidden
+          />
           <span>{meta.label}</span>
           {/*
             Locus (TOC-reading; previously "Span of control"):

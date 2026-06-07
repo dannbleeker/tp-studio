@@ -40,11 +40,7 @@ describe('crtDeadBranchRule', () => {
     const rc = makeEntity({ type: 'rootCause', title: 'RC' });
     const mid = makeEntity({ type: 'effect', title: 'Mid' });
     const ude = makeEntity({ type: 'ude', title: 'UDE' });
-    const doc = makeDoc(
-      [rc, mid, ude],
-      [makeEdge(rc.id, mid.id), makeEdge(mid.id, ude.id)],
-      'crt'
-    );
+    const doc = makeDoc([rc, mid, ude], [makeEdge(rc.id, mid.id), makeEdge(mid.id, ude.id)], 'crt');
     expect(crtDeadBranchRule(doc)).toEqual([]);
   });
 });

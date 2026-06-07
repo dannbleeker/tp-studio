@@ -13,7 +13,9 @@ describe('logicTypeMismatchRule', () => {
   it('flags a necessity edge on a CRT (a sufficiency tree)', () => {
     const a = makeEntity();
     const b = makeEntity();
-    const w = logicTypeMismatchRule(makeDoc([a, b], [makeEdge(a.id, b.id, { kind: 'necessity' })], 'crt'));
+    const w = logicTypeMismatchRule(
+      makeDoc([a, b], [makeEdge(a.id, b.id, { kind: 'necessity' })], 'crt')
+    );
     expect(w).toHaveLength(1);
     expect(w[0]?.target.kind).toBe('edge');
     expect(w[0]?.message).toMatch(/sufficiency logic/);
