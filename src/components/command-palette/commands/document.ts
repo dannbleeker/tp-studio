@@ -151,6 +151,16 @@ export const documentCommands: Command[] = [
       s.openQuickCapture();
     },
   }),
+  // E3 — the 3-Cloud rapid-diagnosis wizard. A fast on-ramp alternative to a
+  // full CRT: three UDE conflicts consolidated into one Core Cloud document.
+  withWriteGuard({
+    id: 'three-cloud-diagnosis',
+    label: 'Rapid 3-cloud diagnosis…',
+    group: 'File',
+    run: (s) => {
+      s.openThreeCloud();
+    },
+  }),
   withWriteGuard({
     // Session 79 / brief §12 — pick from the curated templates library.
     id: 'new-from-template',

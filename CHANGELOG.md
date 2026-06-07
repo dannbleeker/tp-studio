@@ -2,6 +2,34 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — E3: 3-Cloud rapid-diagnosis wizard
+
+A fast on-ramp alternative to a full Current Reality Tree (a-dato source; Theme E). A
+guided overlay (palette: **Rapid 3-cloud diagnosis…**) walks the rapid method in two steps:
+
+  1. **Capture** three undesirable effects and the conflict felt behind each — what you do
+     (D) vs what you feel you should do instead (D′).
+  2. **Consolidate** the three into one Core Cloud (A/B/C/D/D′) — the single conflict sitting
+     under all three symptoms.
+
+On finish it mints a single Evaporating Cloud document tagged `cloudType: 'core'`, opens it
+in a tab (honouring the new-tab preference), and preserves the three source conflicts as a
+provenance block in the document description.
+
+Why one doc, not four: an EC document is exactly one 5-box cloud (manual layout), so the
+three source clouds are captured in the wizard's own local state — shown side by side at the
+consolidation step (the pedagogical heart of the method) — rather than spun into three extra
+canvas tabs. The overlay never touches the active document; all elicitation is local React
+state, committed once, so dismissing mid-flow leaves the workspace untouched.
+
+New: `src/domain/threeCloud.ts` (pure `buildThreeCloudCoreDoc` + `summariseConflicts`),
+`src/components/three-cloud/ThreeCloudWizard.tsx`, the `threeCloudOpen` dialog flag +
+`commitThreeCloudDiagnosis` store action, and the palette command. Reuses
+`createDocument('ec')`, the `ecSlot` tagging, and the canonical EC slot labels / guiding
+questions from `ecGuiding`. Tests in `tests/domain/threeCloud.test.ts`,
+`tests/store/threeCloud.test.ts`, `tests/components/ThreeCloudWizard.test.tsx`. Full suite
+2968 passing.
+
 ## Session 180 (cont.) — Theme A: loop delay markers (A4) + loop naming (A3)
 
 Completes the System-Dynamics-lens theme (A1 R/B badge + A2 diagram-aware loop CLR shipped S179).

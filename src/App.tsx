@@ -49,6 +49,11 @@ const QuickCaptureDialog = lazy(() =>
     default: m.QuickCaptureDialog,
   }))
 );
+const ThreeCloudWizard = lazy(() =>
+  import('./components/three-cloud/ThreeCloudWizard').then((m) => ({
+    default: m.ThreeCloudWizard,
+  }))
+);
 const RevisionPanel = lazy(() =>
   import('./components/history/RevisionPanel').then((m) => ({ default: m.RevisionPanel }))
 );
@@ -388,6 +393,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Quick capture">
           <QuickCaptureDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="3-cloud wizard">
+          <ThreeCloudWizard />
         </ErrorBoundary>
         <ErrorBoundary label="Revision history">
           <RevisionPanel />

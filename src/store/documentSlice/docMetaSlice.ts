@@ -9,6 +9,7 @@ import {
   saveDocToLocalStorage,
   type TabsLoadResult,
 } from '@/domain/persistence';
+import { buildThreeCloudCoreDoc, type ThreeCloudInput } from '@/domain/threeCloud';
 import type {
   CloudType,
   CustomEntityClass,
@@ -94,6 +95,10 @@ export type DocMetaSlice = {
    *  "Undo" that restores the previous doc only makes sense in replace
    *  mode. */
   openDocInTab: (doc: TPDocument) => boolean;
+
+  /** E3 — build a Core Cloud document from a completed 3-Cloud rapid diagnosis,
+   *  open it (honouring `openDocsInNewTab`), and dismiss the wizard overlay. */
+  commitThreeCloudDiagnosis: (input: ThreeCloudInput) => void;
 
   resolveWarning: (warningId: string) => void;
   unresolveWarning: (warningId: string) => void;
@@ -390,6 +395,16 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         // was open; switching to a non-wizardable diagram clears it.
         get().closeCreationWizard();
       }
+    },
+
+    commitThreeCloudDiagnosis: (input) => {
+      // E3 — turn a completed rapid diagnosis into a Core Cloud document and
+      // open it (honouring the new-tab preference, exactly like loading any
+      // doc). The builder is pure; this action owns the tab-open and dismissing
+      // the wizard overlay so the panel just gathers input and fires once.
+      const doc = buildThreeCloudCoreDoc(input);
+      get().openDocInTab(doc);
+      get().closeThreeCloud();
     },
 
     setTitle: (title) => {

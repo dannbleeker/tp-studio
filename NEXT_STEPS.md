@@ -44,8 +44,7 @@ tied-core-drivers Spawn-EC action — all **shipped Session 179** (see CHANGELOG
 **Remaining candidates — greenlight pending** (no code yet; full rationale in the doc):
 - **A3. Loop naming + behavior-over-time note** — ✅ shipped Session 180 (`Edge.loopName` + `loopNarrative` on back-edges, label by the R/B badge; see CHANGELOG).
 - **A4. Delay markers on edges** — ✅ shipped Session 180 (`Edge.delay` → `//` marker + `reinforcing-no-delay` validator on CRT/FRT/NBR; see CHANGELOG).
-- **E3. 3-Cloud rapid-diagnosis wizard** (S–M) — guided 3 UDEs → 3 ECs → consolidate to a core cloud; a fast
-  on-ramp alternative to a full CRT, reusing the EC wizard + cloud-progression.
+- **E3. 3-Cloud rapid-diagnosis wizard** — ✅ shipped Session 180 (palette "Rapid 3-cloud diagnosis…"; three UDE conflicts → one `cloudType:'core'` EC doc, source conflicts preserved in the description; see CHANGELOG).
 - **E5. Long-arrow / missing-step warning** — ✅ shipped Session 180 (`long-arrow` validator, EXISTENCE tier, "Insert a step" action; flags a sufficiency edge spanning ≥3 causal levels on CRT/FRT/TT/NBR; see CHANGELOG).
 - **E6. Reader / trainee mode** — ✅ shipped Session 180 (reader AppMode, per-element coaching tooltips, challenge-arrow CLR comment flow; see CHANGELOG).
 

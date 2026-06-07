@@ -29,6 +29,12 @@ export type DialogsSlice = {
   contextMenu: ContextMenuState;
   /** FL-QC1 Quick Capture dialog. */
   quickCaptureOpen: boolean;
+  /** E3 — 3-Cloud rapid-diagnosis wizard. A self-contained guided overlay that
+   *  captures three UDE conflicts in its own local state and, on finish, mints
+   *  a single `cloudType: 'core'` EC document. Unlike the per-keystroke creation
+   *  wizard it never mutates the active doc — so it's a plain boolean visibility
+   *  flag, not the `creationWizard` step machine. */
+  threeCloudOpen: boolean;
   /** Session 77 / brief §10 — print preview modal. */
   printOpen: boolean;
   /** Session 79 / brief §12 — templates picker dialog. */
@@ -168,6 +174,10 @@ export type DialogsSlice = {
   openQuickCapture: () => void;
   closeQuickCapture: () => void;
 
+  /** E3 — open / close the 3-Cloud rapid-diagnosis wizard overlay. */
+  openThreeCloud: () => void;
+  closeThreeCloud: () => void;
+
   /** Session 77 / brief §10 — print preview modal. */
   openPrintPreview: () => void;
   closePrintPreview: () => void;
@@ -295,6 +305,7 @@ export type DialogsDataKeys =
   | 'docSettingsOpen'
   | 'contextMenu'
   | 'quickCaptureOpen'
+  | 'threeCloudOpen'
   | 'printOpen'
   | 'templatePickerOpen'
   | 'diagramPickerOpen'
@@ -325,6 +336,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   docSettingsOpen: false,
   contextMenu: { open: false },
   quickCaptureOpen: false,
+  threeCloudOpen: false,
   printOpen: false,
   templatePickerOpen: false,
   diagramPickerOpen: null,
@@ -372,6 +384,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   docSettingsOpen: false,
   contextMenu: { open: false },
   quickCaptureOpen: false,
+  threeCloudOpen: false,
   printOpen: false,
   templatePickerOpen: false,
   diagramPickerOpen: null,
@@ -415,6 +428,8 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openQuickCapture: () => set({ quickCaptureOpen: true }),
   closeQuickCapture: () => set({ quickCaptureOpen: false }),
+  openThreeCloud: () => set({ threeCloudOpen: true }),
+  closeThreeCloud: () => set({ threeCloudOpen: false }),
 
   openPrintPreview: () => set({ printOpen: true }),
   closePrintPreview: () => set({ printOpen: false }),

@@ -533,6 +533,15 @@ EC documents have a dedicated three-tab inspector and a top-of-canvas **verbalis
 - **Drag any box to reposition it.** Positions persist to local storage and survive reload. Auto-layout is disabled for EC; the geometry IS the diagnostic.
 - The palette also surfaces Assumption (violet) for edge side-attachments. CLR rules apply structurally (clarity, entity-existence, causality-existence, tautology) **plus the EC-specific `ec-completeness` rule** (Session 77) that bundles five brief-prescribed checks (both wants present, both needs present, all four necessity edges, mutex flag, single conflict). The mutex-edge rule (`ec-missing-conflict`) flags when neither D ↔ D′ edge carries the lightning-bolt mutex marker.
 
+### Rapid 3-cloud diagnosis
+
+A fast on-ramp to a Core Cloud when you don't yet have a full Current Reality Tree. Open the palette and pick **Rapid 3-cloud diagnosis…**. A two-step overlay walks you through the 3-cloud method:
+
+1. **Capture three symptoms.** Name three undesirable effects, and for each the conflict you feel behind it — what you *do* (D) versus what you feel you *should do instead* (D′).
+2. **Consolidate.** With the three conflicts shown side by side, write the single Core Cloud that sits under all of them: the shared objective (A), the two needs it protects (B / C), and the two opposing wants (D / D′).
+
+On finish you get a new Evaporating Cloud document tagged as a **Core cloud**, opened in its own tab, with the three source conflicts recorded in the document description (visible in the Document Inspector). Nothing you were working on is touched — the overlay only creates the new cloud when you click **Create core cloud**. From there it's an ordinary EC: edit the boxes, mark the D ↔ D′ conflict, run the CLR checks, or carry an injection forward into an FRT.
+
 ### EC canvas chrome (Session 87, refined Session 89)
 
 EC documents carry three workshop-oriented artifacts above the canvas, each surfacing something the BESTSELLER workshop PPT keeps prominently visible. **The reading guide is hidden by default since Session 89** — toggle it on via the palette command **Toggle EC reading guide** when you want workshop-style prompts visible above the canvas:
