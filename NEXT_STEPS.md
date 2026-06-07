@@ -36,17 +36,11 @@ selection-only · header/footer templates · page setup — A4/Letter, portrait/
 **both** the browser-print and vector-PDF paths. The "bespoke per-type one-page layouts" idea is closed as
 over-engineering (see Out-of-scope — won't build).
 
-### External reviews — TOC/TP sources → `docs/EXTERNAL_TP_SOURCE_REVIEW.md`
-Seven sources mined + cross-checked against the codebase + Cohen gap analysis (the doc is retained for the
-full rationale). Themes A1/A2, B, C1/C2, D and **E1 (5 system-archetype patterns)** — plus the
-tied-core-drivers Spawn-EC action — all **shipped Session 179** (see CHANGELOG).
-
-**Remaining candidates — greenlight pending** (no code yet; full rationale in the doc):
-- **A3. Loop naming + behavior-over-time note** — ✅ shipped Session 180 (`Edge.loopName` + `loopNarrative` on back-edges, label by the R/B badge; see CHANGELOG).
-- **A4. Delay markers on edges** — ✅ shipped Session 180 (`Edge.delay` → `//` marker + `reinforcing-no-delay` validator on CRT/FRT/NBR; see CHANGELOG).
-- **E3. 3-Cloud rapid-diagnosis wizard** — ✅ shipped Session 180 (palette "Rapid 3-cloud diagnosis…"; three UDE conflicts → one `cloudType:'core'` EC doc, source conflicts preserved in the description; see CHANGELOG).
-- **E5. Long-arrow / missing-step warning** — ✅ shipped Session 180 (`long-arrow` validator, EXISTENCE tier, "Insert a step" action; flags a sufficiency edge spanning ≥3 causal levels on CRT/FRT/TT/NBR; see CHANGELOG).
-- **E6. Reader / trainee mode** — ✅ shipped Session 180 (reader AppMode, per-element coaching tooltips, challenge-arrow CLR comment flow; see CHANGELOG).
+### External reviews — TOC/TP sources → `docs/EXTERNAL_TP_SOURCE_REVIEW.md` — ✅ theme complete
+Seven sources mined + cross-checked against the codebase + Cohen gap analysis (the doc is retained for
+the full rationale). **Every candidate is now shipped or explicitly dropped:** A1/A2, B, C1/C2, D and
+E1 (5 system-archetype patterns) + the tied-core-drivers Spawn-EC action (Session 179); A3, A4, E3, E5,
+E6 (Session 180 — see CHANGELOG); E2 / E4 / E7 dropped to won't-build (see Out-of-scope below).
 
 ---
 
