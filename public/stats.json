@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-07T13:43:22.942Z",
-  "commit": "81903e1",
+  "generatedAt": "2026-06-07T13:51:40.586Z",
+  "commit": "78c2783",
   "headline": {
-    "linesTsJs": 105517,
+    "linesTsJs": 105747,
     "tests": 2916,
-    "lineCoveragePct": 91.3,
-    "commits": 601,
+    "lineCoveragePct": 91.22,
+    "commits": 602,
     "ageDays": 27,
-    "trackedFiles": 947
+    "trackedFiles": 950
   },
   "code": [
     {
@@ -27,8 +27,8 @@
     },
     {
       "category": "Build scripts",
-      "files": 17,
-      "lines": 3544
+      "files": 18,
+      "lines": 3774
     },
     {
       "category": "Styles (CSS)",
@@ -43,23 +43,23 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 91.3,
-      "covered": 11209,
+      "pct": 91.22,
+      "covered": 11199,
       "total": 12276
     },
     "statements": {
-      "pct": 88.4,
-      "covered": 12699,
+      "pct": 88.33,
+      "covered": 12688,
       "total": 14364
     },
     "functions": {
-      "pct": 87.21,
-      "covered": 2354,
+      "pct": 87.06,
+      "covered": 2350,
       "total": 2699
     },
     "branches": {
-      "pct": 77.22,
-      "covered": 7076,
+      "pct": 77.2,
+      "covered": 7074,
       "total": 9163
     }
   },
@@ -106,12 +106,12 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 601,
-    "commits7d": 202,
+    "commits": 602,
+    "commits7d": 203,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 546
+        "count": 547
       },
       {
         "name": "github-actions[bot]",
@@ -123,7 +123,7 @@
       }
     ],
     "churn30d": {
-      "added": 170526,
+      "added": 170944,
       "removed": 32236
     },
     "changelogEntries": 312
