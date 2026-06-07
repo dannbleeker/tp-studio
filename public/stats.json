@@ -1,15 +1,16 @@
 {
-  "generatedAt": "2026-06-07T17:39:36.061Z",
-  "commit": "ec2e51a",
+  "generatedAt": "2026-06-07T17:48:49.293Z",
+  "commit": "715f1de",
   "headline": {
-    "linesTsJs": 107265,
+    "linesTsJs": 107267,
     "tests": 2944,
     "lineCoveragePct": 91.17,
-    "commits": 620,
+    "commits": 622,
     "ageDays": 27,
     "trackedFiles": 965,
     "featureManualPct": 88.1,
-    "featureBookPct": 76.7
+    "featureBookPct": 76.7,
+    "featureExamplePct": 29.5
   },
   "code": [
     {
@@ -30,7 +31,7 @@
     {
       "category": "Build scripts",
       "files": 20,
-      "lines": 4210
+      "lines": 4212
     },
     {
       "category": "Styles (CSS)",
@@ -68,27 +69,27 @@
   "tests": {
     "unit": 2856,
     "e2e": 88,
-    "durationMs": 194619,
+    "durationMs": 186628,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10471
+        "ms": 9654
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4820
+        "ms": 4395
       },
       {
         "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 1738
+        "ms": 1550
       },
       {
-        "file": "tests/components/Inspector.test.tsx",
-        "ms": 1351
+        "file": "tests/components/canvas/useEdgeRoutes.test.tsx",
+        "ms": 1235
       },
       {
         "file": "tests/components/SelectionToolbar.test.tsx",
-        "ms": 1266
+        "ms": 1191
       }
     ]
   },
@@ -690,16 +691,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 620,
-    "commits7d": 215,
+    "commits": 622,
+    "commits7d": 217,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 556
+        "count": 557
       },
       {
         "name": "github-actions[bot]",
-        "count": 53
+        "count": 54
       },
       {
         "name": "dannbleeker",
@@ -707,8 +708,8 @@
       }
     ],
     "churn30d": {
-      "added": 173961,
-      "removed": 32558
+      "added": 173980,
+      "removed": 32575
     },
     "changelogEntries": 314
   }
