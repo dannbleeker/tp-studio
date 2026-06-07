@@ -350,6 +350,8 @@ title,type,description,parent_title
 
 Need a starter diagram for a common scenario? Open the palette and pick **Pattern library…**. The dialog lists curated starter diagrams across every TOC diagram type — software-team CRTs, classic teaching ECs, the canonical Outcome ← (Precondition + Action) TT shape, and so on. Filter by diagram type via the chip row at the top, or scroll through everything. Click a card to load it; Undo from the success toast restores your previous doc. The Evaporating Cloud set includes the **change-resistance / buy-in** clouds — *Resistance to change (Efrat's cloud)*, *Speak up vs stay safe*, and *Transformation vs this quarter* — the generic conflict behind why a sound change keeps getting resisted.
 
+It also includes the **system archetypes** (Session 179) — Senge's recurring dynamics rendered as TP trees: *Fixes that Fail*, *Escalation*, *Shifting the Burden*, and *Eroding Goals* (reinforcing CRTs), plus *Limits to Growth* (a balancing FRT). Each is a feedback loop, so the **R / B badge** on its back-edge tells you at a glance whether it's a self-amplifying spiral (R) or a self-correcting limit (B).
+
 The library is distinct from **Load example…** (which loads the one canonical example per diagram type). Patterns are many-per-type and the library grows over time — if you author a new shape worth keeping, drop a builder in `src/domain/patterns/` and register it in the `PATTERNS` array.
 
 ### Paste from whiteboard (Miro / Mural)

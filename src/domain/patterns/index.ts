@@ -38,9 +38,13 @@ import { buildPatternCloudCore } from './cloud-core';
 import { buildPatternCloudFirefighting } from './cloud-firefighting';
 import { buildPatternCloudUDE } from './cloud-ude';
 import { buildPatternCRTEngineeringVelocity } from './crt-engineering-velocity';
+import { buildPatternCRTErodingGoals } from './crt-eroding-goals';
+import { buildPatternCRTEscalation } from './crt-escalation';
+import { buildPatternCRTFixesThatFail } from './crt-fixes-that-fail';
 import { buildPatternCRTInventoryTurnsFalling } from './crt-inventory-turns-falling';
 import { buildPatternCRTMultiProjectBottleneck } from './crt-multi-project-bottleneck';
 import { buildPatternCRTSalesPipelineStall } from './crt-sales-pipeline-stall';
+import { buildPatternCRTShiftingTheBurden } from './crt-shifting-the-burden';
 import { buildPatternCRTTonsPerHour } from './crt-tons-per-hour';
 import { buildPatternECBatchSize } from './ec-batch-size';
 import { buildPatternECBuildVsBuy } from './ec-build-vs-buy';
@@ -57,6 +61,7 @@ import { buildPatternECSpeakUpVsStaySafe } from './ec-speak-up-vs-stay-safe';
 import { buildPatternECSpecialistVsGeneralist } from './ec-specialist-vs-generalist';
 import { buildPatternECTransformationVsQuarter } from './ec-transformation-vs-quarter';
 import { buildPatternFRTDbrScheduling } from './frt-dbr-scheduling';
+import { buildPatternFRTLimitsToGrowth } from './frt-limits-to-growth';
 import { buildPatternFRTPricingExperiment } from './frt-pricing-experiment';
 import { buildPatternFRTScheduleAdherence } from './frt-schedule-adherence';
 import { buildPatternFRTTeamOkrs } from './frt-team-okrs';
@@ -141,6 +146,36 @@ export const PATTERNS: Pattern[] = [
     hint: "Goldratt's archetype — one local measure (reward the furnace on tons/hour) sprays into a UDE field: WIP piles up, the wrong mix is poured, inventory balloons, orders ship late. AND on the late-orders UDE; pairs with the schedule-adherence FRT.",
     diagramType: 'crt',
     build: buildPatternCRTTonsPerHour,
+  },
+  // System archetypes (Session 179) — Senge's recurring dynamics as CRTs, each a
+  // feedback loop the R/B badge reads. See docs/EXTERNAL_TP_SOURCE_REVIEW.md (E1).
+  {
+    id: 'crt-fixes-that-fail',
+    label: 'Fixes that Fail (system archetype)',
+    hint: 'Senge archetype as a CRT — a quick fix relieves the symptom but its side-effect feeds the problem back: a reinforcing (R) vicious cycle. Break it at the root cause, not the symptom.',
+    diagramType: 'crt',
+    build: buildPatternCRTFixesThatFail,
+  },
+  {
+    id: 'crt-escalation',
+    label: 'Escalation (system archetype)',
+    hint: 'Senge archetype as a CRT — each party out-responds the other: a reinforcing (R) arms race. Break it by changing the measure both sides react to.',
+    diagramType: 'crt',
+    build: buildPatternCRTEscalation,
+  },
+  {
+    id: 'crt-shifting-the-burden',
+    label: 'Shifting the Burden (system archetype)',
+    hint: 'Senge archetype as a CRT — leaning on the symptomatic fix erodes the capacity for the fundamental solution: a reinforcing (R) dependency. Break it by investing in the fundamental solution.',
+    diagramType: 'crt',
+    build: buildPatternCRTShiftingTheBurden,
+  },
+  {
+    id: 'crt-eroding-goals',
+    label: 'Eroding Goals (system archetype)',
+    hint: 'Senge archetype as a CRT — closing the gap by lowering the goal ratchets the standard down each pass: a reinforcing (R) erosion. Break it by holding the goal and lifting performance.',
+    diagramType: 'crt',
+    build: buildPatternCRTErodingGoals,
   },
 
   // ── EC ─────────────────────────────────────────────────────────────
@@ -313,6 +348,15 @@ export const PATTERNS: Pattern[] = [
     hint: 'The FRT counterpart to the tons-per-hour CRT — swap the local measure for finishing-schedule adherence; the right mix is poured, WIP drains, inventory falls, orders ship on time. AND on the on-time effect.',
     diagramType: 'frt',
     build: buildPatternFRTScheduleAdherence,
+  },
+  // System archetype (Session 179, E1) — the one FRT archetype: a balancing (B)
+  // limit on a reinforcing growth engine.
+  {
+    id: 'frt-limits-to-growth',
+    label: 'Limits to Growth (system archetype)',
+    hint: 'Senge archetype as an FRT — a reinforcing growth engine meets a balancing (B) limit, so pushing harder yields less. Break it with an injection that lifts the limit, not one that drives growth.',
+    diagramType: 'frt',
+    build: buildPatternFRTLimitsToGrowth,
   },
 
   // ── PRT ────────────────────────────────────────────────────────────

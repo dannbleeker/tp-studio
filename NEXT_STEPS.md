@@ -38,16 +38,12 @@ over-engineering (see Out-of-scope — won't build).
 
 ### External reviews — TOC/TP sources → `docs/EXTERNAL_TP_SOURCE_REVIEW.md`
 Seven sources mined + cross-checked against the codebase + Cohen gap analysis (the doc is retained for the
-full rationale). Themes A1/A2, B, C1/C2 and D — plus the tied-core-drivers Spawn-EC action — all **shipped
-Session 179** (see CHANGELOG).
+full rationale). Themes A1/A2, B, C1/C2, D and **E1 (5 system-archetype patterns)** — plus the
+tied-core-drivers Spawn-EC action — all **shipped Session 179** (see CHANGELOG).
 
 **Remaining candidates — greenlight pending** (no code yet; full rationale in the doc):
 - **A3. Loop naming + behavior-over-time note** (M) — name a detected loop + an optional dynamic narrative.
 - **A4. Delay markers on edges** (S) — `//` glyph + "a reinforcing loop with no delay escalates instantly" hint.
-- **E1. System-archetype pattern library** (L — scalable; 2–3 to start) — new `PATTERNS` entries (id/label/hint/
-  build, no schema change): curated CRT/FRT templates for "Fixes that Fail", "Escalation", "Limits to Growth",
-  "Shifting the Burden", "Eroding Goals". Each archetype's feedback loop rides a back-edge + the shipped R/B loop
-  badge. The L is authoring (each is a hand-built TP tree), not infrastructure.
 - **E3. 3-Cloud rapid-diagnosis wizard** (S–M) — guided 3 UDEs → 3 ECs → consolidate to a core cloud; a fast
   on-ramp alternative to a full CRT, reusing the EC wizard + cloud-progression.
 - **E5. Long-arrow / missing-step warning** (M) — flag a sufficiency edge that skips too many logical levels

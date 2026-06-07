@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 179 (cont.) — pattern library: 5 system-archetype starters (external-review E1)
+
+External-review candidate **E1**. Five of Senge's system archetypes join the pattern library as curated
+CRT/FRT starters — each a feedback loop the R/B badge reads, bridging System Dynamics (where the archetypes
+live) and TOC (where you design the fix):
+
+- **CRT, reinforcing (R):** Fixes that Fail · Escalation · Shifting the Burden · Eroding Goals.
+- **FRT, balancing (B):** Limits to Growth — its balancing loop intentionally trips the FRT loop-polarity
+  nudge ("an injection may be self-limiting — intended?"), which is exactly the archetype's lesson.
+
+Pure content: five new `build()` files in `src/domain/patterns/` registered in `PATTERNS` — no schema change,
+no UI change (the library dialog auto-surfaces them; loops are structural + auto-detected). These are the first
+pattern builders to nominate a loop arc with `isBackEdge` and a balancing polarity with `weight: 'negative'`.
+New `archetypePatterns.test.ts` pins each archetype's single cycle + intended R/B polarity + back-edge arc so
+the defining dynamic can't silently drift. Full suite **2907 passing**; tsc + build + bundle-size green.
+
 ## Session 179 (cont.) — crt-tied-core-drivers: one-click "Spawn Evaporating Cloud"
 
 Follow-up to the build batch below. The `crt-tied-core-drivers` warning (two root causes tied for the most
