@@ -48,10 +48,7 @@ tied-core-drivers Spawn-EC action — all **shipped Session 179** (see CHANGELOG
   on-ramp alternative to a full CRT, reusing the EC wizard + cloud-progression.
 - **E5. Long-arrow / missing-step warning** (M) — flag a sufficiency edge that skips too many logical levels
   (a dismissible hint; higher false-positive risk).
-- **E6. Reader / trainee mode** (M, incremental) — a distraction-free read-only view for non-experts: hide the
-  edit chrome, add "how to read this" entity/arrow coaching, and a guided "challenge this arrow" that files a
-  CLR-tagged comment (pairs with the shipped CLR comments). The new parts over Browse Lock / presentation /
-  scrutiny are the coaching tooltips + the challenge→comment flow.
+- **E6. Reader / trainee mode** — ✅ shipped Session 180 (reader AppMode, per-element coaching tooltips, challenge-arrow CLR comment flow; see CHANGELOG).
 
 ---
 

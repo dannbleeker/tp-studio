@@ -32,6 +32,8 @@ import type { TPNode as TPNodeType } from '../edges/flow-types';
 // and the corner-badge JSX. Pulled out of TPNode.tsx to keep this file
 // focused on the everyday-card render + edit machinery; see those
 // files for the per-piece rationale.
+import { ENTITY_TYPE_COACHING } from '@/domain/readerModeCoaching';
+import { EntityCoachingTooltip } from './EntityCoachingTooltip';
 import { StFacetRow } from './StFacetRow';
 import {
   AnnotationBadge,
@@ -85,6 +87,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
     showReverseReachBadges,
     diagramType,
     customEntityClasses,
+    isReaderMode,
   } = useDocumentStore(
     useShallow((s) => {
       const doc = currentDoc(s);
@@ -100,6 +103,8 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         showReverseReachBadges: s.showReverseReachBadges,
         diagramType: doc.diagramType,
         customEntityClasses: doc.customEntityClasses,
+        // Session 180 / E6 — reader mode coaching tooltip.
+        isReaderMode: s.appMode === 'reader',
       };
     })
   );
@@ -238,6 +243,30 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         when (zoom is low) AND (the user is interacting with this node) —
         always-on at low zoom would clutter the canvas.
       */}
+      {/* Session 180 / E6 — Reader mode coaching card. Appears below the node
+          on hover when reader mode is active. Uses the same NodeToolbar pattern
+          as the zoom-up overlay above but at Position.Bottom. Note entities
+          are outside the causal graph (no type metadata in the coaching
+          registry for them beyond the fallback label), so we still show the
+          tooltip — the coaching entry for 'note' explains this. Custom entity
+          classes that aren't in ENTITY_TYPE_COACHING fall back gracefully to
+          nothing (the registry only covers built-in types). */}
+      {isReaderMode && (
+        <NodeToolbar
+          isVisible={isHovered && !isEditing}
+          position={Position.Bottom}
+          offset={8}
+          className="pointer-events-none"
+        >
+          {ENTITY_TYPE_COACHING[entity.type as keyof typeof ENTITY_TYPE_COACHING] && (
+            <EntityCoachingTooltip
+              Icon={EntityIcon}
+              stripeColor={meta.stripeColor}
+              coaching={ENTITY_TYPE_COACHING[entity.type as keyof typeof ENTITY_TYPE_COACHING]}
+            />
+          )}
+        </NodeToolbar>
+      )}
       <NodeToolbar
         isVisible={showZoomUp && !isEditing}
         position={Position.Top}

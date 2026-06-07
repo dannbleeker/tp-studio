@@ -141,7 +141,7 @@ export type DefaultLayoutDirection = 'auto' | 'BT' | 'TB' | 'LR' | 'RL';
  * phases. Persisted across reloads so a workshop facilitator's
  * setup survives a refresh.
  */
-export type AppMode = 'expert' | 'guided' | 'workshop' | 'presentation';
+export type AppMode = 'expert' | 'guided' | 'workshop' | 'presentation' | 'reader';
 
 /** Print page setup (Session 178). `paper` + `orientation` size the print
  *  box + the `@page` rule for browser-print (and the page format for the

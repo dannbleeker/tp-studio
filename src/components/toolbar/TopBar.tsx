@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   HelpCircle,
   History,
   Lock,
@@ -10,6 +11,7 @@ import {
   Search,
   Sun,
   Undo2,
+  X,
 } from 'lucide-react';
 import { SHORTCUT_BY_ID, shortcutToAria } from '@/domain/shortcuts';
 import { useDocumentStore } from '@/store';
@@ -66,6 +68,9 @@ export function TopBar() {
   const togglePalette = useDocumentStore((s) => s.togglePalette);
   const browseLocked = useDocumentStore((s) => s.browseLocked);
   const setBrowseLocked = useDocumentStore((s) => s.setBrowseLocked);
+  const appMode = useDocumentStore((s) => s.appMode);
+  const setAppMode = useDocumentStore((s) => s.setAppMode);
+  const isReaderMode = appMode === 'reader';
 
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
   const cmdKey = isMac ? '⌘' : 'Ctrl';
@@ -74,6 +79,41 @@ export function TopBar() {
   // keyboard shortcut alongside the button label. Derived from the
   // shortcut registry so a future key remap propagates here.
   const paletteAria = shortcutToAria(SHORTCUT_BY_ID.palette?.keys ?? '');
+
+  // Session 180 / E6 — Reader mode shows a minimal toolbar: a "Reader mode"
+  // label pill + "Exit reader mode" button + help icon. All edit affordances
+  // are hidden — Browse Lock already blocks writes, but the minimal chrome
+  // also signals clearly that the document is in a read-only viewing state.
+  if (isReaderMode) {
+    return (
+      <div data-component="top-bar" className="flex shrink-0 items-center gap-2">
+        <span className="flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1 text-indigo-700 text-xs font-medium dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+          <BookOpen className="h-3 w-3" aria-hidden />
+          Reader mode
+        </span>
+        <Button
+          variant="softNeutral"
+          size="sm"
+          onClick={() => setAppMode('expert')}
+          title="Exit reader mode"
+          aria-label="Exit reader mode"
+        >
+          <X className="h-3.5 w-3.5" />
+          Exit
+        </Button>
+        <Button
+          variant="softNeutral"
+          size="icon"
+          onClick={openHelp}
+          className="pointer-events-auto"
+          aria-label="Help"
+          title="Help"
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div

@@ -18,6 +18,9 @@ const APP_MODE_OPTIONS: Array<{
   { id: 'guided', label: 'Guided', hint: 'method-checklist + creation wizards prominent' },
   { id: 'workshop', label: 'Workshop', hint: 'facilitator + group session affordances' },
   { id: 'presentation', label: 'Presentation', hint: 'canvas-only, read-only, full-screen' },
+  // Session 180 / E6 — reader / trainee mode: clean chrome, coaching
+  // tooltips on hover, and "Challenge?" button on edges.
+  { id: 'reader', label: 'Reader', hint: 'distraction-free read-only with coaching tooltips' },
 ];
 
 const appModeCommands: Command[] = APP_MODE_OPTIONS.map((opt) => ({

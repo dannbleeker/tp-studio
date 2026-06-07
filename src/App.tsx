@@ -211,6 +211,9 @@ export function App() {
   // phase (auto-open method checklist + creation wizards).
   const appMode = useDocumentStore((s) => s.appMode);
   const isPresentation = appMode === 'presentation';
+  // Session 180 / E6 — reader mode hides the inspector (like presentation),
+  // but keeps the tab strip + header visible so the user can navigate docs.
+  const isReader = appMode === 'reader';
 
   // FL-EX9: surface a recovery toast when the previous session ended
   // unexpectedly.
@@ -277,7 +280,8 @@ export function App() {
       className={clsx(
         'flex h-screen w-screen flex-col overflow-hidden',
         appMode === 'workshop' && 'app-mode-workshop',
-        appMode === 'presentation' && 'app-mode-presentation'
+        appMode === 'presentation' && 'app-mode-presentation',
+        appMode === 'reader' && 'app-mode-reader'
       )}
     >
       <DocumentMeta />
@@ -346,7 +350,7 @@ export function App() {
           canvas stays usable if (say) the Inspector blows up on a bad
           warning derivation, and vice versa. The root boundary wrapping
           all of <App /> still catches anything that escapes a panel. */}
-        {!isPresentation && (
+        {!isPresentation && !isReader && (
           <ErrorBoundary label="Inspector">
             <Inspector />
           </ErrorBoundary>

@@ -73,6 +73,35 @@ describe('appMode — Browse Lock auto-engage on Presentation', () => {
   });
 });
 
+// Session 180 / E6 — reader mode mirrors presentation's Browse Lock
+// auto-engage contract. Reader mode is the fifth AppMode value.
+describe('appMode — Browse Lock auto-engage on Reader', () => {
+  it('entering Reader mode engages Browse Lock when it was off', () => {
+    expect(s().browseLocked).toBe(false);
+    s().setAppMode('reader');
+    expect(s().browseLocked).toBe(true);
+  });
+
+  it('leaving Reader mode does NOT auto-unlock', () => {
+    s().setAppMode('reader');
+    expect(s().browseLocked).toBe(true);
+    s().setAppMode('expert');
+    // Lock stays — user explicitly toggles off if they want.
+    expect(s().browseLocked).toBe(true);
+  });
+
+  it('entering Reader mode when Browse Lock already engaged leaves it untouched', () => {
+    s().setBrowseLocked(true);
+    s().setAppMode('reader');
+    expect(s().browseLocked).toBe(true);
+  });
+
+  it('setAppMode switches to reader correctly', () => {
+    s().setAppMode('reader');
+    expect(s().appMode).toBe('reader');
+  });
+});
+
 describe('appMode — Guided mode wizard force-show', () => {
   it('opens the Goal Tree wizard on newDocument in Guided mode even when the suppress flag is off', () => {
     // Suppress flag explicitly off — without Guided, the wizard would stay closed.
@@ -104,12 +133,14 @@ describe('appMode — palette commands', () => {
     // mounts at runtime.
     const { COMMANDS } = await import('@/components/command-palette/commands');
     const modeCommands = COMMANDS.filter((c) => c.id.startsWith('switch-app-mode-'));
-    expect(modeCommands).toHaveLength(4);
+    // Session 180 / E6 — reader mode added as fifth AppMode value.
+    expect(modeCommands).toHaveLength(5);
     const ids = modeCommands.map((c) => c.id).sort();
     expect(ids).toEqual([
       'switch-app-mode-expert',
       'switch-app-mode-guided',
       'switch-app-mode-presentation',
+      'switch-app-mode-reader',
       'switch-app-mode-workshop',
     ]);
   });

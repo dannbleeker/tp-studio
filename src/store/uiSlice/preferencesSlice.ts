@@ -479,7 +479,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       // to. The lock toggle in the (now-hidden) TopBar reappears as
       // soon as the mode flips back to Expert / Guided / Workshop.
       const next: Partial<{ appMode: AppMode; browseLocked: boolean }> = { appMode: mode };
-      if (mode === 'presentation' && !get().browseLocked) {
+      // Session 135 — presentation auto-locks; Session 180 — reader also auto-locks
+      // (both are read-only modes where a stray click must not edit the doc).
+      // Leaving either mode does NOT auto-unlock — the user keeps their choice.
+      if ((mode === 'presentation' || mode === 'reader') && !get().browseLocked) {
         next.browseLocked = true;
       }
       set(next);

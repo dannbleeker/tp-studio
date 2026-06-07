@@ -32,6 +32,7 @@ import { CanvasNav } from './overlays/CanvasNav';
 import { CommentPinsOverlay } from './overlays/CommentPinsOverlay';
 import { EmptyHint } from './overlays/EmptyHint';
 import { FirstEntityTip } from './overlays/FirstEntityTip';
+import { ReaderModeBanner } from './overlays/ReaderModeBanner';
 import { StatusStrip } from './overlays/StatusStrip';
 
 // Lazy-loaded so the EC-only chrome + the creation wizard split OUT of the main
@@ -122,14 +123,17 @@ function CanvasInner() {
   //   - isPresentation (Session 135): presentation mode hides the zoom chip so
   //     the canvas reads as a clean read-only surface (structure overlays —
   //     junctors / assumption anchors — stay, as they're diagram content).
-  const { locked, showMinimap, ecChromeCollapsed, isPresentation } = useDocumentStore(
-    useShallow((s) => ({
-      locked: s.browseLocked,
-      showMinimap: s.showMinimap,
-      ecChromeCollapsed: s.ecChromeCollapsed,
-      isPresentation: s.appMode === 'presentation',
-    }))
-  );
+  const { locked, showMinimap, ecChromeCollapsed, isPresentation, isReaderMode } =
+    useDocumentStore(
+      useShallow((s) => ({
+        locked: s.browseLocked,
+        showMinimap: s.showMinimap,
+        ecChromeCollapsed: s.ecChromeCollapsed,
+        isPresentation: s.appMode === 'presentation',
+        // Session 180 / E6 — reader mode orientation banner.
+        isReaderMode: s.appMode === 'reader',
+      }))
+    );
 
   // Mirror React Flow's selection (marquee-drag, ctrl/cmd-click, shift-click)
   // into the store. Edges win when both sets are non-empty (the inspector's
@@ -333,6 +337,10 @@ function CanvasInner() {
       <Breadcrumb />
       {isEmpty && <EmptyHint />}
       {!isEmpty && <FirstEntityTip />}
+      {/* Session 180 / E6 — reader mode orientation banner (floating top-centre
+          of the canvas). Reuses `printLegendFor` so the reading-direction copy
+          stays in one place. Dismissible per session. Freeform = no banner. */}
+      {isReaderMode && <ReaderModeBanner diagramType={doc.diagramType} />}
       <StatusStrip />
       {/* Session 78 — Goal Tree / EC creation wizard panel. The
           component returns null when no wizard is active, so the

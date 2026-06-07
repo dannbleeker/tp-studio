@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Eye, GitBranch, History, Link2, Lock, Search, Sparkles } from 'lucide-react';
+import { BookOpen, Eye, GitBranch, History, Link2, Lock, Search, Sparkles } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { DataComponent } from '@/components/dataComponentNames';
 import { useDocumentStore } from '@/store';
@@ -30,6 +30,7 @@ import { useDocumentStore } from '@/store';
 export function StatusStrip() {
   const {
     browseLocked,
+    isReaderMode,
     hoistedGroupId,
     historyPanelOpen,
     creationWizardActive,
@@ -37,6 +38,7 @@ export function StatusStrip() {
     compareRevisionId,
     canvasMode,
     setBrowseLocked,
+    setAppMode,
     toggleHistoryPanel,
     closeSearch,
     closeCompare,
@@ -47,6 +49,8 @@ export function StatusStrip() {
   } = useDocumentStore(
     useShallow((s) => ({
       browseLocked: s.browseLocked,
+      // Session 180 / E6 — reader mode chip (click to exit).
+      isReaderMode: s.appMode === 'reader',
       hoistedGroupId: s.hoistedGroupId,
       historyPanelOpen: s.historyPanelOpen,
       creationWizardActive: s.creationWizard !== null,
@@ -54,6 +58,7 @@ export function StatusStrip() {
       compareRevisionId: s.compareRevisionId,
       canvasMode: s.canvasMode,
       setBrowseLocked: s.setBrowseLocked,
+      setAppMode: s.setAppMode,
       toggleHistoryPanel: s.toggleHistoryPanel,
       closeSearch: s.closeSearch,
       closeCompare: s.closeCompare,
@@ -72,6 +77,18 @@ export function StatusStrip() {
     tone: string;
   }[] = [];
 
+  // Session 180 / E6 — reader mode chip. Appears BEFORE browse lock
+  // (it's the primary mode indicator; browse lock is a secondary detail).
+  // Click exits reader mode and returns to expert mode.
+  if (isReaderMode) {
+    chips.push({
+      key: 'reader',
+      label: 'Reader mode',
+      Icon: BookOpen,
+      tone: 'indigo',
+      onClick: () => setAppMode('expert'),
+    });
+  }
   if (browseLocked) {
     chips.push({
       key: 'lock',

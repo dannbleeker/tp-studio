@@ -2,6 +2,68 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 — E6: Reader / Trainee Mode
+
+**E6** ships all three slices together: a distraction-free `'reader'` AppMode, per-element coaching
+tooltips, and a guided "Challenge this arrow" flow that files a CLR-tagged review comment.
+
+### What shipped
+
+**AppMode `'reader'` (Slice 1 — shell + chrome hiding)**
+
+- Added `'reader'` as the fifth `AppMode` value (joining `'expert' | 'guided' | 'workshop' |
+  'presentation'`). Entering reader mode auto-engages Browse Lock — same contract as presentation mode,
+  no auto-disengage on exit.
+- `TopBar` shows a minimal strip in reader mode: a "Reader mode" pill badge, an "Exit" button, and the
+  help icon — all edit affordances hidden.
+- `Inspector` hidden in reader mode (same guard as presentation mode).
+- `StatusStrip` shows an indigo "Reader mode" chip (click to exit) before the Browse Lock chip.
+- Command palette `switch-app-mode-reader` wired automatically via the `APP_MODE_OPTIONS` map.
+- `App.tsx` adds `app-mode-reader` CSS class for targeted CSS overrides.
+
+**Coaching tooltips (Slice 2 — entity + edge orientation)**
+
+- New `src/domain/readerModeCoaching.ts` — domain registry with coaching copy for all 15 `EntityType`
+  values and both `EdgeKind` values. Single source of truth; no UI strings in component files.
+- New `EntityCoachingTooltip` component (`src/components/canvas/nodes/`) — renders a `w-56` card via
+  the existing `NodeToolbar` (Position.Bottom, 8 px offset) when reader mode is active and the entity is
+  hovered. Falls back gracefully for custom entity classes with no coaching entry.
+- New `ReaderModeBanner` component (`src/components/canvas/overlays/`) — floating "How to read this"
+  pill at top-centre of the canvas, reusing `printLegendFor(diagramType)` for copy. Truncates to first
+  sentence; dismissed by ×; renders nothing for freeform diagrams.
+- `ChallengeButton` edge overlay includes an edge-kind label pill (orientation label from the coaching
+  registry) stacked above the "Challenge?" button at the edge midpoint.
+
+**"Challenge this arrow" (Slice 3 — guided CLR comment flow)**
+
+- New `ChallengeButton` component (`src/components/canvas/edges/`) — rendered via `EdgeLabelRenderer`
+  at `labelY + 32 px` (below existing edge badges) when reader mode is active and the edge is hovered.
+  Excludes note-edges and mutex arrows. Calls existing `startCommentAt({ kind: 'edge', edgeId })` — no
+  new store action.
+- `CommentComposer` derives an internal `challengeMode` flag: `isReaderMode && pendingCommentAnchor?.kind
+  === 'edge'`. When true: heading changes to "What's your reservation about this arrow?"; CLR picker is
+  promoted above the textarea with a hint "Naming the category helps the diagram author respond to your
+  specific concern."; the "whole diagram instead" checkbox is hidden.
+
+### Files
+
+| New | Purpose |
+|-----|---------|
+| `src/domain/readerModeCoaching.ts` | Coaching copy registry (15 entity types + 2 edge kinds) |
+| `src/components/canvas/overlays/ReaderModeBanner.tsx` | Floating reading-rule banner |
+| `src/components/canvas/nodes/EntityCoachingTooltip.tsx` | NodeToolbar coaching card |
+| `src/components/canvas/edges/ChallengeButton.tsx` | Edge midpoint challenge button |
+| `tests/domain/readerModeCoaching.test.ts` | Registry completeness tests |
+| `tests/components/ReaderModeBanner.test.tsx` | Banner render + dismiss smoke tests |
+
+Modified: `store/uiSlice/types.ts`, `preferencesSlice.ts`, `App.tsx`, `TopBar.tsx`, `Canvas.tsx`,
+`TPNode.tsx`, `TPEdge.tsx`, `CommentComposer.tsx`, `StatusStrip.tsx`,
+`command-palette/commands/view.ts`, `tests/store/appMode.test.ts`.
+
+Full suite **2924 passing** (1 pre-existing todo); tsc, build, and docs-bundle all green.
+
+---
+
 ## Session 179 (cont.) — pattern library: 5 system-archetype starters (external-review E1)
 
 External-review candidate **E1**. Five of Senge's system archetypes join the pattern library as curated

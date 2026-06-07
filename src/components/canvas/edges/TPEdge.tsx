@@ -16,6 +16,7 @@ import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
 import { junctorKindField } from './junctorGeometry';
 import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
+import { ChallengeButton } from './ChallengeButton';
 import {
   AggregateBadge,
   AssumptionBadge,
@@ -182,6 +183,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       const targetIsNote = edge ? doc.entities[edge.targetId]?.type === 'note' : false;
       return {
         edgeLabel: edge?.label,
+        edgeKind: edge?.kind ?? ('sufficiency' as const),
         isMutex: edge?.isMutualExclusion === true,
         weight: edge?.weight,
         hasDescription: typeof desc === 'string' && desc.trim().length > 0,
@@ -199,11 +201,14 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         // Browse Lock disables the reconnect gesture (Canvas omits onReconnect),
         // so the visible re-target knobs hide too — no dangling affordance.
         browseLocked: s.browseLocked,
+        // Session 180 / E6 — reader mode challenge button + edge-kind label.
+        isReaderMode: s.appMode === 'reader',
       };
     })
   );
   const {
     edgeLabel,
+    edgeKind,
     isMutex,
     weight,
     hasDescription,
@@ -215,6 +220,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     isHovered,
     isConnecting,
     browseLocked,
+    isReaderMode,
   } = edgeView;
   // Actions in their own shallow bundle. They're stable refs across
   // store snapshots, so this subscription effectively never fires —
@@ -556,6 +562,17 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         />
       )}
       {fallbackLabel && <FallbackLabel labelX={labelX} labelY={labelY} text={fallbackLabel} />}
+      {/* Session 180 / E6 — Reader mode: edge-kind label + "Challenge?" button.
+          Only shown in reader mode on hover. Note edges (dotted annotations)
+          and mutex edges don't carry logical semantics, so we skip them. */}
+      {isReaderMode && isHovered && !isNoteEdge && !isMutex && (
+        <ChallengeButton
+          edgeId={props.id}
+          edgeKind={edgeKind}
+          labelX={labelX}
+          labelY={labelY}
+        />
+      )}
     </>
   );
 }
