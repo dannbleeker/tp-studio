@@ -3,6 +3,7 @@ import { Syringe, Target, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { actionEligibility } from '@/domain/actionEligibility';
 import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL, type ECSlot } from '@/domain/ecGuiding';
+import { CUSTOM_CLASS_ICONS } from '@/domain/entityTypeIcons';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import type { EntityType, Warning } from '@/domain/types';
 import { usePropagatedStates } from '@/hooks/usePropagatedStates';
@@ -177,6 +178,43 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
             { id: 'lg', label: 'Large' },
           ]}
         />
+      </Field>
+
+      {/* Session 179 (Theme D2) — optional per-entity icon override. Picks a
+          Lucide icon (or "None" for the entity-type default) rendered on the
+          node card. Stored as the icon name; emit-or-omitted on persist. */}
+      <Field label="Icon" as="group">
+        <div className="flex max-h-32 flex-wrap gap-1 overflow-y-auto rounded-md border border-neutral-200 p-1.5 dark:border-neutral-800">
+          <button
+            type="button"
+            disabled={locked}
+            onClick={() => updateEntity(entityId, { icon: undefined })}
+            className={clsx(
+              'rounded px-2 py-1 text-[11px]',
+              entity.icon ? UNSELECTED_BUTTON_CLASS : SELECTED_BUTTON_CLASS
+            )}
+            title="Use the default icon for this entity type"
+          >
+            None
+          </button>
+          {Object.entries(CUSTOM_CLASS_ICONS).map(([name, Icon]) => (
+            <button
+              key={name}
+              type="button"
+              disabled={locked}
+              onClick={() => updateEntity(entityId, { icon: name })}
+              className={clsx(
+                'rounded p-1.5',
+                entity.icon === name ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+              )}
+              title={name}
+              aria-label={`Icon: ${name}`}
+              aria-pressed={entity.icon === name}
+            >
+              <Icon className="h-4 w-4" aria-hidden />
+            </button>
+          ))}
+        </div>
       </Field>
 
       <ActionFields

@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
+import type { ClrCategory } from '@/domain/clrCategory';
 import type { Comment, CommentAnchor } from '@/domain/types';
 import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
@@ -14,9 +15,9 @@ import { makeApplyDocChange, touch } from './docMutate';
  * on the top-level comment.
  */
 export type CommentsSlice = {
-  /** Add a top-level comment on an anchor. Returns the comment, or null when
-   *  the body is empty. */
-  addComment: (anchor: CommentAnchor, body: string) => Comment | null;
+  /** Add a top-level comment on an anchor, optionally tagged with a CLR
+   *  category. Returns the comment, or null when the body is empty. */
+  addComment: (anchor: CommentAnchor, body: string, clrCategory?: ClrCategory) => Comment | null;
   /** Reply to a comment. Replies attach to the same anchor as their thread
    *  and re-target the top-level parent (one level deep). Null on empty body
    *  or unknown parent. */
@@ -30,7 +31,12 @@ export type CommentsSlice = {
 export const createCommentsSlice: StateCreator<RootStore, [], [], CommentsSlice> = (set, get) => {
   const applyDocChange = makeApplyDocChange(get, set);
 
-  const mint = (anchor: CommentAnchor, body: string, parentId?: string): Comment => {
+  const mint = (
+    anchor: CommentAnchor,
+    body: string,
+    parentId?: string,
+    clrCategory?: ClrCategory
+  ): Comment => {
     const now = Date.now();
     return {
       id: `cmt-${nanoid(10)}`,
@@ -39,6 +45,7 @@ export const createCommentsSlice: StateCreator<RootStore, [], [], CommentsSlice>
       // Local display name from preferences; neutral fallback when unset.
       author: get().commentAuthorName.trim() || 'Anonymous',
       ...(parentId ? { parentId } : {}),
+      ...(clrCategory ? { clrCategory } : {}),
       createdAt: now,
       updatedAt: now,
     };
@@ -51,10 +58,10 @@ export const createCommentsSlice: StateCreator<RootStore, [], [], CommentsSlice>
   };
 
   return {
-    addComment: (anchor, body) => {
+    addComment: (anchor, body, clrCategory) => {
       const text = body.trim();
       if (text.length === 0) return null;
-      const comment = mint(anchor, text);
+      const comment = mint(anchor, text, undefined, clrCategory);
       insert(comment);
       return comment;
     },

@@ -1,5 +1,6 @@
 import { MessageSquarePlus } from 'lucide-react';
 import { useState } from 'react';
+import { CLR_CATEGORIES, CLR_CATEGORY_LABELS, type ClrCategory } from '@/domain/clrCategory';
 import type { CommentAnchor } from '@/domain/types';
 import { Button } from '../ui/Button';
 import type { AnchorDescription } from './anchors';
@@ -26,10 +27,12 @@ export function CommentComposer({
   anchorDesc: AnchorDescription;
   authorName: string;
   onAuthorNameChange: (name: string) => void;
-  onSubmit: (anchor: CommentAnchor, body: string) => void;
+  onSubmit: (anchor: CommentAnchor, body: string, clrCategory?: ClrCategory) => void;
 }) {
   const [body, setBody] = useState('');
   const [toDocument, setToDocument] = useState(false);
+  // Session 179 (Theme C) — optional CLR category for this comment. '' = none.
+  const [clrCategory, setClrCategory] = useState<ClrCategory | ''>('');
 
   const isAnchored = anchor.kind !== 'document';
   const effectiveAnchor: CommentAnchor = toDocument ? { kind: 'document' } : anchor;
@@ -38,9 +41,10 @@ export function CommentComposer({
   const submit = () => {
     const trimmed = body.trim();
     if (!trimmed) return;
-    onSubmit(effectiveAnchor, trimmed);
+    onSubmit(effectiveAnchor, trimmed, clrCategory || undefined);
     setBody('');
     setToDocument(false);
+    setClrCategory('');
   };
 
   return (
@@ -75,6 +79,26 @@ export function CommentComposer({
         }}
         className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900"
       />
+
+      {/* CLR reservation tag — turns the comment into a named "I have a
+          <category> reservation" objection (the non-threatening disagreement
+          protocol). Optional; defaults to none. */}
+      <label className="mt-2 flex items-center gap-1.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+        <span className="shrink-0">CLR reservation</span>
+        <select
+          value={clrCategory}
+          onChange={(e) => setClrCategory(e.target.value as ClrCategory | '')}
+          aria-label="Category of Legitimate Reservation"
+          className="flex-1 rounded-sm border border-neutral-200 bg-white px-1.5 py-0.5 text-neutral-700 outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+        >
+          <option value="">None</option>
+          {CLR_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {CLR_CATEGORY_LABELS[c]}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <div className="mt-2 flex items-center justify-between gap-2">
         {isAnchored ? (

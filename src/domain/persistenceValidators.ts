@@ -1,3 +1,4 @@
+import { isClrCategory } from './clrCategory';
 import { isEdgeKind, isEntityType, isObject, isStringArray } from './guards';
 import {
   validateAttributes,
@@ -118,6 +119,10 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   if (v.owner !== undefined && typeof v.owner !== 'string') {
     throw invalid(label, 'has non-string owner');
   }
+  // Session 179 (Theme D2) — optional per-entity icon name.
+  if (v.icon !== undefined && typeof v.icon !== 'string') {
+    throw invalid(label, 'has non-string icon');
+  }
   if (v.lastValidatedAt !== undefined && typeof v.lastValidatedAt !== 'number') {
     throw invalid(label, 'has non-number lastValidatedAt');
   }
@@ -177,6 +182,7 @@ export const validateEntity = (v: unknown, label: string): Entity => {
       ? { workingAssumption: v.workingAssumption }
       : {}),
     ...(typeof v.owner === 'string' && v.owner.length > 0 ? { owner: v.owner } : {}),
+    ...(typeof v.icon === 'string' && v.icon.length > 0 ? { icon: v.icon } : {}),
     ...(typeof v.lastValidatedAt === 'number' ? { lastValidatedAt: v.lastValidatedAt } : {}),
     ...(v.unspecified === true ? { unspecified: true as const } : {}),
     ...(v.spanOfControl === 'control' ||
@@ -350,6 +356,9 @@ export const validateComment = (v: unknown, label: string): Comment => {
   if (v.resolved !== undefined && typeof v.resolved !== 'boolean') {
     throw invalid(label, 'has non-boolean resolved');
   }
+  if (v.clrCategory !== undefined && !isClrCategory(v.clrCategory)) {
+    throw invalid(label, 'has invalid clrCategory');
+  }
   if (!isFiniteNumber(v.createdAt)) throw invalid(label, 'has non-finite createdAt');
   if (!isFiniteNumber(v.updatedAt)) throw invalid(label, 'has non-finite updatedAt');
   // Re-build the anchor so stray extra fields don't ride along on round-trip.
@@ -368,6 +377,7 @@ export const validateComment = (v: unknown, label: string): Comment => {
     author: v.author,
     ...(typeof v.parentId === 'string' && v.parentId.length > 0 ? { parentId: v.parentId } : {}),
     ...(v.resolved === true ? { resolved: true as const } : {}),
+    ...(isClrCategory(v.clrCategory) ? { clrCategory: v.clrCategory } : {}),
     createdAt: v.createdAt,
     updatedAt: v.updatedAt,
   };

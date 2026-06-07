@@ -130,6 +130,8 @@ Use Notes for caveats, open questions, references to external docs, or workshop 
 
 **Changing the title size.** Below the description field there's a three-button **Title size** group — Compact / Regular / Large. Useful for shrinking a noisy sub-tree's labels or enlarging a key entity for emphasis. Per-entity; default is Regular.
 
+**Choosing an icon (Session 179).** Below Title size, the **Icon** picker gives an individual entity a custom icon from the Lucide catalogue — handy for marking a key node or adding a visual cue beyond the entity-type colour. Click **None** to fall back to the entity type's default icon. Per-entity; round-trips with the document.
+
 **Collapsing one entity's downstream.** Right-click an entity that has any downstream edges and pick **Collapse downstream**. Its successors disappear from the canvas; a small `▸ +N` chip on the entity shows how many descendants are hidden. Click the chip (or right-click → **Expand downstream**) to bring them back. This is per-entity; group-level collapse — for an entire labeled group — is described under [Groups → Collapse and expand](#collapse-and-expand).
 
 **Owner.** Below Attestation the inspector has an **Owner** field — a free-form text input naming whoever's accountable for the entity (decision owner, action assignee, validation owner, etc.). The field feeds the `owner` column of the risk-register CSV export, and gives a reviewer reading the diagram six months from now a quick "ask this person" anchor without forcing a formal user model. Underneath the field is a **Mark validated** button that stamps the current timestamp into `entity.lastValidatedAt`; once stamped, the date plus the owner name reads back as "Last validated YYYY-MM-DD by …" so an audit trail accumulates across re-validations.
@@ -475,6 +477,10 @@ Hover a warning to reveal the Resolve / Reopen button. Resolution persists in th
 
 You can also see a total count at any time: `Cmd/Ctrl+K` → **Run validation** surfaces a toast with the open / resolved breakdown.
 
+**CRT build-quality checks (Session 179).** On a Current Reality Tree the validators add a set of soft construction nudges drawn from the classic CRT method: an entity that **leads to no UDE** (prune it, or connect it into the chain); a **UDE with no cause feeding it** (the tree is incomplete there); the **leading root cause explaining fewer than half the UDEs** (the tree may have two independent clusters); **two root causes tied** for the most UDEs (a hidden conflict may sit beneath — consider an Evaporating Cloud); a UDE phrased as the **absence of a solution** ("lack of…", a leading "No…") rather than an observable effect; and a **UDE count** outside the rough 3–15 range. All are dismissible like any other CLR warning.
+
+**Logic-type and loop checks (Session 179).** A **logic-type** nudge flags an edge whose kind contradicts the diagram's primary logic (sufficiency for CRT/FRT/TT/NBR; necessity for a Goal Tree). And for diagrams with a feedback loop, a **loop-polarity** check reads the loop as **Reinforcing (R)** or **Balancing (B)** — the product of the edge polarities around it — and flags a balancing (self-correcting) loop where a reinforcing (self-amplifying) one is expected. The loop-closing back-edge also carries a small **R / B badge** on the canvas, so you can see at a glance whether a cycle is a vicious/virtuous spiral (R) or a goal-seeking damper (B).
+
 **Scrutinize a single link.** Select an edge and click **Scrutinize against the CLR** in its inspector (or `Cmd/Ctrl+K` → **Scrutinize this edge**). A guided stepper walks the eight canonical Categories of Legitimate Reservation — Clarity, Entity existence, Causality existence, Cause sufficiency, Additional cause, Cause–effect reversal, Predicted-effect existence, Tautology — **one question at a time** for that single cause→effect arrow. Any warning the validators already flagged on the edge appears under the matching question; the rest are prompts for your own judgment, with a checkbox to tick each as you consider it (the ticks are a session aid — nothing is saved). This is the complement to **Start CLR walkthrough**: the walkthrough clears the warnings that *did* fire across the whole diagram, while scrutiny makes you ask *every* reservation of the link in front of you, including the ones nothing flagged. It's read-only, so it stays available under Browse Lock.
 
 ## Review comments
@@ -487,7 +493,8 @@ Mark up a diagram with questions and notes — for your future self or for a col
 
 1. Optionally **select an entity or edge** first — the composer anchors the comment to it ("Commenting on _Root cause_"). With nothing selected (or a multi-selection), it anchors to the whole diagram. A checkbox lets you switch an anchored comment back to the whole diagram.
 2. Set your name once in the **"Signing as"** field — it's remembered for next time (blank comments are signed "Anonymous"). This is a local label, not a login.
-3. Type your note and click **Comment** (or press `Cmd/Ctrl+Enter`).
+3. Optionally tag the comment with a **CLR reservation** (Session 179) from the dropdown — one of the seven Categories of Legitimate Reservation. This turns "I disagree" into the non-threatening "I have a _causality-existence_ reservation" that TP facilitation teaches; the category shows as a small badge on the comment, and a filter appears in the panel once any comment is tagged.
+4. Type your note and click **Comment** (or press `Cmd/Ctrl+Enter`).
 
 **Work a thread.** Each comment shows **Reply** (one level of replies), **Resolve** (and **Reopen**), and — on hover — **Edit** / **Delete**. Deleting a comment that has replies removes the whole thread (with a confirm).
 

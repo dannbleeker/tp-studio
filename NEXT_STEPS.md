@@ -61,36 +61,26 @@ page seam. The print thread is now **fully closed**. The bigger "bespoke per-typ
 over-engineering (Dann, Session 178 — the canvas is the layout; the legend covers the per-type need). The
 "full one-page print designs" line stays parked (see Out-of-scope — won't build).
 
-### External reviews — TOC/TP sources (review for new features + suggestions)
-For each: read, extract what TP Studio could add/improve, and propose suggestions for Dann to review.
-Cross-check against `docs/TP_BASICS_GAP_ANALYSIS.md` (Cohen) — which already drove the Session-154+
-completeness arc — so we don't re-derive shipped work.
-- Wiley SDR (system dynamics × TP): https://onlinelibrary.wiley.com/doi/full/10.1002/sdr.1768
-- Scribd "Abstract of TOC and TP Tools": https://www.scribd.com/document/52841875/My-Abstract-of-the-TOC-and-TP-Tools
-- Flying Logic — "create a CRT": https://flyinglogic.com/1152/how-to-create-a-current-reality-tree-with-flying-logic/
-- a-dato — "a deep dive into TOC TP": https://www.a-dato.com/learning/a-deep-dive-into-toc-thinking-processes/
-- Scribd "Building a Current Reality Tree": https://www.scribd.com/document/380825791/BuildingCurrentRealityTree-pdf
-- Scribd "CRT" presentation: https://www.scribd.com/presentation/254672332/Crt
-- TOCICO 2013 Mabin "TP Basics" (PDF): https://cdn.ymaws.com/www.tocico.org/resource/collection/B6E9C93D-AFC5-407E-9D8B-AD70D0AEAFE0/Mabin,_Vicky_TOCICO_2013_TP_Basics_English_Final_plus_bio(FINAL2).pdf
+### External reviews — TOC/TP sources → `docs/EXTERNAL_TP_SOURCE_REVIEW.md` (research done Session 179)
+All seven sources mined + cross-checked against the codebase + Cohen gap analysis. TP Studio is extremely
+complete (whole Cohen arc + guided CLR scrutiny stepper + `Entity.attributes` + back-edges already shipped).
 
----
+**✅ Shipped Session 179 (cont.) — see CHANGELOG:** loop polarity (A1 R/B back-edge badge + A2 type-aware loop
+CLR); Theme B (6 CRT build-quality warnings — dead-branch, ude-no-upstream, low-core-driver-coverage,
+tied-core-drivers, ude-wording, ude-count); Theme C (CLR-labelled review comments + logic-type mismatch lint);
+Theme D (select successors/predecessors surfaced on the context menu/toolbar — the commands already existed;
+per-entity icon override). ~50 new tests; full suite 2891 green.
 
-## Bundle-size backlog (Session 172 audit — needs greenlight; lazy-loading is user-visible)
-
-A read-only bundle sweep found ~27–37 KB gz of eager-chunk savings (the `index` chunk is ~95 KB gz
-/ 351 KB raw → could drop to ~58–68 KB). **Deliberately NOT landed in the Session-172 optimization
-pass:** unlike the dead-code / perf / type batches (provably behaviour-preserving), these are
-`React.lazy` + Suspense + prefetch changes that add **user-visible loading states**, so they want
-Dann's review. Heavy export libs (`html-to-image`, `jspdf`, `svg2pdf`, `pptxgenjs`) + ExportPickerDialog
-+ pattern/template libraries + HelpDialog + CommandPalette are **already correctly lazy** — no action.
-All actionable items are now shipped or closed (Session 177): EC chrome + wizard #2/#3/#7 lazy-loaded;
-shareLink #6 dynamic-imported. Closed as can't-split — the modules are needed EAGERLY by core shell
-components: TopBar #4 (`@/domain/shortcuts` via `SelectionToolbar`) and #8 actionEligibility
-(`statePropagation` runs for EVERY diagram via `usePropagatedStates` in `useGraphView`; `actionEligibility`
-is eager via `EntityInspector` too).
-
-- ~~#1 Gate validators behind inspector `open` / #5 Lazy-load Inspector~~ — ❌ discarded (Dann, Session 172):
-  `validate()`-regression risk for a modest win.
+**Remaining candidates — greenlight pending** (full rationale in the doc):
+- **A3. Loop naming + behavior-over-time note** (M) — name a detected loop + an optional dynamic narrative.
+- **A4. Delay markers on edges** (S) — `//` glyph + "a reinforcing loop with no delay escalates instantly" hint.
+- **E1. System-archetype pattern library** (L) — "Fixes that Fail", "Escalation", "Limits to Growth", etc.
+- **E2. Layers-of-Resistance review panel** (M) — the 6 buy-in layers, each linked to the TP tool that addresses it.
+- **E3. 3-Cloud rapid-diagnosis wizard** (S–M) — 3 UDEs → 3 ECs → consolidate to a core cloud.
+- **E4. T/I/OE impact tags + heatmap** (S/M) — Throughput/Inventory/Operating-Expense directional tags on entities.
+- **E5. Long-arrow / missing-step warning** (M) — flag a sufficiency edge that skips too many logical levels.
+- **E6. Reader / trainee mode** (M) — simplified edit-hidden view + "how to read this" coaching prompts.
+- **E7. Leverage-point flag** (S) — `entity.isLeveragePoint` badge (marginal; the constraint is already implicit).
 
 ---
 

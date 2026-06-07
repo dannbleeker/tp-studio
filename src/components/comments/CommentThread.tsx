@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { CheckCircle2, CornerDownRight, MapPin, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
+import { CLR_CATEGORY_LABELS } from '@/domain/clrCategory';
 import type { Comment } from '@/domain/types';
 import { formatRelativeTime } from '../history/formatTime';
 import { Button } from '../ui/Button';
@@ -180,6 +181,14 @@ function CommentItem({
       <p className="mt-0.5 whitespace-pre-wrap break-words text-neutral-700 text-sm dark:text-neutral-200">
         {comment.body}
       </p>
+      {comment.clrCategory && (
+        <span
+          className="mt-1 inline-block rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 font-medium text-[10px] text-amber-700 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-300"
+          title="Category of Legitimate Reservation raised by this comment"
+        >
+          {CLR_CATEGORY_LABELS[comment.clrCategory]} reservation
+        </span>
+      )}
       <div className="mt-0.5 flex items-center gap-2 text-[11px] text-neutral-400 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
         <button
           type="button"

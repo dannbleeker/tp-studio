@@ -157,6 +157,23 @@ export const rootCauseReachCounts = (doc: TPDocument): Map<string, number> => {
   return out;
 };
 
+const coreDriverCache = new WeakMap<TPDocument, CoreDriverCandidate[]>();
+
+/**
+ * Cached wrapper — `findCoreDrivers` is pure in `doc`, and a single validation
+ * pass calls it from two CRT rules (low-coverage + tied-drivers) plus the Core
+ * Driver panel. Keying on the doc reference makes the repeat calls within one
+ * pass O(1). (`udeReachCounts` it depends on is already cached on
+ * entities/edges; this caches the additional per-candidate forward walk.)
+ */
+export const findCoreDrivers = (doc: TPDocument): CoreDriverCandidate[] => {
+  const cached = coreDriverCache.get(doc);
+  if (cached) return cached;
+  const result = computeCoreDrivers(doc);
+  coreDriverCache.set(doc, result);
+  return result;
+};
+
 /**
  * Pick the top-scoring Core Driver candidates from the document. Returns
  * `[]` when there are no UDEs (the concept doesn't apply outside CRT-like
@@ -164,7 +181,7 @@ export const rootCauseReachCounts = (doc: TPDocument): Map<string, number> => {
  * scaffold). At most 3 entries; ties at the boundary may push beyond 3 only
  * when many candidates literally tie for top.
  */
-export const findCoreDrivers = (doc: TPDocument): CoreDriverCandidate[] => {
+const computeCoreDrivers = (doc: TPDocument): CoreDriverCandidate[] => {
   const counts = udeReachCounts(doc);
   if (counts.size === 0) return [];
 

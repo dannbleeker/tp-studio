@@ -24,6 +24,7 @@ import {
   DescriptionBadge,
   EdgeInlineLabel,
   FallbackLabel,
+  LoopPolarityBadge,
   MutexBadge,
   WeightBadge,
 } from './TPEdgeBadges';
@@ -167,6 +168,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // re-derived here: a per-edge component can't see all node positions to make the
   // against-flow pick. Omitted (falsy) on `data` for a non-back-edge.
   const isBackEdge = props.data?.isBackEdge === true;
+  const loopPolarity = props.data?.loopPolarity;
   const edgeView = useDocumentStore(
     useShallow((s) => {
       const doc = currentDoc(s);
@@ -507,6 +509,9 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           Each renders its own `<EdgeLabelRenderer>`; the conditions +
           placement deltas are unchanged. */}
       {isBackEdge && <BackEdgeBadge labelX={labelX} labelY={labelY} />}
+      {loopPolarity && loopPolarity !== 'unknown' && (
+        <LoopPolarityBadge labelX={labelX} labelY={labelY} polarity={loopPolarity} />
+      )}
       {isMutex && <MutexBadge labelX={labelX} labelY={labelY} />}
       {weight && weight !== 'positive' && (
         <WeightBadge labelX={labelX} labelY={labelY} weight={weight} />

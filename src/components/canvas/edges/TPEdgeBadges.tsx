@@ -1,6 +1,7 @@
 import { EdgeLabelRenderer } from '@xyflow/react';
 import { MessageSquare } from 'lucide-react';
 import { memo } from 'react';
+import type { LoopPolarity } from '@/domain/loopAnalysis';
 import type { EdgeWeight } from '@/domain/types';
 
 /**
@@ -82,6 +83,40 @@ export const WeightBadge = memo(function WeightBadge({
         aria-label={`Edge polarity: ${weight}`}
       >
         {weight === 'negative' ? '−' : '∅'}
+      </div>
+    </EdgeLabelRenderer>
+  );
+});
+
+/** R/B pill on a cycle's loop-closing back-edge (the System-Dynamics lens):
+ *  Reinforcing (R, emerald — self-amplifying: vicious in a CRT, virtuous in an
+ *  FRT) vs Balancing (B, sky — self-correcting / goal-seeking). Sits one slot
+ *  right of the weight badge. Renders nothing for an unclassified loop. */
+export const LoopPolarityBadge = memo(function LoopPolarityBadge({
+  labelX,
+  labelY,
+  polarity,
+}: Anchor & { polarity: LoopPolarity }) {
+  if (polarity === 'unknown') return null;
+  const reinforcing = polarity === 'reinforcing';
+  return (
+    <EdgeLabelRenderer>
+      <div
+        className={
+          reinforcing
+            ? 'nodrag nopan pointer-events-none absolute select-none rounded-full border border-emerald-400 bg-emerald-50 px-1.5 font-semibold text-[10px] text-emerald-700 shadow-xs dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200'
+            : 'nodrag nopan pointer-events-none absolute select-none rounded-full border border-sky-400 bg-sky-50 px-1.5 font-semibold text-[10px] text-sky-700 shadow-xs dark:border-sky-700 dark:bg-sky-950 dark:text-sky-200'
+        }
+        style={{ transform: `translate(-50%, -50%) translate(${labelX + 48}px, ${labelY - 14}px)` }}
+        title={
+          reinforcing
+            ? 'Reinforcing loop (R) — self-amplifying (vicious in a CRT, virtuous in an FRT)'
+            : 'Balancing loop (B) — self-correcting / goal-seeking'
+        }
+        role="img"
+        aria-label={`Feedback loop: ${reinforcing ? 'reinforcing' : 'balancing'}`}
+      >
+        {reinforcing ? 'R' : 'B'}
       </div>
     </EdgeLabelRenderer>
   );

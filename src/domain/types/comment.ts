@@ -2,6 +2,7 @@
 // so it round-trips through JSON export, share-links, and the self-contained
 // HTML export. References `EntityId` / `EdgeId` for the anchor link.
 
+import type { ClrCategory } from '../clrCategory';
 import type { EdgeId, EntityId } from './ids';
 
 /**
@@ -40,6 +41,10 @@ export type Comment = {
   readonly parentId?: string;
   /** Marks the thread addressed. Only set on top-level comments. */
   readonly resolved?: boolean;
+  /** Session 179 (Theme C) — optional CLR category this comment raises, turning
+   *  it into a named "legitimate reservation" (a non-threatening disagreement
+   *  vocabulary). Omitted when the comment isn't a CLR objection. */
+  readonly clrCategory?: ClrCategory;
   readonly createdAt: number;
   readonly updatedAt: number;
 };

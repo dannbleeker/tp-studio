@@ -366,6 +366,11 @@ export type Entity = {
    *  semantics portable (e.g. a renderer or exporter can ask "which
    *  one is the objective?" without coordinate inspection). */
   ecSlot?: 'a' | 'b' | 'c' | 'd' | 'dPrime';
+  /** Session 179 (Theme D2) — optional per-entity icon override: a Lucide icon
+   *  name from `CUSTOM_CLASS_ICONS`. Layered on top of the entity-type / custom-
+   *  class default icon; an unknown name falls back to that default. Omitted
+   *  from JSON when unset, like every other optional field. */
+  icon?: string;
   /** B7 — user-defined attributes. Keyed by user-chosen name (max one
    *  per key), valued by a tagged AttrValue. Surfaces in the
    *  EntityInspector as a key/value editor. Use for ad-hoc metadata

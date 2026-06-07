@@ -2,6 +2,49 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 179 (cont.) — external-source build batch: CRT quality + loop polarity + logic-type lint + CLR comments + entity icons
+
+The first build batch from the external-source review (`docs/EXTERNAL_TP_SOURCE_REVIEW.md`). Five themes,
+all riding the existing CLR / comment / node infrastructure — no schema bump (every new persisted field is
+additive-optional and strictly validated on import).
+
+**Theme B — six CRT build-quality soft warnings** (Dettmer / Mabin / Fedurko construction heuristics),
+CRT-scoped, reusing the cached `udeReachCounts` / `findCoreDrivers`:
+
+- `crt-dead-branch` — a non-UDE entity that reaches no UDE (prune or connect it).
+- `crt-ude-no-upstream` — a UDE with no incoming cause (the tree is incomplete there).
+- `crt-low-core-driver-coverage` — the leading root cause explains < half the UDEs (two clusters?).
+- `crt-tied-core-drivers` — two root causes tie for the most UDEs (a hidden conflict / Evaporating Cloud?).
+- `crt-ude-wording` — a UDE phrased as the absence of a solution ("lack of…", a leading "No…").
+- `crt-ude-count` — fewer than 3 / more than 15 UDEs (scope guard).
+
+**Theme A — loop polarity (the System-Dynamics lens).** New `domain/loopAnalysis.ts` classifies each
+detected cycle as **Reinforcing** (an even count of negative edges) or **Balancing** (odd) from the product
+of `edge.weight` around the loop. An **R / B badge** rides the loop-closing back-edge on the canvas (stamped
+in `useGraphEdgeEmission`, rendered in `TPEdge`). A new `loop-polarity` CLR nudge flags a *balancing* loop
+where a reinforcing one is expected — unusual in a CRT/NBR problem tree, and usually a self-limiting injection
+in an FRT. Answers "is this loop a feature or a bug?" at a glance.
+
+**Theme C2 — `logic-type-mismatch` lint.** Flags an edge whose `kind` contradicts the diagram's primary
+logic (sufficiency: CRT/FRT/TT/NBR; necessity: Goal Tree). EC/PRT/S&T/Freeform are out of scope.
+
+**Theme C1 — CLR-labelled review comments.** A comment can carry an optional CLR category (new
+`domain/clrCategory.ts` — the canonical 7), turning "I disagree" into "I have a <category> reservation"
+(Mabin's non-threatening disagreement protocol). Composer dropdown, a badge on the rendered comment, and a
+category filter in the panel (surfaced only once a doc uses the protocol). Round-trips; strictly validated.
+
+**Theme D — discoverability + per-entity icons.** D1: the existing select-successors / -predecessors actions
+now also appear on the right-click menu + selection toolbar (inline-run verbs; palette + keyboard unchanged).
+D2: an optional per-entity icon (`Entity.icon`, a Lucide name from the 57-icon catalogue) layered on the
+type/class default — picker in the EntityInspector, rendered on the node card, falls back to the default for
+an unknown name.
+
+Reviewer pass added a `findCoreDrivers` doc-reference cache (two CRT rules call it per validation pass) and a
+`loopsWithPolarity` edge-keyed cache. ~50 new tests across `crtBuildQuality`, `loopAnalysis`,
+`logicTypeMismatch`, `entityIcon`, `commentClrCategory`, and the emission + composer suites. Full suite
+**2891 passing**; tsc + build + bundle-size all green. (Biome left to CI — the native binary is
+AppLocker-blocked locally.)
+
 ## Session 179 — print: how-to-read legend in the vector PDF + multi-page clip fix
 
 Closes backlog #2 (legend parity in the vector PDF) and fixes a latent multi-page rendering bug it

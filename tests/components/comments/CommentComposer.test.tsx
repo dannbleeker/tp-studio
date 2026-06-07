@@ -52,8 +52,21 @@ describe('CommentComposer', () => {
     const ta = getByPlaceholderText(/Add a review comment/) as HTMLTextAreaElement;
     fireEvent.change(ta, { target: { value: 'My note' } });
     fireEvent.click(getByText('Comment').closest('button') as HTMLButtonElement);
-    expect(onSubmit).toHaveBeenCalledWith(entityAnchor, 'My note');
+    expect(onSubmit).toHaveBeenCalledWith(entityAnchor, 'My note', undefined);
     expect(ta.value).toBe('');
+  });
+
+  it('passes the selected CLR category on submit', () => {
+    const onSubmit = vi.fn();
+    const { getByText, getByPlaceholderText, getByLabelText } = renderComposer({ onSubmit });
+    fireEvent.change(getByPlaceholderText(/Add a review comment/), {
+      target: { value: 'reservation' },
+    });
+    fireEvent.change(getByLabelText('Category of Legitimate Reservation'), {
+      target: { value: 'clarity' },
+    });
+    fireEvent.click(getByText('Comment').closest('button') as HTMLButtonElement);
+    expect(onSubmit).toHaveBeenCalledWith(entityAnchor, 'reservation', 'clarity');
   });
 
   it('files against the whole diagram when the checkbox is ticked', () => {
@@ -64,7 +77,7 @@ describe('CommentComposer', () => {
     const ta = getByPlaceholderText(/Add a review comment/);
     fireEvent.change(ta, { target: { value: 'general note' } });
     fireEvent.click(getByText('Comment').closest('button') as HTMLButtonElement);
-    expect(onSubmit).toHaveBeenCalledWith({ kind: 'document' }, 'general note');
+    expect(onSubmit).toHaveBeenCalledWith({ kind: 'document' }, 'general note', undefined);
   });
 
   it('submits on Cmd/Ctrl+Enter', () => {
@@ -73,7 +86,7 @@ describe('CommentComposer', () => {
     const ta = getByPlaceholderText(/Add a review comment/);
     fireEvent.change(ta, { target: { value: 'quick' } });
     fireEvent.keyDown(ta, { key: 'Enter', ctrlKey: true });
-    expect(onSubmit).toHaveBeenCalledWith(entityAnchor, 'quick');
+    expect(onSubmit).toHaveBeenCalledWith(entityAnchor, 'quick', undefined);
   });
 
   it('omits the whole-diagram checkbox when already document-anchored', () => {

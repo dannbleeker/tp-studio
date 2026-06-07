@@ -85,7 +85,19 @@ export type ClrRuleId =
   // check that a non-leaf `injection` (tactic) has at least one
   // child injection feeding it via the structural graph. A tactic
   // with no children that ISN'T explicitly marked leaf is suspicious.
-  | 'st-tactic-rollup';
+  | 'st-tactic-rollup'
+  // Session 179 — external-source review batch (docs/EXTERNAL_TP_SOURCE_REVIEW.md).
+  // Theme B — CRT build-quality nudges:
+  | 'crt-dead-branch' // a non-UDE entity that leads to no UDE (trim it)
+  | 'crt-ude-no-upstream' // a UDE with no incoming cause (tree incomplete)
+  | 'crt-low-core-driver-coverage' // top root cause explains < half the UDEs
+  | 'crt-tied-core-drivers' // 2+ root causes tie for top → hidden conflict?
+  | 'crt-ude-wording' // a UDE phrased as the absence of a solution
+  | 'crt-ude-count' // CRT scoped to too few / too many UDEs
+  // Theme C2 — logic-type consistency:
+  | 'logic-type-mismatch' // an edge whose kind contradicts the diagram's primary logic
+  // Theme A2 — loop semantics (the System-Dynamics lens):
+  | 'loop-polarity'; // a balancing loop where a reinforcing one is expected
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each

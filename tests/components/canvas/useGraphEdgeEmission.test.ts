@@ -88,4 +88,24 @@ describe('useGraphEdgeEmission', () => {
     const collapseToSelf = { remap: () => 'X' } as unknown as GraphProjection;
     expect(emit(collapseToSelf)).toHaveLength(0);
   });
+
+  it('stamps loopPolarity on exactly one (closing) edge of a cycle', () => {
+    // Session 179 — a 2-cycle of all-positive edges is a reinforcing loop; the
+    // R/B badge rides only the loop-closing back-edge, so exactly one of the two
+    // edges carries the field.
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    s().connect(a.id, b.id);
+    s().connect(b.id, a.id);
+    const stamped = emit().filter((e) => e.data?.loopPolarity);
+    expect(stamped).toHaveLength(1);
+    expect(stamped[0]?.data?.loopPolarity).toBe('reinforcing');
+  });
+
+  it('does not stamp loopPolarity on an acyclic edge', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    s().connect(a.id, b.id);
+    expect(emit()[0]?.data?.loopPolarity).toBeUndefined();
+  });
 });

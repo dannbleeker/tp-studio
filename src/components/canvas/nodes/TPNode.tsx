@@ -19,6 +19,7 @@ import clsx from 'clsx';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT, ZOOM_UP_THRESHOLD } from '@/domain/constants';
+import { CUSTOM_CLASS_ICONS, type CustomClassIconName } from '@/domain/entityTypeIcons';
 import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { isStNodeFormat, ST_FACET_KEYS } from '@/domain/graph';
 import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
@@ -118,6 +119,10 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
   // classes pick up their label / colour / icon. Built-ins resolve
   // identically to the previous direct `ENTITY_TYPE_META[type]` lookup.
   const meta = resolveEntityTypeMeta(entity.type, customEntityClasses);
+  // Session 179 (Theme D2) — optional per-entity icon override layered on the
+  // class/type default; an unknown name falls back to the resolved meta icon.
+  const EntityIcon =
+    (entity.icon ? CUSTOM_CLASS_ICONS[entity.icon as CustomClassIconName] : undefined) ?? meta.icon;
   // FL-ET7: Notes sit outside the causal graph. We hide the React Flow
   // handles so the user can't drag a connection into / out of a note,
   // and we tint the body yellow so the card reads as a sticky annotation
@@ -249,7 +254,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
               ~6 px on screen and hard to scan; the bump improves
               legibility without changing layout. */}
           <span className="flex items-center gap-1 font-medium text-[11px] text-neutral-500 uppercase tracking-[0.06em] dark:text-neutral-400">
-            <meta.icon
+            <EntityIcon
               className="h-3 w-3 shrink-0"
               style={{ color: meta.stripeColor }}
               aria-hidden
@@ -300,7 +305,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           {/* B3: per-type icon. Stripe colour duplicated on the icon so the
               two visual cues read together rather than competing. `aria-hidden`
               because the label text already announces the type. */}
-          <meta.icon className="h-3 w-3 shrink-0" style={{ color: meta.stripeColor }} aria-hidden />
+          <EntityIcon className="h-3 w-3 shrink-0" style={{ color: meta.stripeColor }} aria-hidden />
           <span>{meta.label}</span>
           {/*
             Locus (TOC-reading; previously "Span of control"):

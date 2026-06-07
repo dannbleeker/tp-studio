@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { MessageSquare, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { CLR_CATEGORIES, CLR_CATEGORY_LABELS, type ClrCategory } from '@/domain/clrCategory';
 import type { Comment, CommentAnchor } from '@/domain/types';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -60,8 +61,14 @@ export function CommentsPanel() {
   );
 
   const [filter, setFilter] = useState<Filter>('open');
+  // Session 179 (Theme C) — optional CLR-category filter, alongside the
+  // open/resolved filter. 'all' = no category filter.
+  const [clrFilter, setClrFilter] = useState<ClrCategory | 'all'>('all');
 
   const comments = useMemo(() => doc.comments ?? {}, [doc.comments]);
+  // Only surface the CLR filter once at least one comment carries a category,
+  // so it doesn't clutter the panel on docs that don't use the protocol.
+  const hasClrTags = useMemo(() => Object.values(comments).some((c) => c.clrCategory), [comments]);
 
   // Split into top-level threads + a parent→replies index. Replies read
   // oldest-first (conversation order); threads newest-first (recent
@@ -92,10 +99,16 @@ export function CommentsPanel() {
 
   const visibleThreads = useMemo(
     () =>
-      threads.filter((c) =>
-        filter === 'all' ? true : filter === 'resolved' ? c.resolved === true : c.resolved !== true
+      threads.filter(
+        (c) =>
+          (filter === 'all'
+            ? true
+            : filter === 'resolved'
+              ? c.resolved === true
+              : c.resolved !== true) &&
+          (clrFilter === 'all' || c.clrCategory === clrFilter)
       ),
-    [threads, filter]
+    [threads, filter, clrFilter]
   );
 
   // A pending "point" anchor (pane → Add comment here) wins over the
@@ -193,8 +206,8 @@ export function CommentsPanel() {
           anchorDesc={composerDesc}
           authorName={authorName}
           onAuthorNameChange={setAuthorName}
-          onSubmit={(anchor, body) => {
-            addComment(anchor, body);
+          onSubmit={(anchor, body, clrCategory) => {
+            addComment(anchor, body, clrCategory);
             clearPending();
           }}
         />
@@ -218,6 +231,21 @@ export function CommentsPanel() {
             active={filter === 'all'}
             onClick={() => setFilter('all')}
           />
+          {hasClrTags && (
+            <select
+              value={clrFilter}
+              onChange={(e) => setClrFilter(e.target.value as ClrCategory | 'all')}
+              aria-label="Filter by CLR category"
+              className="ml-auto rounded-md border border-neutral-200 bg-white px-1.5 py-1 text-neutral-600 text-xs outline-hidden focus:border-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
+            >
+              <option value="all">All CLR</option>
+              {CLR_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {CLR_CATEGORY_LABELS[c]}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto">

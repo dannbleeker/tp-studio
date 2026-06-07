@@ -1,6 +1,7 @@
 import type { Edge as RFEdge, Node as RFNode } from '@xyflow/react';
 import type { EligibilityStatus } from '@/domain/actionEligibility';
 import type { EdgeRoute } from '@/domain/edgeRouting';
+import type { LoopPolarity } from '@/domain/loopAnalysis';
 import type { Entity, EntityState, Group } from '@/domain/types';
 
 export type TPNodeData = {
@@ -87,6 +88,12 @@ export type TPEdgeData = {
    *  without re-deriving aggregation / synthetic-endpoint state. Omitted (falsy)
    *  for aggregated and collapsed-group-synthetic edges. */
   reconnectable?: boolean;
+  /** System-Dynamics lens (Session 179) — when this edge is the loop-closing
+   *  back-edge of a detected cycle, its Reinforcing / Balancing classification
+   *  (the product of the loop's edge polarities). Stamped by
+   *  `useGraphEdgeEmission` from `loopsWithPolarity(doc)`; drives the R/B badge
+   *  in `TPEdge`. Omitted on non-closing edges and on loops we can't classify. */
+  loopPolarity?: LoopPolarity;
 };
 
 export type TPGroupNodeData = {

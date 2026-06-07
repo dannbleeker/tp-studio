@@ -6,12 +6,19 @@ import { causeEffectReversalRule } from './causeEffectReversal';
 import { causeSufficiencyRule } from './causeSufficiency';
 import { clarityRule } from './clarity';
 import { completeStepRule } from './completeStep';
+import { crtLowCoreDriverCoverageRule, crtTiedCoreDriversRule } from './crtCoreDriverChecks';
+import { crtDeadBranchRule } from './crtDeadBranch';
+import { crtUdeCountRule } from './crtUdeCount';
+import { crtUdeNoUpstreamRule } from './crtUdeNoUpstream';
+import { crtUdeWordingRule } from './crtUdeWording';
 import { ecCompletenessRule } from './ecCompleteness';
 import { ecMissingConflictRule } from './ecMissingConflict';
 import { entityExistenceRule } from './entityExistence';
 import { externalRootCauseRule } from './externalRootCause';
 import { goalTreeMultipleGoalsRule } from './goalTreeMultipleGoals';
 import { indirectEffectRule } from './indirectEffect';
+import { logicTypeMismatchRule } from './logicTypeMismatch';
+import { loopPolarityRule } from './loopPolarity';
 import { predictedEffectExistenceRule } from './predictedEffectExistence';
 import { type TieredRule, tieredRule } from './shared';
 import { stTacticAssumptionsRule } from './stTacticAssumptions';
@@ -65,12 +72,24 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // probably isn't the real root. CRT-specific because FRT injections
     // are external by design and the warning would be noise there.
     tieredRule('clarity', 'external-root-cause', externalRootCauseRule),
+    // Session 179 — external-source review batch (Theme B + C2 + A2).
+    tieredRule('clarity', 'crt-ude-count', crtUdeCountRule),
+    tieredRule('existence', 'crt-ude-no-upstream', crtUdeNoUpstreamRule),
+    tieredRule('clarity', 'crt-dead-branch', crtDeadBranchRule),
+    tieredRule('clarity', 'crt-low-core-driver-coverage', crtLowCoreDriverCoverageRule),
+    tieredRule('clarity', 'crt-tied-core-drivers', crtTiedCoreDriversRule),
+    tieredRule('clarity', 'crt-ude-wording', crtUdeWordingRule),
+    tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
+    tieredRule('clarity', 'loop-polarity', loopPolarityRule),
   ],
   frt: [
     ...STRUCTURAL_RULES,
     tieredRule('sufficiency', 'cause-sufficiency', causeSufficiencyRule),
     tieredRule('sufficiency', 'additional-cause', additionalCauseRuleFor('desiredEffect')),
     tieredRule('existence', 'predicted-effect-existence', predictedEffectExistenceRule),
+    // Session 179 — logic-type lint + loop-polarity (Theme C2 + A2).
+    tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
+    tieredRule('clarity', 'loop-polarity', loopPolarityRule),
   ],
   // PRT (A2): the structural rules apply; the PRT-specific rules
   // ("a goal with no IOs feeding obstacles below") are parked.
@@ -88,6 +107,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // taxonomic slot as the existing `external-root-cause` mental-
     // model nudge.
     tieredRule('clarity', 'tt-action-locus-unset', ttActionLocusUnsetRule),
+    // Session 179 — logic-type lint (Theme C2).
+    tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
   ],
   // EC (A1): structural rules plus the missing-conflict check. The book
   // makes the conflict between the two Wants explicit via an edge; without
@@ -132,6 +153,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
   goalTree: [
     ...STRUCTURAL_RULES,
     tieredRule('clarity', 'goalTree-multiple-goals', goalTreeMultipleGoalsRule),
+    // Session 179 — logic-type lint, necessity logic (Theme C2).
+    tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
   ],
   // Session 134 / spec major gap #5 — NBR runs the FRT rule set:
   // structural rules + cause-sufficiency + additional-cause (with the
@@ -144,6 +167,9 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('sufficiency', 'cause-sufficiency', causeSufficiencyRule),
     tieredRule('sufficiency', 'additional-cause', additionalCauseRuleFor('ude')),
     tieredRule('existence', 'predicted-effect-existence', predictedEffectExistenceRule),
+    // Session 179 — logic-type lint + loop-polarity (Theme C2 + A2).
+    tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
+    tieredRule('clarity', 'loop-polarity', loopPolarityRule),
   ],
 };
 

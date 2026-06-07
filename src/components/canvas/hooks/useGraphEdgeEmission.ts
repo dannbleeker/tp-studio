@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { effectiveBackEdgeIds } from '@/domain/backEdges';
 import { edgesArray, openCommentCountsByAnchor } from '@/domain/graph';
+import { type LoopPolarity, loopsWithPolarity } from '@/domain/loopAnalysis';
 import type { TPDocument } from '@/domain/types';
 import { EDGE_ARROW_AND_MARKER_ID, EDGE_ARROW_MARKER_ID } from '../edges/edgeArrowhead';
 import type { TPEdge } from '../edges/flow-types';
@@ -66,6 +67,18 @@ export const useGraphEdgeEmission = (
     // Open-comment counts keyed by edge id — stamped into `data` below so
     // TPEdge reads an O(1) count instead of scanning `doc.comments`.
     const { byEdge: commentCountByEdge } = openCommentCountsByAnchor(doc.comments);
+
+    // Loop polarity (System-Dynamics lens, Session 179) — classify each cycle's
+    // closing back-edge as Reinforcing / Balancing so `TPEdge` can badge it.
+    // Rides the cached `findCycles` inside `loopsWithPolarity`; `unknown` loops
+    // (a zero-weight edge breaks the product) are omitted so the badge only ever
+    // shows a real classification.
+    const loopPolarityByEdge = new Map<string, LoopPolarity>();
+    for (const loop of loopsWithPolarity(doc)) {
+      if (loop.closingEdgeId && loop.polarity !== 'unknown') {
+        loopPolarityByEdge.set(loop.closingEdgeId, loop.polarity);
+      }
+    }
 
     type Bucket = {
       sourceId: string;
@@ -156,6 +169,8 @@ export const useGraphEdgeEmission = (
       // edge has no single underlying edge id to key the route map on.
       // In Phase A this is always undefined because `routes` is `{}`.
       const route = isAggregated ? undefined : routes[b.sample.id];
+      // R/B badge only on the loop-closing back-edge (a real, non-aggregated edge).
+      const loopPolarity = isAggregated ? undefined : loopPolarityByEdge.get(b.sample.id);
       const edge: TPEdge = {
         id: isAggregated ? `agg:${b.sourceId}->${b.targetId}` : b.sample.id,
         source: b.sourceId,
@@ -172,6 +187,7 @@ export const useGraphEdgeEmission = (
           ...(route ? { route } : {}),
           ...(reconnectable ? { reconnectable: true } : {}),
           ...(backEdges.has(b.sample.id) ? { isBackEdge: true } : {}),
+          ...(loopPolarity ? { loopPolarity } : {}),
         },
         ...(isJunctorEdge
           ? {}

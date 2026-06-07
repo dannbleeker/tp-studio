@@ -12,6 +12,8 @@
  */
 
 import { MessageSquarePlus } from 'lucide-react';
+import { reachableBackward, reachableForward } from '@/domain/graph';
+import type { EntityId } from '@/domain/types';
 import type { DocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import type { Verb } from './selectionVerbs';
@@ -214,6 +216,35 @@ export const verbsForSingleEntity = (id: string, state: DocumentStore): Verb[] =
       });
     }
   }
+  // Session 179 (Theme D) — surface the existing select-successors /
+  // -predecessors actions (already palette + keyboard commands) on the
+  // right-click menu + toolbar too. Inline `run` rather than `paletteCommandId`
+  // because those live in the palette-only `navigate` module, which
+  // `verbCommandRuns` deliberately keeps off the eager path; the reach + select
+  // is trivial to inline. `writes: true` governs toolbar VISIBILITY only (the
+  // `add-comment-on-selection` precedent): the locked toolbar stays quiet, but
+  // the actions remain reachable under Browse Lock via the palette + keyboard —
+  // they're pure navigation and never write-guarded.
+  verbs.push({
+    id: 'select-successors',
+    label: 'Select all successors',
+    shortLabel: 'Successors',
+    writes: true,
+    run: (s) => {
+      const reached = reachableForward(currentDoc(s), [id as EntityId]);
+      s.selectEntities([...new Set<string>([id, ...reached])]);
+    },
+  });
+  verbs.push({
+    id: 'select-predecessors',
+    label: 'Select all predecessors',
+    shortLabel: 'Predecessors',
+    writes: true,
+    run: (s) => {
+      const reached = reachableBackward(currentDoc(s), [id as EntityId]);
+      s.selectEntities([...new Set<string>([id, ...reached])]);
+    },
+  });
   // Comments — annotate the selected entity. `writes: true` is for toolbar
   // VISIBILITY only (not authorization, per the `Verb.writes` contract):
   // under Browse Lock the selection toolbar goes quiet like every other
