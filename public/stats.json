@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-07T17:18:55.864Z",
-  "commit": "913fd40",
+  "generatedAt": "2026-06-07T17:31:15.322Z",
+  "commit": "96a5b77",
   "headline": {
-    "linesTsJs": 107174,
+    "linesTsJs": 107265,
     "tests": 2944,
     "lineCoveragePct": 91.17,
-    "commits": 616,
+    "commits": 618,
     "ageDays": 27,
-    "trackedFiles": 964,
+    "trackedFiles": 965,
     "featureManualPct": 88.1,
     "featureBookPct": 76.7
   },
@@ -29,8 +29,8 @@
     },
     {
       "category": "Build scripts",
-      "files": 19,
-      "lines": 4119
+      "files": 20,
+      "lines": 4210
     },
     {
       "category": "Styles (CSS)",
@@ -60,35 +60,35 @@
       "total": 2746
     },
     "branches": {
-      "pct": 77.17,
-      "covered": 7153,
+      "pct": 77.19,
+      "covered": 7154,
       "total": 9268
     }
   },
   "tests": {
     "unit": 2856,
     "e2e": 88,
-    "durationMs": 193624,
+    "durationMs": 193590,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10174
+        "ms": 10179
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4756
+        "ms": 4620
       },
       {
         "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 1594
-      },
-      {
-        "file": "tests/components/Inspector.test.tsx",
-        "ms": 1361
+        "ms": 1716
       },
       {
         "file": "tests/components/SelectionToolbar.test.tsx",
-        "ms": 1337
+        "ms": 1423
+      },
+      {
+        "file": "tests/components/EntityInspector.test.tsx",
+        "ms": 1216
       }
     ]
   },
@@ -690,16 +690,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 616,
-    "commits7d": 211,
+    "commits": 618,
+    "commits7d": 213,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 554
+        "count": 555
       },
       {
         "name": "github-actions[bot]",
-        "count": 51
+        "count": 52
       },
       {
         "name": "dannbleeker",
@@ -707,8 +707,8 @@
       }
     ],
     "churn30d": {
-      "added": 173313,
-      "removed": 32502
+      "added": 173931,
+      "removed": 32528
     },
     "changelogEntries": 314
   }
