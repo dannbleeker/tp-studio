@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-06-07T19:01:08.463Z",
-  "commit": "3084764",
+  "generatedAt": "2026-06-07T19:33:43.636Z",
+  "commit": "c39e392",
   "headline": {
-    "linesTsJs": 109108,
-    "tests": 3107,
-    "lineCoveragePct": 92.45,
-    "commits": 626,
+    "linesTsJs": 112516,
+    "tests": 3333,
+    "lineCoveragePct": 93.33,
+    "commits": 630,
     "ageDays": 27,
-    "trackedFiles": 965,
-    "featureManualPct": 88.1,
+    "trackedFiles": 970,
+    "featureManualPct": 100,
     "featureBookPct": 76.7,
     "featureExamplePct": 29.5
   },
@@ -16,12 +16,12 @@
     {
       "category": "App code (src, excl. tests)",
       "files": 461,
-      "lines": 62105
+      "lines": 62116
     },
     {
       "category": "Unit tests",
-      "files": 326,
-      "lines": 40803
+      "files": 331,
+      "lines": 44200
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 92.45,
-      "covered": 11452,
-      "total": 12387
+      "pct": 93.33,
+      "covered": 11620,
+      "total": 12450
     },
     "statements": {
-      "pct": 89.54,
-      "covered": 12982,
-      "total": 14497
+      "pct": 90.48,
+      "covered": 13184,
+      "total": 14571
     },
     "functions": {
-      "pct": 87.61,
-      "covered": 2406,
-      "total": 2746
+      "pct": 88.78,
+      "covered": 2469,
+      "total": 2781
     },
     "branches": {
-      "pct": 78.57,
-      "covered": 7282,
-      "total": 9268
+      "pct": 80.11,
+      "covered": 7457,
+      "total": 9308
     }
   },
   "tests": {
-    "unit": 3019,
+    "unit": 3245,
     "e2e": 88,
-    "durationMs": 193517,
+    "durationMs": 154091,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 9799
+        "ms": 7803
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5021
+        "ms": 3318
       },
       {
-        "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 1490
+        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
+        "ms": 1629
       },
       {
-        "file": "tests/components/SelectionToolbar.test.tsx",
-        "ms": 1204
+        "file": "tests/components/quick-capture/QuickCaptureDialog.test.tsx",
+        "ms": 1585
       },
       {
-        "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 1114
+        "file": "tests/components/MultiInspector.test.tsx",
+        "ms": 1432
       }
     ]
   },
@@ -198,13 +198,13 @@
   "docs": {
     "bookWords": 48483,
     "chapters": 24,
-    "appLoc": 62105,
+    "appLoc": 62116,
     "docToCodeRatio": 0.78
   },
   "featureCoverage": {
     "total": 193,
-    "manual": 170,
-    "manualPct": 88.1,
+    "manual": 193,
+    "manualPct": 100,
     "book": 148,
     "bookPct": 76.7,
     "bookExample": 57,
@@ -212,7 +212,7 @@
     "byArea": {
       "CRT": {
         "total": 8,
-        "manual": 7,
+        "manual": 8,
         "book": 6
       },
       "FRT": {
@@ -232,7 +232,7 @@
       },
       "TT": {
         "total": 5,
-        "manual": 4,
+        "manual": 5,
         "book": 5
       },
       "GoalTree": {
@@ -242,7 +242,7 @@
       },
       "ST": {
         "total": 3,
-        "manual": 2,
+        "manual": 3,
         "book": 3
       },
       "NBR": {
@@ -252,7 +252,7 @@
       },
       "Canvas": {
         "total": 16,
-        "manual": 15,
+        "manual": 16,
         "book": 8
       },
       "Editing": {
@@ -262,12 +262,12 @@
       },
       "Entities": {
         "total": 18,
-        "manual": 17,
+        "manual": 18,
         "book": 12
       },
       "Edges": {
         "total": 19,
-        "manual": 17,
+        "manual": 19,
         "book": 11
       },
       "CLR": {
@@ -277,17 +277,17 @@
       },
       "Layout": {
         "total": 6,
-        "manual": 5,
+        "manual": 6,
         "book": 3
       },
       "Export": {
         "total": 12,
-        "manual": 11,
+        "manual": 12,
         "book": 12
       },
       "Import": {
         "total": 7,
-        "manual": 4,
+        "manual": 7,
         "book": 5
       },
       "Print": {
@@ -312,17 +312,17 @@
       },
       "Palette": {
         "total": 3,
-        "manual": 1,
+        "manual": 3,
         "book": 1
       },
       "Settings": {
         "total": 7,
-        "manual": 6,
+        "manual": 7,
         "book": 7
       },
       "Workshop": {
         "total": 5,
-        "manual": 1,
+        "manual": 5,
         "book": 5
       },
       "Reader": {
@@ -337,128 +337,12 @@
       },
       "General": {
         "total": 18,
-        "manual": 14,
+        "manual": 18,
         "book": 15
       }
     },
     "gaps": {
-      "noManual": [
-        {
-          "id": "layout-crossing-reroute",
-          "name": "Edge-crossing reroute",
-          "since": 173
-        },
-        {
-          "id": "import-ai-skill",
-          "name": "AI import-generator skill",
-          "since": 153
-        },
-        {
-          "id": "edge-4side-anchor",
-          "name": "4-side edge anchoring",
-          "since": 138
-        },
-        {
-          "id": "tt-task-csv",
-          "name": "TT task-tracker CSV export",
-          "since": 135
-        },
-        {
-          "id": "st-assumption-subtyping",
-          "name": "S&T assumption sub-typing",
-          "since": 135
-        },
-        {
-          "id": "canvas-state-badge",
-          "name": "Entity state badge on nodes",
-          "since": 135
-        },
-        {
-          "id": "entity-import-traceability",
-          "name": "Imported-from traceability",
-          "since": 135
-        },
-        {
-          "id": "import-cross-doc",
-          "name": "Import entity from another doc",
-          "since": 135
-        },
-        {
-          "id": "settings-app-mode",
-          "name": "App-mode switching",
-          "since": 135
-        },
-        {
-          "id": "workshop-presentation",
-          "name": "Presentation mode",
-          "since": 135
-        },
-        {
-          "id": "workshop-step-through",
-          "name": "Presentation step-through",
-          "since": 135
-        },
-        {
-          "id": "workshop-large-text",
-          "name": "Workshop large-text mode",
-          "since": 135
-        },
-        {
-          "id": "workshop-guided",
-          "name": "Guided mode",
-          "since": 135
-        },
-        {
-          "id": "general-speculation",
-          "name": "What-if speculation overlay",
-          "since": 135
-        },
-        {
-          "id": "general-state-propagation",
-          "name": "Entity state propagation",
-          "since": 135
-        },
-        {
-          "id": "general-epub",
-          "name": "EPUB book download",
-          "since": 135
-        },
-        {
-          "id": "export-picker",
-          "name": "Export picker dialog",
-          "since": 134
-        },
-        {
-          "id": "import-picker",
-          "name": "Import picker dialog",
-          "since": 133
-        },
-        {
-          "id": "general-about",
-          "name": "About dialog",
-          "since": 111
-        },
-        {
-          "id": "palette-recent",
-          "name": "Recent palette commands",
-          "since": 88
-        },
-        {
-          "id": "crt-scope-nudge",
-          "name": "System-scope nudge on CRT load",
-          "since": 83
-        },
-        {
-          "id": "edge-attributes",
-          "name": "Edge custom attributes",
-          "since": 71
-        },
-        {
-          "id": "palette-sections",
-          "name": "Palette grouped sections",
-          "since": 45
-        }
-      ],
+      "noManual": [],
       "noBook": [
         {
           "id": "crt-spawn-ec-tied",
@@ -691,16 +575,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 626,
-    "commits7d": 219,
+    "commits": 630,
+    "commits7d": 222,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 559
+        "count": 562
       },
       {
         "name": "github-actions[bot]",
-        "count": 56
+        "count": 57
       },
       {
         "name": "dannbleeker",
@@ -708,9 +592,9 @@
       }
     ],
     "churn30d": {
-      "added": 175872,
-      "removed": 32622
+      "added": 179427,
+      "removed": 32683
     },
-    "changelogEntries": 314
+    "changelogEntries": 315
   }
 }
