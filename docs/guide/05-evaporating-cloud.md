@@ -294,6 +294,8 @@ The Rapid 3-cloud diagnosis is not a shortcut that skips the rigor — it's a fa
 > - An injection exists addressing the breakable assumption.
 > - The resolution sentence — "Once X, the conflict dissolves because Y" — is one sentence and stands up to a "really?" challenge.
 
+> **✏️ Now you try.** Find a decision your team keeps relitigating — a chronic either/or. Open an EC (`Cmd+K → New Evaporating Cloud`) and fill the five boxes: the shared goal (A), the two needs (B / C), the two conflicting wants (D / D′). Mark the D ↔ D′ conflict, then add the assumptions on each arrow and cycle their status chips until you find one that's **Invalid** — that breakable assumption is your injection.
+
 🔁 **Chain to next:** the EC names the conflict and drafts an injection. The Future Reality Tree checks whether the injection actually delivers the desired effects without spawning new UDEs.
 
 ---

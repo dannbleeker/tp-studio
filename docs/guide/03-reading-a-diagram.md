@@ -144,7 +144,7 @@ Set a state from Entity Inspector → State, or by cycling the selected entity. 
 
 What makes states more than annotation is **propagation**. TP Studio folds known states downstream along the causal structure: a `true` cause whose junctor is satisfied lights its effect `true`; a `false` member of an AND junctor blocks the effect; OR/XOR fold by their own rules; negative-polarity edges flip the signal; zero-polarity and back-edges are skipped; cycles short-circuit rather than loop forever. Derived states render in the same badges but without the manual marker, so you can always tell what *you* asserted from what the diagram *concluded*.
 
-**What-if speculation** is the live version of this. `Cmd+K → Begin speculation` opens a temporary overlay: flip any entity's state and watch propagation re-flow across the canvas in real time, with speculated badges drawn with a dashed ring so they're visibly provisional. A banner offers **Commit** (write the speculated states back as the real ones, in a single undo step) or **Revert** (`Esc`) — discard the overlay and restore reality. Nothing touches the saved document until you commit.
+**What-if speculation** is the live version of this. `Cmd+K → Speculate: what changes if…` opens a temporary overlay: flip any entity's state and watch propagation re-flow across the canvas in real time, with speculated badges drawn with a dashed ring so they're visibly provisional. A banner offers **Commit** (write the speculated states back as the real ones, in a single undo step) or **Revert** (`Esc`) — discard the overlay and restore reality. Nothing touches the saved document until you commit.
 
 Use it to ask the questions a static diagram can't: "If this assumption turns out false, what downstream effects collapse?" "Which root cause, flipped to true, lights up the most of the tree?" Speculation turns the diagram from a picture into a model you can poke.
 
@@ -153,7 +153,7 @@ Use it to ask the questions a static diagram can't: "If this assumption turns ou
 Six "Categories of Legitimate Reservation" — the discipline checks Goldratt taught for evaluating someone else's causal claim. TP Studio surfaces them automatically as **warnings** in the Inspector's Warnings list. They are not errors; they are reservations a thoughtful colleague would raise if they were reading your diagram over your shoulder. We get into the CLR in depth in [Chapter 13](13-the-clr.md), but for now know that:
 
 - Warnings fire on entities AND edges, depending on what the rule checks.
-- Tiers escalate from `clarity` (the most pedagogical) to `predictedEffect` (the most architectural).
+- Tiers escalate from `clarity` (the most pedagogical) through `existence` to `sufficiency` (the more structural).
 - You can dismiss warnings explicitly when you've considered the reservation and decided it doesn't apply.
 - The `Start CLR walkthrough` palette command iterates all open warnings one at a time with Resolve / Open-in-inspector actions.
 
@@ -173,7 +173,7 @@ Edge polarity:  default • positive • negative (−) • zero (∅)
 Junctors:       AND (violet) • OR (indigo) • XOR (rose)
 Back-edge:      thick dashed + ↻ glyph
 Mutex (EC):     red + ⚡ glyph
-Span-of-ctrl:   C (emerald) • I (amber) • E (neutral)
+Locus:          C (emerald) • I (amber) • E (neutral)
 Entity state:   T (true) • F (false) • ? (unknown/disputed) • dashed ring = speculated
 ```
 

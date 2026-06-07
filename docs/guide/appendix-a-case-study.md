@@ -56,6 +56,8 @@ Cause chains (built bottom-up):
 
 The structure converges: three UDEs trace through five intermediate effects to two terminal causes ("Senior agents context-switch constantly" and "Support lead has no protected drafting time"), with the lead's protected-time problem feeding three of the four intermediate effects. The core driver is structural — not a hiring problem, not a tooling problem, not a re-org problem. The lead has not been protected from incoming work long enough to build the team's scaling apparatus.
 
+**The CLR check.** Before trusting the diagnosis, the team scrutinised the load-bearing arrows — the discipline of [Chapter 13](13-the-clr.md). The edge *"Senior agents context-switch constantly" → "Resolution time > 8h"* drew a **cause-sufficiency** reservation: was context-switching *alone* enough? No — it AND-joins with *"No shared triage rubric"* (without a rubric, every interruption restarts from zero). They also ran **Scrutinize this edge** on the core driver's outgoing arrow and asked the reversal question — is it *"no protected time → no rubric"*, or *"no rubric → no protected time"*? — and confirmed the direction held. Two minutes of CLR turned a plausible tree into a defensible one.
+
 ## EC
 
 Why has this persisted? The EC.

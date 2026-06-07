@@ -10,7 +10,7 @@ docs/guide/
 ├── AUTHORING.md           ← this file (maintainer face)
 ├── 00-foreword.md
 ├── 01-…  through  17-…   ← chapter files, one per chapter
-├── appendix-a-…  through  appendix-f-…
+├── appendix-a-…  through  appendix-g-…
 └── screenshots/           ← generated PNGs, committed
     ├── crt-step-3-first-effect.png
     ├── ec-wizard-step-2.png
@@ -82,6 +82,7 @@ The whole loop is one workflow click + one PR review for most UI changes.
   - **⚠ Common mistake** — pattern to watch for in your own work
   - **🛑 When to stop** — criteria for "this diagram is done"
   - **🔁 Chain to next** — at chapter end, signpost to the natural next chapter
+  - **✏️ Now you try** — a short hands-on exercise closing each Part-2 chapter; the reader applies it to their own problem in TP Studio
 - **Plain Markdown.** No HTML, no MDX. The book renders identically on GitHub web, in VS Code preview, and via any static-site generator pointed at the directory.
 
 ## Building the PDF and EPUB
@@ -127,7 +128,7 @@ Requirements: `marked` + `@playwright/test`. Chromium binary
 installed via `pnpm exec playwright install chromium`.
 
 Output: `docs/guide/Causal-Thinking-with-TP-Studio.pdf`. Typically
-~1.5 MB with the 13 chapter screenshots embedded.
+~1.5 MB with the 14 chapter screenshots embedded.
 
 ### EPUB (`scripts/build-book-epub.mjs`)
 
@@ -159,4 +160,4 @@ markdown change.
 
 ## Versioning
 
-When TP Studio's schema version bumps (currently v8), or a major UI change lands, mark the affected chapter with a `> *Last reviewed against TP Studio v…*` note near the top. Helps readers calibrate whether the screenshots they see are current.
+When TP Studio's schema version bumps (currently v9), or a major UI change lands, mark the affected chapter with a `> *Last reviewed against TP Studio v…*` note near the top. Helps readers calibrate whether the screenshots they see are current.

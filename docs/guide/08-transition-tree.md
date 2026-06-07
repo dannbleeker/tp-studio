@@ -159,7 +159,7 @@ The practical tell: if you find yourself writing the same precondition into the 
 
 > **🛠 How TP Studio helps**
 > - `Cmd+K → New diagram…` → select **Transition Tree** to start fresh.
-> - `Cmd+K → Load example…` → select **Transition Tree** to load a worked example with the canonical triple structure. Five TT pattern templates also ship in `Cmd+K → Open Pattern Library…`: Support triage, Engineer onboarding, Incident response, Feature-flag rollout, Enterprise deal close — each demonstrating a different domain shape.
+> - `Cmd+K → Load example…` → select **Transition Tree** to load a worked example with the canonical triple structure. Five TT pattern templates also ship in `Cmd+K → Pattern library…`: Support triage Transition Tree, Engineer onboarding, Incident response, Feature-flag rollout, Enterprise deal close — each demonstrating a different domain shape.
 > - **Inspector Type grid** — click `action` (cyan stripe) to mark an entity as an Action. `Cmd+K → Mark entity as Action (TT)` and `Cmd+K → Mark entity as desired Outcome (TT)` are the palette shortcuts.
 > - `Cmd+K → Add precondition to Action (TT)` — select a bare Action and run this command to auto-create a precondition entity wired into the same Outcome. Faster than building the triple by hand.
 > - **`complete-step` validator** (CLR tier `sufficiency`, TT-only) — flags any Action whose outgoing edge to an Outcome has no non-action sibling (unpaired precondition slot).
@@ -192,6 +192,8 @@ The practical tell: if you find yourself writing the same precondition into the 
 > - Every action has a Working assumption (or you've decided the rationale is genuinely self-evident for that step).
 > - The reasoning-narrative export reads as a runnable plan that a new team member could execute without additional briefing.
 > - You've run what-if speculation to confirm that completing each IO's terminal outcome correctly unblocks the next IO's first step.
+
+> **✏️ Now you try.** Take one Intermediate Objective from your PRT. Open a TT (`Cmd+K → New Transition Tree`) and sequence the actions as Outcome ← Precondition + Action triples, numbering each step. Set an owner on each Action, then run `Export… → Task tracker CSV` and paste it into your tracker. If a step's precondition slot is empty, the `complete-step` warning will say so — what existing condition does that action rely on?
 
 🔁 **Chain to next:** the TT is the operational plan. The Goal Tree (next chapter) is a *strategic* decomposition — the frame around the entire CRT→TT process when the constraint is the goal itself.
 

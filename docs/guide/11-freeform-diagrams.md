@@ -60,6 +60,8 @@ Attributes round-trip through JSON, CSV exports, and OPML exports.
 > - You haven't accumulated CLR-style mistakes (freeform won't catch them; you have to catch them yourself).
 > - The set of custom entity classes is small and understandable to a future reader.
 
+> **✏️ Now you try.** Find something that *isn't* a TOC shape — a decision record, an argument you're having, a dependency sketch. Open a Freeform diagram (`Cmd+K → New Freeform Diagram`) and, in the Document Inspector, define a couple of **custom entity classes** that fit your domain (e.g. *Claim*, *Evidence*, *Risk*). Map the thing. Notice which CLR rules still fire (the structural ones) and which stay quiet — that's the method getting out of your way.
+
 🔁 **Chain to next:** Part 2 is done — you know every TP and when to use each. Part 3 covers the cross-cutting skills: groups, the CLR in depth, iteration via revisions and side-by-side compare.
 
 ---

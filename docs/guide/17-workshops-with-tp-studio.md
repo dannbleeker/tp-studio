@@ -54,12 +54,23 @@ The EC workshop is shorter — typically 2 hours — but follows the same shape:
 - **The workshop runs long.** Snapshot, set a hard stop, schedule a follow-up. A half-finished CRT is more valuable than a forced-completion one.
 - **The CRT looks like a project plan.** You're confusing CRT (diagnosis) with PRT/TT (planning). Re-set: this diagram is *why things are the way they are now*, not *what we'll do about it*.
 
+## After the workshop — from diagram to commitment
+
+The diagram is not the deliverable; the *change* is. A CRT everyone nodded at and nobody acted on was a nice afternoon, not an intervention. Three moves turn the room's work into commitment:
+
+1. **Close on the next tree, not on applause.** A CRT workshop should end by naming the core problem and agreeing the next step — usually *Create the Core Cloud from this entity*, carrying the U-Shape forward ([Chapter 16](16-sharing-your-work.md)). Book the follow-up before everyone stands up; the analysis cools fast.
+2. **Assign owners on the canvas.** Each injection or intermediate objective gets an **Owner** in the inspector and, where it's a plan, a due date. Export the **Task tracker CSV** (TT) or **Prerequisite plan CSV** (PRT) straight into the team's tracker so the diagram becomes the backlog, not a screenshot in a deck.
+3. **Distribute the reasoning, not just the picture.** Send the **reasoning narrative** export + a PDF within 24 hours, and the **share link** to anyone who couldn't attend. Stakeholders who can re-read the logic — and **Challenge this arrow** in Reader mode — stay bought in; a picture with no argument attached is forgotten by Friday.
+
+Then schedule the **re-measure**. The workshop named a gap (the Performance frame's Low / High); put a date on the calendar to come back and check it moved ([Chapter 1 — Closing the loop](01-the-system-has-a-goal.md)). A TOC engagement that never re-measures can't tell a real win from a comfortable story.
+
 ## Sidebars
 
 > **🛠 How TP Studio helps**
 > - **System Scope dialog** (Document Inspector) — "Step 0" for any analysis.
 > - **Method Checklist** — the canonical recipe per diagram type, always visible.
 > - **Zoom-up annotation** — readable titles at any zoom.
+> - **App modes for the room** — `Cmd+K → Switch to Workshop mode` enlarges node text for a projector while you keep editing; **Presentation mode** gives a read-only, chrome-free projection with a bottom-centre **step-through** control (‹ / › or the arrow keys) for walking a finished tree past an audience without speaker notes.
 > - **Walkthrough overlay** — re-centers the group on the diagram's reading.
 > - **Side-by-side compare** — for structural disagreements.
 > - **CLR walkthrough** — final discipline pass.

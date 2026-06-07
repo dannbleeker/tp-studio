@@ -158,6 +158,8 @@ If you genuinely need two Goals, dismiss the warning and proceed. Just be honest
 > - Read-aloud passes at every chain, without invented bridge-sentences.
 > - You can describe the strategic frame in one sentence that the Goal-Tree vocabulary makes precise.
 
+> **✏️ Now you try.** State a goal for your team in one sentence. Open a Goal Tree (`Cmd+K → New Goal Tree`) and let the wizard walk you through the apex Goal, three Critical Success Factors, and the Necessary Conditions under each. Keep it to a single apex — if a second goal sneaks in, the `goalTree-multiple-goals` warning offers a one-click **Convert extras to CSFs**.
+
 🔁 **Chain to next:** the Goal Tree is the strategic frame. The S&T tree is the *deployment* of that frame across the organization, one operational level at a time.
 
 ---

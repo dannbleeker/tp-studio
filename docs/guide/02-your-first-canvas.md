@@ -69,7 +69,7 @@ Read the arrow aloud: *"Resolution time exceeds 8h" causes "Customers churn".* T
 
 ## The command palette
 
-`Cmd+K` (Mac) or `Ctrl+K` (Windows / Linux) opens the command palette — the canonical way to do anything in TP Studio that isn't a direct canvas gesture. Try it now. You'll see a search box and a list of commands grouped by category: File, Edit, Diagram, Layout, Export, Settings.
+`Cmd+K` (Mac) or `Ctrl+K` (Windows / Linux) opens the command palette — the canonical way to do anything in TP Studio that isn't a direct canvas gesture. Try it now. You'll see a search box and a list of commands grouped by category: File, Edit, View, Review, Export, Help. Your five most-recent commands pin to the top in a Recent group.
 
 Type **Help** to filter. The top result is "Show keyboard shortcuts". Press Enter to open the Help dialog — that's the reference for every shortcut the application exposes.
 
@@ -122,6 +122,20 @@ Five minutes. No reading.
 7. Open the History panel (TopBar history button on `sm+` screens, or `Cmd+K → Open history panel`). You'll see your "After type change" snapshot.
 
 You now know more about the surface than you can remember reading. That's the point of the chapter.
+
+## Starting from a real problem (not a blank canvas)
+
+The hardest moment in any analysis is the empty canvas with a vague problem behind it. You don't have to start by drawing. Match your starting state to the on-ramp:
+
+| You have… | Start with | How |
+| --- | --- | --- |
+| A vague mess, no idea where to begin | **Rapid 3-cloud diagnosis** | `Cmd+K → Rapid 3-cloud diagnosis…`. Name three symptoms and the tug-of-war behind each; it consolidates them into one Core Cloud to work from. |
+| A brain-dump, meeting notes, a bulleted list | **Quick Capture** | Press `E` (outside a text field). Paste the indented list; each line becomes an entity, indentation becomes causal nesting. |
+| A spreadsheet of items | **CSV import** | `Cmd+K → Import… → Entities CSV`. A `title,type,parent_title` header maps rows to entities and edges. |
+| A sense that "someone's drawn this shape before" | **Templates / Pattern library** | `Cmd+K → New from template…` for the curated set, or `Pattern library…` for the broader catalogue (system archetypes, domain CRTs, the classic clouds). Load one, edit it into your situation. |
+| A problem you can *describe* but not draw | **The AI skill** | Describe it to Claude via the `tp-studio-import` skill — "*a CRT for why onboarding churns*" — and import the `.json` it produces ([Chapter 16](16-sharing-your-work.md)). Treat it as a first draft to scrutinise, not an answer. |
+
+All five drop you onto a populated canvas with *something* to react to — and reacting is far easier than creating from nothing. From there it's the same loop: read it aloud, scrutinise the arrows, restructure, repeat.
 
 ## Where this lives in the rest of the book
 

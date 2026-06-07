@@ -26,6 +26,8 @@ Use it solo before you present. Use it with a participant in a workshop. The dis
 
 The two modes are complementary: step-through forces *discipline* (you can't skim, you have to advance), all-at-once gives you *artifact* (the verbal form lives outside the canvas now).
 
+**The reading word.** Both modes render each edge as a sentence; which connective they use is set by **Settings → Display → Causality reading** — *Auto* (diagram-type-aware, recommended), *Because* / *Therefore* (sufficiency readings), or *In order to* (necessity). A per-edge label always overrides the fallback.
+
 ### 3. The VerbalisationStrip (EC-only)
 
 For Evaporating Clouds, the canonical reading is a single paragraph. The VerbalisationStrip renders it above the canvas, updating live as you edit. Settings → EC Verbal Style toggles between `neutral` ("we must") and `twoSided` ("they want / I want") framings.

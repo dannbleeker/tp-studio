@@ -45,6 +45,8 @@ The PDF route is the most polished for static layout. Use Print Preview for the 
 - **Reasoning narrative** — Markdown, sentence-per-edge prose. See [Chapter 15](15-verbalisation-walkthroughs.md).
 - **Reasoning outline** — Markdown, nested-list form.
 - **CSV** — entities + edges + groups in one RFC-4180 file.
+- **Task tracker CSV** — one row per Action (step / precondition / outcome / owner / due date / status / success criteria), for pasting into Jira / Trello / Planner / Asana. Only surfaces when the doc has Action entities — a Transition Tree is the canonical source.
+- **Prerequisite plan CSV** — one row per Intermediate Objective in dependency order (objective / overcomes / depends-on / owner / due date / status / notes). Only surfaces when the doc has Intermediate Objectives — a Prerequisite Tree is the canonical source.
 - **Annotations only (.md / .txt)** — just the description bodies, for content-review workflows.
 - **EC Workshop Sheet (PDF)** — one-page PPT-style layout with guiding questions, EC-only.
 - **Risk register (CSV)** — one row per UDE in the doc, with columns `risk_id / risk / trigger / consequence / mitigation / owner / status`. The exporter walks each UDE backwards through the causal graph to find any reachable injection or desired-effect; if one exists the row is `mitigated`, otherwise `open`. Owner comes from `entity.owner` (with a back-compat fallback to `entity.attributes.owner.value` for older docs). Imports cleanly into Jira / Linear / a spreadsheet. Only surfaces in the Export picker when the doc has at least one UDE — NBR diagrams and CRTs are the canonical sources; an EC has no UDEs by construction so it's hidden there.
@@ -54,7 +56,7 @@ The PDF route is the most polished for static layout. Use Print Preview for the 
 
 ## Importing back
 
-Going the other direction — opening someone else's file — uses the single **Import…** picker (`Cmd+K → Import…`). The dialog fans out five sources as cards: **TP Studio JSON** (full round-trip), **Flying Logic file** (`.fll`), **Mermaid diagram** (`.mmd`), **Entities CSV** (append rather than replace), and **Paste from whiteboard** — the last is the escape hatch for Miro / Mural / FigJam / any text source. Copy stickies from the source board, paste into the textarea, one entity is minted per non-empty line. Bullet markers (`-` `*` `•` `1.` `1)`) are stripped, tab-separated content keeps only the first column. Connectors aren't inferred — Miro / Mural don't expose arrow structure in client-accessible exports, so this path gets the entities into the canvas; you wire causality after.
+Going the other direction — opening someone else's file — uses the single **Import…** picker (`Cmd+K → Import…`). The dialog fans out five sources as cards: **TP Studio JSON** (full round-trip), **Flying Logic file** (`.logicx` / `.logic` / `.xlogic`), **Mermaid diagram** (`.mmd`), **Entities CSV** (append rather than replace), and **Paste from whiteboard** — the last is the escape hatch for Miro / Mural / FigJam / any text source. Copy stickies from the source board, paste into the textarea, one entity is minted per non-empty line. Bullet markers (`-` `*` `•` `1.` `1)`) are stripped, tab-separated content keeps only the first column. Connectors aren't inferred — Miro / Mural don't expose arrow structure in client-accessible exports, so this path gets the entities into the canvas; you wire causality after.
 
 ## Save to file / Open from file
 
@@ -124,7 +126,7 @@ Perfect for: airgapped audiences, security-conscious recipients, slides with emb
 
 Browse Lock keeps a reviewer from accidentally editing your diagram. Reader mode goes further: it reshapes the whole interface for someone who doesn't know TP notation at all.
 
-Switch into it before handing a diagram to a manager, a client, or a domain expert who wasn't in the room when the tree was built: `Cmd+K → Enter Reader mode`. Reader mode is a fifth app mode — alongside Expert, Guided, Workshop, and Presentation — that wraps a distraction-free, read-only shell on top of Browse Lock. The toolbar collapses to a single close button; the palette, inspector, and edit chrome all disappear. What remains is the diagram, a slim reading-hint banner across the top, and the canvas.
+Switch into it before handing a diagram to a manager, a client, or a domain expert who wasn't in the room when the tree was built: `Cmd+K → Switch to Reader mode`. Reader mode is a fifth app mode — alongside Expert, Guided, Workshop, and Presentation — that wraps a distraction-free, read-only shell on top of Browse Lock. The toolbar collapses to a single close button; the palette, inspector, and edit chrome all disappear. What remains is the diagram, a slim reading-hint banner across the top, and the canvas.
 
 The banner shows the diagram-type reading rule in one sentence — for a CRT, that's something like *"Read bottom to top: lower nodes cause upper ones"*. For an EC it shows the five-box convention. The right framing in eight words is worth more than a four-paragraph email.
 
@@ -160,7 +162,7 @@ Two boundaries worth knowing:
 > - **Standalone HTML viewer** — self-contained share artifact.
 > - **EC Workshop Sheet PDF** — one-page handout for EC workshops.
 > - **Browse Lock auto-engages on share-link load** — receivers can't accidentally edit.
-> - **`Cmd+K → Enter Reader mode`** — distraction-free shell for non-expert reviewers: reading-hint banner, coaching tooltips, and "Challenge this arrow" affordance.
+> - **`Cmd+K → Switch to Reader mode`** — distraction-free shell for non-expert reviewers: reading-hint banner, coaching tooltips, and "Challenge this arrow" affordance.
 > - **Review comments** — notes pinned to an entity / edge / the whole diagram, carried inside every JSON / share-link / HTML export.
 > - **`tp-studio-import` Claude skill** — describe a problem in words; get an importable JSON for any of the nine diagram types.
 
@@ -169,7 +171,7 @@ Two boundaries worth knowing:
 > - **PDF for static audiences, share link for interactive ones.** Stakeholders click PDFs; analysts click links.
 > - **Use redacted JSON when sharing the shape of an analysis.** "Here's our diagnostic shape, with anonymized content" is a real workflow.
 > - **The EC Workshop Sheet is great handout material.** Print one per participant.
-> - **Enter Reader mode before sending to a domain expert.** They shouldn't need to learn TP notation to give you useful feedback.
+> - **Switch to Reader mode before sending to a domain expert.** They shouldn't need to learn TP notation to give you useful feedback.
 > - **Use comments for async review.** Share the link, let reviewers pin objections to the exact edge, then work the Open filter to zero.
 
 > **⚠ Common mistakes**

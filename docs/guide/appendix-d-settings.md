@@ -15,11 +15,13 @@
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| Causality reading | Auto | none / because / therefore / auto (per-diagram-type) — fallback edge label when no per-edge label is set. See [Chapter 3](03-reading-a-diagram.md). |
+| Causality reading | Auto | none / auto / because / therefore / in order to — fallback edge label when no per-edge label is set. See [Chapter 3](03-reading-a-diagram.md). |
 | Show UDE-reach badge | Off | Toggles the amber `→N UDEs` pill on each entity. |
-| Show reverse-reach badge | Off | Toggles the sky `←N root causes` pill. |
+| Show root-cause-reach badge | Off | Toggles the sky `←N root causes` pill. |
 | Show annotation numbers | Off | Renders each entity's `annotationNumber` as a small badge. |
 | Show entity IDs | Off | Renders the entity's stable id as a tiny corner badge. Mostly for debugging. |
+| Show action-eligibility badge | Off | Toggles the ✓ / ✗ / … eligibility pill on Transition-Tree Action nodes. Off by default — fresh TTs read "pending" everywhere until states are set. |
+| Ink-saving print mode | Off | Removes group fills and lightens strokes for cheaper printing. |
 
 ## Behavior
 
@@ -44,4 +46,3 @@
 | --- | --- | --- |
 | Browse Lock on share-link receive | On | Auto-engage Browse Lock when loading a `#!share=` URL. |
 | EC chrome collapsed | On | Hide the EC reading-instructions + verbalisation strips by default. Toggle via `Cmd+K → Toggle EC reading guide` when you want them back for a workshop. |
-| System scope nudge | Off | Show a soft toast on every CRT load reminding you to fill System Scope. (Most users find this intrusive; off by default.) |

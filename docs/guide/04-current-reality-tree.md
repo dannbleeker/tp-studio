@@ -30,6 +30,8 @@ The setup: VP of Customer Success calls you in. "We're losing customers. Support
 
 Three UDEs to start. You write them down in TP Studio.
 
+> **Scope before you draw.** Open a fresh CRT with an empty System Scope and TP Studio drops a one-time toast pointing you to the Document Inspector's **System Scope** section — Goldratt's Step 1 (name the system, its boundary, its measures) *before* the effects. Fill any answer and the nudge is satisfied for that document; dismiss it and it won't return. We jump straight to the UDEs to keep the example moving, but in real work, scope first.
+
 ### Step 1 — The first UDE
 
 Open TP Studio. `Cmd+K → New diagram → Current Reality Tree`. Empty CRT canvas opens.
@@ -184,6 +186,8 @@ The support team's restart spiral is a textbook Fixes that Fail: the restart is 
 > - The CLR walkthrough is empty or every open warning is intentionally dismissed.
 > - You can read each chain aloud without rewording.
 > - You're ready to ask the next question: *why hasn't this been fixed already?* (That's the EC in Chapter 5.)
+
+> **✏️ Now you try.** Pick a recurring frustration on your own team. Open a CRT (`Cmd+K → New Current Reality Tree`), capture three UDEs you can actually *observe*, and build each down to a root cause with `Shift+Tab`. Run `Cmd+K → Find core driver(s)` — does the cause it picks match your gut? Read the tree aloud with **Start read-through**, then clear the CLR walkthrough. If your tree reads like a to-do list, you've drawn a plan, not a diagnosis — restart with effects, not actions.
 
 🔁 **Chain to next:** the CRT shows you *what* is wrong. The Evaporating Cloud shows you *why nobody has fixed it yet*.
 

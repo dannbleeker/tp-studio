@@ -33,17 +33,19 @@
 | `Cmd/Ctrl+C` / `X` / `V` | Copy / cut / paste |
 | `Cmd/Ctrl+Shift+→` | Select all successors |
 | `Cmd/Ctrl+Shift+←` | Select all predecessors |
+| `Cmd/Ctrl+Shift+S` | Swap the two selected entities |
 
 ## Document-wide
 
 | Shortcut | Action |
 | --- | --- |
-| `Cmd/Ctrl+Z` / `Shift+Z` | Undo / redo |
+| `Cmd/Ctrl+Z` / `Cmd/Ctrl+Shift+Z` | Undo / redo |
+| `Cmd/Ctrl+S` | Save (force a flush + confirmation toast) |
+| `Cmd/Ctrl+P` | Print / Save as PDF |
 | `Cmd/Ctrl+K` | Open command palette |
 | `Cmd/Ctrl+F` | Open find panel |
 | `Cmd/Ctrl+,` | Open settings |
 | `Cmd/Ctrl+E` | Palette pre-filtered to Export commands |
-| `Cmd/Ctrl+\` | Close inspector (clear selection) |
 | `E` (no modifiers, not in text field) | Open Quick Capture |
 | `?` | Open Help dialog |
 | `Cmd/Ctrl+T` | New tab *(installed app only)* |

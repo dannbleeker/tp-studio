@@ -28,22 +28,29 @@ Goldratt named six. The operationalization into validator-style rules that pract
 5. **Additional cause.** Is there a *different* cause that would also produce this effect? Two roads to the same destination — modelled with OR-junctors, often missed by single-path thinking.
 6. **Cause-effect reversal.** Run the same arrow the other way around; does it still make sense? If the answer is "actually, maybe even more sense," you've inverted the causal direction. The classic trap inside a B2B sales org: "deals are slow because morale is low" — until someone points out the direction is "morale is low because deals are slow."
 
-TP Studio's validator system implements rules in each of these tiers. The `Warnings` list in the Inspector surfaces them per-entity / per-edge. The `Start CLR walkthrough` palette command iterates them one at a time.
+TP Studio's validator system implements rules drawn from each of these categories. The `Warnings` list in the Inspector surfaces them per-entity / per-edge. The `Start CLR walkthrough` palette command iterates them one at a time.
 
 ## How TP Studio surfaces them
 
 Each validator carries:
 
-- A **tier**: `clarity`, `sufficiency`, `causality`, or `predictedEffect`. The tier governs the warning's color and the order it appears in the walkthrough wizard.
+- A **tier**: `clarity`, `existence`, or `sufficiency` — TP Studio's three groupings, not the eight teaching categories above. The tier governs how the Warnings list groups the rule (under **CLARITY** / **EXISTENCE** / **SUFFICIENCY** headers) and the order it appears in the walkthrough wizard.
 - A **diagram-type scope**: most rules fire only on specific diagram types (e.g., `ec-missing-conflict` is EC-only; `complete-step` is TT-only).
 - A **trigger predicate**: a pure function over the doc that returns the set of entities/edges to fire on.
 - Optionally, a **one-click action**: a `WARNING_ACTIONS` registry entry that resolves the warning. Example: the `convert-extra-goals-to-csfs` action on the `goalTree-multiple-goals` warning.
 
-The full list is in [Appendix C](appendix-c-clr-rules.md).
+The full list — every implemented rule, its tier, and the diagram types it fires on — is in [Appendix C](appendix-c-clr-rules.md).
+
+**Beyond the classical six.** Most rules map onto a category Goldratt or Dettmer named. TP Studio adds two families the classical list never did — pure build-quality checks a tool is uniquely placed to compute:
+
+- **CRT build-quality** (CRT only) — *is the tree well-formed?* A UDE with no cause feeding it; a branch that leads to no UDE; a UDE count outside the rough 3–15 band; a leading root cause that explains fewer than half the UDEs; two root causes tied for the lead (a hidden conflict — with a one-click *Spawn Evaporating Cloud*); or a UDE phrased as the absence of a solution.
+- **System-dynamics lint** (CRT / FRT / TT / NBR, where loops live) — `logic-type-mismatch` (an edge whose kind fights the diagram's logic), `loop-polarity` (a balancing loop where you'd expect a reinforcing one), `long-arrow` (a jump across ≥ 3 causal levels), and `reinforcing-no-delay` (a feedback loop with no time lag).
+
+Neither family is a textbook CLR category — they're the reservations the tool can raise automatically, leaving the contextual judgments to you.
 
 ## Reading warnings
 
-Click any entity with an open warning. The Inspector's Warnings section lists them as bullet items with the tier color (yellow for `clarity`, amber for `sufficiency`, orange for `causality`, red for `predictedEffect`). Each warning has a one-line explanation; some carry a "Fix" button when a one-click action is available.
+Click any entity with an open warning. The Inspector's Warnings section lists them grouped under their tier — **CLARITY**, **EXISTENCE**, **SUFFICIENCY** — each with a one-line explanation; some carry a "Fix" button when a one-click action is available.
 
 ![CLR warnings visible in the Inspector for an entity with no incoming causes](screenshots/chapter13-clr-warnings-visible.png)
 
@@ -84,7 +91,7 @@ Don't dismiss without writing the explanation. A dismissed warning with no ratio
 > - **Per-entity / per-edge Warnings list** in the Inspector.
 > - **`Cmd+K → Start CLR walkthrough`** — modal that iterates open warnings.
 > - **One-click actions** on a subset of warnings (e.g., `convert-extra-goals-to-csfs`).
-> - **Tier-color coding** in the warnings list: clarity (yellow) → sufficiency (amber) → causality (orange) → predicted-effect (red).
+> - **Tier grouping** in the warnings list: warnings sort under **CLARITY → EXISTENCE → SUFFICIENCY** headers.
 > - **Dismissibility** — every warning can be dismissed; dismissals don't recur until the underlying state changes.
 > - **`Scrutinize this edge (walk the CLR questions)`** — walks one edge through all eight CLR categories as questions, including the ones nothing flagged; read-only, so it works under Browse Lock.
 > - **Long-arrow check** — EXISTENCE-tier validator flags sufficiency arrows spanning ≥3 causal levels; "Insert a step" action splices a blank intermediate entity into the over-long edge.
@@ -97,7 +104,7 @@ Don't dismiss without writing the explanation. A dismissed warning with no ratio
 
 > **⚠ Common mistakes**
 > - **Dismissing without explanation.** Each dismissal is a future-self bug if the rationale isn't recorded.
-> - **Treating all warnings as equal.** The four tiers are deliberately ordered. A `predictedEffect` warning is structural; a `clarity` warning might just be a typo.
+> - **Treating all warnings as equal.** The three tiers are deliberately ordered. An `existence` warning is structural — a missing entity or an unreal link; a `clarity` warning might just be a typo.
 
 🔁 **Chain to next:** the CLR is the validation conscience. Iteration is the *building* conscience — revisions, branches, side-by-side compare are how a diagram improves over time.
 
