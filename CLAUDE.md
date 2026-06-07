@@ -114,7 +114,7 @@ These bite often — work around them, don't fight them:
 - **`pnpm` / `npx` are AppLocker-blocked** and PowerShell is in Constrained Language Mode (`npm.ps1`/`pnpm.ps1` break). Run tools via their node entry points:
   - `node ./node_modules/typescript/bin/tsc --noEmit`
   - **Biome runs via the node bin** — `node ./node_modules/@biomejs/biome/bin/biome check src tests` works (only the `biome.exe` shim that `pnpm lint` calls is AppLocker-blocked, NOT the node-invoked binary; confirmed Session 180 after two avoidable red-CI rounds). Autofix with `--write` (formatter + organizeImports) and `--write --unsafe` (Tailwind `useSortedClasses` class sorting). **Run it locally before every push** — no more hand-matching from the CI diff. If CI lint still goes red, `gh run view <id> --log-failed` shows the exact diff.
-  - `node ./node_modules/knip/bin/knip.js` (exits 0 even when it lists exports — a new unused export fails CI, not the local run)
+  - `node ./node_modules/knip/bin/knip.js --no-progress` (Session 180: knip.json code-rules are now `error`, so it EXITS NON-ZERO on unused files/exports/types/duplicates/enumMembers — gates locally, matching CI; deps/resolution rules stay `warn`. Folded into `preflight.mjs`.)
   - `node ./node_modules/vitest/vitest.mjs run [substring]` (`--coverage` for coverage)
   - `node ./node_modules/vite/bin/vite.js build`
   - `node ./scripts/check-bundle-size.mjs` (after a build) — fails CI if a chunk exceeds `bundle-budget.json` + 10% slop; re-pin the budget deliberately when a feature legitimately grows a chunk.
