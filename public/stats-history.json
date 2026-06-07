@@ -1,10 +1,10 @@
 [
   {
     "date": "2026-06-07",
-    "linesTsJs": 106003,
-    "coveragePct": 91.31,
-    "tests": 2916,
-    "bundleKb": 798.2,
-    "mutationScore": 77.59
+    "linesTsJs": 106373,
+    "coveragePct": 91.16,
+    "tests": 2926,
+    "bundleKb": 799.1,
+    "mutationScore": 70.15
   }
 ]
