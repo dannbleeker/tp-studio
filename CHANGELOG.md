@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Persistence: corrupt cosmetic fields degrade, not fail the load
+
+`importFromJSON` already validated in two tiers — structural fields (id, diagramType, schemaVersion,
+the entity / edge / group records) throw and reject the doc, while cosmetic fields (title, style
+toggles, metadata) soft-degrade "so a corrupt import still loads." But three cosmetic fields were
+misclassified as strict: `resolvedWarnings` (the dismissed-warning set), `author`, and `description`.
+A single bad value in any of them failed the WHOLE document load — and since `tryParseDoc` swallows the
+throw and falls back to a backup slot, that can cost the user their committed snapshot. Moved all three
+into the tier they belong to: a malformed `resolvedWarnings` resets to `{}`; a non-string
+`author`/`description` is dropped (the return spread already did this — the throws were redundant). Also
+made `nextAnnotationNumber` recoverable — a corrupt counter rebuilds from `max(annotationNumber) + 1`
+instead of failing — so the only remaining hard-fails are the genuinely non-recoverable identity +
+graph-content fields. +7 tests (the soft-degrade tier + a boundary check that a bad id / diagramType
+still throws). No structural validation changed; no existing test touched.
+
 ## Session 180 (cont.) — Keyboard: bare-key shortcuts defer to focused controls
 
 Canvas bare-key shortcuts gated only on `isEditableTarget` (text inputs), so when a button / menu /

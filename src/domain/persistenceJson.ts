@@ -40,6 +40,12 @@ export const importFromJSON = (raw: string): TPDocument => {
   // the document is at CURRENT_SCHEMA_VERSION. Today the registry is empty;
   // this is the plumbing for future versions.
   parsed = migrateToCurrent(parsed);
+  // Validation runs in two tiers. NON-RECOVERABLE fields (id, diagramType,
+  // schemaVersion, and the entity / edge / group records) throw and reject the
+  // doc. RECOVERABLE / cosmetic fields (title, metadata + style toggles, the
+  // dismissed-warning set, the annotation counter) soft-degrade to a sane
+  // default so one bad value never costs the user the whole document on load
+  // (`tryParseDoc` would otherwise drop it and fall back to a backup slot).
   if (!isObject(parsed)) throw new Error('Invalid document: not an object.');
   if (parsed.schemaVersion !== CURRENT_SCHEMA_VERSION) {
     throw new Error(`Unsupported schemaVersion: ${String(parsed.schemaVersion)}`);
@@ -54,23 +60,21 @@ export const importFromJSON = (raw: string): TPDocument => {
   const edges = pruneSingletonJunctors(validateRecord(parsed.edges, validateEdge, 'edges'));
   const groups = validateRecord(parsed.groups ?? {}, validateGroup, 'groups');
 
-  let resolvedWarnings: Record<string, true> = {};
-  if (parsed.resolvedWarnings !== undefined) {
-    if (!isTrueMap(parsed.resolvedWarnings)) {
-      throw new Error('Invalid document: resolvedWarnings must map strings to literal true.');
-    }
-    resolvedWarnings = parsed.resolvedWarnings;
-  }
+  // Cosmetic feature-state (which warnings the user dismissed): a malformed
+  // value soft-degrades to "none dismissed" rather than failing the whole load.
+  // `isTrueMap(undefined)` is false, so an absent map still yields `{}`.
+  const resolvedWarnings: Record<string, true> = isTrueMap(parsed.resolvedWarnings)
+    ? parsed.resolvedWarnings
+    : {};
 
-  if (typeof parsed.nextAnnotationNumber !== 'number') {
-    throw new Error('Invalid document: nextAnnotationNumber must be a number.');
-  }
-  if (parsed.author !== undefined && typeof parsed.author !== 'string') {
-    throw new Error('Invalid document: author must be a string.');
-  }
-  if (parsed.description !== undefined && typeof parsed.description !== 'string') {
-    throw new Error('Invalid document: description must be a string.');
-  }
+  // Recoverable: a non-number counter is rebuilt from the entities (max
+  // annotation + 1) rather than failing the load. `author` / `description` are
+  // cosmetic — a non-string value is simply dropped by the conditional spread in
+  // the returned object below, so no guard (and no hard-fail) is needed here.
+  const nextAnnotationNumber: number =
+    typeof parsed.nextAnnotationNumber === 'number'
+      ? parsed.nextAnnotationNumber
+      : Object.values(entities).reduce((m, e) => Math.max(m, e.annotationNumber), 0) + 1;
   const layoutConfig = validateLayoutConfig(parsed.layoutConfig);
   const systemScope = validateSystemScope(parsed.systemScope);
   const methodChecklist = validateMethodChecklist(parsed.methodChecklist);
@@ -117,7 +121,7 @@ export const importFromJSON = (raw: string): TPDocument => {
     edges,
     groups,
     resolvedWarnings,
-    nextAnnotationNumber: parsed.nextAnnotationNumber,
+    nextAnnotationNumber,
     ...(typeof parsed.author === 'string' ? { author: parsed.author } : {}),
     ...(typeof parsed.description === 'string' ? { description: parsed.description } : {}),
     ...(layoutConfig ? { layoutConfig } : {}),

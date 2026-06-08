@@ -44,12 +44,9 @@ E1 (5 system-archetype patterns) + the tied-core-drivers Spawn-EC action (Sessio
 E6 (Session 180 — see CHANGELOG); E2 / E4 / E7 dropped to won't-build (see Out-of-scope below).
 
 ### Deferred from the Session-180 under-the-hood review (need Dann's call)
-Two findings verified real but left for a decision rather than landed unattended (see the CHANGELOG
-"Under-the-hood" entries for what *was* fixed — including the CSV multiline-import and the bare-key
-shortcut-gating bugs that used to head this list, now shipped):
-- **JSON load throws on a corrupt `resolvedWarnings` value** (`persistenceJson.ts`) → backup-slot
-  fallback, possible doc loss. The validator is deliberately strict everywhere; soft-degrading just
-  this one non-critical field to `{}` is a validation-philosophy call.
+One finding left — and it's an optional tidy-up. The CSV multiline-import, the bare-key shortcut-gating,
+and the JSON corrupt-cosmetic-field load bugs that used to head this list have all shipped (see the
+CHANGELOG "Under-the-hood" entries):
 - **Two one-shot timers not cleared on unmount** (`RevisionPanel` snapshot highlight,
   `ReadAllAtOnceDialog` copy-state). Benign under React 18 (the late `setState` is a no-op); pure
   tidy-up — left alone rather than add cleanup machinery for a non-problem.
