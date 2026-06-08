@@ -64,7 +64,11 @@ const renderPreamble = (doc: TPDocument): string[] => {
     const filled = fields.filter(([, v]) => v?.trim());
     if (filled.length > 0) {
       lines.push('', '## System scope');
-      for (const [label, val] of filled) lines.push(`- **${label}:** ${val?.trim()}`);
+      // Collapse internal newlines — system-scope fields are freeform text, and
+      // a raw newline would break the Markdown list item (the continuation
+      // renders as a sibling paragraph, dropping the `- ` prefix).
+      for (const [label, val] of filled)
+        lines.push(`- **${label}:** ${val?.trim().replace(/\r?\n/g, ' ')}`);
     }
   }
 

@@ -153,6 +153,23 @@ describe('exportPPTX — deck pipeline', () => {
     expect(allText()).toContain('On the one hand');
   });
 
+  it('pairs EC wants with their needs by ecSlot, not entity order', async () => {
+    // Wants inserted D'-then-D but needs B-then-C, so plain enumeration order
+    // would mis-pair D' with Need B. Slot-based pairing must give D→B, D'→C.
+    const goal = makeEntity({ title: 'Goal', type: 'goal', ecSlot: 'a' });
+    const needB = makeEntity({ title: 'Need B', type: 'need', ecSlot: 'b' });
+    const needC = makeEntity({ title: 'Need C', type: 'need', ecSlot: 'c' });
+    const wantDPrime = makeEntity({ title: "Want D'", type: 'want', ecSlot: 'dPrime' });
+    const wantD = makeEntity({ title: 'Want D', type: 'want', ecSlot: 'd' });
+    const doc = makeDoc([goal, needB, needC, wantDPrime, wantD], [], 'ec');
+
+    await exportPPTX(doc, NODES, 'auto');
+
+    const text = allText();
+    expect(text).toContain('"Want D" in order to meet "Need B"');
+    expect(text).toContain('"Want D\'" in order to meet "Need C"');
+  });
+
   it('falls back to the incomplete-cloud copy when the EC structure is partial', async () => {
     const goal = makeEntity({ title: 'Goal', type: 'goal' });
     const wantD = makeEntity({ title: 'Want D', type: 'want' });

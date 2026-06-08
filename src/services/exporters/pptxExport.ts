@@ -284,8 +284,14 @@ export const exportPPTX = async (
     const lines: string[] = [];
     if (goal?.title) lines.push(`Common goal: ${goal.title}`);
     if (wants.length === 2 && needs.length === 2) {
-      const [d, dPrime] = wants;
-      const [b, c] = needs;
+      // Pair by EC slot, not enumeration order, so D/D' (and the needs they
+      // serve) can't be swapped when the entities aren't stored in slot order
+      // (e.g. a different JSON key order). Falls back to enumeration order for a
+      // legacy slot-less EC, preserving the prior behaviour there.
+      const d = wants.find((w) => w.ecSlot === 'd') ?? wants[0];
+      const dPrime = wants.find((w) => w.ecSlot === 'dPrime') ?? wants[1];
+      const b = needs.find((n) => n.ecSlot === 'b') ?? needs[0];
+      const c = needs.find((n) => n.ecSlot === 'c') ?? needs[1];
       lines.push('');
       lines.push(
         `On the one hand, we want "${d?.title ?? '—'}" in order to meet "${b?.title ?? '—'}".`

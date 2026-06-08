@@ -39,6 +39,15 @@ describe('exportReasoningNarrative — common shape', () => {
     expect(md).toContain('by Alice');
   });
 
+  it('collapses newlines in system-scope values so the Markdown list stays intact', () => {
+    useDocumentStore.getState().setTitle('CRT');
+    useDocumentStore.getState().setSystemScope({ boundaries: 'Line one\nLine two' });
+    const md = exportReasoningNarrative(doc());
+    expect(md).toContain('- **Boundaries:** Line one Line two');
+    // The continuation must not break out of the bullet into a sibling line.
+    expect(md).not.toContain('Line one\nLine two');
+  });
+
   it('renders one sentence per edge in topological order (causes first)', () => {
     seedChain(['A', 'B', 'C']);
     const md = exportReasoningNarrative(doc());
