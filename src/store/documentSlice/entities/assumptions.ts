@@ -126,8 +126,9 @@ export function createAssumptionActions({
       applyDocChange((prev) => {
         const cur = prev.assumptions?.[assumptionId];
         if (!cur) return prev;
-        // No-op when the value is unchanged (treat absent === undefined).
-        if ((cur.kind ?? undefined) === kind) return prev;
+        // No-op when the value is unchanged. An absent optional field already
+        // reads as `undefined`, so a plain `===` treats absent === undefined.
+        if (cur.kind === kind) return prev;
         // Emit-or-omit: clearing the kind drops the field entirely
         // rather than storing `kind: undefined`, matching the rest of
         // the optional-field convention (and exactOptionalPropertyTypes).

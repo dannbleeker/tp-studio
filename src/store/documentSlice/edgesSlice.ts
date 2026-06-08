@@ -12,7 +12,7 @@ import {
 } from '@/domain/graph';
 import type { AttrValue, Edge, EdgeWeight, Entity, Patch } from '@/domain/types';
 import type { RootStore } from '../types';
-import { edgePatch, makeApplyDocChange, touch } from './docMutate';
+import { edgePatch, makeApplyDocChange, prunedSpread, touch } from './docMutate';
 
 /**
  * Bundle 8 / FL-ED3 + FL-ED4 — the three mutually-exclusive junctor
@@ -208,8 +208,7 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
         return touch({
           ...prev,
           edges,
-          ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
-          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
+          ...prunedSpread(prev, { assumptions, comments }),
         });
       });
       set({ selection: { kind: 'none' } });
@@ -339,7 +338,9 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       applyDocChange((prev) => {
         const cur = prev.edges[edgeId];
         if (!cur) return prev;
-        if ((cur.weight ?? undefined) === weight) return prev;
+        // Absent optional field reads as `undefined`, so `===` treats
+        // absent === undefined (no-op when unchanged / clearing a never-set).
+        if (cur.weight === weight) return prev;
         if (weight === undefined) {
           const { weight: _drop, ...rest } = cur;
           return touch({ ...prev, edges: { ...prev.edges, [edgeId]: rest as Edge } });
@@ -453,8 +454,7 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
           entities: { ...prev.entities, [newEntity.id]: newEntity },
           edges: nextEdges,
           nextAnnotationNumber: annotationNumber + 1,
-          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
-          ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
+          ...prunedSpread(prev, { assumptions, comments }),
         });
       });
       // Select + enter inline-edit on the new entity so the user can type a
@@ -526,8 +526,7 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
         return touch({
           ...prev,
           edges: nextEdges,
-          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
-          ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
+          ...prunedSpread(prev, { assumptions, comments }),
         });
       });
       return true;

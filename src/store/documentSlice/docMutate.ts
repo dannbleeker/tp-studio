@@ -169,3 +169,34 @@ export const scrubFromGroups = (
   }
   return changed ? out : groups;
 };
+
+/**
+ * Conditional spread for prune / re-home results when rebuilding a document.
+ *
+ * The graph-prune helpers (`pruneAssumptions`, `pruneComments`,
+ * `rehomeAssumptions`, `reanchorEdgeComments`) return the SAME reference when
+ * nothing changed and a fresh map otherwise. Splicing an UNCHANGED map back
+ * into a doc update would needlessly break reference-equality — the WeakMap
+ * caches and identity-based memos keyed on `doc.comments` / `doc.assumptions`
+ * would invalidate for nothing. So each field is included ONLY when the prune
+ * actually produced a new reference, and an explicit `undefined` is never
+ * passed (which `exactOptionalPropertyTypes` would reject anyway).
+ *
+ * Extracted from five mutation sites — deleteEntity, deleteEntitiesAndEdges,
+ * deleteEdge, spliceEdge, spliceEntityIntoEdge — that open-coded the identical
+ * two-line spread (see git history for the duplicated form).
+ */
+export const prunedSpread = (
+  prev: TPDocument,
+  pruned: {
+    assumptions?: TPDocument['assumptions'];
+    comments?: TPDocument['comments'];
+  }
+): Partial<Pick<TPDocument, 'assumptions' | 'comments'>> => ({
+  ...(pruned.assumptions !== undefined && pruned.assumptions !== prev.assumptions
+    ? { assumptions: pruned.assumptions }
+    : {}),
+  ...(pruned.comments !== undefined && pruned.comments !== prev.comments
+    ? { comments: pruned.comments }
+    : {}),
+});

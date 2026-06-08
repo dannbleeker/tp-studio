@@ -22,7 +22,7 @@ import {
 import { saveDocToLocalStorage } from '@/domain/persistence';
 import type { DocumentId, Entity, EntityState, EntityType, Patch } from '@/domain/types';
 import { currentDoc } from '../../selectors';
-import { entityPatch, scrubFromGroups, touch } from '../docMutate';
+import { entityPatch, prunedSpread, scrubFromGroups, touch } from '../docMutate';
 import { stripMirrorLinks } from '../linkPrune';
 import type { EntityFactoryDeps } from './shared';
 
@@ -151,8 +151,7 @@ export function createEntityCrudActions({
           entities: rest,
           edges,
           groups: scrubFromGroups(prev.groups, [id]),
-          ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
-          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
+          ...prunedSpread(prev, { assumptions, comments }),
         });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });
@@ -268,8 +267,7 @@ export function createEntityCrudActions({
           entities,
           edges: nextEdges,
           groups: scrubFromGroups(prev.groups, entityIds),
-          ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
-          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
+          ...prunedSpread(prev, { assumptions, comments }),
         });
       });
       set({ selection: { kind: 'none' }, editingEntityId: null });
@@ -284,10 +282,10 @@ export function createEntityCrudActions({
         for (const { id, state } of entries) {
           const cur = prev.entities[id];
           if (!cur) continue;
-          // No-op per entity when the state already matches (treat
-          // absent === undefined so clearing a never-set field is a
-          // no-op too).
-          if ((cur.state ?? undefined) === state) continue;
+          // No-op per entity when the state already matches. An absent
+          // optional field reads as `undefined`, so a plain `===` treats
+          // absent === undefined (clearing a never-set field is a no-op too).
+          if (cur.state === state) continue;
           // Emit-or-omit: clearing drops the field rather than storing
           // `state: undefined` (exactOptionalPropertyTypes + the
           // persist convention).
