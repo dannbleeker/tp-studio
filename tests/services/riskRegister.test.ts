@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { buildRiskRegisterCsv } from '@/services/exporters/riskRegister';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { buildRiskRegisterCsv, exportRiskRegister } from '@/services/exporters/riskRegister';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 
@@ -98,5 +98,37 @@ describe('buildRiskRegisterCsv', () => {
     expect(csv).toContain('"Drop, then plateau"');
     // Embedded double-quote gets doubled.
     expect(csv).toContain('""scare quote""');
+  });
+});
+
+describe('exportRiskRegister — row count (toast)', () => {
+  const fakeUrl = 'blob:http://localhost/fake-object-url';
+
+  beforeEach(() => {
+    // jsdom implements neither URL.createObjectURL nor revokeObjectURL; fake
+    // timers keep triggerDownload's deferred revoke from firing post-test.
+    vi.stubGlobal('URL', {
+      ...URL,
+      createObjectURL: vi.fn(() => fakeUrl),
+      revokeObjectURL: vi.fn(),
+    });
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('counts one row per UDE even when a description spans multiple lines', () => {
+    // Regression: the count came from `csv.split('\n')`, which an RFC-4180
+    // quoted multi-line `description` cell inflated. Two UDEs — one with an
+    // embedded newline — must report exactly 2, not 3.
+    const u1 = seedEntity('Customer churn', 'ude');
+    seedEntity('Revenue dip', 'ude');
+    useDocumentStore.getState().updateEntity(u1.id, {
+      description: 'Line one\nLine two\nLine three',
+    });
+    expect(exportRiskRegister(doc())).toBe(2);
   });
 });

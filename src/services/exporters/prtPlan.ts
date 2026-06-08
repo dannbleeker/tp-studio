@@ -1,5 +1,5 @@
 import { incomingEdges, isAssumption, outgoingEdges, structuralEntities } from '@/domain/graph';
-import type { Entity, TPDocument } from '@/domain/types';
+import type { Edge, Entity, TPDocument } from '@/domain/types';
 import { csvRow, slug, triggerDownload } from './shared';
 
 /**
@@ -89,6 +89,16 @@ export const orderedIntermediateObjectives = (doc: TPDocument): Entity[] => {
     inDegree.set(edge.targetId, (inDegree.get(edge.targetId) ?? 0) + 1);
   }
 
+  // Outgoing adjacency built once so the Kahn dequeue below is O(V+E) rather
+  // than O(V·E) — it previously re-scanned every edge (`edges.filter(...)`) on
+  // each node popped from the queue.
+  const outgoing = new Map<string, Edge[]>();
+  for (const edge of edges) {
+    const list = outgoing.get(edge.sourceId);
+    if (list) list.push(edge);
+    else outgoing.set(edge.sourceId, [edge]);
+  }
+
   const ready: Entity[] = [];
   for (const [id, d] of inDegree) {
     if (d === 0) {
@@ -105,7 +115,7 @@ export const orderedIntermediateObjectives = (doc: TPDocument): Entity[] => {
     if (!next || visited.has(next.id)) continue;
     visited.add(next.id);
     order.push(next);
-    for (const edge of edges.filter((e) => e.sourceId === next.id)) {
+    for (const edge of outgoing.get(next.id) ?? []) {
       const remaining = (inDegree.get(edge.targetId) ?? 0) - 1;
       inDegree.set(edge.targetId, remaining);
       if (remaining <= 0) {
@@ -178,5 +188,7 @@ export const exportPrtPlan = (doc: TPDocument): number => {
   const csv = buildPrtPlanCsv(doc);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   triggerDownload(blob, `${slug(doc.title)}-prt-plan.csv`);
-  return csv.split('\n').filter((line) => line.length > 0).length - 1;
+  // One CSV record per ordered IO — count the source rows directly so a cell
+  // with an embedded newline (quoted per RFC 4180) can't inflate the toast.
+  return orderedIntermediateObjectives(doc).length;
 };

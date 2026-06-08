@@ -222,6 +222,7 @@ export const exportRiskRegister = (doc: TPDocument): number => {
   const csv = buildRiskRegisterCsv(doc);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   triggerDownload(blob, `${slug(doc.title)}-risk-register.csv`);
-  // Subtract 1 for the header.
-  return csv.split('\n').filter((line) => line.length > 0).length - 1;
+  // One CSV record per UDE — count the source rows directly so a multi-line
+  // `description` cell (quoted per RFC 4180) can't inflate the toast count.
+  return Object.values(doc.entities).filter((e) => e.type === 'ude').length;
 };

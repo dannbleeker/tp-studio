@@ -205,5 +205,7 @@ export const exportTtTasks = (doc: TPDocument): number => {
   const csv = buildTtTasksCsv(doc);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   triggerDownload(blob, `${slug(doc.title)}-tt-tasks.csv`);
-  return csv.split('\n').filter((line) => line.length > 0).length - 1;
+  // One CSV record per action — count the source rows directly so a cell with
+  // an embedded newline (quoted per RFC 4180) can't inflate the toast count.
+  return Object.values(doc.entities).filter((e) => e.type === 'action').length;
 };
