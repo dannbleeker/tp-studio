@@ -2,6 +2,47 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Under-the-hood: correctness + performance
+
+A review-and-fix pass surfacing latent bugs and hot-path waste — every change gated and
+output-preserving, no feature or behaviour changes. Found by a parallel correctness review
+plus a hot-path perf audit; each finding verified against the source before applying (one
+audit "finding" cited a non-existent file and was dropped).
+
+**Correctness.**
+- **Revision diff was blind to most edge edits.** The history panel's edge comparison only
+  checked source / target / AND-group / label, so changing an edge's polarity, OR/XOR junctor,
+  back-edge / delay / mutex flag, kind, description, or loop name/narrative reported "no
+  changes." Now compares every edge field.
+- **Bulk delete left orphaned junctors.** Deleting a multi-selection cascaded edges but skipped
+  the `pruneSingletonJunctors` step the single-entity delete applies, so removing one of two
+  AND/OR/XOR co-causes left the survivor tagged with a vacuous group id (a lone junctor circle).
+  Now prunes, matching the single path.
+- **"Restore defaults" skipped two preferences.** `resetPreferencesToDefaults` omitted
+  `layoutDensity` and `printLayout`, silently keeping (and re-persisting) the user's values for
+  those two. Now resets them.
+- **Context menu had duplicate React keys.** Label-based keys collided when two rows shared a
+  label (several untitled edges in the edge-picker, two "Delete" rows); switched to index-based
+  keys so reconciliation is stable.
+- **CSV exporters over-counted the toast.** The "N risks / actions / objectives exported" count
+  came from `csv.split('\n')`, which an RFC-4180-quoted multi-line cell inflated (a multi-line
+  UDE description over-counted the risk register). Now counts the source rows directly.
+- **File picker hung on cancel.** `pickFile()` only resolved from `onchange`; a dismissed dialog
+  fires `cancel`, not `change`, so the promise never settled and `await pickFile(...)` leaked the
+  suspended continuation. Wired `oncancel`.
+
+**Performance.**
+- **PRT-plan topo-sort was O(V·E).** `orderedIntermediateObjectives` re-scanned every edge
+  (`edges.filter`) on each node popped from the Kahn queue; built a sourceId→edges adjacency map
+  once (O(V+E)). Topological order is identical.
+- **Memoized edge badges re-rendered needlessly.** TPEdge handed the memoized TPEdgeBadges inline
+  `onOpen` / `onSelect` arrows (React Compiler is off, so nothing stabilises them), defeating their
+  `memo`; hoisted to `useCallback`, restoring the Session 135 skip.
+- **Anchor-signature memo over-recomputed.** `assumptionAnchorSig` keyed on the whole `doc`,
+  re-running on every keystroke / drag frame; narrowed to `[doc.edges]` like its siblings.
+
++9 regression tests pin the fixes. Each change committed + gated + green on CI separately.
+
 ## Session 180 (cont.) — Book: practitioner improvements
 
 Six additions to the practitioner book (`docs/guide/`) that turn it from "explains the method"
