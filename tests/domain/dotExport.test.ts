@@ -60,6 +60,31 @@ describe('exportToDot (Block D / N2)', () => {
     expect(boldCount).toBe(2);
   });
 
+  it('renders OR-grouped edges with style=dashed (not bold)', () => {
+    const { a, b, c } = seedAndGroupable();
+    const result = useDocumentStore.getState().groupAsOr(
+      Object.values(useDocumentStore.getState().doc.edges)
+        .filter((e) => (e.sourceId === a.id || e.sourceId === b.id) && e.targetId === c.id)
+        .map((e) => e.id)
+    );
+    expect(result.ok).toBe(true);
+    const dot = exportCurrent();
+    expect((dot.match(/style=dashed/g) ?? []).length).toBe(2);
+    expect(dot).not.toContain('style=bold');
+  });
+
+  it('renders XOR-grouped edges with style=dotted', () => {
+    const { a, b, c } = seedAndGroupable();
+    const result = useDocumentStore.getState().groupAsXor(
+      Object.values(useDocumentStore.getState().doc.edges)
+        .filter((e) => (e.sourceId === a.id || e.sourceId === b.id) && e.targetId === c.id)
+        .map((e) => e.id)
+    );
+    expect(result.ok).toBe(true);
+    const dot = exportCurrent();
+    expect((dot.match(/style=dotted/g) ?? []).length).toBe(2);
+  });
+
   it('escapes double quotes, backslashes, and newlines inside labels', () => {
     seedEntity('He said "hi"\nand left');
     const dot = exportCurrent();

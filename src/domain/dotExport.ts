@@ -59,7 +59,14 @@ export const exportToDot = (doc: TPDocument): string => {
     if (!src || !tgt || isAssumption(src) || isAssumption(tgt)) continue;
     const attrs: string[] = [];
     if (edge.label?.trim()) attrs.push(`label="${escapeDot(edge.label.trim())}"`);
+    // Distinguish junctor groups by line style — plain DOT can't draw the
+    // grouped Flying-Logic junction, so the edge style carries the semantics:
+    // AND = bold, OR = dashed, XOR (mutex) = dotted. An edge can carry more than
+    // one group id on a corrupt import; resolve and > or > xor to match the
+    // import-collapse rule.
     if (edge.andGroupId) attrs.push('style=bold');
+    else if (edge.orGroupId) attrs.push('style=dashed');
+    else if (edge.xorGroupId) attrs.push('style=dotted');
     const attrStr = attrs.length ? ` [${attrs.join(', ')}]` : '';
     lines.push(`  ${dotId(edge.sourceId)} -> ${dotId(edge.targetId)}${attrStr};`);
   }
