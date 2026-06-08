@@ -57,6 +57,23 @@ describe('importFromJSON — cosmetic fields soft-degrade instead of failing the
     json.nextAnnotationNumber = 'corrupt';
     expect(importFromJSON(JSON.stringify(json)).nextAnnotationNumber).toBe(6);
   });
+
+  it('drops edges whose endpoints no longer resolve to an entity', () => {
+    resetIds();
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const json = JSON.parse(exportToJSON(makeDoc([a, b], []))) as Record<string, unknown>;
+    // A valid edge a->b plus a dangling edge whose target is a ghost id — only
+    // reachable via a malformed / hand-edited import (validateEdge checks shape,
+    // not endpoint existence).
+    json.edges = {
+      keep: { id: 'keep', sourceId: a.id, targetId: b.id, kind: 'sufficiency' },
+      drop: { id: 'drop', sourceId: a.id, targetId: 'ghost', kind: 'sufficiency' },
+    };
+    const imported = importFromJSON(JSON.stringify(json));
+    expect(imported.edges.keep).toBeDefined();
+    expect(imported.edges.drop).toBeUndefined();
+  });
 });
 
 describe('importFromJSON — structural fields still reject the document', () => {

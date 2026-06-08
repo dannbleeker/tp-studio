@@ -72,6 +72,32 @@ export const pruneSingletonJunctors = (edges: Record<string, Edge>): Record<stri
 };
 
 /**
+ * Drop edges whose source or target entity no longer exists. A well-formed
+ * document never carries these — delete cascades remove an entity's edges — but
+ * a malformed or hand-edited JSON import can, and `validateEdge` only checks an
+ * edge's SHAPE, not that its endpoints resolve to real entities. Pruning on
+ * import keeps the in-memory doc well-formed, so the many readers that guard
+ * with `if (!src || !tgt) continue` are defending against a state that no longer
+ * occurs post-load. Returns the SAME `edges` reference when nothing was dangling
+ * so callers can spread it conditionally.
+ */
+export const pruneDanglingEdges = (
+  edges: Record<string, Edge>,
+  entities: Record<string, Entity>
+): Record<string, Edge> => {
+  let changed = false;
+  const next: Record<string, Edge> = {};
+  for (const [id, edge] of Object.entries(edges)) {
+    if (entities[edge.sourceId] && entities[edge.targetId]) {
+      next[id] = edge;
+    } else {
+      changed = true;
+    }
+  }
+  return changed ? next : edges;
+};
+
+/**
  * Prune the first-class `doc.assumptions` map against a POST-deletion set of
  * surviving edges + entities:
  *   - drop any Assumption whose host edge no longer exists (an orphan — the

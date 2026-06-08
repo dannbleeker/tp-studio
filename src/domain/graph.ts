@@ -32,6 +32,7 @@ export {
   openCommentCountsByAnchor,
   pruneAssumptions,
   pruneComments,
+  pruneDanglingEdges,
   pruneSingletonJunctors,
   reanchorEdgeComments,
   rehomeAssumptions,

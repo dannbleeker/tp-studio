@@ -1,6 +1,6 @@
 import { errorMessage } from '@/services/errors';
 import { isCloudType } from './cloudType';
-import { pruneSingletonJunctors } from './graphPrune';
+import { pruneDanglingEdges, pruneSingletonJunctors } from './graphPrune';
 import { isDiagramType, isObject, isTrueMap } from './guards';
 import { CURRENT_SCHEMA_VERSION, migrateToCurrent } from './migrations';
 import {
@@ -55,9 +55,13 @@ export const importFromJSON = (raw: string): TPDocument => {
     throw new Error('Invalid document: bad diagramType.');
   }
   const entities = validateRecord(parsed.entities, validateEntity, 'entities');
-  // Tidy any junctor group left with a single input — an older doc or import
-  // can carry a logically-vacuous "AND of one"; collapse it to a plain edge.
-  const edges = pruneSingletonJunctors(validateRecord(parsed.edges, validateEdge, 'edges'));
+  // Drop dangling edges (an endpoint no longer resolves to an entity — only
+  // possible on a malformed / hand-edited import) FIRST, then tidy any junctor
+  // group left with a single input — an older doc or import can carry a
+  // logically-vacuous "AND of one"; collapse it to a plain edge.
+  const edges = pruneSingletonJunctors(
+    pruneDanglingEdges(validateRecord(parsed.edges, validateEdge, 'edges'), entities)
+  );
   const groups = validateRecord(parsed.groups ?? {}, validateGroup, 'groups');
 
   // Cosmetic feature-state (which warnings the user dismissed): a malformed
