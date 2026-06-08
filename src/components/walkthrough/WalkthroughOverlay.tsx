@@ -62,12 +62,28 @@ function WalkthroughOverlayBody() {
   // topmost surface without also clearing the canvas selection.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight' || e.key === ' ') {
+      // Space is also the native "activate the focused control" key. Focus is
+      // trapped inside the card (useFocusTrap below), so a button almost always
+      // owns focus — hijacking Space there would steal its click and keyboard
+      // users couldn't press Resolve / Next / Close. Arrow keys don't activate
+      // controls, so they always drive step nav; Space only advances when no
+      // control owns focus (e.g. the card itself).
+      const target = e.target as HTMLElement | null;
+      const onControl =
+        target instanceof HTMLButtonElement ||
+        target instanceof HTMLAnchorElement ||
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable === true;
+      if (e.key === 'ArrowRight') {
         e.preventDefault();
         walkthroughNext();
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         walkthroughPrev();
+      } else if (e.key === ' ' && !onControl) {
+        e.preventDefault();
+        walkthroughNext();
       }
     };
     window.addEventListener('keydown', handler);

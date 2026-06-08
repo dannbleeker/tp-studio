@@ -189,6 +189,16 @@ export const exportToFlyingLogic = (doc: TPDocument): string => {
         const sourceAttrs: string[] = [
           `<attribute key="tp-studio-edge-id" class="java.lang.String">${escapeXml(edge.id)}</attribute>`,
         ];
+        // Carry the edge label on the source→junctor edge (the one tagged with
+        // tp-studio-edge-id, which the reader reconstructs the TP edge from), so
+        // a labelled AND/OR/XOR edge survives the round-trip — matching the
+        // direct-edge branch below. Without this the reader's `inE.label` read
+        // came back empty and the label was silently dropped on re-import.
+        if (edge.label) {
+          sourceAttrs.push(
+            `<attribute key="label" class="java.lang.String">${escapeXml(edge.label)}</attribute>`
+          );
+        }
         if (edge.weight) {
           sourceAttrs.push(
             `<attribute key="tp-studio-weight" class="java.lang.String">${edge.weight}</attribute>`

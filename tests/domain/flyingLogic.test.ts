@@ -150,6 +150,21 @@ describe('round-trip: TP → FL → TP', () => {
     const reimported = importFromFlyingLogic(xml);
     expect(reimported.edges[e.id]?.label).toBe('within 30 days');
   });
+
+  it('preserves labels on AND-grouped edges through the round-trip', () => {
+    // Regression: the source→junctor edge omitted the `label` attribute the
+    // direct-edge path emits, so a labelled AND/OR/XOR edge lost its label on
+    // re-import even though the reader was ready to read it back.
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const target = makeEntity({ title: 'C' });
+    const e1 = makeEdge(a.id, target.id, { andGroupId: 'g1', label: 'min 2 weeks' });
+    const e2 = makeEdge(b.id, target.id, { andGroupId: 'g1' });
+    const doc = makeDoc([a, b, target], [e1, e2]);
+    const xml = exportToFlyingLogic(doc);
+    const reimported = importFromFlyingLogic(xml);
+    expect(reimported.edges[e1.id]?.label).toBe('min 2 weeks');
+  });
 });
 
 describe('importFromFlyingLogic — nested user-saved schema', () => {
