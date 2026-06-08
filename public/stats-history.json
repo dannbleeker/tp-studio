@@ -12,10 +12,10 @@
   },
   {
     "date": "2026-06-08",
-    "linesTsJs": 123648,
+    "linesTsJs": 123677,
     "coveragePct": 96.87,
     "tests": 4132,
-    "bundleKb": 803.2,
+    "bundleKb": 803.3,
     "mutationScore": 70.15,
     "featureManualPct": 100,
     "featureBookPct": 76.7,
