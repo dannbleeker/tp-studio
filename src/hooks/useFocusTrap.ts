@@ -66,7 +66,11 @@ export const useFocusTrap = (
       if (e.key !== 'Tab') return;
       const list = focusables();
       if (list.length === 0) {
+        // No focusable children — keep focus on the container (as the mount path
+        // does) rather than swallowing Tab into a dead-end the keyboard user
+        // can't escape.
         e.preventDefault();
+        root.focus();
         return;
       }
       const firstEl = list[0]!;

@@ -199,6 +199,24 @@ describe('useFocusTrap — initialFocus', () => {
     render(<ContainerHarness />);
     expect(document.activeElement).toBe(getTrap());
   });
+
+  it('keeps focus on the container when Tab fires with no focusable children', () => {
+    // Regression: this branch used to preventDefault and return, dead-ending a
+    // keyboard user; it now routes focus to the (tabIndex) container, mirroring
+    // the mount fallback.
+    const EmptyHarness = () => {
+      const ref = useRef<HTMLDivElement>(null);
+      useFocusTrap(ref, true, { initialFocus: false });
+      return (
+        <div ref={ref} tabIndex={-1} data-testid="trap">
+          <span>not focusable</span>
+        </div>
+      );
+    };
+    render(<EmptyHarness />);
+    fireTab(getTrap());
+    expect(document.activeElement).toBe(getTrap());
+  });
 });
 
 // ---------------------------------------------------------------------------

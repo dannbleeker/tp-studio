@@ -8,6 +8,7 @@ import {
 } from '@xyflow/react';
 import { lazy, Suspense, useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { GRID_DOT } from '@/domain/tokens';
 import { guardWriteOrToast } from '@/services/browseLock';
@@ -311,14 +312,18 @@ function CanvasInner() {
               // sits just inside the canvas top.
               <div className="pointer-events-none absolute top-2 right-0 left-0 z-10 flex flex-col items-stretch gap-1 px-4">
                 <div className="pointer-events-auto">
-                  <Suspense fallback={null}>
-                    <ECReadingInstructions />
-                  </Suspense>
+                  <ErrorBoundary fallback={null}>
+                    <Suspense fallback={null}>
+                      <ECReadingInstructions />
+                    </Suspense>
+                  </ErrorBoundary>
                 </div>
                 <div className="pointer-events-auto w-full">
-                  <Suspense fallback={null}>
-                    <VerbalisationStrip />
-                  </Suspense>
+                  <ErrorBoundary fallback={null}>
+                    <Suspense fallback={null}>
+                      <VerbalisationStrip />
+                    </Suspense>
+                  </ErrorBoundary>
                 </div>
               </div>
             )}
@@ -326,9 +331,11 @@ function CanvasInner() {
                 the chrome in a header row it no longer shares a band with the
                 toolbar buttons, so it sits just inside the canvas top. */}
             <div className="pointer-events-none absolute top-2 right-4 z-10 flex justify-end">
-              <Suspense fallback={null}>
-                <ECInjectionChip />
-              </Suspense>
+              <ErrorBoundary fallback={null}>
+                <Suspense fallback={null}>
+                  <ECInjectionChip />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </>
         )}
@@ -345,9 +352,11 @@ function CanvasInner() {
           component returns null when no wizard is active, so the
           unconditional mount is safe; renders top-left over the
           canvas otherwise. Lazy-loaded (bundle #17) — null until first opened. */}
-      <Suspense fallback={null}>
-        <CreationWizardPanel />
-      </Suspense>
+      <ErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <CreationWizardPanel />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }
