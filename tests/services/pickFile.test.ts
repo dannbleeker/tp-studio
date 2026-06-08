@@ -79,6 +79,25 @@ describe('pickFile', () => {
     expect(useDocumentStore.getState().toasts).toHaveLength(0);
   });
 
+  it('resolves null when the dialog is dismissed (cancel event, no change)', async () => {
+    // Real dismissal fires `cancel`, never `change`. Before `oncancel` was
+    // wired the promise never settled and `await pickFile(...)` hung forever
+    // (leaking the suspended continuation). Drive ONLY the cancel handler.
+    const realCreate = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation(((tag: string) => {
+      const el = realCreate(tag);
+      if (tag === 'input') {
+        const input = el as HTMLInputElement;
+        input.click = () => input.oncancel?.(new Event('cancel'));
+      }
+      return el;
+    }) as typeof document.createElement);
+
+    const result = await pickFile({ accept: '*', label: 'Test', parse: () => 'ok' });
+    expect(result).toBeNull();
+    expect(useDocumentStore.getState().toasts).toHaveLength(0);
+  });
+
   it('passes file text to parse and returns the result', async () => {
     const file = makeTextFile('hello world');
     interceptFilePicker([file]);

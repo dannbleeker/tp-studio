@@ -50,6 +50,12 @@ export function pickFile<T>(opts: {
         resolve(null);
       }
     };
+    // A dismissed picker (Cancel / Esc) fires `cancel`, never `change`; without
+    // this the promise would never settle and `await pickFile(...)` would hang
+    // forever, leaking the suspended continuation. `oncancel` is supported in
+    // every browser TP Studio targets (Chrome/Edge 113+, Firefox 91+,
+    // Safari 16.4+); on anything older this is simply a no-op (no regression).
+    input.oncancel = () => resolve(null);
     input.click();
   });
 }

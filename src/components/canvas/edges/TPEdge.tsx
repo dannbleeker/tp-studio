@@ -5,7 +5,7 @@
 // the Session 105 comparator's behavior stays intact.
 
 import { BaseEdge, type EdgeProps, getBezierPath, Position } from '@xyflow/react';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/domain/constants';
 import { EDGE_PALETTES } from '@/domain/tokens';
@@ -236,6 +236,20 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       setECInspectorTab: s.setECInspectorTab,
     }))
   );
+  // Stable handlers so the memoized mid-edge badges (TPEdgeBadges) can skip
+  // re-rendering when only this edge's geometry/selection changes. Inline
+  // arrows would hand each badge a fresh `onOpen` ref every render and defeat
+  // its `memo` (React Compiler is off — see vite.config.ts — so nothing else
+  // stabilises them). Mirrors TPNode's `handleOpenComments`.
+  const handleOpenAssumptions = useCallback(() => {
+    selectEdge(props.id);
+    setECInspectorTab('inspector');
+  }, [selectEdge, setECInspectorTab, props.id]);
+  const handleOpenComments = useCallback(() => {
+    selectEdge(props.id);
+    useDocumentStore.getState().openCommentsPanel();
+  }, [selectEdge, props.id]);
+  const handleSelectEdge = useCallback(() => selectEdge(props.id), [selectEdge, props.id]);
   // Session 87 UX fix #5 — for the EC D↔D′ mutex edge, the default
   // Left/Right handle layout on EC entities sends the bezier looping
   // around the diagram (D's left side → D′'s right side, with both
@@ -538,10 +552,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           labelY={labelY}
           edgeId={props.id}
           count={assumptionCount}
-          onOpen={() => {
-            selectEdge(props.id);
-            setECInspectorTab('inspector');
-          }}
+          onOpen={handleOpenAssumptions}
         />
       )}
       {openCommentCount > 0 && (
@@ -550,10 +561,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           labelY={labelY}
           edgeId={props.id}
           count={openCommentCount}
-          onOpen={() => {
-            selectEdge(props.id);
-            useDocumentStore.getState().openCommentsPanel();
-          }}
+          onOpen={handleOpenComments}
         />
       )}
       {hasDescription && <DescriptionBadge labelX={labelX} labelY={labelY} />}
@@ -565,7 +573,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           truncated={truncatedLabel}
           // Goal #3 — clicking the label selects the edge (select only; unlike
           // the assumption badge it doesn't also force the EC inspector tab).
-          onSelect={() => selectEdge(props.id)}
+          onSelect={handleSelectEdge}
         />
       )}
       {fallbackLabel && <FallbackLabel labelX={labelX} labelY={labelY} text={fallbackLabel} />}
