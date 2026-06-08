@@ -42,6 +42,26 @@ the full rationale). **Every candidate is now shipped or explicitly dropped:** A
 E1 (5 system-archetype patterns) + the tied-core-drivers Spawn-EC action (Session 179); A3, A4, E3, E5,
 E6 (Session 180 — see CHANGELOG); E2 / E4 / E7 dropped to won't-build (see Out-of-scope below).
 
+### Deferred from the Session-180 under-the-hood review (need Dann's call)
+Four findings verified real but left for a decision rather than landed unattended (see the CHANGELOG
+"Under-the-hood: correctness + performance" entry for what *was* fixed):
+- **CSV import drops multiline quoted fields.** `csvImport.ts` splits on `\n` *before* quote-parsing,
+  so an Excel/Sheets cell with an embedded newline (valid RFC 4180) breaks the row — a truncated
+  description plus a phantom / `Unknown type` row. Fix = a whole-document quote-aware tokenizer (unify
+  the outer line-split with `parseCsvLine`'s quote state). Real bug; deferred because a parser rewrite
+  carries real regression risk for the common case.
+- **Delete/Backspace fires when a non-input control has focus.** `isEditableTarget` (keyboardUtils)
+  only guards INPUT / TEXTAREA / contenteditable, so Backspace while a toolbar/canvas `<button>` is
+  focused triggers delete-selection. The broad fix (treat every button as "in a field") would disable
+  *all* shortcuts whenever any button has focus — needs a targeted decision (gate only the destructive
+  keys against button focus?).
+- **JSON load throws on a corrupt `resolvedWarnings` value** (`persistenceJson.ts`) → backup-slot
+  fallback, possible doc loss. The validator is deliberately strict everywhere; soft-degrading just
+  this one non-critical field to `{}` is a validation-philosophy call.
+- **Two one-shot timers not cleared on unmount** (`RevisionPanel` snapshot highlight,
+  `ReadAllAtOnceDialog` copy-state). Benign under React 18 (the late `setState` is a no-op); pure
+  tidy-up — left alone rather than add cleanup machinery for a non-problem.
+
 ---
 
 ## Out of scope — won't build
