@@ -454,9 +454,12 @@ describe('junctorObstacleBoxes', () => {
     const cy = NODE_MIN_HEIGHT + JUNCTOR_CENTER_OFFSET_Y;
     expect(box.x + box.width / 2).toBeCloseTo(cx, 6);
     expect(box.y + box.height / 2).toBeCloseTo(cy, 6);
-    // Size = the visible ellipse + an 8 px margin so edges clear it.
-    expect(box.width).toBe(2 * (JUNCTOR_RADIUS_X + 8));
-    expect(box.height).toBe(2 * (JUNCTOR_RADIUS + 8));
+    // Size = the BARE visible ellipse. The single routing clearance
+    // (NODE_OBSTACLE_MARGIN) is applied once downstream by computeEdgeRoutes,
+    // exactly like a real node — pre-inflating the box here too double-padded
+    // junctors (over-clearing them by 8px vs a same-size node).
+    expect(box.width).toBe(2 * JUNCTOR_RADIUS_X);
+    expect(box.height).toBe(2 * JUNCTOR_RADIUS);
   });
 
   it('returns no boxes for a junctor-free doc', () => {

@@ -46,10 +46,6 @@ import { useDocumentStore } from '@/store';
 import { junctorCenterX } from '../edges/junctorGeometry';
 import { nodeSizeFor } from './graphViewConstants';
 
-/** Padding around a junctor circle's obstacle box, so routed edges clear the
- *  visible ellipse rather than grazing it. */
-const JUNCTOR_OBSTACLE_MARGIN = 8;
-
 /** Extra padding added to every obstacle box FOR ROUTING ONLY (anchoring still
  *  uses the exact `allBoxes`), so a routed edge that passes a card it isn't
  *  attached to keeps a visible gap instead of grazing the card and reading as if
@@ -110,8 +106,13 @@ export const junctorObstacleBoxes = (
     }
     const cx = junctorCenterX(causeXs, tPos.x + tSize.width / 2);
     const cy = tPos.y + tSize.height + JUNCTOR_CENTER_OFFSET_Y;
-    const halfW = JUNCTOR_RADIUS_X + JUNCTOR_OBSTACLE_MARGIN;
-    const halfH = JUNCTOR_RADIUS + JUNCTOR_OBSTACLE_MARGIN;
+    // The box is the BARE visible ellipse — the uniform NODE_OBSTACLE_MARGIN
+    // clearance is added once downstream (computeEdgeRoutes' padBox), exactly
+    // like a real node. Pre-inflating here as well double-padded junctors,
+    // over-clearing them by 8px so routed edges bowed further around a junctor
+    // circle than around a same-size node.
+    const halfW = JUNCTOR_RADIUS_X;
+    const halfH = JUNCTOR_RADIUS;
     boxes.set(`junctor:${gid}`, {
       x: cx - halfW,
       y: cy - halfH,
