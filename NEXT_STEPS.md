@@ -7,6 +7,42 @@ CHANGELOG.
 
 ---
 
+## Flagged in the unattended hardening pass (Session 180 cont.) — need a human call
+
+Surfaced during the gated bug/perf/maintainability sweep but **deliberately not** auto-applied:
+each is a judgment call about intended behaviour, a sensitive validator/CLR semantic, or a UX
+enhancement — flag-don't-ship under the Balanced posture. Listed with the call that needs making.
+
+**Behaviour / semantics — decide intent first:**
+- **NBR validator gap** — the Negative-Branch ruleset has a thinner structural check than the
+  other types. Possibly intentional (NBR is position/flow-based); confirm the intended rule.
+- **Assumption lifecycle under the dual representation** — detach / re-attach / delete-entity
+  paths still straddle the legacy assumption-Entity and the Session-77 first-class `Assumption`
+  record. Works today; collapsing the transitional dual-rep is the real cleanup, too broad to
+  do safely unattended.
+- **`goalTree` "because" connector** — reads with a sufficiency-style connector in places; a
+  test pins the wording, so it may be deliberate. Confirm the intended Goal-Tree reading.
+- **Untitled-entity handling in exporters** — `prtPlan` / `ttTasks` / `riskRegister` *drop* an
+  untitled entity from their cell while `goalTree` emits `(untitled objective)`. Pick one
+  convention (placeholder vs drop) and make them consistent.
+
+**Low-value / niche — only if revisiting the area:**
+- **`findCycles` + `pruneSingletonJunctors`** only matter on a malformed import.
+- **DOT export edge styling** doesn't distinguish mutex / xor / or groups — an enhancement.
+- **Junctor obstacle double-padding** (visual routing nuance) needs a screenshot-verified
+  geometry change, not an unattended one.
+- **`PrintPreviewDialog` sets `pdfBusy` just before close** — benign ordering; low value.
+- **`CommandPalette` combobox ARIA** (role=combobox/listbox/option + aria-activedescendant) is
+  a real a11y win but a feature enhancement — out of scope for a bug/perf pass; do it
+  deliberately with its own tests.
+
+**Refactors considered and declined (so they aren't re-proposed):**
+- Folding `setPerformanceLow` / `setPerformanceHigh` into one helper needs a dynamic-key
+  destructure whose rest-type widens to omit *both* fields behind an `as` cast — trades
+  type-precise explicit code for cast-masked DRY. Left as two setters.
+
+---
+
 ## Active backlog (Session 176 — Dann's review batch)
 
 ### Overlapping edges into one entity — can't grab/redirect one (Dann)

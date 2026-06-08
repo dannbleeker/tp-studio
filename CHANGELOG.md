@@ -2,6 +2,75 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Unattended hardening pass: bugs, performance, maintainability
+
+A self-contained gated sweep — every fix its own commit (verify the finding against the
+real code → fix → regression test → full preflight → green CI), judgment calls flagged
+for review rather than auto-applied. Nine landed changes across three tracks, plus a
+clean-bill audit of the data-integrity core.
+
+**Data integrity (store) — three latent state-corruption bugs.**
+- *Compare mode leaked across tabs.* `activeDocEphemeralReset` cleared per-doc UI state
+  on a tab/doc swap but missed `compareRevisionId` / `sideBySideRevisionId`, so switching
+  tabs with a revision comparison open carried the ghost compare state onto the next
+  document. Reset both alongside the other ephemeral fields.
+- *`cloneDoc` aliased the comments map.* The revision-snapshot clone shallow-copied every
+  record map *except* `comments`, so a snapshot and its live document shared one comments
+  object — editing comments after a snapshot mutated the snapshot too. Added the missing
+  copy.
+- *Splice dropped edge comments + assumptions.* Splicing an entity into an edge (or
+  splicing an edge) rebuilt the edge pair but left comments and assumptions anchored to
+  the now-removed edge id — they silently vanished. Splice now re-homes both to the
+  surviving downstream half via two new pure helpers (`reanchorEdgeComments` /
+  `rehomeAssumptions`) and prunes only genuine orphans.
+
+**Export correctness — four exporters disagreed with the on-canvas model.**
+- *Spawned EC was structurally wrong.* `spawnEC` built its five boxes without the `ecSlot`
+  tags and wired them with `sufficiency` edges; an Evaporating Cloud reads in *necessity*
+  and the exporters/readers key off `ecSlot`. Bound the five slots (a/b/c/d/dPrime) and
+  switched to necessity edges.
+- *EC slide paired the wrong boxes.* The PPTX EC slide picked D / D′ by array position
+  rather than `ecSlot`, so a reordered cloud paired the conflict arrows wrong. Select by
+  slot with an enumeration fallback.
+- *PPTX Transition-Tree deck diverged.* The deck re-implemented the narrative-sentence
+  loop instead of calling the shared `buildReasoningSentences`, and the copy lacked the TT
+  AND-junctor triple form — a TT exported to PowerPoint read as generic "X because Y" lines
+  while the Markdown narrative and the print/PDF companion rendered "in order to obtain T,
+  do A given P". Delegated the deck to the canonical builder (non-TT output byte-identical;
+  the divergent copy + its now-dead imports deleted).
+- *Markdown system-scope swallowed newlines.* A multi-line system-scope value broke its
+  Markdown bullet; embedded newlines now collapse to spaces.
+
+**Performance — hot-path allocation trims, output-identical.**
+- Two per-edge CLR validators (`causalityExistence`, `logicTypeMismatch`) called
+  `Object.values(doc.edges)` on every validation; routed both through the cached
+  `edgesArray(doc)` (WeakMap-memoised on the edges reference).
+- `computeRevisionDiff` built a throwaway `new Set([...keys, ...keys])` spread per record
+  map (entities/edges/groups) on the cached diff path; replaced with an incremental union
+  that skips the intermediate arrays.
+
+**Resilience & a11y.**
+- The canvas's four lazy strips sat in `<Suspense>` with no error boundary, so a
+  chunk-load failure (e.g. a stale service worker after a deploy) took down the whole
+  canvas; each now has its own `<ErrorBoundary fallback={null}>` and degrades to hidden,
+  matching the per-lazy pattern in `App.tsx`.
+- `useFocusTrap` swallowed Tab into a dead-end when a trapped container had no focusable
+  children; it now routes focus to the container, mirroring the mount-time fallback.
+
+**Maintainability (behaviour-preserving).**
+- Extracted `prunedSpread` — the "include the pruned map only when its reference actually
+  changed" conditional spread that five mutation sites (deleteEntity,
+  deleteEntitiesAndEdges, deleteEdge, spliceEdge, spliceEntityIntoEdge) had open-coded.
+- Removed three `(cur.X ?? undefined) === param` no-op guards in setters
+  (`setAssumptionKind`, `setEntityStates`, `setEdgeWeight`); the fields are `T | undefined`
+  string-literal unions with no `null`, so a plain `===` is equivalent — the `?? undefined`
+  only *looked* like a null-guard.
+
+**Audit (no change).** A focused read-through of the undo/redo, revisions/snapshots,
+multi-doc tab, and persistence subsystems found no real correctness bugs — the
+`docs[activeDocId] === doc` invariant, history snapshots, undo coalescing, and the
+persistence round-trip all hold. Recorded here so the next session doesn't re-walk it.
+
 ## Session 180 (cont.) — Lifecycle: cancel transient timers on unmount
 
 Two "show a state for N seconds" timers — `RevisionPanel`'s just-captured-snapshot highlight and
