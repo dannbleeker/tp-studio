@@ -11,8 +11,8 @@ CHANGELOG.
 
 Surfaced during the gated sweep but **deliberately not** auto-applied: each needs a call about
 intended behaviour before it can be done safely. (The export-consistency, dangling-edge, DOT
-or/xor styling, print-dialog close-order and command-palette-ARIA items have since been fixed in
-the follow-up attended batch — see CHANGELOG.)
+or/xor styling, print-dialog close-order, command-palette-ARIA and junctor-clearance items have
+since been fixed — see CHANGELOG.)
 
 **Behaviour / semantics — decide intent first:**
 - **NBR validator gap** — the Negative-Branch ruleset has a thinner structural check than the
@@ -23,10 +23,6 @@ the follow-up attended batch — see CHANGELOG.)
   do safely unattended.
 - **`goalTree` "because" connector** — reads with a sufficiency-style connector in places; a
   test pins the wording, so it may be deliberate. Confirm the intended Goal-Tree reading.
-
-**Low-value / niche — only if revisiting the area:**
-- **Junctor obstacle double-padding** (visual routing nuance) needs a screenshot-verified
-  geometry change, not an unattended one.
 
 ---
 

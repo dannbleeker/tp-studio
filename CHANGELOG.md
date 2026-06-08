@@ -2,6 +2,16 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Junctor obstacle box no longer double-padded
+
+`junctorObstacleBoxes` baked an 8px margin into each junctor's routing-obstacle box, then
+`computeEdgeRoutes` padded every box again by the uniform 10px `NODE_OBSTACLE_MARGIN` — so a
+junctor circle got 18px of edge berth while a same-size node got 10px, bowing routed edges further
+around junctors than necessary. Dropped the redundant junctor margin; the box is now the bare
+ellipse and gets the same single clearance as a node. Verified with a Pillow geometry render + a
+programmatic crossing check (the box still clears the circle by 10px), and the existing clearance
+test now pins the bare-ellipse size.
+
 ## Session 180 (cont.) — Follow-up batch: five flagged items resolved
 
 An attended pass picking five items off the unattended sweep's flagged list.
