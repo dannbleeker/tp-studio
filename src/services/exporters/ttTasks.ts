@@ -132,9 +132,12 @@ const successCriteriaFor = (entity: Entity): string => {
 const preconditionFor = (doc: TPDocument, action: Entity): string => {
   const incoming = incomingEdges(doc, action.id);
   if (incoming.length === 0) return '(no precondition drawn)';
+  // Keep untitled sources visible (placeholder); only an unresolved (deleted)
+  // source is skipped.
   const titles = incoming
-    .map((e) => doc.entities[e.sourceId]?.title?.trim() ?? '')
-    .filter((t) => t.length > 0);
+    .map((e) => doc.entities[e.sourceId])
+    .filter((s): s is Entity => !!s)
+    .map((s) => s.title.trim() || '(untitled)');
   if (titles.length === 0) return '(no precondition drawn)';
   return titles.join('; ');
 };
@@ -147,8 +150,9 @@ const outcomeFor = (doc: TPDocument, action: Entity): string => {
   const outgoing = outgoingEdges(doc, action.id);
   if (outgoing.length === 0) return '(no outcome drawn)';
   const titles = outgoing
-    .map((e) => doc.entities[e.targetId]?.title?.trim() ?? '')
-    .filter((t) => t.length > 0);
+    .map((e) => doc.entities[e.targetId])
+    .filter((t): t is Entity => !!t)
+    .map((t) => t.title.trim() || '(untitled)');
   if (titles.length === 0) return '(no outcome drawn)';
   return titles.join('; ');
 };

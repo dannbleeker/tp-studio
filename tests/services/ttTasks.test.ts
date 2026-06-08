@@ -57,6 +57,20 @@ describe('buildTtTasksCsv', () => {
     expect(action.id.length).toBeGreaterThan(0);
   });
 
+  it('keeps an untitled precondition / outcome visible as a placeholder', () => {
+    const pre = seedEntity('', 'effect');
+    const action = seedEntity('Deploy the build', 'action');
+    const outcome = seedEntity('', 'effect');
+    useDocumentStore.getState().connect(pre.id, action.id);
+    useDocumentStore.getState().connect(action.id, outcome.id);
+    const row = buildTtTasksCsv(doc()).split('\n')[1]!;
+    // Both blank-titled neighbours show "(untitled)" rather than collapsing to
+    // "(no precondition drawn)" / "(no outcome drawn)" — the action HAS edges.
+    expect(row.split('(untitled)').length - 1).toBe(2);
+    expect(row).not.toContain('(no precondition drawn)');
+    expect(row).not.toContain('(no outcome drawn)');
+  });
+
   it('surfaces incoming edges as preconditions and outgoing as outcomes', () => {
     const pre = seedEntity('Backup taken', 'effect');
     const action = seedEntity('Migrate the database', 'action');

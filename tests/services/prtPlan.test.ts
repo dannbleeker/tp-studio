@@ -47,6 +47,25 @@ describe('buildPrtPlanCsv', () => {
     expect(buildPrtPlanCsv(doc())).toContain('No purchasing approval');
   });
 
+  it('keeps an untitled obstacle visible as a placeholder instead of dropping it', () => {
+    const io = seedEntity('Submit a budget request', 'intermediateObjective');
+    const obstacle = seedEntity('', 'obstacle');
+    connect(io.id, obstacle.id);
+    // "(untitled obstacle)" can only come from the overcomes cell — proves the
+    // untitled obstacle is placeholdered, not filtered out of the list.
+    expect(buildPrtPlanCsv(doc())).toContain('(untitled obstacle)');
+  });
+
+  it('keeps an untitled prerequisite objective visible in the depends_on cell', () => {
+    const ioA = seedEntity('', 'intermediateObjective');
+    const ioB = seedEntity('Train the team', 'intermediateObjective');
+    connect(ioA.id, ioB.id);
+    const csv = buildPrtPlanCsv(doc());
+    // A's own row placeholders its blank title; B's depends_on cell ALSO names A
+    // as "(untitled objective)" rather than dropping it — so two occurrences.
+    expect(csv.split('(untitled objective)').length - 1).toBe(2);
+  });
+
   it('orders IOs topologically — a prerequisite IO precedes its dependent', () => {
     const ioA = seedEntity('Set up the toolchain', 'intermediateObjective');
     const ioB = seedEntity('Train the team on it', 'intermediateObjective');

@@ -53,6 +53,27 @@ describe('buildRiskRegisterCsv', () => {
     expect(ude.id.length).toBeGreaterThan(0);
   });
 
+  it('keeps an untitled trigger visible as a placeholder instead of dropping it', () => {
+    const cause = seedEntity('', 'effect');
+    const ude = seedEntity('Customer churn', 'ude');
+    useDocumentStore.getState().connect(cause.id, ude.id);
+    // The UDE is titled, so "(untitled)" can only be the placeholdered trigger.
+    expect(buildRiskRegisterCsv(doc())).toContain('(untitled)');
+  });
+
+  it('keeps an untitled injection mitigation visible (placeholder) and still flips status', () => {
+    const inj = seedEntity('', 'injection');
+    const effect = seedEntity('Outreach campaign', 'effect');
+    const ude = seedEntity('Customer churn', 'ude');
+    useDocumentStore.getState().connect(inj.id, effect.id);
+    useDocumentStore.getState().connect(effect.id, ude.id);
+    const csv = buildRiskRegisterCsv(doc());
+    // The blank-titled injection is surfaced as "(untitled)" rather than dropped
+    // from the mitigation set, and the risk still reads as mitigated.
+    expect(csv).toContain('(untitled)');
+    expect(csv).toMatch(/,mitigated\b/);
+  });
+
   it('walks backward to find an injection mitigation and flips status to "mitigated"', () => {
     const inj = seedEntity('Win-back outreach', 'injection');
     const effect = seedEntity('Outreach campaign launches', 'effect');

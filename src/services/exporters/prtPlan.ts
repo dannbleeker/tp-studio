@@ -137,11 +137,12 @@ export const orderedIntermediateObjectives = (doc: TPDocument): Entity[] => {
 };
 
 const overcomesFor = (doc: TPDocument, io: Entity): string => {
+  // Keep untitled obstacles visible (placeholder) rather than dropping them,
+  // matching the "(untitled objective)" treatment of the primary cell.
   const titles = outgoingEdges(doc, io.id)
     .map((e) => doc.entities[e.targetId])
     .filter((t): t is Entity => t?.type === 'obstacle')
-    .map((t) => t.title.trim())
-    .filter((t) => t.length > 0);
+    .map((t) => t.title.trim() || '(untitled obstacle)');
   return titles.length > 0 ? titles.join('; ') : '(no obstacle linked)';
 };
 
@@ -151,8 +152,7 @@ const dependsOnFor = (doc: TPDocument, io: Entity): string => {
     .filter(
       (sourceEntity): sourceEntity is Entity => sourceEntity?.type === 'intermediateObjective'
     )
-    .map((sourceEntity) => sourceEntity.title.trim())
-    .filter((t) => t.length > 0);
+    .map((sourceEntity) => sourceEntity.title.trim() || '(untitled objective)');
   return titles.length > 0 ? titles.join('; ') : '(none)';
 };
 

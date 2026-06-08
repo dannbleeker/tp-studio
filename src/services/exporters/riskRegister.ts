@@ -53,8 +53,9 @@ const triggerFor = (doc: TPDocument, ude: Entity): string => {
   const incoming = incomingEdges(doc, ude.id);
   if (incoming.length === 0) return '(no trigger drawn)';
   const titles = incoming
-    .map((e) => doc.entities[e.sourceId]?.title?.trim() ?? '')
-    .filter((t) => t.length > 0);
+    .map((e) => doc.entities[e.sourceId])
+    .filter((s): s is Entity => !!s)
+    .map((s) => s.title.trim() || '(untitled)');
   if (titles.length === 0) return '(no trigger drawn)';
   return titles.join(' + ');
 };
@@ -84,17 +85,15 @@ const buildMitigationsByUde = (doc: TPDocument): Map<string, string[]> => {
   // BFS loop.
   const mitigations: Entity[] = [];
   for (const e of Object.values(doc.entities)) {
-    if (e.type === 'injection' || e.type === 'desiredEffect') {
-      const title = e.title.trim();
-      if (title.length > 0) mitigations.push(e);
-    }
+    // Keep untitled mitigations (placeholdered below) rather than dropping them.
+    if (e.type === 'injection' || e.type === 'desiredEffect') mitigations.push(e);
   }
   // Forward-BFS from each mitigation; record the mitigation's title
   // against every UDE reached. The `seenForThisMitigation` Set
   // prevents duplicate entries when one mitigation reaches the same
   // UDE via multiple paths.
   for (const m of mitigations) {
-    const title = m.title.trim();
+    const title = m.title.trim() || '(untitled)';
     const visited = new Set<string>([m.id]);
     const queue: string[] = [m.id];
     // Head-index dequeue: O(1) per step vs `queue.shift()`'s O(N) array slide.
