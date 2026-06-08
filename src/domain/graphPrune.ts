@@ -1,5 +1,5 @@
 import { edgesArray, junctorGroupId } from './graphCore';
-import type { Assumption, Comment, Edge, Entity, EntityId, TPDocument } from './types';
+import type { Assumption, Comment, Edge, EdgeId, Entity, EntityId, TPDocument } from './types';
 
 /**
  * Cascade-cleanup helpers over a TPDocument: pruning edges / assumptions /
@@ -155,6 +155,57 @@ export const pruneComments = (
   }
   // Track the deletion count instead of re-enumerating both maps' keys.
   return dropped > 0 ? next : comments;
+};
+
+/**
+ * Re-anchor edge-comments from one edge id to another. The splice paths replace
+ * an edge with two halves; its comments should follow the downstream half (which
+ * also inherits the edge's label + assumptions) instead of orphaning on the now-
+ * deleted id. Returns the SAME reference when nothing matched.
+ */
+export const reanchorEdgeComments = (
+  comments: Record<string, Comment> | undefined,
+  fromEdgeId: string,
+  toEdgeId: EdgeId
+): Record<string, Comment> | undefined => {
+  if (!comments) return comments;
+  let changed = false;
+  const next: Record<string, Comment> = {};
+  for (const [id, c] of Object.entries(comments)) {
+    if (c.anchor.kind === 'edge' && c.anchor.edgeId === fromEdgeId) {
+      next[id] = { ...c, anchor: { kind: 'edge', edgeId: toEdgeId } };
+      changed = true;
+    } else {
+      next[id] = c;
+    }
+  }
+  return changed ? next : comments;
+};
+
+/**
+ * Re-home assumption records from one host edge to another. The splice paths
+ * copy `edge.assumptionIds` onto the downstream half, so the matching
+ * `doc.assumptions[*].edgeId` must follow — otherwise the record points at the
+ * deleted edge, its count badge reads zero, and the next prune drops it as an
+ * orphan. Returns the SAME reference when nothing matched.
+ */
+export const rehomeAssumptions = (
+  assumptions: Record<string, Assumption> | undefined,
+  fromEdgeId: string,
+  toEdgeId: string
+): Record<string, Assumption> | undefined => {
+  if (!assumptions) return assumptions;
+  let changed = false;
+  const next: Record<string, Assumption> = {};
+  for (const [id, a] of Object.entries(assumptions)) {
+    if (a.edgeId === fromEdgeId) {
+      next[id] = { ...a, edgeId: toEdgeId };
+      changed = true;
+    } else {
+      next[id] = a;
+    }
+  }
+  return changed ? next : assumptions;
 };
 
 /**

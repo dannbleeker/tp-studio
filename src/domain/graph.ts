@@ -33,6 +33,8 @@ export {
   pruneAssumptions,
   pruneComments,
   pruneSingletonJunctors,
+  reanchorEdgeComments,
+  rehomeAssumptions,
   removeEntityFromEdges,
 } from './graphPrune';
 export { findCycles, findPath, reachableBackward, reachableForward } from './graphReach';

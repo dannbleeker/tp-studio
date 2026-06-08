@@ -2,7 +2,14 @@ import { nanoid } from 'nanoid';
 import type { StateCreator } from 'zustand';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { createEdge, createEntity } from '@/domain/factory';
-import { hasEdge, pruneAssumptions, pruneComments, pruneSingletonJunctors } from '@/domain/graph';
+import {
+  hasEdge,
+  pruneAssumptions,
+  pruneComments,
+  pruneSingletonJunctors,
+  reanchorEdgeComments,
+  rehomeAssumptions,
+} from '@/domain/graph';
 import type { AttrValue, Edge, EdgeWeight, Entity, Patch } from '@/domain/types';
 import type { RootStore } from '../types';
 import { edgePatch, makeApplyDocChange, touch } from './docMutate';
@@ -421,15 +428,33 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       applyDocChange((prev) => {
         if (!prev.edges[edgeId]) return prev;
         const { [edgeId]: _removed, ...remainingEdges } = prev.edges;
+        const nextEdges = {
+          ...remainingEdges,
+          [upstreamEdge.id]: upstreamEdge,
+          [downstreamEdge.id]: downstreamEdge,
+        };
+        // The downstream half is the semantic continuation (it inherited the
+        // edge's label + assumptionIds), so the spliced edge's comments +
+        // assumption records follow it onto `downstreamEdge` rather than orphan
+        // on the now-deleted id. (prune is a no-op here — no other edge was
+        // removed — but keeps the shape identical to spliceEntityIntoEdge.)
+        const comments = pruneComments(
+          reanchorEdgeComments(prev.comments, edgeId, downstreamEdge.id),
+          nextEdges,
+          prev.entities
+        );
+        const assumptions = pruneAssumptions(
+          rehomeAssumptions(prev.assumptions, edgeId, downstreamEdge.id),
+          nextEdges,
+          prev.entities
+        );
         return touch({
           ...prev,
           entities: { ...prev.entities, [newEntity.id]: newEntity },
-          edges: {
-            ...remainingEdges,
-            [upstreamEdge.id]: upstreamEdge,
-            [downstreamEdge.id]: downstreamEdge,
-          },
+          edges: nextEdges,
           nextAnnotationNumber: annotationNumber + 1,
+          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
+          ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
         });
       });
       // Select + enter inline-edit on the new entity so the user can type a
@@ -480,13 +505,29 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       };
       applyDocChange((prev) => {
         if (!prev.entities[entityId] || !prev.edges[edgeId]) return prev;
+        const nextEdges = {
+          ...remainingEdges,
+          [upstream.id]: upstream,
+          [downstream.id]: downstream,
+        };
+        // Re-home the spliced edge's comments + assumptions onto the downstream
+        // half (which inherited its assumptionIds), then prune anything anchored
+        // to the OTHER edges this splice dropped (the entity's old wiring).
+        const comments = pruneComments(
+          reanchorEdgeComments(prev.comments, edgeId, downstream.id),
+          nextEdges,
+          prev.entities
+        );
+        const assumptions = pruneAssumptions(
+          rehomeAssumptions(prev.assumptions, edgeId, downstream.id),
+          nextEdges,
+          prev.entities
+        );
         return touch({
           ...prev,
-          edges: {
-            ...remainingEdges,
-            [upstream.id]: upstream,
-            [downstream.id]: downstream,
-          },
+          edges: nextEdges,
+          ...(comments !== undefined && comments !== prev.comments ? { comments } : {}),
+          ...(assumptions !== undefined && assumptions !== prev.assumptions ? { assumptions } : {}),
         });
       });
       return true;
