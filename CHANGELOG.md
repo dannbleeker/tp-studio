@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — CSV import: multiline quoted fields
+
+`parseEntitiesCsv` split the file on newlines *before* quote-parsing, so a quoted field containing a
+newline — a valid RFC 4180 multiline cell, and exactly what `exportToCsv` emits for a multi-line
+description — was torn across rows (a truncated value plus a phantom `Unknown type` row). Replaced the
+`split('\n')` + per-line parser with a single-pass, quote-aware **record** tokenizer: commas split
+fields and newlines split records only *outside* quotes, `""` stays the escaped quote, CRLF is
+normalized, and each record keeps the physical line it starts on so error toasts still point at the
+right row. +6 regression tests (multiline cell; line-number accuracy after a multiline field; CRLF
+inside a quoted field; comma+newline in one field; escaped quote in a multiline field; trailing
+newline → no phantom row); all prior CSV tests unchanged. One deliberate edge change: an *unclosed*
+quote now reads to end of file (standard RFC 4180) rather than stopping at the line break.
+
 ## Session 180 (cont.) — Under-the-hood: correctness + performance
 
 A review-and-fix pass surfacing latent bugs and hot-path waste — every change gated and

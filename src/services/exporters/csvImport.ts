@@ -31,49 +31,81 @@ export type CsvParseResult =
   | { ok: false; errors: { line: number; message: string }[] };
 
 /**
- * Forgiving line parser: quoted fields support embedded commas, doubled-up
- * quotes escape a literal quote, and a missing closing quote falls back to
- * "read to end of line." Plenty of CSV in the wild is more permissive than
- * RFC 4180 wants — being lenient costs nothing here.
+ * Single-pass, quote-aware CSV record tokenizer. Walks the WHOLE document so a
+ * quoted field may span physical lines (an RFC 4180 multiline cell): commas
+ * split fields and newlines split records only OUTSIDE quotes; inside quotes
+ * both are literal content and `""` is an escaped quote. Each record carries the
+ * 1-based physical line it STARTS on, so error toasts still point at the right
+ * row and the count stays accurate after a multiline field. Cells are trimmed,
+ * matching the previous per-line parser.
+ *
+ * Line endings are normalized (CRLF / lone CR -> LF) up front. An unclosed quote
+ * reads to end of file (standard RFC 4180); the previous line-based parser
+ * stopped at the line break, but every well-formed CSV — including this app's
+ * own `exportToCsv` — is unaffected. Replaces the old `split(/\r?\n/)` +
+ * per-line parser, which tore quoted multiline fields across rows.
  */
-const parseCsvLine = (line: string): string[] => {
-  const out: string[] = [];
+const parseCsvRecords = (text: string): { cells: string[]; line: number }[] => {
+  const normalized = text.replace(/\r\n?/g, '\n');
+  const records: { cells: string[]; line: number }[] = [];
+  let cells: string[] = [];
   let cur = '';
   let inQuotes = false;
-  // Index-based loop because we need lookahead (`line[i + 1]`) on the
-  // doubled-quote escape rule. `for…of line` would lose the lookahead.
-  for (let i = 0; i < line.length; i++) {
-    const ch = line.charAt(i);
+  let line = 1; // physical line of the current character
+  let recordStartLine = 1; // physical line the in-progress record began on
+
+  const endRecord = (): void => {
+    cells.push(cur.trim());
+    records.push({ cells, line: recordStartLine });
+    cells = [];
+    cur = '';
+  };
+
+  for (let i = 0; i < normalized.length; i++) {
+    const ch = normalized.charAt(i);
     if (inQuotes) {
-      if (ch === '"' && line.charAt(i + 1) === '"') {
-        cur += '"';
+      if (ch === '"' && normalized.charAt(i + 1) === '"') {
+        cur += '"'; // doubled-quote escape
         i += 1;
       } else if (ch === '"') {
         inQuotes = false;
       } else {
+        if (ch === '\n') line += 1; // keep the physical line count honest inside a multiline field
         cur += ch;
       }
     } else if (ch === '"') {
       inQuotes = true;
     } else if (ch === ',') {
-      out.push(cur);
+      cells.push(cur.trim());
       cur = '';
+    } else if (ch === '\n') {
+      endRecord();
+      line += 1;
+      recordStartLine = line;
     } else {
       cur += ch;
     }
   }
-  out.push(cur);
-  return out.map((s) => s.trim());
+  // Flush a final record only when content is still pending — a trailing newline
+  // leaves none, so it adds no phantom row.
+  if (cur !== '' || cells.length > 0) endRecord();
+  return records;
 };
 
-export const parseEntitiesCsv = (text: string): CsvParseResult => {
-  const lines = text.split(/\r?\n/).map((l) => l.trim());
-  // Drop trailing empties.
-  while (lines.length && !lines[lines.length - 1]) lines.pop();
-  if (lines.length === 0) return { ok: false, errors: [{ line: 1, message: 'Empty file.' }] };
+/**
+ * A blank physical line tokenizes to a single empty cell — distinct from `,,`,
+ * which yields several empty cells and is still validated as a row.
+ */
+const isBlankRecord = (r: { cells: string[] }): boolean =>
+  r.cells.length === 1 && r.cells[0] === '';
 
-  const [headerLine = ''] = lines;
-  const header = parseCsvLine(headerLine).map((h) => h.toLowerCase());
+export const parseEntitiesCsv = (text: string): CsvParseResult => {
+  const records = parseCsvRecords(text);
+  // Drop trailing blank records (a trailing newline / blank tail).
+  while (records.length && isBlankRecord(records[records.length - 1]!)) records.pop();
+  if (records.length === 0) return { ok: false, errors: [{ line: 1, message: 'Empty file.' }] };
+
+  const header = records[0]!.cells.map((h) => h.toLowerCase());
   const idx = {
     title: header.indexOf('title'),
     type: header.indexOf('type'),
@@ -97,15 +129,15 @@ export const parseEntitiesCsv = (text: string): CsvParseResult => {
 
   const errors: { line: number; message: string }[] = [];
   const rows: CsvRow[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const raw = lines[i];
-    if (!raw) continue;
-    const cells = parseCsvLine(raw);
+  for (let i = 1; i < records.length; i++) {
+    const rec = records[i]!;
+    if (isBlankRecord(rec)) continue; // skip blank lines between rows
+    const cells = rec.cells;
     const title = cells[idx.title]?.trim() ?? '';
     const type = cells[idx.type]?.trim() ?? '';
     const description = idx.description !== -1 ? cells[idx.description]?.trim() : undefined;
     const parentTitle = idx.parentTitle !== -1 ? cells[idx.parentTitle]?.trim() : undefined;
-    const lineNo = i + 1;
+    const lineNo = rec.line;
     if (!title) {
       errors.push({ line: lineNo, message: 'Empty title.' });
       continue;

@@ -44,13 +44,9 @@ E1 (5 system-archetype patterns) + the tied-core-drivers Spawn-EC action (Sessio
 E6 (Session 180 — see CHANGELOG); E2 / E4 / E7 dropped to won't-build (see Out-of-scope below).
 
 ### Deferred from the Session-180 under-the-hood review (need Dann's call)
-Four findings verified real but left for a decision rather than landed unattended (see the CHANGELOG
-"Under-the-hood: correctness + performance" entry for what *was* fixed):
-- **CSV import drops multiline quoted fields.** `csvImport.ts` splits on `\n` *before* quote-parsing,
-  so an Excel/Sheets cell with an embedded newline (valid RFC 4180) breaks the row — a truncated
-  description plus a phantom / `Unknown type` row. Fix = a whole-document quote-aware tokenizer (unify
-  the outer line-split with `parseCsvLine`'s quote state). Real bug; deferred because a parser rewrite
-  carries real regression risk for the common case.
+Three findings verified real but left for a decision rather than landed unattended (see the CHANGELOG
+"Under-the-hood" entries for what *was* fixed — including the CSV multiline-import bug that used to head
+this list, now shipped):
 - **Delete/Backspace fires when a non-input control has focus.** `isEditableTarget` (keyboardUtils)
   only guards INPUT / TEXTAREA / contenteditable, so Backspace while a toolbar/canvas `<button>` is
   focused triggers delete-selection. The broad fix (treat every button as "in a field") would disable
