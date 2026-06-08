@@ -197,6 +197,7 @@ export function PrintPreviewDialog() {
   const handleVectorPdf = async (): Promise<void> => {
     if (pdfBusy) return;
     setPdfBusy(true);
+    let succeeded = false;
     try {
       const nodes = getCanvasNodes();
       // For "selection only", filter nodes to those whose id is in the
@@ -221,7 +222,7 @@ export function PrintPreviewDialog() {
         return;
       }
       showToast('success', 'Vector PDF saved.');
-      close();
+      succeeded = true;
     } catch (err) {
       log.error('vector-pdf-export-failed', err);
       showToast(
@@ -231,6 +232,9 @@ export function PrintPreviewDialog() {
     } finally {
       setPdfBusy(false);
     }
+    // Close only after the busy-state reset is committed — close() unmounts this
+    // dialog, so calling setPdfBusy after it would setState on a dead component.
+    if (succeeded) close();
   };
 
   const annotationCount = structuralEntities(doc).filter((e) => e.description).length;
