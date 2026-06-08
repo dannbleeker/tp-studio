@@ -75,6 +75,28 @@ describe('resetPreferencesToDefaults', () => {
     expect(s().ecReadingInstructionsDismissed).toBe(false);
   });
 
+  it('resets layoutDensity and printLayout back to factory defaults', () => {
+    const s = () => useDocumentStore.getState();
+
+    // Capture factory defaults from a freshly-reset store.
+    const defaultDensity = s().layoutDensity;
+    const defaultPrintLayout = s().printLayout;
+
+    // Mutate both fields.
+    s().setLayoutDensity('compact');
+    s().setPrintLayout({ orientation: 'landscape' });
+
+    // Confirm mutations took.
+    expect(s().layoutDensity).toBe('compact');
+    expect(s().printLayout.orientation).toBe('landscape');
+
+    s().resetPreferencesToDefaults();
+
+    // Both fields should be back to factory defaults.
+    expect(s().layoutDensity).toBe(defaultDensity);
+    expect(s().printLayout).toEqual(defaultPrintLayout);
+  });
+
   it('persists the reset to localStorage so a reload picks up the defaults', () => {
     const s = () => useDocumentStore.getState();
     s().setCausalityLabel('therefore');

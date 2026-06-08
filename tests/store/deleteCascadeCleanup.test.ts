@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { seedConnectedPair, seedEntity } from '../helpers/seedDoc';
+import { seedAndGroupable, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 /**
  * B2 — deleting the currently hoisted group must exit hoist; otherwise
@@ -89,5 +89,27 @@ describe('delete prunes orphaned assumptions (B3) + scrubs injectionIds (B4)', (
 
     s().deleteEdge(pair2.edge.id);
     expect(s().doc.assumptions?.[asm.id]).toBeDefined();
+  });
+});
+
+describe('deleteEntitiesAndEdges prunes singleton junctors (bulk-delete)', () => {
+  it('removes andGroupId from the surviving edge when its AND partner is deleted', () => {
+    // Set up: A→C and B→C grouped as AND, then bulk-delete A.
+    const { a, b: _b, c: _c, e1, e2 } = seedAndGroupable();
+    const grouped = s().groupAsAnd([e1.id, e2.id]);
+    expect(grouped.ok).toBe(true);
+
+    // Both edges carry the same andGroupId before the delete.
+    const groupId = s().doc.edges[e1.id]?.andGroupId;
+    expect(groupId).toBeTruthy();
+    expect(s().doc.edges[e2.id]?.andGroupId).toBe(groupId);
+
+    // Bulk-delete A (taking e1 with it). B→C (e2) is the sole survivor.
+    s().deleteEntitiesAndEdges([a.id], []);
+
+    // e1 is gone.
+    expect(s().doc.edges[e1.id]).toBeUndefined();
+    // The surviving edge must have its andGroupId pruned — a junctor of one is meaningless.
+    expect(s().doc.edges[e2.id]?.andGroupId).toBeUndefined();
   });
 });

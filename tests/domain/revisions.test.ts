@@ -290,6 +290,58 @@ describe('computeRevisionDiff — entityContentEqual optional-field branches', (
   });
 });
 
+describe('computeRevisionDiff — edgeContentEqual newly-compared fields', () => {
+  it('counts edge as changed when weight differs (negative vs unset)', () => {
+    const e1 = baseEntity('e1');
+    const e2 = baseEntity('e2');
+    const edgeA = { ...baseEdge('ed1', 'e1', 'e2'), weight: 'negative' as const };
+    const edgeB = baseEdge('ed1', 'e1', 'e2');
+    const a = docWith({ entities: { e1, e2 }, edges: { ed1: edgeA } });
+    const b = docWith({ entities: { e1, e2 }, edges: { ed1: edgeB } });
+    expect(computeRevisionDiff(a, b).edgesChanged).toBe(1);
+  });
+
+  it('counts edge as changed when isBackEdge differs (true vs unset)', () => {
+    const e1 = baseEntity('e1');
+    const e2 = baseEntity('e2');
+    const edgeA = { ...baseEdge('ed1', 'e1', 'e2'), isBackEdge: true };
+    const edgeB = baseEdge('ed1', 'e1', 'e2');
+    const a = docWith({ entities: { e1, e2 }, edges: { ed1: edgeA } });
+    const b = docWith({ entities: { e1, e2 }, edges: { ed1: edgeB } });
+    expect(computeRevisionDiff(a, b).edgesChanged).toBe(1);
+  });
+
+  it('counts edge as changed when delay differs (true vs unset)', () => {
+    const e1 = baseEntity('e1');
+    const e2 = baseEntity('e2');
+    const edgeA = { ...baseEdge('ed1', 'e1', 'e2'), delay: true };
+    const edgeB = baseEdge('ed1', 'e1', 'e2');
+    const a = docWith({ entities: { e1, e2 }, edges: { ed1: edgeA } });
+    const b = docWith({ entities: { e1, e2 }, edges: { ed1: edgeB } });
+    expect(computeRevisionDiff(a, b).edgesChanged).toBe(1);
+  });
+
+  it('counts edge as changed when orGroupId differs (set vs unset)', () => {
+    const e1 = baseEntity('e1');
+    const e2 = baseEntity('e2');
+    const edgeA = { ...baseEdge('ed1', 'e1', 'e2'), orGroupId: 'g' };
+    const edgeB = baseEdge('ed1', 'e1', 'e2');
+    const a = docWith({ entities: { e1, e2 }, edges: { ed1: edgeA } });
+    const b = docWith({ entities: { e1, e2 }, edges: { ed1: edgeB } });
+    expect(computeRevisionDiff(a, b).edgesChanged).toBe(1);
+  });
+
+  it('counts edge as changed when kind differs (necessity vs sufficiency)', () => {
+    const e1 = baseEntity('e1');
+    const e2 = baseEntity('e2');
+    const edgeA = { ...baseEdge('ed1', 'e1', 'e2'), kind: 'necessity' as const };
+    const edgeB = baseEdge('ed1', 'e1', 'e2'); // kind: 'sufficiency'
+    const a = docWith({ entities: { e1, e2 }, edges: { ed1: edgeA } });
+    const b = docWith({ entities: { e1, e2 }, edges: { ed1: edgeB } });
+    expect(computeRevisionDiff(a, b).edgesChanged).toBe(1);
+  });
+});
+
 describe('computeRevisionDiff — edgeContentEqual branches', () => {
   it('counts edge as changed when andGroupId differs', () => {
     const e1 = baseEntity('e1');

@@ -539,6 +539,8 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         showArchivedGroups: d.showArchivedGroups,
         edgeRouting: d.edgeRouting,
         openDocsInNewTab: d.openDocsInNewTab,
+        layoutDensity: d.layoutDensity,
+        printLayout: d.printLayout,
       });
       persistPrefs();
     },

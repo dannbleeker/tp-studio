@@ -248,14 +248,19 @@ export function createEntityCrudActions({
             changed = true;
           }
         }
-        const nextEdges = { ...edges };
+        const explicitlyDeleted = { ...edges };
         for (const id of edgeIds) {
-          if (nextEdges[id]) {
-            delete nextEdges[id];
+          if (explicitlyDeleted[id]) {
+            delete explicitlyDeleted[id];
             changed = true;
           }
         }
         if (!changed) return prev;
+        // Collapse any junctor group the cascade / explicit delete left with a
+        // single input ("AND of one") back to a plain edge — matches what the
+        // single-entity `deleteEntity` path does; the bulk path used to skip it,
+        // leaving a survivor tagged with a now-vacuous and/or/xor group id.
+        const nextEdges = pruneSingletonJunctors(explicitlyDeleted);
         const assumptions = pruneAssumptions(prev.assumptions, nextEdges, entities);
         const comments = pruneComments(prev.comments, nextEdges, entities);
         return touch({

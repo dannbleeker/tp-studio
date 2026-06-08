@@ -128,8 +128,18 @@ const edgeContentEqual = (
 ): boolean => {
   if (a.sourceId !== b.sourceId) return false;
   if (a.targetId !== b.targetId) return false;
+  if (a.kind !== b.kind) return false;
   if ((a.andGroupId ?? '') !== (b.andGroupId ?? '')) return false;
+  if ((a.orGroupId ?? '') !== (b.orGroupId ?? '')) return false;
+  if ((a.xorGroupId ?? '') !== (b.xorGroupId ?? '')) return false;
+  if ((a.weight ?? '') !== (b.weight ?? '')) return false;
   if ((a.label ?? '') !== (b.label ?? '')) return false;
+  if ((a.description ?? '') !== (b.description ?? '')) return false;
+  if ((a.loopName ?? '') !== (b.loopName ?? '')) return false;
+  if ((a.loopNarrative ?? '') !== (b.loopNarrative ?? '')) return false;
+  if (Boolean(a.isBackEdge) !== Boolean(b.isBackEdge)) return false;
+  if (Boolean(a.isMutualExclusion) !== Boolean(b.isMutualExclusion)) return false;
+  if (Boolean(a.delay) !== Boolean(b.delay)) return false;
   return true;
 };
 
