@@ -74,4 +74,27 @@ describe('spawnECFromConflict', () => {
     const ec = spawnECFromConflict(sourceDoc(), rc.id);
     expect(ec.id).not.toBe(sourceDoc().id);
   });
+
+  it('binds the canonical ecSlot to each box (a=goal, b/c=needs, d/dPrime=wants)', () => {
+    // Verbalisation, the ec-completeness rule, and the EC workshop PDF all key
+    // off ecSlot — a spawned EC with no slots silently produced placeholder
+    // verbal text and a permanently-skipped completeness rule.
+    const rc = seedEntity('Conflict', 'rootCause');
+    const ec = spawnECFromConflict(sourceDoc(), rc.id);
+    const bySlot = (slot: string) => Object.values(ec.entities).find((e) => e.ecSlot === slot);
+    expect(bySlot('a')?.type).toBe('goal');
+    expect(bySlot('b')?.type).toBe('need');
+    expect(bySlot('c')?.type).toBe('need');
+    expect(bySlot('d')?.type).toBe('want');
+    expect(bySlot('dPrime')?.type).toBe('want');
+    // The source title lands in the 'd' (Want 1) slot, and every box has a slot.
+    expect(bySlot('d')?.title).toBe('Conflict');
+    expect(Object.values(ec.entities).every((e) => e.ecSlot !== undefined)).toBe(true);
+  });
+
+  it('wires necessity-typed edges (EC reads "in order to A, we must B")', () => {
+    const rc = seedEntity('Conflict', 'rootCause');
+    const ec = spawnECFromConflict(sourceDoc(), rc.id);
+    expect(Object.values(ec.edges).every((e) => e.kind === 'necessity')).toBe(true);
+  });
 });

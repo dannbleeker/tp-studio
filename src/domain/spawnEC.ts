@@ -34,7 +34,11 @@ const buildEntity = (
   title: string,
   t: number,
   annotationNumber: number,
-  position: { x: number; y: number }
+  position: { x: number; y: number },
+  // EC slot binding (D/D'/B/C/A). Verbalisation, the ec-completeness rule, and
+  // the EC workshop PDF all key off `ecSlot`; omitting it (as this builder did)
+  // left a spawned EC with placeholder verbal text and a dead completeness rule.
+  slot: 'a' | 'b' | 'c' | 'd' | 'dPrime'
 ): Entity => ({
   id: newEntityId(),
   type,
@@ -43,13 +47,15 @@ const buildEntity = (
   createdAt: t,
   updatedAt: t,
   position,
+  ecSlot: slot,
 });
 
+// EC edges are necessity-typed ("in order to A, we must B"), matching `seedEC`.
 const buildEdge = (sourceId: EntityId, targetId: EntityId): Edge => ({
   id: newEdgeId(),
   sourceId,
   targetId,
-  kind: 'sufficiency',
+  kind: 'necessity',
 });
 
 export const spawnECFromConflict = (
@@ -65,29 +71,33 @@ export const spawnECFromConflict = (
     'Common goal — what both sides ultimately serve',
     t,
     1,
-    EC_SEED_POSITIONS.goal
+    EC_SEED_POSITIONS.goal,
+    'a'
   );
   const need1 = buildEntity(
     'need',
     'Need 1 — what does Want 1 satisfy?',
     t,
     2,
-    EC_SEED_POSITIONS.need1
+    EC_SEED_POSITIONS.need1,
+    'b'
   );
   const need2 = buildEntity(
     'need',
     'Need 2 — what does Want 2 satisfy?',
     t,
     3,
-    EC_SEED_POSITIONS.need2
+    EC_SEED_POSITIONS.need2,
+    'c'
   );
-  const want1 = buildEntity('want', conflictTitle, t, 4, EC_SEED_POSITIONS.want1);
+  const want1 = buildEntity('want', conflictTitle, t, 4, EC_SEED_POSITIONS.want1, 'd');
   const want2 = buildEntity(
     'want',
     'Want 2 — the conflicting strategy',
     t,
     5,
-    EC_SEED_POSITIONS.want2
+    EC_SEED_POSITIONS.want2,
+    'dPrime'
   );
 
   const entities = [goal, need1, need2, want1, want2];
