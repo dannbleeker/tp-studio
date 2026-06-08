@@ -175,7 +175,9 @@ export const computeRevisionDiff = (prev: TPDocument, next: TPDocument): Revisio
   let entitiesAdded = 0;
   let entitiesRemoved = 0;
   let entitiesChanged = 0;
-  for (const id of new Set([...Object.keys(prev.entities), ...Object.keys(next.entities)])) {
+  const allEntityIds = new Set<string>(Object.keys(prev.entities));
+  for (const k of Object.keys(next.entities)) allEntityIds.add(k);
+  for (const id of allEntityIds) {
     const p = prev.entities[id];
     const n = next.entities[id];
     if (!p && n) entitiesAdded += 1;
@@ -186,7 +188,9 @@ export const computeRevisionDiff = (prev: TPDocument, next: TPDocument): Revisio
   let edgesAdded = 0;
   let edgesRemoved = 0;
   let edgesChanged = 0;
-  for (const id of new Set([...Object.keys(prev.edges), ...Object.keys(next.edges)])) {
+  const allEdgeIds = new Set<string>(Object.keys(prev.edges));
+  for (const k of Object.keys(next.edges)) allEdgeIds.add(k);
+  for (const id of allEdgeIds) {
     const p = prev.edges[id];
     const n = next.edges[id];
     if (!p && n) edgesAdded += 1;
@@ -197,7 +201,9 @@ export const computeRevisionDiff = (prev: TPDocument, next: TPDocument): Revisio
   let groupsAdded = 0;
   let groupsRemoved = 0;
   let groupsChanged = 0;
-  for (const id of new Set([...Object.keys(prev.groups), ...Object.keys(next.groups)])) {
+  const allGroupIds = new Set<string>(Object.keys(prev.groups));
+  for (const k of Object.keys(next.groups)) allGroupIds.add(k);
+  for (const id of allGroupIds) {
     const p = prev.groups[id];
     const n = next.groups[id];
     if (!p && n) groupsAdded += 1;

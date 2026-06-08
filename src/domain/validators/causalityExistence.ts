@@ -1,3 +1,4 @@
+import { edgesArray } from '../graph';
 import type { TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
 
@@ -10,7 +11,7 @@ import { makeWarning, type UntieredWarning } from './shared';
  * `resolvedWarnings` map.
  */
 export const causalityExistenceRule = (doc: TPDocument): UntieredWarning[] =>
-  Object.values(doc.edges).map((edge) =>
+  edgesArray(doc).map((edge) =>
     makeWarning(
       doc,
       'causality-existence',

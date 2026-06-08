@@ -1,3 +1,4 @@
+import { edgesArray } from '../graph';
 import type { DiagramType, EdgeKind, TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
 
@@ -31,7 +32,7 @@ export const logicTypeMismatchRule = (doc: TPDocument): UntieredWarning[] => {
   const expected = PRIMARY_LOGIC[doc.diagramType];
   if (!expected) return [];
   const out: UntieredWarning[] = [];
-  for (const edge of Object.values(doc.edges)) {
+  for (const edge of edgesArray(doc)) {
     if (edge.kind !== expected) {
       out.push(
         makeWarning(
