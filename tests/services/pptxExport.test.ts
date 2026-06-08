@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { buildReasoningSentences } from '@/domain/reasoningExport';
 import { buildSentencesForTest, chunkForTest } from '@/services/exporters/pptxExport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedChain, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
@@ -89,5 +90,31 @@ describe('buildSentencesForTest', () => {
     const sentences = buildSentencesForTest(doc(), 'in-order-to');
     expect(sentences).toHaveLength(1);
     expect(sentences[0]).toBe('In order to obtain "Launch", "Authorization" must hold.');
+  });
+
+  it('delegates to the canonical reasoning builder for TT (AND-junctor triples)', () => {
+    // A Transition Tree where one target is fed by an ACTION plus a precondition.
+    // The canonical builder collapses those two edges into a single
+    // "in order to obtain T, do A given P" triple; the deck must match it. An
+    // earlier divergent copy in the exporter emitted two generic per-edge
+    // sentences, so a TT deck read differently from every other export of the
+    // same tree — this pins the deck to the shared builder.
+    useDocumentStore.getState().newDocument('tt');
+    const action = seedEntity('Pull the lever', 'action');
+    const precondition = seedEntity('Lever is unlocked', 'effect');
+    const target = seedEntity('Machine starts', 'effect');
+    const s = useDocumentStore.getState();
+    s.connect(action.id, target.id);
+    s.connect(precondition.id, target.id);
+
+    const ttDoc = doc();
+    // Deck output equals the canonical narrative / print builder exactly.
+    expect(buildSentencesForTest(ttDoc, 'auto')).toEqual(buildReasoningSentences(ttDoc, 'auto'));
+    // Teeth: the TT triple actually fired (one combined line, not two per-edge).
+    const deck = buildSentencesForTest(ttDoc, 'auto');
+    expect(deck).toHaveLength(1);
+    expect(deck[0]).toBe(
+      'In order to obtain "Machine starts", do "Pull the lever" given "Lever is unlocked".'
+    );
   });
 });

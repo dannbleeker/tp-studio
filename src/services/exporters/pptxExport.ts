@@ -1,14 +1,10 @@
 import type { Node } from '@xyflow/react';
 import type PptxGenJSDefault from 'pptxgenjs';
 import { findCoreDrivers } from '@/domain/coreDriver';
-import {
-  renderEdgeSentence,
-  resolveEdgeConnector,
-  topologicalEdgeOrder,
-} from '@/domain/edgeReading';
 import { ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
-import { entitiesOfType, isAssumption } from '@/domain/graph';
+import { entitiesOfType } from '@/domain/graph';
 import { METHOD_BY_DIAGRAM } from '@/domain/methodChecklist';
+import { buildReasoningSentences } from '@/domain/reasoningExport';
 import type { TPDocument } from '@/domain/types';
 import type { CausalityLabel } from '@/store/uiSlice/types';
 import { capturePngDataUrl } from './image';
@@ -73,25 +69,16 @@ export const chunkForTest = <T>(arr: T[], size: number): T[][] => {
 const chunk = chunkForTest;
 
 /**
- * Walk the doc and produce the deck's narrative sentences. Mirrors the
- * loop inside `exportReasoningNarrative` but returns the array directly
- * (no Markdown framing) so the deck can lay it out slide-by-slide.
- * Exposed (under a `*ForTest` alias) for unit tests.
+ * The deck's narrative sentences. Delegates to the canonical
+ * `buildReasoningSentences` so the deck stays in lockstep with the Markdown
+ * narrative export and the print / PDF "reasoning companion" — including the
+ * TT AND-junctor triple form, which an earlier divergent copy here silently
+ * omitted (a Transition Tree deck then read as generic per-edge sentences
+ * instead of the "in order to obtain T, do A given P" triples every other
+ * export uses). Exposed under a `*ForTest` alias for unit tests.
  */
-export const buildSentencesForTest = (doc: TPDocument, label: CausalityLabel): string[] => {
-  const order = topologicalEdgeOrder(doc);
-  const sentences: string[] = [];
-  for (const eid of order) {
-    const e = doc.edges[eid];
-    if (!e) continue;
-    const src = doc.entities[e.sourceId];
-    const tgt = doc.entities[e.targetId];
-    if (!src || !tgt || isAssumption(src) || isAssumption(tgt)) continue;
-    const connector = resolveEdgeConnector(e, label, doc.diagramType);
-    sentences.push(renderEdgeSentence(src, tgt, connector));
-  }
-  return sentences;
-};
+export const buildSentencesForTest = (doc: TPDocument, label: CausalityLabel): string[] =>
+  buildReasoningSentences(doc, label);
 
 const buildSentences = buildSentencesForTest;
 
