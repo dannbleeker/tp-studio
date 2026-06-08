@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-08T11:35:12.821Z",
-  "commit": "5531589",
+  "generatedAt": "2026-06-08T12:02:05.912Z",
+  "commit": "a1233d4",
   "headline": {
     "linesTsJs": 123346,
     "tests": 4123,
     "lineCoveragePct": 96.87,
-    "commits": 670,
-    "ageDays": 27,
-    "trackedFiles": 988,
+    "commits": 672,
+    "ageDays": 28,
+    "trackedFiles": 989,
     "featureManualPct": 100,
     "featureBookPct": 76.7,
     "featureExamplePct": 29.5
@@ -61,35 +61,35 @@
       "total": 2785
     },
     "branches": {
-      "pct": 84.75,
-      "covered": 7947,
+      "pct": 84.76,
+      "covered": 7948,
       "total": 9376
     }
   },
   "tests": {
     "unit": 4035,
     "e2e": 88,
-    "durationMs": 195625,
+    "durationMs": 213738,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11172
+        "ms": 11042
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4847
+        "ms": 5500
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4560
+        "ms": 4601
+      },
+      {
+        "file": "tests/components/comments/CommentsPanel.test.tsx",
+        "ms": 2508
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2191
-      },
-      {
-        "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 1872
+        "ms": 2234
       }
     ]
   },
@@ -190,8 +190,8 @@
   },
   "bundle": {
     "jsGzipKb": 785,
-    "cssGzipKb": 17.7,
-    "totalGzipKb": 802.7,
+    "cssGzipKb": 17.8,
+    "totalGzipKb": 802.8,
     "budgetKb": 193.4,
     "withinBudget": true
   },
@@ -574,17 +574,17 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 27,
-    "commits": 670,
-    "commits7d": 251,
+    "ageDays": 28,
+    "commits": 672,
+    "commits7d": 253,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 582
+        "count": 583
       },
       {
         "name": "github-actions[bot]",
-        "count": 77
+        "count": 78
       },
       {
         "name": "dannbleeker",
@@ -592,8 +592,8 @@
       }
     ],
     "churn30d": {
-      "added": 191580,
-      "removed": 33735
+      "added": 192325,
+      "removed": 33777
     },
     "changelogEntries": 322
   }
