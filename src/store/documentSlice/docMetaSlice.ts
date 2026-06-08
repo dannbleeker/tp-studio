@@ -278,6 +278,12 @@ const activeDocEphemeralReset = () => ({
   editingEntityId: null,
   walkthrough: { kind: 'closed' as const },
   searchMatchIndex: 0,
+  // Compare / side-by-side are per-doc views of a revision in the CURRENT doc's
+  // history. A doc swap must clear them, or the entering tab is stuck in a ghost
+  // compare state: its revisions no longer contain the compared id, so the
+  // banner renders no diff (and no way to exit) while the canvas stays locked.
+  compareRevisionId: null,
+  sideBySideRevisionId: null,
   ...speculationDefaults(),
 });
 

@@ -134,6 +134,11 @@ const cloneDoc = (doc: TPDocument): TPDocument => ({
   ...(doc.methodChecklist ? { methodChecklist: { ...doc.methodChecklist } } : {}),
   ...(doc.customEntityClasses ? { customEntityClasses: { ...doc.customEntityClasses } } : {}),
   ...(doc.assumptions ? { assumptions: { ...doc.assumptions } } : {}),
+  // Comments were the one record not shallow-copied here — aliasing the live
+  // comment map, unlike every sibling above. Copy it too so a snapshot / branch
+  // can never share the live doc's comment object (defensive: comments are
+  // immutable-by-convention today, so this closes a latent gap, not an active leak).
+  ...(doc.comments ? { comments: { ...doc.comments } } : {}),
 });
 
 /** Read the per-doc revisions map from localStorage. Returns an empty map
