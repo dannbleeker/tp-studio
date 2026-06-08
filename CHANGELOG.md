@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Follow-up batch: five flagged items resolved
+
+An attended pass picking five items off the unattended sweep's flagged list.
+
+- **Exporters keep untitled entities visible.** The PRT-plan / TT-tasks / risk-register CSVs
+  dropped untitled linked entities from their secondary columns while the primary cell (and the
+  goal-tree exporter) showed a `(untitled …)` placeholder — a reader couldn't tell an
+  unnamed-but-present neighbour from a missing one. Every secondary column now placeholders an
+  untitled entity (overcomes / depends_on, precondition / outcome, trigger, and the risk
+  mitigation set) and skips only a genuinely deleted one.
+- **Import drops dangling edges.** `validateEdge` checks an edge's shape but can't verify its
+  endpoints resolve, so a malformed / hand-edited JSON could carry half-attached edges. Added
+  `pruneDanglingEdges`, run on import before the singleton-junctor tidy, so a loaded doc is
+  well-formed (valid exports never have dangling edges, so they're unaffected).
+- **DOT export distinguishes OR / XOR groups.** Only AND edges were styled (bold); OR and XOR
+  (mutex) groups now render dashed / dotted, with and > or > xor precedence matching the
+  import-collapse rule.
+- **Print dialog closes after the busy-state reset.** `handleVectorPdf` closed the dialog (an
+  unmount) before clearing `pdfBusy` in its `finally` — a setState on a dead component. It now
+  flags success and closes after the reset commits.
+- **Command palette is an ARIA combobox.** Wired the WAI-ARIA combobox/listbox pattern
+  (role=combobox + aria-controls / aria-expanded / aria-activedescendant on the input; a
+  role=listbox container — the `<ul>` became a `<div>` since a list can't carry an interactive
+  role; role=option + aria-selected per row) so a screen reader announces the active command as
+  the user arrows the list. Section headers stay `role="presentation"`.
+
++9 tests across the five. The print-dialog reorder has no unit test (no existing harness; benign
+React-warning fix).
+
 ## Session 180 (cont.) — Unattended hardening pass: bugs, performance, maintainability
 
 A self-contained gated sweep — every fix its own commit (verify the finding against the
