@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-07T21:17:06.758Z",
-  "commit": "5a6f1f3",
+  "generatedAt": "2026-06-08T00:03:45.586Z",
+  "commit": "686a452",
   "headline": {
-    "linesTsJs": 122673,
+    "linesTsJs": 122691,
     "tests": 4083,
-    "lineCoveragePct": 96.8,
-    "commits": 642,
+    "lineCoveragePct": 96.81,
+    "commits": 645,
     "ageDays": 27,
     "trackedFiles": 984,
     "featureManualPct": 100,
@@ -16,12 +16,12 @@
     {
       "category": "App code (src, excl. tests)",
       "files": 461,
-      "lines": 62115
+      "lines": 62125
     },
     {
       "category": "Unit tests",
       "files": 344,
-      "lines": 54357
+      "lines": 54365
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 96.8,
-      "covered": 12052,
-      "total": 12450
+      "pct": 96.81,
+      "covered": 12056,
+      "total": 12452
     },
     "statements": {
-      "pct": 94.07,
-      "covered": 13708,
-      "total": 14571
+      "pct": 94.09,
+      "covered": 13712,
+      "total": 14573
     },
     "functions": {
-      "pct": 93.99,
-      "covered": 2614,
+      "pct": 94.1,
+      "covered": 2617,
       "total": 2781
     },
     "branches": {
-      "pct": 84.66,
-      "covered": 7881,
+      "pct": 84.63,
+      "covered": 7878,
       "total": 9308
     }
   },
   "tests": {
     "unit": 3995,
     "e2e": 88,
-    "durationMs": 209080,
+    "durationMs": 198636,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10605
+        "ms": 10158
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5011
+        "ms": 4698
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4753
+        "ms": 4319
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2260
+        "ms": 2145
       },
       {
-        "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2062
+        "file": "tests/components/EdgeInspector.test.tsx",
+        "ms": 1889
       }
     ]
   },
@@ -185,7 +185,7 @@
     "anyCount": 13,
     "tsIgnore": 0,
     "tsExpectError": 0,
-    "biomeIgnore": 39,
+    "biomeIgnore": 38,
     "nonNull": 95
   },
   "bundle": {
@@ -198,7 +198,7 @@
   "docs": {
     "bookWords": 52848,
     "chapters": 25,
-    "appLoc": 62115,
+    "appLoc": 62125,
     "docToCodeRatio": 0.85
   },
   "featureCoverage": {
@@ -575,16 +575,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 642,
-    "commits7d": 228,
+    "commits": 645,
+    "commits7d": 227,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 567
+        "count": 569
       },
       {
         "name": "github-actions[bot]",
-        "count": 64
+        "count": 65
       },
       {
         "name": "dannbleeker",
@@ -592,8 +592,8 @@
       }
     ],
     "churn30d": {
-      "added": 190199,
-      "removed": 33141
+      "added": 190269,
+      "removed": 33193
     },
     "changelogEntries": 317
   }
