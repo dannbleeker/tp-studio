@@ -23,7 +23,8 @@ it — a click always grabs whichever edge is on top.
   parked: always-fan (highest visual risk), click/Tab-cycle, widen-band.
 
 ### Test-coverage — healthy (reference; no open target)
-~91% lines / 77% branches. CI floor auto-ratchets via `node ./scripts/pin-coverage-thresholds.mjs`
+~97% lines / ~85% branches (Session-180 push; CI floors ratcheted to 94 lines / 82 branches). CI floor
+auto-ratchets via `node ./scripts/pin-coverage-thresholds.mjs`
 (run once happy; never run two `--coverage` processes at once — shared `coverage/.tmp`). All the
 Session-176/177 named gaps are closed (pure exporters, `persistenceValidators`, the emission/projection
 hooks, `canvasRef`, `CreationWizardPanel`, `pdfExport`/`pptxExport`). Revisit only if a big new module
