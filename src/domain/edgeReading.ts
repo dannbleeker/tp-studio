@@ -17,7 +17,12 @@ export const resolveCausalityWord = (
 ): string | undefined => {
   if (causalityLabel === 'none') return undefined;
   if (causalityLabel === 'auto') {
-    return diagramType === 'prt' || diagramType === 'ec' ? 'in order to' : 'because';
+    // PRT / EC / Goal Tree read in NECESSITY logic ("in order to Y, X must hold");
+    // CRT / FRT / TT / NBR read in SUFFICIENCY ("Y because X"). Matches the
+    // PRIMARY_LOGIC map in validators/logicTypeMismatch.ts.
+    return diagramType === 'prt' || diagramType === 'ec' || diagramType === 'goalTree'
+      ? 'in order to'
+      : 'because';
   }
   if (causalityLabel === 'in-order-to') return 'in order to';
   return causalityLabel;
@@ -31,7 +36,7 @@ export const resolveCausalityWord = (
  *   - **`because`** — "[Effect] *because* [Cause]." (bottom-up reading)
  *   - **`therefore`** — "[Cause], *therefore* [Effect]." (top-down reading)
  *   - **`in order to`** — "*In order to* obtain [Effect], we must [Cause]."
- *     (PRT/EC necessity reading)
+ *     (PRT / EC / Goal Tree necessity reading)
  *
  * Used by the Read-through walkthrough overlay and by future text-output
  * exporters. The `connector` argument lets callers override the word if

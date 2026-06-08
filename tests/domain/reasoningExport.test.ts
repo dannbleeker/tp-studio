@@ -356,15 +356,17 @@ describe('buildReasoningSentences — assumption skipping and non-CRT types', ()
     expect(sentences).toEqual(['"Injection A", therefore "Effect B".']);
   });
 
-  it('uses "because" connector on goalTree (auto — goalTree is sufficiency not necessity)', () => {
-    // goalTree uses 'auto' which resolves to 'because' (only prt/ec get 'in order to')
+  it('uses "in order to" connector on goalTree (auto — Goal Tree is necessity logic)', () => {
+    // A Goal Tree reads in necessity ("in order to obtain Y, X must hold"), like
+    // prt/ec — not sufficiency. Its 'auto' reading resolves to 'in order to',
+    // matching the PRIMARY_LOGIC map (goalTree: 'necessity').
     resetIds();
     const goal = makeEntity({ type: 'goal', title: 'Big Goal', annotationNumber: 1 });
     const nc = makeEntity({ type: 'necessaryCondition', title: 'NC 1', annotationNumber: 2 });
     const e = makeEdge(nc.id, goal.id);
     const doc = makeDoc([goal, nc], [e], 'goalTree');
     const sentences = buildReasoningSentences(doc, 'auto');
-    expect(sentences).toEqual(['"Big Goal" because "NC 1".']);
+    expect(sentences).toEqual(['In order to obtain "Big Goal", "NC 1" must hold.']);
   });
 
   it('uses "in order to" connector on NBR (auto maps to "because"; explicit override works)', () => {
@@ -449,7 +451,7 @@ describe('exportReasoningNarrative — diagram types not yet covered', () => {
     expect(md).toContain('"Churn drops" because "Apply policy".');
   });
 
-  it('renders goalTree narrative with "because" phrasing (auto → because for goalTree)', () => {
+  it('renders goalTree narrative with "in order to" phrasing (necessity logic)', () => {
     resetIds();
     const goal = makeEntity({ type: 'goal', title: 'Become profitable', annotationNumber: 1 });
     const csf = makeEntity({
@@ -461,7 +463,7 @@ describe('exportReasoningNarrative — diagram types not yet covered', () => {
     const doc = makeDoc([goal, csf], [e], 'goalTree');
     const md = exportReasoningNarrative(doc);
     expect(md).toContain('*Goal Tree*');
-    expect(md).toContain('"Become profitable" because "Grow revenue".');
+    expect(md).toContain('In order to obtain "Become profitable", "Grow revenue" must hold.');
   });
 
   it('renders ST narrative correctly', () => {
