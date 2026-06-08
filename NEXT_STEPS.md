@@ -43,14 +43,6 @@ the full rationale). **Every candidate is now shipped or explicitly dropped:** A
 E1 (5 system-archetype patterns) + the tied-core-drivers Spawn-EC action (Session 179); A3, A4, E3, E5,
 E6 (Session 180 — see CHANGELOG); E2 / E4 / E7 dropped to won't-build (see Out-of-scope below).
 
-### Deferred from the Session-180 under-the-hood review (need Dann's call)
-One finding left — and it's an optional tidy-up. The CSV multiline-import, the bare-key shortcut-gating,
-and the JSON corrupt-cosmetic-field load bugs that used to head this list have all shipped (see the
-CHANGELOG "Under-the-hood" entries):
-- **Two one-shot timers not cleared on unmount** (`RevisionPanel` snapshot highlight,
-  `ReadAllAtOnceDialog` copy-state). Benign under React 18 (the late `setState` is a no-op); pure
-  tidy-up — left alone rather than add cleanup machinery for a non-problem.
-
 ---
 
 ## Out of scope — won't build

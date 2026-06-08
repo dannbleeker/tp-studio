@@ -2,6 +2,17 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Lifecycle: cancel transient timers on unmount
+
+Two "show a state for N seconds" timers — `RevisionPanel`'s just-captured-snapshot highlight and
+`ReadAllAtOnceDialog`'s copy-state — called `setTimeout` without keeping the handle, so closing the
+panel / dialog before the timer fired left a one-shot timer running against a torn-down component (a
+no-op `setState` under React 18, but a real leaked timer until it fired). Extracted a small
+`useTimeoutFn` hook returning a stable `setTimer(fn, ms)` that cancels any prior pending timer AND
+clears on unmount, and wired both sites through it. +3 hook tests (fires after the delay; re-arm
+cancels the prior; unmount cancels). Closes the last item from the Session-180 under-the-hood review —
+the deferred list is now empty.
+
 ## Session 180 (cont.) — Persistence: corrupt cosmetic fields degrade, not fail the load
 
 `importFromJSON` already validated in two tiers — structural fields (id, diagramType, schemaVersion,

@@ -3,6 +3,7 @@ import { Clock, GitBranch, History, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import type { Revision } from '@/domain/revisions';
+import { useTimeoutFn } from '@/hooks/useTimeoutFn';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
@@ -53,6 +54,7 @@ export function RevisionPanel() {
   // The just-captured snapshot row gets a brief highlight so the user sees
   // their action land. Cleared after ~1.5 s; not persisted anywhere.
   const [recentId, setRecentId] = useState<string | null>(null);
+  const setRecentTimer = useTimeoutFn();
 
   return (
     <aside
@@ -91,7 +93,7 @@ export function RevisionPanel() {
               const id = captureSnapshot();
               showToast('success', 'Snapshot captured.');
               setRecentId(id);
-              setTimeout(() => setRecentId((cur) => (cur === id ? null : cur)), 1500);
+              setRecentTimer(() => setRecentId((cur) => (cur === id ? null : cur)), 1500);
             }}
             className="w-full"
             aria-label="Snapshot current document"

@@ -6,6 +6,7 @@ import {
   resolveEdgeConnector,
   topologicalEdgeOrder,
 } from '@/domain/edgeReading';
+import { useTimeoutFn } from '@/hooks/useTimeoutFn';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
@@ -42,6 +43,7 @@ export function ReadAllAtOnceDialog() {
     }))
   );
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const setCopyTimer = useTimeoutFn();
 
   // Topologically order + render every edge. Memoize on the doc + label
   // so reopening the same diagram doesn't recompute.
@@ -69,10 +71,10 @@ export function ReadAllAtOnceDialog() {
     try {
       await navigator.clipboard.writeText(fullText);
       setCopyState('copied');
-      setTimeout(() => setCopyState('idle'), 2000);
+      setCopyTimer(() => setCopyState('idle'), 2000);
     } catch {
       setCopyState('failed');
-      setTimeout(() => setCopyState('idle'), 2000);
+      setCopyTimer(() => setCopyState('idle'), 2000);
     }
   };
 
