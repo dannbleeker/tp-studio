@@ -9,7 +9,7 @@ import { getCanvasNodes } from '@/services/canvasRef';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
-import { isEditableTarget } from './keyboardUtils';
+import { isEditableTarget, isInteractiveTarget } from './keyboardUtils';
 
 /**
  * Selection-dependent keyboard shortcuts. Everything here either reads the
@@ -40,7 +40,12 @@ export function useSelectionShortcuts() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const cmdOrCtrl = e.metaKey || e.ctrlKey;
-      const inField = isEditableTarget(e.target);
+      // These are bare-key CANVAS shortcuts, so they fire only when the canvas
+      // owns the keyboard — not when a text field OR an interactive control
+      // (button / link / select / menu item) has focus, which would let a
+      // keystroke meant for that control double as a canvas command (the
+      // Tab-on-a-button "mint a child" / Backspace "delete selection" bugs).
+      const onControl = isEditableTarget(e.target) || isInteractiveTarget(e.target);
 
       // reg: select-successors / select-predecessors
       // Cmd/Ctrl+Shift+ArrowRight / ArrowLeft — select successors / predecessors.
@@ -84,7 +89,7 @@ export function useSelectionShortcuts() {
         !cmdOrCtrl &&
         !e.shiftKey &&
         !e.altKey &&
-        !inField &&
+        !onControl &&
         e.key.toLowerCase() === 'a' &&
         single?.kind === 'edges'
       ) {
@@ -99,7 +104,7 @@ export function useSelectionShortcuts() {
       // Enter OR F2 on a single selected entity → begin editing its title (F2 is
       // the conventional rename key — Z-6). Enter on a GROUP hoists it; F2 ignores
       // groups (they have no title to rename).
-      if ((e.key === 'Enter' || e.key === 'F2') && !inField && single?.kind === 'entities') {
+      if ((e.key === 'Enter' || e.key === 'F2') && !onControl && single?.kind === 'entities') {
         const isGroup = doc.groups[single.id] != null;
         if (isGroup && e.key !== 'Enter') return; // F2 on a group: no-op
         e.preventDefault();
@@ -113,7 +118,7 @@ export function useSelectionShortcuts() {
       }
 
       // reg: delete-entity / delete-group
-      if ((e.key === 'Delete' || e.key === 'Backspace') && !inField) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !onControl) {
         if (selection.kind === 'none') return;
         e.preventDefault();
         if (!guardWriteOrToast()) return;
@@ -122,7 +127,7 @@ export function useSelectionShortcuts() {
       }
 
       // reg: add-child / add-parent
-      if (e.key === 'Tab' && !inField && single?.kind === 'entities') {
+      if (e.key === 'Tab' && !onControl && single?.kind === 'entities') {
         e.preventDefault();
         if (!guardWriteOrToast()) return;
         const newEntity = addEntity({
@@ -143,7 +148,7 @@ export function useSelectionShortcuts() {
       // Group expand / collapse on a selected group node:
       //   →  expands a collapsed group; ←  collapses an expanded one.
       // The asymmetry mirrors how a tree control reads: right = open.
-      if (!inField && single?.kind === 'entities' && doc.groups[single.id]) {
+      if (!onControl && single?.kind === 'entities' && doc.groups[single.id]) {
         const group = doc.groups[single.id];
         if (e.key === 'ArrowRight' && group?.collapsed) {
           e.preventDefault();
@@ -163,7 +168,7 @@ export function useSelectionShortcuts() {
       // ArrowUp → effect (target of an outgoing edge).
       // ArrowDown → cause (source of an incoming edge).
       // ArrowLeft / ArrowRight → sibling at the same rank (using live RF positions).
-      if (!inField && single?.kind === 'entities' && !doc.groups[single.id]) {
+      if (!onControl && single?.kind === 'entities' && !doc.groups[single.id]) {
         const edges = Object.values(doc.edges);
         let nextId: string | undefined;
         const currentId = single.id;

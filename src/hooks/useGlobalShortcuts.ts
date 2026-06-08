@@ -7,7 +7,7 @@ import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboar
 import { isStandalonePWA } from '@/services/pwa';
 import { flushPersist } from '@/services/storage/persistDebounced';
 import { useDocumentStore } from '@/store';
-import { isEditableTarget } from './keyboardUtils';
+import { isEditableTarget, isInteractiveTarget } from './keyboardUtils';
 
 /**
  * Selection-agnostic global keyboard shortcuts. Everything that does not
@@ -44,6 +44,12 @@ export function useGlobalShortcuts() {
     const handler = (e: KeyboardEvent) => {
       const cmdOrCtrl = e.metaKey || e.ctrlKey;
       const inField = isEditableTarget(e.target);
+      // The two BARE-key shortcuts below (Quick Capture `e`, zoom +/-/0)
+      // additionally defer to a focused control — a button / menu owns the
+      // keystroke, same as the canvas-selection shortcuts. The CHORDS keep using
+      // `inField` (text-only) so undo / redo / copy / save still fire while a
+      // control has focus; `Escape` stays global on purpose.
+      const onControl = inField || isInteractiveTarget(e.target);
 
       // reg: palette
       // Cmd/Ctrl+K — palette (works anywhere)
@@ -145,7 +151,7 @@ export function useGlobalShortcuts() {
 
       // reg: quick-capture
       // E (bare) — Quick Capture (FL-QC1). Skip when typing or modifier'd.
-      if (!cmdOrCtrl && !e.shiftKey && !e.altKey && !inField && e.key.toLowerCase() === 'e') {
+      if (!cmdOrCtrl && !e.shiftKey && !e.altKey && !onControl && e.key.toLowerCase() === 'e') {
         e.preventDefault();
         if (!guardWriteOrToast()) return;
         useDocumentStore.getState().openQuickCapture();
@@ -156,7 +162,7 @@ export function useGlobalShortcuts() {
       // Zoom shortcuts (FL-DI1). Only fire outside text fields so the OS
       // browser zoom (Cmd+- / Cmd+=) still works while typing.
       const inst = getCanvasInstance();
-      if (!inField && cmdOrCtrl === false && inst) {
+      if (!onControl && cmdOrCtrl === false && inst) {
         if (e.key === '+' || e.key === '=') {
           e.preventDefault();
           inst.zoomIn();

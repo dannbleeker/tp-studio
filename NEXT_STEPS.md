@@ -44,14 +44,9 @@ E1 (5 system-archetype patterns) + the tied-core-drivers Spawn-EC action (Sessio
 E6 (Session 180 — see CHANGELOG); E2 / E4 / E7 dropped to won't-build (see Out-of-scope below).
 
 ### Deferred from the Session-180 under-the-hood review (need Dann's call)
-Three findings verified real but left for a decision rather than landed unattended (see the CHANGELOG
-"Under-the-hood" entries for what *was* fixed — including the CSV multiline-import bug that used to head
-this list, now shipped):
-- **Delete/Backspace fires when a non-input control has focus.** `isEditableTarget` (keyboardUtils)
-  only guards INPUT / TEXTAREA / contenteditable, so Backspace while a toolbar/canvas `<button>` is
-  focused triggers delete-selection. The broad fix (treat every button as "in a field") would disable
-  *all* shortcuts whenever any button has focus — needs a targeted decision (gate only the destructive
-  keys against button focus?).
+Two findings verified real but left for a decision rather than landed unattended (see the CHANGELOG
+"Under-the-hood" entries for what *was* fixed — including the CSV multiline-import and the bare-key
+shortcut-gating bugs that used to head this list, now shipped):
 - **JSON load throws on a corrupt `resolvedWarnings` value** (`persistenceJson.ts`) → backup-slot
   fallback, possible doc loss. The validator is deliberately strict everywhere; soft-degrading just
   this one non-critical field to `{}` is a validation-philosophy call.

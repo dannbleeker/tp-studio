@@ -51,6 +51,30 @@ describe('useGlobalShortcuts — Cmd+K (palette)', () => {
   });
 });
 
+describe('useGlobalShortcuts — bare keys defer to a focused control', () => {
+  // The bare-key shortcuts (Quick Capture) must not fire when a button/menu owns
+  // focus — same class as the canvas-selection shortcuts. Chords (Cmd+K/S/Z/…)
+  // and Escape stay broad and are covered by their own describes.
+  it('E (Quick Capture) on a focused button does NOT open Quick Capture', () => {
+    render(
+      <div>
+        <button type="button">x</button>
+        <Host />
+      </div>
+    );
+    const button = document.querySelector('button') as HTMLButtonElement;
+    button.focus();
+    fireEvent.keyDown(button, { key: 'e' });
+    expect(s().quickCaptureOpen).toBe(false);
+  });
+
+  it('E on the canvas (no control focused) DOES open Quick Capture', () => {
+    render(<Host />);
+    fireEvent.keyDown(window, { key: 'e' });
+    expect(s().quickCaptureOpen).toBe(true);
+  });
+});
+
 describe('useGlobalShortcuts — Cmd+S (save)', () => {
   it('toasts "Saved to this browser" after Cmd+S', () => {
     render(<Host />);

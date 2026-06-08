@@ -206,3 +206,79 @@ describe('useSelectionShortcuts — group expand / collapse', () => {
     expect(s().doc.groups[g.id]?.collapsed).toBe(true);
   });
 });
+
+describe('useSelectionShortcuts — defers to a focused control, not just text inputs', () => {
+  // Render the host beside a <button>, focus it, and fire bare-key shortcuts ON
+  // the button. None of the canvas shortcuts should act — a focused toolbar /
+  // inspector / menu control owns the keystroke (the Backspace-deletes-selection
+  // and Tab-mints-a-child bugs). React Flow nodes are role="group" divs, so this
+  // gate never touches the primary canvas gestures (covered by the other
+  // describes above, which fire on `window`).
+  const renderWithButton = (): HTMLButtonElement => {
+    render(
+      <div>
+        <button type="button">x</button>
+        <Host />
+      </div>
+    );
+    const button = document.querySelector('button') as HTMLButtonElement;
+    button.focus();
+    return button;
+  };
+
+  it('Backspace on a focused button does NOT open the delete confirmation', () => {
+    const e = seedEntity('Keep me');
+    useDocumentStore.getState().selectEntities([e.id]);
+    const button = renderWithButton();
+    fireEvent.keyDown(button, { key: 'Backspace' });
+    expect(s().confirmDialog).toBeNull();
+  });
+
+  it('Tab on a focused button does NOT mint a child entity', () => {
+    const parent = seedEntity('Parent');
+    useDocumentStore.getState().selectEntities([parent.id]);
+    const button = renderWithButton();
+    const before = Object.keys(s().doc.entities).length;
+    fireEvent.keyDown(button, { key: 'Tab' });
+    expect(Object.keys(s().doc.entities).length).toBe(before);
+  });
+
+  it('Enter on a focused button does NOT begin a rename', () => {
+    const e = seedEntity('Entity');
+    useDocumentStore.getState().selectEntities([e.id]);
+    const button = renderWithButton();
+    fireEvent.keyDown(button, { key: 'Enter' });
+    expect(s().editingEntityId).not.toBe(e.id);
+  });
+
+  it('A on a focused button does NOT add an assumption to the selected edge', () => {
+    const { edge } = seedConnectedPair();
+    useDocumentStore.getState().selectEdges([edge.id]);
+    const button = renderWithButton();
+    fireEvent.keyDown(button, { key: 'a' });
+    expect(s().doc.edges[edge.id]?.assumptionIds?.length ?? 0).toBe(0);
+  });
+
+  it('ArrowUp on a focused button does NOT move the selection', () => {
+    const { entities } = seedChain(['Bottom', 'Mid', 'Top']);
+    const bottom = entities[0]!;
+    useDocumentStore.getState().selectEntities([bottom.id]);
+    const button = renderWithButton();
+    fireEvent.keyDown(button, { key: 'ArrowUp' });
+    const sel = s().selection;
+    if (sel.kind !== 'entities') throw new Error('selection changed kind unexpectedly');
+    expect(sel.ids).toEqual([bottom.id]);
+  });
+
+  it('Backspace on the canvas (no control focused) DOES open the delete confirmation', () => {
+    // Pins the primary gesture: the gate must not silently swallow real deletes.
+    // Two entities so the multi-select path always prompts (a single
+    // connectionless entity deletes without a dialog).
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    useDocumentStore.getState().selectEntities([a.id, b.id]);
+    render(<Host />);
+    fireEvent.keyDown(window, { key: 'Backspace' });
+    expect(s().confirmDialog).not.toBeNull();
+  });
+});

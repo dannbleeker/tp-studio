@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Keyboard: bare-key shortcuts defer to focused controls
+
+Canvas bare-key shortcuts gated only on `isEditableTarget` (text inputs), so when a button / menu /
+select owned keyboard focus the keystroke ALSO ran as a canvas command: Backspace deleted the
+selection, **Tab minted a child entity** (hijacking focus navigation), Enter started a rename, A added
+an assumption, Arrows moved the selection — and in the global hook `e` opened Quick Capture and
+`+`/`-`/`0` zoomed. Root-caused as one class rather than patching only the reported Delete: added
+`isInteractiveTarget` (`button, a[href], select, [role="button"], [role="menuitem"]`, via `closest`)
+and OR-ed it into the gate for **every** bare-key branch in `useSelectionShortcuts` plus the two bare
+keys in `useGlobalShortcuts`. App-wide CHORDS (undo / redo / copy / save) and `Escape` stay broad —
+they should fire while a control has focus. The primary gesture is untouched: React Flow marks nodes
+`role="group"` and the pane `role="application"`, neither in the denylist, so select-and-Delete still
+works. +14 tests (the predicate incl. the canvas-role negatives; a "control focused → does not fire"
+test per affected key; positive canvas-side regressions).
+
 ## Session 180 (cont.) — CSV import: multiline quoted fields
 
 `parseEntitiesCsv` split the file on newlines *before* quote-parsing, so a quoted field containing a
