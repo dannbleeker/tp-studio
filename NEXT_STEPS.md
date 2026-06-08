@@ -11,8 +11,8 @@ CHANGELOG.
 
 Surfaced during the gated sweep but **deliberately not** auto-applied: each needs a call about
 intended behaviour before it can be done safely. (The export-consistency, dangling-edge, DOT
-or/xor styling, print-dialog close-order, command-palette-ARIA and junctor-clearance items have
-since been fixed — see CHANGELOG.)
+or/xor styling, print-dialog close-order, command-palette-ARIA, junctor-clearance and
+goalTree-necessity items have since been fixed — see CHANGELOG.)
 
 **Behaviour / semantics — decide intent first:**
 - **NBR validator gap** — the Negative-Branch ruleset has a thinner structural check than the
@@ -21,8 +21,6 @@ since been fixed — see CHANGELOG.)
   paths still straddle the legacy assumption-Entity and the Session-77 first-class `Assumption`
   record. Works today; collapsing the transitional dual-rep is the real cleanup, too broad to
   do safely unattended.
-- **`goalTree` "because" connector** — reads with a sufficiency-style connector in places; a
-  test pins the wording, so it may be deliberate. Confirm the intended Goal-Tree reading.
 
 ---
 

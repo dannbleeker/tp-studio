@@ -2,6 +2,16 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Goal Tree reads in necessity, not "because"
+
+`resolveCausalityWord` fell through to the sufficiency connector "because" for a Goal Tree, so a
+goalTree edge read `"Big Goal" because "NC 1"` — backwards. A Goal Tree is *necessity* logic ("in
+order to obtain the goal, the condition must hold"), which the codebase already asserts in the
+`PRIMARY_LOGIC` map (`goalTree: 'necessity'`). Added goalTree to the "in order to" branch alongside
+PRT/EC, so the narrative export, the print/PDF reasoning companion and the canvas read-through now
+render `In order to obtain "Big Goal", "NC 1" must hold.` CRT/FRT/TT/NBR stay "because"; PRT/EC
+unchanged. Two pinned tests flipped to the necessity wording.
+
 ## Session 180 (cont.) — Junctor obstacle box no longer double-padded
 
 `junctorObstacleBoxes` baked an 8px margin into each junctor's routing-obstacle box, then
