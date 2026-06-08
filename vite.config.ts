@@ -181,7 +181,15 @@ export default defineConfig(({ command, mode }) => ({
           'assets/MarkdownPreview*.js',
         ],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
+        // The SPA fallback must NOT swallow the standalone .html pages hosted
+        // alongside the app shell (dashboard.html, user-guide.html, notices.html,
+        // security.html). They're precached and served by GitHub Pages directly;
+        // without this denylist the service worker rewrites a *navigation* to any
+        // of them into index.html (the app) — which is exactly what made
+        // `/dashboard.html` open the editor instead of the dashboard. The app's
+        // own deep links are extensionless (root + query/hash), so denying every
+        // `.html` path from the fallback is safe and future-proofs any new page.
+        navigateFallbackDenylist: [/^\/api\//, /\.html$/],
         // Session 114 — runtime-cache the practitioner book PDF
         // (`Causal-Thinking-with-TP-Studio.pdf`). The PDF is ~1 MB; we
         // deliberately keep it out of the precache `globPatterns` so
