@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-08T11:08:01.177Z",
-  "commit": "85168ca",
+  "generatedAt": "2026-06-08T11:24:30.107Z",
+  "commit": "0dd5201",
   "headline": {
     "linesTsJs": 123280,
     "tests": 4120,
-    "lineCoveragePct": 96.9,
-    "commits": 667,
+    "lineCoveragePct": 96.87,
+    "commits": 668,
     "ageDays": 27,
     "trackedFiles": 986,
     "featureManualPct": 100,
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 96.9,
-      "covered": 12104,
+      "pct": 96.87,
+      "covered": 12100,
       "total": 12490
     },
     "statements": {
-      "pct": 94.14,
-      "covered": 13767,
+      "pct": 94.11,
+      "covered": 13763,
       "total": 14623
     },
     "functions": {
-      "pct": 94.21,
-      "covered": 2621,
+      "pct": 94.1,
+      "covered": 2618,
       "total": 2782
     },
     "branches": {
-      "pct": 84.78,
-      "covered": 7946,
+      "pct": 84.75,
+      "covered": 7943,
       "total": 9372
     }
   },
   "tests": {
     "unit": 4032,
     "e2e": 88,
-    "durationMs": 207875,
+    "durationMs": 191900,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10977
+        "ms": 11257
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5089
+        "ms": 5045
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4926
+        "ms": 4474
+      },
+      {
+        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
+        "ms": 2473
       },
       {
         "file": "tests/components/EdgeInspector.test.tsx",
-        "ms": 2541
-      },
-      {
-        "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2433
+        "ms": 1920
       }
     ]
   },
@@ -575,8 +575,8 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 27,
-    "commits": 667,
-    "commits7d": 248,
+    "commits": 668,
+    "commits7d": 249,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -584,7 +584,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 75
+        "count": 76
       },
       {
         "name": "dannbleeker",
@@ -592,8 +592,8 @@
       }
     ],
     "churn30d": {
-      "added": 191431,
-      "removed": 33655
+      "added": 191474,
+      "removed": 33698
     },
     "changelogEntries": 321
   }
