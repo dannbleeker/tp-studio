@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { paletteScore } from '@/domain/paletteScore';
 import { paletteKbdForCommand } from '@/domain/shortcuts';
 import { useDelayedFocus } from '@/hooks/useDelayedFocus';
@@ -36,6 +36,11 @@ export function CommandPalette() {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  // Stable ids for the ARIA combobox/listbox wiring — the focused input points
+  // at the active option via aria-controls + aria-activedescendant.
+  const baseId = useId();
+  const listboxId = `${baseId}-listbox`;
+  const optionId = (idx: number) => `${baseId}-opt-${idx}`;
   // Session 88 (S17) — snapshot the recent-command id list on every
   // open. We don't subscribe; the list is small and only the active
   // tab needs to see it. Re-snapping on open means a command run in
@@ -174,9 +179,12 @@ export function CommandPalette() {
     // across filter/reorder so React reconciles rows instead of
     // rebuilding them.
     return (
-      <li key={`${keyScope}:${cmd.id}`}>
+      <div key={`${keyScope}:${cmd.id}`}>
         <button
           type="button"
+          id={optionId(idx)}
+          role="option"
+          aria-selected={idx === activeIndex}
           className={clsx(
             'flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm transition',
             idx === activeIndex
@@ -203,7 +211,7 @@ export function CommandPalette() {
             </kbd>
           )}
         </button>
-      </li>
+      </div>
     );
   };
 
@@ -212,6 +220,12 @@ export function CommandPalette() {
       <input
         ref={inputRef}
         type="text"
+        role="combobox"
+        aria-controls={listboxId}
+        aria-expanded={flatList.length > 0}
+        aria-activedescendant={flatList.length > 0 ? optionId(activeIndex) : undefined}
+        aria-autocomplete="list"
+        aria-label="Command search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => {
@@ -229,9 +243,16 @@ export function CommandPalette() {
         placeholder="Type a command…"
         className="w-full border-neutral-200 border-b bg-transparent px-4 py-3 text-neutral-900 text-sm outline-hidden placeholder:text-neutral-400 dark:border-neutral-800 dark:text-neutral-100"
       />
-      <ul className="max-h-[60vh] overflow-y-auto py-1.5">
+      <div
+        id={listboxId}
+        role="listbox"
+        aria-label="Commands"
+        className="max-h-[60vh] overflow-y-auto py-1.5"
+      >
         {flatList.length === 0 && (
-          <li className="px-4 py-3 text-neutral-500 text-sm">No matches.</li>
+          <div role="presentation" className="px-4 py-3 text-neutral-500 text-sm">
+            No matches.
+          </div>
         )}
         {sections === null
           ? // Filtered view: flat, sorted by score.
@@ -251,29 +272,29 @@ export function CommandPalette() {
                       typing (filtered view takes over). */}
                   {recentCommands.length > 0 && (
                     <Fragment key="recent-section">
-                      <li
+                      <div
                         role="presentation"
                         className="select-none px-4 pt-3 pb-1 font-semibold text-[10px] text-violet-500 uppercase tracking-wider dark:text-violet-400"
                       >
                         Recent
-                      </li>
+                      </div>
                       {recentCommands.map((cmd) => renderRow(cmd, flatIdx++, 'recent'))}
                     </Fragment>
                   )}
                   {sections.map((section) => (
                     <Fragment key={section.group}>
                       {/* Session 87 (S4) — `aria-hidden` removed so screen
-                          readers announce category transitions when the
-                          user walks the unfiltered palette. `role="presentation"`
-                          keeps the header out of the listitem-count for
+                          readers announce category transitions when the user
+                          walks the unfiltered palette. `role="presentation"`
+                          keeps the header out of the listbox's option set for
                           assistive tech without hiding it from the
                           accessibility tree entirely. */}
-                      <li
+                      <div
                         role="presentation"
                         className="select-none px-4 pt-3 pb-1 font-semibold text-[10px] text-neutral-400 uppercase tracking-wider dark:text-neutral-500"
                       >
                         {section.group}
-                      </li>
+                      </div>
                       {section.items.map((cmd, i) => {
                         // Edit-group rows break under sub-headers; other
                         // groups render flat. The sub-header shows on the
@@ -286,13 +307,13 @@ export function CommandPalette() {
                         if (sub && sub !== prevSub) {
                           return (
                             <Fragment key={`sub:${section.group}:${cmd.id}`}>
-                              <li
+                              <div
                                 role="presentation"
                                 data-subheader=""
                                 className="select-none px-4 pt-2 pb-0.5 pl-6 font-medium text-[9px] text-neutral-400 uppercase tracking-wide dark:text-neutral-500"
                               >
                                 {sub}
-                              </li>
+                              </div>
                               {row}
                             </Fragment>
                           );
@@ -304,7 +325,7 @@ export function CommandPalette() {
                 </>
               );
             })()}
-      </ul>
+      </div>
     </Modal>
   );
 }

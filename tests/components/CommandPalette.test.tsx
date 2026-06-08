@@ -21,7 +21,7 @@ describe('CommandPalette', () => {
   it('opens when the store says paletteOpen and renders all commands', () => {
     open();
     const { container } = render(<CommandPalette />);
-    const items = container.querySelectorAll('li button');
+    const items = container.querySelectorAll('button[role="option"]');
     // We don't assert exact count (the catalog grows) but require a healthy
     // floor so a regression that filters everything is caught.
     expect(items.length).toBeGreaterThanOrEqual(20);
@@ -34,7 +34,7 @@ describe('CommandPalette', () => {
     act(() => {
       fireEvent.change(input, { target: { value: 'capture' } });
     });
-    const labels = Array.from(container.querySelectorAll('li button')).map(
+    const labels = Array.from(container.querySelectorAll('button[role="option"]')).map(
       (b) => b.textContent ?? ''
     );
     // Session 90 — the export-as-PNG / export-as-SVG individual commands
@@ -54,7 +54,7 @@ describe('CommandPalette', () => {
     const { container } = render(<CommandPalette />);
     const input = container.querySelector('input') as HTMLInputElement;
     expect(input.value).toBe('Export');
-    const labels = Array.from(container.querySelectorAll('li button')).map(
+    const labels = Array.from(container.querySelectorAll('button[role="option"]')).map(
       (b) => b.textContent ?? ''
     );
     // Every label that survives the filter should be Export-related.
@@ -88,7 +88,7 @@ describe('CommandPalette', () => {
   it('renders section headers in canonical order when no query is active', () => {
     // The palette groups commands by `cmd.group` and emits a section header
     // before each non-empty group, in a fixed File / Edit / View / Review /
-    // Export / Help order. Headers are <li role="presentation"> rows with no
+    // Export / Help order. Headers are <div role="presentation"> rows with no
     // <button> inside — Session 87 (S4) swapped them from `aria-hidden` to
     // `role="presentation"` so screen readers announce category transitions.
     open();
@@ -96,7 +96,7 @@ describe('CommandPalette', () => {
     // Exclude the Edit-group sub-section headers (`data-subheader`) — this
     // test pins the top-level GROUP order, not the intra-Edit sub-sections.
     const headers = Array.from(
-      container.querySelectorAll('li[role="presentation"]:not([data-subheader])')
+      container.querySelectorAll('div[role="presentation"]:not([data-subheader])')
     ).map((n) => n.textContent ?? '');
     // Every value in `headers` must come from the canonical order. The
     // canonical list is the source of truth; this test just pins that we
@@ -117,7 +117,7 @@ describe('CommandPalette', () => {
   it('renders Edit sub-section headers in the unfiltered list', () => {
     open();
     const { container } = render(<CommandPalette />);
-    const subheaders = Array.from(container.querySelectorAll('li[data-subheader]')).map(
+    const subheaders = Array.from(container.querySelectorAll('div[data-subheader]')).map(
       (n) => n.textContent ?? ''
     );
     expect(subheaders).toContain('Clipboard & history');
@@ -131,7 +131,8 @@ describe('CommandPalette', () => {
     open();
     const { container } = render(<CommandPalette />);
     act(() => fireEvent.change(container.querySelector('input')!, { target: { value: 'png' } }));
-    const headers = container.querySelectorAll('li[aria-hidden="true"]');
+    // Filtered view is flat — no section-header rows (role="presentation") at all.
+    const headers = container.querySelectorAll('div[role="presentation"]');
     expect(headers.length).toBe(0);
   });
 
@@ -148,7 +149,7 @@ describe('CommandPalette', () => {
     // Reopen — the just-run command should appear under a Recent header.
     open();
     const reopen = render(<CommandPalette />);
-    const headers = Array.from(reopen.container.querySelectorAll('li[role="presentation"]')).map(
+    const headers = Array.from(reopen.container.querySelectorAll('div[role="presentation"]')).map(
       (n) => n.textContent ?? ''
     );
     expect(headers[0]).toBe('Recent');
@@ -170,7 +171,7 @@ describe('CommandPalette', () => {
     act(() =>
       fireEvent.change(reopen.container.querySelector('input')!, { target: { value: 'png' } })
     );
-    const headers = Array.from(reopen.container.querySelectorAll('li[role="presentation"]')).map(
+    const headers = Array.from(reopen.container.querySelectorAll('div[role="presentation"]')).map(
       (n) => n.textContent ?? ''
     );
     expect(headers).not.toContain('Recent');
@@ -186,10 +187,36 @@ describe('CommandPalette', () => {
     // The Help command's id is `help`; its row will be the one whose
     // button text contains "shortcuts" (from "Help / shortcuts…") or
     // similar — we look up by text and check the button has an SVG.
-    const helpRow = Array.from(container.querySelectorAll('li button')).find((b) =>
+    const helpRow = Array.from(container.querySelectorAll('button[role="option"]')).find((b) =>
       /shortcuts/i.test(b.textContent ?? '')
     ) as HTMLButtonElement | undefined;
     expect(helpRow).toBeTruthy();
     expect(helpRow?.querySelector('svg')).toBeTruthy();
+  });
+
+  it('exposes an ARIA combobox/listbox and tracks the active option', () => {
+    open();
+    const { container } = render(<CommandPalette />);
+    const input = container.querySelector('input')!;
+    expect(input.getAttribute('role')).toBe('combobox');
+    expect(input.getAttribute('aria-autocomplete')).toBe('list');
+    expect(input.getAttribute('aria-expanded')).toBe('true');
+
+    // aria-controls points at the listbox container.
+    const listbox = container.querySelector('[role="listbox"]') as HTMLElement;
+    expect(listbox).toBeTruthy();
+    expect(input.getAttribute('aria-controls')).toBe(listbox.id);
+
+    const options = container.querySelectorAll('button[role="option"]');
+    expect(options.length).toBeGreaterThanOrEqual(20);
+    // The active descendant starts on the first option and follows ArrowDown.
+    const first = options[0] as HTMLButtonElement;
+    const second = options[1] as HTMLButtonElement;
+    expect(input.getAttribute('aria-activedescendant')).toBe(first.id);
+    expect(first.getAttribute('aria-selected')).toBe('true');
+    act(() => fireEvent.keyDown(input, { key: 'ArrowDown' }));
+    expect(input.getAttribute('aria-activedescendant')).toBe(second.id);
+    expect(second.getAttribute('aria-selected')).toBe('true');
+    expect(first.getAttribute('aria-selected')).toBe('false');
   });
 });
