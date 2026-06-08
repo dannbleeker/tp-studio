@@ -30,6 +30,13 @@ audit "finding" cited a non-existent file and was dropped).
 - **File picker hung on cancel.** `pickFile()` only resolved from `onchange`; a dismissed dialog
   fires `cancel`, not `change`, so the promise never settled and `await pickFile(...)` leaked the
   suspended continuation. Wired `oncancel`.
+- **Flying Logic export dropped labels on grouped edges.** The source→junctor edge omitted the
+  `label` attribute the direct-edge path emits, so a labelled AND/OR/XOR edge lost its label on
+  re-import (the reader was already reading it back). Now emits it, matching the direct path.
+- **Walkthrough Space-bar stole button clicks.** The CLR-walkthrough's window keydown handler
+  hijacked Space (advance + `preventDefault`) with no target guard; with focus trapped in the card,
+  a focused button never received its Space activation. Space now advances only when no control owns
+  focus; Arrow keys still always navigate.
 
 **Performance.**
 - **PRT-plan topo-sort was O(V·E).** `orderedIntermediateObjectives` re-scanned every edge
@@ -41,7 +48,7 @@ audit "finding" cited a non-existent file and was dropped).
 - **Anchor-signature memo over-recomputed.** `assumptionAnchorSig` keyed on the whole `doc`,
   re-running on every keystroke / drag frame; narrowed to `[doc.edges]` like its siblings.
 
-+9 regression tests pin the fixes. Each change committed + gated + green on CI separately.
++10 regression tests pin the fixes. Each change committed + gated + green on CI separately.
 
 ## Session 180 (cont.) — Book: practitioner improvements
 
