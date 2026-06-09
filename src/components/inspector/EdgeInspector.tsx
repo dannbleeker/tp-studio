@@ -94,9 +94,9 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
 
   if (!edge) return null;
 
-  const assumptions = (edge.assumptionIds ?? [])
-    .map((id) => entities[id])
-    .filter((e): e is Entity => e?.type === 'assumption');
+  // Record-canonical: the Well takes the edge's assumption ids and each row
+  // reads its own record from doc.assumptions. No assumption-Entity lookup.
+  const assumptionIds = edge.assumptionIds ?? [];
 
   // Re-wire is offered only for a normal causal cause→effect edge. A note-edge
   // (one endpoint a note) keeps the read-only display — its semantics aren't a
@@ -364,7 +364,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
           collapses two near-identical row implementations into one
           source of truth. The richer pill UX is a strict improvement
           on CRT / FRT / PRT / TT edges. */}
-      <AssumptionWell edgeId={edgeId} assumptions={assumptions} />
+      <AssumptionWell edgeId={edgeId} assumptionIds={assumptionIds} />
 
       <WarningsList warnings={warnings} />
 

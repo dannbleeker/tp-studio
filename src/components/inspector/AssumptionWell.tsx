@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { ArrowUpRight, Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import type { AssumptionKind, AssumptionStatus, Entity } from '@/domain/types';
+import type { AssumptionKind, AssumptionStatus } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
@@ -70,7 +70,13 @@ const nextKind = (k: AssumptionKind | undefined): AssumptionKind | undefined => 
   return KIND_CYCLE[(idx + 1) % KIND_CYCLE.length];
 };
 
-export function AssumptionWell({ edgeId, assumptions }: { edgeId: string; assumptions: Entity[] }) {
+export function AssumptionWell({
+  edgeId,
+  assumptionIds,
+}: {
+  edgeId: string;
+  assumptionIds: readonly string[];
+}) {
   const addAssumptionToEdge = useDocumentStore((s) => s.addAssumptionToEdge);
   const locked = useDocumentStore((s) => s.browseLocked);
   const diagramType = useDocumentStore((s) => currentDoc(s).diagramType);
@@ -86,15 +92,15 @@ export function AssumptionWell({ edgeId, assumptions }: { edgeId: string; assump
   };
 
   return (
-    <Field label={`Assumptions (${assumptions.length})`} as="group">
-      {assumptions.length > 0 && (
+    <Field label={`Assumptions (${assumptionIds.length})`} as="group">
+      {assumptionIds.length > 0 && (
         <ul className="flex flex-col gap-1.5">
-          {assumptions.map((a) => (
+          {assumptionIds.map((id) => (
             <AssumptionRow
-              key={a.id}
+              key={id}
               edgeId={edgeId}
-              assumption={a}
-              autoFocus={a.id === lastAddedRef.current}
+              assumptionId={id}
+              autoFocus={id === lastAddedRef.current}
             />
           ))}
         </ul>
@@ -109,11 +115,11 @@ export function AssumptionWell({ edgeId, assumptions }: { edgeId: string; assump
 
 function AssumptionRow({
   edgeId,
-  assumption,
+  assumptionId,
   autoFocus,
 }: {
   edgeId: string;
-  assumption: Entity;
+  assumptionId: string;
   autoFocus: boolean;
 }) {
   const setAssumptionText = useDocumentStore((s) => s.setAssumptionText);
@@ -121,11 +127,13 @@ function AssumptionRow({
   const setAssumptionKind = useDocumentStore((s) => s.setAssumptionKind);
   const detachAssumption = useDocumentStore((s) => s.detachAssumption);
   const selectEntity = useDocumentStore((s) => s.selectEntity);
-  const status: AssumptionStatus =
-    useDocumentStore((s) => currentDoc(s).assumptions?.[assumption.id]?.status) ?? 'unexamined';
-  const kind: AssumptionKind | undefined = useDocumentStore(
-    (s) => currentDoc(s).assumptions?.[assumption.id]?.kind
-  );
+  // Subscribe to this assumption's own record (granular — the row re-renders
+  // only when ITS record changes). Record-canonical: text / status / kind all
+  // come from the record now, not the legacy assumption-Entity's title.
+  const record = useDocumentStore((s) => currentDoc(s).assumptions?.[assumptionId]);
+  const status: AssumptionStatus = record?.status ?? 'unexamined';
+  const kind: AssumptionKind | undefined = record?.kind;
+  const text = record?.text ?? '';
   const locked = useDocumentStore((s) => s.browseLocked);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -143,7 +151,7 @@ function AssumptionRow({
     <li className="flex items-center gap-1 rounded-md border border-violet-200 bg-violet-50/40 px-1 py-1 dark:border-violet-900/40 dark:bg-violet-950/20">
       <button
         type="button"
-        onClick={() => setAssumptionStatus(assumption.id, nextStatus(status))}
+        onClick={() => setAssumptionStatus(assumptionId, nextStatus(status))}
         disabled={locked}
         title={`Status: ${STATUS_LABEL[status]} (click to cycle to ${STATUS_LABEL[nextStatus(status)]})`}
         aria-label={`Assumption status: ${STATUS_LABEL[status]}. Press to cycle to ${STATUS_LABEL[nextStatus(status)]}.`}
@@ -159,7 +167,7 @@ function AssumptionRow({
           two single-letter pills read as "status · kind". */}
       <button
         type="button"
-        onClick={() => setAssumptionKind(assumption.id, nextKind(kind))}
+        onClick={() => setAssumptionKind(assumptionId, nextKind(kind))}
         disabled={locked}
         title={`Kind: ${kindLabel(kind)} (click to cycle to ${kindLabel(nextKind(kind))})`}
         aria-label={`Assumption kind: ${kindLabel(kind)}. Press to cycle to ${kindLabel(nextKind(kind))}.`}
@@ -172,16 +180,16 @@ function AssumptionRow({
       </button>
       <input
         ref={inputRef}
-        data-assumption-id={assumption.id}
-        value={assumption.title}
+        data-assumption-id={assumptionId}
+        value={text}
         placeholder="State the assumption…"
-        onChange={(e) => setAssumptionText(assumption.id, e.target.value)}
+        onChange={(e) => setAssumptionText(assumptionId, e.target.value)}
         disabled={locked}
         className="flex-1 bg-transparent px-1 py-0.5 text-neutral-800 text-xs outline-hidden placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
       />
       <button
         type="button"
-        onClick={() => selectEntity(assumption.id)}
+        onClick={() => selectEntity(assumptionId)}
         className="rounded-sm p-1 text-neutral-500 transition hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900/40 dark:hover:text-violet-300"
         title="Open assumption"
         aria-label="Open assumption"
@@ -190,7 +198,7 @@ function AssumptionRow({
       </button>
       <button
         type="button"
-        onClick={() => detachAssumption(edgeId, assumption.id)}
+        onClick={() => detachAssumption(edgeId, assumptionId)}
         disabled={locked}
         className="rounded-sm p-1 text-neutral-500 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950/40 dark:hover:text-red-300"
         title="Detach from this edge"
