@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 180 (cont.) — Assumption lifecycle keeps the dual representation consistent
+
+The legacy assumption-Entity (`edge.assumptionIds[]`) and the Session-77 first-class Assumption
+record (`doc.assumptions[id]`, sharing the id) desynced on two paths: deleting an assumption-Entity
+left the record **orphaned** (`pruneAssumptions` only checked edge survival, not entity survival),
+and detaching (the Assumption Well's ✕) removed the id from `assumptionIds` only — floating the
+entity (invisible: assumptions aren't canvas nodes) and lingering the record with a stale `edgeId`.
+Both leaked into JSON export. Now `pruneAssumptions` also drops a record whose assumption-Entity is
+gone, and ✕ removes the assumption **outright** (entity + record + any anchored comment) when it
+leaves its only edge — an assumption lives on exactly one edge (single `edgeId`, no re-attach UI),
+so detach can only mean remove; if it's still attached elsewhere (reachable only via the unused
+`attachAssumption`), it's kept. +2 tests, +1 assertion. The broader two-representation *collapse*
+remains a separate, larger effort.
+
 ## Session 180 (cont.) — Goal Tree reads in necessity, not "because"
 
 `resolveCausalityWord` fell through to the sufficiency connector "because" for a Goal Tree, so a

@@ -11,16 +11,18 @@ CHANGELOG.
 
 Surfaced during the gated sweep but **deliberately not** auto-applied: each needs a call about
 intended behaviour before it can be done safely. (The export-consistency, dangling-edge, DOT
-or/xor styling, print-dialog close-order, command-palette-ARIA, junctor-clearance and
-goalTree-necessity items have since been fixed — see CHANGELOG.)
+or/xor styling, print-dialog close-order, command-palette-ARIA, junctor-clearance,
+goalTree-necessity and assumption-lifecycle items have since been fixed — see CHANGELOG.)
 
 **Behaviour / semantics — decide intent first:**
 - **NBR validator gap** — the Negative-Branch ruleset has a thinner structural check than the
   other types. Possibly intentional (NBR is position/flow-based); confirm the intended rule.
-- **Assumption lifecycle under the dual representation** — detach / re-attach / delete-entity
-  paths still straddle the legacy assumption-Entity and the Session-77 first-class `Assumption`
-  record. Works today; collapsing the transitional dual-rep is the real cleanup, too broad to
-  do safely unattended.
+
+**Known tech-debt — future cleanup, not urgent:**
+- **Collapse the assumption dual-representation** — the lifecycle paths are now consistent (see
+  CHANGELOG), but the legacy assumption-Entity and the Session-77 first-class `Assumption` record
+  still coexist (sharing an id). Folding them into one canonical shape is a multi-file data-model
+  change (persistence, migration, exporters, UI) for its own session.
 
 ---
 
