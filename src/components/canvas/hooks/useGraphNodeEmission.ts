@@ -6,7 +6,7 @@ import { openCommentCountsByAnchor } from '@/domain/graph';
 import { descendantEntityCount } from '@/domain/groups';
 import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisions';
 import { effectiveState } from '@/domain/statePropagation';
-import type { Entity, EntityId, EntityState, TPDocument } from '@/domain/types';
+import type { EntityId, EntityState, TPDocument } from '@/domain/types';
 import { Z } from '@/domain/zLayers';
 import type { AnyTPNode, TPCollapsedGroupNode, TPGroupNode, TPNode } from '../edges/flow-types';
 import {
@@ -230,21 +230,16 @@ export const useGraphNodeEmission = (
       nodes.push(node);
     }
 
-    // Assumption nodes — record-canonical. Assumptions live in `doc.assumptions`
-    // (not `doc.entities`); synthesize the minimal entity shape TPNode renders
-    // from. Emit only when placement gave the card a position (an unplaced
-    // assumption — e.g. its host edge sits in a collapsed group — isn't shown).
+    // Assumption cards — record-canonical. Each renders from its `doc.assumptions`
+    // record via the dedicated `tpAssumption` node (NOT an entity / `TPNode`). Emit
+    // only when placement gave the card a position (an unplaced assumption — e.g.
+    // its host edge sits in a collapsed group — isn't shown). Non-selectable /
+    // non-draggable: an assumption is an edge annotation, and its position is DERIVED
+    // (placeAssumptionsNearEdges), so a drag couldn't persist. Editing is via
+    // double-click (setAssumptionText) or the EdgeInspector's Assumption Well.
     for (const a of Object.values(doc.assumptions ?? {})) {
       const position = positions[a.id];
       if (!position) continue;
-      const synthEntity: Entity = {
-        id: a.id as EntityId,
-        type: 'assumption',
-        title: a.text,
-        annotationNumber: a.annotationNumber ?? 0,
-        createdAt: a.createdAt,
-        updatedAt: a.updatedAt,
-      };
       const openComments = commentCounts.byAssumption.get(a.id);
       const diffStatus = compareDiff
         ? (() => {
@@ -252,24 +247,18 @@ export const useGraphNodeEmission = (
             return s === 'unchanged' || s === 'removed' ? undefined : s;
           })()
         : undefined;
+      const numberPrefix = typeof a.annotationNumber === 'number' ? `#${a.annotationNumber} ` : '';
       nodes.push({
         id: a.id,
-        type: 'tp',
+        type: 'tpAssumption',
         position,
-        ariaLabel: entityAriaLabel(
-          synthEntity,
-          doc.customEntityClasses ? { customClasses: doc.customEntityClasses } : {}
-        ),
+        ariaLabel: `Assumption ${numberPrefix}${a.text || '(untitled)'}`.trim(),
         width: NODE_WIDTH,
         height: NODE_MIN_HEIGHT,
-        // Record-canonical: an assumption is an edge annotation, not a selectable
-        // graph node — it has no entity to inspect/connect and its position is
-        // DERIVED (placeAssumptionsNearEdges), so a drag couldn't persist. Editing
-        // is via double-click (routes to setAssumptionText) or the AssumptionWell.
         selectable: false,
         draggable: false,
         data: {
-          entity: synthEntity,
+          assumption: a,
           ...(openComments && openComments > 0 ? { openCommentCount: openComments } : {}),
           ...(diffStatus ? { diffStatus } : {}),
         },

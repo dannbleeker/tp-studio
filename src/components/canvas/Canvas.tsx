@@ -25,6 +25,7 @@ import { useCanvasDragHandlers } from './hooks/useCanvasDragHandlers';
 import { useGraphMutations } from './hooks/useGraphMutations';
 import { useGraphView } from './hooks/useGraphView';
 import { useSearchDimming } from './hooks/useSearchDimming';
+import { TPAssumptionNode } from './nodes/TPAssumptionNode';
 import { TPCollapsedGroupNode } from './nodes/TPCollapsedGroupNode';
 import { TPGroupNode } from './nodes/TPGroupNode';
 import { TPNode } from './nodes/TPNode';
@@ -55,6 +56,7 @@ const CreationWizardPanel = lazy(() =>
 
 const nodeTypes = {
   tp: TPNode,
+  tpAssumption: TPAssumptionNode,
   tpGroup: TPGroupNode,
   tpCollapsedGroup: TPCollapsedGroupNode,
 };

@@ -64,7 +64,7 @@ describe('useGraphNodeEmission', () => {
     expect(tp.find((n) => n.id === a.id)?.position).toEqual({ x: 0, y: 0 });
   });
 
-  it('emits an assumption node synthesized from its record (no entity in doc.entities)', () => {
+  it('emits a tpAssumption node from its record (no entity in doc.entities)', () => {
     const a = makeEntity({ title: 'Cause' });
     const b = makeEntity({ title: 'Effect' });
     const e = makeEdge(a.id, b.id);
@@ -88,14 +88,14 @@ describe('useGraphNodeEmission', () => {
       asm1: { x: 300, y: 200 },
     });
     const node = nodes.find((n) => n.id === 'asm1');
-    expect(node?.type).toBe('tp');
+    // Dedicated assumption node type — renders from the record, not an entity.
+    expect(node?.type).toBe('tpAssumption');
     expect(node?.position).toEqual({ x: 300, y: 200 });
-    const ent = (
-      node?.data as { entity: { type: string; title: string; annotationNumber: number } }
-    ).entity;
-    expect(ent.type).toBe('assumption');
-    expect(ent.title).toBe('Because budget holds');
-    expect(ent.annotationNumber).toBe(9);
+    expect(node?.selectable).toBe(false);
+    const rec = (node?.data as { assumption: { text: string; annotationNumber: number } })
+      .assumption;
+    expect(rec.text).toBe('Because budget holds');
+    expect(rec.annotationNumber).toBe(9);
   });
 
   it('omits an assumption node when placement gave it no position', () => {

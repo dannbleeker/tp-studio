@@ -2,7 +2,7 @@ import type { Edge as RFEdge, Node as RFNode } from '@xyflow/react';
 import type { EligibilityStatus } from '@/domain/actionEligibility';
 import type { EdgeRoute } from '@/domain/edgeRouting';
 import type { LoopPolarity } from '@/domain/loopAnalysis';
-import type { Entity, EntityState, Group } from '@/domain/types';
+import type { Assumption, Entity, EntityState, Group } from '@/domain/types';
 
 export type TPNodeData = {
   entity: Entity;
@@ -104,6 +104,22 @@ export type TPEdgeData = {
   loopName?: string;
 };
 
+/**
+ * Record-canonical: an assumption renders from its `doc.assumptions` record, NOT
+ * from a `doc.entities` entity (it isn't one). Its own React Flow node type keeps
+ * it out of the entity-typed `TPNode` and lets the EntityType union drop
+ * `'assumption'`. Position is derived (`placeAssumptionsNearEdges`); the card is
+ * non-selectable / non-draggable (set at emission) — an edge annotation, not a node.
+ */
+export type TPAssumptionNodeData = {
+  assumption: Assumption;
+  /** Open (unresolved) comments anchored to this assumption — stamped by
+   *  `useGraphNodeEmission` from `openCommentCountsByAnchor`; omitted when 0. */
+  openCommentCount?: number;
+  /** H2 visual-diff tint, when a compare revision is active. Omitted otherwise. */
+  diffStatus?: 'added' | 'removed' | 'changed';
+};
+
 export type TPGroupNodeData = {
   group: Group;
   width: number;
@@ -118,8 +134,9 @@ export type TPCollapsedGroupNodeData = {
 };
 
 export type TPNode = RFNode<TPNodeData, 'tp'>;
+export type TPAssumptionNode = RFNode<TPAssumptionNodeData, 'tpAssumption'>;
 export type TPEdge = RFEdge<TPEdgeData, 'tp'>;
 export type TPGroupNode = RFNode<TPGroupNodeData, 'tpGroup'>;
 export type TPCollapsedGroupNode = RFNode<TPCollapsedGroupNodeData, 'tpCollapsedGroup'>;
 
-export type AnyTPNode = TPNode | TPGroupNode | TPCollapsedGroupNode;
+export type AnyTPNode = TPNode | TPAssumptionNode | TPGroupNode | TPCollapsedGroupNode;
