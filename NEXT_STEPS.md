@@ -19,17 +19,13 @@ goalTree-necessity and assumption-lifecycle items have since been fixed — see 
   other types. Possibly intentional (NBR is position/flow-based); confirm the intended rule.
 
 **Known tech-debt — future cleanup, not urgent:**
-- **Assumption dual-representation collapse — Phase 4 (the deletion payoff).** The data model is now
-  RECORD-CANONICAL (Session 181, see CHANGELOG): assumptions are pure `doc.assumptions` records, no
-  longer `doc.entities` — the store stopped writing assumption entities, migration v9→v10 moves
-  existing ones out (+ re-types standalone ones to notes), and `'assumption'` is no longer a
-  node-palette type. What's LEFT is the verification-heavy deletion pass: (a) `'assumption'` still
-  sits in the `EntityType` union — the canvas synthesizes an entity-shape from the record for
-  `TPNode` — so the ~75 `isAssumption`/`isNonCausal` guards that skip assumptions in causal
-  traversals (exporters, coreDriver, edgeReading, validators) are now DEAD code but still present;
-  (b) `edge.assumptionIds[]` survives as a per-edge membership index. Removing both — and deciding
-  whether to drop `'assumption'` from `EntityType` entirely (needs a dedicated assumption node
-  component instead of the synthesize shim) — is the endgame for its own session.
+- _(Nothing parked here right now.)_
+
+> ✅ **Assumption dual-representation collapse — DONE** (Session 181, see CHANGELOG). Fully
+> record-canonical: `'assumption'` is gone from the `EntityType` union, the ~75 `isAssumption`
+> guards are deleted (`isNonCausal` → `isNote`), the canvas renders a dedicated `TPAssumptionNode`,
+> and `edge.assumptionIds` is removed — attachment is solely `record.edgeId` via the WeakMap-cached
+> `assumptionsForEdge`. Migration v9→v10 + the importer move/clean existing docs.
 
 ---
 

@@ -22,16 +22,33 @@ dual-writes. The record is now the **only** home; an assumption is no longer an 
   user made via the old palette, attached to no edge) is re-typed to a `note` rather than dropped.
   Latent fix: the importer hard-coded `schemaVersion: 9` on its output — now stamps the current
   version. The `schemaVersion` literal type drove the bump across every doc-construction site.
-- **Canvas + UI.** Assumption cards are synthesized from the record and are now **non-selectable /
-  non-draggable** (annotations, not graph nodes; position is derived) — double-click still edits in
-  place, routed to `setAssumptionText`. Removed the vestigial "Open assumption" button; the comments
-  panel's jump handles the `{kind:'assumption'}` anchor (selects the host edge + centers the card).
+- **Canvas + UI.** Assumption cards are now **non-selectable / non-draggable** (annotations, not
+  graph nodes; position is derived) — double-click still edits in place, routed to
+  `setAssumptionText`. Removed the vestigial "Open assumption" button; the comments panel's jump
+  handles the `{kind:'assumption'}` anchor (selects the host edge + centers the card).
 - **Palette.** `'assumption'` is no longer a node type in any diagram's palette (it would mint an
   orphan the canvas can't render); a free-floating side-claim is a `note`.
 
-The deletion payoff — removing the now-dead `isAssumption` guards, dropping `edge.assumptionIds`, and
-deciding whether `'assumption'` leaves the `EntityType` union — is deferred to its own session
-(tracked in NEXT_STEPS). 4174→4178 tests; full preflight green at every step.
+**Phase 4 — full removal (the payoff).** With the data layer record-canonical, `'assumption'` left
+the type system entirely:
+
+- **Dedicated canvas node.** A new `TPAssumptionNode` (`tpAssumption` React Flow type) renders
+  straight from the record — replacing the shim that synthesized a fake `Entity{type:'assumption'}`
+  to feed `TPNode`. Visual parity verified live (violet stripe, HelpCircle, #N badge, dashed anchor).
+- **`'assumption'` removed from `EntityType`.** Its rows are gone from every `Record<EntityType,…>`
+  table (labels, icons, colors, palettes, coaching, FL type-map — an imported FL "Assumption" node
+  now maps to `note`). `isAssumption` is deleted and `isNonCausal` collapses to `isNote`; the ~75
+  guards that skipped assumptions in causal traversals (exporters, coreDriver, edgeReading,
+  validators, entity iterations) are gone — the skips are now a type-system guarantee.
+- **`edge.assumptionIds` removed.** Attachment is solely `record.edgeId`; per-edge lookups use the
+  WeakMap-cached `assumptionsForEdge`. `attachAssumption` is deleted (an assumption has one edge);
+  splice re-homes records, not an edge field. Surfaced + fixed two latent issues: the
+  assumption-placement memo + the validation-fingerprint cache both keyed on `doc.edges`, so an
+  assumption add/remove (now only touching `doc.assumptions`) wouldn't re-derive placement or re-run
+  EC completeness — both now key on `doc.assumptions`. Also hardened v9→v10 against an
+  `Object.prototype`-named id (e.g. `"toString"`) minting a bogus record (`Object.hasOwn`).
+
+~4157 tests; full preflight green at every gated step.
 
 ## Session 180 (cont.) — Assumption lifecycle keeps the dual representation consistent
 
