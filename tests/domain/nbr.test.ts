@@ -29,14 +29,15 @@ describe('NBR diagram type — registry coverage', () => {
     expect(DIAGRAM_TYPE_LABEL.nbr).toBe('Negative Branch Reservation');
   });
 
-  it('paletteForDoc includes injection, effect, ude, desiredEffect, assumption, note', () => {
+  it('paletteForDoc includes injection, effect, ude, desiredEffect, note (not assumption)', () => {
     const palette = paletteForDoc({ diagramType: 'nbr' });
     expect(palette).toContain('injection');
     expect(palette).toContain('effect');
     expect(palette).toContain('ude');
     expect(palette).toContain('desiredEffect');
-    expect(palette).toContain('assumption');
     expect(palette).toContain('note');
+    // Record-canonical: assumptions are edge annotations, not palette node types.
+    expect(palette).not.toContain('assumption');
   });
 
   it('defaultEntityType("nbr") is "ude" (the canonical empty-canvas drop)', () => {

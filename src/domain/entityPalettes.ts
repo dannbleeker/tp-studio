@@ -20,76 +20,54 @@ const GOAL_TREE_CLASSES: EntityType[] = ['goal', 'criticalSuccessFactor', 'neces
 // every palette so they don't crowd the TOC-typed picks.
 const UNIVERSAL_ANNOTATION_CLASSES: EntityType[] = ['note'];
 
+// Record-canonical (v10): `'assumption'` is intentionally NOT a palette type.
+// An assumption is an edge annotation (a `doc.assumptions` record created via
+// the EdgeInspector's AssumptionWell), not a standalone causal node — adding it
+// as a node would mint an orphan entity the canvas can't render. A free-floating
+// "side claim" is a `note` instead.
 export const PALETTE_BY_DIAGRAM: Record<DiagramType, EntityType[]> = {
-  crt: [
-    'ude',
-    'effect',
-    'rootCause',
-    'assumption',
-    ...GOAL_TREE_CLASSES,
-    ...UNIVERSAL_ANNOTATION_CLASSES,
-  ],
+  crt: ['ude', 'effect', 'rootCause', ...GOAL_TREE_CLASSES, ...UNIVERSAL_ANNOTATION_CLASSES],
   frt: [
     'injection',
     'effect',
     'desiredEffect',
-    'assumption',
     ...GOAL_TREE_CLASSES,
     ...UNIVERSAL_ANNOTATION_CLASSES,
   ],
   // PRT (A2): the apex `goal` anchors the tree; obstacles and intermediate
-  // objectives are the working set. Assumptions live on edges as in CRT/FRT.
-  prt: ['goal', 'obstacle', 'intermediateObjective', 'assumption', ...UNIVERSAL_ANNOTATION_CLASSES],
+  // objectives are the working set.
+  prt: ['goal', 'obstacle', 'intermediateObjective', ...UNIVERSAL_ANNOTATION_CLASSES],
   // TT (A3): the sequenced injection plan. An apex `desiredEffect` anchors
   // the outcome; `action`s are the steps; `effect`s capture intermediate
-  // states the plan passes through; assumptions live on edges.
-  tt: ['action', 'effect', 'desiredEffect', 'assumption', ...UNIVERSAL_ANNOTATION_CLASSES],
+  // states the plan passes through.
+  tt: ['action', 'effect', 'desiredEffect', ...UNIVERSAL_ANNOTATION_CLASSES],
   // EC (A1): the five-box conflict. `goal` anchors the common objective;
-  // `need` and `want` are the four arms. Assumptions can live on edges as
-  // in any other diagram.
-  ec: ['goal', 'need', 'want', 'assumption', ...UNIVERSAL_ANNOTATION_CLASSES],
+  // `need` and `want` are the four arms.
+  ec: ['goal', 'need', 'want', ...UNIVERSAL_ANNOTATION_CLASSES],
   // FL-DT4 — Strategy & Tactics Tree. Each "node" in S&T is a (Strategy,
-  // Tactic) pair plus a triplet of assumptions (Necessary, Parallel,
-  // Sufficiency). The palette surfaces those facets via the existing TOC
+  // Tactic) pair. The palette surfaces those facets via the existing TOC
   // entity types: `goal` for strategies (the apex anchors the top-level
   // strategy), `injection` for tactics (the active "how"), `necessaryCondition`
   // for the assumption layers (a tactic's NA / PA / SA are necessary
-  // conditions on the strategy), plus `assumption` and `effect` for
-  // anything that doesn't fit a slot. Default entity type is `injection`
-  // (= the tactic — the "do something" pole of an S&T node).
-  st: [
-    'goal',
-    'injection',
-    'necessaryCondition',
-    'effect',
-    'assumption',
-    ...UNIVERSAL_ANNOTATION_CLASSES,
-  ],
+  // conditions on the strategy), plus `effect` for anything that doesn't fit a
+  // slot. Default entity type is `injection` (the "do something" pole).
+  st: ['goal', 'injection', 'necessaryCondition', 'effect', ...UNIVERSAL_ANNOTATION_CLASSES],
   // FL-DT5 — Free-form diagram. No TOC scaffolding; the palette is just
   // the universally-applicable types (effect as a neutral box, note as a
-  // sticky annotation, assumption as a side-claim). Custom entity classes
-  // appended by `paletteForDoc` give the user their own typology.
-  freeform: ['effect', 'assumption', ...UNIVERSAL_ANNOTATION_CLASSES],
+  // sticky annotation / side-claim). Custom entity classes appended by
+  // `paletteForDoc` give the user their own typology.
+  freeform: ['effect', ...UNIVERSAL_ANNOTATION_CLASSES],
   // Session 77 / brief §5 — Goal Tree. Three-layer necessity tree using
   // the existing Goal Tree entity types. Goal at apex, CSFs below,
-  // Necessary Conditions nested under CSFs; assumptions can sit on any
-  // edge, notes float free.
-  goalTree: ['goal', 'criticalSuccessFactor', 'necessaryCondition', 'assumption', 'note'],
+  // Necessary Conditions nested under CSFs; notes float free.
+  goalTree: ['goal', 'criticalSuccessFactor', 'necessaryCondition', 'note'],
   // Session 134 / spec major gap #5 — Negative Branch Reservation. A
   // dual of the FRT: trace forward from an injection to the *undesirable*
   // consequences it might generate, then attach mitigations. Palette
   // mirrors FRT (injection at the bottom, effect / UDE forward, plus
-  // assumption + universal annotations) — no new entity type is needed
-  // because the structural role differs but the building blocks are
-  // the same.
-  nbr: [
-    'injection',
-    'effect',
-    'ude',
-    'desiredEffect',
-    'assumption',
-    ...UNIVERSAL_ANNOTATION_CLASSES,
-  ],
+  // universal annotations) — no new entity type is needed because the
+  // structural role differs but the building blocks are the same.
+  nbr: ['injection', 'effect', 'ude', 'desiredEffect', ...UNIVERSAL_ANNOTATION_CLASSES],
 };
 
 /**

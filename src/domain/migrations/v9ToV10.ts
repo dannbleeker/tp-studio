@@ -63,7 +63,15 @@ export const v9ToV10: Migration = {
         ([, e]) =>
           isPlainObject(e) && Array.isArray(e.assumptionIds) && e.assumptionIds.includes(id)
       );
-      if (!edgeEntry) continue; // orphan — drop it (was already invisible)
+      if (!edgeEntry) {
+        // Orphan assumption-entity — no host edge AND no record. The user made a
+        // standalone "assumption" node via the old palette (assumptions weren't
+        // edge-only before this pivot). Post-pivot an assumption can't be an
+        // entity, so preserve the content NON-DESTRUCTIVELY by re-typing it to a
+        // `note` (the universal free-floating annotation) rather than dropping it.
+        nextEntities[id] = { ...ent, type: 'note' };
+        continue;
+      }
       const now = typeof ent.createdAt === 'number' ? ent.createdAt : Date.now();
       const rec: Record<string, unknown> = {
         id,

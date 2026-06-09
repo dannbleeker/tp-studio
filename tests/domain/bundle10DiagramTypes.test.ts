@@ -29,13 +29,14 @@ describe('FL-DT4 — Strategy & Tactics Tree', () => {
   it('palette surfaces S&T-relevant entity types', () => {
     const palette = PALETTE_BY_DIAGRAM.st;
     // Apex strategy (goal), tactic (injection), and the assumption-facet
-    // carriers (necessaryCondition + assumption) are the load-bearing
-    // types for the S&T pattern. Effects + notes round out the palette.
+    // carrier (necessaryCondition) are the load-bearing types for the S&T
+    // pattern. Effects + notes round out the palette.
     expect(palette).toContain('goal');
     expect(palette).toContain('injection');
     expect(palette).toContain('necessaryCondition');
-    expect(palette).toContain('assumption');
     expect(palette).toContain('note');
+    // Record-canonical: assumptions are edge annotations, not palette node types.
+    expect(palette).not.toContain('assumption');
   });
 
   it('default entity type is injection (the tactic — "do something")', () => {
@@ -94,8 +95,10 @@ describe('FL-DT5 — Freeform diagram', () => {
   it('palette includes only neutral / annotation types', () => {
     const palette = PALETTE_BY_DIAGRAM.freeform;
     expect(palette).toContain('effect');
-    expect(palette).toContain('assumption');
     expect(palette).toContain('note');
+    // Record-canonical: assumptions are edge annotations, not palette node types
+    // (a free-floating side-claim is a `note`).
+    expect(palette).not.toContain('assumption');
     // Crucially, no TOC-specific types in the default palette — the user
     // can add custom classes via the doc settings if they want their own
     // typology.

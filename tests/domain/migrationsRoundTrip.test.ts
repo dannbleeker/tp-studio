@@ -444,4 +444,49 @@ describe('schema migrations round-trip', () => {
     expect(doc.assumptions?.asm?.status).toBe('unexamined');
     expect(doc.assumptions?.asm?.annotationNumber).toBe(3);
   });
+
+  it('imports a v9 doc with a STANDALONE assumption entity → re-typed to a note (non-destructive)', () => {
+    const T = 1700000000000;
+    const v9 = {
+      id: 'doc-asm3',
+      title: 'v9 standalone assumption node',
+      diagramType: 'freeform',
+      schemaVersion: 9,
+      createdAt: T,
+      updatedAt: T,
+      nextAnnotationNumber: 3,
+      groups: {},
+      entities: {
+        e: {
+          id: 'e',
+          type: 'effect',
+          title: 'A box',
+          annotationNumber: 1,
+          createdAt: T,
+          updatedAt: T,
+        },
+        // A free-floating assumption NODE the user added via the old palette —
+        // attached to no edge and carrying no first-class record.
+        loose: {
+          id: 'loose',
+          type: 'assumption',
+          title: 'a side claim',
+          annotationNumber: 2,
+          position: { x: 120, y: 80 },
+          createdAt: T,
+          updatedAt: T,
+        },
+      },
+      edges: {},
+      assumptions: {},
+    };
+    const doc = importFromJSON(JSON.stringify(v9));
+    expect(doc.schemaVersion).toBe(10);
+    // Preserved, not dropped — re-typed to a note keeping its title + position.
+    expect(doc.entities.loose?.type).toBe('note');
+    expect(doc.entities.loose?.title).toBe('a side claim');
+    expect(doc.entities.loose?.position).toEqual({ x: 120, y: 80 });
+    // It never became a first-class assumption record (no host edge).
+    expect(doc.assumptions?.loose).toBeUndefined();
+  });
 });
