@@ -21,7 +21,6 @@ import {
 } from '../ui/buttonClasses';
 import { InsetCard } from '../ui/InsetCard';
 import { ActionFields } from './ActionFields';
-import { AttachedEdgesList } from './AttachedEdgesList';
 import { EntityLinksSection } from './EntityLinksSection';
 import { EntityProvenanceSection } from './EntityProvenanceSection';
 import { EntityStateSection } from './EntityStateSection';
@@ -373,8 +372,6 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         onSetState={(next) => updateEntity(entityId, { state: next })}
         onSetSpeculative={(next) => setSpeculativeState(entityId, next)}
       />
-
-      {entity.type === 'assumption' && <AttachedEdgesList assumptionId={entityId} />}
 
       {diagramType === 'st' && entity.type === 'injection' && (
         <StFacetsSection

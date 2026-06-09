@@ -354,10 +354,9 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       const existing = doc.edges[existingEdgeId];
       if (!existing) return null;
       const source = doc.entities[sourceEntityId];
-      // FL-ET7: same as `connect()` — notes can't be source of a causal
-      // edge. Assumptions are already filtered (they attach via
-      // `Edge.assumptionIds`, not as endpoints).
-      if (!source || source.type === 'assumption' || source.type === 'note') return null;
+      // FL-ET7: notes can't be the source of a causal edge. (Assumptions can't
+      // either, but they're not entities -- they attach via Edge.assumptionIds.)
+      if (!source || source.type === 'note') return null;
       // Self / duplicate guards.
       if (sourceEntityId === existing.sourceId || sourceEntityId === existing.targetId) return null;
       if (hasEdge(doc, sourceEntityId, existing.targetId)) return null;

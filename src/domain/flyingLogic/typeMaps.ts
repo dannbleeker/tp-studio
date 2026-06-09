@@ -21,7 +21,6 @@ export const ENTITY_TYPE_TO_FL: Record<EntityType, string> = {
   rootCause: 'Root Cause',
   injection: 'Injection',
   desiredEffect: 'Desired Effect',
-  assumption: 'Assumption',
   // Goal Tree classes (A4) — Flying Logic doesn't predefine matching classes,
   // so we emit them under their natural names. FL imports unknown entity
   // classes as a custom user class without complaint.
@@ -59,7 +58,11 @@ export const FL_TO_ENTITY_TYPE: Record<string, EntityType> = {
   // spelling difference — possibly a regional variant or older build).
   // Map to the same TS type as "Desired Effect".
   'Desirable Effect': 'desiredEffect',
-  Assumption: 'assumption',
+  // Record-canonical: an assumption isn't an entity type any more (it's an edge
+  // annotation). An imported FL "Assumption" node becomes a `note` so its text is
+  // preserved on the canvas; the user can re-attach it to an edge via the
+  // Assumption Well if they want it as a first-class assumption.
+  Assumption: 'note',
   Goal: 'goal',
   Objective: 'goal',
   'Critical Success Factor': 'criticalSuccessFactor',

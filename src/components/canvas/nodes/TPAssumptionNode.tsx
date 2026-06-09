@@ -4,6 +4,7 @@ import { HelpCircle } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { VIOLET_500 } from '@/domain/tokens';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
 import type { TPAssumptionNode as TPAssumptionNodeType } from '../edges/flow-types';
@@ -21,8 +22,6 @@ import { AnnotationBadge, CommentCountBadge } from './TPNodeBadges';
  * Visual parity with the old synthesized rendering: white card + violet stripe +
  * HelpCircle "Assumption" header + the shared annotation / comment corner badges.
  */
-const ASSUMPTION_STRIPE = '#8b5cf6'; // violet-500 — mirrors `tokens.assumption`
-
 function TPAssumptionNodeImpl({ id, data }: NodeProps<TPAssumptionNodeType>) {
   const { assumption, openCommentCount, diffStatus } = data;
   const { isEditing, setAssumptionText, beginEditing, endEditing } = useDocumentStore(
@@ -78,16 +77,12 @@ function TPAssumptionNodeImpl({ id, data }: NodeProps<TPAssumptionNodeType>) {
       )}
       <div
         className="w-1.5 shrink-0 rounded-l-lg"
-        style={{ backgroundColor: ASSUMPTION_STRIPE }}
+        style={{ backgroundColor: VIOLET_500 }}
         aria-hidden
       />
       <div className="flex flex-1 flex-col gap-1 px-3 py-2.5">
         <span className="flex items-center gap-1 font-medium text-[11px] text-neutral-500 uppercase tracking-[0.06em] dark:text-neutral-400">
-          <HelpCircle
-            className="h-3 w-3 shrink-0"
-            style={{ color: ASSUMPTION_STRIPE }}
-            aria-hidden
-          />
+          <HelpCircle className="h-3 w-3 shrink-0" style={{ color: VIOLET_500 }} aria-hidden />
           <span>Assumption</span>
         </span>
         {isEditing ? (

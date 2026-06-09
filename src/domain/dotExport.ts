@@ -1,5 +1,5 @@
 import { resolveEntityTypeMeta } from './entityTypeMeta';
-import { isAssumption, structuralEntities } from './graph';
+import { structuralEntities } from './graph';
 import type { TPDocument } from './types';
 
 /**
@@ -56,7 +56,7 @@ export const exportToDot = (doc: TPDocument): string => {
   for (const edge of Object.values(doc.edges)) {
     const src = doc.entities[edge.sourceId];
     const tgt = doc.entities[edge.targetId];
-    if (!src || !tgt || isAssumption(src) || isAssumption(tgt)) continue;
+    if (!src || !tgt) continue;
     const attrs: string[] = [];
     if (edge.label?.trim()) attrs.push(`label="${escapeDot(edge.label.trim())}"`);
     // Distinguish junctor groups by line style — plain DOT can't draw the

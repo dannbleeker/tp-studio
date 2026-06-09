@@ -19,7 +19,7 @@ const doc = () => useDocumentStore.getState().doc;
  * unit-test the pure data-shaping helpers (`chunkForTest`,
  * `buildSentencesForTest`) since they carry the regression risk that
  * a unit test catches: the slide pagination + the
- * narrative-sentence ordering / assumption filtering.
+ * narrative-sentence ordering.
  */
 
 describe('chunkForTest', () => {
@@ -60,22 +60,6 @@ describe('buildSentencesForTest', () => {
     expect(sentences.length).toBe(2);
     expect(sentences[0]).toContain('"B" because "A"');
     expect(sentences[1]).toContain('"C" because "B"');
-  });
-
-  it('skips edges where either endpoint is an assumption', () => {
-    // Two structural entities + one assumption hanging off the edge between them.
-    const a = seedEntity('Effect A', 'effect');
-    const b = seedEntity('Effect B', 'effect');
-    const assumption = seedEntity('Hidden assumption', 'assumption');
-    const s = useDocumentStore.getState();
-    s.connect(a.id, b.id);
-    // An edge that touches the assumption shouldn't appear in the deck.
-    s.connect(assumption.id, b.id);
-
-    const sentences = buildSentencesForTest(doc(), 'auto');
-    expect(sentences.length).toBe(1);
-    expect(sentences[0]).toContain('Effect');
-    expect(sentences.join('\n')).not.toContain('Hidden assumption');
   });
 
   it('handles a single edge with the expected wording', () => {

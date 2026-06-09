@@ -170,24 +170,22 @@ export const connectionCount = (doc: TPDocument, entityId: string): number =>
 export const hasEdge = (doc: TPDocument, sourceId: string, targetId: string): boolean =>
   (edgeIndex(doc).bySource.get(sourceId) ?? EMPTY_EDGE_LIST).some((e) => e.targetId === targetId);
 
-export const isAssumption = (entity: Entity): boolean => entity.type === 'assumption';
-
 /**
  * FL-ET7: `Note` entities are free-form annotations. They render on the
  * canvas as their own (yellow-stripe) cards but never participate in
- * edges, never feed CLR rules, and never appear in causality exports.
- * Pair with {@link isAssumption}; both are "structural noise" relative
- * to the causality graph.
+ * edges, never feed CLR rules, and never appear in causality exports —
+ * "structural noise" relative to the causality graph.
  */
 export const isNote = (entity: Entity): boolean => entity.type === 'note';
 
 /**
- * `assumption` OR `note` — the two entity types that exist outside the
- * causal graph. Helpers iterating "every causally-meaningful entity"
- * should filter via this predicate so future non-causal types stay one
- * change away.
+ * Entities that exist outside the causal graph. Record-canonical (v10):
+ * assumptions are no longer entities (they're edge annotations), so `note`
+ * is the only non-causal entity type — but helpers iterating "every
+ * causally-meaningful entity" keep filtering via this predicate so a future
+ * non-causal type stays one change away.
  */
-export const isNonCausal = (entity: Entity): boolean => isAssumption(entity) || isNote(entity);
+export const isNonCausal = (entity: Entity): boolean => isNote(entity);
 
 /**
  * Session 132 / Tier 3 #28 — per-doc-reference index of entities by

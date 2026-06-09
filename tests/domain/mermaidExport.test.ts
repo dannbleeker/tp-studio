@@ -60,12 +60,4 @@ describe('exportToMermaid (Block D / N3)', () => {
     const md = exportCurrent();
     expect(md).toContain('Line one<br/>Line &quot;two&quot;');
   });
-
-  it('excludes assumption entities from the output', () => {
-    seedEntity('Structural', 'effect');
-    seedEntity('Side note', 'assumption');
-    const md = exportCurrent();
-    expect(md).toContain('Structural');
-    expect(md).not.toContain('Side note');
-  });
 });

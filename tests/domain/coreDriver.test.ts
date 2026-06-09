@@ -38,14 +38,6 @@ describe('udeReachCounts', () => {
     state.connect(rc.id, u2.id);
     expect(udeReachCounts(doc()).get(rc.id)).toBe(2);
   });
-
-  it('ignores assumption entities entirely', () => {
-    seedEntity('UDE', 'ude');
-    seedEntity('Side note', 'assumption');
-    const counts = udeReachCounts(doc());
-    // Assumption is not structural and shouldn't appear as a reaching entity.
-    expect([...counts.keys()].some((id) => doc().entities[id]?.type === 'assumption')).toBe(false);
-  });
 });
 
 describe('findCoreDrivers', () => {

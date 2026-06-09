@@ -53,7 +53,6 @@ describe('isEntityType', () => {
       'rootCause',
       'injection',
       'desiredEffect',
-      'assumption',
       'goal',
       'criticalSuccessFactor',
       'necessaryCondition',

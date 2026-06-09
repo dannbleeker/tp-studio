@@ -68,7 +68,6 @@ const LABELS: Record<EntityType, string> = {
   rootCause: 'Root Cause',
   injection: 'Injection',
   desiredEffect: 'Desired Effect',
-  assumption: 'Assumption',
   goal: 'Goal',
   criticalSuccessFactor: 'Critical Success Factor',
   necessaryCondition: 'Necessary Condition',
@@ -89,7 +88,6 @@ const LABELS: Record<EntityType, string> = {
  *   - `rootCause` → Sprout: something that grows downstream effects.
  *   - `injection` → Syringe: literally a TOC "injection" — an intervention.
  *   - `desiredEffect` → Sparkles: a good outcome / desired state.
- *   - `assumption` → HelpCircle: an unverified claim the user is taking on faith.
  *   - `goal` → Flag: aspirational endpoint at the apex of an IO map.
  *   - `criticalSuccessFactor` → Star: must-have, primary supporting condition.
  *   - `necessaryCondition` → CheckSquare: a checkable prerequisite.
@@ -106,7 +104,6 @@ const ICONS: Record<EntityType, LucideIcon> = {
   rootCause: Sprout,
   injection: Syringe,
   desiredEffect: Sparkles,
-  assumption: HelpCircle,
   goal: Flag,
   criticalSuccessFactor: Star,
   necessaryCondition: CheckSquare,

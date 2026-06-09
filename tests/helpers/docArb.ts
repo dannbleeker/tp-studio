@@ -40,7 +40,6 @@ export const entityTypeArb = fc.constantFrom<EntityType>(
   'rootCause',
   'injection',
   'desiredEffect',
-  'assumption',
   'goal',
   'criticalSuccessFactor',
   'necessaryCondition',

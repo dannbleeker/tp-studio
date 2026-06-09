@@ -87,7 +87,7 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
   const entityOptions = useMemo(() => {
     const label = (e: Entity): string => e.title.trim() || `(untitled #${e.annotationNumber})`;
     return Object.values(entities)
-      .filter((e) => e.type !== 'assumption' && e.type !== 'note')
+      .filter((e) => e.type !== 'note')
       .map((e) => ({ value: e.id, label: label(e) }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [entities]);

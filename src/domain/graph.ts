@@ -19,7 +19,6 @@ export {
   getEntity,
   hasEdge,
   incomingEdges,
-  isAssumption,
   isNonCausal,
   isNote,
   isStNodeFormat,

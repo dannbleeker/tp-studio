@@ -70,7 +70,6 @@ const ALL_ENTITY_TYPES: Record<EntityType, true> = {
   rootCause: true,
   injection: true,
   desiredEffect: true,
-  assumption: true,
   goal: true,
   criticalSuccessFactor: true,
   necessaryCondition: true,

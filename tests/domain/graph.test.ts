@@ -8,7 +8,6 @@ import {
   findPath,
   hasEdge,
   incomingEdges,
-  isAssumption,
   outgoingEdges,
   reachableBackward,
   reachableForward,
@@ -164,16 +163,11 @@ describe('entitiesByType / entitiesOfType', () => {
   });
 });
 
-describe('isAssumption / structuralEntities', () => {
-  it('isAssumption is a pure predicate on entity.type', () => {
-    expect(isAssumption(makeEntity({ type: 'assumption' }))).toBe(true);
-    expect(isAssumption(makeEntity({ type: 'effect' }))).toBe(false);
-  });
-
-  it('structuralEntities filters out assumptions', () => {
+describe('structuralEntities', () => {
+  it('filters out notes (the only non-causal entity type)', () => {
     const eff = makeEntity({ type: 'effect', title: 'E' });
-    const ass = makeEntity({ type: 'assumption', title: 'A' });
-    const doc = makeDoc([eff, ass], []);
+    const note = makeEntity({ type: 'note', title: 'N' });
+    const doc = makeDoc([eff, note], []);
     expect(structuralEntities(doc).map((e) => e.id)).toEqual([eff.id]);
   });
 });
@@ -201,7 +195,7 @@ describe('removeEntityFromEdges', () => {
   it('scrubs the id from assumptionIds on surviving edges', () => {
     const a = makeEntity({ title: 'A' });
     const b = makeEntity({ title: 'B' });
-    const assumption = makeEntity({ type: 'assumption', title: 'Assumption' });
+    const assumption = makeEntity({ type: 'note', title: 'Assumption' });
     const ab = makeEdge(a.id, b.id, { assumptionIds: [assumption.id] });
     const result = removeEntityFromEdges(makeDoc([a, b, assumption], [ab]), assumption.id);
     expect(result[ab.id]).toBeDefined();
@@ -211,8 +205,8 @@ describe('removeEntityFromEdges', () => {
   it('preserves other assumption ids when only one is removed', () => {
     const a = makeEntity({ title: 'A' });
     const b = makeEntity({ title: 'B' });
-    const ass1 = makeEntity({ type: 'assumption', title: 'A1' });
-    const ass2 = makeEntity({ type: 'assumption', title: 'A2' });
+    const ass1 = makeEntity({ type: 'note', title: 'A1' });
+    const ass2 = makeEntity({ type: 'note', title: 'A2' });
     const ab = makeEdge(a.id, b.id, { assumptionIds: [ass1.id, ass2.id] });
     const result = removeEntityFromEdges(makeDoc([a, b, ass1, ass2], [ab]), ass1.id);
     expect(result[ab.id]!.assumptionIds).toEqual([ass2.id]);

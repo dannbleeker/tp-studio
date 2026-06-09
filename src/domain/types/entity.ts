@@ -10,7 +10,6 @@ export type EntityType =
   | 'rootCause'
   | 'injection'
   | 'desiredEffect'
-  | 'assumption'
   // Goal Tree (A4): used to build IO maps / Necessary-Condition trees. These
   // are valid in any diagram but the palette surfaces them for CRT and FRT.
   | 'goal'
@@ -35,7 +34,8 @@ export type EntityType =
   // the causal graph — they cannot be source or target of an edge, and they
   // sit outside every CLR rule that pattern-matches on causality. Treat like
   // a sticky note pinned next to the diagram. Available in every diagram's
-  // palette as a universal annotation type alongside `assumption`.
+  // palette as a universal annotation type. (Assumptions are NOT an entity type
+  // — they're edge annotations; see `doc.assumptions` / the `Assumption` record.)
   | 'note';
 
 /** F3: per-entity title rendering size. Lets practitioners shrink a busy

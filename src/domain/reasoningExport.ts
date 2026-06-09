@@ -2,13 +2,7 @@ import type { CausalityLabel } from '@/store/uiSlice/types';
 import { findCoreDrivers } from './coreDriver';
 import { renderEdgeSentence, resolveEdgeConnector, topologicalEdgeOrder } from './edgeReading';
 import { DIAGRAM_TYPE_LABEL, ENTITY_TYPE_META } from './entityTypeMeta';
-import {
-  entitiesOfType,
-  incomingEdges,
-  isAssumption,
-  outgoingEdges,
-  structuralEntities,
-} from './graph';
+import { entitiesOfType, incomingEdges, outgoingEdges, structuralEntities } from './graph';
 import { METHOD_BY_DIAGRAM } from './methodChecklist';
 import type { Edge, Entity, TPDocument } from './types';
 
@@ -129,7 +123,7 @@ const ttTriples = (doc: TPDocument, label: CausalityLabel): string[] => {
   for (const e of Object.values(doc.edges)) {
     const src = doc.entities[e.sourceId];
     const tgt = doc.entities[e.targetId];
-    if (!src || !tgt || isAssumption(src) || isAssumption(tgt)) continue;
+    if (!src || !tgt) continue;
     const list = byTarget.get(tgt.id) ?? [];
     list.push(e);
     byTarget.set(tgt.id, list);
@@ -200,7 +194,7 @@ export const buildReasoningSentences = (
     if (!e) continue;
     const src = doc.entities[e.sourceId];
     const tgt = doc.entities[e.targetId];
-    if (!src || !tgt || isAssumption(src) || isAssumption(tgt)) continue;
+    if (!src || !tgt) continue;
     const connector = resolveEdgeConnector(e, label, doc.diagramType);
     sentences.push(renderEdgeSentence(src, tgt, connector));
   }
@@ -274,7 +268,7 @@ const findTerminals = (doc: TPDocument): Entity[] =>
       const outs = outgoingEdges(doc, e.id);
       return outs.every((edge) => {
         const t = doc.entities[edge.targetId];
-        return !t || isAssumption(t);
+        return !t;
       });
     })
     .sort((a, b) => a.annotationNumber - b.annotationNumber);
@@ -294,7 +288,7 @@ const renderCausesInto = (
   if (!target) return;
   for (const edge of incoming) {
     const source = doc.entities[edge.sourceId];
-    if (!source || isAssumption(source)) continue;
+    if (!source) continue;
     const connector = resolveEdgeConnector(edge, label, doc.diagramType);
     const indent = '  '.repeat(depth);
     lines.push(`${indent}- ${renderEdgeSentence(source, target, connector)}`);

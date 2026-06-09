@@ -1,5 +1,5 @@
 import { ENTITY_TYPE_META } from './entityTypeMeta';
-import { isAssumption, outgoingEdges, structuralEntities } from './graph';
+import { outgoingEdges, structuralEntities } from './graph';
 import type { Entity, TPDocument } from './types';
 
 /**
@@ -47,7 +47,7 @@ export const exportToOpml = (doc: TPDocument): string => {
     const outs = outgoingEdges(doc, e.id);
     const targets = outs
       .map((edge) => doc.entities[edge.targetId])
-      .filter((t): t is Entity => t !== undefined && !isAssumption(t))
+      .filter((t): t is Entity => t !== undefined)
       .sort((a, b) => a.annotationNumber - b.annotationNumber);
     outlineParentOf.set(e.id, targets[0]?.id ?? null);
   }

@@ -37,14 +37,6 @@ describe('exportToDot (Block D / N2)', () => {
     expect(dot).toContain(`n_${safeA} -> n_${safeB}`);
   });
 
-  it('excludes assumption entities and edges that touch them', () => {
-    seedEntity('Structural', 'effect');
-    seedEntity('Floating note', 'assumption');
-    const dot = exportCurrent();
-    expect(dot).toContain('Structural');
-    expect(dot).not.toContain('Floating note');
-  });
-
   it('renders AND-grouped edges with style=bold', () => {
     const { a, b, c } = seedAndGroupable();
     const result = useDocumentStore.getState().groupAsAnd([

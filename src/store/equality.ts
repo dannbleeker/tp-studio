@@ -15,8 +15,8 @@
  * values for every key in `keys`.
  *
  * Use for derived selectors that return arrays of small homogeneous
- * objects, e.g. `[{id, sourceTitle, targetTitle}, ...]` from
- * `AttachedEdgesList`. The keys list is the contract: changing the
+ * objects, e.g. the row arrays returned by the `MultiInspector` /
+ * `GroupInspector` selectors. The keys list is the contract: changing the
  * shape of the selector's items requires updating the keys array,
  * which surfaces the contract explicitly.
  */

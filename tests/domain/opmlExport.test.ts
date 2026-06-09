@@ -51,14 +51,6 @@ describe('exportToOpml (Block D / N1)', () => {
     expect(xml).toContain('_note="Note with &lt;tags&gt; &amp; &quot;quotes&quot;"');
   });
 
-  it('omits assumptions from the outline (they belong to edges, not the causal flow)', () => {
-    seedEntity('Structural effect', 'effect');
-    seedEntity('Side note', 'assumption');
-    const xml = exportCurrent();
-    expect(xml).toContain('text="Structural effect"');
-    expect(xml).not.toContain('text="Side note"');
-  });
-
   it('chains a three-link causal chain into a 3-deep outline tree', () => {
     seedChain(['A', 'B', 'C']);
     const xml = exportCurrent();

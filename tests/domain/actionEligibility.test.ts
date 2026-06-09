@@ -125,30 +125,6 @@ describe('actionEligibility — multiple preconditions + folding', () => {
     expect(actionEligibility(doc, propagateStates(doc), action.id).status).toBe('eligible');
   });
 
-  it('ignores Action + Assumption siblings (only true preconditions count)', () => {
-    resetIds();
-    const action = makeEntity({ type: 'action', title: 'A' });
-    const otherAction = makeEntity({ type: 'action', title: 'A2', state: 'false' });
-    const assumption = makeEntity({ type: 'assumption', title: 'as', state: 'false' });
-    const precond = makeEntity({ type: 'effect', title: 'P', state: 'true' });
-    const outcome = makeEntity({ type: 'effect', title: 'O' });
-    const doc = makeDoc(
-      [action, otherAction, assumption, precond, outcome],
-      [
-        makeEdge(action.id, outcome.id),
-        makeEdge(otherAction.id, outcome.id),
-        makeEdge(assumption.id, outcome.id),
-        makeEdge(precond.id, outcome.id),
-      ]
-    );
-    const r = actionEligibility(doc, propagateStates(doc), action.id);
-    // The false action/assumption siblings are NOT preconditions — only
-    // the true `effect` is, so the step is eligible.
-    expect(r.status).toBe('eligible');
-    expect(r.preconditions).toHaveLength(1);
-    expect(r.preconditions[0]?.id).toBe(precond.id);
-  });
-
   it('a propagation-derived true precondition (no manual state) makes the action eligible', () => {
     resetIds();
     // upstream(true) → precond → outcome ← action. precond has no manual

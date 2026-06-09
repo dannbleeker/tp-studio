@@ -10,8 +10,8 @@
  * fresh collision-free id; the entity object itself is discarded.
  */
 
-import { createEntity } from '@/domain/factory';
 import { pruneAssumptions, pruneComments } from '@/domain/graph';
+import { newEntityId } from '@/domain/ids';
 import type { Assumption, AssumptionKind, AssumptionStatus, Edge, EntityId } from '@/domain/types';
 import { currentDoc } from '../../selectors';
 import { prunedSpread, touch } from '../docMutate';
@@ -41,10 +41,9 @@ export function createAssumptionActions({
       const edge = doc.edges[edgeId];
       if (!edge) return null;
       const annotationNumber = doc.nextAnnotationNumber;
-      // Record-canonical (v10): the assumption lives ONLY in `doc.assumptions`.
-      // `createEntity` is used purely to mint a fresh, collision-free id; the
-      // entity object itself is NOT added to `doc.entities`.
-      const id = createEntity({ type: 'assumption', title, annotationNumber }).id;
+      // Record-canonical (v10): the assumption lives ONLY in `doc.assumptions` —
+      // mint a fresh id directly (it is not an entity).
+      const id = newEntityId();
       const now = Date.now();
       const assumption: Assumption = {
         id: id as string,

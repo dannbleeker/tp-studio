@@ -70,11 +70,11 @@ describe('st-tactic-assumptions rule', () => {
     expect(stTacticAssumptionsRule(doc)).toHaveLength(0);
   });
 
-  it('only counts necessaryCondition feeders (other types like assumption do not satisfy)', () => {
+  it('only counts necessaryCondition feeders (other types like effect do not satisfy)', () => {
     const tactic = makeEntity({ type: 'injection', title: 'Tactic' });
-    const a1 = makeEntity({ type: 'assumption', title: 'A1' });
-    const a2 = makeEntity({ type: 'assumption', title: 'A2' });
-    const a3 = makeEntity({ type: 'assumption', title: 'A3' });
+    const a1 = makeEntity({ type: 'effect', title: 'A1' });
+    const a2 = makeEntity({ type: 'effect', title: 'A2' });
+    const a3 = makeEntity({ type: 'effect', title: 'A3' });
     const apex = makeEntity({ type: 'goal' });
     const doc = buildSTDoc(
       [apex, tactic, a1, a2, a3],
@@ -85,10 +85,10 @@ describe('st-tactic-assumptions rule', () => {
         makeEdge(a3.id, tactic.id),
       ]
     );
-    // `assumption` entities are typically edge-attachments, not full
-    // graph nodes; the rule requires structural `necessaryCondition`
-    // entities (the canonical NA/PA/SA carriers in TP Studio's S&T
-    // model).
+    // Non-`necessaryCondition` feeders (here plain `effect` nodes) don't
+    // count toward the NA/PA/SA facets; the rule requires structural
+    // `necessaryCondition` entities (the canonical NA/PA/SA carriers in
+    // TP Studio's S&T model).
     expect(stTacticAssumptionsRule(doc)).toHaveLength(1);
   });
 });

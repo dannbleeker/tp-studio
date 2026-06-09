@@ -20,14 +20,16 @@ describe('Note entity (FL-ET7)', () => {
   it('isNote / isNonCausal predicates discriminate correctly', () => {
     const note = seedEntity('A reminder', 'note');
     const effect = seedEntity('Some effect', 'effect');
-    const assumption = seedEntity('A claim', 'assumption');
+    const rootCause = seedEntity('A cause', 'rootCause');
 
     expect(isNote(note)).toBe(true);
     expect(isNote(effect)).toBe(false);
-    expect(isNote(assumption)).toBe(false);
+    expect(isNote(rootCause)).toBe(false);
 
+    // Notes are the only non-causal entity type; structural causal types
+    // (effect, rootCause) are causal.
     expect(isNonCausal(note)).toBe(true);
-    expect(isNonCausal(assumption)).toBe(true);
+    expect(isNonCausal(rootCause)).toBe(false);
     expect(isNonCausal(effect)).toBe(false);
   });
 

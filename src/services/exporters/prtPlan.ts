@@ -1,4 +1,4 @@
-import { incomingEdges, isAssumption, outgoingEdges, structuralEntities } from '@/domain/graph';
+import { incomingEdges, outgoingEdges, structuralEntities } from '@/domain/graph';
 import type { Edge, Entity, TPDocument } from '@/domain/types';
 import { csvRow, slug, triggerDownload } from './shared';
 
@@ -80,7 +80,7 @@ export const orderedIntermediateObjectives = (doc: TPDocument): Entity[] => {
   const edges = Object.values(doc.edges).filter((e) => {
     const src = doc.entities[e.sourceId];
     const tgt = doc.entities[e.targetId];
-    return src && tgt && !isAssumption(src) && !isAssumption(tgt);
+    return src !== undefined && tgt !== undefined;
   });
 
   const inDegree = new Map<string, number>();

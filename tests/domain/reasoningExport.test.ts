@@ -326,25 +326,7 @@ describe('appendCoreDriverSection — non-CRT and zero-drivers branches', () => 
   });
 });
 
-describe('buildReasoningSentences — assumption skipping and non-CRT types', () => {
-  it('skips edges whose source is an assumption entity', () => {
-    resetIds();
-    const assumption = makeEntity({ type: 'assumption', title: 'Hidden', annotationNumber: 1 });
-    const effect = makeEntity({ type: 'effect', title: 'Effect', annotationNumber: 2 });
-    const e = makeEdge(assumption.id, effect.id);
-    const doc = makeDoc([assumption, effect], [e], 'crt');
-    expect(buildReasoningSentences(doc)).toEqual([]);
-  });
-
-  it('skips edges whose target is an assumption entity', () => {
-    resetIds();
-    const effect = makeEntity({ type: 'effect', title: 'Effect', annotationNumber: 1 });
-    const assumption = makeEntity({ type: 'assumption', title: 'Hidden', annotationNumber: 2 });
-    const e = makeEdge(effect.id, assumption.id);
-    const doc = makeDoc([effect, assumption], [e], 'crt');
-    expect(buildReasoningSentences(doc)).toEqual([]);
-  });
-
+describe('buildReasoningSentences — non-CRT types', () => {
   it('uses "therefore" connector on FRT (auto → "because"; explicit "therefore" override)', () => {
     resetIds();
     const a = makeEntity({ type: 'injection', title: 'Injection A', annotationNumber: 1 });
@@ -421,21 +403,6 @@ describe('ttTriples — fallback paths in TT diagram', () => {
     expect(md).toContain('"Pre-existing state"');
     // Should NOT have the "In order to obtain…" triple form
     expect(md).not.toContain('In order to obtain "Outcome happens"');
-  });
-
-  it('skips TT edges whose source or target is an assumption', () => {
-    resetIds();
-    const assumption = makeEntity({ type: 'assumption', title: 'Unstated', annotationNumber: 1 });
-    const action = makeEntity({ type: 'action', title: 'Do something', annotationNumber: 2 });
-    const outcome = makeEntity({ type: 'effect', title: 'Result', annotationNumber: 3 });
-    const e1 = makeEdge(assumption.id, outcome.id); // assumption as source → skip
-    const e2 = makeEdge(action.id, outcome.id);
-    const doc = makeDoc([assumption, action, outcome], [e1, e2], 'tt');
-    // With only action feeding outcome (assumption skipped), no triple is possible.
-    const sentences = buildReasoningSentences(doc);
-    // Should include per-edge sentence for action→outcome, NOT the "In order to" form
-    expect(sentences.some((s) => s.includes('"Result"'))).toBe(true);
-    expect(sentences.every((s) => !s.includes('"Unstated"'))).toBe(true);
   });
 });
 
@@ -521,14 +488,6 @@ describe('exportReasoningOutline — common shape', () => {
     expect(md).toContain('No causes drawn yet.');
   });
 
-  it('skips assumption-typed entities entirely', () => {
-    seedEntity('Real terminal', 'effect');
-    seedEntity('Side note', 'assumption');
-    const md = exportReasoningOutline(doc());
-    expect(md).toContain('Real terminal');
-    expect(md).not.toContain('Side note');
-  });
-
   it('EC outline renders the 5-box structure as a description', () => {
     useDocumentStore.getState().newDocument('ec');
     const md = exportReasoningOutline(doc());
@@ -548,54 +507,6 @@ describe('exportReasoningOutline — common shape', () => {
     expect(md).toContain('## Likely Core Driver(s)');
     expect(md).toContain('Strong root');
     expect(md).toContain('reaches 2 UDEs');
-  });
-
-  it('renders "No structural entities yet." when the doc has no structural entities', () => {
-    // A freeform doc with only an assumption entity (non-structural)
-    resetIds();
-    const asmpt = makeEntity({ type: 'assumption', title: 'Hidden note', annotationNumber: 1 });
-    const d = makeDoc([asmpt], [], 'freeform');
-    const md = exportReasoningOutline(d);
-    expect(md).toContain('*No structural entities yet.*');
-    expect(md).not.toContain('Hidden note');
-  });
-
-  it('findTerminals: outgoing-only-to-assumption entities count as terminals', () => {
-    // b has an outgoing edge to an assumption — that makes it a "terminal"
-    // because structurally it has no real downstream.
-    resetIds();
-    const a = makeEntity({ type: 'effect', title: 'Cause node', annotationNumber: 1 });
-    const b = makeEntity({ type: 'effect', title: 'Terminal node', annotationNumber: 2 });
-    const asmpt = makeEntity({ type: 'assumption', title: 'Side note', annotationNumber: 3 });
-    const e1 = makeEdge(a.id, b.id);
-    const e2 = makeEdge(b.id, asmpt.id); // b → assumption: b still acts as terminal
-    const d = makeDoc([a, b, asmpt], [e1, e2], 'crt');
-    const md = exportReasoningOutline(d);
-    // b should appear as a heading (it is a terminal relative to structural edges)
-    expect(md).toContain('### Terminal node (Effect)');
-    // Assumption should NOT appear as a heading
-    expect(md).not.toContain('### Side note');
-  });
-
-  it('renderCausesInto: skips assumption-typed sources in outline bullet list', () => {
-    resetIds();
-    const asmpt = makeEntity({
-      type: 'assumption',
-      title: 'Assumption source',
-      annotationNumber: 1,
-    });
-    const terminal = makeEntity({ type: 'effect', title: 'Effect terminal', annotationNumber: 2 });
-    const e = makeEdge(asmpt.id, terminal.id);
-    const d = makeDoc([asmpt, terminal], [e], 'crt');
-    const md = exportReasoningOutline(d);
-    // Terminal is a heading; no bullet for the assumption cause
-    expect(md).toContain('### Effect terminal (Effect)');
-    // The assumption entity itself should not appear in a bullet sentence
-    expect(md).not.toContain('Assumption source');
-    // Terminal has one incoming edge (from assumption) so the "no causes" note
-    // is NOT triggered — but no bullet is rendered either because assumption is
-    // skipped. The section has a heading and nothing else.
-    expect(md).not.toContain('*No causes drawn yet.*');
   });
 
   it('renderCausesInto: cycle guard — a pure cycle has no terminals, outline is structurally empty', () => {
@@ -675,14 +586,15 @@ describe('exportReasoningOutline — EC-specific branches', () => {
     const w1 = makeEntity({ type: 'want', title: 'Want 1', annotationNumber: 1 });
     const need = makeEntity({ type: 'need', title: 'Need 1', annotationNumber: 2 });
     const asmpt = makeEntity({
-      type: 'assumption',
+      type: 'note',
       title: 'Because of budget',
       annotationNumber: 3,
     });
     const e = makeEdge(w1.id, need.id, { assumptionIds: [asmpt.id] });
     const d = makeDoc([w1, need, asmpt], [e], 'ec');
     // Record-canonical: the exporter reads the assumption text from the
-    // first-class record (synced with the entity title).
+    // first-class `doc.assumptions` record, keyed by the id referenced in
+    // the edge's `assumptionIds`.
     d.assumptions = {
       [asmpt.id]: {
         id: asmpt.id,
@@ -703,7 +615,7 @@ describe('exportReasoningOutline — EC-specific branches', () => {
     resetIds();
     const w1 = makeEntity({ type: 'want', title: 'Want 1', annotationNumber: 1 });
     const need = makeEntity({ type: 'need', title: 'Need 1', annotationNumber: 2 });
-    const asmpt = makeEntity({ type: 'assumption', title: '', annotationNumber: 3 });
+    const asmpt = makeEntity({ type: 'note', title: '', annotationNumber: 3 });
     const e = makeEdge(w1.id, need.id, { assumptionIds: [asmpt.id] });
     const d = makeDoc([w1, need, asmpt], [e], 'ec');
     d.assumptions = {

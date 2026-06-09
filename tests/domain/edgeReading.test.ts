@@ -74,16 +74,6 @@ describe('topologicalEdgeOrder', () => {
     expect(order).toEqual([ab.id, bc.id]);
   });
 
-  it('skips edges involving assumption entities', () => {
-    const a = makeEntity({ title: 'A' });
-    const b = makeEntity({ title: 'B' });
-    const assn = makeEntity({ title: 'note', type: 'assumption' });
-    const ab = makeEdge(a.id, b.id);
-    const aAssn = makeEdge(a.id, assn.id);
-    const order = topologicalEdgeOrder(makeDoc([a, b, assn], [ab, aAssn]));
-    expect(order).toEqual([ab.id]);
-  });
-
   it('falls back to creation order on the remaining unreached edges (cycle)', () => {
     const a = makeEntity({ title: 'A' });
     const b = makeEntity({ title: 'B' });

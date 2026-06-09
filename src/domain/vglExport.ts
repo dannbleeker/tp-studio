@@ -1,5 +1,5 @@
 import { ENTITY_TYPE_META } from './entityTypeMeta';
-import { isAssumption, structuralEntities } from './graph';
+import { structuralEntities } from './graph';
 import type { TPDocument } from './types';
 
 /**
@@ -89,7 +89,6 @@ export const exportToVgl = (doc: TPDocument): string => {
     const src = doc.entities[edge.sourceId];
     const tgt = doc.entities[edge.targetId];
     if (!src || !tgt) continue;
-    if (isAssumption(src) || isAssumption(tgt)) continue;
     if (edge.andGroupId) {
       const key = edge.andGroupId;
       const bucket = byAndKey.get(key);

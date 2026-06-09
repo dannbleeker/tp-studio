@@ -2,7 +2,6 @@ import {
   entitiesOfType,
   getEntity,
   incomingEdges,
-  isAssumption,
   reachableBackward,
   reachableForward,
   structuralEntities,
@@ -43,7 +42,7 @@ const filterStructural = (doc: TPDocument, ids: Iterable<string>): string[] => {
   const out: string[] = [];
   for (const id of ids) {
     const e = getEntity(doc, id);
-    if (e && !isAssumption(e)) out.push(id);
+    if (e) out.push(id);
   }
   return out;
 };

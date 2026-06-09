@@ -83,7 +83,7 @@ export function actionEligibility(
       if (!src) continue;
       // Preconditions are the non-Action, non-Assumption siblings — the
       // existing conditions, not other do-something steps or edge claims.
-      if (src.type === 'action' || src.type === 'assumption') continue;
+      if (src.type === 'action') continue;
       if (seen.has(src.id)) continue;
       seen.add(src.id);
       preconditions.push({

@@ -25,7 +25,7 @@ import { Field } from './Field';
 // reads using custom equality. The selector still walks the
 // selection but `arrayShallowEqualByKeys` skips re-renders when the
 // derived row data is logically the same. Matches the pattern landed
-// for `AttachedEdgesList`, `AssumptionAnchorOverlay`, etc.
+// for `AssumptionAnchorOverlay`, `GroupInspector`, etc.
 type EntitiesMultiRow = {
   id: string;
   type: EntityType;

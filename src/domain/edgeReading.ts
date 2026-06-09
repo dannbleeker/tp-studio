@@ -1,5 +1,5 @@
 import type { CausalityLabel } from '@/store/uiSlice/types';
-import { isAssumption, structuralEntities } from './graph';
+import { structuralEntities } from './graph';
 import type { DiagramType, Edge, Entity, TPDocument } from './types';
 
 /**
@@ -76,7 +76,7 @@ export const topologicalEdgeOrder = (doc: TPDocument): string[] => {
   const edges = Object.values(doc.edges).filter((e) => {
     const src = doc.entities[e.sourceId];
     const tgt = doc.entities[e.targetId];
-    return src && tgt && !isAssumption(src) && !isAssumption(tgt);
+    return src !== undefined && tgt !== undefined;
   });
 
   // In-degree per entity.

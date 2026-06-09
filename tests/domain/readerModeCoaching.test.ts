@@ -7,21 +7,20 @@ import type { DiagramType, EdgeKind, EntityType } from '@/domain/types';
  * Session 180 / E6 — Reader mode coaching registry smoke tests.
  *
  * Goals:
- *   1. All 15 EntityType values have a coaching entry with non-empty
+ *   1. All 14 EntityType values have a coaching entry with non-empty
  *      label + tip (guarantees no hover tooltip is silently blank).
  *   2. Both EdgeKind values have a coaching entry.
  *   3. printLegendFor returns non-empty for every structured diagram
  *      type; '' for freeform (used by ReaderModeBanner).
  */
 
-// The canonical 15 entity types from src/domain/types/entity.ts.
+// The canonical 14 entity types from src/domain/types/entity.ts.
 const ALL_ENTITY_TYPES: EntityType[] = [
   'ude',
   'effect',
   'rootCause',
   'injection',
   'desiredEffect',
-  'assumption',
   'goal',
   'criticalSuccessFactor',
   'necessaryCondition',
@@ -47,7 +46,7 @@ const STRUCTURED_DIAGRAM_TYPES: DiagramType[] = [
 ];
 
 describe('ENTITY_TYPE_COACHING', () => {
-  it('has an entry for every EntityType (15 total)', () => {
+  it('has an entry for every EntityType (14 total)', () => {
     for (const type of ALL_ENTITY_TYPES) {
       const entry = ENTITY_TYPE_COACHING[type];
       expect(entry, `Missing coaching entry for EntityType "${type}"`).toBeDefined();

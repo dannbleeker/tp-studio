@@ -34,14 +34,6 @@ describe('exportToVgl (N5)', () => {
     expect(vgl).toContain('description: "A note"');
   });
 
-  it('skips assumption-typed entities entirely', () => {
-    seedEntity('Real entity', 'effect');
-    seedEntity('Side note', 'assumption');
-    const vgl = exportToVgl(docState());
-    expect(vgl).toContain('"Real entity"');
-    expect(vgl).not.toContain('"Side note"');
-  });
-
   it('plain edges render as a single line (no body) when no label is set', () => {
     seedConnectedPair('A', 'B');
     const vgl = exportToVgl(docState());

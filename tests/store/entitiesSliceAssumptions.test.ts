@@ -117,15 +117,10 @@ describe('entitiesSlice — setAssumptionKind (S&T sub-typing)', () => {
 });
 
 describe('entitiesSlice — setAssumptionText', () => {
-  it('updates both the assumption text and the dual-write entity title', () => {
+  it('updates the assumption text', () => {
     const { assumption } = seedEdgeWithAssumption();
     useDocumentStore.getState().setAssumptionText(assumption.id, 'New text');
     expect(s().doc.assumptions?.[assumption.id]?.text).toBe('New text');
-    // Dual-write: the assumption-typed entity's `title` should mirror.
-    const ent = s().doc.entities[assumption.id];
-    if (ent && ent.type === 'assumption') {
-      expect(ent.title).toBe('New text');
-    }
   });
 
   it('is a no-op for an unknown assumption id', () => {

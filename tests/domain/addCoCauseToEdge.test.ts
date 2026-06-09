@@ -61,10 +61,10 @@ describe('store.addCoCauseToEdge', () => {
     expect(result).toBeNull();
   });
 
-  it('returns null for an assumption-typed source', () => {
+  it('returns null for a note-typed source', () => {
     const { edge } = seedConnectedPair();
-    const assn = seedEntity('Note', 'assumption');
-    const result = useDocumentStore.getState().addCoCauseToEdge(edge.id, assn.id);
+    const note = seedEntity('Note', 'note');
+    const result = useDocumentStore.getState().addCoCauseToEdge(edge.id, note.id);
     expect(result).toBeNull();
   });
 

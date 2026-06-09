@@ -10,7 +10,6 @@ export const ENTITY_STRIPE_COLOR: Record<EntityType, string> = {
   rootCause: '#d97706', // amber-600
   injection: '#059669', // emerald-600
   desiredEffect: '#6366f1', // indigo-500
-  assumption: '#8b5cf6', // violet-500
   // Goal Tree classes (A4): visually distinct from CRT/FRT classes so a Goal
   // entity inside a CRT reads as "this is the goal of the system" rather
   // than an effect.
@@ -37,6 +36,9 @@ export const ENTITY_STRIPE_COLOR: Record<EntityType, string> = {
 };
 
 export const ACCENT = '#6366f1'; // indigo-500
+// violet-500 — the AND-junctor edge color, and the assumption card's stripe
+// (see TPAssumptionNode). A raw color token, not tied to any EntityType.
+export const VIOLET_500 = '#8b5cf6';
 
 // --- Edge color palettes ---
 // Each palette maps the four edge states (default / selected / AND / arrow marker)
@@ -57,9 +59,9 @@ export const EDGE_PALETTES: Record<EdgePaletteId, EdgePaletteTokens> = {
   default: {
     stroke: '#a3a3a3', // neutral-400
     strokeSelected: ACCENT,
-    strokeAnd: ENTITY_STRIPE_COLOR.assumption,
+    strokeAnd: VIOLET_500,
     marker: '#737373', // neutral-500
-    markerAnd: ENTITY_STRIPE_COLOR.assumption,
+    markerAnd: VIOLET_500,
   },
   colorblindSafe: {
     // Wong palette: sky-blue + vermillion + bluish-green. Distinct in

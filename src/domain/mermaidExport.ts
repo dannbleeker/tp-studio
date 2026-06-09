@@ -1,5 +1,5 @@
 import { resolveEntityTypeMeta } from './entityTypeMeta';
-import { isAssumption, structuralEntities } from './graph';
+import { structuralEntities } from './graph';
 import type { TPDocument } from './types';
 
 /**
@@ -57,7 +57,7 @@ export const exportToMermaid = (doc: TPDocument): string => {
   for (const edge of Object.values(doc.edges)) {
     const src = doc.entities[edge.sourceId];
     const tgt = doc.entities[edge.targetId];
-    if (!src || !tgt || isAssumption(src) || isAssumption(tgt)) continue;
+    if (!src || !tgt) continue;
     const arrow = edge.andGroupId ? '==>' : '-->';
     if (edge.label?.trim()) {
       lines.push(

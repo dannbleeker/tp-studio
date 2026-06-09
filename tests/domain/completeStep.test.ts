@@ -57,16 +57,6 @@ describe('CLR: TT complete-step rule (completeStepRule)', () => {
     expect(warnings.length).toBe(2);
   });
 
-  it('does not count assumption entities as preconditions', () => {
-    const a = makeEntity({ type: 'action', title: 'Do the thing' });
-    const assn = makeEntity({ type: 'assumption', title: 'we assume X' });
-    const de = makeEntity({ type: 'desiredEffect', title: 'Result' });
-    const e1 = makeEdge(a.id, de.id);
-    const e2 = makeEdge(assn.id, de.id);
-    const doc = makeDoc([a, assn, de], [e1, e2], 'tt');
-    expect(completeStepRule(doc).length).toBe(1);
-  });
-
   it('only registers in the TT diagram type', () => {
     // Same shape as the first test but in a CRT — should not surface
     // the rule because TT-specific rules are not in the CRT rule list.

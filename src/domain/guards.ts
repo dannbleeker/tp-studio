@@ -32,7 +32,6 @@ const ENTITY_TYPES: ReadonlySet<EntityType> = new Set<EntityType>([
   'rootCause',
   'injection',
   'desiredEffect',
-  'assumption',
   'goal',
   'criticalSuccessFactor',
   'necessaryCondition',

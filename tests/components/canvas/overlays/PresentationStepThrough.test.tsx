@@ -136,9 +136,9 @@ describe('PresentationStepThrough — rendering', () => {
     expect(container.textContent ?? '').toBe('');
   });
 
-  it('renders nothing when only non-causal entities exist (notes and assumptions)', () => {
+  it('renders nothing when only non-causal entities exist (notes)', () => {
     seedEntity('My note', 'note');
-    seedEntity('My assumption', 'assumption');
+    seedEntity('Another note', 'note');
     enterPresentation();
     const { container } = renderChip();
     expect(container.textContent ?? '').toBe('');
@@ -180,7 +180,6 @@ describe('PresentationStepThrough — rendering', () => {
   it('ignores non-causal entities in the total count', () => {
     seedEntity('Effect', 'effect');
     seedEntity('Note X', 'note');
-    seedEntity('Assumption Y', 'assumption');
     clearSelection(); // addEntity auto-selects; clear so label shows "—"
     enterPresentation();
     renderChip();
@@ -638,7 +637,7 @@ describe('PresentationStepThrough — walk ordering', () => {
     expect(selectedId()).toBe(e3.id);
   });
 
-  it('non-causal entities (note, assumption) are skipped in the walk', () => {
+  it('non-causal entities (notes) are skipped in the walk', () => {
     const e1 = seedEntity('Cause', 'effect');
     act(() => s().updateEntity(e1.id, { ordering: 1 }));
     seedEntity('Side note', 'note');
@@ -647,8 +646,7 @@ describe('PresentationStepThrough — walk ordering', () => {
       s().updateEntity(e2.id, { ordering: 2 });
       s().selectEntities([]); // clear auto-selection from addEntity
     });
-    seedEntity('Assumption', 'assumption');
-    clearSelection(); // clear the assumption's auto-selection
+    clearSelection(); // ensure nothing is selected so the label shows "—"
 
     enterPresentation();
     renderChip();

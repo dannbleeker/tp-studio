@@ -48,10 +48,6 @@ export const ENTITY_TYPE_COACHING: Record<EntityType, CoachingEntry> = {
     label: 'Desired Effect',
     tip: 'A positive outcome the injection is meant to produce. Desired effects replace UDEs in the Future Reality Tree.',
   },
-  assumption: {
-    label: 'Assumption',
-    tip: 'An unverified claim the arrow depends on. Surfacing assumptions is where real scrutiny happens — the weakest one is where resistance will come from.',
-  },
   goal: {
     label: 'Goal',
     tip: 'The top-level outcome the whole system must achieve. In a Goal Tree, every element below is necessary for this goal.',

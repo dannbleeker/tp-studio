@@ -156,9 +156,6 @@ export const useGraphNodeEmission = (
     for (const id of visibleEntityIds) {
       const entity = doc.entities[id];
       if (!entity) continue;
-      // Record-canonical: assumptions are emitted from doc.assumptions below, not
-      // from the entity loop (they are transitioning out of doc.entities).
-      if (entity.type === 'assumption') continue;
       const hidden = hiddenCountByCollapser.get(entity.id);
       const reach = reachCounts.get(entity.id);
       const reverseReach = reverseReachCounts.get(entity.id);

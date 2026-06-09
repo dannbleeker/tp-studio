@@ -51,7 +51,6 @@ export const completeStepRule = (doc: TPDocument): UntieredWarning[] => {
       const hasPrecondition = siblings.some((s) => {
         const src = doc.entities[s.sourceId];
         if (!src) return false;
-        if (src.type === 'assumption') return false;
         if (src.type === 'action') return false;
         return true;
       });
