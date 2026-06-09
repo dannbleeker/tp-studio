@@ -1,5 +1,5 @@
-import { newDocumentId } from '../ids';
-import type { Edge, TPDocument } from '../types';
+import { newDocumentId, newEntityId } from '../ids';
+import type { Assumption, Edge, TPDocument } from '../types';
 import { buildEdge, buildEntity } from './shared';
 
 /**
@@ -14,12 +14,6 @@ export const buildExampleFreeform = (): TPDocument => {
   const claim = buildEntity('effect', 'Our product retains users better than competitors', t, 1);
   const evidence1 = buildEntity('effect', 'Q3 cohort 90-day retention: 78%', t, 2);
   const evidence2 = buildEntity('effect', 'Net promoter score: 62 (industry avg: 38)', t, 3);
-  const caveat = buildEntity(
-    'assumption',
-    'Sample size for NPS is small (n=240); margin of error ±6',
-    t,
-    4
-  );
   const note = buildEntity(
     'note',
     'Re-run cohort analysis after the Q4 product changes ship',
@@ -27,11 +21,24 @@ export const buildExampleFreeform = (): TPDocument => {
     5
   );
 
-  const entities = [claim, evidence1, evidence2, caveat, note];
+  const entities = [claim, evidence1, evidence2, note];
   const edges: Edge[] = [buildEdge(evidence1.id, claim.id), buildEdge(evidence2.id, claim.id)];
-  // Caveat attaches to the evidence-2 edge as an assumption.
+  // Record-canonical: the caveat is an edge ANNOTATION (a doc.assumptions record),
+  // not an entity — it annotates the evidence-2 → claim edge.
   const evidence2Edge = edges[1]!;
-  edges[1] = { ...evidence2Edge, assumptionIds: [caveat.id] };
+  const caveatId = newEntityId();
+  edges[1] = { ...evidence2Edge, assumptionIds: [caveatId] };
+  const assumptions: Record<string, Assumption> = {
+    [caveatId]: {
+      id: caveatId,
+      edgeId: evidence2Edge.id,
+      text: 'Sample size for NPS is small (n=240); margin of error ±6',
+      status: 'unexamined',
+      annotationNumber: 4,
+      createdAt: t,
+      updatedAt: t,
+    },
+  };
 
   return {
     id: newDocumentId(),
@@ -42,6 +49,7 @@ export const buildExampleFreeform = (): TPDocument => {
     groups: {},
     resolvedWarnings: {},
     nextAnnotationNumber: 6,
+    assumptions,
     createdAt: t,
     updatedAt: t,
     schemaVersion: 10,
