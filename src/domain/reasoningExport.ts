@@ -354,8 +354,8 @@ const renderEcOutline = (doc: TPDocument): string[] => {
       if (!src || !tgt) continue;
       lines.push(`- **${src.title.trim() || 'Untitled'} → ${tgt.title.trim() || 'Untitled'}**`);
       for (const aid of e.assumptionIds ?? []) {
-        const a = doc.entities[aid];
-        if (a) lines.push(`  - ${a.title.trim() || 'Untitled assumption'}`);
+        const a = doc.assumptions?.[aid];
+        if (a) lines.push(`  - ${a.text.trim() || 'Untitled assumption'}`);
       }
     }
   }

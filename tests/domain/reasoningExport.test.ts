@@ -681,6 +681,18 @@ describe('exportReasoningOutline — EC-specific branches', () => {
     });
     const e = makeEdge(w1.id, need.id, { assumptionIds: [asmpt.id] });
     const d = makeDoc([w1, need, asmpt], [e], 'ec');
+    // Record-canonical: the exporter reads the assumption text from the
+    // first-class record (synced with the entity title).
+    d.assumptions = {
+      [asmpt.id]: {
+        id: asmpt.id,
+        edgeId: e.id,
+        text: 'Because of budget',
+        status: 'unexamined',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    };
     const md = exportReasoningOutline(d);
     expect(md).toContain('### Assumptions on edges');
     expect(md).toContain('**Want 1 → Need 1**');
@@ -694,6 +706,16 @@ describe('exportReasoningOutline — EC-specific branches', () => {
     const asmpt = makeEntity({ type: 'assumption', title: '', annotationNumber: 3 });
     const e = makeEdge(w1.id, need.id, { assumptionIds: [asmpt.id] });
     const d = makeDoc([w1, need, asmpt], [e], 'ec');
+    d.assumptions = {
+      [asmpt.id]: {
+        id: asmpt.id,
+        edgeId: e.id,
+        text: '',
+        status: 'unexamined',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    };
     const md = exportReasoningOutline(d);
     expect(md).toContain('Untitled assumption');
   });
