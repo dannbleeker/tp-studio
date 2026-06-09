@@ -64,6 +64,62 @@ describe('useGraphNodeEmission', () => {
     expect(tp.find((n) => n.id === a.id)?.position).toEqual({ x: 0, y: 0 });
   });
 
+  it('emits an assumption node synthesized from its record (no entity in doc.entities)', () => {
+    const a = makeEntity({ title: 'Cause' });
+    const b = makeEntity({ title: 'Effect' });
+    const e = makeEdge(a.id, b.id);
+    const doc: TPDocument = {
+      ...makeDoc([a, b], [e]),
+      assumptions: {
+        asm1: {
+          id: 'asm1',
+          edgeId: e.id,
+          text: 'Because budget holds',
+          status: 'unexamined',
+          annotationNumber: 9,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    };
+    const nodes = emit(doc, {
+      [a.id]: { x: 0, y: 0 },
+      [b.id]: { x: 0, y: 400 },
+      asm1: { x: 300, y: 200 },
+    });
+    const node = nodes.find((n) => n.id === 'asm1');
+    expect(node?.type).toBe('tp');
+    expect(node?.position).toEqual({ x: 300, y: 200 });
+    const ent = (
+      node?.data as { entity: { type: string; title: string; annotationNumber: number } }
+    ).entity;
+    expect(ent.type).toBe('assumption');
+    expect(ent.title).toBe('Because budget holds');
+    expect(ent.annotationNumber).toBe(9);
+  });
+
+  it('omits an assumption node when placement gave it no position', () => {
+    const a = makeEntity();
+    const b = makeEntity();
+    const e = makeEdge(a.id, b.id);
+    const doc: TPDocument = {
+      ...makeDoc([a, b], [e]),
+      assumptions: {
+        asm1: {
+          id: 'asm1',
+          edgeId: e.id,
+          text: 't',
+          status: 'unexamined',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    };
+    // No position for asm1 (e.g. its host edge is in a collapsed group).
+    const nodes = emit(doc, { [a.id]: { x: 0, y: 0 }, [b.id]: { x: 0, y: 400 } });
+    expect(nodes.find((n) => n.id === 'asm1')).toBeUndefined();
+  });
+
   it('emits a tpGroup rectangle spanning its members', () => {
     const a = makeEntity();
     const b = makeEntity();

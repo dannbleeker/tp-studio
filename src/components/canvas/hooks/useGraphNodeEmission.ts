@@ -6,7 +6,7 @@ import { openCommentCountsByAnchor } from '@/domain/graph';
 import { descendantEntityCount } from '@/domain/groups';
 import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisions';
 import { effectiveState } from '@/domain/statePropagation';
-import type { EntityId, EntityState, TPDocument } from '@/domain/types';
+import type { Entity, EntityId, EntityState, TPDocument } from '@/domain/types';
 import { Z } from '@/domain/zLayers';
 import type { AnyTPNode, TPCollapsedGroupNode, TPGroupNode, TPNode } from '../edges/flow-types';
 import {
@@ -64,12 +64,12 @@ export const useGraphNodeEmission = (
   const commentCounts = useMemo(() => openCommentCountsByAnchor(doc.comments), [doc.comments]);
 
   // Keyed on the structural doc fields this memo actually reads —
-  // `entities` + `groups` (directly + via descendantEntityCount), `edges`
-  // (via actionEligibility), `customEntityClasses` (ariaLabel) — NOT the whole
-  // `doc`. So a non-structural mutation (CLR-resolve, document title /
+  // `entities` + `assumptions` + `groups` (directly + via descendantEntityCount),
+  // `edges` (via actionEligibility), `customEntityClasses` (ariaLabel) — NOT the
+  // whole `doc`. So a non-structural mutation (CLR-resolve, document title /
   // description) doesn't rebuild every node object. Audited: these are the only
   // `doc.*` accesses in the memo body + its callees.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` is read whole but only via its entities/groups/edges/customEntityClasses; narrowed deliberately.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` is read whole but only via its entities/assumptions/groups/edges/customEntityClasses; narrowed deliberately.
   return useMemo(() => {
     const {
       proj,
@@ -156,6 +156,9 @@ export const useGraphNodeEmission = (
     for (const id of visibleEntityIds) {
       const entity = doc.entities[id];
       if (!entity) continue;
+      // Record-canonical: assumptions are emitted from doc.assumptions below, not
+      // from the entity loop (they are transitioning out of doc.entities).
+      if (entity.type === 'assumption') continue;
       const hidden = hiddenCountByCollapser.get(entity.id);
       const reach = reachCounts.get(entity.id);
       const reverseReach = reverseReachCounts.get(entity.id);
@@ -227,6 +230,46 @@ export const useGraphNodeEmission = (
       nodes.push(node);
     }
 
+    // Assumption nodes — record-canonical. Assumptions live in `doc.assumptions`
+    // (not `doc.entities`); synthesize the minimal entity shape TPNode renders
+    // from. Emit only when placement gave the card a position (an unplaced
+    // assumption — e.g. its host edge sits in a collapsed group — isn't shown).
+    for (const a of Object.values(doc.assumptions ?? {})) {
+      const position = positions[a.id];
+      if (!position) continue;
+      const synthEntity: Entity = {
+        id: a.id as EntityId,
+        type: 'assumption',
+        title: a.text,
+        annotationNumber: a.annotationNumber ?? 0,
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+      };
+      const openComments = commentCounts.byAssumption.get(a.id);
+      const diffStatus = compareDiff
+        ? (() => {
+            const s = entityStatusFromDiff(compareDiff, a.id);
+            return s === 'unchanged' || s === 'removed' ? undefined : s;
+          })()
+        : undefined;
+      nodes.push({
+        id: a.id,
+        type: 'tp',
+        position,
+        ariaLabel: entityAriaLabel(
+          synthEntity,
+          doc.customEntityClasses ? { customClasses: doc.customEntityClasses } : {}
+        ),
+        width: NODE_WIDTH,
+        height: NODE_MIN_HEIGHT,
+        data: {
+          entity: synthEntity,
+          ...(openComments && openComments > 0 ? { openCommentCount: openComments } : {}),
+          ...(diffStatus ? { diffStatus } : {}),
+        },
+      });
+    }
+
     // Collapsed-root cards
     for (const groupId of visibleCollapsedRoots) {
       const group = doc.groups[groupId];
@@ -250,6 +293,7 @@ export const useGraphNodeEmission = (
     return nodes;
   }, [
     doc.entities,
+    doc.assumptions,
     doc.groups,
     doc.edges,
     doc.customEntityClasses,
