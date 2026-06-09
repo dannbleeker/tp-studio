@@ -329,6 +329,9 @@ export const validateAssumption = (v: unknown, label: string): Assumption => {
   }
   if (typeof v.createdAt !== 'number') throw invalid(label, 'has non-number createdAt');
   if (typeof v.updatedAt !== 'number') throw invalid(label, 'has non-number updatedAt');
+  if (v.annotationNumber !== undefined && typeof v.annotationNumber !== 'number') {
+    throw invalid(label, 'has non-number annotationNumber');
+  }
   return {
     id: v.id,
     edgeId: v.edgeId,
@@ -340,6 +343,7 @@ export const validateAssumption = (v: unknown, label: string): Assumption => {
       : {}),
     ...(v.resolved === true ? { resolved: true as const } : {}),
     ...(v.source === 'user' || v.source === 'ai' ? { source: v.source } : {}),
+    ...(typeof v.annotationNumber === 'number' ? { annotationNumber: v.annotationNumber } : {}),
     createdAt: v.createdAt,
     updatedAt: v.updatedAt,
   };

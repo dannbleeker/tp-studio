@@ -61,6 +61,7 @@ export function createAssumptionActions({
         edgeId,
         text: title ?? '',
         status: 'unexamined',
+        annotationNumber,
         createdAt: now,
         updatedAt: now,
       };

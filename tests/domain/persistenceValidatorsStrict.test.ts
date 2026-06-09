@@ -142,12 +142,20 @@ describe('validateEdge', () => {
 describe('validateAssumption', () => {
   it('round-trips a valid assumption', () => {
     const out = validateAssumption(
-      { ...assumption, kind: 'necessary', resolved: true, source: 'user', injectionIds: ['e1'] },
+      {
+        ...assumption,
+        kind: 'necessary',
+        resolved: true,
+        source: 'user',
+        injectionIds: ['e1'],
+        annotationNumber: 7,
+      },
       'a'
     );
     expect(out.status).toBe('unexamined');
     expect(out.kind).toBe('necessary');
     expect(out.resolved).toBe(true);
+    expect(out.annotationNumber).toBe(7);
   });
 
   it('rejects bad fields', () => {
@@ -158,6 +166,9 @@ describe('validateAssumption', () => {
     );
     expect(() => validateAssumption({ ...assumption, source: 'bot' }, 'a')).toThrow(/source/);
     expect(() => validateAssumption({ ...assumption, createdAt: 'x' }, 'a')).toThrow(/createdAt/);
+    expect(() => validateAssumption({ ...assumption, annotationNumber: 'x' }, 'a')).toThrow(
+      /annotationNumber/
+    );
   });
 });
 

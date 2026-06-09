@@ -82,6 +82,11 @@ export type Assumption = {
   resolved?: boolean;
   /** v1.5 hook: AI-suggested assumptions set `source: 'ai'`. */
   source?: 'user' | 'ai';
+  /** The annotation counter the assumption was minted with. Record-canonical:
+   *  carried on the record so the canvas node can render its "#N" badge without
+   *  needing an assumption-Entity. Optional for back-compat with pre-collapse
+   *  records (and pre-v10 imports, which the migration backfills). */
+  annotationNumber?: number;
   createdAt: number;
   updatedAt: number;
 };
