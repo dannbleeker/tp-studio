@@ -222,7 +222,7 @@ describe('assumptions on edges', () => {
     expect(ids).toEqual([assumption.id]);
   });
 
-  it('detachAssumption removes the id and clears the field when empty', () => {
+  it('detachAssumption removes the assumption outright from its only edge', () => {
     const a = addNode('Cause');
     const b = addNode('Effect');
     const e = connect(a.id, b.id);
@@ -230,10 +230,32 @@ describe('assumptions on edges', () => {
     const assumption = useDocumentStore.getState().addAssumptionToEdge(e.id);
     if (!assumption) throw new Error('assumption not created');
     useDocumentStore.getState().detachAssumption(e.id, assumption.id);
-    const edge = useDocumentStore.getState().doc.edges[e.id];
-    expect(edge!.assumptionIds).toBeUndefined();
-    // entity itself still exists
-    expect(useDocumentStore.getState().doc.entities[assumption.id]).toBeDefined();
+    const doc = useDocumentStore.getState().doc;
+    expect(doc.edges[e.id]!.assumptionIds).toBeUndefined();
+    // Detaching from its only edge removes the assumption entirely — no floating
+    // entity and no orphaned first-class record (both would leak into export).
+    expect(doc.entities[assumption.id]).toBeUndefined();
+    expect(doc.assumptions?.[assumption.id]).toBeUndefined();
+  });
+
+  it('detachAssumption keeps an assumption still attached to another edge', () => {
+    const a = addNode('Cause');
+    const b = addNode('Effect');
+    const c = addNode('Other Cause');
+    const d = addNode('Other Effect');
+    const e1 = connect(a.id, b.id);
+    const e2 = connect(c.id, d.id);
+    if (!e1 || !e2) throw new Error('edges not created');
+    const assumption = useDocumentStore.getState().addAssumptionToEdge(e1.id);
+    if (!assumption) throw new Error('assumption not created');
+    useDocumentStore.getState().attachAssumption(e2.id, assumption.id);
+    // Detach from e1 — still attached to e2, so entity + record survive.
+    useDocumentStore.getState().detachAssumption(e1.id, assumption.id);
+    const doc = useDocumentStore.getState().doc;
+    expect(doc.edges[e1.id]!.assumptionIds).toBeUndefined();
+    expect(doc.edges[e2.id]!.assumptionIds).toContain(assumption.id);
+    expect(doc.entities[assumption.id]).toBeDefined();
+    expect(doc.assumptions?.[assumption.id]).toBeDefined();
   });
 
   it('deleting an assumption entity scrubs its id from every edge', () => {
@@ -257,6 +279,8 @@ describe('assumptions on edges', () => {
     expect(doc.entities[assumption.id]).toBeUndefined();
     expect(doc.edges[e1.id]!.assumptionIds).toBeUndefined();
     expect(doc.edges[e2.id]!.assumptionIds).toBeUndefined();
+    // The first-class record is dropped too (its assumption-Entity is gone).
+    expect(doc.assumptions?.[assumption.id]).toBeUndefined();
   });
 });
 

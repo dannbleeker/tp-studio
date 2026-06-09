@@ -13,6 +13,7 @@
  */
 
 import { createEntity } from '@/domain/factory';
+import { pruneAssumptions, pruneComments } from '@/domain/graph';
 import type {
   Assumption,
   AssumptionKind,
@@ -22,7 +23,7 @@ import type {
   EntityId,
 } from '@/domain/types';
 import { currentDoc } from '../../selectors';
-import { touch } from '../docMutate';
+import { prunedSpread, touch } from '../docMutate';
 import type { EntityFactoryDeps } from './shared';
 
 export type AssumptionActions = {
@@ -98,15 +99,33 @@ export function createAssumptionActions({
         const edge = prev.edges[edgeId];
         const branded = assumptionId as EntityId;
         if (!edge?.assumptionIds?.includes(branded)) return prev;
+        // Remove from THIS edge's list. Session 117 — when the list goes empty,
+        // OMIT assumptionIds rather than setting it `undefined` (exactOptional
+        // rejects explicit undefined); destructured-rest is the emit-or-omit.
         const filtered = edge.assumptionIds.filter((a) => a !== branded);
-        // Session 117 — when filtered is empty, OMIT assumptionIds rather
-        // than setting `assumptionIds: undefined`. Under
-        // exactOptionalPropertyTypes the optional field rejects explicit
-        // undefined. Destructured-rest is the cleanest emit-or-omit
-        // pattern.
-        const { assumptionIds: _drop, ...rest } = edge;
-        const nextEdge: Edge = filtered.length ? { ...edge, assumptionIds: filtered } : rest;
-        return touch({ ...prev, edges: { ...prev.edges, [edgeId]: nextEdge } });
+        const { assumptionIds: _drop, ...edgeRest } = edge;
+        const nextEdge: Edge = filtered.length ? { ...edge, assumptionIds: filtered } : edgeRest;
+        const nextEdges = { ...prev.edges, [edgeId]: nextEdge };
+        // An assumption lives on exactly one edge — the first-class record carries
+        // a single edgeId and there is no re-attach UI. If it's still attached to
+        // another edge (only reachable via `attachAssumption`), keep it; otherwise
+        // remove it OUTRIGHT (entity + first-class record + any anchored comment).
+        // Leaving a detached-from-its-only-edge assumption would float the entity
+        // (invisible — assumptions aren't canvas nodes) and orphan its record,
+        // both of which leak into JSON export.
+        const stillAttached = Object.values(nextEdges).some((e) =>
+          e.assumptionIds?.includes(branded)
+        );
+        if (stillAttached) return touch({ ...prev, edges: nextEdges });
+        const { [assumptionId]: _entity, ...restEntities } = prev.entities;
+        const assumptions = pruneAssumptions(prev.assumptions, nextEdges, restEntities);
+        const comments = pruneComments(prev.comments, nextEdges, restEntities);
+        return touch({
+          ...prev,
+          entities: restEntities,
+          edges: nextEdges,
+          ...prunedSpread(prev, { assumptions, comments }),
+        });
       });
     },
 
