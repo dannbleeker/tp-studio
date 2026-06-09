@@ -132,7 +132,7 @@ type TPDocument = {
 Key shape decisions:
 
 - **AND-junctions are not separate nodes.** They are an attribute on a group of edges sharing a target (`andGroupId`). The renderer draws a Flying-Logic-style junctor circle (a labelled "AND" circle just above the target; sibling edges terminate at the perimeter and a short outgoing line carries the arrow into the target).
-- **Assumptions are first-class entities** (type `'assumption'`) attachable to edges via `assumptionIds`. The edge inspector exposes inline create / detach / open-entity affordances; the assumption entity's inspector lists the edges that reference it.
+- **Assumptions are edge annotations, not entities** — record-canonical (v10): each is a first-class `doc.assumptions` record carrying its host `edgeId`, text, and a lifecycle status/kind, no longer a `doc.entities` node. The edge inspector's Assumption Well exposes inline create / edit / status-and-kind chips / detach; the canvas renders each as a derived (non-selectable) annotation card near its edge. `edge.assumptionIds[]` remains as a per-edge membership index.
 - **Groups** are shaded enclosures over entities. Nested, collapsible, draggable; collapsed groups aggregate inbound/outbound edges to a single card. Hoist drills into a group with breadcrumb to exit.
 - **Layout strategy is per-diagram-type.** CRT / FRT / PRT / TT run dagre against the visible set; EC is `manual` — `Entity.position` lives in the schema and drives the canvas directly. See [`src/domain/layoutStrategy.ts`](src/domain/layoutStrategy.ts).
 - **Warnings are derived, never stored.** `validate(doc)` runs the 8 CLR rules on demand; resolution state is persisted in `doc.resolvedWarnings` keyed by a stable `ruleId:targetKind:targetId` identifier.

@@ -52,18 +52,17 @@ export type AssumptionStatus = 'unexamined' | 'valid' | 'invalid' | 'challengeab
 export type AssumptionKind = 'necessary' | 'parallel' | 'sufficient';
 
 /**
- * Assumption IDs share the string space with the assumption-Entity
- * records that shadow them during the v6→v7 migration. Plain `string`
- * rather than a brand — matches the brief's `id: string` shape and
- * lets `doc.assumptions[entityId]` work transparently while both
- * representations coexist.
+ * Record-canonical (v10): an assumption is identified solely by this id. It was
+ * historically shared with a now-removed assumption-Entity (the two shapes
+ * coexisted from v7 until the v9→v10 collapse). Plain `string` rather than a
+ * brand — matches the brief's `id: string` shape.
  */
 export type Assumption = {
   id: string;
-  /** The edge this assumption sits behind. The edge's
-   *  `assumptionIds: EntityId[]` carries the reverse index; IDs in
-   *  that list dereference into `doc.assumptions` for status + into
-   *  `doc.entities` for the legacy text. */
+  /** The edge this assumption sits behind — the single source of truth for
+   *  attachment. The edge's `assumptionIds: EntityId[]` mirrors it as a per-edge
+   *  membership index (preserves ordering for the placement stagger); text +
+   *  status live here on the record, never on an entity. */
   edgeId: string;
   text: string;
   status: AssumptionStatus;

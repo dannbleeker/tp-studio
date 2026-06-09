@@ -19,10 +19,17 @@ goalTree-necessity and assumption-lifecycle items have since been fixed — see 
   other types. Possibly intentional (NBR is position/flow-based); confirm the intended rule.
 
 **Known tech-debt — future cleanup, not urgent:**
-- **Collapse the assumption dual-representation** — the lifecycle paths are now consistent (see
-  CHANGELOG), but the legacy assumption-Entity and the Session-77 first-class `Assumption` record
-  still coexist (sharing an id). Folding them into one canonical shape is a multi-file data-model
-  change (persistence, migration, exporters, UI) for its own session.
+- **Assumption dual-representation collapse — Phase 4 (the deletion payoff).** The data model is now
+  RECORD-CANONICAL (Session 181, see CHANGELOG): assumptions are pure `doc.assumptions` records, no
+  longer `doc.entities` — the store stopped writing assumption entities, migration v9→v10 moves
+  existing ones out (+ re-types standalone ones to notes), and `'assumption'` is no longer a
+  node-palette type. What's LEFT is the verification-heavy deletion pass: (a) `'assumption'` still
+  sits in the `EntityType` union — the canvas synthesizes an entity-shape from the record for
+  `TPNode` — so the ~75 `isAssumption`/`isNonCausal` guards that skip assumptions in causal
+  traversals (exporters, coreDriver, edgeReading, validators) are now DEAD code but still present;
+  (b) `edge.assumptionIds[]` survives as a per-edge membership index. Removing both — and deciding
+  whether to drop `'assumption'` from `EntityType` entirely (needs a dedicated assumption node
+  component instead of the synthesize shim) — is the endgame for its own session.
 
 ---
 

@@ -2,6 +2,37 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 181 — Assumptions collapse to a record-canonical model
+
+The assumption dual-representation is gone at the data layer. An assumption used to live **twice**
+under one id — a `type:'assumption'` entity in `doc.entities` (title, position) *and* a first-class
+`Assumption` record in `doc.assumptions` (edgeId, text, status, …), kept in sync by store
+dual-writes. The record is now the **only** home; an assumption is no longer an entity.
+
+- **Store (record-only).** `addAssumptionToEdge` mints just a record (`createEntity` is used only to
+  source a collision-free id, then discarded); `attachAssumption` resolves via the record;
+  `setAssumptionText` drops its entity-title dual-write; `detachAssumption` removes the record
+  outright (the host edge survives the detach, so host-edge-keyed `pruneAssumptions` can't catch the
+  orphan — it's dropped explicitly, along with any comment anchored to it). `pruneAssumptions` no
+  longer keys on a sibling entity, fixing delete-cascade + splice that otherwise dropped every record.
+- **Migration v9→v10.** Moves every `type:'assumption'` entity out of `doc.entities` into
+  `doc.assumptions` (back-filling text / edgeId-via-reverse-walk / annotationNumber when an old doc
+  lacked the record), re-anchors their comments from `{kind:'entity'}` to `{kind:'assumption'}`, and
+  keeps `edge.assumptionIds` (the per-edge index, for now). A **standalone** assumption node (one a
+  user made via the old palette, attached to no edge) is re-typed to a `note` rather than dropped.
+  Latent fix: the importer hard-coded `schemaVersion: 9` on its output — now stamps the current
+  version. The `schemaVersion` literal type drove the bump across every doc-construction site.
+- **Canvas + UI.** Assumption cards are synthesized from the record and are now **non-selectable /
+  non-draggable** (annotations, not graph nodes; position is derived) — double-click still edits in
+  place, routed to `setAssumptionText`. Removed the vestigial "Open assumption" button; the comments
+  panel's jump handles the `{kind:'assumption'}` anchor (selects the host edge + centers the card).
+- **Palette.** `'assumption'` is no longer a node type in any diagram's palette (it would mint an
+  orphan the canvas can't render); a free-floating side-claim is a `note`.
+
+The deletion payoff — removing the now-dead `isAssumption` guards, dropping `edge.assumptionIds`, and
+deciding whether `'assumption'` leaves the `EntityType` union — is deferred to its own session
+(tracked in NEXT_STEPS). 4174→4178 tests; full preflight green at every step.
+
 ## Session 180 (cont.) — Assumption lifecycle keeps the dual representation consistent
 
 The legacy assumption-Entity (`edge.assumptionIds[]`) and the Session-77 first-class Assumption
