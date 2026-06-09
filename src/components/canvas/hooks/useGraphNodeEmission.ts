@@ -262,6 +262,12 @@ export const useGraphNodeEmission = (
         ),
         width: NODE_WIDTH,
         height: NODE_MIN_HEIGHT,
+        // Record-canonical: an assumption is an edge annotation, not a selectable
+        // graph node — it has no entity to inspect/connect and its position is
+        // DERIVED (placeAssumptionsNearEdges), so a drag couldn't persist. Editing
+        // is via double-click (routes to setAssumptionText) or the AssumptionWell.
+        selectable: false,
+        draggable: false,
         data: {
           entity: synthEntity,
           ...(openComments && openComments > 0 ? { openCommentCount: openComments } : {}),

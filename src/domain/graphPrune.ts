@@ -122,10 +122,11 @@ export const pruneAssumptions = (
   let changed = false;
   const next: Record<string, Assumption> = {};
   for (const [id, a] of Object.entries(assumptions)) {
-    if (!survivingEdges[a.edgeId] || !survivingEntities[id]) {
+    if (!survivingEdges[a.edgeId]) {
       // Orphaned record: its host edge is gone (the causal link it annotated is
-      // gone) OR its assumption-Entity was deleted. Either way the first-class
-      // record has nothing left to attach to, so drop it.
+      // gone), so the record has nothing left to attach to — drop it. Record-
+      // canonical (v10): an assumption is no longer an entity, so its survival
+      // hinges only on the host edge, never on a sibling `doc.entities[id]`.
       changed = true;
       continue;
     }

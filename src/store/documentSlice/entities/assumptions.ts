@@ -1,33 +1,24 @@
 /**
- * Assumption-on-edge actions. Two layered surfaces:
+ * Assumption-on-edge actions. Record-canonical (v10): an assumption is a pure
+ * `Assumption` record in `doc.assumptions` (text, status, kind, injection links,
+ * resolved flag), keyed by id and attached to its host edge via `record.edgeId`.
+ * It is NOT a `doc.entities` entity — the canvas card is synthesized from the
+ * record (see `useGraphNodeEmission`), and `edge.assumptionIds[]` survives only
+ * as a legacy per-edge membership index until a later phase removes it.
  *
- *   1. The legacy assumption-Entity (typed `'assumption'`, attached to
- *      an edge via `edge.assumptionIds[]`). Existing UI paths (TPNode
- *      rendering, sketchpad-style lists) still read from here.
- *   2. The Session 77 first-class `Assumption` record (status chip,
- *      injection links, resolved flag). Shares the same id as the
- *      assumption-Entity — overlapping ID space; see migration v6→v7
- *      for the rationale.
- *
- * Both shapes stay in sync via dual-writes in `setAssumptionText`.
+ * `createEntity` is still called in `addAssumptionToEdge`, but ONLY to mint a
+ * fresh collision-free id; the entity object itself is discarded.
  */
 
 import { createEntity } from '@/domain/factory';
 import { pruneAssumptions, pruneComments } from '@/domain/graph';
-import type {
-  Assumption,
-  AssumptionKind,
-  AssumptionStatus,
-  Edge,
-  Entity,
-  EntityId,
-} from '@/domain/types';
+import type { Assumption, AssumptionKind, AssumptionStatus, Edge, EntityId } from '@/domain/types';
 import { currentDoc } from '../../selectors';
 import { prunedSpread, touch } from '../docMutate';
 import type { EntityFactoryDeps } from './shared';
 
 export type AssumptionActions = {
-  addAssumptionToEdge: (edgeId: string, title?: string) => Entity | null;
+  addAssumptionToEdge: (edgeId: string, title?: string) => Assumption | null;
   attachAssumption: (edgeId: string, assumptionId: string) => void;
   detachAssumption: (edgeId: string, assumptionId: string) => void;
   setAssumptionStatus: (assumptionId: string, status: AssumptionStatus) => void;
@@ -50,14 +41,13 @@ export function createAssumptionActions({
       const edge = doc.edges[edgeId];
       if (!edge) return null;
       const annotationNumber = doc.nextAnnotationNumber;
-      const entity = createEntity({ type: 'assumption', title, annotationNumber });
-      // Session 77: also mint a first-class Assumption record so the
-      // EC AssumptionWell has a status chip + injection link from day
-      // one. Shares the same id as the assumption-Entity (overlapping
-      // ID space; see migration v6→v7 for the rationale).
+      // Record-canonical (v10): the assumption lives ONLY in `doc.assumptions`.
+      // `createEntity` is used purely to mint a fresh, collision-free id; the
+      // entity object itself is NOT added to `doc.entities`.
+      const id = createEntity({ type: 'assumption', title, annotationNumber }).id;
       const now = Date.now();
       const assumption: Assumption = {
-        id: entity.id as string,
+        id: id as string,
         edgeId,
         text: title ?? '',
         status: 'unexamined',
@@ -69,23 +59,24 @@ export function createAssumptionActions({
         const e = prev.edges[edgeId];
         if (!e) return prev;
         const current = e.assumptionIds ?? [];
-        const nextEdge: Edge = { ...e, assumptionIds: [...current, entity.id] };
+        const nextEdge: Edge = { ...e, assumptionIds: [...current, id] };
         const nextAssumptions = { ...(prev.assumptions ?? {}), [assumption.id]: assumption };
         return touch({
           ...prev,
-          entities: { ...prev.entities, [entity.id]: entity },
           edges: { ...prev.edges, [edgeId]: nextEdge },
           assumptions: nextAssumptions,
           nextAnnotationNumber: annotationNumber + 1,
         });
       });
-      return entity;
+      return assumption;
     },
 
     attachAssumption: (edgeId, assumptionId) => {
       applyDocChange((prev) => {
         const edge = prev.edges[edgeId];
-        const assumption = prev.entities[assumptionId];
+        // Record-canonical (v10): resolve the assumption via its record, not a
+        // (no-longer-existent) `doc.entities` entry.
+        const assumption = prev.assumptions?.[assumptionId];
         if (!edge || !assumption) return prev;
         const branded = assumptionId as EntityId;
         const current = edge.assumptionIds ?? [];
@@ -110,20 +101,20 @@ export function createAssumptionActions({
         // An assumption lives on exactly one edge — the first-class record carries
         // a single edgeId and there is no re-attach UI. If it's still attached to
         // another edge (only reachable via `attachAssumption`), keep it; otherwise
-        // remove it OUTRIGHT (entity + first-class record + any anchored comment).
-        // Leaving a detached-from-its-only-edge assumption would float the entity
-        // (invisible — assumptions aren't canvas nodes) and orphan its record,
-        // both of which leak into JSON export.
+        // remove it OUTRIGHT (the record + any comment anchored to it). The host
+        // edge usually SURVIVES the detach (we only stripped it from the edge's
+        // index), so host-edge-keyed `pruneAssumptions` can't catch this orphan —
+        // drop the record by id explicitly, then prune to scrub the rest. Leaving
+        // it would orphan a record that leaks into JSON export.
         const stillAttached = Object.values(nextEdges).some((e) =>
           e.assumptionIds?.includes(branded)
         );
         if (stillAttached) return touch({ ...prev, edges: nextEdges });
-        const { [assumptionId]: _entity, ...restEntities } = prev.entities;
-        const assumptions = pruneAssumptions(prev.assumptions, nextEdges, restEntities);
-        const comments = pruneComments(prev.comments, nextEdges, restEntities);
+        const { [assumptionId]: _record, ...restAssumptions } = prev.assumptions ?? {};
+        const assumptions = pruneAssumptions(restAssumptions, nextEdges, prev.entities);
+        const comments = pruneComments(prev.comments, nextEdges, prev.entities, restAssumptions);
         return touch({
           ...prev,
-          entities: restEntities,
           edges: nextEdges,
           ...prunedSpread(prev, { assumptions, comments }),
         });
@@ -170,15 +161,9 @@ export function createAssumptionActions({
           if (!cur || cur.text === text) return prev;
           const next: Assumption = { ...cur, text, updatedAt: Date.now() };
           const nextAssumptions = { ...(prev.assumptions ?? {}), [assumptionId]: next };
-          // Dual-write: keep the legacy assumption-Entity's `title` in
-          // sync so any UI path that reads it (TPNode, lists) stays
-          // current.
-          const ent = prev.entities[assumptionId];
-          const nextEntities =
-            ent && ent.type === 'assumption' && ent.title !== text
-              ? { ...prev.entities, [assumptionId]: { ...ent, title: text, updatedAt: Date.now() } }
-              : prev.entities;
-          return touch({ ...prev, entities: nextEntities, assumptions: nextAssumptions });
+          // Record-canonical (v10): text lives only on the record now — no
+          // assumption-Entity to dual-write.
+          return touch({ ...prev, assumptions: nextAssumptions });
         },
         { coalesceKey: `assumption-text:${assumptionId}` }
       );

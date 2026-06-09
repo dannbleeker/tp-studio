@@ -571,11 +571,9 @@ describe('AssumptionWell — EC "…because" prefix', () => {
     expect(newBtn).toBeTruthy();
     act(() => fireEvent.click(newBtn!));
     // The just-created assumption should carry the EC prefix.
-    const assns = Object.values(useDocumentStore.getState().doc.entities).filter(
-      (e) => e.type === 'assumption'
-    );
+    const assns = Object.values(useDocumentStore.getState().doc.assumptions ?? {});
     expect(assns).toHaveLength(1);
-    expect(assns[0]?.title).toBe('…because ');
+    expect(assns[0]?.text).toBe('…because ');
     unmount();
   });
 
@@ -587,11 +585,9 @@ describe('AssumptionWell — EC "…because" prefix', () => {
       btn.textContent?.includes('New assumption')
     ) as HTMLButtonElement | undefined;
     act(() => fireEvent.click(newBtn!));
-    const assns = Object.values(useDocumentStore.getState().doc.entities).filter(
-      (e) => e.type === 'assumption'
-    );
+    const assns = Object.values(useDocumentStore.getState().doc.assumptions ?? {});
     expect(assns).toHaveLength(1);
     // CRT assumptions still start empty.
-    expect(assns[0]?.title).toBe('');
+    expect(assns[0]?.text).toBe('');
   });
 });

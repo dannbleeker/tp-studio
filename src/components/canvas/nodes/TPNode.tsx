@@ -78,6 +78,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
   const {
     isEditing,
     updateEntity,
+    setAssumptionText,
     endEditing,
     beginEditing,
     toggleEntityCollapsed,
@@ -94,6 +95,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       return {
         isEditing: s.editingEntityId === entity.id,
         updateEntity: s.updateEntity,
+        setAssumptionText: s.setAssumptionText,
         endEditing: s.endEditing,
         beginEditing: s.beginEditing,
         toggleEntityCollapsed: s.toggleEntityCollapsed,
@@ -354,10 +356,21 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
             className="resize-none border-none bg-transparent p-0 text-neutral-900 text-node leading-snug outline-hidden placeholder:text-neutral-400 dark:text-neutral-100"
             rows={2}
             defaultValue={entity.title}
-            placeholder={isNoteEntity ? 'Type a note…' : 'State the effect…'}
+            placeholder={
+              entity.type === 'assumption'
+                ? 'State the assumption…'
+                : isNoteEntity
+                  ? 'Type a note…'
+                  : 'State the effect…'
+            }
             onBlur={(e) => {
               const next = e.currentTarget.value.trim();
-              if (next !== entity.title) updateEntity(entity.id, { title: next });
+              if (next !== entity.title) {
+                // Record-canonical: an assumption's text lives on its record, not
+                // a `doc.entities` title — route the in-place edit accordingly.
+                if (entity.type === 'assumption') setAssumptionText(entity.id, next);
+                else updateEntity(entity.id, { title: next });
+              }
               endEditing();
             }}
             onKeyDown={(e) => {

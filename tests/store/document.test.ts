@@ -191,7 +191,7 @@ describe('persistence side-effect', () => {
 });
 
 describe('assumptions on edges', () => {
-  it('addAssumptionToEdge creates an assumption entity and attaches it', () => {
+  it('addAssumptionToEdge creates a record-only assumption and attaches it to the edge', () => {
     const a = addNode('Cause');
     const b = addNode('Effect');
     const e = connect(a.id, b.id);
@@ -200,7 +200,9 @@ describe('assumptions on edges', () => {
     expect(assumption).not.toBeNull();
     if (!assumption) return;
     const doc = useDocumentStore.getState().doc;
-    expect(doc.entities[assumption.id]!.type).toBe('assumption');
+    // Record-canonical: the assumption lives in doc.assumptions, NOT doc.entities.
+    expect(doc.entities[assumption.id]).toBeUndefined();
+    expect(doc.assumptions?.[assumption.id]?.status).toBe('unexamined');
     expect(doc.edges[e.id]!.assumptionIds).toEqual([assumption.id]);
   });
 
@@ -249,38 +251,12 @@ describe('assumptions on edges', () => {
     const assumption = useDocumentStore.getState().addAssumptionToEdge(e1.id);
     if (!assumption) throw new Error('assumption not created');
     useDocumentStore.getState().attachAssumption(e2.id, assumption.id);
-    // Detach from e1 — still attached to e2, so entity + record survive.
+    // Detach from e1 — still attached to e2, so the record survives.
     useDocumentStore.getState().detachAssumption(e1.id, assumption.id);
     const doc = useDocumentStore.getState().doc;
     expect(doc.edges[e1.id]!.assumptionIds).toBeUndefined();
     expect(doc.edges[e2.id]!.assumptionIds).toContain(assumption.id);
-    expect(doc.entities[assumption.id]).toBeDefined();
     expect(doc.assumptions?.[assumption.id]).toBeDefined();
-  });
-
-  it('deleting an assumption entity scrubs its id from every edge', () => {
-    const a = addNode('Cause');
-    const b = addNode('Effect');
-    const c = addNode('Other Cause');
-    const d = addNode('Other Effect');
-    const e1 = connect(a.id, b.id);
-    const e2 = connect(c.id, d.id);
-    if (!e1 || !e2) throw new Error('edges not created');
-    const assumption = useDocumentStore.getState().addAssumptionToEdge(e1.id);
-    if (!assumption) throw new Error('assumption not created');
-    useDocumentStore.getState().attachAssumption(e2.id, assumption.id);
-    // sanity
-    expect(useDocumentStore.getState().doc.edges[e1.id]!.assumptionIds).toContain(assumption.id);
-    expect(useDocumentStore.getState().doc.edges[e2.id]!.assumptionIds).toContain(assumption.id);
-
-    useDocumentStore.getState().deleteEntity(assumption.id);
-
-    const doc = useDocumentStore.getState().doc;
-    expect(doc.entities[assumption.id]).toBeUndefined();
-    expect(doc.edges[e1.id]!.assumptionIds).toBeUndefined();
-    expect(doc.edges[e2.id]!.assumptionIds).toBeUndefined();
-    // The first-class record is dropped too (its assumption-Entity is gone).
-    expect(doc.assumptions?.[assumption.id]).toBeUndefined();
   });
 });
 

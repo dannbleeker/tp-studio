@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ArrowUpRight, Plus, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import type { AssumptionKind, AssumptionStatus } from '@/domain/types';
 import { useDocumentStore } from '@/store';
@@ -126,7 +126,6 @@ function AssumptionRow({
   const setAssumptionStatus = useDocumentStore((s) => s.setAssumptionStatus);
   const setAssumptionKind = useDocumentStore((s) => s.setAssumptionKind);
   const detachAssumption = useDocumentStore((s) => s.detachAssumption);
-  const selectEntity = useDocumentStore((s) => s.selectEntity);
   // Subscribe to this assumption's own record (granular — the row re-renders
   // only when ITS record changes). Record-canonical: text / status / kind all
   // come from the record now, not the legacy assumption-Entity's title.
@@ -187,15 +186,6 @@ function AssumptionRow({
         disabled={locked}
         className="flex-1 bg-transparent px-1 py-0.5 text-neutral-800 text-xs outline-hidden placeholder:text-neutral-400 disabled:opacity-60 dark:text-neutral-200"
       />
-      <button
-        type="button"
-        onClick={() => selectEntity(assumptionId)}
-        className="rounded-sm p-1 text-neutral-500 transition hover:bg-violet-100 hover:text-violet-700 dark:hover:bg-violet-900/40 dark:hover:text-violet-300"
-        title="Open assumption"
-        aria-label="Open assumption"
-      >
-        <ArrowUpRight className="h-3 w-3" />
-      </button>
       <button
         type="button"
         onClick={() => detachAssumption(edgeId, assumptionId)}

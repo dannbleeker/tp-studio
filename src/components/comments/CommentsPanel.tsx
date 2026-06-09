@@ -152,6 +152,22 @@ export function CommentsPanel() {
           });
         }
       }
+    } else if (anchor.kind === 'assumption') {
+      // An assumption isn't independently selectable (it's an edge annotation),
+      // so select its HOST edge — that opens the EdgeInspector's AssumptionWell —
+      // and center on the assumption's canvas card when placement gave it one.
+      const record = doc.assumptions?.[anchor.assumptionId];
+      if (record) selectEdge(record.edgeId);
+      const inst = getCanvasInstance();
+      const node = inst?.getNode(anchor.assumptionId);
+      if (node && inst) {
+        window.requestAnimationFrame(() => {
+          inst.setCenter(node.position.x + 140, node.position.y + 40, {
+            zoom: inst.getZoom(),
+            duration: 250,
+          });
+        });
+      }
     } else if (anchor.kind === 'point') {
       const inst = getCanvasInstance();
       if (inst) {
