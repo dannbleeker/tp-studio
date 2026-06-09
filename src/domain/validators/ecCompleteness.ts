@@ -1,3 +1,4 @@
+import { assumptionsForEdge } from '../graph';
 import type { Entity, TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
 
@@ -145,7 +146,7 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
       return (matches || reverseMatches) && (!arrow.mutex || e.isMutualExclusion);
     });
     if (!edge) continue;
-    const count = edge.assumptionIds?.length ?? 0;
+    const count = assumptionsForEdge(doc, edge.id).length;
     if (count === 0) {
       out.push(
         makeWarning(

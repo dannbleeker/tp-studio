@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { assumptionsForEdge } from '@/domain/graph';
 import type { AssumptionKind, AssumptionStatus } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -70,16 +71,15 @@ const nextKind = (k: AssumptionKind | undefined): AssumptionKind | undefined => 
   return KIND_CYCLE[(idx + 1) % KIND_CYCLE.length];
 };
 
-export function AssumptionWell({
-  edgeId,
-  assumptionIds,
-}: {
-  edgeId: string;
-  assumptionIds: readonly string[];
-}) {
+export function AssumptionWell({ edgeId }: { edgeId: string }) {
   const addAssumptionToEdge = useDocumentStore((s) => s.addAssumptionToEdge);
   const locked = useDocumentStore((s) => s.browseLocked);
   const diagramType = useDocumentStore((s) => currentDoc(s).diagramType);
+  // Record-canonical: the edge's assumptions are the `doc.assumptions` records
+  // keyed to it. `assumptionsForEdge` returns a per-`doc.assumptions` cached,
+  // referentially-stable array, so this selector doesn't re-render on unrelated
+  // store changes.
+  const records = useDocumentStore((s) => assumptionsForEdge(currentDoc(s), edgeId));
   const lastAddedRef = useRef<string | null>(null);
 
   const handleAdd = () => {
@@ -92,15 +92,15 @@ export function AssumptionWell({
   };
 
   return (
-    <Field label={`Assumptions (${assumptionIds.length})`} as="group">
-      {assumptionIds.length > 0 && (
+    <Field label={`Assumptions (${records.length})`} as="group">
+      {records.length > 0 && (
         <ul className="flex flex-col gap-1.5">
-          {assumptionIds.map((id) => (
+          {records.map((rec) => (
             <AssumptionRow
-              key={id}
+              key={rec.id}
               edgeId={edgeId}
-              assumptionId={id}
-              autoFocus={id === lastAddedRef.current}
+              assumptionId={rec.id}
+              autoFocus={rec.id === lastAddedRef.current}
             />
           ))}
         </ul>

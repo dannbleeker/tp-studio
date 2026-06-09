@@ -23,11 +23,10 @@ export const buildExampleFreeform = (): TPDocument => {
 
   const entities = [claim, evidence1, evidence2, note];
   const edges: Edge[] = [buildEdge(evidence1.id, claim.id), buildEdge(evidence2.id, claim.id)];
-  // Record-canonical: the caveat is an edge ANNOTATION (a doc.assumptions record),
-  // not an entity — it annotates the evidence-2 → claim edge.
+  // Record-canonical: the caveat is an edge ANNOTATION (a doc.assumptions record
+  // keyed to the edge via `edgeId`), not an entity. It annotates evidence-2 → claim.
   const evidence2Edge = edges[1]!;
   const caveatId = newEntityId();
-  edges[1] = { ...evidence2Edge, assumptionIds: [caveatId] };
   const assumptions: Record<string, Assumption> = {
     [caveatId]: {
       id: caveatId,

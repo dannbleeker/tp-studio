@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import type { Assumption, EdgeId } from '@/domain/types';
 import { ecCompletenessRule } from '@/domain/validators/ecCompleteness';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
@@ -44,32 +45,18 @@ const fullECDoc = (overrides?: {
   const d = makeEntity({ title: 'Leave at 5', ecSlot: 'd', type: 'want' });
   const dPrime = makeEntity({ title: 'Stay late', ecSlot: 'dPrime', type: 'want' });
 
-  // Build the 5 canonical edges. The `assumptionIds` arrays mark
-  // which arrows have ≥1 assumption (rule 4).
-  const eBA = makeEdge(b.id, a.id, {
-    kind: 'necessity',
-    assumptionIds: overrides?.withAssumptionOn?.includes('B → A') ? (['x'] as never) : [],
-  });
-  const eCA = makeEdge(c.id, a.id, {
-    kind: 'necessity',
-    assumptionIds: overrides?.withAssumptionOn?.includes('C → A') ? (['x'] as never) : [],
-  });
+  // Build the 5 canonical edges. Record-canonical (v10): assumptions
+  // attach via `doc.assumptions[*].edgeId`, so an arrow has ≥1
+  // assumption (rule 4) when a record below names its edge id.
+  const eBA = makeEdge(b.id, a.id, { kind: 'necessity' });
+  const eCA = makeEdge(c.id, a.id, { kind: 'necessity' });
   // Rule 3 — swap the want targets to surface the "supports unexpected
   // target" warning.
   const dTarget = overrides?.swapWantTargets ? c.id : b.id;
   const dPrimeTarget = overrides?.swapWantTargets ? b.id : c.id;
-  const eDB = makeEdge(d.id, dTarget, {
-    kind: 'necessity',
-    assumptionIds: overrides?.withAssumptionOn?.includes('D → B') ? (['x'] as never) : [],
-  });
-  const eDpC = makeEdge(dPrime.id, dPrimeTarget, {
-    kind: 'necessity',
-    assumptionIds: overrides?.withAssumptionOn?.includes('D′ → C') ? (['x'] as never) : [],
-  });
-  const eDDp = makeEdge(d.id, dPrime.id, {
-    isMutualExclusion: true,
-    assumptionIds: overrides?.withAssumptionOn?.includes('D ↔ D′') ? (['x'] as never) : [],
-  });
+  const eDB = makeEdge(d.id, dTarget, { kind: 'necessity' });
+  const eDpC = makeEdge(dPrime.id, dPrimeTarget, { kind: 'necessity' });
+  const eDDp = makeEdge(d.id, dPrime.id, { isMutualExclusion: true });
 
   const entities = overrides?.bIsSameAsC ? [a, b, d, dPrime] : [a, b, c, d, dPrime];
   if (overrides?.withInjection) {
@@ -79,7 +66,34 @@ const fullECDoc = (overrides?: {
   if (overrides?.extraEdge) {
     edges.push(makeEdge(overrides.extraEdge.from as never, overrides.extraEdge.to as never));
   }
-  return { doc: makeECDoc(entities, edges), a, b, c, d, dPrime };
+
+  // One assumption record per arrow flagged in `withAssumptionOn`,
+  // keyed to that arrow's edge id (the validator reads them via
+  // `assumptionsForEdge`).
+  const arrowEdges: Record<string, EdgeId> = {
+    'B → A': eBA.id,
+    'C → A': eCA.id,
+    'D → B': eDB.id,
+    'D′ → C': eDpC.id,
+    'D ↔ D′': eDDp.id,
+  };
+  const assumptions: Record<string, Assumption> = {};
+  for (const label of overrides?.withAssumptionOn ?? []) {
+    const edgeId = arrowEdges[label];
+    if (!edgeId) continue;
+    const id = `asm-${label}`;
+    assumptions[id] = {
+      id,
+      edgeId,
+      text: `assumption on ${label}`,
+      status: 'unexamined',
+      createdAt: 1,
+      updatedAt: 1,
+    };
+  }
+
+  const doc = { ...makeECDoc(entities, edges), assumptions };
+  return { doc, a, b, c, d, dPrime };
 };
 
 describe('ecCompletenessRule — Rule 1 (A non-empty)', () => {

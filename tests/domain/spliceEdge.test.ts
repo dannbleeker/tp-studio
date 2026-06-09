@@ -42,7 +42,7 @@ describe('store.spliceEdge', () => {
     if (!edge) return;
     // Stamp label and back-edge onto the edge.
     useDocumentStore.getState().updateEdge(edge.id, { label: 'within 1 week', isBackEdge: true });
-    // Attach an assumption so we have an assumptionIds list to migrate.
+    // Attach an assumption so we have a record to re-home onto the downstream half.
     const assn = useDocumentStore.getState().addAssumptionToEdge(edge.id);
     expect(assn).not.toBeNull();
 
@@ -55,11 +55,12 @@ describe('store.spliceEdge', () => {
     // Downstream half carries the semantic baggage:
     expect(downstream?.label).toBe('within 1 week');
     expect(downstream?.isBackEdge).toBe(true);
-    expect(downstream?.assumptionIds).toEqual([assn?.id]);
+    // Record-canonical (v10): the assumption record re-homes onto the
+    // downstream half via its `edgeId` (no `edge.assumptionIds` index).
+    expect(doc.assumptions?.[assn!.id]?.edgeId).toBe(downstream?.id);
     // Upstream half is clean:
     expect(upstream?.label).toBeUndefined();
     expect(upstream?.isBackEdge).toBeUndefined();
-    expect(upstream?.assumptionIds).toBeUndefined();
   });
 
   it('drops AND grouping on the original edge (user can re-AND if desired)', () => {

@@ -355,7 +355,7 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       if (!existing) return null;
       const source = doc.entities[sourceEntityId];
       // FL-ET7: notes can't be the source of a causal edge. (Assumptions can't
-      // either, but they're not entities -- they attach via Edge.assumptionIds.)
+      // either, but they're not entities -- they attach via their record's edgeId.)
       if (!source || source.type === 'note') return null;
       // Self / duplicate guards.
       if (sourceEntityId === existing.sourceId || sourceEntityId === existing.targetId) return null;
@@ -412,16 +412,14 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
         sourceId: edge.sourceId,
         targetId: newEntity.id,
       });
-      // Downstream half: new entity → target. Inherits the edge's label,
-      // assumption list, and back-edge flag (the half closer to the effect
-      // carries the semantic baggage of the original step).
+      // Downstream half: new entity → target. Inherits the edge's label + back-edge
+      // flag (the half closer to the effect carries the semantic baggage of the
+      // original step). Its assumptions follow via `rehomeAssumptions` below
+      // (record-canonical — attachment is `record.edgeId`, not an edge field).
       const downstreamBase = createEdge({ sourceId: newEntity.id, targetId: edge.targetId });
       const downstreamEdge: Edge = {
         ...downstreamBase,
         ...(edge.label ? { label: edge.label } : {}),
-        ...(edge.assumptionIds && edge.assumptionIds.length > 0
-          ? { assumptionIds: edge.assumptionIds }
-          : {}),
         ...(edge.isBackEdge === true ? { isBackEdge: true as const } : {}),
       };
 
@@ -434,7 +432,7 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
           [downstreamEdge.id]: downstreamEdge,
         };
         // The downstream half is the semantic continuation (it inherited the
-        // edge's label + assumptionIds), so the spliced edge's comments +
+        // edge's label), so the spliced edge's comments +
         // assumption records follow it onto `downstreamEdge` rather than orphan
         // on the now-deleted id. (prune is a no-op here — no other edge was
         // removed — but keeps the shape identical to spliceEntityIntoEdge.)
@@ -497,9 +495,6 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
       const downstream: Edge = {
         ...downstreamBase,
         ...(edge.label ? { label: edge.label } : {}),
-        ...(edge.assumptionIds && edge.assumptionIds.length > 0
-          ? { assumptionIds: edge.assumptionIds }
-          : {}),
         ...(edge.isBackEdge === true ? { isBackEdge: true as const } : {}),
       };
       applyDocChange((prev) => {
@@ -509,8 +504,8 @@ export const createEdgesSlice: StateCreator<RootStore, [], [], EdgesSlice> = (se
           [upstream.id]: upstream,
           [downstream.id]: downstream,
         };
-        // Re-home the spliced edge's comments + assumptions onto the downstream
-        // half (which inherited its assumptionIds), then prune anything anchored
+        // Re-home the spliced edge's comments + assumption records onto the
+        // downstream half, then prune anything anchored
         // to the OTHER edges this splice dropped (the entity's old wiring).
         const comments = pruneComments(
           reanchorEdgeComments(prev.comments, edgeId, downstream.id),

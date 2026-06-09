@@ -97,8 +97,9 @@ describe('useSelectionShortcuts — A (add-assumption-to-edge)', () => {
     useDocumentStore.getState().selectEdges([edge.id]);
     render(<Host />);
     fireEvent.keyDown(window, { key: 'a' });
-    const after = s().doc.edges[edge.id];
-    expect(after?.assumptionIds?.length ?? 0).toBeGreaterThan(0);
+    // Record-canonical (v10): a fresh assumption record keyed to the edge.
+    const records = Object.values(s().doc.assumptions ?? {}).filter((a) => a.edgeId === edge.id);
+    expect(records.length).toBeGreaterThan(0);
   });
 
   it('A on a non-edge selection is a no-op', () => {
@@ -256,7 +257,9 @@ describe('useSelectionShortcuts — defers to a focused control, not just text i
     useDocumentStore.getState().selectEdges([edge.id]);
     const button = renderWithButton();
     fireEvent.keyDown(button, { key: 'a' });
-    expect(s().doc.edges[edge.id]?.assumptionIds?.length ?? 0).toBe(0);
+    // Record-canonical (v10): no assumption record was minted for the edge.
+    const records = Object.values(s().doc.assumptions ?? {}).filter((a) => a.edgeId === edge.id);
+    expect(records.length).toBe(0);
   });
 
   it('ArrowUp on a focused button does NOT move the selection', () => {

@@ -118,7 +118,10 @@ describe('validateEdge', () => {
     expect(out.kind).toBe('sufficiency');
     expect(out.weight).toBe('negative');
     expect(out.isBackEdge).toBe(true);
-    expect(out.assumptionIds).toEqual(['a1']);
+    // Record-canonical (v10): a legacy `edge.assumptionIds` on an imported
+    // pre-removal doc is ignored — the field is not carried onto the edge
+    // (assumptions live in `doc.assumptions`, keyed by `edgeId`).
+    expect('assumptionIds' in out).toBe(false);
   });
 
   it('collapses conflicting junctor groups (AND > OR > XOR)', () => {
@@ -133,7 +136,8 @@ describe('validateEdge', () => {
     expect(() => validateEdge({ ...edge, targetId: 5 }, 'x')).toThrow(/targetId/);
     expect(() => validateEdge({ ...edge, kind: 'nope' }, 'x')).toThrow(/kind/);
     expect(() => validateEdge({ ...edge, weight: 'huge' }, 'x')).toThrow(/weight/);
-    expect(() => validateEdge({ ...edge, assumptionIds: 'a1' }, 'x')).toThrow(/assumptionIds/);
+    // Record-canonical (v10): `edge.assumptionIds` is no longer a validated
+    // field — a legacy value is ignored on import rather than rejected.
     expect(() => validateEdge({ ...edge, isBackEdge: 'yes' }, 'x')).toThrow(/isBackEdge/);
     expect(() => validateEdge({ ...edge, isMutualExclusion: 1 }, 'x')).toThrow(/isMutualExclusion/);
   });

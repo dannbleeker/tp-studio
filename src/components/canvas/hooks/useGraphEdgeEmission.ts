@@ -140,12 +140,7 @@ export const useGraphEdgeEmission = (
       // Assumption count only applies to real (non-aggregated) edges —
       // a synthetic `agg:` edge has no single underlying edge id, so it
       // never carries an assumption badge (matches prior behaviour).
-      const assumptionCount = isAggregated
-        ? 0
-        : Math.max(
-            b.sample.assumptionIds?.length ?? 0,
-            assumptionCountByEdge.get(b.sample.id) ?? 0
-          );
+      const assumptionCount = isAggregated ? 0 : (assumptionCountByEdge.get(b.sample.id) ?? 0);
       // Open-comment count — real (non-aggregated) edges only, same
       // rationale as assumptions: a synthetic `agg:` edge has no single
       // underlying edge id to badge.

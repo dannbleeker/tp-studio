@@ -590,11 +590,11 @@ describe('exportReasoningOutline — EC-specific branches', () => {
       title: 'Because of budget',
       annotationNumber: 3,
     });
-    const e = makeEdge(w1.id, need.id, { assumptionIds: [asmpt.id] });
+    const e = makeEdge(w1.id, need.id);
     const d = makeDoc([w1, need, asmpt], [e], 'ec');
     // Record-canonical: the exporter reads the assumption text from the
-    // first-class `doc.assumptions` record, keyed by the id referenced in
-    // the edge's `assumptionIds`.
+    // first-class `doc.assumptions` record, keyed to the edge via its
+    // `edgeId` (there is no longer an `edge.assumptionIds` index).
     d.assumptions = {
       [asmpt.id]: {
         id: asmpt.id,
@@ -616,7 +616,7 @@ describe('exportReasoningOutline — EC-specific branches', () => {
     const w1 = makeEntity({ type: 'want', title: 'Want 1', annotationNumber: 1 });
     const need = makeEntity({ type: 'need', title: 'Need 1', annotationNumber: 2 });
     const asmpt = makeEntity({ type: 'note', title: '', annotationNumber: 3 });
-    const e = makeEdge(w1.id, need.id, { assumptionIds: [asmpt.id] });
+    const e = makeEdge(w1.id, need.id);
     const d = makeDoc([w1, need, asmpt], [e], 'ec');
     d.assumptions = {
       [asmpt.id]: {
@@ -632,17 +632,26 @@ describe('exportReasoningOutline — EC-specific branches', () => {
     expect(md).toContain('Untitled assumption');
   });
 
-  it('EC outline: edge with assumptionIds but missing src/tgt entities is skipped gracefully', () => {
+  it('EC outline: edge with an assumption but missing src/tgt entities is skipped gracefully', () => {
     // An edge references entity IDs that don't exist in the doc
     resetIds();
     const orphanEdge = makeEdge(
       'ghost-src' as ReturnType<typeof makeEntity>['id'],
-      'ghost-tgt' as ReturnType<typeof makeEntity>['id'],
-      {
-        assumptionIds: ['ghost-assumption' as ReturnType<typeof makeEntity>['id']],
-      }
+      'ghost-tgt' as ReturnType<typeof makeEntity>['id']
     );
     const d = makeDoc([], [orphanEdge], 'ec');
+    // Record-canonical: an assumption keyed to the orphan edge (whose
+    // endpoints don't resolve). The src/tgt guard should skip it.
+    d.assumptions = {
+      'ghost-assumption': {
+        id: 'ghost-assumption',
+        edgeId: orphanEdge.id,
+        text: 'orphan',
+        status: 'unexamined',
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    };
     // Should not throw — the src/tgt guard skips it
     expect(() => exportReasoningOutline(d)).not.toThrow();
     const md = exportReasoningOutline(d);

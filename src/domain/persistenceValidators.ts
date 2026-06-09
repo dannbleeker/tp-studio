@@ -231,9 +231,9 @@ export const validateEdge = (v: unknown, label: string): Edge => {
   ) {
     throw invalid(label, `has invalid weight "${String(v.weight)}"`);
   }
-  if (v.assumptionIds !== undefined && !isStringArray(v.assumptionIds)) {
-    throw invalid(label, 'has non-string-array assumptionIds');
-  }
+  // Record-canonical: `edge.assumptionIds` was removed — an edge's assumptions
+  // are `doc.assumptions` records keyed by `edgeId`. A legacy field on an
+  // imported pre-removal doc is simply ignored (not carried forward).
   if (v.label !== undefined && typeof v.label !== 'string') {
     throw invalid(label, 'has non-string label');
   }
@@ -274,7 +274,6 @@ export const validateEdge = (v: unknown, label: string): Edge => {
     ...(v.weight === 'positive' || v.weight === 'negative' || v.weight === 'zero'
       ? { weight: v.weight }
       : {}),
-    ...(isStringArray(v.assumptionIds) ? { assumptionIds: v.assumptionIds as EntityId[] } : {}),
     ...(typeof v.label === 'string' ? { label: v.label } : {}),
     ...(typeof v.description === 'string' ? { description: v.description } : {}),
     ...(v.isBackEdge === true ? { isBackEdge: true as const } : {}),

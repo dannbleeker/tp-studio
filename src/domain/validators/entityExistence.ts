@@ -12,9 +12,9 @@ import { makeWarning, type UntieredWarning } from './shared';
  *     `DISCONNECTED_GRAPH_FLOOR` total entities. Below the floor we assume
  *     the user is mid-sketch and noise would dominate; above it, an
  *     entity with no edges is either forgotten or an orphan from a
- *     deletion. Non-causal entities (assumptions attach to edges via
- *     `edge.assumptionIds`; notes are free-form annotations that never
- *     belong to the causal graph) are exempt.
+ *     deletion. Non-causal `note` entities (free-form annotations that never
+ *     belong to the causal graph) are exempt. (Assumptions aren't entities at
+ *     all now — they're edge annotations in `doc.assumptions`.)
  *
  * Entities flagged `unspecified: true` are exempt from the empty-title
  * check — they exist *deliberately* as placeholders that the user hasn't

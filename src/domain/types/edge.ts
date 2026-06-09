@@ -58,17 +58,17 @@ export type Edge = {
   orGroupId?: string;
   /** Bundle 8 / FL-ED1 — see {@link EdgeWeight}. Metadata only. */
   weight?: EdgeWeight;
-  assumptionIds?: EntityId[];
   /** Optional short text label rendered mid-edge. ≤30 chars renders inline,
-   *  longer wraps as a tooltip. Distinct from assumption entities. */
+   *  longer wraps as a tooltip. Distinct from the edge's assumptions
+   *  (`doc.assumptions` records keyed to it). */
   label?: string;
   /** Long-form markdown annotation explaining the edge — distinct from the
-   *  short `label` (which sits inline on the canvas) and from
-   *  `assumptionIds` (which links to standalone Assumption entities).
-   *  Surfaces in EdgeInspector as a full MarkdownField; the canvas shows a
-   *  small "note" indicator when set. Use for "why this edge holds" prose
-   *  that doesn't deserve a separate Assumption entity but is too long for
-   *  the label. Round-trips through JSON. */
+   *  short `label` (which sits inline on the canvas) and from the edge's
+   *  assumptions (first-class `doc.assumptions` records). Surfaces in
+   *  EdgeInspector as a full MarkdownField; the canvas shows a small "note"
+   *  indicator when set. Use for "why this edge holds" prose that doesn't
+   *  deserve a separate assumption but is too long for the label. Round-trips
+   *  through JSON. */
   description?: string;
   /** Book-derived (TOC-reading set): explicit acknowledgement that this edge
    *  closes a causal loop intentionally. CRTs often contain vicious circles

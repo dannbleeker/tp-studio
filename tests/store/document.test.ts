@@ -200,10 +200,11 @@ describe('assumptions on edges', () => {
     expect(assumption).not.toBeNull();
     if (!assumption) return;
     const doc = useDocumentStore.getState().doc;
-    // Record-canonical: the assumption lives in doc.assumptions, NOT doc.entities.
+    // Record-canonical: the assumption lives in doc.assumptions, NOT doc.entities,
+    // and attaches to its host edge SOLELY via the record's `edgeId`.
     expect(doc.entities[assumption.id]).toBeUndefined();
     expect(doc.assumptions?.[assumption.id]?.status).toBe('unexamined');
-    expect(doc.edges[e.id]!.assumptionIds).toEqual([assumption.id]);
+    expect(doc.assumptions?.[assumption.id]?.edgeId).toBe(e.id);
   });
 
   it('addAssumptionToEdge returns null for an unknown edge', () => {
@@ -211,20 +212,7 @@ describe('assumptions on edges', () => {
     expect(result).toBeNull();
   });
 
-  it('attachAssumption is idempotent', () => {
-    const a = addNode('Cause');
-    const b = addNode('Effect');
-    const e = connect(a.id, b.id);
-    if (!e) throw new Error('edge not created');
-    const assumption = useDocumentStore.getState().addAssumptionToEdge(e.id);
-    if (!assumption) throw new Error('assumption not created');
-    useDocumentStore.getState().attachAssumption(e.id, assumption.id);
-    useDocumentStore.getState().attachAssumption(e.id, assumption.id);
-    const ids = useDocumentStore.getState().doc.edges[e.id]!.assumptionIds;
-    expect(ids).toEqual([assumption.id]);
-  });
-
-  it('detachAssumption removes the assumption outright from its only edge', () => {
+  it('detachAssumption removes the assumption outright from its edge', () => {
     const a = addNode('Cause');
     const b = addNode('Effect');
     const e = connect(a.id, b.id);
@@ -233,30 +221,11 @@ describe('assumptions on edges', () => {
     if (!assumption) throw new Error('assumption not created');
     useDocumentStore.getState().detachAssumption(e.id, assumption.id);
     const doc = useDocumentStore.getState().doc;
-    expect(doc.edges[e.id]!.assumptionIds).toBeUndefined();
-    // Detaching from its only edge removes the assumption entirely — no floating
+    // Record-canonical (v10): an assumption belongs to exactly one edge (its
+    // `record.edgeId`), so "detach" removes the record outright — no floating
     // entity and no orphaned first-class record (both would leak into export).
     expect(doc.entities[assumption.id]).toBeUndefined();
     expect(doc.assumptions?.[assumption.id]).toBeUndefined();
-  });
-
-  it('detachAssumption keeps an assumption still attached to another edge', () => {
-    const a = addNode('Cause');
-    const b = addNode('Effect');
-    const c = addNode('Other Cause');
-    const d = addNode('Other Effect');
-    const e1 = connect(a.id, b.id);
-    const e2 = connect(c.id, d.id);
-    if (!e1 || !e2) throw new Error('edges not created');
-    const assumption = useDocumentStore.getState().addAssumptionToEdge(e1.id);
-    if (!assumption) throw new Error('assumption not created');
-    useDocumentStore.getState().attachAssumption(e2.id, assumption.id);
-    // Detach from e1 — still attached to e2, so the record survives.
-    useDocumentStore.getState().detachAssumption(e1.id, assumption.id);
-    const doc = useDocumentStore.getState().doc;
-    expect(doc.edges[e1.id]!.assumptionIds).toBeUndefined();
-    expect(doc.edges[e2.id]!.assumptionIds).toContain(assumption.id);
-    expect(doc.assumptions?.[assumption.id]).toBeDefined();
   });
 });
 

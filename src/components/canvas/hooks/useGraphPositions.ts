@@ -238,16 +238,19 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   }, [fp, layoutDensity]);
 
   // Signature of the assumption→edge anchor set — changes only when an
-  // assumption is attached / detached / re-anchored (which don't advance the
-  // structural layout fingerprint), so the placement memo re-runs on those.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via `doc.edges` (assumption attachments live on edges) — narrowed deliberately, like the `withAssumptions` / routing / emission memos, so a title-only edit (which flips `doc` but not `doc.edges`) doesn't re-run this per keystroke.
+  // assumption is added / removed / re-homed (which don't advance the structural
+  // layout fingerprint), so the placement memo re-runs on those. Record-canonical:
+  // attachment lives on `doc.assumptions` (each record's `edgeId`), so the memo
+  // narrows to that slice — a title-only edit (which flips `doc` but not
+  // `doc.assumptions`) doesn't re-run this per keystroke.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deliberately narrowed to `doc.assumptions`.
   const assumptionAnchorSig = useMemo(() => {
+    const map = doc.assumptions;
+    if (!map) return '';
     const parts: string[] = [];
-    for (const e of edgesArray(doc)) {
-      if (e.assumptionIds?.length) parts.push(`${e.id}:${e.assumptionIds.join(',')}`);
-    }
+    for (const a of Object.values(map)) parts.push(`${a.edgeId}:${a.id}`);
     return parts.sort().join('|');
-  }, [doc.edges]);
+  }, [doc.assumptions]);
 
   // Z-3 — augment the auto-layout (dagre/radial) with anchored-assumption cards
   // placed beside their edges. Manual diagrams (EC) already position assumptions

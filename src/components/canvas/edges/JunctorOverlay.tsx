@@ -93,7 +93,7 @@ type JunctorGroup = {
 
 // Session 135 / Perf #7 — equality fn skips re-renders when the
 // junctor group set is unchanged. Unrelated edge mutations (label,
-// weight, attestation, assumptionIds) no longer churn this overlay.
+// weight, attestation) no longer churn this overlay.
 // `sourceKey` is included so adding/removing a cause to an existing group (same
 // id/kind/target) still re-derives the geometry.
 const junctorGroupsEqual = arrayShallowEqualByKeys<JunctorGroup>([

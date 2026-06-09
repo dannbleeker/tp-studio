@@ -385,8 +385,11 @@ describe('schema migrations round-trip', () => {
     expect(doc.assumptions?.asm?.text).toBe('because the budget holds');
     expect(doc.assumptions?.asm?.status).toBe('valid');
     expect(doc.assumptions?.asm?.annotationNumber).toBe(3);
-    // The per-edge membership index is preserved (removed only in a later phase).
-    expect(doc.edges.e1?.assumptionIds).toEqual(['asm']);
+    // Record-canonical (v10): the assumption attaches to its host edge SOLELY
+    // via the record's `edgeId`. The legacy per-edge `assumptionIds` index is
+    // dropped on import — it's not carried onto the edge.
+    expect(doc.assumptions?.asm?.edgeId).toBe('e1');
+    expect('assumptionIds' in (doc.edges.e1 ?? {})).toBe(false);
     // The comment is re-anchored from {kind:'entity'} to {kind:'assumption'}.
     const c = doc.comments?.c1;
     expect(c?.anchor.kind).toBe('assumption');
@@ -488,5 +491,52 @@ describe('schema migrations round-trip', () => {
     expect(doc.entities.loose?.position).toEqual({ x: 120, y: 80 });
     // It never became a first-class assumption record (no host edge).
     expect(doc.assumptions?.loose).toBeUndefined();
+  });
+
+  it('handles an assumption entity keyed by an Object.prototype name without minting a bogus record', () => {
+    // Regression: a hand-edited / adversarial id like "toString" made v9→v10 read
+    // the INHERITED `Object.prototype.toString` off the (empty) assumptions map as
+    // a truthy "existing record" and spread it into a record with no id — which
+    // then failed strict validation. The migration must use own-property checks,
+    // so this orphan assumption-entity becomes a plain note instead.
+    const T = 1700000000000;
+    const v9 = {
+      id: 'doc-proto',
+      title: 'v9 prototype-key assumption',
+      diagramType: 'crt',
+      schemaVersion: 9,
+      createdAt: T,
+      updatedAt: T,
+      nextAnnotationNumber: 3,
+      groups: {},
+      entities: {
+        toString: {
+          id: 'toString',
+          type: 'assumption',
+          title: 'sneaky',
+          annotationNumber: 1,
+          createdAt: T,
+          updatedAt: T,
+        },
+        real: {
+          id: 'real',
+          type: 'ude',
+          title: 'Real UDE',
+          annotationNumber: 2,
+          createdAt: T,
+          updatedAt: T,
+        },
+      },
+      edges: {},
+      assumptions: {},
+    };
+    const doc = importFromJSON(JSON.stringify(v9));
+    expect(doc.schemaVersion).toBe(10);
+    // Orphan (no host edge) → re-typed to a note, NOT a malformed record.
+    // Bracket access — `doc.entities.toString` would resolve to the inherited
+    // Object.prototype method at the type level.
+    expect(doc.entities['toString']?.type).toBe('note');
+    expect(doc.assumptions?.['toString']).toBeUndefined();
+    expect(Object.keys(doc.assumptions ?? {})).toHaveLength(0);
   });
 });

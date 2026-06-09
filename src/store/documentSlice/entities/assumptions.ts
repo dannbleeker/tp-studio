@@ -1,25 +1,21 @@
 /**
- * Assumption-on-edge actions. Record-canonical (v10): an assumption is a pure
+ * Assumption-on-edge actions. Record-canonical: an assumption is a pure
  * `Assumption` record in `doc.assumptions` (text, status, kind, injection links,
- * resolved flag), keyed by id and attached to its host edge via `record.edgeId`.
- * It is NOT a `doc.entities` entity — the canvas card is synthesized from the
- * record (see `useGraphNodeEmission`), and `edge.assumptionIds[]` survives only
- * as a legacy per-edge membership index until a later phase removes it.
- *
- * `createEntity` is still called in `addAssumptionToEdge`, but ONLY to mint a
- * fresh collision-free id; the entity object itself is discarded.
+ * resolved flag), keyed by id and attached to its host edge SOLELY via
+ * `record.edgeId` — there is no `edge.assumptionIds` index any more, and an
+ * assumption is not a `doc.entities` entity. Its canvas card renders from the
+ * record (`TPAssumptionNode`); per-edge lookups go through `assumptionsForEdge`.
  */
 
-import { pruneAssumptions, pruneComments } from '@/domain/graph';
+import { pruneComments } from '@/domain/graph';
 import { newEntityId } from '@/domain/ids';
-import type { Assumption, AssumptionKind, AssumptionStatus, Edge, EntityId } from '@/domain/types';
+import type { Assumption, AssumptionKind, AssumptionStatus, EntityId } from '@/domain/types';
 import { currentDoc } from '../../selectors';
 import { prunedSpread, touch } from '../docMutate';
 import type { EntityFactoryDeps } from './shared';
 
 export type AssumptionActions = {
   addAssumptionToEdge: (edgeId: string, title?: string) => Assumption | null;
-  attachAssumption: (edgeId: string, assumptionId: string) => void;
   detachAssumption: (edgeId: string, assumptionId: string) => void;
   setAssumptionStatus: (assumptionId: string, status: AssumptionStatus) => void;
   /** S&T sub-typing (Session 135). Pass `undefined` to clear the kind
@@ -55,14 +51,10 @@ export function createAssumptionActions({
         updatedAt: now,
       };
       applyDocChange((prev) => {
-        const e = prev.edges[edgeId];
-        if (!e) return prev;
-        const current = e.assumptionIds ?? [];
-        const nextEdge: Edge = { ...e, assumptionIds: [...current, id] };
+        if (!prev.edges[edgeId]) return prev;
         const nextAssumptions = { ...(prev.assumptions ?? {}), [assumption.id]: assumption };
         return touch({
           ...prev,
-          edges: { ...prev.edges, [edgeId]: nextEdge },
           assumptions: nextAssumptions,
           nextAnnotationNumber: annotationNumber + 1,
         });
@@ -70,52 +62,18 @@ export function createAssumptionActions({
       return assumption;
     },
 
-    attachAssumption: (edgeId, assumptionId) => {
-      applyDocChange((prev) => {
-        const edge = prev.edges[edgeId];
-        // Record-canonical (v10): resolve the assumption via its record, not a
-        // (no-longer-existent) `doc.entities` entry.
-        const assumption = prev.assumptions?.[assumptionId];
-        if (!edge || !assumption) return prev;
-        const branded = assumptionId as EntityId;
-        const current = edge.assumptionIds ?? [];
-        if (current.includes(branded)) return prev;
-        const nextEdge: Edge = { ...edge, assumptionIds: [...current, branded] };
-        return touch({ ...prev, edges: { ...prev.edges, [edgeId]: nextEdge } });
-      });
-    },
-
     detachAssumption: (edgeId, assumptionId) => {
       applyDocChange((prev) => {
-        const edge = prev.edges[edgeId];
-        const branded = assumptionId as EntityId;
-        if (!edge?.assumptionIds?.includes(branded)) return prev;
-        // Remove from THIS edge's list. Session 117 — when the list goes empty,
-        // OMIT assumptionIds rather than setting it `undefined` (exactOptional
-        // rejects explicit undefined); destructured-rest is the emit-or-omit.
-        const filtered = edge.assumptionIds.filter((a) => a !== branded);
-        const { assumptionIds: _drop, ...edgeRest } = edge;
-        const nextEdge: Edge = filtered.length ? { ...edge, assumptionIds: filtered } : edgeRest;
-        const nextEdges = { ...prev.edges, [edgeId]: nextEdge };
-        // An assumption lives on exactly one edge — the first-class record carries
-        // a single edgeId and there is no re-attach UI. If it's still attached to
-        // another edge (only reachable via `attachAssumption`), keep it; otherwise
-        // remove it OUTRIGHT (the record + any comment anchored to it). The host
-        // edge usually SURVIVES the detach (we only stripped it from the edge's
-        // index), so host-edge-keyed `pruneAssumptions` can't catch this orphan —
-        // drop the record by id explicitly, then prune to scrub the rest. Leaving
-        // it would orphan a record that leaks into JSON export.
-        const stillAttached = Object.values(nextEdges).some((e) =>
-          e.assumptionIds?.includes(branded)
-        );
-        if (stillAttached) return touch({ ...prev, edges: nextEdges });
+        const record = prev.assumptions?.[assumptionId];
+        // An assumption lives on exactly one edge (its `record.edgeId`). "Detach"
+        // is removal: drop the record outright + any comment anchored to it. Guard
+        // on the host edge so a stale caller can't remove a different edge's record.
+        if (!record || record.edgeId !== edgeId) return prev;
         const { [assumptionId]: _record, ...restAssumptions } = prev.assumptions ?? {};
-        const assumptions = pruneAssumptions(restAssumptions, nextEdges, prev.entities);
-        const comments = pruneComments(prev.comments, nextEdges, prev.entities, restAssumptions);
+        const comments = pruneComments(prev.comments, prev.edges, prev.entities, restAssumptions);
         return touch({
           ...prev,
-          edges: nextEdges,
-          ...prunedSpread(prev, { assumptions, comments }),
+          ...prunedSpread(prev, { assumptions: restAssumptions, comments }),
         });
       });
     },

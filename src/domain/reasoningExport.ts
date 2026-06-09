@@ -2,7 +2,13 @@ import type { CausalityLabel } from '@/store/uiSlice/types';
 import { findCoreDrivers } from './coreDriver';
 import { renderEdgeSentence, resolveEdgeConnector, topologicalEdgeOrder } from './edgeReading';
 import { DIAGRAM_TYPE_LABEL, ENTITY_TYPE_META } from './entityTypeMeta';
-import { entitiesOfType, incomingEdges, outgoingEdges, structuralEntities } from './graph';
+import {
+  assumptionsForEdge,
+  entitiesOfType,
+  incomingEdges,
+  outgoingEdges,
+  structuralEntities,
+} from './graph';
 import { METHOD_BY_DIAGRAM } from './methodChecklist';
 import type { Edge, Entity, TPDocument } from './types';
 
@@ -338,7 +344,7 @@ const renderEcOutline = (doc: TPDocument): string[] => {
   }
   // Edge assumptions
   const edgesWithAssumptions = Object.values(doc.edges).filter(
-    (e) => (e.assumptionIds?.length ?? 0) > 0
+    (e) => assumptionsForEdge(doc, e.id).length > 0
   );
   if (edgesWithAssumptions.length > 0) {
     lines.push('', '### Assumptions on edges');
@@ -347,9 +353,8 @@ const renderEcOutline = (doc: TPDocument): string[] => {
       const tgt = doc.entities[e.targetId];
       if (!src || !tgt) continue;
       lines.push(`- **${src.title.trim() || 'Untitled'} → ${tgt.title.trim() || 'Untitled'}**`);
-      for (const aid of e.assumptionIds ?? []) {
-        const a = doc.assumptions?.[aid];
-        if (a) lines.push(`  - ${a.text.trim() || 'Untitled assumption'}`);
+      for (const a of assumptionsForEdge(doc, e.id)) {
+        lines.push(`  - ${a.text.trim() || 'Untitled assumption'}`);
       }
     }
   }

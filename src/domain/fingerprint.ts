@@ -94,6 +94,9 @@ const computeLayoutFingerprint = (doc: TPDocument): string => {
  *     `layoutFingerprint` so toggling a facet attribute counts)
  *   - per-edge: id, source, target, andGroupId, weight, isBackEdge,
  *     delay (the loop-polarity + reinforcing-no-delay rules read these)
+ *   - the assumption→edge mapping (`record.edgeId` for every
+ *     `doc.assumptions` record) — the EC "≥1 assumption per arrow" rule
+ *     counts assumptions per edge, so add / remove / re-home must re-validate
  *   - resolved-warning ids (so "resolve" / "un-resolve" flips
  *     re-validate)
  *
@@ -101,8 +104,8 @@ const computeLayoutFingerprint = (doc: TPDocument): string => {
  *   - position, attestation, owner, lastValidatedAt, evidence,
  *     description, attributes other than S&T facets, collapsed,
  *     titleSize, ordering, annotationNumber, edge labels /
- *     descriptions / assumptionIds / loopName / loopNarrative, OR/XOR
- *     group ids, group memberships.
+ *     descriptions / loopName / loopNarrative, OR/XOR group ids, group
+ *     memberships, assumption text / status / kind.
  *
  * Note: a future rule that reads any of the "free" fields needs to
  * either add the field here or invalidate the cache another way.
@@ -114,20 +117,32 @@ const ST_FACET_FINGERPRINT_KEYS: readonly string[] = [
   'stSufficiencyAssumption',
 ];
 
-// Perf #30 — keyed on (entities, edges, resolvedWarnings) references.
-// `diagramType` is a primitive and can't be a WeakMap key, so it's
+// Perf #30 — keyed on (entities, edges, resolvedWarnings, assumptions)
+// references. `diagramType` is a primitive and can't be a WeakMap key, so it's
 // stored beside the string and re-checked on a hit (it changes only at
-// document creation/load, which also changes the other refs — the
-// check is belt-and-suspenders).
+// document creation/load, which also changes the other refs — the check is
+// belt-and-suspenders). `doc.assumptions` is in the key because adding an
+// assumption changes ONLY that map (not `doc.edges`) post record-canonical, yet
+// the EC completeness rule reads per-edge assumption counts.
+const EMPTY_ASSUMPTIONS_FP = Object.freeze({}) as NonNullable<TPDocument['assumptions']>;
+
 const validationFpCache = new WeakMap<
   TPDocument['entities'],
-  WeakMap<TPDocument['edges'], WeakMap<TPDocument['resolvedWarnings'], { dt: string; str: string }>>
+  WeakMap<
+    TPDocument['edges'],
+    WeakMap<
+      TPDocument['resolvedWarnings'],
+      WeakMap<NonNullable<TPDocument['assumptions']>, { dt: string; str: string }>
+    >
+  >
 >();
 
 export const validationFingerprint = (doc: TPDocument): string => {
+  const assumptionsKey = doc.assumptions ?? EMPTY_ASSUMPTIONS_FP;
   let byEdges = validationFpCache.get(doc.entities);
   let byResolved = byEdges?.get(doc.edges);
-  const hit = byResolved?.get(doc.resolvedWarnings);
+  let byAssumptions = byResolved?.get(doc.resolvedWarnings);
+  const hit = byAssumptions?.get(assumptionsKey);
   if (hit && hit.dt === doc.diagramType) return hit.str;
 
   const str = computeValidationFingerprint(doc);
@@ -139,7 +154,11 @@ export const validationFingerprint = (doc: TPDocument): string => {
     byResolved = new WeakMap();
     byEdges.set(doc.edges, byResolved);
   }
-  byResolved.set(doc.resolvedWarnings, { dt: doc.diagramType, str });
+  if (!byAssumptions) {
+    byAssumptions = new WeakMap();
+    byResolved.set(doc.resolvedWarnings, byAssumptions);
+  }
+  byAssumptions.set(assumptionsKey, { dt: doc.diagramType, str });
   return str;
 };
 
@@ -170,5 +189,12 @@ const computeValidationFingerprint = (doc: TPDocument): string => {
     .sort()
     .join('|');
   const resolvedSig = Object.keys(doc.resolvedWarnings).sort().join(',');
-  return `${doc.diagramType}|${entitySig}|${edgeSig}|${resolvedSig}`;
+  // The assumption→edge mapping (multiset of host edge ids) — captures per-edge
+  // assumption counts for the EC completeness rule. Text/status/kind are NOT
+  // encoded (no rule reads them).
+  const assumptionSig = Object.values(doc.assumptions ?? {})
+    .map((a) => a.edgeId)
+    .sort()
+    .join(',');
+  return `${doc.diagramType}|${entitySig}|${edgeSig}|${resolvedSig}|${assumptionSig}`;
 };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { EntityId } from '@/domain/types';
+import type { EntityId, TPDocument } from '@/domain/types';
 import { verbalisedECText, verbaliseEC } from '@/domain/verbalisation';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
@@ -20,7 +20,8 @@ import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 const buildEC = (
   opts: {
     titles?: Partial<Record<'a' | 'b' | 'c' | 'd' | 'dPrime', string>>;
-    /** Optional list of assumption-entity ids to attach to a given edge. */
+    /** Optional list of assumption ids to attach to a given arrow (as
+     *  `doc.assumptions` records keyed to that arrow's edge via `edgeId`). */
     assumptionsOn?: Partial<Record<'bToA' | 'cToA' | 'dToB' | 'dPrimeToC' | 'dToDPrime', string[]>>;
     /** Add a mutex flag to the D↔D' edge. */
     mutexDtoDPrime?: boolean;
@@ -54,25 +55,49 @@ const buildEC = (
     ecSlot: 'dPrime',
   });
 
-  // Session 117 — conditional spreads to OMIT undefined fields rather
-  // than set them explicitly (exactOptionalPropertyTypes rejects the
-  // explicit-undefined idiom on optional Edge fields).
   const ed = opts.assumptionsOn ?? {};
-  const necessityEdge = (sourceId: EntityId, targetId: EntityId, ids?: EntityId[]) => ({
+  const necessityEdge = (sourceId: EntityId, targetId: EntityId) => ({
     ...makeEdge(sourceId, targetId),
     kind: 'necessity' as const,
-    ...(ids ? { assumptionIds: ids } : {}),
   });
-  const bToA = necessityEdge(b.id, a.id, ed.bToA as EntityId[] | undefined);
-  const cToA = necessityEdge(c.id, a.id, ed.cToA as EntityId[] | undefined);
-  const dToB = necessityEdge(d.id, b.id, ed.dToB as EntityId[] | undefined);
-  const dPrimeToC = necessityEdge(dPrime.id, c.id, ed.dPrimeToC as EntityId[] | undefined);
+  const bToA = necessityEdge(b.id, a.id);
+  const cToA = necessityEdge(c.id, a.id);
+  const dToB = necessityEdge(d.id, b.id);
+  const dPrimeToC = necessityEdge(dPrime.id, c.id);
   const conflict = {
-    ...necessityEdge(d.id, dPrime.id, ed.dToDPrime as EntityId[] | undefined),
+    ...necessityEdge(d.id, dPrime.id),
     ...(opts.mutexDtoDPrime ? { isMutualExclusion: true as const } : {}),
   };
 
   const doc = makeDoc([a, b, c, d, dPrime], [bToA, cToA, dToB, dPrimeToC, conflict], 'ec');
+
+  // Record-canonical (v10): assumptions attach to an arrow via the
+  // `doc.assumptions` record's `edgeId`. Turn each `assumptionsOn` list
+  // into records keyed to the matching arrow's edge id (the verbaliser
+  // counts them via `assumptionsForEdge`).
+  const arrowEdgeIds: Record<keyof typeof ed, string> = {
+    bToA: bToA.id,
+    cToA: cToA.id,
+    dToB: dToB.id,
+    dPrimeToC: dPrimeToC.id,
+    dToDPrime: conflict.id,
+  };
+  const assumptions: TPDocument['assumptions'] = {};
+  for (const [arrow, ids] of Object.entries(ed) as [keyof typeof ed, string[]][]) {
+    const edgeId = arrowEdgeIds[arrow];
+    for (const id of ids) {
+      assumptions![id] = {
+        id,
+        edgeId,
+        text: id,
+        status: 'unexamined',
+        createdAt: 1,
+        updatedAt: 1,
+      };
+    }
+  }
+  doc.assumptions = assumptions;
+
   return { doc, ids: { a: a.id, b: b.id, c: c.id, d: d.id, dPrime: dPrime.id } };
 };
 

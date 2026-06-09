@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { useGraphEdgeEmission } from '@/components/canvas/hooks/useGraphEdgeEmission';
 import type { GraphProjection } from '@/components/canvas/hooks/useGraphProjection';
-import type { Assumption, EntityId, TPDocument } from '@/domain/types';
+import type { Assumption, TPDocument } from '@/domain/types';
 import { makeDoc, makeEdge, makeEntity, resetIds } from '../../domain/helpers';
 
 /**
@@ -10,8 +10,8 @@ import { makeDoc, makeEdge, makeEntity, resetIds } from '../../domain/helpers';
  * edge's assumption count and stamps it into `data.assumptionCount`, so
  * `TPEdge` reads an O(1) prop instead of iterating `doc.assumptions`
  * inside its per-edge store selector on every store change. These tests
- * lock that the emitted count is correct (first-class records ∪ legacy
- * `assumptionIds`) and omitted when zero.
+ * lock that the emitted count is correct (counted from the first-class
+ * `doc.assumptions` records keyed by `edgeId`) and omitted when zero.
  */
 
 // The hook only reads `projection.remap`; an identity remap models the
@@ -47,17 +47,15 @@ describe('useGraphEdgeEmission — assumption count stamping (Perf #17)', () => 
     expect(emitted?.data?.assumptionCount).toBe(2);
   });
 
-  it('falls back to legacy `assumptionIds` length when no records exist', () => {
+  it('stamps a count of 1 for an edge with a single record', () => {
     resetIds();
     const a = makeEntity();
     const b = makeEntity();
-    const edge = makeEdge(a.id, b.id, {
-      assumptionIds: ['x', 'y', 'z'] as unknown as EntityId[],
-    });
-    const doc = makeDoc([a, b], [edge]);
+    const edge = makeEdge(a.id, b.id);
+    const doc = withAssumptions(makeDoc([a, b], [edge]), [assumption(edge.id, 'as-1')]);
     const { result } = renderHook(() => useGraphEdgeEmission(doc, identityProjection));
     const emitted = result.current.find((e) => e.id === edge.id);
-    expect(emitted?.data?.assumptionCount).toBe(3);
+    expect(emitted?.data?.assumptionCount).toBe(1);
   });
 
   it('omits assumptionCount entirely when the edge has none', () => {

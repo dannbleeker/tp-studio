@@ -2,9 +2,8 @@
  * Entity-level mutations: add / update / delete plus per-entity feature
  * fields (collapse, position, ordering, etc.), bulk delete that scrubs
  * downstream edges/groups, swap of two entities' content, and the
- * assumption-on-edge helpers (which create new assumption entities and
- * attach them to existing edges — primary mutation is on the entities
- * map plus the edge's `assumptionIds`).
+ * assumption-on-edge helpers (which create first-class `doc.assumptions`
+ * records keyed to an edge via `record.edgeId` — assumptions are not entities).
  *
  * Session 135 — split from one 621-line file into four focused
  * factories under `entities/`. The slice presented to Zustand

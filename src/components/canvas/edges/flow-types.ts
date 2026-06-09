@@ -60,7 +60,7 @@ export type TPEdgeData = {
    *  boundary. Rendered with a small count badge; not selectable for editing. */
   aggregateCount?: number;
   /** Session 135 / Perf #17 — number of assumptions attached to this edge
-   *  (legacy `assumptionIds` ∪ first-class `Assumption` records keyed to it),
+   *  (the first-class `Assumption` records keyed to it via `record.edgeId`),
    *  precomputed once in `useGraphEdgeEmission`. Lets `TPEdge` read an O(1)
    *  count from `data` instead of iterating `doc.assumptions` inside its
    *  per-edge store selector on every store change. Omitted when 0. */

@@ -192,25 +192,11 @@ describe('removeEntityFromEdges', () => {
     expect(result[ab.id]).toBe(ab); // same reference — no copy when unaffected
   });
 
-  it('scrubs the id from assumptionIds on surviving edges', () => {
-    const a = makeEntity({ title: 'A' });
-    const b = makeEntity({ title: 'B' });
-    const assumption = makeEntity({ type: 'note', title: 'Assumption' });
-    const ab = makeEdge(a.id, b.id, { assumptionIds: [assumption.id] });
-    const result = removeEntityFromEdges(makeDoc([a, b, assumption], [ab]), assumption.id);
-    expect(result[ab.id]).toBeDefined();
-    expect(result[ab.id]!.assumptionIds).toBeUndefined();
-  });
-
-  it('preserves other assumption ids when only one is removed', () => {
-    const a = makeEntity({ title: 'A' });
-    const b = makeEntity({ title: 'B' });
-    const ass1 = makeEntity({ type: 'note', title: 'A1' });
-    const ass2 = makeEntity({ type: 'note', title: 'A2' });
-    const ab = makeEdge(a.id, b.id, { assumptionIds: [ass1.id, ass2.id] });
-    const result = removeEntityFromEdges(makeDoc([a, b, ass1, ass2], [ab]), ass1.id);
-    expect(result[ab.id]!.assumptionIds).toEqual([ass2.id]);
-  });
+  // Record-canonical (v10): assumptions attach via the `doc.assumptions`
+  // record's `edgeId`, not a now-removed `edge.assumptionIds` index, and
+  // they aren't entities — so `removeEntityFromEdges` no longer scrubs
+  // anything assumption-related (orphan records are pruned separately by
+  // `pruneAssumptions`). The old per-edge scrub assertions are obsolete.
 });
 
 describe('reachableForward / reachableBackward', () => {

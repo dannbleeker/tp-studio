@@ -101,12 +101,9 @@ const findArrow = (
     const matches = edge.sourceId === sourceId && edge.targetId === targetId;
     const reverseMatches = requireMutex && edge.sourceId === targetId && edge.targetId === sourceId;
     if ((matches || reverseMatches) && (!requireMutex || edge.isMutualExclusion)) {
-      // Assumption count from BOTH the legacy Edge.assumptionIds list
-      // (back-compat) and the v7 Document.assumptions map keyed by
-      // edgeId. The two should normally agree; we union to be safe.
-      const legacy = edge.assumptionIds?.length ?? 0;
-      const fromMap = assumptionsForEdge(doc, edge.id).length;
-      return { edgeId: edge.id, assumptionCount: Math.max(legacy, fromMap) };
+      // Record-canonical: the edge's assumption count is the first-class
+      // `doc.assumptions` records keyed to it.
+      return { edgeId: edge.id, assumptionCount: assumptionsForEdge(doc, edge.id).length };
     }
   }
   return null;

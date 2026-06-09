@@ -27,7 +27,7 @@ describe('Edge.description field', () => {
     expect(doc().edges[edge.id]?.description).toBeUndefined();
   });
 
-  it('coexists with label and assumptionIds', () => {
+  it('coexists with label and an edge assumption', () => {
     const { edge } = seedConnectedPair();
     const state = useDocumentStore.getState();
     state.updateEdge(edge.id, { label: 'within 30 days', description: 'long form' });
@@ -35,7 +35,10 @@ describe('Edge.description field', () => {
     const e = doc().edges[edge.id];
     expect(e?.label).toBe('within 30 days');
     expect(e?.description).toBe('long form');
-    expect(e?.assumptionIds?.length).toBe(1);
+    // Record-canonical (v10): the assumption is a `doc.assumptions` record
+    // keyed to the edge via `edgeId`, not an `edge.assumptionIds` entry.
+    const records = Object.values(doc().assumptions ?? {}).filter((a) => a.edgeId === edge.id);
+    expect(records.length).toBe(1);
   });
 
   it('persistence rejects non-string description', () => {

@@ -18,9 +18,11 @@ import { isPlainObject, type Migration } from './shared';
  *   3. Rewrites any comment anchored to it via `{kind:'entity', entityId}` into
  *      `{kind:'assumption', assumptionId}`.
  *
- * `edge.assumptionIds[]` is KEPT — it stays the per-edge membership index until
- * a later phase removes it. An orphaned assumption-entity (referenced by no edge
- * AND with no existing record) is simply dropped: it was already invisible
+ * This migration leaves `edge.assumptionIds[]` on the raw doc (it was still part
+ * of the v10 schema when written); the field was later removed from the model, so
+ * the importer (`validateEdge`) now drops it — attachment is `record.edgeId`. An
+ * orphaned assumption-entity (referenced by no edge AND with no existing record)
+ * is simply dropped: it was already invisible
  * (assumptions aren't selectable nodes) and a record with `edgeId:''` would only
  * dangle.
  */
@@ -47,7 +49,10 @@ export const v9ToV10: Migration = {
         nextEntities[id] = ent;
         continue;
       }
-      const existing = nextAssumptions[id];
+      // `Object.hasOwn`, not a truthy `nextAssumptions[id]`: an adversarial /
+      // hand-edited id like `"toString"` would otherwise resolve to the inherited
+      // Object.prototype method and spread into a malformed record with no `id`.
+      const existing = Object.hasOwn(nextAssumptions, id) ? nextAssumptions[id] : undefined;
       if (existing) {
         // Common case — the record was dual-written since v7. Only fill an
         // annotationNumber gap from the entity (records minted by v6→v7 predate

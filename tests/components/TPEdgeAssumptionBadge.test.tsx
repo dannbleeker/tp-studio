@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { assumptionsForEdge } from '@/domain/graph';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 beforeEach(resetStoreForTest);
@@ -7,46 +8,27 @@ beforeEach(resetStoreForTest);
  * Session 87 / EC PPT comparison item #6 — assumption-badge count
  * sourcing.
  *
- * The badge component (TPEdge.tsx) computes its count by combining
- * BOTH the legacy `Edge.assumptionIds` and the v7 `doc.assumptions`
- * map keyed by `edgeId`. The actual SVG portal is rendered via React
- * Flow's `EdgeLabelRenderer`, which requires a live React Flow
- * runtime — not testable in isolation here. These tests pin the
- * COUNT-COMPUTATION SHAPE instead: building the same combined-count
- * locally on the store state, mirroring the production selector.
+ * Record-canonical (v10): the badge count is driven SOLELY by the
+ * `doc.assumptions` records keyed to the edge via `edgeId` (the legacy
+ * `Edge.assumptionIds` index was removed). The actual SVG portal is
+ * rendered via React Flow's `EdgeLabelRenderer`, which requires a live
+ * React Flow runtime — not testable in isolation here. These tests pin
+ * the COUNT-COMPUTATION SHAPE instead, mirroring the production selector
+ * (`useGraphEdgeEmission` counts `doc.assumptions` by `edgeId`).
  */
 
-const combinedAssumptionCount = (edgeId: string): number => {
-  const s = useDocumentStore.getState();
-  const legacy = s.doc.edges[edgeId]?.assumptionIds?.length ?? 0;
-  let fromMap = 0;
-  if (s.doc.assumptions) {
-    for (const a of Object.values(s.doc.assumptions)) {
-      if (a.edgeId === edgeId) fromMap += 1;
-    }
-  }
-  return Math.max(legacy, fromMap);
-};
+const assumptionCount = (edgeId: string): number =>
+  assumptionsForEdge(useDocumentStore.getState().doc, edgeId).length;
 
 describe('TPEdge assumption count sourcing (Session 87)', () => {
-  it('returns 0 when the edge has no assumptions on either backing', () => {
+  it('returns 0 when the edge has no assumption records', () => {
     const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
     const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
     const edge = useDocumentStore.getState().connect(a.id, b.id);
-    expect(combinedAssumptionCount(edge!.id)).toBe(0);
+    expect(assumptionCount(edge!.id)).toBe(0);
   });
 
-  it('counts the legacy assumptionIds list when only it is populated', () => {
-    const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
-    const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
-    const edge = useDocumentStore.getState().connect(a.id, b.id);
-    useDocumentStore
-      .getState()
-      .updateEdge(edge!.id, { assumptionIds: ['asm-1', 'asm-2'] as never });
-    expect(combinedAssumptionCount(edge!.id)).toBe(2);
-  });
-
-  it('counts the v7 doc.assumptions map when only it is populated', () => {
+  it('counts the doc.assumptions records keyed to the edge', () => {
     const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
     const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
     const edge = useDocumentStore.getState().connect(a.id, b.id);
@@ -73,14 +55,15 @@ describe('TPEdge assumption count sourcing (Session 87)', () => {
         },
       },
     }));
-    expect(combinedAssumptionCount(edge!.id)).toBe(2);
+    expect(assumptionCount(edge!.id)).toBe(2);
   });
 
-  it('returns the MAX of the two backings — they normally agree post-migration', () => {
+  it('counts only the records keyed to THIS edge, ignoring records on other edges', () => {
     const a = useDocumentStore.getState().addEntity({ type: 'effect', title: 'A' });
     const b = useDocumentStore.getState().addEntity({ type: 'effect', title: 'B' });
+    const c = useDocumentStore.getState().addEntity({ type: 'effect', title: 'C' });
     const edge = useDocumentStore.getState().connect(a.id, b.id);
-    useDocumentStore.getState().updateEdge(edge!.id, { assumptionIds: ['asm-1'] as never });
+    const other = useDocumentStore.getState().connect(b.id, c.id);
     useDocumentStore.setState((s) => ({
       doc: {
         ...s.doc,
@@ -93,9 +76,9 @@ describe('TPEdge assumption count sourcing (Session 87)', () => {
             createdAt: 1,
             updatedAt: 1,
           },
-          'asm-record-2': {
-            id: 'asm-record-2',
-            edgeId: edge!.id,
+          'asm-other': {
+            id: 'asm-other',
+            edgeId: other!.id,
             text: 'b',
             status: 'unexamined',
             createdAt: 1,
@@ -104,6 +87,7 @@ describe('TPEdge assumption count sourcing (Session 87)', () => {
         },
       },
     }));
-    expect(combinedAssumptionCount(edge!.id)).toBe(2);
+    expect(assumptionCount(edge!.id)).toBe(1);
+    expect(assumptionCount(other!.id)).toBe(1);
   });
 });

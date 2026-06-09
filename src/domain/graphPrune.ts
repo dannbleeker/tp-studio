@@ -17,21 +17,7 @@ export const removeEntityFromEdges = (doc: TPDocument, entityId: string): Record
   // contract — we only read from the cache, never mutate it.
   const surviving = edgesArray(doc).filter((e) => e.sourceId !== branded && e.targetId !== branded);
   const result: Record<string, Edge> = {};
-  for (const edge of surviving) {
-    if (!edge.assumptionIds?.includes(branded)) {
-      result[edge.id] = edge;
-      continue;
-    }
-    const filtered = edge.assumptionIds.filter((a) => a !== branded);
-    if (filtered.length) {
-      result[edge.id] = { ...edge, assumptionIds: filtered };
-    } else {
-      // Omit the field rather than setting `assumptionIds: undefined`
-      // (exactOptionalPropertyTypes rejects explicit undefined).
-      const { assumptionIds: _drop, ...rest } = edge;
-      result[edge.id] = rest;
-    }
-  }
+  for (const edge of surviving) result[edge.id] = edge;
   return result;
 };
 
@@ -219,8 +205,8 @@ export const reanchorEdgeComments = (
 };
 
 /**
- * Re-home assumption records from one host edge to another. The splice paths
- * copy `edge.assumptionIds` onto the downstream half, so the matching
+ * Re-home assumption records from one host edge to another. On a splice the
+ * downstream half is the semantic continuation, so the matching
  * `doc.assumptions[*].edgeId` must follow — otherwise the record points at the
  * deleted edge, its count badge reads zero, and the next prune drops it as an
  * orphan. Returns the SAME reference when nothing matched.

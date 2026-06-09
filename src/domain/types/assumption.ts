@@ -59,10 +59,10 @@ export type AssumptionKind = 'necessary' | 'parallel' | 'sufficient';
  */
 export type Assumption = {
   id: string;
-  /** The edge this assumption sits behind — the single source of truth for
-   *  attachment. The edge's `assumptionIds: EntityId[]` mirrors it as a per-edge
-   *  membership index (preserves ordering for the placement stagger); text +
-   *  status live here on the record, never on an entity. */
+  /** The edge this assumption sits behind — the SOLE attachment link (there is
+   *  no `edge.assumptionIds` any more). Per-edge lookups go through
+   *  `assumptionsForEdge`; text + status live here on the record, never on an
+   *  entity. */
   edgeId: string;
   text: string;
   status: AssumptionStatus;

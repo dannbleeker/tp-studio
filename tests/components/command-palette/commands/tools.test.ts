@@ -96,8 +96,10 @@ describe('toolCommands — add-assumption-to-edge', () => {
     const { edge } = seedConnectedPair();
     useDocumentStore.getState().selectEdges([edge.id]);
     await runCommand(findCommand(toolCommands, 'add-assumption-to-edge'));
-    const after = s().doc.edges[edge.id];
-    expect(after?.assumptionIds?.length ?? 0).toBeGreaterThan(0);
+    // Record-canonical: the command mints an assumption record keyed to
+    // the edge via `edgeId` (there is no longer an `edge.assumptionIds`).
+    const records = Object.values(s().doc.assumptions ?? {}).filter((a) => a.edgeId === edge.id);
+    expect(records.length).toBeGreaterThan(0);
   });
 });
 

@@ -231,7 +231,7 @@ export function createEntityCrudActions({
 
     // Bulk delete: entities + standalone edges in one history step. Cascade
     // edges that touch any deleted entity (existing single-delete behavior).
-    // Assumption ids are scrubbed by `removeEntityFromEdges`.
+    // Assumption records on a cascaded-away edge are dropped by `pruneAssumptions`.
     deleteEntitiesAndEdges: (entityIds, edgeIds) => {
       if (entityIds.length === 0 && edgeIds.length === 0) return;
       const before = currentDoc(get());
