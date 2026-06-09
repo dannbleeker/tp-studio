@@ -1,5 +1,4 @@
 import { type InternalNode, useStore as useRFStore } from '@xyflow/react';
-import { entitiesOfType } from '@/domain/graph';
 import { arrayShallowEqualByKeys } from '@/store/equality';
 import { currentDoc } from '@/store/selectors';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
@@ -8,8 +7,8 @@ import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
  * Session 133 — visualise the "this assumption pertains to that edge"
  * link as a dashed line on the canvas.
  *
- * Schema model (since v7): every assumption-typed entity may be
- * anchored to one or more edges via `Edge.assumptionIds: EntityId[]`.
+ * Schema model: each first-class assumption record in `doc.assumptions`
+ * names its host edge via `edgeId`; this overlay draws that link.
  * Before this overlay, that link was discoverable only through the
  * Edge Inspector's Assumption Well or the small "A" badge on the
  * affected edge. EC practitioners (where assumption work is heaviest)
@@ -95,21 +94,20 @@ export function AssumptionAnchorOverlay() {
   // component re-render when the triple list is unchanged.
   const anchors = useDocumentStoreWith((s) => {
     const doc = currentDoc(s);
-    const assumptions = entitiesOfType(doc, 'assumption');
-    if (assumptions.length === 0) return [];
-    const assumptionIds = new Set(assumptions.map((a) => a.id as string));
+    if (!doc.assumptions) return [];
     const out: AnchorTriple[] = [];
-    for (const edge of Object.values(doc.edges)) {
-      if (!edge.assumptionIds?.length) continue;
-      for (const aid of edge.assumptionIds) {
-        if (!assumptionIds.has(aid)) continue;
-        out.push({
-          key: `${edge.id}::${aid}`,
-          assumptionId: aid,
-          sourceId: edge.sourceId,
-          targetId: edge.targetId,
-        });
-      }
+    // Record-canonical: each assumption record names its host edge directly
+    // (`record.edgeId`); resolve it to the edge's endpoints for the dashed line.
+    // The assumption's node position is still looked up by its (shared) id below.
+    for (const a of Object.values(doc.assumptions)) {
+      const edge = doc.edges[a.edgeId];
+      if (!edge) continue;
+      out.push({
+        key: `${edge.id}::${a.id}`,
+        assumptionId: a.id,
+        sourceId: edge.sourceId,
+        targetId: edge.targetId,
+      });
     }
     return out;
   }, anchorTriplesEqual);
