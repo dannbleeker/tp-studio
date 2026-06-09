@@ -1,8 +1,8 @@
 /**
  * Z-3 — place an *anchored* assumption card beside the edge it annotates.
  *
- * An assumption-typed entity renders as a card on the canvas but has no causal
- * edges of its own (it's linked to an edge via `Edge.assumptionIds`, drawn as a
+ * An assumption renders as a card on the canvas but has no causal edges of its
+ * own (the first-class record names its host edge via `edgeId`, drawn as a
  * dashed connector by `AssumptionAnchorOverlay`). dagre lays out by edges, so an
  * assumption is an isolated 1-node component and gets packed into a far corner —
  * which reads as "the assumption is rendered very very far away" (Dann's Z-3).
@@ -29,24 +29,21 @@ const ASSUMPTION_STACK_STEP = 130;
 type AssumptionAnchor = { sourceId: string; targetId: string; index: number };
 
 /**
- * Map each anchored assumption id → the first edge that lists it in
- * `assumptionIds`, plus a per-edge `index` (0-based) used to stagger multiple
- * assumptions on the same edge. Non-assumption ids and dangling references are
- * skipped.
+ * Map each anchored assumption id → its host edge's endpoints, plus a per-edge
+ * `index` (0-based) used to stagger multiple assumptions sharing one anchor edge.
+ * Record-canonical: walks `doc.assumptions` (each record names its host `edgeId`);
+ * records whose host edge no longer exists are skipped.
  */
 export const anchoredAssumptionEdges = (doc: TPDocument): Map<string, AssumptionAnchor> => {
   const out = new Map<string, AssumptionAnchor>();
   const perEdge = new Map<string, number>();
-  for (const edge of Object.values(doc.edges)) {
-    if (!edge.assumptionIds?.length) continue;
-    for (const aid of edge.assumptionIds) {
-      if (out.has(aid)) continue;
-      if (doc.entities[aid]?.type !== 'assumption') continue;
-      const key = `${edge.sourceId}>${edge.targetId}`;
-      const index = perEdge.get(key) ?? 0;
-      perEdge.set(key, index + 1);
-      out.set(aid, { sourceId: edge.sourceId, targetId: edge.targetId, index });
-    }
+  for (const a of Object.values(doc.assumptions ?? {})) {
+    const edge = doc.edges[a.edgeId];
+    if (!edge) continue;
+    const key = `${edge.sourceId}>${edge.targetId}`;
+    const index = perEdge.get(key) ?? 0;
+    perEdge.set(key, index + 1);
+    out.set(a.id, { sourceId: edge.sourceId, targetId: edge.targetId, index });
   }
   return out;
 };

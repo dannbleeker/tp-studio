@@ -7,20 +7,39 @@ import {
 } from '@/domain/assumptionPlacement';
 import type { TPDocument } from '@/domain/types';
 
-// Minimal doc builder — the placement helpers read only `entities[id].type`
-// and each edge's `sourceId` / `targetId` / `assumptionIds`.
+// Minimal doc builder. The placement helpers are now record-canonical: they read
+// `doc.assumptions` (each record's host `edgeId`) + the edge endpoints. Build the
+// records from each edge's `assumptionIds` fixture (assumption-typed ids only,
+// mirroring the old entity-type filter) so the fixtures below stay readable.
 const mkDoc = (
   entities: Record<string, { type: string }>,
   edges: Record<string, { sourceId: string; targetId: string; assumptionIds?: string[] }>
-): TPDocument =>
-  ({
+): TPDocument => {
+  const assumptions: Record<string, unknown> = {};
+  for (const [edgeId, e] of Object.entries(edges)) {
+    for (const aid of e.assumptionIds ?? []) {
+      if (entities[aid]?.type === 'assumption') {
+        assumptions[aid] = {
+          id: aid,
+          edgeId,
+          text: aid,
+          status: 'unexamined',
+          createdAt: 1,
+          updatedAt: 1,
+        };
+      }
+    }
+  }
+  return {
     entities: Object.fromEntries(
       Object.entries(entities).map(([id, e]) => [id, { id, title: id, ...e }])
     ),
     edges: Object.fromEntries(
       Object.entries(edges).map(([id, e]) => [id, { id, kind: 'sufficiency', ...e }])
     ),
-  }) as unknown as TPDocument;
+    assumptions,
+  } as unknown as TPDocument;
+};
 
 const SIZE = () => ({ width: 260, height: 120 });
 
