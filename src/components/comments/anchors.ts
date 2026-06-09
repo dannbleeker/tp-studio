@@ -1,4 +1,4 @@
-import type { CommentAnchor, Edge, Entity } from '@/domain/types';
+import type { Assumption, CommentAnchor, Edge, Entity } from '@/domain/types';
 import type { Selection } from '@/store/uiSlice/types';
 
 /**
@@ -22,16 +22,17 @@ export function anchorFromSelection(selection: Selection): CommentAnchor {
 export type AnchorDescription = { text: string; missing: boolean };
 
 /**
- * Human label for a comment's anchor. Entity → its title; edge →
- * "Source → Target"; document → "Whole diagram". `missing` is true when
- * the anchored entity/edge no longer exists — defensive only, since
+ * Human label for a comment's anchor. Entity → its title; assumption → its
+ * text; edge → "Source → Target"; document → "Whole diagram". `missing` is true
+ * when the anchored entity/edge/assumption no longer exists — defensive only, since
  * `pruneComments` drops such comments on delete (a document-anchored
  * comment is never missing).
  */
 export function describeAnchor(
   anchor: CommentAnchor,
   entities: Record<string, Entity>,
-  edges: Record<string, Edge>
+  edges: Record<string, Edge>,
+  assumptions: Record<string, Assumption> = {}
 ): AnchorDescription {
   if (anchor.kind === 'document') return { text: 'Whole diagram', missing: false };
   if (anchor.kind === 'point') return { text: 'Pinned note', missing: false };
@@ -40,6 +41,12 @@ export function describeAnchor(
     return e
       ? { text: e.title.trim() || 'Untitled', missing: false }
       : { text: 'Deleted entity', missing: true };
+  }
+  if (anchor.kind === 'assumption') {
+    const a = assumptions[anchor.assumptionId];
+    return a
+      ? { text: a.text.trim() || 'Untitled assumption', missing: false }
+      : { text: 'Deleted assumption', missing: true };
   }
   const edge = edges[anchor.edgeId];
   if (!edge) return { text: 'Deleted connection', missing: true };

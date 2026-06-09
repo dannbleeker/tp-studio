@@ -170,6 +170,11 @@ describe('validateComment', () => {
     expect(edg.anchor).toEqual({ kind: 'edge', edgeId: 'x1' });
     const pt = validateComment({ ...comment, anchor: { kind: 'point', x: 1, y: 2 } }, 'c');
     expect(pt.anchor).toEqual({ kind: 'point', x: 1, y: 2 });
+    const asm = validateComment(
+      { ...comment, anchor: { kind: 'assumption', assumptionId: 'a1' } },
+      'c'
+    );
+    expect(asm.anchor).toEqual({ kind: 'assumption', assumptionId: 'a1' });
   });
 
   it('rejects a bad anchor + wrong-typed fields', () => {

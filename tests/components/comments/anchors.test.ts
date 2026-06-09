@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { anchorFromSelection, describeAnchor } from '@/components/comments/anchors';
-import type { Edge, Entity } from '@/domain/types';
+import type { Assumption, Edge, Entity } from '@/domain/types';
 import type { EdgeId, EntityId } from '@/domain/types/ids';
 import type { Selection } from '@/store/uiSlice/types';
 
@@ -38,6 +38,24 @@ describe('describeAnchor', () => {
   const edges: Record<string, Edge> = {
     ed1: { sourceId: eid('e1'), targetId: eid('e2') } as Edge,
   };
+  const assumptions: Record<string, Assumption> = {
+    a1: {
+      id: 'a1',
+      edgeId: 'ed1',
+      text: 'Because budget holds',
+      status: 'unexamined',
+      createdAt: 1,
+      updatedAt: 1,
+    },
+    blankA: {
+      id: 'blankA',
+      edgeId: 'ed1',
+      text: '   ',
+      status: 'unexamined',
+      createdAt: 1,
+      updatedAt: 1,
+    },
+  };
 
   it('labels a document anchor', () => {
     expect(describeAnchor({ kind: 'document' }, entities, edges)).toEqual({
@@ -66,6 +84,22 @@ describe('describeAnchor', () => {
     expect(describeAnchor({ kind: 'edge', edgeId: edid('ed1') }, entities, edges).text).toBe(
       'Root cause → Effect'
     );
+  });
+
+  it('labels an assumption anchor by its record text, with an Untitled fallback', () => {
+    expect(
+      describeAnchor({ kind: 'assumption', assumptionId: 'a1' }, entities, edges, assumptions).text
+    ).toBe('Because budget holds');
+    expect(
+      describeAnchor({ kind: 'assumption', assumptionId: 'blankA' }, entities, edges, assumptions)
+        .text
+    ).toBe('Untitled assumption');
+  });
+
+  it('flags a missing assumption anchor', () => {
+    expect(
+      describeAnchor({ kind: 'assumption', assumptionId: 'gone' }, entities, edges, assumptions)
+    ).toEqual({ text: 'Deleted assumption', missing: true });
   });
 
   it('flags a missing entity / edge anchor', () => {

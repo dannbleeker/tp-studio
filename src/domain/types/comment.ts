@@ -9,6 +9,9 @@ import type { EdgeId, EntityId } from './ids';
  * Where a review comment is anchored:
  *   - `entity` / `edge` — attached to a specific node/edge. These anchors are
  *     pruned when their target is deleted (see `pruneComments` in `graph.ts`).
+ *   - `assumption` — attached to a first-class assumption record in
+ *     `doc.assumptions` (record-canonical: assumptions are not entities). Pruned
+ *     when the assumption is removed.
  *   - `document` — a general remark not tied to any one element.
  *   - `point` — a free-floating sticky-note pin at a canvas coordinate
  *     (`x` / `y` in flow space). Like `document`, it is never pruned — it has
@@ -18,6 +21,7 @@ import type { EdgeId, EntityId } from './ids';
 export type CommentAnchor =
   | { readonly kind: 'entity'; readonly entityId: EntityId }
   | { readonly kind: 'edge'; readonly edgeId: EdgeId }
+  | { readonly kind: 'assumption'; readonly assumptionId: string }
   | { readonly kind: 'document' }
   | { readonly kind: 'point'; readonly x: number; readonly y: number };
 

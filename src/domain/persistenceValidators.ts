@@ -349,13 +349,14 @@ const isCommentAnchor = (v: unknown): v is CommentAnchor => {
   if (!isObject(v)) return false;
   if (v.kind === 'entity') return typeof v.entityId === 'string';
   if (v.kind === 'edge') return typeof v.edgeId === 'string';
+  if (v.kind === 'assumption') return typeof v.assumptionId === 'string';
   if (v.kind === 'point') return isFiniteNumber(v.x) && isFiniteNumber(v.y);
   return v.kind === 'document';
 };
 
 /**
  * Review-comment validator. Strict on the required fields; the anchor is a
- * three-way discriminated union (entity / edge / document). `body` + `author`
+ * discriminated union (entity / edge / assumption / document / point). `body` + `author`
  * are plain strings (rendered as escaped text, so no markup is interpreted).
  * Optional `parentId` (a reply) and `resolved` follow the type-or-omit rule.
  */
@@ -382,9 +383,11 @@ export const validateComment = (v: unknown, label: string): Comment => {
       ? { kind: 'entity', entityId: v.anchor.entityId }
       : v.anchor.kind === 'edge'
         ? { kind: 'edge', edgeId: v.anchor.edgeId }
-        : v.anchor.kind === 'point'
-          ? { kind: 'point', x: v.anchor.x, y: v.anchor.y }
-          : { kind: 'document' };
+        : v.anchor.kind === 'assumption'
+          ? { kind: 'assumption', assumptionId: v.anchor.assumptionId }
+          : v.anchor.kind === 'point'
+            ? { kind: 'point', x: v.anchor.x, y: v.anchor.y }
+            : { kind: 'document' };
   return {
     id: v.id,
     anchor,

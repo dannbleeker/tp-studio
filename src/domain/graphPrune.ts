@@ -159,14 +159,21 @@ export const pruneAssumptions = (
 export const pruneComments = (
   comments: Record<string, Comment> | undefined,
   survivingEdges: Record<string, Edge>,
-  survivingEntities: Record<string, Entity>
+  survivingEntities: Record<string, Entity>,
+  survivingAssumptions?: Record<string, Assumption>
 ): Record<string, Comment> | undefined => {
   if (!comments) return comments;
   const anchorAlive = (c: Comment): boolean =>
     c.anchor.kind === 'document' ||
     c.anchor.kind === 'point' ||
     (c.anchor.kind === 'entity' && survivingEntities[c.anchor.entityId] !== undefined) ||
-    (c.anchor.kind === 'edge' && survivingEdges[c.anchor.edgeId] !== undefined);
+    (c.anchor.kind === 'edge' && survivingEdges[c.anchor.edgeId] !== undefined) ||
+    // An assumption-anchored comment survives while its record does. When the
+    // caller doesn't pass the surviving-assumptions map (most delete paths don't
+    // touch assumptions), treat it as alive rather than pruning it blindly.
+    (c.anchor.kind === 'assumption' &&
+      (survivingAssumptions === undefined ||
+        survivingAssumptions[c.anchor.assumptionId] !== undefined));
   const next: Record<string, Comment> = {};
   let dropped = 0;
   for (const [id, c] of Object.entries(comments)) {
@@ -243,7 +250,11 @@ export const rehomeAssumptions = (
  * thread). Document-anchored comments aren't counted here (they have no
  * node/edge to badge). Returns empty maps when the doc has no comments.
  */
-type CommentCounts = { byEntity: Map<string, number>; byEdge: Map<string, number> };
+type CommentCounts = {
+  byEntity: Map<string, number>;
+  byEdge: Map<string, number>;
+  byAssumption: Map<string, number>;
+};
 // Cache keyed on the `comments` record reference (stable until comments mutate,
 // via the store's immutable updates). The node- and edge-emission hooks both
 // call this per emission; the cache lets the second caller reuse the first's
@@ -253,11 +264,12 @@ const commentCountsCache = new WeakMap<Record<string, Comment>, CommentCounts>()
 export const openCommentCountsByAnchor = (
   comments: Record<string, Comment> | undefined
 ): CommentCounts => {
-  if (!comments) return { byEntity: new Map(), byEdge: new Map() };
+  if (!comments) return { byEntity: new Map(), byEdge: new Map(), byAssumption: new Map() };
   const cached = commentCountsCache.get(comments);
   if (cached) return cached;
   const byEntity = new Map<string, number>();
   const byEdge = new Map<string, number>();
+  const byAssumption = new Map<string, number>();
   for (const c of Object.values(comments)) {
     if (c.parentId !== undefined) continue;
     if (c.resolved === true) continue;
@@ -265,9 +277,11 @@ export const openCommentCountsByAnchor = (
       byEntity.set(c.anchor.entityId, (byEntity.get(c.anchor.entityId) ?? 0) + 1);
     } else if (c.anchor.kind === 'edge') {
       byEdge.set(c.anchor.edgeId, (byEdge.get(c.anchor.edgeId) ?? 0) + 1);
+    } else if (c.anchor.kind === 'assumption') {
+      byAssumption.set(c.anchor.assumptionId, (byAssumption.get(c.anchor.assumptionId) ?? 0) + 1);
     }
   }
-  const result: CommentCounts = { byEntity, byEdge };
+  const result: CommentCounts = { byEntity, byEdge, byAssumption };
   commentCountsCache.set(comments, result);
   return result;
 };

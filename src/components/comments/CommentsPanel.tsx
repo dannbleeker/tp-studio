@@ -114,7 +114,12 @@ export function CommentsPanel() {
   // A pending "point" anchor (pane → Add comment here) wins over the
   // selection-derived anchor so the composer targets the dropped pin.
   const composerAnchor = pendingCommentAnchor ?? anchorFromSelection(selection);
-  const composerDesc = describeAnchor(composerAnchor, doc.entities, doc.edges);
+  const composerDesc = describeAnchor(
+    composerAnchor,
+    doc.entities,
+    doc.edges,
+    doc.assumptions ?? {}
+  );
 
   const jumpToAnchor = (anchor: CommentAnchor) => {
     if (anchor.kind === 'entity') {
@@ -260,7 +265,12 @@ export function CommentsPanel() {
           ) : (
             <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
               {visibleThreads.map((top) => {
-                const desc = describeAnchor(top.anchor, doc.entities, doc.edges);
+                const desc = describeAnchor(
+                  top.anchor,
+                  doc.entities,
+                  doc.edges,
+                  doc.assumptions ?? {}
+                );
                 return (
                   <CommentThread
                     key={top.id}

@@ -87,6 +87,27 @@ describe('pruneComments', () => {
     expect(pruneComments(map, {}, {})).toBe(map);
   });
 
+  it('keeps an assumption-anchored comment when its record survives (or no map passed)', () => {
+    const map = { c1: mk({ id: 'c1', anchor: { kind: 'assumption', assumptionId: 'a1' } }) };
+    // No surviving-assumptions map → treated as alive (defensive; most delete
+    // paths don't touch assumptions).
+    expect(pruneComments(map, {}, {})).toBe(map);
+    const a1 = {
+      id: 'a1',
+      edgeId: 'e1',
+      text: 't',
+      status: 'unexamined' as const,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    expect(pruneComments(map, {}, {}, { a1 })).toBe(map);
+  });
+
+  it('drops an assumption-anchored comment when its record is gone (map passed)', () => {
+    const map = { c1: mk({ id: 'c1', anchor: { kind: 'assumption', assumptionId: 'a1' } }) };
+    expect(pruneComments(map, {}, {}, {})).toEqual({});
+  });
+
   it('drops replies orphaned when their parent dies', () => {
     const map = {
       p1: mk({ id: 'p1', anchor: { kind: 'entity', entityId: e.id } }),
@@ -151,6 +172,16 @@ describe('openCommentCountsByAnchor', () => {
     });
     expect(byEntity.get(e.id)).toBe(2);
     expect(byEdge.get('ed1')).toBe(1);
+  });
+
+  it('counts open assumption-anchored comments into byAssumption', () => {
+    const { byAssumption } = openCommentCountsByAnchor({
+      c1: mk({ id: 'c1', anchor: { kind: 'assumption', assumptionId: 'a1' } }),
+      c2: mk({ id: 'c2', anchor: { kind: 'assumption', assumptionId: 'a1' } }),
+      c3: mk({ id: 'c3', anchor: { kind: 'assumption', assumptionId: 'a2' } }),
+    });
+    expect(byAssumption.get('a1')).toBe(2);
+    expect(byAssumption.get('a2')).toBe(1);
   });
 
   it('ignores resolved threads, replies, and document anchors', () => {
