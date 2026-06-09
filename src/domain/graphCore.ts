@@ -6,7 +6,7 @@
 //
 // Split out of `graph.ts` (Session 165).
 
-import type { Edge, Entity, EntityId, EntityType, TPDocument } from './types';
+import type { Assumption, Edge, Entity, EntityId, EntityType, TPDocument } from './types';
 
 /**
  * Session 105 / Tier 1 #3 — cached `Object.values(doc.edges)`.
@@ -245,6 +245,49 @@ const EMPTY_TYPE_RESULT: readonly Entity[] = Object.freeze([]) as readonly Entit
 
 export const entitiesOfType = (doc: TPDocument, type: EntityType): readonly Entity[] =>
   entitiesByType(doc).get(type) ?? EMPTY_TYPE_RESULT;
+
+const EMPTY_ASSUMPTIONS_BY_EDGE: ReadonlyMap<string, readonly Assumption[]> = new Map();
+const EMPTY_ASSUMPTION_RESULT: readonly Assumption[] = Object.freeze([]) as readonly Assumption[];
+
+/**
+ * Per-doc memo of first-class assumption records grouped by their host edge
+ * (`record.edgeId`). Keyed on the `doc.assumptions` reference — stable until an
+ * assumption mutates, same strategy as {@link entitiesByType}. Internal; callers
+ * use {@link assumptionsForEdge}.
+ */
+const assumptionsByEdgeCache = new WeakMap<
+  NonNullable<TPDocument['assumptions']>,
+  ReadonlyMap<string, readonly Assumption[]>
+>();
+
+const assumptionsByEdge = (doc: TPDocument): ReadonlyMap<string, readonly Assumption[]> => {
+  const map = doc.assumptions;
+  if (!map) return EMPTY_ASSUMPTIONS_BY_EDGE;
+  const cached = assumptionsByEdgeCache.get(map);
+  if (cached) return cached;
+  const byEdge = new Map<string, Assumption[]>();
+  for (const a of Object.values(map)) {
+    let arr = byEdge.get(a.edgeId);
+    if (!arr) {
+      arr = [];
+      byEdge.set(a.edgeId, arr);
+    }
+    arr.push(a);
+  }
+  const frozen: ReadonlyMap<string, readonly Assumption[]> = byEdge;
+  assumptionsByEdgeCache.set(map, frozen);
+  return frozen;
+};
+
+/**
+ * The first-class assumption records attached to the given edge (by
+ * `record.edgeId`). Cached per `doc.assumptions` reference; returns a stable
+ * empty-array reference when the edge has none, so callers' referential-equality
+ * checks hold. The record-canonical replacement for walking `edge.assumptionIds`
+ * into `doc.entities`.
+ */
+export const assumptionsForEdge = (doc: TPDocument, edgeId: string): readonly Assumption[] =>
+  assumptionsByEdge(doc).get(edgeId) ?? EMPTY_ASSUMPTION_RESULT;
 
 // Session 85 — per-doc-reference memo. `structuralEntities` is called
 // from 44+ sites (validators, exporters, emission, inspector, layout,

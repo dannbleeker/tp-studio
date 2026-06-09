@@ -1,3 +1,4 @@
+import { assumptionsForEdge } from './graphCore';
 import type { Entity, TPDocument } from './types';
 
 /**
@@ -104,9 +105,7 @@ const findArrow = (
       // (back-compat) and the v7 Document.assumptions map keyed by
       // edgeId. The two should normally agree; we union to be safe.
       const legacy = edge.assumptionIds?.length ?? 0;
-      const fromMap = doc.assumptions
-        ? Object.values(doc.assumptions).filter((a) => a.edgeId === edge.id).length
-        : 0;
+      const fromMap = assumptionsForEdge(doc, edge.id).length;
       return { edgeId: edge.id, assumptionCount: Math.max(legacy, fromMap) };
     }
   }

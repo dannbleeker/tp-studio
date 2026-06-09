@@ -10,6 +10,7 @@
 //   - `graphPrune.ts` — cascade-delete cleanup + the comment-count aggregation.
 
 export {
+  assumptionsForEdge,
   connectionCount,
   edgesArray,
   entitiesArray,

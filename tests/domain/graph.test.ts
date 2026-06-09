@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  assumptionsForEdge,
   connectionCount,
   entitiesByType,
   entitiesOfType,
@@ -14,9 +15,60 @@ import {
   removeEntityFromEdges,
   structuralEntities,
 } from '@/domain/graph';
+import type { Assumption, TPDocument } from '@/domain/types';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(resetIds);
+
+describe('assumptionsForEdge', () => {
+  const mkAssumption = (id: string, edgeId: string): Assumption => ({
+    id,
+    edgeId,
+    text: id,
+    status: 'unexamined',
+    createdAt: 1,
+    updatedAt: 1,
+  });
+
+  it('groups the first-class assumption records by their host edge id', () => {
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const c = makeEntity({ title: 'C' });
+    const e1 = makeEdge(a.id, b.id);
+    const e2 = makeEdge(b.id, c.id);
+    const doc: TPDocument = {
+      ...makeDoc([a, b, c], [e1, e2]),
+      assumptions: {
+        a1: mkAssumption('a1', e1.id),
+        a2: mkAssumption('a2', e1.id),
+        a3: mkAssumption('a3', e2.id),
+      },
+    };
+    expect(assumptionsForEdge(doc, e1.id).map((x) => x.id)).toEqual(['a1', 'a2']);
+    expect(assumptionsForEdge(doc, e2.id).map((x) => x.id)).toEqual(['a3']);
+  });
+
+  it('returns a stable empty-array reference for an edge with no assumptions', () => {
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const e1 = makeEdge(a.id, b.id);
+    const doc = makeDoc([a, b], [e1]); // no assumptions field at all
+    const first = assumptionsForEdge(doc, e1.id);
+    expect(first).toEqual([]);
+    expect(assumptionsForEdge(doc, e1.id)).toBe(first); // same ref → memo-stable
+  });
+
+  it('memoises per doc.assumptions reference', () => {
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const e1 = makeEdge(a.id, b.id);
+    const doc: TPDocument = {
+      ...makeDoc([a, b], [e1]),
+      assumptions: { a1: mkAssumption('a1', e1.id) },
+    };
+    expect(assumptionsForEdge(doc, e1.id)).toBe(assumptionsForEdge(doc, e1.id));
+  });
+});
 
 describe('incomingEdges / outgoingEdges', () => {
   it('returns only edges that target / source the given entity', () => {
