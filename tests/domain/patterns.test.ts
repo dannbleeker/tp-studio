@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CURRENT_SCHEMA_VERSION } from '@/domain/migrations';
 import { PATTERNS, patternById, patternsForDiagram } from '@/domain/patterns';
 import type { DiagramType } from '@/domain/types';
 
@@ -76,10 +77,12 @@ describe('pattern registry', () => {
     }
   });
 
-  it('every built doc carries the current schemaVersion (9)', () => {
+  it('every built doc carries the current schemaVersion', () => {
     for (const pattern of PATTERNS) {
       const doc = pattern.build();
-      expect(doc.schemaVersion, `pattern ${pattern.id} ships an outdated schemaVersion`).toBe(9);
+      expect(doc.schemaVersion, `pattern ${pattern.id} ships an outdated schemaVersion`).toBe(
+        CURRENT_SCHEMA_VERSION
+      );
     }
   });
 });

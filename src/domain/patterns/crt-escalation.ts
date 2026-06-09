@@ -42,6 +42,6 @@ export const buildPatternCRTEscalation = (): TPDocument => {
     nextAnnotationNumber: 4,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 9,
+    schemaVersion: 10,
   };
 };

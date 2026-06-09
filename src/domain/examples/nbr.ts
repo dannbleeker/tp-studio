@@ -77,6 +77,6 @@ export const buildExampleNBR = (): TPDocument => {
     nextAnnotationNumber: 8,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 9,
+    schemaVersion: 10,
   };
 };

@@ -3,8 +3,8 @@ import { importFromJSON } from '@/domain/persistence';
 
 /**
  * Migration round-trip — feed `importFromJSON` a minimal document at each
- * past schemaVersion (1, 2, 3, 4) and assert the migration chain produces
- * a valid v5 document.
+ * past schemaVersion and assert the migration chain produces a valid
+ * current-version document.
  *
  * The fixtures are deliberately tiny: a single entity, a single edge, no
  * groups. We don't need full real-world docs — the migration functions
@@ -55,7 +55,7 @@ describe('schema migrations round-trip', () => {
 
     const doc = importFromJSON(JSON.stringify(raw));
 
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
     expect(doc.groups).toEqual({});
     expect(doc.nextAnnotationNumber).toBe(2); // 1 entity → next is 2
     // v1→v2 assigns annotationNumber 1 to the single entity.
@@ -83,7 +83,7 @@ describe('schema migrations round-trip', () => {
 
     const doc = importFromJSON(JSON.stringify(raw));
 
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
     expect(doc.groups).toEqual({});
     expect(doc.nextAnnotationNumber).toBe(2);
     expect(Object.values(doc.entities)[0]?.annotationNumber).toBe(1);
@@ -105,7 +105,7 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v3));
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
   });
 
   it('imports a v4 fixture → v5 doc (single version bump)', () => {
@@ -124,7 +124,7 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v4));
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
   });
 
   it('rejects a future-version document with a clear error', () => {
@@ -159,7 +159,7 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v5));
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
     // v6 added these fields but only as optional; migration doesn't
     // populate empty maps in the doc (they remain undefined).
     expect(doc.customEntityClasses).toBeUndefined();
@@ -198,7 +198,7 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v6));
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
     expect(doc.customEntityClasses?.['risk-event']?.label).toBe('Risk Event');
     const entity = Object.values(doc.entities)[0];
     expect(entity?.attributes?.severity).toEqual({ kind: 'int', value: 8 });
@@ -272,7 +272,7 @@ describe('schema migrations round-trip', () => {
       },
     };
     const doc = importFromJSON(JSON.stringify(v6ec));
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
     expect(doc.entities.a?.ecSlot).toBe('a');
     expect(doc.entities.b?.ecSlot).toBe('b');
     expect(doc.entities.c?.ecSlot).toBe('c');
@@ -303,7 +303,145 @@ describe('schema migrations round-trip', () => {
       },
     });
     const doc = importFromJSON(JSON.stringify(v7));
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
     expect(doc.ecVerbalStyle).toBe('twoSided');
+  });
+
+  // Session — v9→v10: record-canonical assumptions. The pivot moves every
+  // `type:'assumption'` entity OUT of `doc.entities` into `doc.assumptions`,
+  // re-anchors its comments to `{kind:'assumption'}`, and keeps the edge's
+  // `assumptionIds` membership index.
+  it('imports a v9 doc with an assumption entity + record → v10 record-only, comment re-anchored', () => {
+    const T = 1700000000000;
+    const v9 = {
+      id: 'doc-asm',
+      title: 'v9 assumption fixture',
+      diagramType: 'crt',
+      schemaVersion: 9,
+      createdAt: T,
+      updatedAt: T,
+      nextAnnotationNumber: 4,
+      groups: {},
+      entities: {
+        s: {
+          id: 's',
+          type: 'rootCause',
+          title: 'Cause',
+          annotationNumber: 1,
+          createdAt: T,
+          updatedAt: T,
+        },
+        t: {
+          id: 't',
+          type: 'ude',
+          title: 'Effect',
+          annotationNumber: 2,
+          createdAt: T,
+          updatedAt: T,
+        },
+        // The legacy assumption-Entity (with the canonical annotation number).
+        asm: {
+          id: 'asm',
+          type: 'assumption',
+          title: 'because the budget holds',
+          annotationNumber: 3,
+          createdAt: T,
+          updatedAt: T,
+        },
+      },
+      edges: {
+        e1: { id: 'e1', sourceId: 's', targetId: 't', kind: 'sufficiency', assumptionIds: ['asm'] },
+      },
+      // The dual-written record — but missing annotationNumber (records minted
+      // by v6→v7 predate that field), so the migration must back-fill it.
+      assumptions: {
+        asm: {
+          id: 'asm',
+          edgeId: 'e1',
+          text: 'because the budget holds',
+          status: 'valid',
+          createdAt: T,
+          updatedAt: T,
+        },
+      },
+      comments: {
+        c1: {
+          id: 'c1',
+          anchor: { kind: 'entity', entityId: 'asm' },
+          body: 'is this still true?',
+          author: 'Dann',
+          createdAt: T,
+          updatedAt: T,
+        },
+      },
+    };
+    const doc = importFromJSON(JSON.stringify(v9));
+    expect(doc.schemaVersion).toBe(10);
+    // The assumption is no longer an entity; the real nodes survive.
+    expect(doc.entities.asm).toBeUndefined();
+    expect(doc.entities.s).toBeDefined();
+    expect(doc.entities.t).toBeDefined();
+    // The record is canonical; annotationNumber back-filled from the entity.
+    expect(doc.assumptions?.asm?.text).toBe('because the budget holds');
+    expect(doc.assumptions?.asm?.status).toBe('valid');
+    expect(doc.assumptions?.asm?.annotationNumber).toBe(3);
+    // The per-edge membership index is preserved (removed only in a later phase).
+    expect(doc.edges.e1?.assumptionIds).toEqual(['asm']);
+    // The comment is re-anchored from {kind:'entity'} to {kind:'assumption'}.
+    const c = doc.comments?.c1;
+    expect(c?.anchor.kind).toBe('assumption');
+    if (c?.anchor.kind === 'assumption') expect(c.anchor.assumptionId).toBe('asm');
+  });
+
+  it('imports a v9 doc whose assumption entity has NO record → back-fills via reverse-walk', () => {
+    const T = 1700000000000;
+    const v9 = {
+      id: 'doc-asm2',
+      title: 'v9 assumption without record',
+      diagramType: 'crt',
+      schemaVersion: 9,
+      createdAt: T,
+      updatedAt: T,
+      nextAnnotationNumber: 4,
+      groups: {},
+      entities: {
+        s: {
+          id: 's',
+          type: 'rootCause',
+          title: 'Cause',
+          annotationNumber: 1,
+          createdAt: T,
+          updatedAt: T,
+        },
+        t: {
+          id: 't',
+          type: 'ude',
+          title: 'Effect',
+          annotationNumber: 2,
+          createdAt: T,
+          updatedAt: T,
+        },
+        asm: {
+          id: 'asm',
+          type: 'assumption',
+          title: 'reverse-walk me',
+          annotationNumber: 3,
+          createdAt: T,
+          updatedAt: T,
+        },
+      },
+      edges: {
+        e1: { id: 'e1', sourceId: 's', targetId: 't', kind: 'sufficiency', assumptionIds: ['asm'] },
+      },
+      // No first-class record exists — the migration must mint one.
+      assumptions: {},
+    };
+    const doc = importFromJSON(JSON.stringify(v9));
+    expect(doc.schemaVersion).toBe(10);
+    expect(doc.entities.asm).toBeUndefined();
+    expect(doc.assumptions?.asm?.edgeId).toBe('e1'); // reverse-walked from the edge
+    expect(doc.assumptions?.asm?.text).toBe('reverse-walk me');
+    expect(doc.assumptions?.asm?.status).toBe('unexamined');
+    expect(doc.assumptions?.asm?.annotationNumber).toBe(3);
   });
 });

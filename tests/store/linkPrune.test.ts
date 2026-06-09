@@ -39,7 +39,7 @@ const doc = (id: string, entities: Entity[]): TPDocument =>
     nextAnnotationNumber: 2,
     createdAt: 1,
     updatedAt: 1,
-    schemaVersion: 9,
+    schemaVersion: 10,
   }) as TPDocument;
 
 const mapOf = (...docs: TPDocument[]): Record<DocumentId, TPDocument> =>

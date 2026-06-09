@@ -141,5 +141,5 @@ export type TPDocument = {
   comments?: Record<string, Comment>;
   createdAt: number;
   updatedAt: number;
-  schemaVersion: 9;
+  schemaVersion: 10;
 };

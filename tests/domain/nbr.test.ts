@@ -22,7 +22,7 @@ describe('NBR diagram type — registry coverage', () => {
     const doc = createDocument('nbr');
     expect(doc.diagramType).toBe('nbr');
     expect(Object.keys(doc.entities)).toHaveLength(0);
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
   });
 
   it('DIAGRAM_TYPE_LABEL.nbr is the full name', () => {

@@ -148,7 +148,7 @@ describe('comments round-trip + migration', () => {
 
   it('migrates a v8 document to v9 (additive, no data change)', () => {
     const restored = importFromJSON(JSON.stringify({ ...makeDoc([], []), schemaVersion: 8 }));
-    expect(restored.schemaVersion).toBe(9);
+    expect(restored.schemaVersion).toBe(10);
   });
 });
 

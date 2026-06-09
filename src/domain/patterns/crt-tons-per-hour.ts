@@ -76,6 +76,6 @@ export const buildPatternCRTTonsPerHour = (): TPDocument => {
     nextAnnotationNumber: 7,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 9,
+    schemaVersion: 10,
   };
 };

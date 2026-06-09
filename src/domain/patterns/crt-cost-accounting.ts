@@ -70,6 +70,6 @@ export const buildPatternCRTCostAccounting = (): TPDocument => {
     nextAnnotationNumber: 12,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 9,
+    schemaVersion: 10,
   };
 };

@@ -100,6 +100,6 @@ export const buildPatternGoalTreeSubscriptionBusiness = (): TPDocument => {
     nextAnnotationNumber: 10,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 9,
+    schemaVersion: 10,
   };
 };

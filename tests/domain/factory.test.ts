@@ -9,7 +9,7 @@ describe('createDocument', () => {
   it.each(ALL_DIAGRAM_TYPES)('produces a valid blank document for %s', (type) => {
     const doc = createDocument(type);
     expect(doc.diagramType).toBe(type);
-    expect(doc.schemaVersion).toBe(9);
+    expect(doc.schemaVersion).toBe(10);
     expect(doc.title).toMatch(/Untitled/);
     expect(doc.createdAt).toBeTypeOf('number');
     expect(doc.updatedAt).toBe(doc.createdAt);

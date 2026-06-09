@@ -144,6 +144,9 @@ export const importFromJSON = (raw: string): TPDocument => {
     ...(performanceHigh ? { performanceHigh } : {}),
     createdAt: typeof parsed.createdAt === 'number' ? parsed.createdAt : Date.now(),
     updatedAt: typeof parsed.updatedAt === 'number' ? parsed.updatedAt : Date.now(),
-    schemaVersion: 9,
+    // The doc was just normalized by `migrateToCurrent`. The literal must equal
+    // `CURRENT_SCHEMA_VERSION` — the `schemaVersion: 10` literal TYPE on
+    // TPDocument makes tsc enforce that on every bump.
+    schemaVersion: 10,
   };
 };

@@ -107,6 +107,6 @@ export const buildECPattern = (spec: ECPatternSpec): TPDocument => {
     nextAnnotationNumber: 6 + noteParts.length,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 9,
+    schemaVersion: 10,
   };
 };

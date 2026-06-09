@@ -50,6 +50,6 @@ export const buildPatternCRTShiftingTheBurden = (): TPDocument => {
     nextAnnotationNumber: 5,
     createdAt: t,
     updatedAt: t,
-    schemaVersion: 9,
+    schemaVersion: 10,
   };
 };
