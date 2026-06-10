@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-06-10T16:46:11.014Z",
-  "commit": "1df878d",
+  "generatedAt": "2026-06-10T18:38:01.788Z",
+  "commit": "c82c112",
   "headline": {
-    "linesTsJs": 125096,
-    "tests": 4162,
-    "lineCoveragePct": 96.75,
-    "commits": 753,
+    "linesTsJs": 125414,
+    "tests": 4174,
+    "lineCoveragePct": 96.73,
+    "commits": 756,
     "ageDays": 30,
     "trackedFiles": 993,
     "featureManualPct": 100,
-    "featureBookPct": 76.8,
-    "featureExamplePct": 29.4
+    "featureBookPct": 76.4,
+    "featureExamplePct": 29.2
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
       "files": 464,
-      "lines": 63048
+      "lines": 63222
     },
     {
       "category": "Unit tests",
       "files": 349,
-      "lines": 55847
+      "lines": 55991
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 96.75,
-      "covered": 12238,
-      "total": 12649
+      "pct": 96.73,
+      "covered": 12284,
+      "total": 12698
     },
     "statements": {
       "pct": 94.02,
-      "covered": 13922,
-      "total": 14807
+      "covered": 13978,
+      "total": 14867
     },
     "functions": {
-      "pct": 94.07,
-      "covered": 2637,
-      "total": 2803
+      "pct": 94.06,
+      "covered": 2646,
+      "total": 2813
     },
     "branches": {
-      "pct": 84.7,
-      "covered": 8017,
-      "total": 9465
+      "pct": 84.66,
+      "covered": 8037,
+      "total": 9493
     }
   },
   "tests": {
-    "unit": 4074,
+    "unit": 4086,
     "e2e": 88,
-    "durationMs": 207161,
+    "durationMs": 207901,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10422
-      },
-      {
-        "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4430
+        "ms": 10838
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4303
+        "ms": 4617
+      },
+      {
+        "file": "tests/perf/validators.bench.test.ts",
+        "ms": 4466
       },
       {
         "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2456
+        "ms": 1993
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2235
+        "ms": 1954
       }
     ]
   },
@@ -117,12 +117,12 @@
         "lines": 688
       },
       {
-        "name": "components/canvas/edges/TPEdge.tsx",
-        "lines": 617
+        "name": "components/canvas/hooks/useEdgeRoutes.ts",
+        "lines": 618
       },
       {
-        "name": "components/canvas/hooks/useEdgeRoutes.ts",
-        "lines": 603
+        "name": "components/canvas/edges/TPEdge.tsx",
+        "lines": 617
       },
       {
         "name": "domain/patterns/index.ts",
@@ -189,26 +189,26 @@
     "nonNull": 98
   },
   "bundle": {
-    "jsGzipKb": 786.2,
+    "jsGzipKb": 786.8,
     "cssGzipKb": 17.7,
-    "totalGzipKb": 803.9,
+    "totalGzipKb": 804.5,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 52913,
     "chapters": 25,
-    "appLoc": 63048,
+    "appLoc": 63222,
     "docToCodeRatio": 0.84
   },
   "featureCoverage": {
-    "total": 194,
-    "manual": 194,
+    "total": 195,
+    "manual": 195,
     "manualPct": 100,
     "book": 149,
-    "bookPct": 76.8,
+    "bookPct": 76.4,
     "bookExample": 57,
-    "bookExamplePct": 29.4,
+    "bookExamplePct": 29.2,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -251,8 +251,8 @@
         "book": 1
       },
       "Canvas": {
-        "total": 16,
-        "manual": 16,
+        "total": 17,
+        "manual": 17,
         "book": 8
       },
       "Editing": {
@@ -344,6 +344,11 @@
     "gaps": {
       "noManual": [],
       "noBook": [
+        {
+          "id": "canvas-grow-cards",
+          "name": "Grow cards to fit text",
+          "since": 181
+        },
         {
           "id": "crt-spawn-ec-tied",
           "name": "Spawn EC from tied core drivers",
@@ -575,16 +580,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 30,
-    "commits": 753,
-    "commits7d": 269,
+    "commits": 756,
+    "commits7d": 272,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 629
+        "count": 631
       },
       {
         "name": "github-actions[bot]",
-        "count": 113
+        "count": 114
       },
       {
         "name": "dannbleeker",
@@ -592,9 +597,9 @@
       }
     ],
     "churn30d": {
-      "added": 185832,
-      "removed": 35017
+      "added": 186227,
+      "removed": 35070
     },
-    "changelogEntries": 330
+    "changelogEntries": 331
   }
 }
