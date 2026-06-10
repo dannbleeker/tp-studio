@@ -34,8 +34,8 @@
   },
   {
     "date": "2026-06-10",
-    "linesTsJs": 125413,
-    "coveragePct": 96.73,
+    "linesTsJs": 125416,
+    "coveragePct": 96.74,
     "tests": 4174,
     "bundleKb": 804.5,
     "mutationScore": 70.15,
