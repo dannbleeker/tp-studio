@@ -118,3 +118,68 @@ describe('validationFingerprint', () => {
     expect(fp('validation')).not.toBe(a);
   });
 });
+
+describe('validationFingerprint — custom entity classes', () => {
+  it("changes when a class's supersetOf changes (isOfBuiltin rules re-classify)", () => {
+    seedEntity('A');
+    useDocumentStore.getState().upsertCustomEntityClass({
+      id: 'site-risk',
+      label: 'Site Risk',
+      supersetOf: 'ude',
+    });
+    const a = fp('validation');
+    useDocumentStore.getState().upsertCustomEntityClass({
+      id: 'site-risk',
+      label: 'Site Risk',
+      supersetOf: 'effect',
+    });
+    expect(fp('validation')).not.toBe(a);
+  });
+
+  it('does NOT change on a label-only class edit (no rule reads labels)', () => {
+    seedEntity('A');
+    useDocumentStore.getState().upsertCustomEntityClass({
+      id: 'site-risk',
+      label: 'Site Risk',
+      supersetOf: 'ude',
+    });
+    const a = fp('validation');
+    useDocumentStore.getState().upsertCustomEntityClass({
+      id: 'site-risk',
+      label: 'Renamed Risk',
+      supersetOf: 'ude',
+    });
+    expect(fp('validation')).toBe(a);
+  });
+
+  it('validate() re-runs after a supersetOf flip with unchanged entities/edges (stale-cache regression)', async () => {
+    // Repro for the review finding: editing a class's supersetOf used to be
+    // invisible to the fingerprint (entities/edges refs unchanged), so the
+    // isOfBuiltin-aware rules served stale results until an unrelated edit.
+    const { validate } = await import('@/domain/validators');
+    const { makeDoc, makeEntity, makeEdge } = await import('./helpers');
+    const counter = makeEntity({ type: 'counter-move' as never, title: 'Custom injection' });
+    const eff = makeEntity({ type: 'effect', title: 'Traced effect' });
+    const base = makeDoc([counter, eff], [makeEdge(counter.id, eff.id)], 'nbr');
+    const asInjection = {
+      ...base,
+      customEntityClasses: {
+        'counter-move': { id: 'counter-move', label: 'Counter', supersetOf: 'injection' as const },
+      },
+    };
+    // Tracing custom injection + no UDE → the shape rule fires.
+    expect(validate(asInjection).some((w) => w.ruleId === 'nbr-no-negative-branch')).toBe(true);
+    // Same entities/edges REFERENCES, only the class map differs.
+    const asEffect = {
+      ...asInjection,
+      customEntityClasses: {
+        'counter-move': { id: 'counter-move', label: 'Counter', supersetOf: 'effect' as const },
+      },
+    };
+    expect(asEffect.entities).toBe(asInjection.entities);
+    expect(asEffect.edges).toBe(asInjection.edges);
+    // No injection in the doc any more → the rule must NOT fire (a stale
+    // fingerprint hit would keep returning the old warning).
+    expect(validate(asEffect).some((w) => w.ruleId === 'nbr-no-negative-branch')).toBe(false);
+  });
+});

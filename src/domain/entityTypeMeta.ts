@@ -197,23 +197,10 @@ export const resolveEntityTypeMeta = (
 export const entityMeta = (typeId: string, doc?: TPDocument): EntityTypeMeta =>
   resolveEntityTypeMeta(typeId, doc?.customEntityClasses);
 
-/**
- * B3 — "Does this entity behave as the given built-in type?" Returns
- * true when the entity's own `type` IS the built-in, or when its
- * `type` is a custom class with `supersetOf` set to the built-in.
- *
- * Use this in CLR rules and other places that pattern-match on
- * built-in entity types so they also fire for the user's custom
- * classes. Custom classes that don't set `supersetOf` are treated as
- * their own type — the rules ignore them, which is the right default
- * for purely decorative typology.
- */
-export const isOfBuiltin = (
-  entityTypeId: string,
-  builtin: EntityType,
-  customClasses?: Record<string, CustomEntityClass>
-): boolean => {
-  if (entityTypeId === builtin) return true;
-  const custom = customClasses?.[entityTypeId];
-  return custom?.supersetOf === builtin;
-};
+// `isOfBuiltin` ("does this entity behave as the given built-in type?") and
+// `displayTitle` moved to `entityPalettes.ts` — the dependency-free leaf — so
+// domain-core modules (graphCore's `entitiesOfBuiltin`) and exporters can use
+// them without pulling this module's Lucide icon catalogue into their chunk.
+// Re-exported here to keep `@/domain/entityTypeMeta` the single import surface
+// for the existing call sites.
+export { displayTitle, isOfBuiltin } from './entityPalettes';

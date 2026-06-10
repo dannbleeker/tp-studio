@@ -99,13 +99,19 @@ const computeLayoutFingerprint = (doc: TPDocument): string => {
  *     counts assumptions per edge, so add / remove / re-home must re-validate
  *   - resolved-warning ids (so "resolve" / "un-resolve" flips
  *     re-validate)
+ *   - the custom-class supersetOf mapping (`id>supersetOf` per
+ *     `doc.customEntityClasses` entry) — every `isOfBuiltin`-aware rule
+ *     (predicted-effect-existence, additional-cause, the NBR shape rules)
+ *     re-classifies entities when a class's supersetOf changes, with no
+ *     entity/edge mutation involved
  *
  * NOT encoded (mutating these is free):
  *   - position, attestation, owner, lastValidatedAt, evidence,
  *     description, attributes other than S&T facets, collapsed,
  *     titleSize, ordering, annotationNumber, edge labels /
  *     descriptions / loopName / loopNarrative, OR/XOR group ids, group
- *     memberships, assumption text / status / kind.
+ *     memberships, assumption text / status / kind, custom-class
+ *     label / color / hint (only `supersetOf` feeds a rule).
  *
  * Note: a future rule that reads any of the "free" fields needs to
  * either add the field here or invalidate the cache another way.
@@ -117,14 +123,18 @@ const ST_FACET_FINGERPRINT_KEYS: readonly string[] = [
   'stSufficiencyAssumption',
 ];
 
-// Perf #30 — keyed on (entities, edges, resolvedWarnings, assumptions)
-// references. `diagramType` is a primitive and can't be a WeakMap key, so it's
-// stored beside the string and re-checked on a hit (it changes only at
-// document creation/load, which also changes the other refs — the check is
-// belt-and-suspenders). `doc.assumptions` is in the key because adding an
-// assumption changes ONLY that map (not `doc.edges`) post record-canonical, yet
-// the EC completeness rule reads per-edge assumption counts.
+// Perf #30 — keyed on (entities, edges, resolvedWarnings, assumptions,
+// customEntityClasses) references. `diagramType` is a primitive and can't be a
+// WeakMap key, so it's stored beside the string and re-checked on a hit (it
+// changes only at document creation/load, which also changes the other refs —
+// the check is belt-and-suspenders). `doc.assumptions` is in the key because
+// adding an assumption changes ONLY that map (not `doc.edges`) post
+// record-canonical, yet the EC completeness rule reads per-edge assumption
+// counts. `doc.customEntityClasses` is in the key for the same reason: editing
+// a class's `supersetOf` re-classifies entities for the `isOfBuiltin`-aware
+// rules without touching any other map.
 const EMPTY_ASSUMPTIONS_FP = Object.freeze({}) as NonNullable<TPDocument['assumptions']>;
+const EMPTY_CLASSES_FP = Object.freeze({}) as NonNullable<TPDocument['customEntityClasses']>;
 
 const validationFpCache = new WeakMap<
   TPDocument['entities'],
@@ -132,17 +142,22 @@ const validationFpCache = new WeakMap<
     TPDocument['edges'],
     WeakMap<
       TPDocument['resolvedWarnings'],
-      WeakMap<NonNullable<TPDocument['assumptions']>, { dt: string; str: string }>
+      WeakMap<
+        NonNullable<TPDocument['assumptions']>,
+        WeakMap<NonNullable<TPDocument['customEntityClasses']>, { dt: string; str: string }>
+      >
     >
   >
 >();
 
 export const validationFingerprint = (doc: TPDocument): string => {
   const assumptionsKey = doc.assumptions ?? EMPTY_ASSUMPTIONS_FP;
+  const classesKey = doc.customEntityClasses ?? EMPTY_CLASSES_FP;
   let byEdges = validationFpCache.get(doc.entities);
   let byResolved = byEdges?.get(doc.edges);
   let byAssumptions = byResolved?.get(doc.resolvedWarnings);
-  const hit = byAssumptions?.get(assumptionsKey);
+  let byClasses = byAssumptions?.get(assumptionsKey);
+  const hit = byClasses?.get(classesKey);
   if (hit && hit.dt === doc.diagramType) return hit.str;
 
   const str = computeValidationFingerprint(doc);
@@ -158,7 +173,11 @@ export const validationFingerprint = (doc: TPDocument): string => {
     byAssumptions = new WeakMap();
     byResolved.set(doc.resolvedWarnings, byAssumptions);
   }
-  byAssumptions.set(assumptionsKey, { dt: doc.diagramType, str });
+  if (!byClasses) {
+    byClasses = new WeakMap();
+    byAssumptions.set(assumptionsKey, byClasses);
+  }
+  byClasses.set(classesKey, { dt: doc.diagramType, str });
   return str;
 };
 
@@ -196,5 +215,11 @@ const computeValidationFingerprint = (doc: TPDocument): string => {
     .map((a) => a.edgeId)
     .sort()
     .join(',');
-  return `${doc.diagramType}|${entitySig}|${edgeSig}|${resolvedSig}|${assumptionSig}`;
+  // The custom-class supersetOf mapping — the only class field any rule reads
+  // (via `isOfBuiltin`). Label / color / hint edits stay fingerprint-free.
+  const classesSig = Object.values(doc.customEntityClasses ?? {})
+    .map((c) => `${c.id}>${c.supersetOf ?? ''}`)
+    .sort()
+    .join(',');
+  return `${doc.diagramType}|${entitySig}|${edgeSig}|${resolvedSig}|${assumptionSig}|${classesSig}`;
 };

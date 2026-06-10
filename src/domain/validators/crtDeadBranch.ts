@@ -1,4 +1,5 @@
 import { udeReachCounts } from '../coreDriver';
+import { displayTitle } from '../entityPalettes';
 import { structuralEntities } from '../graph';
 import type { TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
@@ -31,7 +32,7 @@ export const crtDeadBranchRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'crt-dead-branch',
         { kind: 'entity', id: e.id },
-        `"${e.title || '(untitled)'}" doesn't lead to any UDE — prune or archive it, or connect it into the causal chain.`
+        `"${displayTitle(e)}" doesn't lead to any UDE — prune or archive it, or connect it into the causal chain.`
       )
     );
   }

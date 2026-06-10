@@ -153,3 +153,31 @@ describe('exportRiskRegister — row count (toast)', () => {
     expect(exportRiskRegister(doc())).toBe(2);
   });
 });
+
+describe('custom entity classes (supersetOf) in the register', () => {
+  it('a custom-class injection counts as a mitigation (validator/exporter agreement)', () => {
+    const s = useDocumentStore.getState();
+    s.upsertCustomEntityClass({
+      id: 'counter-move',
+      label: 'Counter Move',
+      supersetOf: 'injection',
+    });
+    const mit = s.addEntity({ type: 'counter-move' as never, title: 'Custom mitigation' });
+    const ude = seedEntity('Customer churn', 'ude');
+    useDocumentStore.getState().connect(mit.id, ude.id);
+    const csv = buildRiskRegisterCsv(doc());
+    const row = csv.split('\n')[1]!;
+    expect(row).toContain('Custom mitigation');
+    expect(row.endsWith(',mitigated')).toBe(true);
+  });
+
+  it('a custom-class UDE gets a register row', () => {
+    const s = useDocumentStore.getState();
+    s.upsertCustomEntityClass({ id: 'site-risk', label: 'Site Risk', supersetOf: 'ude' });
+    s.addEntity({ type: 'site-risk' as never, title: 'Custom risk row' });
+    const csv = buildRiskRegisterCsv(doc());
+    const lines = csv.split('\n').filter((l) => l.length > 0);
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toContain('Custom risk row');
+  });
+});

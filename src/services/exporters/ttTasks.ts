@@ -1,3 +1,4 @@
+import { displayTitle } from '@/domain/entityPalettes';
 import { incomingEdges, outgoingEdges } from '@/domain/graph';
 import type { Entity, TPDocument } from '@/domain/types';
 import { csvRow, slug, triggerDownload } from './shared';
@@ -137,7 +138,7 @@ const preconditionFor = (doc: TPDocument, action: Entity): string => {
   const titles = incoming
     .map((e) => doc.entities[e.sourceId])
     .filter((s): s is Entity => !!s)
-    .map((s) => s.title.trim() || '(untitled)');
+    .map((s) => displayTitle(s));
   if (titles.length === 0) return '(no precondition drawn)';
   return titles.join('; ');
 };
@@ -152,7 +153,7 @@ const outcomeFor = (doc: TPDocument, action: Entity): string => {
   const titles = outgoing
     .map((e) => doc.entities[e.targetId])
     .filter((t): t is Entity => !!t)
-    .map((t) => t.title.trim() || '(untitled)');
+    .map((t) => displayTitle(t));
   if (titles.length === 0) return '(no outcome drawn)';
   return titles.join('; ');
 };

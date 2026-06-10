@@ -1,4 +1,4 @@
-import type { DiagramType, EntityType, TPDocument } from './types';
+import type { CustomEntityClass, DiagramType, EntityType, TPDocument } from './types';
 
 /**
  * Session 135 — extracted from `entityTypeMeta.ts` (file split). The
@@ -145,3 +145,31 @@ export const paletteForDoc = (doc: {
     : [];
   return [...builtins, ...custom];
 };
+
+/**
+ * Type-classification predicate: does `entityTypeId` denote the given
+ * built-in type, either directly or via a custom class whose `supersetOf`
+ * points at it? The single owner of "is this a kind of <builtin>" for
+ * validators, exporters and the cached `entitiesOfBuiltin` index. Lives in
+ * this dependency-free leaf (not `entityTypeMeta`, which pulls the Lucide
+ * icon catalogue) so domain-core modules can import it without dragging
+ * icons into their chunk.
+ */
+export const isOfBuiltin = (
+  entityTypeId: string,
+  builtin: EntityType,
+  customClasses?: Record<string, CustomEntityClass>
+): boolean => {
+  if (entityTypeId === builtin) return true;
+  const custom = customClasses?.[entityTypeId];
+  return custom?.supersetOf === builtin;
+};
+
+/**
+ * An entity's title for prose surfaces (warning messages, CSV cells), with the
+ * shared "(untitled)" fallback for empty / whitespace-only titles. One owner
+ * for the literal — validators and exporters previously each inlined it (some
+ * without the trim). Suffixed variants ("(untitled objective)" etc.) stay
+ * local to their exporters on purpose: the suffix carries meaning there.
+ */
+export const displayTitle = (e: { title: string }): string => e.title.trim() || '(untitled)';

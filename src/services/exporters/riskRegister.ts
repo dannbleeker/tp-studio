@@ -1,4 +1,5 @@
-import { incomingEdges, outgoingEdges } from '@/domain/graph';
+import { displayTitle, isOfBuiltin } from '@/domain/entityPalettes';
+import { entitiesOfBuiltin, incomingEdges, outgoingEdges } from '@/domain/graph';
 import type { Entity, EvidenceItem, TPDocument } from '@/domain/types';
 import { csvRow, slug, triggerDownload } from './shared';
 
@@ -55,7 +56,7 @@ const triggerFor = (doc: TPDocument, ude: Entity): string => {
   const titles = incoming
     .map((e) => doc.entities[e.sourceId])
     .filter((s): s is Entity => !!s)
-    .map((s) => s.title.trim() || '(untitled)');
+    .map((s) => displayTitle(s));
   if (titles.length === 0) return '(no trigger drawn)';
   return titles.join(' + ');
 };
@@ -81,19 +82,20 @@ const triggerFor = (doc: TPDocument, ude: Entity): string => {
 const buildMitigationsByUde = (doc: TPDocument): Map<string, string[]> => {
   const result = new Map<string, string[]>();
   // First, collect all candidate mitigations (injection + desiredEffect
-  // entities). Walking by type avoids the per-entity filter in the
-  // BFS loop.
-  const mitigations: Entity[] = [];
-  for (const e of Object.values(doc.entities)) {
-    // Keep untitled mitigations (placeholdered below) rather than dropping them.
-    if (e.type === 'injection' || e.type === 'desiredEffect') mitigations.push(e);
-  }
+  // entities, custom classes included — the same `entitiesOfBuiltin`
+  // definition the NBR validator uses, so the exporter and the validator
+  // can't disagree about what counts as an injection). Untitled mitigations
+  // are kept (placeholdered below) rather than dropped.
+  const mitigations: Entity[] = [
+    ...entitiesOfBuiltin(doc, 'injection'),
+    ...entitiesOfBuiltin(doc, 'desiredEffect'),
+  ];
   // Forward-BFS from each mitigation; record the mitigation's title
   // against every UDE reached. The `seenForThisMitigation` Set
   // prevents duplicate entries when one mitigation reaches the same
   // UDE via multiple paths.
   for (const m of mitigations) {
-    const title = m.title.trim() || '(untitled)';
+    const title = displayTitle(m);
     const visited = new Set<string>([m.id]);
     const queue: string[] = [m.id];
     // Head-index dequeue: O(1) per step vs `queue.shift()`'s O(N) array slide.
@@ -107,7 +109,7 @@ const buildMitigationsByUde = (doc: TPDocument): Map<string, string[]> => {
         visited.add(targetId);
         const tgt = doc.entities[targetId];
         if (!tgt) continue;
-        if (tgt.type === 'ude') {
+        if (isOfBuiltin(tgt.type, 'ude', doc.customEntityClasses)) {
           let list = result.get(targetId);
           if (!list) {
             list = [];
@@ -184,8 +186,10 @@ const evidenceFor = (entity: Entity): string => {
 export const buildRiskRegisterCsv = (doc: TPDocument): string => {
   const lines: string[] = [csvRow([...HEADER])];
 
-  const udes = Object.values(doc.entities)
-    .filter((e) => e.type === 'ude')
+  // Custom classes with supersetOf:'ude' get a register row too — they're
+  // UDEs to every other surface (validator, canvas), so the export agrees.
+  const udes = entitiesOfBuiltin(doc, 'ude')
+    .slice()
     .sort((a, b) => a.annotationNumber - b.annotationNumber);
 
   // Session 135 / Perf #4 — one BFS pass instead of one per UDE.
@@ -198,7 +202,7 @@ export const buildRiskRegisterCsv = (doc: TPDocument): string => {
     lines.push(
       csvRow([
         ude.id,
-        ude.title.trim() || '(untitled)',
+        displayTitle(ude),
         triggerFor(doc, ude),
         ude.description ?? '',
         mitigation,
@@ -223,5 +227,5 @@ export const exportRiskRegister = (doc: TPDocument): number => {
   triggerDownload(blob, `${slug(doc.title)}-risk-register.csv`);
   // One CSV record per UDE — count the source rows directly so a multi-line
   // `description` cell (quoted per RFC 4180) can't inflate the toast count.
-  return Object.values(doc.entities).filter((e) => e.type === 'ude').length;
+  return entitiesOfBuiltin(doc, 'ude').length;
 };

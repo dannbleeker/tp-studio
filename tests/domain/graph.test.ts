@@ -3,6 +3,7 @@ import {
   assumptionsForEdge,
   connectionCount,
   entitiesByType,
+  entitiesOfBuiltin,
   entitiesOfType,
   findCycles,
   findPath,
@@ -330,5 +331,44 @@ describe('findCycles', () => {
     const cycles = findCycles(doc);
     // Only the A↔B cycle; the A→B→C arm doesn't add a cycle.
     expect(cycles).toHaveLength(1);
+  });
+});
+
+describe('entitiesOfBuiltin', () => {
+  const CLASSES = {
+    'site-risk': { id: 'site-risk', label: 'Site Risk', supersetOf: 'ude' as const },
+  };
+
+  it('matches raw builtin types AND custom classes with a matching supersetOf', () => {
+    const plain = makeEntity({ type: 'ude', title: 'Plain' });
+    const custom = makeEntity({ type: 'site-risk' as never, title: 'Custom' });
+    const other = makeEntity({ type: 'effect', title: 'Other' });
+    const doc = { ...makeDoc([plain, custom, other], []), customEntityClasses: CLASSES };
+    expect(
+      entitiesOfBuiltin(doc, 'ude')
+        .map((e) => e.id)
+        .sort()
+    ).toEqual([plain.id, custom.id].sort());
+  });
+
+  it('returns a referentially-stable array per (entities, classes) state', () => {
+    const a = makeEntity({ type: 'ude', title: 'A' });
+    const doc = { ...makeDoc([a], []), customEntityClasses: CLASSES };
+    expect(entitiesOfBuiltin(doc, 'ude')).toBe(entitiesOfBuiltin(doc, 'ude'));
+  });
+
+  it('re-derives when only the classes map changes (same entities reference)', () => {
+    const custom = makeEntity({ type: 'site-risk' as never, title: 'Custom' });
+    const asUde = { ...makeDoc([custom], []), customEntityClasses: CLASSES };
+    const asEffect = {
+      ...asUde,
+      customEntityClasses: {
+        'site-risk': { id: 'site-risk', label: 'Site Risk', supersetOf: 'effect' as const },
+      },
+    };
+    expect(asEffect.entities).toBe(asUde.entities);
+    expect(entitiesOfBuiltin(asUde, 'ude')).toHaveLength(1);
+    expect(entitiesOfBuiltin(asEffect, 'ude')).toHaveLength(0);
+    expect(entitiesOfBuiltin(asEffect, 'effect')).toHaveLength(1);
   });
 });

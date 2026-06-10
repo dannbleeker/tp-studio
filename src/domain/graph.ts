@@ -15,6 +15,7 @@ export {
   edgesArray,
   entitiesArray,
   entitiesByType,
+  entitiesOfBuiltin,
   entitiesOfType,
   getEntity,
   hasEdge,

@@ -1,6 +1,6 @@
-import { isOfBuiltin } from '../entityTypeMeta';
-import { entitiesOfType, incomingEdges, outgoingEdges, reachableForward } from '../graph';
-import type { Entity, TPDocument } from '../types';
+import { displayTitle } from '../entityPalettes';
+import { entitiesOfBuiltin, incomingEdges, outgoingEdges, reachableForward } from '../graph';
+import type { TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
 
 /**
@@ -9,23 +9,17 @@ import { makeWarning, type UntieredWarning } from './shared';
  * The canonical Negative Branch Reservation walks: candidate injection →
  * forward chain → turning point → UDEs (the method checklist teaches exactly
  * this, and the risk-register export structurally assumes it — its mitigation
- * inference BFSes injection → UDE). Until now nothing validated that shape:
- * NBR borrowed the FRT rule set wholesale and was the only typed diagram with
- * zero diagram-specific rules. These two cover the structurally-verifiable
- * halves; the judgment steps (turning point, reactive-vs-proactive mitigation,
- * adopt/modify/reject) stay with the checklist — a rule there would nag during
- * normal use (a mitigation is legitimately absent while you're still deciding).
+ * inference BFSes injection → UDE). These two rules cover the structurally-
+ * verifiable halves; the judgment steps (turning point, reactive-vs-proactive
+ * mitigation, adopt/modify/reject) stay with the checklist — a rule there
+ * would nag during normal use (a mitigation is legitimately absent while
+ * you're still deciding).
  *
- * Type matching: injections resolve via `isOfBuiltin` so custom classes with
- * `supersetOf: 'injection'` participate (consistent with the sibling
- * `predicted-effect-existence` rule in the NBR set); UDEs match the plain type
- * (consistent with every CRT UDE rule).
+ * Type matching: BOTH injections and UDEs resolve via `entitiesOfBuiltin`, so
+ * custom entity classes with `supersetOf: 'injection'` / `'ude'` participate —
+ * the same definition the risk-register export uses, so the validator and the
+ * exporter can't disagree about what counts as an injection or a UDE.
  */
-
-const injectionsOf = (doc: TPDocument): Entity[] =>
-  Object.values(doc.entities).filter((e) =>
-    isOfBuiltin(e.type, 'injection', doc.customEntityClasses)
-  );
 
 /**
  * `nbr-no-negative-branch` — the user has started tracing forward from the
@@ -41,8 +35,8 @@ const injectionsOf = (doc: TPDocument): Entity[] =>
  */
 export const nbrNoNegativeBranchRule = (doc: TPDocument): UntieredWarning[] => {
   if (doc.diagramType !== 'nbr') return [];
-  if (entitiesOfType(doc, 'ude').length > 0) return [];
-  const tracing = injectionsOf(doc)
+  if (entitiesOfBuiltin(doc, 'ude').length > 0) return [];
+  const tracing = entitiesOfBuiltin(doc, 'injection')
     .filter((inj) => outgoingEdges(doc, inj.id).length > 0)
     .sort((a, b) => a.annotationNumber - b.annotationNumber);
   const anchor = tracing[0];
@@ -73,14 +67,14 @@ export const nbrNoNegativeBranchRule = (doc: TPDocument): UntieredWarning[] => {
  */
 export const nbrUdeDisconnectedRule = (doc: TPDocument): UntieredWarning[] => {
   if (doc.diagramType !== 'nbr') return [];
-  const injections = injectionsOf(doc);
+  const injections = entitiesOfBuiltin(doc, 'injection');
   if (injections.length === 0) return [];
   const reachable = reachableForward(
     doc,
     injections.map((inj) => inj.id)
   );
   const out: UntieredWarning[] = [];
-  for (const ude of entitiesOfType(doc, 'ude')) {
+  for (const ude of entitiesOfBuiltin(doc, 'ude')) {
     if (incomingEdges(doc, ude.id).length === 0) continue;
     if (reachable.has(ude.id)) continue;
     out.push(
@@ -88,7 +82,7 @@ export const nbrUdeDisconnectedRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'nbr-ude-disconnected',
         { kind: 'entity', id: ude.id },
-        `UDE "${ude.title || '(untitled)'}" doesn't trace back to the candidate injection — connect the chain (injection → … → UDE) or it can't inform the adopt / modify / reject call.`
+        `UDE "${displayTitle(ude)}" doesn't trace back to the candidate injection — connect the chain (injection → … → UDE) or it can't inform the adopt / modify / reject call.`
       )
     );
   }

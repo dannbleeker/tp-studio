@@ -150,6 +150,17 @@ describe('nbr-ude-disconnected', () => {
     }
   });
 
+  it('does not fire on a non-NBR diagram (same disconnected shape on FRT)', () => {
+    const inj = makeEntity({ type: 'injection', title: 'Add a QA gate' });
+    const effA = makeEntity({ type: 'effect', title: 'On-chain' });
+    const effB = makeEntity({ type: 'effect', title: 'Floating root' });
+    const ude = makeEntity({ type: 'ude', title: 'Off-chain UDE' });
+    const warnings = validate(
+      makeDoc([inj, effA, effB, ude], [makeEdge(inj.id, effA.id), makeEdge(effB.id, ude.id)], 'frt')
+    );
+    expect(rules(warnings, 'nbr-ude-disconnected')).toHaveLength(0);
+  });
+
   it('survives a cycle on the injection chain (BFS is cycle-safe)', () => {
     const inj = makeEntity({ type: 'injection', title: 'Add a QA gate' });
     const a = makeEntity({ type: 'effect', title: 'A' });
@@ -168,5 +179,59 @@ describe('nbr-ude-disconnected', () => {
       )
     );
     expect(rules(warnings, 'nbr-ude-disconnected')).toHaveLength(0);
+  });
+});
+
+describe('custom entity classes (supersetOf) participate in both rules', () => {
+  const CLASSES = {
+    'site-risk': { id: 'site-risk', label: 'Site Risk', supersetOf: 'ude' as const },
+    'counter-move': { id: 'counter-move', label: 'Counter Move', supersetOf: 'injection' as const },
+  };
+
+  it('a custom-class UDE suppresses nbr-no-negative-branch (the branch exists)', () => {
+    const inj = makeEntity({ type: 'injection', title: 'Add a QA gate' });
+    const risk = makeEntity({ type: 'site-risk' as never, title: 'Custom UDE' });
+    const doc = {
+      ...makeDoc([inj, risk], [makeEdge(inj.id, risk.id)], 'nbr'),
+      customEntityClasses: CLASSES,
+    };
+    expect(rules(validate(doc), 'nbr-no-negative-branch')).toHaveLength(0);
+  });
+
+  it('a disconnected custom-class UDE is flagged by nbr-ude-disconnected', () => {
+    const inj = makeEntity({ type: 'injection', title: 'Add a QA gate' });
+    const effA = makeEntity({ type: 'effect', title: 'On-chain' });
+    const effB = makeEntity({ type: 'effect', title: 'Floating root' });
+    const risk = makeEntity({ type: 'site-risk' as never, title: 'Custom off-chain UDE' });
+    const doc = {
+      ...makeDoc(
+        [inj, effA, effB, risk],
+        [makeEdge(inj.id, effA.id), makeEdge(effB.id, risk.id)],
+        'nbr'
+      ),
+      customEntityClasses: CLASSES,
+    };
+    const hits = rules(validate(doc), 'nbr-ude-disconnected');
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.target).toEqual({ kind: 'entity', id: risk.id });
+  });
+
+  it('a custom-class injection seeds reachability and the tracing guard', () => {
+    const counter = makeEntity({ type: 'counter-move' as never, title: 'Custom injection' });
+    const eff = makeEntity({ type: 'effect', title: 'Traced effect' });
+    const ude = makeEntity({ type: 'ude', title: 'Reached UDE' });
+    const doc = {
+      ...makeDoc(
+        [counter, eff, ude],
+        [makeEdge(counter.id, eff.id), makeEdge(eff.id, ude.id)],
+        'nbr'
+      ),
+      customEntityClasses: CLASSES,
+    };
+    const warnings = validate(doc);
+    // Reachable from the custom injection → no disconnected warning; a UDE
+    // exists → no no-negative-branch warning.
+    expect(rules(warnings, 'nbr-ude-disconnected')).toHaveLength(0);
+    expect(rules(warnings, 'nbr-no-negative-branch')).toHaveLength(0);
   });
 });

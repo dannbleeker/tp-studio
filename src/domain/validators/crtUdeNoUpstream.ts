@@ -1,3 +1,4 @@
+import { displayTitle } from '../entityPalettes';
 import { entitiesOfType, incomingEdges } from '../graph';
 import type { TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
@@ -21,7 +22,7 @@ export const crtUdeNoUpstreamRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'crt-ude-no-upstream',
           { kind: 'entity', id: ude.id },
-          `UDE "${ude.title || '(untitled)'}" has no cause feeding it — the tree is incomplete until it connects to the causal chain.`
+          `UDE "${displayTitle(ude)}" has no cause feeding it — the tree is incomplete until it connects to the causal chain.`
         )
       );
     }

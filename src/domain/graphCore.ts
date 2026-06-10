@@ -6,6 +6,7 @@
 //
 // Split out of `graph.ts` (Session 165).
 
+import { isOfBuiltin } from './entityPalettes';
 import type { Assumption, Edge, Entity, EntityId, EntityType, TPDocument } from './types';
 
 /**
@@ -243,6 +244,46 @@ const EMPTY_TYPE_RESULT: readonly Entity[] = Object.freeze([]) as readonly Entit
 
 export const entitiesOfType = (doc: TPDocument, type: EntityType): readonly Entity[] =>
   entitiesByType(doc).get(type) ?? EMPTY_TYPE_RESULT;
+
+/**
+ * Custom-class-aware sibling of {@link entitiesOfType}: entities whose type IS
+ * the builtin OR a custom class with `supersetOf` pointing at it (the
+ * `isOfBuiltin` resolution). This is the single owner of "what counts as an
+ * <injection / ude / …>" — validators and exporters share it so they can't
+ * drift on custom-class documents.
+ *
+ * Cache: keyed on BOTH `doc.entities` and `doc.customEntityClasses`, because
+ * the classes map can change independently of the entities map (editing a
+ * class's `supersetOf` re-classifies entities without touching them). The
+ * absent-classes case shares one frozen sentinel so it stays WeakMap-keyable.
+ * Returned arrays are readonly — callers that sort must copy first.
+ */
+const EMPTY_CLASSES: NonNullable<TPDocument['customEntityClasses']> = Object.freeze({});
+const entitiesOfBuiltinCache = new WeakMap<
+  TPDocument['entities'],
+  WeakMap<NonNullable<TPDocument['customEntityClasses']>, Map<EntityType, readonly Entity[]>>
+>();
+
+export const entitiesOfBuiltin = (doc: TPDocument, builtin: EntityType): readonly Entity[] => {
+  const classes = doc.customEntityClasses ?? EMPTY_CLASSES;
+  let byClasses = entitiesOfBuiltinCache.get(doc.entities);
+  if (!byClasses) {
+    byClasses = new WeakMap();
+    entitiesOfBuiltinCache.set(doc.entities, byClasses);
+  }
+  let byBuiltin = byClasses.get(classes);
+  if (!byBuiltin) {
+    byBuiltin = new Map();
+    byClasses.set(classes, byBuiltin);
+  }
+  const hit = byBuiltin.get(builtin);
+  if (hit) return hit;
+  const out = entitiesArray(doc).filter((e) =>
+    isOfBuiltin(e.type, builtin, doc.customEntityClasses)
+  );
+  byBuiltin.set(builtin, out);
+  return out;
+};
 
 const EMPTY_ASSUMPTIONS_BY_EDGE: ReadonlyMap<string, readonly Assumption[]> = new Map();
 const EMPTY_ASSUMPTION_RESULT: readonly Assumption[] = Object.freeze([]) as readonly Assumption[];

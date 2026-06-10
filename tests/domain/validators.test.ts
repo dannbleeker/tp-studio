@@ -124,6 +124,19 @@ describe('CLR: additional cause', () => {
     expect(hasRule(warnings, 'additional-cause')).toBe(true);
   });
 
+  it('covers custom entity classes via supersetOf (entitiesOfBuiltin matching)', () => {
+    const risk = makeEntity({ type: 'site-risk' as never, title: 'Custom causeless UDE' });
+    const doc = {
+      ...makeDoc([risk], [], 'crt'),
+      customEntityClasses: {
+        'site-risk': { id: 'site-risk', label: 'Site Risk', supersetOf: 'ude' as const },
+      },
+    };
+    const hits = validate(doc).filter((w) => w.ruleId === 'additional-cause');
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.target).toEqual({ kind: 'entity', id: risk.id });
+  });
+
   it('targets BOTH ude and desiredEffect on NBR (Session 181 — the S134 comment finally built)', () => {
     const ude = makeEntity({ type: 'ude', title: 'Competitor ships first' });
     const de = makeEntity({ type: 'desiredEffect', title: 'Fewer bugs slip through' });
