@@ -6,7 +6,7 @@ Session 136 usage feedback. Local-first, no backend, all persistence in
 localStorage.
 
 The plan was produced by a Plan agent that audited the codebase against
-`C:\dev\tp-studio` and grounded every claim in real file paths. The seven
+`C:\devtools\tp-studio` and grounded every claim in real file paths. The seven
 locked decisions below were settled in the same session by Dann directly.
 
 ---
