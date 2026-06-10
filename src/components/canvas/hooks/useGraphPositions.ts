@@ -255,7 +255,6 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   // attachment lives on `doc.assumptions` (each record's `edgeId`), so the memo
   // narrows to that slice — a title-only edit (which flips `doc` but not
   // `doc.assumptions`) doesn't re-run this per keystroke.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: deliberately narrowed to `doc.assumptions`.
   const assumptionAnchorSig = useMemo(() => {
     const map = doc.assumptions;
     if (!map) return '';
