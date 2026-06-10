@@ -473,6 +473,33 @@ describe('junctorObstacleBoxes', () => {
     });
     expect(boxes.size).toBe(0);
   });
+
+  it('grow-to-fit lowers the junctor circle under a taller (multi-line) target', () => {
+    // Clearance check: the junctor circle sits below its TARGET's bottom edge, so
+    // a taller (grown) target must push the obstacle box down by the height delta.
+    // Proves the grow-to-fit opts thread all the way into the routing geometry.
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('c1\nc2\nc3\nc4'); // 4-line title → grows when fit-to-text is on
+    const store = useDocumentStore.getState();
+    const e1 = store.connect(a.id, c.id);
+    const e2 = store.connect(b.id, c.id);
+    if (!e1 || !e2) throw new Error('edges not created');
+    const grp = store.groupAsAnd([e1.id, e2.id]);
+    if (!grp.ok) throw new Error(`groupAsAnd failed: ${grp.reason}`);
+    const doc = useDocumentStore.getState().doc;
+    const positions = {
+      [a.id]: { x: 0, y: 400 },
+      [b.id]: { x: 400, y: 400 },
+      [c.id]: { x: 200, y: 0 },
+    };
+    const yOff = [...junctorObstacleBoxes(doc, positions).values()][0]?.y ?? 0;
+    const yOn = [...junctorObstacleBoxes(doc, positions, { growToFit: true }).values()][0]?.y ?? 0;
+    expect(yOn).toBeGreaterThan(yOff);
+    // A 4-line title grows C from 72 to 72 + ceil(2 × 15·1.35) = 113, so the
+    // circle drops by exactly that height delta (41px).
+    expect(yOn - yOff).toBeCloseTo(113 - NODE_MIN_HEIGHT, 6);
+  });
 });
 
 // -- Crossing-aware reroute (#5) -------------------------------------------

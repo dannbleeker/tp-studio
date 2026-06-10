@@ -147,6 +147,12 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   // recompute positions even when the underlying doc fingerprint hasn't
   // changed. Read it directly from the store (stable selector ref).
   const hoistedGroupId = useDocumentStore((s) => s.hoistedGroupId);
+  // Session 181 — grow-to-fit card sizing. Both feed `nodeSizeFor`; both are
+  // folded into the layout fingerprint below so toggling either re-runs layout
+  // (else cards would grow but positions wouldn't, overlapping).
+  const growCardsToFitText = useDocumentStore((s) => s.growCardsToFitText);
+  const appMode = useDocumentStore((s) => s.appMode);
+  const sizeOpts: NodeSizeOpts = { growToFit: growCardsToFitText, appMode };
 
   const strategy = LAYOUT_STRATEGY[doc.diagramType];
   // Goal #4 — auto-layout is authoritative: `entity.position` is honored
@@ -161,7 +167,7 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
     .sort()
     .join(
       ','
-    )}|ec:${[...projection.hiddenCountByCollapser.keys()].sort().join(',')}|cfg:${layoutConfigKey(doc.layoutConfig)}|s:${strategy}|m:${layoutMode}`;
+    )}|ec:${[...projection.hiddenCountByCollapser.keys()].sort().join(',')}|cfg:${layoutConfigKey(doc.layoutConfig)}|s:${strategy}|m:${layoutMode}|g:${growCardsToFitText ? 1 : 0}|am:${appMode}`;
 
   // Manual-layout diagrams (Evaporating Cloud) skip the layout engine
   // entirely: positions live on the entities themselves. Compute
@@ -182,7 +188,7 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   // can also run synchronously.
   const radialPositions = useFingerprintMemo(() => {
     if (strategy === 'manual' || layoutMode !== 'radial') return null;
-    const { nodes, edges } = buildLayoutInputs(doc, projection);
+    const { nodes, edges } = buildLayoutInputs(doc, projection, sizeOpts);
     // Auto-layout authoritative — radial output wins; stored positions ignored.
     return radialLayout(nodes, edges);
   }, `radial:${fp}`);
@@ -215,7 +221,7 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
       try {
         const mod = await loadLayoutModule();
         if (cancelled) return;
-        const { nodes, edges } = buildLayoutInputs(doc, projection);
+        const { nodes, edges } = buildLayoutInputs(doc, projection, sizeOpts);
         const opts = mod.layoutConfigToOptions(doc.layoutConfig);
         // Apply the density multiplier only when the per-doc override
         // is absent; an explicit `layoutConfig.ranksep` (user dialed
@@ -266,7 +272,7 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   const withAssumptions = useMemo(() => {
     if (Object.keys(autoBase).length === 0) return autoBase;
     const sizeOf = (id: string) =>
-      nodeSizeFor(doc, id) ?? { width: NODE_WIDTH, height: NODE_MIN_HEIGHT };
+      nodeSizeFor(doc, id, sizeOpts) ?? { width: NODE_WIDTH, height: NODE_MIN_HEIGHT };
     const placed = placeAssumptionsNearEdges(doc, autoBase, sizeOf);
     return Object.keys(placed).length > 0 ? { ...autoBase, ...placed } : autoBase;
   }, [autoBase, assumptionAnchorSig]);

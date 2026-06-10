@@ -95,6 +95,8 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // Minimap default ON — it's a useful affordance for non-trivial diagrams
     // and easy to dismiss in Settings.
     showMinimap: raw?.showMinimap !== false,
+    // Session 181 — grow-cards-to-fit-text OFF by default (fixed-height cards).
+    growCardsToFitText: raw?.growCardsToFitText === true,
     // Ink-saver default OFF — preserves the colourful look people expect on
     // screen; users opt in when they're about to print.
     printInkSaver: raw?.printInkSaver === true,

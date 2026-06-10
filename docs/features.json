@@ -47,6 +47,7 @@
     {"id":"nbr-trim-branch","name":"NBR trim-branch injection","area":"NBR","since":157,"manual":true,"book":false,"bookExample":false},
     {"id":"nbr-shape-clr","name":"NBR negative-branch shape rules","area":"NBR","since":181,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-nodes","name":"Canvas entity cards","area":"Canvas","since":1,"manual":true,"book":true,"bookExample":true},
+    {"id":"canvas-grow-cards","name":"Grow cards to fit text","area":"Canvas","since":181,"manual":true,"book":false,"bookExample":false},
     {"id":"canvas-minimap","name":"Minimap","area":"Canvas","since":11,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-zoom","name":"Zoom controls + percentage","area":"Canvas","since":11,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-zoom-edit","name":"Click-to-edit zoom percent","area":"Canvas","since":176,"manual":true,"book":false,"bookExample":false},

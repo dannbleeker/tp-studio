@@ -85,6 +85,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
     showEntityIds,
     showReachBadges,
     showReverseReachBadges,
+    growCardsToFitText,
     diagramType,
     customEntityClasses,
     isReaderMode,
@@ -101,6 +102,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         showEntityIds: s.showEntityIds,
         showReachBadges: s.showReachBadges,
         showReverseReachBadges: s.showReverseReachBadges,
+        growCardsToFitText: s.growCardsToFitText,
         diagramType: doc.diagramType,
         customEntityClasses: doc.customEntityClasses,
         // Session 180 / E6 — reader mode coaching tooltip.
@@ -386,7 +388,11 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         ) : (
           <span
             className={clsx(
-              'line-clamp-2 whitespace-pre-line text-neutral-900 leading-snug dark:text-neutral-100',
+              'whitespace-pre-line text-neutral-900 leading-snug dark:text-neutral-100',
+              // Session 181 — grow-to-fit lets the title use up to 6 lines (the
+              // card grows with it); off keeps the 2-line clamp. Both clamps are
+              // static literals so Tailwind emits them.
+              growCardsToFitText ? 'line-clamp-6' : 'line-clamp-2',
               // F3: per-entity title size. Default ('md') falls back to the
               // app-wide `text-node` token; sm/lg shrink or grow from there.
               entity.titleSize === 'sm' && 'text-xs',

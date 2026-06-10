@@ -8,12 +8,14 @@ import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisi
 import { effectiveState } from '@/domain/statePropagation';
 import type { EntityId, EntityState, TPDocument } from '@/domain/types';
 import { Z } from '@/domain/zLayers';
+import { useDocumentStore } from '@/store';
 import type { AnyTPNode, TPCollapsedGroupNode, TPGroupNode, TPNode } from '../edges/flow-types';
 import {
   COLLAPSED_HEIGHT,
   COLLAPSED_WIDTH,
   GROUP_PADDING,
   GROUP_TITLE_TOP,
+  type NodeSizeOpts,
   nodeSizeFor,
 } from './graphViewConstants';
 import { collapsedGroupAriaLabel, entityAriaLabel, groupAriaLabel } from './nodeAriaLabels';
@@ -62,6 +64,12 @@ export const useGraphNodeEmission = (
   // tracks comment add/resolve/delete but stays off the drag path (the
   // big emission memo re-runs on every `positions` change).
   const commentCounts = useMemo(() => openCommentCountsByAnchor(doc.comments), [doc.comments]);
+
+  // Session 181 — grow-to-fit card sizing (entity nodes + the group bbox that
+  // wraps them). Read here so nodeSizeFor below matches the layout/router boxes.
+  const growCardsToFitText = useDocumentStore((s) => s.growCardsToFitText);
+  const appMode = useDocumentStore((s) => s.appMode);
+  const sizeOpts: NodeSizeOpts = { growToFit: growCardsToFitText, appMode };
 
   // Keyed on the structural doc fields this memo actually reads —
   // `entities` + `assumptions` + `groups` (directly + via descendantEntityCount),
@@ -114,7 +122,7 @@ export const useGraphNodeEmission = (
         // via the shared `nodeSizeFor` rule so an S&T-format member contributes
         // its true (taller) height to the bbox.
         if (!visibleEntityIds.has(id) && !visibleCollapsedRootsSet.has(id)) continue;
-        const size = nodeSizeFor(doc, id);
+        const size = nodeSizeFor(doc, id, sizeOpts);
         if (!size) continue;
         const { width: w, height: h } = size;
         hasMembers = true;
@@ -211,7 +219,10 @@ export const useGraphNodeEmission = (
         // S&T-format entities render taller — size via the shared `nodeSizeFor`
         // rule so this hint matches the layout/router box rather than being a
         // flat NODE_MIN_HEIGHT (which under-sized S&T cards in the MiniMap).
-        ...(nodeSizeFor(doc, entity.id) ?? { width: NODE_WIDTH, height: NODE_MIN_HEIGHT }),
+        ...(nodeSizeFor(doc, entity.id, sizeOpts) ?? {
+          width: NODE_WIDTH,
+          height: NODE_MIN_HEIGHT,
+        }),
         data: {
           entity,
           ...(hidden && hidden > 0 ? { hiddenDescendantCount: hidden } : {}),
@@ -298,5 +309,7 @@ export const useGraphNodeEmission = (
     reverseReachCounts,
     commentCounts,
     showActionEligibility,
+    growCardsToFitText,
+    appMode,
   ]);
 };

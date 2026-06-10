@@ -585,6 +585,9 @@ export const useEdgeRoutes = (
   backEdgeIds?: ReadonlySet<string>
 ): EdgeRouteMap => {
   const smartRouting = useDocumentStore((s) => s.edgeRouting === 'smart');
+  // Session 181 — obstacle boxes use the grown card height when grow-to-fit is on.
+  const growCardsToFitText = useDocumentStore((s) => s.growCardsToFitText);
+  const appMode = useDocumentStore((s) => s.appMode);
   // Keyed on the structural doc fields `computeEdgeRoutes` reads — `edges`
   // (via `edgesArray`, the route set, incl. junctor membership), `entities` +
   // `groups` (obstacle box geometry), `diagramType` (radial vs flow) — NOT the
@@ -596,7 +599,10 @@ export const useEdgeRoutes = (
   // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via edges/entities/groups/diagramType; narrowed deliberately.
   return useMemo<EdgeRouteMap>(() => {
     if (!smartRouting) return {};
-    return computeEdgeRoutes(doc, projection, positions, backEdgeIds);
+    return computeEdgeRoutes(doc, projection, positions, backEdgeIds, {
+      growToFit: growCardsToFitText,
+      appMode,
+    });
   }, [
     smartRouting,
     doc.edges,
@@ -606,5 +612,7 @@ export const useEdgeRoutes = (
     projection,
     positions,
     backEdgeIds,
+    growCardsToFitText,
+    appMode,
   ]);
 };

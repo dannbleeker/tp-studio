@@ -71,6 +71,7 @@ export function DisplayTab() {
     showReverseReachBadges,
     showActionEligibility,
     showMinimap,
+    growCardsToFitText,
     printInkSaver,
     causalityLabel,
     defaultLayoutDirection,
@@ -82,6 +83,7 @@ export function DisplayTab() {
     setShowReverseReachBadges,
     setShowActionEligibility,
     setShowMinimap,
+    setGrowCardsToFitText,
     setPrintInkSaver,
     setCausalityLabel,
     setDefaultLayoutDirection,
@@ -95,6 +97,7 @@ export function DisplayTab() {
       showReverseReachBadges: s.showReverseReachBadges,
       showActionEligibility: s.showActionEligibility,
       showMinimap: s.showMinimap,
+      growCardsToFitText: s.growCardsToFitText,
       printInkSaver: s.printInkSaver,
       causalityLabel: s.causalityLabel,
       defaultLayoutDirection: s.defaultLayoutDirection,
@@ -106,6 +109,7 @@ export function DisplayTab() {
       setShowReverseReachBadges: s.setShowReverseReachBadges,
       setShowActionEligibility: s.setShowActionEligibility,
       setShowMinimap: s.setShowMinimap,
+      setGrowCardsToFitText: s.setGrowCardsToFitText,
       setPrintInkSaver: s.setPrintInkSaver,
       setCausalityLabel: s.setCausalityLabel,
       setDefaultLayoutDirection: s.setDefaultLayoutDirection,
@@ -127,6 +131,12 @@ export function DisplayTab() {
         hint="Mono-font caption below each title"
         checked={showEntityIds}
         onChange={setShowEntityIds}
+      />
+      <Toggle
+        label="Grow cards to fit text"
+        hint="Let entity cards grow taller to show the full title, up to 6 lines. Off keeps the fixed card height with a 2-line clamp."
+        checked={growCardsToFitText}
+        onChange={setGrowCardsToFitText}
       />
       <Toggle
         label="Show UDE-reach badge"

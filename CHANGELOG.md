@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 181 (cont.) — Grow cards to fit text (opt-in)
+
+A new **Settings → Display → Grow cards to fit text** toggle (off by default) lets an entity card
+grow taller to show its full title instead of clamping to two lines — capped at six lines so a long
+title can't expand without bound. Width stays fixed at 220px; short cards stay compact.
+
+- **Pure, deterministic sizing — no DOM measurement.** Card size is computed before render (the one
+  `nodeSizeFor` rule feeds dagre layout, the A* edge-routing obstacle boxes, and the minimap), so a
+  new `estimateTitleLines` greedy word-wrap counts lines from the title + the effective font (per
+  `titleSize` and app mode), and `nodeSizeFor` grows the height one line beyond the 2-line baseline
+  up to the 6-line cap. The same count drives the card's `line-clamp`, so the computed box and the
+  rendered card grow together — layout and edges stay correct, with the estimate biased generous so
+  text is never clipped before the cap.
+- Landed as a behavior-preserving prep commit (the estimator + an optional `nodeSizeFor` opts seam
+  threaded through the layout/routing helpers, off by default) then the wiring: the app-wide
+  `growCardsToFitText` localStorage preference, the Display toggle, the three size hooks reading it
+  (folded into the layout fingerprint so toggling relayouts), and the TPNode clamp swap. No
+  document/schema change.
+- Verified in a real browser: short titles stay at the 72px floor, medium/long titles grow to fit
+  with no clipping, a >6-line title caps and clamps with an ellipsis, and no cards overlap after
+  growing. Unit tests pin the estimator (newline-exact + wrap/monotonicity), the grown / capped /
+  S&T-excluded heights, and that the grown height reaches the routing obstacle geometry.
+
 ## Session 181 (cont.) — Review fixes: one custom-class owner + document-level warnings
 
 A max-effort review of the NBR shape-rules commit surfaced nine findings (none crash-grade); all

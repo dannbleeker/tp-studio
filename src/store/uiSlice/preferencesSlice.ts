@@ -42,6 +42,10 @@ export type PreferencesSlice = {
    *  Settings → Display. */
   showActionEligibility: boolean;
   showMinimap: boolean;
+  /** Session 181 — grow entity cards taller to fit their full title text,
+   *  capped at `MAX_CARD_GROW_LINES`. Off by default: cards stay the fixed
+   *  72px box and clamp the title to 2 lines. App-wide viewing preference. */
+  growCardsToFitText: boolean;
   printInkSaver: boolean;
   layoutMode: LayoutMode;
   causalityLabel: CausalityLabel;
@@ -135,6 +139,8 @@ export type PreferencesSlice = {
   /** Session 135 — toggle the action-eligibility canvas badge. */
   setShowActionEligibility: (show: boolean) => void;
   setShowMinimap: (show: boolean) => void;
+  /** Session 181 — toggle grow-cards-to-fit-text. */
+  setGrowCardsToFitText: (grow: boolean) => void;
   setPrintInkSaver: (on: boolean) => void;
   setLayoutMode: (mode: LayoutMode) => void;
   setCausalityLabel: (label: CausalityLabel) => void;
@@ -195,6 +201,7 @@ export type PreferencesDataKeys =
   | 'showReverseReachBadges'
   | 'showActionEligibility'
   | 'showMinimap'
+  | 'growCardsToFitText'
   | 'printInkSaver'
   | 'layoutMode'
   | 'causalityLabel'
@@ -232,6 +239,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   showReverseReachBadges: false,
   showActionEligibility: false,
   showMinimap: true,
+  growCardsToFitText: false,
   printInkSaver: false,
   layoutMode: 'flow',
   // Session 136 — default flipped from 'none' to 'auto' per Dann's
@@ -305,6 +313,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       showReverseReachBadges: s.showReverseReachBadges,
       showActionEligibility: s.showActionEligibility,
       showMinimap: s.showMinimap,
+      growCardsToFitText: s.growCardsToFitText,
       printInkSaver: s.printInkSaver,
       layoutMode: s.layoutMode,
       causalityLabel: s.causalityLabel,
@@ -337,6 +346,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     showReverseReachBadges: initialPrefs.showReverseReachBadges,
     showActionEligibility: initialPrefs.showActionEligibility,
     showMinimap: initialPrefs.showMinimap,
+    growCardsToFitText: initialPrefs.growCardsToFitText,
     printInkSaver: initialPrefs.printInkSaver,
     layoutMode: initialPrefs.layoutMode,
     causalityLabel: initialPrefs.causalityLabel,
@@ -394,6 +404,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setShowReachBadges: (show) => {
       set({ showReachBadges: show });
+      persistPrefs();
+    },
+    setGrowCardsToFitText: (grow) => {
+      set({ growCardsToFitText: grow });
       persistPrefs();
     },
     setShowReverseReachBadges: (show) => {
@@ -522,6 +536,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         showReverseReachBadges: d.showReverseReachBadges,
         showActionEligibility: d.showActionEligibility,
         showMinimap: d.showMinimap,
+        growCardsToFitText: d.growCardsToFitText,
         printInkSaver: d.printInkSaver,
         layoutMode: d.layoutMode,
         causalityLabel: d.causalityLabel,
