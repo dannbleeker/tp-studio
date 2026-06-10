@@ -79,6 +79,7 @@ function SymptomsStep({
       </p>
       {conflicts.map((c, i) => (
         <fieldset
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length positional slots, never reordered.
           key={i}
           className="flex flex-col gap-2 rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"
         >
