@@ -8,7 +8,8 @@
 
 import { NODE_MIN_HEIGHT, NODE_WIDTH, ST_NODE_HEIGHT } from '@/domain/constants';
 import { isStNodeFormat } from '@/domain/graph';
-import type { TPDocument } from '@/domain/types';
+import type { Entity, TPDocument } from '@/domain/types';
+import type { AppMode } from '@/store/uiSlice/types';
 
 /** Padding around a group's bounding box on every side. */
 export const GROUP_PADDING = 24;
@@ -20,6 +21,97 @@ export const COLLAPSED_WIDTH = 220;
 /** Collapsed-group card height — same dual role as `COLLAPSED_WIDTH`. */
 export const COLLAPSED_HEIGHT = 90;
 
+// --- Grow-to-fit title sizing (opt-in via the "Grow cards to fit text" pref) ---
+
+/** Usable title-wrap width inside a card at the fixed `NODE_WIDTH`:
+ *  220 − 6px colour stripe (`w-1.5`) − 24px content padding (`px-3`) − 2px
+ *  border (border-box) = 188px. The estimator wraps the title in this width. */
+const TITLE_TEXT_WIDTH = NODE_WIDTH - 6 - 24 - 2;
+
+/** Lines the default (non-grown) card already shows via `line-clamp-2`. Height
+ *  only grows for lines BEYOND this, so a ≤2-line title keeps today's 72px box. */
+const BASE_TITLE_LINES = 2;
+
+/** Hard cap on grown height — Dann's "up to a point". A longer title clamps with
+ *  an ellipsis (the card switches to `line-clamp-6`). */
+export const MAX_CARD_GROW_LINES = 6;
+
+/** Average glyph advance as a fraction of font size. Biased slightly WIDE (a real
+ *  proportional sans averages ~0.5) so the estimate rounds toward MORE lines: a
+ *  too-tall box is a harmless gap, a too-short one would clip text or let an
+ *  unrelated edge graze the card. */
+const AVG_CHAR_WIDTH_RATIO = 0.52;
+
+/**
+ * The font the title span actually renders at, by per-entity `titleSize` and the
+ * app `appMode` (`--text-node` is 15px by default, 18px in workshop, 16px in
+ * presentation; `sm`→`text-xs` 12px, `lg`→`text-base` 16px). The estimator needs
+ * the EFFECTIVE size so the computed box matches the rendered card.
+ */
+const effectiveTitleFont = (
+  titleSize: Entity['titleSize'],
+  appMode: AppMode | undefined
+): { fontSize: number; lineHeightPx: number } => {
+  if (titleSize === 'sm') return { fontSize: 12, lineHeightPx: 16 };
+  if (titleSize === 'lg') return { fontSize: 16, lineHeightPx: 24 };
+  // 'md' / unset → the app-mode-driven `--text-node`.
+  if (appMode === 'workshop') return { fontSize: 18, lineHeightPx: 18 * 1.4 };
+  if (appMode === 'presentation') return { fontSize: 16, lineHeightPx: 16 * 1.35 };
+  return { fontSize: 15, lineHeightPx: 15 * 1.35 };
+};
+
+/**
+ * Estimate how many visual lines `title` wraps to at `fontSize` inside the fixed
+ * {@link TITLE_TEXT_WIDTH}. Greedy word-wrap (whole words; a single word longer
+ * than a line breaks mid-word), honouring explicit `\n` (the span is
+ * `whitespace-pre-line`). Pure + deterministic — no DOM measurement — so the
+ * layout stays stable and the geometry tests can pin it.
+ */
+export const estimateTitleLines = (title: string, fontSize: number): number => {
+  const perLine = Math.max(1, Math.floor(TITLE_TEXT_WIDTH / (fontSize * AVG_CHAR_WIDTH_RATIO)));
+  let lines = 0;
+  for (const para of title.split('\n')) {
+    const words = para.split(/\s+/).filter(Boolean);
+    if (words.length === 0) {
+      lines += 1; // a blank line still occupies a row
+      continue;
+    }
+    let col = 0; // chars used on the current line (0 = empty)
+    for (const word of words) {
+      const sep = col === 0 ? 0 : 1; // the space before this word
+      if (col !== 0 && col + sep + word.length > perLine) {
+        lines += 1; // doesn't fit — wrap to a fresh line
+        col = 0;
+      }
+      if (word.length > perLine) {
+        // A single word longer than a line breaks mid-word across rows.
+        const span = Math.ceil(word.length / perLine);
+        lines += span - 1;
+        col = word.length - (span - 1) * perLine;
+      } else {
+        col = col === 0 ? word.length : col + 1 + word.length;
+      }
+    }
+    lines += 1; // the paragraph's final line
+  }
+  return Math.max(1, lines);
+};
+
+/** Grown card height for a normal entity: today's 72px floor plus one line-height
+ *  per wrapped line beyond {@link BASE_TITLE_LINES}, capped at
+ *  {@link MAX_CARD_GROW_LINES}. */
+const grownEntityHeight = (entity: Entity, appMode: AppMode | undefined): number => {
+  const { fontSize, lineHeightPx } = effectiveTitleFont(entity.titleSize, appMode);
+  const lines = Math.min(estimateTitleLines(entity.title || '', fontSize), MAX_CARD_GROW_LINES);
+  const extraLines = Math.max(0, lines - BASE_TITLE_LINES);
+  return NODE_MIN_HEIGHT + Math.ceil(extraLines * lineHeightPx);
+};
+
+/** Options for {@link nodeSizeFor}. When `growToFit` is set, a normal entity's
+ *  height is estimated from its title (capped); omitted/false reproduces the
+ *  original fixed-height behaviour exactly. `appMode` selects the render font. */
+export type NodeSizeOpts = { growToFit?: boolean; appMode?: AppMode };
+
 /**
  * Canonical render/layout size of a visible node, by id — the ONE place the
  * "how big is this node?" rule lives. Every pipeline stage that needs a node's
@@ -27,18 +119,24 @@ export const COLLAPSED_HEIGHT = 90;
  * measurement hint) calls this, so a node type's dimensions can't drift between
  * them and adding a new sized type is a one-line change here.
  *
- *   - entity            → `NODE_WIDTH`, and `ST_NODE_HEIGHT` for an S&T-format
- *                         entity, else `NODE_MIN_HEIGHT`;
+ *   - entity            → `NODE_WIDTH`; `ST_NODE_HEIGHT` for an S&T-format
+ *                         entity; the grow-to-fit height when `opts.growToFit`;
+ *                         else `NODE_MIN_HEIGHT`;
  *   - collapsed-root    → `COLLAPSED_WIDTH × COLLAPSED_HEIGHT`;
  *   - neither (unknown) → `null`, so callers skip it (e.g. as a non-obstacle).
  */
 export const nodeSizeFor = (
   doc: TPDocument,
-  id: string
+  id: string,
+  opts?: NodeSizeOpts
 ): { width: number; height: number } | null => {
   const entity = doc.entities[id];
   if (entity) {
-    return { width: NODE_WIDTH, height: isStNodeFormat(entity) ? ST_NODE_HEIGHT : NODE_MIN_HEIGHT };
+    if (isStNodeFormat(entity)) return { width: NODE_WIDTH, height: ST_NODE_HEIGHT };
+    if (opts?.growToFit) {
+      return { width: NODE_WIDTH, height: grownEntityHeight(entity, opts.appMode) };
+    }
+    return { width: NODE_WIDTH, height: NODE_MIN_HEIGHT };
   }
   if (doc.groups[id]) return { width: COLLAPSED_WIDTH, height: COLLAPSED_HEIGHT };
   return null;

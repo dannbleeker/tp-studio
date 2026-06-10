@@ -44,7 +44,7 @@ import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { junctorCenterX } from '../edges/junctorGeometry';
-import { nodeSizeFor } from './graphViewConstants';
+import { type NodeSizeOpts, nodeSizeFor } from './graphViewConstants';
 
 /** Extra padding added to every obstacle box FOR ROUTING ONLY (anchoring still
  *  uses the exact `allBoxes`), so a routed edge that passes a card it isn't
@@ -66,8 +66,13 @@ export type EdgeRouteMap = Readonly<Record<string, EdgeRoute>>;
  * obstacle picture stays in lockstep with what dagre laid out; `null` for an
  * id that is neither a known entity nor a group (skip it as an obstacle).
  */
-const obstacleBoxFor = (doc: TPDocument, id: string, position: Point): Box | null => {
-  const size = nodeSizeFor(doc, id);
+const obstacleBoxFor = (
+  doc: TPDocument,
+  id: string,
+  position: Point,
+  opts?: NodeSizeOpts
+): Box | null => {
+  const size = nodeSizeFor(doc, id, opts);
   if (!size) return null;
   return { x: position.x, y: position.y, width: size.width, height: size.height };
 };
@@ -83,7 +88,8 @@ const obstacleBoxFor = (doc: TPDocument, id: string, position: Point): Box | nul
  */
 export const junctorObstacleBoxes = (
   doc: TPDocument,
-  positions: GraphPositions
+  positions: GraphPositions,
+  opts?: NodeSizeOpts
 ): Map<string, Box> => {
   const groups = new Map<string, { targetId: string; sourceIds: string[] }>();
   for (const edge of edgesArray(doc)) {
@@ -96,12 +102,12 @@ export const junctorObstacleBoxes = (
   const boxes = new Map<string, Box>();
   for (const [gid, g] of groups) {
     const tPos = positions[g.targetId];
-    const tSize = nodeSizeFor(doc, g.targetId);
+    const tSize = nodeSizeFor(doc, g.targetId, opts);
     if (!tPos || !tSize) continue;
     const causeXs: number[] = [];
     for (const sid of g.sourceIds) {
       const sPos = positions[sid];
-      const sSize = nodeSizeFor(doc, sid);
+      const sSize = nodeSizeFor(doc, sid, opts);
       if (sPos && sSize) causeXs.push(sPos.x + sSize.width / 2);
     }
     const cx = junctorCenterX(causeXs, tPos.x + tSize.width / 2);
@@ -475,7 +481,8 @@ export const computeEdgeRoutes = (
   doc: TPDocument,
   projection: GraphProjection,
   positions: GraphPositions,
-  backEdgeIds?: ReadonlySet<string>
+  backEdgeIds?: ReadonlySet<string>,
+  opts?: NodeSizeOpts
 ): EdgeRouteMap => {
   // Feature #5 — the layout's main flow axis drives the "prefer flow
   // direction" side choice: vertical for the dagre trees, horizontal
@@ -486,13 +493,13 @@ export const computeEdgeRoutes = (
   for (const id of projection.visibleEntityIds) {
     const pos = positions[id];
     if (!pos) continue;
-    const box = obstacleBoxFor(doc, id, pos);
+    const box = obstacleBoxFor(doc, id, pos, opts);
     if (box) allBoxes.set(id, box);
   }
   for (const id of projection.visibleCollapsedRoots) {
     const pos = positions[id];
     if (!pos) continue;
-    const box = obstacleBoxFor(doc, id, pos);
+    const box = obstacleBoxFor(doc, id, pos, opts);
     if (box) allBoxes.set(id, box);
   }
   // Junctor circles are overlays the router otherwise can't see, so an unrelated
@@ -501,7 +508,7 @@ export const computeEdgeRoutes = (
   // obstacle box (synthetic `junctor:<gid>` id — never an edge endpoint, so it
   // blocks every routed edge) so those edges route AROUND it. The junctor's own
   // cause edges are skipped below, so they're unaffected.
-  for (const [id, box] of junctorObstacleBoxes(doc, positions)) allBoxes.set(id, box);
+  for (const [id, box] of junctorObstacleBoxes(doc, positions, opts)) allBoxes.set(id, box);
   const allBoxesArr: Box[] = [];
   // Parallel array of box ids in the same order as `allBoxesArr`.
   // Used inside the per-edge loop to skip the source/target boxes

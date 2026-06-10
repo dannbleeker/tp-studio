@@ -8,7 +8,12 @@ import { radialLayout } from '@/domain/radialLayout';
 import type { TPDocument } from '@/domain/types';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useDocumentStore } from '@/store';
-import { COLLAPSED_HEIGHT, COLLAPSED_WIDTH, nodeSizeFor } from './graphViewConstants';
+import {
+  COLLAPSED_HEIGHT,
+  COLLAPSED_WIDTH,
+  type NodeSizeOpts,
+  nodeSizeFor,
+} from './graphViewConstants';
 import type { GraphProjection } from './useGraphProjection';
 
 /**
@@ -80,7 +85,8 @@ const loadLayoutModule = (): Promise<LayoutModule> => {
  */
 const buildLayoutInputs = (
   doc: TPDocument,
-  projection: GraphProjection
+  projection: GraphProjection,
+  opts?: NodeSizeOpts
 ): {
   nodes: { id: string; width: number; height: number }[];
   edges: { sourceId: string; targetId: string; isJunctor: boolean }[];
@@ -93,7 +99,7 @@ const buildLayoutInputs = (
   const entityIds = [...visibleEntityIds].filter((id) => !skipAssumptions.has(id));
   const nodes = [
     ...entityIds.map((id) => {
-      const { width, height } = nodeSizeFor(doc, id) ?? {
+      const { width, height } = nodeSizeFor(doc, id, opts) ?? {
         width: NODE_WIDTH,
         height: NODE_MIN_HEIGHT,
       };
