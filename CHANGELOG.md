@@ -2,6 +2,37 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 181 (cont.) — Review fixes: one custom-class owner + document-level warnings
+
+A max-effort review of the NBR shape-rules commit surfaced nine findings (none crash-grade); all
+fixed in two follow-up commits:
+
+- **One owner for "is this entity an X?".** A new cached `entitiesOfBuiltin(doc, builtin)`
+  (graphCore) matches raw types AND custom classes via `supersetOf`, cache-keyed on *both*
+  `doc.entities` and `doc.customEntityClasses`. The NBR shape rules, `additional-cause`, and the
+  whole risk-register exporter (mitigations, BFS, rows, count) now share it — previously the
+  validator used `isOfBuiltin` while the exporter raw-matched types, so a custom-class injection
+  satisfied the validator while the register showed the same UDE as a permanently open risk.
+  `additional-cause` also gained a `(first, ...rest)` signature so a zero-type registration can't
+  compile into a silently dead rule.
+- **Validation fingerprint knows about custom classes.** Editing a class's `supersetOf` re-classifies
+  entities for the `isOfBuiltin`-aware rules but used to be invisible to the fingerprint cache —
+  stale warnings until an unrelated edit. `doc.customEntityClasses` joined the cache key and the
+  fingerprint string (id>supersetOf pairs only; label/color edits stay free). Pinned by a
+  same-references regression test.
+- **`{ kind: 'document' }` WarningTarget.** The two genuinely doc-scoped rules (`crt-ude-count`,
+  `nbr-no-negative-branch`) used to anchor on an arbitrary "earliest" entity, so deleting or
+  re-wiring that entity re-keyed the warning and silently orphaned the user's dismissal. They now
+  target the document with a lifetime-stable id; the warnings render in a new **Document-level
+  warnings** section of the Document Inspector + the CLR walkthrough (verified live: resolve
+  persists `nbr-no-negative-branch:document`). An existing crt-ude-count dismissal reappears once
+  and re-dismisses with one click — deliberate, no migration.
+- Bundle guard catch: moving `isOfBuiltin`/the new shared `displayTitle` ("(untitled)" fallback,
+  previously 8 inlined literals) into `entityTypeMeta` would have dragged the Lucide icon catalogue
+  into the main chunk via graphCore (99.7 KB, +16%); both live in the dependency-free
+  `entityPalettes` leaf instead (83.9 KB — below the prior baseline, since the exporters dropped the
+  icon import too). entityTypeMeta re-exports them, so existing import sites are unchanged.
+
 ## Session 181 (cont.) — NBR shape rules close the validator gap
 
 The Session-180 hardening pass flagged that the Negative-Branch ruleset was thinner than the other
