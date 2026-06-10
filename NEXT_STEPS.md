@@ -7,16 +7,12 @@ CHANGELOG.
 
 ---
 
-## Flagged in the unattended hardening pass (Session 180 cont.) — need a human call
+## Flagged in the unattended hardening pass (Session 180 cont.) — ✅ all resolved
 
-Surfaced during the gated sweep but **deliberately not** auto-applied: each needs a call about
-intended behaviour before it can be done safely. (The export-consistency, dangling-edge, DOT
-or/xor styling, print-dialog close-order, command-palette-ARIA, junctor-clearance,
-goalTree-necessity and assumption-lifecycle items have since been fixed — see CHANGELOG.)
-
-**Behaviour / semantics — decide intent first:**
-- **NBR validator gap** — the Negative-Branch ruleset has a thinner structural check than the
-  other types. Possibly intentional (NBR is position/flow-based); confirm the intended rule.
+Every item from the gated sweep has been decided and closed (export-consistency, dangling-edge,
+DOT or/xor styling, print-dialog close-order, command-palette-ARIA, junctor-clearance,
+goalTree-necessity, assumption-lifecycle, and — last — the **NBR validator gap**, closed Session 181
+with the two `nbr-*` shape rules + the additional-cause widening; see CHANGELOG).
 
 **Known tech-debt — future cleanup, not urgent:**
 - _(Nothing parked here right now.)_

@@ -103,7 +103,13 @@ export type ClrRuleId =
   | 'long-arrow'
   // Session 180 (Theme A / A4) — a reinforcing loop none of whose edges carries
   // a delay (it would escalate instantly — a lag is probably un-modelled).
-  | 'reinforcing-no-delay';
+  | 'reinforcing-no-delay'
+  // Session 181 — NBR shape rules (closes the "NBR validator gap" flag). The
+  // canonical NBR walks injection → forward chain → turning point → UDEs; the
+  // method checklist teaches it and the risk-register export assumes it, so the
+  // validator now checks the two structurally-verifiable halves:
+  | 'nbr-no-negative-branch' // tracing started but no UDE captured — it's still an FRT
+  | 'nbr-ude-disconnected'; // a wired-up UDE that doesn't trace back to any injection
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each

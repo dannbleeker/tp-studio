@@ -45,6 +45,7 @@
     {"id":"st-assumption-subtyping","name":"S&T assumption sub-typing","area":"ST","since":135,"manual":true,"book":true,"bookExample":false},
     {"id":"nbr-diagram","name":"Negative Branch Reservation","area":"NBR","since":134,"manual":true,"book":false,"bookExample":false},
     {"id":"nbr-trim-branch","name":"NBR trim-branch injection","area":"NBR","since":157,"manual":true,"book":false,"bookExample":false},
+    {"id":"nbr-shape-clr","name":"NBR negative-branch shape rules","area":"NBR","since":181,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-nodes","name":"Canvas entity cards","area":"Canvas","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"canvas-minimap","name":"Minimap","area":"Canvas","since":11,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-zoom","name":"Zoom controls + percentage","area":"Canvas","since":11,"manual":true,"book":true,"bookExample":false},

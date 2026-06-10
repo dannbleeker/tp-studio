@@ -123,6 +123,16 @@ describe('CLR: additional cause', () => {
     const warnings = validate(makeDoc([de], [], 'frt'));
     expect(hasRule(warnings, 'additional-cause')).toBe(true);
   });
+
+  it('targets BOTH ude and desiredEffect on NBR (Session 181 — the S134 comment finally built)', () => {
+    const ude = makeEntity({ type: 'ude', title: 'Competitor ships first' });
+    const de = makeEntity({ type: 'desiredEffect', title: 'Fewer bugs slip through' });
+    const warnings = validate(makeDoc([ude, de], [], 'nbr'));
+    const hits = warnings.filter((w) => w.ruleId === 'additional-cause');
+    expect(hits.map((w) => (w.target.kind === 'entity' ? w.target.id : '')).sort()).toEqual(
+      [ude.id, de.id].sort()
+    );
+  });
 });
 
 describe('CLR: cause-effect reversal', () => {

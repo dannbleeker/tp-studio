@@ -20,6 +20,7 @@ import { indirectEffectRule } from './indirectEffect';
 import { logicTypeMismatchRule } from './logicTypeMismatch';
 import { longArrowRule } from './longArrow';
 import { loopPolarityRule } from './loopPolarity';
+import { nbrNoNegativeBranchRule, nbrUdeDisconnectedRule } from './nbrBranchIntegrity';
 import { predictedEffectExistenceRule } from './predictedEffectExistence';
 import { reinforcingNoDelayRule } from './reinforcingNoDelay';
 import { type TieredRule, tieredRule } from './shared';
@@ -168,17 +169,22 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // Session 179 — logic-type lint, necessity logic (Theme C2).
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
   ],
-  // Session 134 / spec major gap #5 — NBR runs the FRT rule set:
-  // structural rules + cause-sufficiency + additional-cause (with the
-  // additional-cause target widened to either `ude` or `desiredEffect`,
-  // since NBR carries both) + predicted-effect-existence. The
-  // negative-branch shape is essentially "an FRT subtree that ends in
-  // UDEs instead of desired effects," so the rules transfer cleanly.
+  // Session 134 / spec major gap #5 — NBR runs the FRT rule set: structural
+  // rules + cause-sufficiency + additional-cause (target widened to BOTH `ude`
+  // and `desiredEffect`, since an NBR carries both — the widening was claimed
+  // here since S134 but only built in S181) + predicted-effect-existence. The
+  // negative-branch shape is essentially "an FRT subtree that ends in UDEs
+  // instead of desired effects," so the rules transfer cleanly. On top, two
+  // NBR-specific shape rules (Session 181) verify the canonical walk the
+  // method checklist teaches and the risk-register export assumes:
+  // injection → forward chain → UDEs.
   nbr: [
     ...STRUCTURAL_RULES,
     tieredRule('sufficiency', 'cause-sufficiency', causeSufficiencyRule),
-    tieredRule('sufficiency', 'additional-cause', additionalCauseRuleFor('ude')),
+    tieredRule('sufficiency', 'additional-cause', additionalCauseRuleFor('ude', 'desiredEffect')),
     tieredRule('existence', 'predicted-effect-existence', predictedEffectExistenceRule),
+    tieredRule('existence', 'nbr-no-negative-branch', nbrNoNegativeBranchRule),
+    tieredRule('existence', 'nbr-ude-disconnected', nbrUdeDisconnectedRule),
     // Session 179 — logic-type lint + loop-polarity (Theme C2 + A2).
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
     tieredRule('clarity', 'loop-polarity', loopPolarityRule),

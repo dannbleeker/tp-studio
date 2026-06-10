@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 181 (cont.) — NBR shape rules close the validator gap
+
+The Session-180 hardening pass flagged that the Negative-Branch ruleset was thinner than the other
+types and asked for a human call. Research showed the hedge ("possibly intentional — NBR is
+position/flow-based") was unfounded: NBR is a dagre-laid-out sufficiency causality graph; it was
+simply the only typed diagram with **zero** diagram-specific rules, while the method checklist
+teaches — and the risk-register export structurally assumes — the canonical walk
+injection → forward chain → turning point → UDEs. Dann picked the full option:
+
+- **`nbr-no-negative-branch`** (EXISTENCE) — tracing has started (an injection has outgoing edges)
+  but no UDE exists: the document still reads as an FRT. Silent until the trace starts, so it
+  sequences after `predicted-effect-existence` instead of stacking with it; anchors on the earliest
+  injection (no document-level warning target exists — same workaround as `crt-ude-count`).
+- **`nbr-ude-disconnected`** (EXISTENCE) — a wired-up UDE that isn't forward-reachable from any
+  injection can't inform the adopt/modify/reject call (and the risk register, whose mitigation
+  inference follows the same chain, shows it permanently open). Skips causeless UDEs
+  (`additional-cause` owns those) and stays silent with no injection in the doc (checklist step 1
+  owns that moment). One BFS from all injections via the existing `reachableForward`.
+- **additional-cause widened on NBR** — the S134 registry comment claimed the terminal-type target
+  was "widened to either `ude` or `desiredEffect`" but the code only ever passed `'ude'`; the
+  factory now takes a type list and NBR registers both, so a causeless Desired Effect (the intended
+  FRT half) gets the same "no causes captured?" nudge FRT users get.
+
+Judgment steps (turning point, reactive-vs-proactive mitigation, the final decision) deliberately
+stay with the checklist — a mitigation is legitimately absent while you're still deciding, so a rule
+there would nag during normal use. A new test pins that all shipped NBR content (example + 4
+patterns) is clean of both shape warnings. +13 tests; appendix-G + USER_GUIDE rows added; the
+NEXT_STEPS flag (the last open item from the S180 hardening pass) is retired.
+
 ## Session 181 — Assumptions collapse to a record-canonical model
 
 The assumption dual-representation is gone at the data layer. An assumption used to live **twice**

@@ -43,6 +43,8 @@ A finished diagram that's subtly wrong is more dangerous than an obviously unfin
 | --- | --- | --- |
 | The FRT has no negative branches. | — | You haven't looked hard enough. For each injection, ask "what could this break?" and start a negative branch. |
 | An injection's predicted second effect appears nowhere. | `predicted-effect-existence` | If A→B is real, B's other consequences should show too. Draw them, or doubt the claim. |
+| An NBR has a forward trace but no UDE. | `nbr-no-negative-branch` | It still reads as an FRT. Follow the chain to where it turns negative ("yes, but…") and name the UDE. |
+| An NBR UDE doesn't trace back to the injection. | `nbr-ude-disconnected` | Connect the chain (injection → … → UDE) — an off-chain UDE can't inform the adopt/modify/reject call. |
 
 ### Transition Tree
 
