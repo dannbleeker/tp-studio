@@ -1,8 +1,10 @@
 import clsx from 'clsx';
 import { X } from 'lucide-react';
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
 import { MarkdownField } from '@/components/inspector/MarkdownField';
+import { WarningsList } from '@/components/inspector/WarningsList';
 import { TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
 import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '@/components/ui/buttonClasses';
@@ -11,6 +13,7 @@ import { CLOUD_TYPE_LABEL, CLOUD_TYPES } from '@/domain/cloudType';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { METHOD_BY_DIAGRAM, type MethodStep } from '@/domain/methodChecklist';
 import type { CloudType, DiagramType, SystemScope } from '@/domain/types';
+import { validate } from '@/domain/validators';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -130,6 +133,17 @@ export function DocumentInspector() {
   const steps = METHOD_BY_DIAGRAM[diagramType] ?? [];
   const doneCount = steps.filter((s) => methodChecklist[s.id] === true).length;
 
+  // Session 181 — document-targeted CLR warnings (UDE count, missing negative
+  // branch). They anchor on the diagram as a whole, so the selection-driven
+  // inspector never shows them; this modal + the CLR walkthrough are their
+  // homes. `validate` is fingerprint-cached, so this shares the canvas
+  // inspector's result rather than re-running the rules.
+  const doc = useDocumentStore((s) => currentDoc(s));
+  const docWarnings = useMemo(
+    () => (open ? validate(doc).filter((w) => w.target.kind === 'document') : []),
+    [open, doc]
+  );
+
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="doc-inspector-title">
       <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
@@ -165,6 +179,12 @@ export function DocumentInspector() {
           placeholder="Goal of this tree, who it's for, what's in scope — supports markdown."
           locked={locked}
         />
+
+        {docWarnings.length > 0 && (
+          <Field label="Document-level warnings" as="group">
+            <WarningsList warnings={docWarnings} />
+          </Field>
+        )}
 
         {/*
           System Scope — book-derived "Step 0" capture. Collapsed by default

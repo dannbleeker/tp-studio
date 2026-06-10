@@ -246,7 +246,7 @@ describe('CLR: indirect-effect (Block C / E2)', () => {
     const warnings = validate(makeDoc([target, a, b, c], edges));
     const indirect = warnings.filter((w) => w.ruleId === 'indirect-effect');
     expect(indirect).toHaveLength(1);
-    expect(indirect[0]?.target.id).toBe(target.id);
+    expect(indirect[0]?.target).toEqual({ kind: 'entity', id: target.id });
   });
 
   it('does not warn at 2 incoming edges (common, intentional shape)', () => {

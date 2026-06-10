@@ -25,8 +25,10 @@ describe('nbr-no-negative-branch', () => {
     const warnings = validate(makeDoc([inj, eff], [makeEdge(inj.id, eff.id)], 'nbr'));
     const hits = rules(warnings, 'nbr-no-negative-branch');
     expect(hits).toHaveLength(1);
-    // Anchored on the injection (no document-level warning target exists).
-    expect(hits[0]!.target).toEqual({ kind: 'entity', id: inj.id });
+    // Document-targeted: the missing branch is a property of the diagram, and
+    // the id-less target keeps the warning id stable across entity edits.
+    expect(hits[0]!.target).toEqual({ kind: 'document' });
+    expect(hits[0]!.id).toBe('nbr-no-negative-branch:document');
     expect(hits[0]!.tier).toBe('existence');
   });
 

@@ -29,23 +29,23 @@ import { makeWarning, type UntieredWarning } from './shared';
  * Deliberately silent until at least one injection has an outgoing edge, so the
  * nudges sequence instead of stacking: a lone injection with no trace already
  * gets `predicted-effect-existence` ("what follows?"); this rule takes over
- * once the trace exists but the branch doesn't. Anchors on the earliest
- * injection — `WarningTarget` has no document-level kind (same workaround as
- * `crt-ude-count`).
+ * once the trace exists but the branch doesn't. Targets the DOCUMENT — the
+ * missing branch is a property of the diagram, not of any one injection, and a
+ * document target keeps the warning id stable (an entity stand-in anchor
+ * re-keyed it whenever the anchor injection was deleted or re-wired).
  */
 export const nbrNoNegativeBranchRule = (doc: TPDocument): UntieredWarning[] => {
   if (doc.diagramType !== 'nbr') return [];
   if (entitiesOfBuiltin(doc, 'ude').length > 0) return [];
-  const tracing = entitiesOfBuiltin(doc, 'injection')
-    .filter((inj) => outgoingEdges(doc, inj.id).length > 0)
-    .sort((a, b) => a.annotationNumber - b.annotationNumber);
-  const anchor = tracing[0];
-  if (!anchor) return [];
+  const tracing = entitiesOfBuiltin(doc, 'injection').some(
+    (inj) => outgoingEdges(doc, inj.id).length > 0
+  );
+  if (!tracing) return [];
   return [
     makeWarning(
       doc,
       'nbr-no-negative-branch',
-      { kind: 'entity', id: anchor.id },
+      { kind: 'document' },
       'No undesirable effect captured yet — trace the injection forward to where the chain turns negative ("yes, but…"). Without a UDE this still reads as an FRT.'
     ),
   ];

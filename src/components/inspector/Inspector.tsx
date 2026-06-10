@@ -63,6 +63,9 @@ export function Inspector() {
     const entityMap = new Map<string, Warning[]>();
     const edgeMap = new Map<string, Warning[]>();
     for (const w of warnings) {
+      // Document-targeted warnings belong to no selection — they render in the
+      // Document Inspector + the CLR walkthrough instead.
+      if (w.target.kind === 'document') continue;
       const bucket = w.target.kind === 'entity' ? entityMap : edgeMap;
       const list = bucket.get(w.target.id);
       if (list) list.push(w);

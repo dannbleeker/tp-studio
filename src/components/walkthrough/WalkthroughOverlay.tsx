@@ -287,9 +287,13 @@ function ClrWalkthroughBody({
           <Check className="h-3.5 w-3.5" />
           Resolve
         </Button>
-        <Button variant="softNeutral" size="sm" onClick={() => onOpenInInspector(warning.target)}>
-          Open in inspector
-        </Button>
+        {/* A document-targeted warning has nothing to select — the label above
+            already reads "Document", so the jump button would be a no-op. */}
+        {warning.target.kind !== 'document' && (
+          <Button variant="softNeutral" size="sm" onClick={() => onOpenInInspector(warning.target)}>
+            Open in inspector
+          </Button>
+        )}
       </div>
     </div>
   );

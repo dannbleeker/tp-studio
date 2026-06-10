@@ -119,7 +119,19 @@ export type ClrRuleId =
  */
 export type ClrTier = 'clarity' | 'existence' | 'sufficiency';
 
-export type WarningTarget = { kind: 'entity'; id: string } | { kind: 'edge'; id: string };
+/**
+ * What a CLR warning is anchored to. `document` (Session 181) is for rules
+ * whose subject is the diagram as a whole (UDE count, missing negative
+ * branch) — they used to anchor on an arbitrary "earliest" entity as a
+ * stand-in, which made their warning ids unstable (deleting / re-wiring the
+ * stand-in re-keyed the warning and orphaned the user's stored resolution).
+ * Document warnings render in the Document Inspector + the CLR walkthrough
+ * rather than a selection inspector.
+ */
+export type WarningTarget =
+  | { kind: 'entity'; id: string }
+  | { kind: 'edge'; id: string }
+  | { kind: 'document' };
 
 /**
  * Session 79 — actionable warnings. Some CLR rules carry an

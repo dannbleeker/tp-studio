@@ -245,6 +245,24 @@ describe('crtUdeCountRule', () => {
     expect(crtUdeCountRule(makeDoc([], [], 'crt'))).toEqual([]);
   });
 
+  it('targets the document, so a stored resolution survives entity churn', () => {
+    // Session 181 — previously anchored on the earliest UDE: deleting that UDE
+    // re-keyed the warning id and silently orphaned the user's resolution. The
+    // document target's id is stable for the document's lifetime.
+    const u1 = makeEntity({ type: 'ude' });
+    const u2 = makeEntity({ type: 'ude' });
+    const w = crtUdeCountRule(makeDoc([u1, u2], [], 'crt', { 'crt-ude-count:document': true }));
+    expect(w).toHaveLength(1);
+    expect(w[0]?.target).toEqual({ kind: 'document' });
+    expect(w[0]?.id).toBe('crt-ude-count:document');
+    expect(w[0]?.resolved).toBe(true);
+    // Different UDE set (the old anchor gone) → same warning id, resolution intact.
+    const u3 = makeEntity({ type: 'ude' });
+    const w2 = crtUdeCountRule(makeDoc([u3], [], 'crt', { 'crt-ude-count:document': true }));
+    expect(w2[0]?.id).toBe('crt-ude-count:document');
+    expect(w2[0]?.resolved).toBe(true);
+  });
+
   it('does not fire on non-CRT diagrams', () => {
     // A single UDE would trip "fewer than 3" on a CRT; the guard suppresses it on FRT.
     expect(crtUdeCountRule(makeDoc([makeEntity({ type: 'ude' })], [], 'frt'))).toEqual([]);

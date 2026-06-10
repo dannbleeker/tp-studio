@@ -55,7 +55,10 @@ export const tieredRule = (tier: ClrTier, ruleId: ClrRuleId, fn: ValidatorRule):
 });
 
 const warningId = (ruleId: ClrRuleId, target: WarningTarget): string =>
-  `${ruleId}:${target.kind}:${target.id}`;
+  // A document target has no id — and that's the point: the warning id is
+  // stable for the document's lifetime, so a stored resolution can't be
+  // orphaned by edits the way an "earliest entity" stand-in anchor could.
+  target.kind === 'document' ? `${ruleId}:document` : `${ruleId}:${target.kind}:${target.id}`;
 
 /**
  * Build a `Warning` carrying the rule id, target, message, and a `resolved`
