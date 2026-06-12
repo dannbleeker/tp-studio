@@ -44,6 +44,28 @@ describe('exportToSelfContainedHTML', () => {
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
   });
 
+  it('neutralises injected handlers/markup in title + description (no live vector survives)', () => {
+    resetIds();
+    // The exact payloads the sibling MindMap Studio export carried: an
+    // onerror handler and a javascript: link. Here they reach the viewer as
+    // escaped text in a title + a free-text description, so no attribute or
+    // element is parsed out of them.
+    const a = makeEntity({
+      type: 'effect',
+      title: '<img src=x onerror=alert(1)>',
+      description: '<a href="javascript:alert(2)">click</a>',
+    });
+    const html = exportToSelfContainedHTML(makeDoc([a], [], 'crt'));
+    // No live element or handler is parsed out of the payloads: the escaped
+    // text legitimately still contains the characters "onerror=", but with the
+    // angle brackets encoded it can never become an element that fires.
+    expect(html).not.toContain('<img src=x');
+    expect(html).not.toContain('href="javascript:');
+    // The text is preserved — just escaped (visible, not executable).
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(html).toContain('&lt;a href=&quot;javascript:alert(2)&quot;&gt;');
+  });
+
   it('builds the assumption status CSS class from a fixed allowlist (no class injection)', () => {
     resetIds();
     const a = makeEntity({ type: 'effect', title: 'E' });
