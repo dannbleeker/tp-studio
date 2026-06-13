@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-06-13T16:30:40.259Z",
-  "commit": "1cce85d",
+  "generatedAt": "2026-06-13T16:40:11.857Z",
+  "commit": "ff216bc",
   "headline": {
-    "linesTsJs": 128543,
+    "linesTsJs": 128554,
     "tests": 4244,
     "lineCoveragePct": 96.3,
-    "commits": 819,
+    "commits": 822,
     "ageDays": 33,
-    "trackedFiles": 1027,
-    "featureManualPct": 99.5,
+    "trackedFiles": 1028,
+    "featureManualPct": 100,
     "featureBookPct": 75.1,
     "featureExamplePct": 27.8
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 485,
-      "lines": 65371
+      "files": 486,
+      "lines": 65382
     },
     {
       "category": "Unit tests",
@@ -47,54 +47,54 @@
   "coverage": {
     "lines": {
       "pct": 96.3,
-      "covered": 12469,
-      "total": 12948
+      "covered": 12470,
+      "total": 12949
     },
     "statements": {
       "pct": 93.67,
-      "covered": 14198,
-      "total": 15156
+      "covered": 14199,
+      "total": 15157
     },
     "functions": {
       "pct": 93.13,
-      "covered": 2713,
-      "total": 2913
+      "covered": 2714,
+      "total": 2914
     },
     "branches": {
-      "pct": 84.44,
+      "pct": 84.47,
       "covered": 8184,
-      "total": 9692
+      "total": 9688
     }
   },
   "tests": {
     "unit": 4151,
     "e2e": 93,
-    "durationMs": 210934,
+    "durationMs": 211156,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11229
+        "ms": 9867
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4625
+        "ms": 4389
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4305
-      },
-      {
-        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2032
+        "ms": 4334
       },
       {
         "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 1850
+        "ms": 2309
+      },
+      {
+        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
+        "ms": 2123
       }
     ]
   },
   "domain": {
-    "components": 123,
+    "components": 124,
     "hooks": 19,
     "storeSlices": 14,
     "validators": 4,
@@ -189,22 +189,22 @@
     "nonNull": 99
   },
   "bundle": {
-    "jsGzipKb": 799,
+    "jsGzipKb": 798.7,
     "cssGzipKb": 18.6,
-    "totalGzipKb": 817.5,
+    "totalGzipKb": 817.3,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53468,
     "chapters": 25,
-    "appLoc": 65371,
+    "appLoc": 65382,
     "docToCodeRatio": 0.82
   },
   "featureCoverage": {
     "total": 205,
-    "manual": 204,
-    "manualPct": 99.5,
+    "manual": 205,
+    "manualPct": 100,
     "book": 154,
     "bookPct": 75.1,
     "bookExample": 57,
@@ -252,7 +252,7 @@
       },
       "Canvas": {
         "total": 19,
-        "manual": 18,
+        "manual": 19,
         "book": 8
       },
       "Editing": {
@@ -347,13 +347,7 @@
       }
     },
     "gaps": {
-      "noManual": [
-        {
-          "id": "canvas-hover-fan",
-          "name": "Hover-fan converging edges",
-          "since": 185
-        }
-      ],
+      "noManual": [],
       "noBook": [
         {
           "id": "canvas-hover-fan",
@@ -616,16 +610,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 33,
-    "commits": 819,
-    "commits7d": 239,
+    "commits": 822,
+    "commits7d": 241,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 665
+        "count": 667
       },
       {
         "name": "github-actions[bot]",
-        "count": 143
+        "count": 144
       },
       {
         "name": "dannbleeker",
@@ -633,8 +627,8 @@
       }
     ],
     "churn30d": {
-      "added": 138642,
-      "removed": 33199
+      "added": 138796,
+      "removed": 33331
     },
     "changelogEntries": 335
   }
