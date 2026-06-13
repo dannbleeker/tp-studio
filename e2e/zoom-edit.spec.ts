@@ -11,13 +11,13 @@ import { expect, test } from '@playwright/test';
 
 test.describe('CanvasNav — editable zoom percent (Z-1)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?test=1');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
   });
 
   test('typing a percentage zooms; Escape cancels', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?test=1');
 
     // The zoom chip is the only CanvasNav button whose accessible name is a
     // bare percentage (the zoom-out / zoom-in / fit buttons are icon-only).

@@ -40,13 +40,13 @@ test.describe('canvas visual regression', () => {
   // creation and deletes the stale branch — no spam.
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?test=1');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
   });
 
   test('empty canvas snapshot', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?test=1');
     // Wait for the React Flow viewport to mount so the screenshot is
     // stable. The element shows up even on an empty doc.
     await page.waitForSelector('.react-flow__viewport');

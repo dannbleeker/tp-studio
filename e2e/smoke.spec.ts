@@ -18,13 +18,13 @@ test.describe('TP Studio smoke', () => {
     // Clear localStorage before each test so persisted state from a
     // previous run doesn't leak into the next. The doc and prefs both
     // live in localStorage; reset both.
-    await page.goto('/');
+    await page.goto('/?test=1');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
   });
 
   test('renders the empty canvas with the new-doc CTA', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?test=1');
     // The title badge should be visible at the top-left.
     await expect(page.getByRole('textbox')).toBeAttached();
     // The command-search field (Session 182 replaced the "Commands" button) is
@@ -32,8 +32,18 @@ test.describe('TP Studio smoke', () => {
     await expect(page.getByRole('button', { name: /search or run a command/i })).toBeVisible();
   });
 
-  test('Cmd+K opens the command palette', async ({ page }) => {
+  test('boots to the Start workspace by default (no ?test=1)', async ({ page }) => {
+    // Session 184 — real users land on the Start workspace, not the editor.
+    // The rest of the suite passes ?test=1, which boots straight to the canvas.
     await page.goto('/');
+    await expect(page.locator('aside[aria-label="Workspace"]')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /what problem are you working on/i })
+    ).toBeVisible();
+  });
+
+  test('Cmd+K opens the command palette', async ({ page }) => {
+    await page.goto('/?test=1');
     // Ctrl+K works as a substitute for Cmd+K on non-Mac CI runners; the
     // app binding listens to either modifier.
     await page.keyboard.press('Control+K');
@@ -46,7 +56,7 @@ test.describe('TP Studio smoke', () => {
   });
 
   test('canvas double-click creates a new entity (preserves across reload)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?test=1');
     // Double-click the canvas surface to spawn an entity at that point.
     // The canvas takes the full viewport; click the center.
     const viewport = page.viewportSize();

@@ -4,6 +4,22 @@ import type { RootStore } from '../types';
 import type { ContextMenuState, ContextMenuTarget, StartSection } from './types';
 
 /**
+ * Session 184 — the boot landing. Real users open onto the **Start** workspace;
+ * the test surfaces land on the editor instead so the suite keeps booting onto
+ * the canvas: vitest (`import.meta.env.MODE === 'test'`) and the e2e hook
+ * (`?test=1`). A `#!share=` boot also skips Start so a shared link opens its
+ * document directly. Focusing any doc clears `startSection` (see
+ * `activeDocEphemeralReset`), so this only governs the very first paint.
+ */
+const initialStartSection = (): StartSection | null => {
+  if (import.meta.env.MODE === 'test') return null;
+  if (typeof window === 'undefined') return 'start';
+  if (new URLSearchParams(window.location.search).has('test')) return null;
+  if (window.location.hash.startsWith('#!share=')) return null;
+  return 'start';
+};
+
+/**
  * Everything modal-ish: the command palette, help / settings / doc-settings
  * dialogs, the right-click context menu, and Quick Capture. Each has its
  * own `open*` / `close*` pair — a flat dialog-visibility registry.
@@ -373,7 +389,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   commentsPanelOpen: false,
   inspectorHidden: false,
   clrPanelOpen: false,
-  startSection: null,
+  startSection: initialStartSection(),
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -423,7 +439,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   commentsPanelOpen: false,
   inspectorHidden: false,
   clrPanelOpen: false,
-  startSection: null,
+  startSection: initialStartSection(),
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
