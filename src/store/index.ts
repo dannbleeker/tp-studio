@@ -141,10 +141,10 @@ setStorageErrorListener((err) => {
       // nothing, so evict the oldest CLOSED trees (not open in any tab) to keep
       // the app saving. The only tier that drops a user's primary saved document,
       // so it's last, conservative (a small batch), and loud.
-      const evicted = evictOldestClosedTrees(
-        new Set(readTabsManifest()?.tabOrder ?? []),
-        QUOTA_EVICT_BATCH
-      );
+      // Use the in-memory tab order (the source of truth) rather than re-reading
+      // the persisted manifest, so a momentarily-stale manifest can't mark an open
+      // tab as evictable — and it matches what `forgetClosedDocs` reads.
+      const evicted = evictOldestClosedTrees(new Set(store.tabOrder), QUOTA_EVICT_BATCH);
       if (evicted > 0) {
         // The Start "All trees" library re-scans storage on this bump.
         useDocumentStore.setState((st) => ({ savedDocsVersion: st.savedDocsVersion + 1 }));
