@@ -67,6 +67,12 @@ export type SelectionSlice = {
    *  unchanged value so moving within one edge doesn't fan re-renders. */
   hoveredEdgeId: string | null;
 
+  /** Hover-fan (Session 185) — the TARGET id of the currently-hovered edge, set
+   *  alongside `hoveredEdgeId`. `TPEdge` reads `hoveredEdgeTargetId === target` to
+   *  know its convergence group is hovered and spread the fan. Null when nothing
+   *  is hovered. */
+  hoveredEdgeTargetId: string | null;
+
   /** Session 138 — the canvas interaction mode (`idle` / `edge-join` /
    *  `pending-edge`), folding the former `joinModeEdgeId` +
    *  `pendingEdgeSourceId` nullable flags into one discriminated union so
@@ -112,7 +118,7 @@ export type SelectionSlice = {
   /** Goal #3 — set/clear the hovered edge for the select-hover highlight.
    *  No-op when unchanged (same per-frame-safety rationale as the two
    *  connection-drag setters above). */
-  setHoveredEdge: (edgeId: string | null) => void;
+  setHoveredEdge: (edgeId: string | null, targetId?: string | null) => void;
 
   /** Session 133 — enter / exit edge-join mode. `startEdgeJoinMode`
    *  remembers the source edge id; the next edge click on the canvas
@@ -139,6 +145,7 @@ export type SelectionDataKeys =
   | 'connectingFromId'
   | 'connectionDropEdgeId'
   | 'hoveredEdgeId'
+  | 'hoveredEdgeTargetId'
   | 'canvasMode';
 
 export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => ({
@@ -149,6 +156,7 @@ export const selectionDefaults = (): Pick<SelectionSlice, SelectionDataKeys> => 
   connectingFromId: null,
   connectionDropEdgeId: null,
   hoveredEdgeId: null,
+  hoveredEdgeTargetId: null,
   canvasMode: { kind: 'idle' },
 });
 
@@ -233,13 +241,14 @@ export const createSelectionSlice: StateCreator<RootStore, [], [], SelectionSlic
     if (get().connectionDropEdgeId === edgeId) return;
     set({ connectionDropEdgeId: edgeId });
   },
-  setHoveredEdge: (edgeId) => {
+  setHoveredEdge: (edgeId, targetId = null) => {
     // Same bail-early rationale as the connection-drag setters: edge
     // mousemove can refire for the same id, and every visible TPEdge
     // subscribes to `hoveredEdgeId === props.id`, so an unchanged write
-    // would thrash reconciliation across the whole canvas.
+    // would thrash reconciliation across the whole canvas. The hovered edge's
+    // target rides along for the hover-fan group check (Session 185).
     if (get().hoveredEdgeId === edgeId) return;
-    set({ hoveredEdgeId: edgeId });
+    set({ hoveredEdgeId: edgeId, hoveredEdgeTargetId: edgeId === null ? null : targetId });
   },
 
   startEdgeJoinMode: (edgeId) =>

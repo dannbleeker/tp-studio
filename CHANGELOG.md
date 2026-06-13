@@ -2,6 +2,33 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 185 — Hover-fan: spread converging edges apart on hover
+
+When 2+ edges converge on one entity you couldn't grab one to re-route it — a click took
+whichever sat on top (the Session-177 edge-picker addressed the click; this is the promised
+"fan later" direct-manipulation follow-up). Now hovering any edge in a convergence group spreads
+the group's endpoints apart at the shared target so each is grabbable; they snap back on leave.
+**No domain-logic changes** — emission metadata plus a render-time endpoint offset.
+
+- **Groundwork (behavior-preserving).** `useGraphEdgeEmission` groups the fan-eligible visible edges
+  — real, non-aggregated, non-junctor (a junctor's siblings converge at the junctor circle, not the
+  target) — by target and stamps each with its `fanRank` + the group `fanCount`, only when 2+
+  converge. Position-free, so rank is a stable sourceId order.
+- **Render.** `onEdgeMouseEnter` stashes the hovered edge's target (`hoveredEdgeTargetId`); `TPEdge`
+  fans when its own target matches and its group has 2+ members, offsetting its bezier endpoint by
+  `(fanRank − (n−1)/2)·16` around the shared point and dropping its routed path so the offset
+  renders. Gated to **direct** routes (≤2 waypoints): a detoured edge stays put so it doesn't pop
+  from its obstacle detour to a straight bezier. The 16-unit spacing stays under the 56px edge
+  hit-tolerance, so the hovered edge doesn't slip out from under the pointer (no flicker).
+- **Tested + verified.** Gating + offset are a pure `hoverFan` helper (unit-tested: only a hovered
+  2+ direct group fans; symmetric spread, middle of an odd group unmoved); emission stamping is
+  unit-tested. End-to-end spread/snap-back verified in a real browser (Edge): 3 edges converging on
+  one node go from 0px endpoint spread at rest to a symmetric fan on hover, back to 0 on leave.
+- Known follow-ups (see NEXT_STEPS): fans only in flow layouts on direct-route convergence
+  (smart-routed detours + radial keep their path); a small Y shift on the route→bezier switch;
+  sourceId slot ordering (a position sort would guarantee crossing-free fanning); smooth CSS path
+  transition deferred (the route→bezier structure change doesn't tween cleanly).
+
 ## Session 184 — Start by default + a persistent tree library
 
 Two follow-ups to the Session-183 Start page, both layered on the existing engine — **no domain-logic changes**:

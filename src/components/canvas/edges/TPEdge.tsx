@@ -15,6 +15,7 @@ import { ChallengeButton } from './ChallengeButton';
 import { ARROW_TRIANGLE_D, arrowheadOnPath, arrowheadTransform } from './edgeArrowhead';
 import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
+import { hoverFanActive, hoverFanOffsetX } from './hoverFan';
 import { junctorKindField } from './junctorGeometry';
 import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
 import {
@@ -51,6 +52,12 @@ const LABEL_INLINE_MAX = 30;
  *  AND" gesture) lands more easily; still narrow enough that adjacent
  *  parallel edges don't fight each other on the hover. */
 const EDGE_INTERACTION_WIDTH = 56;
+
+/** Hover-fan (Session 185) — lateral spacing (flow units) between adjacent
+ *  converging edges when their shared target is hovered. Kept comfortably below
+ *  the 56px edge hit-tolerance so the hovered edge stays under the pointer as the
+ *  group spreads (no hover flicker for the common 2–3-edge convergence). */
+const FAN_SPACING = 16;
 
 /**
  * E6: for AND-grouped non-aggregated edges, the visible edge segment stops
@@ -137,17 +144,8 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     sourceY: props.sourceY,
   });
 
-  // Default bezier — what React Flow's source/target handle positions
-  // produce. The mutex special-case below overrides this when both
-  // endpoints resolve to vertically-stacked entity positions.
-  const [bezierPath, bezierLabelX, bezierLabelY] = getBezierPath({
-    sourceX: sourceAnchor.x,
-    sourceY: sourceAnchor.y,
-    targetX: effectiveTargetX,
-    targetY: effectiveTargetY,
-    sourcePosition: props.sourcePosition,
-    targetPosition: props.targetPosition,
-  });
+  // The default bezier (with any hover-fan offset) is computed below, after the
+  // store selector resolves whether this edge's convergence group is hovered.
 
   // Session 105 / Tier 1 #1 — one shallow-equal selector returning a
   // flat record of all the per-edge primitives. Previously this file
@@ -202,6 +200,9 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
         // source), used to suppress the hover cue mid-drag so the
         // drop-target glow owns the visual.
         isHovered: s.hoveredEdgeId === props.id,
+        // Hover-fan (Session 185) — true when the currently-hovered edge lands on
+        // the same target as this one, i.e. this edge's convergence group is hovered.
+        isFanGroupHovered: s.hoveredEdgeTargetId != null && s.hoveredEdgeTargetId === props.target,
         isConnecting: s.connectingFromId != null,
         // Browse Lock disables the reconnect gesture (Canvas omits onReconnect),
         // so the visible re-target knobs hide too — no dangling affordance.
@@ -223,10 +224,38 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     diagramType,
     isNoteEdge,
     isHovered,
+    isFanGroupHovered,
     isConnecting,
     browseLocked,
     isReaderMode,
   } = edgeView;
+
+  // Hover-fan (Session 185) — when this edge converges on the same target as the
+  // currently-hovered edge, nudge its endpoint sideways so overlapping siblings
+  // spread apart and one can be grabbed. Only a DIRECT route (≤2 waypoints) fans:
+  // a detoured route stays put so it doesn't snap from its obstacle detour to a
+  // straight bezier (the "pop"). A fanned edge drops its routed path (below) and
+  // falls back to this bezier, so the endpoint offset actually shows.
+  const fanCount = props.data?.fanCount ?? 0;
+  const fanActive = hoverFanActive({
+    isFanGroupHovered,
+    fanCount,
+    routeWaypointCount: props.data?.route?.waypoints?.length ?? 0,
+  });
+  const fanOffsetX = fanActive
+    ? hoverFanOffsetX(props.data?.fanRank ?? 0, fanCount, FAN_SPACING)
+    : 0;
+  // Default bezier — what React Flow's source/target handle positions produce,
+  // plus any hover-fan offset. The mutex special-case below overrides this when
+  // both endpoints resolve to vertically-stacked entity positions.
+  const [bezierPath, bezierLabelX, bezierLabelY] = getBezierPath({
+    sourceX: sourceAnchor.x,
+    sourceY: sourceAnchor.y,
+    targetX: effectiveTargetX + fanOffsetX,
+    targetY: effectiveTargetY,
+    sourcePosition: props.sourcePosition,
+    targetPosition: props.targetPosition,
+  });
   // Actions in their own shallow bundle. They're stable refs across
   // store snapshots, so this subscription effectively never fires —
   // it's bundled for symmetry with the primitives bundle above.
@@ -343,12 +372,13 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // route's waypoints* (see `resolveEdgePath`), so it rides a bent detour
   // instead of sitting at the straight bezier midpoint (which can land inside
   // an obstacle the route bends around).
-  const routedPath = props.data?.route?.d;
+  // Hover-fan (Session 185) drops the routed path so the fanned bezier renders.
+  const routedPath = fanActive ? undefined : props.data?.route?.d;
   const { path, labelX, labelY } = resolveEdgePath({
     mutex: mutexPath,
     radial: radialRoute,
     routedPath,
-    routeWaypoints: props.data?.route?.waypoints,
+    routeWaypoints: fanActive ? undefined : props.data?.route?.waypoints,
     bezier: { path: bezierPath, labelX: bezierLabelX, labelY: bezierLabelY },
   });
 

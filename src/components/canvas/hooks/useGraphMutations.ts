@@ -90,7 +90,7 @@ export const useGraphMutations = (): {
     // cue (makes the otherwise-invisible 56px hit zone discoverable). Set
     // unconditionally; the component suppresses the cue while a connection
     // drag is in flight (the drop-target glow takes over then).
-    s.setHoveredEdge(edge.id);
+    s.setHoveredEdge(edge.id, edge.target);
     // Goal #2 — while a connection drag is in progress, glow this edge as the
     // "drop here to AND" target. Read the flag imperatively (no subscription);
     // the setter no-ops if unchanged so re-hovering the same edge is free.

@@ -36,13 +36,15 @@ PROBLEM: when 2+ edges converge on one entity, you can't reliably select/drag ON
 it — a click always grabs whichever edge is on top.
 - ✅ **Shipped (Session 177, see CHANGELOG):** the inspector-driven re-wire (Cause/Effect dropdowns →
   `reconnectEdge`) and the canvas edge-picker (click a stack of overlapping edges → a menu to choose one).
-- **Hover-fan (chosen next slice — researched, not yet built).** Spread converging edges apart on
-  hover of the shared endpoint so you grab one directly, snapping back on leave — the
-  direct-manipulation polish on top of the picker (Dann: "picker now, fan later"). Researched feasible
-  (moderate, ~5–7 files: stamp `fanRank`/`fanCount` at emission, offset `effectiveTargetX` in `TPEdge`
-  on hover, CSS `transition: d`). Main risk: the routed-vs-bezier "pop" on obstacle-routed diagrams
-  (gate it — only fan when the routed path ≈ a direct bezier); it's also mouse-only. Alternatives
-  parked: always-fan (highest visual risk), click/Tab-cycle, widen-band.
+- ✅ **Hover-fan — SHIPPED (Session 185, see CHANGELOG).** Hovering a convergence group spreads its
+  endpoints apart so one is grabbable, snapping back on leave. `fanRank`/`fanCount` stamped at
+  emission; `TPEdge` offsets the bezier endpoint on hover and drops the routed path so it shows;
+  gated to direct routes (≤2 waypoints) to avoid the detour pop. **Open polish (small, optional):**
+  (a) it only fans direct-route convergence in flow layouts — smart-routed *detours* and radial mode
+  keep their path (fanning a detour would need to re-route, not just offset the bezier); (b) a small
+  Y shift on the route→bezier switch; (c) slot order is by sourceId — a render-time position sort
+  would guarantee crossing-free fanning; (d) smooth CSS path transition deferred (route→bezier
+  structure change doesn't tween cleanly). Mouse-only by design.
 
 ### Test-coverage — healthy (reference; no open target)
 ~97% lines / ~85% branches (Session-180 push; CI floors ratcheted to 94 lines / 82 branches). CI floor

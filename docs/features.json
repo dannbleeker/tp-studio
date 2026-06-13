@@ -2,7 +2,7 @@
   "$schema": "./features.schema.json",
   "note": "Canonical catalogue of TP Studio's user-facing features — the denominator for the feature-coverage metric (scripts/build-stats.mjs). One entry per capability a user can see, do, or configure (dev infrastructure is intentionally excluded). `manual` = covered in USER_GUIDE.md; `book` = covered in a docs/guide chapter; `bookExample` = that chapter carries a worked example. Deduped from the full CHANGELOG (Sessions 1-180) in Session 180. Add a row when a user-facing feature ships and fill its coverage as the manual/book catch up.",
   "areas": ["CRT","EC","FRT","PRT","TT","GoalTree","ST","NBR","Canvas","Editing","Entities","Edges","CLR","Layout","Export","Import","Print","Comments","Revisions","Search","Palette","Settings","Workshop","Reader","Patterns","Start","General"],
-  "reviewedThroughSession": 184,
+  "reviewedThroughSession": 185,
   "features": [
     {"id":"crt-diagram","name":"Current Reality Tree","area":"CRT","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"crt-core-driver","name":"Core Driver finder","area":"CRT","since":52,"manual":true,"book":true,"bookExample":true},
@@ -64,6 +64,7 @@
     {"id":"canvas-back-edge-routing","name":"Back-edge loop routing","area":"Canvas","since":177,"manual":true,"book":false,"bookExample":false},
     {"id":"canvas-loop-rb-badge","name":"Loop polarity R/B badge","area":"Canvas","since":179,"manual":true,"book":true,"bookExample":true},
     {"id":"canvas-assumption-overlay","name":"Assumption anchor dashed overlay","area":"Canvas","since":133,"manual":true,"book":true,"bookExample":true},
+    {"id":"canvas-hover-fan","name":"Hover-fan converging edges","area":"Canvas","since":185,"manual":false,"book":false,"bookExample":false},
     {"id":"edit-inline-title","name":"Inline title editing","area":"Editing","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"edit-create-entity","name":"Double-click / Alt-click to create","area":"Editing","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"edit-rename-f2","name":"F2 / Enter to rename","area":"Editing","since":176,"manual":true,"book":false,"bookExample":false},
