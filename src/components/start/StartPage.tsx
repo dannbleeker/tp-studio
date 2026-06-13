@@ -1,7 +1,9 @@
 import { Search } from 'lucide-react';
 import { useDocumentStore } from '@/store';
 import type { StartSection } from '@/store/uiSlice/types';
+import { TEMPLATE_SPECS } from '@/templates';
 import { StartSidebar } from './StartSidebar';
+import { TemplateGallery } from './TemplateGallery';
 
 const SECTION_TITLE: Record<StartSection, string> = {
   start: 'Start',
@@ -59,8 +61,19 @@ export function StartPage() {
   );
 }
 
-/** Placeholder bodies — replaced section-by-section over Stages B–D. */
+/** Per-section body. Templates is registry-driven (Stage B); the hero and tree
+ *  galleries fill in over Stages C–D. */
 function StartSectionBody({ section }: { section: StartSection }) {
+  if (section === 'templates') {
+    return (
+      <div className="flex flex-col gap-5">
+        <p className="text-neutral-500 text-sm dark:text-neutral-400">
+          {TEMPLATE_SPECS.length} worked examples — each one checked against the method.
+        </p>
+        <TemplateGallery />
+      </div>
+    );
+  }
   return (
     <div className="rounded-lg border border-neutral-200 border-dashed px-6 py-12 text-center dark:border-neutral-800">
       <p className="font-medium text-neutral-500 text-sm dark:text-neutral-400">
