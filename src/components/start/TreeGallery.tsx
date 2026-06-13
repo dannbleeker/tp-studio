@@ -1,5 +1,5 @@
 import { TreeCard } from './TreeCard';
-import type { OpenTree } from './useOpenTrees';
+import type { SavedTree } from './useSavedTrees';
 
 /** Shared empty-state card for the tree galleries / lists. */
 export function TreesEmpty({ message }: { message: string }) {
@@ -14,7 +14,7 @@ export function TreesEmpty({ message }: { message: string }) {
  * Session 183 — a responsive grid of tree cards (the user's open trees). Used by
  * "All trees" and "Needs review" (the latter passing a filtered list).
  */
-export function TreeGallery({ trees, emptyMessage }: { trees: OpenTree[]; emptyMessage: string }) {
+export function TreeGallery({ trees, emptyMessage }: { trees: SavedTree[]; emptyMessage: string }) {
   if (trees.length === 0) return <TreesEmpty message={emptyMessage} />;
   return (
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Trees">

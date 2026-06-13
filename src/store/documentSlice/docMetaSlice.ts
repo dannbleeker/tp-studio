@@ -4,6 +4,7 @@ import { newDocumentId } from '@/domain/ids';
 import {
   importFromJSON,
   loadAllTabsWithStatus,
+  loadSavedDoc,
   persistTabsManifest,
   removeDocFromStorage,
   saveDocToLocalStorage,
@@ -59,6 +60,10 @@ export type DocMetaSlice = {
   activeDocId: DocumentId;
   /** Left-to-right tab-strip ordering (one id per open tab). */
   tabOrder: DocumentId[];
+  /** Session 184 — bumped whenever the SAVED set changes in a way the open
+   *  tabs don't reflect (a closed-tree delete / "Forget closed documents"), so
+   *  the Start library (`useSavedTrees`) re-scans storage. */
+  savedDocsVersion: number;
   setDocument: (doc: TPDocument) => void;
   newDocument: (diagramType: DiagramType) => void;
   setTitle: (title: string) => void;
@@ -79,7 +84,9 @@ export type DocMetaSlice = {
   switchTab: (id: DocumentId) => void;
   /** Close tab `id`. If it was active, activates the right-hand neighbour
    *  (clamped); if it was the last tab, opens a fresh blank CRT so there is
-   *  never zero tabs. Drops the closed doc's per-doc storage slots. */
+   *  never zero tabs. Session 184 — the closed doc's body STAYS in storage
+   *  (reopenable from the Start "All trees" library via `openSavedDoc`); only
+   *  `deleteSavedDoc` / "Forget closed documents" removes it. */
   closeTab: (id: DocumentId) => void;
   /** Reorder the tab strip. `order` must be a permutation of `tabOrder`;
    *  a non-permutation is ignored. */
@@ -95,6 +102,12 @@ export type DocMetaSlice = {
    *  "Undo" that restores the previous doc only makes sense in replace
    *  mode. */
   openDocInTab: (doc: TPDocument) => boolean;
+  /** Session 184 — open a saved tree by id from the Start library: switches to
+   *  it if already open, else loads its body from storage into a new tab. */
+  openSavedDoc: (id: DocumentId) => void;
+  /** Session 184 — permanently delete a saved tree (open or closed): closes its
+   *  tab if open, removes its body from storage, and bumps `savedDocsVersion`. */
+  deleteSavedDoc: (id: DocumentId) => void;
 
   /** E3 — build a Core Cloud document from a completed 3-Cloud rapid diagnosis,
    *  open it (honouring `openDocsInNewTab`), and dismiss the wizard overlay. */
@@ -257,8 +270,8 @@ export const bootRecoveryStatus: {
  */
 export const docMetaDefaults = (): Pick<
   DocMetaSlice,
-  'doc' | 'docs' | 'activeDocId' | 'tabOrder'
-> => activeDocState(createDocument('crt'));
+  'doc' | 'docs' | 'activeDocId' | 'tabOrder' | 'savedDocsVersion'
+> => ({ ...activeDocState(createDocument('crt')), savedDocsVersion: 0 });
 
 /**
  * The per-doc *ephemeral* UI state that must reset whenever the active
@@ -364,9 +377,31 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
 
   return {
     ...initialTabState,
+    savedDocsVersion: 0,
 
     setDocument: (doc) => {
       performDocumentSwap(doc, 'document swap');
+    },
+
+    // Session 184 — the Start "All trees" library. `openSavedDoc` reopens any
+    // saved tree by id (switch if already open, else load its body from
+    // storage into a new tab); `deleteSavedDoc` permanently removes one.
+    openSavedDoc: (id) => {
+      const state = get();
+      if (state.docs[id]) {
+        state.switchTab(id);
+        return;
+      }
+      const doc = loadSavedDoc(id);
+      if (doc) state.openDocInTab(doc);
+    },
+    deleteSavedDoc: (id) => {
+      // Closing an open tab clears `startSection` (it exits to the editor), but a
+      // delete from the Start library must STAY on Start — snapshot + restore it.
+      const section = get().startSection;
+      if (get().docs[id]) get().closeTab(id);
+      removeDocFromStorage(id);
+      set({ savedDocsVersion: get().savedDocsVersion + 1, startSection: section });
     },
 
     newDocument: (diagramType) => {
@@ -527,7 +562,9 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         });
         saveDocToLocalStorage(fresh);
         persistTabsManifest({ activeDocId: fresh.id, tabOrder: [fresh.id] });
-        removeDocFromStorage(id);
+        // Session 184 — closing a tab no longer deletes the doc's body. It
+        // stays in storage so the Start "All trees" library can reopen it;
+        // only an explicit delete / "Forget closed documents" removes it.
         get().reloadRevisionsForActiveDoc();
         return;
       }
@@ -539,7 +576,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         const liveActive = sweptDocs[state.activeDocId] ?? state.doc;
         set({ doc: liveActive, docs: sweptDocs, tabOrder: remaining, historyByDoc: historyRest });
         persistTabsManifest({ activeDocId: state.activeDocId, tabOrder: remaining });
-        removeDocFromStorage(id);
+        // Session 184 — keep the closed doc's body (reopenable from the library).
         return;
       }
 
@@ -561,7 +598,7 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         ...activeDocEphemeralReset(),
       });
       persistTabsManifest({ activeDocId: nextActiveId, tabOrder: remaining });
-      removeDocFromStorage(id);
+      // Session 184 — keep the closed doc's body (reopenable from the library).
       get().reloadRevisionsForActiveDoc();
     },
 

@@ -244,6 +244,29 @@ const loadDocByIdWithStatus = (id: DocumentId): LoadResult =>
     readString(docBackupKey(id))
   );
 
+/**
+ * Session 184 — every saved doc id in storage (open OR closed). Closing a tab
+ * no longer deletes the body, so the Start "All trees" library reads these to
+ * keep closed trees reachable; only an explicit delete (or "Forget closed
+ * documents") removes one. The committed slot is the source of truth — a doc
+ * without one is treated as not-saved.
+ */
+const DOC_COMMITTED_KEY_RE = /^tp-studio:doc:([^:]+):committed:v2$/;
+export const listSavedDocIds = (): DocumentId[] => {
+  if (typeof localStorage === 'undefined') return [];
+  const ids: DocumentId[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    const match = key ? DOC_COMMITTED_KEY_RE.exec(key) : null;
+    if (match?.[1]) ids.push(match[1] as DocumentId);
+  }
+  return ids;
+};
+
+/** Load one saved doc by id (committed / live / backup precedence); `null` if
+ *  nothing usable is stored under that id. */
+export const loadSavedDoc = (id: DocumentId): TPDocument | null => loadDocByIdWithStatus(id).doc;
+
 /** Validate a parsed manifest shape. Returns `null` if absent / malformed. */
 const parseTabsManifest = (raw: string | null): TabsManifest | null => {
   if (raw === null) return null;

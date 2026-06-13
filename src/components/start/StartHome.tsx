@@ -7,7 +7,7 @@ import { useDocumentStore } from '@/store';
 import { buildTemplate, TEMPLATE_SPECS } from '@/templates';
 import { TemplateGallery } from './TemplateGallery';
 import { TreeCard } from './TreeCard';
-import type { OpenTree } from './useOpenTrees';
+import type { SavedTree } from './useSavedTrees';
 
 const EXAMPLE_PROBLEMS = [
   'Customer churn is rising',
@@ -22,7 +22,7 @@ const EXAMPLE_PROBLEMS = [
  * example callout opens a finished CRT, and the registry-driven template strip
  * sits beneath "…or start from a template".
  */
-export function StartHome({ trees }: { trees: OpenTree[] }) {
+export function StartHome({ trees }: { trees: SavedTree[] }) {
   const { openDocInTab, showToast, setStartSection } = useDocumentStore(
     useShallow((s) => ({
       openDocInTab: s.openDocInTab,

@@ -10,11 +10,10 @@ import {
   Lock,
   Plus,
 } from 'lucide-react';
-import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { validate } from '@/domain/validators';
 import { useDocumentStore } from '@/store';
 import type { StartSection } from '@/store/uiSlice/types';
+import { useSavedTrees } from './useSavedTrees';
 
 type LucideIcon = typeof Home;
 type NavItem = { section: StartSection; label: string; icon: LucideIcon; badge?: number };
@@ -22,31 +21,24 @@ type NavItem = { section: StartSection; label: string; icon: LucideIcon; badge?:
 /**
  * Session 183 — the Start workspace's persistent left rail. The logo is a Home
  * affordance, "New tree" is the primary create action, and the nav list drives
- * the `startSection` view. Badges (open-tree count, needs-review count) are
+ * the `startSection` view. Badges (saved-tree count, needs-review count) are
  * computed from the store — never literals — so they can't drift from reality.
  */
 export function StartSidebar() {
-  const { startSection, setStartSection, openDiagramPicker, docs, tabOrder } = useDocumentStore(
+  const { startSection, setStartSection, openDiagramPicker } = useDocumentStore(
     useShallow((s) => ({
       startSection: s.startSection,
       setStartSection: s.setStartSection,
       openDiagramPicker: s.openDiagramPicker,
-      docs: s.docs,
-      tabOrder: s.tabOrder,
     }))
   );
 
-  // Open-tree count + how many have at least one unresolved CLR reservation.
-  // `validate` is the same pure function the editor uses, so "needs review"
-  // can't diverge from the per-tree Logic pills or the editor's Logic chip.
-  const { treeCount, needsReviewCount } = useMemo(() => {
-    let needs = 0;
-    for (const id of tabOrder) {
-      const d = docs[id];
-      if (d && validate(d).some((w) => !w.resolved)) needs++;
-    }
-    return { treeCount: tabOrder.length, needsReviewCount: needs };
-  }, [docs, tabOrder]);
+  // The whole saved library (open + closed) drives the badges, via the same
+  // cached `validate(doc)` the per-tree Logic pills + the editor's chip use —
+  // so "All trees" / "Needs review" can never disagree with the cards.
+  const trees = useSavedTrees();
+  const treeCount = trees.length;
+  const needsReviewCount = trees.filter((t) => t.openWarnings > 0).length;
 
   const items: NavItem[] = [
     { section: 'start', label: 'Start', icon: Home },

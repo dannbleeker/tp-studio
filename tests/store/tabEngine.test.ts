@@ -194,14 +194,17 @@ describe('Batch 5.1 — closeTab', () => {
     expect(Object.keys(s().doc.entities).length).toBe(0);
   });
 
-  it('drops the closed doc’s per-doc storage slot', () => {
+  it('keeps the closed doc’s body in storage (Session 184 — reopenable from the Start library)', () => {
     const aId = s().activeDocId;
     const b = createDocument('frt');
     s().openTab(b); // writes b's committed slot
     expect(localStorage.getItem(docCommittedKey(b.id))).not.toBeNull();
     s().switchTab(aId); // make B a background tab
     s().closeTab(b.id);
-    expect(localStorage.getItem(docCommittedKey(b.id))).toBeNull();
+    // The tab is closed (out of the open set), but the body persists so the
+    // Start "All trees" library can reopen it; only an explicit delete removes it.
+    expect(s().tabOrder).not.toContain(b.id);
+    expect(localStorage.getItem(docCommittedKey(b.id))).not.toBeNull();
   });
 });
 

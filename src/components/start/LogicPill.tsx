@@ -4,7 +4,7 @@ import { CircleAlert, CircleCheck } from 'lucide-react';
 /**
  * Session 183 — a tree's CLR status, mirroring the editor's TopBar Logic chip:
  * emerald "Logic clear" when no reservations are open, amber "N to review"
- * otherwise. The caller passes the count from {@link useOpenTrees}, which reads
+ * otherwise. The caller passes the count from {@link useSavedTrees}, which reads
  * the same pure `validate(doc)` the chip + inspector use — so the pill can
  * never drift from the editor.
  */

@@ -16,9 +16,11 @@ export { exportToJSON, importFromJSON } from './persistenceJson';
 export type { LoadResult, TabsLoadResult, TabsManifest } from './persistenceStorage';
 export {
   clearLocalStorage,
+  listSavedDocIds,
   loadAllTabsWithStatus,
   loadFromLocalStorage,
   loadFromLocalStorageWithStatus,
+  loadSavedDoc,
   persistActiveDoc,
   persistTabsManifest,
   readTabsManifest,

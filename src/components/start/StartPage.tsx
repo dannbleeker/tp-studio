@@ -8,7 +8,7 @@ import { StartSidebar } from './StartSidebar';
 import { TemplateGallery } from './TemplateGallery';
 import { TreeGallery } from './TreeGallery';
 import { TreeList } from './TreeList';
-import { useOpenTrees } from './useOpenTrees';
+import { useSavedTrees } from './useSavedTrees';
 
 const SECTION_TITLE: Record<StartSection, string> = {
   start: 'Start',
@@ -70,7 +70,7 @@ export function StartPage() {
  *  Start view's "pick up where you left off" + the gallery sections, so the
  *  Logic counts are computed in a single place. */
 function StartSectionBody({ section }: { section: StartSection }) {
-  const trees = useOpenTrees();
+  const trees = useSavedTrees();
 
   switch (section) {
     case 'start':
