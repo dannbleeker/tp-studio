@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { readTabsManifest, removeDocBackup } from '@/domain/persistence';
+import { evictOldestClosedTrees, readTabsManifest, removeDocBackup } from '@/domain/persistence';
 import type { Revision } from '@/domain/revisions';
 import { cancelPendingPersist } from '@/services/storage/persistDebounced';
 import {
@@ -63,6 +63,11 @@ useDocumentStore.getState().reloadRevisionsForActiveDoc();
 // retry-write that itself trips quota won't infinitely recurse through
 // the listener.
 let quotaMitigationInFlight = false;
+
+/** Final-tier quota mitigation evicts at most this many of the oldest closed
+ *  trees per trigger — small + conservative since it drops primary user data; the
+ *  cascade re-fires (freeing more) if the next save still doesn't fit. */
+const QUOTA_EVICT_BATCH = 5;
 
 const tryTrimRevisionsForQuota = (): { trimmed: number; revisionsDropped: number } | null => {
   type RevisionsByDoc = Record<string, Revision[]>;
@@ -129,6 +134,23 @@ setStorageErrorListener((err) => {
         store.showToast(
           'info',
           `Browser storage was full — freed space by dropping ${droppedBackups} inactive tab backup${droppedBackups === 1 ? '' : 's'}. Your open tabs are safe.`
+        );
+        return;
+      }
+      // Final tier (Session 185) — trimming revisions + dropping backups freed
+      // nothing, so evict the oldest CLOSED trees (not open in any tab) to keep
+      // the app saving. The only tier that drops a user's primary saved document,
+      // so it's last, conservative (a small batch), and loud.
+      const evicted = evictOldestClosedTrees(
+        new Set(readTabsManifest()?.tabOrder ?? []),
+        QUOTA_EVICT_BATCH
+      );
+      if (evicted > 0) {
+        // The Start "All trees" library re-scans storage on this bump.
+        useDocumentStore.setState((st) => ({ savedDocsVersion: st.savedDocsVersion + 1 }));
+        store.showToast(
+          'error',
+          `Browser storage was full — removed your ${evicted} oldest closed tree${evicted === 1 ? '' : 's'} to keep saving. Open tabs are safe; export trees you want to keep.`
         );
         return;
       }

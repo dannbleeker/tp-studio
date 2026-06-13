@@ -18,8 +18,11 @@ with the two `nbr-*` shape rules + the additional-cause widening; see CHANGELOG)
 - ✅ **"Forget closed documents" now sweeps revision-less closed trees too** (Session 185, see
   CHANGELOG) — it enumerates committed-only bodies (`listSavedDocIds`), not just the revisions map,
   and refreshes the Start library. Per-tree Delete on the Start cards remains for individual cleanup.
-- Saved trees still accumulate in `localStorage` with no automatic cap — fine for tens-to-low-hundreds
-  of trees; a future quota guard could evict the oldest closed ones.
+- ✅ **localStorage quota guard** (Session 185, see CHANGELOG) — the quota-mitigation cascade gained a
+  final tier: after trimming revisions + dropping inactive backups, it evicts the oldest *closed* trees
+  (never an open tab), a small conservative batch per trigger, with a loud toast. Saved trees no longer
+  grow unbounded into a hard save failure. (Tuning open if it ever matters: batch size, or a proactive
+  pre-quota nudge.)
 
 > ✅ **Assumption dual-representation collapse — DONE** (Session 181, see CHANGELOG). Fully
 > record-canonical: `'assumption'` is gone from the `EntityType` union, the ~75 `isAssumption`

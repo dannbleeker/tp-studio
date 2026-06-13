@@ -33,9 +33,12 @@ the group's endpoints apart at the shared target so each is grabbable; they snap
 map, so a closed tree that was never snapshotted — the common case since Session 184 keeps every
 closed body — survived the sweep. It now also enumerates the committed-only bodies (`listSavedDocIds`)
 and drops the closed ones, bumping `savedDocsVersion` so the Start "All trees" library refreshes. The
-confirm copy + toast say so (it clears the closed-tree library, not just revision history). Also a
-small internal tidy: the byte-identical cross-doc link chip in `EntityLinksSection` and the injection
-flower is now one shared `LinkChip`.
+confirm copy + toast say so (it clears the closed-tree library, not just revision history). And the
+localStorage-quota cascade gained a final tier — when trimming revisions + dropping inactive backups
+frees nothing, it evicts the oldest *closed* trees (never an open tab) to keep the app saving, a small
+conservative batch per trigger with a clear toast (this is the only tier that drops a primary saved
+document, so it's last). Also a small internal tidy: the byte-identical cross-doc link chip in
+`EntityLinksSection` and the injection flower is now one shared `LinkChip`.
 
 ## Session 184 — Start by default + a persistent tree library
 

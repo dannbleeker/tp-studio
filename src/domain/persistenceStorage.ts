@@ -267,6 +267,27 @@ export const listSavedDocIds = (): DocumentId[] => {
  *  nothing usable is stored under that id. */
 export const loadSavedDoc = (id: DocumentId): TPDocument | null => loadDocByIdWithStatus(id).doc;
 
+/**
+ * Quota mitigation, final tier (Session 185) — evict up to `batch` of the oldest
+ * CLOSED saved trees (ids NOT in `openIds`), oldest `updatedAt` first, to free
+ * localStorage when the cheaper tiers (trim revisions, drop inactive backups)
+ * freed nothing. This is the only tier that drops a user's primary saved
+ * document, so the caller keeps it last + conservative and tells the user to
+ * export anything they want to keep. Returns how many trees were removed.
+ */
+export const evictOldestClosedTrees = (openIds: ReadonlySet<string>, batch: number): number => {
+  const closed = listSavedDocIds()
+    .filter((id) => !openIds.has(id))
+    .map((id) => ({ id, updatedAt: loadSavedDoc(id)?.updatedAt ?? 0 }))
+    .sort((a, b) => a.updatedAt - b.updatedAt);
+  let evicted = 0;
+  for (const { id } of closed.slice(0, Math.max(0, batch))) {
+    removeDocFromStorage(id);
+    evicted += 1;
+  }
+  return evicted;
+};
+
 /** Validate a parsed manifest shape. Returns `null` if absent / malformed. */
 const parseTabsManifest = (raw: string | null): TabsManifest | null => {
   if (raw === null) return null;

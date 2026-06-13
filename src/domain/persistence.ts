@@ -16,6 +16,7 @@ export { exportToJSON, importFromJSON } from './persistenceJson';
 export type { LoadResult, TabsLoadResult, TabsManifest } from './persistenceStorage';
 export {
   clearLocalStorage,
+  evictOldestClosedTrees,
   listSavedDocIds,
   loadAllTabsWithStatus,
   loadFromLocalStorage,
