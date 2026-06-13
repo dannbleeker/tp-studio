@@ -15,8 +15,8 @@ import { currentDoc } from '@/store/selectors';
  * header, so even a fresh user sees what kind of issue they're looking
  * at without needing the docs.
  */
-const TIER_ORDER: ClrTier[] = ['clarity', 'existence', 'sufficiency'];
-const TIER_META: Record<ClrTier, { label: string; hint: string }> = {
+export const TIER_ORDER: ClrTier[] = ['clarity', 'existence', 'sufficiency'];
+export const TIER_META: Record<ClrTier, { label: string; hint: string }> = {
   clarity: { label: 'Clarity', hint: 'Is the statement well-formed?' },
   existence: { label: 'Existence', hint: 'Does the structure make sense?' },
   sufficiency: { label: 'Sufficiency', hint: 'Is the cause enough on its own?' },

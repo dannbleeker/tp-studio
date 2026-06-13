@@ -17,6 +17,7 @@ import { SHORTCUT_BY_ID, shortcutToAria } from '@/domain/shortcuts';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { KebabMenu } from './KebabMenu';
+import { LogicChip } from './LogicChip';
 import { useToolbarActions } from './useToolbarActions';
 
 /**
@@ -152,6 +153,9 @@ export function TopBar() {
           {cmdKey}+K
         </kbd>
       </Button>
+      {/* Session 182 — tree-level CLR health chip. Toggles the Logic-check panel.
+          Its own component so document edits re-render only the chip. */}
+      <LogicChip />
       {/* Session 87 (S26) — Undo / Redo affordances. Cmd+Z / Cmd+Shift+Z
           already work via the global shortcut registry; these buttons
           surface the same actions visually so users who don't know

@@ -9,6 +9,7 @@ import { PresentationStepThrough } from './components/canvas/overlays/Presentati
 import { SelectionToolbar } from './components/canvas/overlays/SelectionToolbar';
 import { SpeculationBanner } from './components/canvas/overlays/SpeculationBanner';
 import { DocumentMeta } from './components/DocumentMeta';
+import { CLRPanel } from './components/inspector/CLRPanel';
 import { Inspector } from './components/inspector/Inspector';
 import { PrintLegend } from './components/print/PrintLegend';
 import { Toaster } from './components/toast/Toaster';
@@ -220,6 +221,9 @@ export function App() {
   // Session 180 / E6 — reader mode hides the inspector (like presentation),
   // but keeps the tab strip + header visible so the user can navigate docs.
   const isReader = appMode === 'reader';
+  // Session 182 — the Logic-check (CLR) panel takes over the right dock from the
+  // Inspector when open (mutually exclusive).
+  const clrPanelOpen = useDocumentStore((s) => s.clrPanelOpen);
 
   // FL-EX9: surface a recovery toast when the previous session ended
   // unexpectedly.
@@ -362,11 +366,17 @@ export function App() {
           canvas stays usable if (say) the Inspector blows up on a bad
           warning derivation, and vice versa. The root boundary wrapping
           all of <App /> still catches anything that escapes a panel. */}
-          {!isPresentation && !isReader && (
-            <ErrorBoundary label="Inspector">
-              <Inspector />
-            </ErrorBoundary>
-          )}
+          {!isPresentation &&
+            !isReader &&
+            (clrPanelOpen ? (
+              <ErrorBoundary label="Logic check">
+                <CLRPanel />
+              </ErrorBoundary>
+            ) : (
+              <ErrorBoundary label="Inspector">
+                <Inspector />
+              </ErrorBoundary>
+            ))}
         </div>
       </div>
       <ContextMenu />

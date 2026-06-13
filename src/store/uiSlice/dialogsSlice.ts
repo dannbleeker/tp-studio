@@ -150,6 +150,9 @@ export type DialogsSlice = {
    *  re-shows it. Independent of the selection-driven `open` derivation in
    *  `useSelectionShape`. */
   inspectorHidden: boolean;
+  /** Session 182 — Logic-check (CLR) panel open; mutually exclusive with the
+   *  Inspector in the right dock. */
+  clrPanelOpen: boolean;
 
   openPalette: () => void;
   openPaletteWithQuery: (query: string) => void;
@@ -261,6 +264,10 @@ export type DialogsSlice = {
    *  double-click-edge gesture). */
   toggleInspector: () => void;
   showInspector: () => void;
+  /** Session 182 — toggle / close the Logic-check (CLR) panel; it takes over the
+   *  right dock from the Inspector. */
+  toggleClrPanel: () => void;
+  closeClrPanel: () => void;
 
   /** Session 133 — open / close the all-at-once verbalisation dialog. */
   openReadAllAtOnce: () => void;
@@ -321,6 +328,7 @@ export type DialogsDataKeys =
   | 'historyPanelOpen'
   | 'commentsPanelOpen'
   | 'inspectorHidden'
+  | 'clrPanelOpen'
   | 'pendingCommentAnchor'
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
@@ -352,6 +360,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   historyPanelOpen: false,
   commentsPanelOpen: false,
   inspectorHidden: false,
+  clrPanelOpen: false,
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -400,6 +409,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   historyPanelOpen: false,
   commentsPanelOpen: false,
   inspectorHidden: false,
+  clrPanelOpen: false,
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -499,6 +509,8 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   toggleInspector: () => set({ inspectorHidden: !get().inspectorHidden }),
   showInspector: () => set({ inspectorHidden: false }),
+  toggleClrPanel: () => set({ clrPanelOpen: !get().clrPanelOpen }),
+  closeClrPanel: () => set({ clrPanelOpen: false }),
 
   openReadAllAtOnce: () => set({ readAllAtOnceOpen: true }),
   closeReadAllAtOnce: () => set({ readAllAtOnceOpen: false }),
