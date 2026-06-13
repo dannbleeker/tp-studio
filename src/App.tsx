@@ -15,6 +15,7 @@ import { PrintLegend } from './components/print/PrintLegend';
 import { Toaster } from './components/toast/Toaster';
 import { CommandSearch } from './components/toolbar/CommandSearch';
 import { HomeLogo } from './components/toolbar/HomeLogo';
+import { MethodStepper } from './components/toolbar/MethodStepper';
 import { TabStrip } from './components/toolbar/TabStrip';
 import { TitleBadge } from './components/toolbar/TitleBadge';
 import { TopBar } from './components/toolbar/TopBar';
@@ -318,6 +319,8 @@ export function App() {
             </div>
             <TopBar />
           </div>
+          {/* Session 182 — method-path stepper (hidden in reader's minimal chrome). */}
+          {!isReader && <MethodStepper />}
         </header>
       )}
       {/* The canvas, its overlays, and the Inspector live in a flex-1
