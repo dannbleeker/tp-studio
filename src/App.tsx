@@ -1,6 +1,7 @@
 import { ReactFlowProvider } from '@xyflow/react';
 import clsx from 'clsx';
 import { lazy, Suspense, useEffect } from 'react';
+import { BlocksRail } from './components/canvas/BlocksRail';
 import { Canvas } from './components/canvas/Canvas';
 import { CompareBanner } from './components/canvas/overlays/CompareBanner';
 import { ContextMenu } from './components/canvas/overlays/ContextMenu';
@@ -310,56 +311,63 @@ export function App() {
           this `relative` row, so it starts below the header — no overlap with
           the TopBar / tab strip. `data-print-canvas` lets print.css pin this
           row to a fixed box while `body.printing` is set (see usePrintCanvas). */}
-      <div className="relative flex-1 overflow-hidden" data-print-canvas>
-        {/* Session 95 — `ReactFlowProvider` hoisted here so the
+      <div className="flex flex-1 flex-row overflow-hidden">
+        {/* Session 182 — Building Blocks rail: type-led entity creation, left of
+            the canvas. Hidden in presentation / reader (chrome). Sibling of the
+            print-canvas row so `data-print-canvas` + the Inspector's positioning
+            context are untouched. */}
+        {!isPresentation && !isReader && <BlocksRail />}
+        <div className="relative min-w-0 flex-1 overflow-hidden" data-print-canvas>
+          {/* Session 95 — `ReactFlowProvider` hoisted here so the
             SelectionToolbar + future canvas overlays can read React Flow's
             state via `useRFStore` from outside the Canvas component. */}
-        <ReactFlowProvider>
-          {/* Session 113 — Canvas wrapped in its own ErrorBoundary. React
+          <ReactFlowProvider>
+            {/* Session 113 — Canvas wrapped in its own ErrorBoundary. React
             Flow is a third-party renderer; an internal crash there
             previously surfaced through the root boundary and froze the
             entire app on the crash screen. Scoped here so a Canvas
             crash leaves the TopBar / Inspector / palette usable and
             the user can at least save / export / load a different
             doc. */}
-          <ErrorBoundary label="Canvas">
-            <Canvas />
-          </ErrorBoundary>
-          {/* Session 95 — selection-anchored floating toolbar.
+            <ErrorBoundary label="Canvas">
+              <Canvas />
+            </ErrorBoundary>
+            {/* Session 95 — selection-anchored floating toolbar.
             Mounted inside the provider but outside Canvas's render
             tree so it doesn't get re-mounted on Canvas re-renders.
             ErrorBoundary scopes any crash so the canvas stays
             usable. */}
-          {!isPresentation && (
-            <ErrorBoundary label="Selection toolbar">
-              <SelectionToolbar />
-            </ErrorBoundary>
-          )}
-          {/* Session 135 / spec gap #9 Phase 1C — Presentation
+            {!isPresentation && (
+              <ErrorBoundary label="Selection toolbar">
+                <SelectionToolbar />
+              </ErrorBoundary>
+            )}
+            {/* Session 135 / spec gap #9 Phase 1C — Presentation
             step-through control. Self-gated on `appMode ===
             'presentation'` inside the component, so it only mounts
             chrome when the mode is active. Lives inside the
             ReactFlowProvider so `useReactFlow().fitView({...})` is
             available for the focus-on-step behaviour. */}
-          <ErrorBoundary label="Presentation step-through">
-            <PresentationStepThrough />
+            <ErrorBoundary label="Presentation step-through">
+              <PresentationStepThrough />
+            </ErrorBoundary>
+          </ReactFlowProvider>
+          <ErrorBoundary label="Compare banner">
+            <CompareBanner />
           </ErrorBoundary>
-        </ReactFlowProvider>
-        <ErrorBoundary label="Compare banner">
-          <CompareBanner />
-        </ErrorBoundary>
-        <ErrorBoundary label="Speculation banner">
-          <SpeculationBanner />
-        </ErrorBoundary>
-        {/* Nested ErrorBoundaries scope a crash to a single panel — the
+          <ErrorBoundary label="Speculation banner">
+            <SpeculationBanner />
+          </ErrorBoundary>
+          {/* Nested ErrorBoundaries scope a crash to a single panel — the
           canvas stays usable if (say) the Inspector blows up on a bad
           warning derivation, and vice versa. The root boundary wrapping
           all of <App /> still catches anything that escapes a panel. */}
-        {!isPresentation && !isReader && (
-          <ErrorBoundary label="Inspector">
-            <Inspector />
-          </ErrorBoundary>
-        )}
+          {!isPresentation && !isReader && (
+            <ErrorBoundary label="Inspector">
+              <Inspector />
+            </ErrorBoundary>
+          )}
+        </div>
       </div>
       <ContextMenu />
       <Suspense fallback={null}>

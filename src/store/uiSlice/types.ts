@@ -187,6 +187,8 @@ export type StoredPrefs = {
   /** Session 181 — grow entity cards taller to fit their title (capped).
    *  Default `false` (fixed-height cards, 2-line clamp). */
   growCardsToFitText?: boolean;
+  /** Session 182 — Building Blocks rail collapsed. Default `false` (expanded). */
+  blocksRailCollapsed?: boolean;
   /** F6: ink-saving print mode — strips entity-stripe fills and drops the
    *  group background tints when sent to a printer / PDF. */
   printInkSaver?: boolean;

@@ -46,6 +46,8 @@ export type PreferencesSlice = {
    *  capped at `MAX_CARD_GROW_LINES`. Off by default: cards stay the fixed
    *  72px box and clamp the title to 2 lines. App-wide viewing preference. */
   growCardsToFitText: boolean;
+  /** Session 182 — Building Blocks rail collapsed (default expanded). */
+  blocksRailCollapsed: boolean;
   printInkSaver: boolean;
   layoutMode: LayoutMode;
   causalityLabel: CausalityLabel;
@@ -141,6 +143,8 @@ export type PreferencesSlice = {
   setShowMinimap: (show: boolean) => void;
   /** Session 181 — toggle grow-cards-to-fit-text. */
   setGrowCardsToFitText: (grow: boolean) => void;
+  /** Session 182 — collapse/expand the Building Blocks rail. */
+  setBlocksRailCollapsed: (collapsed: boolean) => void;
   setPrintInkSaver: (on: boolean) => void;
   setLayoutMode: (mode: LayoutMode) => void;
   setCausalityLabel: (label: CausalityLabel) => void;
@@ -202,6 +206,7 @@ export type PreferencesDataKeys =
   | 'showActionEligibility'
   | 'showMinimap'
   | 'growCardsToFitText'
+  | 'blocksRailCollapsed'
   | 'printInkSaver'
   | 'layoutMode'
   | 'causalityLabel'
@@ -240,6 +245,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   showActionEligibility: false,
   showMinimap: true,
   growCardsToFitText: false,
+  blocksRailCollapsed: false,
   printInkSaver: false,
   layoutMode: 'flow',
   // Session 136 — default flipped from 'none' to 'auto' per Dann's
@@ -314,6 +320,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       showActionEligibility: s.showActionEligibility,
       showMinimap: s.showMinimap,
       growCardsToFitText: s.growCardsToFitText,
+      blocksRailCollapsed: s.blocksRailCollapsed,
       printInkSaver: s.printInkSaver,
       layoutMode: s.layoutMode,
       causalityLabel: s.causalityLabel,
@@ -347,6 +354,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     showActionEligibility: initialPrefs.showActionEligibility,
     showMinimap: initialPrefs.showMinimap,
     growCardsToFitText: initialPrefs.growCardsToFitText,
+    blocksRailCollapsed: initialPrefs.blocksRailCollapsed,
     printInkSaver: initialPrefs.printInkSaver,
     layoutMode: initialPrefs.layoutMode,
     causalityLabel: initialPrefs.causalityLabel,
@@ -408,6 +416,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setGrowCardsToFitText: (grow) => {
       set({ growCardsToFitText: grow });
+      persistPrefs();
+    },
+    setBlocksRailCollapsed: (collapsed) => {
+      set({ blocksRailCollapsed: collapsed });
       persistPrefs();
     },
     setShowReverseReachBadges: (show) => {
@@ -537,6 +549,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         showActionEligibility: d.showActionEligibility,
         showMinimap: d.showMinimap,
         growCardsToFitText: d.growCardsToFitText,
+        blocksRailCollapsed: d.blocksRailCollapsed,
         printInkSaver: d.printInkSaver,
         layoutMode: d.layoutMode,
         causalityLabel: d.causalityLabel,

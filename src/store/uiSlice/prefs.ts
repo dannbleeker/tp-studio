@@ -97,6 +97,8 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     showMinimap: raw?.showMinimap !== false,
     // Session 181 — grow-cards-to-fit-text OFF by default (fixed-height cards).
     growCardsToFitText: raw?.growCardsToFitText === true,
+    // Session 182 — Building Blocks rail expanded by default (collapsed = false).
+    blocksRailCollapsed: raw?.blocksRailCollapsed === true,
     // Ink-saver default OFF — preserves the colourful look people expect on
     // screen; users opt in when they're about to print.
     printInkSaver: raw?.printInkSaver === true,

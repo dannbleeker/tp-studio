@@ -32,6 +32,7 @@ import type { CustomEntityClass, EntityType, TPDocument } from './types';
  */
 
 export {
+  DIAGRAM_SHORT_LABEL,
   DIAGRAM_TYPE_LABEL,
   defaultEntityType,
   PALETTE_BY_DIAGRAM,
@@ -60,6 +61,12 @@ export type EntityTypeMeta = {
    * stripe colour alone is less reliable.
    */
   icon: LucideIcon;
+  /**
+   * One-line, plain-language meaning of the type — what it IS in TOC terms, in
+   * words a newcomer gets. Built-ins only (custom classes omit it). Single source
+   * of truth for the Building Blocks rail rows and the type-picker tooltip.
+   */
+  meaning?: string;
 };
 
 const LABELS: Record<EntityType, string> = {
@@ -115,6 +122,29 @@ const ICONS: Record<EntityType, LucideIcon> = {
   note: StickyNote,
 };
 
+/**
+ * One-line plain-language meaning per built-in type (see `EntityTypeMeta.meaning`).
+ * Read by the Building Blocks rail and the inspector type-picker tooltip — one
+ * place to edit the copy.
+ */
+const MEANINGS: Record<EntityType, string> = {
+  ude: 'A symptom you want gone. Start a CRT from 3–5 of these.',
+  effect: 'An intermediate consequence in the chain of cause and effect.',
+  rootCause: 'A deep driver with nothing causing it above — your leverage point.',
+  injection:
+    'A change you introduce: the intervention that breaks a conflict or drives a future tree.',
+  desiredEffect: 'A positive outcome you want the change to produce.',
+  goal: 'The objective the whole tree exists to reach.',
+  criticalSuccessFactor: "A must-have condition without which the goal can't be met.",
+  necessaryCondition: 'A prerequisite that a higher condition or goal depends on.',
+  obstacle: 'A barrier standing between you and an objective.',
+  intermediateObjective: 'A stepping-stone you reach by clearing an obstacle.',
+  action: 'A concrete step that moves the plan forward.',
+  need: 'An underlying requirement each side of a conflict is protecting.',
+  want: 'The concrete position one side takes to meet its need.',
+  note: 'A sticky annotation. Sits outside the causal graph.',
+};
+
 export const ENTITY_TYPE_META: Record<EntityType, EntityTypeMeta> = (
   Object.keys(LABELS) as EntityType[]
 ).reduce(
@@ -124,6 +154,7 @@ export const ENTITY_TYPE_META: Record<EntityType, EntityTypeMeta> = (
       label: LABELS[type],
       stripeColor: ENTITY_STRIPE_COLOR[type],
       icon: ICONS[type],
+      meaning: MEANINGS[type],
     };
     return acc;
   },

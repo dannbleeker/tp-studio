@@ -88,6 +88,23 @@ export const DIAGRAM_TYPE_LABEL: Record<DiagramType, string> = {
 };
 
 /**
+ * Short labels for compact chrome (the Building Blocks rail's cross-diagram
+ * hints, the method-path stepper) — acronyms where they exist, short names else.
+ * Mirror of `DIAGRAM_TYPE_LABEL`; add a new diagram type to both together.
+ */
+export const DIAGRAM_SHORT_LABEL: Record<DiagramType, string> = {
+  crt: 'CRT',
+  frt: 'FRT',
+  prt: 'PRT',
+  tt: 'TT',
+  ec: 'EC',
+  st: 'S&T',
+  freeform: 'Freeform',
+  goalTree: 'Goal Tree',
+  nbr: 'NBR',
+};
+
+/**
  * The entity type a fresh canvas seeds when the user double-clicks empty
  * space, or what `createDocument` would seed if it pre-populated entities.
  *
