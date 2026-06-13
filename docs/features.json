@@ -2,7 +2,7 @@
   "$schema": "./features.schema.json",
   "note": "Canonical catalogue of TP Studio's user-facing features — the denominator for the feature-coverage metric (scripts/build-stats.mjs). One entry per capability a user can see, do, or configure (dev infrastructure is intentionally excluded). `manual` = covered in USER_GUIDE.md; `book` = covered in a docs/guide chapter; `bookExample` = that chapter carries a worked example. Deduped from the full CHANGELOG (Sessions 1-180) in Session 180. Add a row when a user-facing feature ships and fill its coverage as the manual/book catch up.",
   "areas": ["CRT","EC","FRT","PRT","TT","GoalTree","ST","NBR","Canvas","Editing","Entities","Edges","CLR","Layout","Export","Import","Print","Comments","Revisions","Search","Palette","Settings","Workshop","Reader","Patterns","General"],
-  "reviewedThroughSession": 181,
+  "reviewedThroughSession": 182,
   "features": [
     {"id":"crt-diagram","name":"Current Reality Tree","area":"CRT","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"crt-core-driver","name":"Core Driver finder","area":"CRT","since":52,"manual":true,"book":true,"bookExample":true},
@@ -48,6 +48,7 @@
     {"id":"nbr-shape-clr","name":"NBR negative-branch shape rules","area":"NBR","since":181,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-nodes","name":"Canvas entity cards","area":"Canvas","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"canvas-grow-cards","name":"Grow cards to fit text","area":"Canvas","since":181,"manual":true,"book":false,"bookExample":false},
+    {"id":"blocks-rail","name":"Building Blocks rail","area":"Canvas","since":182,"manual":true,"book":false,"bookExample":false},
     {"id":"canvas-minimap","name":"Minimap","area":"Canvas","since":11,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-zoom","name":"Zoom controls + percentage","area":"Canvas","since":11,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-zoom-edit","name":"Click-to-edit zoom percent","area":"Canvas","since":176,"manual":true,"book":false,"bookExample":false},
@@ -119,6 +120,7 @@
     {"id":"clr-logic-mismatch","name":"Logic-type mismatch lint","area":"CLR","since":179,"manual":true,"book":false,"bookExample":false},
     {"id":"clr-long-arrow","name":"Long-arrow / missing-step warning","area":"CLR","since":180,"manual":true,"book":true,"bookExample":true},
     {"id":"clr-reinforcing-no-delay","name":"Reinforcing-loop no-delay warning","area":"CLR","since":180,"manual":true,"book":true,"bookExample":true},
+    {"id":"clr-panel","name":"Logic-check status chip + CLR panel","area":"CLR","since":182,"manual":true,"book":false,"bookExample":false},
     {"id":"layout-dagre","name":"Auto-layout (dagre)","area":"Layout","since":1,"manual":true,"book":true,"bookExample":false},
     {"id":"layout-radial","name":"Radial / sunburst layout","area":"Layout","since":27,"manual":true,"book":false,"bookExample":false},
     {"id":"layout-direction","name":"Layout direction setting","area":"Layout","since":47,"manual":true,"book":true,"bookExample":false},
@@ -198,6 +200,8 @@
     {"id":"general-nested-groups","name":"Nested + collapsible groups","area":"General","since":10,"manual":true,"book":true,"bookExample":false},
     {"id":"general-recovery","name":"Auto-recovery (live draft + backup)","area":"General","since":19,"manual":true,"book":true,"bookExample":false},
     {"id":"general-epub","name":"EPUB book download","area":"General","since":135,"manual":true,"book":false,"bookExample":false},
-    {"id":"general-freeform","name":"Freeform diagram type","area":"General","since":75,"manual":true,"book":true,"bookExample":false}
+    {"id":"general-freeform","name":"Freeform diagram type","area":"General","since":75,"manual":true,"book":true,"bookExample":false},
+    {"id":"method-stepper","name":"Method-path stepper","area":"General","since":182,"manual":true,"book":false,"bookExample":false},
+    {"id":"topbar-actions","name":"Top-bar Export / Share / command search","area":"General","since":182,"manual":true,"book":false,"bookExample":false}
   ]
 }

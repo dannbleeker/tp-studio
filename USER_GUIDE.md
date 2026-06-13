@@ -45,17 +45,39 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 
 | Element | Where | What it does |
 | --- | --- | --- |
-| Title | Top-left | Click to rename the document. The badge next to it shows the diagram type (`CRT` or `FRT`); the small info icon opens the Document Inspector. |
-| Commands button | Top-right | Opens the command palette (or press `Cmd/Ctrl+K`). |
-| Lock button | Top-right | Toggles Browse Lock — read-only mode for safe sharing or screen-recording. |
-| Help button (?) | Top-right | Opens the keyboard-shortcuts dialog. |
-| Theme toggle (sun/moon) | Top-right | Switches between light and dark. (High-contrast lives in Settings.) |
+| Home / logo | Top-left | The TP Studio mark; opens the About dialog. |
+| Title + type badge | Top-left | Click the title to rename the document. The badge shows the diagram type (`CRT`, `EC`, …); the small ⓘ icon opens the Document Inspector. |
+| Command search | Top-center | Click it (or press `Cmd/Ctrl+K`) to open the command palette — the fastest route to any action. |
+| Building Blocks rail | Left edge | Type-led entity creation for the current diagram — click a block to drop that entity at the canvas center. Collapsible. See [Building Blocks rail](#building-blocks-rail). |
+| Method path | Strip under the top bar | Where the active diagram sits in the TP sequence, plus a suggested next step. See [Method path](#method-path). |
+| Logic check chip | Top-right | Emerald **"all clear"** or amber **"N to review"** — click to open the CLR panel. See [The CLR panel](#the-clr-panel). |
+| Undo / Redo | Top-right | Step backward / forward through edits. |
+| History / Comments | Top-right | Revision history; review comments. |
+| Share | Top-right | Copies a share link to the clipboard. |
+| Export | Top-right (filled) | Opens the export picker (PNG / PDF / JSON / …). |
+| Overflow (⋮) | Top-right | Theme, Browse Lock, Help, layout mode, and the rest. |
 | Canvas | Center | The infinite dot-grid where your diagram lives. |
 | Zoom controls | Bottom-center | Zoom in, zoom out, fit-to-view. |
-| Inspector | Right panel | Slides in when you select an entity or edge. Holds title, type, description, CLR warnings, and delete. |
+| Inspector | Right panel | Slides in when you select an entity or edge. Holds title, type, description, CLR warnings, and delete. Shares the dock with the CLR panel — opening one closes the other. |
 | Toasts | Bottom-center, overlay | Brief confirmations: "Saved", "Loaded example CRT", "3 open CLR concerns", etc. |
 
-**The command palette.** The Commands button — or `Cmd/Ctrl+K` from anywhere — opens the palette, the fastest route to any action. Before you type, commands are grouped into labelled sections (**File / Edit / View / Review / Export / Help**) with your **five most-recent** commands pinned in a "Recent" group at the top; start typing and that structure gives way to a ranked search across every command. `Cmd/Ctrl+E` opens the palette pre-filtered to Export.
+**The command palette.** The command-search field — or `Cmd/Ctrl+K` from anywhere — opens the palette, the fastest route to any action. Before you type, commands are grouped into labelled sections (**File / Edit / View / Review / Export / Help**) with your **five most-recent** commands pinned in a "Recent" group at the top; start typing and that structure gives way to a ranked search across every command. `Cmd/Ctrl+E` opens the palette pre-filtered to Export.
+
+## Building Blocks rail
+
+The rail down the left edge is the type-led way to add entities. It lists exactly the building blocks that belong to the **current** diagram — each as a coloured stripe chip with its icon, label, and a one-line plain-language meaning — so on a CRT you see UDEs, causes, and root causes; on an Evaporating Cloud you see the objective, needs, wants, and conflict; and so on.
+
+- **Click a block** to create that entity and drop it at the centre of your current view, ready to name.
+- Blocks that belong to **other** diagram types show dimmed, with a hint of where they live — a quiet map of the whole vocabulary without cluttering the active palette.
+- **Collapse** the rail with the chevron in its header when you want more canvas; the choice is remembered per browser.
+
+The rail is additive — double-clicking the canvas to create an entity still works exactly as before.
+
+## Method path
+
+A thin strip under the top bar situates the diagram you're editing in the canonical Thinking-Process sequence — **CRT → EC → FRT → PRT → TT** — with **Goal Tree** and **S&T** shown as a parallel planning branch. The current diagram is filled and marked with a green dot; sibling diagrams you already have open as tabs read as outlined "open" (click to switch to them); the rest are dashed "to-do" (click to create one and open it in a new tab).
+
+When the diagram in front of you reaches a milestone, a suggestion appears on the right — for example, once a CRT has a **root cause**, the strip nudges you to *break it with an Evaporating Cloud*. Click the suggestion to jump straight there. It stays quiet until the next step is genuinely earned, so it guides without nagging.
 
 ## Working with multiple documents (tabs)
 
@@ -259,7 +281,7 @@ Once a diagram has a couple of dozen entities, getting around becomes a separate
 - `Cmd/Ctrl+Shift+←` — selects every upstream entity.
 - Palette → **Select path between selected entities** — with exactly two entities selected, finds the shortest directed path between them and selects every entity and edge on the way. Falls back to ignoring direction if no directed path exists. Toasts if the two are disconnected.
 
-**Radial / sunburst layout.** A toolbar button (Orbit icon, between the Lock and Help buttons) flips the layout between the default top-down dagre flow and a radial sunburst — apex at the center, contributors radiating out on concentric rings. Useful for "see the whole tree at once" screenshots, posters, or alternative reading. Click again to flip back; the preference persists across reloads. **The toggle hides on Evaporating Cloud** since EC is hand-positioned — its 5-box geometry IS the diagnostic, so flipping to radial would erase the conflict.
+**Radial / sunburst layout.** A control in the overflow (⋮) menu — **Radial layout** / **Flow layout** — flips the layout between the default top-down dagre flow and a radial sunburst — apex at the center, contributors radiating out on concentric rings. Useful for "see the whole tree at once" screenshots, posters, or alternative reading. Click again to flip back; the preference persists across reloads. **The toggle hides on Evaporating Cloud** since EC is hand-positioned — its 5-box geometry IS the diagnostic, so flipping to radial would erase the conflict.
 
 **Pinning entities (drag-to-pin).** On any diagram, dragging an entity now persists its position — that entity becomes pinned in place. Auto-layout (dagre on CRT/FRT/PRT/TT, the radial sunburst, etc.) routes around the pin: it lays out every other entity normally and overwrites the dagre coords for pinned ones with your saved values. A small violet pin glyph appears at the bottom-right of pinned entities so you can spot them at a glance. To free a pin, right-click → **Unpin position (let layout reclaim)**, or run **Palette → Reset layout — unpin all entities** to clear every pin in the doc. Manual-layout diagrams (Evaporating Cloud) don't show the pin glyph because every entity is implicitly pinned to its slot there.
 
@@ -492,7 +514,9 @@ When an assumption entity is deleted, every edge that referenced it is automatic
 
 ## The CLR panel
 
-Whenever you select an entity or edge, the inspector renders any open CLR concerns at the bottom:
+**The Logic check (status chip + panel).** The top bar carries a **Logic** chip that reads the whole diagram at a glance — emerald **"all clear"** when nothing is open, amber **"N to review"** when concerns remain. Click it to open the **CLR panel** down the right side: every reservation, grouped by tier (**Clarity → Existence → Sufficiency**), with the open / resolved breakdown in the header. Each row names its target and the rule that fired; click a row to **select and centre** the entity or edge it's about, **Resolve / Reopen** it in place, or apply a one-click **remedy** where the rule offers one. A **guided walk** steps through the open concerns one at a time. The panel shares the right dock with the Inspector — opening the Logic check closes the Inspector, and selecting something reopens it.
+
+**Per-selection warnings.** Whenever you select an entity or edge, the inspector also renders that item's open CLR concerns at the bottom:
 
 - **Open** warnings are amber.
 - **Resolved** warnings are greyed out with a strikethrough; you can reopen them.
@@ -794,7 +818,7 @@ If the second goal really is a peer to the first, dismiss the warning with **Res
 
 All settings persist across reloads.
 
-The sun/moon button in the top-right toolbar quickly cycles between `Light` and `Dark`. High contrast and the other prefs live in the Settings dialog.
+The **Theme** item in the overflow (⋮) menu cycles between `Light` and `Dark`. High contrast and the other prefs live in the Settings dialog.
 
 PNG exports respect the current theme — light theme exports get a white background; dark theme and high contrast both get a near-black background.
 
@@ -990,8 +1014,8 @@ Same content as the in-app `?` button (top-right).
 
 The app is designed for ≥1024 px but stays usable down to about 360 px:
 
-- At **< 640 px** (small phones / split-screen) the minimap, live zoom percentage, and diagram-type badge hide to free up space; the "Commands" button collapses to a single Search icon, and the Layout Mode / History / Help / Theme buttons collapse into a **kebab menu (⋮)** at the right of the toolbar. Tap the kebab to reach those actions; the menu auto-closes after you pick one. The Lock button stays visible.
-- At **< 768 px** the Layout Mode button is hidden from the toolbar (it stays inside the kebab on phone widths, and remains reachable from the palette on tablets in this range).
+- The **overflow (⋮)** menu at the right of the top bar is always present and holds Theme, Browse Lock, Help, and Layout mode. As the window narrows, the top bar collapses by **content priority** instead of wrapping: the **undo/redo** and **history/comments** clusters fold into the overflow first (below ~1024 px), then **Share** sheds its label to an icon and the **command-search** field collapses to a single Search icon. The **Export** button stays visible throughout. Tap the kebab to reach the folded actions; the menu auto-closes after you pick one.
+- At **< 640 px** (small phones / split-screen) the minimap, live zoom percentage, and diagram-type badge also hide to free up space.
 - At **< 1024 px** the inspector caps at 85 % of the viewport width so it doesn't dominate the canvas. A translucent backdrop appears behind the panel — tap anywhere outside the inspector to dismiss without aiming for the small × in the header. Everything else behaves the same.
 - Long document titles truncate cleanly instead of pushing the toolbar off-screen.
 

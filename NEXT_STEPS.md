@@ -131,7 +131,7 @@ Specific to the Windows + corporate-AppLocker box this was built on.
 
 1. **Pull the project state.** `cd C:\devtools\tp-studio && git status` (clean). `pnpm install` (preinstall verifies
    Node `>=22` + pnpm `^10`). `pnpm dev` to start. The local gate is **`node scripts/preflight.mjs`**
-   (tsc → biome → knip → vitest → build → bundle-size; ~2,970 tests) — `pnpm`-invoked tools are
+   (tsc → biome → knip → vitest → build → bundle-size; ~4,200 tests) — `pnpm`-invoked tools are
    AppLocker-blocked on this box, so run them via node bins (see Known environment quirks).
 2. **Open the durable docs** — README.md (architecture), USER_GUIDE.md (features), CHANGELOG.md (history),
    SECURITY.md (threat model), docs/RENDER_ENGINE_NOTES.md (canvas rendering).
