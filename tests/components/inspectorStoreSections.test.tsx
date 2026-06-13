@@ -85,6 +85,36 @@ describe('EvidenceList', () => {
     act(() => fireEvent.click(getByLabelText('Remove evidence')));
     expect(evidenceOf(e.id)).toHaveLength(0);
   });
+
+  it('renders the citation link only for a safe URL scheme (live-edit XSS guard)', () => {
+    // The URL field's live-edit path writes the raw input straight to state,
+    // bypassing the import-time validator — so EvidenceList must itself refuse
+    // to render a `javascript:`/`data:` URL as a clickable href.
+    const e = seedEntity('Effect');
+    act(() => {
+      s().addEvidence(e.id);
+    });
+    const item = evidenceOf(e.id)[0]!;
+
+    const safe = render(
+      <EvidenceList
+        entityId={e.id}
+        evidence={[{ ...item, url: 'https://example.com' }]}
+        ownerHint={undefined}
+      />
+    );
+    expect(safe.queryByLabelText('Open citation in new tab')).not.toBeNull();
+    safe.unmount();
+
+    const hostile = render(
+      <EvidenceList
+        entityId={e.id}
+        evidence={[{ ...item, url: 'javascript:alert(1)' }]}
+        ownerHint={undefined}
+      />
+    );
+    expect(hostile.queryByLabelText('Open citation in new tab')).toBeNull();
+  });
 });
 
 describe('GroupInspector', () => {
