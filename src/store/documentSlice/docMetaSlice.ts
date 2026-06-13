@@ -401,7 +401,19 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       const section = get().startSection;
       if (get().docs[id]) get().closeTab(id);
       removeDocFromStorage(id);
-      set({ savedDocsVersion: get().savedDocsVersion + 1, startSection: section });
+      // The doc is gone for good now (unlike a plain close, which is reopenable),
+      // so sweep cross-doc links pointing INTO it out of the still-open tabs and
+      // persist those — otherwise they'd linger as dead chips and ride along in
+      // exports. closeTab no longer sweeps, so this covers both open + closed docs.
+      const { docs, activeDocId, doc } = get();
+      const { docs: sweptDocs, changed } = stripLinksToDoc(docs, id);
+      for (const d of changed) saveDocToLocalStorage(d);
+      set({
+        docs: sweptDocs,
+        doc: sweptDocs[activeDocId] ?? doc,
+        savedDocsVersion: get().savedDocsVersion + 1,
+        startSection: section,
+      });
     },
 
     newDocument: (diagramType) => {
@@ -543,12 +555,11 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       const { [id]: _closedHist, ...historyRest } = state.historyByDoc;
       flushPersist();
 
-      // Forgetting this doc (closeTab also removes it from storage) — sweep any
-      // cross-doc links pointing INTO it out of the other open tabs so they don't
-      // linger as dead "tab closed" chips. Persist whichever docs changed. A no-op
-      // (empty `docsRest`) for the last-tab case below.
-      const { docs: sweptDocs, changed: sweptLinkDocs } = stripLinksToDoc(docsRest, id);
-      for (const d of sweptLinkDocs) saveDocToLocalStorage(d);
+      // Session 184 — closing a tab keeps the doc's body in storage (reopenable
+      // from the Start "All trees" library), so cross-doc links pointing INTO it
+      // are left intact and reconnect on reopen; the inspector renders them as
+      // muted "tab closed" chips meanwhile. Only an explicit delete forgets the
+      // doc and sweeps those links (see `deleteSavedDoc`).
 
       // Last tab closed → never zero tabs; replace with a fresh blank CRT.
       if (remaining.length === 0) {
@@ -569,12 +580,10 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
         return;
       }
 
-      // Closing a background tab → active tab untouched (except a link sweep).
+      // Closing a background tab → the active tab is untouched.
       if (id !== state.activeDocId) {
-        // Keep the active doc in lockstep with `docs` — it may itself have held a
-        // link into the just-forgotten tab, which the sweep above removed.
-        const liveActive = sweptDocs[state.activeDocId] ?? state.doc;
-        set({ doc: liveActive, docs: sweptDocs, tabOrder: remaining, historyByDoc: historyRest });
+        const liveActive = docsRest[state.activeDocId] ?? state.doc;
+        set({ doc: liveActive, docs: docsRest, tabOrder: remaining, historyByDoc: historyRest });
         persistTabsManifest({ activeDocId: state.activeDocId, tabOrder: remaining });
         // Session 184 — keep the closed doc's body (reopenable from the library).
         return;
@@ -583,13 +592,13 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       // Closing the active tab → activate the right-hand neighbour (clamped
       // to the new last tab when the closed tab was rightmost).
       const nextActiveId = remaining[Math.min(idx, remaining.length - 1)];
-      const target = nextActiveId ? sweptDocs[nextActiveId] : undefined;
+      const target = nextActiveId ? docsRest[nextActiveId] : undefined;
       if (!nextActiveId || !target) return;
       const restored = historyRest[nextActiveId] ?? { past: [], future: [] };
       const { [nextActiveId]: _nowLive, ...historyParked } = historyRest;
       set({
         doc: target,
-        docs: sweptDocs,
+        docs: docsRest,
         activeDocId: nextActiveId,
         tabOrder: remaining,
         historyByDoc: historyParked,

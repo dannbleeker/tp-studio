@@ -70,16 +70,21 @@ export const stripMirrorLinks = (
 };
 
 /**
- * Sweep every cross-document link that points INTO `closedDocId` — a doc being
- * forgotten (closed AND removed from storage) — out of every doc in `docs`.
+ * Sweep every cross-document link that points INTO `deletedDocId` — a doc being
+ * permanently DELETED (and removed from storage) — out of every doc in `docs`.
+ *
+ * A plain tab CLOSE does not sweep: the doc stays reopenable from the Start
+ * library, so its incoming links are kept and reconnect on reopen (the inspector
+ * renders them as muted "tab closed" chips meanwhile). Only this delete path,
+ * where the doc is gone for good, prunes them.
  *
  * Companion to {@link stripMirrorLinks}: that one keys on the deleted ENTITY;
- * this keys on the whole target DOC, since a forgotten doc takes all of its
- * entities with it. Pass the OTHER open docs (the closed doc is already gone from
- * the map); links into docs that aren't currently open can't be reached here, and
- * the inspector's render guard already hides those.
+ * this keys on the whole target DOC, since a deleted doc takes all of its
+ * entities with it. Pass the still-open docs (the deleted doc is already gone
+ * from the map); links into docs that aren't open can't be reached here, and the
+ * inspector's render guard already hides those.
  */
 export const stripLinksToDoc = (
   docs: Record<DocumentId, TPDocument>,
-  closedDocId: DocumentId
-): PruneResult => pruneLinks(docs, (l) => l.docId !== closedDocId);
+  deletedDocId: DocumentId
+): PruneResult => pruneLinks(docs, (l) => l.docId !== deletedDocId);

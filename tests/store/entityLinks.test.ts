@@ -118,22 +118,45 @@ describe('deleteEntity / deleteEntitiesAndEdges — sweep reciprocal mirror link
   });
 });
 
-describe('closeTab — sweep links into the forgotten doc', () => {
-  it('sweeps links pointing into a forgotten BACKGROUND tab', () => {
+describe('closeTab — keeps links into the (reopenable) closed doc', () => {
+  it('keeps links pointing into a closed BACKGROUND tab', () => {
     setupTwoTabs();
     s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
     expect(s().doc.entities.a1?.links).toHaveLength(1);
     s().closeTab(did('doc-b'));
-    expect(s().doc.entities.a1?.links).toBeUndefined();
-    expect(s().docs[did('doc-a')]?.entities.a1?.links).toBeUndefined();
+    // doc-b is reopenable from the library, so doc-a's link to it survives — the
+    // inspector renders it as a muted "tab closed" chip that revives on reopen.
+    expect(s().docs[did('doc-a')]?.entities.a1?.links).toEqual([
+      { docId: 'doc-b', entityId: 'b1' },
+    ]);
   });
 
-  it('sweeps links when the forgotten doc is the ACTIVE tab', () => {
+  it('keeps links when the closed doc is the ACTIVE tab', () => {
     setupTwoTabs();
     s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
     s().closeTab(did('doc-a')); // close the active doc → doc-b becomes active
     expect(s().activeDocId).toBe(did('doc-b'));
-    expect(s().doc.entities.b1?.links).toBeUndefined();
+    expect(s().doc.entities.b1?.links).toEqual([{ docId: 'doc-a', entityId: 'a1' }]);
+  });
+});
+
+describe('deleteSavedDoc — sweeps links into the forgotten doc', () => {
+  it('sweeps links pointing into a deleted (still-open) tab', () => {
+    setupTwoTabs();
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    expect(s().doc.entities.a1?.links).toHaveLength(1);
+    s().deleteSavedDoc(did('doc-b'));
+    // Deleting forgets the doc for good → doc-a's now-dangling link is swept.
+    expect(s().docs[did('doc-a')]?.entities.a1?.links).toBeUndefined();
+  });
+
+  it('sweeps links into a doc that was closed first, then deleted', () => {
+    setupTwoTabs();
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    s().closeTab(did('doc-b')); // closed but reopenable → link kept
+    expect(s().docs[did('doc-a')]?.entities.a1?.links).toHaveLength(1);
+    s().deleteSavedDoc(did('doc-b')); // now truly gone → link swept
+    expect(s().docs[did('doc-a')]?.entities.a1?.links).toBeUndefined();
   });
 });
 
