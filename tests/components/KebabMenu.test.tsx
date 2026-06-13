@@ -100,6 +100,18 @@ describe('KebabMenu', () => {
     expect(useDocumentStore.getState().theme).toBe('light');
   });
 
+  it('Browse Lock menuitem flips browseLocked (Session 182 — moved here from the TopBar)', () => {
+    const { container } = render(<KebabMenu />);
+    openMenu(container);
+    const lockItem = Array.from(
+      container.querySelectorAll('[role="menuitem"], [role="menuitemcheckbox"]')
+    ).find((b) => b.textContent?.includes('Lock for browsing')) as HTMLButtonElement;
+    expect(lockItem).toBeTruthy();
+    expect(useDocumentStore.getState().browseLocked).toBe(false);
+    click(lockItem);
+    expect(useDocumentStore.getState().browseLocked).toBe(true);
+  });
+
   it('Layout-mode menuitem flips between flow and radial', () => {
     const { container } = render(<KebabMenu />);
     openMenu(container);

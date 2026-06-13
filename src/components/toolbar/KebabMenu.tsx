@@ -1,10 +1,14 @@
 import {
   HelpCircle,
   History,
+  Lock,
+  LockOpen,
+  MessageSquare,
   Moon,
   MoreVertical,
   Network,
   Orbit,
+  PanelRight,
   Redo2,
   Sun,
   Undo2,
@@ -18,25 +22,17 @@ import {
 } from 'react';
 import { useAutoFocusFirstEnabled } from '@/hooks/useAutoFocusFirstEnabled';
 import { useOutsideAndEscape } from '@/hooks/useOutsideAndEscape';
+import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { useToolbarActions } from './useToolbarActions';
 
 /**
- * Kebab "More actions" menu — single icon trigger that opens a vertical
- * list of secondary toolbar actions (Undo / Redo / Layout Mode / History
- * / Help / Theme).
- *
- * Session 136 — visible at every viewport width (was `sm:hidden`,
- * narrow-only). The trigger was added at all widths after Dann asked
- * to move the standalone Layout-mode picker off the topbar chrome:
- * Layout lives here now, full stop. The other items still also have
- * standalone topbar buttons at `sm:` and above (so a desktop user
- * keeps one-click Undo / History / Help / Theme); the kebab is the
- * single source of truth on narrow widths and the only entry point
- * for Layout-mode regardless of width.
- *
- * Browse Lock and the Commands button stay outside the kebab — primary
- * CTAs visible at every width.
+ * Overflow "More actions" menu — a single ▾ trigger, visible at EVERY width
+ * (Session 182). It absorbs the secondary toolbar controls the redesign moved
+ * off the bar: Browse Lock, Inspector toggle, Layout mode, Help, and Theme are
+ * always here. Undo / Redo / History / Comments ALSO appear here, but only below
+ * `lg` — where the TopBar collapses their clusters — so they stay reachable
+ * without duplicating at desktop widths.
  */
 export function KebabMenu() {
   const [open, setOpen] = useState(false);
@@ -49,28 +45,25 @@ export function KebabMenu() {
     theme,
     layoutMode,
     historyPanelOpen,
+    commentsPanelOpen,
+    inspectorHidden,
     showLayoutToggle,
     canUndo,
     canRedo,
     toggleTheme,
     openHelp,
     toggleHistoryPanel,
+    toggleCommentsPanel,
+    toggleInspector,
     setLayoutMode,
     undo,
     redo,
   } = useToolbarActions();
+  const browseLocked = useDocumentStore((s) => s.browseLocked);
+  const setBrowseLocked = useDocumentStore((s) => s.setBrowseLocked);
 
   useOutsideAndEscape(containerRef, () => setOpen(false), open);
-
-  // When the menu opens, focus the first ENABLED item so a keyboard user
-  // lands inside the menu instead of staying on the trigger. Disabled
-  // items (e.g. Undo when there's nothing to undo) can't accept focus
-  // and would otherwise leave the trigger as activeElement.
-  // Session 94 (Top-30 #16) — extracted to a shared hook so future
-  // surfaces inherit the disabled-skip behaviour.
   useAutoFocusFirstEnabled(menuRef, open, '[role="menuitem"], [role="menuitemcheckbox"]');
-  // When the menu closes, restore focus to the trigger so Tab continues
-  // from where the user was. Matches the WAI-ARIA menu pattern.
   useEffect(() => {
     if (!open) triggerRef.current?.focus({ preventScroll: true });
   }, [open]);
@@ -81,35 +74,29 @@ export function KebabMenu() {
     close();
   };
 
-  // ArrowUp/ArrowDown move focus between menuitems; Home/End jump to the
-  // ends; Tab closes the menu (and the useEffect above restores focus to
-  // the trigger). Enter / Space activate the focused item — which the
-  // native <button> already handles.
-  //
-  // Session 92 — skip disabled items in the walk (the Undo/Redo rows
-  // are disabled when there's no history to undo/redo). Walking past
-  // them by stepping `(idx ± 1)` mod-length would land on a button
-  // that can't actually accept focus, leaving activeElement on the
-  // previous item and looking like the key did nothing.
+  // ArrowUp/Down + Home/End move between items; Tab closes. Skip both disabled
+  // AND responsively-hidden items (`offsetParent === null`) so the walk never
+  // lands on a `lg:hidden` row at desktop widths.
   const onMenuKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     const items = Array.from(
       menuRef.current?.querySelectorAll<HTMLButtonElement>(
         '[role="menuitem"], [role="menuitemcheckbox"]'
       ) ?? []
     );
-    if (items.length === 0) return;
-    const enabled = items.filter((el) => !el.disabled);
+    // Skip both disabled AND responsively-hidden (`lg:hidden`) items so the walk
+    // never lands on a `display:none` row at desktop widths. `getComputedStyle`
+    // (not `offsetParent`, which is always null under jsdom) keeps this correct
+    // in the browser and inert in tests, where no stylesheet sets `display`.
+    const enabled = items.filter((el) => !el.disabled && getComputedStyle(el).display !== 'none');
     if (enabled.length === 0) return;
     const active = document.activeElement as HTMLButtonElement | null;
     const idx = active ? enabled.indexOf(active) : -1;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      const next = enabled[(idx + 1) % enabled.length];
-      next?.focus();
+      enabled[(idx + 1) % enabled.length]?.focus();
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      const next = enabled[(idx - 1 + enabled.length) % enabled.length];
-      next?.focus();
+      enabled[(idx - 1 + enabled.length) % enabled.length]?.focus();
     } else if (e.key === 'Home') {
       e.preventDefault();
       enabled[0]?.focus();
@@ -117,27 +104,15 @@ export function KebabMenu() {
       e.preventDefault();
       enabled[enabled.length - 1]?.focus();
     } else if (e.key === 'Tab') {
-      // Tab away closes the menu. Let the browser's natural Tab handler
-      // move focus to the next focusable element on the page.
       close();
     }
   };
 
-  // Single-item layout helper: lucide icon + text label, padded for touch.
   const itemClass =
     'flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800';
 
   return (
-    <div ref={containerRef} className="relative sm:hidden">
-      {/* Session 136 — initial removal of `sm:hidden` caused a
-          TopBar layout shift loop on Desktop viewports: with the
-          kebab trigger added at sm+, Playwright's
-          element-is-stable retry on adjacent buttons (the Lock
-          toggle, the History button) thrashed and timed out. The
-          kebab stays narrow-only; Layout-mode picker was already
-          removed from the TopBar (it's reachable via the Cmd+K
-          palette command "Switch to radial layout" /
-          "Switch to flow layout" at every viewport). */}
+    <div ref={containerRef} className="relative">
       <Button
         ref={triggerRef}
         variant={open ? 'softViolet' : 'softNeutral'}
@@ -160,14 +135,12 @@ export function KebabMenu() {
           onKeyDown={onMenuKeyDown}
           className="absolute top-full right-0 z-30 mt-1 w-48 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-lg dark:border-neutral-800 dark:bg-neutral-950"
         >
-          {/* Session 92 — Undo / Redo in the kebab so the affordance
-              isn't hidden from narrow viewports. The sm+ TopBar
-              already surfaces these as standalone icons (Session 87).
-              Disabled states mirror the TopBar buttons. */}
+          {/* Undo / Redo / History / Comments — only below lg (the TopBar shows
+              them as standalone buttons at lg+). */}
           <button
             type="button"
             role="menuitem"
-            className={itemClass}
+            className={`${itemClass} lg:hidden`}
             onClick={runAndClose(undo)}
             disabled={!canUndo}
             aria-disabled={!canUndo}
@@ -178,7 +151,7 @@ export function KebabMenu() {
           <button
             type="button"
             role="menuitem"
-            className={itemClass}
+            className={`${itemClass} lg:hidden`}
             onClick={runAndClose(redo)}
             disabled={!canRedo}
             aria-disabled={!canRedo}
@@ -186,6 +159,27 @@ export function KebabMenu() {
             <Redo2 className="h-3.5 w-3.5" />
             <span>Redo</span>
           </button>
+          <button
+            type="button"
+            role="menuitemcheckbox"
+            className={`${itemClass} lg:hidden`}
+            onClick={runAndClose(toggleHistoryPanel)}
+            aria-checked={historyPanelOpen}
+          >
+            <History className="h-3.5 w-3.5" />
+            <span>{historyPanelOpen ? 'Close history' : 'Open history'}</span>
+          </button>
+          <button
+            type="button"
+            role="menuitemcheckbox"
+            className={`${itemClass} lg:hidden`}
+            onClick={runAndClose(toggleCommentsPanel)}
+            aria-checked={commentsPanelOpen}
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span>{commentsPanelOpen ? 'Close comments' : 'Open comments'}</span>
+          </button>
+          {/* Always-in-overflow controls. */}
           {showLayoutToggle && (
             <button
               type="button"
@@ -205,11 +199,21 @@ export function KebabMenu() {
             type="button"
             role="menuitemcheckbox"
             className={itemClass}
-            onClick={runAndClose(toggleHistoryPanel)}
-            aria-checked={historyPanelOpen}
+            onClick={runAndClose(toggleInspector)}
+            aria-checked={!inspectorHidden}
           >
-            <History className="h-3.5 w-3.5" />
-            <span>{historyPanelOpen ? 'Close history' : 'Open history'}</span>
+            <PanelRight className="h-3.5 w-3.5" />
+            <span>{inspectorHidden ? 'Show inspector' : 'Hide inspector'}</span>
+          </button>
+          <button
+            type="button"
+            role="menuitemcheckbox"
+            className={itemClass}
+            onClick={runAndClose(() => setBrowseLocked(!browseLocked))}
+            aria-checked={browseLocked}
+          >
+            {browseLocked ? <Lock className="h-3.5 w-3.5" /> : <LockOpen className="h-3.5 w-3.5" />}
+            <span>{browseLocked ? 'Unlock document' : 'Lock for browsing'}</span>
           </button>
           <button
             type="button"

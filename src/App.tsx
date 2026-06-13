@@ -13,6 +13,8 @@ import { CLRPanel } from './components/inspector/CLRPanel';
 import { Inspector } from './components/inspector/Inspector';
 import { PrintLegend } from './components/print/PrintLegend';
 import { Toaster } from './components/toast/Toaster';
+import { CommandSearch } from './components/toolbar/CommandSearch';
+import { HomeLogo } from './components/toolbar/HomeLogo';
 import { TabStrip } from './components/toolbar/TabStrip';
 import { TitleBadge } from './components/toolbar/TitleBadge';
 import { TopBar } from './components/toolbar/TopBar';
@@ -304,8 +306,16 @@ export function App() {
       {!isPresentation && (
         <header className="relative z-30 shrink-0" data-component="app-chrome">
           <TabStrip />
-          <div className="flex items-center justify-between gap-2 border-neutral-200 border-b bg-white px-4 py-1.5 dark:border-neutral-800 dark:bg-neutral-950">
-            <TitleBadge />
+          {/* Session 182 — three-zone band: home/logo + doc title (left) ·
+              command/search (centre) · action clusters (right). */}
+          <div className="flex items-center gap-2 border-neutral-200 border-b bg-white px-3 py-1.5 dark:border-neutral-800 dark:bg-neutral-950">
+            <div className="flex min-w-0 shrink items-center gap-2">
+              <HomeLogo />
+              <TitleBadge />
+            </div>
+            <div className="flex min-w-0 flex-1 justify-center">
+              <CommandSearch />
+            </div>
             <TopBar />
           </div>
         </header>
