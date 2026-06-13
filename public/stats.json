@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-13T18:37:22.546Z",
-  "commit": "8eb80f9",
+  "generatedAt": "2026-06-13T19:44:31.883Z",
+  "commit": "7961f47",
   "headline": {
-    "linesTsJs": 128640,
-    "tests": 4248,
-    "lineCoveragePct": 96.28,
-    "commits": 835,
+    "linesTsJs": 128448,
+    "tests": 4246,
+    "lineCoveragePct": 96.3,
+    "commits": 837,
     "ageDays": 33,
-    "trackedFiles": 1026,
+    "trackedFiles": 1024,
     "featureManualPct": 100,
     "featureBookPct": 75.1,
     "featureExamplePct": 27.8
@@ -15,18 +15,18 @@
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 483,
-      "lines": 65406
+      "files": 482,
+      "lines": 65241
     },
     {
       "category": "Unit tests",
       "files": 361,
-      "lines": 56936
+      "lines": 56928
     },
     {
       "category": "E2E tests (Playwright)",
       "files": 14,
-      "lines": 2085
+      "lines": 2066
     },
     {
       "category": "Build scripts",
@@ -46,55 +46,55 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 96.28,
-      "covered": 12501,
-      "total": 12983
+      "pct": 96.3,
+      "covered": 12496,
+      "total": 12975
     },
     "statements": {
-      "pct": 93.66,
-      "covered": 14231,
-      "total": 15193
+      "pct": 93.69,
+      "covered": 14227,
+      "total": 15185
     },
     "functions": {
-      "pct": 93.11,
-      "covered": 2719,
-      "total": 2920
+      "pct": 93.17,
+      "covered": 2717,
+      "total": 2916
     },
     "branches": {
-      "pct": 84.38,
+      "pct": 84.41,
       "covered": 8206,
-      "total": 9724
+      "total": 9721
     }
   },
   "tests": {
-    "unit": 4155,
-    "e2e": 93,
-    "durationMs": 221285,
+    "unit": 4154,
+    "e2e": 92,
+    "durationMs": 216671,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10896
+        "ms": 10500
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4995
+        "ms": 5131
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4828
+        "ms": 4849
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 3091
+        "ms": 2446
       },
       {
-        "file": "tests/components/EdgeInspector.test.tsx",
-        "ms": 2172
+        "file": "tests/components/comments/CommentsPanel.test.tsx",
+        "ms": 2167
       }
     ]
   },
   "domain": {
-    "components": 124,
+    "components": 123,
     "hooks": 19,
     "storeSlices": 14,
     "validators": 4,
@@ -161,7 +161,7 @@
       },
       {
         "file": "App.tsx",
-        "commits": 47
+        "commits": 48
       },
       {
         "file": "components/inspector/EntityInspector.tsx",
@@ -172,8 +172,8 @@
         "commits": 35
       },
       {
-        "file": "store/documentSlice/docMetaSlice.ts",
-        "commits": 30
+        "file": "store/uiSlice/dialogsSlice.ts",
+        "commits": 31
       }
     ],
     "risky": []
@@ -189,16 +189,16 @@
     "nonNull": 99
   },
   "bundle": {
-    "jsGzipKb": 799,
+    "jsGzipKb": 796.7,
     "cssGzipKb": 18.6,
-    "totalGzipKb": 817.5,
+    "totalGzipKb": 815.3,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53468,
     "chapters": 25,
-    "appLoc": 65406,
+    "appLoc": 65241,
     "docToCodeRatio": 0.82
   },
   "featureCoverage": {
@@ -610,16 +610,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 33,
-    "commits": 835,
-    "commits7d": 253,
+    "commits": 837,
+    "commits7d": 255,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 674
+        "count": 675
       },
       {
         "name": "github-actions[bot]",
-        "count": 150
+        "count": 151
       },
       {
         "name": "dannbleeker",
@@ -627,8 +627,8 @@
       }
     ],
     "churn30d": {
-      "added": 132591,
-      "removed": 32718
+      "added": 131835,
+      "removed": 32638
     },
     "changelogEntries": 336
   }
