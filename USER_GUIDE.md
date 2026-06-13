@@ -401,14 +401,6 @@ title,type,description,parent_title
 "Warehouse is understaffed",rootCause,,"Customer satisfaction is declining"
 ```
 
-### Pattern library
-
-Need a starter diagram for a common scenario? Open the palette and pick **Pattern library…**. The dialog lists curated starter diagrams across every TOC diagram type — software-team CRTs, classic teaching ECs, the canonical Outcome ← (Precondition + Action) TT shape, and so on. Filter by diagram type via the chip row at the top, or scroll through everything. Click a card to load it; Undo from the success toast restores your previous doc. The Evaporating Cloud set includes the **change-resistance / buy-in** clouds — *Resistance to change (Efrat's cloud)*, *Speak up vs stay safe*, and *Transformation vs this quarter* — the generic conflict behind why a sound change keeps getting resisted.
-
-It also includes the **system archetypes** (Session 179) — Senge's recurring dynamics rendered as TP trees: *Fixes that Fail*, *Escalation*, *Shifting the Burden*, and *Eroding Goals* (reinforcing CRTs), plus *Limits to Growth* (a balancing FRT). Each is a feedback loop, so the **R / B badge** on its back-edge tells you at a glance whether it's a self-amplifying spiral (R) or a self-correcting limit (B). A separate **cost-accounting / product-costing CRT** captures Goldratt's "cost world" critique — a fully-loaded product cost spraying undesirable effects — and pairs with the *Cost world vs throughput world* cloud.
-
-The library is distinct from **Load example…** (which loads the one canonical example per diagram type). Patterns are many-per-type and the library grows over time — if you author a new shape worth keeping, drop a builder in `src/domain/patterns/` and register it in the `PATTERNS` array.
-
 ### Paste from whiteboard (Miro / Mural)
 
 Open **Import…** in the palette and pick **Paste from whiteboard**. A dialog opens with a textarea — paste sticky-note content from Miro, Mural, FigJam, Lucidspark, or any text source (a bulleted Markdown list, meeting transcript, even chat output). One entity is minted per non-empty line. Bullet markers (`-`, `*`, `•`, `1.`, `1)`) are stripped, and a tab-separated paste (spreadsheet → clipboard) keeps only the first column. Pick the entity type from the dropdown — it defaults to the first entry in the current diagram's palette.
@@ -802,15 +794,14 @@ All but CSV open the result in a **new tab**, leaving your current work untouche
 
 ## Templates library
 
-`Cmd/Ctrl+K` → **New from template…** opens a picker with 10 curated templates spanning the three v3-brief diagram types:
+The **Templates** library (Session 186) is one curated set of starter diagrams — 69 of them, spanning *every* TOC diagram type — that you drop on the canvas and adapt. It used to be two separate libraries (a small "Templates" set and a larger "Pattern library"); they're now unified, shown identically in two places:
 
-- **Goal Trees (2)**: a generic SaaS-product Goal Tree (apex Goal + 3 CSFs + their NCs) and a Retail Operations Goal Tree tuned for store-level operations.
-- **Evaporating Clouds (5)**: Sales vs. Marketing, Speed vs. Quality, Build vs. Buy, Centralise vs. Decentralise, Maker vs. Manager schedules — the five most-recurring strategic conflicts in operations and product work.
-- **CRTs (3)**: a Retail Operations CRT, a SaaS Engineering CRT, and a Personal Productivity CRT. Each is a worked example with a half-dozen entities + edges showing the canonical UDE → cause cascade.
+- **Start page → Templates** (the left sidebar). The full gallery, grouped by diagram type, each card a colored type-stripe + title + one-line description. Click a card to open it in a new tab.
+- **In the editor**, `Cmd/Ctrl+K` → **Browse templates…** (or the Building Blocks rail's "Browse templates & examples"). The same set in a filterable dialog — a chip row at the top narrows to one diagram type, or scroll through all. Click a card to load it; **Undo** from the success toast restores your previous doc.
 
-Each card shows a tiny SVG thumbnail of the diagram's shape (EC cards draw the 5-box layout with the red conflict line; trees show levels bottom-up), the diagram-type badge, the entity + edge counts, and a one-line description. Clicking a card replaces the current document with a freshly-instantiated copy of the template — your previous work is overwritten, so save first if you want to keep it. The picker traps focus, dismisses on Escape, and is keyboard-navigable.
+The library covers Goal Trees, Evaporating Clouds — including the **change-resistance / buy-in** clouds (*Resistance to change (Efrat's cloud)*, *Speak up vs stay safe*, *Transformation vs this quarter*) — Current Reality Trees, Future Reality Trees, Prerequisite Trees, Transition Trees (the canonical Outcome ← (Precondition + Action) shape), Strategy & Tactics Trees, and Negative Branch Reservations. It also includes the **system archetypes** (Session 179) — Senge's recurring dynamics as TP trees: *Fixes that Fail*, *Escalation*, *Shifting the Burden*, *Eroding Goals* (reinforcing CRTs) and *Limits to Growth* (a balancing FRT); each is a feedback loop, so the **R / B badge** on its back-edge tells you at a glance whether it's a self-amplifying spiral (R) or a self-correcting limit (B). A **cost-accounting / product-costing CRT** captures Goldratt's "cost world" critique and pairs with the *Cost world vs throughput world* cloud.
 
-Templates are starting points, not boilerplate — every entity is editable, deletable, and re-typable. Use them when you want to skip the "stare at a blank canvas" problem and start with the shape of the conversation.
+Templates are starting points, not boilerplate — every entity is editable, deletable, and re-typable. Use one when you want to skip the "stare at a blank canvas" problem and start with the shape of the conversation. The library is distinct from **Load example…** (which loads the one canonical example per diagram type). It grows over time — drop a builder in `src/domain/patterns/` and register it in the `PATTERNS` array, and it surfaces in both the gallery and the dialog automatically.
 
 ## Multi-goal Goal Trees
 

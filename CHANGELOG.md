@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 186 — Templates + Patterns unified into one "Templates" library
+
+The app had two parallel libraries of curated starter diagrams: the Start "Templates" gallery's 10
+`TEMPLATE_SPECS` (Goal Tree / EC / CRT only) and the editor "Pattern library"'s ~60 `PATTERNS` (all 8
+diagram types). They overlapped conceptually but were separate definitions. Now there's **one**
+registry, shown identically everywhere under the name **Templates**.
+
+- **One registry.** The 10 templates are folded into `PATTERNS` (each surfaced as a Pattern built via
+  `buildTemplate`); the 3 EC templates (build-vs-buy / quality-vs-speed / centralize) supersede their
+  near-duplicate patterns, which are deleted. The combined set (69 entries) is stably grouped by
+  diagram-type block. Registry guards stay green (≥5 per type, unique ids, all build at the current
+  schema).
+- **Both surfaces show it.** The Start "Templates" gallery + hero strip render the unified set (was 10
+  across 3 types → now 69 across all 8) via a generic `groupByDiagramType`; the editor library reads
+  the same `PATTERNS`. Verified live (Edge): the Templates page shows all 8 type groups (Goal Trees …
+  Negative Branch Reservations), 69 cards.
+- **One name.** The editor "Pattern library" dialog + its palette command are renamed **Templates** /
+  "Browse templates…" (the Start sidebar already said Templates). User decisions: "Templates"
+  everywhere; dedupe the overlaps keeping the richer templates.
+- Follow-up: the legacy "New from template…" thumbnail picker — a third, redundant surface still
+  showing the old 10 — is teed up for retirement; it cascades into orphaned thumbnail code + an e2e
+  visual baseline, so it's its own focused step.
+
 ## Session 185 — Hover-fan + closed-library hygiene
 
 When 2+ edges converge on one entity you couldn't grab one to re-route it — a click took
