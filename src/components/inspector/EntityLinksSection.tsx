@@ -1,7 +1,7 @@
-import clsx from 'clsx';
-import { Link2, RotateCcw, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { DocumentId, Entity, EntityId, TPDocument } from '@/domain/types';
 import { Field } from './Field';
+import { LinkChip } from './LinkChip';
 
 /**
  * Phase 2a (TP completeness #2) — navigable cross-document links. Each chip jumps
@@ -46,39 +46,13 @@ export function EntityLinksSection({
           const reachable = Boolean(targetDoc && targetEntity);
           return (
             <div key={`${link.docId}:${link.entityId}`} className="flex items-center gap-1.5">
-              <button
-                type="button"
+              <LinkChip
+                reachable={reachable}
+                title={targetEntity?.title ?? ''}
+                docTitle={targetDoc?.title ?? ''}
                 onClick={() => onNavigate(link.docId, link.entityId)}
-                title={
-                  reachable
-                    ? `Go to "${targetEntity?.title || 'entity'}" in ${targetDoc?.title}`
-                    : 'Reopen its tab and follow this link.'
-                }
-                className={clsx(
-                  'flex min-w-0 flex-1 items-center gap-1.5 rounded-md border px-2 py-1 text-left text-xs transition',
-                  reachable
-                    ? 'border-indigo-200 bg-indigo-50/60 text-indigo-800 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-900/50'
-                    : 'border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200'
-                )}
-              >
-                {reachable ? (
-                  <Link2 aria-hidden className="h-3 w-3 shrink-0" />
-                ) : (
-                  <RotateCcw aria-hidden className="h-3 w-3 shrink-0" />
-                )}
-                <span className="truncate">
-                  {reachable ? (
-                    <>
-                      {targetEntity?.title || '(untitled)'}
-                      <span className="ml-1 text-indigo-500/70 dark:text-indigo-300/60">
-                        · {targetDoc?.title}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="italic">Reopen linked tab</span>
-                  )}
-                </span>
-              </button>
+                className="flex-1"
+              />
               {!locked && (
                 <button
                   type="button"

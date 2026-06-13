@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
-import { Link2, RotateCcw, Sparkles, Syringe, TriangleAlert, Workflow } from 'lucide-react';
+import { Link2, Sparkles, Syringe, TriangleAlert, Workflow } from 'lucide-react';
 import {
   buildInjectionFlower,
   CANONICAL_FLOWER_PETALS,
@@ -11,6 +11,7 @@ import type { Entity } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { LargeDialog } from '../ui/LargeDialog';
+import { LinkChip } from './LinkChip';
 
 /**
  * Phase 3 #3 — the "Injection Flower" dialog. Opened by the "View the injection
@@ -154,40 +155,13 @@ function InjectionFlowerBody({ injection, onClose }: { injection: Entity; onClos
               ) : (
                 <div className="flex flex-col gap-1.5">
                   {petal.links.map((link) => (
-                    <button
+                    <LinkChip
                       key={`${link.docId}:${link.entityId}`}
-                      type="button"
+                      reachable={link.reachable}
+                      title={link.entityTitle ?? ''}
+                      docTitle={link.docTitle ?? ''}
                       onClick={() => go(link)}
-                      title={
-                        link.reachable
-                          ? `Go to "${link.entityTitle || 'entity'}" in ${link.docTitle}`
-                          : 'Reopen its tab and follow this link.'
-                      }
-                      className={clsx(
-                        'flex min-w-0 items-center gap-1.5 rounded-md border px-2 py-1 text-left text-xs transition',
-                        link.reachable
-                          ? 'border-indigo-200 bg-indigo-50/60 text-indigo-800 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-900/50'
-                          : 'border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200'
-                      )}
-                    >
-                      {link.reachable ? (
-                        <Link2 aria-hidden className="h-3 w-3 shrink-0" />
-                      ) : (
-                        <RotateCcw aria-hidden className="h-3 w-3 shrink-0" />
-                      )}
-                      <span className="truncate">
-                        {link.reachable ? (
-                          <>
-                            {link.entityTitle || '(untitled)'}
-                            <span className="ml-1 text-indigo-500/70 dark:text-indigo-300/60">
-                              · {link.docTitle}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="italic">Reopen linked tab</span>
-                        )}
-                      </span>
-                    </button>
+                    />
                   ))}
                 </div>
               )}
