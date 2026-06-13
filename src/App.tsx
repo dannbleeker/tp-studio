@@ -300,7 +300,12 @@ export function App() {
       // the canvas a11y push (slice 3).
       aria-label="TP Studio canvas"
       className={clsx(
-        'flex h-screen w-screen flex-col overflow-hidden',
+        // `relative` makes <main> the containing block for the always-mounted,
+        // off-screen slide panels (Comments / Revision, `absolute right-0
+        // translate-x-full`), so its `overflow-hidden` clips them and they never
+        // add horizontal document scroll — including on the Start surface, which
+        // (unlike the editor) has no other positioned ancestor to clip them.
+        'relative flex h-screen w-screen flex-col overflow-hidden',
         appMode === 'workshop' && 'app-mode-workshop',
         appMode === 'presentation' && 'app-mode-presentation',
         appMode === 'reader' && 'app-mode-reader'
