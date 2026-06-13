@@ -284,6 +284,11 @@ const activeDocEphemeralReset = () => ({
   // banner renders no diff (and no way to exit) while the canvas stays locked.
   compareRevisionId: null,
   sideBySideRevisionId: null,
+  // Session 183 — focusing any document leaves the Start (workspace) surface.
+  // Centralised here so every doc-entry path (the palette "New diagram", the
+  // diagram / template pickers, a Start tree card, the hero "Build a CRT")
+  // exits Start without each call site having to remember to.
+  startSection: null,
   ...speculationDefaults(),
 });
 

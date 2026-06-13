@@ -143,6 +143,15 @@ export type DefaultLayoutDirection = 'auto' | 'BT' | 'TB' | 'LR' | 'RL';
  */
 export type AppMode = 'expert' | 'guided' | 'workshop' | 'presentation' | 'reader';
 
+/**
+ * Session 183 — the Start (workspace) surface's active nav section. `null`
+ * means the editor is shown (the Start page is hidden); any non-null value
+ * renders the Start shell with that sidebar item active. Transient view state
+ * (not persisted): the editor stays the default landing, and the Start page is
+ * reached on demand via the Home logo, then navigated via its own sidebar.
+ */
+export type StartSection = 'start' | 'allTrees' | 'recent' | 'templates' | 'needsReview' | 'learn';
+
 /** Print page setup (Session 178). `paper` + `orientation` size the print
  *  box + the `@page` rule for browser-print (and the page format for the
  *  vector PDF); `scale` chooses whether browser-print fits the whole tree

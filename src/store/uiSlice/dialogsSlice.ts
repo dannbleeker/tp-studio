@@ -1,7 +1,7 @@
 import type { StateCreator } from 'zustand';
 import type { CommentAnchor, DiagramType, TPDocument } from '@/domain/types';
 import type { RootStore } from '../types';
-import type { ContextMenuState, ContextMenuTarget } from './types';
+import type { ContextMenuState, ContextMenuTarget, StartSection } from './types';
 
 /**
  * Everything modal-ish: the command palette, help / settings / doc-settings
@@ -153,6 +153,10 @@ export type DialogsSlice = {
   /** Session 182 — Logic-check (CLR) panel open; mutually exclusive with the
    *  Inspector in the right dock. */
   clrPanelOpen: boolean;
+  /** Session 183 — the Start (workspace) surface. `null` = the editor is shown;
+   *  a non-null section renders the full-screen Start shell with that sidebar
+   *  item active. Reached via the Home logo; navigated via its own sidebar. */
+  startSection: StartSection | null;
 
   openPalette: () => void;
   openPaletteWithQuery: (query: string) => void;
@@ -269,6 +273,13 @@ export type DialogsSlice = {
   toggleClrPanel: () => void;
   closeClrPanel: () => void;
 
+  /** Session 183 — Start (workspace) surface navigation. `openStart` shows the
+   *  Start shell (defaulting to the 'start' section); `setStartSection` switches
+   *  the active sidebar section; `closeStart` returns to the editor. */
+  openStart: (section?: StartSection) => void;
+  setStartSection: (section: StartSection) => void;
+  closeStart: () => void;
+
   /** Session 133 — open / close the all-at-once verbalisation dialog. */
   openReadAllAtOnce: () => void;
   closeReadAllAtOnce: () => void;
@@ -329,6 +340,7 @@ export type DialogsDataKeys =
   | 'commentsPanelOpen'
   | 'inspectorHidden'
   | 'clrPanelOpen'
+  | 'startSection'
   | 'pendingCommentAnchor'
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
@@ -361,6 +373,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   commentsPanelOpen: false,
   inspectorHidden: false,
   clrPanelOpen: false,
+  startSection: null,
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -410,6 +423,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   commentsPanelOpen: false,
   inspectorHidden: false,
   clrPanelOpen: false,
+  startSection: null,
   pendingCommentAnchor: null,
   compareRevisionId: null,
   sideBySideRevisionId: null,
@@ -511,6 +525,10 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   showInspector: () => set({ inspectorHidden: false }),
   toggleClrPanel: () => set({ clrPanelOpen: !get().clrPanelOpen }),
   closeClrPanel: () => set({ clrPanelOpen: false }),
+
+  openStart: (section = 'start') => set({ startSection: section }),
+  setStartSection: (section) => set({ startSection: section }),
+  closeStart: () => set({ startSection: null }),
 
   openReadAllAtOnce: () => set({ readAllAtOnceOpen: true }),
   closeReadAllAtOnce: () => set({ readAllAtOnceOpen: false }),

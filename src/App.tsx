@@ -12,6 +12,7 @@ import { DocumentMeta } from './components/DocumentMeta';
 import { CLRPanel } from './components/inspector/CLRPanel';
 import { Inspector } from './components/inspector/Inspector';
 import { PrintLegend } from './components/print/PrintLegend';
+import { StartPage } from './components/start/StartPage';
 import { Toaster } from './components/toast/Toaster';
 import { CommandSearch } from './components/toolbar/CommandSearch';
 import { HomeLogo } from './components/toolbar/HomeLogo';
@@ -227,6 +228,9 @@ export function App() {
   // Session 182 — the Logic-check (CLR) panel takes over the right dock from the
   // Inspector when open (mutually exclusive).
   const clrPanelOpen = useDocumentStore((s) => s.clrPanelOpen);
+  // Session 183 — the Start (workspace) surface. Non-null → render the Start
+  // shell instead of the editor chrome + canvas.
+  const startSection = useDocumentStore((s) => s.startSection);
 
   // FL-EX9: surface a recovery toast when the previous session ended
   // unexpectedly.
@@ -300,98 +304,109 @@ export function App() {
       <DocumentMeta />
       <PrintHeader />
       <PrintLegend />
-      {/* Chrome header — the tab strip + a (title · toolbar) band. A real
+      {/* Session 183 — the Start (workspace) surface replaces the editor chrome
+          + canvas when a Start section is active (never in presentation, which
+          is a focused projection of one doc). The dialog/overlay block further
+          down stays mounted in both views, so ⌘K, toasts, and the pickers work
+          on the Start page too. */}
+      {startSection !== null && !isPresentation ? (
+        <StartPage />
+      ) : (
+        <>
+          {/* Chrome header — the tab strip + a (title · toolbar) band. A real
           flex-column header now, not floating `absolute` overlays, so it
           never overlaps the canvas or the Inspector. Hidden in presentation
           mode (full-bleed canvas). */}
-      {!isPresentation && (
-        <header className="relative z-30 shrink-0" data-component="app-chrome">
-          <TabStrip />
-          {/* Session 182 — three-zone band: home/logo + doc title (left) ·
+          {!isPresentation && (
+            <header className="relative z-30 shrink-0" data-component="app-chrome">
+              <TabStrip />
+              {/* Session 182 — three-zone band: home/logo + doc title (left) ·
               command/search (centre) · action clusters (right). */}
-          <div className="flex items-center gap-2 border-neutral-200 border-b bg-white px-3 py-1.5 dark:border-neutral-800 dark:bg-neutral-950">
-            <div className="flex min-w-0 shrink items-center gap-2">
-              <HomeLogo />
-              <TitleBadge />
-            </div>
-            <div className="flex min-w-0 flex-1 justify-center">
-              <CommandSearch />
-            </div>
-            <TopBar />
-          </div>
-          {/* Session 182 — method-path stepper (hidden in reader's minimal chrome). */}
-          {!isReader && <MethodStepper />}
-        </header>
-      )}
-      {/* The canvas, its overlays, and the Inspector live in a flex-1
+              <div className="flex items-center gap-2 border-neutral-200 border-b bg-white px-3 py-1.5 dark:border-neutral-800 dark:bg-neutral-950">
+                <div className="flex min-w-0 shrink items-center gap-2">
+                  <HomeLogo />
+                  <TitleBadge />
+                </div>
+                <div className="flex min-w-0 flex-1 justify-center">
+                  <CommandSearch />
+                </div>
+                <TopBar />
+              </div>
+              {/* Session 182 — method-path stepper (hidden in reader's minimal chrome). */}
+              {!isReader && <MethodStepper />}
+            </header>
+          )}
+          {/* The canvas, its overlays, and the Inspector live in a flex-1
           content row beneath the header. The Inspector is `absolute` within
           this `relative` row, so it starts below the header — no overlap with
           the TopBar / tab strip. `data-print-canvas` lets print.css pin this
           row to a fixed box while `body.printing` is set (see usePrintCanvas). */}
-      <div className="flex flex-1 flex-row overflow-hidden">
-        {/* Session 182 — Building Blocks rail: type-led entity creation, left of
+          <div className="flex flex-1 flex-row overflow-hidden">
+            {/* Session 182 — Building Blocks rail: type-led entity creation, left of
             the canvas. Hidden in presentation / reader (chrome). Sibling of the
             print-canvas row so `data-print-canvas` + the Inspector's positioning
             context are untouched. */}
-        {!isPresentation && !isReader && <BlocksRail />}
-        <div className="relative min-w-0 flex-1 overflow-hidden" data-print-canvas>
-          {/* Session 95 — `ReactFlowProvider` hoisted here so the
+            {!isPresentation && !isReader && <BlocksRail />}
+            <div className="relative min-w-0 flex-1 overflow-hidden" data-print-canvas>
+              {/* Session 95 — `ReactFlowProvider` hoisted here so the
             SelectionToolbar + future canvas overlays can read React Flow's
             state via `useRFStore` from outside the Canvas component. */}
-          <ReactFlowProvider>
-            {/* Session 113 — Canvas wrapped in its own ErrorBoundary. React
+              <ReactFlowProvider>
+                {/* Session 113 — Canvas wrapped in its own ErrorBoundary. React
             Flow is a third-party renderer; an internal crash there
             previously surfaced through the root boundary and froze the
             entire app on the crash screen. Scoped here so a Canvas
             crash leaves the TopBar / Inspector / palette usable and
             the user can at least save / export / load a different
             doc. */}
-            <ErrorBoundary label="Canvas">
-              <Canvas />
-            </ErrorBoundary>
-            {/* Session 95 — selection-anchored floating toolbar.
+                <ErrorBoundary label="Canvas">
+                  <Canvas />
+                </ErrorBoundary>
+                {/* Session 95 — selection-anchored floating toolbar.
             Mounted inside the provider but outside Canvas's render
             tree so it doesn't get re-mounted on Canvas re-renders.
             ErrorBoundary scopes any crash so the canvas stays
             usable. */}
-            {!isPresentation && (
-              <ErrorBoundary label="Selection toolbar">
-                <SelectionToolbar />
-              </ErrorBoundary>
-            )}
-            {/* Session 135 / spec gap #9 Phase 1C — Presentation
+                {!isPresentation && (
+                  <ErrorBoundary label="Selection toolbar">
+                    <SelectionToolbar />
+                  </ErrorBoundary>
+                )}
+                {/* Session 135 / spec gap #9 Phase 1C — Presentation
             step-through control. Self-gated on `appMode ===
             'presentation'` inside the component, so it only mounts
             chrome when the mode is active. Lives inside the
             ReactFlowProvider so `useReactFlow().fitView({...})` is
             available for the focus-on-step behaviour. */}
-            <ErrorBoundary label="Presentation step-through">
-              <PresentationStepThrough />
-            </ErrorBoundary>
-          </ReactFlowProvider>
-          <ErrorBoundary label="Compare banner">
-            <CompareBanner />
-          </ErrorBoundary>
-          <ErrorBoundary label="Speculation banner">
-            <SpeculationBanner />
-          </ErrorBoundary>
-          {/* Nested ErrorBoundaries scope a crash to a single panel — the
+                <ErrorBoundary label="Presentation step-through">
+                  <PresentationStepThrough />
+                </ErrorBoundary>
+              </ReactFlowProvider>
+              <ErrorBoundary label="Compare banner">
+                <CompareBanner />
+              </ErrorBoundary>
+              <ErrorBoundary label="Speculation banner">
+                <SpeculationBanner />
+              </ErrorBoundary>
+              {/* Nested ErrorBoundaries scope a crash to a single panel — the
           canvas stays usable if (say) the Inspector blows up on a bad
           warning derivation, and vice versa. The root boundary wrapping
           all of <App /> still catches anything that escapes a panel. */}
-          {!isPresentation &&
-            !isReader &&
-            (clrPanelOpen ? (
-              <ErrorBoundary label="Logic check">
-                <CLRPanel />
-              </ErrorBoundary>
-            ) : (
-              <ErrorBoundary label="Inspector">
-                <Inspector />
-              </ErrorBoundary>
-            ))}
-        </div>
-      </div>
+              {!isPresentation &&
+                !isReader &&
+                (clrPanelOpen ? (
+                  <ErrorBoundary label="Logic check">
+                    <CLRPanel />
+                  </ErrorBoundary>
+                ) : (
+                  <ErrorBoundary label="Inspector">
+                    <Inspector />
+                  </ErrorBoundary>
+                ))}
+            </div>
+          </div>
+        </>
+      )}
       <ContextMenu />
       <Suspense fallback={null}>
         {/* Session 113 — wrap the remaining lazy dialogs / overlays in
