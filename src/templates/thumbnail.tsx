@@ -323,7 +323,10 @@ export function DocumentThumbnail({ doc }: { doc: TPDocument }): ReactElement {
       aria-labelledby={`docthumb-${doc.id}-title`}
     >
       <title id={`docthumb-${doc.id}-title`}>{`${doc.title || 'Untitled'} preview`}</title>
-      <rect width={THUMB_W} height={THUMB_H} fill="#fafafa" />
+      {/* Theme-aware background (Session 184) — `fill-neutral-50` is the same
+          #fafafa the template thumbnails use, so light mode is unchanged; dark
+          mode gets a dark canvas instead of a harsh white block on the card. */}
+      <rect width={THUMB_W} height={THUMB_H} className="fill-neutral-50 dark:fill-neutral-900" />
       {prims.map((p, i) => renderPrim(p, i))}
     </svg>
   );
