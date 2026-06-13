@@ -60,4 +60,13 @@ describe('exportToMermaid (Block D / N3)', () => {
     const md = exportCurrent();
     expect(md).toContain('Line one<br/>Line &quot;two&quot;');
   });
+
+  it('renders an inline |label| on an edge that carries one', () => {
+    const { a, b, edge } = seedConnectedPair();
+    useDocumentStore.getState().updateEdge(edge.id, { label: 'because' });
+    const md = exportCurrent();
+    const safeA = a.id.replace(/[^a-zA-Z0-9_]/g, '_');
+    const safeB = b.id.replace(/[^a-zA-Z0-9_]/g, '_');
+    expect(md).toContain(`n_${safeA} -->|"because"| n_${safeB}`);
+  });
 });

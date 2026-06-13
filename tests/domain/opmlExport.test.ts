@@ -85,4 +85,36 @@ describe('exportToOpml (Block D / N1)', () => {
     const xml = exportCurrent();
     expect(xml).toContain('<ownerName>Alice</ownerName>');
   });
+
+  it('nests multiple causes of one effect as siblings under it', () => {
+    const effect = seedEntity('Effect');
+    const c1 = seedEntity('Cause one');
+    const c2 = seedEntity('Cause two');
+    useDocumentStore.getState().connect(c1.id, effect.id);
+    useDocumentStore.getState().connect(c2.id, effect.id);
+    const xml = exportCurrent();
+    const idxEffect = xml.indexOf('text="Effect"');
+    expect(idxEffect).toBeLessThan(xml.indexOf('text="Cause one"'));
+    expect(idxEffect).toBeLessThan(xml.indexOf('text="Cause two"'));
+    // The effect has children, so its outline tag is an opener, not self-closing.
+    expect(xml).toMatch(/text="Effect"[^>]*[^/]>/);
+  });
+
+  it('routes a multi-output entity under its lowest-numbered target', () => {
+    const a = seedEntity('Multi'); // annotation 1
+    const b = seedEntity('Target B'); // 2
+    const c = seedEntity('Target C'); // 3
+    useDocumentStore.getState().connect(a.id, b.id);
+    useDocumentStore.getState().connect(a.id, c.id);
+    const xml = exportCurrent();
+    // A's outline parent is the lower-numbered target (B), so A nests after B.
+    expect(xml.indexOf('text="Multi"')).toBeGreaterThan(xml.indexOf('text="Target B"'));
+  });
+
+  it('orders multiple roots by annotation number', () => {
+    seedEntity('First root');
+    seedEntity('Second root');
+    const xml = exportCurrent();
+    expect(xml.indexOf('text="Second root"')).toBeGreaterThan(xml.indexOf('text="First root"'));
+  });
 });

@@ -84,4 +84,13 @@ describe('exportToDot (Block D / N2)', () => {
     expect(dot).toContain('\\nand left');
     expect(dot).not.toMatch(/\\\\(?!n)/); // no spurious backslashes
   });
+
+  it('renders a label attribute on an edge that carries one', () => {
+    const { a, b, edge } = seedConnectedPair();
+    useDocumentStore.getState().updateEdge(edge.id, { label: 'leads to' });
+    const dot = exportCurrent();
+    const safeA = a.id.replace(/[^a-zA-Z0-9_]/g, '_');
+    const safeB = b.id.replace(/[^a-zA-Z0-9_]/g, '_');
+    expect(dot).toContain(`n_${safeA} -> n_${safeB} [label="leads to"]`);
+  });
 });
