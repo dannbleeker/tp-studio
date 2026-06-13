@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-06-13T09:31:00.621Z",
-  "commit": "600b100",
+  "generatedAt": "2026-06-13T09:47:52.281Z",
+  "commit": "1c0cb4c",
   "headline": {
-    "linesTsJs": 125885,
-    "tests": 4208,
-    "lineCoveragePct": 96.9,
-    "commits": 772,
+    "linesTsJs": 126767,
+    "tests": 4213,
+    "lineCoveragePct": 96.73,
+    "commits": 779,
     "ageDays": 32,
-    "trackedFiles": 999,
+    "trackedFiles": 1010,
     "featureManualPct": 100,
-    "featureBookPct": 76.4,
-    "featureExamplePct": 29.2
+    "featureBookPct": 74.9,
+    "featureExamplePct": 28.6
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 464,
-      "lines": 63222
+      "files": 473,
+      "lines": 64048
     },
     {
       "category": "Unit tests",
-      "files": 355,
-      "lines": 56462
+      "files": 357,
+      "lines": 56518
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,56 +46,56 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 96.9,
-      "covered": 12305,
-      "total": 12698
+      "pct": 96.73,
+      "covered": 12342,
+      "total": 12758
     },
     "statements": {
-      "pct": 94.22,
-      "covered": 14008,
-      "total": 14867
+      "pct": 94.08,
+      "covered": 14051,
+      "total": 14934
     },
     "functions": {
-      "pct": 94.31,
-      "covered": 2653,
-      "total": 2813
+      "pct": 94.08,
+      "covered": 2670,
+      "total": 2838
     },
     "branches": {
-      "pct": 85.01,
-      "covered": 8070,
-      "total": 9493
+      "pct": 84.78,
+      "covered": 8090,
+      "total": 9542
     }
   },
   "tests": {
-    "unit": 4120,
+    "unit": 4125,
     "e2e": 88,
-    "durationMs": 214508,
+    "durationMs": 215195,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10708
+        "ms": 11064
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5305
+        "ms": 5231
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4435
+        "ms": 4433
+      },
+      {
+        "file": "tests/components/EdgeInspector.test.tsx",
+        "ms": 2161
       },
       {
         "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2504
-      },
-      {
-        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 1955
+        "ms": 2120
       }
     ]
   },
   "domain": {
-    "components": 107,
-    "hooks": 18,
+    "components": 113,
+    "hooks": 19,
     "storeSlices": 14,
     "validators": 4,
     "exporters": 13,
@@ -125,8 +125,8 @@
         "lines": 617
       },
       {
-        "name": "domain/patterns/index.ts",
-        "lines": 568
+        "name": "store/uiSlice/preferencesSlice.ts",
+        "lines": 576
       }
     ]
   },
@@ -142,16 +142,16 @@
         "pct": 0
       },
       {
+        "file": "services/shareCurrentDoc.ts",
+        "pct": 9.09
+      },
+      {
         "file": "components/canvas/overlays/CompareBanner.tsx",
         "pct": 55.55
       },
       {
-        "file": "components/canvas/nodes/TPAssumptionNode.tsx",
-        "pct": 62.06
-      },
-      {
-        "file": "components/history/RevisionRow.tsx",
-        "pct": 66.66
+        "file": "domain/methodPath.ts",
+        "pct": 55.55
       }
     ],
     "churnHotspots": [
@@ -161,7 +161,7 @@
       },
       {
         "file": "App.tsx",
-        "commits": 40
+        "commits": 44
       },
       {
         "file": "components/inspector/EntityInspector.tsx",
@@ -173,13 +173,13 @@
       },
       {
         "file": "store/uiSlice/dialogsSlice.ts",
-        "commits": 27
+        "commits": 28
       }
     ],
     "risky": []
   },
   "hygiene": {
-    "todo": 14,
+    "todo": 15,
     "fixme": 0,
     "hack": 2,
     "anyCount": 13,
@@ -189,26 +189,26 @@
     "nonNull": 98
   },
   "bundle": {
-    "jsGzipKb": 786.8,
-    "cssGzipKb": 17.7,
-    "totalGzipKb": 804.5,
+    "jsGzipKb": 791.4,
+    "cssGzipKb": 18.1,
+    "totalGzipKb": 809.4,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 52913,
     "chapters": 25,
-    "appLoc": 63222,
-    "docToCodeRatio": 0.84
+    "appLoc": 64048,
+    "docToCodeRatio": 0.83
   },
   "featureCoverage": {
-    "total": 195,
-    "manual": 195,
+    "total": 199,
+    "manual": 199,
     "manualPct": 100,
     "book": 149,
-    "bookPct": 76.4,
+    "bookPct": 74.9,
     "bookExample": 57,
-    "bookExamplePct": 29.2,
+    "bookExamplePct": 28.6,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -251,8 +251,8 @@
         "book": 1
       },
       "Canvas": {
-        "total": 17,
-        "manual": 17,
+        "total": 18,
+        "manual": 18,
         "book": 8
       },
       "Editing": {
@@ -271,8 +271,8 @@
         "book": 11
       },
       "CLR": {
-        "total": 9,
-        "manual": 9,
+        "total": 10,
+        "manual": 10,
         "book": 8
       },
       "Layout": {
@@ -336,14 +336,34 @@
         "book": 3
       },
       "General": {
-        "total": 18,
-        "manual": 18,
+        "total": 20,
+        "manual": 20,
         "book": 15
       }
     },
     "gaps": {
       "noManual": [],
       "noBook": [
+        {
+          "id": "blocks-rail",
+          "name": "Building Blocks rail",
+          "since": 182
+        },
+        {
+          "id": "clr-panel",
+          "name": "Logic-check status chip + CLR panel",
+          "since": 182
+        },
+        {
+          "id": "method-stepper",
+          "name": "Method-path stepper",
+          "since": 182
+        },
+        {
+          "id": "topbar-actions",
+          "name": "Top-bar Export / Share / command search",
+          "since": 182
+        },
         {
           "id": "canvas-grow-cards",
           "name": "Grow cards to fit text",
@@ -580,16 +600,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 32,
-    "commits": 772,
-    "commits7d": 202,
+    "commits": 779,
+    "commits7d": 209,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 640
+        "count": 646
       },
       {
         "name": "github-actions[bot]",
-        "count": 121
+        "count": 122
       },
       {
         "name": "dannbleeker",
@@ -597,9 +617,9 @@
       }
     ],
     "churn30d": {
-      "added": 139517,
-      "removed": 32727
+      "added": 140117,
+      "removed": 33138
     },
-    "changelogEntries": 331
+    "changelogEntries": 332
   }
 }
