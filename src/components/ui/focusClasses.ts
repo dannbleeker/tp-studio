@@ -39,7 +39,7 @@ export const INPUT_FOCUS =
   'outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400';
 
 /** Clickable cards in picker dialogs (DiagramTypePicker /
- *  ExportPicker / TemplatePicker). Bolder `ring-2` ring at a lighter
+ *  ExportPicker / Templates). Bolder `ring-2` ring at a lighter
  *  ring color so a focused card reads at card-grid distance. Pairs
  *  with `outline-none` and a complementary `focus:border-indigo-400`.
  *  Dark-mode override uses `dark:focus:ring-indigo-600` to maintain

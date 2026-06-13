@@ -1,6 +1,6 @@
 /**
  * Session 94 (refactor #1) — shared shell for the centered-card picker
- * dialogs (DiagramTypePicker / ExportPicker / TemplatePicker / PrintPreview).
+ * dialogs (DiagramTypePicker / ExportPicker / Templates / PrintPreview).
  *
  * Each of those dialogs had grown its own copy of the same scaffolding:
  *   - raw `<dialog open>` with `fixed inset-0 z-50 ... bg-black/40` backdrop
