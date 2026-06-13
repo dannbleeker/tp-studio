@@ -64,8 +64,16 @@ export function KebabMenu() {
 
   useOutsideAndEscape(containerRef, () => setOpen(false), open);
   useAutoFocusFirstEnabled(menuRef, open, '[role="menuitem"], [role="menuitemcheckbox"]');
+  // Restore focus to the trigger ONLY when the menu closes (open: true → false),
+  // never on initial mount. Before Session 182 the kebab was `sm:hidden`, so a
+  // mount-time `.focus()` was a no-op on desktop (can't focus a display:none
+  // element); now that the overflow is always shown, focusing on mount would
+  // steal focus on load and swallow bare-key shortcuts (e.g. `e` → Quick
+  // Capture, `+/-/0` → zoom, which defer to a focused control).
+  const wasOpen = useRef(false);
   useEffect(() => {
-    if (!open) triggerRef.current?.focus({ preventScroll: true });
+    if (!open && wasOpen.current) triggerRef.current?.focus({ preventScroll: true });
+    wasOpen.current = open;
   }, [open]);
 
   const close = () => setOpen(false);

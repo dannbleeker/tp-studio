@@ -29,12 +29,23 @@ const openMenu = (container: HTMLElement): void => {
 describe('KebabMenu', () => {
   it('renders nothing in the menu until opened', () => {
     const { container } = render(<KebabMenu />);
-    // Trigger is always rendered (its `sm:hidden` parent doesn't affect JSDOM).
+    // Trigger is always rendered (Session 182 — always visible, no longer `sm:hidden`).
     expect(container.querySelector('button[aria-label="More actions"]')).toBeTruthy();
     // No menuitems before the trigger is clicked.
     expect(container.querySelectorAll('[role="menuitem"], [role="menuitemcheckbox"]').length).toBe(
       0
     );
+  });
+
+  it('does not steal focus on mount (Session 182 — bare-key shortcuts must keep working)', () => {
+    // The focus-restore effect must fire only when the menu closes, never on
+    // initial mount. Now that the overflow is always visible, a mount-time
+    // `.focus()` would grab focus on load and swallow bare-key shortcuts that
+    // defer to a focused control (`e` → Quick Capture, `+/-/0` → zoom).
+    const { container } = render(<KebabMenu />);
+    const trigger = container.querySelector('button[aria-label="More actions"]');
+    expect(trigger).toBeTruthy();
+    expect(document.activeElement).not.toBe(trigger);
   });
 
   it('opens and closes when the trigger is clicked twice', () => {
