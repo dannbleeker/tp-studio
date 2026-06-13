@@ -45,7 +45,7 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 
 | Element | Where | What it does |
 | --- | --- | --- |
-| Home / logo | Top-left | The TP Studio mark; opens the About dialog. |
+| Home / logo | Top-left | The TP Studio mark; opens the **Start** workspace (your trees, templates, and the problem-led hero). See [The Start page](#the-start-page). |
 | Title + type badge | Top-left | Click the title to rename the document. The badge shows the diagram type (`CRT`, `EC`, …); the small ⓘ icon opens the Document Inspector. |
 | Command search | Top-center | Click it (or press `Cmd/Ctrl+K`) to open the command palette — the fastest route to any action. |
 | Building Blocks rail | Left edge | Type-led entity creation for the current diagram — click a block to drop that entity at the canvas center. Collapsible. See [Building Blocks rail](#building-blocks-rail). |
@@ -78,6 +78,18 @@ The rail is additive — double-clicking the canvas to create an entity still wo
 A thin strip under the top bar situates the diagram you're editing in the canonical Thinking-Process sequence — **CRT → EC → FRT → PRT → TT** — with **Goal Tree** and **S&T** shown as a parallel planning branch. The current diagram is filled and marked with a green dot; sibling diagrams you already have open as tabs read as outlined "open" (click to switch to them); the rest are dashed "to-do" (click to create one and open it in a new tab).
 
 When the diagram in front of you reaches a milestone, a suggestion appears on the right — for example, once a CRT has a **root cause**, the strip nudges you to *break it with an Evaporating Cloud*. Click the suggestion to jump straight there. It stays quiet until the next step is genuinely earned, so it guides without nagging.
+
+## The Start page
+
+Click the **logo** (top-left) to open the **Start** page — a full-screen workspace that sits in front of the editor, with a persistent left sidebar that switches the main view:
+
+- **Start** — a problem-led hero: type what's going wrong and **Build a Current Reality Tree** mints a fresh CRT with that statement as its first UDE. Example chips do the same in one click, a worked-example callout opens a finished CRT to learn from, and a template strip sits beneath. Once you have work in progress, a **"Pick up where you left off"** row shows your most-recent trees.
+- **All trees / Recent** — every open tree as a card (a mini preview + title + type + edited time) or a compact list. Each carries a **Logic pill** — emerald *"Logic clear"* or amber *"N to review"* — reading the exact same validation as the editor's Logic chip, so a card can never disagree with the canvas.
+- **Templates** — the full library, grouped by diagram type; click any card to load it in a new tab.
+- **Needs review** — only the trees with at least one open reservation: the CLR as triage. Open the workspace, see which trees still have logic to resolve, and click straight in.
+- **Learn the method** — the User Guide, the keyboard reference, and the practitioner's book.
+
+The sidebar badges are live: **All trees** counts your open tabs, **Needs review** counts the trees with open reservations. Clicking a tree card, a template, or **Build** drops you into the editor on that document; **New tree** opens the diagram-type picker. The Start page reflects your *open* tabs — closing a tab removes it (there's no separate saved-document archive), so it's your live working set.
 
 ## Working with multiple documents (tabs)
 

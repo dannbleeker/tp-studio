@@ -27,16 +27,18 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 
 | Element | Where | What it does |
 | --- | --- | --- |
-| **Title** | Top-left | Click to rename the document. A small `CRT` / `FRT` / `EC` / etc. badge next to it shows the diagram type. |
-| **Commands button** | Top-right | Opens the command palette. Same as `Cmd/Ctrl+K`. |
-| **Lock button** | Top-right | Toggles Browse Lock — read-only mode. Use it before screen-sharing or demoing. |
-| **History button** | Top-right (sm+ screens) | Toggles the Revision Panel slide-in. |
-| **Help button (?)** | Top-right | Opens **Help** — the User Guide and practitioner book, plus keyboard shortcuts & gestures. |
-| **Theme toggle** | Top-right | Light ↔ dark. (High-contrast variants live in Settings.) |
+| **Home / logo** | Top-left | The TP Studio mark. Opens the **Start** workspace — your trees, the templates, and the problem-led "build a CRT" hero (see below). |
+| **Title + type badge** | Top-left | Click the title to rename. A `CRT` / `FRT` / `EC` / etc. badge shows the diagram type; the small ⓘ icon opens the Document Inspector. |
+| **Command search** | Top-center | Click it (or press `Cmd/Ctrl+K`) to open the command palette. |
+| **Building Blocks rail** | Left edge | Type-led entity creation for the current diagram — click a block to drop that entity at the canvas centre. Collapsible. |
+| **Method path** | Strip under the top bar | Where the active diagram sits in the TP sequence (CRT → EC → FRT → PRT → TT, plus the Goal / S&T branch), with a suggested next step. |
+| **Logic check chip** | Top-right | Emerald **"all clear"** or amber **"N to review"** — opens the CLR (Categories of Legitimate Reservation) panel. |
+| **Undo / Redo · History · Comments** | Top-right | Step through edits; the Revision panel; review comments. |
+| **Share · Export** | Top-right | Copy a read-only share link; open the unified Export picker. |
+| **Overflow (⋮)** | Top-right | Theme, Browse Lock, Help, and the layout-mode toggle. |
 | **Canvas** | Center | The infinite dot-grid where your diagram lives. Pan with middle-click drag or two-finger scroll; zoom with the wheel or `+` / `-`. |
-| **Zoom controls** | Bottom-left | Zoom in, zoom out, fit-to-view. |
-| **Minimap** | Bottom-right (when enabled in Settings) | An overview with a viewport indicator. |
-| **Inspector** | Right panel | Slides in when you select an entity or edge. Holds title, type, description, attestation, span-of-control, attributes, and warnings. |
+| **Zoom controls** | Bottom | Zoom in, zoom out, fit-to-view. |
+| **Inspector** | Right panel | Slides in when you select an entity or edge — title, type, description, attributes, and warnings. Shares the dock with the Logic-check panel. |
 | **Toaster** | Bottom-center | Brief confirmations: "Saved", "Loaded example CRT", "3 open CLR concerns". |
 
 ## Creating your first entity
@@ -97,6 +99,20 @@ Opening a document — an import, a pattern, a template, an example, a shared li
 
 The palette (`Cmd/Ctrl+K`) carries **New / Duplicate / Close / Next / Previous tab** and **Forget closed documents** (reclaims storage from closed docs). Installed as an app, the native **`Cmd/Ctrl+T` / `+W` / `+1`–`9`** keys work too ([Appendix B](appendix-b-keyboard-reference.md)).
 
+## The Start page — your workspace home
+
+Click the **logo** (top-left) to open the **Start** page: a full-screen workspace that sits in front of the editor, with a persistent left sidebar whose nav drives the main area.
+
+- **Start** — a problem-led hero. Type what's going wrong (*"We keep missing deadlines"*) and **Build a Current Reality Tree** mints a fresh CRT with that statement as its first UDE — no blank canvas. Example chips do the same in one click; a worked-example callout opens a finished CRT to learn from; and a strip of templates sits beneath. Once you have work in progress, a **"Pick up where you left off"** row shows your most-recent trees with their logic status.
+- **All trees / Recent** — every open tree as a card (a mini preview + title + type + when you last edited it) or a compact list. Each card carries a **Logic pill**: emerald *"Logic clear"* or amber *"N to review"*, reading the exact same Categories-of-Legitimate-Reservation check the editor's Logic chip uses — so a card can never disagree with the canvas.
+- **Templates** — the full library, grouped by diagram type (Goal Trees, Evaporating Clouds, CRTs, …). Click a card to load it into a new tab.
+- **Needs review** — just the trees with at least one open reservation. This is the CLR as triage: open the workspace, see which trees still have logic to resolve, and click straight in.
+- **Learn the method** — the User Guide, the keyboard reference, and this book.
+
+![The Start workspace — sidebar, the problem-led hero, and the grouped template gallery](screenshots/chapter02-start-page.png)
+
+Clicking any tree card, template, or the **Build** button drops you straight into the editor on that document; **New tree** (top of the sidebar) opens the diagram-type picker. The Start page reflects the *open* tabs — closing a tab removes it (there is no separate saved-document library), so it's your live working set, not an archive.
+
 ## Saving, exporting, sharing — the one-paragraph version
 
 You don't save. TP Studio saves continuously to localStorage. Close the tab; reopen; your work is there.
@@ -129,6 +145,7 @@ The hardest moment in any analysis is the empty canvas with a vague problem behi
 
 | You have… | Start with | How |
 | --- | --- | --- |
+| A problem you can name in a sentence | **The Start hero** | Click the logo, type the problem, **Build a Current Reality Tree**. Your sentence becomes the tree's first UDE — you're on a populated canvas immediately. |
 | A vague mess, no idea where to begin | **Rapid 3-cloud diagnosis** | `Cmd+K → Rapid 3-cloud diagnosis…`. Name three symptoms and the tug-of-war behind each; it consolidates them into one Core Cloud to work from. |
 | A brain-dump, meeting notes, a bulleted list | **Quick Capture** | Press `E` (outside a text field). Paste the indented list; each line becomes an entity, indentation becomes causal nesting. |
 | A spreadsheet of items | **CSV import** | `Cmd+K → Import… → Entities CSV`. A `title,type,parent_title` header maps rows to entities and edges. |

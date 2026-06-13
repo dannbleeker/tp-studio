@@ -111,6 +111,26 @@ test.describe('book — Part 1 — Foundations', () => {
     await _screenshot(page, 'chapter02-tabs', { mask: TOASTER_MASK(page) });
   });
 
+  test('chapter02-start-page', async ({ page }) => {
+    await page.goto('/?test=1');
+    await page.evaluate(() => {
+      const hook = window.__TP_TEST__;
+      if (!hook) throw new Error('test hook not installed');
+      // A small mixed working set so the Start page shows the hero, a
+      // "pick up where you left off" row, and the template strip.
+      hook.seed({ type: 'ude', titles: ['Customers churn at renewal'] });
+      hook.setDocTitle('Renewal churn (CRT)');
+      hook.openTab('ec', 'Triage vs. ship (EC)');
+      hook.openTab('goalTree', 'Team goal tree');
+      hook.switchToTabIndex(0);
+    });
+    // Open the Start workspace via the Home logo.
+    await page.getByRole('button', { name: /home — tp studio workspace/i }).first().click();
+    await page.waitForSelector('aside[aria-label="Workspace"]');
+    await page.waitForTimeout(400);
+    await _screenshot(page, 'chapter02-start-page', { mask: TOASTER_MASK(page) });
+  });
+
   test('chapter03-causality-because', async ({ page }) => {
     await page.goto('/?test=1');
     await page.evaluate(() => {
