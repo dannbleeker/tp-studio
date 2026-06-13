@@ -2,6 +2,7 @@ import { Search } from 'lucide-react';
 import { useDocumentStore } from '@/store';
 import type { StartSection } from '@/store/uiSlice/types';
 import { TEMPLATE_SPECS } from '@/templates';
+import { StartHome } from './StartHome';
 import { StartSidebar } from './StartSidebar';
 import { TemplateGallery } from './TemplateGallery';
 
@@ -64,6 +65,9 @@ export function StartPage() {
 /** Per-section body. Templates is registry-driven (Stage B); the hero and tree
  *  galleries fill in over Stages C–D. */
 function StartSectionBody({ section }: { section: StartSection }) {
+  if (section === 'start') {
+    return <StartHome />;
+  }
   if (section === 'templates') {
     return (
       <div className="flex flex-col gap-5">
