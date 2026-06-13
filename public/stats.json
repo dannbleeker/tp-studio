@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-13T10:14:24.021Z",
-  "commit": "37553aa",
+  "generatedAt": "2026-06-13T10:28:23.795Z",
+  "commit": "fc65217",
   "headline": {
-    "linesTsJs": 126785,
+    "linesTsJs": 126789,
     "tests": 4213,
     "lineCoveragePct": 96.73,
-    "commits": 781,
+    "commits": 783,
     "ageDays": 32,
     "trackedFiles": 1010,
     "featureManualPct": 100,
@@ -26,7 +26,7 @@
     {
       "category": "E2E tests (Playwright)",
       "files": 13,
-      "lines": 1988
+      "lines": 1992
     },
     {
       "category": "Build scripts",
@@ -51,8 +51,8 @@
       "total": 12758
     },
     "statements": {
-      "pct": 94.09,
-      "covered": 14052,
+      "pct": 94.08,
+      "covered": 14051,
       "total": 14934
     },
     "functions": {
@@ -61,35 +61,35 @@
       "total": 2838
     },
     "branches": {
-      "pct": 84.81,
-      "covered": 8093,
+      "pct": 84.8,
+      "covered": 8092,
       "total": 9542
     }
   },
   "tests": {
     "unit": 4125,
     "e2e": 88,
-    "durationMs": 213646,
+    "durationMs": 209072,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10374
+        "ms": 10269
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4600
+        "ms": 4594
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4473
-      },
-      {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2654
+        "ms": 4228
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2383
+        "ms": 2497
+      },
+      {
+        "file": "tests/components/EdgeInspector.test.tsx",
+        "ms": 2336
       }
     ]
   },
@@ -600,16 +600,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 32,
-    "commits": 781,
-    "commits7d": 211,
+    "commits": 783,
+    "commits7d": 213,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 647
+        "count": 648
       },
       {
         "name": "github-actions[bot]",
-        "count": 123
+        "count": 124
       },
       {
         "name": "dannbleeker",
@@ -617,8 +617,8 @@
       }
     ],
     "churn30d": {
-      "added": 140183,
-      "removed": 33207
+      "added": 139758,
+      "removed": 33017
     },
     "changelogEntries": 332
   }
