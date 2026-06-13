@@ -39,7 +39,7 @@ describe('Batch 5.3 — loading a document routes to a new tab', () => {
 
     const pattern = firstPattern();
     act(() => {
-      fireEvent.click(screen.getByRole('button', { name: `Load pattern: ${pattern.label}` }));
+      fireEvent.click(screen.getByRole('button', { name: `Load template: ${pattern.label}` }));
     });
 
     expect(s().tabOrder).toHaveLength(2);
@@ -57,7 +57,7 @@ describe('Batch 5.3 — loading a document routes to a new tab', () => {
 
     const pattern = firstPattern();
     act(() => {
-      fireEvent.click(screen.getByRole('button', { name: `Load pattern: ${pattern.label}` }));
+      fireEvent.click(screen.getByRole('button', { name: `Load template: ${pattern.label}` }));
     });
 
     expect(s().tabOrder).toHaveLength(1);

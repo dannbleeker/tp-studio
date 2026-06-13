@@ -2,9 +2,9 @@ import { ArrowRight, BookOpenCheck, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { createDocument, createEntity } from '@/domain/factory';
+import { PATTERNS } from '@/domain/patterns';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
-import { buildTemplate, TEMPLATE_SPECS } from '@/templates';
 import { TemplateGallery } from './TemplateGallery';
 import { TreeCard } from './TreeCard';
 import type { SavedTree } from './useSavedTrees';
@@ -56,13 +56,13 @@ export function StartHome({ trees }: { trees: SavedTree[] }) {
     showToast('success', ude ? `Started a CRT from "${ude}".` : 'Started a blank CRT.');
   };
 
-  // The worked example is the first CRT template in the registry — registry-
-  // driven, so it never names a specific module.
-  const workedExample = TEMPLATE_SPECS.find((s) => s.diagramType === 'crt');
+  // The worked example is the first CRT in the unified library — registry-driven,
+  // so it never names a specific module.
+  const workedExample = PATTERNS.find((p) => p.diagramType === 'crt');
   const openWorkedExample = (): void => {
     if (!workedExample) return;
-    openDocInTab(buildTemplate(workedExample));
-    showToast('success', `Opened the worked example "${workedExample.title}".`);
+    openDocInTab(workedExample.build());
+    showToast('success', `Opened the worked example "${workedExample.label}".`);
   };
 
   return (
@@ -188,7 +188,7 @@ export function StartHome({ trees }: { trees: SavedTree[] }) {
             …or start from a template
           </h2>
           <span className="text-neutral-400 text-xs dark:text-neutral-500">
-            {TEMPLATE_SPECS.length} worked examples · checked against the method
+            {PATTERNS.length} curated templates · every diagram type
           </span>
         </div>
         <TemplateGallery limitPerGroup={3} />

@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react';
+import { PATTERNS } from '@/domain/patterns';
 import { useDocumentStore } from '@/store';
 import type { StartSection } from '@/store/uiSlice/types';
-import { TEMPLATE_SPECS } from '@/templates';
 import { LearnSection } from './LearnSection';
 import { StartHome } from './StartHome';
 import { StartSidebar } from './StartSidebar';
@@ -79,7 +79,8 @@ function StartSectionBody({ section }: { section: StartSection }) {
       return (
         <div className="flex flex-col gap-5">
           <p className="text-neutral-500 text-sm dark:text-neutral-400">
-            {TEMPLATE_SPECS.length} worked examples — each one checked against the method.
+            {PATTERNS.length} curated templates — every diagram type, drawn from canonical TOC
+            patterns.
           </p>
           <TemplateGallery />
         </div>

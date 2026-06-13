@@ -73,8 +73,8 @@ export function PatternLibraryDialog() {
     showToast(
       'success',
       openedNewTab
-        ? `Opened pattern "${pattern.label}" in a new tab.`
-        : `Loaded pattern "${pattern.label}".`,
+        ? `Opened template "${pattern.label}" in a new tab.`
+        : `Loaded template "${pattern.label}".`,
       undoRestoreAction(openedNewTab, previousDoc, setDocument)
     );
     close();
@@ -84,9 +84,9 @@ export function PatternLibraryDialog() {
     <LargeDialog
       open={true}
       onClose={close}
-      title="Pattern library"
-      subtitle="Curated starter diagrams for common TOC scenarios. Pick one to open it (in a new tab by default)."
-      closeAriaLabel="Close pattern library"
+      title="Templates"
+      subtitle="Curated starter diagrams for every TOC diagram type. Pick one to open it (in a new tab by default)."
+      closeAriaLabel="Close templates"
     >
       {/* Session 135 — `<fieldset>` + visually-hidden `<legend>` is
           the canonical accessible pattern for "a labelled group of
@@ -123,19 +123,19 @@ export function PatternLibraryDialog() {
 
       {visible.length === 0 ? (
         <p className="px-1 py-6 text-center text-neutral-500 text-sm dark:text-neutral-400">
-          No patterns registered for this diagram type yet.
+          No templates registered for this diagram type yet.
         </p>
       ) : (
         <ul
           className="grid grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3"
-          aria-label="Patterns"
+          aria-label="Templates"
         >
           {visible.map((pattern) => (
             <li key={pattern.id}>
               <button
                 type="button"
                 onClick={() => handlePick(pattern.id)}
-                aria-label={`Load pattern: ${pattern.label}`}
+                aria-label={`Load template: ${pattern.label}`}
                 className={clsx(
                   'group flex h-full w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
                   'hover:border-indigo-400 hover:bg-indigo-50/40',

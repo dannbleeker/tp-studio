@@ -13,7 +13,6 @@ import {
 import { DIAGRAM_SHORT_LABEL, DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { ENTITY_STRIPE_COLOR, VIOLET_500 } from '@/domain/tokens';
 import type { DiagramType } from '@/domain/types';
-import type { TemplateSpec } from '@/templates';
 
 /**
  * Session 183 — per-diagram-type chrome for the Start surface (group headers,
@@ -111,25 +110,25 @@ export const diagramMetaFor = (type: DiagramType): DiagramMeta =>
   DIAGRAM_META[type] ?? fallbackDiagramMeta(type);
 
 /**
- * Group templates by `diagramType`, computed from the specs present (never a
- * hand-maintained list) — so adding a TemplateSpec module to the registry makes
- * a group/card appear with zero edits here. Empty groups are dropped; groups
- * render in {@link DIAGRAM_ORDER}, with any present-but-unordered type appended
- * after in first-seen order so a brand-new diagram type degrades gracefully
- * instead of vanishing.
+ * Group any diagram-typed items (templates / patterns / the unified library) by
+ * `diagramType`, computed from what's present (never a hand-maintained list) — so
+ * adding a registry entry makes a group/card appear with zero edits here. Empty
+ * groups are dropped; groups render in {@link DIAGRAM_ORDER}, with any
+ * present-but-unordered type appended after in first-seen order so a brand-new
+ * diagram type degrades gracefully instead of vanishing.
  */
-export const groupTemplatesByType = (
-  specs: readonly TemplateSpec[]
-): Array<{ type: DiagramType; specs: TemplateSpec[] }> => {
-  const byType = new Map<DiagramType, TemplateSpec[]>();
-  for (const spec of specs) {
-    const arr = byType.get(spec.diagramType);
-    if (arr) arr.push(spec);
-    else byType.set(spec.diagramType, [spec]);
+export const groupByDiagramType = <T extends { diagramType: DiagramType }>(
+  items: readonly T[]
+): Array<{ type: DiagramType; items: T[] }> => {
+  const byType = new Map<DiagramType, T[]>();
+  for (const item of items) {
+    const arr = byType.get(item.diagramType);
+    if (arr) arr.push(item);
+    else byType.set(item.diagramType, [item]);
   }
   const ordered: DiagramType[] = [
     ...DIAGRAM_ORDER.filter((t) => byType.has(t)),
     ...[...byType.keys()].filter((t) => !DIAGRAM_ORDER.includes(t)),
   ];
-  return ordered.map((type) => ({ type, specs: byType.get(type) ?? [] }));
+  return ordered.map((type) => ({ type, items: byType.get(type) ?? [] }));
 };

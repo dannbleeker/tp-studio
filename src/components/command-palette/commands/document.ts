@@ -28,7 +28,7 @@ export const documentCommands: Command[] = [
   // `src/domain/patterns/index.ts` with a filter chip row.
   withWriteGuard({
     id: 'open-pattern-library',
-    label: 'Pattern library…',
+    label: 'Browse templates…',
     group: 'File',
     run: (s) => s.openPatternLibrary(),
   }),
