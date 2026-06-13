@@ -79,9 +79,10 @@ test.describe('delete entity flow', () => {
     });
     await expect(page.locator('[data-component="tp-node"]')).toHaveCount(1);
 
-    // Toggle Browse Lock on. The button has aria-label "Lock document
-    // for browsing" when unlocked.
-    await page.getByRole('button', { name: /lock document for browsing/i }).click();
+    // Toggle Browse Lock on. Session 182 moved it into the overflow (⋮) menu:
+    // open the menu, then click the "Lock for browsing" checkbox item.
+    await page.getByRole('button', { name: 'More actions' }).click();
+    await page.getByRole('menuitemcheckbox', { name: /lock for browsing/i }).click();
 
     // Select the entity and press Delete. With Browse Lock on, the
     // confirm dialog should NOT open and the entity should remain.

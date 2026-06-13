@@ -27,8 +27,9 @@ test.describe('TP Studio smoke', () => {
     await page.goto('/');
     // The title badge should be visible at the top-left.
     await expect(page.getByRole('textbox')).toBeAttached();
-    // The Commands button is the primary CTA at every breakpoint.
-    await expect(page.getByRole('button', { name: /commands/i })).toBeVisible();
+    // The command-search field (Session 182 replaced the "Commands" button) is
+    // the primary palette entry point, visible at the desktop breakpoint.
+    await expect(page.getByRole('button', { name: /search or run a command/i })).toBeVisible();
   });
 
   test('Cmd+K opens the command palette', async ({ page }) => {

@@ -186,7 +186,9 @@ test.describe('book — Part 2 — Thinking Processes', () => {
     await page.getByPlaceholder(/command/i).fill('New diagram');
     await page.keyboard.press('Enter');
     await page.waitForSelector('h2:has-text("New diagram")');
-    await page.getByRole('button', { name: /goal tree/i }).click();
+    // Use the picker's full "New: …" name — Session 182's method-path stepper
+    // also renders a "Goal Tree" pill, so /goal tree/i would be ambiguous.
+    await page.getByRole('button', { name: /new: goal tree/i }).click();
     // Goal Tree opens with the creation wizard at step 1; no
     // entities exist yet (the wizard creates the Goal entity on
     // step-1 commit). Wait for the wizard panel, not a tp-node.
