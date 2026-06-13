@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-13T13:37:50.389Z",
-  "commit": "d552ac6",
+  "generatedAt": "2026-06-13T13:42:46.446Z",
+  "commit": "a978ed3",
   "headline": {
-    "linesTsJs": 128199,
-    "tests": 4230,
-    "lineCoveragePct": 96.24,
-    "commits": 807,
+    "linesTsJs": 128262,
+    "tests": 4233,
+    "lineCoveragePct": 96.27,
+    "commits": 809,
     "ageDays": 33,
-    "trackedFiles": 1024,
+    "trackedFiles": 1025,
     "featureManualPct": 100,
     "featureBookPct": 75.5,
     "featureExamplePct": 27.9
@@ -25,8 +25,8 @@
     },
     {
       "category": "E2E tests (Playwright)",
-      "files": 13,
-      "lines": 2022
+      "files": 14,
+      "lines": 2085
     },
     {
       "category": "Build scripts",
@@ -46,18 +46,18 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 96.24,
-      "covered": 12442,
+      "pct": 96.27,
+      "covered": 12445,
       "total": 12927
     },
     "statements": {
-      "pct": 93.64,
-      "covered": 14170,
+      "pct": 93.66,
+      "covered": 14173,
       "total": 15132
     },
     "functions": {
-      "pct": 93.02,
-      "covered": 2708,
+      "pct": 93.12,
+      "covered": 2711,
       "total": 2911
     },
     "branches": {
@@ -68,28 +68,28 @@
   },
   "tests": {
     "unit": 4140,
-    "e2e": 90,
-    "durationMs": 217125,
+    "e2e": 93,
+    "durationMs": 125184,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11177
+        "ms": 4827
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5349
+        "ms": 2728
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4633
+        "ms": 2311
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2412
+        "ms": 1373
       },
       {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2182
+        "file": "tests/components/export/ExportPickerDialog.test.tsx",
+        "ms": 1329
       }
     ]
   },
@@ -605,16 +605,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 33,
-    "commits": 807,
-    "commits7d": 233,
+    "commits": 809,
+    "commits7d": 235,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 659
+        "count": 660
       },
       {
         "name": "github-actions[bot]",
-        "count": 137
+        "count": 138
       },
       {
         "name": "dannbleeker",
@@ -622,8 +622,8 @@
       }
     ],
     "churn30d": {
-      "added": 139473,
-      "removed": 33120
+      "added": 139572,
+      "removed": 33156
     },
     "changelogEntries": 334
   }
