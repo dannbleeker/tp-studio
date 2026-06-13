@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-13T12:16:10.991Z",
-  "commit": "a296f36",
+  "generatedAt": "2026-06-13T12:24:31.464Z",
+  "commit": "4a61b4f",
   "headline": {
     "linesTsJs": 128024,
     "tests": 4225,
     "lineCoveragePct": 96.33,
-    "commits": 795,
+    "commits": 798,
     "ageDays": 33,
-    "trackedFiles": 1023,
+    "trackedFiles": 1024,
     "featureManualPct": 100,
     "featureBookPct": 75.4,
     "featureExamplePct": 28.1
@@ -69,27 +69,27 @@
   "tests": {
     "unit": 4136,
     "e2e": 89,
-    "durationMs": 218997,
+    "durationMs": 212308,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10806
+        "ms": 11183
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4920
+        "ms": 4546
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4774
+        "ms": 4302
+      },
+      {
+        "file": "tests/components/EdgeInspector.test.tsx",
+        "ms": 2266
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 3287
-      },
-      {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2106
+        "ms": 2202
       }
     ]
   },
@@ -605,8 +605,8 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 33,
-    "commits": 795,
-    "commits7d": 221,
+    "commits": 798,
+    "commits7d": 224,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -614,7 +614,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 129
+        "count": 132
       },
       {
         "name": "dannbleeker",
@@ -622,8 +622,8 @@
       }
     ],
     "churn30d": {
-      "added": 140651,
-      "removed": 33173
+      "added": 140440,
+      "removed": 33245
     },
     "changelogEntries": 333
   }
