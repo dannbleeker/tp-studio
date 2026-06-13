@@ -30,6 +30,18 @@ describe('analysisCommands — find-core-drivers', () => {
     await runCommand(findCommand(analysisCommands, 'find-core-drivers'));
     expect(s().toasts.some((t) => /no core driver/i.test(t.message))).toBe(true);
   });
+
+  it('lists the candidates when more than one core driver exists', async () => {
+    useDocumentStore.getState().newDocument('crt');
+    const rc1 = seedEntity('Root one', 'rootCause');
+    const ude1 = seedEntity('UDE one', 'ude');
+    s().connect(rc1.id, ude1.id);
+    const rc2 = seedEntity('Root two', 'rootCause');
+    const ude2 = seedEntity('UDE two', 'ude');
+    s().connect(rc2.id, ude2.id);
+    await runCommand(findCommand(analysisCommands, 'find-core-drivers'));
+    expect(s().toasts.some((t) => /core driver candidates:/i.test(t.message))).toBe(true);
+  });
 });
 
 describe('analysisCommands — spawn-ec-from-selection', () => {
@@ -150,5 +162,17 @@ describe('analysisCommands — speculation (Phase 1C)', () => {
     expect(s().speculationOverlay).toBeNull();
     expect(s().doc.entities[e.id]?.state).toBeUndefined();
     expect(s().toasts.some((t) => /discarded/i.test(t.message))).toBe(true);
+  });
+
+  it('revert-speculation toasts info when not speculating', async () => {
+    await runCommand(findCommand(analysisCommands, 'revert-speculation'));
+    expect(s().toasts.some((t) => /not speculating/i.test(t.message))).toBe(true);
+  });
+
+  it('commit-speculation just ends the session when no states were set', async () => {
+    s().beginSpeculation(); // overlay = {} — nothing speculated yet
+    await runCommand(findCommand(analysisCommands, 'commit-speculation'));
+    expect(s().speculationOverlay).toBeNull();
+    expect(s().toasts.some((t) => /speculation ended/i.test(t.message))).toBe(true);
   });
 });
