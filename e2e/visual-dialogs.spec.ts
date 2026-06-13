@@ -7,8 +7,8 @@ import { expect, test } from '@playwright/test';
  * Session 101 seeded the first three (Settings / Help / Template
  * Picker — the highest-leverage surfaces): SettingsDialog exercises
  * the tabs + FormPrimitives + theme swatches; HelpDialog covers the
- * keyboard-shortcut + gesture reference; TemplatePickerDialog
- * catches SVG layout regressions in `templateThumbnailSvg`. Session
+ * keyboard-shortcut + gesture reference. (The TemplatePicker snapshot
+ * was retired in Session 186 when that dialog was removed.) Session
  * 102 added the remaining seven (Print Preview, Export Picker,
  * Diagram Type, Confirm, Quick Capture, Revisions, Side-by-Side) so
  * every modal in the app has continuous pixel-comparison coverage.
