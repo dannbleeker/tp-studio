@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-13T17:17:03.014Z",
-  "commit": "734abc6",
+  "generatedAt": "2026-06-13T17:38:46.215Z",
+  "commit": "34bf0ac",
   "headline": {
-    "linesTsJs": 128684,
+    "linesTsJs": 128706,
     "tests": 4248,
     "lineCoveragePct": 96.28,
-    "commits": 828,
+    "commits": 830,
     "ageDays": 33,
     "trackedFiles": 1029,
     "featureManualPct": 100,
@@ -16,7 +16,7 @@
     {
       "category": "App code (src, excl. tests)",
       "files": 486,
-      "lines": 65442
+      "lines": 65464
     },
     {
       "category": "Unit tests",
@@ -47,13 +47,13 @@
   "coverage": {
     "lines": {
       "pct": 96.28,
-      "covered": 12492,
-      "total": 12974
+      "covered": 12496,
+      "total": 12978
     },
     "statements": {
       "pct": 93.66,
-      "covered": 14221,
-      "total": 15183
+      "covered": 14225,
+      "total": 15187
     },
     "functions": {
       "pct": 93.11,
@@ -61,35 +61,35 @@
       "total": 2919
     },
     "branches": {
-      "pct": 84.44,
-      "covered": 8191,
-      "total": 9700
+      "pct": 84.39,
+      "covered": 8205,
+      "total": 9722
     }
   },
   "tests": {
     "unit": 4155,
     "e2e": 93,
-    "durationMs": 225356,
+    "durationMs": 223476,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10345
+        "ms": 10195
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5289
+        "ms": 5270
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4829
+        "ms": 4723
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 3125
+        "ms": 2470
       },
       {
         "file": "tests/components/EdgeInspector.test.tsx",
-        "ms": 2807
+        "ms": 2274
       }
     ]
   },
@@ -118,7 +118,7 @@
       },
       {
         "name": "components/canvas/edges/TPEdge.tsx",
-        "lines": 647
+        "lines": 669
       },
       {
         "name": "components/canvas/hooks/useEdgeRoutes.ts",
@@ -169,7 +169,7 @@
       },
       {
         "file": "components/canvas/edges/TPEdge.tsx",
-        "commits": 34
+        "commits": 35
       },
       {
         "file": "store/documentSlice/docMetaSlice.ts",
@@ -189,16 +189,16 @@
     "nonNull": 99
   },
   "bundle": {
-    "jsGzipKb": 798.9,
+    "jsGzipKb": 799,
     "cssGzipKb": 18.6,
-    "totalGzipKb": 817.5,
+    "totalGzipKb": 817.6,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53468,
     "chapters": 25,
-    "appLoc": 65442,
+    "appLoc": 65464,
     "docToCodeRatio": 0.82
   },
   "featureCoverage": {
@@ -610,16 +610,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 33,
-    "commits": 828,
-    "commits7d": 246,
+    "commits": 830,
+    "commits7d": 248,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 670
+        "count": 671
       },
       {
         "name": "github-actions[bot]",
-        "count": 147
+        "count": 148
       },
       {
         "name": "dannbleeker",
@@ -627,8 +627,8 @@
       }
     ],
     "churn30d": {
-      "added": 138497,
-      "removed": 33312
+      "added": 137065,
+      "removed": 33072
     },
     "changelogEntries": 335
   }
