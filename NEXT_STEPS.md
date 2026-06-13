@@ -44,10 +44,12 @@ it — a click always grabs whichever edge is on top.
   emission; `TPEdge` offsets the bezier endpoint on hover and drops the routed path so it shows;
   gated to direct routes (≤2 waypoints) to avoid the detour pop. **Open polish (small, optional):**
   (a) it only fans direct-route convergence in flow layouts — smart-routed *detours* and radial mode
-  keep their path (fanning a detour would need to re-route, not just offset the bezier); (b) a small
-  Y shift on the route→bezier switch; (c) slot order is by sourceId — a render-time position sort
-  would guarantee crossing-free fanning; (d) smooth CSS path transition deferred (route→bezier
-  structure change doesn't tween cleanly). Mouse-only by design.
+  keep their path (fanning a detour would need to re-route, not just offset the bezier); (b) slot
+  order is by sourceId — a render-time position sort would guarantee crossing-free fanning, but would
+  couple edge emission to per-frame drag positions (a deliberate perf boundary — needs Dann's call on
+  the trade-off). Mouse-only by design. The route→bezier Y-jump and the spread's ease-in were
+  polished in a follow-up (the bezier anchors on the routed endpoints; a hover-gated 120ms `d`
+  transition).
 
 ### Test-coverage — healthy (reference; no open target)
 ~97% lines / ~85% branches (Session-180 push; CI floors ratcheted to 94 lines / 82 branches). CI floor

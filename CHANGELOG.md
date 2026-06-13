@@ -24,10 +24,13 @@ the group's endpoints apart at the shared target so each is grabbable; they snap
   2+ direct group fans; symmetric spread, middle of an odd group unmoved); emission stamping is
   unit-tested. End-to-end spread/snap-back verified in a real browser (Edge): 3 edges converging on
   one node go from 0px endpoint spread at rest to a symmetric fan on hover, back to 0 on leave.
-- Known follow-ups (see NEXT_STEPS): fans only in flow layouts on direct-route convergence
-  (smart-routed detours + radial keep their path); a small Y shift on the route→bezier switch;
-  sourceId slot ordering (a position sort would guarantee crossing-free fanning); smooth CSS path
-  transition deferred (the route→bezier structure change doesn't tween cleanly).
+- Polish (same session): the spread now anchors on the routed path's own endpoints, so hover-in
+  moves only the X — no vertical jump from the route→bezier swap — and eases in over 120ms (the
+  `transition` is gated to the active hover, so node drags, which also change the path `d`, don't
+  rubber-band). Remaining follow-ups (see NEXT_STEPS): fans only direct-route convergence in flow
+  layouts (smart-routed detours + radial keep their path); sourceId slot ordering — a render-time
+  position sort would guarantee crossing-free fanning but would couple edge emission to per-frame
+  drag positions (a deliberate perf boundary).
 
 **Closed-library hygiene.** "Forget closed documents" (palette) used to scan only the revisions
 map, so a closed tree that was never snapshotted — the common case since Session 184 keeps every

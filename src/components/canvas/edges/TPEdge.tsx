@@ -59,6 +59,12 @@ const EDGE_INTERACTION_WIDTH = 56;
  *  group spreads (no hover flicker for the common 2–3-edge convergence). */
 const FAN_SPACING = 16;
 
+/** Hover-fan (Session 185) — the spread eases in over this duration. Gated to the
+ *  active hover (below) so node drags, which also change the path `d`, never pick
+ *  up the transition and rubber-band; the snap-back on leave is instant (the
+ *  pointer has already moved off the group by then). */
+const FAN_TRANSITION_MS = 120;
+
 /**
  * E6: for AND-grouped non-aggregated edges, the visible edge segment stops
  * at a "junctor" point sitting just below the target node, rather than at
@@ -245,14 +251,21 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   const fanOffsetX = fanActive
     ? hoverFanOffsetX(props.data?.fanRank ?? 0, fanCount, FAN_SPACING)
     : 0;
+  // When fanning, anchor the bezier on the routed path's OWN endpoints (a direct
+  // route is `[sourceAnchor, targetAnchor]`) so hovering only spreads the target X
+  // — no incidental vertical or source jump from swapping the route for the bezier.
+  const fanWaypoints = fanActive ? props.data?.route?.waypoints : undefined;
+  const fanFrom = fanWaypoints && fanWaypoints.length >= 2 ? fanWaypoints[0] : undefined;
+  const fanTo =
+    fanWaypoints && fanWaypoints.length >= 2 ? fanWaypoints[fanWaypoints.length - 1] : undefined;
   // Default bezier — what React Flow's source/target handle positions produce,
   // plus any hover-fan offset. The mutex special-case below overrides this when
   // both endpoints resolve to vertically-stacked entity positions.
   const [bezierPath, bezierLabelX, bezierLabelY] = getBezierPath({
-    sourceX: sourceAnchor.x,
-    sourceY: sourceAnchor.y,
-    targetX: effectiveTargetX + fanOffsetX,
-    targetY: effectiveTargetY,
+    sourceX: fanFrom?.x ?? sourceAnchor.x,
+    sourceY: fanFrom?.y ?? sourceAnchor.y,
+    targetX: (fanTo?.x ?? effectiveTargetX) + fanOffsetX,
+    targetY: fanTo?.y ?? effectiveTargetY,
     sourcePosition: props.sourcePosition,
     targetPosition: props.targetPosition,
   });
@@ -515,6 +528,10 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           strokeDasharray,
           filter: selectedFilter,
           cursor: isHoverActive ? 'pointer' : undefined,
+          // Hover-fan eases the spread in (the arrowhead below tracks it). Only
+          // while the fan is active, so a node drag's per-frame `d` changes don't
+          // animate and rubber-band the edge behind the node.
+          ...(fanActive ? { transition: `d ${FAN_TRANSITION_MS}ms ease-out` } : {}),
           ...props.style,
         }}
       />
@@ -526,7 +543,12 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           d={ARROW_TRIANGLE_D}
           transform={arrowheadTransform(arrowHead)}
           fill={stroke}
-          style={{ pointerEvents: 'none' }}
+          style={{
+            pointerEvents: 'none',
+            // Track the path's fan tween so the arrowhead doesn't jump ahead of the
+            // curve tip during the spread (same gate as the path: hover only).
+            ...(fanActive ? { transition: `transform ${FAN_TRANSITION_MS}ms ease-out` } : {}),
+          }}
         />
       )}
       {/* Backlog — visible "re-target" knobs on a SELECTED reconnectable edge's
