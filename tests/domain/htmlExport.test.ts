@@ -130,6 +130,15 @@ describe('exportToSelfContainedHTML', () => {
     void ({} as EntityId); // keep the import non-empty for the test file's typing pattern
   });
 
+  it('renders an Injections section when the doc has injection entities', () => {
+    resetIds();
+    const inj = makeEntity({ type: 'injection', title: 'Run a pilot' });
+    const doc = makeDoc([inj], [], 'frt');
+    const html = exportToSelfContainedHTML(doc);
+    expect(html).toContain('Injections (1)');
+    expect(html).toContain('Run a pilot');
+  });
+
   it('embeds the preview PNG figure when `previewPng` is provided (Session 136)', () => {
     const doc = makeDoc([makeEntity({ type: 'ude', title: 'X' })], [], 'crt');
     // Tiny 1x1 transparent PNG data URL — enough to verify the embed
