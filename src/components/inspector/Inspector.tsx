@@ -134,9 +134,11 @@ export function Inspector() {
         )}
         aria-hidden={!open}
         // The `inert` attribute removes the panel from sequential focus and from
-        // assistive-tech navigation while it's animated off-screen. React types
-        // don't carry it on aside yet, hence the cast.
-        {...({ inert: !open ? '' : undefined } as Record<string, string | undefined>)}
+        // assistive-tech navigation while it's animated off-screen. Must be a real
+        // boolean: under React 19.2 `inert=""` (empty string) is treated as a false
+        // boolean attribute and dropped, leaving an aria-hidden panel with focusable
+        // children (axe `aria-hidden-focus`). React types don't carry it on aside, hence the cast.
+        {...({ inert: !open ? true : undefined } as Record<string, boolean | undefined>)}
       >
         <div className="flex h-full flex-col">
           <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">

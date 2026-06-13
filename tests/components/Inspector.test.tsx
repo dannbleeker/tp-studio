@@ -13,6 +13,11 @@ describe('Inspector', () => {
     const aside = container.querySelector('aside')!;
     expect(aside.className).toContain('translate-x-full');
     expect(aside.getAttribute('aria-hidden')).toBe('true');
+    // A closed aria-hidden panel MUST also be `inert` so its focusable children
+    // leave the tab order (axe `aria-hidden-focus`). `inert` must be a real
+    // boolean prop — React 19.2 drops an empty-string `inert=""` as a false
+    // boolean attribute, which is the regression this guards.
+    expect(aside.hasAttribute('inert')).toBe(true);
   });
 
   it('shows the EntityInspector when a single entity is selected', () => {

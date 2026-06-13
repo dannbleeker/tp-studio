@@ -205,7 +205,9 @@ export function CommentsPanel() {
         open ? 'translate-x-0' : 'translate-x-full'
       )}
       aria-hidden={!open}
-      {...({ inert: !open ? '' : undefined } as Record<string, string | undefined>)}
+      // Real boolean, not `''`: React 19.2 drops an empty-string `inert` as a false
+      // boolean attribute, leaving aria-hidden + focusable children (axe `aria-hidden-focus`).
+      {...({ inert: !open ? true : undefined } as Record<string, boolean | undefined>)}
     >
       <div className="flex h-full flex-col">
         <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">

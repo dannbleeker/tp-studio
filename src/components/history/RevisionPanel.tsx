@@ -72,9 +72,10 @@ export function RevisionPanel() {
         open ? 'translate-x-0' : 'translate-x-full'
       )}
       aria-hidden={!open}
-      // `inert` removes the panel from focus + AT navigation while it's
-      // off-screen. React types don't carry it on `aside` yet; cast.
-      {...({ inert: !open ? '' : undefined } as Record<string, string | undefined>)}
+      // `inert` removes the panel from focus + AT navigation while it's off-screen.
+      // Real boolean, not `''`: React 19.2 drops an empty-string `inert` as a false
+      // boolean attribute (axe `aria-hidden-focus`). Cast: types lack it on `aside`.
+      {...({ inert: !open ? true : undefined } as Record<string, boolean | undefined>)}
     >
       <div className="flex h-full flex-col">
         <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">

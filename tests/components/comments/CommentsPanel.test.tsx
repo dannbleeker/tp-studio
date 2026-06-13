@@ -36,6 +36,10 @@ describe('CommentsPanel', () => {
     const aside = container.querySelector('aside');
     expect(aside?.className).toContain('translate-x-full');
     expect(aside?.getAttribute('aria-hidden')).toBe('true');
+    // Closed panel must be `inert` (not just aria-hidden) so the composer's
+    // inputs/buttons leave the tab order (axe `aria-hidden-focus`). Guards the
+    // React-19.2 empty-string `inert` drop.
+    expect(aside?.hasAttribute('inert')).toBe(true);
   });
 
   it('shows an empty state when open with no comments', () => {
