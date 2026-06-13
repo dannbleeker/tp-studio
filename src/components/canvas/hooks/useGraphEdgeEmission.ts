@@ -109,6 +109,25 @@ export const useGraphEdgeEmission = (
       }
     }
 
+    // Hover-fan (Session 185) — group fan-eligible visible edges by target so the
+    // renderer can spread converging edges apart on hover. Eligible = real
+    // (non-aggregated) non-junctor edges: an aggregated `agg:` edge is one
+    // synthetic line (nothing to fan), and junctor edges converge at the junctor
+    // circle, not the target. Position-free (this layer carries none), so rank is
+    // a stable sourceId order — it separates the siblings; precise left-to-right
+    // ordering is a render-time refinement.
+    const fanSourcesByTarget = new Map<string, string[]>();
+    for (const b of buckets.values()) {
+      const aggregated = b.count > 1 || b.isSyntheticEndpoint;
+      const junctor =
+        !aggregated && Boolean(b.sample.andGroupId || b.sample.orGroupId || b.sample.xorGroupId);
+      if (aggregated || junctor) continue;
+      const arr = fanSourcesByTarget.get(b.targetId);
+      if (arr) arr.push(b.sourceId);
+      else fanSourcesByTarget.set(b.targetId, [b.sourceId]);
+    }
+    for (const arr of fanSourcesByTarget.values()) arr.sort();
+
     const edges: TPEdge[] = [];
     // Wave 3 — back-edge set (manual ∪ flow-aware auto-detected). Passed in from
     // `useGraphView` (computed with positions); the layout-free id-based set is the
@@ -169,6 +188,11 @@ export const useGraphEdgeEmission = (
       // Theme A — A4 delay marker + A3 loop name (real, non-aggregated edges only).
       const delay = isAggregated ? false : b.sample.delay === true;
       const loopName = isAggregated ? undefined : b.sample.loopName;
+      // Hover-fan rank/count for this edge's convergence group (real edges only;
+      // aggregated/junctor edges were excluded when the groups were built).
+      const fanSources = isAggregated ? undefined : fanSourcesByTarget.get(b.targetId);
+      const fanCount = fanSources && fanSources.length > 1 ? fanSources.length : 0;
+      const fanRank = fanCount > 1 ? fanSources!.indexOf(b.sourceId) : 0;
       const edge: TPEdge = {
         id: isAggregated ? `agg:${b.sourceId}->${b.targetId}` : b.sample.id,
         source: b.sourceId,
@@ -188,6 +212,7 @@ export const useGraphEdgeEmission = (
           ...(loopPolarity ? { loopPolarity } : {}),
           ...(delay ? { delay: true } : {}),
           ...(loopName ? { loopName } : {}),
+          ...(fanCount > 1 ? { fanRank, fanCount } : {}),
         },
         ...(isJunctorEdge
           ? {}

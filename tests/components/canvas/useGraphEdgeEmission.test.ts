@@ -108,4 +108,54 @@ describe('useGraphEdgeEmission', () => {
     s().connect(a.id, b.id);
     expect(emit()[0]?.data?.loopPolarity).toBeUndefined();
   });
+
+  describe('hover-fan stamping', () => {
+    it('stamps fanRank/fanCount on edges converging on one target (distinct ranks)', () => {
+      const a = seedEntity('A');
+      const b = seedEntity('B');
+      const c = seedEntity('C');
+      const d = seedEntity('D');
+      s().connect(a.id, d.id);
+      s().connect(b.id, d.id);
+      s().connect(c.id, d.id);
+      const converging = emit().filter((e) => e.target === d.id);
+      expect(converging).toHaveLength(3);
+      expect(converging.every((e) => e.data?.fanCount === 3)).toBe(true);
+      // Each sibling gets a distinct rank across 0..2 so the fan slots don't collide.
+      expect(converging.map((e) => e.data?.fanRank).sort()).toEqual([0, 1, 2]);
+    });
+
+    it('omits fan fields for a non-converging (lone) edge', () => {
+      const a = seedEntity('A');
+      const b = seedEntity('B');
+      s().connect(a.id, b.id);
+      const edge = emit()[0];
+      expect(edge?.data?.fanCount).toBeUndefined();
+      expect(edge?.data?.fanRank).toBeUndefined();
+    });
+
+    it('excludes AND-grouped (junctor) edges — they converge at the junctor, not the target', () => {
+      const a = seedEntity('A');
+      const b = seedEntity('B');
+      const c = seedEntity('C');
+      const eAC = s().connect(a.id, c.id);
+      const eBC = s().connect(b.id, c.id);
+      s().groupAsAnd([eAC?.id ?? '', eBC?.id ?? '']);
+      const toC = emit().filter((e) => e.target === c.id);
+      expect(toC.every((e) => e.data?.fanCount === undefined)).toBe(true);
+    });
+
+    it('does not fan an aggregated edge (one synthetic line into the target)', () => {
+      const a = seedEntity('A');
+      const b = seedEntity('B');
+      const c = seedEntity('C');
+      s().connect(a.id, c.id);
+      s().connect(b.id, c.id);
+      const collapse = {
+        remap: (id: string) => (id === a.id || id === b.id ? 'G' : id),
+      } as unknown as GraphProjection;
+      const agg = emit(collapse).find((e) => e.id === `agg:G->${c.id}`);
+      expect(agg?.data?.fanCount).toBeUndefined();
+    });
+  });
 });

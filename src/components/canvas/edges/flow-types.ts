@@ -102,6 +102,17 @@ export type TPEdgeData = {
    *  (`Edge.loopName`); drives the loop-name label in `TPEdge`. Stamped by
    *  `useGraphEdgeEmission`. Omitted when unnamed. */
   loopName?: string;
+  /** Hover-fan (Session 185) — this edge's rank (0-based) within the group of
+   *  real, non-junctor edges converging on the same target. Stamped by
+   *  `useGraphEdgeEmission` only when the group has 2+ members; `TPEdge` reads it
+   *  on hover to spread the converging edges apart so one can be grabbed directly.
+   *  Order is a stable sourceId sort (this layer is position-free). Omitted when
+   *  the edge doesn't converge with any sibling. */
+  fanRank?: number;
+  /** Hover-fan (Session 185) — total number of edges in this edge's convergence
+   *  group (its fan size). Stamped alongside `fanRank` only when >1; when 1 or
+   *  absent, `TPEdge` does not fan. */
+  fanCount?: number;
 };
 
 /**
