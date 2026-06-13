@@ -2,7 +2,7 @@
   "$schema": "./features.schema.json",
   "note": "Canonical catalogue of TP Studio's user-facing features — the denominator for the feature-coverage metric (scripts/build-stats.mjs). One entry per capability a user can see, do, or configure (dev infrastructure is intentionally excluded). `manual` = covered in USER_GUIDE.md; `book` = covered in a docs/guide chapter; `bookExample` = that chapter carries a worked example. Deduped from the full CHANGELOG (Sessions 1-180) in Session 180. Add a row when a user-facing feature ships and fill its coverage as the manual/book catch up.",
   "areas": ["CRT","EC","FRT","PRT","TT","GoalTree","ST","NBR","Canvas","Editing","Entities","Edges","CLR","Layout","Export","Import","Print","Comments","Revisions","Search","Palette","Settings","Workshop","Reader","Patterns","Start","General"],
-  "reviewedThroughSession": 183,
+  "reviewedThroughSession": 184,
   "features": [
     {"id":"crt-diagram","name":"Current Reality Tree","area":"CRT","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"crt-core-driver","name":"Core Driver finder","area":"CRT","since":52,"manual":true,"book":true,"bookExample":true},
@@ -206,6 +206,7 @@
     {"id":"start-page","name":"Start workspace shell","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
     {"id":"start-hero","name":"Problem-led CRT hero","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
     {"id":"start-tree-cards","name":"Tree cards with live Logic status","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
-    {"id":"start-needs-review","name":"Needs-review triage","area":"Start","since":183,"manual":true,"book":true,"bookExample":false}
+    {"id":"start-needs-review","name":"Needs-review triage","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
+    {"id":"start-library","name":"Persistent tree library (open / delete closed trees)","area":"Start","since":184,"manual":true,"book":true,"bookExample":false}
   ]
 }

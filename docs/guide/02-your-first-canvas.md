@@ -14,14 +14,14 @@ Pick the hosted PWA if you're a reader rather than a contributor. The app is ide
 
 **Updates.** When a new version of TP Studio ships, a small "New version available — Refresh now" toast appears at the bottom of the canvas; click it to apply. The flow is explicit on purpose: silent reloads while you're mid-edit would be hostile. If you want to check on demand (e.g. after a known release), `Cmd/Ctrl+K → Check for updates` forces the service worker to look — it tells you either *"You're on the latest version of TP Studio"* (green) or surfaces the refresh prompt for a new build (info).
 
-The first time you load TP Studio you'll see an empty canvas with a centered hint:
+TP Studio opens on the **Start** page — a workspace that names a problem for you, lists your trees, and offers templates (covered in [The Start page](#the-start-page--your-workspace-home) below). Building or opening a tree from there drops you onto the canvas. A brand-new tree is an empty canvas with a centered hint:
 
 ![Empty canvas with the double-click-to-add-entity hint](screenshots/chapter02-empty-canvas.png)
 
 > **Empty diagram**
 > Double-click anywhere to add your first entity.
 
-Your work auto-saves to this browser on every change. Closing the tab and reopening it picks up where you left off. No sign-in, no cloud, no upload — your diagrams live in this browser's `localStorage` and nowhere else. (Sharing with others is a separate step covered in [Chapter 16](16-sharing-your-work.md).)
+Your work auto-saves to this browser on every change. Closing the tab keeps the tree in the library (the Start page's "All trees"); reopening the app picks up where you left off. No sign-in, no cloud, no upload — your diagrams live in this browser's `localStorage` and nowhere else. (Sharing with others is a separate step covered in [Chapter 16](16-sharing-your-work.md).)
 
 ## What's on screen
 
@@ -101,17 +101,17 @@ The palette (`Cmd/Ctrl+K`) carries **New / Duplicate / Close / Next / Previous t
 
 ## The Start page — your workspace home
 
-Click the **logo** (top-left) to open the **Start** page: a full-screen workspace that sits in front of the editor, with a persistent left sidebar whose nav drives the main area.
+TP Studio **opens on the Start page**: a full-screen workspace that sits in front of the editor, with a persistent left sidebar whose nav drives the main area. The **logo** (top-left) returns you to it any time.
 
 - **Start** — a problem-led hero. Type what's going wrong (*"We keep missing deadlines"*) and **Build a Current Reality Tree** mints a fresh CRT with that statement as its first UDE — no blank canvas. Example chips do the same in one click; a worked-example callout opens a finished CRT to learn from; and a strip of templates sits beneath. Once you have work in progress, a **"Pick up where you left off"** row shows your most-recent trees with their logic status.
-- **All trees / Recent** — every open tree as a card (a mini preview + title + type + when you last edited it) or a compact list. Each card carries a **Logic pill**: emerald *"Logic clear"* or amber *"N to review"*, reading the exact same Categories-of-Legitimate-Reservation check the editor's Logic chip uses — so a card can never disagree with the canvas.
-- **Templates** — the full library, grouped by diagram type (Goal Trees, Evaporating Clouds, CRTs, …). Click a card to load it into a new tab.
+- **All trees / Recent** — every tree you've made as a card (a mini preview + title + type + when you last edited it) or a compact list. **Closing a tab keeps the tree here** — "All trees" is a library of every tree, not just the open tabs; hover a card and click the trash icon to delete one for good. Each card carries a **Logic pill**: emerald *"Logic clear"* or amber *"N to review"*, reading the exact same Categories-of-Legitimate-Reservation check the editor's Logic chip uses — so a card can never disagree with the canvas.
+- **Templates** — the full template library, grouped by diagram type (Goal Trees, Evaporating Clouds, CRTs, …). Click a card to load it into a new tab.
 - **Needs review** — just the trees with at least one open reservation. This is the CLR as triage: open the workspace, see which trees still have logic to resolve, and click straight in.
 - **Learn the method** — the User Guide, the keyboard reference, and this book.
 
 ![The Start workspace — sidebar, the problem-led hero, and the grouped template gallery](screenshots/chapter02-start-page.png)
 
-Clicking any tree card, template, or the **Build** button drops you straight into the editor on that document; **New tree** (top of the sidebar) opens the diagram-type picker. The Start page reflects the *open* tabs — closing a tab removes it (there is no separate saved-document library), so it's your live working set, not an archive.
+Clicking any tree card, template, or the **Build** button drops you straight into the editor on that document; **New tree** (top of the sidebar) opens the diagram-type picker. Trees stay in the library until you delete them — `Cmd/Ctrl+K → Forget closed documents` clears the closed ones in bulk.
 
 ## Saving, exporting, sharing — the one-paragraph version
 

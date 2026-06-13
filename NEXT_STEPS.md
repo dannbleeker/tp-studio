@@ -15,14 +15,11 @@ goalTree-necessity, assumption-lifecycle, and — last — the **NBR validator g
 with the two `nbr-*` shape rules + the additional-cause widening; see CHANGELOG).
 
 **Known tech-debt — future cleanup, not urgent:**
-- **Start page shows only OPEN tabs, not a persistent library** (Session 183). The Start
-  galleries ("All trees" / "Recent" / "Needs review") read `docs` / `tabOrder` — the open tabs —
-  because the model keeps no saved-document registry; closing a tab forgets the tree. A persistent
-  library (an IndexedDB index of every tree, with open/restore) would turn "All trees" into an
-  archive rather than the live working set. A real feature, deferred — not requested in the brief.
-- **Start is reached via the Home logo, not the default boot screen** (Session 183). `startSection`
-  defaults to `null` (the editor) so the whole test/e2e suite keeps landing on the canvas. Making
-  Start the default landing for real users is a one-line change gated on non-test mode, if wanted.
+- **"Forget closed documents" only sweeps trees that have revisions** (Session 184). Now that
+  closing a tab keeps the body, the bulk-forget should also drop revision-less closed trees;
+  per-tree Delete on the Start cards is the reliable cleanup meanwhile. Saved trees also accumulate
+  in `localStorage` with no automatic cap — fine for tens-to-low-hundreds of trees; a future quota
+  guard could evict the oldest closed ones.
 
 > ✅ **Assumption dual-representation collapse — DONE** (Session 181, see CHANGELOG). Fully
 > record-canonical: `'assumption'` is gone from the `EntityType` union, the ~75 `isAssumption`

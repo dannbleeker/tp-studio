@@ -81,15 +81,15 @@ When the diagram in front of you reaches a milestone, a suggestion appears on th
 
 ## The Start page
 
-Click the **logo** (top-left) to open the **Start** page — a full-screen workspace that sits in front of the editor, with a persistent left sidebar that switches the main view:
+TP Studio **opens on the Start page** — a full-screen workspace that sits in front of the editor — and the **logo** (top-left) returns you to it any time. It has a persistent left sidebar that switches the main view:
 
 - **Start** — a problem-led hero: type what's going wrong and **Build a Current Reality Tree** mints a fresh CRT with that statement as its first UDE. Example chips do the same in one click, a worked-example callout opens a finished CRT to learn from, and a template strip sits beneath. Once you have work in progress, a **"Pick up where you left off"** row shows your most-recent trees.
-- **All trees / Recent** — every open tree as a card (a mini preview + title + type + edited time) or a compact list. Each carries a **Logic pill** — emerald *"Logic clear"* or amber *"N to review"* — reading the exact same validation as the editor's Logic chip, so a card can never disagree with the canvas.
-- **Templates** — the full library, grouped by diagram type; click any card to load it in a new tab.
+- **All trees / Recent** — every tree you've made as a card (a mini preview + title + type + edited time) or a compact list. **Closing a tab keeps the tree here** — "All trees" is your library, not just the open tabs; hover a card and click the trash icon to delete one for good. Each carries a **Logic pill** — emerald *"Logic clear"* or amber *"N to review"* — reading the exact same validation as the editor's Logic chip, so a card can never disagree with the canvas.
+- **Templates** — the full template library, grouped by diagram type; click any card to load it in a new tab.
 - **Needs review** — only the trees with at least one open reservation: the CLR as triage. Open the workspace, see which trees still have logic to resolve, and click straight in.
 - **Learn the method** — the User Guide, the keyboard reference, and the practitioner's book.
 
-The sidebar badges are live: **All trees** counts your open tabs, **Needs review** counts the trees with open reservations. Clicking a tree card, a template, or **Build** drops you into the editor on that document; **New tree** opens the diagram-type picker. The Start page reflects your *open* tabs — closing a tab removes it (there's no separate saved-document archive), so it's your live working set.
+The sidebar badges are live: **All trees** counts every saved tree, **Needs review** counts the ones with open reservations. Clicking a tree card, a template, or **Build** drops you into the editor on that document; **New tree** opens the diagram-type picker. Trees live in the library until you delete them (or run `Cmd/Ctrl+K → Forget closed documents` to clear the closed ones in bulk).
 
 ## Working with multiple documents (tabs)
 
