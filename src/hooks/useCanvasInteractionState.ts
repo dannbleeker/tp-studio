@@ -60,7 +60,6 @@ export const isAnyModalOpen = (s: RootStore): boolean =>
   s.diagramPickerOpen !== null ||
   s.exportPickerOpen ||
   s.importPickerOpen ||
-  s.templatePickerOpen ||
   s.patternLibraryOpen !== null ||
   s.whiteboardPasteOpen ||
   s.readAllAtOnceOpen ||

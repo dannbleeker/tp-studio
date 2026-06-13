@@ -99,11 +99,6 @@ const PrintAppendix = lazy(() =>
 const PrintReasoning = lazy(() =>
   import('./components/print/PrintReasoning').then((m) => ({ default: m.PrintReasoning }))
 );
-const TemplatePickerDialog = lazy(() =>
-  import('./components/templates/TemplatePickerDialog').then((m) => ({
-    default: m.TemplatePickerDialog,
-  }))
-);
 // Session 90 — diagram-type + export pickers replace 14 + 17 palette
 // commands respectively. Both are lazy because they only appear via
 // explicit palette commands; their dependency trees (entityTypeMeta,
@@ -472,9 +467,6 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Print preview">
           <PrintPreviewDialog />
-        </ErrorBoundary>
-        <ErrorBoundary label="Template picker">
-          <TemplatePickerDialog />
         </ErrorBoundary>
         <ErrorBoundary label="Diagram-type picker">
           <DiagramTypePickerDialog />

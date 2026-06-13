@@ -33,7 +33,6 @@ describe('isAnyModalOpen', () => {
     ['diagramPickerOpen', () => set({ diagramPickerOpen: 'new' })],
     ['exportPickerOpen', () => set({ exportPickerOpen: true })],
     ['importPickerOpen', () => set({ importPickerOpen: true })],
-    ['templatePickerOpen', () => set({ templatePickerOpen: true })],
     ['patternLibraryOpen', () => set({ patternLibraryOpen: { filter: 'all' } })],
     ['whiteboardPasteOpen', () => set({ whiteboardPasteOpen: true })],
     ['readAllAtOnceOpen', () => set({ readAllAtOnceOpen: true })],

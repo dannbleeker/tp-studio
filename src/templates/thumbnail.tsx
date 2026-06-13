@@ -285,28 +285,6 @@ const renderPrim = (p: Primitive, i: number): ReactElement => {
 };
 
 /**
- * Session 88 (S22) — JSX renderer. The picker mounts this directly
- * (no `dangerouslySetInnerHTML`). The viewBox stays identical so
- * any CSS sizing on the parent works unchanged.
- */
-export function TemplateThumbnail({ spec }: { spec: TemplateSpec }): ReactElement {
-  const prims = primitivesFor(spec);
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox={`0 0 ${THUMB_W} ${THUMB_H}`}
-      preserveAspectRatio="xMidYMid meet"
-      role="img"
-      aria-labelledby={`thumb-${spec.id}-title`}
-    >
-      <title id={`thumb-${spec.id}-title`}>{`${spec.title} thumbnail`}</title>
-      <rect width={THUMB_W} height={THUMB_H} fill="#fafafa" />
-      {prims.map((p, i) => renderPrim(p, i))}
-    </svg>
-  );
-}
-
-/**
  * Session 183 — a live-document thumbnail for the Start surface's tree cards.
  * Reuses the exact primitive layout the template thumbnails use, reading from
  * the document's entities/edges via {@link thumbShapeFromDoc}. An empty document

@@ -53,8 +53,6 @@ export type DialogsSlice = {
   threeCloudOpen: boolean;
   /** Session 77 / brief §10 — print preview modal. */
   printOpen: boolean;
-  /** Session 79 / brief §12 — templates picker dialog. */
-  templatePickerOpen: boolean;
   /** Session 90 — diagram-type picker. Tri-state: `null` (closed), or
    *  the mode (`'new'` = create blank, `'example'` = load example).
    *  Replaces the 14 per-diagram-type palette commands with one
@@ -205,10 +203,6 @@ export type DialogsSlice = {
   openPrintPreview: () => void;
   closePrintPreview: () => void;
 
-  /** Session 79 — templates picker. */
-  openTemplatePicker: () => void;
-  closeTemplatePicker: () => void;
-
   /** Phase 2a — "Link to entity in another tab…" cross-doc link picker. */
   openLinkEntityPicker: () => void;
   closeLinkEntityPicker: () => void;
@@ -341,7 +335,6 @@ export type DialogsDataKeys =
   | 'quickCaptureOpen'
   | 'threeCloudOpen'
   | 'printOpen'
-  | 'templatePickerOpen'
   | 'diagramPickerOpen'
   | 'exportPickerOpen'
   | 'importPickerOpen'
@@ -374,7 +367,6 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   quickCaptureOpen: false,
   threeCloudOpen: false,
   printOpen: false,
-  templatePickerOpen: false,
   diagramPickerOpen: null,
   exportPickerOpen: false,
   importPickerOpen: false,
@@ -424,7 +416,6 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   quickCaptureOpen: false,
   threeCloudOpen: false,
   printOpen: false,
-  templatePickerOpen: false,
   diagramPickerOpen: null,
   exportPickerOpen: false,
   importPickerOpen: false,
@@ -473,9 +464,6 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openPrintPreview: () => set({ printOpen: true }),
   closePrintPreview: () => set({ printOpen: false }),
-
-  openTemplatePicker: () => set({ templatePickerOpen: true }),
-  closeTemplatePicker: () => set({ templatePickerOpen: false }),
 
   openDiagramPicker: (mode) => set({ diagramPickerOpen: mode }),
   closeDiagramPicker: () => set({ diagramPickerOpen: null }),

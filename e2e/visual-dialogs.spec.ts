@@ -67,25 +67,6 @@ test.describe('dialog visual regression', () => {
     });
   });
 
-  test('template picker dialog', async ({ page }) => {
-    await page.goto('/?test=1');
-    // Cmd+K → "New from template" routes through `templatePickerOpen`.
-    await page.keyboard.press('Control+K');
-    await page.getByPlaceholder(/command/i).fill('New from template');
-    await page.keyboard.press('Enter');
-    // The picker renders 10 cards in a grid — wait for the first
-    // template card to land before snapshotting so the SVG
-    // thumbnails are committed.
-    await page.waitForSelector('[data-component="template-card"]');
-    // The grid contains framework-free SVG thumbnails; a small wait
-    // lets any animated transitions on the modal settle.
-    await page.waitForTimeout(150);
-    await expect(page).toHaveScreenshot('dialog-template-picker.png', {
-      maxDiffPixelRatio: 0.02,
-      mask: [page.locator('[data-component="toaster"]')],
-    });
-  });
-
   // ─────────────────────────────────────────────────────────────────
   // Session 102 additions — remaining seven dialogs. Each carries a
   // skip guard until baselines exist on main; remove after the

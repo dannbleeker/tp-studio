@@ -21,9 +21,11 @@ registry, shown identically everywhere under the name **Templates**.
 - **One name.** The editor "Pattern library" dialog + its palette command are renamed **Templates** /
   "Browse templates…" (the Start sidebar already said Templates). User decisions: "Templates"
   everywhere; dedupe the overlaps keeping the richer templates.
-- Follow-up: the legacy "New from template…" thumbnail picker — a third, redundant surface still
-  showing the old 10 — is teed up for retirement; it cascades into orphaned thumbnail code + an e2e
-  visual baseline, so it's its own focused step.
+- The legacy "New from template…" thumbnail picker — a third, redundant surface that still showed the
+  old 10 — is **retired**: its palette command now opens the unified Templates dialog, the
+  `TemplatePickerDialog` + its store flag / actions / Esc-wiring are removed, the orphaned
+  `TemplateThumbnail` is deleted (the live-document `DocumentThumbnail` stays), and its e2e visual
+  test + baseline are dropped.
 
 ## Session 185 — Hover-fan + closed-library hygiene
 

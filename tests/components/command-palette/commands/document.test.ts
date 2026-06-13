@@ -70,9 +70,9 @@ describe('documentCommands', () => {
     expect(s().quickCaptureOpen).toBe(true);
   });
 
-  it('new-from-template opens the template picker', async () => {
+  it('new-from-template opens the unified Templates library', async () => {
     await runCommand(findCommand(documentCommands, 'new-from-template'));
-    expect(s().templatePickerOpen).toBe(true);
+    expect(s().patternLibraryOpen).not.toBeNull();
   });
 
   it('open-document-inspector opens the doc-settings dialog', async () => {

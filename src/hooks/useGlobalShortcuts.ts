@@ -227,7 +227,7 @@ export function useGlobalShortcuts() {
       //
       // Priority order (topmost first):
       //   confirmDialog (synchronously blocking) →
-      //   quickCapture → diagramPicker → exportPicker → templatePicker →
+      //   quickCapture → diagramPicker → exportPicker →
       //   printPreview → docSettings → settings → search → about → help →
       //   palette → sideBySide compare → visual-diff compare → comments →
       //   history → editing (let the textarea cancel its own edit) → hoist →
@@ -255,10 +255,6 @@ export function useGlobalShortcuts() {
         }
         if (state.exportPickerOpen) {
           state.closeExportPicker();
-          return;
-        }
-        if (state.templatePickerOpen) {
-          state.closeTemplatePicker();
           return;
         }
         if (state.printOpen) {

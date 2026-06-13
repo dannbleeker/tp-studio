@@ -591,13 +591,6 @@ describe('useGlobalShortcuts — Esc cascade (remaining layers)', () => {
     expect(s().exportPickerOpen).toBe(false);
   });
 
-  it('Esc closes templatePicker when open', () => {
-    useDocumentStore.getState().openTemplatePicker();
-    render(<Host />);
-    fireEvent.keyDown(window, { key: 'Escape' });
-    expect(s().templatePickerOpen).toBe(false);
-  });
-
   it('Esc closes printPreview when open', () => {
     useDocumentStore.getState().openPrintPreview();
     render(<Host />);

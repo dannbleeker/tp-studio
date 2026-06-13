@@ -162,12 +162,13 @@ export const documentCommands: Command[] = [
     },
   }),
   withWriteGuard({
-    // Session 79 / brief §12 — pick from the curated templates library.
+    // Session 79 / 186 — start from the unified Templates library (the renamed
+    // pattern-library dialog; the old thumbnail picker was retired).
     id: 'new-from-template',
     label: 'New from template…',
     group: 'File',
     run: (s) => {
-      s.openTemplatePicker();
+      s.openPatternLibrary();
     },
   }),
   {
