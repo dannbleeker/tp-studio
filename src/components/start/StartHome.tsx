@@ -6,6 +6,8 @@ import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { buildTemplate, TEMPLATE_SPECS } from '@/templates';
 import { TemplateGallery } from './TemplateGallery';
+import { TreeCard } from './TreeCard';
+import type { OpenTree } from './useOpenTrees';
 
 const EXAMPLE_PROBLEMS = [
   'Customer churn is rising',
@@ -20,11 +22,20 @@ const EXAMPLE_PROBLEMS = [
  * example callout opens a finished CRT, and the registry-driven template strip
  * sits beneath "…or start from a template".
  */
-export function StartHome() {
-  const { openDocInTab, showToast } = useDocumentStore(
-    useShallow((s) => ({ openDocInTab: s.openDocInTab, showToast: s.showToast }))
+export function StartHome({ trees }: { trees: OpenTree[] }) {
+  const { openDocInTab, showToast, setStartSection } = useDocumentStore(
+    useShallow((s) => ({
+      openDocInTab: s.openDocInTab,
+      showToast: s.showToast,
+      setStartSection: s.setStartSection,
+    }))
   );
   const [problem, setProblem] = useState('');
+
+  // "Pick up where you left off" shows only trees with real content (a fresh
+  // blank doc shouldn't clutter the resume strip); most-recent first, capped.
+  const recent = trees.filter((t) => Object.keys(t.doc.entities).length > 0).slice(0, 6);
+  const reviewCount = trees.filter((t) => t.openWarnings > 0).length;
 
   // Build a CRT from a problem statement: the trimmed text becomes the tree's
   // first UDE (and the doc title). `openDocInTab` exits Start into the editor.
@@ -111,6 +122,40 @@ export function StartHome() {
           ))}
         </div>
       </section>
+
+      {recent.length > 0 && (
+        <section>
+          <div className="mb-4 flex items-baseline justify-between gap-3">
+            <h2 className="font-semibold text-neutral-900 text-sm dark:text-neutral-100">
+              Pick up where you left off
+            </h2>
+            <div className="flex items-baseline gap-3">
+              {reviewCount > 0 && (
+                <span className="text-amber-600 text-xs dark:text-amber-400">
+                  {reviewCount} {reviewCount === 1 ? 'tree needs' : 'trees need'} a logic review
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setStartSection('allTrees')}
+                className="font-medium text-indigo-600 text-xs transition hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:text-indigo-400"
+              >
+                View all trees →
+              </button>
+            </div>
+          </div>
+          <ul
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            aria-label="Recent trees"
+          >
+            {recent.map((t) => (
+              <li key={t.id}>
+                <TreeCard id={t.id} doc={t.doc} openWarnings={t.openWarnings} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {workedExample && (
         <button

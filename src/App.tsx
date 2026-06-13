@@ -12,7 +12,6 @@ import { DocumentMeta } from './components/DocumentMeta';
 import { CLRPanel } from './components/inspector/CLRPanel';
 import { Inspector } from './components/inspector/Inspector';
 import { PrintLegend } from './components/print/PrintLegend';
-import { StartPage } from './components/start/StartPage';
 import { Toaster } from './components/toast/Toaster';
 import { CommandSearch } from './components/toolbar/CommandSearch';
 import { HomeLogo } from './components/toolbar/HomeLogo';
@@ -165,6 +164,12 @@ const CommandPalette = lazy(() =>
     default: m.CommandPalette,
   }))
 );
+// Session 183 — the Start (workspace) surface. Only renders when a Start section
+// is active (default is the editor), so lazy-load it to keep the whole start/*
+// tree + the thumbnail renderer out of the first-paint index chunk.
+const StartPage = lazy(() =>
+  import('./components/start/StartPage').then((m) => ({ default: m.StartPage }))
+);
 
 /**
  * Print-only header. Hidden in normal view by the print.css `.print-only`
@@ -310,7 +315,9 @@ export function App() {
           down stays mounted in both views, so ⌘K, toasts, and the pickers work
           on the Start page too. */}
       {startSection !== null && !isPresentation ? (
-        <StartPage />
+        <Suspense fallback={null}>
+          <StartPage />
+        </Suspense>
       ) : (
         <>
           {/* Chrome header — the tab strip + a (title · toolbar) band. A real

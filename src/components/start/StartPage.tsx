@@ -2,9 +2,13 @@ import { Search } from 'lucide-react';
 import { useDocumentStore } from '@/store';
 import type { StartSection } from '@/store/uiSlice/types';
 import { TEMPLATE_SPECS } from '@/templates';
+import { LearnSection } from './LearnSection';
 import { StartHome } from './StartHome';
 import { StartSidebar } from './StartSidebar';
 import { TemplateGallery } from './TemplateGallery';
+import { TreeGallery } from './TreeGallery';
+import { TreeList } from './TreeList';
+import { useOpenTrees } from './useOpenTrees';
 
 const SECTION_TITLE: Record<StartSection, string> = {
   start: 'Start',
@@ -62,30 +66,43 @@ export function StartPage() {
   );
 }
 
-/** Per-section body. Templates is registry-driven (Stage B); the hero and tree
- *  galleries fill in over Stages C–D. */
+/** Per-section body. The open trees are read once here and shared with the
+ *  Start view's "pick up where you left off" + the gallery sections, so the
+ *  Logic counts are computed in a single place. */
 function StartSectionBody({ section }: { section: StartSection }) {
-  if (section === 'start') {
-    return <StartHome />;
+  const trees = useOpenTrees();
+
+  switch (section) {
+    case 'start':
+      return <StartHome trees={trees} />;
+    case 'templates':
+      return (
+        <div className="flex flex-col gap-5">
+          <p className="text-neutral-500 text-sm dark:text-neutral-400">
+            {TEMPLATE_SPECS.length} worked examples — each one checked against the method.
+          </p>
+          <TemplateGallery />
+        </div>
+      );
+    case 'allTrees':
+      return (
+        <TreeGallery
+          trees={trees}
+          emptyMessage="No trees yet — start one from the Start page or a template."
+        />
+      );
+    case 'recent':
+      return <TreeList trees={trees} emptyMessage="No trees yet." />;
+    case 'needsReview':
+      return (
+        <TreeGallery
+          trees={trees.filter((t) => t.openWarnings > 0)}
+          emptyMessage="All clear — no open trees have logic reservations to review."
+        />
+      );
+    case 'learn':
+      return <LearnSection />;
+    default:
+      return null;
   }
-  if (section === 'templates') {
-    return (
-      <div className="flex flex-col gap-5">
-        <p className="text-neutral-500 text-sm dark:text-neutral-400">
-          {TEMPLATE_SPECS.length} worked examples — each one checked against the method.
-        </p>
-        <TemplateGallery />
-      </div>
-    );
-  }
-  return (
-    <div className="rounded-lg border border-neutral-200 border-dashed px-6 py-12 text-center dark:border-neutral-800">
-      <p className="font-medium text-neutral-500 text-sm dark:text-neutral-400">
-        {SECTION_TITLE[section]}
-      </p>
-      <p className="mt-1 text-neutral-400 text-xs dark:text-neutral-500">
-        This section is being built.
-      </p>
-    </div>
-  );
 }

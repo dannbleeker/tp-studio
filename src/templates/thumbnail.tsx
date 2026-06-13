@@ -1,6 +1,31 @@
 import type { ReactElement } from 'react';
 import { ENTITY_STRIPE_COLOR } from '@/domain/tokens';
+import type { DiagramType, TPDocument } from '@/domain/types';
 import type { TemplateSpec } from './shared';
+
+/**
+ * Session 183 — the minimal shape the primitive builders read. A `TemplateSpec`
+ * already satisfies it structurally (its entities carry `key`/`type`/`ecSlot`,
+ * its edges `source`/`target`), and a live `TPDocument` is adapted to it by
+ * {@link thumbShapeFromDoc} — so the same layout logic drives both the template
+ * picker thumbnails and the Start surface's tree-card previews.
+ */
+type ThumbShape = {
+  diagramType: DiagramType;
+  entities: ReadonlyArray<{ key: string; type: string; ecSlot?: 'a' | 'b' | 'c' | 'd' | 'dPrime' }>;
+  edges: ReadonlyArray<{ source: string; target: string }>;
+};
+
+/** Adapt a live document (entities/edges as records) to the thumbnail shape. */
+const thumbShapeFromDoc = (doc: TPDocument): ThumbShape => ({
+  diagramType: doc.diagramType,
+  entities: Object.values(doc.entities).map((e) => ({
+    key: e.id,
+    type: e.type,
+    ...(e.ecSlot ? { ecSlot: e.ecSlot } : {}),
+  })),
+  edges: Object.values(doc.edges).map((e) => ({ source: e.sourceId, target: e.targetId })),
+});
 
 /**
  * Session 79 / brief §12 — Template thumbnail generator.
@@ -65,7 +90,7 @@ type Primitive = NodeBox | LineSeg;
  * is rendered the same way by both the JSX and string emitters
  * below, so the visual output is identical.
  */
-const ecPrimitives = (spec: TemplateSpec): Primitive[] => {
+const ecPrimitives = (spec: ThumbShape): Primitive[] => {
   const w = 32;
   const h = 14;
   const xA = 10;
@@ -143,7 +168,7 @@ const ecPrimitives = (spec: TemplateSpec): Primitive[] => {
  * single goal for goalTree, or the union of UDEs for CRT). Render
  * each bin as a row, with rows going bottom-up.
  */
-const treePrimitives = (spec: TemplateSpec): Primitive[] => {
+const treePrimitives = (spec: ThumbShape): Primitive[] => {
   const childrenOf = new Map<string, string[]>();
   for (const e of spec.entities) childrenOf.set(e.key, []);
   for (const edge of spec.edges) {
@@ -222,7 +247,7 @@ const treePrimitives = (spec: TemplateSpec): Primitive[] => {
   return [...edgePrims, ...nodePrims];
 };
 
-const primitivesFor = (spec: TemplateSpec): Primitive[] =>
+const primitivesFor = (spec: ThumbShape): Primitive[] =>
   spec.diagramType === 'ec' ? ecPrimitives(spec) : treePrimitives(spec);
 
 /** Render one primitive as a React element. Stable keys derived
@@ -275,6 +300,29 @@ export function TemplateThumbnail({ spec }: { spec: TemplateSpec }): ReactElemen
       aria-labelledby={`thumb-${spec.id}-title`}
     >
       <title id={`thumb-${spec.id}-title`}>{`${spec.title} thumbnail`}</title>
+      <rect width={THUMB_W} height={THUMB_H} fill="#fafafa" />
+      {prims.map((p, i) => renderPrim(p, i))}
+    </svg>
+  );
+}
+
+/**
+ * Session 183 — a live-document thumbnail for the Start surface's tree cards.
+ * Reuses the exact primitive layout the template thumbnails use, reading from
+ * the document's entities/edges via {@link thumbShapeFromDoc}. An empty document
+ * renders just the background, so a brand-new tree still gets a tidy preview.
+ */
+export function DocumentThumbnail({ doc }: { doc: TPDocument }): ReactElement {
+  const prims = primitivesFor(thumbShapeFromDoc(doc));
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={`0 0 ${THUMB_W} ${THUMB_H}`}
+      preserveAspectRatio="xMidYMid meet"
+      role="img"
+      aria-labelledby={`docthumb-${doc.id}-title`}
+    >
+      <title id={`docthumb-${doc.id}-title`}>{`${doc.title || 'Untitled'} preview`}</title>
       <rect width={THUMB_W} height={THUMB_H} fill="#fafafa" />
       {prims.map((p, i) => renderPrim(p, i))}
     </svg>
