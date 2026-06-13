@@ -1,6 +1,6 @@
 # TP Studio
 
-A practitioner-focused canvas for **Theory of Constraints Thinking Process** diagrams. Open source, local-first, runs in your browser. Build sufficiency-logic graphs (Current Reality Trees, Future Reality Trees, Prerequisite Trees, Transition Trees, Evaporating Clouds), let the tool auto-layout (or hand-position for EC), and surface Categories of Legitimate Reservation (CLR) as soft warnings.
+A practitioner-focused canvas for **Theory of Constraints Thinking Process** diagrams. Open source, local-first, runs in your browser. Build the full set of TP diagrams — Current Reality, Future Reality, Prerequisite, Transition and Negative Branch trees, Evaporating Clouds, Goal Trees, Strategy & Tactics trees, plus free-form canvases — let the tool auto-layout (or hand-position for EC), and surface Categories of Legitimate Reservation (CLR) as soft warnings.
 
 **Live demo:** <https://tp-studio.struktureretsundfornuft.dk/> — installs as a desktop / mobile PWA, works fully offline after first visit. Chrome and Edge will offer an Install prompt after a couple of visits; or open the command palette (`Ctrl/Cmd+K`) and pick **Install TP Studio…** to install on demand.
 
@@ -93,7 +93,7 @@ The combined root and the `resetStoreForTest` helper live in [`src/store/index.t
 - **`noUncheckedIndexedAccess`** + **`noImplicitReturns`** are on in `tsconfig`.
 - **Brand types** ([src/domain/types.ts](src/domain/types.ts)) — `EntityId` / `EdgeId` / `DocumentId` are phantom-branded strings. `Entity.id`, `Edge.sourceId`, `Edge.assumptionIds` etc. are typed; the factory casts at the boundary. Plain `string` is still accepted for external IDs coming from React Flow / file pickers.
 - **Strict JSON import validation** ([src/domain/persistence.ts](src/domain/persistence.ts)) checks every field shape before construction. Malformed user-supplied JSON throws a descriptive error rather than crashing the canvas later.
-- **Forward-only schema migrations** ([src/domain/migrations.ts](src/domain/migrations.ts)) — `importFromJSON` walks the parsed document through registered migrations to reach `CURRENT_SCHEMA_VERSION` before validation. Currently at v4: v1→v2 adds stable per-entity `annotationNumber` + `nextAnnotationNumber` on the document, v2→v3 introduces the `groups` map, v3→v4 reserves `Edge.label`.
+- **Forward-only schema migrations** ([src/domain/migrations/](src/domain/migrations)) — `importFromJSON` walks the parsed document through registered migrations to reach `CURRENT_SCHEMA_VERSION` before validation. Currently at **v10**: each step is its own file (`v1ToV2.ts` … `v9ToV10.ts`). Early steps add the per-entity `annotationNumber`, the `groups` map, and `Edge.label`; the most recent, `v9→v10`, collapses the old entity-modeled assumptions into first-class `doc.assumptions` records.
 
 ### Storage seam
 
@@ -109,12 +109,14 @@ Tunable magic numbers (history limit, coalesce window, CLR thresholds, layout se
 
 ## Data model
 
-The model is a typed directed graph. One canonical schema; diagram types (CRT, FRT) are projections of it. See [src/domain/types.ts](src/domain/types.ts).
+The model is a typed directed graph. One canonical schema; the nine diagram types are projections of it. See [src/domain/types/](src/domain/types) (split into `document.ts`, `entity.ts`, `edge.ts`, `clr.ts`, …).
 
 ```ts
 type TPDocument = {
   id: DocumentId;
-  diagramType: 'crt' | 'frt' | 'prt' | 'tt' | 'ec';
+  diagramType:
+    | 'crt' | 'frt' | 'prt' | 'tt' | 'ec'
+    | 'goalTree' | 'st' | 'nbr' | 'freeform';
   title: string;
   entities: Record<string, Entity>;
   edges: Record<string, Edge>;
@@ -123,9 +125,11 @@ type TPDocument = {
   nextAnnotationNumber: number;
   createdAt: number;
   updatedAt: number;
-  schemaVersion: 4;
+  schemaVersion: 10;
   author?: string;
   description?: string;
+  // + optional, additive fields omitted here — layoutConfig, systemScope,
+  //   methodChecklist, customEntityClasses, assumptions, comments, … (see document.ts)
 };
 ```
 
@@ -135,12 +139,14 @@ Key shape decisions:
 - **Assumptions are edge annotations, not entities** — record-canonical (v10): each is a first-class `doc.assumptions` record carrying its host `edgeId`, text, and a lifecycle status/kind, no longer a `doc.entities` node and no longer in the `EntityType` union. Attachment is solely `record.edgeId` (per-edge lookups via the WeakMap-cached `assumptionsForEdge`). The edge inspector's Assumption Well exposes inline create / edit / status-and-kind chips / detach; the canvas renders each via a dedicated `TPAssumptionNode` (non-selectable) near its edge.
 - **Groups** are shaded enclosures over entities. Nested, collapsible, draggable; collapsed groups aggregate inbound/outbound edges to a single card. Hoist drills into a group with breadcrumb to exit.
 - **Layout strategy is per-diagram-type.** CRT / FRT / PRT / TT run dagre against the visible set; EC is `manual` — `Entity.position` lives in the schema and drives the canvas directly. See [`src/domain/layoutStrategy.ts`](src/domain/layoutStrategy.ts).
-- **Warnings are derived, never stored.** `validate(doc)` runs the 8 CLR rules on demand; resolution state is persisted in `doc.resolvedWarnings` keyed by a stable `ruleId:targetKind:targetId` identifier.
-- **Schema version is `4`.** Bumping requires a forward migration in [`src/domain/migrations.ts`](src/domain/migrations.ts); existing docs walk through the migration chain at import time.
+- **Warnings are derived, never stored.** `validate(doc)` runs the CLR rule set on demand; resolution state is persisted in `doc.resolvedWarnings` keyed by a stable `ruleId:targetKind:targetId` identifier.
+- **Schema version is `10`.** Bumping requires a forward migration in [`src/domain/migrations/`](src/domain/migrations); existing docs walk through the migration chain at import time.
 
 ## CLR rules
 
-Eight rules, each its own file in [src/domain/validators/](src/domain/validators):
+The Categories of Legitimate Reservation surface as **soft, derived warnings**: `validate(doc)` runs the rule set on demand and nothing is stored except resolution state. The original eight rules have since grown to **30+** as diagram-specific and source-derived checks were added — the canonical list of ids is the `ClrRuleId` union in [src/domain/types/clr.ts](src/domain/types/clr.ts), each implemented in one or more files under [src/domain/validators/](src/domain/validators) and composed in [validators/index.ts](src/domain/validators/index.ts). Every warning is stamped with one of three tiers — **Clarity / Existence / Sufficiency** — which is how the CLR panel and inspector group them.
+
+The eight foundational rules:
 
 | Rule                          | Fires when                                                                  |
 | ----------------------------- | --------------------------------------------------------------------------- |
@@ -152,6 +158,8 @@ Eight rules, each its own file in [src/domain/validators/](src/domain/validators
 | `cause-effect-reversal`       | CRT only — Root Cause with incoming, or UDE with outgoing                   |
 | `predicted-effect-existence`  | FRT only — Injection with no outgoing                                       |
 | `tautology`                   | Entity has one child whose title is >= 0.85 similar (Levenshtein)           |
+
+On top of those: diagram-specific rules (EC completeness, Goal-Tree single-apex, the TT action-locus check, S&T tactic-rollup, the `crt-*` build-quality nudges, the `nbr-*` shape checks) and system-dynamics / source-derived rules (`indirect-effect`, `cycle`, `long-arrow`, `loop-polarity`, `reinforcing-no-delay`, `logic-type-mismatch`). The full user-facing reference is [book appendix C](docs/guide/appendix-c-clr-rules.md). Some rules carry a one-click remedy (`WarningAction`).
 
 The user can mark any individual warning **Resolved** in the inspector; the resolution persists in the document and survives export/import round-trips.
 
@@ -165,7 +173,7 @@ The implementation lives in two context-keyed hooks: [`useGlobalShortcuts`](src/
 
 ## Testing
 
-**1156+ tests** across the suite ([tests/](tests/)) as of Session 108. Coverage spans every layer:
+**4,200+ tests** (≈4,150 unit + 92 Playwright e2e) across the suite ([tests/](tests/)) as of Session 186, at ~96% line / ~84% branch coverage. Coverage spans every layer:
 
 - **Domain** — validators (one file per rule), persistence (round-trip + every malformed-input branch), graph helpers, layout, radial layout, Flying Logic import/export, search, groups, quick capture, palette score, shortcuts registry, layout strategy
 - **Store** — document mutations, groups, AND grouping, assumption attach/detach, undo / redo / coalescing, history cap, cascade delete
@@ -179,11 +187,11 @@ Run `pnpm test`. Run `pnpm test:watch` while developing.
 
 ## Status
 
-Iteration 2 shipped: navigation/search, multi-select, Quick Capture, groups (nesting + collapse + hoist), rich annotations (markdown descriptions, edge labels), the full export pack (JSON / CSV / PNG / JPEG / SVG / Flying Logic XML / annotations / PDF), and the polish/preferences bundle (Browse Lock, themes including high-contrast, edge-color palettes, animation speed, ink-saver print mode).
+TP Studio is **feature-complete and heavily polished across 180+ build sessions** — all nine diagram types, the full CLR rule set, the complete export pack (JSON / CSV / PNG / JPEG / SVG / Flying Logic XML / annotations / multi-page vector PDF / PPTX), share links, self-contained HTML export, PWA install + offline, revision history with side-by-side compare and named branches, multi-document tabs with a persistent tree library, a Start workspace home, the Building-Blocks rail + Logic-check panel + method-path stepper, review comments, the unified Templates library, and a 25-chapter practitioner book.
 
-Tier 1 features (auto-recovery, reverse-edge, redact, F2–F4 / F6–F7 polish), Tier 2 diagrams (A1 Evaporating Cloud, A2 Prerequisite Tree, A3 Transition Tree) and Tier 3 (F5 radial alternate view + Session 99 obstacle-aware radial edge routing) all landed. Connector visuals carry Flying-Logic-style AND / OR / XOR junctors (Session 73). Goal Tree + EC creation wizards (Session 78), full template library + a11y audit (Session 79), vector PDF export (Session 80), structured S&T trees + Strategy/Tactics diagram type (Session 75), per-document custom entity classes with curated 57-icon Lucide picker (Sessions 70/76), revision history + side-by-side compare + named branches (Sessions 41 + 62), PWA install (Session 89), comprehensive security audit + CSP (Session 98), the 17-chapter *Causal Thinking with TP Studio* book + clickable-TOC PDF (Sessions 103/104; retitled Session 110), and the under-the-hood performance pass with three-sample perf-trace baseline (Sessions 105–108) all landed.
+The **change history is the source of truth** — see [CHANGELOG.md](CHANGELOG.md); what's planned next is in [NEXT_STEPS.md](NEXT_STEPS.md).
 
-**1156+ tests green as of Session 108, TypeScript + Biome clean, `pnpm audit --prod` clean.**
+**~4,250 tests green as of Session 186 (≈96% line coverage), TypeScript + Biome clean, `pnpm audit --prod` clean.**
 
 ## License
 
