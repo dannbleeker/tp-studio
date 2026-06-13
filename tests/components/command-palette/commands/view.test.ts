@@ -50,4 +50,19 @@ describe('viewCommands — reset-layout', () => {
       useDocumentStore.setState({ confirm: originalConfirm });
     }
   });
+
+  it('reports a plural count when several entities are unpinned', async () => {
+    const e1 = seedEntity('One');
+    const e2 = seedEntity('Two');
+    useDocumentStore.getState().setEntityPosition(e1.id, { x: 1, y: 1 });
+    useDocumentStore.getState().setEntityPosition(e2.id, { x: 2, y: 2 });
+    const originalConfirm = useDocumentStore.getState().confirm;
+    useDocumentStore.setState({ confirm: async () => true });
+    try {
+      await runCommand(findCommand(viewCommands, 'reset-layout'));
+      expect(s().toasts.some((t) => /unpinned 2 entities/i.test(t.message))).toBe(true);
+    } finally {
+      useDocumentStore.setState({ confirm: originalConfirm });
+    }
+  });
 });

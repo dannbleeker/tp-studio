@@ -143,6 +143,20 @@ describe('edgeCommands — keyboard edge-creation (slice 5)', () => {
     await runCommand(findCommand(edgeCommands, 'complete-edge-to-selection'));
     expect(s().toasts.some((t) => /no edge pending/i.test(t.message))).toBe(true);
   });
+
+  it('complete-edge-to-selection reports when the edge already exists', async () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const makeEdge = async () => {
+      useDocumentStore.getState().selectEntity(a.id);
+      await runCommand(findCommand(edgeCommands, 'start-edge-from-selection'));
+      useDocumentStore.getState().selectEntity(b.id);
+      await runCommand(findCommand(edgeCommands, 'complete-edge-to-selection'));
+    };
+    await makeEdge(); // first A → B succeeds
+    await makeEdge(); // second is a duplicate
+    expect(s().toasts.some((t) => /could not create/i.test(t.message))).toBe(true);
+  });
 });
 
 describe('edgeCommands — registry shape', () => {
