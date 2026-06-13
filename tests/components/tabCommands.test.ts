@@ -64,4 +64,12 @@ describe('Batch 5.2b — tab palette commands', () => {
     expect(s().tabOrder).toEqual([aId]);
     expect(s().activeDocId).toBe(aId);
   });
+
+  it('Next / Previous are no-ops with a single tab', () => {
+    const aId = s().activeDocId;
+    expect(s().tabOrder).toHaveLength(1);
+    run('next-tab');
+    run('previous-tab');
+    expect(s().activeDocId).toBe(aId); // the < 2 guard held — nothing switched
+  });
 });
