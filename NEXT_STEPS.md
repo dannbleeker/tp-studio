@@ -15,11 +15,11 @@ goalTree-necessity, assumption-lifecycle, and — last — the **NBR validator g
 with the two `nbr-*` shape rules + the additional-cause widening; see CHANGELOG).
 
 **Known tech-debt — future cleanup, not urgent:**
-- **"Forget closed documents" only sweeps trees that have revisions** (Session 184). Now that
-  closing a tab keeps the body, the bulk-forget should also drop revision-less closed trees;
-  per-tree Delete on the Start cards is the reliable cleanup meanwhile. Saved trees also accumulate
-  in `localStorage` with no automatic cap — fine for tens-to-low-hundreds of trees; a future quota
-  guard could evict the oldest closed ones.
+- ✅ **"Forget closed documents" now sweeps revision-less closed trees too** (Session 185, see
+  CHANGELOG) — it enumerates committed-only bodies (`listSavedDocIds`), not just the revisions map,
+  and refreshes the Start library. Per-tree Delete on the Start cards remains for individual cleanup.
+- Saved trees still accumulate in `localStorage` with no automatic cap — fine for tens-to-low-hundreds
+  of trees; a future quota guard could evict the oldest closed ones.
 
 > ✅ **Assumption dual-representation collapse — DONE** (Session 181, see CHANGELOG). Fully
 > record-canonical: `'assumption'` is gone from the `EntityType` union, the ~75 `isAssumption`

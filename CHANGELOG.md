@@ -2,7 +2,7 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 185 — Hover-fan: spread converging edges apart on hover
+## Session 185 — Hover-fan + closed-library hygiene
 
 When 2+ edges converge on one entity you couldn't grab one to re-route it — a click took
 whichever sat on top (the Session-177 edge-picker addressed the click; this is the promised
@@ -28,6 +28,14 @@ the group's endpoints apart at the shared target so each is grabbable; they snap
   (smart-routed detours + radial keep their path); a small Y shift on the route→bezier switch;
   sourceId slot ordering (a position sort would guarantee crossing-free fanning); smooth CSS path
   transition deferred (the route→bezier structure change doesn't tween cleanly).
+
+**Closed-library hygiene.** "Forget closed documents" (palette) used to scan only the revisions
+map, so a closed tree that was never snapshotted — the common case since Session 184 keeps every
+closed body — survived the sweep. It now also enumerates the committed-only bodies (`listSavedDocIds`)
+and drops the closed ones, bumping `savedDocsVersion` so the Start "All trees" library refreshes. The
+confirm copy + toast say so (it clears the closed-tree library, not just revision history). Also a
+small internal tidy: the byte-identical cross-doc link chip in `EntityLinksSection` and the injection
+flower is now one shared `LinkChip`.
 
 ## Session 184 — Start by default + a persistent tree library
 

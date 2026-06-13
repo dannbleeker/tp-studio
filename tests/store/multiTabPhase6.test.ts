@@ -6,12 +6,13 @@
  *    otherwise the overlay renders against a doc that doesn't contain those
  *    ids.
  *  - `forgetClosedDocs` reclaims storage held by documents the user has
- *    closed (their revisions linger after `closeTab` by design) while
- *    leaving every open tab's history intact.
+ *    closed — their body (Session 184) and any revisions linger after
+ *    `closeTab` by design — while leaving every open tab intact.
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDocument } from '@/domain/factory';
+import { listSavedDocIds } from '@/domain/persistence';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 const s = () => useDocumentStore.getState();
@@ -61,6 +62,19 @@ describe('Phase 6 — forgetClosedDocs', () => {
     expect(revisionsDropped).toBe(1);
     // The still-open doc keeps its history.
     expect(s().revisions.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('also forgets a closed doc with only a body and no revisions (Session 185)', () => {
+    const ec = createDocument('ec');
+    s().openTab(ec); // saves ec's body, tabs [A, ec]
+    s().closeTab(ec.id); // ec closed → body kept (reopenable), but it has NO revisions
+    expect(s().tabOrder).not.toContain(ec.id);
+    // Pre-Session-185 this committed-only body was invisible to forgetClosedDocs
+    // (it scanned the revisions map); now it's swept too.
+    expect(listSavedDocIds()).toContain(ec.id);
+    const { docsForgotten } = s().forgetClosedDocs();
+    expect(docsForgotten).toBe(1);
+    expect(listSavedDocIds()).not.toContain(ec.id); // body gone — no longer reopenable
   });
 
   it('is a no-op when every saved doc is still open', () => {

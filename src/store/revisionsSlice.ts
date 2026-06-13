@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand';
 import { newRevisionId } from '@/domain/ids';
-import { importFromJSON, removeDocFromStorage } from '@/domain/persistence';
+import { importFromJSON, listSavedDocIds, removeDocFromStorage } from '@/domain/persistence';
 import type { Revision } from '@/domain/revisions';
 import type { DocumentId, TPDocument } from '@/domain/types';
 import { readJSON, STORAGE_KEYS, writeJSON } from '@/services/storage/storage';
@@ -190,6 +190,8 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
       const next: RevisionsByDoc = {};
       let docsForgotten = 0;
       let revisionsDropped = 0;
+      const forgotten = new Set<string>();
+      // 1. Closed docs that carry revision history — drop the revisions + the body.
       for (const [docId, list] of Object.entries(byDoc)) {
         if (openIds.has(docId)) {
           next[docId] = list;
@@ -197,11 +199,25 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
         }
         docsForgotten += 1;
         revisionsDropped += Array.isArray(list) ? list.length : 0;
-        // Defensively drop any lingering body slots too — closeTab already
-        // removes them on close; this also sweeps pre-multi-tab orphans.
         removeDocFromStorage(docId as DocumentId);
+        forgotten.add(docId);
       }
-      if (docsForgotten > 0) saveRevisionsByDoc(next);
+      // 2. Session 185 — since Session 184 a close KEEPS the doc's body (reopenable
+      // from the Start "All trees" library), so a closed tree that was never
+      // snapshotted has no revisions and the loop above misses it. Sweep those
+      // committed-only bodies too, otherwise "Forget closed documents" leaves most
+      // of the closed library behind.
+      for (const docId of listSavedDocIds()) {
+        if (openIds.has(docId) || forgotten.has(docId)) continue;
+        removeDocFromStorage(docId);
+        docsForgotten += 1;
+        forgotten.add(docId);
+      }
+      if (docsForgotten > 0) {
+        saveRevisionsByDoc(next);
+        // The Start library (`useSavedTrees`) re-scans storage on this bump.
+        set({ savedDocsVersion: get().savedDocsVersion + 1 });
+      }
       return { docsForgotten, revisionsDropped };
     },
 

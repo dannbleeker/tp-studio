@@ -53,7 +53,7 @@ export const documentCommands: Command[] = [
     group: 'File',
     run: async (s) => {
       const ok = await s.confirm(
-        'Permanently delete the saved revision history of every document you have closed? Your open tabs keep their full history. This cannot be undone.',
+        "Permanently delete every document you've closed — its saved body and any revision history? Your open tabs are untouched, but closed trees disappear from the Start page's library too. This cannot be undone.",
         { confirmLabel: 'Forget closed docs' }
       );
       if (!ok) return;
@@ -61,7 +61,7 @@ export const documentCommands: Command[] = [
       s.showToast(
         docsForgotten > 0 ? 'success' : 'info',
         docsForgotten > 0
-          ? `Forgot ${docsForgotten} closed document${docsForgotten === 1 ? '' : 's'} (${revisionsDropped} revision${revisionsDropped === 1 ? '' : 's'} freed).`
+          ? `Forgot ${docsForgotten} closed document${docsForgotten === 1 ? '' : 's'}${revisionsDropped > 0 ? ` (${revisionsDropped} revision${revisionsDropped === 1 ? '' : 's'} freed)` : ''}.`
           : 'No closed documents to forget — every saved document is currently open.'
       );
     },
