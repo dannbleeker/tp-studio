@@ -25,6 +25,8 @@
  * alone — multiple patterns share a `diagramType` and the dialog
  * needs the per-pattern label / hint to differentiate them.
  */
+
+import { buildTemplate, TEMPLATE_SPECS } from '@/templates';
 import { buildExampleCRT } from '../examples/crt';
 import { buildExampleEC } from '../examples/ec';
 import { buildExampleFRT } from '../examples/frt';
@@ -48,8 +50,6 @@ import { buildPatternCRTSalesPipelineStall } from './crt-sales-pipeline-stall';
 import { buildPatternCRTShiftingTheBurden } from './crt-shifting-the-burden';
 import { buildPatternCRTTonsPerHour } from './crt-tons-per-hour';
 import { buildPatternECBatchSize } from './ec-batch-size';
-import { buildPatternECBuildVsBuy } from './ec-build-vs-buy';
-import { buildPatternECCentralizeVsFederate } from './ec-centralize-vs-federate';
 import { buildPatternECCostVsThroughput } from './ec-cost-vs-throughput';
 import { buildPatternECDelegation } from './ec-delegation';
 import { buildPatternECEfratsChangeCloud } from './ec-efrats-change-cloud';
@@ -57,7 +57,6 @@ import { buildPatternECInventoryVsAvailability } from './ec-inventory-vs-availab
 import { buildPatternECPricing } from './ec-pricing';
 import { buildPatternECProfitSpendVsSave } from './ec-profit-spend-vs-save';
 import { buildPatternECProjectTaskSafety } from './ec-project-task-safety';
-import { buildPatternECQualityVsSpeed } from './ec-quality-vs-speed';
 import { buildPatternECSpeakUpVsStaySafe } from './ec-speak-up-vs-stay-safe';
 import { buildPatternECSpecialistVsGeneralist } from './ec-specialist-vs-generalist';
 import { buildPatternECTransformationVsQuarter } from './ec-transformation-vs-quarter';
@@ -104,7 +103,7 @@ export type Pattern = {
   build: () => TPDocument;
 };
 
-export const PATTERNS: Pattern[] = [
+const CORE_PATTERNS: Pattern[] = [
   // ── CRT ────────────────────────────────────────────────────────────
   {
     id: 'crt-customer-satisfaction',
@@ -214,27 +213,6 @@ export const PATTERNS: Pattern[] = [
     hint: 'TP Basics cloud progression — the symptom-vs-cause trap (fix now vs. fix the cause). Pre-tagged cloud-type "Firefighting".',
     diagramType: 'ec',
     build: buildPatternCloudFirefighting,
-  },
-  {
-    id: 'ec-quality-vs-speed',
-    label: 'Quality vs speed',
-    hint: 'Engineering tradeoff EC — QA gate vs continuous delivery, both routes to "ship features customers love".',
-    diagramType: 'ec',
-    build: buildPatternECQualityVsSpeed,
-  },
-  {
-    id: 'ec-centralize-vs-federate',
-    label: 'Centralize vs federate',
-    hint: 'Org-design EC — central design-system team vs embedded maintainers, around shared brand coherence.',
-    diagramType: 'ec',
-    build: buildPatternECCentralizeVsFederate,
-  },
-  {
-    id: 'ec-build-vs-buy',
-    label: 'Build vs buy',
-    hint: 'Procurement EC — in-house customer data platform vs vendor adoption, around control and speed needs.',
-    diagramType: 'ec',
-    build: buildPatternECBuildVsBuy,
   },
   {
     id: 'ec-specialist-vs-generalist',
@@ -559,6 +537,33 @@ export const PATTERNS: Pattern[] = [
     build: buildPatternSTTimeToMarket,
   },
 ];
+
+/**
+ * Session 185 — the Session-79 "templates" folded into the one library, so the
+ * Start "Templates" gallery and the in-editor library show a single unified set.
+ * Each ships as literal entities/edges; we surface it here as a Pattern built via
+ * `buildTemplate`. The 3 EC templates (build-vs-buy / quality-vs-speed /
+ * centralize) supersede their former pattern equivalents, dropped above.
+ */
+const TEMPLATE_PATTERNS: Pattern[] = TEMPLATE_SPECS.map((spec) => ({
+  id: spec.id,
+  label: spec.title,
+  hint: spec.description,
+  diagramType: spec.diagramType,
+  build: () => buildTemplate(spec),
+}));
+
+/** The unified curated-starter library ("Templates" in the UI) — the core
+ *  patterns plus the folded templates, stably grouped by diagram-type block so
+ *  the in-editor dialog's "All" view and the Start gallery both read cleanly. */
+const TYPE_BLOCK_ORDER: DiagramType[] = ['crt', 'ec', 'frt', 'prt', 'tt', 'nbr', 'goalTree', 'st'];
+const typeRank = (t: DiagramType): number => {
+  const i = TYPE_BLOCK_ORDER.indexOf(t);
+  return i === -1 ? TYPE_BLOCK_ORDER.length : i;
+};
+export const PATTERNS: Pattern[] = [...CORE_PATTERNS, ...TEMPLATE_PATTERNS].sort(
+  (a, b) => typeRank(a.diagramType) - typeRank(b.diagramType)
+);
 
 /** Subset of `PATTERNS` matching the given diagram type, in registry order. */
 export const patternsForDiagram = (diagramType: DiagramType): Pattern[] =>
