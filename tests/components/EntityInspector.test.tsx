@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { EntityInspector } from '@/components/inspector/EntityInspector';
 import { CUSTOM_CLASS_ICONS } from '@/domain/entityTypeIcons';
+import { ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 
@@ -50,6 +51,20 @@ describe('EntityInspector', () => {
     expect(rcBtn).toBeTruthy();
     act(() => fireEvent.click(rcBtn!));
     expect(useDocumentStore.getState().doc.entities[e.id]?.type).toBe('rootCause');
+  });
+
+  it('each type button carries its plain-language meaning as a tooltip', () => {
+    // The `meaning` copy is the single source of truth on EntityTypeMeta,
+    // shared with the Building Blocks rail. The type-picker surfaces it as a
+    // native `title` tooltip so the TP vocabulary is learnable in place.
+    const e = seedEntity('A', 'effect');
+    const { container } = render(<EntityInspector entityId={e.id} warnings={[]} />);
+    const udeBtn = Array.from(container.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Undesirable Effect')
+    ) as HTMLButtonElement | undefined;
+    expect(udeBtn).toBeTruthy();
+    expect(udeBtn?.getAttribute('title')).toBe(ENTITY_TYPE_META.ude.meaning);
+    expect(ENTITY_TYPE_META.ude.meaning).toBeTruthy();
   });
 
   it('Title size buttons update titleSize (undefined for md, set for sm/lg)', () => {

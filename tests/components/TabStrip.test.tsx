@@ -91,6 +91,28 @@ describe('Batch 5.2 — TabStrip', () => {
     expect(screen.getByRole('toolbar', { name: 'Open documents' })).toBeTruthy();
   });
 
+  it('renders a diagram-type colour dot, coloured by each tab’s diagram type', () => {
+    act(() => {
+      s().setTitle('Alpha'); // default doc = CRT
+    });
+    act(() => {
+      s().openTab(docNamed('Beta')); // docNamed builds an FRT
+    });
+    render(<TabStrip />);
+    const dotOf = (name: string): HTMLElement | null => {
+      const chip = screen.getByRole('button', { name }).parentElement as HTMLElement;
+      return chip.querySelector('span[aria-hidden="true"]');
+    };
+    const a = dotOf('Alpha');
+    const b = dotOf('Beta');
+    expect(a).not.toBeNull();
+    expect(b).not.toBeNull();
+    expect(a?.style.backgroundColor).toBeTruthy();
+    // CRT vs FRT read as different brand colours — proves the dot is
+    // diagram-type-driven, not a constant.
+    expect(a?.style.backgroundColor).not.toBe(b?.style.backgroundColor);
+  });
+
   it('drag-to-reorder moves a chip into the drop target slot', () => {
     const aId = s().activeDocId;
     act(() => {

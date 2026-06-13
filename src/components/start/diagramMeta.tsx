@@ -10,16 +10,21 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react';
-import { DIAGRAM_SHORT_LABEL, DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
-import { ENTITY_STRIPE_COLOR, VIOLET_500 } from '@/domain/tokens';
+import {
+  DIAGRAM_SHORT_LABEL,
+  DIAGRAM_TYPE_COLOR,
+  DIAGRAM_TYPE_LABEL,
+} from '@/domain/entityTypeMeta';
+import { ENTITY_STRIPE_COLOR } from '@/domain/tokens';
 import type { DiagramType } from '@/domain/types';
 
 /**
  * Session 183 — per-diagram-type chrome for the Start surface (group headers,
- * tree-card tags). `label` / `tag` reuse the domain's `DIAGRAM_TYPE_LABEL` /
- * `DIAGRAM_SHORT_LABEL`; `color` is a representative entity-stripe colour from
- * tokens (no new colour values); `icon` is a lucide glyph. Cover every
- * `DiagramType` so grouping never hits the fallback for a known type.
+ * tree-card tags). `label` / `tag` / `color` reuse the domain's
+ * `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` / `DIAGRAM_TYPE_COLOR` (the colour
+ * is the diagram's canonical entity-stripe token — no new colour values); `icon`
+ * is a lucide glyph. Cover every `DiagramType` so grouping never hits the
+ * fallback for a known type.
  */
 export type DiagramMeta = { label: string; tag: string; color: string; icon: LucideIcon };
 
@@ -27,55 +32,55 @@ export const DIAGRAM_META: Record<DiagramType, DiagramMeta> = {
   goalTree: {
     label: DIAGRAM_TYPE_LABEL.goalTree,
     tag: DIAGRAM_SHORT_LABEL.goalTree,
-    color: ENTITY_STRIPE_COLOR.goal,
+    color: DIAGRAM_TYPE_COLOR.goalTree,
     icon: Target,
   },
   ec: {
     label: DIAGRAM_TYPE_LABEL.ec,
     tag: DIAGRAM_SHORT_LABEL.ec,
-    color: ENTITY_STRIPE_COLOR.want,
+    color: DIAGRAM_TYPE_COLOR.ec,
     icon: Cloud,
   },
   crt: {
     label: DIAGRAM_TYPE_LABEL.crt,
     tag: DIAGRAM_SHORT_LABEL.crt,
-    color: ENTITY_STRIPE_COLOR.ude,
+    color: DIAGRAM_TYPE_COLOR.crt,
     icon: Network,
   },
   frt: {
     label: DIAGRAM_TYPE_LABEL.frt,
     tag: DIAGRAM_SHORT_LABEL.frt,
-    color: ENTITY_STRIPE_COLOR.desiredEffect,
+    color: DIAGRAM_TYPE_COLOR.frt,
     icon: TrendingUp,
   },
   prt: {
     label: DIAGRAM_TYPE_LABEL.prt,
     tag: DIAGRAM_SHORT_LABEL.prt,
-    color: ENTITY_STRIPE_COLOR.intermediateObjective,
+    color: DIAGRAM_TYPE_COLOR.prt,
     icon: ListChecks,
   },
   tt: {
     label: DIAGRAM_TYPE_LABEL.tt,
     tag: DIAGRAM_SHORT_LABEL.tt,
-    color: ENTITY_STRIPE_COLOR.action,
+    color: DIAGRAM_TYPE_COLOR.tt,
     icon: Footprints,
   },
   st: {
     label: DIAGRAM_TYPE_LABEL.st,
     tag: DIAGRAM_SHORT_LABEL.st,
-    color: VIOLET_500,
+    color: DIAGRAM_TYPE_COLOR.st,
     icon: MapIcon,
   },
   nbr: {
     label: DIAGRAM_TYPE_LABEL.nbr,
     tag: DIAGRAM_SHORT_LABEL.nbr,
-    color: ENTITY_STRIPE_COLOR.obstacle,
+    color: DIAGRAM_TYPE_COLOR.nbr,
     icon: AlertTriangle,
   },
   freeform: {
     label: DIAGRAM_TYPE_LABEL.freeform,
     tag: DIAGRAM_SHORT_LABEL.freeform,
-    color: ENTITY_STRIPE_COLOR.effect,
+    color: DIAGRAM_TYPE_COLOR.freeform,
     icon: Shapes,
   },
 };

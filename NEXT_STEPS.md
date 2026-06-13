@@ -72,6 +72,12 @@ the full rationale). **Every candidate is now shipped or explicitly dropped:** A
 E1 (5 system-archetype patterns) + the tied-core-drivers Spawn-EC action (Session 179); A3, A4, E3, E5,
 E6 (Session 180 — see CHANGELOG); E2 / E4 / E7 dropped to won't-build (see Out-of-scope below).
 
+### Start "Pick up where you left off" — prominent Resume card (deferred, Session 187)
+The UX-redesign mockup leads the resume area with ONE large "Resume →" card for the most-recently-edited
+tree, then a gallery of the rest. The shipped Start renders every recent tree as an equal-weight card (a
+deliberate simplification). Reviewed in the Session-187 design-fidelity pass and **deferred by decision**
+(Dann) — the uniform grid stays. Revisit only if the resume hierarchy proves worth the extra layout.
+
 ---
 
 ## Out of scope — won't build

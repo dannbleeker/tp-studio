@@ -1,7 +1,8 @@
 import clsx from 'clsx';
 import { Plus, X } from 'lucide-react';
+import { DIAGRAM_TYPE_COLOR } from '@/domain/entityTypeMeta';
 import { createDocument } from '@/domain/factory';
-import type { DocumentId } from '@/domain/types';
+import type { DiagramType, DocumentId } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { arrayShallowEqualByKeys } from '@/store/equality';
 import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
@@ -24,9 +25,14 @@ import { useDocumentStoreWith } from '@/store/useDocumentStoreWithEquality';
  * edit (which re-refs `docs`) doesn't churn the strip — it re-renders
  * only when a tab's id / title / active-flag actually changes.
  */
-type TabChip = { id: DocumentId; title: string; active: boolean };
+type TabChip = {
+  id: DocumentId;
+  title: string;
+  active: boolean;
+  diagramType: DiagramType | undefined;
+};
 
-const tabChipsEqual = arrayShallowEqualByKeys<TabChip>(['id', 'title', 'active']);
+const tabChipsEqual = arrayShallowEqualByKeys<TabChip>(['id', 'title', 'active', 'diagramType']);
 
 export function TabStrip() {
   const chips = useDocumentStoreWith<TabChip[]>(
@@ -35,6 +41,7 @@ export function TabStrip() {
         id,
         title: s.docs[id]?.title?.trim() || 'Untitled',
         active: id === s.activeDocId,
+        diagramType: s.docs[id]?.diagramType,
       })),
     tabChipsEqual
   );
@@ -92,6 +99,13 @@ export function TabStrip() {
               : 'border-transparent bg-transparent text-neutral-500 hover:bg-neutral-200/60 hover:text-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800/60 dark:hover:text-neutral-200'
           )}
         >
+          {chip.diagramType && (
+            <span
+              className="h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ backgroundColor: DIAGRAM_TYPE_COLOR[chip.diagramType] }}
+              aria-hidden
+            />
+          )}
           <button
             type="button"
             data-component="tab"

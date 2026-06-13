@@ -21,7 +21,12 @@ export function CommandSearch() {
       aria-keyshortcuts={paletteAria}
       aria-label="Search or run a command"
       title={`Search or run a command  ${cmdKey}+K`}
-      className="pointer-events-auto flex w-full max-w-md items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-neutral-500 text-xs transition hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:border-neutral-700"
+      // Hidden below `lg` (content-priority responsive collapse from the
+      // redesign mockup): on narrower viewports the centre search field gives
+      // up its space first so the title + right-hand action clusters never wrap
+      // or scroll. The ⌘K palette stays fully reachable via the shortcut and
+      // the TopBar overflow ▾ at every width.
+      className="pointer-events-auto hidden w-full max-w-md items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-neutral-500 text-xs transition hover:border-neutral-300 hover:bg-neutral-50 lg:flex dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:border-neutral-700"
     >
       <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
       <span className="flex-1 truncate text-left">Search or run a command…</span>

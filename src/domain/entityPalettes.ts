@@ -1,3 +1,4 @@
+import { ENTITY_STRIPE_COLOR, VIOLET_500 } from './tokens';
 import type { CustomEntityClass, DiagramType, EntityType, TPDocument } from './types';
 
 /**
@@ -102,6 +103,28 @@ export const DIAGRAM_SHORT_LABEL: Record<DiagramType, string> = {
   freeform: 'Freeform',
   goalTree: 'Goal Tree',
   nbr: 'NBR',
+};
+
+/**
+ * A representative "brand" colour per diagram type — the dot used by compact
+ * chrome (the tab strip's per-tab type dot, the Start surface's group headers +
+ * tree-card tags). Each value is an existing entity-stripe token (or the violet
+ * AND-token for S&T), so there are NO new colour values: a diagram reads as the
+ * stripe of its most characteristic entity — a CRT is UDE-red, an EC is
+ * want-fuchsia, an FRT is desired-effect-indigo, a PRT is intermediate-objective
+ * blue. Single source of truth; the Start surface's `DIAGRAM_META` reads from
+ * here. Add a new diagram type to `DiagramType` and this map together.
+ */
+export const DIAGRAM_TYPE_COLOR: Record<DiagramType, string> = {
+  crt: ENTITY_STRIPE_COLOR.ude,
+  frt: ENTITY_STRIPE_COLOR.desiredEffect,
+  prt: ENTITY_STRIPE_COLOR.intermediateObjective,
+  tt: ENTITY_STRIPE_COLOR.action,
+  ec: ENTITY_STRIPE_COLOR.want,
+  st: VIOLET_500,
+  freeform: ENTITY_STRIPE_COLOR.effect,
+  goalTree: ENTITY_STRIPE_COLOR.goal,
+  nbr: ENTITY_STRIPE_COLOR.obstacle,
 };
 
 /**

@@ -146,7 +146,16 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           onChange={(type) => updateEntity(entityId, { type: type as EntityType })}
           options={availableTypes.map((type) => {
             const meta = resolveEntityTypeMeta(type, customEntityClasses);
-            return { id: type, label: meta.label, stripe: meta.stripeColor };
+            // `hint` → native title tooltip on each type button: the one-line
+            // plain-language meaning, the single source of truth shared with the
+            // Building Blocks rail (`EntityTypeMeta.meaning`). Custom classes have
+            // no meaning, so the tooltip is simply omitted for them.
+            return {
+              id: type,
+              label: meta.label,
+              stripe: meta.stripeColor,
+              ...(meta.meaning ? { hint: meta.meaning } : {}),
+            };
           })}
         />
       </Field>

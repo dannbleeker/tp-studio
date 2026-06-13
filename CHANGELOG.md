@@ -2,6 +2,39 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 187 — Design-handoff fidelity pass (UX Redesign mockup)
+
+A Claude Design handoff bundle (`TP Studio UX Redesign.html` + its `redesign/*.jsx` source) was imported
+and audited against the live app. The finding: the redesign's seven moves — Building Blocks rail,
+surfaced Logic check, regrouped top bar, method-path stepper, the Workspace Start page, registry-driven
+Templates, and per-card logic status — were **already shipped** across Sessions 182–186 (and in places the
+app went beyond the mockup). A four-surface fidelity comparison surfaced a short list of genuine gaps; the
+ones below were closed — each an additive, behavior-preserving change with **no** domain-logic, validator,
+token, or export changes.
+
+- **Entity meanings now teach in the inspector.** The one-line plain-language `meaning` for each entity
+  type (the single source of truth on `EntityTypeMeta.meaning`, already shown in the Building Blocks rail)
+  now surfaces as a native tooltip on every button in the inspector's **Type** picker — fulfilling the
+  redesign's "reused by tooltips" intent and making the `entityTypeMeta.ts` docstring true. Custom classes
+  (which carry no meaning) simply get no tooltip.
+- **Logic-check panel gains a one-line CLR explainer.** The Logic-check (CLR) panel header now opens with a
+  one-sentence "every cause-and-effect link is checked against Goldratt's Categories of Legitimate
+  Reservation — walk them tier by tier" line above the open/resolved counts, so the product's
+  differentiator explains itself in place. New dedicated `CLRPanel.test.tsx`.
+- **Tab strip shows a per-tab diagram-type colour dot.** Each open tab now carries a small dot in its
+  diagram's brand colour (CRT red, EC fuchsia, FRT indigo, …) so trees are tellable apart at a glance.
+  Backed by a new canonical **`DIAGRAM_TYPE_COLOR`** map in the domain (`entityPalettes.ts`, beside
+  `DIAGRAM_TYPE_LABEL`); the Start surface's `DIAGRAM_META` is de-duped to read from it — one colour
+  source, no new values (each maps to an existing entity-stripe token).
+- **Centre command/search field collapses below `lg`.** The ⌘K search field now follows the redesign's
+  content-priority responsive rule — it tucks away on narrower viewports so the title + right-hand action
+  clusters never wrap; the `Cmd/Ctrl+K` shortcut and the overflow ▾ keep it reachable at any width.
+- **Deferred by decision:** the mockup's single prominent "Resume" card on Start (vs. today's equal-weight
+  recent-tree grid) was reviewed and left as-is — logged in NEXT_STEPS.
+
+Docs: USER_GUIDE notes the tab colour dot + the responsive search field; NEXT_STEPS logs the deferred
+Resume card.
+
 ## Session 186 — Templates + Patterns unified into one "Templates" library
 
 The app had two parallel libraries of curated starter diagrams: the Start "Templates" gallery's 10

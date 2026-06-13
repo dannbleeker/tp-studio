@@ -114,13 +114,17 @@ export function CLRPanel() {
       aria-label="Logic check"
       className="absolute top-0 right-0 z-20 flex h-full w-[min(85vw,320px)] flex-col border-neutral-200 border-l bg-white md:w-[320px] dark:border-neutral-800 dark:bg-neutral-950"
     >
-      <div className="flex items-center justify-between gap-2 border-neutral-200 border-b px-3 py-2 dark:border-neutral-800">
+      <div className="flex items-start justify-between gap-2 border-neutral-200 border-b px-3 py-2 dark:border-neutral-800">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 font-semibold text-neutral-800 text-sm dark:text-neutral-100">
             <ScanSearch className="h-4 w-4 text-indigo-500" aria-hidden />
             Logic check
           </div>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+          <p className="mt-0.5 text-[11px] text-neutral-500 leading-snug dark:text-neutral-400">
+            Every cause-and-effect link is checked against Goldratt's Categories of Legitimate
+            Reservation — walk them tier by tier.
+          </p>
+          <p className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
             {open.length} to review{resolvedCount > 0 ? ` · ${resolvedCount} resolved` : ''}
           </p>
         </div>

@@ -47,7 +47,7 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 | --- | --- | --- |
 | Home / logo | Top-left | The TP Studio mark; opens the **Start** workspace (your trees, templates, and the problem-led hero). See [The Start page](#the-start-page). |
 | Title + type badge | Top-left | Click the title to rename the document. The badge shows the diagram type (`CRT`, `EC`, …); the small ⓘ icon opens the Document Inspector. |
-| Command search | Top-center | Click it (or press `Cmd/Ctrl+K`) to open the command palette — the fastest route to any action. |
+| Command search | Top-center | Click it (or press `Cmd/Ctrl+K`) to open the command palette — the fastest route to any action. On narrower windows the field tucks away to protect the toolbar; `Cmd/Ctrl+K` still works everywhere. |
 | Building Blocks rail | Left edge | Type-led entity creation for the current diagram — click a block to drop that entity at the canvas center. Collapsible. See [Building Blocks rail](#building-blocks-rail). |
 | Method path | Strip under the top bar | Where the active diagram sits in the TP sequence, plus a suggested next step. See [Method path](#method-path). |
 | Logic check chip | Top-right | Emerald **"all clear"** or amber **"N to review"** — click to open the CLR panel. See [The CLR panel](#the-clr-panel). |
@@ -99,6 +99,7 @@ TP Studio holds several documents open at once, each in its own tab. The **tab s
 - **New tab** — click the **+** at the end of the strip (opens a blank CRT), or `Cmd/Ctrl+K → New tab`.
 - **Close** — hover a tab and click its **✕**. Closing the last tab leaves a fresh blank one — there's never zero tabs.
 - **Reorder** — drag a tab left or right.
+- **Tell trees apart** — each tab shows a small dot in its diagram type's colour (CRT red, EC fuchsia, FRT indigo, …).
 - **Duplicate** — `Cmd/Ctrl+K → Duplicate tab` makes an independent copy (own id, own history, `(copy)` title).
 
 Each tab is fully independent: its own undo/redo history, its own autosave, its own share link. Switching tabs parks one document's history and restores the other's. **Every open tab comes back when you reload** — close the browser and your whole working set is restored, not just the last document.
