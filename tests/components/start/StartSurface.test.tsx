@@ -5,6 +5,7 @@ import { StartPage } from '@/components/start/StartPage';
 import { StartSidebar } from '@/components/start/StartSidebar';
 import { useSavedTrees } from '@/components/start/useSavedTrees';
 import { createDocument } from '@/domain/factory';
+import type { DocumentId } from '@/domain/types';
 import { validate } from '@/domain/validators';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -65,6 +66,31 @@ describe('useSavedTrees', () => {
     expect(useDocumentStore.getState().docs[ec.id]).toBeUndefined();
     act(() => useDocumentStore.getState().openSavedDoc(ec.id));
     expect(useDocumentStore.getState().docs[ec.id]).toBeTruthy();
+  });
+
+  it('openSavedDoc returns true on reopen, false + a toast when the tree is gone', () => {
+    const ec = createDocument('ec');
+    act(() => {
+      useDocumentStore.getState().openTab(ec);
+      useDocumentStore.getState().closeTab(ec.id);
+    });
+    // A saved (closed) tree reopens → true. A click-to-reopen chip relies on this
+    // to know whether to follow through with a select.
+    let reopened = false;
+    act(() => {
+      reopened = useDocumentStore.getState().openSavedDoc(ec.id);
+    });
+    expect(reopened).toBe(true);
+
+    // A never-saved id can't be opened → false, and surfaces a toast.
+    let opened = true;
+    act(() => {
+      opened = useDocumentStore.getState().openSavedDoc('doc-missing' as DocumentId);
+    });
+    expect(opened).toBe(false);
+    expect(
+      useDocumentStore.getState().toasts.some((t) => /no longer available/i.test(t.message))
+    ).toBe(true);
   });
 
   it('deleting a tree from Start stays on Start (does not exit to the editor)', () => {

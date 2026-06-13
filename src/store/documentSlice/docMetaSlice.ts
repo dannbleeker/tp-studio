@@ -103,8 +103,10 @@ export type DocMetaSlice = {
    *  mode. */
   openDocInTab: (doc: TPDocument) => boolean;
   /** Session 184 — open a saved tree by id from the Start library: switches to
-   *  it if already open, else loads its body from storage into a new tab. */
-  openSavedDoc: (id: DocumentId) => void;
+   *  it if already open, else loads its body from storage into a new tab.
+   *  Returns true if it switched/opened, or false (with a toast) if the tree was
+   *  already deleted — so callers that then navigate can skip a dead select. */
+  openSavedDoc: (id: DocumentId) => boolean;
   /** Session 184 — permanently delete a saved tree (open or closed): closes its
    *  tab if open, removes its body from storage, and bumps `savedDocsVersion`. */
   deleteSavedDoc: (id: DocumentId) => void;
@@ -390,10 +392,15 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       const state = get();
       if (state.docs[id]) {
         state.switchTab(id);
-        return;
+        return true;
       }
       const doc = loadSavedDoc(id);
-      if (doc) state.openDocInTab(doc);
+      if (doc) {
+        state.openDocInTab(doc);
+        return true;
+      }
+      state.showToast('info', 'That tree is no longer available — it was deleted.');
+      return false;
     },
     deleteSavedDoc: (id) => {
       // Closing an open tab clears `startSection` (it exits to the editor), but a

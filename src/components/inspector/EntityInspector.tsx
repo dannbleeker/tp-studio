@@ -56,9 +56,10 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   const setSpeculativeState = useDocumentStore((s) => s.setSpeculativeState);
   const locked = useDocumentStore((s) => s.browseLocked);
   // Phase 2a — navigable cross-doc links: resolve link targets from the open
-  // tabs (`docs`) and jump via switchTab + selectEntity.
+  // tabs (`docs`) and jump via openSavedDoc + selectEntity (openSavedDoc switches
+  // to the tab if open, else reopens the saved tree — Session 184).
   const docs = useDocumentStore((s) => s.docs);
-  const switchTab = useDocumentStore((s) => s.switchTab);
+  const openSavedDoc = useDocumentStore((s) => s.openSavedDoc);
   const selectEntity = useDocumentStore((s) => s.selectEntity);
   const unlinkEntity = useDocumentStore((s) => s.unlinkEntity);
   const toggleCoreProblem = useDocumentStore((s) => s.toggleCoreProblem);
@@ -281,8 +282,9 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         docs={docs}
         locked={locked}
         onNavigate={(docId, entityId) => {
-          switchTab(docId);
-          selectEntity(entityId);
+          // Reopen the saved tree if its tab was closed; only select once we know
+          // the doc is actually there (a deleted tree shows a toast and no-ops).
+          if (openSavedDoc(docId)) selectEntity(entityId);
         }}
         onUnlink={(link) => unlinkEntity(entity.id, link)}
       />

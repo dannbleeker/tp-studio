@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
-import { Link2, Sparkles, Syringe, TriangleAlert, Workflow } from 'lucide-react';
+import { Link2, RotateCcw, Sparkles, Syringe, TriangleAlert, Workflow } from 'lucide-react';
 import {
   buildInjectionFlower,
   CANONICAL_FLOWER_PETALS,
@@ -20,8 +20,9 @@ import { LargeDialog } from '../ui/LargeDialog';
  * catch-all — so the user can see, at a glance, whether the injection is fully
  * developed or still missing a side. Empty canonical petals show a prompt.
  *
- * Read-only lens over `Entity.links`: each row navigates (switchTab +
- * selectEntity, closing the dialog); nothing is mutated and no schema changes.
+ * Read-only lens over `Entity.links`: each row navigates (openSavedDoc +
+ * selectEntity, closing the dialog) — reopening the linked tree first if its tab
+ * was closed (Session 184); nothing is mutated and no schema changes.
  */
 export function InjectionFlowerDialog() {
   const entityId = useDocumentStore((s) => s.injectionFlowerEntityId);
@@ -90,7 +91,7 @@ const PETAL_META: Record<
 function InjectionFlowerBody({ injection, onClose }: { injection: Entity; onClose: () => void }) {
   // The multi-doc map resolves each link's target (title / doc / diagram type).
   const allDocs = useDocumentStore((s) => s.docs);
-  const switchTab = useDocumentStore((s) => s.switchTab);
+  const openSavedDoc = useDocumentStore((s) => s.openSavedDoc);
   const selectEntity = useDocumentStore((s) => s.selectEntity);
 
   const flower = buildInjectionFlower(injection, allDocs);
@@ -99,8 +100,9 @@ function InjectionFlowerBody({ injection, onClose }: { injection: Entity; onClos
   ).length;
 
   const go = (link: FlowerLink): void => {
-    if (!link.reachable) return;
-    switchTab(link.docId);
+    // Switch to the tab if open, else reopen the saved tree (Session 184); only
+    // navigate + close once we know it's there (a deleted tree toasts and stays).
+    if (!openSavedDoc(link.docId)) return;
     selectEntity(link.entityId);
     onClose();
   };
@@ -155,21 +157,24 @@ function InjectionFlowerBody({ injection, onClose }: { injection: Entity; onClos
                     <button
                       key={`${link.docId}:${link.entityId}`}
                       type="button"
-                      disabled={!link.reachable}
                       onClick={() => go(link)}
                       title={
                         link.reachable
                           ? `Go to "${link.entityTitle || 'entity'}" in ${link.docTitle}`
-                          : 'That document is not open — reopen its tab to follow this link.'
+                          : 'Reopen its tab and follow this link.'
                       }
                       className={clsx(
                         'flex min-w-0 items-center gap-1.5 rounded-md border px-2 py-1 text-left text-xs transition',
                         link.reachable
                           ? 'border-indigo-200 bg-indigo-50/60 text-indigo-800 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-900/50'
-                          : 'cursor-not-allowed border-neutral-200 text-neutral-400 dark:border-neutral-800 dark:text-neutral-500'
+                          : 'border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200'
                       )}
                     >
-                      <Link2 aria-hidden className="h-3 w-3 shrink-0" />
+                      {link.reachable ? (
+                        <Link2 aria-hidden className="h-3 w-3 shrink-0" />
+                      ) : (
+                        <RotateCcw aria-hidden className="h-3 w-3 shrink-0" />
+                      )}
                       <span className="truncate">
                         {link.reachable ? (
                           <>
@@ -179,7 +184,7 @@ function InjectionFlowerBody({ injection, onClose }: { injection: Entity; onClos
                             </span>
                           </>
                         ) : (
-                          <span className="italic">Linked entity (tab closed)</span>
+                          <span className="italic">Reopen linked tab</span>
                         )}
                       </span>
                     </button>

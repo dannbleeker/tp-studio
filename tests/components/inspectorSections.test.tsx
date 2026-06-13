@@ -110,8 +110,8 @@ describe('EntityLinksSection', () => {
     expect(onNavigate).toHaveBeenCalledWith(linkedDocId, targetEntity.id);
   });
 
-  it('shows a disabled, muted chip when the target tab is closed', () => {
-    const { link } = buildTarget();
+  it('renders a clickable "reopen" chip when the target tab is closed', () => {
+    const { targetEntity, link } = buildTarget();
     const onNavigate = vi.fn();
     const { getByText } = render(
       <EntityLinksSection
@@ -122,10 +122,12 @@ describe('EntityLinksSection', () => {
         onUnlink={vi.fn()}
       />
     );
-    const btn = getByText(/tab closed/).closest('button') as HTMLButtonElement;
-    expect(btn.disabled).toBe(true);
+    // Session 184 — the closed-tab chip now reopens the tree on click (the parent
+    // routes this through openSavedDoc), so it's enabled and still calls onNavigate.
+    const btn = getByText(/reopen linked tab/i).closest('button') as HTMLButtonElement;
+    expect(btn.disabled).toBe(false);
     fireEvent.click(btn);
-    expect(onNavigate).not.toHaveBeenCalled();
+    expect(onNavigate).toHaveBeenCalledWith(linkedDocId, targetEntity.id);
   });
 
   it('hides a dead link when the target tab is open but the entity was deleted', () => {
