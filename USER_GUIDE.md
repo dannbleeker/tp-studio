@@ -49,7 +49,7 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 | Title + type badge | Top-left | Click the title to rename the document. The badge shows the diagram type (`CRT`, `EC`, …); the small ⓘ icon opens the Document Inspector. |
 | Command search | Top-center | Click it (or press `Cmd/Ctrl+K`) to open the command palette — the fastest route to any action. On narrower windows the field tucks away to protect the toolbar; `Cmd/Ctrl+K` still works everywhere. |
 | Building Blocks rail | Left edge | Type-led entity creation for the current diagram — click a block to drop that entity at the canvas center. Collapsible. See [Building Blocks rail](#building-blocks-rail). |
-| Method path | Strip under the top bar | Where the active diagram sits in the TP sequence, plus a suggested next step. See [Method path](#method-path). |
+| Method path | Strip under the top bar | Where the active diagram sits in the TP sequence, plus a suggested next step. **Collapsible** — hide it with its chevron, reopen from the ⋮ menu. See [Method path](#method-path). |
 | Logic check chip | Top-right | Emerald **"all clear"** or amber **"N to review"** — click to open the CLR panel. See [The CLR panel](#the-clr-panel). |
 | Undo / Redo | Top-right | Step backward / forward through edits. |
 | History / Comments | Top-right | Revision history; review comments. |
@@ -78,6 +78,8 @@ The rail is additive — double-clicking the canvas to create an entity still wo
 A thin strip under the top bar situates the diagram you're editing in the canonical Thinking-Process sequence — **CRT → EC → FRT → PRT → TT** — with **Goal Tree** and **S&T** shown as a parallel planning branch. The current diagram is filled and marked with a green dot; sibling diagrams you already have open as tabs read as outlined "open" (click to switch to them); the rest are dashed "to-do" (click to create one and open it in a new tab).
 
 When the diagram in front of you reaches a milestone, a suggestion appears on the right — for example, once a CRT has a **root cause**, the strip nudges you to *break it with an Evaporating Cloud*. Click the suggestion to jump straight there. It stays quiet until the next step is genuinely earned, so it guides without nagging.
+
+Need the space? **Collapse the strip** with the chevron at its right edge — it hides completely, and you can bring it back any time from the top-bar **⋮ overflow → Show method path**. Your choice is remembered across reloads.
 
 ## The Start page
 

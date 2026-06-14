@@ -1,4 +1,4 @@
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MethodStepper } from '@/components/toolbar/MethodStepper';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -45,5 +45,12 @@ describe('MethodStepper', () => {
     });
     const { container } = render(<MethodStepper />);
     expect(container.textContent).toContain('break it with an Evaporating Cloud');
+  });
+
+  it('the collapse control hides the strip via the persisted pref (Session 188)', () => {
+    render(<MethodStepper />);
+    expect(useDocumentStore.getState().methodPathCollapsed).toBe(false);
+    act(() => fireEvent.click(screen.getByLabelText('Hide method path')));
+    expect(useDocumentStore.getState().methodPathCollapsed).toBe(true);
   });
 });

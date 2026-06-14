@@ -48,6 +48,9 @@ export type PreferencesSlice = {
   growCardsToFitText: boolean;
   /** Session 182 — Building Blocks rail collapsed (default expanded). */
   blocksRailCollapsed: boolean;
+  /** Session 188 — Method-path strip collapsed (default expanded). When
+   *  collapsed the strip is fully hidden and reopened from the ⋮ menu. */
+  methodPathCollapsed: boolean;
   printInkSaver: boolean;
   layoutMode: LayoutMode;
   causalityLabel: CausalityLabel;
@@ -145,6 +148,8 @@ export type PreferencesSlice = {
   setGrowCardsToFitText: (grow: boolean) => void;
   /** Session 182 — collapse/expand the Building Blocks rail. */
   setBlocksRailCollapsed: (collapsed: boolean) => void;
+  /** Session 188 — collapse/expand the method-path strip. */
+  setMethodPathCollapsed: (collapsed: boolean) => void;
   setPrintInkSaver: (on: boolean) => void;
   setLayoutMode: (mode: LayoutMode) => void;
   setCausalityLabel: (label: CausalityLabel) => void;
@@ -207,6 +212,7 @@ export type PreferencesDataKeys =
   | 'showMinimap'
   | 'growCardsToFitText'
   | 'blocksRailCollapsed'
+  | 'methodPathCollapsed'
   | 'printInkSaver'
   | 'layoutMode'
   | 'causalityLabel'
@@ -246,6 +252,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   showMinimap: true,
   growCardsToFitText: false,
   blocksRailCollapsed: false,
+  methodPathCollapsed: false,
   printInkSaver: false,
   layoutMode: 'flow',
   // Session 136 — default flipped from 'none' to 'auto' per Dann's
@@ -321,6 +328,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       showMinimap: s.showMinimap,
       growCardsToFitText: s.growCardsToFitText,
       blocksRailCollapsed: s.blocksRailCollapsed,
+      methodPathCollapsed: s.methodPathCollapsed,
       printInkSaver: s.printInkSaver,
       layoutMode: s.layoutMode,
       causalityLabel: s.causalityLabel,
@@ -355,6 +363,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     showMinimap: initialPrefs.showMinimap,
     growCardsToFitText: initialPrefs.growCardsToFitText,
     blocksRailCollapsed: initialPrefs.blocksRailCollapsed,
+    methodPathCollapsed: initialPrefs.methodPathCollapsed,
     printInkSaver: initialPrefs.printInkSaver,
     layoutMode: initialPrefs.layoutMode,
     causalityLabel: initialPrefs.causalityLabel,
@@ -420,6 +429,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setBlocksRailCollapsed: (collapsed) => {
       set({ blocksRailCollapsed: collapsed });
+      persistPrefs();
+    },
+    setMethodPathCollapsed: (collapsed) => {
+      set({ methodPathCollapsed: collapsed });
       persistPrefs();
     },
     setShowReverseReachBadges: (show) => {
@@ -550,6 +563,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         showMinimap: d.showMinimap,
         growCardsToFitText: d.growCardsToFitText,
         blocksRailCollapsed: d.blocksRailCollapsed,
+        methodPathCollapsed: d.methodPathCollapsed,
         printInkSaver: d.printInkSaver,
         layoutMode: d.layoutMode,
         causalityLabel: d.causalityLabel,

@@ -123,6 +123,26 @@ describe('KebabMenu', () => {
     expect(useDocumentStore.getState().browseLocked).toBe(true);
   });
 
+  it('Method-path menuitem toggles methodPathCollapsed (Session 188)', () => {
+    const { container } = render(<KebabMenu />);
+    openMenu(container);
+    const hideItem = Array.from(
+      container.querySelectorAll('[role="menuitem"], [role="menuitemcheckbox"]')
+    ).find((b) => b.textContent?.includes('Hide method path')) as HTMLButtonElement;
+    expect(hideItem).toBeTruthy();
+    expect(useDocumentStore.getState().methodPathCollapsed).toBe(false);
+    click(hideItem);
+    expect(useDocumentStore.getState().methodPathCollapsed).toBe(true);
+    // Re-open — the label flips to "Show method path".
+    openMenu(container);
+    const showItem = Array.from(
+      container.querySelectorAll('[role="menuitem"], [role="menuitemcheckbox"]')
+    ).find((b) => b.textContent?.includes('Show method path')) as HTMLButtonElement;
+    expect(showItem).toBeTruthy();
+    click(showItem);
+    expect(useDocumentStore.getState().methodPathCollapsed).toBe(false);
+  });
+
   it('Layout-mode menuitem flips between flow and radial', () => {
     const { container } = render(<KebabMenu />);
     openMenu(container);

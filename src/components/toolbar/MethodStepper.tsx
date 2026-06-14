@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronUp, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { DIAGRAM_SHORT_LABEL, DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
@@ -18,13 +18,14 @@ import { currentDoc } from '@/store/selectors';
  * milestone — e.g. a CRT with a root cause → "break it with an Evaporating Cloud".
  */
 export function MethodStepper() {
-  const { doc, tabOrder, docs, openDocInTab, switchTab } = useDocumentStore(
+  const { doc, tabOrder, docs, openDocInTab, switchTab, setMethodPathCollapsed } = useDocumentStore(
     useShallow((s) => ({
       doc: currentDoc(s),
       tabOrder: s.tabOrder,
       docs: s.docs,
       openDocInTab: s.openDocInTab,
       switchTab: s.switchTab,
+      setMethodPathCollapsed: s.setMethodPathCollapsed,
     }))
   );
 
@@ -106,17 +107,28 @@ export function MethodStepper() {
           <Step key={dt} dt={dt} chevron={i < TP_GOAL_BRANCH.length - 1} />
         ))}
       </nav>
-      {next && (
+      <div className="ml-auto flex shrink-0 items-center gap-1.5">
+        {next && (
+          <button
+            type="button"
+            onClick={() => goTo(next.diagram)}
+            className="hidden shrink-0 items-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-medium text-[11px] text-indigo-700 transition hover:bg-indigo-100 lg:inline-flex dark:border-indigo-800/50 dark:bg-indigo-950/40 dark:text-indigo-300"
+          >
+            <Sparkles className="h-3.5 w-3.5" aria-hidden />
+            {next.label}
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+          </button>
+        )}
         <button
           type="button"
-          onClick={() => goTo(next.diagram)}
-          className="ml-auto hidden shrink-0 items-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-medium text-[11px] text-indigo-700 transition hover:bg-indigo-100 lg:inline-flex dark:border-indigo-800/50 dark:bg-indigo-950/40 dark:text-indigo-300"
+          onClick={() => setMethodPathCollapsed(true)}
+          title="Hide the method path — reopen it from the ⋮ menu"
+          aria-label="Hide method path"
+          className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-neutral-400 transition hover:bg-neutral-200/70 hover:text-neutral-700 dark:hover:bg-neutral-800/70 dark:hover:text-neutral-200"
         >
-          <Sparkles className="h-3.5 w-3.5" aria-hidden />
-          {next.label}
-          <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+          <ChevronUp className="h-3.5 w-3.5" aria-hidden />
         </button>
-      )}
+      </div>
     </div>
   );
 }

@@ -99,6 +99,8 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     growCardsToFitText: raw?.growCardsToFitText === true,
     // Session 182 — Building Blocks rail expanded by default (collapsed = false).
     blocksRailCollapsed: raw?.blocksRailCollapsed === true,
+    // Session 188 — method-path strip expanded by default (collapsed = false).
+    methodPathCollapsed: raw?.methodPathCollapsed === true,
     // Ink-saver default OFF — preserves the colourful look people expect on
     // screen; users opt in when they're about to print.
     printInkSaver: raw?.printInkSaver === true,

@@ -198,6 +198,8 @@ export type StoredPrefs = {
   growCardsToFitText?: boolean;
   /** Session 182 — Building Blocks rail collapsed. Default `false` (expanded). */
   blocksRailCollapsed?: boolean;
+  /** Session 188 — method-path strip collapsed. Default `false` (expanded). */
+  methodPathCollapsed?: boolean;
   /** F6: ink-saving print mode — strips entity-stripe fills and drops the
    *  group background tints when sent to a printer / PDF. */
   printInkSaver?: boolean;

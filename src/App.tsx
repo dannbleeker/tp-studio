@@ -231,6 +231,9 @@ export function App() {
   // Session 183 — the Start (workspace) surface. Non-null → render the Start
   // shell instead of the editor chrome + canvas.
   const startSection = useDocumentStore((s) => s.startSection);
+  // Session 188 — the method-path strip is collapsible (persisted); when
+  // collapsed it is fully hidden and reopened from the ⋮ overflow menu.
+  const methodPathCollapsed = useDocumentStore((s) => s.methodPathCollapsed);
 
   // FL-EX9: surface a recovery toast when the previous session ended
   // unexpectedly.
@@ -339,8 +342,9 @@ export function App() {
                 </div>
                 <TopBar />
               </div>
-              {/* Session 182 — method-path stepper (hidden in reader's minimal chrome). */}
-              {!isReader && <MethodStepper />}
+              {/* Session 182 — method-path stepper (hidden in reader's minimal chrome).
+                  Session 188 — collapsible; hidden when methodPathCollapsed. */}
+              {!isReader && !methodPathCollapsed && <MethodStepper />}
             </header>
           )}
           {/* The canvas, its overlays, and the Inspector live in a flex-1

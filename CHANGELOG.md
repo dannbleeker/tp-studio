@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 188 — Method-path strip is collapsible
+
+The method-path strip under the top bar is now collapsible, so it stops claiming a full row when you
+don't need it (Dann's request). Layered on the existing stepper — **no change** to the method sequence,
+the next-step logic, or any other behaviour.
+
+- **Collapse from the strip, reopen from the ⋮ menu.** A chevron at the strip's right edge hides it
+  completely (the row is fully reclaimed, not just slimmed); the top-bar overflow ⋮ gains a **Show /
+  Hide method path** toggle to bring it back. The choice is a persisted `methodPathCollapsed` preference
+  (default expanded) that mirrors the Building Blocks rail's `blocksRailCollapsed` exactly — remembered
+  across reloads and documents.
+- The next-step suggestion chip moved into a right-aligned cluster next to the new collapse control; its
+  appearance and behaviour are unchanged.
+- Tests: the MethodStepper spec gains a collapse-button case and the KebabMenu spec a show/hide-toggle
+  case. Docs: USER_GUIDE's "What you see" table + Method-path section note the collapse + reopen path.
+
 ## Session 187 — Design-handoff fidelity pass (UX Redesign mockup)
 
 A Claude Design handoff bundle (`TP Studio UX Redesign.html` + its `redesign/*.jsx` source) was imported

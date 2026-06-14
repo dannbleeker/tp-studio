@@ -10,6 +10,7 @@ import {
   Orbit,
   PanelRight,
   Redo2,
+  Sparkles,
   Sun,
   Undo2,
 } from 'lucide-react';
@@ -61,6 +62,8 @@ export function KebabMenu() {
   } = useToolbarActions();
   const browseLocked = useDocumentStore((s) => s.browseLocked);
   const setBrowseLocked = useDocumentStore((s) => s.setBrowseLocked);
+  const methodPathCollapsed = useDocumentStore((s) => s.methodPathCollapsed);
+  const setMethodPathCollapsed = useDocumentStore((s) => s.setMethodPathCollapsed);
 
   useOutsideAndEscape(containerRef, () => setOpen(false), open);
   useAutoFocusFirstEnabled(menuRef, open, '[role="menuitem"], [role="menuitemcheckbox"]');
@@ -212,6 +215,16 @@ export function KebabMenu() {
           >
             <PanelRight className="h-3.5 w-3.5" />
             <span>{inspectorHidden ? 'Show inspector' : 'Hide inspector'}</span>
+          </button>
+          <button
+            type="button"
+            role="menuitemcheckbox"
+            className={itemClass}
+            onClick={runAndClose(() => setMethodPathCollapsed(!methodPathCollapsed))}
+            aria-checked={!methodPathCollapsed}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>{methodPathCollapsed ? 'Show method path' : 'Hide method path'}</span>
           </button>
           <button
             type="button"
