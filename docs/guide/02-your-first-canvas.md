@@ -31,11 +31,11 @@ Your work auto-saves to this browser on every change. Closing the tab keeps the 
 | **Title + type badge** | Top-left | Click the title to rename. A `CRT` / `FRT` / `EC` / etc. badge shows the diagram type; the small ⓘ icon opens the Document Inspector. |
 | **Command search** | Top-center | Click it (or press `Cmd/Ctrl+K`) to open the command palette. |
 | **Building Blocks rail** | Left edge | Type-led entity creation for the current diagram — click a block to drop that entity at the canvas centre. Collapsible. |
-| **Method path** | Strip under the top bar | Where the active diagram sits in the TP sequence (CRT → EC → FRT → PRT → TT, plus the Goal / S&T branch), with a suggested next step. |
+| **Method path** | Strip under the top bar | Where the active diagram sits in the TP sequence (CRT → EC → FRT → PRT → TT, plus the Goal / S&T branch), with a suggested next step. **Collapsible** — hide it with its chevron, reopen from the ⋮ menu. |
 | **Logic check chip** | Top-right | Emerald **"all clear"** or amber **"N to review"** — opens the CLR (Categories of Legitimate Reservation) panel. |
 | **Undo / Redo · History · Comments** | Top-right | Step through edits; the Revision panel; review comments. |
 | **Share · Export** | Top-right | Copy a read-only share link; open the unified Export picker. |
-| **Overflow (⋮)** | Top-right | Theme, Browse Lock, Help, and the layout-mode toggle. |
+| **Overflow (⋮)** | Top-right | Theme, Browse Lock, Help, the layout-mode toggle, and **Show / Hide method path**. |
 | **Canvas** | Center | The infinite dot-grid where your diagram lives. Pan with middle-click drag or two-finger scroll; zoom with the wheel or `+` / `-`. |
 | **Zoom controls** | Bottom | Zoom in, zoom out, fit-to-view. |
 | **Inspector** | Right panel | Slides in when you select an entity or edge — title, type, description, attributes, and warnings. Shares the dock with the Logic-check panel. |
