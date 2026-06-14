@@ -5,7 +5,7 @@ description: Run the full TP Studio verification gate on demand (tsc · biome ·
 
 Run the full verification gate for TP Studio and report the result. This is a mid-session check — **do not commit or push** (that's `/session-end`).
 
-Prefix every command with `cd /c/dev/tp-studio &&` — `pnpm`/`npx` are AppLocker-blocked, so use the node entry points. Run in this order; on the **first** failure, stop and diagnose from the real error rather than pushing past it:
+Prefix every command with `cd /c/devtools/tp-studio &&` — `pnpm`/`npx` are AppLocker-blocked, so use the node entry points. Run in this order; on the **first** failure, stop and diagnose from the real error rather than pushing past it:
 
 1. `node ./node_modules/typescript/bin/tsc --noEmit`
 2. `node ./node_modules/@biomejs/biome/bin/biome check <changed files>` (or `.` for everything; add `--write` to autofix, then re-check)
