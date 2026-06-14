@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-13T23:59:43.135Z",
-  "commit": "45e2537",
+  "generatedAt": "2026-06-14T04:20:56.393Z",
+  "commit": "05fe95a",
   "headline": {
     "linesTsJs": 128590,
     "tests": 4252,
     "lineCoveragePct": 95.93,
-    "commits": 843,
+    "commits": 845,
     "ageDays": 33,
     "trackedFiles": 1025,
     "featureManualPct": 100,
@@ -51,8 +51,8 @@
       "total": 13042
     },
     "statements": {
-      "pct": 93.31,
-      "covered": 14249,
+      "pct": 93.32,
+      "covered": 14250,
       "total": 15269
     },
     "functions": {
@@ -61,35 +61,35 @@
       "total": 2939
     },
     "branches": {
-      "pct": 83.83,
-      "covered": 8209,
+      "pct": 83.84,
+      "covered": 8210,
       "total": 9792
     }
   },
   "tests": {
     "unit": 4160,
     "e2e": 92,
-    "durationMs": 214108,
+    "durationMs": 215587,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10932
+        "ms": 9920
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4793
+        "ms": 5043
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4164
-      },
-      {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2342
+        "ms": 4157
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2233
+        "ms": 2906
+      },
+      {
+        "file": "tests/components/EdgeInspector.test.tsx",
+        "ms": 2093
       }
     ]
   },
@@ -610,16 +610,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 33,
-    "commits": 843,
-    "commits7d": 261,
+    "commits": 845,
+    "commits7d": 263,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 679
+        "count": 680
       },
       {
         "name": "github-actions[bot]",
-        "count": 153
+        "count": 154
       },
       {
         "name": "dannbleeker",
@@ -627,8 +627,8 @@
       }
     ],
     "churn30d": {
-      "added": 131446,
-      "removed": 32673
+      "added": 131493,
+      "removed": 32720
     },
     "changelogEntries": 337
   }
