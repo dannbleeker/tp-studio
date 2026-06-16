@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 188 (cont.) — Dashboard load coverage
+
+The live dashboard (`public/dashboard.html`) — a standalone static page that lives outside the React
+app and the type system — had no automated coverage, so a renamed element id or a dropped data fetch
+could break it silently. Verified it renders end-to-end (the live GitHub repo pulse, the Chart.js
+charts, and the `stats.json` CI metrics all populate) and added two layers of "does it load" coverage:
+
+- **Structural guard** (`tests/dashboard.test.ts`, unit suite): asserts the HTML ↔ inline-JS contract —
+  every element id the script writes into exists in the markup AND is targeted by the script, the page
+  fetches `stats.json` / `stats-history.json`, both loaders are wired to `window.load`, and the
+  live-fetch failure path degrades gracefully.
+- **Browser load test** (`e2e/dashboard.spec.ts`, Playwright): loads `/dashboard.html` in real Chromium
+  with the GitHub API + Chart.js CDN stubbed (hermetic — no network, no rate limits), and asserts the
+  `stats.json` metrics populate (`#stats-body` shown, headline numbers filled, code/coverage rows
+  rendered), the section scaffolding renders, and no uncaught JS errors fire.
+
 ## Session 188 — Method-path strip is collapsible
 
 The method-path strip under the top bar is now collapsible, so it stops claiming a full row when you
