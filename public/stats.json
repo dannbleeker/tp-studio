@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-18T09:02:31.452Z",
-  "commit": "9b63b0e",
+  "generatedAt": "2026-06-18T09:16:14.231Z",
+  "commit": "5db8d68",
   "headline": {
-    "linesTsJs": 128815,
+    "linesTsJs": 128848,
     "tests": 4264,
     "lineCoveragePct": 95.96,
-    "commits": 859,
+    "commits": 861,
     "ageDays": 37,
     "trackedFiles": 1028,
     "featureManualPct": 100,
@@ -31,7 +31,7 @@
     {
       "category": "Build scripts",
       "files": 20,
-      "lines": 4213
+      "lines": 4246
     },
     {
       "category": "Styles (CSS)",
@@ -69,27 +69,27 @@
   "tests": {
     "unit": 4168,
     "e2e": 96,
-    "durationMs": 227847,
+    "durationMs": 213687,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10425
+        "ms": 10234
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5326
+        "ms": 4761
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4565
+        "ms": 4276
       },
       {
-        "file": "tests/components/EdgeInspector.test.tsx",
-        "ms": 2934
+        "file": "tests/components/comments/CommentsPanel.test.tsx",
+        "ms": 2484
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2753
+        "ms": 2172
       }
     ]
   },
@@ -610,16 +610,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 37,
-    "commits": 859,
-    "commits7d": 98,
+    "commits": 861,
+    "commits7d": 100,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 685
+        "count": 686
       },
       {
         "name": "github-actions[bot]",
-        "count": 163
+        "count": 164
       },
       {
         "name": "dannbleeker",
@@ -627,8 +627,8 @@
       }
     ],
     "churn30d": {
-      "added": 109638,
-      "removed": 24683
+      "added": 109875,
+      "removed": 24865
     },
     "changelogEntries": 340
   }
