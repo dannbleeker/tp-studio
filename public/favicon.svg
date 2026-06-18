@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="TP Studio">
+  <!--
+    Session 189 — favicon matching the Start workspace's brand mark
+    (StartSidebar.tsx): the lucide `git-branch` glyph on a rounded square.
+    Geometry mirrors the in-app mark exactly — a 32px `rounded-md` (rx=6)
+    square with the 24-unit lucide icon scaled to 16px (h-4 w-4) and
+    centred (translate 8, scale 2/3). Colours adapt to the browser's
+    colour scheme the same way the in-app square does: neutral-900 square
+    + white glyph in light mode, neutral-100 square + neutral-900 glyph in
+    dark. Presentation attributes carry the light-mode look as a fallback
+    for renderers that ignore the embedded <style>; the CSS overrides win
+    where supported.
+  -->
+  <style>
+    .sq { fill: #171717; }
+    .ic { stroke: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .sq { fill: #f5f5f5; }
+      .ic { stroke: #171717; }
+    }
+  </style>
+  <rect class="sq" width="32" height="32" rx="6" fill="#171717" />
+  <g
+    class="ic"
+    transform="translate(8 8) scale(0.66667)"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M15 6a9 9 0 0 0-9 9V3" />
+    <circle cx="18" cy="6" r="3" />
+    <circle cx="6" cy="18" r="3" />
+  </g>
+</svg>

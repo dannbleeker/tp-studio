@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 189 — Favicon matches the Start workspace mark
+
+The browser-tab favicon now matches the brand mark you see inside the app's Start
+workspace (`StartSidebar.tsx`) — the lucide `git-branch` glyph on a rounded square —
+instead of the older "TP" monogram. Dann's request.
+
+- **New `public/favicon.svg`.** Geometry mirrors the in-app mark exactly: a 32px
+  `rounded-md` (rx=6) square with the 24-unit `git-branch` glyph scaled to 16px and
+  centred. Colours adapt to the browser's colour scheme the same way the in-app square
+  does — neutral-900 square + white glyph in light mode, neutral-100 + neutral-900 glyph
+  in dark — via a `prefers-color-scheme` block, with light-mode presentation attributes
+  as a fallback for renderers that ignore the embedded `<style>`.
+- **`index.html`** points `rel="icon"` at the SVG (crisp at any size, colour-scheme
+  adaptive) and keeps the existing `icon-192.png` as a `rel="icon"` fallback for browsers
+  without SVG-favicon support. `apple-touch-icon` stays PNG (Safari ignores SVG there).
+- **PWA install icons are unchanged.** The manifest's `icon-192/512(-maskable).png` set
+  (the home-screen / installed-app icon) keeps the "TP" monogram — this change is
+  scoped to the browser-tab favicon only.
+
 ## Session 188 (cont.) — Dashboard load coverage
 
 The live dashboard (`public/dashboard.html`) — a standalone static page that lives outside the React
