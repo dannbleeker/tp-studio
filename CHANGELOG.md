@@ -2,11 +2,12 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 189 — Favicon matches the Start workspace mark
+## Session 189 — Brand mark replaces the "TP" monogram (favicon + PWA icons)
 
-The browser-tab favicon now matches the brand mark you see inside the app's Start
-workspace (`StartSidebar.tsx`) — the lucide `git-branch` glyph on a rounded square —
-instead of the older "TP" monogram. Dann's request.
+The browser-tab favicon **and** the PWA / installed-app icons now use the app's brand
+mark — the lucide `git-branch` glyph on a dark rounded square, the same mark shown in the
+top bar (`HomeLogo.tsx`) and the Start workspace (`StartSidebar.tsx`) — replacing the
+older white "TP" monogram on indigo. Dann's request.
 
 - **New `public/favicon.svg`.** Geometry mirrors the in-app mark exactly: a 32px
   `rounded-md` (rx=6) square with the 24-unit `git-branch` glyph scaled to 16px and
@@ -14,12 +15,20 @@ instead of the older "TP" monogram. Dann's request.
   does — neutral-900 square + white glyph in light mode, neutral-100 + neutral-900 glyph
   in dark — via a `prefers-color-scheme` block, with light-mode presentation attributes
   as a fallback for renderers that ignore the embedded `<style>`.
+- **PWA / manifest icons regenerated.** `scripts/generate-pwa-icons.mjs` now renders the
+  `git-branch` glyph on a neutral-900 square instead of the white-"TP"-on-indigo monogram.
+  The glyph has curves (two rings + a quarter-arc), so the generator switched from the
+  old 5×7 bitmap-font path to a signed-distance-field rasteriser supersampled 4× for
+  clean anti-aliasing. `icon-192/512.png` keep the rounded-square look (transparent
+  corners); `icon-192/512-maskable.png` are full-bleed so a platform mask never reveals a
+  transparent corner, with the glyph held inside the maskable safe zone.
 - **`index.html`** points `rel="icon"` at the SVG (crisp at any size, colour-scheme
-  adaptive) and keeps the existing `icon-192.png` as a `rel="icon"` fallback for browsers
-  without SVG-favicon support. `apple-touch-icon` stays PNG (Safari ignores SVG there).
-- **PWA install icons are unchanged.** The manifest's `icon-192/512(-maskable).png` set
-  (the home-screen / installed-app icon) keeps the "TP" monogram — this change is
-  scoped to the browser-tab favicon only.
+  adaptive) with `icon-192.png` as a `rel="icon"` fallback; `apple-touch-icon` uses the
+  full-bleed `icon-192-maskable.png` (opaque — Safari ignores SVG, and iOS expects no
+  transparency).
+- **Unchanged on purpose:** the manifest `theme_color` / `<meta name="theme-color">`
+  stays indigo (still the app's accent colour throughout the UI), and `og-image.png`
+  keeps its share-banner wordmark — both are separate from the square icon mark.
 
 ## Session 188 (cont.) — Dashboard load coverage
 

@@ -124,7 +124,7 @@ Four PNG files in `public/`:
 - `icon-192-maskable.png` — Android/Windows maskable variant (content in central 80% safe zone)
 - `icon-512-maskable.png` — same, 512×512
 
-Design: white "TP" monogram on indigo-500 background, rounded square. Generated programmatically via a small Node script that emits the four PNGs at build time (or pre-generated once and committed). Pre-generate is simpler — commit them.
+Design (Session 189): white lucide `git-branch` glyph on a neutral-900 rounded square — the app's brand mark (same as `HomeLogo.tsx` / `StartSidebar.tsx` and the `favicon.svg`), replacing the earlier white "TP" monogram on indigo-500. Generated programmatically via a small Node script (`scripts/generate-pwa-icons.mjs`, an SDF rasteriser supersampled 4× for the glyph's curves) that emits the four PNGs; pre-generated once and committed.
 
 ### 4. Update-prompt toast wiring (30 min)
 

@@ -1,16 +1,27 @@
-// Session 89 — generate the four PWA icons in public/ as PNGs.
+// Session 89 / rev. Session 189 — generate the four PWA icons in
+// public/ as PNGs.
 //
 // Pure-Node PNG encoder (no `sharp`, no `pngjs`) so the script runs
-// against the repo's existing dependencies. The icons are simple
-// enough that hand-rolling RGBA + zlib is cheaper than dragging in a
-// drawing library:
-//   - indigo-500 (#6366f1) rounded-square background
-//   - white "TP" monogram, centred
+// against the repo's existing dependencies, with a small analytic
+// rasteriser for the brand mark:
+//   - neutral-900 (#171717) rounded-square background
+//   - white lucide `git-branch` glyph, centred
 //
-// The maskable variants keep the visual within the central 80% safe
-// zone (Android / Windows clip the outer 10% to fit their masks). We
-// achieve that here by simply scaling the monogram down to 60% of the
-// canvas — leaving generous padding for any platform mask shape.
+// Session 189 swapped the old white "TP" monogram on indigo for the
+// app's actual brand mark — the lucide `git-branch` glyph on a dark
+// rounded square — so the installed-app / home-screen icon matches the
+// in-app logo (`HomeLogo.tsx` / `StartSidebar.tsx`) AND the browser-tab
+// favicon (`public/favicon.svg`). The glyph has curves (two rings + a
+// quarter-arc), so the renderer is a signed-distance-field rasteriser
+// supersampled 4× and box-downsampled for clean anti-aliasing — the old
+// 5×7 bitmap-font path only handled axis-aligned monogram edges.
+//
+// Standard vs maskable: the standard icons keep the favicon's look — a
+// rounded square with transparent corners. The maskable variants fill
+// the whole canvas (opaque, square) so a platform mask (Android /
+// Windows circle/squircle) never reveals a transparent corner; the
+// glyph stays in the central safe zone either way (it spans ~29–71% of
+// the canvas, comfortably inside the maskable 80% safe circle).
 //
 // Run with: `node scripts/generate-pwa-icons.mjs`. Idempotent.
 
@@ -24,142 +35,164 @@ const here = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(here, '..', 'public');
 mkdirSync(publicDir, { recursive: true });
 
-// Indigo-500 (matches Tailwind's `indigo-500` and the manifest's
-// `theme_color`). RGB triple.
-const BG = [0x63, 0x66, 0xf1];
-// White monogram.
-const FG = [0xff, 0xff, 0xff];
+// neutral-900 square + white glyph — matches the in-app brand mark
+// (Tailwind `bg-neutral-900` / `text-white`) and the favicon's
+// light-mode colours. RGB triples.
+const SQUARE = [0x17, 0x17, 0x17];
+const GLYPH = [0xff, 0xff, 0xff];
 
-// 5x7 bitmap font for the letters T and P. Each row is 5 bits left to
-// right; 1 = foreground, 0 = background. Enough to render "TP".
-const FONT = {
-  T: [
-    [1, 1, 1, 1, 1],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-  ],
-  P: [
-    [1, 1, 1, 1, 0],
-    [1, 0, 0, 0, 1],
-    [1, 0, 0, 0, 1],
-    [1, 1, 1, 1, 0],
-    [1, 0, 0, 0, 0],
-    [1, 0, 0, 0, 0],
-    [1, 0, 0, 0, 0],
-  ],
-};
+// Supersample factor for anti-aliasing. Render at 4× then box-downsample
+// — 16 samples per output pixel smooths the rings + arc without a
+// drawing library.
+const SS = 4;
 
-/** Build a size×size RGBA buffer for the icon. `safeZoneFraction`
- *  controls how big the monogram is relative to the canvas — 0.85 for
- *  the standard icon (just inset from the rounded corners), 0.55 for
- *  the maskable variant so platform mask clipping never touches the
- *  monogram. */
-function buildIcon(size, safeZoneFraction) {
-  const pixels = new Uint8Array(size * size * 4);
+// Corner radius of the standard (non-maskable) rounded square, as a
+// fraction of the side. Matches the favicon's 6/32 ≈ 0.1875.
+const CORNER_FRACTION = 0.1875;
 
-  // Background — solid indigo-500 with rounded corners. Corner radius
-  // is ~20% of the canvas side (matches the PWA "rounded square"
-  // aesthetic; Android wraps the maskable variant with its own mask
-  // so the radius there is irrelevant — the padding does the work).
-  const radius = Math.round(size * 0.2);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const inCorner = isOutsideRoundedSquare(x, y, size, radius);
-      const idx = (y * size + x) * 4;
-      if (inCorner) {
-        pixels[idx + 0] = 0;
-        pixels[idx + 1] = 0;
-        pixels[idx + 2] = 0;
-        pixels[idx + 3] = 0; // transparent
-      } else {
-        pixels[idx + 0] = BG[0];
-        pixels[idx + 1] = BG[1];
-        pixels[idx + 2] = BG[2];
-        pixels[idx + 3] = 0xff;
+// The glyph's 24-unit lucide viewBox is scaled to this fraction of the
+// canvas and centred — mirrors the favicon (16px glyph in a 32px square).
+const GLYPH_FRACTION = 0.5;
+
+// --- git-branch glyph geometry (lucide v1.16, 24-unit viewBox) -------
+// Path `M15 6 a9 9 0 0 0 -9 9 V3` + two `r=3` circles, all stroked at
+// width 2 with round caps/joins. Expressed here as centreline distance
+// fields so the stroke (and its round caps/joins) fall out of a single
+// `<= halfStroke` test.
+const STROKE_HALF = 1; // half of lucide stroke-width 2, in glyph units
+
+// Vertical segment of the path: from (6,3) down to (6,15).
+const SEG_A = [6, 3];
+const SEG_B = [6, 15];
+// Quarter-arc of the path: centre (15,15), radius 9, sweeping the
+// upper-left quadrant (angles π‥3π/2) between (15,6) and (6,15).
+const ARC_C = [15, 15];
+const ARC_R = 9;
+const ARC_E1 = [15, 6];
+const ARC_E2 = [6, 15];
+// The two branch nodes (stroked rings).
+const RING1 = [18, 6];
+const RING2 = [6, 18];
+const RING_R = 3;
+
+function hypot(dx, dy) {
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+/** Distance from p to the line segment a→b (round-capped: outside the
+ *  segment span the nearest point is an endpoint). */
+function distSegment(px, py, a, b) {
+  const vx = b[0] - a[0];
+  const vy = b[1] - a[1];
+  const wx = px - a[0];
+  const wy = py - a[1];
+  const len2 = vx * vx + vy * vy;
+  let t = len2 === 0 ? 0 : (wx * vx + wy * vy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  return hypot(px - (a[0] + t * vx), py - (a[1] + t * vy));
+}
+
+/** Distance from p to the quarter-arc (centre ARC_C, radius ARC_R). On
+ *  the arc's angular span → radial distance; outside it → distance to the
+ *  nearer endpoint, which gives the round caps. */
+function distArc(px, py) {
+  let ang = Math.atan2(py - ARC_C[1], px - ARC_C[0]);
+  if (ang < 0) ang += 2 * Math.PI; // normalise to [0, 2π)
+  if (ang >= Math.PI && ang <= 1.5 * Math.PI) {
+    return Math.abs(hypot(px - ARC_C[0], py - ARC_C[1]) - ARC_R);
+  }
+  return Math.min(hypot(px - ARC_E1[0], py - ARC_E1[1]), hypot(px - ARC_E2[0], py - ARC_E2[1]));
+}
+
+/** Distance from p to a stroked ring's centreline circle. */
+function distRing(px, py, c) {
+  return Math.abs(hypot(px - c[0], py - c[1]) - RING_R);
+}
+
+/** True if (gx,gy) in 24-unit glyph space is inside the stroked glyph. */
+function inGlyph(gx, gy) {
+  const d = Math.min(
+    distSegment(gx, gy, SEG_A, SEG_B),
+    distArc(gx, gy),
+    distRing(gx, gy, RING1),
+    distRing(gx, gy, RING2)
+  );
+  return d <= STROKE_HALF;
+}
+
+/** True if (x,y) in [0,S) is inside the rounded square of side S with the
+ *  given corner radius. */
+function inRoundedSquare(x, y, S, radius) {
+  const dx = Math.max(radius - x, x - (S - 1 - radius), 0);
+  const dy = Math.max(radius - y, y - (S - 1 - radius), 0);
+  return dx * dx + dy * dy <= radius * radius;
+}
+
+/** Build a size×size RGBA buffer for the icon, supersampled SS× and
+ *  box-downsampled (premultiplied alpha) for anti-aliasing. */
+function buildIcon(size, { maskable }) {
+  const S = size * SS;
+  const radius = CORNER_FRACTION * S;
+  // Map glyph 24-unit space → supersampled pixels.
+  const glyphPx = GLYPH_FRACTION * S;
+  const scale = glyphPx / 24;
+  const origin = (S - glyphPx) / 2;
+
+  // Hi-res RGBA: index 0..3 per pixel.
+  const hi = new Uint8Array(S * S * 4);
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const idx = (y * S + x) * 4;
+      // Glyph test in 24-unit space (sample pixel centre).
+      const gx = (x + 0.5 - origin) / scale;
+      const gy = (y + 0.5 - origin) / scale;
+      const onGlyph = gx >= 0 && gx <= 24 && gy >= 0 && gy <= 24 && inGlyph(gx, gy);
+      // Background: full-bleed for maskable, rounded for standard.
+      const onSquare = maskable || inRoundedSquare(x, y, S, radius);
+      if (onGlyph) {
+        hi[idx] = GLYPH[0];
+        hi[idx + 1] = GLYPH[1];
+        hi[idx + 2] = GLYPH[2];
+        hi[idx + 3] = 0xff;
+      } else if (onSquare) {
+        hi[idx] = SQUARE[0];
+        hi[idx + 1] = SQUARE[1];
+        hi[idx + 2] = SQUARE[2];
+        hi[idx + 3] = 0xff;
       }
+      // else: leave transparent (zero-initialised).
     }
   }
 
-  // Monogram — "TP" rendered at glyph height = safeZoneFraction * size.
-  // The 5x7 base bitmap scales by integer multiples so anti-aliasing
-  // isn't an issue at the sizes we ship (192 / 512).
-  const charsT = FONT.T;
-  const charsP = FONT.P;
-  const baseGlyphW = 5;
-  const baseGlyphH = 7;
-  const baseGap = 2; // gap between T and P in font-units
-  const baseTextW = baseGlyphW * 2 + baseGap;
-
-  const safeSize = size * safeZoneFraction;
-  // Scale the glyph so the *text block* (T + gap + P) fits inside the
-  // safe zone. Then enforce an integer pixel scale so the edges stay
-  // crisp without AA.
-  const scale = Math.floor(Math.min(safeSize / baseTextW, safeSize / baseGlyphH));
-  const scaledTextW = baseTextW * scale;
-  const scaledTextH = baseGlyphH * scale;
-  const startX = Math.round((size - scaledTextW) / 2);
-  const startY = Math.round((size - scaledTextH) / 2);
-
-  drawGlyph(pixels, size, startX, startY, scale, charsT);
-  drawGlyph(pixels, size, startX + (baseGlyphW + baseGap) * scale, startY, scale, charsP);
-
-  return pixels;
-}
-
-function isOutsideRoundedSquare(x, y, size, radius) {
-  // Check each of the four corners. Outside the rounded arc → return
-  // true so the caller fills transparent (instead of indigo).
-  const corners = [
-    [radius, radius], // top-left
-    [size - 1 - radius, radius], // top-right
-    [radius, size - 1 - radius], // bottom-left
-    [size - 1 - radius, size - 1 - radius], // bottom-right
-  ];
-  for (const [cx, cy] of corners) {
-    const inXSide = x < cx ? 'left' : x > cx ? 'right' : 'center';
-    const inYSide = y < cy ? 'top' : y > cy ? 'bottom' : 'center';
-    // Only outside the rounded square if both x and y are on the
-    // *outer* side of this corner's centre.
-    if (
-      (cx === radius && inXSide === 'left' && cy === radius && inYSide === 'top') ||
-      (cx === size - 1 - radius && inXSide === 'right' && cy === radius && inYSide === 'top') ||
-      (cx === radius && inXSide === 'left' && cy === size - 1 - radius && inYSide === 'bottom') ||
-      (cx === size - 1 - radius &&
-        inXSide === 'right' &&
-        cy === size - 1 - radius &&
-        inYSide === 'bottom')
-    ) {
-      const dx = x - cx;
-      const dy = y - cy;
-      if (dx * dx + dy * dy > radius * radius) return true;
-    }
-  }
-  return false;
-}
-
-function drawGlyph(pixels, size, originX, originY, scale, glyph) {
-  for (let gy = 0; gy < glyph.length; gy++) {
-    const row = glyph[gy];
-    for (let gx = 0; gx < row.length; gx++) {
-      if (!row[gx]) continue;
-      for (let dy = 0; dy < scale; dy++) {
-        for (let dx = 0; dx < scale; dx++) {
-          const px = originX + gx * scale + dx;
-          const py = originY + gy * scale + dy;
-          if (px < 0 || px >= size || py < 0 || py >= size) continue;
-          const idx = (py * size + px) * 4;
-          pixels[idx + 0] = FG[0];
-          pixels[idx + 1] = FG[1];
-          pixels[idx + 2] = FG[2];
-          pixels[idx + 3] = 0xff;
+  // Box-downsample SS×SS → 1, premultiplied-alpha so the rounded-corner
+  // edge doesn't fringe toward black.
+  const out = new Uint8Array(size * size * 4);
+  for (let oy = 0; oy < size; oy++) {
+    for (let ox = 0; ox < size; ox++) {
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      let aSum = 0;
+      for (let sy = 0; sy < SS; sy++) {
+        for (let sx = 0; sx < SS; sx++) {
+          const sidx = ((oy * SS + sy) * S + (ox * SS + sx)) * 4;
+          const af = hi[sidx + 3] / 255;
+          r += hi[sidx] * af;
+          g += hi[sidx + 1] * af;
+          b += hi[sidx + 2] * af;
+          aSum += hi[sidx + 3];
         }
       }
+      const n = SS * SS;
+      const sumAf = aSum / 255;
+      const oidx = (oy * size + ox) * 4;
+      out[oidx] = sumAf > 0 ? Math.round(r / sumAf) : 0;
+      out[oidx + 1] = sumAf > 0 ? Math.round(g / sumAf) : 0;
+      out[oidx + 2] = sumAf > 0 ? Math.round(b / sumAf) : 0;
+      out[oidx + 3] = Math.round(aSum / n);
     }
   }
+  return out;
 }
 
 // --- PNG encoder ---------------------------------------------------
@@ -222,14 +255,14 @@ function crc32(buf) {
 
 // --- Emit the four files ------------------------------------------
 const targets = [
-  { name: 'icon-192.png', size: 192, safe: 0.85 },
-  { name: 'icon-512.png', size: 512, safe: 0.85 },
-  { name: 'icon-192-maskable.png', size: 192, safe: 0.55 },
-  { name: 'icon-512-maskable.png', size: 512, safe: 0.55 },
+  { name: 'icon-192.png', size: 192, maskable: false },
+  { name: 'icon-512.png', size: 512, maskable: false },
+  { name: 'icon-192-maskable.png', size: 192, maskable: true },
+  { name: 'icon-512-maskable.png', size: 512, maskable: true },
 ];
 
 for (const t of targets) {
-  const rgba = buildIcon(t.size, t.safe);
+  const rgba = buildIcon(t.size, { maskable: t.maskable });
   const png = encodePng(t.size, t.size, rgba);
   const out = join(publicDir, t.name);
   writeFileSync(out, png);
