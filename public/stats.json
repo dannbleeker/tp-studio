@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-16T19:24:26.407Z",
-  "commit": "f5b2090",
+  "generatedAt": "2026-06-18T09:02:31.452Z",
+  "commit": "9b63b0e",
   "headline": {
     "linesTsJs": 128815,
     "tests": 4264,
     "lineCoveragePct": 95.96,
-    "commits": 857,
-    "ageDays": 36,
-    "trackedFiles": 1027,
+    "commits": 859,
+    "ageDays": 37,
+    "trackedFiles": 1028,
     "featureManualPct": 100,
     "featureBookPct": 75.1,
     "featureExamplePct": 27.8
@@ -52,7 +52,7 @@
     },
     "statements": {
       "pct": 93.34,
-      "covered": 14261,
+      "covered": 14260,
       "total": 15277
     },
     "functions": {
@@ -61,35 +61,35 @@
       "total": 2944
     },
     "branches": {
-      "pct": 83.84,
-      "covered": 8212,
+      "pct": 83.83,
+      "covered": 8211,
       "total": 9794
     }
   },
   "tests": {
     "unit": 4168,
     "e2e": 96,
-    "durationMs": 217585,
+    "durationMs": 227847,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10165
+        "ms": 10425
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4808
+        "ms": 5326
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4776
+        "ms": 4565
+      },
+      {
+        "file": "tests/components/EdgeInspector.test.tsx",
+        "ms": 2934
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2526
-      },
-      {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2150
+        "ms": 2753
       }
     ]
   },
@@ -189,9 +189,9 @@
     "nonNull": 99
   },
   "bundle": {
-    "jsGzipKb": 797.1,
+    "jsGzipKb": 797.2,
     "cssGzipKb": 18.6,
-    "totalGzipKb": 815.7,
+    "totalGzipKb": 815.8,
     "budgetKb": 193.4,
     "withinBudget": true
   },
@@ -609,17 +609,17 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 36,
-    "commits": 857,
-    "commits7d": 123,
+    "ageDays": 37,
+    "commits": 859,
+    "commits7d": 98,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 684
+        "count": 685
       },
       {
         "name": "github-actions[bot]",
-        "count": 162
+        "count": 163
       },
       {
         "name": "dannbleeker",
@@ -627,9 +627,9 @@
       }
     ],
     "churn30d": {
-      "added": 113014,
-      "removed": 26176
+      "added": 109638,
+      "removed": 24683
     },
-    "changelogEntries": 339
+    "changelogEntries": 340
   }
 }
