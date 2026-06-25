@@ -2,7 +2,7 @@
   "$schema": "./features.schema.json",
   "note": "Canonical catalogue of TP Studio's user-facing features — the denominator for the feature-coverage metric (scripts/build-stats.mjs). One entry per capability a user can see, do, or configure (dev infrastructure is intentionally excluded). `manual` = covered in USER_GUIDE.md; `book` = covered in a docs/guide chapter; `bookExample` = that chapter carries a worked example. Deduped from the full CHANGELOG (Sessions 1-180) in Session 180. Add a row when a user-facing feature ships and fill its coverage as the manual/book catch up.",
   "areas": ["CRT","EC","FRT","PRT","TT","GoalTree","ST","NBR","Canvas","Editing","Entities","Edges","CLR","Layout","Export","Import","Print","Comments","Revisions","Search","Palette","Settings","Workshop","Reader","Patterns","Start","General"],
-  "reviewedThroughSession": 186,
+  "reviewedThroughSession": 190,
   "features": [
     {"id":"crt-diagram","name":"Current Reality Tree","area":"CRT","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"crt-core-driver","name":"Core Driver finder","area":"CRT","since":52,"manual":true,"book":true,"bookExample":true},
@@ -203,7 +203,9 @@
     {"id":"general-epub","name":"EPUB book download","area":"General","since":135,"manual":true,"book":false,"bookExample":false},
     {"id":"general-freeform","name":"Freeform diagram type","area":"General","since":75,"manual":true,"book":true,"bookExample":false},
     {"id":"method-stepper","name":"Method-path stepper","area":"General","since":182,"manual":true,"book":false,"bookExample":false},
+    {"id":"method-path-collapse","name":"Collapsible method-path strip","area":"General","since":188,"manual":true,"book":false,"bookExample":false},
     {"id":"topbar-actions","name":"Top-bar Export / Share / command search","area":"General","since":182,"manual":true,"book":false,"bookExample":false},
+    {"id":"tab-diagram-color-dot","name":"Per-tab diagram-type colour dot","area":"General","since":187,"manual":true,"book":false,"bookExample":false},
     {"id":"start-page","name":"Start workspace shell","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
     {"id":"start-hero","name":"Problem-led CRT hero","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
     {"id":"start-tree-cards","name":"Tree cards with live Logic status","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},

@@ -13,6 +13,7 @@
       "!**/reports",
       "!**/perf-trace-output",
       "!e2e/fixtures/**",
+      "!docs/features.json",
       "!src/**/*.d.ts",
       "src/vite-env.d.ts",
       "!src/domain/types.js",
