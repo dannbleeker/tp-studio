@@ -16,15 +16,12 @@ import type {
   CustomEntityClass,
   DiagramType,
   DocumentId,
-  Entity,
   EntityId,
-  EntityLink,
   LayoutConfig,
   Patch,
   SystemScope,
   TPDocument,
 } from '@/domain/types';
-import { buildCoreCloudSeed, buildInjectionFRTSeed } from '@/domain/uShape';
 import { flushPersist, persistDebounced } from '@/services/storage/persistDebounced';
 import { type ActiveDocFields, activeDocState, setActiveDoc } from '../activeDoc';
 import { applyTabSwitchHistory, pushHistoryEntry, stashHistory } from '../historySlice';
@@ -32,6 +29,7 @@ import { autoSnapshotOutgoing } from '../revisionsSlice';
 import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
 import { speculationDefaults } from '../uiSlice/speculationSlice';
+import { type CrossDocLinkActions, createCrossDocLinkActions } from './docMeta/crossDocLinks';
 import { makeApplyDocChange, touch } from './docMutate';
 import { stripLinksToDoc } from './linkPrune';
 
@@ -180,29 +178,10 @@ export type DocMetaSlice = {
   setPerformanceHigh: (value: string) => void;
 
   /**
-   * Phase 2a (TP completeness #2 — U-Shape linkage) — link the currently
-   * selected entity (active tab) to `targetEntityId` in another open tab
-   * `targetDocId`. Writes a **reciprocal** link on both entities (the partner
-   * carries the mirror) and persists both docs. No-op unless exactly one entity
-   * is selected and the target is a *different* open tab. Links are reference
-   * metadata — deliberately not pushed to undo history.
-   */
-  linkSelectedEntityTo: (targetDocId: DocumentId, targetEntityId: EntityId) => void;
-  /** Phase 2a — remove `link` from entity `sourceEntityId` (active doc) and its
-   *  mirror from the target entity when that tab is open. */
-  unlinkEntity: (sourceEntityId: EntityId, link: EntityLink) => void;
-
-  /**
    * Phase 2b (TP completeness #2 — U-Shape) — toggle the user-set "core
    * problem" marker on an entity (the U-Shape hinge; undoable).
    */
   toggleCoreProblem: (entityId: EntityId) => void;
-  /** Phase 2b — guided helper: spawn a Core Cloud (EC, `cloudType:'core'`) from
-   *  the selected entity, opened in a new tab and reciprocally linked back. */
-  createCoreCloudFromSelection: () => void;
-  /** Phase 2b — guided helper: carry the selected entity into a new FRT as an
-   *  injection, opened in a new tab and reciprocally linked back. */
-  carryInjectionToFRT: () => void;
 
   /**
    * B10 — add or replace a custom entity class on the active doc. The
@@ -224,7 +203,7 @@ export type DocMetaSlice = {
    * experiment with class shapes without losing entity references.
    */
   removeCustomEntityClass: (id: string) => void;
-};
+} & CrossDocLinkActions;
 
 /**
  * Build the boot-time active-doc state from a multi-doc load (Batch 5.4).
@@ -307,16 +286,9 @@ const activeDocEphemeralReset = () => ({
   ...speculationDefaults(),
 });
 
-/** Phase 2a — set an entity's cross-doc `links`, dropping the field entirely
- *  when the list is empty so an unlinked entity round-trips without it. */
-const withLinks = (entity: Entity, links: EntityLink[]): Entity => {
-  if (links.length > 0) return { ...entity, links };
-  const { links: _drop, ...rest } = entity;
-  return rest;
-};
-
 export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> = (set, get) => {
   const applyDocChange = makeApplyDocChange(get, set);
+  const deps = { get, set, applyDocChange };
 
   // Shared "swap the active document" sequence used by `setDocument` and
   // `newDocument`: snapshot the outgoing doc as a revision (suppressed on a
@@ -339,47 +311,10 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
     get().reloadRevisionsForActiveDoc();
   };
 
-  // Phase 2b (U-Shape) — shared spawn: bake a reciprocal link onto the seed's
-  // anchor entity, add the mirror to the source, persist the source, and open
-  // the seed in a NEW tab (always — the whole point is both docs open + linked,
-  // so this bypasses the `openDocsInNewTab` pref). Links are metadata → no
-  // history entry (cf. `linkSelectedEntityTo`). Returns false if the source /
-  // anchor entity is missing.
-  const spawnLinkedFromSelection = (
-    seed: { doc: TPDocument; anchorId: EntityId },
-    sourceEntityId: EntityId
-  ): boolean => {
-    const state = get();
-    const sourceDocId = state.activeDocId;
-    const sourceEntity = state.doc.entities[sourceEntityId];
-    const anchor = seed.doc.entities[seed.anchorId];
-    if (!sourceEntity || !anchor) return false;
-    const seedWithLink: TPDocument = {
-      ...seed.doc,
-      entities: {
-        ...seed.doc.entities,
-        [seed.anchorId]: { ...anchor, links: [{ docId: sourceDocId, entityId: sourceEntityId }] },
-      },
-    };
-    const nextSource = touch({
-      ...state.doc,
-      entities: {
-        ...state.doc.entities,
-        [sourceEntityId]: {
-          ...sourceEntity,
-          links: [...(sourceEntity.links ?? []), { docId: seed.doc.id, entityId: seed.anchorId }],
-        },
-      },
-    });
-    set(setActiveDoc(state, nextSource));
-    saveDocToLocalStorage(nextSource);
-    get().openTab(seedWithLink);
-    return true;
-  };
-
   return {
     ...initialTabState,
     savedDocsVersion: 0,
+    ...createCrossDocLinkActions(deps),
 
     setDocument: (doc) => {
       performDocumentSwap(doc, 'document swap');
@@ -819,100 +754,6 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
       );
     },
 
-    linkSelectedEntityTo: (targetDocId, targetEntityId) => {
-      const state = get();
-      const sel = state.selection;
-      if (sel.kind !== 'entities' || sel.ids.length !== 1) return;
-      const sourceEntityId = sel.ids[0];
-      if (!sourceEntityId) return;
-      const sourceDocId = state.activeDocId;
-      if (targetDocId === sourceDocId) return; // cross-tab links only
-      const sourceDoc = state.doc;
-      const targetDoc = state.docs[targetDocId];
-      if (!targetDoc) return;
-      const sourceEntity = sourceDoc.entities[sourceEntityId];
-      const targetEntity = targetDoc.entities[targetEntityId];
-      if (!sourceEntity || !targetEntity) return;
-
-      // Dedup — don't double-link the same pair.
-      const already = (sourceEntity.links ?? []).some(
-        (l) => l.docId === targetDocId && l.entityId === targetEntityId
-      );
-      if (already) {
-        get().showToast('info', `Already linked to "${targetEntity.title || 'that entity'}".`);
-        return;
-      }
-
-      const sourceLink: EntityLink = { docId: targetDocId, entityId: targetEntityId };
-      const mirrorLink: EntityLink = { docId: sourceDocId, entityId: sourceEntityId };
-      const nextSource = touch({
-        ...sourceDoc,
-        entities: {
-          ...sourceDoc.entities,
-          [sourceEntityId]: { ...sourceEntity, links: [...(sourceEntity.links ?? []), sourceLink] },
-        },
-      });
-      const nextTarget = touch({
-        ...targetDoc,
-        entities: {
-          ...targetDoc.entities,
-          [targetEntityId]: { ...targetEntity, links: [...(targetEntity.links ?? []), mirrorLink] },
-        },
-      });
-
-      // Reciprocal write: merge the background target into `docs` first so
-      // `setActiveDoc` preserves it while replacing the active source doc. No
-      // history entry on either side — links are metadata (cf.
-      // `markSystemScopeNudgeShown`).
-      set(
-        setActiveDoc({ ...state, docs: { ...state.docs, [targetDocId]: nextTarget } }, nextSource)
-      );
-      saveDocToLocalStorage(nextSource);
-      saveDocToLocalStorage(nextTarget);
-      get().showToast(
-        'success',
-        `Linked to "${targetEntity.title || 'entity'}" in ${targetDoc.title}.`
-      );
-    },
-
-    unlinkEntity: (sourceEntityId, link) => {
-      const state = get();
-      const sourceDoc = state.doc;
-      const sourceEntity = sourceDoc.entities[sourceEntityId];
-      if (!sourceEntity?.links) return;
-      const remaining = sourceEntity.links.filter(
-        (l) => !(l.docId === link.docId && l.entityId === link.entityId)
-      );
-      if (remaining.length === sourceEntity.links.length) return; // no such link
-      const nextSource = touch({
-        ...sourceDoc,
-        entities: { ...sourceDoc.entities, [sourceEntityId]: withLinks(sourceEntity, remaining) },
-      });
-
-      // Drop the mirror from the target entity when its tab is open.
-      let nextDocs = state.docs;
-      const targetDoc = state.docs[link.docId];
-      const targetEntity = targetDoc?.entities[link.entityId];
-      if (targetDoc && targetEntity?.links) {
-        const mirrorRemaining = targetEntity.links.filter(
-          (l) => !(l.docId === state.activeDocId && l.entityId === sourceEntityId)
-        );
-        if (mirrorRemaining.length !== targetEntity.links.length) {
-          const nextTarget = touch({
-            ...targetDoc,
-            entities: {
-              ...targetDoc.entities,
-              [link.entityId]: withLinks(targetEntity, mirrorRemaining),
-            },
-          });
-          nextDocs = { ...state.docs, [link.docId]: nextTarget };
-          saveDocToLocalStorage(nextTarget);
-        }
-      }
-      set(setActiveDoc({ ...state, docs: nextDocs }, nextSource));
-      saveDocToLocalStorage(nextSource);
-    },
-
     toggleCoreProblem: (entityId) => {
       applyDocChange((prev) => {
         const e = prev.entities[entityId];
@@ -926,43 +767,6 @@ export const createDocMetaSlice: StateCreator<RootStore, [], [], DocMetaSlice> =
           entities: { ...prev.entities, [entityId]: { ...e, coreProblem: true } },
         });
       });
-    },
-
-    createCoreCloudFromSelection: () => {
-      const state = get();
-      const sel = state.selection;
-      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
-        get().showToast('info', 'Select a single entity (your core problem) first.');
-        return;
-      }
-      const sourceEntityId = sel.ids[0];
-      if (!sourceEntityId) return;
-      const sourceEntity = state.doc.entities[sourceEntityId];
-      if (!sourceEntity) return;
-      const problem = sourceEntity.title.trim() || 'this problem';
-      if (spawnLinkedFromSelection(buildCoreCloudSeed(problem), sourceEntityId)) {
-        get().showToast(
-          'success',
-          `Created a Core Cloud for "${problem}" — linked back to your tree.`
-        );
-      }
-    },
-
-    carryInjectionToFRT: () => {
-      const state = get();
-      const sel = state.selection;
-      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
-        get().showToast('info', 'Select the entity to carry into an FRT first.');
-        return;
-      }
-      const sourceEntityId = sel.ids[0];
-      if (!sourceEntityId) return;
-      const sourceEntity = state.doc.entities[sourceEntityId];
-      if (!sourceEntity) return;
-      const injection = sourceEntity.title.trim() || 'this injection';
-      if (spawnLinkedFromSelection(buildInjectionFRTSeed(injection), sourceEntityId)) {
-        get().showToast('success', `Carried "${injection}" into a new FRT — linked back.`);
-      }
     },
 
     setMethodStep: (stepId, done) => {
