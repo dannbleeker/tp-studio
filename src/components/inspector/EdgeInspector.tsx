@@ -35,6 +35,37 @@ const WEIGHT_OPTIONS: { id: EdgeWeight | undefined; label: string; hint: string 
   { id: 'zero', label: 'Zero', hint: 'Neutral — flagged as non-influential.' },
 ];
 
+/**
+ * One AND/OR/XOR junctor-group row: a short hash of the (non-user-facing nanoid)
+ * group id plus an Ungroup button. Extracted from three structurally identical
+ * inline blocks that differed only in the label, the group id, and which ungroup
+ * action fires — see Design audit #8 below for why the id is shown hashed.
+ */
+function JunctorGroupField({
+  label,
+  groupId,
+  onUngroup,
+  locked,
+}: {
+  label: string;
+  groupId: string;
+  onUngroup: () => void;
+  locked: boolean;
+}) {
+  return (
+    <Field label={label} as="group">
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-mono text-neutral-500 text-xs dark:text-neutral-400">
+          #{groupId.slice(0, 4)}
+        </span>
+        <Button variant="softViolet" size="sm" onClick={onUngroup} disabled={locked}>
+          Ungroup
+        </Button>
+      </div>
+    </Field>
+  );
+}
+
 export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: Warning[] }) {
   const edge = useEdge(edgeId);
   const source = useEntity(edge?.sourceId);
@@ -170,55 +201,28 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
           groups apart on one edge's inspector) instead of the raw id;
           the label + Ungroup button carry the actionable meaning. */}
       {edge.andGroupId && (
-        <Field label="AND group" as="group">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-mono text-neutral-500 text-xs dark:text-neutral-400">
-              #{edge.andGroupId.slice(0, 4)}
-            </span>
-            <Button
-              variant="softViolet"
-              size="sm"
-              onClick={() => ungroupAnd([edgeId])}
-              disabled={locked}
-            >
-              Ungroup
-            </Button>
-          </div>
-        </Field>
+        <JunctorGroupField
+          label="AND group"
+          groupId={edge.andGroupId}
+          onUngroup={() => ungroupAnd([edgeId])}
+          locked={locked}
+        />
       )}
       {edge.orGroupId && (
-        <Field label="OR group" as="group">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-mono text-neutral-500 text-xs dark:text-neutral-400">
-              #{edge.orGroupId.slice(0, 4)}
-            </span>
-            <Button
-              variant="softViolet"
-              size="sm"
-              onClick={() => ungroupOr([edgeId])}
-              disabled={locked}
-            >
-              Ungroup
-            </Button>
-          </div>
-        </Field>
+        <JunctorGroupField
+          label="OR group"
+          groupId={edge.orGroupId}
+          onUngroup={() => ungroupOr([edgeId])}
+          locked={locked}
+        />
       )}
       {edge.xorGroupId && (
-        <Field label="XOR group" as="group">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-mono text-neutral-500 text-xs dark:text-neutral-400">
-              #{edge.xorGroupId.slice(0, 4)}
-            </span>
-            <Button
-              variant="softViolet"
-              size="sm"
-              onClick={() => ungroupXor([edgeId])}
-              disabled={locked}
-            >
-              Ungroup
-            </Button>
-          </div>
-        </Field>
+        <JunctorGroupField
+          label="XOR group"
+          groupId={edge.xorGroupId}
+          onUngroup={() => ungroupXor([edgeId])}
+          locked={locked}
+        />
       )}
 
       <Field label="Polarity" as="group">
