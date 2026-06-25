@@ -21,6 +21,14 @@ faster; this round chases the residual and lands three smaller wins.
   advanced its in-memory `lastCommittedRaw` cache even when the main-slot write failed
   (quota), so the next save copied a never-committed payload into the legacy `docBackup`
   slot. Now the cache only advances when the write lands. Regression test added.
+- **Fix — Flying Logic import no longer drops forward-referenced nested groups.** The
+  `.vgl` reader resolved group members in a single pass, so a parent group whose vertex
+  preceded its child group's (the writer emits groups in insertion order, parent-first)
+  looked the child up in a half-built map and silently dropped the nesting — a round-trip
+  data loss. Now resolved in two passes (create every group, then resolve members), so
+  entity *and* forward-referenced nested-group members both survive. Found by an
+  adversarially-verified bug hunt; new round-trip test reproduces it (fails on the old
+  single-pass reader).
 - **Refactor — `EdgeInspector`'s three identical AND/OR/XOR junctor-group rows** collapse
   into one `JunctorGroupField` component (behaviour-preserving; existing tests cover it).
 - **Docs/tooling — feature catalogue caught up to Session 190** (the collapsible method-path

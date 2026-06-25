@@ -367,8 +367,15 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
     }
   }
 
-  // Third pass: groups.
+  // Third pass: groups — in TWO sub-passes. Flying Logic emits group vertices
+  // in document order with NO child-before-parent guarantee (the writer walks
+  // `doc.groups` in insertion order), so a parent group can reference a child
+  // group that appears LATER in the vertex list. A single pass resolved members
+  // against a half-built `groupByEid`, silently dropping any forward-referenced
+  // nested group from its parent's `memberIds` — losing the nesting on import.
+  // 3a — create every group first (ids registered, members deferred).
   const groupByEid = new Map<string, Group>();
+  const groupMemberEids = new Map<string, readonly string[]>();
   for (const v of vertices.values()) {
     if (!v.isGroup) continue;
     const title = v.attrs.get('title') ?? 'Group';
@@ -377,9 +384,20 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
       ? (preservedColor as GroupColor)
       : 'indigo';
     const preservedId = v.attrs.get('tp-studio-id');
-    const memberEids = v.grouped ?? [];
+    const created = createGroup({ title, color, memberIds: [] });
+    const finalGroup: Group = {
+      ...created,
+      id: (preservedId || created.id) as GroupId,
+      collapsed: v.collapsed,
+    };
+    groupByEid.set(v.eid, finalGroup);
+    groupMemberEids.set(v.eid, v.grouped ?? []);
+  }
+  // 3b — resolve members now that every group exists, so entity AND nested-group
+  // members (including forward references) both resolve.
+  for (const [eid, group] of groupByEid) {
     const memberIds: string[] = [];
-    for (const memberEid of memberEids) {
+    for (const memberEid of groupMemberEids.get(eid) ?? []) {
       const childEntity = entityByEid.get(memberEid);
       if (childEntity) {
         memberIds.push(childEntity.id);
@@ -388,13 +406,7 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
       const childGroup = groupByEid.get(memberEid);
       if (childGroup) memberIds.push(childGroup.id);
     }
-    const created = createGroup({ title, color, memberIds });
-    const finalGroup: Group = {
-      ...created,
-      id: (preservedId || created.id) as GroupId,
-      collapsed: v.collapsed,
-    };
-    groupByEid.set(v.eid, finalGroup);
+    groupByEid.set(eid, { ...group, memberIds });
   }
 
   // Build the final document.

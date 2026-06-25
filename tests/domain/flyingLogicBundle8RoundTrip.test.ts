@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createGroup } from '@/domain/factory';
 import { importFromFlyingLogic } from '@/domain/flyingLogic/reader';
 import { exportToFlyingLogic } from '@/domain/flyingLogic/writer';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
@@ -80,5 +81,39 @@ describe('Flying Logic round-trip — Bundle 8 features', () => {
     const negEdge = Object.values(restored.edges).find((e) => e.weight === 'negative');
     expect(negEdge).toBeDefined();
     expect(negEdge?.andGroupId).toBeDefined();
+  });
+});
+
+/**
+ * Session 190 — nested groups must survive a round-trip regardless of vertex
+ * order. The writer emits group vertices in `doc.groups` insertion order with no
+ * child-before-parent guarantee, so a parent that contains a later-defined child
+ * group is emitted FIRST. The reader's single-pass group resolution used to look
+ * the child up in a half-built map and silently drop the reference — losing the
+ * nesting. The two-pass reader fixes it.
+ */
+describe('Flying Logic round-trip — nested groups', () => {
+  it('preserves a forward-referenced child group (parent emitted before child)', () => {
+    resetIds();
+    const a = makeEntity({ type: 'rootCause', title: 'A' });
+    const b = makeEntity({ type: 'ude', title: 'B' });
+    const child = createGroup({ title: 'Child', memberIds: [a.id, b.id] });
+    const parent = createGroup({ title: 'Parent', memberIds: [child.id] });
+    // Parent inserted BEFORE child → writer emits the parent vertex first, so the
+    // parent's child-group reference is a FORWARD reference on import.
+    const doc = {
+      ...makeDoc([a, b], [makeEdge(a.id, b.id)], 'crt'),
+      groups: { [parent.id]: parent, [child.id]: child },
+    };
+    const restored = importFromFlyingLogic(exportToFlyingLogic(doc));
+    const restoredGroups = Object.values(restored.groups);
+    const restoredParent = restoredGroups.find((g) => g.title === 'Parent');
+    const restoredChild = restoredGroups.find((g) => g.title === 'Child');
+    expect(restoredParent).toBeDefined();
+    expect(restoredChild).toBeDefined();
+    // The nesting survived: the parent still lists the child group as a member.
+    expect(restoredParent?.memberIds).toContain(restoredChild?.id);
+    // And the child kept its entity members.
+    expect(restoredChild?.memberIds).toHaveLength(2);
   });
 });
