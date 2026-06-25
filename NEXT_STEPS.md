@@ -34,6 +34,22 @@ with the two `nbr-*` shape rules + the additional-cause widening; see CHANGELOG)
 
 ## Active backlog (Session 176 — Dann's review batch)
 
+### Perf-trace `edit-heavy` scenario is noise-dominated — decision needed (Session 190)
+The scheduled Perf-trace flagged `edit-heavy` as a regression. Session 190 fixed the two real
+wastes behind it — the edge router and the reach-count BFS both re-ran on every *entity* edit
+because they keyed on the `doc.entities` reference (now keyed on stable structural signatures;
+see CHANGELOG). `all-actions` improved robustly and repeatably (p95 6.45 → ~1.9–2.7 ms, ~60 %).
+But `edit-heavy` p95 measured **18.27 → 14.36 → 21.16 ms across three commits that only *removed*
+work** — i.e. it swings ±40 % run-to-run even at median-of-3, so the 25 % gate trips on runner
+variance, not a real app regression. The residual cost is the inherent O(N) node-array rebuild +
+React reconciliation of 100 nodes per edit, which has grown legitimately since the Session-131
+baseline (9.2 ms) as features landed.
+**Open decision (Dann's CI call) — pick one, none shipped unilaterally:** (a) raise the
+`edit-heavy` sample count (median-of-5/7) to shrink variance; (b) widen the threshold for
+`edit-heavy` specifically; or (c) re-baseline `edit-heavy` to a realistic central value with the
+wide noise floor acknowledged. Chasing it with more app code changes is **not** warranted — it's
+a measurement-infrastructure issue, and the hot path is now clean.
+
 ### Overlapping edges into one entity — can't grab/redirect one (Dann)
 PROBLEM: when 2+ edges converge on one entity, you can't reliably select/drag ONE to re-route
 it — a click always grabs whichever edge is on top.
