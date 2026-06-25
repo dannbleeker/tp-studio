@@ -355,6 +355,14 @@ export function ExportPickerDialog() {
 
   if (!open) return null;
 
+  // Availability of each gated entity type, keyed by the `requiresEntityType`
+  // value — so the per-item filter below is one lookup instead of an if-ladder.
+  const hasEntityType: Record<'ude' | 'action' | 'intermediateObjective', boolean> = {
+    ude: hasAnyUde,
+    action: hasAnyAction,
+    intermediateObjective: hasAnyIntermediateObjective,
+  };
+
   const handlePick = async (action: ExportAction): Promise<void> => {
     close();
     // Run the action against the live store state. The exporter
@@ -377,11 +385,7 @@ export function ExportPickerDialog() {
         {EXPORT_CATEGORIES.map((cat) => {
           const visible = cat.items.filter((it) => {
             if (it.onlyOnECDoc && diagramType !== 'ec') return false;
-            if (it.requiresEntityType === 'ude' && !hasAnyUde) return false;
-            if (it.requiresEntityType === 'action' && !hasAnyAction) return false;
-            if (it.requiresEntityType === 'intermediateObjective' && !hasAnyIntermediateObjective) {
-              return false;
-            }
+            if (it.requiresEntityType && !hasEntityType[it.requiresEntityType]) return false;
             return true;
           });
           if (visible.length === 0) return null;
