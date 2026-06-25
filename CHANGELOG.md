@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 190 (cont.) — Edit-heavy round 2 + a backup-cache fix + housekeeping
+
+Follow-ups in the same unattended optimization pass. The routing gate (below) cut the
+edit-heavy perf-trace from +98.6 % to +56.1 % over baseline and made `all-actions` ~3.4×
+faster; this round chases the residual and lands three smaller wins.
+
+- **Perf — the reach-count BFS no longer re-walks the graph on an entity edit.**
+  `useGraphNodeEmission` hoists the UDE-reach / root-cause-reach counters into a
+  topology-keyed memo, but it keyed on the raw `doc.entities` reference, so an *entity*
+  title/description/state edit (the edit-heavy hot path) busted the WeakMap reach cache and
+  re-ran both O(V·(V+E)) walks every keystroke — the earlier narrowing only spared a
+  *document*-title edit. Now keyed on **`entityTypeSignature`** (each entity's id + type, the
+  only fields the walks read) + `doc.edges`; an entity-content edit leaves it unchanged, so
+  the BFS is skipped. Behaviour-preserving (reach values are unchanged); new signature
+  stability/sensitivity unit tests.
+- **Fix — backup cache isn't poisoned by a quota-failed write.** `saveToLocalStorage`
+  advanced its in-memory `lastCommittedRaw` cache even when the main-slot write failed
+  (quota), so the next save copied a never-committed payload into the legacy `docBackup`
+  slot. Now the cache only advances when the write lands. Regression test added.
+- **Refactor — `EdgeInspector`'s three identical AND/OR/XOR junctor-group rows** collapse
+  into one `JunctorGroupField` component (behaviour-preserving; existing tests cover it).
+- **Docs/tooling — feature catalogue caught up to Session 190** (the collapsible method-path
+  strip and the per-tab diagram-type colour dot get rows), and `docs/features.json` is now
+  excluded from biome so its hand-maintained compact one-line-per-feature format survives the
+  lint-staged formatter.
+
 ## Session 190 — Perf: title edits no longer re-run the edge router (edit-heavy regression)
 
 The scheduled Perf-trace workflow flagged the **edit-heavy** scenario (repeated title

@@ -13,6 +13,7 @@ import type { AnyTPNode, TPCollapsedGroupNode, TPGroupNode, TPNode } from '../ed
 import {
   COLLAPSED_HEIGHT,
   COLLAPSED_WIDTH,
+  entityTypeSignature,
   GROUP_PADDING,
   GROUP_TITLE_TOP,
   type NodeSizeOpts,
@@ -51,15 +52,20 @@ export const useGraphNodeEmission = (
   // topology-keyed memo keeps the O(V·(V+E)) walk off the drag path.
   // (The functions are also WeakMap-cached internally, Perf #20.)
   //
-  // Keyed on `doc.entities` + `doc.edges` — the ONLY fields `udeReachCounts` /
-  // `rootCauseReachCounts` read (both WeakMap-cached on exactly that pair). A
-  // non-structural doc edit (a CLR-resolve toggle, a document title/description
-  // change) leaves those refs intact, so the reach memos — and the emission
-  // memo that depends on their result — skip the recompute entirely.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: passes the whole `doc` but reads only its entities + edges; narrowed deliberately.
-  const reachCounts = useMemo(() => udeReachCounts(doc), [doc.entities, doc.edges]);
+  // Session 190 — keyed on `entityTypeSignature` (each entity's id + type, the
+  // ONLY entity fields the reach walks read) + `doc.edges`, NOT the raw
+  // `doc.entities` reference. An entity title/description/state edit bumps
+  // `doc.entities` (and so the WeakMap reach cache, keyed on that ref, would
+  // miss and re-walk the graph twice) but changes no id or type — the signature
+  // is unchanged, so the reach memos hold and the BFS is skipped. The earlier
+  // narrowing here only spared a DOCUMENT-title edit; an ENTITY-title edit (the
+  // edit-heavy hot path) still busted it. Edges stay a separate stable dep.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `entityTypeSignature` reads `doc` only via `doc.entities`; keyed on it deliberately.
+  const entityTypeSig = useMemo(() => entityTypeSignature(doc), [doc.entities]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` only via entity id+type (captured by `entityTypeSig`) + edges; narrowed deliberately.
+  const reachCounts = useMemo(() => udeReachCounts(doc), [entityTypeSig, doc.edges]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: topology-only, same as reachCounts above.
-  const reverseReachCounts = useMemo(() => rootCauseReachCounts(doc), [doc.entities, doc.edges]);
+  const reverseReachCounts = useMemo(() => rootCauseReachCounts(doc), [entityTypeSig, doc.edges]);
   // Open-comment counts per entity, keyed on `doc.comments` so the badge
   // tracks comment add/resolve/delete but stays off the drag path (the
   // big emission memo re-runs on every `positions` change).

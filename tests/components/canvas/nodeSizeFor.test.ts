@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   entityRoutingSignature,
+  entityTypeSignature,
   estimateTitleLines,
   MAX_CARD_GROW_LINES,
   nodeSizeFor,
@@ -267,5 +268,70 @@ describe('entityRoutingSignature', () => {
     const short = entityRoutingSignature(twoEntityDoc({ title: 'one line' }), opts);
     const tall = entityRoutingSignature(twoEntityDoc({ title: 'a\nb\nc\nd' }), opts);
     expect(tall).not.toBe(short);
+  });
+});
+
+/**
+ * `entityTypeSignature` is the `===`-stable string the reach-count memos key on,
+ * so the O(V·(V+E)) reachability BFS skips edits that change no id or type.
+ *   - STABILITY: a title/description/state edit leaves it untouched (the
+ *     edit-heavy residual fix);
+ *   - SENSITIVITY: add / remove / retype an entity and it changes, so a stale
+ *     reach count can never be cached.
+ */
+describe('entityTypeSignature', () => {
+  const doc = (e2: Record<string, unknown> = {}): TPDocument =>
+    ({
+      ...createDocument('crt'),
+      entities: {
+        a: {
+          id: 'a',
+          type: 'rootCause',
+          title: 'root',
+          annotationNumber: 1,
+          createdAt: 0,
+          updatedAt: 0,
+        },
+        b: {
+          id: 'b',
+          type: 'ude',
+          title: 'ude',
+          annotationNumber: 2,
+          createdAt: 0,
+          updatedAt: 0,
+          ...e2,
+        },
+      },
+    }) as unknown as TPDocument;
+
+  it('is unchanged by a title / description / state edit', () => {
+    const base = entityTypeSignature(doc());
+    expect(entityTypeSignature(doc({ title: 'a very different title' }))).toBe(base);
+    expect(entityTypeSignature(doc({ description: 'long-winded reasoning' }))).toBe(base);
+    expect(entityTypeSignature(doc({ state: 'present' }))).toBe(base);
+  });
+
+  it('changes when an entity is retyped', () => {
+    expect(entityTypeSignature(doc({ type: 'intermediateObjective' }))).not.toBe(
+      entityTypeSignature(doc())
+    );
+  });
+
+  it('changes when the entity set changes', () => {
+    const two = entityTypeSignature(doc());
+    const one = entityTypeSignature({
+      ...createDocument('crt'),
+      entities: {
+        a: {
+          id: 'a',
+          type: 'rootCause',
+          title: 'root',
+          annotationNumber: 1,
+          createdAt: 0,
+          updatedAt: 0,
+        },
+      },
+    } as unknown as TPDocument);
+    expect(one).not.toBe(two);
   });
 });

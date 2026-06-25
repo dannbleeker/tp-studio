@@ -175,3 +175,26 @@ export const entityRoutingSignature = (doc: TPDocument, opts?: NodeSizeOpts): st
   }
   return parts.join(';');
 };
+
+/**
+ * A `===`-stable signature of the entity fields the reachability walks read:
+ * each entity's `id` and `type`. The reach counters (`udeReachCounts` /
+ * `rootCauseReachCounts`) seed off `type === 'ude'` / `'rootCause'` and traverse
+ * the edge graph — they never read a title, description, state, or position.
+ *
+ * Keying the reach-count memos on this string (instead of the raw `doc.entities`
+ * reference) means an ENTITY title / description / state / colour edit — which
+ * bumps the entities-map reference but adds, removes, or retypes nothing — leaves
+ * the signature unchanged, so the O(V·(V+E)) forward/backward BFS is skipped.
+ * Before this, every such edit busted the WeakMap reach cache (keyed on the
+ * entities reference) and re-walked the whole graph twice (Session 190 — the
+ * residual half of the edit-heavy perf regression). Edges, the other input, are
+ * already a separate dep that stays stable across an entity-content edit.
+ */
+export const entityTypeSignature = (doc: TPDocument): string => {
+  const parts: string[] = [];
+  for (const id of Object.keys(doc.entities)) {
+    parts.push(`${id}:${doc.entities[id]?.type ?? ''}`);
+  }
+  return parts.join(';');
+};
