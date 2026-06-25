@@ -31,6 +31,14 @@ faster; this round chases the residual and lands three smaller wins.
   single-pass reader).
 - **Refactor — `EdgeInspector`'s three identical AND/OR/XOR junctor-group rows** collapse
   into one `JunctorGroupField` component (behaviour-preserving; existing tests cover it).
+- **Refactor — `docMetaSlice` (1029 lines, the repo's largest file) split into `docMeta/`
+  sub-modules**, mirroring the `entitiesSlice` + `entities/` pattern: `tabs.ts` (the tab engine
+  + document swaps), `metadata.ts` (the `applyDocChange` setters + markers), `crossDocLinks.ts`
+  (U-Shape linking), and `shared.ts` (the `DocMetaFactoryDeps` bag). The composer keeps the
+  boot-time tab restore + recovery signal and its public exports
+  (`createDocMetaSlice` / `DocMetaSlice` / `bootRecoveryStatus` / `docMetaDefaults`) unchanged,
+  so no consumer import moved. A pure move — verbatim action bodies, zero behaviour/test changes;
+  the slice presented to Zustand stays one flat object. Landed in three gated commits.
 - **Docs/tooling — feature catalogue caught up to Session 190** (the collapsible method-path
   strip and the per-tab diagram-type colour dot get rows), and `docs/features.json` is now
   excluded from biome so its hand-maintained compact one-line-per-feature format survives the
