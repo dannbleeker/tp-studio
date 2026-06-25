@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   loadFromLocalStorage,
   loadFromLocalStorageWithStatus,
@@ -42,6 +42,43 @@ describe('FL-EX9 — backup-slot recovery', () => {
     const backupRaw = localStorage.getItem(STORAGE_KEYS.docBackup);
     expect(backupRaw).not.toBeNull();
     expect(JSON.parse(backupRaw!).title).toBe('first');
+  });
+
+  it('never backs up a never-committed payload after a quota-failed write', () => {
+    // Regression: `saveToLocalStorage` updated its in-memory `lastCommittedRaw`
+    // cache unconditionally, even when the main-slot write failed (quota). The
+    // NEXT save then copied that never-committed payload into the backup slot,
+    // overwriting a known-good snapshot. The cache must only advance on a write
+    // that actually landed.
+    saveToLocalStorage(docAt(1000, 'committed-1'));
+    saveToLocalStorage(docAt(2000, 'committed-2')); // slot + cache now 'committed-2'
+
+    // Fail ONLY the main doc-slot write (the backup write still succeeds), as a
+    // real QuotaExceededError would mid-flush.
+    const realSetItem = Storage.prototype.setItem;
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (
+      this: Storage,
+      key: string,
+      value: string
+    ) {
+      if (key === STORAGE_KEYS.doc) {
+        const err = new Error('quota'); // jsdom has no DOMException ctor surface here
+        err.name = 'QuotaExceededError';
+        throw err;
+      }
+      realSetItem.call(this, key, value);
+    });
+    saveToLocalStorage(docAt(3000, 'quota-failed-3')); // main write throws → ignored
+    spy.mockRestore();
+
+    // The next successful save must back up the last KNOWN-GOOD doc, never the
+    // never-committed 'quota-failed-3' body.
+    saveToLocalStorage(docAt(4000, 'committed-4'));
+    const backupRaw = localStorage.getItem(STORAGE_KEYS.docBackup);
+    expect(backupRaw).not.toBeNull();
+    const backupTitle = JSON.parse(backupRaw!).title;
+    expect(backupTitle).not.toBe('quota-failed-3');
+    expect(backupTitle).toBe('committed-2');
   });
 
   it('falls back to the backup when the main slot is corrupted', () => {

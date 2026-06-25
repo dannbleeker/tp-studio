@@ -49,8 +49,12 @@ export const saveToLocalStorage = (doc: TPDocument, serialized?: string): void =
   // a fresh slot read.
   const prior = lastCommittedRaw ?? readString(STORAGE_KEYS.doc);
   if (prior !== null) writeString(STORAGE_KEYS.docBackup, prior);
-  writeString(STORAGE_KEYS.doc, raw);
-  lastCommittedRaw = raw;
+  // Only advance the in-memory "last committed" cache when the write actually
+  // landed. On a quota-exceeded write `writeString` returns false; updating the
+  // cache anyway would let the NEXT save copy a never-committed payload into the
+  // backup slot, breaking the FL-EX9 invariant that `docBackup` tracks a
+  // known-good snapshot. Keep the cache pinned to the last payload that committed.
+  if (writeString(STORAGE_KEYS.doc, raw)) lastCommittedRaw = raw;
 };
 
 /**
