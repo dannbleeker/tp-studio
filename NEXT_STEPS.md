@@ -15,6 +15,16 @@ goalTree-necessity, assumption-lifecycle, and — last — the **NBR validator g
 with the two `nbr-*` shape rules + the additional-cause widening; see CHANGELOG).
 
 **Known tech-debt — future cleanup, not urgent:**
+- **`docMetaSlice.ts` is a 1029-line grab-bag — candidate for a sub-module split** (assessed
+  Session 190). It mixes ~30 actions across distinct concerns: document lifecycle, the **tabs
+  cluster** (open/switch/close/reorder/duplicate/openSavedDoc/deleteSavedDoc), cross-doc **links**,
+  EC settings, config, custom-entity-classes, and core-problem actions. The tabs and links clusters
+  are the cleanest seams to extract into sub-modules (mirroring how `entitiesSlice` split into
+  `entityCrud.ts` etc.). NOT a trivial move: the tab/link actions close over shared local helpers
+  (`performDocumentSwap`, `spawnLinkedFromSelection`) that also serve non-tab actions, so the split
+  needs the `EntityFactoryDeps`-style pattern (pass the shared closures into each cluster factory).
+  Behavior-preserving once wired; the ~4240 tests + tsc pin it. Deferred from the Session-190 run as
+  too risky to rush unattended — do it as a focused prep-first session.
 - ✅ **"Forget closed documents" now sweeps revision-less closed trees too** (Session 185, see
   CHANGELOG) — it enumerates committed-only bodies (`listSavedDocIds`), not just the revisions map,
   and refreshes the Start library. Per-tree Delete on the Start cards remains for individual cleanup.
