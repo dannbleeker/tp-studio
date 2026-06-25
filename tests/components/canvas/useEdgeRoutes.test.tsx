@@ -11,7 +11,7 @@
  *     `routeEdge` invocation is exercised directly.
  */
 
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { junctorCenterX } from '@/components/canvas/edges/junctorGeometry';
 import {
@@ -90,6 +90,92 @@ describe('useEdgeRoutes — preference-gated', () => {
     });
     expect(result.current[edge.id]).toBeDefined();
     expect(result.current[edge.id]?.waypoints.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+// -- useEdgeRoutes memoization (edit-heavy regression, Session 190) ---------
+// The routing memo is keyed on a structural signature (obstacle size + collapse)
+// rather than the raw `doc.entities` / `projection` references, both of which
+// churn on every mutation. So a title-only edit reuses the cached route map (the
+// router is the expensive A* + O(E²) decross pass), while any edit that actually
+// moves the geometry or the visible set still recomputes. These pin both halves.
+describe('useEdgeRoutes — memoization gate', () => {
+  // A FIXED positions object (stable ref across rerenders) so the memo identity
+  // reflects only the entity/projection narrowing, not a positions-driven recompute.
+  const renderRoutes = (positions: Record<string, { x: number; y: number }>) =>
+    renderHook(() => {
+      const doc = useDocumentStore((s) => s.doc);
+      const projection = useGraphProjection(doc);
+      return useEdgeRoutes(doc, projection, positions);
+    });
+
+  it('holds the routes reference across a title-only edit (grow-to-fit off)', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const edge = useDocumentStore.getState().connect(a.id, b.id);
+    if (!edge) throw new Error('edge not created');
+    const positions = { [a.id]: { x: 0, y: 0 }, [b.id]: { x: 0, y: 200 } };
+    const { result } = renderRoutes(positions);
+    const before = result.current;
+    expect(before[edge.id]).toBeDefined();
+    act(() => {
+      useDocumentStore
+        .getState()
+        .updateEntity(a.id, { title: 'A renamed — a much longer title than it had before' });
+    });
+    // Same reference: a title edit moves no obstacle box, so the router is skipped.
+    expect(result.current).toBe(before);
+  });
+
+  it('recomputes when an entity is collapsed (the visible set changes)', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('C');
+    const store = useDocumentStore.getState();
+    store.connect(a.id, b.id);
+    const edge = store.connect(b.id, c.id);
+    if (!edge) throw new Error('edge not created');
+    const positions = {
+      [a.id]: { x: 0, y: 0 },
+      [b.id]: { x: 0, y: 200 },
+      [c.id]: { x: 0, y: 400 },
+    };
+    const { result } = renderRoutes(positions);
+    const before = result.current;
+    act(() => {
+      useDocumentStore.getState().toggleEntityCollapsed(b.id);
+    });
+    expect(result.current).not.toBe(before);
+  });
+
+  it('recomputes when an entity is added (structural change)', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const edge = useDocumentStore.getState().connect(a.id, b.id);
+    if (!edge) throw new Error('edge not created');
+    const positions = { [a.id]: { x: 0, y: 0 }, [b.id]: { x: 0, y: 200 } };
+    const { result } = renderRoutes(positions);
+    const before = result.current;
+    act(() => {
+      useDocumentStore.getState().addEntity({ type: 'ude' });
+    });
+    expect(result.current).not.toBe(before);
+  });
+
+  it('recomputes a grown card when grow-to-fit is on and a title edit changes its height', () => {
+    useDocumentStore.getState().setGrowCardsToFitText(true);
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const edge = useDocumentStore.getState().connect(a.id, b.id);
+    if (!edge) throw new Error('edge not created');
+    const positions = { [a.id]: { x: 0, y: 0 }, [b.id]: { x: 0, y: 200 } };
+    const { result } = renderRoutes(positions);
+    const before = result.current;
+    act(() => {
+      // A 4-line title grows the card height → obstacle geometry changes → reroute.
+      useDocumentStore.getState().updateEntity(a.id, { title: 'l1\nl2\nl3\nl4' });
+    });
+    expect(result.current).not.toBe(before);
   });
 });
 

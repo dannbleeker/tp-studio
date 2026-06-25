@@ -44,7 +44,7 @@ import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { junctorCenterX } from '../edges/junctorGeometry';
-import { type NodeSizeOpts, nodeSizeFor } from './graphViewConstants';
+import { entityRoutingSignature, type NodeSizeOpts, nodeSizeFor } from './graphViewConstants';
 
 /** Extra padding added to every obstacle box FOR ROUTING ONLY (anchoring still
  *  uses the exact `allBoxes`), so a routed edge that passes a card it isn't
@@ -588,15 +588,33 @@ export const useEdgeRoutes = (
   // Session 181 — obstacle boxes use the grown card height when grow-to-fit is on.
   const growCardsToFitText = useDocumentStore((s) => s.growCardsToFitText);
   const appMode = useDocumentStore((s) => s.appMode);
-  // Keyed on the structural doc fields `computeEdgeRoutes` reads — `edges`
-  // (via `edgesArray`, the route set, incl. junctor membership), `entities` +
-  // `groups` (obstacle box geometry), `diagramType` (radial vs flow) — NOT the
-  // whole `doc`. Without this the A* routing re-ran on EVERY mutation, which
-  // (since `routes` feeds edge emission) defeated the edge-emission dep
-  // narrowing. Now a non-structural edit (CLR-resolve, document title,
-  // customEntityClasses, comments, assumptions) leaves these refs intact, so
-  // routing — and the edge emission downstream of it — skips entirely.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via edges/entities/groups/diagramType; narrowed deliberately.
+  // The projection's visibility (which entities/edges route) is a pure function
+  // of entity existence + F7 collapse (folded into `entitySig` below) + group
+  // structure (`doc.groups`) + hoist/archived. Reading those scalars here lets
+  // the routing memo hold its result across edits that change none of them —
+  // even though `projection` itself is a fresh object on every doc mutation.
+  const hoistedGroupId = useDocumentStore((s) => s.hoistedGroupId);
+  const showArchivedGroups = useDocumentStore((s) => s.showArchivedGroups);
+  // The ONLY entity content the router reads: obstacle size + per-entity
+  // collapse, captured as a `===`-stable string. A title / description / state /
+  // colour edit bumps `doc.entities` but changes neither, so this dep is
+  // untouched and the (expensive) router is skipped — the edit-heavy perf fix.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `entityRoutingSignature` reads `doc` only via `doc.entities` (+ `nodeSizeFor`); keyed on `doc.entities` deliberately so the string only rebuilds when entities change.
+  const entitySig = useMemo(
+    () => entityRoutingSignature(doc, { growToFit: growCardsToFitText, appMode }),
+    [doc.entities, growCardsToFitText, appMode]
+  );
+  // Keyed on the structural inputs `computeEdgeRoutes` actually reads — `edges`
+  // (the route set, incl. junctor membership), `groups` + `entitySig` (obstacle
+  // geometry + per-entity collapse), `diagramType` (radial vs flow), the laid-out
+  // `positions`, `backEdgeIds`, and the projection scalars (hoist / archived).
+  // Deliberately NOT the raw `doc.entities` / `projection` references: both churn
+  // on every mutation and would defeat the gate (a title edit re-ran the whole
+  // A* router, since `routes` also feeds edge emission). The memo body still
+  // reads the live `doc` + `projection` closures, so any recompute sees current
+  // data; a cache HIT can never be stale because every input that affects routing
+  // is reflected in a listed dep (see `entityRoutingSignature`).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc`/`projection` whole but only via the fields captured by `entitySig` + the listed deps; narrowed deliberately (mirrors `useGraphPositions` / `useGraphProjection`).
   return useMemo<EdgeRouteMap>(() => {
     if (!smartRouting) return {};
     return computeEdgeRoutes(doc, projection, positions, backEdgeIds, {
@@ -606,12 +624,13 @@ export const useEdgeRoutes = (
   }, [
     smartRouting,
     doc.edges,
-    doc.entities,
     doc.groups,
     doc.diagramType,
-    projection,
+    entitySig,
     positions,
     backEdgeIds,
+    hoistedGroupId,
+    showArchivedGroups,
     growCardsToFitText,
     appMode,
   ]);

@@ -2,6 +2,38 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 190 — Perf: title edits no longer re-run the edge router (edit-heavy regression)
+
+The scheduled Perf-trace workflow flagged the **edit-heavy** scenario (repeated title
+edits over a 100-entity diagram) at p95 **18.3 ms — +98.6 % over the 9.2 ms baseline**,
+while `all-actions` was unchanged. Root cause: `useEdgeRoutes` keyed its memo on the raw
+`doc.entities` reference (and on `projection`, itself rebuilt every mutation), so a
+title-only edit — which moves no obstacle box and changes no visibility — still re-ran the
+full smart router (visibility-graph build + A\* per edge + the O(E²) decross scan) on every
+keystroke. `useGraphPositions` already sidesteps this with a structural fingerprint; the
+router was the one pipeline stage that didn't.
+
+- **New `entityRoutingSignature(doc, opts)`** (`graphViewConstants.ts`) — a `===`-stable
+  string of every entity's *routing-relevant* content and nothing else: its obstacle size
+  (via `nodeSizeFor`) plus its F7 `collapsed` flag. Those are the only two channels through
+  which an entity reaches the router (geometry + visibility), so two docs with an identical
+  signature route identically.
+- **`useEdgeRoutes` now keys its memo** on that signature plus the structural inputs the
+  router actually reads — `doc.edges`, `doc.groups`, `diagramType`, the laid-out
+  `positions`, `backEdgeIds`, and the projection scalars (`hoistedGroupId`,
+  `showArchivedGroups`) — instead of the churning `doc.entities` / `projection` references.
+  A cache HIT can never be stale: every input that affects routing is reflected in a listed
+  dep. Title / description / state / colour edits now skip the router entirely; collapse,
+  add/remove, resize (S&T format), grow-to-fit height changes, hoist, and layout changes
+  still recompute.
+- **Strictly behaviour-preserving** — the route *values* are unchanged (the same `doc`
+  flows into `computeEdgeRoutes` on every recompute); only the *frequency* of recompute
+  drops. Pinned by new unit tests (`nodeSizeFor.test.ts`: signature stability vs
+  sensitivity) and render-hook memo-identity tests (`useEdgeRoutes.test.tsx`: the routes ref
+  holds across a title edit, and recomputes on collapse / add / grown-card height).
+  `perf-baseline.json` is left at 9.2 ms — the next Perf-trace run confirms the fix restores
+  it.
+
 ## Session 189 — Brand mark replaces the "TP" monogram (favicon + PWA icons)
 
 The browser-tab favicon **and** the PWA / installed-app icons now use the app's brand

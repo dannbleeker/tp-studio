@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  entityRoutingSignature,
   estimateTitleLines,
   MAX_CARD_GROW_LINES,
   nodeSizeFor,
@@ -177,5 +178,94 @@ describe('estimateTitleLines', () => {
   it('estimates more lines at a larger font size (monotonic in fontSize)', () => {
     const text = 'the quick brown fox jumps over the lazy dog again and again and again';
     expect(estimateTitleLines(text, 18)).toBeGreaterThanOrEqual(estimateTitleLines(text, 15));
+  });
+});
+
+/**
+ * `entityRoutingSignature` is the `===`-stable string `useEdgeRoutes` keys its
+ * memo on, so the A* router skips edits that change no obstacle box and no
+ * visibility. These pin the two properties that make the gate correct:
+ *   - STABILITY: a title/description/state edit leaves the signature untouched
+ *     (grow-to-fit off), so the router is skipped (the edit-heavy perf fix);
+ *   - SENSITIVITY: anything that DOES move the routing geometry or the visible
+ *     set (size, collapse, entity set, grow-mode height) changes the signature,
+ *     so a stale route can never be cached.
+ */
+describe('entityRoutingSignature', () => {
+  const twoEntityDoc = (overrides: Record<string, unknown> = {}): TPDocument =>
+    ({
+      ...createDocument('crt'),
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'ude',
+          title: 'first',
+          annotationNumber: 1,
+          createdAt: 0,
+          updatedAt: 0,
+        },
+        e2: {
+          id: 'e2',
+          type: 'ude',
+          title: 'second',
+          annotationNumber: 2,
+          createdAt: 0,
+          updatedAt: 0,
+          ...overrides,
+        },
+      },
+    }) as unknown as TPDocument;
+
+  it('is byte-identical after a title-only edit (grow-to-fit off) — the router is skipped', () => {
+    const before = entityRoutingSignature(twoEntityDoc());
+    const after = entityRoutingSignature(
+      twoEntityDoc({ title: 'a completely different, longer title' })
+    );
+    expect(after).toBe(before);
+  });
+
+  it('is unchanged by non-geometric fields (description / state / colour)', () => {
+    const base = entityRoutingSignature(twoEntityDoc());
+    expect(entityRoutingSignature(twoEntityDoc({ description: 'why this is true' }))).toBe(base);
+    expect(entityRoutingSignature(twoEntityDoc({ state: 'present' }))).toBe(base);
+  });
+
+  it('changes when an entity is collapsed (the visible set moves)', () => {
+    const open = entityRoutingSignature(twoEntityDoc());
+    const collapsed = entityRoutingSignature(twoEntityDoc({ collapsed: true }));
+    expect(collapsed).not.toBe(open);
+  });
+
+  it('changes when the entity set changes (add / remove)', () => {
+    const two = entityRoutingSignature(twoEntityDoc());
+    const oneDoc = {
+      ...createDocument('crt'),
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'ude',
+          title: 'first',
+          annotationNumber: 1,
+          createdAt: 0,
+          updatedAt: 0,
+        },
+      },
+    } as unknown as TPDocument;
+    expect(entityRoutingSignature(oneDoc)).not.toBe(two);
+  });
+
+  it('changes when an obstacle box resizes (S&T format → taller box)', () => {
+    const normal = entityRoutingSignature(twoEntityDoc());
+    const st = entityRoutingSignature(
+      twoEntityDoc({ type: 'injection', attributes: { stStrategy: 'do the thing' } })
+    );
+    expect(st).not.toBe(normal);
+  });
+
+  it('grow-to-fit ON: a title edit that changes the wrapped height DOES move the signature', () => {
+    const opts = { growToFit: true } as const;
+    const short = entityRoutingSignature(twoEntityDoc({ title: 'one line' }), opts);
+    const tall = entityRoutingSignature(twoEntityDoc({ title: 'a\nb\nc\nd' }), opts);
+    expect(tall).not.toBe(short);
   });
 });

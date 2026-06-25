@@ -141,3 +141,37 @@ export const nodeSizeFor = (
   if (doc.groups[id]) return { width: COLLAPSED_WIDTH, height: COLLAPSED_HEIGHT };
   return null;
 };
+
+/**
+ * A referentially-stable structural signature of every entity's
+ * routing-relevant content. The edge router (`computeEdgeRoutes`) reads an
+ * entity through exactly two channels:
+ *
+ *   - its obstacle SIZE, via {@link nodeSizeFor} (S&T-format vs normal, and —
+ *     when grow-to-fit is on — the wrapped-title height);
+ *   - its VISIBILITY, via the projection, which keys on entity existence + the
+ *     per-entity F7 `collapsed` flag (see `useGraphProjection`).
+ *
+ * Nothing else about an entity reaches routing. So two documents whose entities
+ * yield the same signature route identically. `useEdgeRoutes` keys its
+ * expensive memo (visibility-graph build + A\* per edge + O(E²) decross) on this
+ * string instead of the raw `doc.entities` reference: a title / description /
+ * colour / state edit bumps the entities-map reference but changes no obstacle
+ * box and no visibility bit, so the signature is unchanged and the router is
+ * skipped. Before this gate, every such edit re-ran the whole router — the
+ * edit-heavy perf regression (Session 190; trace p95 ~9 ms → ~18 ms).
+ *
+ * O(entities) string build — cheap next to the routing it guards, and the
+ * entities-map key order is preserved across in-place patches (object spread),
+ * so an unchanged graph yields a byte-identical (hence `===`-stable) string.
+ */
+export const entityRoutingSignature = (doc: TPDocument, opts?: NodeSizeOpts): string => {
+  const parts: string[] = [];
+  for (const id of Object.keys(doc.entities)) {
+    const size = nodeSizeFor(doc, id, opts);
+    if (!size) continue; // unreachable for an entity id; keeps the types honest
+    const collapsed = doc.entities[id]?.collapsed ? '1' : '0';
+    parts.push(`${id}:${size.width}x${size.height}:${collapsed}`);
+  }
+  return parts.join(';');
+};
