@@ -2,6 +2,17 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 191 (cont.) — `edgesSlice` split into focused sub-modules
+
+`edgesSlice.ts` (561 lines) split into an `edges/` subfolder of `create*Actions(deps)`
+factories, mirroring the `entitiesSlice` + `entities/` and `docMetaSlice` + `docMeta/`
+pattern: `connect.ts` (connect / trim / update / delete / reverse / reconnect),
+`junctor.ts` (AND/OR/XOR group + ungroup + add-co-cause + the `JunctorKind` constants),
+`splice.ts` (the two splice gestures), `attributes.ts` (polarity + edge attributes), and
+`shared.ts` (`EdgesFactoryDeps`). The composer keeps `createEdgesSlice` + `EdgesSlice` and
+re-exports `JunctorKind` (consumed by `JunctorOverlay` + the Flying Logic writer), so no
+consumer import moved. Pure move — verbatim action bodies, zero behaviour/test changes.
+
 ## Session 191 (cont.) — Projection memo gated on a collapse signature (+ an edge-staleness fix)
 
 `useGraphProjection` (pipeline stage 1 — the visible-entity set + remap consumed by
