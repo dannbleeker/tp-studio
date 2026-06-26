@@ -7,6 +7,7 @@ import {
 } from '@/domain/groups';
 import type { TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
+import { entityCollapseSignature } from './graphViewConstants';
 
 /** The shape returned by `computeCollapseProjection` — derived rather than
  *  imported because the domain function inlines its return type. */
@@ -54,11 +55,17 @@ export const useGraphProjection = (doc: TPDocument): GraphProjection => {
   const hoistedGroupId = useDocumentStore((s) => s.hoistedGroupId);
   const showArchivedGroups = useDocumentStore((s) => s.showArchivedGroups);
 
-  // Keyed on `doc.entities` + `doc.groups` — the only doc fields read here and
-  // in `computeCollapseProjection` (collapse/hoist is entities + groups, never
-  // edges or metadata). So a non-structural doc edit doesn't recompute the
-  // projection (or, downstream, the emission memos keyed on its result).
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via entities + groups; narrowed deliberately.
+  // The only entity content the projection reads is existence + the F7
+  // `collapsed` flag — captured by `entityCollapseSignature`, so a title /
+  // description / state edit (which bumps `doc.entities`) leaves it untouched and
+  // the projection holds. Session 191 — also keyed on `doc.edges`: the F7
+  // entity-collapse BFS below walks the edge graph (line ~115) to find what's
+  // hidden behind a collapser, so an edge added/removed under a collapsed entity
+  // MUST recompute the hidden set (it previously didn't — the memo wasn't keyed
+  // on edges, leaving a stale `hiddenCountByCollapser`).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `entityCollapseSignature` reads `doc` only via `doc.entities`; keyed on it deliberately.
+  const entityCollapseSig = useMemo(() => entityCollapseSignature(doc), [doc.entities]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reads `doc` whole but only via the fields captured by `entityCollapseSig` + edges + groups + the hoist/archived scalars; narrowed deliberately.
   return useMemo(() => {
     const proj = computeCollapseProjection(doc);
 
@@ -157,5 +164,5 @@ export const useGraphProjection = (doc: TPDocument): GraphProjection => {
       remap,
       hiddenCountByCollapser,
     };
-  }, [doc.entities, doc.groups, hoistedGroupId, showArchivedGroups]);
+  }, [entityCollapseSig, doc.edges, doc.groups, hoistedGroupId, showArchivedGroups]);
 };

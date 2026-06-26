@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 191 (cont.) — Projection memo gated on a collapse signature (+ an edge-staleness fix)
+
+`useGraphProjection` (pipeline stage 1 — the visible-entity set + remap consumed by
+positions + emission) keyed its memo on the raw `doc.entities` reference, so a
+title / description / state edit rebuilt the O(N) visibility set (and its F7 collapse
+BFS) on every keystroke. Now gated on **`entityCollapseSignature`** (each entity's id +
+F7 `collapsed` flag — the only entity content the projection reads), mirroring the
+shipped routing / reach signatures, so non-structural edits reuse the cached projection.
+
+It also adds **`doc.edges`** to the memo deps, fixing a latent staleness: the F7
+entity-collapse BFS walks the edge graph to find what's hidden behind a collapser, but
+the memo wasn't keyed on edges — so adding/removing an edge under a *collapsed* entity
+left `hiddenCountByCollapser` (and the hidden set) stale until an entity edit. A
+render-hook test reproduces it (fails on the old deps). Behaviour-preserving otherwise;
+memo-identity + sensitivity tests pin the gate.
+
 ## Session 191 — CLR validator test sweep + a stale-fingerprint fix it surfaced
 
 A test-hardening pass over the CLR validators (sitting at ~64.7 % mutation score with many

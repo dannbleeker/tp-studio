@@ -198,3 +198,23 @@ export const entityTypeSignature = (doc: TPDocument): string => {
   }
   return parts.join(';');
 };
+
+/**
+ * A `===`-stable signature of the entity fields the visibility projection reads:
+ * each entity's `id` (existence) and `collapsed` flag (F7 per-entity collapse).
+ * `computeCollapseProjection` consults `doc.entities` only for existence, and the
+ * projection's direct reads are the F7 `collapsed` flag — never a title,
+ * description, state, type, or position.
+ *
+ * Keying `useGraphProjection` on this string (instead of the raw `doc.entities`
+ * reference) means a title / description / state / colour edit — which bumps the
+ * entities map but adds, removes, or re-collapses nothing — leaves the signature
+ * unchanged, so the O(N) visibility rebuild (and its F7 collapse BFS) is skipped.
+ */
+export const entityCollapseSignature = (doc: TPDocument): string => {
+  const parts: string[] = [];
+  for (const id of Object.keys(doc.entities)) {
+    parts.push(`${id}:${doc.entities[id]?.collapsed ? '1' : '0'}`);
+  }
+  return parts.join(';');
+};
