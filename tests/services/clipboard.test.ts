@@ -110,6 +110,48 @@ describe('clipboard', () => {
     }
   });
 
+  it('paste carries entity content (position, attributes, span-of-control), re-minting identity', () => {
+    const a = addNode('A');
+    const store = useDocumentStore.getState();
+    store.updateEntity(a.id, {
+      position: { x: 137, y: 248 },
+      spanOfControl: 'external',
+      description: 'a note',
+    });
+    store.setEntityAttribute(a.id, 'custom', { kind: 'string', value: 'kept' });
+    store.selectEntity(a.id);
+    copySelection();
+    pasteClipboard();
+
+    const doc = useDocumentStore.getState().doc;
+    const pasted = Object.values(doc.entities).find((e) => e.id !== a.id);
+    expect(pasted).toBeTruthy();
+    if (!pasted) return;
+    expect(pasted.position).toEqual({ x: 137, y: 248 });
+    expect(pasted.spanOfControl).toBe('external');
+    expect(pasted.description).toBe('a note');
+    expect(pasted.attributes?.custom).toEqual({ kind: 'string', value: 'kept' });
+    // Identity is freshly minted, not copied.
+    expect(pasted.id).not.toBe(a.id);
+    expect(pasted.annotationNumber).not.toBe(doc.entities[a.id]?.annotationNumber);
+  });
+
+  it('paste drops entity binding fields (ecSlot, coreProblem) that must not duplicate', () => {
+    const a = addNode('A');
+    const store = useDocumentStore.getState();
+    store.updateEntity(a.id, { ecSlot: 'a', coreProblem: true });
+    store.selectEntity(a.id);
+    copySelection();
+    pasteClipboard();
+
+    const doc = useDocumentStore.getState().doc;
+    const pasted = Object.values(doc.entities).find((e) => e.id !== a.id);
+    expect(pasted).toBeTruthy();
+    if (!pasted) return;
+    expect(pasted.ecSlot).toBeUndefined();
+    expect(pasted.coreProblem).toBeUndefined();
+  });
+
   it('paste twice produces two independent copies', () => {
     const a = addNode('A');
     const b = addNode('B');

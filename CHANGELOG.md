@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 191 (cont.) — Paste preserves entity content + graphCore tests
+
+A follow-up hunt over the remaining domain logic (state-propagation, patterns, cross-doc links,
+EC/injection) surfaced the entity-side twin of the edge paste bug below:
+
+- **Fix — paste dropped every entity field except `description`.** `pasteClipboard` minted each
+  copy via `createEntity` and re-attached only `description`, so a copy/paste silently lost the
+  entity's `position` (hand-positioned **Evaporating Cloud** boxes all collapsed to (0,0)),
+  `attributes` (S&T facets + custom key/values), `evidence`, `spanOfControl`, styling, and the EC
+  want/need text. Paste now carries all of the entity's self-contained content and only re-mints
+  identity + timestamps. The fields that bind or refer OUTSIDE the entity are intentionally
+  dropped — `ecSlot` (binds to one of the EC's five fixed roles → would duplicate a slot),
+  `links` (cross-doc references → back-links would desync), `coreProblem` (the doc's single
+  core-problem marker), and `importedFrom` (provenance of the original, not of a fresh local
+  copy). Two tests pin it (content carried; binding fields dropped), the first failing pre-fix.
+- **Tests — `graphCore` now has a dedicated suite** (`tests/domain/graphCore.test.ts`, 22 cases):
+  the WeakMap-cached `edgesArray` / `entitiesArray` / `edgeIndex` (hit returns the same reference,
+  a new map reference rebuilds), `junctorGroupId` precedence, self-loop counting in
+  `connectionCount`, the stable frozen empty-array sentinels, `isStNodeFormat` (injection +
+  facet-attribute gating), and `assumptionsForEdge` grouping. The last foundational graph module
+  without its own test.
+
 ## Session 191 (cont.) — Copy/paste no longer strips edge properties
 
 An adversarially-verified bug hunt over the un-swept complex areas (layout, geometry/routing,

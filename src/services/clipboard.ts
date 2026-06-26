@@ -65,14 +65,40 @@ export const pasteClipboard = (): PasteResult => {
   // Mint new entities, preserve the per-entity id mapping for edge remap.
   const idMap = new Map<string, string>();
   const newEntities: Entity[] = buffer.entities.map((src, i) => {
-    const e = createEntity({
+    const minted = createEntity({
       type: src.type,
       title: src.title,
       annotationNumber: startAnnotation + i,
     });
-    // Conditional spread to avoid passing `description: undefined`
-    // when the source entity has no description (exactOptionalPropertyTypes).
-    const next: Entity = src.description !== undefined ? { ...e, description: src.description } : e;
+    // Carry ALL of the source entity's self-contained content (position,
+    // attributes, evidence, span-of-control, styling, EC want/need text, …) onto
+    // the fresh copy. Paste previously kept only `description`, so e.g. a
+    // hand-positioned Evaporating Cloud box collapsed to (0,0) and any S&T /
+    // custom attributes were silently lost. Re-mint the identity + timestamps,
+    // and DROP the few fields that bind or refer OUTSIDE the entity — carrying
+    // them verbatim would dangle, duplicate a singleton, or desync a back-ref:
+    //   ecSlot       — binds the box to one of the EC's five fixed roles
+    //   links        — cross-document references (back-links would go asymmetric)
+    //   coreProblem  — the doc's single "core problem" designation
+    //   importedFrom — provenance of the ORIGINAL; a paste is a fresh local copy
+    const {
+      id: _id,
+      annotationNumber: _annotation,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      ecSlot: _ecSlot,
+      links: _links,
+      coreProblem: _coreProblem,
+      importedFrom: _importedFrom,
+      ...carried
+    } = src;
+    const next: Entity = {
+      ...carried,
+      id: minted.id,
+      annotationNumber: minted.annotationNumber,
+      createdAt: minted.createdAt,
+      updatedAt: minted.updatedAt,
+    };
     idMap.set(src.id, next.id);
     return next;
   });
