@@ -75,6 +75,12 @@ fallback/skip branches — and the sweep surfaced a real correctness bug.
   diagram-type fallback, invalid-weight rejection, OR/XOR junctor synthesis on a raw import,
   group colour/collapsed parsing, malformed-vertex/edge skips, and flat-over-`documentInfo`
   metadata precedence.
+- **Result — validator mutation score 64.7 % → 72.4 %** (a fresh full run over
+  `src/domain/validators/**`, 1096 mutants: 788 killed + 5 timeout, up from the prior pass). The
+  residual survivors are concentrated in `index.ts` (the registry's unused `ruleId` label arg and
+  the `validate()` LRU-cache internals — equivalent mutants that don't change output) and
+  `ecCompleteness.ts` (a five-sub-rule validator); the high-value, output-affecting mutants are
+  now killed.
 
 ## Session 190 (cont.) — Edit-heavy round 2 + a backup-cache fix + housekeeping
 
