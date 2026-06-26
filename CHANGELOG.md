@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 191 — CLR validator test sweep + a stale-fingerprint fix it surfaced
+
+A test-hardening pass over the CLR validators (sitting at ~64.7 % mutation score with many
+rules covered only collectively). Added dedicated, mutant-killing tests for 16 previously
+under-tested rules plus the two most complex ones, and filled the Flying Logic reader's
+fallback/skip branches — and the sweep surfaced a real correctness bug.
+
+- **Fix — the validation fingerprint omitted `edge.kind` and `edge.isMutualExclusion`.**
+  `validate(doc)` is memoized via a 32-entry LRU keyed on `computeValidationFingerprint`, whose
+  per-edge signature encoded `id:source>target:andGroupId:weight:isBackEdge:delay` but NOT the
+  edge's `kind` (read by `logic-type-mismatch`, `long-arrow`, `cause-sufficiency`) or
+  `isMutualExclusion` (read by `ec-missing-conflict`, `ec-completeness`). So two docs differing
+  ONLY in one of those fields collided on the cache key and `validate` returned the prior doc's
+  warnings: flipping an edge sufficiency↔necessity, or ticking/unticking the EC conflict edge's
+  Mutual-exclusion flag, left the relevant warning stale until an unrelated edit perturbed the
+  key. The fingerprint's own header comment warns about exactly this omission class. Both fields
+  added to the per-edge signature; a fail-before/pass-after regression test pins it.
+- **Tests — 18 new validator suites** under `tests/domain/validators/` (one per rule), covering
+  the positive trigger (exact target + message + action), the off-by-one boundary, negative
+  shapes that must NOT fire, and diagram-type gating: `longArrow`, `ecCompleteness`,
+  `externalRootCause`, `crtUdeCount`, `crtUdeNoUpstream`, `crtDeadBranch`, `crtCoreDriverChecks`,
+  `crtUdeWording`, `logicTypeMismatch`, `loopPolarity`, `reinforcingNoDelay`, `completeStep`,
+  `ttActionLocusUnset`, `ecMissingConflict`, `stTacticAssumptions`, `stTacticRollup`,
+  `goalTreeMultipleGoals`, `nbrBranchIntegrity`.
+- **Tests — Flying Logic reader edge cases** (`tests/domain/flyingLogic/reader.test.ts`): the
+  diagram-type fallback, invalid-weight rejection, OR/XOR junctor synthesis on a raw import,
+  group colour/collapsed parsing, malformed-vertex/edge skips, and flat-over-`documentInfo`
+  metadata precedence.
+
 ## Session 190 (cont.) — Edit-heavy round 2 + a backup-cache fix + housekeeping
 
 Follow-ups in the same unattended optimization pass. The routing gate (below) cut the

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { layoutFingerprint, validationFingerprint } from '@/domain/fingerprint';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedConnectedPair, seedEntity } from '../helpers/seedDoc';
+import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
 beforeEach(resetStoreForTest);
 
@@ -181,5 +182,34 @@ describe('validationFingerprint — custom entity classes', () => {
     // No injection in the doc any more → the rule must NOT fire (a stale
     // fingerprint hit would keep returning the old warning).
     expect(validate(asEffect).some((w) => w.ruleId === 'nbr-no-negative-branch')).toBe(false);
+  });
+});
+
+/**
+ * Regression — every edge field a validator reads MUST be in the validation
+ * fingerprint, or two docs differing only in that field collide on the cache
+ * key and `validate` returns stale warnings. `edge.kind`
+ * (logic-type-mismatch / long-arrow / cause-sufficiency) and
+ * `edge.isMutualExclusion` (ec-missing-conflict / ec-completeness) were
+ * missing (found Session 191 by the validator-test sweep).
+ */
+describe('validationFingerprint — edge fields rules read', () => {
+  const twoNodeDoc = (edgeOverrides: Parameters<typeof makeEdge>[2]) => {
+    resetIds();
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    return makeDoc([a, b], [makeEdge(a.id, b.id, edgeOverrides)]);
+  };
+
+  it('changes when an edge kind flips sufficiency ↔ necessity', () => {
+    const suff = validationFingerprint(twoNodeDoc({ kind: 'sufficiency' }));
+    const nec = validationFingerprint(twoNodeDoc({ kind: 'necessity' }));
+    expect(suff).not.toBe(nec);
+  });
+
+  it('changes when an edge mutual-exclusion flag flips', () => {
+    const plain = validationFingerprint(twoNodeDoc({}));
+    const mutex = validationFingerprint(twoNodeDoc({ isMutualExclusion: true }));
+    expect(plain).not.toBe(mutex);
   });
 });

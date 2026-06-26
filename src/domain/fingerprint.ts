@@ -199,11 +199,14 @@ const computeValidationFingerprint = (doc: TPDocument): string => {
     .join('|');
   const edgeSig = edgesArray(doc)
     // weight + isBackEdge feed the loop-polarity rule; delay feeds the
-    // reinforcing-no-delay rule (Theme A / A4) — so toggling any of them must
-    // re-run validation rather than hit a stale fingerprint.
+    // reinforcing-no-delay rule (Theme A / A4); kind (sufficiency vs necessity)
+    // feeds logic-type-mismatch / long-arrow / cause-sufficiency; and
+    // isMutualExclusion feeds the EC missing-conflict + completeness rules — so
+    // toggling any of them must re-run validation rather than hit a stale
+    // fingerprint (Session 191 — kind + isMutualExclusion were missing).
     .map(
       (e) =>
-        `${e.id}:${e.sourceId}>${e.targetId}:${e.andGroupId ?? ''}:${e.weight ?? ''}:${e.isBackEdge ? 'b' : ''}:${e.delay ? 'd' : ''}`
+        `${e.id}:${e.sourceId}>${e.targetId}:${e.andGroupId ?? ''}:${e.weight ?? ''}:${e.isBackEdge ? 'b' : ''}:${e.delay ? 'd' : ''}:${e.kind}:${e.isMutualExclusion ? 'm' : ''}`
     )
     .sort()
     .join('|');
