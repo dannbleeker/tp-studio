@@ -82,7 +82,28 @@ export const pasteClipboard = (): PasteResult => {
     const newSource = idMap.get(src.sourceId);
     const newTarget = idMap.get(src.targetId);
     if (!newSource || !newTarget) continue;
-    newEdges.push(createEdge({ sourceId: newSource, targetId: newTarget }));
+    // Carry the source edge's semantic `kind` (createEdge hard-codes
+    // 'sufficiency', which would silently downgrade EC / Goal Tree / PRT
+    // necessity edges) plus all its metadata. Conditional spreads keep
+    // exactOptionalPropertyTypes happy (never assign `field: undefined`).
+    // The junctor group ids (and/or/xorGroupId) are intentionally DROPPED:
+    // they reference a cross-edge group, so pasting a subset would dangle or
+    // alias the original group — the user can re-group after paste.
+    const base = createEdge({ sourceId: newSource, targetId: newTarget });
+    const next: Edge = {
+      ...base,
+      kind: src.kind,
+      ...(src.weight !== undefined ? { weight: src.weight } : {}),
+      ...(src.label !== undefined ? { label: src.label } : {}),
+      ...(src.description !== undefined ? { description: src.description } : {}),
+      ...(src.isBackEdge !== undefined ? { isBackEdge: src.isBackEdge } : {}),
+      ...(src.isMutualExclusion !== undefined ? { isMutualExclusion: src.isMutualExclusion } : {}),
+      ...(src.delay !== undefined ? { delay: src.delay } : {}),
+      ...(src.loopName !== undefined ? { loopName: src.loopName } : {}),
+      ...(src.loopNarrative !== undefined ? { loopNarrative: src.loopNarrative } : {}),
+      ...(src.attributes !== undefined ? { attributes: src.attributes } : {}),
+    };
+    newEdges.push(next);
   }
 
   // Splice into the doc via setDocument (one history step, persistence flush).

@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 191 (cont.) — Copy/paste no longer strips edge properties
+
+An adversarially-verified bug hunt over the un-swept complex areas (layout, geometry/routing,
+history/undo-redo, selection/clipboard) surfaced one real, high-severity data-loss bug:
+
+- **Fix — paste discarded every edge property except its endpoints.** `pasteClipboard`
+  reconstructed each copied edge with `createEdge({ sourceId, targetId })`, which hard-codes
+  `kind: 'sufficiency'` and ignores all other fields. So a routine Ctrl+C / Ctrl+V silently lost
+  the edge's `weight`, `label`, `description`, `isBackEdge`, `isMutualExclusion`, `delay`,
+  `loopName`, `loopNarrative`, and `attributes` — and **downgraded `kind: 'necessity'` →
+  `'sufficiency'`**, corrupting the semantics of EC / Goal Tree / PRT edges (which would then
+  spuriously trip the `logic-type-mismatch` validator). The entity paste path already preserved
+  `description`, so the edge path dropping everything was an asymmetric oversight. Paste now
+  carries the source edge's `kind` plus all metadata (conditional spreads for
+  exactOptionalPropertyTypes); the junctor group ids (`and`/`or`/`xorGroupId`) are intentionally
+  dropped — they reference a cross-edge group, so pasting a subset would dangle or alias it.
+  Two tests pin it (metadata preserved; group ids dropped), the first failing pre-fix.
+
 ## Session 191 (cont.) — Two bugs from an adversarial cache/round-trip hunt
 
 A deep bug hunt (adversarially verified, 13 of 15 candidates rejected) surfaced two real,
