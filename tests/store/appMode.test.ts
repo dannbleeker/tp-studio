@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { resetStoreForTest, useDocumentStore } from '@/store';
+import { readInitialPrefs } from '@/store/uiSlice/prefs';
+import type { AppMode } from '@/store/uiSlice/types';
 
 /**
  * Session 135 / spec major gap #9 — app-mode state.
@@ -167,4 +169,19 @@ describe('appMode — palette commands', () => {
     expect(s().toasts.length).toBe(beforeToasts + 1);
     expect(s().toasts[beforeToasts]?.kind).toBe('info');
   });
+});
+
+// Regression: 'reader' was missing from VALID_APP_MODES, so readInitialPrefs
+// rejected the persisted value and silently reverted Reader mode to 'expert'
+// on reload. Every valid AppMode must round-trip through persistence — this
+// parametrized test also guards against a future mode being added to the type
+// + setter but forgotten in the validation whitelist.
+describe('appMode — persists every mode across a reload', () => {
+  const MODES: readonly AppMode[] = ['expert', 'guided', 'workshop', 'presentation', 'reader'];
+  for (const mode of MODES) {
+    it(`persists '${mode}'`, () => {
+      s().setAppMode(mode);
+      expect(readInitialPrefs().appMode).toBe(mode);
+    });
+  }
 });

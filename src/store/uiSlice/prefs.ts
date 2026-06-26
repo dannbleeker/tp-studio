@@ -56,6 +56,7 @@ const VALID_APP_MODES: ReadonlySet<AppMode> = new Set([
   'guided',
   'workshop',
   'presentation',
+  'reader',
 ]);
 const VALID_EDGE_ROUTING: ReadonlySet<EdgeRouting> = new Set(['smart', 'direct']);
 

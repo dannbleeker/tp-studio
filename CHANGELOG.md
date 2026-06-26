@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 191 (cont.) — Reader mode survives a reload
+
+A final adversarial sweep over the last un-swept areas (shortcut dispatch, search/library,
+creation wizards, markdown/settings/deep-link) surfaced one real persistence bug:
+
+- **Fix — Reader mode silently reverted to Expert on reload.** `readInitialPrefs` validates the
+  persisted `appMode` against `VALID_APP_MODES`, but that whitelist listed only
+  `expert`/`guided`/`workshop`/`presentation` — it omitted `reader`, a fully-shipped fifth mode
+  (Session 180/E6). So switching to Reader, then reloading, failed the `.has()` check and fell
+  back to `expert` — while `browseLocked` (auto-engaged by Reader) persisted independently,
+  stranding the user in a browse-locked Expert state. `reader` added to the set. A parametrized
+  test now asserts every `AppMode` round-trips through persistence (the `reader` case failed
+  pre-fix), guarding against any future mode being added to the type + setter but forgotten in
+  the validation whitelist.
+
 ## Session 191 (cont.) — Paste preserves entity content + graphCore tests
 
 A follow-up hunt over the remaining domain logic (state-propagation, patterns, cross-doc links,
