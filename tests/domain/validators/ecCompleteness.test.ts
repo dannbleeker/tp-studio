@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import type { TPDocument } from '@/domain/types';
 import { validate } from '@/domain/validators';
 import { makeDoc, makeEdge, makeEntity, resetIds } from '../helpers';
 
@@ -58,6 +59,16 @@ describe('CLR: ec-completeness', () => {
     expect(has(msgs, 'connects to something other than A')).toBe(false);
   });
 
+  it('Rule 2 — does NOT fire on a Need (B) mutual-exclusion edge', () => {
+    const a = makeEntity({ ecSlot: 'a', title: 'A' });
+    const b = makeEntity({ ecSlot: 'b', title: 'B' });
+    const c = makeEntity({ ecSlot: 'c', title: 'C' });
+    const inj = makeEntity({ type: 'injection', title: 'Inj' });
+    // B↔C is the conflict (mutual-exclusion) link, not a support edge — excluded.
+    const msgs = ecMessages([a, b, c, inj], [makeEdge(b.id, c.id, { isMutualExclusion: true })]);
+    expect(has(msgs, 'connects to something other than A')).toBe(false);
+  });
+
   it('Rule 3 — fires when a Want (D) feeds the wrong Need', () => {
     const a = makeEntity({ ecSlot: 'a', title: 'A' });
     const b = makeEntity({ ecSlot: 'b', title: 'B' });
@@ -69,12 +80,75 @@ describe('CLR: ec-completeness', () => {
     expect(has(msgs, 'supports an unexpected target')).toBe(true);
   });
 
+  it('Rule 3 — does NOT fire when a Want (D) feeds its own Need (B)', () => {
+    const a = makeEntity({ ecSlot: 'a', title: 'A' });
+    const b = makeEntity({ ecSlot: 'b', title: 'B' });
+    const d = makeEntity({ ecSlot: 'd', title: 'D' });
+    const inj = makeEntity({ type: 'injection', title: 'Inj' });
+    const msgs = ecMessages([a, b, d, inj], [makeEdge(d.id, b.id)]);
+    expect(has(msgs, 'supports an unexpected target')).toBe(false);
+  });
+
+  it('Rule 3 — does NOT fire on a Want (D) mutual-exclusion edge', () => {
+    const a = makeEntity({ ecSlot: 'a', title: 'A' });
+    const b = makeEntity({ ecSlot: 'b', title: 'B' });
+    const d = makeEntity({ ecSlot: 'd', title: 'D' });
+    const dp = makeEntity({ ecSlot: 'dPrime', title: "D'" });
+    const inj = makeEntity({ type: 'injection', title: 'Inj' });
+    // D↔D′ is the conflict link, not a support edge — must be excluded.
+    const msgs = ecMessages(
+      [a, b, d, dp, inj],
+      [makeEdge(d.id, dp.id, { isMutualExclusion: true })]
+    );
+    expect(has(msgs, 'supports an unexpected target')).toBe(false);
+  });
+
   it('Rule 4 — fires when a canonical arrow (B → A) carries no assumption', () => {
     const a = makeEntity({ ecSlot: 'a', title: 'A' });
     const b = makeEntity({ ecSlot: 'b', title: 'B' });
     const inj = makeEntity({ type: 'injection', title: 'Inj' });
     const msgs = ecMessages([a, b, inj], [makeEdge(b.id, a.id)]);
     expect(has(msgs, 'No assumption recorded on B → A')).toBe(true);
+  });
+
+  it('Rule 4 — does NOT fire once the arrow carries an assumption', () => {
+    const a = makeEntity({ ecSlot: 'a', title: 'A' });
+    const b = makeEntity({ ecSlot: 'b', title: 'B' });
+    const inj = makeEntity({ type: 'injection', title: 'Inj' });
+    const edge = makeEdge(b.id, a.id);
+    const doc: TPDocument = {
+      ...makeDoc([a, b, inj], [edge], 'ec'),
+      assumptions: {
+        x: {
+          id: 'x',
+          edgeId: edge.id,
+          text: 'assume',
+          status: 'unexamined',
+          createdAt: 0,
+          updatedAt: 0,
+        },
+      },
+    };
+    const msgs = validate(doc)
+      .filter((w) => w.ruleId === 'ec-completeness')
+      .map((w) => w.message);
+    expect(has(msgs, 'No assumption recorded on B → A')).toBe(false);
+  });
+
+  it('Rule 4 — checks the D ↔ D′ mutex arrow in the reverse direction too', () => {
+    const a = makeEntity({ ecSlot: 'a', title: 'A' });
+    const b = makeEntity({ ecSlot: 'b', title: 'B' });
+    const c = makeEntity({ ecSlot: 'c', title: 'C' });
+    const d = makeEntity({ ecSlot: 'd', title: 'D' });
+    const dp = makeEntity({ ecSlot: 'dPrime', title: "D'" });
+    const inj = makeEntity({ type: 'injection', title: 'Inj' });
+    // Edge drawn D′→D (reverse of the canonical D↔D′) + flagged mutex: still
+    // matches the arrow, so its missing-assumption warning must fire.
+    const msgs = ecMessages(
+      [a, b, c, d, dp, inj],
+      [makeEdge(dp.id, d.id, { isMutualExclusion: true })]
+    );
+    expect(has(msgs, 'No assumption recorded on D ↔ D′')).toBe(true);
   });
 
   it('Rule 5 — fires when an Objective exists but there is no injection', () => {

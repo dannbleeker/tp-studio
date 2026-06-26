@@ -77,7 +77,9 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
   for (const slot of ['b', 'c'] as const) {
     const ent = slots[slot];
     if (!ent || !slots.a) continue;
-    const incoming = Object.values(doc.edges).filter((e) => e.targetId === ent.id);
+    // A Need may only support the Objective. Mutual-exclusion edges (the B↔C
+    // conflict link) are not support edges, so they're excluded here — the
+    // missing incoming-want case is left to Rule 3 (the want side).
     const outgoing = Object.values(doc.edges).filter(
       (e) => e.sourceId === ent.id && e.targetId !== slots.a?.id && !e.isMutualExclusion
     );
@@ -91,9 +93,6 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
         )
       );
     }
-    // Need has no incoming want? That's covered by rule 3 (the want
-    // side); skip here to avoid double-counting.
-    void incoming;
   }
 
   // Rule 3 — D supports only B; D′ supports only C.

@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 191 (cont.) — EC-completeness hardening + a dead-code trim
+
+- **Tests — five more `ec-completeness` cases** killing real mutation survivors in the EC
+  validator's most complex rules: the mutual-exclusion exclusion in Rule 2 (a B↔C conflict edge
+  must NOT trip "connects to something other than A") and Rule 3 (a D↔D′ conflict edge isn't a
+  support edge), the correct-target negative for Rule 3 (D→B is fine), the with-assumption
+  negative for Rule 4 (an arrow carrying an assumption is silent), and Rule 4's reverse-direction
+  mutex match (a D′→D edge still satisfies the D↔D′ arrow). A scoped Stryker run confirms the
+  file's mutation score rose **65.7 % → 71.1 %**.
+- **Dead code — removed the vestigial `incoming` filter** in Rule 2: it ran an O(E)
+  `Object.values(doc.edges).filter(…)` per Need on every `validate()` only to `void` the result
+  (the missing-incoming-want case is Rule 3's job). Behaviour-identical; one fewer edge scan per
+  EC validate.
+
 ## Session 191 (cont.) — Reader mode survives a reload
 
 A final adversarial sweep over the last un-swept areas (shortcut dispatch, search/library,
