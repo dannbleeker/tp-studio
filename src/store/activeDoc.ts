@@ -91,10 +91,23 @@ export const setActiveDoc = (state: ActiveDocFields, nextDoc: TPDocument): Activ
   // Rekey: the active tab now holds a different-id doc. Keep its slot in
   // `tabOrder`; drop the old id from `docs`.
   const { [state.activeDocId]: _old, ...rest } = state.docs;
+  // Replace the old active id with the new one in place. If `nextDoc.id` already
+  // names ANOTHER open tab (e.g. a replace-mode load of a doc whose id collides
+  // with a background tab), the naive map would leave `tabOrder` with a duplicate
+  // id — corrupting the tab strip (duplicate React keys; closeTab removing both;
+  // the bad order persisting across reload). Dedup, keeping the active tab's slot.
+  const seen = new Set<DocumentId>();
+  const tabOrder: DocumentId[] = [];
+  for (const id of state.tabOrder) {
+    const mapped = id === state.activeDocId ? nextDoc.id : id;
+    if (seen.has(mapped)) continue;
+    seen.add(mapped);
+    tabOrder.push(mapped);
+  }
   return {
     doc: nextDoc,
     docs: { ...rest, [nextDoc.id]: nextDoc },
     activeDocId: nextDoc.id,
-    tabOrder: state.tabOrder.map((id) => (id === state.activeDocId ? nextDoc.id : id)),
+    tabOrder,
   };
 };

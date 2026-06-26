@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 191 (cont.) — Two bugs from an adversarial cache/round-trip hunt
+
+A deep bug hunt (adversarially verified, 13 of 15 candidates rejected) surfaced two real,
+unrelated correctness bugs:
+
+- **Fix — `setActiveDoc` could duplicate a tab id.** When the active tab is rekeyed to a doc
+  whose id matches ANOTHER open tab (e.g. a replace-mode load of a JSON export of an
+  already-open tree), the `tabOrder.map(old → new)` produced a duplicate id (`[X, B]` →
+  `[B, B]`) and overwrote the background tab's doc — corrupting the tab strip (duplicate React
+  keys; `closeTab` removing both occurrences), and the bad order persisted across reload. Now
+  dedups the rekeyed `tabOrder`, keeping the active tab's slot. Unit test reproduces it.
+- **Fix — VGL export silently flattened OR / XOR junctor groups.** `exportToVgl` bucketed edges
+  only by `andGroupId`; OR- and XOR-grouped edges fell through to plain `edge A -> B` lines,
+  losing the grouping (the sibling DOT + Flying Logic exporters already handle all three kinds).
+  Generalised the bucketing to AND/OR/XOR, emitting `edge_or` / `edge_xor` blocks mirroring
+  `edge_and` (AND output byte-identical). VGL is a one-way human-readable format — no user data
+  loss, but an export-fidelity defect. Tests added for both kinds.
+
 ## Session 191 (cont.) — `edgesSlice` split into focused sub-modules
 
 `edgesSlice.ts` (561 lines) split into an `edges/` subfolder of `create*Actions(deps)`
