@@ -80,20 +80,30 @@ export const exportToVgl = (doc: TPDocument): string => {
     out.push('  }');
   }
 
-  // Group edges: AND-grouped ones bucket under `edge_and target:T { … }`,
-  // plain ones render one-per-line.
+  // Group edges by junctor kind: AND/OR/XOR-grouped ones bucket under
+  // `edge_<kind> target:T { … }`; plain ones render one-per-line. An edge belongs
+  // to AT MOST ONE junctor kind (store-enforced), so the kinds never overlap.
   type Edge = (typeof doc.edges)[string];
+  const JUNCTOR_KINDS = ['and', 'or', 'xor'] as const;
+  type JunctorKind = (typeof JUNCTOR_KINDS)[number];
+  const groupFieldOf = (e: Edge, kind: JunctorKind): string | undefined =>
+    kind === 'and' ? e.andGroupId : kind === 'or' ? e.orGroupId : e.xorGroupId;
   const plain: Edge[] = [];
-  const byAndKey = new Map<string, { targetId: string; members: Edge[] }>();
+  const buckets: Record<JunctorKind, Map<string, { targetId: string; members: Edge[] }>> = {
+    and: new Map(),
+    or: new Map(),
+    xor: new Map(),
+  };
   for (const edge of Object.values(doc.edges)) {
     const src = doc.entities[edge.sourceId];
     const tgt = doc.entities[edge.targetId];
     if (!src || !tgt) continue;
-    if (edge.andGroupId) {
-      const key = edge.andGroupId;
-      const bucket = byAndKey.get(key);
+    const kind = JUNCTOR_KINDS.find((k) => groupFieldOf(edge, k));
+    const key = kind && groupFieldOf(edge, kind);
+    if (kind && key) {
+      const bucket = buckets[kind].get(key);
       if (bucket) bucket.members.push(edge);
-      else byAndKey.set(key, { targetId: edge.targetId, members: [edge] });
+      else buckets[kind].set(key, { targetId: edge.targetId, members: [edge] });
     } else {
       plain.push(edge);
     }
@@ -110,18 +120,20 @@ export const exportToVgl = (doc: TPDocument): string => {
     }
   }
 
-  for (const { targetId, members } of byAndKey.values()) {
-    if (members.length < 2) {
-      // Single-member AND group → render as a plain edge instead of an
-      // empty-ish `edge_and` block. The user can re-AND on import.
-      for (const edge of members) {
-        out.push(`  edge ${tid(edge.sourceId)} -> ${tid(edge.targetId)}`);
+  for (const kind of JUNCTOR_KINDS) {
+    for (const { targetId, members } of buckets[kind].values()) {
+      if (members.length < 2) {
+        // Single-member group → render as a plain edge instead of an empty-ish
+        // `edge_<kind>` block. The user can re-group on import.
+        for (const edge of members) {
+          out.push(`  edge ${tid(edge.sourceId)} -> ${tid(edge.targetId)}`);
+        }
+        continue;
       }
-      continue;
+      out.push(`  edge_${kind} target:${tid(targetId)} {`);
+      for (const edge of members) out.push(`    ${tid(edge.sourceId)}`);
+      out.push('  }');
     }
-    out.push(`  edge_and target:${tid(targetId)} {`);
-    for (const edge of members) out.push(`    ${tid(edge.sourceId)}`);
-    out.push('  }');
   }
 
   out.push('}');

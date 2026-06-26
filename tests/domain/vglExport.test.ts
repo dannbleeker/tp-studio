@@ -58,6 +58,28 @@ describe('exportToVgl (N5)', () => {
     expect((block.match(/^\s{4}e_\w+$/gm) ?? []).length).toBe(2);
   });
 
+  it('OR-grouped edges with 2+ members render as one `edge_or` block', () => {
+    const { e1, e2 } = seedAndGroupable();
+    const r = useDocumentStore.getState().groupAsOr([e1.id, e2.id]);
+    expect(r.ok).toBe(true);
+    const vgl = exportToVgl(docState());
+    expect(vgl).toMatch(/edge_or target:e_[\w]+ \{/);
+    const block = vgl.match(/edge_or[\s\S]*?\}/)?.[0] ?? '';
+    expect((block.match(/^\s{4}e_\w+$/gm) ?? []).length).toBe(2);
+    // Must NOT silently flatten the OR group into plain edges (the old bug).
+    expect(vgl).not.toMatch(/^\s{2}edge e_\w+ -> e_\w+$/m);
+  });
+
+  it('XOR-grouped edges with 2+ members render as one `edge_xor` block', () => {
+    const { e1, e2 } = seedAndGroupable();
+    const r = useDocumentStore.getState().groupAsXor([e1.id, e2.id]);
+    expect(r.ok).toBe(true);
+    const vgl = exportToVgl(docState());
+    expect(vgl).toMatch(/edge_xor target:e_[\w]+ \{/);
+    const block = vgl.match(/edge_xor[\s\S]*?\}/)?.[0] ?? '';
+    expect((block.match(/^\s{4}e_\w+$/gm) ?? []).length).toBe(2);
+  });
+
   it('escapes double quotes and backslashes inside titles', () => {
     seedEntity('She said \\"hi\\"', 'effect');
     const vgl = exportToVgl(docState());
