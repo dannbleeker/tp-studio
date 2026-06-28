@@ -1,6 +1,6 @@
 {
-  "mutationScore": 64.69,
-  "mutants": 1096,
+  "mutationScore": 73.24,
+  "mutants": 1091,
   "scope": "src/domain/validators",
-  "generatedAt": "2026-06-21T09:05:23.403Z"
+  "generatedAt": "2026-06-28T08:36:31.067Z"
 }
