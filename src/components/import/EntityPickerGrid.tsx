@@ -90,9 +90,9 @@ export function EntityPickerGrid({
                   aria-label={`${cardActionVerb} ${entity.title || 'untitled entity'} (${meta.label})`}
                   className={clsx(
                     'group flex h-full w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
-                    'hover:border-indigo-400 hover:bg-indigo-50/40',
+                    'hover:border-accent-400 hover:bg-accent-50/40',
                     CARD_FOCUS,
-                    'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
+                    'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500 dark:hover:bg-accent-950/40'
                   )}
                 >
                   <span className="flex items-center gap-2">

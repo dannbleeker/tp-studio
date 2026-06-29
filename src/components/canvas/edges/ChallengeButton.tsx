@@ -45,13 +45,13 @@ export function ChallengeButton({
         className="flex flex-col items-center gap-1"
       >
         {/* Edge-kind orientation label */}
-        <span className="pointer-events-none rounded-full border border-indigo-200/70 bg-white/90 px-2 py-0.5 text-[10px] text-indigo-600 shadow-xs dark:border-indigo-800/50 dark:bg-neutral-900/90 dark:text-indigo-300">
+        <span className="pointer-events-none rounded-full border border-accent-200/70 bg-white/90 px-2 py-0.5 text-[10px] text-accent-600 shadow-xs dark:border-accent-800/50 dark:bg-neutral-900/90 dark:text-accent-300">
           {coaching.label}
         </span>
         {/* Challenge button */}
         <button
           type="button"
-          className="rounded-full border border-indigo-300 bg-white px-2.5 py-0.5 font-medium text-indigo-600 text-xs shadow-sm transition hover:bg-indigo-50 dark:border-indigo-700 dark:bg-neutral-900 dark:text-indigo-300 dark:hover:bg-indigo-950"
+          className="rounded-full border border-accent-300 bg-white px-2.5 py-0.5 font-medium text-accent-600 text-xs shadow-sm transition hover:bg-accent-50 dark:border-accent-700 dark:bg-neutral-900 dark:text-accent-300 dark:hover:bg-accent-950"
           title={coaching.tip}
           onClick={(e) => {
             e.stopPropagation();

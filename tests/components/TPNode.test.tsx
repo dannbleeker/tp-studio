@@ -105,11 +105,11 @@ describe('TPNode — hover + selection affordance (Feature #1, Session 147)', ()
     expect(card(container)).not.toMatch(/ring-neutral-300/);
   });
 
-  it('a selected node shows the beefed-up indigo ring + glow', () => {
+  it('a selected node shows the beefed-up accent ring + glow', () => {
     const entity = createEntity({ type: 'effect', title: 'Selected', annotationNumber: 1 });
     const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity }, true)} />);
-    expect(card(container)).toMatch(/ring-indigo-500/);
-    expect(card(container)).toMatch(/shadow-indigo-500\/30/);
+    expect(card(container)).toMatch(/ring-accent-500/);
+    expect(card(container)).toMatch(/shadow-accent-500\/30/);
   });
 
   it('hover ring is suppressed while selected — selection wins', () => {
@@ -118,7 +118,7 @@ describe('TPNode — hover + selection affordance (Feature #1, Session 147)', ()
     const el = container.querySelector('[data-component="tp-node"]') as HTMLElement;
     fireEvent.mouseEnter(el);
     expect(card(container)).not.toMatch(/ring-neutral-300/); // no neutral hover ring
-    expect(card(container)).toMatch(/ring-indigo-500/); // still the selected ring
+    expect(card(container)).toMatch(/ring-accent-500/); // still the selected ring
   });
 });
 
@@ -240,18 +240,18 @@ describe('TPNode — descriptions + collapsed cascade', () => {
 });
 
 describe('TPNode — selected styling', () => {
-  it('applies the indigo ring class when selected=true', () => {
+  it('applies the accent ring class when selected=true', () => {
     const entity = createEntity({ type: 'effect', title: 'selected', annotationNumber: 1 });
     const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity }, true)} />);
     const wrapper = container.querySelector('[data-component="tp-node"]');
-    expect(wrapper?.className ?? '').toMatch(/ring-indigo/);
+    expect(wrapper?.className ?? '').toMatch(/ring-accent/);
   });
 
   it('does NOT apply the selected ring class when selected=false', () => {
     const entity = createEntity({ type: 'effect', title: 'unselected', annotationNumber: 1 });
     const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity }, false)} />);
     const wrapper = container.querySelector('[data-component="tp-node"]');
-    expect(wrapper?.className ?? '').not.toMatch(/ring-indigo/);
+    expect(wrapper?.className ?? '').not.toMatch(/ring-accent/);
   });
 });
 

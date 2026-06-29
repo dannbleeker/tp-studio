@@ -29,7 +29,7 @@ export function LogicChip() {
         hasIssues
           ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300'
           : 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300',
-        clrPanelOpen && 'ring-2 ring-indigo-300 dark:ring-indigo-700'
+        clrPanelOpen && 'ring-2 ring-accent-300 dark:ring-accent-700'
       )}
     >
       <ScanSearch className="h-3.5 w-3.5" aria-hidden />

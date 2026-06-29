@@ -147,9 +147,9 @@ function EdgeScrutinyBody({
                   aria-current={current ? 'step' : undefined}
                   className={clsx(
                     'flex h-6 w-6 items-center justify-center rounded-full border text-[11px] transition',
-                    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-400',
+                    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-accent-400',
                     current
-                      ? 'border-indigo-500 bg-indigo-500 text-white'
+                      ? 'border-accent-500 bg-accent-500 text-white'
                       : done
                         ? 'border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                         : 'border-neutral-300 text-neutral-500 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-400'
@@ -206,7 +206,7 @@ function EdgeScrutinyBody({
               type="checkbox"
               checked={reviewed.has(category.ruleId)}
               onChange={() => toggleReviewed(category.ruleId)}
-              className="h-4 w-4 rounded border-neutral-300 text-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-neutral-600"
+              className="h-4 w-4 rounded border-neutral-300 text-accent-500 focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-neutral-600"
             />
             I’ve considered this reservation for this link
           </label>

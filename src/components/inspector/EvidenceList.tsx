@@ -188,7 +188,7 @@ function EvidenceRow({
           title={`Source: ${SOURCE_LABEL[item.source]} (click to cycle)`}
           aria-label={`Source ${SOURCE_LABEL[item.source]}. Press to cycle.`}
           className={clsx(
-            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide outline-hidden transition focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50',
+            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide outline-hidden transition focus-visible:ring-2 focus-visible:ring-accent-400 disabled:cursor-not-allowed disabled:opacity-50',
             SOURCE_CHIP_CLASS[item.source]
           )}
         >
@@ -203,7 +203,7 @@ function EvidenceRow({
           title={`Strength: ${STRENGTH_LABEL[item.strength]} (click to cycle)`}
           aria-label={`Strength ${STRENGTH_LABEL[item.strength]}. Press to cycle.`}
           className={clsx(
-            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide outline-hidden transition focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50',
+            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide outline-hidden transition focus-visible:ring-2 focus-visible:ring-accent-400 disabled:cursor-not-allowed disabled:opacity-50',
             STRENGTH_CHIP_CLASS[item.strength]
           )}
         >
@@ -233,7 +233,7 @@ function EvidenceRow({
             href={item.url}
             target="_blank"
             rel="noreferrer noopener"
-            className="rounded-sm p-1 text-neutral-500 transition hover:bg-indigo-100 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
+            className="rounded-sm p-1 text-neutral-500 transition hover:bg-accent-100 hover:text-accent-700 dark:hover:bg-accent-950/40 dark:hover:text-accent-300"
             title="Open citation in new tab"
             aria-label="Open citation in new tab"
           >

@@ -59,7 +59,7 @@ export function RevisionRow({
       className={clsx(
         'px-4 py-3 transition-colors',
         recent && 'bg-violet-50/50 dark:bg-violet-950/30',
-        comparing && 'bg-indigo-50/60 dark:bg-indigo-950/30'
+        comparing && 'bg-accent-50/60 dark:bg-accent-950/30'
       )}
     >
       <div className="flex items-start justify-between gap-2">
@@ -85,7 +85,7 @@ export function RevisionRow({
               placeholder="Label this snapshot…"
               // biome-ignore lint/a11y/noAutofocus: opt-in inline rename — the user just clicked the pencil and expects to type immediately.
               autoFocus
-              className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1 text-neutral-900 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+              className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1 text-neutral-900 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
             />
           ) : (
             <p className="truncate font-medium text-neutral-800 text-sm dark:text-neutral-200">
@@ -105,8 +105,8 @@ export function RevisionRow({
             className={clsx(
               'rounded-xs p-1 transition',
               comparing
-                ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
-                : 'text-neutral-400 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-200'
+                ? 'bg-accent-100 text-accent-700 dark:bg-accent-900 dark:text-accent-200'
+                : 'text-neutral-400 hover:bg-accent-50 hover:text-accent-700 dark:hover:bg-accent-950/40 dark:hover:text-accent-200'
             )}
             aria-label="Visual diff (overlay)"
             title="Visual diff (overlay live canvas)"
@@ -116,7 +116,7 @@ export function RevisionRow({
           <button
             type="button"
             onClick={onSideBySide}
-            className="rounded-sm p-1 text-neutral-400 transition hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-200"
+            className="rounded-sm p-1 text-neutral-400 transition hover:bg-accent-50 hover:text-accent-700 dark:hover:bg-accent-950/40 dark:hover:text-accent-200"
             aria-label="Side-by-side compare"
             title="Side-by-side compare"
           >
@@ -146,7 +146,7 @@ export function RevisionRow({
           <button
             type="button"
             onClick={onRestore}
-            className="rounded-sm p-1 text-neutral-400 transition hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-200"
+            className="rounded-sm p-1 text-neutral-400 transition hover:bg-accent-50 hover:text-accent-700 dark:hover:bg-accent-950/40 dark:hover:text-accent-200"
             aria-label="Restore snapshot"
             title="Restore"
           >

@@ -157,9 +157,9 @@ export function ImportPickerDialog() {
               onClick={() => void handlePick(it)}
               className={clsx(
                 'group flex h-full w-full flex-col gap-0.5 rounded-md border border-neutral-200 bg-white px-3 py-2 text-left transition',
-                'hover:border-indigo-400 hover:bg-indigo-50/40',
+                'hover:border-accent-400 hover:bg-accent-50/40',
                 CARD_FOCUS,
-                'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
+                'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500 dark:hover:bg-accent-950/40'
               )}
             >
               <span className="font-medium text-neutral-900 text-sm dark:text-neutral-100">

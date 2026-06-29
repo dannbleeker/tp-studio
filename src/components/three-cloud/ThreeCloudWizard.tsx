@@ -52,7 +52,7 @@ const blankCore = (): CoreCloud => ({
 });
 
 const inputClass =
-  'w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-xs outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100';
+  'w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-xs outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100';
 
 const labelClass =
   'font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400';
@@ -130,7 +130,7 @@ function ConsolidateStep({
 }) {
   return (
     <div className={stepClass}>
-      <div className="rounded-lg border border-indigo-100 bg-indigo-50/50 p-3 dark:border-indigo-900/40 dark:bg-indigo-950/20">
+      <div className="rounded-lg border border-accent-100 bg-accent-50/50 p-3 dark:border-accent-900/40 dark:bg-accent-950/20">
         <p className={labelClass}>The three conflicts</p>
         <ul className="mt-1 flex flex-col gap-1 text-[11px] text-neutral-700 dark:text-neutral-200">
           {conflicts.map((c, i) => (
@@ -226,7 +226,7 @@ export function ThreeCloudWizard() {
     <Modal open={open} onDismiss={close} widthClass="max-w-3xl" labelledBy="tc-title" align="top">
       <header className="flex items-center justify-between border-neutral-200 border-b px-4 py-3 dark:border-neutral-800">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-indigo-500" />
+          <Sparkles className="h-4 w-4 text-accent-500" />
           <h2
             id="tc-title"
             className="font-semibold text-neutral-900 text-sm dark:text-neutral-100"

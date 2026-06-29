@@ -382,7 +382,7 @@ describe('JunctorOverlay — per-kind label fill colors', () => {
     expect(andText?.getAttribute('fill')).toBe(EDGE_PALETTES.default.strokeAnd);
   });
 
-  it('OR text fill = #6366f1 (indigo-500)', () => {
+  it('OR text fill = #6366f1 (accent-500)', () => {
     const a = addEntity('A');
     const b = addEntity('B');
     const c = addEntity('C');

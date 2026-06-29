@@ -91,7 +91,7 @@ export function LinkEntityPickerDialog() {
                       className={clsx(
                         'max-w-[20ch] truncate rounded-full border px-2.5 py-1 font-medium text-xs transition',
                         active
-                          ? 'border-indigo-400 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-300'
+                          ? 'border-accent-400 bg-accent-50 text-accent-700 dark:border-accent-500 dark:bg-accent-950/50 dark:text-accent-300'
                           : 'border-neutral-200 text-neutral-600 hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800'
                       )}
                     >

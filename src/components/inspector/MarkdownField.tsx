@@ -68,7 +68,7 @@ export function MarkdownField({
     >
       {effectiveMode === 'edit' ? (
         <textarea
-          className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 font-mono text-neutral-900 text-xs leading-relaxed outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
+          className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 font-mono text-neutral-900 text-xs leading-relaxed outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100"
           rows={rows}
           placeholder={placeholder}
           value={value}

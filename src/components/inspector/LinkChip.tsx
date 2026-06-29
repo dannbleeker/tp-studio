@@ -38,7 +38,7 @@ export function LinkChip({
       className={clsx(
         'flex min-w-0 items-center gap-1.5 rounded-md border px-2 py-1 text-left text-xs transition',
         reachable
-          ? 'border-indigo-200 bg-indigo-50/60 text-indigo-800 hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-900/50'
+          ? 'border-accent-200 bg-accent-50/60 text-accent-800 hover:bg-accent-100 dark:border-accent-900 dark:bg-accent-950/40 dark:text-accent-200 dark:hover:bg-accent-900/50'
           : 'border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200',
         className
       )}
@@ -52,7 +52,7 @@ export function LinkChip({
         {reachable ? (
           <>
             {title || '(untitled)'}
-            <span className="ml-1 text-indigo-500/70 dark:text-indigo-300/60">· {docTitle}</span>
+            <span className="ml-1 text-accent-500/70 dark:text-accent-300/60">· {docTitle}</span>
           </>
         ) : (
           <span className="italic">Reopen linked tab</span>

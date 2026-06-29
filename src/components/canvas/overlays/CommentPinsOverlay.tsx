@@ -44,7 +44,7 @@ export function CommentPinsOverlay() {
             style={{ left, top }}
             // `-translate-x-1/2 -translate-y-full` + the squared bottom-left
             // corner anchor the pin's tip at the exact point, map-marker style.
-            className="pointer-events-auto absolute flex -translate-x-1/2 -translate-y-full items-center rounded-full rounded-bl-none border border-indigo-300 bg-indigo-50 p-1 text-indigo-700 shadow-sm transition hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
+            className="pointer-events-auto absolute flex -translate-x-1/2 -translate-y-full items-center rounded-full rounded-bl-none border border-accent-300 bg-accent-50 p-1 text-accent-700 shadow-sm transition hover:bg-accent-100 dark:border-accent-700 dark:bg-accent-950 dark:text-accent-200 dark:hover:bg-accent-900"
             title={`Pinned comment: ${c.body.slice(0, 80)}`}
             aria-label={`Pinned review comment by ${c.author || 'Anonymous'} — open the Comments panel`}
           >

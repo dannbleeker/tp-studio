@@ -117,7 +117,7 @@ export function CLRPanel() {
       <div className="flex items-start justify-between gap-2 border-neutral-200 border-b px-3 py-2 dark:border-neutral-800">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 font-semibold text-neutral-800 text-sm dark:text-neutral-100">
-            <ScanSearch className="h-4 w-4 text-indigo-500" aria-hidden />
+            <ScanSearch className="h-4 w-4 text-accent-500" aria-hidden />
             Logic check
           </div>
           <p className="mt-0.5 text-[11px] text-neutral-500 leading-snug dark:text-neutral-400">

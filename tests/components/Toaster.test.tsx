@@ -152,10 +152,10 @@ describe('Toaster', () => {
     });
     render(<Toaster />);
     const btn = screen.getByText('Refresh now') as HTMLButtonElement;
-    // Filled CTA = indigo background. The exact class string is brittle
+    // Filled CTA = accent background. The exact class string is brittle
     // to pin literally; assert the filled-color signal instead so a
     // future Tailwind tweak (e.g. switching to violet) still passes as
     // long as the button is no longer a transparent outline.
-    expect(btn.className).toMatch(/bg-indigo-/);
+    expect(btn.className).toMatch(/bg-accent-/);
   });
 });

@@ -181,8 +181,8 @@ describe('CommentsPanel', () => {
       s().addComment({ kind: 'entity', entityId: e.id }, 'needs attention');
     });
     const { container } = render(<CommentsPanel />);
-    // The badge is a <span> with rounded-full bg-indigo-100
-    const badge = container.querySelector('span.bg-indigo-100');
+    // The badge is a <span> with rounded-full bg-accent-100
+    const badge = container.querySelector('span.bg-accent-100');
     expect(badge).not.toBeNull();
     expect(badge?.textContent).toContain('1');
     expect(badge?.textContent).toContain('open');
@@ -199,7 +199,7 @@ describe('CommentsPanel', () => {
     });
     const { container } = render(<CommentsPanel />);
     // When openCount === 0 the badge span is not rendered
-    const badge = container.querySelector('span.bg-indigo-100');
+    const badge = container.querySelector('span.bg-accent-100');
     expect(badge).toBeNull();
   });
 

@@ -10,7 +10,7 @@ import { lazy, Suspense, useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
-import { GRID_DOT } from '@/domain/tokens';
+import { ACCENT, GRID_DOT } from '@/domain/tokens';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -277,8 +277,10 @@ function CanvasInner() {
             // currently-visible window reads clearly on the thumbnail,
             // and add a 1.5-px indigo stroke so the rectangle has a
             // hard edge regardless of background.
-            maskColor="rgba(99, 102, 241, 0.18)"
-            maskStrokeColor="#6366f1"
+            // Accent at ~18% alpha (hex8 `2e` ≈ 0.18) so the viewport mask
+            // tracks the brand token; the stroke is the full accent.
+            maskColor={`${ACCENT}2e`}
+            maskStrokeColor={ACCENT}
             maskStrokeWidth={1.5}
             nodeColor={miniMapNodeColor}
             // Border on each node thumbnail — without it, neutral-grey

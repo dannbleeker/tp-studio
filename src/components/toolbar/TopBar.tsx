@@ -62,7 +62,7 @@ export function TopBar() {
   if (isReaderMode) {
     return (
       <div data-component="top-bar" className="flex shrink-0 items-center gap-2">
-        <span className="flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1 font-medium text-indigo-700 text-xs dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+        <span className="flex items-center gap-1.5 rounded-full border border-accent-300 bg-accent-50 px-3 py-1 font-medium text-accent-700 text-xs dark:border-accent-700 dark:bg-accent-950 dark:text-accent-300">
           <BookOpen className="h-3 w-3" aria-hidden />
           Reader mode
         </span>

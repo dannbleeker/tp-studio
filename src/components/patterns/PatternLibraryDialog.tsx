@@ -111,7 +111,7 @@ export function PatternLibraryDialog() {
               className={clsx(
                 'rounded-full border px-2.5 py-0.5 font-medium text-[11px] transition',
                 isActive
-                  ? 'border-indigo-500 bg-indigo-100 text-indigo-800 dark:border-indigo-400 dark:bg-indigo-950 dark:text-indigo-200'
+                  ? 'border-accent-500 bg-accent-100 text-accent-800 dark:border-accent-400 dark:bg-accent-950 dark:text-accent-200'
                   : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800'
               )}
             >
@@ -138,12 +138,12 @@ export function PatternLibraryDialog() {
                 aria-label={`Load template: ${pattern.label}`}
                 className={clsx(
                   'group flex h-full w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
-                  'hover:border-indigo-400 hover:bg-indigo-50/40',
+                  'hover:border-accent-400 hover:bg-accent-50/40',
                   CARD_FOCUS,
-                  'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/40'
+                  'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500 dark:hover:bg-accent-950/40'
                 )}
               >
-                <span className="self-start rounded-sm bg-indigo-100 px-1.5 py-0 font-semibold text-[9px] text-indigo-700 uppercase tracking-wide dark:bg-indigo-950 dark:text-indigo-200">
+                <span className="self-start rounded-sm bg-accent-100 px-1.5 py-0 font-semibold text-[9px] text-accent-700 uppercase tracking-wide dark:bg-accent-950 dark:text-accent-200">
                   {DIAGRAM_TYPE_LABEL[pattern.diagramType]}
                 </span>
                 <h3 className="font-medium text-neutral-900 text-sm leading-tight dark:text-neutral-100">

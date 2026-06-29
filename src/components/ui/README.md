@@ -75,10 +75,14 @@ Colour, spacing, radii, and typography come from one of:
 - the class-constant modules in this directory (`buttonClasses`, `focusClasses`,
   `textClasses`).
 
-No primitive hardcodes a hex value. The one open item is that the **indigo accent**
-is restated as Tailwind utility classes across the primitives rather than read from
-a single token — see the tokens section of `EXTRACTION_AUDIT.md` for the
-recommendation.
+No primitive hardcodes a hex value. The brand **accent** is a semantic token:
+`--color-accent-50…950` in the Tailwind `@theme` (used as `bg-accent-*` /
+`ring-accent-*` / …) with the paired `ACCENT` constant in `tokens.ts` for
+JS/SVG/export contexts. Re-skin the whole app by changing that one token block. **Consumer contract:** a vendoring app MUST define `--color-accent-*`
+in its own `@theme` (and an `ACCENT` constant) — the primitives reference `accent-*`,
+not `indigo-*`. Note `InsetCard` still offers a fixed `indigo` *tone* (a categorical
+colour among amber/emerald/rose), which is intentionally NOT the accent. See
+`EXTRACTION_AUDIT.md` for the full token map.
 
 ---
 
@@ -92,8 +96,9 @@ recommendation.
       `onConfirm`, `onCancel`); `Modal` (`onDismiss`); `LargeDialog` (`onClose`). See
       `INVENTORY.md`.
 - [x] **All tokens are in `domain/tokens.ts` and the Tailwind `@theme`.** No raw hex
-      in `ui/` components; design tokens centralised. (Open: accent not yet a
-      semantic token — documented.)
+      in `ui/` components; design tokens centralised. Accent is now a semantic token
+      (`--color-accent-*` + `ACCENT`/`ACCENT_400`); a guard test keeps the
+      accent-carrying primitives off raw `indigo-` and the CSS/TS tokens in sync.
 - [x] **No hardcoded colours in `ui/`.** Confirmed — zero hex / `rgb()` in
       `src/components/ui/`. `src/styles/` still holds app-global theme literals;
       flagged in `EXTRACTION_AUDIT.md` as app-level, out of the primitive surface.

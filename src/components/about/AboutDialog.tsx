@@ -118,7 +118,7 @@ export function AboutDialog() {
             href={NOTICES_PATH}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-indigo-700 underline dark:text-indigo-300"
+            className="text-accent-700 underline dark:text-accent-300"
           >
             third-party notices
           </a>{' '}

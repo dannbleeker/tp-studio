@@ -113,7 +113,7 @@ export function WhiteboardPasteDialog() {
               '- Customers churn after first month\n- Onboarding email lands in spam\n- Activation rate below 30%'
             }
             rows={10}
-            className="w-full resize-y rounded-md border border-neutral-300 bg-white p-3 font-mono text-neutral-900 text-sm shadow-inner focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+            className="w-full resize-y rounded-md border border-neutral-300 bg-white p-3 font-mono text-neutral-900 text-sm shadow-inner focus:border-accent-400 focus:outline-none focus:ring-1 focus:ring-accent-400 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
           />
         </div>
 
@@ -128,7 +128,7 @@ export function WhiteboardPasteDialog() {
             id="whiteboard-paste-type"
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-neutral-900 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+            className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-neutral-900 text-sm focus:border-accent-400 focus:outline-none focus:ring-1 focus:ring-accent-400 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
           >
             {palette.map((t) => (
               <option key={t} value={t}>

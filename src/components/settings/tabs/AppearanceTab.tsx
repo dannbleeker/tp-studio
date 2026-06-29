@@ -108,7 +108,7 @@ export function AppearanceTab() {
                 className={clsx(
                   'flex flex-col items-stretch gap-1 rounded-md border p-1.5 text-left transition',
                   selected
-                    ? 'border-indigo-400 ring-2 ring-indigo-200 dark:border-indigo-500 dark:ring-indigo-900'
+                    ? 'border-accent-400 ring-2 ring-accent-200 dark:border-accent-500 dark:ring-accent-900'
                     : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-800 dark:hover:border-neutral-700'
                 )}
               >

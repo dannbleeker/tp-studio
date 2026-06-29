@@ -41,9 +41,9 @@ export function LearnSection() {
           key={title}
           type="button"
           onClick={onClick}
-          className="flex flex-col gap-1.5 rounded-lg border border-neutral-200 bg-white p-4 text-left transition hover:border-indigo-400 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500"
+          className="flex flex-col gap-1.5 rounded-lg border border-neutral-200 bg-white p-4 text-left transition hover:border-accent-400 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500"
         >
-          <Icon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" aria-hidden />
+          <Icon className="h-5 w-5 text-accent-600 dark:text-accent-400" aria-hidden />
           <h3 className="font-medium text-neutral-900 text-sm dark:text-neutral-100">{title}</h3>
           <p className="text-neutral-600 text-xs leading-snug dark:text-neutral-400">{desc}</p>
         </button>

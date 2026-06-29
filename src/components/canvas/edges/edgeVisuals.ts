@@ -1,4 +1,4 @@
-import type { EdgePaletteTokens } from '@/domain/tokens';
+import { ACCENT, type EdgePaletteTokens } from '@/domain/tokens';
 
 /** Mutex edges paint red regardless of AND/selection — the red is the
  *  *semantic* signal ("these two Wants conflict") and dominates the diagram's
@@ -6,7 +6,7 @@ import type { EdgePaletteTokens } from '@/domain/tokens';
 const MUTEX_STROKE = '#dc2626';
 /** Splice-target indigo (the "release lands on this edge" cue) — the same hue
  *  family as the app accent, so it introduces no new colour. */
-const SPLICE_TARGET_STROKE = '#6366f1';
+const SPLICE_TARGET_STROKE = ACCENT;
 /** A TOC back-edge (feedback-loop closer) paints a distinct amber-orange so the
  *  loop stands apart from the grey causal edges and the junctor purple. Hardcoded
  *  (palette-independent) like the mutex red — the colour is the semantic signal. */

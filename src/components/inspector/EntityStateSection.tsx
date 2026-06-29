@@ -41,7 +41,7 @@ export function EntityStateSection({
   return (
     <Field label="State" as="group">
       {speculationOverlay !== null && (
-        <p className="mb-1.5 text-[11px] text-indigo-700 dark:text-indigo-300">
+        <p className="mb-1.5 text-[11px] text-accent-700 dark:text-accent-300">
           Speculating — picking a state explores the cascade without saving.
         </p>
       )}

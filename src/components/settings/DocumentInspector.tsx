@@ -218,7 +218,7 @@ export function DocumentInspector() {
                   placeholder={placeholder}
                   onChange={(e) => setSystemScope({ [key]: e.target.value })}
                   disabled={locked}
-                  className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+                  className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
                 />
               </Field>
             ))}
@@ -255,7 +255,7 @@ export function DocumentInspector() {
                 placeholder="e.g. On-time delivery sits at 60%."
                 onChange={(e) => setPerformanceLow(e.target.value)}
                 disabled={locked}
-                className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+                className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
               />
             </Field>
             <Field label="High — target / desired">
@@ -265,7 +265,7 @@ export function DocumentInspector() {
                 placeholder="e.g. Reach 98% on-time delivery within two quarters."
                 onChange={(e) => setPerformanceHigh(e.target.value)}
                 disabled={locked}
-                className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+                className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
               />
             </Field>
           </div>
@@ -345,7 +345,7 @@ export function DocumentInspector() {
               onChange={(e) =>
                 setCloudType(e.target.value === '' ? undefined : (e.target.value as CloudType))
               }
-              className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+              className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
             >
               <option value="">— Untyped</option>
               {CLOUD_TYPES.map((ct) => (

@@ -51,11 +51,11 @@ export function CompareBanner() {
   const changedCount = diff.entitiesChanged.size + diff.edgesChanged.size;
 
   return (
-    <div className="absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-indigo-300 bg-indigo-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur-sm dark:border-indigo-700 dark:bg-indigo-950/90">
+    <div className="absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-accent-300 bg-accent-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur-sm dark:border-accent-700 dark:bg-accent-950/90">
       {/* Design audit #24 — size normalized to the text-[10px] eyebrow
           scale (kept indigo, not the neutral EYEBROW token, since the
           banner carries its own indigo identity). */}
-      <span className="font-semibold text-[10px] text-indigo-700 uppercase tracking-wider dark:text-indigo-300">
+      <span className="font-semibold text-[10px] text-accent-700 uppercase tracking-wider dark:text-accent-300">
         Visual diff
       </span>
       <span className="text-neutral-700 dark:text-neutral-200">vs. {revLabel || 'snapshot'}</span>
@@ -82,7 +82,7 @@ export function CompareBanner() {
       <button
         type="button"
         onClick={closeCompare}
-        className="rounded-full p-0.5 text-indigo-700 hover:bg-indigo-100 dark:text-indigo-300 dark:hover:bg-indigo-900"
+        className="rounded-full p-0.5 text-accent-700 hover:bg-accent-100 dark:text-accent-300 dark:hover:bg-accent-900"
         aria-label="Exit visual diff (Esc)"
         title="Exit visual diff (Esc)"
       >

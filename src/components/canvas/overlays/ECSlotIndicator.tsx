@@ -120,7 +120,7 @@ export function ECSlotIndicator({
               className={clsx(
                 'transition',
                 active
-                  ? 'fill-indigo-500 stroke-indigo-600 dark:fill-indigo-400 dark:stroke-indigo-300'
+                  ? 'fill-accent-500 stroke-accent-600 dark:fill-accent-400 dark:stroke-accent-300'
                   : 'fill-neutral-100 stroke-neutral-300 dark:fill-neutral-800 dark:stroke-neutral-600'
               )}
               strokeWidth="0.8"

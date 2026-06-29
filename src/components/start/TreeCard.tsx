@@ -49,7 +49,7 @@ export function TreeCard({
         type="button"
         onClick={() => openSavedDoc(id)}
         aria-label={`Open tree: ${title}`}
-        className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white text-left transition hover:border-indigo-400 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500"
+        className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white text-left transition hover:border-accent-400 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500"
       >
         <div className="aspect-[5/3] w-full overflow-hidden border-neutral-200 border-b bg-neutral-50 [&>svg]:h-full [&>svg]:w-full dark:border-neutral-800 dark:bg-neutral-950">
           <DocumentThumbnail doc={doc} />

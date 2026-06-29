@@ -77,7 +77,7 @@ export function LinkRowItem({ href, Icon, label, hint, external }: LinkRow) {
       rel="noopener noreferrer"
       className="group -mx-2 flex items-start gap-3 rounded-md px-2 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
     >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-neutral-500 group-hover:text-indigo-500 dark:text-neutral-400" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-neutral-500 group-hover:text-accent-500 dark:text-neutral-400" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 font-medium text-neutral-900 text-sm dark:text-neutral-100">
           {label}

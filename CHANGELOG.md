@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 — `@studio/ui` extraction prep + app-wide accent token
+
+Groundwork for vendoring `src/components/ui/` into a shared `@studio/ui` + `@studio/tokens`
+package (consumed by `mece-studio` / `mindmap-studio` via git sync). No package created, no
+build config changed — the app is left functionally + visually identical.
+
+- **Audit + docs.** `src/components/ui/README.md` (export contract — "components in `ui/` never
+  `useDocumentStore()`; they take all state as props" — + readiness checklist), `INVENTORY.md`
+  (per-primitive catalogue + gaps), and `EXTRACTION_AUDIT.md` (store / tokens / hooks scans).
+- **Decoupled `ConfirmDialog` from the store.** It's now a pure, prop-driven shell
+  (`open`/`children`/`confirmLabel?`/`cancelLabel?`/`onConfirm`/`onCancel`); the store wiring
+  moved to a new app-layer host `components/ConfirmDialogHost.tsx`. After this, **zero** store
+  imports remain anywhere in `ui/`.
+- **App-wide semantic accent token.** Added a full `accent` colour scale
+  (`--color-accent-50…950`, = the existing indigo values) to the Tailwind `@theme`, paired with
+  `ACCENT` in `tokens.ts` for JS/SVG/export. Swept **157 `indigo-*` utility lines
+  across 66 files** to `accent-*` and migrated the raw indigo hex/rgb literals (CSS focus
+  outline / selection glow / prose link / entity-ref bg → `var()`/`color-mix()`; JS minimap,
+  junctor OR, splice-target, HTML + EC-workshop exports → `ACCENT`). The brand is now one knob.
+  Categorical indigos are deliberately left alone — the `indigo` group tint (`groupColors`), chip
+  palette (`chipColors`), `desiredEffect` entity stripe, and the `indigo` tones in `InsetCard` /
+  `StatusStrip` are colours-among-peers, not the accent. A guard test
+  (`tests/components/ui/accentToken.test.ts`) keeps the accent-carrying primitives off raw
+  `indigo-` and asserts the CSS token + `ACCENT` stay in sync. Because the token equals the old
+  indigo, rendering is pixel-identical.
+
 ## Session 191 (cont.) — EC-completeness hardening + a dead-code trim
 
 - **Tests — five more `ec-completeness` cases** killing real mutation survivors in the EC

@@ -8,7 +8,7 @@ import {
   NODE_MIN_HEIGHT,
   NODE_WIDTH,
 } from '@/domain/constants';
-import { EDGE_PALETTES } from '@/domain/tokens';
+import { ACCENT, EDGE_PALETTES } from '@/domain/tokens';
 import type { TPDocument } from '@/domain/types';
 import { setHoveredJunctor } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -61,7 +61,7 @@ type JunctorKind = 'AND' | 'OR' | 'XOR';
  *  identical. */
 const KIND_STROKE: Record<JunctorKind, string> = {
   AND: '#8b5cf6', // violet-500 — default-palette AND (assumption stripe)
-  OR: '#6366f1', // indigo-500
+  OR: ACCENT, // the app accent
   XOR: '#f43f5e', // rose-500
 };
 

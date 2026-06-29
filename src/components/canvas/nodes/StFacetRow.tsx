@@ -78,7 +78,7 @@ export function StFacetRow({
       <span
         className={clsx(
           'shrink-0 font-semibold uppercase tracking-wide',
-          accent ? 'text-indigo-700 dark:text-indigo-300' : 'text-neutral-500 dark:text-neutral-400'
+          accent ? 'text-accent-700 dark:text-accent-300' : 'text-neutral-500 dark:text-neutral-400'
         )}
         style={{ width: 48 }}
       >
@@ -104,7 +104,7 @@ export function StFacetRow({
             }
           }}
           aria-label={`Edit ${label} facet`}
-          className="flex-1 resize-none rounded-sm border border-indigo-300 bg-white px-1 py-0 text-[10px] text-neutral-900 leading-tight outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-400 dark:border-indigo-700 dark:bg-neutral-950 dark:text-neutral-100"
+          className="flex-1 resize-none rounded-sm border border-accent-300 bg-white px-1 py-0 text-[10px] text-neutral-900 leading-tight outline-hidden focus:border-accent-500 focus:ring-1 focus:ring-accent-400 dark:border-accent-700 dark:bg-neutral-950 dark:text-neutral-100"
         />
       ) : (
         <button
@@ -120,7 +120,7 @@ export function StFacetRow({
           }}
           aria-label={`Edit ${label} facet (double-click)`}
           className={clsx(
-            'flex-1 cursor-text truncate rounded-xs px-0.5 text-left transition hover:bg-indigo-50 dark:hover:bg-indigo-950/30',
+            'flex-1 cursor-text truncate rounded-xs px-0.5 text-left transition hover:bg-accent-50 dark:hover:bg-accent-950/30',
             value ? '' : 'text-neutral-400 italic dark:text-neutral-500'
           )}
           title={value ? `${value} — double-click to edit` : 'Double-click to set'}

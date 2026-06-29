@@ -68,7 +68,7 @@ export function StartHome({ trees }: { trees: SavedTree[] }) {
   return (
     <div className="flex flex-col gap-10">
       <section>
-        <p className="font-semibold text-[11px] text-indigo-600 uppercase tracking-wider dark:text-indigo-400">
+        <p className="font-semibold text-[11px] text-accent-600 uppercase tracking-wider dark:text-accent-400">
           Theory of Constraints · Thinking Processes
         </p>
         <h1 className="mt-2 font-bold text-2xl text-neutral-900 tracking-tight dark:text-neutral-100">
@@ -86,7 +86,7 @@ export function StartHome({ trees }: { trees: SavedTree[] }) {
             buildCRT(problem);
           }}
         >
-          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 py-2 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900">
+          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 py-2 focus-within:border-accent-400 focus-within:ring-1 focus-within:ring-accent-400 dark:border-neutral-700 dark:bg-neutral-900">
             <TriangleAlert className="h-4 w-4 shrink-0 text-red-400" aria-hidden />
             <input
               type="text"
@@ -99,7 +99,7 @@ export function StartHome({ trees }: { trees: SavedTree[] }) {
           </div>
           <button
             type="submit"
-            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 font-medium text-sm text-white transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md bg-accent-600 px-4 py-2 font-medium text-sm text-white transition hover:bg-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
           >
             Build a Current Reality Tree
             <ArrowRight className="h-4 w-4" aria-hidden />
@@ -115,7 +115,7 @@ export function StartHome({ trees }: { trees: SavedTree[] }) {
               key={p}
               type="button"
               onClick={() => buildCRT(p)}
-              className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-neutral-600 text-xs transition hover:border-indigo-300 hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-indigo-600 dark:hover:text-indigo-300"
+              className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-neutral-600 text-xs transition hover:border-accent-300 hover:text-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-accent-600 dark:hover:text-accent-300"
             >
               {p}
             </button>
@@ -138,7 +138,7 @@ export function StartHome({ trees }: { trees: SavedTree[] }) {
               <button
                 type="button"
                 onClick={() => setStartSection('allTrees')}
-                className="font-medium text-indigo-600 text-xs transition hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:text-indigo-400"
+                className="font-medium text-accent-600 text-xs transition hover:text-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:text-accent-400"
               >
                 View all trees →
               </button>
@@ -161,10 +161,10 @@ export function StartHome({ trees }: { trees: SavedTree[] }) {
         <button
           type="button"
           onClick={openWorkedExample}
-          className="group flex items-center gap-3 rounded-lg border border-indigo-200 bg-indigo-50/50 px-4 py-3 text-left transition hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/50"
+          className="group flex items-center gap-3 rounded-lg border border-accent-200 bg-accent-50/50 px-4 py-3 text-left transition hover:bg-accent-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-accent-900/50 dark:bg-accent-950/30 dark:hover:bg-accent-950/50"
         >
           <BookOpenCheck
-            className="h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-400"
+            className="h-5 w-5 shrink-0 text-accent-600 dark:text-accent-400"
             aria-hidden
           />
           <span className="min-w-0 flex-1">
@@ -176,7 +176,7 @@ export function StartHome({ trees }: { trees: SavedTree[] }) {
             </span>
           </span>
           <ArrowRight
-            className="h-4 w-4 shrink-0 text-indigo-500 transition group-hover:translate-x-0.5"
+            className="h-4 w-4 shrink-0 text-accent-500 transition group-hover:translate-x-0.5"
             aria-hidden
           />
         </button>

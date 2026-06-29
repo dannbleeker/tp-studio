@@ -65,7 +65,7 @@ export function CommentComposer({
         value={clrCategory}
         onChange={(e) => setClrCategory(e.target.value as ClrCategory | '')}
         aria-label="Category of Legitimate Reservation"
-        className="flex-1 rounded-sm border border-neutral-200 bg-white px-1.5 py-0.5 text-neutral-700 outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+        className="flex-1 rounded-sm border border-neutral-200 bg-white px-1.5 py-0.5 text-neutral-700 outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
       >
         <option value="">None</option>
         {CLR_CATEGORIES.map((c) => (
@@ -87,13 +87,13 @@ export function CommentComposer({
           placeholder="your name"
           onChange={(e) => onAuthorNameChange(e.target.value)}
           aria-label="Your name for comments"
-          className="w-32 rounded-sm border border-neutral-200 bg-white px-1.5 py-0.5 text-neutral-700 outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+          className="w-32 rounded-sm border border-neutral-200 bg-white px-1.5 py-0.5 text-neutral-700 outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
         />
       </div>
 
       {/* Session 180 / E6 — challenge mode heading (reader + edge anchor) */}
       {challengeMode ? (
-        <p className="mb-2 font-semibold text-indigo-700 text-sm dark:text-indigo-400">
+        <p className="mb-2 font-semibold text-accent-700 text-sm dark:text-accent-400">
           What's your reservation about this arrow?
         </p>
       ) : (
@@ -125,7 +125,7 @@ export function CommentComposer({
             submit();
           }
         }}
-        className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900"
+        className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900"
       />
 
       {/* CLR reservation tag — turns the comment into a named "I have a
@@ -141,7 +141,7 @@ export function CommentComposer({
               type="checkbox"
               checked={toDocument}
               onChange={(e) => setToDocument(e.target.checked)}
-              className="accent-indigo-500"
+              className="accent-accent-500"
             />
             Comment on whole diagram instead
           </label>

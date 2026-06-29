@@ -68,7 +68,7 @@ export function Toaster() {
                       // toast-kind-tinted background pulls the eye to the
                       // action when the toast itself is informational
                       // (e.g. PWA "New version available → Refresh now").
-                      'bg-indigo-600 text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 focus-visible:outline-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                      'bg-accent-600 text-white shadow-xs hover:bg-accent-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-400 focus-visible:outline-offset-2 dark:bg-accent-500 dark:hover:bg-accent-400'
                     : 'border border-current/30 hover:bg-current/10'
                 )}
               >

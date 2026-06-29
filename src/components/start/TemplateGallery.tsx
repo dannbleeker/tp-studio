@@ -55,7 +55,7 @@ export function TemplateGallery({ limitPerGroup }: { limitPerGroup?: number }) {
                     type="button"
                     onClick={() => pick(pattern)}
                     aria-label={`Open template: ${pattern.label}`}
-                    className="group flex h-full w-full overflow-hidden rounded-lg border border-neutral-200 bg-white text-left transition hover:border-indigo-400 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-indigo-500"
+                    className="group flex h-full w-full overflow-hidden rounded-lg border border-neutral-200 bg-white text-left transition hover:border-accent-400 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500"
                   >
                     <span
                       className="w-1 shrink-0"

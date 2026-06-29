@@ -5,6 +5,7 @@ import {
   type ECSlot,
 } from '@/domain/ecGuiding';
 import { entitiesOfType } from '@/domain/graph';
+import { ACCENT } from '@/domain/tokens';
 import type { Entity, TPDocument } from '@/domain/types';
 import { loadJsPdf } from '@/services/exporters/pdfShared';
 import { slug, triggerDownload } from '@/services/exporters/shared';
@@ -201,7 +202,7 @@ const buildAndDownloadECWorkshopSheet = async (doc: TPDocument): Promise<boolean
   ];
   let chipX = MARGIN_MM + 53;
   for (const step of steps) {
-    pdf.setFillColor(99, 102, 241);
+    pdf.setFillColor(ACCENT); // the app accent (jsPDF accepts a hex string)
     pdf.circle(chipX, readingY + 4.5, 2.2, 'F');
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');

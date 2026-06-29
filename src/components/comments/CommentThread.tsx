@@ -48,7 +48,7 @@ export function CommentThread({
           'mb-2 inline-flex max-w-full items-center gap-1 rounded-full px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wider',
           anchorMissing
             ? 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
-            : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-300 dark:hover:bg-indigo-900/50'
+            : 'bg-accent-50 text-accent-600 hover:bg-accent-100 dark:bg-accent-950/50 dark:text-accent-300 dark:hover:bg-accent-900/50'
         )}
       >
         <MapPin className="h-3 w-3 shrink-0" />
@@ -147,7 +147,7 @@ function CommentItem({
               setEditing(false);
             }
           }}
-          className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900"
+          className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900"
         />
         <div className="mt-1 flex items-center gap-1">
           <Button variant="primary" size="xs" onClick={save} disabled={draft.trim().length === 0}>
@@ -244,7 +244,7 @@ function ReplyBox({
             onCancel();
           }
         }}
-        className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900"
+        className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900"
       />
       <div className="mt-1 flex items-center gap-1">
         <Button variant="primary" size="xs" onClick={submit} disabled={body.trim().length === 0}>

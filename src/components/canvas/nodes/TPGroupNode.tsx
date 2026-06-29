@@ -34,7 +34,7 @@ function TPGroupNodeImpl({ data, selected }: NodeProps<TPGroupNodeType>) {
         // when "show archived" is on; when it does, dim it so it reads
         // as parked-but-preserved rather than live reasoning.
         group.archived && 'opacity-50 saturate-50',
-        selected && 'ring-2 ring-indigo-500/60 ring-offset-1'
+        selected && 'ring-2 ring-accent-500/60 ring-offset-1'
       )}
       style={{ width, height }}
     >

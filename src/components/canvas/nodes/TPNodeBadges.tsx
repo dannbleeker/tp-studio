@@ -217,7 +217,7 @@ export const StateBadge = memo(function StateBadge({
       className={clsx(
         'pointer-events-none absolute top-1/2 -left-2 -translate-y-1/2 rounded-full border px-1.5 py-0.5 font-bold text-[10px] shadow-xs',
         meta.cls,
-        speculated && 'border-dashed ring-2 ring-indigo-400/50'
+        speculated && 'border-dashed ring-2 ring-accent-400/50'
       )}
       role="img"
       aria-label={label}
@@ -303,7 +303,7 @@ export const CommentCountBadge = memo(function CommentCountBadge({
         e.stopPropagation();
         onOpen();
       }}
-      className="absolute -top-1.5 -left-1.5 flex items-center gap-0.5 rounded-full border border-indigo-300 bg-indigo-50 px-1.5 py-0.5 font-semibold text-[10px] text-indigo-700 shadow-xs transition hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
+      className="absolute -top-1.5 -left-1.5 flex items-center gap-0.5 rounded-full border border-accent-300 bg-accent-50 px-1.5 py-0.5 font-semibold text-[10px] text-accent-700 shadow-xs transition hover:bg-accent-100 dark:border-accent-700 dark:bg-accent-950 dark:text-accent-200 dark:hover:bg-accent-900"
       aria-label={`${count} open comment${count === 1 ? '' : 's'} — open the Comments panel`}
       title={`${count} open comment${count === 1 ? '' : 's'} — click to review`}
     >
