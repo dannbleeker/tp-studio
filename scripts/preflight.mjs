@@ -59,7 +59,8 @@ const steps = [
     label: 'bundle-size',
     argv: ['./scripts/check-bundle-size.mjs'],
     fast: false,
-    fixHint: 'a chunk exceeds bundle-budget.json + 10% slop — reduce it, or re-pin the budget deliberately',
+    fixHint:
+      'a chunk exceeds bundle-budget.json + 10% slop — reduce it, or re-pin the budget deliberately',
   },
 ];
 
@@ -81,7 +82,9 @@ for (const step of selected) {
   const { status } = spawnSync(process.execPath, step.argv, { stdio: 'inherit', cwd: root });
   const secs = ((Date.now() - t) / 1000).toFixed(0);
   if (status !== 0) {
-    process.stdout.write(`\n✗ preflight failed at "${step.label}" (exit ${status ?? 'signal'}, ${secs}s).\n`);
+    process.stdout.write(
+      `\n✗ preflight failed at "${step.label}" (exit ${status ?? 'signal'}, ${secs}s).\n`
+    );
     if (step.fixHint) process.stdout.write(`  fix: ${step.fixHint}\n`);
     process.stdout.write('  Fix it before pushing.\n');
     process.exit(typeof status === 'number' ? status : 1);

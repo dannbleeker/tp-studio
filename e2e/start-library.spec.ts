@@ -33,7 +33,10 @@ test.describe('Start library — close keeps the tree, reopen + delete', () => {
     await page.waitForSelector('[data-component="tab-strip"]');
 
     // Open the Start workspace → All trees.
-    await page.getByRole('button', { name: /home — tp studio workspace/i }).first().click();
+    await page
+      .getByRole('button', { name: /home — tp studio workspace/i })
+      .first()
+      .click();
     await page.waitForSelector('aside[aria-label="Workspace"]');
     await page.getByRole('button', { name: /^All trees/ }).click();
 
@@ -47,7 +50,10 @@ test.describe('Start library — close keeps the tree, reopen + delete', () => {
     await expect(page.locator('.react-flow__viewport')).toBeVisible();
 
     // Back to the library, delete a tree (confirm in the app's dialog).
-    await page.getByRole('button', { name: /home — tp studio workspace/i }).first().click();
+    await page
+      .getByRole('button', { name: /home — tp studio workspace/i })
+      .first()
+      .click();
     await page.getByRole('button', { name: /^All trees/ }).click();
     await page.locator('button[aria-label^="Open tree:"]').first().hover();
     await page.locator('button[aria-label^="Delete tree:"]').first().click({ force: true });

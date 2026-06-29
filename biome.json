@@ -12,7 +12,7 @@
       "!**/test-results",
       "!**/reports",
       "!**/perf-trace-output",
-      "!e2e/fixtures/**",
+      "!e2e/fixtures",
       "!docs/features.json",
       "!src/**/*.d.ts",
       "src/vite-env.d.ts",
