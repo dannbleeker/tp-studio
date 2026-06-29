@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-29T07:25:02.458Z",
-  "commit": "8f5b4f3",
+  "generatedAt": "2026-06-29T11:26:11.963Z",
+  "commit": "6ae0795",
   "headline": {
     "linesTsJs": 133243,
     "tests": 4560,
     "lineCoveragePct": 96.05,
-    "commits": 910,
+    "commits": 911,
     "ageDays": 48,
     "trackedFiles": 1065,
     "featureManualPct": 100,
@@ -52,7 +52,7 @@
     },
     "statements": {
       "pct": 93.5,
-      "covered": 14328,
+      "covered": 14329,
       "total": 15324
     },
     "functions": {
@@ -61,35 +61,35 @@
       "total": 2959
     },
     "branches": {
-      "pct": 84.19,
-      "covered": 8275,
+      "pct": 84.2,
+      "covered": 8276,
       "total": 9828
     }
   },
   "tests": {
     "unit": 4464,
     "e2e": 96,
-    "durationMs": 237071,
+    "durationMs": 140585,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10721
+        "ms": 5437
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5570
+        "ms": 2773
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4740
-      },
-      {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2580
+        "ms": 2402
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2159
+        "ms": 1333
+      },
+      {
+        "file": "tests/components/comments/CommentsPanel.test.tsx",
+        "ms": 1213
       }
     ]
   },
@@ -620,8 +620,8 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 48,
-    "commits": 910,
-    "commits7d": 47,
+    "commits": 911,
+    "commits7d": 48,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -629,7 +629,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 185
+        "count": 186
       },
       {
         "name": "Claude",
@@ -641,8 +641,8 @@
       }
     ],
     "churn30d": {
-      "added": 78754,
-      "removed": 19060
+      "added": 78817,
+      "removed": 19108
     },
     "changelogEntries": 351
   }
