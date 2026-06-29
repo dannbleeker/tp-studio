@@ -142,7 +142,7 @@ export function SearchPanel() {
               closeSearch();
             }
           }}
-          className="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900"
+          className="flex-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900"
         />
         <span className="min-w-[64px] text-neutral-500 text-xs tabular-nums dark:text-neutral-400">
           {count === 0 ? 'No matches' : `${safeIndex + 1} / ${count}`}
@@ -204,7 +204,7 @@ export function SearchPanel() {
                 className={clsx(
                   'flex w-full flex-col items-start gap-0.5 border-l-2 px-3 py-1.5 text-left text-xs transition',
                   i === safeIndex
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
+                    ? 'border-accent-500 bg-accent-50 dark:bg-accent-950/40'
                     : 'border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-900'
                 )}
               >
@@ -244,7 +244,7 @@ function OptionToggle({
       className={clsx(
         'rounded-xs p-1 transition',
         active
-          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
+          ? 'bg-accent-100 text-accent-700 dark:bg-accent-950/60 dark:text-accent-300'
           : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       )}
     >

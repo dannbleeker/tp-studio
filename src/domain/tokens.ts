@@ -35,6 +35,11 @@ export const ENTITY_STRIPE_COLOR: Record<EntityType, string> = {
   note: '#eab308', // yellow-500
 };
 
+// Brand accent for JS/SVG/export contexts that can't read the CSS theme
+// token. Paired with `--color-accent-500` in `src/styles/index.css` (the
+// Tailwind `@theme` block) — both are the single re-skin knob and MUST stay
+// in sync. (The lighter `--color-accent-400` shade lives only in CSS, where
+// the dark-mode selection glow consumes it; no JS context needs it yet.)
 export const ACCENT = '#6366f1'; // indigo-500
 // violet-500 — the AND-junctor edge color, and the assumption card's stripe
 // (see TPAssumptionNode). A raw color token, not tied to any EntityType.

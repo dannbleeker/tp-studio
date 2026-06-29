@@ -25,7 +25,7 @@ export function TreeList({ trees, emptyMessage }: { trees: SavedTree[]; emptyMes
               type="button"
               onClick={() => openSavedDoc(id)}
               aria-label={`Open tree: ${title}`}
-              className="flex w-full items-center gap-3 bg-white px-3 py-2.5 text-left transition hover:bg-neutral-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-inset dark:bg-neutral-900 dark:hover:bg-neutral-800/60"
+              className="flex w-full items-center gap-3 bg-white px-3 py-2.5 text-left transition hover:bg-neutral-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-inset dark:bg-neutral-900 dark:hover:bg-neutral-800/60"
             >
               <Icon className="h-4 w-4 shrink-0" style={{ color: meta.color }} aria-hidden />
               <span className="min-w-0 flex-1 truncate font-medium text-neutral-900 text-sm dark:text-neutral-100">

@@ -106,7 +106,7 @@ export function Slider({
         step={1}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-1 h-1 w-full cursor-pointer appearance-none rounded-full bg-neutral-200 accent-indigo-500 dark:bg-neutral-800"
+        className="mt-1 h-1 w-full cursor-pointer appearance-none rounded-full bg-neutral-200 accent-accent-500 dark:bg-neutral-800"
       />
     </label>
   );
@@ -131,7 +131,7 @@ export function Toggle({
       </span>
       <input
         type="checkbox"
-        className="mt-1 h-4 w-4 cursor-pointer accent-indigo-500"
+        className="mt-1 h-4 w-4 cursor-pointer accent-accent-500"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
       />

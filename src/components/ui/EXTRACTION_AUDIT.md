@@ -60,23 +60,29 @@ Radii/spacing are Tailwind scale utilities (`rounded-md`, `px-3`, `gap-2`), not 
 pixel values. The lone exception is intentional design tokens already centralised in
 class-constant modules (`buttonClasses.ts`, `focusClasses.ts`, `textClasses.ts`).
 
-### Straggler flagged — the accent colour is implicit, not tokenised
+### Accent colour — now a semantic token ✅ (resolved)
 
-Every primitive hardcodes the **indigo** accent as Tailwind utility classes
-(`bg-indigo-500`, `focus-visible:ring-indigo-400`, `border-indigo-400`, …) spread
-across `Button.tsx`, `buttonClasses.ts`, `focusClasses.ts`, `TabBar.tsx`,
-`InsetCard.tsx`, `ConfirmDialog`'s primary button. `tokens.ts` defines
-`ACCENT = '#6366f1'` (indigo-500) but the components don't reference it — they
-restate the hue as class names.
+Previously every primitive hard-coded the **indigo** accent as Tailwind utility
+classes, with no single re-skin knob. **Resolved by the app-wide accent-token
+refactor:**
 
-- **Why it matters for extraction:** `mece-studio` / `mindmap-studio` may want a
-  different brand accent. Today swapping it means a find-and-replace of `indigo-*`
-  across the primitives, not a one-token change.
-- **Recommendation (not done here — would touch the Tailwind theme):** promote the
-  accent to a semantic Tailwind colour token (e.g. `--color-accent-*` in the
-  `@theme` block, used as `bg-accent-500`) so the shared package has one knob. Left
-  as a documented follow-up because it changes the theme/build surface, which is out
-  of scope for this prep pass.
+- A full `accent` colour scale (`--color-accent-50…950`, = the old indigo values) is
+  defined in the `@theme` block of `src/styles/index.css`, generating
+  `bg-accent-*` / `text-accent-*` / `ring-accent-*` / `border-accent-*` (with
+  `/opacity` + `dark:` support). `tokens.ts` carries the paired `ACCENT` (=
+  `--color-accent-500`) for JS/SVG/export contexts.
+- **157 `indigo-*` utility lines across 66 files** were swept to `accent-*`, and the
+  raw indigo hex/rgb literals (CSS `index.css` + JS `JunctorOverlay` / `edgeVisuals`
+  / `Canvas` minimap / `htmlExport` / `ecWorkshopExport`) now read from the token.
+  Because the token maps to the current indigo values, the app is **pixel-identical**.
+- **Re-skin knob:** change `--color-accent-*` (+ `ACCENT`/`ACCENT_400`) in one place.
+- **Deliberately NOT swept (categorical, not the accent):** the `indigo` *group tint*
+  (`groupColors.ts`), the `indigo` *chip palette* (`chipColors.ts`), the
+  `desiredEffect` *entity stripe* (`tokens.ts`), and the `indigo` *tones* in
+  `InsetCard` / `StatusStrip` (peers of amber/emerald/rose/violet). A guard test
+  (`tests/components/ui/accentToken.test.ts`) enforces that the accent-carrying
+  primitives use `accent-`, not raw `indigo-`, and that the CSS token + `ACCENT`
+  stay in sync.
 
 ### `src/styles/` — many raw hex, all app-level (flagged, not refactored)
 
@@ -85,10 +91,12 @@ buckets:
 
 1. **Tailwind-palette duplicates** — `#d4d4d4` (neutral-300), `#525252`
    (neutral-600), `#404040` (neutral-700), `#737373` (neutral-500), `#e5e5e5`
-   (neutral-200), `#6366f1` + `rgb(99 102 241)` (indigo-500), `rgb(129 140 248)`
-   (indigo-400). Hand-authored CSS rules (the `.prose-tp` block, the selection-glow
-   `drop-shadow`s, the focus outline) can't use Tailwind utilities, so they restate
-   the palette as literals.
+   (neutral-200). Hand-authored CSS rules (the `.prose-tp` block, print styles) can't
+   use Tailwind utilities, so they restate the neutral palette as literals.
+   *(The indigo accent literals that used to live here — the focus outline, the
+   selection-glow `drop-shadow`s, the prose-link colour, the entity-ref background —
+   were migrated to `var(--color-accent-*)` / `color-mix()` by the accent-token
+   refactor; only neutrals remain.)*
 2. **Bespoke theme backgrounds** — the per-theme `body` colours (`#1c1410` rust,
    `#0c0d10` coal, `#0a1628` navy, `#0f1419` ayu, plus their `outline-color`
    accents). These have **no token** anywhere; they're defined only in CSS.

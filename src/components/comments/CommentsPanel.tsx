@@ -214,7 +214,7 @@ export function CommentsPanel() {
           <span className="flex items-center gap-2 font-semibold text-[11px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
             <MessageSquare className="h-3.5 w-3.5" /> Comments
             {openCount > 0 && (
-              <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 font-semibold text-[10px] text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+              <span className="rounded-full bg-accent-100 px-1.5 py-0.5 font-semibold text-[10px] text-accent-700 dark:bg-accent-950/60 dark:text-accent-300">
                 {openCount} open
               </span>
             )}
@@ -259,7 +259,7 @@ export function CommentsPanel() {
               value={clrFilter}
               onChange={(e) => setClrFilter(e.target.value as ClrCategory | 'all')}
               aria-label="Filter by CLR category"
-              className="ml-auto rounded-md border border-neutral-200 bg-white px-1.5 py-1 text-neutral-600 text-xs outline-hidden focus:border-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
+              className="ml-auto rounded-md border border-neutral-200 bg-white px-1.5 py-1 text-neutral-600 text-xs outline-hidden focus:border-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
             >
               <option value="all">All CLR</option>
               {CLR_CATEGORIES.map((c) => (
@@ -331,7 +331,7 @@ function FilterTab({
       className={clsx(
         'rounded-md px-2 py-1 font-medium text-xs transition',
         active
-          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
+          ? 'bg-accent-100 text-accent-700 dark:bg-accent-950/60 dark:text-accent-300'
           : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-neutral-200'
       )}
     >

@@ -208,7 +208,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         // Feature #1 — beefed-up selection: full-opacity indigo ring + a soft
         // indigo glow (was a faint `/60` ring), so "selected" is unmistakable
         // and clearly distinct from the neutral hover lift below.
-        selected && 'shadow-indigo-500/30 shadow-lg ring-2 ring-indigo-500 ring-offset-1',
+        selected && 'shadow-accent-500/30 shadow-lg ring-2 ring-accent-500 ring-offset-1',
         // H2 visual-diff tints. `'added'` greens the card so the user can
         // scan for "what's new since the snapshot." `'changed'` ambers
         // entities whose content drifted. Removed entities (only in the
@@ -218,7 +218,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           'ring-2 ring-emerald-400/70 ring-offset-1 dark:ring-emerald-500/70',
         diffStatus === 'changed' && 'ring-2 ring-amber-400/70 ring-offset-1 dark:ring-amber-500/70',
         // Goal #2 — connection-drop target ring (indigo = will connect, rose = rejected).
-        connDrop === 'valid' && 'ring-2 ring-indigo-400/80 ring-offset-1',
+        connDrop === 'valid' && 'ring-2 ring-accent-400/80 ring-offset-1',
         connDrop === 'invalid' && 'ring-2 ring-rose-400/70 ring-offset-1',
         // Feature #1 — neutral hover lift on a plain, unselected node (lowest
         // precedence; suppressed above whenever any other ring is active).
@@ -322,7 +322,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       <Handle
         type="target"
         position={targetPosition}
-        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-transparent before:content-[''] group-hover:before:border-indigo-400 dark:before:border-neutral-700"
+        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-transparent before:content-[''] group-hover:before:border-accent-400 dark:before:border-neutral-700"
       />
       <div
         className="w-1.5 shrink-0 rounded-l-lg"
@@ -492,7 +492,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       <Handle
         type="source"
         position={sourcePosition}
-        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-transparent before:content-[''] group-hover:before:border-indigo-400 dark:before:border-neutral-700"
+        className="!h-5 !w-5 !min-h-0 !min-w-0 !border-0 !bg-transparent before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:h-2 before:w-2 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border before:border-neutral-300 before:bg-transparent before:content-[''] group-hover:before:border-accent-400 dark:before:border-neutral-700"
       />
     </div>
   );

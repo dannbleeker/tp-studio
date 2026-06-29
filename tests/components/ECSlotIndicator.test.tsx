@@ -8,7 +8,7 @@ import { ECSlotIndicator } from '@/components/canvas/overlays/ECSlotIndicator';
  * The component is a small inline SVG showing the canonical 5-box EC
  * layout with one slot highlighted. Tests pin the rendering contract:
  * always renders 5 boxes (one per slot), the targeted box gets the
- * `fill-indigo-500` class, and the title attribute updates to name
+ * `fill-accent-500` class, and the title attribute updates to name
  * the targeted slot. We don't pin exact coordinates — the layout map
  * is the source of truth and changing it shouldn't break tests.
  */
@@ -32,12 +32,12 @@ describe('ECSlotIndicator', () => {
     expect(labels).toContain('D′');
   });
 
-  it('highlights the targeted slot with the indigo fill class', () => {
+  it('highlights the targeted slot with the accent fill class', () => {
     const { container } = render(<ECSlotIndicator targetSlot="b" />);
     // The "B" slot's <text> sits next to a <rect>. Find the rect that
-    // shares the indigo-filled class set.
+    // shares the accent-filled class set.
     const rects = Array.from(container.querySelectorAll('rect'));
-    const filled = rects.filter((r) => r.getAttribute('class')?.includes('fill-indigo-500'));
+    const filled = rects.filter((r) => r.getAttribute('class')?.includes('fill-accent-500'));
     // Exactly one rect should be filled.
     expect(filled).toHaveLength(1);
   });
@@ -45,7 +45,7 @@ describe('ECSlotIndicator', () => {
   it('renders no filled slot when targetSlot is null', () => {
     const { container } = render(<ECSlotIndicator targetSlot={null} />);
     const filled = Array.from(container.querySelectorAll('rect')).filter((r) =>
-      r.getAttribute('class')?.includes('fill-indigo-500')
+      r.getAttribute('class')?.includes('fill-accent-500')
     );
     expect(filled).toHaveLength(0);
   });

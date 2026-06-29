@@ -143,7 +143,7 @@ export function HelpDialog() {
               close();
               openAbout();
             }}
-            className="text-indigo-600 text-xs hover:underline dark:text-indigo-400"
+            className="text-accent-600 text-xs hover:underline dark:text-accent-400"
           >
             About this app →
           </button>

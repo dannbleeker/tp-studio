@@ -70,7 +70,7 @@ export function MethodStepper() {
             isCurrent
               ? 'border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900'
               : isOpen
-                ? 'border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300'
+                ? 'border-accent-300 bg-accent-50 text-accent-700 hover:bg-accent-100 dark:border-accent-800 dark:bg-accent-950/40 dark:text-accent-300'
                 : 'border-neutral-200 border-dashed text-neutral-400 hover:border-neutral-300 hover:text-neutral-600 dark:border-neutral-700 dark:text-neutral-500'
           )}
         >
@@ -112,7 +112,7 @@ export function MethodStepper() {
           <button
             type="button"
             onClick={() => goTo(next.diagram)}
-            className="hidden shrink-0 items-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-medium text-[11px] text-indigo-700 transition hover:bg-indigo-100 lg:inline-flex dark:border-indigo-800/50 dark:bg-indigo-950/40 dark:text-indigo-300"
+            className="hidden shrink-0 items-center gap-1.5 rounded-md border border-accent-200 bg-accent-50 px-2.5 py-1 font-medium text-[11px] text-accent-700 transition hover:bg-accent-100 lg:inline-flex dark:border-accent-800/50 dark:bg-accent-950/40 dark:text-accent-300"
           >
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             {next.label}

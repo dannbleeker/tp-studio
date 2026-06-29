@@ -72,7 +72,7 @@ export function StartSidebar() {
         <button
           type="button"
           onClick={() => openDiagramPicker('new')}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-3 py-2 font-medium text-sm text-white transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-accent-600 px-3 py-2 font-medium text-sm text-white transition hover:bg-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
         >
           <Plus className="h-4 w-4" aria-hidden />
           New tree
@@ -89,7 +89,7 @@ export function StartSidebar() {
               onClick={() => setStartSection(section)}
               aria-current={active ? 'page' : undefined}
               className={clsx(
-                'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400',
+                'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400',
                 active
                   ? 'bg-neutral-900 font-medium text-white dark:bg-neutral-100 dark:text-neutral-900'
                   : 'text-neutral-600 hover:bg-neutral-200/60 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'

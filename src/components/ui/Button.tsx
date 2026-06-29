@@ -6,7 +6,7 @@ export type ButtonVariant = 'primary' | 'ghost' | 'softNeutral' | 'softViolet' |
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'icon';
 
 const BASE =
-  'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition outline-hidden focus-visible:ring-2 focus-visible:ring-accent-400 disabled:cursor-not-allowed disabled:opacity-50';
 
 const SIZE: Record<ButtonSize, string> = {
   // Session 135 (design audit #6) — tiny inline-action size for the
@@ -19,7 +19,7 @@ const SIZE: Record<ButtonSize, string> = {
 };
 
 const VARIANT: Record<ButtonVariant, string> = {
-  primary: 'border border-indigo-500 bg-indigo-500 text-white shadow-sm hover:bg-indigo-600',
+  primary: 'border border-accent-500 bg-accent-500 text-white shadow-sm hover:bg-accent-600',
   ghost:
     'border border-transparent text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200',
   softNeutral:

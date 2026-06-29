@@ -45,8 +45,8 @@ export function SpeculationBanner() {
   const count = Object.keys(overlay).length;
 
   return (
-    <div className="absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-indigo-300 bg-indigo-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur-sm dark:border-indigo-700 dark:bg-indigo-950/90">
-      <span className="flex items-center gap-1.5 font-semibold text-indigo-700 uppercase tracking-wider dark:text-indigo-300">
+    <div className="absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full border border-accent-300 bg-accent-50/95 px-3 py-1.5 text-xs shadow-md backdrop-blur-sm dark:border-accent-700 dark:bg-accent-950/90">
+      <span className="flex items-center gap-1.5 font-semibold text-accent-700 uppercase tracking-wider dark:text-accent-300">
         <FlaskConical className="h-3.5 w-3.5" />
         Speculating
       </span>
@@ -59,7 +59,7 @@ export function SpeculationBanner() {
         type="button"
         onClick={commit}
         disabled={count === 0}
-        className="flex items-center gap-1 rounded-full bg-indigo-600 px-2 py-0.5 font-medium text-[11px] text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex items-center gap-1 rounded-full bg-accent-600 px-2 py-0.5 font-medium text-[11px] text-white transition hover:bg-accent-700 disabled:cursor-not-allowed disabled:opacity-40"
         aria-label="Commit speculative states to the document"
         title="Commit — write these states into the document (one undo)"
       >
@@ -69,7 +69,7 @@ export function SpeculationBanner() {
       <button
         type="button"
         onClick={revert}
-        className="flex items-center gap-1 rounded-full border border-indigo-300 px-2 py-0.5 font-medium text-[11px] text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900"
+        className="flex items-center gap-1 rounded-full border border-accent-300 px-2 py-0.5 font-medium text-[11px] text-accent-700 transition hover:bg-accent-100 dark:border-accent-700 dark:text-accent-300 dark:hover:bg-accent-900"
         aria-label="Revert speculation (Esc)"
         title="Revert — discard these hypotheticals (Esc)"
       >

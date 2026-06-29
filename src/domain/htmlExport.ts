@@ -1,6 +1,7 @@
 import { DIAGRAM_TYPE_LABEL, resolveEntityTypeMeta } from './entityTypeMeta';
 import { entitiesOfType, structuralEntities } from './graph';
 import { isSafeCssColor } from './safeCss';
+import { ACCENT } from './tokens';
 import type { Entity, TPDocument } from './types';
 import { verbalisedECText } from './verbalisation';
 
@@ -97,7 +98,7 @@ const VIEWER_CSS = `
     border-top: 1px solid #e5e5e5; padding: 16px 32px; color: #a3a3a3;
     font-size: 11px; text-align: center;
   }
-  .footer .brand { color: #6366f1; font-weight: 600; }
+  .footer .brand { color: ${ACCENT}; font-weight: 600; }
 `;
 
 const renderEntity = (e: Entity, doc: TPDocument): string => {

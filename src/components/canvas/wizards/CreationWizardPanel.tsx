@@ -248,7 +248,7 @@ export function CreationWizardPanel() {
         type="button"
         onClick={toggleMinimised}
         data-component="creation-wizard-minimised"
-        className="absolute top-2 left-4 z-30 flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1.5 font-medium text-indigo-700 text-xs shadow-md transition hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
+        className="absolute top-2 left-4 z-30 flex items-center gap-1.5 rounded-full border border-accent-300 bg-accent-50 px-3 py-1.5 font-medium text-accent-700 text-xs shadow-md transition hover:bg-accent-100 dark:border-accent-700 dark:bg-accent-950 dark:text-accent-200 dark:hover:bg-accent-900"
       >
         <Sparkles className="h-3 w-3" aria-hidden />
         Continue setup ›
@@ -286,7 +286,7 @@ export function CreationWizardPanel() {
       data-component="creation-wizard"
       aria-label={`${kind === 'goalTree' ? 'Goal Tree' : kind === 'crt' ? 'Current Reality Tree' : 'Evaporating Cloud'} creation wizard`}
       className={clsx(
-        'absolute z-30 flex w-[min(380px,92vw)] flex-col gap-2 rounded-lg border border-indigo-200 bg-white p-3 shadow-lg dark:border-indigo-800 dark:bg-neutral-900',
+        'absolute z-30 flex w-[min(380px,92vw)] flex-col gap-2 rounded-lg border border-accent-200 bg-white p-3 shadow-lg dark:border-accent-800 dark:bg-neutral-900',
         positioned === null && 'top-2 left-4'
       )}
       style={positioned ?? undefined}
@@ -300,9 +300,9 @@ export function CreationWizardPanel() {
       >
         <div className="flex items-center gap-1.5">
           <GripVertical className="h-3 w-3 text-neutral-400 dark:text-neutral-500" aria-hidden />
-          <Sparkles className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
+          <Sparkles className="h-3.5 w-3.5 text-accent-600 dark:text-accent-400" aria-hidden />
           <span
-            className="font-semibold text-[11px] text-indigo-700 uppercase tracking-wide dark:text-indigo-300"
+            className="font-semibold text-[11px] text-accent-700 uppercase tracking-wide dark:text-accent-300"
             aria-live="polite"
             aria-atomic="true"
           >
@@ -371,7 +371,7 @@ export function CreationWizardPanel() {
                 className={clsx(
                   'flex-1 rounded-xs border px-1.5 py-0.5 font-medium transition',
                   active
-                    ? 'border-indigo-400 bg-indigo-100 text-indigo-800 dark:border-indigo-500 dark:bg-indigo-900 dark:text-indigo-200'
+                    ? 'border-accent-400 bg-accent-100 text-accent-800 dark:border-accent-500 dark:bg-accent-900 dark:text-accent-200'
                     : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800'
                 )}
               >
@@ -396,9 +396,9 @@ export function CreationWizardPanel() {
             className={clsx(
               'h-1 flex-1 rounded-full',
               i < step
-                ? 'bg-indigo-500'
+                ? 'bg-accent-500'
                 : i === step
-                  ? 'bg-indigo-400'
+                  ? 'bg-accent-400'
                   : 'bg-neutral-200 dark:bg-neutral-700'
             )}
           />
@@ -414,7 +414,7 @@ export function CreationWizardPanel() {
           (Session 88) — three different surfaces reinforcing the
           same conceptual shape. */}
       {kind === 'ec' && (
-        <div className="flex justify-center text-indigo-600 dark:text-indigo-300">
+        <div className="flex justify-center text-accent-600 dark:text-accent-300">
           <ECSlotIndicator targetSlot={EC_SLOTS_BY_ORDER[wizardOrder][step] ?? null} />
         </div>
       )}
@@ -442,7 +442,7 @@ export function CreationWizardPanel() {
               }
             }
           }}
-          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+          className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
         />
         <p className="text-[10px] text-neutral-500 italic dark:text-neutral-400">
           Enter to commit · Shift+Enter for a newline · Esc to dismiss
@@ -487,7 +487,7 @@ export function CreationWizardPanel() {
         <button
           type="button"
           onClick={commit}
-          className="rounded-md bg-indigo-600 px-3 py-1.5 font-semibold text-white text-xs transition hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+          className="rounded-md bg-accent-600 px-3 py-1.5 font-semibold text-white text-xs transition hover:bg-accent-700 disabled:opacity-50 dark:bg-accent-500 dark:hover:bg-accent-400"
         >
           {isFinalStep ? 'Finish' : 'Next ›'}
         </button>

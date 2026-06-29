@@ -56,7 +56,7 @@ export function CanvasNav() {
       <button
         type="button"
         onClick={() => flow.zoomOut()}
-        className="rounded-sm p-1 text-neutral-600 hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-400 dark:text-neutral-300 dark:hover:bg-neutral-800"
+        className="rounded-sm p-1 text-neutral-600 hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-accent-400 dark:text-neutral-300 dark:hover:bg-neutral-800"
         aria-label="Zoom out"
         title="Zoom out  (-)"
       >
@@ -84,13 +84,13 @@ export function CanvasNav() {
           }}
           onBlur={(e) => commit(e.currentTarget.value)}
           aria-label="Set zoom percent"
-          className="w-9 rounded-sm bg-neutral-100 px-1 text-center font-mono text-[10px] text-neutral-700 tabular-nums outline-hidden ring-1 ring-indigo-400 dark:bg-neutral-800 dark:text-neutral-200"
+          className="w-9 rounded-sm bg-neutral-100 px-1 text-center font-mono text-[10px] text-neutral-700 tabular-nums outline-hidden ring-1 ring-accent-400 dark:bg-neutral-800 dark:text-neutral-200"
         />
       ) : (
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="rounded-sm px-1.5 font-mono text-[10px] text-neutral-600 tabular-nums hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-400 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          className="rounded-sm px-1.5 font-mono text-[10px] text-neutral-600 tabular-nums hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-accent-400 dark:text-neutral-300 dark:hover:bg-neutral-800"
           title="Set zoom % (click to type)"
         >
           {pct}%
@@ -99,7 +99,7 @@ export function CanvasNav() {
       <button
         type="button"
         onClick={() => flow.zoomIn()}
-        className="rounded-sm p-1 text-neutral-600 hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-400 dark:text-neutral-300 dark:hover:bg-neutral-800"
+        className="rounded-sm p-1 text-neutral-600 hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-accent-400 dark:text-neutral-300 dark:hover:bg-neutral-800"
         aria-label="Zoom in"
         title="Zoom in  (+)"
       >
@@ -108,7 +108,7 @@ export function CanvasNav() {
       <button
         type="button"
         onClick={() => flow.fitView({ padding: 0.4, maxZoom: 1.2 })}
-        className="rounded-sm p-1 text-neutral-600 hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-400 dark:text-neutral-300 dark:hover:bg-neutral-800"
+        className="rounded-sm p-1 text-neutral-600 hover:bg-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-accent-400 dark:text-neutral-300 dark:hover:bg-neutral-800"
         aria-label="Fit view"
         title="Fit view  (0)"
       >

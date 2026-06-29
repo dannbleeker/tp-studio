@@ -32,26 +32,26 @@ export function ECReadingInstructions() {
     <aside
       data-component="ec-reading-instructions"
       aria-label="Evaporating Cloud reading instructions"
-      className="mx-auto flex max-w-3xl items-center gap-2 rounded-md border border-indigo-200 bg-indigo-50/95 px-3 py-1.5 text-[11px] text-indigo-900 shadow-xs backdrop-blur-sm dark:border-indigo-800 dark:bg-indigo-950/95 dark:text-indigo-100"
+      className="mx-auto flex max-w-3xl items-center gap-2 rounded-md border border-accent-200 bg-accent-50/95 px-3 py-1.5 text-[11px] text-accent-900 shadow-xs backdrop-blur-sm dark:border-accent-800 dark:bg-accent-950/95 dark:text-accent-100"
     >
-      <span className="font-semibold text-indigo-700 uppercase tracking-wide dark:text-indigo-300">
+      <span className="font-semibold text-accent-700 uppercase tracking-wide dark:text-accent-300">
         Read every arrow:
       </span>
       <ol className="flex flex-1 flex-wrap items-center gap-x-3 gap-y-1">
         <li className="flex items-center gap-1">
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-200 font-bold text-[9px] text-indigo-900 dark:bg-indigo-800 dark:text-indigo-100">
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent-200 font-bold text-[9px] text-accent-900 dark:bg-accent-800 dark:text-accent-100">
             1
           </span>
           <span>In order to&hellip;</span>
         </li>
         <li className="flex items-center gap-1">
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-200 font-bold text-[9px] text-indigo-900 dark:bg-indigo-800 dark:text-indigo-100">
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent-200 font-bold text-[9px] text-accent-900 dark:bg-accent-800 dark:text-accent-100">
             2
           </span>
           <span>we must&hellip;</span>
         </li>
         <li className="flex items-center gap-1">
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-200 font-bold text-[9px] text-indigo-900 dark:bg-indigo-800 dark:text-indigo-100">
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent-200 font-bold text-[9px] text-accent-900 dark:bg-accent-800 dark:text-accent-100">
             3
           </span>
           <span>because&hellip;</span>
@@ -67,7 +67,7 @@ export function ECReadingInstructions() {
         // weight as the Modal close buttons elsewhere (Inspector,
         // About, Settings). The smaller icon was easy to miss in
         // the dense indigo strip.
-        className="rounded-sm p-1 text-indigo-600 transition hover:bg-indigo-100 hover:text-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-900 dark:hover:text-indigo-100"
+        className="rounded-sm p-1 text-accent-600 transition hover:bg-accent-100 hover:text-accent-800 dark:text-accent-300 dark:hover:bg-accent-900 dark:hover:text-accent-100"
       >
         <X className="h-4 w-4" />
       </button>

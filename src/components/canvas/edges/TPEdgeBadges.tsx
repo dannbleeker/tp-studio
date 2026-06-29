@@ -238,7 +238,7 @@ export const CommentBadge = memo(function CommentBadge({
           e.stopPropagation();
           onOpen();
         }}
-        className="nodrag nopan pointer-events-auto absolute flex cursor-pointer select-none items-center gap-0.5 rounded-full border border-indigo-300 bg-indigo-50 px-1.5 font-semibold text-[10px] text-indigo-700 shadow-xs transition hover:bg-indigo-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-300 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-200 dark:hover:bg-indigo-900"
+        className="nodrag nopan pointer-events-auto absolute flex cursor-pointer select-none items-center gap-0.5 rounded-full border border-accent-300 bg-accent-50 px-1.5 font-semibold text-[10px] text-accent-700 shadow-xs transition hover:bg-accent-100 focus:outline-hidden focus:ring-2 focus:ring-accent-300 dark:border-accent-700 dark:bg-accent-950 dark:text-accent-200 dark:hover:bg-accent-900"
         style={{ transform: `translate(-50%, -50%) translate(${labelX - 16}px, ${labelY + 14}px)` }}
         title={`${count} open comment${count === 1 ? '' : 's'} on this edge — click to review`}
         aria-label={`${count} open comment${count === 1 ? '' : 's'} on this edge. Open the Comments panel.`}

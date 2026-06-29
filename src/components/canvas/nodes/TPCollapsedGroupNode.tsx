@@ -35,7 +35,7 @@ export function TPCollapsedGroupNode({ data, selected }: NodeProps<TPCollapsedGr
         'relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 px-3 py-2 text-center shadow-xs transition',
         colors.bgStrong,
         colors.border,
-        selected && 'ring-2 ring-indigo-500/60 ring-offset-1'
+        selected && 'ring-2 ring-accent-500/60 ring-offset-1'
       )}
       style={{ width, height }}
       onDoubleClick={(e) => {

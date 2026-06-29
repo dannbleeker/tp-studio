@@ -47,7 +47,7 @@ export function StartPage() {
             type="button"
             onClick={togglePalette}
             aria-label="Search or run a command"
-            className="flex w-full max-w-xs items-center gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-neutral-400 text-sm transition hover:border-neutral-300 hover:text-neutral-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
+            className="flex w-full max-w-xs items-center gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-neutral-400 text-sm transition hover:border-neutral-300 hover:text-neutral-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
           >
             <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
             <span className="flex-1 truncate text-left">Search trees…</span>

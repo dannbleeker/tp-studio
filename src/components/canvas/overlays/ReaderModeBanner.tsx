@@ -30,17 +30,17 @@ export function ReaderModeBanner({ diagramType }: { diagramType: DiagramType }) 
   return (
     <div
       data-component="reader-mode-banner"
-      className="pointer-events-auto absolute top-3 left-1/2 z-30 flex max-w-sm -translate-x-1/2 items-start gap-2 rounded-full border border-indigo-200/70 bg-white/95 px-4 py-1.5 shadow-sm backdrop-blur-sm dark:border-indigo-800/50 dark:bg-neutral-900/95"
+      className="pointer-events-auto absolute top-3 left-1/2 z-30 flex max-w-sm -translate-x-1/2 items-start gap-2 rounded-full border border-accent-200/70 bg-white/95 px-4 py-1.5 shadow-sm backdrop-blur-sm dark:border-accent-800/50 dark:bg-neutral-900/95"
       role="note"
       aria-label="How to read this diagram"
     >
-      <p className="flex-1 text-center text-indigo-700 text-xs leading-relaxed dark:text-indigo-300">
+      <p className="flex-1 text-center text-accent-700 text-xs leading-relaxed dark:text-accent-300">
         {shortLegend}
       </p>
       <button
         type="button"
         onClick={() => setDismissed(true)}
-        className="mt-0.5 shrink-0 rounded-full text-indigo-400 transition hover:text-indigo-600 dark:text-indigo-500 dark:hover:text-indigo-300"
+        className="mt-0.5 shrink-0 rounded-full text-accent-400 transition hover:text-accent-600 dark:text-accent-500 dark:hover:text-accent-300"
         aria-label="Dismiss reading guide"
         title="Dismiss"
       >

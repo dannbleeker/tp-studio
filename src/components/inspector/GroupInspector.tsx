@@ -235,7 +235,7 @@ export function GroupInspector({ groupId }: { groupId: string }) {
           <label className="flex items-center gap-2 px-1 text-neutral-600 text-xs dark:text-neutral-300">
             <input
               type="checkbox"
-              className="h-3.5 w-3.5 accent-indigo-500"
+              className="h-3.5 w-3.5 accent-accent-500"
               checked={showArchivedGroups}
               onChange={(e) => setShowArchivedGroups(e.target.checked)}
             />

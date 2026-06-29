@@ -117,7 +117,7 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           aria-label={`Guiding question for slot ${ecSlot.toUpperCase()}`}
           data-component="ec-guiding-question"
         >
-          <p className="mb-1 font-semibold text-[10px] text-indigo-700 uppercase tracking-wider dark:text-indigo-300">
+          <p className="mb-1 font-semibold text-[10px] text-accent-700 uppercase tracking-wider dark:text-accent-300">
             {EC_SLOT_LABEL[ecSlot]}
           </p>
           <p className="italic leading-snug">{EC_SLOT_GUIDING_QUESTIONS[ecSlot]}</p>
@@ -269,11 +269,11 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
             <span className="font-semibold">
               {entity.importedFrom.sourceTitle || '(untitled source)'}
             </span>
-            <span className="ml-1 text-indigo-700/70 dark:text-indigo-300/70">
+            <span className="ml-1 text-accent-700/70 dark:text-accent-300/70">
               · doc {entity.importedFrom.docId.slice(0, 8)}…
             </span>
             {entity.importedFrom.importedAt && (
-              <span className="ml-1 text-indigo-700/70 dark:text-indigo-300/70">
+              <span className="ml-1 text-accent-700/70 dark:text-accent-300/70">
                 · imported{' '}
                 {new Date(entity.importedFrom.importedAt).toLocaleDateString(undefined, {
                   year: 'numeric',

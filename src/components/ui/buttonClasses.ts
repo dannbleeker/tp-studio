@@ -31,7 +31,7 @@
  */
 
 export const SELECTED_BUTTON_CLASS =
-  'border-indigo-400 bg-indigo-50 text-indigo-900 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-200';
+  'border-accent-400 bg-accent-50 text-accent-900 dark:border-accent-500 dark:bg-accent-950/40 dark:text-accent-200';
 
 export const UNSELECTED_BUTTON_CLASS =
   'border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-900';
@@ -50,7 +50,7 @@ export const UNSELECTED_BUTTON_CLASS =
  * to avoid overriding the inner span's colour.
  */
 export const SELECTED_BUTTON_CLASS_PLAIN =
-  'border-indigo-400 bg-indigo-50 dark:border-indigo-500 dark:bg-indigo-950/40';
+  'border-accent-400 bg-accent-50 dark:border-accent-500 dark:bg-accent-950/40';
 
 export const UNSELECTED_BUTTON_CLASS_PLAIN =
   'border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900';

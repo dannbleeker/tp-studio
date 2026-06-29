@@ -94,16 +94,16 @@ describe('StFacetRow — static render', () => {
     expect(container.querySelector('button')).not.toBeNull();
   });
 
-  it('applies the accent (indigo) class on the label span when accent=true', () => {
+  it('applies the accent class on the label span when accent=true', () => {
     const entityId = seedEntityWithAttr('stStrategy', 'Accelerate');
     const { container } = render(
       <StFacetRow entityId={entityId} attrKey="stStrategy" label="S" value="Accelerate" accent />
     );
     const label = container.querySelector('span');
-    expect(label?.className ?? '').toMatch(/indigo/);
+    expect(label?.className ?? '').toMatch(/accent/);
   });
 
-  it('does NOT apply indigo class when accent is omitted', () => {
+  it('does NOT apply the accent class when accent is omitted', () => {
     const entityId = seedEntityWithAttr('stNecessaryAssumption', 'Assumption text');
     const { container } = render(
       <StFacetRow
@@ -114,8 +114,8 @@ describe('StFacetRow — static render', () => {
       />
     );
     const label = container.querySelector('span');
-    // neutral styling, not accent indigo
-    expect(label?.className ?? '').not.toMatch(/text-indigo-700/);
+    // neutral styling, not the accent
+    expect(label?.className ?? '').not.toMatch(/text-accent-700/);
   });
 
   it('button aria-label references the provided label', () => {

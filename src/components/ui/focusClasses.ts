@@ -36,13 +36,13 @@
  *  dominating the surrounding layout. Always pair with
  *  `outline-none`. */
 export const INPUT_FOCUS =
-  'outline-hidden focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400';
+  'outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400';
 
 /** Clickable cards in picker dialogs (DiagramTypePicker /
  *  ExportPicker / Templates). Bolder `ring-2` ring at a lighter
  *  ring color so a focused card reads at card-grid distance. Pairs
- *  with `outline-none` and a complementary `focus:border-indigo-400`.
- *  Dark-mode override uses `dark:focus:ring-indigo-600` to maintain
+ *  with `outline-none` and a complementary `focus:border-accent-400`.
+ *  Dark-mode override uses `dark:focus:ring-accent-600` to maintain
  *  visibility on the darker background. */
 export const CARD_FOCUS =
-  'focus:border-indigo-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-300 dark:focus:ring-indigo-600';
+  'focus:border-accent-400 focus:outline-hidden focus:ring-2 focus:ring-accent-300 dark:focus:ring-accent-600';
