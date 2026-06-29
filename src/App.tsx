@@ -1,6 +1,7 @@
 import { ReactFlowProvider } from '@xyflow/react';
 import clsx from 'clsx';
 import { lazy, Suspense, useEffect } from 'react';
+import { ConfirmDialogHost } from './components/ConfirmDialogHost';
 import { BlocksRail } from './components/canvas/BlocksRail';
 import { Canvas } from './components/canvas/Canvas';
 import { CompareBanner } from './components/canvas/overlays/CompareBanner';
@@ -19,7 +20,6 @@ import { MethodStepper } from './components/toolbar/MethodStepper';
 import { TabStrip } from './components/toolbar/TabStrip';
 import { TitleBadge } from './components/toolbar/TitleBadge';
 import { TopBar } from './components/toolbar/TopBar';
-import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { useGlobalKeyboard } from './hooks/useGlobalKeyboard';
 import { usePrintCanvas } from './hooks/usePrintCanvas';
@@ -500,7 +500,7 @@ export function App() {
           <PatternLibraryDialog />
         </ErrorBoundary>
       </Suspense>
-      <ConfirmDialog />
+      <ConfirmDialogHost />
       <Toaster />
       <Suspense fallback={null}>
         <PrintAppendix />
