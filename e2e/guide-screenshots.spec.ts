@@ -125,7 +125,10 @@ test.describe('book — Part 1 — Foundations', () => {
       hook.switchToTabIndex(0);
     });
     // Open the Start workspace via the Home logo.
-    await page.getByRole('button', { name: /home — tp studio workspace/i }).first().click();
+    await page
+      .getByRole('button', { name: /home — tp studio workspace/i })
+      .first()
+      .click();
     await page.waitForSelector('aside[aria-label="Workspace"]');
     await page.waitForTimeout(400);
     await _screenshot(page, 'chapter02-start-page', { mask: TOASTER_MASK(page) });
