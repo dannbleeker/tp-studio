@@ -16,7 +16,10 @@ const ANIM_SPEED_MULTIPLIER = {
  *   (so dark backgrounds + brighter foreground).
  * - Animation speed: written as the `--anim-speed` CSS variable, consumed
  *   throughout the stylesheet as `transition-duration: calc(Xms * var(...))`.
- *   `instant` collapses all transitions to 0ms.
+ *   `instant` collapses all transitions to 0ms. The `default` speed leaves the
+ *   variable to CSS so the `@media (prefers-reduced-motion: reduce)` override in
+ *   `index.css` can zero it out — i.e. the OS "reduce motion" setting is
+ *   honoured automatically unless the user picks an explicit non-default speed.
  */
 export function useThemeClass() {
   const theme = useDocumentStore((s) => s.theme);
@@ -44,10 +47,13 @@ export function useThemeClass() {
   }, [theme]);
 
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      '--anim-speed',
-      ANIM_SPEED_MULTIPLIER[animationSpeed]
-    );
+    const root = document.documentElement;
+    // For the DEFAULT speed, defer to CSS: `:root { --anim-speed: 1 }` plus the
+    // `@media (prefers-reduced-motion: reduce)` override in index.css govern, so
+    // the OS "reduce motion" setting is honoured automatically. An explicit user
+    // choice (instant/slow/fast) wins via an inline override.
+    if (animationSpeed === 'default') root.style.removeProperty('--anim-speed');
+    else root.style.setProperty('--anim-speed', ANIM_SPEED_MULTIPLIER[animationSpeed]);
   }, [animationSpeed]);
 
   useEffect(() => {

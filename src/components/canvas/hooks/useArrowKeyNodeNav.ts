@@ -2,6 +2,7 @@ import { useReactFlow } from '@xyflow/react';
 import { useEffect } from 'react';
 import { incomingEdges, outgoingEdges } from '@/domain/graph';
 import type { TPDocument } from '@/domain/types';
+import { isEditableTarget, isInteractiveTarget } from '@/hooks/keyboardUtils';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -9,12 +10,14 @@ import { currentDoc } from '@/store/selectors';
  * Session 135 — canvas a11y slice 4. Arrow-key navigation between
  * connected nodes.
  *
- * When a `.react-flow__node` has keyboard focus, the arrow keys jump
- * focus + selection to the connected neighbour in that direction. This
- * is the single biggest UX win for keyboard-only diagram reading: Tab
- * gets you onto the canvas, then arrows walk the causal structure the
- * way the human eye does, without the user having to find every node
- * via a long Tab cycle.
+ * When a `.react-flow__node` has keyboard focus — OR a single entity is
+ * selected (e.g. via a mouse click, whose DOM focus may sit on the body) —
+ * the arrow keys jump focus + selection to the connected neighbour in that
+ * direction. This is the single biggest UX win for keyboard-only diagram
+ * reading: Tab gets you onto the canvas, then arrows walk the structure the
+ * way the human eye does, without a long Tab cycle. Since Session 192 this is
+ * the ONLY arrow-nav owner (the causal ↑effect/↓cause variant that used to
+ * live in `useSelectionShortcuts` was removed to end the focus-path split).
  *
  * Scope (slice 4):
  *   - Only entity nodes (`type='tp'`). Collapsed-root cards stand in
@@ -153,15 +156,34 @@ export const useArrowKeyNodeNav = (): void => {
   const flow = useReactFlow();
 
   useEffect(() => {
+    // reg: move-to-effect / move-to-cause / move-to-sibling
+    // Single owner of plain-arrow navigation between connected entities. The
+    // registry's three entity-arrow entries all map here; the causal variant
+    // that used to also live in `useSelectionShortcuts` was removed so the
+    // behaviour no longer depends on the focus path (Tab vs click).
     const handler = (e: KeyboardEvent) => {
       const direction = KEY_TO_DIRECTION[e.key];
       if (!direction) return;
       // Pass modifier-arrow combos through — global shortcuts may want them.
       if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+      // Resolve the entity to navigate FROM. Prefer the focused node wrapper
+      // (Tab-driven keyboard nav); fall back to the store's single-entity
+      // selection so a click-selected node — whose DOM focus may sit on the
+      // body rather than the node — navigates identically. This is what makes
+      // arrow nav behave the same whether the node was reached by Tab or click.
       const active = document.activeElement;
-      if (!(active instanceof HTMLElement)) return;
-      if (!active.classList.contains('react-flow__node')) return;
-      const fromId = active.getAttribute('data-id');
+      let fromId: string | null = null;
+      if (active instanceof HTMLElement && active.classList.contains('react-flow__node')) {
+        fromId = active.getAttribute('data-id');
+      } else {
+        // Not on a node: only navigate when nothing editable / interactive owns
+        // the keys (arrows must still move the caret in a field, or operate a
+        // focused control), and exactly one entity is selected.
+        if (isEditableTarget(active) || isInteractiveTarget(active)) return;
+        const sel = useDocumentStore.getState().selection;
+        if (sel.kind === 'entities' && sel.ids.length === 1) fromId = sel.ids[0] ?? null;
+      }
       if (!fromId) return;
 
       const targetId = findNeighborInDirection(

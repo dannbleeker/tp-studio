@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import ARROW_NAV_HOOK_SOURCE from '@/components/canvas/hooks/useArrowKeyNodeNav.ts?raw';
 import { SHORTCUTS } from '@/domain/shortcuts';
 import GLOBAL_HOOK_SOURCE from '@/hooks/useGlobalShortcuts.ts?raw';
 import SELECTION_HOOK_SOURCE from '@/hooks/useSelectionShortcuts.ts?raw';
@@ -24,8 +25,9 @@ import SELECTION_HOOK_SOURCE from '@/hooks/useSelectionShortcuts.ts?raw';
  * carries no markers itself.
  */
 
-/** Combined source text from both sub-hooks. */
-const HOOK_SOURCE = `${GLOBAL_HOOK_SOURCE}\n${SELECTION_HOOK_SOURCE}`;
+/** Combined source text from the three keyboard-shortcut hooks. Arrow-key
+ *  navigation binds in `useArrowKeyNodeNav`, so its markers count too. */
+const HOOK_SOURCE = `${GLOBAL_HOOK_SOURCE}\n${SELECTION_HOOK_SOURCE}\n${ARROW_NAV_HOOK_SOURCE}`;
 
 /**
  * Pull every id in `// reg: id [/ id [/ id...]]` markers out of the sources.

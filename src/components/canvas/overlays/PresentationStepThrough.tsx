@@ -2,6 +2,7 @@ import { useReactFlow } from '@xyflow/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
 import { isNonCausal } from '@/domain/graph';
+import { prefersReducedMotion } from '@/services/prefersReducedMotion';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -102,7 +103,7 @@ export function PresentationStepThrough() {
       flow.fitView({
         nodes: [{ id }],
         padding: 0.3,
-        duration: 250,
+        duration: prefersReducedMotion() ? 0 : 250,
       } as Parameters<typeof flow.fitView>[0]);
     },
     [selectEntities, flow]

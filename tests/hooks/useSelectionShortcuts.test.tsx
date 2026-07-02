@@ -112,32 +112,13 @@ describe('useSelectionShortcuts — A (add-assumption-to-edge)', () => {
   });
 });
 
-describe('useSelectionShortcuts — Arrow key navigation', () => {
-  it("ArrowUp moves selection to the target of the entity's outgoing edge", () => {
-    const { entities } = seedChain(['Bottom', 'Mid', 'Top']);
-    const bottom = entities[0]!;
-    const mid = entities[1]!;
-    useDocumentStore.getState().selectEntities([bottom.id]);
-    render(<Host />);
-    fireEvent.keyDown(window, { key: 'ArrowUp' });
-    const sel = s().selection;
-    expect(sel.kind).toBe('entities');
-    if (sel.kind !== 'entities') return;
-    expect(sel.ids).toEqual([mid.id]);
-  });
-
-  it("ArrowDown moves selection to the source of the entity's incoming edge", () => {
-    const { entities } = seedChain(['A', 'B', 'C']);
-    const a = entities[0]!;
-    const b = entities[1]!;
-    useDocumentStore.getState().selectEntities([b.id]);
-    render(<Host />);
-    fireEvent.keyDown(window, { key: 'ArrowDown' });
-    const sel = s().selection;
-    if (sel.kind !== 'entities') return;
-    expect(sel.ids).toEqual([a.id]);
-  });
-});
+// Plain-arrow navigation between connected entities moved OUT of
+// useSelectionShortcuts (Session 192): it is now owned solely by the geometric
+// `useArrowKeyNodeNav` (unit-tested in
+// `tests/components/canvas/arrowKeyNodeNav.test.ts`), so there is one arrow-nav
+// model regardless of the focus path. The old causal ↑effect/↓cause unit tests
+// that lived here were removed with that branch. Group expand/collapse (← / →)
+// and the Cmd/Ctrl+Shift+Arrow reach-select below still bind here.
 
 describe('useSelectionShortcuts — Cmd+Shift+ArrowRight (select-successors)', () => {
   it('selects every forward-reachable entity', () => {

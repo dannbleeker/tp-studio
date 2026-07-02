@@ -59,6 +59,8 @@
     {"id":"canvas-arrow-nav","name":"Arrow-key node navigation","area":"Canvas","since":1,"manual":true,"book":false,"bookExample":false},
     {"id":"canvas-keyboard-edge","name":"Keyboard edge-creation gesture","area":"Canvas","since":135,"manual":true,"book":false,"bookExample":false},
     {"id":"canvas-a11y-names","name":"Screen-reader accessible names","area":"Canvas","since":135,"manual":true,"book":false,"bookExample":false},
+    {"id":"a11y-reduced-motion","name":"Honours OS reduce-motion setting","area":"Canvas","since":192,"manual":true,"book":false,"bookExample":false},
+    {"id":"canvas-tab-reading-order","name":"Reading-order canvas Tab traversal","area":"Canvas","since":192,"manual":true,"book":false,"bookExample":false},
     {"id":"canvas-selection-toolbar","name":"Selection toolbar","area":"Canvas","since":95,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-state-badge","name":"Entity state badge on nodes","area":"Canvas","since":135,"manual":true,"book":false,"bookExample":false},
     {"id":"canvas-back-edge-routing","name":"Back-edge loop routing","area":"Canvas","since":177,"manual":true,"book":false,"bookExample":false},

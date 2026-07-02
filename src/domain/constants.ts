@@ -111,9 +111,6 @@ export const EDGE_RECONNECT_HANDLE_RADIUS = 5;
 // UI/UX can adjust from one place.
 export const ZOOM_UP_THRESHOLD = 0.7;
 
-// --- Sibling-arrow nav tolerance ---
-export const SIBLING_Y_TOLERANCE_PX = 60;
-
 // --- Export ---
 export const PNG_PIXEL_RATIO = 2;
 export const PNG_PADDING = 32;

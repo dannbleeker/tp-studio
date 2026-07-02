@@ -192,7 +192,7 @@ Three ways, in increasing order of speed:
 2. **Tab.** With a node selected, `Tab` creates a child entity *and* connects current → new. `Shift+Tab` creates a parent (new → current). Both put the new entity in edit mode so you can name it right away.
 3. **Right-click.** Right-click an entity for **Add child** / **Add parent** entries.
 
-The canvas re-flows automatically after each change, with a 300 ms ease-out animation. New nodes and edges fade in over ~220 ms; deletions fade out symmetrically. Both honor the **Animation speed** preference in Settings (Instant skips the fades entirely).
+The canvas re-flows automatically after each change, with a 300 ms ease-out animation. New nodes and edges fade in over ~220 ms; deletions fade out symmetrically. Both honor the **Animation speed** preference in Settings (Instant skips the fades entirely) and, on the Default speed, your OS **"reduce motion"** setting — turn that on and the fades and camera moves collapse to instant.
 
 **Selecting an edge.** Edges are thin, so each one has a generous, mostly-invisible click zone around it — plus cues to find that zone. **Hover** an edge and it answers: it thickens a touch, picks up a soft grey glow, and the cursor becomes a pointer, so you can see exactly what a click would land on. **Click** anywhere in that zone — or click the edge's inline **label** — to select it. A selected edge is unmistakable: it draws in indigo with a crisp indigo *casing band* hugging it, distinct from the softer indigo glow an edge shows while you *drag a connection onto it* to AND-join (above). Once an edge is selected, the right-click actions below — and the Edge Inspector — act on it.
 
@@ -819,7 +819,7 @@ If the second goal really is a peer to the first, dismiss the warning with **Res
 `Cmd/Ctrl+,` (or **Settings…** in the palette) opens the Settings dialog with three sections:
 
 - **Appearance.** Pick a theme — seven options: `Light`, `Dark`, `High contrast` (pure black background, white text, thicker focus rings), or one of four named dark variants — `Rust` (warm dark, ember tones), `Coal` (near-black with blue tint), `Navy` (deep blue dark mode), `Ayu` (warm dark with golden accents drawn from the Sublime/VSCode theme). The four named variants layer on top of dark mode — only the body background and focus-ring accent change per variant; the rest of the UI palette stays consistent. Pick an edge color palette — `Default`, `Colorblind-safe` (Wong palette), or `Monochrome`.
-- **Behavior.** Pick an animation speed — `Instant` / `Slow` / `Default` / `Fast`. Toggle **Browse Lock** (also reachable via the top-right lock button).
+- **Behavior.** Pick an animation speed — `Instant` / `Slow` / `Normal` / `Fast`. On `Normal` (the baseline), TP Studio follows your operating system's **"reduce motion"** accessibility setting: enable it in the OS and canvas transitions (including the fit-view camera moves) are minimised automatically. Picking an explicit speed overrides the OS hint. Toggle **Browse Lock** (also reachable via the top-right lock button).
 - **Display.** Toggle **Show annotation numbers**, **Show entity IDs**, **Grow cards to fit text** (Session 181 — lets an entity card grow taller to show its full title, up to six lines, instead of clamping to two; off by default), **Show UDE-reach badge** (Session 52), **Show root-cause-reach badge** (Session 71), **Show action-eligibility badge** (Session 135), **Show minimap**, and **Ink-saving print mode**. Pick a **Causality reading** (none / auto / because / therefore / in order to). Pick a **Default direction for new documents** (auto / BT / TB / LR / RL) — set this when you prefer all new docs to start in a particular orientation; existing docs keep their own per-doc layout setting.
 
 All settings persist across reloads.
@@ -940,8 +940,8 @@ TP Studio targets WCAG 2.1 AA and ships a real keyboard-only authoring path — 
 
 **On the canvas:**
 - **Every node + edge announces itself.** Screen readers read out the human type label + title + (where set) ordering step, locus, propagated state (with `(speculative)` marker on Phase 1C what-if overlays), and action-eligibility status. Edges announce `Edge from <source> to <target>` plus back-edge / mutual-exclusion / assumption-count modifiers. Group rectangles read `Group: <title> (<N> entities)` with collapsed / archived markers; collapsed-root cards read `Collapsed group: <title> (<N> entities hidden)`.
-- **Tab + Shift+Tab walk the canvas;** a visible focus ring marks where you are (distinct from the selection halo so you can tell "where will my Enter land" from "what's chosen").
-- **Arrow keys walk the graph.** With a node focused, ←/↑/→/↓ jumps focus + selection to the connected neighbour in that direction. Picks the connected entity whose center is most in the pressed direction; ignores back-edges and mutual-exclusion markers.
+- **Tab + Shift+Tab walk the canvas** in **reading order** — top-to-bottom, left-to-right by on-screen position, so keyboard focus tracks the diagram the way the eye reads it (not the order entities were created). A visible focus ring marks where you are (distinct from the selection halo so you can tell "where will my Enter land" from "what's chosen").
+- **Arrow keys walk the graph.** With a node focused — or a single entity selected by click — ←/↑/→/↓ jumps focus + selection to the connected neighbour in that direction. Picks the connected entity whose center is most in the pressed direction; ignores back-edges and mutual-exclusion markers. This is the single, consistent arrow-nav model regardless of whether the node was reached by Tab or click.
 - **Keyboard edge creation.** Two-step palette flow: select source → `Cmd/Ctrl+K → Start edge from selected entity… (keyboard)`; select target (Tab or arrow keys) → `Cmd/Ctrl+K → Complete edge to selected entity (keyboard)`. The StatusStrip chip "Select target, then palette → Complete edge" shows while an edge is pending; click it (or press Esc) to cancel.
 
 **Dialogs and the palette:**
@@ -993,9 +993,7 @@ Same content as the in-app `?` button (top-right).
 | `Alt+Enter` (in title) | Newline (multi-line title) |
 | `Tab` | Add child entity |
 | `Shift+Tab` | Add parent entity |
-| `↑` | Move selection to effect (target of an outgoing edge) |
-| `↓` | Move selection to cause (source of an incoming edge) |
-| `← / →` | Move selection to a same-rank sibling |
+| `↑` / `↓` / `← / →` | Walk to the connected neighbour in that direction (geometric — follows the on-screen layout) |
 | `Del` / `Backspace` | Delete (with confirm if connected) |
 
 **On a selected group**

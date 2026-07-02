@@ -59,13 +59,17 @@ export function BehaviorTab() {
 
   return (
     <Section title="Behavior">
-      <Field label="Animation speed">
+      <Field label="Animation speed" as="group">
         <RadioGroup
           name="animationSpeed"
           value={animationSpeed}
           onChange={setAnimationSpeed}
           options={SPEED_OPTIONS}
         />
+        <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+          “Normal” follows your system’s “reduce motion” accessibility setting — enable it in your
+          OS and animations are minimised automatically.
+        </span>
       </Field>
       <Toggle
         label="Browse Lock"

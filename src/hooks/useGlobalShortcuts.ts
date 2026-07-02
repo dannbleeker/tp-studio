@@ -9,6 +9,7 @@ import {
   duplicateSelection,
   pasteClipboard,
 } from '@/services/clipboard';
+import { prefersReducedMotion } from '@/services/prefersReducedMotion';
 import { isStandalonePWA } from '@/services/pwa';
 import { flushPersist } from '@/services/storage/persistDebounced';
 import { useDocumentStore } from '@/store';
@@ -181,7 +182,7 @@ export function useGlobalShortcuts() {
         }
         if (e.key === '0') {
           e.preventDefault();
-          inst.fitView({ padding: 0.4, maxZoom: 1.2, duration: 200 });
+          inst.fitView({ padding: 0.4, maxZoom: 1.2, duration: prefersReducedMotion() ? 0 : 200 });
           return;
         }
       }

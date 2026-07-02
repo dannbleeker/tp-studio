@@ -4,6 +4,7 @@ import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { rootCauseReachCounts, udeReachCounts } from '@/domain/coreDriver';
 import { openCommentCountsByAnchor } from '@/domain/graph';
 import { descendantEntityCount } from '@/domain/groups';
+import { readingOrder } from '@/domain/readingOrder';
 import { type DetailedRevisionDiff, entityStatusFromDiff } from '@/domain/revisions';
 import { effectiveState } from '@/domain/statePropagation';
 import type { EntityId, EntityState, TPDocument } from '@/domain/types';
@@ -166,8 +167,12 @@ export const useGraphNodeEmission = (
       nodes.push(node);
     }
 
-    // Entity nodes
-    for (const id of visibleEntityIds) {
+    // Entity nodes. Emitted in top-to-bottom, left-to-right reading order (via
+    // the post-layout positions) so browser-Tab / screen-reader traversal walks
+    // the diagram the way the eye reads it, not in entity-creation order. Nodes
+    // don't overlap and stacking is governed by explicit zIndex, so reordering
+    // the array is visually inert — it only changes DOM/Tab order.
+    for (const id of readingOrder([...visibleEntityIds], positions)) {
       const entity = doc.entities[id];
       if (!entity) continue;
       const hidden = hiddenCountByCollapser.get(entity.id);

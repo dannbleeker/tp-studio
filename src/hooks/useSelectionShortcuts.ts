@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { SIBLING_Y_TOLERANCE_PX } from '@/domain/constants';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { reachableBackward, reachableForward } from '@/domain/graph';
 import type { EntityId } from '@/domain/types';
 import { guardWriteOrToast } from '@/services/browseLock';
-import { getCanvasNodes } from '@/services/canvasRef';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -15,9 +13,9 @@ import { isEditableTarget, isInteractiveTarget } from './keyboardUtils';
  * Selection-dependent keyboard shortcuts. Everything here either reads the
  * current selection on every keystroke or only makes sense while something
  * is selected: Enter (rename / hoist), Tab / Shift+Tab (add child / parent),
- * Arrow nav between connected entities, Arrow expand / collapse on a group,
- * Cmd/Ctrl+Shift+Arrow successor / predecessor expansion, and the
- * Delete/Backspace deletion path.
+ * Arrow expand / collapse on a group, Cmd/Ctrl+Shift+Arrow successor /
+ * predecessor expansion, and the Delete/Backspace deletion path. (Plain-arrow
+ * navigation between connected entities is owned by `useArrowKeyNodeNav`.)
  *
  * Each branch carries a `// reg: <id>` marker that the registry-link test
  * (`tests/hooks/shortcutRegistry.test.ts`) cross-checks against `SHORTCUTS`
@@ -28,9 +26,8 @@ export function useSelectionShortcuts() {
   // One shallow-equal selector for all the actions we bind. Zustand actions
   // are stable references, so this effectively runs once and stops re-rendering
   // this hook on every store mutation.
-  const { selectEntity, addEntity, connect, beginEditing } = useDocumentStore(
+  const { addEntity, connect, beginEditing } = useDocumentStore(
     useShallow((s) => ({
-      selectEntity: s.selectEntity,
       addEntity: s.addEntity,
       connect: s.connect,
       beginEditing: s.beginEditing,
@@ -162,56 +159,20 @@ export function useSelectionShortcuts() {
         }
       }
 
-      // reg: move-to-effect / move-to-cause / move-to-sibling
-      // Arrow-key navigation among connected entities.
-      // Layout is bottom-up: effects are visually above causes.
-      // ArrowUp → effect (target of an outgoing edge).
-      // ArrowDown → cause (source of an incoming edge).
-      // ArrowLeft / ArrowRight → sibling at the same rank (using live RF positions).
-      if (!onControl && single?.kind === 'entities' && !doc.groups[single.id]) {
-        const edges = Object.values(doc.edges);
-        let nextId: string | undefined;
-        const currentId = single.id;
-
-        if (e.key === 'ArrowUp') {
-          const out = edges.find((edge) => edge.sourceId === currentId);
-          if (out) nextId = out.targetId;
-        } else if (e.key === 'ArrowDown') {
-          const inc = edges.find((edge) => edge.targetId === currentId);
-          if (inc) nextId = inc.sourceId;
-        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-          const rfNodes = getCanvasNodes();
-          const current = rfNodes.find((n) => n.id === currentId);
-          if (current) {
-            const direction = e.key === 'ArrowRight' ? 1 : -1;
-            const candidates = rfNodes.filter(
-              (n) =>
-                n.id !== current.id &&
-                // Only real entities are sibling-navigable: `getCanvasNodes()`
-                // also returns group / collapsed-group nodes whose ids aren't
-                // in `doc.entities`, and `selectEntity`-ing one would point the
-                // inspector at a missing entity.
-                doc.entities[n.id] !== undefined &&
-                Math.abs(n.position.y - current.position.y) <= SIBLING_Y_TOLERANCE_PX &&
-                Math.sign(n.position.x - current.position.x) === direction
-            );
-            candidates.sort(
-              (a, b) =>
-                Math.abs(a.position.x - current.position.x) -
-                Math.abs(b.position.x - current.position.x)
-            );
-            nextId = candidates[0]?.id;
-          }
-        }
-
-        if (nextId) {
-          e.preventDefault();
-          selectEntity(nextId);
-        }
-      }
+      // Arrow-key navigation between connected entities is owned SOLELY by
+      // `useArrowKeyNodeNav` (geometric: walk to the connected neighbour in the
+      // pressed direction). It previously ALSO lived here as a causal variant
+      // (↑ effect / ↓ cause / ← → sibling), so the same selected node behaved
+      // differently depending on whether it had DOM focus (Tab) or was merely
+      // click-selected — the capture-phase geometric handler won only when a
+      // node owned focus. That focus-dependent split contradicted the printed
+      // shortcut reference; the causal branch is removed so there is one
+      // documented model. Group expand/collapse (← / →) stays here — it's a
+      // group-only gesture the geometric nav doesn't touch. The registry
+      // markers for the arrow-nav shortcuts now live in `useArrowKeyNodeNav`.
     };
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [selectEntity, addEntity, connect, beginEditing]);
+  }, [addEntity, connect, beginEditing]);
 }

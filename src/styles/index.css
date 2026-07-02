@@ -88,6 +88,18 @@
   --duration-slow: calc(300ms * var(--anim-speed));
 }
 
+/* Honour the OS "reduce motion" accessibility setting: collapse every
+ * --anim-speed-scaled transition to 0. This governs only when the user is on
+ * the DEFAULT animation speed — useThemeClass leaves --anim-speed to CSS then,
+ * so this override applies; an explicit instant/slow/fast choice writes an
+ * inline --anim-speed that outranks this rule. JS-driven durations (React Flow
+ * fitView) read the `prefersReducedMotion()` helper instead. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --anim-speed: 0;
+  }
+}
+
 html,
 body,
 #root {

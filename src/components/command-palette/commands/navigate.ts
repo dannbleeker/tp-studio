@@ -1,6 +1,7 @@
 import { findPath, reachableBackward, reachableForward } from '@/domain/graph';
 import type { EntityId } from '@/domain/types';
 import { getCanvasInstance } from '@/services/canvasRef';
+import { prefersReducedMotion } from '@/services/prefersReducedMotion';
 import { currentDoc } from '@/store/selectors';
 import type { Command } from './types';
 
@@ -81,7 +82,7 @@ export const navigateCommands: Command[] = [
     group: 'View',
     run: () => {
       const inst = getCanvasInstance();
-      inst?.fitView({ padding: 0.4, maxZoom: 1.2, duration: 200 });
+      inst?.fitView({ padding: 0.4, maxZoom: 1.2, duration: prefersReducedMotion() ? 0 : 200 });
     },
   },
   {
@@ -109,7 +110,7 @@ export const navigateCommands: Command[] = [
       // Give the auto-layout effect a tick to recompute, then fit.
       setTimeout(() => {
         const inst = getCanvasInstance();
-        inst?.fitView({ padding: 0.4, maxZoom: 1.2, duration: 200 });
+        inst?.fitView({ padding: 0.4, maxZoom: 1.2, duration: prefersReducedMotion() ? 0 : 200 });
       }, 50);
     },
   },

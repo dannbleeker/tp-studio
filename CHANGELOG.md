@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 2: accessibility
+
+Three accessibility fixes so the WCAG-AA promises match the code:
+
+- **Honour `prefers-reduced-motion`.** There was zero handling despite the AA claim. On the
+  `Normal` animation speed the app now leaves `--anim-speed` to CSS, and a new
+  `@media (prefers-reduced-motion: reduce)` rule collapses it to 0 — so the OS "reduce motion"
+  setting minimises canvas transitions automatically. An explicit Instant/Slow/Fast choice still
+  overrides. JS-driven camera moves (React Flow `fitView`) read a new `prefersReducedMotion()`
+  helper and pass `duration: 0` under the setting. Behavior-tab note + USER_GUIDE corrected.
+- **One arrow-key navigation model.** Two handlers used to bind the arrows — a causal
+  ↑effect/↓cause variant in `useSelectionShortcuts` and the geometric nearest-neighbour walk in
+  `useArrowKeyNodeNav` — with the winner decided by whether the node had DOM focus (Tab) or was
+  merely click-selected, contradicting the printed shortcut reference. The causal branch is
+  removed; `useArrowKeyNodeNav` is now the sole owner and gained a store-selection fallback so a
+  click-selected node (no DOM focus) navigates identically. Shortcut labels + USER_GUIDE aligned;
+  the registry-link test now also scans the arrow-nav hook.
+- **Reading-order canvas Tab traversal.** Entity nodes are emitted top-to-bottom, left-to-right by
+  on-screen position (new pure `readingOrder` helper, rank-quantized for a valid total order)
+  instead of creation order, so keyboard / screen-reader Tab tracks the diagram the way the eye
+  reads it. Nodes don't overlap and stacking is zIndex-driven, so the change is visually inert.
+
 ## Session 192 (cont.) — Improvement-review batch 1: core authoring hot path
 
 A grounded product/UX review flagged constant friction in the single most-used loop — sketching
