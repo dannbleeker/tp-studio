@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-02T12:25:38.739Z",
-  "commit": "1d4981b",
+  "generatedAt": "2026-07-02T12:37:31.135Z",
+  "commit": "7762ae3",
   "headline": {
-    "linesTsJs": 134339,
-    "tests": 4594,
-    "lineCoveragePct": 95.83,
-    "commits": 934,
+    "linesTsJs": 134424,
+    "tests": 4596,
+    "lineCoveragePct": 95.79,
+    "commits": 936,
     "ageDays": 52,
-    "trackedFiles": 1073,
+    "trackedFiles": 1074,
     "featureManualPct": 100,
-    "featureBookPct": 71,
-    "featureExamplePct": 26.3
+    "featureBookPct": 70.6,
+    "featureExamplePct": 26.1
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
       "files": 497,
-      "lines": 66366
+      "lines": 66398
     },
     {
       "category": "Unit tests",
-      "files": 390,
-      "lines": 61562
+      "files": 391,
+      "lines": 61615
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.83,
-      "covered": 12671,
-      "total": 13222
+      "pct": 95.79,
+      "covered": 12678,
+      "total": 13234
     },
     "statements": {
-      "pct": 93.28,
-      "covered": 14444,
-      "total": 15483
+      "pct": 93.25,
+      "covered": 14451,
+      "total": 15496
     },
     "functions": {
-      "pct": 92.81,
+      "pct": 92.72,
       "covered": 2764,
-      "total": 2978
+      "total": 2981
     },
     "branches": {
-      "pct": 83.88,
-      "covered": 8365,
-      "total": 9972
+      "pct": 83.86,
+      "covered": 8371,
+      "total": 9982
     }
   },
   "tests": {
-    "unit": 4498,
+    "unit": 4500,
     "e2e": 96,
-    "durationMs": 237972,
+    "durationMs": 250677,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10341
+        "ms": 10331
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5354
+        "ms": 5497
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4930
+        "ms": 5389
       },
       {
         "file": "tests/components/EdgeInspector.test.tsx",
-        "ms": 2200
+        "ms": 2870
       },
       {
-        "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2035
+        "file": "tests/components/comments/CommentsPanel.test.tsx",
+        "ms": 2588
       }
     ]
   },
@@ -189,26 +189,26 @@
     "nonNull": 100
   },
   "bundle": {
-    "jsGzipKb": 799.8,
+    "jsGzipKb": 800,
     "cssGzipKb": 19.1,
-    "totalGzipKb": 818.9,
+    "totalGzipKb": 819.1,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53485,
     "chapters": 25,
-    "appLoc": 66366,
+    "appLoc": 66398,
     "docToCodeRatio": 0.81
   },
   "featureCoverage": {
-    "total": 217,
-    "manual": 217,
+    "total": 218,
+    "manual": 218,
     "manualPct": 100,
     "book": 154,
-    "bookPct": 71,
+    "bookPct": 70.6,
     "bookExample": 57,
-    "bookExamplePct": 26.3,
+    "bookExamplePct": 26.1,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -341,8 +341,8 @@
         "book": 15
       },
       "Start": {
-        "total": 5,
-        "manual": 5,
+        "total": 6,
+        "manual": 6,
         "book": 5
       }
     },
@@ -397,6 +397,11 @@
         {
           "id": "canvas-minimap-semantic",
           "name": "Type-coloured minimap",
+          "since": 192
+        },
+        {
+          "id": "start-delete-undo",
+          "name": "Undo a deleted tree",
           "since": 192
         },
         {
@@ -670,16 +675,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 52,
-    "commits": 934,
-    "commits7d": 55,
+    "commits": 936,
+    "commits7d": 57,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 719
+        "count": 720
       },
       {
         "name": "github-actions[bot]",
-        "count": 200
+        "count": 201
       },
       {
         "name": "Claude",
@@ -691,9 +696,9 @@
       }
     ],
     "churn30d": {
-      "added": 66524,
-      "removed": 17558
+      "added": 66674,
+      "removed": 17606
     },
-    "changelogEntries": 359
+    "changelogEntries": 360
   }
 }
