@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-02T19:48:33.738Z",
-  "commit": "f9a57dc",
+  "generatedAt": "2026-07-02T20:47:20.662Z",
+  "commit": "50feb9d",
   "headline": {
-    "linesTsJs": 135478,
-    "tests": 4635,
-    "lineCoveragePct": 95.54,
-    "commits": 955,
+    "linesTsJs": 135996,
+    "tests": 4654,
+    "lineCoveragePct": 95.55,
+    "commits": 957,
     "ageDays": 52,
-    "trackedFiles": 1083,
-    "featureManualPct": 100,
-    "featureBookPct": 69.1,
-    "featureExamplePct": 25.6
+    "trackedFiles": 1087,
+    "featureManualPct": 99.6,
+    "featureBookPct": 67.8,
+    "featureExamplePct": 25.1
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 501,
-      "lines": 66928
+      "files": 503,
+      "lines": 67156
     },
     {
       "category": "Unit tests",
-      "files": 396,
-      "lines": 62139
+      "files": 398,
+      "lines": 62429
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,55 +46,55 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.54,
-      "covered": 12864,
-      "total": 13464
+      "pct": 95.55,
+      "covered": 12882,
+      "total": 13481
     },
     "statements": {
       "pct": 93.03,
-      "covered": 14668,
-      "total": 15766
+      "covered": 14689,
+      "total": 15789
     },
     "functions": {
-      "pct": 92.48,
-      "covered": 2818,
-      "total": 3047
+      "pct": 92.56,
+      "covered": 2827,
+      "total": 3054
     },
     "branches": {
-      "pct": 83.77,
-      "covered": 8496,
-      "total": 10141
+      "pct": 83.79,
+      "covered": 8512,
+      "total": 10158
     }
   },
   "tests": {
-    "unit": 4539,
+    "unit": 4558,
     "e2e": 96,
-    "durationMs": 262143,
+    "durationMs": 256562,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11133
+        "ms": 10729
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5809
+        "ms": 5440
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5277
+        "ms": 5310
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2875
+        "ms": 2635
       },
       {
         "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2363
+        "ms": 2113
       }
     ]
   },
   "domain": {
-    "components": 126,
+    "components": 128,
     "hooks": 19,
     "storeSlices": 15,
     "validators": 4,
@@ -157,7 +157,7 @@
     "churnHotspots": [
       {
         "file": "components/canvas/Canvas.tsx",
-        "commits": 66
+        "commits": 67
       },
       {
         "file": "App.tsx",
@@ -165,7 +165,7 @@
       },
       {
         "file": "components/inspector/EntityInspector.tsx",
-        "commits": 38
+        "commits": 39
       },
       {
         "file": "components/canvas/edges/TPEdge.tsx",
@@ -195,26 +195,26 @@
     "nonNull": 100
   },
   "bundle": {
-    "jsGzipKb": 802.2,
+    "jsGzipKb": 802.8,
     "cssGzipKb": 19.2,
-    "totalGzipKb": 821.3,
+    "totalGzipKb": 822,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53485,
     "chapters": 25,
-    "appLoc": 66928,
+    "appLoc": 67156,
     "docToCodeRatio": 0.8
   },
   "featureCoverage": {
-    "total": 223,
-    "manual": 223,
-    "manualPct": 100,
+    "total": 227,
+    "manual": 226,
+    "manualPct": 99.6,
     "book": 154,
-    "bookPct": 69.1,
+    "bookPct": 67.8,
     "bookExample": 57,
-    "bookExamplePct": 25.6,
+    "bookExamplePct": 25.1,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -257,13 +257,13 @@
         "book": 1
       },
       "Canvas": {
-        "total": 23,
+        "total": 24,
         "manual": 23,
         "book": 8
       },
       "Editing": {
-        "total": 13,
-        "manual": 13,
+        "total": 15,
+        "manual": 15,
         "book": 8
       },
       "Entities": {
@@ -301,6 +301,11 @@
         "manual": 6,
         "book": 2
       },
+      "Settings": {
+        "total": 8,
+        "manual": 8,
+        "book": 7
+      },
       "Comments": {
         "total": 4,
         "manual": 4,
@@ -320,11 +325,6 @@
         "total": 5,
         "manual": 5,
         "book": 1
-      },
-      "Settings": {
-        "total": 7,
-        "manual": 7,
-        "book": 7
       },
       "Workshop": {
         "total": 5,
@@ -353,7 +353,13 @@
       }
     },
     "gaps": {
-      "noManual": [],
+      "noManual": [
+        {
+          "id": "badge-decollision",
+          "name": "Node corner-badge de-collision",
+          "since": 192
+        }
+      ],
       "noBook": [
         {
           "id": "a11y-reduced-motion",
@@ -403,6 +409,26 @@
         {
           "id": "print-nonlatin-caution",
           "name": "Non-Latin-1 PDF font caution",
+          "since": 192
+        },
+        {
+          "id": "color-palette-nodes",
+          "name": "Colour palette recolours nodes + minimap",
+          "since": 192
+        },
+        {
+          "id": "badge-decollision",
+          "name": "Node corner-badge de-collision",
+          "since": 192
+        },
+        {
+          "id": "inspector-collapsible",
+          "name": "Collapsible entity-inspector sections",
+          "since": 192
+        },
+        {
+          "id": "inspector-direct-pickers",
+          "name": "Direct-pick state chips (status/kind/source/strength)",
           "since": 192
         },
         {
@@ -706,16 +732,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 52,
-    "commits": 955,
-    "commits7d": 74,
+    "commits": 957,
+    "commits7d": 76,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 728
+        "count": 729
       },
       {
         "name": "github-actions[bot]",
-        "count": 212
+        "count": 213
       },
       {
         "name": "Claude",
@@ -727,9 +753,9 @@
       }
     ],
     "churn30d": {
-      "added": 63211,
-      "removed": 15333
+      "added": 64016,
+      "removed": 15588
     },
-    "changelogEntries": 365
+    "changelogEntries": 366
   }
 }
