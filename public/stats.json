@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-06-29T11:26:11.963Z",
-  "commit": "6ae0795",
+  "generatedAt": "2026-07-02T08:38:33.984Z",
+  "commit": "0457c4d",
   "headline": {
-    "linesTsJs": 133243,
-    "tests": 4560,
-    "lineCoveragePct": 96.05,
-    "commits": 911,
-    "ageDays": 48,
+    "linesTsJs": 133571,
+    "tests": 4567,
+    "lineCoveragePct": 95.91,
+    "commits": 913,
+    "ageDays": 51,
     "trackedFiles": 1065,
     "featureManualPct": 100,
-    "featureBookPct": 74.4,
-    "featureExamplePct": 27.5
+    "featureBookPct": 73,
+    "featureExamplePct": 27
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
       "files": 492,
-      "lines": 65757
+      "lines": 65958
     },
     {
       "category": "Unit tests",
       "files": 387,
-      "lines": 61075
+      "lines": 61202
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 96.05,
-      "covered": 12572,
-      "total": 13088
+      "pct": 95.91,
+      "covered": 12598,
+      "total": 13135
     },
     "statements": {
-      "pct": 93.5,
-      "covered": 14329,
-      "total": 15324
+      "pct": 93.37,
+      "covered": 14357,
+      "total": 15376
     },
     "functions": {
-      "pct": 92.73,
-      "covered": 2744,
-      "total": 2959
+      "pct": 92.71,
+      "covered": 2747,
+      "total": 2963
     },
     "branches": {
-      "pct": 84.2,
-      "covered": 8276,
-      "total": 9828
+      "pct": 84.01,
+      "covered": 8296,
+      "total": 9875
     }
   },
   "tests": {
-    "unit": 4464,
+    "unit": 4471,
     "e2e": 96,
-    "durationMs": 140585,
+    "durationMs": 250846,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 5437
+        "ms": 11118
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 2773
+        "ms": 5096
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 2402
-      },
-      {
-        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 1333
+        "ms": 4797
       },
       {
         "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 1213
+        "ms": 2570
+      },
+      {
+        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
+        "ms": 2217
       }
     ]
   },
@@ -102,7 +102,7 @@
     "diagramTypes": 9,
     "clrCategories": 7,
     "libraryPatterns": 59,
-    "commands": 97
+    "commands": 98
   },
   "footprint": {
     "depsProd": 15,
@@ -179,7 +179,7 @@
     "risky": []
   },
   "hygiene": {
-    "todo": 15,
+    "todo": 18,
     "fixme": 0,
     "hack": 2,
     "anyCount": 13,
@@ -189,26 +189,26 @@
     "nonNull": 99
   },
   "bundle": {
-    "jsGzipKb": 798,
+    "jsGzipKb": 798.5,
     "cssGzipKb": 19.1,
-    "totalGzipKb": 817.1,
+    "totalGzipKb": 817.6,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53485,
     "chapters": 25,
-    "appLoc": 65757,
+    "appLoc": 65958,
     "docToCodeRatio": 0.81
   },
   "featureCoverage": {
-    "total": 207,
-    "manual": 207,
+    "total": 211,
+    "manual": 211,
     "manualPct": 100,
     "book": 154,
-    "bookPct": 74.4,
+    "bookPct": 73,
     "bookExample": 57,
-    "bookExamplePct": 27.5,
+    "bookExamplePct": 27,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -251,13 +251,13 @@
         "book": 1
       },
       "Canvas": {
-        "total": 19,
-        "manual": 19,
+        "total": 20,
+        "manual": 20,
         "book": 8
       },
       "Editing": {
-        "total": 10,
-        "manual": 10,
+        "total": 13,
+        "manual": 13,
         "book": 8
       },
       "Entities": {
@@ -349,6 +349,26 @@
     "gaps": {
       "noManual": [],
       "noBook": [
+        {
+          "id": "edit-paste-offset",
+          "name": "Paste offsets copies (cascade)",
+          "since": 192
+        },
+        {
+          "id": "edit-duplicate",
+          "name": "Duplicate selection (Cmd/Ctrl+D)",
+          "since": 192
+        },
+        {
+          "id": "edit-select-all",
+          "name": "Select all entities (Cmd/Ctrl+A)",
+          "since": 192
+        },
+        {
+          "id": "canvas-drag-empty-create",
+          "name": "Drag into empty space creates a connected node",
+          "since": 192
+        },
         {
           "id": "method-path-collapse",
           "name": "Collapsible method-path strip",
@@ -619,17 +639,17 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 48,
-    "commits": 911,
-    "commits7d": 48,
+    "ageDays": 51,
+    "commits": 913,
+    "commits7d": 49,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 710
+        "count": 711
       },
       {
         "name": "github-actions[bot]",
-        "count": 186
+        "count": 187
       },
       {
         "name": "Claude",
@@ -641,9 +661,9 @@
       }
     ],
     "churn30d": {
-      "added": 78817,
-      "removed": 19108
+      "added": 66300,
+      "removed": 16854
     },
-    "changelogEntries": 351
+    "changelogEntries": 352
   }
 }
