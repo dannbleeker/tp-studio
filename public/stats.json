@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-02T19:05:17.877Z",
-  "commit": "328f3c2",
+  "generatedAt": "2026-07-02T19:20:54.895Z",
+  "commit": "dfa6a5c",
   "headline": {
-    "linesTsJs": 134893,
-    "tests": 4608,
+    "linesTsJs": 135075,
+    "tests": 4615,
     "lineCoveragePct": 95.7,
-    "commits": 948,
+    "commits": 951,
     "ageDays": 52,
     "trackedFiles": 1079,
     "featureManualPct": 100,
-    "featureBookPct": 70,
-    "featureExamplePct": 25.9
+    "featureBookPct": 69.7,
+    "featureExamplePct": 25.8
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
       "files": 500,
-      "lines": 66718
+      "lines": 66797
     },
     {
       "category": "Unit tests",
       "files": 393,
-      "lines": 61764
+      "lines": 61867
     },
     {
       "category": "E2E tests (Playwright)",
@@ -47,49 +47,49 @@
   "coverage": {
     "lines": {
       "pct": 95.7,
-      "covered": 12728,
-      "total": 13299
+      "covered": 12758,
+      "total": 13330
     },
     "statements": {
-      "pct": 93.18,
-      "covered": 14512,
-      "total": 15574
+      "pct": 93.19,
+      "covered": 14548,
+      "total": 15611
     },
     "functions": {
-      "pct": 92.8,
-      "covered": 2786,
-      "total": 3002
+      "pct": 92.81,
+      "covered": 2790,
+      "total": 3006
     },
     "branches": {
-      "pct": 83.83,
-      "covered": 8408,
-      "total": 10029
+      "pct": 83.86,
+      "covered": 8429,
+      "total": 10051
     }
   },
   "tests": {
-    "unit": 4512,
+    "unit": 4519,
     "e2e": 96,
-    "durationMs": 232906,
+    "durationMs": 259031,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11000
+        "ms": 10649
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5151
+        "ms": 5805
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4968
+        "ms": 5374
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2267
+        "ms": 2454
       },
       {
-        "file": "tests/components/canvas/useEdgeRoutes.test.tsx",
-        "ms": 2049
+        "file": "tests/components/comments/CommentsPanel.test.tsx",
+        "ms": 2140
       }
     ]
   },
@@ -189,26 +189,26 @@
     "nonNull": 100
   },
   "bundle": {
-    "jsGzipKb": 801.1,
+    "jsGzipKb": 801.4,
     "cssGzipKb": 19.1,
-    "totalGzipKb": 820.2,
+    "totalGzipKb": 820.6,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53485,
     "chapters": 25,
-    "appLoc": 66718,
+    "appLoc": 66797,
     "docToCodeRatio": 0.8
   },
   "featureCoverage": {
-    "total": 220,
-    "manual": 220,
+    "total": 221,
+    "manual": 221,
     "manualPct": 100,
     "book": 154,
-    "bookPct": 70,
+    "bookPct": 69.7,
     "bookExample": 57,
-    "bookExamplePct": 25.9,
+    "bookExamplePct": 25.8,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -281,8 +281,8 @@
         "book": 3
       },
       "Export": {
-        "total": 13,
-        "manual": 13,
+        "total": 14,
+        "manual": 14,
         "book": 12
       },
       "Import": {
@@ -382,6 +382,11 @@
         {
           "id": "export-copy-clipboard",
           "name": "Copy diagram image to clipboard",
+          "since": 192
+        },
+        {
+          "id": "export-pptx-tiling",
+          "name": "PPTX tall-diagram tiling",
           "since": 192
         },
         {
@@ -685,16 +690,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 52,
-    "commits": 948,
-    "commits7d": 67,
+    "commits": 951,
+    "commits7d": 70,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 725
+        "count": 726
       },
       {
         "name": "github-actions[bot]",
-        "count": 208
+        "count": 210
       },
       {
         "name": "Claude",
@@ -706,9 +711,9 @@
       }
     ],
     "churn30d": {
-      "added": 62375,
-      "removed": 15153
+      "added": 62602,
+      "removed": 15184
     },
-    "changelogEntries": 363
+    "changelogEntries": 364
   }
 }

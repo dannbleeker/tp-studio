@@ -155,13 +155,13 @@
   },
   {
     "date": "2026-07-02",
-    "linesTsJs": 134893,
+    "linesTsJs": 135075,
     "coveragePct": 95.7,
-    "tests": 4608,
-    "bundleKb": 820.2,
+    "tests": 4615,
+    "bundleKb": 820.6,
     "mutationScore": 73.24,
     "featureManualPct": 100,
-    "featureBookPct": 70,
-    "featureExamplePct": 25.9
+    "featureBookPct": 69.7,
+    "featureExamplePct": 25.8
   }
 ]
