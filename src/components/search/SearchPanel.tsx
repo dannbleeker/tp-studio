@@ -3,6 +3,7 @@ import { CaseSensitive, ChevronDown, ChevronUp, Regex, WholeWord, X } from 'luci
 import { useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button';
+import { entityMeta } from '@/domain/entityTypeMeta';
 import { ancestorChain } from '@/domain/groups';
 import { findMatches } from '@/domain/search';
 import { useDelayedFocus } from '@/hooks/useDelayedFocus';
@@ -34,6 +35,7 @@ export function SearchPanel() {
     selectEdge,
     toggleGroupCollapsed,
     unhoist,
+    openCommentsPanel,
   } = useDocumentStore(
     useShallow((s) => ({
       query: s.searchQuery,
@@ -48,6 +50,7 @@ export function SearchPanel() {
       selectEdge: s.selectEdge,
       toggleGroupCollapsed: s.toggleGroupCollapsed,
       unhoist: s.unhoist,
+      openCommentsPanel: s.openCommentsPanel,
     }))
   );
 
@@ -94,6 +97,23 @@ export function SearchPanel() {
       }
     } else if (active.kind === 'edge') {
       selectEdge(active.id);
+    } else if (active.kind === 'assumption') {
+      // Reveal the assumption by selecting its host edge — the Edge Inspector
+      // lists the edge's assumptions, so the match becomes visible + editable.
+      const edgeId = currentDoc(state).assumptions?.[active.id]?.edgeId;
+      if (edgeId) selectEdge(edgeId);
+    } else if (active.kind === 'comment') {
+      // Select the comment's anchored object (so the canvas centres on it) and
+      // open the comments panel where the thread lives.
+      const d = currentDoc(state);
+      const anchor = d.comments?.[active.id]?.anchor;
+      if (anchor?.kind === 'entity') selectEntity(anchor.entityId);
+      else if (anchor?.kind === 'edge') selectEdge(anchor.edgeId);
+      else if (anchor?.kind === 'assumption') {
+        const edgeId = d.assumptions?.[anchor.assumptionId]?.edgeId;
+        if (edgeId) selectEdge(edgeId);
+      }
+      openCommentsPanel();
     }
   }, [active?.kind, active?.id]);
 
@@ -209,7 +229,9 @@ export function SearchPanel() {
                 )}
               >
                 <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-                  {m.kind} · {m.field}
+                  {m.kind === 'entity' && m.entityType
+                    ? `${entityMeta(m.entityType, doc).label} · ${m.field}`
+                    : `${m.kind} · ${m.field}`}
                 </span>
                 <span className="line-clamp-1 text-neutral-800 dark:text-neutral-200">
                   {m.preview}

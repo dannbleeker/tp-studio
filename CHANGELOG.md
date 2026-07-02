@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 3: Find covers assumptions + comments
+
+Find (`Cmd/Ctrl+F`) was the document's single locator but ignored two shipped
+first-class record types that carry substantial user text:
+
+- **Find now indexes assumption text and review-comment bodies** alongside
+  entity titles/descriptions, group titles, and edge labels. Jumping to an
+  assumption selects its host edge (its assumptions surface in the Edge
+  Inspector); jumping to a comment selects the anchored object and opens the
+  comments panel.
+- **Result rows show the entity type** for entity hits (via a new
+  `entityType` field on `Match`), so a "Quality UDE" reads as `UDE · title`.
+- Removed the dead `field: 'author'` `Match` variant (a "reserved for Phase 6"
+  slot the code never produced). USER_GUIDE's stale field list corrected.
+
+`useSearchDimming` is unaffected (the new kinds' ids simply don't match any
+canvas node/edge). New unit tests cover assumption/comment indexing + the
+entity-type field.
+
 ## Session 192 (cont.) — Improvement-review batch 2: accessibility
 
 Three accessibility fixes so the WCAG-AA promises match the code:

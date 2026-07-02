@@ -2,13 +2,17 @@ import type { TPDocument } from './types';
 
 export type Match = {
   /** What kind of object the match lives on. */
-  kind: 'entity' | 'edge' | 'group';
+  kind: 'entity' | 'edge' | 'group' | 'assumption' | 'comment';
   /** The id of that object. */
   id: string;
   /** Which field on the object matched. */
-  field: 'title' | 'description' | 'author' | 'label';
+  field: 'title' | 'description' | 'label' | 'text' | 'body';
   /** A short rendered preview of the matched text. */
   preview: string;
+  /** For entity matches, the entity's `type` — lets the UI show a type badge
+   *  and drives "select all of type" without a second doc lookup. Absent on
+   *  non-entity matches. */
+  entityType?: string;
 };
 
 export type SearchOptions = {
@@ -60,10 +64,11 @@ const makePreview = (text: string): string => {
 };
 
 /**
- * Pure search over the document. Scope per X-Search-2: entity title +
- * description, group title, edge author (we don't ship edge annotations yet
- * so this slot is reserved for Phase 6). Matches are returned in document
- * order: entities first, then groups, then edges, each in object-key order.
+ * Pure search over the document. Scope: entity title + description, group
+ * title, edge label, plus the two first-class annotation records that also
+ * carry substantial user text — **assumptions** (`.text`) and single-user
+ * **review comments** (`.body`). Matches are returned in document order:
+ * entities → groups → edges → assumptions → comments, each in object-key order.
  */
 export const findMatches = (doc: TPDocument, query: string, opts: SearchOptions = {}): Match[] => {
   const matcher = buildMatcher(query, opts);
@@ -77,6 +82,7 @@ export const findMatches = (doc: TPDocument, query: string, opts: SearchOptions 
         id: entity.id,
         field: 'title',
         preview: makePreview(entity.title),
+        entityType: entity.type,
       });
     }
     if (entity.description && matcher.test(entity.description)) {
@@ -85,6 +91,7 @@ export const findMatches = (doc: TPDocument, query: string, opts: SearchOptions 
         id: entity.id,
         field: 'description',
         preview: makePreview(entity.description),
+        entityType: entity.type,
       });
     }
   }
@@ -107,6 +114,31 @@ export const findMatches = (doc: TPDocument, query: string, opts: SearchOptions 
         id: edge.id,
         field: 'label',
         preview: makePreview(edge.label),
+      });
+    }
+  }
+
+  // Assumptions + review comments are first-class records (optional maps — a
+  // doc without any omits them). Both carry user-authored prose that Find
+  // previously couldn't reach, so a locator search missed them entirely.
+  for (const assumption of Object.values(doc.assumptions ?? {})) {
+    if (assumption.text && matcher.test(assumption.text)) {
+      out.push({
+        kind: 'assumption',
+        id: assumption.id,
+        field: 'text',
+        preview: makePreview(assumption.text),
+      });
+    }
+  }
+
+  for (const comment of Object.values(doc.comments ?? {})) {
+    if (comment.body && matcher.test(comment.body)) {
+      out.push({
+        kind: 'comment',
+        id: comment.id,
+        field: 'body',
+        preview: makePreview(comment.body),
       });
     }
   }

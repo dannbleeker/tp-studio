@@ -99,4 +99,53 @@ describe('findMatches', () => {
     expect(matches.map((m) => m.kind)).toEqual(['edge']);
     expect(matches[0]!.field).toBe('label');
   });
+
+  it('carries the entity type on entity matches (for the type badge / select-all-of-type)', () => {
+    const a = makeEntity({ title: 'Quality slips', type: 'ude' });
+    const doc = makeDoc([a], []);
+    const matches = findMatches(doc, 'quality');
+    expect(matches).toHaveLength(1);
+    expect(matches[0]!.entityType).toBe('ude');
+  });
+
+  it('indexes assumption text', () => {
+    const a = makeEntity();
+    const b = makeEntity();
+    const doc = {
+      ...makeDoc([a, b], []),
+      assumptions: {
+        as1: {
+          id: 'as1',
+          edgeId: 'e1',
+          text: 'assumes demand stays flat',
+          status: 'unexamined' as const,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    };
+    const matches = findMatches(doc, 'demand stays');
+    expect(matches.map((m) => m.kind)).toEqual(['assumption']);
+    expect(matches[0]!).toMatchObject({ id: 'as1', field: 'text' });
+  });
+
+  it('indexes review-comment bodies', () => {
+    const a = makeEntity();
+    const doc = {
+      ...makeDoc([a], []),
+      comments: {
+        c1: {
+          id: 'c1',
+          anchor: { kind: 'entity' as const, entityId: a.id },
+          body: 'is this really the root cause?',
+          author: 'Dann',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    };
+    const matches = findMatches(doc, 'root cause');
+    expect(matches.map((m) => m.kind)).toEqual(['comment']);
+    expect(matches[0]!).toMatchObject({ id: 'c1', field: 'body' });
+  });
 });
