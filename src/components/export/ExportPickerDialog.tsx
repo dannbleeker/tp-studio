@@ -3,6 +3,7 @@ import { entitiesOfType } from '@/domain/graph';
 import { redactDocument } from '@/domain/redact';
 import { getCanvasNodes } from '@/services/canvasRef';
 import {
+  copyPngToClipboard,
   exportAnnotationsMd,
   exportAnnotationsTxt,
   exportCSV,
@@ -71,6 +72,25 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
   {
     title: 'Images',
     items: [
+      {
+        id: 'copy-png',
+        label: 'Copy image to clipboard',
+        hint: 'Copy the diagram as a PNG — paste straight into a doc, slide, or chat.',
+        run: async (s) => {
+          const result = await copyPngToClipboard(getCanvasNodes());
+          if (result === 'ok') {
+            s.showToast('success', 'Diagram image copied to clipboard.');
+          } else if (result === 'empty') {
+            s.showToast('info', 'Nothing to copy — the canvas is empty.');
+          } else if (result === 'unsupported') {
+            // This browser can't put an image on the clipboard — download instead.
+            await exportPNG(currentDoc(s), getCanvasNodes());
+            s.showToast('info', 'Your browser can’t copy images — saved a PNG file instead.');
+          } else {
+            s.showToast('error', 'Couldn’t copy the image (clipboard permission denied).');
+          }
+        },
+      },
       {
         id: 'png',
         label: 'PNG (2×)',

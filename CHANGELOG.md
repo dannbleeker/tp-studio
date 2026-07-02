@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 4: copy diagram image to clipboard
+
+The single most common report/slide action — copy the picture, click into the
+doc, paste — didn't exist; every image export was a file download requiring a
+find / insert / delete dance.
+
+- **New "Copy image to clipboard" export** (first item under Images). Reuses the
+  in-memory PNG capture (`capturePngDataUrl`), converts it to a Blob, and writes
+  a `ClipboardItem({ 'image/png' })`. Graceful fallbacks: browsers without the
+  async Clipboard image API (older Firefox/Safari) fall back to a normal PNG
+  download with an explanatory toast; an empty canvas or a denied permission
+  toasts accordingly. `copyPngToClipboard(nodes)` in `exporters/image.ts`.
+
 ## Session 192 (cont.) — Improvement-review batch 5: delete-tree Undo
 
 Deleting a saved tree from the Start library used to be instant and

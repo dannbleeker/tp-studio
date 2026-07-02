@@ -136,6 +136,7 @@
     {"id":"layout-crossing-reroute","name":"Edge-crossing reroute","area":"Layout","since":173,"manual":true,"book":false,"bookExample":false},
     {"id":"export-json","name":"JSON export / import","area":"Export","since":1,"manual":true,"book":true,"bookExample":false},
     {"id":"export-images","name":"PNG / JPEG / SVG export","area":"Export","since":1,"manual":true,"book":true,"bookExample":false},
+    {"id":"export-copy-clipboard","name":"Copy diagram image to clipboard","area":"Export","since":192,"manual":true,"book":false,"bookExample":false},
     {"id":"export-csv","name":"CSV export","area":"Export","since":14,"manual":true,"book":true,"bookExample":true},
     {"id":"export-reasoning-md","name":"Reasoning Markdown export","area":"Export","since":58,"manual":true,"book":true,"bookExample":true},
     {"id":"export-flying-logic","name":"Flying Logic export","area":"Export","since":17,"manual":true,"book":true,"bookExample":false},

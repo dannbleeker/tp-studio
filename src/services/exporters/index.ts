@@ -10,7 +10,14 @@
  */
 
 export { exportFlyingLogic, pickFlyingLogic } from './flyingLogic';
-export { capturePngDataUrl, exportJPEG, exportPNG, exportSVG } from './image';
+export {
+  type CopyPngResult,
+  capturePngDataUrl,
+  copyPngToClipboard,
+  exportJPEG,
+  exportPNG,
+  exportSVG,
+} from './image';
 export {
   exportDOT,
   exportMermaid,

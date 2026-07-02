@@ -736,6 +736,8 @@ Two export paths:
 
 **Export as redacted JSON.** `Cmd/Ctrl+K` → **Export as redacted JSON** writes the same structure as a normal JSON export but replaces every entity title with `#N`, blanks descriptions and edge labels, retitles groups as `Group N`, and drops author / document-level description. IDs, types, edges, and AND-groups are preserved exactly. Useful when you want a colleague to see the *shape* of an analysis without leaking what each node says.
 
+**Copy image to clipboard.** In the Export picker, **Copy image to clipboard** (the first Images option) puts the diagram on your clipboard as a PNG — click into a doc, slide, or chat and paste, no file download needed. Browsers that can't copy images to the clipboard (older Firefox/Safari) fall back to saving a PNG file, with a toast to say so.
+
 **Export as PNG.** `Cmd/Ctrl+K` → **Export as PNG (2×)** downloads `<your-title>.png` at 2× pixel density, theme-aware (white background in light mode, near-black in dark mode), cropped to fit your diagram with 32 px of padding.
 
 **Export as JPEG / SVG.** Same as PNG, different format. JPEG is smaller for sharing in chat tools that resample PNGs. SVG is sharp at any zoom and importable into design tools (Figma, Illustrator).

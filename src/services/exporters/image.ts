@@ -80,6 +80,39 @@ export const exportPNG = async (doc: TPDocument, nodes: Node[]): Promise<void> =
   triggerDataUrlDownload(dataUrl, `${slug(doc.title)}.png`);
 };
 
+/** Outcome of {@link copyPngToClipboard}, so the caller can toast appropriately. */
+export type CopyPngResult = 'ok' | 'unsupported' | 'empty' | 'denied';
+
+/**
+ * Copy the current canvas as a PNG to the system clipboard — the fastest path
+ * into a report or slide (copy → click into the doc → paste), skipping the
+ * download → find → insert → delete dance of a file export. Reuses the same
+ * in-memory PNG capture as `exportPNG`. Returns:
+ *   - `'unsupported'` — the async Clipboard image API is missing (older
+ *     Firefox/Safari); the caller falls back to a normal PNG download.
+ *   - `'empty'` — nothing to capture (no nodes / no canvas mounted).
+ *   - `'denied'` — a permission or write error.
+ *   - `'ok'` — the image is on the clipboard.
+ */
+export const copyPngToClipboard = async (nodes: Node[]): Promise<CopyPngResult> => {
+  if (
+    typeof navigator === 'undefined' ||
+    typeof navigator.clipboard?.write !== 'function' ||
+    typeof ClipboardItem === 'undefined'
+  ) {
+    return 'unsupported';
+  }
+  const dataUrl = await capturePngDataUrl(nodes);
+  if (!dataUrl) return 'empty';
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    return 'ok';
+  } catch {
+    return 'denied';
+  }
+};
+
 /**
  * JPEG mirror of `exportPNG`. Quality 0.92 matches the html-to-image
  * default "good but not lossless" sweet spot.

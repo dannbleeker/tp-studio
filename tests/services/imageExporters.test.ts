@@ -1,6 +1,6 @@
 import type { Node } from '@xyflow/react';
-import { describe, expect, it } from 'vitest';
-import { exportJPEG, exportPNG, exportSVG } from '@/services/exporters/image';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { copyPngToClipboard, exportJPEG, exportPNG, exportSVG } from '@/services/exporters/image';
 import { makeDoc } from '../domain/helpers';
 
 /**
@@ -44,5 +44,29 @@ describe('image exporters (early-return paths)', () => {
     // `prepareExport` returns null and the exporter exits early.
     const oneNode = [{ id: 'n', type: 'input', position: { x: 0, y: 0 }, data: {} }] as Node[];
     await expect(exportPNG(fakeDoc, oneNode)).resolves.toBeUndefined();
+  });
+});
+
+describe('copyPngToClipboard', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('returns "unsupported" when the async Clipboard image API is missing', async () => {
+    vi.stubGlobal('navigator', {}); // no navigator.clipboard.write
+    expect(await copyPngToClipboard([])).toBe('unsupported');
+  });
+
+  it('returns "unsupported" when ClipboardItem is undefined (older browsers)', async () => {
+    vi.stubGlobal('navigator', { clipboard: { write: vi.fn() } });
+    vi.stubGlobal('ClipboardItem', undefined);
+    expect(await copyPngToClipboard([])).toBe('unsupported');
+  });
+
+  it('returns "empty" (no clipboard write) when there is nothing to capture', async () => {
+    const write = vi.fn();
+    vi.stubGlobal('navigator', { clipboard: { write } });
+    vi.stubGlobal('ClipboardItem', class {});
+    // Empty nodes → prepareExport returns null → no capture, no write.
+    expect(await copyPngToClipboard([])).toBe('empty');
+    expect(write).not.toHaveBeenCalled();
   });
 });
