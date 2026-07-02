@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-02T20:47:20.662Z",
-  "commit": "50feb9d",
+  "generatedAt": "2026-07-02T21:12:52.153Z",
+  "commit": "cbaa50f",
   "headline": {
-    "linesTsJs": 135996,
-    "tests": 4654,
-    "lineCoveragePct": 95.55,
-    "commits": 957,
+    "linesTsJs": 136396,
+    "tests": 4661,
+    "lineCoveragePct": 95.59,
+    "commits": 959,
     "ageDays": 52,
-    "trackedFiles": 1087,
+    "trackedFiles": 1089,
     "featureManualPct": 99.6,
-    "featureBookPct": 67.8,
-    "featureExamplePct": 25.1
+    "featureBookPct": 67,
+    "featureExamplePct": 24.8
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 503,
-      "lines": 67156
+      "files": 504,
+      "lines": 67408
     },
     {
       "category": "Unit tests",
-      "files": 398,
-      "lines": 62429
+      "files": 399,
+      "lines": 62577
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,55 +46,55 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.55,
-      "covered": 12882,
-      "total": 13481
+      "pct": 95.59,
+      "covered": 12959,
+      "total": 13556
     },
     "statements": {
-      "pct": 93.03,
-      "covered": 14689,
-      "total": 15789
+      "pct": 93.06,
+      "covered": 14776,
+      "total": 15877
     },
     "functions": {
-      "pct": 92.56,
-      "covered": 2827,
-      "total": 3054
+      "pct": 92.71,
+      "covered": 2849,
+      "total": 3073
     },
     "branches": {
-      "pct": 83.79,
-      "covered": 8512,
-      "total": 10158
+      "pct": 83.69,
+      "covered": 8564,
+      "total": 10233
     }
   },
   "tests": {
-    "unit": 4558,
+    "unit": 4565,
     "e2e": 96,
-    "durationMs": 256562,
+    "durationMs": 251229,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10729
+        "ms": 10343
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5440
+        "ms": 5037
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5310
+        "ms": 4870
+      },
+      {
+        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
+        "ms": 2488
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2635
-      },
-      {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2113
+        "ms": 2394
       }
     ]
   },
   "domain": {
-    "components": 128,
+    "components": 129,
     "hooks": 19,
     "storeSlices": 15,
     "validators": 4,
@@ -146,12 +146,12 @@
         "pct": 0
       },
       {
-        "file": "components/start/TreeCard.tsx",
+        "file": "components/start/TreeList.tsx",
         "pct": 0
       },
       {
-        "file": "components/start/TreeGallery.tsx",
-        "pct": 0
+        "file": "services/shareCurrentDoc.ts",
+        "pct": 9.09
       }
     ],
     "churnHotspots": [
@@ -195,26 +195,26 @@
     "nonNull": 100
   },
   "bundle": {
-    "jsGzipKb": 802.8,
+    "jsGzipKb": 803.7,
     "cssGzipKb": 19.2,
-    "totalGzipKb": 822,
+    "totalGzipKb": 822.9,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53485,
     "chapters": 25,
-    "appLoc": 67156,
-    "docToCodeRatio": 0.8
+    "appLoc": 67408,
+    "docToCodeRatio": 0.79
   },
   "featureCoverage": {
-    "total": 227,
-    "manual": 226,
+    "total": 230,
+    "manual": 229,
     "manualPct": 99.6,
     "book": 154,
-    "bookPct": 67.8,
+    "bookPct": 67,
     "bookExample": 57,
-    "bookExamplePct": 25.1,
+    "bookExamplePct": 24.8,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -262,8 +262,8 @@
         "book": 8
       },
       "Editing": {
-        "total": 15,
-        "manual": 15,
+        "total": 16,
+        "manual": 16,
         "book": 8
       },
       "Entities": {
@@ -292,6 +292,16 @@
         "book": 12
       },
       "Import": {
+        "total": 7,
+        "manual": 7,
+        "book": 5
+      },
+      "Patterns": {
+        "total": 4,
+        "manual": 4,
+        "book": 3
+      },
+      "Start": {
         "total": 7,
         "manual": 7,
         "book": 5
@@ -336,20 +346,10 @@
         "manual": 4,
         "book": 4
       },
-      "Patterns": {
-        "total": 3,
-        "manual": 3,
-        "book": 3
-      },
       "General": {
         "total": 22,
         "manual": 22,
         "book": 15
-      },
-      "Start": {
-        "total": 6,
-        "manual": 6,
-        "book": 5
       }
     },
     "gaps": {
@@ -404,6 +404,21 @@
         {
           "id": "export-last-format",
           "name": "Export picker remembers last format",
+          "since": 192
+        },
+        {
+          "id": "pattern-insert-into-current",
+          "name": "Insert template into current diagram",
+          "since": 192
+        },
+        {
+          "id": "start-all-trees-filter",
+          "name": "Start \"All trees\" inline filter",
+          "since": 192
+        },
+        {
+          "id": "quick-capture-into-group",
+          "name": "Quick Capture into a selected group",
           "since": 192
         },
         {
@@ -732,16 +747,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 52,
-    "commits": 957,
-    "commits7d": 76,
+    "commits": 959,
+    "commits7d": 78,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 729
+        "count": 730
       },
       {
         "name": "github-actions[bot]",
-        "count": 213
+        "count": 214
       },
       {
         "name": "Claude",
@@ -753,9 +768,9 @@
       }
     ],
     "churn30d": {
-      "added": 64016,
-      "removed": 15588
+      "added": 64570,
+      "removed": 15692
     },
-    "changelogEntries": 366
+    "changelogEntries": 367
   }
 }
