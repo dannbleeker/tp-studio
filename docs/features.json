@@ -220,6 +220,7 @@
     {"id":"start-hero","name":"Problem-led CRT hero","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
     {"id":"start-tree-cards","name":"Tree cards with live Logic status","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
     {"id":"start-needs-review","name":"Needs-review triage","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
-    {"id":"start-library","name":"Persistent tree library (open / delete closed trees)","area":"Start","since":184,"manual":true,"book":true,"bookExample":false}
+    {"id":"start-library","name":"Persistent tree library (open / delete closed trees)","area":"Start","since":184,"manual":true,"book":true,"bookExample":false},
+    {"id":"start-delete-undo","name":"Undo a deleted tree","area":"Start","since":192,"manual":true,"book":false,"bookExample":false}
   ]
 }

@@ -150,6 +150,10 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
       // Closing an open tab clears `startSection` (it exits to the editor), but a
       // delete from the Start library must STAY on Start — snapshot + restore it.
       const section = get().startSection;
+      // Capture everything an Undo needs BEFORE we mutate anything: the deleted
+      // doc's full body (open tab → in-memory; closed library doc → load from
+      // storage) so the tree can be re-persisted verbatim.
+      const body = get().docs[id] ?? loadSavedDoc(id);
       if (get().docs[id]) get().closeTab(id);
       removeDocFromStorage(id);
       // The doc is gone for good now (unlike a plain close, which is reopenable),
@@ -158,6 +162,11 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
       // exports. closeTab no longer sweeps, so this covers both open + closed docs.
       const { docs, activeDocId, doc } = get();
       const { docs: sweptDocs, changed } = stripLinksToDoc(docs, id);
+      // Pre-sweep originals of the docs whose inbound links we're removing, so
+      // Undo can restore those links too (not just the deleted body).
+      const preSweep = changed
+        .map((c) => docs[c.id])
+        .filter((d): d is TPDocument => d !== undefined);
       for (const d of changed) saveDocToLocalStorage(d);
       set({
         docs: sweptDocs,
@@ -165,6 +174,29 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
         savedDocsVersion: get().savedDocsVersion + 1,
         startSection: section,
       });
+      // Undo affordance — deleting a saved tree used to be instant + irreversible
+      // (starkly asymmetric with the app's crash-recovery discipline). Re-persist
+      // the body + restore the swept inbound links, and refresh the Start library.
+      if (body) {
+        get().showToast('info', `Deleted “${body.title || 'Untitled'}”.`, {
+          action: {
+            label: 'Undo',
+            run: () => {
+              saveDocToLocalStorage(body);
+              const restoredOpen: Record<string, TPDocument> = {};
+              for (const d of preSweep) {
+                saveDocToLocalStorage(d);
+                if (get().docs[d.id]) restoredOpen[d.id] = d;
+              }
+              set({
+                savedDocsVersion: get().savedDocsVersion + 1,
+                docs: { ...get().docs, ...restoredOpen },
+                doc: restoredOpen[get().activeDocId] ?? get().doc,
+              });
+            },
+          },
+        });
+      }
     },
 
     newDocument: (diagramType) => {

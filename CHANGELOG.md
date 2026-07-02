@@ -2,6 +2,22 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 5: delete-tree Undo
+
+Deleting a saved tree from the Start library used to be instant and
+irreversible — one misclick on the hover trash button destroyed the tree, with
+only a modal between the user and permanent loss (starkly asymmetric with the
+app's otherwise-meticulous three-tier crash recovery).
+
+- **`deleteSavedDoc` now fires an Undo toast.** It captures the full doc body
+  before removal (open tab → in-memory; closed library doc → `loadSavedDoc`) plus
+  the pre-sweep versions of any docs whose inbound cross-doc links get stripped,
+  then shows `Deleted "…"` with an **Undo** action that re-persists the body +
+  restores those links and refreshes the Start library. Reuses the existing
+  ToastAction rail — no storage-format change.
+- The delete-confirmation copy is softened from "this can't be undone" to point
+  at the Undo toast.
+
 ## Session 192 (cont.) — Improvement-review batch 8c: PRT + Goal-Tree structural validators
 
 PRT and Goal Tree previously had NO type-specific structural validators (PRT ran

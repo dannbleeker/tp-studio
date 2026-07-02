@@ -37,7 +37,7 @@ export function TreeCard({
 
   const onDelete = async (): Promise<void> => {
     const ok = await confirm(
-      `Delete "${title}"? It will be permanently removed from this browser — this can't be undone.`,
+      `Delete "${title}"? It's removed from this browser — you can Undo from the toast right after.`,
       { confirmLabel: 'Delete tree' }
     );
     if (ok) deleteSavedDoc(id);
