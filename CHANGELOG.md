@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 4: PPTX tall-diagram tiling
+
+The PowerPoint deck's diagram slide `contain`-fit a single image, so a tall
+(portrait) tree shrank to an unreadable postage stamp in the middle of the slide.
+
+- **Tall diagrams now tile across multiple crop-band slides.** A new pure
+  `pngDimensions` (decodes width/height from the captured PNG's IHDR) + a pure
+  `computeCanvasBands` decide, from the diagram's aspect ratio, whether it fits
+  one slide (the common landscape case — unchanged `contain` behaviour) or needs
+  N vertical bands, each shown at full slide width via `sizing: 'crop'` and
+  titled "The diagram (k / N)". Both helpers are unit-tested; the pipeline test
+  asserts a tall capture yields multiple cropped slides.
+
 ## Session 192 (cont.) — Improvement-review batch 5: auto-snapshot while editing
 
 A facilitator who works in one tree for a two-hour workshop without swapping

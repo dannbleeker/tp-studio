@@ -72,6 +72,28 @@ vi.mock('@/services/exporters/image', () => ({
 const mockCapture = vi.mocked(capturePngDataUrl);
 const NODES = [] as never[] as Node[];
 
+/** A minimal PNG data URL whose IHDR carries the given pixel dimensions
+ *  (`pngDimensions` reads only bytes 16–23, so the rest can be zero). */
+const pngDataUrl = (w: number, h: number): string => {
+  const bytes = new Uint8Array(24);
+  const be = (o: number, v: number) => {
+    bytes[o] = (v >>> 24) & 0xff;
+    bytes[o + 1] = (v >>> 16) & 0xff;
+    bytes[o + 2] = (v >>> 8) & 0xff;
+    bytes[o + 3] = v & 0xff;
+  };
+  be(16, w);
+  be(20, h);
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return `data:image/png;base64,${btoa(bin)}`;
+};
+const diagramSlides = () =>
+  lastDeck().slides.filter((s) =>
+    s.texts.some((t) => typeof t.text === 'string' && t.text.startsWith('The diagram'))
+  );
+const sizingType = (img: unknown) => (img as { sizing?: { type?: string } }).sizing?.type;
+
 const lastDeck = () => {
   const inst = pptxMock.instances[pptxMock.instances.length - 1];
   if (!inst) throw new Error('no pptx instance recorded');
@@ -113,6 +135,32 @@ describe('exportPPTX — deck pipeline', () => {
     expect(deck.slides.some((s) => s.images.length > 0)).toBe(true);
     // multi-chunk reasoning titles the slides "Reasoning (1 / 2)".
     expect(allText()).toContain('Reasoning (1 / 2)');
+  });
+
+  it('tiles a tall diagram capture into multiple cropped canvas slides', async () => {
+    // 400 × 1600 → ~4× the slide-box height at full width → several bands.
+    mockCapture.mockResolvedValue(pngDataUrl(400, 1600));
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+    doc.title = 'Tall';
+
+    await exportPPTX(doc, NODES, 'auto');
+
+    const slides = diagramSlides();
+    expect(slides.length).toBeGreaterThan(1);
+    // Every band slide crops the image; the titles are numbered.
+    expect(slides.every((s) => s.images.some((img) => sizingType(img) === 'crop'))).toBe(true);
+    expect(allText()).toContain('The diagram (1 /');
+  });
+
+  it('keeps a single contain slide for a landscape diagram', async () => {
+    mockCapture.mockResolvedValue(pngDataUrl(1600, 500));
+    const doc = makeDoc([makeEntity({ title: 'A' })], []);
+
+    await exportPPTX(doc, NODES, 'auto');
+
+    const slides = diagramSlides();
+    expect(slides).toHaveLength(1);
+    expect(sizingType(slides[0]?.images[0])).toBe('contain');
   });
 
   it('skips the visual slide when the canvas capture returns null', async () => {

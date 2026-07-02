@@ -144,6 +144,7 @@
     {"id":"export-html","name":"Self-contained HTML export","area":"Export","since":77,"manual":true,"book":true,"bookExample":false},
     {"id":"export-vector-pdf","name":"Vector PDF export","area":"Export","since":80,"manual":true,"book":true,"bookExample":false},
     {"id":"export-pptx","name":"PowerPoint deck export","area":"Export","since":134,"manual":true,"book":true,"bookExample":false},
+    {"id":"export-pptx-tiling","name":"PPTX tall-diagram tiling","area":"Export","since":192,"manual":true,"book":false,"bookExample":false},
     {"id":"export-risk-csv","name":"Risk-register CSV export","area":"Export","since":134,"manual":true,"book":true,"bookExample":false},
     {"id":"export-picker","name":"Export picker dialog","area":"Export","since":134,"manual":true,"book":true,"bookExample":false},
     {"id":"export-share-link","name":"Share link","area":"Export","since":134,"manual":true,"book":true,"bookExample":true},

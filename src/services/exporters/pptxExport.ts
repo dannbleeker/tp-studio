@@ -53,6 +53,63 @@ const DIAGRAM_LABELS: Record<TPDocument['diagramType'], string> = {
   nbr: 'Negative Branch Reservation',
 };
 
+// ─── Canvas-slide layout + tall-diagram tiling ─────────────────────────
+/** The diagram-image box on a canvas slide (inches, LAYOUT_WIDE 13.33 × 7.5). */
+const CANVAS_IMG_X = 0.6;
+const CANVAS_IMG_Y = 1.4;
+const CANVAS_IMG_W = 12.13;
+const CANVAS_IMG_H = 5.4;
+
+/**
+ * Decode a PNG data URL's pixel dimensions straight from its IHDR chunk
+ * (width at bytes 16–19, height at 20–23, big-endian), no `<img>`/canvas
+ * needed. Returns null for a non-PNG / malformed input. Pure + testable —
+ * drives the tall-diagram decision below.
+ */
+export const pngDimensions = (dataUrl: string): { width: number; height: number } | null => {
+  const comma = dataUrl.indexOf(',');
+  if (comma < 0 || !dataUrl.startsWith('data:image/png')) return null;
+  try {
+    const bin = atob(dataUrl.slice(comma + 1));
+    if (bin.length < 24) return null;
+    const u32 = (o: number): number =>
+      ((bin.charCodeAt(o) << 24) |
+        (bin.charCodeAt(o + 1) << 16) |
+        (bin.charCodeAt(o + 2) << 8) |
+        bin.charCodeAt(o + 3)) >>>
+      0;
+    const width = u32(16);
+    const height = u32(20);
+    return width > 0 && height > 0 ? { width, height } : null;
+  } catch {
+    return null;
+  }
+};
+
+export type CanvasBand = { crop: boolean; y: number; h: number };
+
+/**
+ * Decide how to place a captured canvas PNG on the diagram slide(s). A portrait
+ * (tall) diagram shown at full slide width runs taller than one slide box, so
+ * under `contain` it shrinks to an unreadable stamp; instead we tile it into
+ * vertical crop bands across N slides, each shown at full width. Returns one
+ * entry per slide — a single non-crop `contain` entry when the diagram fits
+ * legibly (the common landscape case, so behaviour is unchanged there).
+ */
+export const computeCanvasBands = (imgW: number, imgH: number): CanvasBand[] => {
+  const single: CanvasBand[] = [{ crop: false, y: 0, h: CANVAS_IMG_H }];
+  if (imgW <= 0 || imgH <= 0) return single;
+  const fullH = CANVAS_IMG_W * (imgH / imgW); // height if displayed at full slide width
+  const bandCount = Math.ceil(fullH / CANVAS_IMG_H);
+  if (bandCount <= 1) return single;
+  const bands: CanvasBand[] = [];
+  for (let k = 0; k < bandCount; k++) {
+    const y = k * CANVAS_IMG_H;
+    bands.push({ crop: true, y, h: Math.min(CANVAS_IMG_H, fullH - y) });
+  }
+  return bands;
+};
+
 /**
  * Group edge sentences into chunks of N for paginated bullet slides.
  * 7 fits comfortably on a 16:9 slide with room for the title above.
@@ -241,18 +298,40 @@ export const exportPPTX = async (
   try {
     const dataUrl = await capturePngDataUrl(nodes);
     if (dataUrl) {
-      const slide = pptx.addSlide();
-      addSlideTitle(slide, 'The diagram');
-      // pptxgenjs sizes images by the slide layout's coordinate system
-      // (inches at LAYOUT_WIDE). Fit a 12.13 × 5.4 box, centred under
-      // the title. Image is auto-scaled to fit, preserving aspect ratio.
-      slide.addImage({
-        data: dataUrl,
-        x: 0.6,
-        y: 1.4,
-        w: 12.13,
-        h: 5.4,
-        sizing: { type: 'contain', w: 12.13, h: 5.4 },
+      const dims = pngDimensions(dataUrl);
+      // A landscape / near-square diagram fits one slide (single contain
+      // entry); a tall one tiles into N vertical crop bands so it stays
+      // readable instead of shrinking to a stamp.
+      const bands = dims ? computeCanvasBands(dims.width, dims.height) : computeCanvasBands(0, 0);
+      bands.forEach((band, i) => {
+        const slide = pptx.addSlide();
+        addSlideTitle(
+          slide,
+          bands.length > 1 ? `The diagram (${i + 1} / ${bands.length})` : 'The diagram'
+        );
+        if (!band.crop) {
+          // Fits legibly — auto-scaled into the 12.13 × 5.4 box, aspect kept.
+          slide.addImage({
+            data: dataUrl,
+            x: CANVAS_IMG_X,
+            y: CANVAS_IMG_Y,
+            w: CANVAS_IMG_W,
+            h: CANVAS_IMG_H,
+            sizing: { type: 'contain', w: CANVAS_IMG_W, h: CANVAS_IMG_H },
+          });
+        } else {
+          // Show this band at full slide width by cropping the full-width image
+          // to a `band.h`-tall window starting at `band.y` (inches into the
+          // full-width-scaled image).
+          slide.addImage({
+            data: dataUrl,
+            x: CANVAS_IMG_X,
+            y: CANVAS_IMG_Y,
+            w: CANVAS_IMG_W,
+            h: band.h,
+            sizing: { type: 'crop', w: CANVAS_IMG_W, h: band.h, x: 0, y: band.y },
+          });
+        }
       });
     }
   } catch {

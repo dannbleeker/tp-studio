@@ -1,8 +1,63 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { buildReasoningSentences } from '@/domain/reasoningExport';
-import { buildSentencesForTest, chunkForTest } from '@/services/exporters/pptxExport';
+import {
+  buildSentencesForTest,
+  chunkForTest,
+  computeCanvasBands,
+  pngDimensions,
+} from '@/services/exporters/pptxExport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedChain, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
+
+/** Minimal PNG data URL carrying the given pixel dimensions in its IHDR. */
+const pngDataUrl = (w: number, h: number): string => {
+  const bytes = new Uint8Array(24);
+  const be = (o: number, v: number) => {
+    bytes[o] = (v >>> 24) & 0xff;
+    bytes[o + 1] = (v >>> 16) & 0xff;
+    bytes[o + 2] = (v >>> 8) & 0xff;
+    bytes[o + 3] = v & 0xff;
+  };
+  be(16, w);
+  be(20, h);
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return `data:image/png;base64,${btoa(bin)}`;
+};
+
+describe('pngDimensions', () => {
+  it('decodes width + height from a PNG IHDR', () => {
+    expect(pngDimensions(pngDataUrl(220, 500))).toEqual({ width: 220, height: 500 });
+    expect(pngDimensions(pngDataUrl(1, 1))).toEqual({ width: 1, height: 1 });
+  });
+  it('returns null for non-PNG / malformed input', () => {
+    expect(pngDimensions('data:image/jpeg;base64,AAAA')).toBeNull();
+    expect(pngDimensions('data:image/png;base64,AAA')).toBeNull(); // too short
+    expect(pngDimensions('not a data url')).toBeNull();
+  });
+});
+
+describe('computeCanvasBands', () => {
+  it('returns a single non-crop entry for a landscape / near-square diagram', () => {
+    const bands = computeCanvasBands(1600, 500); // wide → fits one slide box
+    expect(bands).toHaveLength(1);
+    expect(bands[0]?.crop).toBe(false);
+  });
+  it('tiles a tall diagram into contiguous full-height crop bands', () => {
+    const bands = computeCanvasBands(400, 1600); // fullH = 12.13 * 4 = 48.5in → 9 bands
+    expect(bands.length).toBe(9);
+    expect(bands.every((b) => b.crop)).toBe(true);
+    // Bands abut with no gap or overlap; the last is a partial remainder.
+    for (let i = 1; i < bands.length; i++) {
+      expect(bands[i]!.y).toBeCloseTo(bands[i - 1]!.y + bands[i - 1]!.h, 5);
+    }
+    expect(bands.at(-1)!.h).toBeLessThanOrEqual(5.4);
+  });
+  it('falls back to a single entry for degenerate dimensions', () => {
+    expect(computeCanvasBands(0, 0)).toHaveLength(1);
+    expect(computeCanvasBands(0, 0)[0]?.crop).toBe(false);
+  });
+});
 
 beforeEach(resetStoreForTest);
 afterEach(resetStoreForTest);
