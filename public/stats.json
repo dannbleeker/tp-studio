@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-02T08:38:33.984Z",
-  "commit": "0457c4d",
+  "generatedAt": "2026-07-02T08:57:11.832Z",
+  "commit": "71fdd36",
   "headline": {
     "linesTsJs": 133571,
     "tests": 4567,
-    "lineCoveragePct": 95.91,
-    "commits": 913,
+    "lineCoveragePct": 95.93,
+    "commits": 915,
     "ageDays": 51,
     "trackedFiles": 1065,
     "featureManualPct": 100,
@@ -46,18 +46,18 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.91,
-      "covered": 12598,
+      "pct": 95.93,
+      "covered": 12601,
       "total": 13135
     },
     "statements": {
-      "pct": 93.37,
-      "covered": 14357,
+      "pct": 93.39,
+      "covered": 14360,
       "total": 15376
     },
     "functions": {
-      "pct": 92.71,
-      "covered": 2747,
+      "pct": 92.81,
+      "covered": 2750,
       "total": 2963
     },
     "branches": {
@@ -69,27 +69,27 @@
   "tests": {
     "unit": 4471,
     "e2e": 96,
-    "durationMs": 250846,
+    "durationMs": 250538,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11118
+        "ms": 10898
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5096
+        "ms": 6185
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4797
+        "ms": 4906
       },
       {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2570
+        "file": "tests/components/EdgeInspector.test.tsx",
+        "ms": 2624
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2217
+        "ms": 2398
       }
     ]
   },
@@ -640,8 +640,8 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 51,
-    "commits": 913,
-    "commits7d": 49,
+    "commits": 915,
+    "commits7d": 51,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -649,7 +649,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 187
+        "count": 189
       },
       {
         "name": "Claude",
@@ -661,8 +661,8 @@
       }
     ],
     "churn30d": {
-      "added": 66300,
-      "removed": 16854
+      "added": 66384,
+      "removed": 16907
     },
     "changelogEntries": 352
   }
