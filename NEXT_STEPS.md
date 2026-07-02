@@ -23,21 +23,37 @@ CI-green** (see the CHANGELOG Session 192 entries for detail):
   cache bugs (or/xorGroupId; per-facet S&T fill state).
 - **Batch 5 (data safety, mostly done):** delete-tree **Undo** toast; in-app **PromptDialog** (the
   lone `window.prompt` is gone); **auto-snapshot while editing** (opt-out Behavior setting).
-- **Batch 4 (export, partial):** **copy diagram image to clipboard** (PNG).
+- **Batch 4 (export/print — DONE):** copy diagram image to clipboard (PNG); PPTX tall-diagram tiling;
+  last-used export-format memory (`recentExports.ts`); non-Latin-1 PDF-font caution in
+  `PrintPreviewDialog` + the EC workshop-sheet toast (Session 192 cont., CI-green).
 
-**Still open** (all verified against real code, in-scope, not-yet-built):
+**Still open** (re-verified against real code Session 192 cont. via a 9-agent recon; three items
+turned out narrower than first written — noted inline — the rest confirmed not-yet-built):
 
-- **Batch 4 — export/print:** inline non-Latin-1 warning in `PrintPreviewDialog`; last-used
-  export-format memory (`recentExports.ts`); PPTX tall-diagram tiling (`pptxExport.ts`).
 - **Batch 5 — data safety (last item):** linked-file "unsaved since last save" chip + write-through
-  ⌘S (`fileHandles.ts`+`fileAccess.ts`+`TitleBadge`). NOTE: Chromium-only File System Access API —
-  needs a real-browser test, not jsdom.
-- **Batch 6 — visual/UI:** colorblind/mono node-stripe palette (`tokens.ts`+`TPNode`+`AppearanceTab`);
-  fix corner-badge collisions (`TPNodeBadges.tsx`); collapsible entity-inspector sections
-  (`EntityInspector.tsx`); direct-selection state pickers replacing forward-only cycle chips.
-- **Batch 7 — templates/library/capture:** insert template into current diagram (mergeSubgraph from
-  `clipboard.ts`); Start "All trees" filter/search + richer cards; Quick Capture into a selected group;
-  manual sibling ordering for auto-layout (largest — domain-first).
+  ⌘S. Verified: the `FileSystemFileHandle` is persisted to IndexedDB and a `save-to-file` palette
+  command already writes through, but `TitleBadge` shows **no** dirty/staleness indicator and ⌘S
+  still flushes localStorage only (`fileHandles.ts`+`fileAccess.ts`+`TitleBadge`+`useGlobalShortcuts`).
+  NOTE: Chromium-only File System Access API — needs a real-browser test, not jsdom.
+- **Batch 6 — visual/UI:**
+  - colorblind/mono **node-stripe** palette — the *edge*-color palette (default / colorblind-safe Wong
+    / mono) already ships + is selectable in Appearance; extend the choice to entity/node stripes
+    (`tokens.ts`+`TPNode`+`AppearanceTab`).
+  - fix corner-badge collisions — top-left `StepBadge`+`CommentCountBadge` share coords, bottom-right
+    `PinBadge`+`ReachReverseBadge` overlap; no stacking logic (`TPNodeBadges.tsx`).
+  - collapsible entity-inspector sections — every section always renders expanded (`EntityInspector.tsx`).
+  - direct-selection state pickers — **narrowed:** `EntityStateSection` is already a direct segmented
+    control; only `AssumptionWell` (kind) + `EvidenceList` (source/strength) remain forward-only cycles.
+- **Batch 7 — templates/library/capture:**
+  - insert template into the current diagram — the Pattern Library only builds a NEW doc
+    (`openDocInTab(pattern.build())`); add a merge-subgraph-into-active path (`PatternLibraryDialog`+`clipboard.ts`).
+  - Start "All trees" **inline** filter/search — **narrowed:** the "All trees" view + "Needs review"
+    filter + rich cards (thumbnail / type / edited-time / logic-pill / delete) already ship; the
+    "Search trees…" button opens the ⌘K palette, so only an in-gallery text filter is missing (`TreeGallery`).
+  - Quick Capture into a selected **group** — currently attaches to a single selected entity only;
+    group selections are rejected (`QuickCaptureDialog`).
+  - manual sibling ordering for auto-layout — `Entity.ordering` exists + drives Presentation/TT/CSV,
+    but dagre layout ignores it; make layout honour it for sibling tie-breaks (`layout.ts`).
 
 Each is an independent green vertical slice. NOTE: visual-snapshot fragility — anything touching the
 selection toolbar, node rendering, the minimap, or a dialog changes an `e2e/visual-*.spec.ts`
