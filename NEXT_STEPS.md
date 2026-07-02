@@ -21,16 +21,17 @@ CI-green** (see the CHANGELOG Session 192 entries for detail):
   assumptions, PRT (`prt-obstacle-no-io`/`prt-io-no-obstacle`) + Goal-Tree
   (`goalTree-csf-no-ncs`/`goalTree-csf-count`) structural validators, + two validation-fingerprint
   cache bugs (or/xorGroupId; per-facet S&T fill state).
-- **Batch 5 (data safety, partial):** delete-tree **Undo** toast.
+- **Batch 5 (data safety, mostly done):** delete-tree **Undo** toast; in-app **PromptDialog** (the
+  lone `window.prompt` is gone); **auto-snapshot while editing** (opt-out Behavior setting).
 - **Batch 4 (export, partial):** **copy diagram image to clipboard** (PNG).
 
 **Still open** (all verified against real code, in-scope, not-yet-built):
 
 - **Batch 4 — export/print:** inline non-Latin-1 warning in `PrintPreviewDialog`; last-used
   export-format memory (`recentExports.ts`); PPTX tall-diagram tiling (`pptxExport.ts`).
-- **Batch 5 — data safety:** in-app PromptDialog for branch naming (replace the lone `window.prompt`
-  in `RevisionPanel.tsx:143`); auto-snapshot while editing (timed + non-empty diff,
-  `docMutate.ts`+`revisionsSlice`); linked-file "unsaved since last save" chip + write-through ⌘S.
+- **Batch 5 — data safety (last item):** linked-file "unsaved since last save" chip + write-through
+  ⌘S (`fileHandles.ts`+`fileAccess.ts`+`TitleBadge`). NOTE: Chromium-only File System Access API —
+  needs a real-browser test, not jsdom.
 - **Batch 6 — visual/UI:** colorblind/mono node-stripe palette (`tokens.ts`+`TPNode`+`AppearanceTab`);
   fix corner-badge collisions (`TPNodeBadges.tsx`); collapsible entity-inspector sections
   (`EntityInspector.tsx`); direct-selection state pickers replacing forward-only cycle chips.
