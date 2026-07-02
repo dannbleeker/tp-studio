@@ -204,9 +204,13 @@ const computeValidationFingerprint = (doc: TPDocument): string => {
     // isMutualExclusion feeds the EC missing-conflict + completeness rules — so
     // toggling any of them must re-run validation rather than hit a stale
     // fingerprint (Session 191 — kind + isMutualExclusion were missing).
+    // ALL THREE junctor group ids are encoded: indirect-effect + cause-
+    // sufficiency now exempt any junctor (not just AND), so toggling an OR / XOR
+    // group must invalidate the cache too (Session 192 — or/xorGroupId were
+    // missing, silently defeating the junctor-aware exemption on cache hits).
     .map(
       (e) =>
-        `${e.id}:${e.sourceId}>${e.targetId}:${e.andGroupId ?? ''}:${e.weight ?? ''}:${e.isBackEdge ? 'b' : ''}:${e.delay ? 'd' : ''}:${e.kind}:${e.isMutualExclusion ? 'm' : ''}`
+        `${e.id}:${e.sourceId}>${e.targetId}:${e.andGroupId ?? ''}:${e.orGroupId ?? ''}:${e.xorGroupId ?? ''}:${e.weight ?? ''}:${e.isBackEdge ? 'b' : ''}:${e.delay ? 'd' : ''}:${e.kind}:${e.isMutualExclusion ? 'm' : ''}`
     )
     .sort()
     .join('|');

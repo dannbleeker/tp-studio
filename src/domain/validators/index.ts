@@ -137,6 +137,9 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // assumption / injection" ones live in the same rule so users see
     // them next to the structural ones in the EC inspector.
     tieredRule('existence', 'ec-completeness', ecCompletenessRule),
+    // Improvement review — EC support edges are uniformly necessity-typed, so
+    // the logic-type lint applies (the D↔D′ mutex edge is skipped in the rule).
+    tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
   ],
   // FL-DT4 — Strategy & Tactics Tree. Structural rules plus the
   // discipline rule: every tactic should declare three assumption

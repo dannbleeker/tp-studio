@@ -212,4 +212,13 @@ describe('validationFingerprint — edge fields rules read', () => {
     const mutex = validationFingerprint(twoNodeDoc({ isMutualExclusion: true }));
     expect(plain).not.toBe(mutex);
   });
+
+  it('changes when OR / XOR grouping is applied (indirect-effect + cause-sufficiency read it)', () => {
+    const plain = validationFingerprint(twoNodeDoc({}));
+    const or = validationFingerprint(twoNodeDoc({ orGroupId: 'or-1' }));
+    const xor = validationFingerprint(twoNodeDoc({ xorGroupId: 'xor-1' }));
+    expect(or).not.toBe(plain);
+    expect(xor).not.toBe(plain);
+    expect(or).not.toBe(xor);
+  });
 });

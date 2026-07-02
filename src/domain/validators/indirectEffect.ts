@@ -1,4 +1,4 @@
-import { incomingEdges, structuralEntities } from '../graph';
+import { incomingEdges, junctorGroupId, structuralEntities } from '../graph';
 import type { TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
 
@@ -12,9 +12,12 @@ import { makeWarning, type UntieredWarning } from './shared';
  * "wait, are some of these really chaining through a step I haven't
  * drawn?" starts to feel motivated.
  *
- * AND-grouped edges are exempt: an explicit AND group already signals
- * "these causes ARE meant to converge directly." Once the user has made
- * that commitment, prompting about indirect effects would just be noise.
+ * Junctor-grouped edges (AND / OR / XOR) are exempt: an explicit junctor
+ * already signals "these causes ARE meant to converge directly" — a deliberate
+ * commitment that applies equally to an OR or XOR group, not just AND. Once the
+ * user has drawn any junctor, prompting about indirect effects would be noise.
+ * (This previously exempted only AND groups, so a legitimate OR/XOR fan-in of
+ * ≥3 alternative causes spuriously tripped the rule.)
  *
  * Skips assumption entities (those attach to edges, not graph entities).
  * Targets the entity itself, not any specific edge — the rule's question
@@ -26,7 +29,7 @@ export const indirectEffectRule = (doc: TPDocument): UntieredWarning[] => {
   const out: UntieredWarning[] = [];
   for (const e of structuralEntities(doc)) {
     const incoming = incomingEdges(doc, e.id);
-    const ungrouped = incoming.filter((edge) => !edge.andGroupId);
+    const ungrouped = incoming.filter((edge) => !junctorGroupId(edge));
     if (ungrouped.length >= INDIRECT_EFFECT_THRESHOLD) {
       out.push(
         makeWarning(

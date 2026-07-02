@@ -2,6 +2,28 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 8a: CLR validator correctness fixes
+
+A TP-methodology review surfaced real correctness bugs in the CLR validators
+(two rules read the wrong thing about junctors, one skipped a diagram whose
+logic is unambiguous, and the validation cache silently defeated the first two):
+
+- **`indirect-effect` and `cause-sufficiency` now exempt ALL junctor kinds**,
+  not just AND. An explicit OR or XOR group is the same deliberate "these causes
+  converge directly" commitment as AND, so a legitimate ≥3-way OR fan-in no
+  longer spuriously trips "could some chain through intermediate effects?" Both
+  rules switch from `!edge.andGroupId` to `!junctorGroupId(edge)`.
+- **`logic-type-mismatch` now covers Evaporating Clouds.** EC support edges are
+  uniformly necessity-typed by design, so a sufficiency-typed EC support edge is
+  the same novice error the rule catches on Goal Trees — it was silently
+  accepted. `ec: 'necessity'` added; the D↔D′ mutual-exclusion edge is skipped
+  (it isn't a causal support link).
+- **Fixed the validation fingerprint** to include `orGroupId` / `xorGroupId`
+  (it only encoded `andGroupId`). Without this the validation cache returned a
+  stale result when only OR/XOR grouping changed — which would have silently
+  defeated the two junctor fixes above on a cache hit. New fingerprint test
+  locks that OR/XOR grouping invalidates the cache.
+
 ## Session 192 (cont.) — Improvement-review batch 3: semantic minimap + select-all-of-type
 
 - **Minimap thumbnails are now coloured by entity type** (its stripe colour)

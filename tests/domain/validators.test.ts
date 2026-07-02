@@ -273,6 +273,76 @@ describe('CLR: indirect-effect (Block C / E2)', () => {
     const warnings = validate(makeDoc([target, a, b, c], edges));
     expect(hasRule(warnings, 'indirect-effect')).toBe(false);
   });
+
+  it('also exempts OR- and XOR-grouped edges (an explicit junctor is a commitment)', () => {
+    const target = makeEntity({ title: 'Effect' });
+    const a = makeEntity({ title: 'Cause A' });
+    const b = makeEntity({ title: 'Cause B' });
+    const c = makeEntity({ title: 'Cause C' });
+    // A legitimate 3-way OR fan-in (three independent sufficient causes) must
+    // NOT trip the rule — the OR is a deliberate model, same as AND.
+    const orEdges = [
+      makeEdge(a.id, target.id, { orGroupId: 'or-1' }),
+      makeEdge(b.id, target.id, { orGroupId: 'or-1' }),
+      makeEdge(c.id, target.id, { orGroupId: 'or-1' }),
+    ];
+    expect(hasRule(validate(makeDoc([target, a, b, c], orEdges)), 'indirect-effect')).toBe(false);
+
+    const xorEdges = [
+      makeEdge(a.id, target.id, { xorGroupId: 'xor-1' }),
+      makeEdge(b.id, target.id, { xorGroupId: 'xor-1' }),
+      makeEdge(c.id, target.id, { xorGroupId: 'xor-1' }),
+    ];
+    expect(hasRule(validate(makeDoc([target, a, b, c], xorEdges)), 'indirect-effect')).toBe(false);
+  });
+});
+
+describe('CLR: logic-type-mismatch on EC (necessity logic)', () => {
+  it('flags a sufficiency-typed EC support edge but not the D↔D′ mutex link', () => {
+    const a = makeEntity({ title: 'D' });
+    const b = makeEntity({ title: 'Need' });
+    const doc = {
+      ...makeDoc([a, b], []),
+      diagramType: 'ec' as const,
+      edges: {
+        support: {
+          id: 'support' as never,
+          sourceId: b.id,
+          targetId: a.id,
+          kind: 'sufficiency' as const,
+        },
+        mutex: {
+          id: 'mutex' as never,
+          sourceId: a.id,
+          targetId: b.id,
+          kind: 'sufficiency' as const,
+          isMutualExclusion: true,
+        },
+      },
+    };
+    const mism = validate(doc).filter((w) => w.ruleId === 'logic-type-mismatch');
+    // Only the support edge is held to necessity logic; the mutex edge is exempt.
+    expect(mism).toHaveLength(1);
+    expect(mism[0]?.target).toEqual({ kind: 'edge', id: 'support' });
+  });
+
+  it('stays silent when EC support edges are correctly necessity-typed', () => {
+    const a = makeEntity({ title: 'D' });
+    const b = makeEntity({ title: 'Need' });
+    const doc = {
+      ...makeDoc([a, b], []),
+      diagramType: 'ec' as const,
+      edges: {
+        support: {
+          id: 'support' as never,
+          sourceId: b.id,
+          targetId: a.id,
+          kind: 'necessity' as const,
+        },
+      },
+    };
+    expect(hasRule(validate(doc), 'logic-type-mismatch')).toBe(false);
+  });
 });
 
 describe('warning tier stamping (Block C / E5)', () => {
