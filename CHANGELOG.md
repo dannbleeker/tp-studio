@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 8c: PRT + Goal-Tree structural validators
+
+PRT and Goal Tree previously had NO type-specific structural validators (PRT ran
+only the generic structural set; Goal Tree added just the multi-goal + logic-type
+nudges) even though their entity models fully define the structure. Four new pure
+graph-query rules, each mirroring a shipped CRT/NBR rule:
+
+- **`prt-obstacle-no-io`** — an Obstacle with no Intermediate Objective
+  overcoming it (no incoming `IO → obstacle` edge). The PRT is incomplete until
+  every obstacle has a plan to remove it.
+- **`prt-io-no-obstacle`** — the symmetric check: an IO that overcomes no
+  obstacle (no outgoing edge to an `obstacle`).
+- **`goalTree-csf-no-ncs`** — a Critical Success Factor with no Necessary
+  Conditions beneath it (no incoming `NC → CSF` edge); a rollup-sufficiency gap.
+- **`goalTree-csf-count`** — a Dettmer-pattern scope nudge (typically 3–5 CSFs),
+  the Goal-Tree analogue of `crt-ude-count`; document-targeted, silent below one.
+
+New `ClrRuleId`s + registration on the `prt` / `goalTree` sets; full unit tests.
+
 ## Session 192 (cont.) — Improvement-review batch 8b: additional-cause + S&T-assumptions validators
 
 Two more CLR validators were validating the wrong thing:

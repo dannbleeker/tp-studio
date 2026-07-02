@@ -16,12 +16,14 @@ import { ecMissingConflictRule } from './ecMissingConflict';
 import { entityExistenceRule } from './entityExistence';
 import { externalRootCauseRule } from './externalRootCause';
 import { goalTreeMultipleGoalsRule } from './goalTreeMultipleGoals';
+import { goalTreeCsfCountRule, goalTreeCsfNoNcsRule } from './goalTreeStructural';
 import { indirectEffectRule } from './indirectEffect';
 import { logicTypeMismatchRule } from './logicTypeMismatch';
 import { longArrowRule } from './longArrow';
 import { loopPolarityRule } from './loopPolarity';
 import { nbrNoNegativeBranchRule, nbrUdeDisconnectedRule } from './nbrBranchIntegrity';
 import { predictedEffectExistenceRule } from './predictedEffectExistence';
+import { prtIoNoObstacleRule, prtObstacleNoIoRule } from './prtStructural';
 import { reinforcingNoDelayRule } from './reinforcingNoDelay';
 import { type TieredRule, tieredRule } from './shared';
 import { stTacticAssumptionsRule } from './stTacticAssumptions';
@@ -102,9 +104,14 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // Session 180 (Theme A / A4) — reinforcing loop with no delay.
     tieredRule('clarity', 'reinforcing-no-delay', reinforcingNoDelayRule),
   ],
-  // PRT (A2): the structural rules apply; the PRT-specific rules
-  // ("a goal with no IOs feeding obstacles below") are parked.
-  prt: STRUCTURAL_RULES,
+  // PRT (A2): structural rules plus the obstacle↔IO pairing checks (Session 192
+  // improvement review — the PRT-specific rules were previously parked). Tier
+  // `existence` — an unpaired obstacle or IO is a structural gap in the plan.
+  prt: [
+    ...STRUCTURAL_RULES,
+    tieredRule('existence', 'prt-obstacle-no-io', prtObstacleNoIoRule),
+    tieredRule('existence', 'prt-io-no-obstacle', prtIoNoObstacleRule),
+  ],
   // TT (A3): structural rules plus the TT Complete-Step check — every
   // Action should be paired with a Precondition in the AND-junction
   // feeding its Outcome. Tier 'sufficiency' because the question is
@@ -171,6 +178,11 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('clarity', 'goalTree-multiple-goals', goalTreeMultipleGoalsRule),
     // Session 179 — logic-type lint, necessity logic (Theme C2).
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
+    // Session 192 (improvement review) — Goal→CSF→NC structural checks. A CSF
+    // with no Necessary Conditions is a rollup-sufficiency gap; the CSF count is
+    // a Dettmer-pattern scope nudge (analogue of crt-ude-count).
+    tieredRule('sufficiency', 'goalTree-csf-no-ncs', goalTreeCsfNoNcsRule),
+    tieredRule('clarity', 'goalTree-csf-count', goalTreeCsfCountRule),
   ],
   // Session 134 / spec major gap #5 — NBR runs the FRT rule set: structural
   // rules + cause-sufficiency + additional-cause (target widened to BOTH `ude`

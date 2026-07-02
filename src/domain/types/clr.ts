@@ -109,7 +109,14 @@ export type ClrRuleId =
   // method checklist teaches it and the risk-register export assumes it, so the
   // validator now checks the two structurally-verifiable halves:
   | 'nbr-no-negative-branch' // tracing started but no UDE captured — it's still an FRT
-  | 'nbr-ude-disconnected'; // a wired-up UDE that doesn't trace back to any injection
+  | 'nbr-ude-disconnected' // a wired-up UDE that doesn't trace back to any injection
+  // Session 192 (improvement review) — PRT + Goal-Tree structural rules (both
+  // diagram types previously had NO type-specific validators despite a fully-
+  // defined obstacle↔IO / Goal→CSF→NC structure):
+  | 'prt-obstacle-no-io' // an obstacle with no Intermediate Objective overcoming it
+  | 'prt-io-no-obstacle' // an IO that overcomes no obstacle
+  | 'goalTree-csf-no-ncs' // a Critical Success Factor with no Necessary Conditions beneath it
+  | 'goalTree-csf-count'; // Goal Tree scoped to too few / too many CSFs
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each
