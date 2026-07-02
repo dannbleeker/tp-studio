@@ -172,6 +172,8 @@
     {"id":"palette-sections","name":"Palette grouped sections","area":"Palette","since":45,"manual":true,"book":false,"bookExample":false},
     {"id":"palette-recent","name":"Recent palette commands","area":"Palette","since":88,"manual":true,"book":false,"bookExample":false},
     {"id":"palette-goto-entity","name":"Palette jump-to-entity (Go to…)","area":"Palette","since":192,"manual":true,"book":false,"bookExample":false},
+    {"id":"palette-select-all-of-type","name":"Select all entities of a type","area":"Palette","since":192,"manual":true,"book":false,"bookExample":false},
+    {"id":"canvas-minimap-semantic","name":"Type-coloured minimap","area":"Canvas","since":192,"manual":true,"book":false,"bookExample":false},
     {"id":"settings-dialog","name":"Settings dialog","area":"Settings","since":7,"manual":true,"book":true,"bookExample":false},
     {"id":"settings-themes","name":"Theme variants","area":"Settings","since":1,"manual":true,"book":true,"bookExample":false},
     {"id":"settings-contrast-cb","name":"High-contrast + colorblind palettes","area":"Settings","since":7,"manual":true,"book":true,"bookExample":false},

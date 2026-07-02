@@ -1,3 +1,4 @@
+import { entityMeta } from '@/domain/entityTypeMeta';
 import { findPath, reachableBackward, reachableForward } from '@/domain/graph';
 import type { EntityId } from '@/domain/types';
 import { getCanvasInstance } from '@/services/canvasRef';
@@ -11,6 +12,34 @@ export const navigateCommands: Command[] = [
     label: 'Find in document…',
     group: 'View',
     run: (s) => s.openSearch(),
+  },
+  {
+    // Type is a primary TP navigation axis ("show me every UDE / obstacle / IO").
+    // Operates on the selected entity's type so it needs no type picker, and
+    // matches on the raw `type` string so custom classes work identically to
+    // built-ins. Pure selection — not write-guarded.
+    id: 'select-all-of-type',
+    label: 'Select all entities of the same type as the selection',
+    group: 'View',
+    run: (s) => {
+      const sel = s.selection;
+      if (sel.kind !== 'entities' || sel.ids.length !== 1) {
+        s.showToast('info', 'Select a single entity first.');
+        return;
+      }
+      const doc = currentDoc(s);
+      const type = doc.entities[sel.ids[0]!]?.type;
+      if (!type) return;
+      const ids = Object.values(doc.entities)
+        .filter((e) => e.type === type)
+        .map((e) => e.id);
+      s.selectEntities(ids);
+      const label = entityMeta(type, doc).label;
+      s.showToast(
+        'info',
+        `Selected ${ids.length} “${label}” entit${ids.length === 1 ? 'y' : 'ies'}.`
+      );
+    },
   },
   {
     id: 'select-path-between',

@@ -2,6 +2,17 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 3: semantic minimap + select-all-of-type
+
+- **Minimap thumbnails are now coloured by entity type** (its stripe colour)
+  instead of a uniform grey, so the minimap reads as a semantic map. Groups keep
+  the indigo tint; custom / unknown types fall back to neutral grey. Uses the
+  static `ENTITY_STRIPE_COLOR` table so the callback stays a stable module
+  constant (no per-render identity churn).
+- **"Select all entities of the same type as the selection"** palette command —
+  type is a primary TP navigation axis ("show me every UDE / obstacle / IO").
+  Matches on the raw `type`, so custom classes work like built-ins.
+
 ## Session 192 (cont.) — Improvement-review batch 3: command palette jumps to entities
 
 The prominent "Type a command…" field returned "No matches" when a user typed

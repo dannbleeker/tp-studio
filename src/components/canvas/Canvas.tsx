@@ -10,7 +10,8 @@ import { lazy, Suspense, useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
-import { ACCENT, GRID_DOT } from '@/domain/tokens';
+import { ACCENT, ENTITY_STRIPE_COLOR, GRID_DOT } from '@/domain/tokens';
+import type { EntityType } from '@/domain/types';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -67,8 +68,17 @@ const edgeTypes = { tp: TPEdge };
 // render makes React Flow + MiniMap treat them as changed; module-scope
 // constants are stable for the component's lifetime.
 const FIT_VIEW_OPTIONS = { padding: 0.4, maxZoom: 1.2 };
-const miniMapNodeColor = (n: Node): string =>
-  n.type === 'tpGroup' || n.type === 'tpCollapsedGroup' ? '#a5b4fc' : '#737373';
+// Colour minimap thumbnails by entity type (its stripe colour) so the minimap
+// is a semantic map, not a field of identical grey dots. Groups keep the indigo
+// tint; a custom-class or unknown type falls back to neutral grey. Reads the
+// static ENTITY_STRIPE_COLOR table so this stays a stable module-scope function
+// (no per-render identity churn — see the hoist note above).
+const miniMapNodeColor = (n: Node): string => {
+  if (n.type === 'tpGroup' || n.type === 'tpCollapsedGroup') return '#a5b4fc';
+  const type = (n.data as { entity?: { type?: string } } | undefined)?.entity?.type;
+  if (type && type in ENTITY_STRIPE_COLOR) return ENTITY_STRIPE_COLOR[type as EntityType];
+  return '#737373';
+};
 
 function CanvasInner() {
   // Projection HOST: the whole doc feeds `useGraphView`, whose projection depends
