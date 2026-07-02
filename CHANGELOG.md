@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 8b: additional-cause + S&T-assumptions validators
+
+Two more CLR validators were validating the wrong thing:
+
+- **`additional-cause` now implements its own reservation.** It previously fired
+  ONLY when a terminal effect (UDE / desiredEffect) had *zero* incoming causes —
+  a cause-*existence* check misfiled under the additional-cause name, and already
+  covered for CRT by `crt-ude-no-upstream`. It now ALSO fires the real reservation
+  on a terminal effect with exactly one ungrouped cause — "only one cause is
+  captured — could a *different*, independent cause also produce this? model the
+  alternatives as an OR" — and self-silences once a second cause or an OR/XOR
+  junction is added (mirroring how `cause-sufficiency` stops on AND-grouping). The
+  zero-cause nudge is kept (NBR/FRT rely on it).
+- **`st-tactic-assumptions` now reads the canonical facet representation.** It
+  counted incoming `necessaryCondition` *entities* — a representation nothing else
+  in the app uses — so a tactic with all three assumption facets filled on its
+  5-facet card was still flagged "missing 3," while three unrelated NC children
+  passed with empty facets. It now counts the reserved `stNecessaryAssumption` /
+  `stParallelAssumption` / `stSufficiencyAssumption` attributes and names which of
+  NA / PA / SA is missing.
+- **Validation fingerprint** now encodes each S&T facet's filled state (was a
+  single "has any facet" bit) so a 1- vs 2- vs 3-facet tactic re-validates instead
+  of colliding on a stale cache — the same class of bug fixed for or/xorGroupId in
+  8a, and necessary for the count-based rule above to be correct on a cache hit.
+
 ## Session 192 (cont.) — Improvement-review batch 8a: CLR validator correctness fixes
 
 A TP-methodology review surfaced real correctness bugs in the CLR validators

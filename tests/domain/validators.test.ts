@@ -110,10 +110,32 @@ describe('CLR: additional cause', () => {
     expect(hasRule(warnings, 'additional-cause')).toBe(true);
   });
 
-  it('does not warn when a UDE has at least one cause', () => {
+  it('warns (additional-cause reservation) when a UDE has exactly one ungrouped cause', () => {
     const cause = makeEntity({ title: 'Slow shipping' });
     const ude = makeEntity({ type: 'ude', title: 'Customer churn' });
     const e = makeEdge(cause.id, ude.id);
+    const hits = validate(makeDoc([cause, ude], [e], 'crt')).filter(
+      (w) => w.ruleId === 'additional-cause'
+    );
+    // The real reservation: a single stated cause should prompt "could a
+    // different independent cause also produce this?" (previously silent).
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.target).toEqual({ kind: 'entity', id: ude.id });
+  });
+
+  it('self-silences once a second cause is added (alternatives now present)', () => {
+    const c1 = makeEntity({ title: 'Slow shipping' });
+    const c2 = makeEntity({ title: 'Poor support' });
+    const ude = makeEntity({ type: 'ude', title: 'Customer churn' });
+    const edges = [makeEdge(c1.id, ude.id), makeEdge(c2.id, ude.id)];
+    const warnings = validate(makeDoc([c1, c2, ude], edges, 'crt'));
+    expect(hasRule(warnings, 'additional-cause')).toBe(false);
+  });
+
+  it('self-silences when the single cause is OR-grouped (alternative already modeled)', () => {
+    const cause = makeEntity({ title: 'Slow shipping' });
+    const ude = makeEntity({ type: 'ude', title: 'Customer churn' });
+    const e = makeEdge(cause.id, ude.id, { orGroupId: 'or-1' });
     const warnings = validate(makeDoc([cause, ude], [e], 'crt'));
     expect(hasRule(warnings, 'additional-cause')).toBe(false);
   });

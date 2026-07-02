@@ -1,4 +1,4 @@
-import { incomingEdges } from '../graph';
+import { ST_FACET_KEYS } from '../graph';
 import type { Entity, TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
 
@@ -13,41 +13,49 @@ import { makeWarning, type UntieredWarning } from './shared';
  *   - **Sufficiency Assumption** — why the tactic actually achieves the
  *     strategy.
  *
- * TP Studio models all three with the existing `necessaryCondition`
- * entity type (the user labels the role via the title or description
- * — "NA: …", "PA: …", "SA: …"). The rule fires when an `injection`
- * entity in an S&T diagram has fewer than three incoming
- * `necessaryCondition` edges. Tier `clarity` because the prescription
- * is "you should declare these," not "the diagram is structurally
- * broken without them."
+ * These are first-class, canonical fields: the reserved `stNecessaryAssumption`
+ * / `stParallelAssumption` / `stSufficiencyAssumption` entity attributes
+ * (`ST_FACET_KEYS`), rendered as the tactic's 5-facet card and edited inline.
+ * The rule counts those FILLED facets and names which of NA / PA / SA is still
+ * missing. (It previously counted incoming `necessaryCondition` *entities* — a
+ * representation nothing else in the app uses — so a tactic with all three
+ * facets filled on its card was still flagged "missing 3," while three unrelated
+ * NC children passed with empty facets.) Tier `clarity` because the prescription
+ * is "you should declare these," not "the diagram is structurally broken."
  *
  * Edge-cases:
  *   - Apex injection with no parent strategy yet → still fires (the
  *     apex is the most important place to declare the three facets).
  *   - An injection that's actually serving as a passthrough rather than
  *     a tactic → user can resolve the warning manually via the
- *     existing Resolve action in WarningsList. No way to detect "this
- *     is a passthrough, not a real tactic" automatically.
+ *     existing Resolve action in WarningsList.
  */
+const FACETS = [
+  { key: ST_FACET_KEYS.necessaryAssumption, label: 'Necessary' },
+  { key: ST_FACET_KEYS.parallelAssumption, label: 'Parallel' },
+  { key: ST_FACET_KEYS.sufficiencyAssumption, label: 'Sufficiency' },
+] as const;
+
+/** A facet counts as declared when its attribute exists with a non-empty value. */
+const facetFilled = (e: Entity, key: string): boolean => {
+  const a = e.attributes?.[key];
+  if (!a) return false;
+  return a.kind === 'string' ? a.value.trim() !== '' : true;
+};
+
 export const stTacticAssumptionsRule = (doc: TPDocument): UntieredWarning[] => {
   if (doc.diagramType !== 'st') return [];
   const out: UntieredWarning[] = [];
   for (const e of Object.values(doc.entities) as Entity[]) {
     if (e.type !== 'injection') continue;
-    const incoming = incomingEdges(doc, e.id);
-    let assumptionFacetCount = 0;
-    for (const edge of incoming) {
-      const source = doc.entities[edge.sourceId];
-      if (source?.type === 'necessaryCondition') assumptionFacetCount++;
-    }
-    if (assumptionFacetCount >= 3) continue;
-    const missing = 3 - assumptionFacetCount;
+    const missing = FACETS.filter((f) => !facetFilled(e, f.key)).map((f) => f.label);
+    if (missing.length === 0) continue;
     out.push(
       makeWarning(
         doc,
         'st-tactic-assumptions',
         { kind: 'entity', id: e.id },
-        `Tactic missing ${missing} assumption facet${missing === 1 ? '' : 's'} — Goldratt's S&T prescribes a Necessary, Parallel, and Sufficiency assumption per tactic.`
+        `Tactic missing ${missing.length} assumption facet${missing.length === 1 ? '' : 's'} (${missing.join(', ')}) — Goldratt's S&T prescribes a Necessary, Parallel, and Sufficiency assumption per tactic.`
       )
     );
   }

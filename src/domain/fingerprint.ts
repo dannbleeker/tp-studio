@@ -187,11 +187,19 @@ const computeValidationFingerprint = (doc: TPDocument): string => {
       const u = e.unspecified === true ? 'u' : '';
       const s = e.spanOfControl ? `:${e.spanOfControl[0]}` : '';
       const slot = e.ecSlot ? `:${e.ecSlot}` : '';
+      // Encode each S&T facet's FILLED state (not just "has any"): the
+      // st-tactic-assumptions rule counts how many of the three assumption
+      // facets are non-empty, so a 1-facet vs 2-facet vs 3-facet tactic must
+      // yield distinct fingerprints (a single `:st` bit collapsed them all →
+      // stale cache). "Filled" matches the rule: a string attr counts only when
+      // non-blank; a non-string attr counts when present.
       const st =
-        e.type === 'injection' &&
-        e.attributes !== undefined &&
-        ST_FACET_FINGERPRINT_KEYS.some((k) => e.attributes?.[k] !== undefined)
-          ? ':st'
+        e.type === 'injection' && e.attributes !== undefined
+          ? `:st${ST_FACET_FINGERPRINT_KEYS.map((k) => {
+              const a = e.attributes?.[k];
+              if (!a) return '0';
+              return a.kind === 'string' ? (a.value.trim() !== '' ? '1' : '0') : '1';
+            }).join('')}`
           : '';
       return `${e.id}:${e.type}:${e.title}:${u}${s}${slot}${st}`;
     })
