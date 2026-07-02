@@ -31,6 +31,7 @@ export function BehaviorTab() {
     showCRTWizard,
     showSelectionToolbar,
     openDocsInNewTab,
+    autoSnapshot,
     setAnimationSpeed,
     setBrowseLocked,
     setShowGoalTreeWizard,
@@ -38,6 +39,7 @@ export function BehaviorTab() {
     setShowCRTWizard,
     setShowSelectionToolbar,
     setOpenDocsInNewTab,
+    setAutoSnapshot,
   } = useDocumentStore(
     useShallow((s) => ({
       animationSpeed: s.animationSpeed,
@@ -47,6 +49,7 @@ export function BehaviorTab() {
       showCRTWizard: s.showCRTWizard,
       showSelectionToolbar: s.showSelectionToolbar,
       openDocsInNewTab: s.openDocsInNewTab,
+      autoSnapshot: s.autoSnapshot,
       setAnimationSpeed: s.setAnimationSpeed,
       setBrowseLocked: s.setBrowseLocked,
       setShowGoalTreeWizard: s.setShowGoalTreeWizard,
@@ -54,6 +57,7 @@ export function BehaviorTab() {
       setShowCRTWizard: s.setShowCRTWizard,
       setShowSelectionToolbar: s.setShowSelectionToolbar,
       setOpenDocsInNewTab: s.setOpenDocsInNewTab,
+      setAutoSnapshot: s.setAutoSnapshot,
     }))
   );
 
@@ -76,6 +80,12 @@ export function BehaviorTab() {
         hint="Read-only mode — disables editing across the canvas, inspector, and shortcuts"
         checked={browseLocked}
         onChange={setBrowseLocked}
+      />
+      <Toggle
+        label="Auto-snapshot while editing"
+        hint="Periodically snapshot the current tree as you edit (every few minutes, only when it changed) so you can compare / restore / branch mid-session. Snapshots also fire on document swap regardless."
+        checked={autoSnapshot}
+        onChange={setAutoSnapshot}
       />
       {/* Session 87 (S5) — the two wizard toggles were standalone
           items in the Behavior section, reading as two unrelated

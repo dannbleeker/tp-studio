@@ -193,6 +193,7 @@ export type StoredPrefs = {
    *  full readout lives in the Entity Inspector regardless. */
   showActionEligibility?: boolean;
   showMinimap?: boolean;
+  autoSnapshot?: boolean;
   /** Session 181 — grow entity cards taller to fit their title (capped).
    *  Default `false` (fixed-height cards, 2-line clamp). */
   growCardsToFitText?: boolean;

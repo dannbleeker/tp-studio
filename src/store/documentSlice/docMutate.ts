@@ -1,9 +1,33 @@
+import { computeRevisionDiff, isEmptyDiff } from '@/domain/revisions';
 import type { Edge, Entity, Patch, TPDocument } from '@/domain/types';
 import { persistDebounced } from '@/services/storage/persistDebounced';
 import { setActiveDoc } from '../activeDoc';
 import { pushHistoryEntry } from '../historySlice';
 import { currentDoc } from '../selectors';
 import type { RootStore } from '../types';
+
+/** How long since the newest snapshot before an edit triggers an auto-snapshot. */
+export const AUTO_SNAPSHOT_INTERVAL_MS = 3 * 60 * 1000;
+
+/**
+ * Auto-snapshot the active doc after a committed edit when: the user is on the
+ * default (opt-out) `autoSnapshot` setting; ≥ AUTO_SNAPSHOT_INTERVAL_MS has
+ * passed since the newest snapshot; and the doc actually differs from it. The
+ * cheap time gate runs on every edit (one Date.now() compare); the heavier diff
+ * runs only once the window elapses. Keyed on the newest revision's
+ * `capturedAt` so it survives reloads and respects manual snapshots too, and a
+ * long single-tab session accrues rollback points (previously snapshots only
+ * fired on doc swap). `captureSnapshot` writes to the separate revisions store
+ * (no `applyDocChange` recursion).
+ */
+const maybeAutoSnapshot = (get: () => RootStore): void => {
+  const state = get();
+  if (!state.autoSnapshot) return;
+  const latest = state.revisions[0]; // newest-first, scoped to the active doc
+  if (latest && Date.now() - latest.capturedAt < AUTO_SNAPSHOT_INTERVAL_MS) return;
+  if (latest && isEmptyDiff(computeRevisionDiff(latest.doc, currentDoc(state)))) return;
+  state.captureSnapshot('Auto');
+};
 
 /**
  * Shared mutation infrastructure for the document sub-slices.
@@ -54,6 +78,9 @@ export const makeApplyDocChange = (get: () => RootStore, set: DocSetState): Appl
       }),
       future: [],
     });
+    // After the edit is committed, consider an auto-snapshot (gated by time +
+    // real-diff + the opt-out setting).
+    maybeAutoSnapshot(get);
   };
 };
 

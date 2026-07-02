@@ -42,6 +42,10 @@ export type PreferencesSlice = {
    *  Settings → Display. */
   showActionEligibility: boolean;
   showMinimap: boolean;
+  /** Auto-snapshot the active doc periodically while editing (opt-out, default
+   *  ON). Adds mid-session rollback points during a long single-tab session so
+   *  the compare/branch/diff machinery isn't limited to doc-swap snapshots. */
+  autoSnapshot: boolean;
   /** Session 181 — grow entity cards taller to fit their full title text,
    *  capped at `MAX_CARD_GROW_LINES`. Off by default: cards stay the fixed
    *  72px box and clamp the title to 2 lines. App-wide viewing preference. */
@@ -144,6 +148,7 @@ export type PreferencesSlice = {
   /** Session 135 — toggle the action-eligibility canvas badge. */
   setShowActionEligibility: (show: boolean) => void;
   setShowMinimap: (show: boolean) => void;
+  setAutoSnapshot: (on: boolean) => void;
   /** Session 181 — toggle grow-cards-to-fit-text. */
   setGrowCardsToFitText: (grow: boolean) => void;
   /** Session 182 — collapse/expand the Building Blocks rail. */
@@ -210,6 +215,7 @@ export type PreferencesDataKeys =
   | 'showReverseReachBadges'
   | 'showActionEligibility'
   | 'showMinimap'
+  | 'autoSnapshot'
   | 'growCardsToFitText'
   | 'blocksRailCollapsed'
   | 'methodPathCollapsed'
@@ -250,6 +256,7 @@ export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKey
   showReverseReachBadges: false,
   showActionEligibility: false,
   showMinimap: true,
+  autoSnapshot: true,
   growCardsToFitText: false,
   blocksRailCollapsed: false,
   methodPathCollapsed: false,
@@ -326,6 +333,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       showReverseReachBadges: s.showReverseReachBadges,
       showActionEligibility: s.showActionEligibility,
       showMinimap: s.showMinimap,
+      autoSnapshot: s.autoSnapshot,
       growCardsToFitText: s.growCardsToFitText,
       blocksRailCollapsed: s.blocksRailCollapsed,
       methodPathCollapsed: s.methodPathCollapsed,
@@ -361,6 +369,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     showReverseReachBadges: initialPrefs.showReverseReachBadges,
     showActionEligibility: initialPrefs.showActionEligibility,
     showMinimap: initialPrefs.showMinimap,
+    autoSnapshot: initialPrefs.autoSnapshot,
     growCardsToFitText: initialPrefs.growCardsToFitText,
     blocksRailCollapsed: initialPrefs.blocksRailCollapsed,
     methodPathCollapsed: initialPrefs.methodPathCollapsed,
@@ -445,6 +454,10 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     },
     setShowMinimap: (show) => {
       set({ showMinimap: show });
+      persistPrefs();
+    },
+    setAutoSnapshot: (on) => {
+      set({ autoSnapshot: on });
       persistPrefs();
     },
     setPrintInkSaver: (on) => {
@@ -561,6 +574,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
         showReverseReachBadges: d.showReverseReachBadges,
         showActionEligibility: d.showActionEligibility,
         showMinimap: d.showMinimap,
+        autoSnapshot: d.autoSnapshot,
         growCardsToFitText: d.growCardsToFitText,
         blocksRailCollapsed: d.blocksRailCollapsed,
         methodPathCollapsed: d.methodPathCollapsed,

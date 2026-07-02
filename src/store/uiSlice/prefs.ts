@@ -96,6 +96,8 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
     // Minimap default ON — it's a useful affordance for non-trivial diagrams
     // and easy to dismiss in Settings.
     showMinimap: raw?.showMinimap !== false,
+    // Auto-snapshot default ON (opt-out) — mid-session rollback points.
+    autoSnapshot: raw?.autoSnapshot !== false,
     // Session 181 — grow-cards-to-fit-text OFF by default (fixed-height cards).
     growCardsToFitText: raw?.growCardsToFitText === true,
     // Session 182 — Building Blocks rail expanded by default (collapsed = false).

@@ -164,6 +164,7 @@
     {"id":"comments-pins","name":"Free-floating comment pins","area":"Comments","since":141,"manual":true,"book":true,"bookExample":false},
     {"id":"comments-clr-category","name":"CLR category on comments","area":"Comments","since":179,"manual":true,"book":false,"bookExample":false},
     {"id":"revisions-history","name":"Revision history","area":"Revisions","since":41,"manual":true,"book":true,"bookExample":true},
+    {"id":"revisions-auto-snapshot","name":"Auto-snapshot while editing","area":"Revisions","since":192,"manual":true,"book":false,"bookExample":false},
     {"id":"revisions-compare","name":"Compare / diff revisions","area":"Revisions","since":62,"manual":true,"book":true,"bookExample":false},
     {"id":"revisions-branches","name":"Named revision branches","area":"Revisions","since":62,"manual":true,"book":true,"bookExample":false},
     {"id":"search-find-panel","name":"Find / search panel","area":"Search","since":11,"manual":true,"book":true,"bookExample":false},

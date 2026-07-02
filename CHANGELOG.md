@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 5: auto-snapshot while editing
+
+A facilitator who works in one tree for a two-hour workshop without swapping
+tabs accumulated ZERO snapshots — the compare / branch / diff machinery was
+useless for exactly the session with the most change, since snapshots only fired
+on document swap.
+
+- **New opt-out "Auto-snapshot while editing" Behavior setting (default ON).**
+  A committed edit now captures an `Auto` revision, gated so it fires at most
+  once per interval (~3 min) AND only when the doc actually differs from the
+  newest snapshot (`computeRevisionDiff` / `isEmptyDiff`). The cheap time gate
+  keyed on the newest revision's `capturedAt` runs on every edit (one
+  `Date.now()` compare); the heavier diff runs only once the window elapses, and
+  the gate respects manual snapshots + survives reloads.
+- Wired at the central `applyDocChange` persist seam in `docMutate.ts`;
+  `captureSnapshot` writes to the separate revisions store, so there's no
+  mutation recursion. Preference persisted alongside the others; a Behavior-tab
+  toggle + the revision-panel help text explain it. (`resetStoreForTest`
+  disables it so unit-test edits stay deterministic.)
+
 ## Session 192 (cont.) — Improvement-review batch 5: in-app prompt dialog
 
 The revision panel's **Branch** action was the one place still using a native

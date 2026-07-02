@@ -104,7 +104,8 @@ export function RevisionPanel() {
             <span>Snapshot now</span>
           </Button>
           <p className="mt-2 text-[11px] text-neutral-500 dark:text-neutral-400">
-            Snapshots also fire automatically on document swap (open / new).
+            Snapshots also fire automatically on document swap and, every few minutes while you edit
+            (Settings → Behavior → Auto-snapshot).
           </p>
         </div>
 

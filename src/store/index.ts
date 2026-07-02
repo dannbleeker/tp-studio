@@ -190,5 +190,9 @@ export const resetStoreForTest = (): void => {
     ...uiDefaults(),
     ...historyDefaults(),
     ...revisionsDefaults(),
+    // Auto-snapshot is a time-based background feature (fires on edit-commit once
+    // an interval has elapsed). Off in tests so ordinary edits don't emit
+    // surprise 'Auto' revisions; the auto-snapshot suite enables it explicitly.
+    autoSnapshot: false,
   });
 };
