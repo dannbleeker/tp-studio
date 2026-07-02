@@ -7,6 +7,51 @@ CHANGELOG.
 
 ---
 
+## Improvement-review backlog (Session 192) — partially shipped
+
+A grounded multi-agent product/UX review produced a ranked set of improvements. **Shipped &
+CI-green** (see CHANGELOG Session 192 entries): batch 1 core-authoring (drag-into-empty creates a
+node, paste offset, Duplicate ⌘D, Select-All ⌘A), batch 2 accessibility (prefers-reduced-motion,
+single arrow-nav model, reading-order Tab), batch 3 navigation (Find indexes assumptions+comments +
+type badge, palette "Go to…" jump, semantic minimap, select-all-of-type), and batch 8a CLR validator
+correctness fixes (junctor-aware indirect-effect/cause-sufficiency, EC logic-type-mismatch, + the
+or/xorGroupId validation-fingerprint bug).
+
+**Still open** (all verified against real code, in-scope, not-yet-built):
+
+- **Methodology 8b (validator correctness — HIGH):**
+  - `additional-cause` (`src/domain/validators/additionalCause.ts`) only detects "zero causes"
+    (a cause-existence check misfiled on the sufficiency tier). Make it the real additional-cause
+    reservation — on a terminal effect with ≥1 incoming cause, nudge "could a *different* independent
+    cause also produce this? model as an OR"; move the zero-incoming case to the `existence` tier.
+  - S&T `stTacticAssumptions` (`src/domain/validators/stTacticAssumptions.ts`) counts incoming
+    `necessaryCondition` entities instead of the reserved facet attributes (`ST_FACET_KEYS`
+    `stNecessaryAssumption`/`stParallelAssumption`/`stSufficiencyAssumption`) / typed `Assumption.kind`.
+    Count the facets; report which of NA/PA/SA is missing.
+  - PRT + Goal-Tree have NO type-specific structural validators (only generic + goal-count). Add
+    `prtObstacleNoIo`/`prtIoNoObstacle`/`prtNoIos` and `goalTreeCsfNoNcs`/`goalTreeCsfDisconnected`/
+    `goalTreeCsfCount`, each a pure graph query mirroring an existing CRT/NBR rule; new `ClrRuleId`s.
+- **Batch 4 — export/print:** copy diagram image to clipboard (PNG, `image.ts`+`ExportPickerDialog`);
+  inline non-Latin-1 warning in `PrintPreviewDialog`; last-used export-format memory
+  (`recentExports.ts`); PPTX tall-diagram tiling (`pptxExport.ts`).
+- **Batch 5 — data safety:** delete-tree Undo toast (`docMeta/tabs.ts`+`TreeCard`); in-app PromptDialog
+  for branch naming (replace the lone `window.prompt` in `RevisionPanel.tsx:143`); auto-snapshot while
+  editing (timed + non-empty diff, `docMutate.ts`+`revisionsSlice`); linked-file "unsaved since last
+  save" chip + write-through ⌘S.
+- **Batch 6 — visual/UI:** colorblind/mono node-stripe palette (`tokens.ts`+`TPNode`+`AppearanceTab`);
+  fix corner-badge collisions (`TPNodeBadges.tsx`); collapsible entity-inspector sections
+  (`EntityInspector.tsx`); direct-selection state pickers replacing forward-only cycle chips.
+- **Batch 7 — templates/library/capture:** insert template into current diagram (mergeSubgraph from
+  `clipboard.ts`); Start "All trees" filter/search + richer cards; Quick Capture into a selected group;
+  manual sibling ordering for auto-layout (largest — domain-first).
+
+Full per-item rationale + file pointers were in the review synthesis; each is an independent green
+vertical slice. NOTE: visual-snapshot fragility — anything touching the selection toolbar, node
+rendering, or the minimap changes `e2e/visual-canvas.spec.ts` baselines; refresh via the
+`update-visual-snapshots` workflow (opens a PR) as part of the slice.
+
+---
+
 ## Flagged in the unattended hardening pass (Session 180 cont.) — ✅ all resolved
 
 Every item from the gated sweep has been decided and closed (export-consistency, dangling-edge,
