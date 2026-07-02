@@ -1,3 +1,4 @@
+import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -10,13 +11,16 @@ import { currentDoc } from '@/store/selectors';
  * siblings; this is the UI-side half that reads the live canvas positions to
  * decide which entities are siblings (same layout rank) and stamps a manual
  * `ordering` on the whole rank so a swap sticks. Auto-layout diagrams only —
- * manual-layout ones (EC / freeform / S&T) place nodes by hand, so there's no
- * rank to reorder.
+ * hand-positioned ones (e.g. Evaporating Cloud) have no rank to reorder.
  */
 
-// Two nodes count as the same rank when their rank-axis coordinate matches
-// within this tolerance (dagre gives a rank one exact value; the slop absorbs
-// any sub-pixel drift from the centering pass).
+// Two nodes count as the same rank when their rank-axis CENTRE coordinate
+// matches within this tolerance. Centres (not top-left positions) are used so a
+// tall node (an S&T injection, a grown card) at the same rank as a short one
+// isn't mis-detected — dagre aligns rank CENTRES, so same-rank centres are
+// identical and different ranks are a rank-gap (80+ px) apart; the slop only
+// absorbs sub-pixel drift. Matches `reorderManualSiblings` in layout.ts, which
+// buckets by dagre's centre coordinate.
 const RANK_EPS = 8;
 
 /**
@@ -33,8 +37,14 @@ export const layoutSiblingOrder = (entityId: string): { ids: string[]; index: nu
   if (!self) return null;
   const direction = doc.layoutConfig?.direction ?? 'BT';
   const vertical = direction === 'BT' || direction === 'TB';
-  const rankOf = (n: (typeof nodes)[number]) => (vertical ? n.position.y : n.position.x);
-  const freeOf = (n: (typeof nodes)[number]) => (vertical ? n.position.x : n.position.y);
+  // Node CENTRE on each axis — the measured size falls back to the canonical
+  // card dimensions before React Flow has measured the DOM.
+  const centreY = (n: (typeof nodes)[number]) =>
+    n.position.y + (n.measured?.height ?? NODE_MIN_HEIGHT) / 2;
+  const centreX = (n: (typeof nodes)[number]) =>
+    n.position.x + (n.measured?.width ?? NODE_WIDTH) / 2;
+  const rankOf = (n: (typeof nodes)[number]) => (vertical ? centreY(n) : centreX(n));
+  const freeOf = (n: (typeof nodes)[number]) => (vertical ? centreX(n) : centreY(n));
   const selfRank = rankOf(self);
   const peers = nodes
     .filter((n) => Math.abs(rankOf(n) - selfRank) <= RANK_EPS)

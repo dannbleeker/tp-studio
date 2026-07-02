@@ -10,7 +10,12 @@ import { seedEntity } from '../helpers/seedDoc';
  */
 
 const h = vi.hoisted(() => ({
-  nodes: [] as { id: string; type: string; position: { x: number; y: number } }[],
+  nodes: [] as {
+    id: string;
+    type: string;
+    position: { x: number; y: number };
+    measured?: { width?: number; height?: number };
+  }[],
 }));
 vi.mock('@/services/canvasRef', () => ({
   getCanvasNodes: () => h.nodes,
@@ -59,6 +64,32 @@ describe('moveEntityInSiblingOrder', () => {
     at(b.id, 100, 0);
     expect(moveEntityInSiblingOrder(a.id, -1)).toBe(false); // A is already leftmost
     expect(doc().entities[a.id]?.ordering).toBeUndefined();
+  });
+
+  it('detects same-rank siblings by CENTRE even when their heights differ', () => {
+    // A short (72px) and a tall (220px) node share the SAME rank centre (y=36),
+    // so their top-left y differ by 74px — the old top-left check (±8) would
+    // miss the pair. Centre-based detection keeps them siblings.
+    const short = seedEntity('Short');
+    const tall = seedEntity('Tall');
+    h.nodes.push({
+      id: short.id,
+      type: 'tp',
+      position: { x: 0, y: 0 },
+      measured: { width: 260, height: 72 },
+    });
+    h.nodes.push({
+      id: tall.id,
+      type: 'tp',
+      position: { x: 100, y: -74 },
+      measured: { width: 260, height: 220 },
+    });
+    const info = layoutSiblingOrder(short.id);
+    expect(info).not.toBeNull();
+    expect(info?.ids).toHaveLength(2);
+    expect(moveEntityInSiblingOrder(short.id, 1)).toBe(true);
+    expect(doc().entities[tall.id]?.ordering).toBe(1);
+    expect(doc().entities[short.id]?.ordering).toBe(2);
   });
 
   it('no-ops when the node has no rank sibling (nodes on different ranks)', () => {
