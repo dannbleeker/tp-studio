@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 5: in-app prompt dialog
+
+The revision panel's **Branch** action was the one place still using a native
+`window.prompt` — a jarring, un-themed, thread-blocking box that some PWA/WebView
+embedders reject outright, against the app's own in-app-dialog convention.
+
+- **New async `prompt()` store action + `<PromptDialog>` shell + `PromptDialogHost`**,
+  the exact sibling of the existing `confirm()` / `ConfirmDialog` split (store-free
+  vendorable shell + app-layer host). `prompt(): Promise<string | null>` resolves
+  the entered string on submit (Enter), `null` on Cancel / Esc / backdrop. The
+  input auto-focuses + selects its seeded value; `promptDialog` joins the global
+  Esc cascade right after `confirmDialog`.
+- Branch-from-snapshot now `await prompt('Branch name?', …)` instead of
+  `window.prompt`. The lone `window.prompt` call in the app is gone.
+
 ## Session 192 (cont.) — Improvement-review batch 4: copy diagram image to clipboard
 
 The single most common report/slide action — copy the picture, click into the

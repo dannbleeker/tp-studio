@@ -12,6 +12,7 @@ import { SpeculationBanner } from './components/canvas/overlays/SpeculationBanne
 import { DocumentMeta } from './components/DocumentMeta';
 import { CLRPanel } from './components/inspector/CLRPanel';
 import { Inspector } from './components/inspector/Inspector';
+import { PromptDialogHost } from './components/PromptDialogHost';
 import { PrintLegend } from './components/print/PrintLegend';
 import { Toaster } from './components/toast/Toaster';
 import { CommandSearch } from './components/toolbar/CommandSearch';
@@ -501,6 +502,7 @@ export function App() {
         </ErrorBoundary>
       </Suspense>
       <ConfirmDialogHost />
+      <PromptDialogHost />
       <Toaster />
       <Suspense fallback={null}>
         <PrintAppendix />

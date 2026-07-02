@@ -139,54 +139,62 @@ describe('RevisionPanel', () => {
     expect(useDocumentStore.getState().sideBySideRevisionId).toBe(id);
   });
 
-  it('Branch button prompts for a name and calls branchFromRevision', () => {
+  // Branch now uses the in-app async `prompt()` store action (not window.prompt);
+  // clicking Branch opens `promptDialog`, and `resolvePrompt(value|null)` settles
+  // the awaited flow. A microtask flush lets the `await prompt(...)` continuation
+  // run before we assert.
+  it('Branch button opens a prompt and branches on submit', async () => {
     seedEntity('A');
     useDocumentStore.getState().captureSnapshot('branch-source');
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
-    // Stub window.prompt to return a branch name
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('my-branch');
     const branchBtn = container.querySelector(
       'button[aria-label="Branch from snapshot"]'
     ) as HTMLButtonElement;
     expect(branchBtn).toBeTruthy();
     act(() => fireEvent.click(branchBtn));
-    promptSpy.mockRestore();
-    // A new revision with branchName "my-branch" should be created
+    expect(useDocumentStore.getState().promptDialog?.message).toBe('Branch name?');
+    await act(async () => {
+      useDocumentStore.getState().resolvePrompt('my-branch');
+      await Promise.resolve();
+    });
     const branched = useDocumentStore
       .getState()
       .revisions.find((r) => r.branchName === 'my-branch');
     expect(branched).toBeTruthy();
   });
 
-  it('Branch button does nothing when the prompt is cancelled (returns null)', () => {
+  it('Branch button does nothing when the prompt is cancelled (resolves null)', async () => {
     seedEntity('A');
     useDocumentStore.getState().captureSnapshot('branch-cancel');
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue(null);
     const branchBtn = container.querySelector(
       'button[aria-label="Branch from snapshot"]'
     ) as HTMLButtonElement;
     const revisionsBefore = useDocumentStore.getState().revisions.length;
     act(() => fireEvent.click(branchBtn));
-    promptSpy.mockRestore();
-    // No new revision should be created
+    await act(async () => {
+      useDocumentStore.getState().resolvePrompt(null);
+      await Promise.resolve();
+    });
     expect(useDocumentStore.getState().revisions.length).toBe(revisionsBefore);
   });
 
-  it('Branch button does nothing when the prompt returns an empty/whitespace string', () => {
+  it('Branch button does nothing when the prompt returns an empty/whitespace string', async () => {
     seedEntity('A');
     useDocumentStore.getState().captureSnapshot('branch-empty');
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('   ');
     const branchBtn = container.querySelector(
       'button[aria-label="Branch from snapshot"]'
     ) as HTMLButtonElement;
     const revisionsBefore = useDocumentStore.getState().revisions.length;
     act(() => fireEvent.click(branchBtn));
-    promptSpy.mockRestore();
+    await act(async () => {
+      useDocumentStore.getState().resolvePrompt('   ');
+      await Promise.resolve();
+    });
     expect(useDocumentStore.getState().revisions.length).toBe(revisionsBefore);
   });
 

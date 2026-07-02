@@ -7,6 +7,7 @@ import {
   type PreferencesSlice,
   preferencesDefaults,
 } from './preferencesSlice';
+import { createPromptSlice, type PromptSlice, promptDefaults } from './promptSlice';
 import { createSearchSlice, type SearchSlice, searchDefaults } from './searchSlice';
 import { createSelectionSlice, type SelectionSlice, selectionDefaults } from './selectionSlice';
 import {
@@ -64,7 +65,8 @@ export type UISlice = SelectionSlice &
   WalkthroughSlice &
   SpeculationSlice &
   ToastsSlice &
-  ConfirmSlice;
+  ConfirmSlice &
+  PromptSlice;
 
 /**
  * Data-only defaults for the unified slice. Used by `resetStoreForTest` to
@@ -81,6 +83,7 @@ export const uiDefaults = (): Pick<
   | keyof ReturnType<typeof speculationDefaults>
   | keyof ReturnType<typeof toastsDefaults>
   | keyof ReturnType<typeof confirmDefaults>
+  | keyof ReturnType<typeof promptDefaults>
 > => ({
   ...selectionDefaults(),
   ...preferencesDefaults(),
@@ -90,6 +93,7 @@ export const uiDefaults = (): Pick<
   ...speculationDefaults(),
   ...toastsDefaults(),
   ...confirmDefaults(),
+  ...promptDefaults(),
 });
 
 export const createUISlice: StateCreator<RootStore, [], [], UISlice> = (...args) => ({
@@ -101,4 +105,5 @@ export const createUISlice: StateCreator<RootStore, [], [], UISlice> = (...args)
   ...createSpeculationSlice(...args),
   ...createToastsSlice(...args),
   ...createConfirmSlice(...args),
+  ...createPromptSlice(...args),
 });

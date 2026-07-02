@@ -50,6 +50,7 @@ export function RevisionPanel() {
   );
   const showToast = useDocumentStore((s) => s.showToast);
   const confirm = useDocumentStore((s) => s.confirm);
+  const prompt = useDocumentStore((s) => s.prompt);
 
   // The just-captured snapshot row gets a brief highlight so the user sees
   // their action land. Cleared after ~1.5 s; not persisted anywhere.
@@ -139,11 +140,11 @@ export function RevisionPanel() {
                 showToast('info', `Visual diff vs. ${r.label ?? 'snapshot'} — Esc to exit.`);
               }}
               onSideBySide={(r) => openSideBySide(r.id)}
-              onBranch={(r) => {
-                const name = window.prompt(
-                  'Branch name?',
-                  r.branchName ? `${r.branchName}-fork` : 'experiment'
-                );
+              onBranch={async (r) => {
+                const name = await prompt('Branch name?', {
+                  defaultValue: r.branchName ? `${r.branchName}-fork` : 'experiment',
+                  confirmLabel: 'Branch',
+                });
                 if (name?.trim()) {
                   const id = branchFromRevision(r.id, name.trim());
                   if (id) showToast('success', `Branched "${name.trim()}" from snapshot.`);

@@ -280,6 +280,12 @@ export function useGlobalShortcuts() {
           state.resolveConfirm(false);
           return;
         }
+        // Prompt dialog is synchronously blocking like confirm — Esc cancels it
+        // (resolve null) before anything else in the cascade.
+        if (state.promptDialog !== null) {
+          state.resolvePrompt(null);
+          return;
+        }
         if (state.quickCaptureOpen) {
           state.closeQuickCapture();
           return;
