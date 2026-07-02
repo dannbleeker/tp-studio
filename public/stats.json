@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-02T21:12:52.153Z",
-  "commit": "cbaa50f",
+  "generatedAt": "2026-07-02T21:26:19.728Z",
+  "commit": "32f46ec",
   "headline": {
-    "linesTsJs": 136396,
-    "tests": 4661,
+    "linesTsJs": 136744,
+    "tests": 4671,
     "lineCoveragePct": 95.59,
-    "commits": 959,
+    "commits": 961,
     "ageDays": 52,
-    "trackedFiles": 1089,
+    "trackedFiles": 1092,
     "featureManualPct": 99.6,
-    "featureBookPct": 67,
-    "featureExamplePct": 24.8
+    "featureBookPct": 66.7,
+    "featureExamplePct": 24.7
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 504,
-      "lines": 67408
+      "files": 505,
+      "lines": 67585
     },
     {
       "category": "Unit tests",
-      "files": 399,
-      "lines": 62577
+      "files": 401,
+      "lines": 62748
     },
     {
       "category": "E2E tests (Playwright)",
@@ -47,49 +47,49 @@
   "coverage": {
     "lines": {
       "pct": 95.59,
-      "covered": 12959,
-      "total": 13556
+      "covered": 13032,
+      "total": 13633
     },
     "statements": {
-      "pct": 93.06,
-      "covered": 14776,
-      "total": 15877
+      "pct": 93.08,
+      "covered": 14867,
+      "total": 15972
     },
     "functions": {
-      "pct": 92.71,
-      "covered": 2849,
-      "total": 3073
+      "pct": 92.78,
+      "covered": 2869,
+      "total": 3092
     },
     "branches": {
-      "pct": 83.69,
-      "covered": 8564,
-      "total": 10233
+      "pct": 83.66,
+      "covered": 8612,
+      "total": 10293
     }
   },
   "tests": {
-    "unit": 4565,
+    "unit": 4575,
     "e2e": 96,
-    "durationMs": 251229,
+    "durationMs": 197796,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10343
+        "ms": 8810
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5037
+        "ms": 3888
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4870
+        "ms": 3717
       },
       {
         "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 2488
+        "ms": 1742
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2394
+        "ms": 1711
       }
     ]
   },
@@ -192,29 +192,29 @@
     "tsIgnore": 0,
     "tsExpectError": 0,
     "biomeIgnore": 43,
-    "nonNull": 100
+    "nonNull": 105
   },
   "bundle": {
-    "jsGzipKb": 803.7,
+    "jsGzipKb": 804.3,
     "cssGzipKb": 19.2,
-    "totalGzipKb": 822.9,
+    "totalGzipKb": 823.5,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53485,
     "chapters": 25,
-    "appLoc": 67408,
+    "appLoc": 67585,
     "docToCodeRatio": 0.79
   },
   "featureCoverage": {
-    "total": 230,
-    "manual": 229,
+    "total": 231,
+    "manual": 230,
     "manualPct": 99.6,
     "book": 154,
-    "bookPct": 67,
+    "bookPct": 66.7,
     "bookExample": 57,
-    "bookExamplePct": 24.8,
+    "bookExamplePct": 24.7,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -282,8 +282,8 @@
         "book": 8
       },
       "Layout": {
-        "total": 6,
-        "manual": 6,
+        "total": 7,
+        "manual": 7,
         "book": 3
       },
       "Export": {
@@ -419,6 +419,11 @@
         {
           "id": "quick-capture-into-group",
           "name": "Quick Capture into a selected group",
+          "since": 192
+        },
+        {
+          "id": "manual-sibling-order",
+          "name": "Manual sibling ordering in auto-layout",
           "since": 192
         },
         {
@@ -747,16 +752,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 52,
-    "commits": 959,
-    "commits7d": 78,
+    "commits": 961,
+    "commits7d": 80,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 730
+        "count": 731
       },
       {
         "name": "github-actions[bot]",
-        "count": 214
+        "count": 215
       },
       {
         "name": "Claude",
@@ -768,9 +773,9 @@
       }
     ],
     "churn30d": {
-      "added": 64570,
-      "removed": 15692
+      "added": 64945,
+      "removed": 15754
     },
-    "changelogEntries": 367
+    "changelogEntries": 368
   }
 }
