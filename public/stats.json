@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-07-02T09:51:05.323Z",
-  "commit": "e7de1e1",
+  "generatedAt": "2026-07-02T10:01:19.038Z",
+  "commit": "c936b3f",
   "headline": {
-    "linesTsJs": 133899,
+    "linesTsJs": 133938,
     "tests": 4576,
-    "lineCoveragePct": 95.9,
-    "commits": 922,
+    "lineCoveragePct": 95.81,
+    "commits": 925,
     "ageDays": 51,
     "trackedFiles": 1070,
     "featureManualPct": 100,
-    "featureBookPct": 71.6,
-    "featureExamplePct": 26.5
+    "featureBookPct": 71,
+    "featureExamplePct": 26.3
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
       "files": 495,
-      "lines": 66110
+      "lines": 66149
     },
     {
       "category": "Unit tests",
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.9,
+      "pct": 95.81,
       "covered": 12626,
-      "total": 13165
+      "total": 13178
     },
     "statements": {
-      "pct": 93.34,
+      "pct": 93.25,
       "covered": 14390,
-      "total": 15416
+      "total": 15430
     },
     "functions": {
-      "pct": 92.84,
+      "pct": 92.75,
       "covered": 2753,
-      "total": 2965
+      "total": 2968
     },
     "branches": {
-      "pct": 83.89,
+      "pct": 83.83,
       "covered": 8326,
-      "total": 9924
+      "total": 9932
     }
   },
   "tests": {
     "unit": 4480,
     "e2e": 96,
-    "durationMs": 283386,
+    "durationMs": 238942,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 12256
+        "ms": 10366
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 6793
+        "ms": 5140
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5626
-      },
-      {
-        "file": "tests/components/EdgeInspector.test.tsx",
-        "ms": 2966
+        "ms": 4454
       },
       {
         "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2880
+        "ms": 2547
+      },
+      {
+        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
+        "ms": 2179
       }
     ]
   },
@@ -102,7 +102,7 @@
     "diagramTypes": 9,
     "clrCategories": 7,
     "libraryPatterns": 59,
-    "commands": 98
+    "commands": 99
   },
   "footprint": {
     "depsProd": 15,
@@ -157,7 +157,7 @@
     "churnHotspots": [
       {
         "file": "components/canvas/Canvas.tsx",
-        "commits": 65
+        "commits": 66
       },
       {
         "file": "App.tsx",
@@ -186,29 +186,29 @@
     "tsIgnore": 0,
     "tsExpectError": 0,
     "biomeIgnore": 43,
-    "nonNull": 99
+    "nonNull": 100
   },
   "bundle": {
-    "jsGzipKb": 799.1,
+    "jsGzipKb": 799.2,
     "cssGzipKb": 19.1,
-    "totalGzipKb": 818.2,
+    "totalGzipKb": 818.3,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 53485,
     "chapters": 25,
-    "appLoc": 66110,
+    "appLoc": 66149,
     "docToCodeRatio": 0.81
   },
   "featureCoverage": {
-    "total": 215,
-    "manual": 215,
+    "total": 217,
+    "manual": 217,
     "manualPct": 100,
     "book": 154,
-    "bookPct": 71.6,
+    "bookPct": 71,
     "bookExample": 57,
-    "bookExamplePct": 26.5,
+    "bookExamplePct": 26.3,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -251,8 +251,8 @@
         "book": 1
       },
       "Canvas": {
-        "total": 22,
-        "manual": 22,
+        "total": 23,
+        "manual": 23,
         "book": 8
       },
       "Editing": {
@@ -311,8 +311,8 @@
         "book": 1
       },
       "Palette": {
-        "total": 4,
-        "manual": 4,
+        "total": 5,
+        "manual": 5,
         "book": 1
       },
       "Settings": {
@@ -387,6 +387,16 @@
         {
           "id": "palette-goto-entity",
           "name": "Palette jump-to-entity (Go to…)",
+          "since": 192
+        },
+        {
+          "id": "palette-select-all-of-type",
+          "name": "Select all entities of a type",
+          "since": 192
+        },
+        {
+          "id": "canvas-minimap-semantic",
+          "name": "Type-coloured minimap",
           "since": 192
         },
         {
@@ -660,16 +670,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 51,
-    "commits": 922,
-    "commits7d": 50,
+    "commits": 925,
+    "commits7d": 51,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 714
+        "count": 715
       },
       {
         "name": "github-actions[bot]",
-        "count": 193
+        "count": 195
       },
       {
         "name": "Claude",
@@ -681,9 +691,9 @@
       }
     ],
     "churn30d": {
-      "added": 66676,
-      "removed": 17177
+      "added": 66787,
+      "removed": 17231
     },
-    "changelogEntries": 355
+    "changelogEntries": 356
   }
 }
