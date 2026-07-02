@@ -4,6 +4,7 @@ import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { PATTERNS } from '@/domain/patterns';
 import type { DiagramType } from '@/domain/types';
 import { getCanvasInstance } from '@/services/canvasRef';
+import { mergeDocIntoActive } from '@/services/clipboard';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { CARD_FOCUS } from '../ui/focusClasses';
@@ -51,6 +52,11 @@ export function PatternLibraryDialog() {
   const setDocument = useDocumentStore((s) => s.setDocument);
   const openDocInTab = useDocumentStore((s) => s.openDocInTab);
   const showToast = useDocumentStore((s) => s.showToast);
+  // Session 193 — "Insert into current diagram" is offered only for a pattern
+  // whose diagram type matches the open doc AND when that doc already has
+  // content (inserting into an empty doc is just the plain "open" case).
+  const docType = useDocumentStore((s) => currentDoc(s).diagramType);
+  const docHasEntities = useDocumentStore((s) => Object.keys(currentDoc(s).entities).length > 0);
 
   // Local filter state is seeded from the open-payload but the user
   // can change it after the dialog opens. Reset is implicit — the
@@ -76,6 +82,21 @@ export function PatternLibraryDialog() {
         ? `Opened template "${pattern.label}" in a new tab.`
         : `Loaded template "${pattern.label}".`,
       undoRestoreAction(openedNewTab, previousDoc, setDocument)
+    );
+    close();
+  };
+
+  // Session 193 — merge the template's subgraph into the open document instead
+  // of replacing it. `mergeDocIntoActive` is one doc-history step, so Ctrl/Cmd+Z
+  // removes the insert — no bespoke undo toast needed (unlike the new-tab path).
+  const handleInsert = (patternId: string): void => {
+    const pattern = PATTERNS.find((p) => p.id === patternId);
+    if (!pattern) return;
+    const { entities } = mergeDocIntoActive(pattern.build());
+    fitViewAfterLoad();
+    showToast(
+      'success',
+      `Inserted "${pattern.label}" — ${entities} entit${entities === 1 ? 'y' : 'ies'} added. Undo to remove.`
     );
     close();
   };
@@ -130,31 +151,47 @@ export function PatternLibraryDialog() {
           className="grid grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3"
           aria-label="Templates"
         >
-          {visible.map((pattern) => (
-            <li key={pattern.id}>
-              <button
-                type="button"
-                onClick={() => handlePick(pattern.id)}
-                aria-label={`Load template: ${pattern.label}`}
-                className={clsx(
-                  'group flex h-full w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
-                  'hover:border-accent-400 hover:bg-accent-50/40',
-                  CARD_FOCUS,
-                  'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500 dark:hover:bg-accent-950/40'
+          {visible.map((pattern) => {
+            const canInsert = docHasEntities && pattern.diagramType === docType;
+            return (
+              <li key={pattern.id} className="relative">
+                <button
+                  type="button"
+                  onClick={() => handlePick(pattern.id)}
+                  aria-label={`Load template: ${pattern.label}`}
+                  className={clsx(
+                    'group flex h-full w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
+                    'hover:border-accent-400 hover:bg-accent-50/40',
+                    CARD_FOCUS,
+                    'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500 dark:hover:bg-accent-950/40'
+                  )}
+                >
+                  <span className="self-start rounded-sm bg-accent-100 px-1.5 py-0 font-semibold text-[9px] text-accent-700 uppercase tracking-wide dark:bg-accent-950 dark:text-accent-200">
+                    {DIAGRAM_TYPE_LABEL[pattern.diagramType]}
+                  </span>
+                  <h3 className="font-medium text-neutral-900 text-sm leading-tight dark:text-neutral-100">
+                    {pattern.label}
+                  </h3>
+                  <p className="text-neutral-600 text-xs leading-snug dark:text-neutral-400">
+                    {pattern.hint}
+                  </p>
+                </button>
+                {/* Session 193 — insert into the open diagram (same type only).
+                    A sibling of the card button (not nested — that's invalid
+                    HTML), overlaid at the top-right corner. */}
+                {canInsert && (
+                  <button
+                    type="button"
+                    onClick={() => handleInsert(pattern.id)}
+                    title="Insert this template into the current diagram (Undo to remove)"
+                    className="absolute top-2 right-2 z-10 rounded-md border border-accent-300 bg-white/95 px-1.5 py-0.5 font-medium text-[10px] text-accent-700 shadow-sm transition hover:bg-accent-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-accent-700 dark:bg-neutral-900/95 dark:text-accent-300 dark:hover:bg-accent-950"
+                  >
+                    + Insert here
+                  </button>
                 )}
-              >
-                <span className="self-start rounded-sm bg-accent-100 px-1.5 py-0 font-semibold text-[9px] text-accent-700 uppercase tracking-wide dark:bg-accent-950 dark:text-accent-200">
-                  {DIAGRAM_TYPE_LABEL[pattern.diagramType]}
-                </span>
-                <h3 className="font-medium text-neutral-900 text-sm leading-tight dark:text-neutral-100">
-                  {pattern.label}
-                </h3>
-                <p className="text-neutral-600 text-xs leading-snug dark:text-neutral-400">
-                  {pattern.hint}
-                </p>
-              </button>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
     </LargeDialog>

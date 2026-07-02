@@ -2,6 +2,7 @@ import { Search } from 'lucide-react';
 import { PATTERNS } from '@/domain/patterns';
 import { useDocumentStore } from '@/store';
 import type { StartSection } from '@/store/uiSlice/types';
+import { AllTreesGallery } from './AllTreesGallery';
 import { LearnSection } from './LearnSection';
 import { StartHome } from './StartHome';
 import { StartSidebar } from './StartSidebar';
@@ -86,12 +87,7 @@ function StartSectionBody({ section }: { section: StartSection }) {
         </div>
       );
     case 'allTrees':
-      return (
-        <TreeGallery
-          trees={trees}
-          emptyMessage="No trees yet — start one from the Start page or a template."
-        />
-      );
+      return <AllTreesGallery trees={trees} />;
     case 'recent':
       return <TreeList trees={trees} emptyMessage="No trees yet." />;
     case 'needsReview':

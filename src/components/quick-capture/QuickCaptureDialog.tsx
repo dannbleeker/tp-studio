@@ -23,6 +23,7 @@ export function QuickCaptureDialog() {
   const close = useDocumentStore((s) => s.closeQuickCapture);
   const selection = useDocumentStore((s) => s.selection);
   const entities = useDocumentStore((s) => currentDoc(s).entities);
+  const groups = useDocumentStore((s) => currentDoc(s).groups);
   const showToast = useDocumentStore((s) => s.showToast);
   const [text, setText] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -35,6 +36,17 @@ export function QuickCaptureDialog() {
     if (!id) return null;
     return entities[id] ? id : null;
   }, [selection, entities]);
+
+  // Session 193 — a single selected GROUP becomes the destination cluster: the
+  // whole capture is added to it as members. Mutually exclusive with `attachToId`
+  // (a selection is either entities or groups, never both).
+  const attachToGroup = useMemo(() => {
+    if (selection.kind !== 'groups' || selection.ids.length !== 1) return null;
+    const id = selection.ids[0];
+    if (!id) return null;
+    const g = groups[id];
+    return g ? { id, title: g.title } : null;
+  }, [selection, groups]);
 
   const parsed = useMemo(() => parseQuickCapture(text), [text]);
 
@@ -52,11 +64,13 @@ export function QuickCaptureDialog() {
       showToast('info', 'Nothing to capture — paste an indented list and try again.');
       return;
     }
-    const result = applyQuickCapture(parsed, attachToId);
+    const result = applyQuickCapture(parsed, attachToId, attachToGroup?.id ?? null);
     close();
     showToast(
       'success',
-      `Created ${result.entities} entit${result.entities === 1 ? 'y' : 'ies'}, ${result.edges} edge${result.edges === 1 ? '' : 's'}.`
+      `Created ${result.entities} entit${result.entities === 1 ? 'y' : 'ies'}, ${result.edges} edge${result.edges === 1 ? '' : 's'}${
+        attachToGroup ? ` in group "${attachToGroup.title || 'group'}"` : ''
+      }.`
     );
   };
 
@@ -99,7 +113,13 @@ export function QuickCaptureDialog() {
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
             Indent with 2 spaces or a tab. Bullets (<code>-</code>, <code>*</code>, <code>•</code>,{' '}
             <code>1.</code>) and leading emoji are stripped automatically.
-            {attachToId ? (
+            {attachToGroup ? (
+              <>
+                {' '}
+                Captured entities will be added to group{' '}
+                <strong>{attachToGroup.title || 'the selected group'}</strong>.
+              </>
+            ) : attachToId ? (
               <>
                 {' '}
                 Roots will attach to{' '}

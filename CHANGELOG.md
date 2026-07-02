@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 7 (part 1): compose from templates + faster capture
+
+- **Insert a template into the current diagram** (not just open it in a new tab).
+  Pattern Library cards of the same diagram type as the open doc now carry a
+  "+ Insert here" action that merges the template's whole subgraph into your
+  diagram — fresh ids, continuing annotation numbers, a small offset so it
+  doesn't land on existing content, and (unlike a clipboard paste of a partial
+  selection) its AND/OR/XOR junctors and entity groups are carried over with
+  remapped ids so the pattern's logic survives. One history step — Ctrl/Cmd+Z
+  removes the insert. New `mergeDocIntoActive`.
+- **Filter the "All trees" gallery in place.** The All-trees view gained an
+  inline search box that narrows the grid by tree title or diagram-type tag
+  (e.g. "crt", "sales") as you type — distinct from the header's ⌘K palette
+  search. Client-side over the already-loaded trees, so it's instant.
+- **Quick Capture into a selected group.** With a single group selected, the
+  whole captured list is dropped into that group as members (the dialog says so
+  up front), instead of only being able to attach roots to a selected entity.
+
 ## Session 192 (cont.) — Improvement-review batch 6: visual / UI consistency
 
 Four canvas + inspector polish items, shipped as one slice.

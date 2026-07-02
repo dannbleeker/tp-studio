@@ -86,7 +86,7 @@ Need the space? **Collapse the strip** with the chevron at its right edge — it
 TP Studio **opens on the Start page** — a full-screen workspace that sits in front of the editor — and the **logo** (top-left) returns you to it any time. It has a persistent left sidebar that switches the main view:
 
 - **Start** — a problem-led hero: type what's going wrong and **Build a Current Reality Tree** mints a fresh CRT with that statement as its first UDE. Example chips do the same in one click, a worked-example callout opens a finished CRT to learn from, and a template strip sits beneath. Once you have work in progress, a **"Pick up where you left off"** row shows your most-recent trees.
-- **All trees / Recent** — every tree you've made as a card (a mini preview + title + type + edited time) or a compact list. **Closing a tab keeps the tree here** — "All trees" is your library, not just the open tabs; hover a card and click the trash icon to delete one — if it was a misclick, hit **Undo** in the toast that appears and the tree comes straight back. Each carries a **Logic pill** — emerald *"Logic clear"* or amber *"N to review"* — reading the exact same validation as the editor's Logic chip, so a card can never disagree with the canvas.
+- **All trees / Recent** — every tree you've made as a card (a mini preview + title + type + edited time) or a compact list. **All trees** carries an **inline filter box** — type part of a tree's name or its diagram-type tag ("crt", "sales") to narrow the grid instantly (distinct from the header's ⌘K palette search). **Closing a tab keeps the tree here** — "All trees" is your library, not just the open tabs; hover a card and click the trash icon to delete one — if it was a misclick, hit **Undo** in the toast that appears and the tree comes straight back. Each carries a **Logic pill** — emerald *"Logic clear"* or amber *"N to review"* — reading the exact same validation as the editor's Logic chip, so a card can never disagree with the canvas.
 - **Templates** — the full template library, grouped by diagram type; click any card to load it in a new tab.
 - **Needs review** — only the trees with at least one open reservation: the CLR as triage. Open the workspace, see which trees still have logic to resolve, and click straight in.
 - **Learn the method** — the User Guide, the keyboard reference, and the practitioner's book.
@@ -380,7 +380,8 @@ What gets normalized:
 Where the roots attach:
 
 - If you had **exactly one entity selected** when you opened Quick Capture, every root in the captured tree attaches as a child of that selection. Build a sub-tree off any node in one paste.
-- If you had nothing selected (or a group / multi-selection), the roots float free at the canvas root.
+- If you had **exactly one group selected**, the whole captured set is dropped **into that group** as members (the dialog tells you which group it will land in) — a fast way to fill a labelled cluster from a pasted list.
+- If you had nothing selected (or a multi-selection), the roots float free at the canvas root.
 
 After commit, the newly created entities are pre-selected — handy for grouping (palette → Group selected entities) or undoing the whole capture (Cmd+Z).
 
@@ -805,6 +806,8 @@ The **Templates** library (Session 186) is one curated set of starter diagrams �
 
 - **Start page → Templates** (the left sidebar). The full gallery, grouped by diagram type, each card a colored type-stripe + title + one-line description. Click a card to open it in a new tab.
 - **In the editor**, `Cmd/Ctrl+K` → **Browse templates…** (or the Building Blocks rail's "Browse templates & examples"). The same set in a filterable dialog — a chip row at the top narrows to one diagram type, or scroll through all. Click a card to load it; **Undo** from the success toast restores your previous doc.
+
+**Insert a template into the diagram you're already in.** When a template's diagram type matches your open document (and that document already has content), its card in the editor dialog shows a **"+ Insert here"** button. Instead of opening the template in a new tab, this **merges** the template's whole subgraph into your current diagram — its entities, edges, AND/OR/XOR junctors, and groups are copied in with fresh ids (so nothing collides), placed with a small offset, and left selected. Use it to compose: drop a *Fixes that Fail* archetype into an existing CRT, or graft a known sub-structure onto your tree. It's one undo step — `Cmd/Ctrl+Z` removes the whole insert.
 
 The library covers Goal Trees, Evaporating Clouds — including the **change-resistance / buy-in** clouds (*Resistance to change (Efrat's cloud)*, *Speak up vs stay safe*, *Transformation vs this quarter*) — Current Reality Trees, Future Reality Trees, Prerequisite Trees, Transition Trees (the canonical Outcome ← (Precondition + Action) shape), Strategy & Tactics Trees, and Negative Branch Reservations. It also includes the **system archetypes** (Session 179) — Senge's recurring dynamics as TP trees: *Fixes that Fail*, *Escalation*, *Shifting the Burden*, *Eroding Goals* (reinforcing CRTs) and *Limits to Growth* (a balancing FRT); each is a feedback loop, so the **R / B badge** on its back-edge tells you at a glance whether it's a self-amplifying spiral (R) or a self-correcting limit (B). A **cost-accounting / product-costing CRT** captures Goldratt's "cost world" critique and pairs with the *Cost world vs throughput world* cloud.
 

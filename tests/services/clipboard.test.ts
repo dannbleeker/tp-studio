@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import type { Group, GroupId } from '@/domain/types';
 import {
   __clearClipboardForTest,
   copySelection,
   cutSelection,
   duplicateSelection,
+  mergeDocIntoActive,
   pasteClipboard,
 } from '@/services/clipboard';
 import { resetStoreForTest, useDocumentStore } from '@/store';
+import { makeDoc, makeEdge, makeEntity, resetIds } from '../domain/helpers';
 import { seedEntity } from '../helpers/seedDoc';
 
 // Thin aliases over the shared seedDoc helpers — the tests below read
@@ -17,6 +20,7 @@ const connect = (s: string, t: string) => useDocumentStore.getState().connect(s,
 beforeEach(() => {
   resetStoreForTest();
   __clearClipboardForTest();
+  resetIds();
 });
 
 describe('clipboard', () => {
@@ -266,5 +270,72 @@ describe('clipboard', () => {
 
   it('duplicateSelection is a no-op when nothing is selected', () => {
     expect(duplicateSelection().ok).toBe(false);
+  });
+});
+
+describe('mergeDocIntoActive (Session 193 — insert a template into the current doc)', () => {
+  const makeSource = () => {
+    // SA & SB AND-join into SC; SA + SB sit in one group.
+    const sa = makeEntity({ title: 'SA' });
+    const sb = makeEntity({ title: 'SB' });
+    const sc = makeEntity({ title: 'SC' });
+    const e1 = makeEdge(sa.id, sc.id, { andGroupId: 'g-src' });
+    const e2 = makeEdge(sb.id, sc.id, { andGroupId: 'g-src' });
+    const source = makeDoc([sa, sb, sc], [e1, e2]);
+    const grp: Group = {
+      id: 'grp1' as GroupId,
+      title: 'Cluster',
+      color: 'indigo',
+      memberIds: [sa.id, sb.id],
+      collapsed: false,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    source.groups = { [grp.id]: grp };
+    return { source, sa, sb, sc };
+  };
+
+  it('splices a full subgraph with fresh ids, remapped junctor + groups, and selects it', () => {
+    const { source, sa } = makeSource();
+    const existing = seedEntity('Existing'); // annotation #1
+    const res = mergeDocIntoActive(source);
+    expect(res).toEqual({ entities: 3, edges: 2 });
+
+    const doc = useDocumentStore.getState().doc;
+    // 1 existing + 3 inserted, and the source ids were re-minted (no collision).
+    expect(Object.keys(doc.entities)).toHaveLength(4);
+    expect(doc.entities[existing.id]).toBeTruthy();
+    expect(doc.entities[sa.id]).toBeUndefined();
+
+    // The two inserted edges still share ONE junctor — a FRESH id, not 'g-src'.
+    const gids = new Set(Object.values(doc.edges).map((e) => e.andGroupId));
+    expect(gids.size).toBe(1);
+    const [gid] = [...gids];
+    expect(gid).toBeTruthy();
+    expect(gid).not.toBe('g-src');
+
+    // The group came across with a fresh id + remapped members.
+    const groups = Object.values(doc.groups);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.title).toBe('Cluster');
+    expect(groups[0]?.memberIds).toHaveLength(2);
+    expect(groups[0]?.memberIds).not.toContain(sa.id);
+
+    // Annotation numbers continued past the existing #1.
+    expect(doc.nextAnnotationNumber).toBe(5);
+
+    // The inserted entities are selected for immediate operation.
+    const sel = useDocumentStore.getState().selection;
+    expect(sel.kind).toBe('entities');
+    if (sel.kind === 'entities') expect(sel.ids).toHaveLength(3);
+  });
+
+  it('lands as one history step (Ctrl+Z removes the whole insert)', () => {
+    const { source } = makeSource();
+    seedEntity('Existing');
+    mergeDocIntoActive(source);
+    expect(Object.keys(useDocumentStore.getState().doc.entities)).toHaveLength(4);
+    useDocumentStore.getState().undo();
+    expect(Object.keys(useDocumentStore.getState().doc.entities)).toHaveLength(1);
   });
 });

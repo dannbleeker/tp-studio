@@ -1,5 +1,7 @@
+import { nanoid } from 'nanoid';
 import { createEdge, createEntity } from '@/domain/factory';
-import type { Edge, Entity } from '@/domain/types';
+import { newGroupId } from '@/domain/ids';
+import type { Edge, Entity, Group, TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -208,6 +210,138 @@ export const duplicateSelection = (): PasteResult => {
   const payload = payloadFromSelection();
   if (!payload) return { ok: false };
   return cloneIntoDoc(payload, PASTE_STEP);
+};
+
+/**
+ * Session 193 — merge a WHOLE source document's subgraph (every entity, edge,
+ * junctor group, and entity group) into the active document. Powers the Pattern
+ * Library's "Insert into current diagram" action: unlike a clipboard paste of a
+ * partial selection — which drops junctor groups because they'd dangle — a
+ * pattern is a complete, self-consistent subgraph, so its AND/OR/XOR logic and
+ * groups are carried over with FRESH ids (remapped so they never collide with
+ * the host doc's). Entities get fresh ids + continuing annotation numbers, and
+ * a small diagonal offset keeps hand-positioned (manual-layout) diagrams from
+ * landing exactly on existing content. One history step; selects the insert.
+ *
+ * Cross-binding / singleton entity fields (`ecSlot`, `links`, `coreProblem`,
+ * `importedFrom`) are dropped for the same reason paste drops them — they refer
+ * outside the subgraph or designate a per-doc singleton.
+ */
+const MERGE_OFFSET = 48;
+
+export const mergeDocIntoActive = (source: TPDocument): { entities: number; edges: number } => {
+  const state = useDocumentStore.getState();
+  const doc = currentDoc(state);
+  const startAnnotation = doc.nextAnnotationNumber;
+
+  const idMap = new Map<string, string>();
+  const newEntities: Entity[] = Object.values(source.entities).map((src, i) => {
+    const minted = createEntity({
+      type: src.type,
+      title: src.title,
+      annotationNumber: startAnnotation + i,
+    });
+    const {
+      id: _id,
+      annotationNumber: _annotation,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      ecSlot: _ecSlot,
+      links: _links,
+      coreProblem: _coreProblem,
+      importedFrom: _importedFrom,
+      ...carried
+    } = src;
+    const next: Entity = {
+      ...carried,
+      ...(carried.position
+        ? {
+            position: {
+              x: carried.position.x + MERGE_OFFSET,
+              y: carried.position.y + MERGE_OFFSET,
+            },
+          }
+        : {}),
+      id: minted.id,
+      annotationNumber: minted.annotationNumber,
+      createdAt: minted.createdAt,
+      updatedAt: minted.updatedAt,
+    };
+    idMap.set(src.id, next.id);
+    return next;
+  });
+
+  // Remap junctor group ids so a set of edges that shared one junctor in the
+  // source still share ONE (fresh) junctor in the host — and never collide with
+  // a junctor id already in the host doc.
+  const junctorMap = new Map<string, string>();
+  const remapJunctor = (gid: string | undefined): string | undefined => {
+    if (gid === undefined) return undefined;
+    let mapped = junctorMap.get(gid);
+    if (!mapped) {
+      mapped = nanoid();
+      junctorMap.set(gid, mapped);
+    }
+    return mapped;
+  };
+
+  const newEdges: Edge[] = [];
+  for (const src of Object.values(source.edges)) {
+    const newSource = idMap.get(src.sourceId);
+    const newTarget = idMap.get(src.targetId);
+    if (!newSource || !newTarget) continue;
+    const base = createEdge({ sourceId: newSource, targetId: newTarget });
+    const andGroupId = remapJunctor(src.andGroupId);
+    const orGroupId = remapJunctor(src.orGroupId);
+    const xorGroupId = remapJunctor(src.xorGroupId);
+    const next: Edge = {
+      ...base,
+      kind: src.kind,
+      ...(src.weight !== undefined ? { weight: src.weight } : {}),
+      ...(src.label !== undefined ? { label: src.label } : {}),
+      ...(src.description !== undefined ? { description: src.description } : {}),
+      ...(src.isBackEdge !== undefined ? { isBackEdge: src.isBackEdge } : {}),
+      ...(src.isMutualExclusion !== undefined ? { isMutualExclusion: src.isMutualExclusion } : {}),
+      ...(src.delay !== undefined ? { delay: src.delay } : {}),
+      ...(src.loopName !== undefined ? { loopName: src.loopName } : {}),
+      ...(src.loopNarrative !== undefined ? { loopNarrative: src.loopNarrative } : {}),
+      ...(src.attributes !== undefined ? { attributes: src.attributes } : {}),
+      ...(andGroupId !== undefined ? { andGroupId } : {}),
+      ...(orGroupId !== undefined ? { orGroupId } : {}),
+      ...(xorGroupId !== undefined ? { xorGroupId } : {}),
+    };
+    newEdges.push(next);
+  }
+
+  // Carry entity groups with fresh ids + remapped member ids (drop empties —
+  // a group whose members didn't come across would be a phantom).
+  const newGroups: Record<string, Group> = {};
+  for (const g of Object.values(source.groups ?? {})) {
+    const memberIds = g.memberIds
+      .map((mid) => idMap.get(mid))
+      .filter((x): x is string => x !== undefined);
+    if (memberIds.length === 0) continue;
+    const gid = newGroupId();
+    newGroups[gid] = { ...g, id: gid, memberIds };
+  }
+
+  const nextDoc: TPDocument = {
+    ...doc,
+    entities: {
+      ...doc.entities,
+      ...Object.fromEntries(newEntities.map((e) => [e.id, e])),
+    },
+    edges: {
+      ...doc.edges,
+      ...Object.fromEntries(newEdges.map((e) => [e.id, e])),
+    },
+    groups: { ...doc.groups, ...newGroups },
+    nextAnnotationNumber: startAnnotation + newEntities.length,
+    updatedAt: Date.now(),
+  };
+  state.setDocument(nextDoc);
+  state.selectEntities(newEntities.map((e) => e.id));
+  return { entities: newEntities.length, edges: newEdges.length };
 };
 
 /** Test seam — clears the in-memory clipboard. */

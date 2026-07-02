@@ -70,4 +70,23 @@ describe('applyQuickCapture', () => {
       .sort();
     expect([...sel.ids].map(String).sort()).toEqual(captured);
   });
+
+  it('adds every captured entity to a selected group (Session 193)', () => {
+    const seed = seedEntity('Seed', 'effect');
+    useDocumentStore.getState().createGroupFromSelection([seed.id], { title: 'Cluster' });
+    const groupId = Object.keys(doc().groups)[0]!;
+    expect(doc().groups[groupId]?.memberIds).toEqual([seed.id]);
+
+    const summary = applyQuickCapture(parseQuickCapture('Alpha\n  Beta'), null, groupId);
+    expect(summary).toEqual({ entities: 2, edges: 1 });
+
+    const group = doc().groups[groupId];
+    // seed + Alpha + Beta all live in the group now.
+    expect(group?.memberIds).toHaveLength(3);
+    const byTitle = idByTitle();
+    expect(group?.memberIds).toContain(byTitle.Alpha);
+    expect(group?.memberIds).toContain(byTitle.Beta);
+    // The internal parent→child edge is still created (indentation preserved).
+    expect(edges()).toHaveLength(1);
+  });
 });

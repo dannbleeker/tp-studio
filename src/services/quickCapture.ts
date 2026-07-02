@@ -10,12 +10,17 @@ import { currentDoc } from '@/store/selectors';
  * - Parent-child links in the tree become edges (parent.id → child.id).
  * - Roots in the tree are connected as children of `attachToId` if given,
  *   otherwise float free at the canvas root.
+ * - When `attachToGroupId` is given (a single group is selected), EVERY
+ *   captured entity is added to that group so the whole capture lands as one
+ *   cluster. Group attach and entity attach are mutually exclusive — the
+ *   selection is either one entity or one group, never both.
  *
  * Returns a summary the caller can surface via toast.
  */
 export const applyQuickCapture = (
   result: ParseResult,
-  attachToId: string | null
+  attachToId: string | null,
+  attachToGroupId: string | null = null
 ): { entities: number; edges: number } => {
   if (result.total === 0) return { entities: 0, edges: 0 };
 
@@ -51,10 +56,16 @@ export const applyQuickCapture = (
     }
   }
 
+  const allIds = [...idByNode.values()];
+
+  // Phase 3 (Session 193): drop the whole capture into the selected group.
+  if (attachToGroupId) {
+    for (const id of allIds) state.addToGroup(attachToGroupId, id);
+  }
+
   // The last entity created became the active selection from `addEntity`.
   // Replace with the freshly-pasted set so the user can immediately operate
   // on the whole capture (e.g. Cmd+G to group, Delete to undo).
-  const allIds = [...idByNode.values()];
   state.selectEntities(allIds);
 
   return { entities: result.total, edges: edgesCreated };
