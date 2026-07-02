@@ -3,9 +3,10 @@ import { useShallow } from 'zustand/shallow';
 import { DataComponent } from '@/components/dataComponentNames';
 import { CLOUD_TYPE_LABEL } from '@/domain/cloudType';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
+import { isDirtySinceSave } from '@/domain/linkedFileStaleness';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
-import { useLinkedFileName } from './useLinkedFileName';
+import { useLinkedFileStatus } from './useLinkedFileName';
 
 /**
  * Editable doc-title at the top-left of the canvas, paired with the
@@ -23,24 +24,30 @@ export function TitleBadge() {
   // compare. All values are primitives (string / boolean) or stable
   // action refs, so `useShallow` correctly avoids re-renders unless
   // the relevant primitives actually change.
-  const { id, title, setTitle, diagramType, cloudType, locked, openDocSettings } = useDocumentStore(
-    useShallow((s) => {
-      const doc = currentDoc(s);
-      return {
-        id: doc.id,
-        title: doc.title,
-        setTitle: s.setTitle,
-        diagramType: doc.diagramType,
-        cloudType: doc.cloudType,
-        locked: s.browseLocked,
-        openDocSettings: s.openDocSettings,
-      };
-    })
-  );
+  const { id, title, setTitle, diagramType, cloudType, updatedAt, locked, openDocSettings } =
+    useDocumentStore(
+      useShallow((s) => {
+        const doc = currentDoc(s);
+        return {
+          id: doc.id,
+          title: doc.title,
+          setTitle: s.setTitle,
+          diagramType: doc.diagramType,
+          cloudType: doc.cloudType,
+          // Session 193 — drives the linked-file "unsaved since last save" chip.
+          updatedAt: doc.updatedAt,
+          locked: s.browseLocked,
+          openDocSettings: s.openDocSettings,
+        };
+      })
+    );
   // Additive (File System Access): the on-disk file this doc re-saves to, or
   // null. Renders nothing when unlinked / unsupported, so it never affects
-  // viewports that have never saved to a file.
-  const linkedName = useLinkedFileName(id);
+  // viewports that have never saved to a file. `dirty` = edited since the last
+  // write, so the chip can nudge the user to re-save (Cmd/Ctrl+S).
+  const linked = useLinkedFileStatus(id);
+  const linkedName = linked?.name ?? null;
+  const dirty = linked ? isDirtySinceSave(updatedAt, linked.savedAt) : false;
 
   return (
     <div
@@ -100,11 +107,20 @@ export function TitleBadge() {
           Hidden below `sm:` like the type badge so narrow viewports stay tidy. */}
       {linkedName && (
         <span
-          className="hidden max-w-[18ch] items-center gap-1 truncate rounded-full bg-emerald-100/80 px-2 py-0.5 font-medium text-[10px] text-emerald-700 sm:inline-flex dark:bg-emerald-900/40 dark:text-emerald-300"
-          title={`Linked to ${linkedName} — “Save to file” writes here; “Save to file as…” picks a new file.`}
+          className={
+            dirty
+              ? 'hidden max-w-[20ch] items-center gap-1 truncate rounded-full bg-amber-100/80 px-2 py-0.5 font-medium text-[10px] text-amber-700 sm:inline-flex dark:bg-amber-900/40 dark:text-amber-300'
+              : 'hidden max-w-[18ch] items-center gap-1 truncate rounded-full bg-emerald-100/80 px-2 py-0.5 font-medium text-[10px] text-emerald-700 sm:inline-flex dark:bg-emerald-900/40 dark:text-emerald-300'
+          }
+          title={
+            dirty
+              ? `Unsaved changes since the last save to ${linkedName}. Press Ctrl/⌘+S to write them to the file.`
+              : `Linked to ${linkedName} — “Save to file” writes here; “Save to file as…” picks a new file.`
+          }
         >
           <Link2 aria-hidden className="h-3 w-3 shrink-0" />
           <span className="truncate">{linkedName}</span>
+          {dirty && <span aria-hidden>· unsaved</span>}
         </span>
       )}
       <button

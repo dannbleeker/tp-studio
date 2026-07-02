@@ -80,6 +80,7 @@ describe('save-to-file — one-click re-save to the linked file', () => {
     vi.mocked(getLinkedFile).mockResolvedValue({
       handle: fakeHandle('budget.tps.json'),
       name: 'budget.tps.json',
+      savedAt: 1000,
     });
     await cmd('save-to-file').run(s());
     expect(ensureWritePermission).toHaveBeenCalled();
@@ -95,6 +96,7 @@ describe('save-to-file — one-click re-save to the linked file', () => {
     vi.mocked(getLinkedFile).mockResolvedValue({
       handle: fakeHandle('gone.tps.json'),
       name: 'gone.tps.json',
+      savedAt: 1000,
     });
     vi.mocked(writeTextToHandle).mockRejectedValue(new Error('file not found'));
     await cmd('save-to-file').run(s());
@@ -107,6 +109,7 @@ describe('save-to-file — one-click re-save to the linked file', () => {
     vi.mocked(getLinkedFile).mockResolvedValue({
       handle: fakeHandle('locked.tps.json'),
       name: 'locked.tps.json',
+      savedAt: 1000,
     });
     vi.mocked(ensureWritePermission).mockResolvedValue(false);
     const handle = fakeHandle('new-spot.tps.json');
@@ -124,6 +127,7 @@ describe('save-to-file-as', () => {
     vi.mocked(getLinkedFile).mockResolvedValue({
       handle: fakeHandle('old.tps.json'),
       name: 'old.tps.json',
+      savedAt: 1000,
     });
     const handle = fakeHandle('copy.tps.json');
     vi.mocked(saveToFile).mockResolvedValue({ status: 'saved', handle });

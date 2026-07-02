@@ -7,57 +7,28 @@ CHANGELOG.
 
 ---
 
-## Improvement-review backlog (Session 192) — partially shipped
+## Improvement-review backlog (Session 192) — ✅ fully shipped
 
-A grounded multi-agent product/UX review produced a ranked set of improvements. **Shipped &
-CI-green** (see the CHANGELOG Session 192 entries for detail):
-- **Batch 1 core-authoring:** drag-into-empty creates a connected node, paste offset, Duplicate ⌘D,
-  Select-All ⌘A.
-- **Batch 2 accessibility:** honour prefers-reduced-motion, single arrow-nav model, reading-order Tab.
-- **Batch 3 navigation:** Find indexes assumptions+comments + type badge, palette "Go to…" jump,
-  semantic minimap, select-all-of-type.
-- **Batch 8 methodology (all validator correctness bugs):** junctor-aware indirect-effect/
-  cause-sufficiency, EC logic-type-mismatch, additional-cause reservation, S&T facet-based
-  assumptions, PRT (`prt-obstacle-no-io`/`prt-io-no-obstacle`) + Goal-Tree
-  (`goalTree-csf-no-ncs`/`goalTree-csf-count`) structural validators, + two validation-fingerprint
-  cache bugs (or/xorGroupId; per-facet S&T fill state).
-- **Batch 5 (data safety, mostly done):** delete-tree **Undo** toast; in-app **PromptDialog** (the
-  lone `window.prompt` is gone); **auto-snapshot while editing** (opt-out Behavior setting).
-- **Batch 4 (export/print — DONE):** copy diagram image to clipboard (PNG); PPTX tall-diagram tiling;
-  last-used export-format memory (`recentExports.ts`); non-Latin-1 PDF-font caution in
-  `PrintPreviewDialog` + the EC workshop-sheet toast (Session 192 cont., CI-green).
+A grounded multi-agent product/UX review produced a ranked set of improvements across 8 batches;
+**every item is now shipped & CI-green** (see the CHANGELOG "Session 192 (cont.)" entries for detail):
 
-**Still open** (re-verified against real code Session 192 cont. via a 9-agent recon; three items
-turned out narrower than first written — noted inline — the rest confirmed not-yet-built):
+- **Batch 1 core-authoring** · **Batch 2 accessibility** · **Batch 3 navigation** ·
+  **Batch 8 methodology** (validator correctness + two fingerprint-cache bugs).
+- **Batch 4 export/print:** copy-image-to-clipboard, PPTX tall-diagram tiling, last-used export
+  memory, non-Latin-1 PDF-font caution.
+- **Batch 5 data safety:** delete-tree Undo, in-app PromptDialog, auto-snapshot-while-editing, and
+  (last) the linked-file **unsaved-changes chip** + **⌘S write-through** to the linked file
+  (`isDirtySinceSave` / `saveToLinkedFile`).
+- **Batch 6 visual/UI:** colour-palette node stripes + minimap, corner-badge de-collision,
+  collapsible inspector sections, direct-pick `ChipSelect` state chips.
+- **Batch 7 templates/library/capture:** insert-template-into-current (`mergeDocIntoActive`),
+  Start "All trees" inline filter, Quick-Capture-into-group, manual sibling ordering (post-dagre
+  reorder + context-menu setter).
 
-- **Batch 5 — data safety (last item):** linked-file "unsaved since last save" chip + write-through
-  ⌘S. Verified: the `FileSystemFileHandle` is persisted to IndexedDB and a `save-to-file` palette
-  command already writes through, but `TitleBadge` shows **no** dirty/staleness indicator and ⌘S
-  still flushes localStorage only (`fileHandles.ts`+`fileAccess.ts`+`TitleBadge`+`useGlobalShortcuts`).
-  NOTE: Chromium-only File System Access API — needs a real-browser test, not jsdom.
-- **Batch 6 — visual/UI:**
-  - colorblind/mono **node-stripe** palette — the *edge*-color palette (default / colorblind-safe Wong
-    / mono) already ships + is selectable in Appearance; extend the choice to entity/node stripes
-    (`tokens.ts`+`TPNode`+`AppearanceTab`).
-  - fix corner-badge collisions — top-left `StepBadge`+`CommentCountBadge` share coords, bottom-right
-    `PinBadge`+`ReachReverseBadge` overlap; no stacking logic (`TPNodeBadges.tsx`).
-  - collapsible entity-inspector sections — every section always renders expanded (`EntityInspector.tsx`).
-  - direct-selection state pickers — **narrowed:** `EntityStateSection` is already a direct segmented
-    control; only `AssumptionWell` (kind) + `EvidenceList` (source/strength) remain forward-only cycles.
-- **Batch 7 — templates/library/capture:**
-  - insert template into the current diagram — the Pattern Library only builds a NEW doc
-    (`openDocInTab(pattern.build())`); add a merge-subgraph-into-active path (`PatternLibraryDialog`+`clipboard.ts`).
-  - Start "All trees" **inline** filter/search — **narrowed:** the "All trees" view + "Needs review"
-    filter + rich cards (thumbnail / type / edited-time / logic-pill / delete) already ship; the
-    "Search trees…" button opens the ⌘K palette, so only an in-gallery text filter is missing (`TreeGallery`).
-  - Quick Capture into a selected **group** — currently attaches to a single selected entity only;
-    group selections are rejected (`QuickCaptureDialog`).
-  - manual sibling ordering for auto-layout — `Entity.ordering` exists + drives Presentation/TT/CSV,
-    but dagre layout ignores it; make layout honour it for sibling tie-breaks (`layout.ts`).
-
-Each is an independent green vertical slice. NOTE: visual-snapshot fragility — anything touching the
-selection toolbar, node rendering, the minimap, or a dialog changes an `e2e/visual-*.spec.ts`
-baseline; refresh via the `update-visual-snapshots` workflow (opens a PR) as part of the slice.
+Nothing from the review remains open. New work starts from the Active backlog below or a fresh
+direction. NOTE (still true): visual-snapshot fragility — anything touching the selection toolbar,
+node rendering, the minimap, or a dialog changes an `e2e/visual-*.spec.ts` baseline; refresh via the
+`update-visual-snapshots` workflow (opens a PR) as part of the slice.
 
 ---
 

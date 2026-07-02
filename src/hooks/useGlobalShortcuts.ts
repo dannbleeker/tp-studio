@@ -11,6 +11,7 @@ import {
 } from '@/services/clipboard';
 import { prefersReducedMotion } from '@/services/prefersReducedMotion';
 import { isStandalonePWA } from '@/services/pwa';
+import { saveToLinkedFile } from '@/services/saveToLinkedFile';
 import { flushPersist } from '@/services/storage/persistDebounced';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -115,8 +116,17 @@ export function useGlobalShortcuts() {
           return;
         }
         e.preventDefault();
-        flushPersist();
-        showToast('success', 'Saved to this browser.');
+        // Session 193 — when the doc is linked to an on-disk file (File System
+        // Access, Chromium), write straight through to it; otherwise flush the
+        // debounced localStorage write. `preventDefault` already fired above so
+        // the browser's own Save dialog never shows during the async hop.
+        void (async () => {
+          const result = await saveToLinkedFile(useDocumentStore.getState());
+          if (result === 'no-link' || result === 'permission-denied') {
+            flushPersist();
+            showToast('success', 'Saved to this browser.');
+          }
+        })();
         return;
       }
 

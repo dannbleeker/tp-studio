@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 5 (last item): linked-file staleness + write-through Save
+
+Closes the final open item from the improvement-review backlog.
+
+- **The linked-file chip flags unsaved changes.** A document linked to an
+  on-disk file (File System Access "Save to file") shows its filename in the
+  title bar; that chip now turns **amber with "· unsaved"** once you edit past
+  the last write, and returns to the calm green "linked" state after a save.
+  Backed by a `savedAt` timestamp recorded on every write and the pure
+  `isDirtySinceSave` predicate.
+- **Ctrl/Cmd+S writes through to the linked file.** Previously ⌘S only flushed
+  the localStorage autosave; now, when the document is linked to a file, it
+  re-writes that file on disk (and re-stamps `savedAt`, clearing the chip). With
+  no linked file it falls back to the localStorage flush + "Saved to this
+  browser" exactly as before. The write path is shared with the "Save to file"
+  palette command (`saveToLinkedFile`) so the two can't drift. (File System
+  Access is Chromium-only; other browsers keep the localStorage flush.)
+
 ## Session 192 (cont.) — Improvement-review batch 7 (part 2): manual sibling ordering
 
 Auto-layout (dagre) ordered sibling nodes by its own crossing-minimization

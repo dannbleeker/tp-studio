@@ -2,13 +2,9 @@ import { exportToJSON, importFromJSON } from '@/domain/persistence';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { errorMessage } from '@/services/errors';
 import { slug } from '@/services/exporters/shared';
-import {
-  ensureWritePermission,
-  openFromFile,
-  saveToFile,
-  writeTextToHandle,
-} from '@/services/fileSystemAccess';
-import { getLinkedFile, linkFile, unlinkFile } from '@/services/storage/fileHandles';
+import { openFromFile, saveToFile } from '@/services/fileSystemAccess';
+import { SAVE_AS_LABEL, saveToLinkedFile } from '@/services/saveToLinkedFile';
+import { getLinkedFile, linkFile } from '@/services/storage/fileHandles';
 import type { DocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
@@ -30,8 +26,6 @@ import { type Command, withWriteGuard } from './types';
  * (download/upload) pickers remain the path, unchanged. localStorage auto-save
  * and the tabs are untouched.
  */
-
-const SAVE_AS_LABEL = 'Save to file as…';
 
 // Two animation frames let React Flow reconcile the loaded node set before the
 // fit-to-bounds call. (Same helper shape as `ImportPickerDialog`'s — kept local
@@ -76,32 +70,18 @@ export const fileAccessCommands: Command[] = [
     label: 'Save to file',
     group: 'File',
     run: async (s) => {
-      const doc = currentDoc(s);
-      const linked = await getLinkedFile(doc.id).catch(() => null);
-
-      if (linked) {
-        const permitted = await ensureWritePermission(linked.handle).catch(() => false);
-        if (permitted) {
-          // The happy path: re-write the remembered file, no picker.
-          try {
-            await writeTextToHandle(linked.handle, exportToJSON(doc));
-            s.showToast('success', `Saved to ${linked.name}.`);
-          } catch (err) {
-            // The file was moved / deleted / access revoked → forget the link
-            // so the next save re-picks, and tell the user how.
-            await unlinkFile(doc.id).catch(() => undefined);
-            s.showToast(
-              'error',
-              `Couldn't save to ${linked.name}: ${errorMessage(err)}. Use "${SAVE_AS_LABEL}" to pick a new file.`
-            );
-          }
-          return;
-        }
-        // Permission not granted (e.g. denied the re-prompt) → fall through to
-        // a fresh pick rather than failing silently.
-        s.showToast('info', `Lost write access to ${linked.name}. Choose where to save.`);
+      // Write through to the linked file (shared with Cmd/Ctrl+S). On
+      // success/error `saveToLinkedFile` has already toasted; only the
+      // no-file / lost-access cases fall through to a fresh pick.
+      const result = await saveToLinkedFile(s);
+      if (result === 'saved' || result === 'error') return;
+      if (result === 'permission-denied') {
+        const linked = await getLinkedFile(currentDoc(s).id).catch(() => null);
+        s.showToast(
+          'info',
+          `Lost write access${linked ? ` to ${linked.name}` : ''}. Choose where to save.`
+        );
       }
-
       await pickSaveLinkOrToast(s);
     },
   },

@@ -17,7 +17,14 @@
  * with (the palette commands are Chromium-gated).
  */
 
-export type LinkedFile = { handle: FileSystemFileHandle; name: string };
+export type LinkedFile = {
+  handle: FileSystemFileHandle;
+  name: string;
+  /** Session 193 — epoch ms of the last successful write/link to this file.
+   *  Compared against the doc's `updatedAt` to show an "unsaved since last
+   *  save" chip. Records without it (pre-upgrade links) read as `0` → dirty. */
+  savedAt: number;
+};
 
 type HandleStore = {
   get(docId: string): Promise<LinkedFile | null>;
@@ -118,9 +125,18 @@ const notify = (): void => {
   for (const listener of [...listeners]) listener();
 };
 
-/** Remember the file `handle` for `docId` (overwrites any previous link). */
-export const linkFile = async (docId: string, handle: FileSystemFileHandle): Promise<void> => {
-  await getStore().set(docId, { handle, name: handle.name });
+/**
+ * Remember the file `handle` for `docId` (overwrites any previous link), also
+ * stamping `savedAt`. Every save path calls this on success, so the "unsaved
+ * since last save" chip clears as soon as a write lands. `savedAt` defaults to
+ * now but is injectable for deterministic tests.
+ */
+export const linkFile = async (
+  docId: string,
+  handle: FileSystemFileHandle,
+  savedAt: number = Date.now()
+): Promise<void> => {
+  await getStore().set(docId, { handle, name: handle.name, savedAt });
   notify();
 };
 

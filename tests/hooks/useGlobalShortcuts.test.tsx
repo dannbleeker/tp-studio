@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from '@testing-library/react';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDocument } from '@/domain/factory';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
@@ -76,10 +76,14 @@ describe('useGlobalShortcuts — bare keys defer to a focused control', () => {
 });
 
 describe('useGlobalShortcuts — Cmd+S (save)', () => {
-  it('toasts "Saved to this browser" after Cmd+S', () => {
+  it('toasts "Saved to this browser" after Cmd+S when no file is linked', async () => {
     render(<Host />);
     fireEvent.keyDown(window, { key: 's', metaKey: true });
-    expect(s().toasts.some((t) => /Saved to this browser/i.test(t.message))).toBe(true);
+    // Session 193 — Cmd+S now first checks (async) for a linked file; with none,
+    // it falls back to the localStorage flush + this toast on the next microtask.
+    await waitFor(() =>
+      expect(s().toasts.some((t) => /Saved to this browser/i.test(t.message))).toBe(true)
+    );
   });
 });
 

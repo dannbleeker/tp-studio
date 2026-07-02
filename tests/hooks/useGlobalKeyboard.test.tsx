@@ -1,4 +1,4 @@
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useGlobalKeyboard } from '@/hooks/useGlobalKeyboard';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -67,12 +67,16 @@ describe('useGlobalKeyboard', () => {
     expect(state.paletteInitialQuery).toBe('Export');
   });
 
-  it('Cmd+S surfaces a "Saved" toast', () => {
+  it('Cmd+S surfaces a "Saved" toast', async () => {
     render(<Harness />);
     dispatchKey({ key: 's', ctrlKey: true });
-    const toasts = useDocumentStore.getState().toasts;
-    expect(toasts).toHaveLength(1);
-    expect(toasts[0]!.message).toMatch(/Saved/i);
+    // Session 193 — Cmd+S first checks (async) for a linked file; with none it
+    // falls back to the localStorage flush + this toast on the next microtask.
+    await waitFor(() => {
+      const toasts = useDocumentStore.getState().toasts;
+      expect(toasts).toHaveLength(1);
+      expect(toasts[0]!.message).toMatch(/Saved/i);
+    });
   });
 
   it('Escape deselects when nothing else is open', () => {
