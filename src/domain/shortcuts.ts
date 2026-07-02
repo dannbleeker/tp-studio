@@ -107,6 +107,20 @@ export const SHORTCUTS: Shortcut[] = [
     bindsAt: 'hook',
   },
   {
+    id: 'duplicate',
+    keys: `${M}+D`,
+    label: 'Duplicate selection',
+    group: 'global',
+    bindsAt: 'hook',
+  },
+  {
+    id: 'select-all',
+    keys: `${M}+A`,
+    label: 'Select all entities',
+    group: 'global',
+    bindsAt: 'hook',
+  },
+  {
     id: 'swap-entities',
     keys: `${M}+Shift+S`,
     label: 'Swap two selected entities',
@@ -319,6 +333,8 @@ export const PALETTE_KBD_BY_COMMAND_ID: Record<string, string> = {
   'copy-selection': `${M}+C`,
   'cut-selection': `${M}+X`,
   'paste-clipboard': `${M}+V`,
+  // Duplicate — palette command id is "duplicate-selection", registry id is "duplicate"
+  'duplicate-selection': `${M}+D`,
   // Find in document — palette command id is "open-search", registry id is "find"
   'open-search': `${M}+F`,
   // Fit view — registry row is the aggregate "+ / - / 0"

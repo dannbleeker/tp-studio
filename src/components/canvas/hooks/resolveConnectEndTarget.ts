@@ -23,13 +23,17 @@ export type ConnectEndEdge = {
  * rather than threading another branch through the ~90-line imperative handler.
  *
  *   - `noop`           — nothing to do (handle hit already handled by `onConnect`,
- *                        self-loop, or empty space).
+ *                        or a self-loop).
  *   - `connect`        — released over a node body → bridge to a normal connect.
  *   - `junctor`        — released over an existing junctor circle → join that
  *                        AND/OR/XOR group via one of its member edges.
  *   - `junctor-missing`— released over a junctor whose group vanished mid-drag
  *                        (e.g. an undo) → fail open with an info toast.
  *   - `edge-andcause`  — released over an edge body → add an AND co-cause.
+ *   - `create-and-connect` — released in empty space → mint a fresh entity there
+ *                        and wire it to the source. Direction comes from the
+ *                        grabbed handle: a `source` handle pulls a new child
+ *                        (effect), a `target` handle pulls a new parent (cause).
  */
 export type ConnectEndTarget =
   | { readonly kind: 'noop' }
@@ -42,7 +46,12 @@ export type ConnectEndTarget =
       readonly memberEdgeId: string;
     }
   | { readonly kind: 'junctor-missing'; readonly label: 'AND' | 'OR' | 'XOR' }
-  | { readonly kind: 'edge-andcause'; readonly sourceId: string; readonly edgeId: string };
+  | { readonly kind: 'edge-andcause'; readonly sourceId: string; readonly edgeId: string }
+  | {
+      readonly kind: 'create-and-connect';
+      readonly sourceId: string;
+      readonly fromHandleType: 'source' | 'target';
+    };
 
 /**
  * Pure decision core of `onConnectEnd`: given where a connection drag was
@@ -57,20 +66,25 @@ export type ConnectEndTarget =
  *   2. Junctor    — more specific than the edge body beneath the circle.
  *   3. Edge body  — the canonical "add a sufficient cause" gesture (always AND;
  *                   OR / XOR only fire on an explicit junctor drop above).
- *   4. Empty      — `noop` (the bare connection was already dropped by `onConnect`).
+ *   4. Empty      — mint a fresh entity at the drop point and connect it
+ *                   (`create-and-connect`). The bare connect was NOT dropped by
+ *                   `onConnect` (that only fires on a handle/node hit), so
+ *                   there's a real "extend the chain outward" gesture to honour.
  *
- * Callers pass `toNodeId` as `connectionState.toNode?.id ?? null` and the two
- * hover snapshots; `rfEdges` is the live edge list used only to resolve a
- * junctor's group to a concrete member edge.
+ * Callers pass `toNodeId` as `connectionState.toNode?.id ?? null`, the handle
+ * type as `connectionState.fromHandle?.type`, and the two hover snapshots;
+ * `rfEdges` is the live edge list used only to resolve a junctor's group to a
+ * concrete member edge.
  */
 export const resolveConnectEndTarget = (input: {
   readonly sourceId: string;
   readonly toNodeId: string | null;
+  readonly fromHandleType: 'source' | 'target';
   readonly hoveredJunctor: HoveredJunctor | null;
   readonly hoveredEdgeId: string | null;
   readonly rfEdges: readonly ConnectEndEdge[];
 }): ConnectEndTarget => {
-  const { sourceId, toNodeId, hoveredJunctor, hoveredEdgeId, rfEdges } = input;
+  const { sourceId, toNodeId, fromHandleType, hoveredJunctor, hoveredEdgeId, rfEdges } = input;
 
   // 1. Released over a node body — connect, unless it's a self-loop.
   if (toNodeId !== null) {
@@ -104,6 +118,6 @@ export const resolveConnectEndTarget = (input: {
   // 3. Released over an edge body — always an AND co-cause.
   if (hoveredEdgeId) return { kind: 'edge-andcause', sourceId, edgeId: hoveredEdgeId };
 
-  // 4. Empty space — nothing to do.
-  return { kind: 'noop' };
+  // 4. Empty space — extend the chain: mint a fresh entity here and wire it.
+  return { kind: 'create-and-connect', sourceId, fromHandleType };
 };

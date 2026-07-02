@@ -188,7 +188,7 @@ Use Notes for caveats, open questions, references to external docs, or workshop 
 
 Three ways, in increasing order of speed:
 
-1. **Drag.** Hover a node — handles appear on the top and bottom. Drag from one node's bottom handle onto another node. The first becomes the cause, the second the effect.
+1. **Drag.** Hover a node — handles appear on the top and bottom. Drag from one node's bottom handle onto another node. The first becomes the cause, the second the effect. **Release the drag in empty space** and TP Studio mints a fresh entity right there and wires it up: dragging from the bottom (cause) handle makes a new child, dragging from the top (effect) handle makes a new parent. The new node opens in edit mode so you can name it immediately — the fastest way to sketch a chain outward.
 2. **Tab.** With a node selected, `Tab` creates a child entity *and* connects current → new. `Shift+Tab` creates a parent (new → current). Both put the new entity in edit mode so you can name it right away.
 3. **Right-click.** Right-click an entity for **Add child** / **Add parent** entries.
 
@@ -278,7 +278,7 @@ Selecting more than one thing turns the right Inspector into a **bulk-actions** 
 2. **Marquee** — click and drag on empty canvas to rubber-band a rectangle; everything inside is selected. Hold `Shift` while marquee-dragging to add to the existing selection rather than replace it.
 3. **Walk the graph by selection** — `Cmd/Ctrl+Shift+→` selects every downstream entity, `Cmd/Ctrl+Shift+←` selects every upstream entity, and palette → *Select path between selected entities* finds the path between two selected entities.
 
-**Cut / copy / paste.** `Cmd/Ctrl+C` copies the current entity multi-selection plus every edge fully inside it. `Cmd/Ctrl+V` pastes with fresh IDs and annotation numbers — paste twice for two independent copies. `Cmd/Ctrl+X` cuts. Cross-document paste works: the clipboard is in-memory and survives a `setDocument` swap.
+**Cut / copy / paste / duplicate.** `Cmd/Ctrl+C` copies the current entity multi-selection plus every edge fully inside it. `Cmd/Ctrl+V` pastes with fresh IDs and annotation numbers; each copy lands a small diagonal step off the source (repeated pastes fan out rather than stacking on one spot). Paste twice for two independent copies. `Cmd/Ctrl+X` cuts. `Cmd/Ctrl+D` **duplicates** the selection in place — the same clone, one step offset, but without touching the copy/paste clipboard, so duplicating never clobbers what you last copied. `Cmd/Ctrl+A` selects every entity in the document (the fast way into the multi-selection bulk actions). Cross-document paste works: the clipboard is in-memory and survives a `setDocument` swap.
 
 ## Finding and navigating
 
@@ -976,6 +976,8 @@ Same content as the in-app `?` button (top-right).
 | `Cmd/Ctrl+Z` | Undo |
 | `Cmd/Ctrl+Shift+Z` | Redo |
 | `Cmd/Ctrl+C / X / V` | Copy / cut / paste selected entities |
+| `Cmd/Ctrl+D` | Duplicate the selection in place (doesn't touch the clipboard) |
+| `Cmd/Ctrl+A` | Select every entity in the document |
 | `Cmd/Ctrl+Shift+S` | Swap two selected entities |
 | `Cmd/Ctrl+F` | Find in document |
 | `Cmd/Ctrl+Shift+→ / ←` | Select all successors / predecessors of the selection |
@@ -1015,6 +1017,7 @@ Same content as the in-app `?` button (top-right).
 | Drag on empty canvas | Marquee — drag a rectangle to select everything inside |
 | Alt+click another entity | With one entity selected, create an edge to the clicked entity |
 | Drag from node handle | Connect entities |
+| Drag from a handle into empty space | Create a new connected entity there — a bottom (cause) handle makes a child, a top (effect) handle makes a parent |
 
 ## Narrow viewports
 

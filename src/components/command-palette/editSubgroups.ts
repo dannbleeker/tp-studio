@@ -31,6 +31,7 @@ export const EDIT_SUBGROUP: Record<string, EditSubgroup> = {
   'copy-selection': 'Clipboard & history',
   'cut-selection': 'Clipboard & history',
   'paste-clipboard': 'Clipboard & history',
+  'duplicate-selection': 'Clipboard & history',
   // Build (add nodes)
   'add-successor': 'Build',
   'add-predecessor': 'Build',

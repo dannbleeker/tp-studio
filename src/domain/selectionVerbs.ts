@@ -268,6 +268,13 @@ export const verbsForBranch = (branch: Branch, state: DocumentStore): Verb[] => 
           writes: true,
           paletteCommandId: 'group-selected-entities',
         },
+        {
+          id: 'duplicate-selection',
+          label: `Duplicate ${branch.ids.length} entities`,
+          shortLabel: 'Duplicate',
+          writes: true,
+          paletteCommandId: 'duplicate-selection',
+        },
       ];
       if (branch.ids.length === 2) {
         verbs.push({

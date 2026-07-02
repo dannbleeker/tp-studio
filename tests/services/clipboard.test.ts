@@ -3,6 +3,7 @@ import {
   __clearClipboardForTest,
   copySelection,
   cutSelection,
+  duplicateSelection,
   pasteClipboard,
 } from '@/services/clipboard';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -127,7 +128,9 @@ describe('clipboard', () => {
     const pasted = Object.values(doc.entities).find((e) => e.id !== a.id);
     expect(pasted).toBeTruthy();
     if (!pasted) return;
-    expect(pasted.position).toEqual({ x: 137, y: 248 });
+    // First paste offsets one diagonal step (32px) so the copy isn't hidden
+    // exactly behind the source.
+    expect(pasted.position).toEqual({ x: 137 + 32, y: 248 + 32 });
     expect(pasted.spanOfControl).toBe('external');
     expect(pasted.description).toBe('a note');
     expect(pasted.attributes?.custom).toEqual({ kind: 'string', value: 'kept' });
@@ -195,5 +198,73 @@ describe('clipboard', () => {
     const sel = useDocumentStore.getState().selection;
     expect(sel.kind).toBe('entities');
     if (sel.kind === 'entities') expect(sel.ids).toHaveLength(1);
+  });
+
+  it('repeated pastes fan out — each copy offsets one step further', () => {
+    const a = addNode('A');
+    const store = useDocumentStore.getState();
+    store.updateEntity(a.id, { position: { x: 0, y: 0 } });
+    store.selectEntity(a.id);
+    copySelection();
+
+    pasteClipboard(); // cascade 1 → +32
+    const first = Object.values(useDocumentStore.getState().doc.entities).find(
+      (e) => e.id !== a.id
+    );
+    expect(first?.position).toEqual({ x: 32, y: 32 });
+
+    pasteClipboard(); // cascade 2 → +64 (relative to the ORIGINAL source)
+    const ids = new Set([a.id, first?.id]);
+    const second = Object.values(useDocumentStore.getState().doc.entities).find(
+      (e) => !ids.has(e.id)
+    );
+    expect(second?.position).toEqual({ x: 64, y: 64 });
+  });
+
+  it('a fresh copy resets the paste cascade back to the first step', () => {
+    const a = addNode('A');
+    const store = useDocumentStore.getState();
+    store.updateEntity(a.id, { position: { x: 0, y: 0 } });
+    store.selectEntity(a.id);
+    copySelection();
+    pasteClipboard(); // cascade 1
+    pasteClipboard(); // cascade 2
+
+    // Re-copy the original → cascade resets, so the next paste is +32 again.
+    store.selectEntity(a.id);
+    copySelection();
+    pasteClipboard();
+    const fresh = Object.values(useDocumentStore.getState().doc.entities)
+      .filter((e) => e.position?.x === 32 && e.position?.y === 32)
+      .find((e) => e.id !== a.id);
+    expect(fresh).toBeTruthy();
+  });
+
+  it('duplicateSelection clones the selection without touching the clipboard buffer', () => {
+    const a = addNode('A');
+    const b = addNode('B');
+    const store = useDocumentStore.getState();
+    store.selectEntity(a.id);
+    copySelection(); // buffer now holds A only
+
+    // Duplicate a DIFFERENT selection — must clone B, and must NOT overwrite
+    // the A that's sitting on the clipboard.
+    store.selectEntity(b.id);
+    const r = duplicateSelection();
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.entities).toBe(1);
+
+    // The clipboard still holds A: pasting produces an A copy, not a B copy.
+    const paste = pasteClipboard();
+    expect(paste.ok).toBe(true);
+    const titles = Object.values(useDocumentStore.getState().doc.entities).map((e) => e.title);
+    // A (orig) + B (orig) + B (dup) + A (paste)
+    expect(titles.filter((t) => t === 'A')).toHaveLength(2);
+    expect(titles.filter((t) => t === 'B')).toHaveLength(2);
+  });
+
+  it('duplicateSelection is a no-op when nothing is selected', () => {
+    expect(duplicateSelection().ok).toBe(false);
   });
 });

@@ -272,20 +272,25 @@ describe('useGraphMutations — edge-hover ref + drop-on-edge fallback', () => {
     expect(after).toBeGreaterThan(before);
   });
 
-  it("clears the hovered edge ref on mouse-leave so a stale hover doesn't trigger", () => {
+  it("clears the hovered edge ref on mouse-leave so a stale hover doesn't add a co-cause", () => {
     const { edge } = seedConnectedPair();
     const coCause = seedEntity('Co-cause');
     const { result } = renderHook(() => useGraphMutations());
     result.current.onEdgeMouseEnter(null, { id: edge.id } as never);
     result.current.onEdgeMouseLeave(null, { id: edge.id } as never);
-    const before = Object.values(s().doc.edges).filter((e) => e.sourceId === coCause.id).length;
+    const entitiesBefore = Object.keys(s().doc.entities).length;
     result.current.onConnectEnd(
       mockMouseEvent(),
       mockFinalConnectionState({ fromId: coCause.id, toId: null, isValid: false })
     );
-    // Hover was cleared; drop-in-empty-space is a no-op.
-    const after = Object.values(s().doc.edges).filter((e) => e.sourceId === coCause.id).length;
-    expect(after).toBe(before);
+    // Hover was cleared, so the release did NOT add a co-cause into the
+    // previously-hovered edge's target (no coCause → edge.target edge).
+    const addedCoCause = Object.values(s().doc.edges).some(
+      (e) => e.sourceId === coCause.id && e.targetId === edge.targetId
+    );
+    expect(addedCoCause).toBe(false);
+    // Instead, the empty-space release created a fresh connected node.
+    expect(Object.keys(s().doc.entities).length).toBe(entitiesBefore + 1);
   });
 });
 

@@ -54,11 +54,32 @@ describe('useGraphMutations.onConnectEnd', () => {
     expect(edges[0]?.targetId).toBe(b.id);
   });
 
-  it('does nothing when released over empty canvas (toNode is null)', () => {
+  it('creates a connected child when a source-handle drag is released over empty canvas', () => {
     const a = seedEntity('A');
     const { result } = renderHook(() => useGraphMutations());
     act(() => result.current.onConnectEnd(fakeEvent, finalStateOverEmptyCanvas(a.id)));
-    expect(Object.values(useDocumentStore.getState().doc.edges)).toHaveLength(0);
+    // Empty-space release now mints a fresh entity and wires it (source handle
+    // → new downstream child), instead of silently doing nothing.
+    const doc = useDocumentStore.getState().doc;
+    const edges = Object.values(doc.edges);
+    expect(Object.keys(doc.entities)).toHaveLength(2);
+    expect(edges).toHaveLength(1);
+    expect(edges[0]?.sourceId).toBe(a.id);
+    expect(edges[0]?.targetId).not.toBe(a.id);
+  });
+
+  it('creates a connected parent when a target-handle drag is released over empty canvas', () => {
+    const a = seedEntity('A');
+    const { result } = renderHook(() => useGraphMutations());
+    const state = mockFinalConnectionState({ fromId: a.id, toId: null, fromHandleType: 'target' });
+    act(() => result.current.onConnectEnd(fakeEvent, state));
+    const doc = useDocumentStore.getState().doc;
+    const edges = Object.values(doc.edges);
+    expect(Object.keys(doc.entities)).toHaveLength(2);
+    expect(edges).toHaveLength(1);
+    // Target handle → the new entity is the upstream parent (cause).
+    expect(edges[0]?.targetId).toBe(a.id);
+    expect(edges[0]?.sourceId).not.toBe(a.id);
   });
 
   it('does nothing on a self-loop (released over the source node body)', () => {

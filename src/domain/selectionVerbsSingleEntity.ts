@@ -260,6 +260,15 @@ export const verbsForSingleEntity = (id: string, state: DocumentStore): Verb[] =
     writes: true,
     run: (s) => s.openCommentsPanel(),
   });
+  // Improvement review — duplicate the entity in place (offset one step). A
+  // fast clone that never touches the copy/paste clipboard buffer.
+  verbs.push({
+    id: 'duplicate-selection',
+    label: 'Duplicate',
+    shortLabel: 'Duplicate',
+    writes: true,
+    paletteCommandId: 'duplicate-selection',
+  });
   verbs.push({
     id: 'confirm-delete-selection',
     label: 'Delete',

@@ -58,6 +58,9 @@ export function mockFinalConnectionState(partial: {
   fromId?: string | null;
   toId?: string | null;
   toHandle?: { nodeId: string } | null;
+  /** Which handle the drag started from — decides create-and-connect direction
+   *  on an empty-space release. Defaults to `source` (extends downstream). */
+  fromHandleType?: 'source' | 'target';
   isValid?: boolean;
 }): FinalConnectionState {
   // Distinguish "key not in partial" (→ undefined → default null) from
@@ -75,6 +78,7 @@ export function mockFinalConnectionState(partial: {
   return {
     toHandle: partial.toHandle ?? null,
     fromNode,
+    fromHandle: partial.fromHandleType ? { type: partial.fromHandleType } : null,
     toNode,
     isValid: partial.isValid ?? null,
   } as never;

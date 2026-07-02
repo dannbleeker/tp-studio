@@ -17,6 +17,7 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   Copy,
+  CopyPlus,
   Download,
   FilePlus,
   FileUp,
@@ -49,6 +50,7 @@ export const COMMAND_ICON_BY_ID: Record<string, LucideIcon | undefined> = {
   'copy-selection': Copy,
   'cut-selection': Scissors,
   'paste-clipboard': FilePlus,
+  'duplicate-selection': CopyPlus,
   // View / nav
   'open-search': Search,
   'open-settings': Settings,

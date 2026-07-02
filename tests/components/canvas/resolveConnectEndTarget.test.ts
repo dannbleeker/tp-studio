@@ -6,7 +6,8 @@
  * clearing) are already covered by the integration tests in
  * `tests/{hooks,components/canvas}/useGraphMutations.test.tsx`. This file pins the
  * thing those can't cleanly assert: the DROP-TARGET PRIORITY ORDER — node body
- * beats junctor beats edge body beats empty — and the junctor group→member lookup.
+ * beats junctor beats edge body beats empty-space create — and the junctor
+ * group→member lookup.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -16,7 +17,12 @@ import {
 } from '@/components/canvas/hooks/resolveConnectEndTarget';
 import type { HoveredJunctor } from '@/services/canvasRef';
 
-const NO_HOVER = { hoveredJunctor: null, hoveredEdgeId: null, rfEdges: [] as ConnectEndEdge[] };
+const NO_HOVER = {
+  fromHandleType: 'source' as const,
+  hoveredJunctor: null,
+  hoveredEdgeId: null,
+  rfEdges: [] as ConnectEndEdge[],
+};
 
 const andEdge = (id: string, groupId: string): ConnectEndEdge => ({
   id,
@@ -39,6 +45,7 @@ describe('resolveConnectEndTarget — priority: node body', () => {
     const t = resolveConnectEndTarget({
       sourceId: 'A',
       toNodeId: 'B',
+      fromHandleType: 'source',
       hoveredJunctor: junctor,
       hoveredEdgeId: 'e9',
       rfEdges: [andEdge('e9', 'g1')],
@@ -53,6 +60,7 @@ describe('resolveConnectEndTarget — priority: junctor circle', () => {
     const t = resolveConnectEndTarget({
       sourceId: 'A',
       toNodeId: null,
+      fromHandleType: 'source',
       hoveredJunctor: junctor,
       hoveredEdgeId: null,
       rfEdges: [andEdge('e1', 'other'), andEdge('e2', 'g1')],
@@ -70,6 +78,7 @@ describe('resolveConnectEndTarget — priority: junctor circle', () => {
     const or = resolveConnectEndTarget({
       sourceId: 'A',
       toNodeId: null,
+      fromHandleType: 'source',
       hoveredJunctor: { groupId: 'g1', kind: 'OR' },
       hoveredEdgeId: null,
       rfEdges: [{ id: 'e1', data: { orGroupId: 'g1' } }],
@@ -84,6 +93,7 @@ describe('resolveConnectEndTarget — priority: junctor circle', () => {
     const xor = resolveConnectEndTarget({
       sourceId: 'A',
       toNodeId: null,
+      fromHandleType: 'source',
       hoveredJunctor: { groupId: 'g2', kind: 'XOR' },
       hoveredEdgeId: null,
       rfEdges: [{ id: 'e2', data: { xorGroupId: 'g2' } }],
@@ -100,6 +110,7 @@ describe('resolveConnectEndTarget — priority: junctor circle', () => {
     const t = resolveConnectEndTarget({
       sourceId: 'A',
       toNodeId: null,
+      fromHandleType: 'source',
       hoveredJunctor: { groupId: 'gone', kind: 'AND' },
       hoveredEdgeId: 'e9',
       rfEdges: [andEdge('e1', 'still-here')],
@@ -111,6 +122,7 @@ describe('resolveConnectEndTarget — priority: junctor circle', () => {
     const t = resolveConnectEndTarget({
       sourceId: 'A',
       toNodeId: null,
+      fromHandleType: 'source',
       hoveredJunctor: { groupId: 'g1', kind: 'AND' },
       hoveredEdgeId: 'e-under',
       rfEdges: [andEdge('e1', 'g1')],
@@ -124,6 +136,7 @@ describe('resolveConnectEndTarget — priority: junctor circle', () => {
     const t = resolveConnectEndTarget({
       sourceId: 'A',
       toNodeId: null,
+      fromHandleType: 'source',
       hoveredJunctor: { groupId: 'g1', kind: 'AND' },
       hoveredEdgeId: null,
       rfEdges: [{ id: 'e1', data: { orGroupId: 'g1' } }],
@@ -132,11 +145,12 @@ describe('resolveConnectEndTarget — priority: junctor circle', () => {
   });
 });
 
-describe('resolveConnectEndTarget — priority: edge body + empty', () => {
+describe('resolveConnectEndTarget — priority: edge body + empty-space create', () => {
   it('adds an AND co-cause when released over an edge body', () => {
     const t = resolveConnectEndTarget({
       sourceId: 'A',
       toNodeId: null,
+      fromHandleType: 'source',
       hoveredJunctor: null,
       hoveredEdgeId: 'e7',
       rfEdges: [],
@@ -144,8 +158,20 @@ describe('resolveConnectEndTarget — priority: edge body + empty', () => {
     expect(t).toEqual({ kind: 'edge-andcause', sourceId: 'A', edgeId: 'e7' });
   });
 
-  it('is a noop when released in empty space', () => {
+  it('creates a downstream child when a SOURCE handle is released in empty space', () => {
     const t = resolveConnectEndTarget({ sourceId: 'A', toNodeId: null, ...NO_HOVER });
-    expect(t).toEqual({ kind: 'noop' });
+    expect(t).toEqual({ kind: 'create-and-connect', sourceId: 'A', fromHandleType: 'source' });
+  });
+
+  it('creates an upstream parent when a TARGET handle is released in empty space', () => {
+    const t = resolveConnectEndTarget({
+      sourceId: 'A',
+      toNodeId: null,
+      fromHandleType: 'target',
+      hoveredJunctor: null,
+      hoveredEdgeId: null,
+      rfEdges: [],
+    });
+    expect(t).toEqual({ kind: 'create-and-connect', sourceId: 'A', fromHandleType: 'target' });
   });
 });

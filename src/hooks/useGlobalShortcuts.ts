@@ -3,10 +3,16 @@ import { useShallow } from 'zustand/shallow';
 import { createDocument } from '@/domain/factory';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasInstance } from '@/services/canvasRef';
-import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboard';
+import {
+  copySelection,
+  cutSelection,
+  duplicateSelection,
+  pasteClipboard,
+} from '@/services/clipboard';
 import { isStandalonePWA } from '@/services/pwa';
 import { flushPersist } from '@/services/storage/persistDebounced';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { isEditableTarget, isInteractiveTarget } from './keyboardUtils';
 
 /**
@@ -205,6 +211,34 @@ export function useGlobalShortcuts() {
         if (result.ok) {
           e.preventDefault();
           showToast('success', `Pasted ${result.entities} entities, ${result.edges} edges.`);
+        }
+        return;
+      }
+
+      // reg: duplicate
+      // Cmd/Ctrl+D — duplicate the entity selection in place (no clipboard
+      // write, so it never clobbers what was copied). Always preventDefault so
+      // the browser's "bookmark this page" dialog can't fire over the canvas.
+      if (cmdOrCtrl && !inField && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        if (!guardWriteOrToast()) return;
+        const r = duplicateSelection();
+        if (r.ok) {
+          showToast('success', `Duplicated ${r.entities} entit${r.entities === 1 ? 'y' : 'ies'}.`);
+        }
+        return;
+      }
+
+      // reg: select-all
+      // Cmd/Ctrl+A — select every entity in the active document (the gateway to
+      // the MultiInspector's bulk operations). Skipped while typing so the
+      // native "select all text" still works in fields.
+      if (cmdOrCtrl && !inField && e.key.toLowerCase() === 'a') {
+        const st = useDocumentStore.getState();
+        const ids = Object.keys(currentDoc(st).entities);
+        if (ids.length > 0) {
+          e.preventDefault();
+          st.selectEntities(ids);
         }
         return;
       }

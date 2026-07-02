@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 1: core authoring hot path
+
+A grounded product/UX review flagged constant friction in the single most-used loop — sketching
+cause/effect chains. Four additive fixes, all opt-in-free (no schema change):
+
+- **Drag a connection into empty canvas now creates a connected node.** Releasing a connection
+  drag in empty space was a silent no-op; it now mints a fresh entity at the drop point and wires
+  it, with direction from the grabbed handle — a bottom (cause) handle extends to a new child, a
+  top (effect) handle to a new parent (mirrors `Tab` / `Shift+Tab`). The new node opens in edit
+  mode. Manual-layout diagrams (EC / freeform) seed the drop coordinate; auto-layout lets dagre
+  place it. The pure drop-resolver (`resolveConnectEndTarget`) gained a `create-and-connect`
+  variant so the priority order (node → junctor → edge → empty) stays unit-tested.
+- **Paste now offsets each copy** by a diagonal step instead of dropping it exactly on the source
+  (previously hidden behind the original). Repeated pastes of the same clipboard fan out via a
+  cascade counter that resets on every fresh copy.
+- **Duplicate (`Cmd/Ctrl+D`)** — clone the entity selection in place (one step offset) *without*
+  touching the copy/paste clipboard, so duplicating never clobbers what was last copied. Surfaced
+  as a palette command and on the selection toolbar / context menu (single + multi entity).
+- **Select All (`Cmd/Ctrl+A`)** — select every entity in the document, the fast gateway into the
+  multi-selection bulk actions. Skipped while typing so native text-select still works.
+
+Clipboard logic was refactored to a shared `cloneIntoDoc(payload, offset)` core behind both paste
+and duplicate. New tests cover the offset cascade, the copy-buffer isolation of duplicate, and
+both create-and-connect directions; `shortcuts.ts` + the registry-link test carry the two new
+keys.
+
 ## Session 192 — `@studio/ui` extraction prep + app-wide accent token
 
 Groundwork for vendoring `src/components/ui/` into a shared `@studio/ui` + `@studio/tokens`

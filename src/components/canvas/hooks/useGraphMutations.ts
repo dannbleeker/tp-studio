@@ -8,10 +8,13 @@ import type {
 } from '@xyflow/react';
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { hasEdge } from '@/domain/graph';
+import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasInstance, getHoveredJunctor, setHoveredJunctor } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { resolveConnectEndTarget } from './resolveConnectEndTarget';
 
 /**
@@ -163,7 +166,7 @@ export const useGraphMutations = (): {
   );
 
   const onConnectEnd = useCallback(
-    (_event: MouseEvent | TouchEvent, connectionState: FinalConnectionState) => {
+    (event: MouseEvent | TouchEvent, connectionState: FinalConnectionState) => {
       // Goal #2 — the drag is ending: clear the connection-drag feedback flags
       // up front (the drop resolution below is independent of them).
       const fb = useDocumentStore.getState();
@@ -192,6 +195,7 @@ export const useGraphMutations = (): {
       const target = resolveConnectEndTarget({
         sourceId,
         toNodeId: connectionState.toNode?.id ?? null,
+        fromHandleType: connectionState.fromHandle?.type ?? 'source',
         hoveredJunctor,
         hoveredEdgeId,
         rfEdges: getCanvasInstance()?.getEdges() ?? [],
@@ -200,6 +204,40 @@ export const useGraphMutations = (): {
       switch (target.kind) {
         case 'noop':
           return;
+        case 'create-and-connect': {
+          // Released in empty space — mint a fresh entity and wire it, turning
+          // the "drag out and let go" gesture into a new connected node (the
+          // dominant sketch-a-chain-outward motion) instead of a silent no-op.
+          if (!guardWriteOrToast()) return;
+          const st = useDocumentStore.getState();
+          const doc = currentDoc(st);
+          const fresh = st.addEntity({
+            type: defaultEntityType(doc.diagramType),
+            startEditing: true,
+          });
+          // Manual-layout diagrams (EC / freeform) honour `Entity.position` —
+          // drop the node where the drag was released. Auto-layout diagrams let
+          // dagre place it, so skip the extra history step there.
+          if (LAYOUT_STRATEGY[doc.diagramType] === 'manual') {
+            const inst = getCanvasInstance();
+            const touch = 'clientX' in event ? null : event.changedTouches?.[0];
+            const screenPoint =
+              'clientX' in event
+                ? { x: event.clientX, y: event.clientY }
+                : touch
+                  ? { x: touch.clientX, y: touch.clientY }
+                  : null;
+            if (inst && screenPoint) {
+              st.setEntityPosition(fresh.id, inst.screenToFlowPosition(screenPoint));
+            }
+          }
+          // Direction from the grabbed handle: a `source` handle extends
+          // downstream (source → new child); a `target` handle extends upstream
+          // (new parent → source), mirroring the Tab / Shift+Tab semantics.
+          if (target.fromHandleType === 'source') connectOrExplain(target.sourceId, fresh.id);
+          else connectOrExplain(fresh.id, target.sourceId);
+          return;
+        }
         case 'connect':
           if (!guardWriteOrToast()) return;
           connectOrExplain(target.sourceId, target.targetId);

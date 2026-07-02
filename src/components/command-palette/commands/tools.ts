@@ -2,7 +2,12 @@ import { defaultEntityType } from '@/domain/entityTypeMeta';
 import { GROUP_COLORS_ORDER } from '@/domain/groupColors';
 import type { EntityType } from '@/domain/types';
 import { validate } from '@/domain/validators';
-import { copySelection, cutSelection, pasteClipboard } from '@/services/clipboard';
+import {
+  copySelection,
+  cutSelection,
+  duplicateSelection,
+  pasteClipboard,
+} from '@/services/clipboard';
 import { confirmAndDeleteSelection } from '@/services/confirmations';
 import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
@@ -451,6 +456,21 @@ export const toolCommands: Command[] = [
       const r = pasteClipboard();
       if (r.ok) s.showToast('success', `Pasted ${r.entities} entities, ${r.edges} edges.`);
       else s.showToast('info', 'Clipboard is empty.');
+    },
+  }),
+  // Session (improvement review) — Duplicate the current entity selection in
+  // place. Distinct from copy+paste: it never touches the clipboard buffer, so
+  // duplicating doesn't clobber whatever the user last copied. Bound to
+  // Cmd/Ctrl+D in the global hook.
+  withWriteGuard({
+    id: 'duplicate-selection',
+    label: 'Duplicate selection',
+    group: 'Edit',
+    run: (s) => {
+      const r = duplicateSelection();
+      if (r.ok)
+        s.showToast('success', `Duplicated ${r.entities} entit${r.entities === 1 ? 'y' : 'ies'}.`);
+      else s.showToast('info', 'Nothing to duplicate — select entities first.');
     },
   }),
   withWriteGuard({
