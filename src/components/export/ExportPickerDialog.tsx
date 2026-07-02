@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { useEffect, useRef } from 'react';
 import { entitiesOfType } from '@/domain/graph';
 import { redactDocument } from '@/domain/redact';
 import { getCanvasNodes } from '@/services/canvasRef';
@@ -25,7 +26,9 @@ import {
   exportVGL,
 } from '@/services/exporters';
 import { exportECWorkshopSheet } from '@/services/exporters/ecWorkshopExport';
+import { hasNonLatin1 } from '@/services/exporters/pdfShared';
 import { generateShareLink, SHARE_LINK_SOFT_WARN_BYTES } from '@/services/shareLink';
+import { getLastExportId, recordLastExport } from '@/services/storage/recentExports';
 import { type RootStore, useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { CARD_FOCUS } from '../ui/focusClasses';
@@ -143,9 +146,22 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
         hint: 'One-page A4 landscape handout matching the BESTSELLER PPT layout.',
         onlyOnECDoc: true,
         run: async (s) => {
-          const ok = await exportECWorkshopSheet(currentDoc(s));
-          if (ok) s.showToast('success', 'EC workshop sheet saved.');
-          else s.showToast('error', 'Workshop sheet export failed.');
+          const activeDoc = currentDoc(s);
+          const ok = await exportECWorkshopSheet(activeDoc);
+          if (!ok) {
+            s.showToast('error', 'Workshop sheet export failed.');
+            return;
+          }
+          // Session 193 — the sheet renders through jsPDF's Latin-1 fonts, so
+          // flag when a slot title carries characters those fonts can't draw.
+          const caution = hasNonLatin1(
+            Object.values(activeDoc.entities)
+              .map((e) => e.title)
+              .join('\n')
+          )
+            ? ' Note: some characters fall outside the PDF fonts (Latin-1) and may not render.'
+            : '';
+          s.showToast('success', `EC workshop sheet saved.${caution}`);
         },
       },
       {
@@ -373,6 +389,19 @@ export function ExportPickerDialog() {
     (s) => entitiesOfType(currentDoc(s), 'intermediateObjective').length > 0
   );
 
+  // Session 193 — remember the last export format. Reopening the picker
+  // auto-focuses that item (so Enter repeats the last export) and marks it
+  // "Last used". `lastExportId` is null until the user has run one export, so
+  // a fresh picker looks and focuses exactly as before.
+  const lastExportRef = useRef<HTMLButtonElement | null>(null);
+  const lastExportId = open ? getLastExportId() : null;
+  useEffect(() => {
+    if (!open) return;
+    // Defer past the dialog's own initial focus so the last-used item wins.
+    const id = window.setTimeout(() => lastExportRef.current?.focus(), 0);
+    return () => window.clearTimeout(id);
+  }, [open]);
+
   if (!open) return null;
 
   // Availability of each gated entity type, keyed by the `requiresEntityType`
@@ -385,6 +414,7 @@ export function ExportPickerDialog() {
 
   const handlePick = async (action: ExportAction): Promise<void> => {
     close();
+    recordLastExport(action.id);
     // Run the action against the live store state. The exporter
     // surfaces its own toasts (success / error / info); we just
     // dispatch and close. Awaited so async exporters (PNG / JPEG /
@@ -415,27 +445,41 @@ export function ExportPickerDialog() {
                 {cat.title}
               </h3>
               <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                {visible.map((it) => (
-                  <li key={it.id}>
-                    <button
-                      type="button"
-                      onClick={() => void handlePick(it)}
-                      className={clsx(
-                        'group flex w-full flex-col gap-0.5 rounded-md border border-neutral-200 bg-white px-3 py-2 text-left transition',
-                        'hover:border-accent-400 hover:bg-accent-50/40',
-                        CARD_FOCUS,
-                        'dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500 dark:hover:bg-accent-950/40'
-                      )}
-                    >
-                      <span className="font-medium text-neutral-900 text-sm dark:text-neutral-100">
-                        {it.label}
-                      </span>
-                      <span className="text-[11px] text-neutral-500 leading-snug dark:text-neutral-400">
-                        {it.hint}
-                      </span>
-                    </button>
-                  </li>
-                ))}
+                {visible.map((it) => {
+                  const isLast = it.id === lastExportId;
+                  return (
+                    <li key={it.id}>
+                      <button
+                        type="button"
+                        ref={isLast ? lastExportRef : undefined}
+                        onClick={() => void handlePick(it)}
+                        className={clsx(
+                          'group flex w-full flex-col gap-0.5 rounded-md border px-3 py-2 text-left transition',
+                          'hover:border-accent-400 hover:bg-accent-50/40',
+                          CARD_FOCUS,
+                          isLast
+                            ? 'border-accent-300 bg-accent-50/50 dark:border-accent-700 dark:bg-accent-950/40'
+                            : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900',
+                          'dark:hover:border-accent-500 dark:hover:bg-accent-950/40'
+                        )}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <span className="font-medium text-neutral-900 text-sm dark:text-neutral-100">
+                            {it.label}
+                          </span>
+                          {isLast && (
+                            <span className="rounded-sm bg-accent-100 px-1 py-px font-medium text-[9px] text-accent-700 uppercase tracking-wide dark:bg-accent-900/60 dark:text-accent-200">
+                              Last used
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-[11px] text-neutral-500 leading-snug dark:text-neutral-400">
+                          {it.hint}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           );

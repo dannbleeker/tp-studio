@@ -2,6 +2,24 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 4: last-used export + non-Latin-1 caution
+
+Two rough edges in the export/print flow.
+
+- **The Export picker remembers your last format.** Reopening Export now
+  auto-focuses the format you last exported (so Enter repeats it) and marks that
+  card "Last used". Persisted best-effort in `localStorage` via a small
+  `recentExports` helper (single id, degrades to session memory if storage
+  throws); a fresh picker with no history looks and focuses exactly as before.
+- **Print / Save-as-PDF warns about characters the built-in fonts can't draw.**
+  jsPDF's standard fonts are Latin-1 only, so a diagram with Cyrillic / CJK /
+  Greek / emoji text printed blank or garbled glyphs with no warning. A new pure
+  `hasNonLatin1` scans the text bound for the PDF; the Print dialog shows an
+  amber caution under the export buttons (pointing users to the browser's own
+  Save-as-PDF for full Unicode), and the EC workshop-sheet export appends the
+  same caution to its success toast. Browser print is unaffected and stays
+  silent.
+
 ## Session 192 (cont.) — Improvement-review batch 4: PPTX tall-diagram tiling
 
 The PowerPoint deck's diagram slide `contain`-fit a single image, so a tall

@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExportPickerDialog } from '@/components/export/ExportPickerDialog';
+import { __resetLastExportForTest } from '@/services/storage/recentExports';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../../helpers/seedDoc';
 
@@ -92,6 +93,10 @@ const clickButton = (container: HTMLElement, label: string): void => {
 beforeEach(() => {
   resetStoreForTest();
   vi.clearAllMocks();
+  // Session 193 — the last-used-format memory is real (localStorage-backed);
+  // reset it so a pick in one test doesn't mark/focus a card in the next.
+  __resetLastExportForTest();
+  window.localStorage.clear();
 });
 afterEach(cleanup);
 
@@ -539,6 +544,68 @@ describe('ExportPickerDialog — click fires exporter and closes', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Last-used-format memory
+// ---------------------------------------------------------------------------
+
+describe('ExportPickerDialog — last-used format memory', () => {
+  // The "Last used" mark nests the label inside a flex wrapper span, so the
+  // first span is no longer the label. Match the leaf span whose exact text
+  // is the label (the marker + hint spans carry different text), which also
+  // keeps "JSON" from matching the "JSON (redacted)" card.
+  const findCard = (container: HTMLElement, label: string): HTMLButtonElement => {
+    const btn = Array.from(container.querySelectorAll('button')).find((b) =>
+      Array.from(b.querySelectorAll('span')).some(
+        (s) => s.children.length === 0 && s.textContent?.trim() === label
+      )
+    );
+    if (!btn) throw new Error(`No export card button with label "${label}"`);
+    return btn;
+  };
+
+  it('does not mark any card on a fresh picker (no prior export)', () => {
+    openPicker();
+    const { container } = render(<ExportPickerDialog />);
+    expect(container.textContent).not.toMatch(/Last used/);
+  });
+
+  it('marks the previously-exported format "Last used" when the picker reopens', async () => {
+    openPicker();
+    const first = render(<ExportPickerDialog />);
+    await act(async () => {
+      clickButton(first.container, 'SVG');
+    });
+    first.unmount();
+
+    openPicker();
+    const { container } = render(<ExportPickerDialog />);
+    expect(findCard(container, 'SVG').textContent).toMatch(/Last used/);
+    // Only the last-used card is marked, not its neighbours.
+    expect(findCard(container, 'PNG (2×)').textContent).not.toMatch(/Last used/);
+  });
+
+  it('moves the "Last used" mark when a different format is exported', async () => {
+    openPicker();
+    const first = render(<ExportPickerDialog />);
+    await act(async () => {
+      clickButton(first.container, 'SVG');
+    });
+    first.unmount();
+
+    openPicker();
+    const second = render(<ExportPickerDialog />);
+    await act(async () => {
+      clickButton(second.container, 'JSON');
+    });
+    second.unmount();
+
+    openPicker();
+    const { container } = render(<ExportPickerDialog />);
+    expect(findCard(container, 'JSON').textContent).toMatch(/Last used/);
+    expect(findCard(container, 'SVG').textContent).not.toMatch(/Last used/);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Toast side-effects from exporters
 // ---------------------------------------------------------------------------
 
@@ -608,6 +675,44 @@ describe('ExportPickerDialog — toast side-effects', () => {
       expect(toasts.length).toBeGreaterThan(0);
       expect(toasts[0]?.kind).toBe('success');
     });
+  });
+
+  it('EC workshop success toast carries a non-Latin-1 caution when a title needs it', async () => {
+    const { exportECWorkshopSheet } = await import('@/services/exporters/ecWorkshopExport');
+    (exportECWorkshopSheet as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    act(() => {
+      seedEntity('Цель проекта', 'goal'); // Cyrillic — outside Latin-1
+    });
+    openPicker();
+    const { container } = render(<ExportPickerDialog />);
+    act(() => {
+      clickButton(container, 'EC workshop sheet (PDF)');
+    });
+    await waitFor(() => {
+      const toasts = useDocumentStore.getState().toasts;
+      expect(toasts[0]?.kind).toBe('success');
+      expect(toasts[0]?.message).toMatch(/may not render/i);
+    });
+  });
+
+  it('EC workshop success toast omits the caution for an all-ASCII title', async () => {
+    const { exportECWorkshopSheet } = await import('@/services/exporters/ecWorkshopExport');
+    (exportECWorkshopSheet as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    act(() => {
+      seedEntity('Reduce lead time', 'goal');
+    });
+    openPicker();
+    const { container } = render(<ExportPickerDialog />);
+    act(() => {
+      clickButton(container, 'EC workshop sheet (PDF)');
+    });
+    await waitFor(() => {
+      const toasts = useDocumentStore.getState().toasts;
+      expect(toasts[0]?.kind).toBe('success');
+    });
+    expect(useDocumentStore.getState().toasts[0]?.message).not.toMatch(/may not render/i);
   });
 
   it('EC workshop sheet shows an error toast on failure', async () => {

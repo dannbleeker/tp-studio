@@ -1,11 +1,12 @@
 import clsx from 'clsx';
-import { FileDown, Printer } from 'lucide-react';
+import { AlertTriangle, FileDown, Printer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { structuralEntities } from '@/domain/graph';
 import { buildReasoningSentences } from '@/domain/reasoningExport';
 import type { TPDocument } from '@/domain/types';
 import { getCanvasNodes } from '@/services/canvasRef';
 import { exportToVectorPdf } from '@/services/exporters/pdfExport';
+import { hasNonLatin1 } from '@/services/exporters/pdfShared';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -240,6 +241,19 @@ export function PrintPreviewDialog() {
   const annotationCount = structuralEntities(doc).filter((e) => e.description).length;
   const reasoningCount = buildReasoningSentences(doc).length;
 
+  // Session 193 — the vector PDF renders through jsPDF's built-in Latin-1
+  // fonts, so scan the text that lands in it (entity titles + descriptions,
+  // plus the resolved header/footer) and warn when any character falls
+  // outside that range. Browser print uses system fonts, so this caution is
+  // scoped to the "Save as PDF" path only.
+  const pdfHasNonLatin1 = hasNonLatin1(
+    [
+      ...structuralEntities(doc).flatMap((e) => [e.title, e.description ?? '']),
+      resolveMergeFields(headerTemplate, doc),
+      resolveMergeFields(footerTemplate, doc),
+    ].join('\n')
+  );
+
   return (
     <LargeDialog
       open={open}
@@ -410,6 +424,17 @@ export function PrintPreviewDialog() {
           </span>
         </label>
       </div>
+
+      {pdfHasNonLatin1 && (
+        <p className="mt-3 flex items-start gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300">
+          <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden />
+          <span>
+            This diagram contains characters outside the Latin-1 range (e.g. a non-Latin script).{' '}
+            <b>Save as PDF</b> uses built-in fonts that can't render them, so they may print blank
+            or garbled. For full Unicode, use <b>Open print dialog</b> and pick "Save as PDF" there.
+          </span>
+        </p>
+      )}
 
       <footer className="flex flex-wrap justify-end gap-2">
         <Button variant="ghost" onClick={close}>

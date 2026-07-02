@@ -27,3 +27,22 @@ export const loadJsPdf = async (): Promise<typeof jsPDF> => {
   const { jsPDF: ctor } = await import('jspdf');
   return ctor;
 };
+
+/**
+ * Session 193 — true when `text` contains any character outside the Latin-1
+ * (ISO-8859-1, code point ≤ 0xFF) range.
+ *
+ * jsPDF's built-in fonts encode WinAnsi/Latin-1 only, so glyphs beyond that
+ * range — CJK, Cyrillic, Greek, Arabic, Hebrew, Devanagari, emoji … — drop
+ * or mis-render in both the vector PDF (`pdfExport`) and the EC workshop
+ * sheet (`ecWorkshopExport`). The Print/Save-as-PDF dialog uses this to warn
+ * before a user exports a diagram whose text won't survive the built-in
+ * fonts; browser print (Ctrl/Cmd+P) uses system fonts and is unaffected.
+ */
+export const hasNonLatin1 = (text: string): boolean => {
+  for (const ch of text) {
+    const cp = ch.codePointAt(0);
+    if (cp !== undefined && cp > 0xff) return true;
+  }
+  return false;
+};
