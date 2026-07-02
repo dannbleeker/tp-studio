@@ -6,8 +6,19 @@ import { ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 
-beforeEach(resetStoreForTest);
-afterEach(cleanup);
+beforeEach(() => {
+  resetStoreForTest();
+  // Session 193 — the Appearance (title size + icon) and Advanced (unspecified +
+  // locus) groups are collapsible and default-collapsed. Open them via the same
+  // persisted-state seam a returning user hits, so the field-level tests below
+  // can still query their controls.
+  window.localStorage.setItem('tp-inspector-section:appearance', '1');
+  window.localStorage.setItem('tp-inspector-section:advanced', '1');
+});
+afterEach(() => {
+  cleanup();
+  window.localStorage.clear();
+});
 
 /**
  * EntityInspector is the editing surface for a single entity: title textarea,

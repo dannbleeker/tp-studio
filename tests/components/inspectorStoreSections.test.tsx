@@ -1,7 +1,9 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { AssumptionWell } from '@/components/inspector/AssumptionWell';
 import { EvidenceList } from '@/components/inspector/EvidenceList';
 import { GroupInspector } from '@/components/inspector/GroupInspector';
+import { assumptionsForEdge } from '@/domain/graph';
 import { GROUP_COLORS_ORDER } from '@/domain/groupColors';
 import { GROUP_PRESETS } from '@/domain/groupPresets';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -11,7 +13,7 @@ import { seedEntity } from '../helpers/seedDoc';
 /**
  * Session 177 — store-connected render tests for two inspector sections that
  * read/write the store directly (so they need the real store, not just
- * props): EvidenceList (add / edit / cycle source+strength / validate /
+ * props): EvidenceList (add / edit / pick source+strength / validate /
  * remove, plus the "entity gone away" toast) and GroupInspector (rename,
  * recolor, preset, collapse, archive-auto-reveal).
  */
@@ -45,7 +47,7 @@ describe('EvidenceList', () => {
     expect(s().toasts.length).toBe(before + 1);
   });
 
-  it('edits the description, cycles source + strength, and validates a row', () => {
+  it('edits the description, picks source + strength directly, and validates a row', () => {
     const e = seedEntity('Effect');
     act(() => {
       s().addEvidence(e.id);
@@ -62,10 +64,16 @@ describe('EvidenceList', () => {
     );
     expect(evidenceOf(e.id)[0]?.description).toBe('Survey n=200');
 
-    act(() => fireEvent.click(getByLabelText(/Source Observed/)));
+    // Session 193 — source + strength are now direct-pick <select>s, not
+    // forward-only cycle chips: any value in one change, no intermediate steps.
+    act(() =>
+      fireEvent.change(getByLabelText(/Evidence source/), { target: { value: 'stakeholder' } })
+    );
     expect(evidenceOf(e.id)[0]?.source).toBe('stakeholder');
 
-    act(() => fireEvent.click(getByLabelText(/Strength Moderate/)));
+    act(() =>
+      fireEvent.change(getByLabelText(/Evidence strength/), { target: { value: 'strong' } })
+    );
     expect(evidenceOf(e.id)[0]?.strength).toBe('strong');
 
     act(() => fireEvent.click(getByText(/Mark validated/).closest('button') as HTMLButtonElement));
@@ -173,5 +181,37 @@ describe('GroupInspector', () => {
     );
     expect(grp(g.id)?.archived).toBe(true);
     expect(s().showArchivedGroups).toBe(true);
+  });
+});
+
+describe('AssumptionWell — direct-pick status + kind (Session 193)', () => {
+  it('picks status + kind in one change; kind round-trips the untyped state', () => {
+    const a = seedEntity('Cause');
+    const b = seedEntity('Effect');
+    let edgeId = '';
+    act(() => {
+      edgeId = s().connect(a.id, b.id)?.id ?? '';
+    });
+    expect(edgeId).not.toBe('');
+    let assumptionId = '';
+    act(() => {
+      assumptionId = s().addAssumptionToEdge(edgeId)?.id ?? '';
+    });
+    const { getByLabelText } = render(<AssumptionWell edgeId={edgeId} />);
+    expect(assumptionsForEdge(doc(), edgeId)).toHaveLength(1);
+
+    // Status: jump straight to 'invalid' (no intermediate cycle steps).
+    act(() =>
+      fireEvent.change(getByLabelText(/Assumption status/), { target: { value: 'invalid' } })
+    );
+    expect(doc().assumptions?.[assumptionId]?.status).toBe('invalid');
+
+    // Kind: pick 'sufficient', then return to untyped via the '' sentinel.
+    act(() =>
+      fireEvent.change(getByLabelText(/Assumption kind/), { target: { value: 'sufficient' } })
+    );
+    expect(doc().assumptions?.[assumptionId]?.kind).toBe('sufficient');
+    act(() => fireEvent.change(getByLabelText(/Assumption kind/), { target: { value: '' } }));
+    expect(doc().assumptions?.[assumptionId]?.kind).toBeUndefined();
   });
 });

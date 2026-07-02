@@ -1,4 +1,3 @@
-import clsx from 'clsx';
 import { CheckCircle2, ExternalLink, Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { isSafeHref } from '@/domain/safeUrl';
@@ -6,6 +5,7 @@ import type { EvidenceItem, EvidenceSource, EvidenceStrength } from '@/domain/ty
 import { useDocumentStore } from '@/store';
 import { TextArea, TextInput } from '../settings/formPrimitives';
 import { Button } from '../ui/Button';
+import { ChipSelect } from './ChipSelect';
 import { EVIDENCE_SOURCE_CHIP, EVIDENCE_STRENGTH_CHIP } from './chipColors';
 import { Field } from './Field';
 
@@ -47,6 +47,8 @@ const SOURCE_LABEL: Record<EvidenceSource, string> = {
   assumption: 'Assumption',
 };
 
+const SOURCE_OPTIONS = SOURCE_ORDER.map((s) => ({ value: s, label: SOURCE_LABEL[s] }));
+
 // Session 135 — chip palettes moved to `chipColors.ts` (shared with
 // AssumptionWell). Local aliases keep the call-site labels readable
 // while the colour stack lives in one place.
@@ -60,17 +62,9 @@ const STRENGTH_LABEL: Record<EvidenceStrength, string> = {
   strong: 'Strong',
 };
 
+const STRENGTH_OPTIONS = STRENGTH_ORDER.map((s) => ({ value: s, label: STRENGTH_LABEL[s] }));
+
 const STRENGTH_CHIP_CLASS = EVIDENCE_STRENGTH_CHIP;
-
-const cycleSource = (s: EvidenceSource): EvidenceSource => {
-  const idx = SOURCE_ORDER.indexOf(s);
-  return SOURCE_ORDER[(idx + 1) % SOURCE_ORDER.length] ?? 'observed';
-};
-
-const cycleStrength = (s: EvidenceStrength): EvidenceStrength => {
-  const idx = STRENGTH_ORDER.indexOf(s);
-  return STRENGTH_ORDER[(idx + 1) % STRENGTH_ORDER.length] ?? 'moderate';
-};
 
 const formatValidatedAt = (t: number): string =>
   new Date(t).toLocaleDateString(undefined, {
@@ -181,34 +175,24 @@ function EvidenceRow({
       />
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <button
-          type="button"
-          onClick={() => updateEvidence(entityId, item.id, { source: cycleSource(item.source) })}
+        <ChipSelect
+          value={item.source}
+          options={SOURCE_OPTIONS}
+          onChange={(next) => updateEvidence(entityId, item.id, { source: next })}
           disabled={locked}
-          title={`Source: ${SOURCE_LABEL[item.source]} (click to cycle)`}
-          aria-label={`Source ${SOURCE_LABEL[item.source]}. Press to cycle.`}
-          className={clsx(
-            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide outline-hidden transition focus-visible:ring-2 focus-visible:ring-accent-400 disabled:cursor-not-allowed disabled:opacity-50',
-            SOURCE_CHIP_CLASS[item.source]
-          )}
-        >
-          {SOURCE_LABEL[item.source]}
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            updateEvidence(entityId, item.id, { strength: cycleStrength(item.strength) })
-          }
+          colorClass={SOURCE_CHIP_CLASS[item.source]}
+          ariaLabel={`Evidence source: ${SOURCE_LABEL[item.source]}`}
+          title="Evidence source"
+        />
+        <ChipSelect
+          value={item.strength}
+          options={STRENGTH_OPTIONS}
+          onChange={(next) => updateEvidence(entityId, item.id, { strength: next })}
           disabled={locked}
-          title={`Strength: ${STRENGTH_LABEL[item.strength]} (click to cycle)`}
-          aria-label={`Strength ${STRENGTH_LABEL[item.strength]}. Press to cycle.`}
-          className={clsx(
-            'shrink-0 rounded-sm border px-1.5 py-0 font-semibold text-[10px] uppercase tracking-wide outline-hidden transition focus-visible:ring-2 focus-visible:ring-accent-400 disabled:cursor-not-allowed disabled:opacity-50',
-            STRENGTH_CHIP_CLASS[item.strength]
-          )}
-        >
-          {STRENGTH_LABEL[item.strength]}
-        </button>
+          colorClass={STRENGTH_CHIP_CLASS[item.strength]}
+          ariaLabel={`Evidence strength: ${STRENGTH_LABEL[item.strength]}`}
+          title="Evidence strength"
+        />
         <TextInput
           type="url"
           value={item.url ?? ''}

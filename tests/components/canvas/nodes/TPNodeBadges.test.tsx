@@ -172,6 +172,21 @@ describe('PinBadge', () => {
     const { container } = render(<PinBadge diagramType={'ec' as DiagramType} />);
     expect(container.firstChild).toBeNull();
   });
+
+  it('sits at the corner by default (bottom-1.5, no lift)', () => {
+    const { container } = render(<PinBadge diagramType={'crt' as DiagramType} />);
+    const badge = container.querySelector('[aria-label="Pinned position"]');
+    expect(badge?.className).toMatch(/-bottom-1\.5/);
+    expect(badge?.className).not.toMatch(/(?<!-)bottom-5/);
+  });
+
+  it('lifts above the reverse-reach pill when stacked', () => {
+    const { container } = render(<PinBadge diagramType={'crt' as DiagramType} stacked />);
+    const badge = container.querySelector('[aria-label="Pinned position"]');
+    // Session 193 — de-collision: lifted to bottom-5, no longer the corner offset.
+    expect(badge?.className).toMatch(/bottom-5/);
+    expect(badge?.className).not.toMatch(/-bottom-1\.5/);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -466,6 +481,21 @@ describe('CommentCountBadge', () => {
   it('renders a button element', () => {
     const { container } = render(<CommentCountBadge count={2} onOpen={vi.fn()} />);
     expect(container.querySelector('button')).not.toBeNull();
+  });
+
+  it('sits at the corner by default (top-1.5, no drop)', () => {
+    const { container } = render(<CommentCountBadge count={2} onOpen={vi.fn()} />);
+    const button = container.querySelector('button');
+    expect(button?.className).toMatch(/-top-1\.5/);
+    expect(button?.className).not.toMatch(/(?<!-)top-5/);
+  });
+
+  it('drops below the Step badge when stacked', () => {
+    const { container } = render(<CommentCountBadge count={2} onOpen={vi.fn()} stacked />);
+    const button = container.querySelector('button');
+    // Session 193 — de-collision: dropped to top-5, no longer the corner offset.
+    expect(button?.className).toMatch(/top-5/);
+    expect(button?.className).not.toMatch(/-top-1\.5/);
   });
 });
 

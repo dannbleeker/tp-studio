@@ -122,11 +122,23 @@ export const StepBadge = memo(function StepBadge({ ordering }: { ordering: numbe
  * (set by drag). Manual-layout diagrams (EC) suppress because every
  * entity is pinned by definition there.
  */
-export const PinBadge = memo(function PinBadge({ diagramType }: { diagramType: DiagramType }) {
+export const PinBadge = memo(function PinBadge({
+  diagramType,
+  stacked,
+}: {
+  diagramType: DiagramType;
+  // Session 193 — the bottom-right corner also hosts the reverse-reach pill.
+  // When both are present, lift the pin above the pill (fixed-height offset, so
+  // it's robust to the pill's variable width) instead of overlapping it.
+  stacked?: boolean;
+}) {
   if (LAYOUT_STRATEGY[diagramType] === 'manual') return null;
   return (
     <span
-      className="pointer-events-none absolute -right-1.5 -bottom-1.5 rounded-full border border-violet-300 bg-violet-50 p-0.5 text-violet-700 shadow-xs dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200"
+      className={clsx(
+        'pointer-events-none absolute -right-1.5 rounded-full border border-violet-300 bg-violet-50 p-0.5 text-violet-700 shadow-xs dark:border-violet-700 dark:bg-violet-950 dark:text-violet-200',
+        stacked ? 'bottom-5' : '-bottom-1.5'
+      )}
       role="img"
       aria-label="Pinned position"
       title="Pinned position — right-click → Unpin to let auto-layout reclaim it"
@@ -292,9 +304,14 @@ export const EligibilityBadge = memo(function EligibilityBadge({
 export const CommentCountBadge = memo(function CommentCountBadge({
   count,
   onOpen,
+  stacked,
 }: {
   count: number;
   onOpen: () => void;
+  // Session 193 — the top-left corner also hosts the Step badge. When both are
+  // present, drop the comment badge below the Step pill (fixed-height offset,
+  // robust to the pill's variable width) so they no longer overlap.
+  stacked?: boolean;
 }) {
   return (
     <button
@@ -303,7 +320,10 @@ export const CommentCountBadge = memo(function CommentCountBadge({
         e.stopPropagation();
         onOpen();
       }}
-      className="absolute -top-1.5 -left-1.5 flex items-center gap-0.5 rounded-full border border-accent-300 bg-accent-50 px-1.5 py-0.5 font-semibold text-[10px] text-accent-700 shadow-xs transition hover:bg-accent-100 dark:border-accent-700 dark:bg-accent-950 dark:text-accent-200 dark:hover:bg-accent-900"
+      className={clsx(
+        'absolute -left-1.5 flex items-center gap-0.5 rounded-full border border-accent-300 bg-accent-50 px-1.5 py-0.5 font-semibold text-[10px] text-accent-700 shadow-xs transition hover:bg-accent-100 dark:border-accent-700 dark:bg-accent-950 dark:text-accent-200 dark:hover:bg-accent-900',
+        stacked ? 'top-5' : '-top-1.5'
+      )}
       aria-label={`${count} open comment${count === 1 ? '' : 's'} — open the Comments panel`}
       title={`${count} open comment${count === 1 ? '' : 's'} — click to review`}
     >

@@ -59,6 +59,9 @@ const THEME_OPTIONS: ThemeOption[] = [
   },
 ];
 
+// Session 193 — one palette id now recolours node stripes, edges, and the
+// minimap together (see `NODE_STRIPE_PALETTES` / `EDGE_PALETTES`), so this is
+// the single "Color palette" accessibility switch.
 const PALETTE_OPTIONS: { id: EdgePalette; label: string; hint?: string }[] = [
   { id: 'default', label: 'Default' },
   { id: 'colorblindSafe', label: 'Colorblind-safe', hint: 'Wong palette' },
@@ -127,7 +130,7 @@ export function AppearanceTab() {
           })}
         </fieldset>
       </Field>
-      <Field label="Edge colors">
+      <Field label="Color palette">
         <RadioGroup
           name="edgePalette"
           value={edgePalette}

@@ -18,7 +18,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { CUSTOM_CLASS_ICONS, type CustomClassIconName } from './entityTypeIcons';
-import { ENTITY_STRIPE_COLOR } from './tokens';
+import { type EdgePaletteId, ENTITY_STRIPE_COLOR, NODE_STRIPE_PALETTES } from './tokens';
 import type { CustomEntityClass, EntityType, TPDocument } from './types';
 
 /**
@@ -189,12 +189,20 @@ const DEFAULT_CUSTOM_STRIPE = '#64748b';
  */
 export const resolveEntityTypeMeta = (
   typeId: string,
-  customClasses?: Record<string, CustomEntityClass>
+  customClasses?: Record<string, CustomEntityClass>,
+  // The active app colour palette (`uiSlice.edgePalette`). `'default'` — the
+  // implicit value for the ~28 callers that don't pass one — returns the
+  // canonical `ENTITY_TYPE_META` unchanged, so nothing shifts until a user
+  // selects an accessible palette. Only built-in types are recoloured; custom
+  // classes keep their user-chosen colour.
+  palette: EdgePaletteId = 'default'
 ): EntityTypeMeta => {
   // 1. Built-in: cast is safe because the key set of ENTITY_TYPE_META
   //    IS the EntityType union, and `in` proved membership.
   if (typeId in ENTITY_TYPE_META) {
-    return ENTITY_TYPE_META[typeId as EntityType];
+    const base = ENTITY_TYPE_META[typeId as EntityType];
+    if (palette === 'default') return base;
+    return { ...base, stripeColor: NODE_STRIPE_PALETTES[palette][typeId as EntityType] };
   }
   // 2. Custom class for the doc.
   const custom = customClasses?.[typeId];

@@ -88,6 +88,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
     growCardsToFitText,
     diagramType,
     customEntityClasses,
+    edgePalette,
     isReaderMode,
   } = useDocumentStore(
     useShallow((s) => {
@@ -105,6 +106,9 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         growCardsToFitText: s.growCardsToFitText,
         diagramType: doc.diagramType,
         customEntityClasses: doc.customEntityClasses,
+        // Session 193 — the active colour palette recolours node stripes
+        // (default is a no-op). Same shallow bundle, so no extra subscription.
+        edgePalette: s.edgePalette,
         // Session 180 / E6 — reader mode coaching tooltip.
         isReaderMode: s.appMode === 'reader',
       };
@@ -125,7 +129,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
   // B10 — resolve through the doc-aware lookup so custom entity
   // classes pick up their label / colour / icon. Built-ins resolve
   // identically to the previous direct `ENTITY_TYPE_META[type]` lookup.
-  const meta = resolveEntityTypeMeta(entity.type, customEntityClasses);
+  const meta = resolveEntityTypeMeta(entity.type, customEntityClasses, edgePalette);
   // Session 179 (Theme D2) — optional per-entity icon override layered on the
   // class/type default; an unknown name falls back to the resolved meta icon.
   const EntityIcon =
@@ -469,7 +473,19 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       {eligibility && <EligibilityBadge status={eligibility} />}
       {showAnnotationNumbers && <AnnotationBadge annotationNumber={entity.annotationNumber} />}
       {typeof entity.ordering === 'number' && <StepBadge ordering={entity.ordering} />}
-      {entity.position && <PinBadge diagramType={diagramType} />}
+      {/* Session 193 — the reverse-reach pill shares the bottom-right corner with
+          the pin; lift the pin when both show. The Step badge shares the top-left
+          corner with the comment badge; drop the comment badge when both show. */}
+      {entity.position && (
+        <PinBadge
+          diagramType={diagramType}
+          stacked={
+            showReverseReachBadges &&
+            typeof rootCauseReachCount === 'number' &&
+            rootCauseReachCount > 0
+          }
+        />
+      )}
       {showReachBadges && typeof udeReachCount === 'number' && udeReachCount > 0 && (
         <ReachForwardBadge count={udeReachCount} />
       )}
@@ -477,7 +493,11 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         typeof rootCauseReachCount === 'number' &&
         rootCauseReachCount > 0 && <ReachReverseBadge count={rootCauseReachCount} />}
       {typeof openCommentCount === 'number' && openCommentCount > 0 && (
-        <CommentCountBadge count={openCommentCount} onOpen={handleOpenComments} />
+        <CommentCountBadge
+          count={openCommentCount}
+          onOpen={handleOpenComments}
+          stacked={typeof entity.ordering === 'number'}
+        />
       )}
       {isCollapsed && (
         <CollapsedExpandButton

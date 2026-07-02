@@ -53,6 +53,7 @@ export function BlocksRail() {
   const {
     diagramType,
     customClasses,
+    edgePalette,
     addEntity,
     setEntityPosition,
     collapsed,
@@ -62,6 +63,8 @@ export function BlocksRail() {
     useShallow((s) => ({
       diagramType: currentDoc(s).diagramType,
       customClasses: currentDoc(s).customEntityClasses,
+      // Session 193 — rail swatches track the active colour palette.
+      edgePalette: s.edgePalette,
       addEntity: s.addEntity,
       setEntityPosition: s.setEntityPosition,
       collapsed: s.blocksRailCollapsed,
@@ -136,7 +139,7 @@ export function BlocksRail() {
 
       <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
         {active.map((type) => {
-          const meta = resolveEntityTypeMeta(type, customClasses);
+          const meta = resolveEntityTypeMeta(type, customClasses, edgePalette);
           const Icon = meta.icon;
           return (
             <button

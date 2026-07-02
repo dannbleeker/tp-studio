@@ -86,6 +86,56 @@ export const EDGE_PALETTES: Record<EdgePaletteId, EdgePaletteTokens> = {
   },
 };
 
+// --- Node stripe palettes ---
+// The same three palette ids that drive edges (`uiSlice.edgePalette`) also
+// drive the entity node stripe colours, so one "Color palette" accessibility
+// switch recolours the whole canvas — nodes, edges, and the minimap — in
+// lockstep. `default` reproduces `ENTITY_STRIPE_COLOR` exactly, so nothing
+// changes on screen until a user opts into an accessible palette. Custom
+// entity classes keep their user-chosen colour regardless of palette.
+export const NODE_STRIPE_PALETTES: Record<EdgePaletteId, Record<EntityType, string>> = {
+  default: ENTITY_STRIPE_COLOR,
+  colorblindSafe: {
+    // Wong palette hues, assigned so the types that co-occur in one diagram
+    // stay mutually distinct; icons + labels disambiguate the rare
+    // cross-diagram hue reuse (e.g. ude/obstacle both vermillion — never in
+    // the same tree).
+    ude: '#d55e00', // vermillion
+    effect: '#767676', // neutral (hue-free)
+    rootCause: '#e69f00', // orange
+    injection: '#009e73', // bluish green
+    desiredEffect: '#0072b2', // blue
+    goal: '#56b4e9', // sky blue
+    criticalSuccessFactor: '#e69f00', // orange
+    necessaryCondition: '#f0e442', // yellow
+    obstacle: '#d55e00', // vermillion
+    intermediateObjective: '#0072b2', // blue
+    action: '#009e73', // bluish green
+    need: '#e69f00', // orange
+    want: '#cc79a7', // reddish purple
+    note: '#f0e442', // yellow
+  },
+  mono: {
+    // Fully desaturated: hue carries no meaning, lightness gives coarse
+    // structure (problems darkest → solutions lightest). Print-friendly and
+    // safe for every colour-vision type.
+    ude: '#404040', // neutral-700
+    effect: '#737373', // neutral-500
+    rootCause: '#525252', // neutral-600
+    injection: '#a3a3a3', // neutral-400
+    desiredEffect: '#a3a3a3', // neutral-400
+    goal: '#525252', // neutral-600
+    criticalSuccessFactor: '#737373', // neutral-500
+    necessaryCondition: '#a3a3a3', // neutral-400
+    obstacle: '#404040', // neutral-700
+    intermediateObjective: '#a3a3a3', // neutral-400
+    action: '#a3a3a3', // neutral-400
+    need: '#737373', // neutral-500
+    want: '#737373', // neutral-500
+    note: '#d4d4d4', // neutral-300
+  },
+};
+
 // Canvas background grid color
 export const GRID_DOT = '#d4d4d4'; // neutral-300
 

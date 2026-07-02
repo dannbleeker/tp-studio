@@ -21,6 +21,7 @@ import {
 } from '../ui/buttonClasses';
 import { InsetCard } from '../ui/InsetCard';
 import { ActionFields } from './ActionFields';
+import { CollapsibleSection } from './CollapsibleSection';
 import { EntityLinksSection } from './EntityLinksSection';
 import { EntityProvenanceSection } from './EntityProvenanceSection';
 import { EntityStateSection } from './EntityStateSection';
@@ -171,60 +172,66 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         locked={locked}
       />
 
-      <Field label="Title size" as="group">
-        <ButtonGroup
-          columns={3}
-          disabled={locked}
-          value={entity.titleSize ?? 'md'}
-          // `'md'` is the default — clearing it (rather than storing
-          // `'md'`) keeps the persisted entity lean.
-          onChange={(size) =>
-            updateEntity(entityId, { titleSize: size === 'md' ? undefined : size })
-          }
-          options={[
-            { id: 'sm', label: 'Compact' },
-            { id: 'md', label: 'Regular' },
-            { id: 'lg', label: 'Large' },
-          ]}
-        />
-      </Field>
-
-      {/* Session 179 (Theme D2) — optional per-entity icon override. Picks a
-          Lucide icon (or "None" for the entity-type default) rendered on the
-          node card. Stored as the icon name; emit-or-omitted on persist. */}
-      <Field label="Icon" as="group">
-        <div className="flex max-h-32 flex-wrap gap-1 overflow-y-auto rounded-md border border-neutral-200 p-1.5 dark:border-neutral-800">
-          <button
-            type="button"
+      {/* Session 193 — the two display tweaks (title size + per-entity icon
+          override) are secondary; fold them into a collapsible "Appearance"
+          section (collapsed by default — the icon grid is the tallest block in
+          the inspector) so the core fields stay above the fold. */}
+      <CollapsibleSection id="appearance" title="Appearance" defaultOpen={false}>
+        <Field label="Title size" as="group">
+          <ButtonGroup
+            columns={3}
             disabled={locked}
-            onClick={() => updateEntity(entityId, { icon: undefined })}
-            className={clsx(
-              'rounded px-2 py-1 text-[11px]',
-              entity.icon ? UNSELECTED_BUTTON_CLASS : SELECTED_BUTTON_CLASS
-            )}
-            title="Use the default icon for this entity type"
-          >
-            None
-          </button>
-          {Object.entries(CUSTOM_CLASS_ICONS).map(([name, Icon]) => (
+            value={entity.titleSize ?? 'md'}
+            // `'md'` is the default — clearing it (rather than storing
+            // `'md'`) keeps the persisted entity lean.
+            onChange={(size) =>
+              updateEntity(entityId, { titleSize: size === 'md' ? undefined : size })
+            }
+            options={[
+              { id: 'sm', label: 'Compact' },
+              { id: 'md', label: 'Regular' },
+              { id: 'lg', label: 'Large' },
+            ]}
+          />
+        </Field>
+
+        {/* Session 179 (Theme D2) — optional per-entity icon override. Picks a
+            Lucide icon (or "None" for the entity-type default) rendered on the
+            node card. Stored as the icon name; emit-or-omitted on persist. */}
+        <Field label="Icon" as="group">
+          <div className="flex max-h-32 flex-wrap gap-1 overflow-y-auto rounded-md border border-neutral-200 p-1.5 dark:border-neutral-800">
             <button
-              key={name}
               type="button"
               disabled={locked}
-              onClick={() => updateEntity(entityId, { icon: name })}
+              onClick={() => updateEntity(entityId, { icon: undefined })}
               className={clsx(
-                'rounded p-1.5',
-                entity.icon === name ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+                'rounded px-2 py-1 text-[11px]',
+                entity.icon ? UNSELECTED_BUTTON_CLASS : SELECTED_BUTTON_CLASS
               )}
-              title={name}
-              aria-label={`Icon: ${name}`}
-              aria-pressed={entity.icon === name}
+              title="Use the default icon for this entity type"
             >
-              <Icon className="h-4 w-4" aria-hidden />
+              None
             </button>
-          ))}
-        </div>
-      </Field>
+            {Object.entries(CUSTOM_CLASS_ICONS).map(([name, Icon]) => (
+              <button
+                key={name}
+                type="button"
+                disabled={locked}
+                onClick={() => updateEntity(entityId, { icon: name })}
+                className={clsx(
+                  'rounded p-1.5',
+                  entity.icon === name ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+                )}
+                title={name}
+                aria-label={`Icon: ${name}`}
+                aria-pressed={entity.icon === name}
+              >
+                <Icon className="h-4 w-4" aria-hidden />
+              </button>
+            ))}
+          </div>
+        </Field>
+      </CollapsibleSection>
 
       <ActionFields
         entity={entity}
@@ -316,63 +323,68 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         onUpdate={(patch) => updateEntity(entityId, patch)}
       />
 
-      {/* `as="group"` — body is itself a `<label>` (checkbox + text);
-          nesting it inside another `<label>` would be invalid. */}
-      <Field label="Unspecified placeholder" as="group">
-        <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
-          <input
-            type="checkbox"
-            className="mt-0.5"
-            checked={entity.unspecified === true}
-            disabled={locked}
-            onChange={(e) =>
-              updateEntity(entityId, { unspecified: e.target.checked ? true : undefined })
-            }
-          />
-          <span>
-            Mark as an unarticulated placeholder. The entity-existence rule won't fire on an empty
-            title, and the node renders with a help-circle glyph. Useful when you know there's a
-            precondition / cause / condition here but can't yet name it.
-          </span>
-        </label>
-      </Field>
+      {/* Session 193 — the placeholder flag + locus are advanced authoring
+          controls; fold them into a collapsible "Advanced" section (collapsed by
+          default) to keep the inspector's default view focused. */}
+      <CollapsibleSection id="advanced" title="Advanced" defaultOpen={false}>
+        {/* `as="group"` — body is itself a `<label>` (checkbox + text);
+            nesting it inside another `<label>` would be invalid. */}
+        <Field label="Unspecified placeholder" as="group">
+          <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={entity.unspecified === true}
+              disabled={locked}
+              onChange={(e) =>
+                updateEntity(entityId, { unspecified: e.target.checked ? true : undefined })
+              }
+            />
+            <span>
+              Mark as an unarticulated placeholder. The entity-existence rule won't fire on an empty
+              title, and the node renders with a help-circle glyph. Useful when you know there's a
+              precondition / cause / condition here but can't yet name it.
+            </span>
+          </label>
+        </Field>
 
-      <Field label="Locus" as="group">
-        {/*
-          TOC-reading (CRT Step 7): "have you built down to causes you
-          actually control or influence?" The three-value flag captures the
-          distinction the book makes between things we can act on directly,
-          things we can affect indirectly, and things we can only observe.
-          A small soft CLR nudge (`external-root-cause`) fires when a
-          rootCause is flagged `external` — those are rarely the real root.
-        */}
-        <div className="grid grid-cols-4 gap-1.5 text-xs">
-          {(
-            [
-              { id: undefined, label: 'Unset' },
-              { id: 'control', label: 'Control' },
-              { id: 'influence', label: 'Influence' },
-              { id: 'external', label: 'External' },
-            ] as const
-          ).map((opt) => {
-            const selected = (entity.spanOfControl ?? null) === (opt.id ?? null);
-            return (
-              <button
-                key={opt.label}
-                type="button"
-                disabled={locked}
-                onClick={() => updateEntity(entityId, { spanOfControl: opt.id })}
-                className={clsx(
-                  TOGGLE_BUTTON_BASE,
-                  selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
-                )}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-      </Field>
+        <Field label="Locus" as="group">
+          {/*
+            TOC-reading (CRT Step 7): "have you built down to causes you
+            actually control or influence?" The three-value flag captures the
+            distinction the book makes between things we can act on directly,
+            things we can affect indirectly, and things we can only observe.
+            A small soft CLR nudge (`external-root-cause`) fires when a
+            rootCause is flagged `external` — those are rarely the real root.
+          */}
+          <div className="grid grid-cols-4 gap-1.5 text-xs">
+            {(
+              [
+                { id: undefined, label: 'Unset' },
+                { id: 'control', label: 'Control' },
+                { id: 'influence', label: 'Influence' },
+                { id: 'external', label: 'External' },
+              ] as const
+            ).map((opt) => {
+              const selected = (entity.spanOfControl ?? null) === (opt.id ?? null);
+              return (
+                <button
+                  key={opt.label}
+                  type="button"
+                  disabled={locked}
+                  onClick={() => updateEntity(entityId, { spanOfControl: opt.id })}
+                  className={clsx(
+                    TOGGLE_BUTTON_BASE,
+                    selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+                  )}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+      </CollapsibleSection>
 
       <EntityStateSection
         entity={entity}

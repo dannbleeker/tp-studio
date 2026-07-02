@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { DIAGRAM_TYPE_LABEL, defaultEntityType, ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
+import {
+  DIAGRAM_TYPE_LABEL,
+  defaultEntityType,
+  ENTITY_TYPE_META,
+  resolveEntityTypeMeta,
+} from '@/domain/entityTypeMeta';
 import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
-import type { DiagramType, EntityType } from '@/domain/types';
+import { type EdgePaletteId, ENTITY_STRIPE_COLOR, NODE_STRIPE_PALETTES } from '@/domain/tokens';
+import type { CustomEntityClass, DiagramType, EntityType } from '@/domain/types';
 
 // One source of truth for the diagram-type keys covered by all of the
 // per-DiagramType registries. Sourced from DIAGRAM_TYPE_LABEL because that
@@ -49,6 +55,56 @@ describe('ENTITY_TYPE_META (Block B / B3 icons)', () => {
       expect(meta.label.length).toBeGreaterThan(0);
       expect(typeof meta.stripeColor).toBe('string');
       expect(meta.stripeColor).toMatch(/^#/);
+    }
+  });
+});
+
+describe('NODE_STRIPE_PALETTES (Session 193 — colour-palette node stripes)', () => {
+  const ALL_PALETTES = Object.keys(NODE_STRIPE_PALETTES) as EdgePaletteId[];
+  const ALL_TYPES = Object.keys(ENTITY_STRIPE_COLOR) as EntityType[];
+
+  it('every palette covers every entity type with a hex colour', () => {
+    for (const palette of ALL_PALETTES) {
+      for (const type of ALL_TYPES) {
+        expect(NODE_STRIPE_PALETTES[palette][type]).toMatch(/^#[0-9a-f]{6}$/i);
+      }
+    }
+  });
+
+  it('the default palette reproduces the canonical stripe colours exactly', () => {
+    expect(NODE_STRIPE_PALETTES.default).toEqual(ENTITY_STRIPE_COLOR);
+  });
+
+  it('the accessible palettes actually differ from the default', () => {
+    expect(NODE_STRIPE_PALETTES.colorblindSafe).not.toEqual(ENTITY_STRIPE_COLOR);
+    expect(NODE_STRIPE_PALETTES.mono).not.toEqual(ENTITY_STRIPE_COLOR);
+  });
+});
+
+describe('resolveEntityTypeMeta — palette awareness', () => {
+  it('returns the canonical meta unchanged for the default palette', () => {
+    for (const type of Object.keys(ENTITY_TYPE_META) as EntityType[]) {
+      expect(resolveEntityTypeMeta(type, undefined, 'default')).toBe(ENTITY_TYPE_META[type]);
+      // Omitting the palette argument is equivalent to 'default'.
+      expect(resolveEntityTypeMeta(type)).toBe(ENTITY_TYPE_META[type]);
+    }
+  });
+
+  it('recolours a built-in stripe under an accessible palette, keeping label + icon', () => {
+    const base = ENTITY_TYPE_META.ude;
+    const cb = resolveEntityTypeMeta('ude', undefined, 'colorblindSafe');
+    expect(cb.stripeColor).toBe(NODE_STRIPE_PALETTES.colorblindSafe.ude);
+    expect(cb.stripeColor).not.toBe(base.stripeColor);
+    expect(cb.label).toBe(base.label);
+    expect(cb.icon).toBe(base.icon);
+  });
+
+  it('leaves a custom entity class colour untouched by the palette', () => {
+    const custom: Record<string, CustomEntityClass> = {
+      risk: { id: 'risk', label: 'Risk', color: '#123456' },
+    };
+    for (const palette of ['default', 'colorblindSafe', 'mono'] as EdgePaletteId[]) {
+      expect(resolveEntityTypeMeta('risk', custom, palette).stripeColor).toBe('#123456');
     }
   });
 });

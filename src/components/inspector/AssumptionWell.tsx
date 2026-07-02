@@ -1,4 +1,3 @@
-import clsx from 'clsx';
 import { Plus, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { assumptionsForEdge } from '@/domain/graph';
@@ -6,6 +5,7 @@ import type { AssumptionKind, AssumptionStatus } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
+import { ChipSelect } from './ChipSelect';
 import { ASSUMPTION_KIND_CHIP, ASSUMPTION_STATUS_CHIP, CHIP_SCHEME } from './chipColors';
 import { Field } from './Field';
 
@@ -22,9 +22,8 @@ import { Field } from './Field';
  *   - invalid     → red (often the breakthrough)
  *   - challengeable → blue (lights up the injection workbench)
  *
- * Clicking the chip cycles through the four states in order. The
- * "+1" round-trip is fine for a low-frequency action; the chip
- * doubles as a status indicator.
+ * Session 193 — the status + kind chips are direct-pick `ChipSelect`s (any
+ * value one click away), replacing the earlier forward-only cycle chips.
  */
 
 const STATUS_ORDER: AssumptionStatus[] = ['unexamined', 'valid', 'invalid', 'challengeable'];
@@ -36,25 +35,12 @@ const STATUS_LABEL: Record<AssumptionStatus, string> = {
   challengeable: 'Challengeable',
 };
 
+const STATUS_OPTIONS = STATUS_ORDER.map((s) => ({ value: s, label: STATUS_LABEL[s] }));
+
 // Session 135 — chip palette moved to `chipColors.ts` so the
 // inspector's status / source / strength pills share one source of
 // truth for the dark-mode colour stack.
 const STATUS_CHIP_CLASS = ASSUMPTION_STATUS_CHIP;
-
-const nextStatus = (s: AssumptionStatus): AssumptionStatus => {
-  const idx = STATUS_ORDER.indexOf(s);
-  return STATUS_ORDER[(idx + 1) % STATUS_ORDER.length] ?? 'unexamined';
-};
-
-// S&T sub-typing (Session 135). The kind chip cycles through the
-// "untyped" state (undefined) plus the three roles, so a user can
-// always get back to untyped without a separate clear control.
-const KIND_CYCLE: (AssumptionKind | undefined)[] = [
-  undefined,
-  'necessary',
-  'parallel',
-  'sufficient',
-];
 
 const KIND_LABEL: Record<AssumptionKind, string> = {
   necessary: 'Necessary',
@@ -62,14 +48,16 @@ const KIND_LABEL: Record<AssumptionKind, string> = {
   sufficient: 'Sufficient',
 };
 
-/** Single-letter glyph for the compact chip. `—` reads as "untyped". */
-const kindGlyph = (k: AssumptionKind | undefined): string => (k ? KIND_LABEL[k].charAt(0) : '—');
-const kindLabel = (k: AssumptionKind | undefined): string => (k ? KIND_LABEL[k] : 'Untyped');
+// The kind picker includes the "untyped" state (persisted as `undefined`),
+// mapped to the empty-string sentinel so the native <select> can round-trip it.
+const KIND_OPTIONS: { value: '' | AssumptionKind; label: string }[] = [
+  { value: '', label: 'Untyped' },
+  { value: 'necessary', label: KIND_LABEL.necessary },
+  { value: 'parallel', label: KIND_LABEL.parallel },
+  { value: 'sufficient', label: KIND_LABEL.sufficient },
+];
 
-const nextKind = (k: AssumptionKind | undefined): AssumptionKind | undefined => {
-  const idx = KIND_CYCLE.indexOf(k);
-  return KIND_CYCLE[(idx + 1) % KIND_CYCLE.length];
-};
+const kindLabel = (k: AssumptionKind | undefined): string => (k ? KIND_LABEL[k] : 'Untyped');
 
 export function AssumptionWell({ edgeId }: { edgeId: string }) {
   const addAssumptionToEdge = useDocumentStore((s) => s.addAssumptionToEdge);
@@ -147,36 +135,28 @@ function AssumptionRow({
   }, [autoFocus]);
 
   return (
-    <li className="flex items-center gap-1 rounded-md border border-violet-200 bg-violet-50/40 px-1 py-1 dark:border-violet-900/40 dark:bg-violet-950/20">
-      <button
-        type="button"
-        onClick={() => setAssumptionStatus(assumptionId, nextStatus(status))}
+    <li className="flex flex-wrap items-center gap-1 rounded-md border border-violet-200 bg-violet-50/40 px-1 py-1 dark:border-violet-900/40 dark:bg-violet-950/20">
+      <ChipSelect
+        value={status}
+        options={STATUS_OPTIONS}
+        onChange={(next) => setAssumptionStatus(assumptionId, next)}
         disabled={locked}
-        title={`Status: ${STATUS_LABEL[status]} (click to cycle to ${STATUS_LABEL[nextStatus(status)]})`}
-        aria-label={`Assumption status: ${STATUS_LABEL[status]}. Press to cycle to ${STATUS_LABEL[nextStatus(status)]}.`}
-        className={clsx(
-          'shrink-0 rounded-xs border px-1 py-0 font-bold text-[9px] uppercase tracking-wide transition focus:outline-hidden focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
-          STATUS_CHIP_CLASS[status]
-        )}
-      >
-        {STATUS_LABEL[status][0]}
-      </button>
-      {/* S&T sub-typing chip (Session 135) — cycles untyped → necessary
-          → parallel → sufficient. Sits next to the status chip so the
-          two single-letter pills read as "status · kind". */}
-      <button
-        type="button"
-        onClick={() => setAssumptionKind(assumptionId, nextKind(kind))}
+        colorClass={STATUS_CHIP_CLASS[status]}
+        ariaLabel={`Assumption status: ${STATUS_LABEL[status]}`}
+        title="Assumption status"
+      />
+      {/* S&T sub-typing (Session 135) — untyped / necessary / parallel /
+          sufficient. Sits next to the status chip so the two read as
+          "status · kind". */}
+      <ChipSelect
+        value={kind ?? ''}
+        options={KIND_OPTIONS}
+        onChange={(next) => setAssumptionKind(assumptionId, next === '' ? undefined : next)}
         disabled={locked}
-        title={`Kind: ${kindLabel(kind)} (click to cycle to ${kindLabel(nextKind(kind))})`}
-        aria-label={`Assumption kind: ${kindLabel(kind)}. Press to cycle to ${kindLabel(nextKind(kind))}.`}
-        className={clsx(
-          'shrink-0 rounded-xs border px-1 py-0 font-bold text-[9px] uppercase tracking-wide transition focus:outline-hidden focus:ring-2 focus:ring-violet-400 disabled:cursor-not-allowed disabled:opacity-50',
-          kind ? ASSUMPTION_KIND_CHIP[kind] : CHIP_SCHEME.neutral
-        )}
-      >
-        {kindGlyph(kind)}
-      </button>
+        colorClass={kind ? ASSUMPTION_KIND_CHIP[kind] : CHIP_SCHEME.neutral}
+        ariaLabel={`Assumption kind: ${kindLabel(kind)}`}
+        title="Assumption kind (S&T)"
+      />
       <input
         ref={inputRef}
         data-assumption-id={assumptionId}

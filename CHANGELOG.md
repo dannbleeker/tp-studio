@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 6: visual / UI consistency
+
+Four canvas + inspector polish items, shipped as one slice.
+
+- **The colour palette now recolours node stripes and the minimap, not just
+  edges.** The Appearance setting (renamed **Edge colors → Color palette**) is
+  now one accessibility switch: `Default` / `Colorblind-safe` (Wong) /
+  `Monochrome` applies to node stripes, edges, the minimap, and the building-
+  blocks rail together. `Default` reproduces the existing colours exactly, so
+  nothing changes until you opt in. New `NODE_STRIPE_PALETTES` + a palette-aware
+  `resolveEntityTypeMeta`; custom entity-class colours are never overridden.
+- **Corner badges no longer overlap.** A pinned node that also shows the
+  reverse-reach pill, or a numbered (ordered) node that also has open comments,
+  previously stacked two badges in the same corner. The second badge now offsets
+  along the edge (a fixed, width-independent lift) so both stay readable.
+- **The entity inspector's secondary controls are collapsible.** The
+  **Appearance** (title size + per-entity icon — the tallest block) and
+  **Advanced** (unspecified-placeholder + locus) groups fold into collapsible
+  sections, collapsed by default, so the core Title / Type / Description / State
+  fields sit above the fold. Open/closed state persists per-section across entity
+  switches and reloads.
+- **State chips are now direct pickers, not forward-only cycles.** The
+  Assumption Well (status + kind) and Evidence list (source + strength) chips
+  became compact colour-coded `ChipSelect` dropdowns — any value in one pick,
+  keyboard- and screen-reader-navigable — instead of click-to-advance-one-step.
+
 ## Session 192 (cont.) — Improvement-review batch 4: last-used export + non-Latin-1 caution
 
 Two rough edges in the export/print flow.

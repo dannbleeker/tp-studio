@@ -6,11 +6,17 @@ import {
   type OnSelectionChangeParams,
   ReactFlow,
 } from '@xyflow/react';
-import { lazy, Suspense, useCallback, useEffect } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { defaultEntityType } from '@/domain/entityTypeMeta';
-import { ACCENT, ENTITY_STRIPE_COLOR, GRID_DOT } from '@/domain/tokens';
+import {
+  ACCENT,
+  type EdgePaletteId,
+  ENTITY_STRIPE_COLOR,
+  GRID_DOT,
+  NODE_STRIPE_PALETTES,
+} from '@/domain/tokens';
 import type { EntityType } from '@/domain/types';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
@@ -70,15 +76,21 @@ const edgeTypes = { tp: TPEdge };
 const FIT_VIEW_OPTIONS = { padding: 0.4, maxZoom: 1.2 };
 // Colour minimap thumbnails by entity type (its stripe colour) so the minimap
 // is a semantic map, not a field of identical grey dots. Groups keep the indigo
-// tint; a custom-class or unknown type falls back to neutral grey. Reads the
-// static ENTITY_STRIPE_COLOR table so this stays a stable module-scope function
-// (no per-render identity churn — see the hoist note above).
-const miniMapNodeColor = (n: Node): string => {
-  if (n.type === 'tpGroup' || n.type === 'tpCollapsedGroup') return '#a5b4fc';
-  const type = (n.data as { entity?: { type?: string } } | undefined)?.entity?.type;
-  if (type && type in ENTITY_STRIPE_COLOR) return ENTITY_STRIPE_COLOR[type as EntityType];
-  return '#737373';
-};
+// tint; a custom-class or unknown type falls back to neutral grey.
+// Session 193 — a factory (not a bare module-scope function) so the minimap
+// honours the active colour palette; `default` reproduces the canonical stripe
+// colours. Memoized on the (rarely-changing) palette in CanvasInner, so the ref
+// stays stable across normal renders — keeping the no-identity-churn property
+// the module-scope version had.
+const makeMiniMapNodeColor =
+  (palette: EdgePaletteId) =>
+  (n: Node): string => {
+    if (n.type === 'tpGroup' || n.type === 'tpCollapsedGroup') return '#a5b4fc';
+    const type = (n.data as { entity?: { type?: string } } | undefined)?.entity?.type;
+    if (type && type in ENTITY_STRIPE_COLOR)
+      return NODE_STRIPE_PALETTES[palette][type as EntityType];
+    return '#737373';
+  };
 
 function CanvasInner() {
   // Projection HOST: the whole doc feeds `useGraphView`, whose projection depends
@@ -102,6 +114,10 @@ function CanvasInner() {
 
   const { nodes: rawNodes, edges: rawEdges } = useGraphView(doc);
   const { nodes, edges } = useSearchDimming(doc, rawNodes, rawEdges);
+  // Session 193 — minimap thumbnails honour the active colour palette. Memoized
+  // on the (rarely-changing) palette so the function ref stays stable.
+  const edgePalette = useDocumentStore((s) => s.edgePalette);
+  const miniMapNodeColor = useMemo(() => makeMiniMapNodeColor(edgePalette), [edgePalette]);
   const {
     onConnect,
     onConnectStart,
