@@ -4,10 +4,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { Button } from '@/components/ui/Button';
 import { entityMeta } from '@/domain/entityTypeMeta';
-import { ancestorChain } from '@/domain/groups';
 import { findMatches } from '@/domain/search';
 import { useDelayedFocus } from '@/hooks/useDelayedFocus';
-import { getCanvasInstance } from '@/services/canvasRef';
+import { jumpToEntity } from '@/services/jumpToEntity';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -33,8 +32,6 @@ export function SearchPanel() {
     closeSearch,
     selectEntity,
     selectEdge,
-    toggleGroupCollapsed,
-    unhoist,
     openCommentsPanel,
   } = useDocumentStore(
     useShallow((s) => ({
@@ -48,8 +45,6 @@ export function SearchPanel() {
       // Entities and groups share the selection bucket; selectEntity drives both.
       selectEntity: s.selectEntity,
       selectEdge: s.selectEdge,
-      toggleGroupCollapsed: s.toggleGroupCollapsed,
-      unhoist: s.unhoist,
       openCommentsPanel: s.openCommentsPanel,
     }))
   );
@@ -71,30 +66,10 @@ export function SearchPanel() {
   useEffect(() => {
     if (!active) return;
     const state = useDocumentStore.getState();
-    // X-Search-5: auto-expand collapsed ancestors so the match becomes visible.
+    // X-Search-5: reveal + centre the match. Shared with the command palette's
+    // "Go to…" rows via `jumpToEntity` so the two surfaces can't drift.
     if (active.kind === 'entity' || active.kind === 'group') {
-      const ancestors = ancestorChain(currentDoc(state), active.id);
-      for (const a of ancestors) {
-        if (a.collapsed) toggleGroupCollapsed(a.id);
-      }
-      // If hoisted and the match isn't inside the hoisted scope, unhoist.
-      if (state.hoistedGroupId) {
-        const inHoist = ancestors.some((a) => a.id === state.hoistedGroupId);
-        if (!inHoist && active.id !== state.hoistedGroupId) unhoist();
-      }
-      selectEntity(active.id);
-      const inst = getCanvasInstance();
-      const node = inst?.getNode(active.id);
-      if (node && inst) {
-        // setCenter is forgiving — call after a frame so the just-mutated
-        // selection and any expand/unhoist re-render lands first.
-        window.requestAnimationFrame(() => {
-          inst.setCenter(node.position.x + 140, node.position.y + 40, {
-            zoom: inst.getZoom(),
-            duration: 250,
-          });
-        });
-      }
+      jumpToEntity(active.id);
     } else if (active.kind === 'edge') {
       selectEdge(active.id);
     } else if (active.kind === 'assumption') {

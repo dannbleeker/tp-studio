@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 3: command palette jumps to entities
+
+The prominent "Type a command…" field returned "No matches" when a user typed
+an entity title — the top navigation intent on a large tree only worked via the
+separate, less-discoverable `Cmd/Ctrl+F`.
+
+- **Command palette now offers "Go to: <title>" rows** for entity + group title
+  matches (capped, deduped) below the command matches, so typing a node's name
+  jumps the viewport + selection to it. Implemented as synthetic `goto:` commands
+  so they reuse the palette's existing render / keyboard / ARIA machinery.
+- **Extracted a shared `jumpToEntity` helper** (expand collapsed ancestors →
+  unhoist if needed → select → centre, honouring reduced-motion) used by BOTH
+  the palette and the Find panel, so the two navigation surfaces can't drift.
+  The Find panel's inline jump logic now delegates to it.
+
 ## Session 192 (cont.) — Improvement-review batch 3: Find covers assumptions + comments
 
 Find (`Cmd/Ctrl+F`) was the document's single locator but ignored two shipped

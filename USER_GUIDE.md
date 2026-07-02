@@ -61,7 +61,7 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 | Inspector | Right panel | Slides in when you select an entity or edge. Holds title, type, description, CLR warnings, and delete. Shares the dock with the CLR panel — opening one closes the other. |
 | Toasts | Bottom-center, overlay | Brief confirmations: "Saved", "Loaded example CRT", "3 open CLR concerns", etc. |
 
-**The command palette.** The command-search field — or `Cmd/Ctrl+K` from anywhere — opens the palette, the fastest route to any action. Before you type, commands are grouped into labelled sections (**File / Edit / View / Review / Export / Help**) with your **five most-recent** commands pinned in a "Recent" group at the top; start typing and that structure gives way to a ranked search across every command. `Cmd/Ctrl+E` opens the palette pre-filtered to Export.
+**The command palette.** The command-search field — or `Cmd/Ctrl+K` from anywhere — opens the palette, the fastest route to any action. Before you type, commands are grouped into labelled sections (**File / Edit / View / Review / Export / Help**) with your **five most-recent** commands pinned in a "Recent" group at the top; start typing and that structure gives way to a ranked search across every command. Typing an **entity or group title** also surfaces **"Go to: …"** rows — pick one to jump the viewport + selection straight to that node (the same jump the Find panel does, so you can navigate to a named node from the palette without reaching for `Cmd/Ctrl+F`). `Cmd/Ctrl+E` opens the palette pre-filtered to Export.
 
 ## Building Blocks rail
 

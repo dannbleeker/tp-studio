@@ -49,6 +49,22 @@ describe('CommandPalette', () => {
     expect(labels.every((l) => !/Settings/.test(l))).toBe(true);
   });
 
+  it('surfaces a "Go to:" row for an entity whose title matches the query', () => {
+    act(() => {
+      useDocumentStore.getState().addEntity({ type: 'ude', title: 'Zephyr bottleneck' });
+    });
+    open();
+    const { container } = render(<CommandPalette />);
+    const input = container.querySelector('input')!;
+    act(() => {
+      fireEvent.change(input, { target: { value: 'Zephyr' } });
+    });
+    const labels = Array.from(container.querySelectorAll('button[role="option"]')).map(
+      (b) => b.textContent ?? ''
+    );
+    expect(labels.some((l) => /Go to:.*Zephyr/i.test(l))).toBe(true);
+  });
+
   it('honors paletteInitialQuery on open (e.g. Cmd+E → "Export")', () => {
     act(() => useDocumentStore.getState().openPaletteWithQuery('Export'));
     const { container } = render(<CommandPalette />);

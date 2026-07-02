@@ -171,6 +171,7 @@
     {"id":"palette","name":"Command palette","area":"Palette","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"palette-sections","name":"Palette grouped sections","area":"Palette","since":45,"manual":true,"book":false,"bookExample":false},
     {"id":"palette-recent","name":"Recent palette commands","area":"Palette","since":88,"manual":true,"book":false,"bookExample":false},
+    {"id":"palette-goto-entity","name":"Palette jump-to-entity (Go to…)","area":"Palette","since":192,"manual":true,"book":false,"bookExample":false},
     {"id":"settings-dialog","name":"Settings dialog","area":"Settings","since":7,"manual":true,"book":true,"bookExample":false},
     {"id":"settings-themes","name":"Theme variants","area":"Settings","since":1,"manual":true,"book":true,"bookExample":false},
     {"id":"settings-contrast-cb","name":"High-contrast + colorblind palettes","area":"Settings","since":7,"manual":true,"book":true,"bookExample":false},

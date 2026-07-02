@@ -1,10 +1,13 @@
 import clsx from 'clsx';
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { paletteScore } from '@/domain/paletteScore';
+import { findMatches } from '@/domain/search';
 import { paletteKbdForCommand } from '@/domain/shortcuts';
 import { useDelayedFocus } from '@/hooks/useDelayedFocus';
+import { jumpToEntity } from '@/services/jumpToEntity';
 import { getRecentCommandIds, recordRecentCommand } from '@/services/storage/recentCommands';
 import { useDocumentStore } from '@/store';
+import { currentDoc } from '@/store/selectors';
 import { Modal } from '../ui/Modal';
 import { iconForCommandId } from './commandIcons';
 import { COMMANDS, type Command } from './commands';
@@ -31,6 +34,7 @@ export function CommandPalette() {
   const open = useDocumentStore((s) => s.paletteOpen);
   const initialQuery = useDocumentStore((s) => s.paletteInitialQuery);
   const close = useDocumentStore((s) => s.closePalette);
+  const doc = useDocumentStore((s) => currentDoc(s));
   const store = useDocumentStore;
 
   const [query, setQuery] = useState('');
@@ -59,11 +63,34 @@ export function CommandPalette() {
    */
   const filtered = useMemo(() => {
     if (!query) return COMMANDS;
-    return COMMANDS.map((c) => ({ c, s: paletteScore(c.label, query) }))
+    const scored = COMMANDS.map((c) => ({ c, s: paletteScore(c.label, query) }))
       .filter(({ s }) => s >= 0)
       .sort((a, b) => b.s - a.s)
       .map(({ c }) => c);
-  }, [query]);
+    // "Go to…" rows: the prominent palette field is the most discoverable
+    // navigation surface, so a typed entity/group title should jump there
+    // instead of returning "No matches". Synthetic Commands (id `goto:<id>`)
+    // flow through the existing render / keyboard / ARIA machinery unchanged;
+    // their run() delegates to the shared `jumpToEntity` helper (same path the
+    // Find panel uses, so the two can't drift). Capped so a broad query can't
+    // flood the command matches. Title matches only — description hits would be
+    // noisy targets. Deduped by object id.
+    const seen = new Set<string>();
+    const jumps: Command[] = [];
+    for (const m of findMatches(doc, query)) {
+      if ((m.kind !== 'entity' && m.kind !== 'group') || m.field !== 'title') continue;
+      if (seen.has(m.id)) continue;
+      seen.add(m.id);
+      jumps.push({
+        id: `goto:${m.id}`,
+        label: `Go to: ${m.preview}`,
+        group: 'View',
+        run: () => jumpToEntity(m.id),
+      });
+      if (jumps.length >= 8) break;
+    }
+    return [...scored, ...jumps];
+  }, [query, doc]);
 
   /**
    * Session 88 (S17) — recent commands rendered above the per-group
