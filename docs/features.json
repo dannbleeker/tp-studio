@@ -156,6 +156,7 @@
     {"id":"pattern-insert-into-current","name":"Insert template into current diagram","area":"Patterns","since":192,"manual":true,"book":false,"bookExample":false},
     {"id":"start-all-trees-filter","name":"Start \"All trees\" inline filter","area":"Start","since":192,"manual":true,"book":false,"bookExample":false},
     {"id":"quick-capture-into-group","name":"Quick Capture into a selected group","area":"Editing","since":192,"manual":true,"book":false,"bookExample":false},
+    {"id":"manual-sibling-order","name":"Manual sibling ordering in auto-layout","area":"Layout","since":192,"manual":true,"book":false,"bookExample":false},
     {"id":"import-picker","name":"Import picker dialog","area":"Import","since":133,"manual":true,"book":true,"bookExample":false},
     {"id":"import-cross-doc","name":"Import entity from another doc","area":"Import","since":135,"manual":true,"book":false,"bookExample":false},
     {"id":"import-ai-skill","name":"AI import-generator skill","area":"Import","since":153,"manual":true,"book":true,"bookExample":false},

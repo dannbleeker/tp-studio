@@ -7,6 +7,7 @@ import type { EntityType } from '@/domain/types';
 import { useEntity } from '@/hooks/useSelected';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { confirmAndDeleteEntity, confirmAndDeleteSelection } from '@/services/confirmations';
+import { layoutSiblingOrder, moveEntityInSiblingOrder } from '@/services/siblingOrder';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { ContextMenuList } from './ContextMenuList';
@@ -208,6 +209,28 @@ export function ContextMenu() {
           label: entity.collapsed ? 'Expand downstream' : 'Collapse downstream',
           run: () => toggleEntityCollapsed(id),
         });
+      }
+      // Session 193 — manual sibling ordering: reorder this node among the
+      // nodes sharing its layout rank. Only surfaced (auto-layout diagrams)
+      // when the node actually HAS a sibling to swap with, and only the
+      // applicable direction(s) — so it never shows a dead action.
+      const siblings = layoutSiblingOrder(id);
+      if (siblings) {
+        result.push({ kind: 'separator' });
+        if (siblings.index > 0) {
+          result.push({
+            kind: 'action',
+            label: 'Move earlier in layout',
+            run: () => moveEntityInSiblingOrder(id, -1),
+          });
+        }
+        if (siblings.index < siblings.ids.length - 1) {
+          result.push({
+            kind: 'action',
+            label: 'Move later in layout',
+            run: () => moveEntityInSiblingOrder(id, 1),
+          });
+        }
       }
       if (convertOptions.length > 0) {
         result.push({ kind: 'separator' });

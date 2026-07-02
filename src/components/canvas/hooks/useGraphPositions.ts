@@ -88,7 +88,7 @@ const buildLayoutInputs = (
   projection: GraphProjection,
   opts?: NodeSizeOpts
 ): {
-  nodes: { id: string; width: number; height: number }[];
+  nodes: { id: string; width: number; height: number; ordering?: number }[];
   edges: { sourceId: string; targetId: string; isJunctor: boolean }[];
 } => {
   const { visibleEntityIds, visibleCollapsedRoots, remap } = projection;
@@ -103,7 +103,9 @@ const buildLayoutInputs = (
         width: NODE_WIDTH,
         height: NODE_MIN_HEIGHT,
       };
-      return { id, width, height };
+      // Session 193 — thread manual sibling ordering into the layout model.
+      const ordering = doc.entities[id]?.ordering;
+      return typeof ordering === 'number' ? { id, width, height, ordering } : { id, width, height };
     }),
     ...visibleCollapsedRoots.map((id) => {
       const { width, height } = nodeSizeFor(doc, id) ?? {

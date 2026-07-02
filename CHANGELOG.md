@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 192 (cont.) — Improvement-review batch 7 (part 2): manual sibling ordering
+
+Auto-layout (dagre) ordered sibling nodes by its own crossing-minimization
+heuristic, with no way to override the left-to-right (or top-to-bottom) order.
+
+- **Reorder siblings in an auto-layout diagram.** Right-click a node →
+  **Move earlier / Move later in layout** shuffles it among the nodes sharing
+  its rank. The order sticks (persisted per entity as `ordering`) and survives
+  re-layouts. It's a post-dagre pass that permutes a *fully-ordered* rank into
+  its manual order using the nodes' own slots — rank + spacing untouched — and a
+  **strict no-op** for any diagram that doesn't use it, so nothing else moves.
+  The `ordering` field already drove Presentation mode + the TT step badge; it
+  now drives layout too. The menu items appear only for auto-layout diagrams and
+  only when the node actually has a sibling to swap with.
+
 ## Session 192 (cont.) — Improvement-review batch 7 (part 1): compose from templates + faster capture
 
 - **Insert a template into the current diagram** (not just open it in a new tab).

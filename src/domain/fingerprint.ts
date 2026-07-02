@@ -65,7 +65,10 @@ const computeLayoutFingerprint = (doc: TPDocument): string => {
         e.type === 'injection' &&
         e.attributes !== undefined &&
         stFacetKeys.some((k) => e.attributes?.[k] !== undefined);
-      return `${e.id}${hasFacet ? ':st' : ''}`;
+      // Session 193 — manual sibling ordering feeds the layout's post-dagre
+      // reorder pass, so a change to it must invalidate the layout cache.
+      const ord = typeof e.ordering === 'number' ? `:o${e.ordering}` : '';
+      return `${e.id}${hasFacet ? ':st' : ''}${ord}`;
     })
     .sort();
   const edgeKeys = edgesArray(doc)

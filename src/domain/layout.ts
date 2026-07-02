@@ -16,6 +16,12 @@ export type NodeBox = {
   id: string;
   width: number;
   height: number;
+  /** Session 193 — optional manual sibling order. When EVERY node in a layout
+   *  rank carries an `ordering`, the post-dagre pass permutes them into that
+   *  order along the free axis (reusing their existing slots, so spacing +
+   *  rank are preserved). Absent everywhere → the pass is a strict no-op, so
+   *  nothing shifts until a user sets it. */
+  ordering?: number;
 };
 
 export type EdgeRef = {
@@ -79,6 +85,7 @@ export const docToLayoutModel = (
     id: e.id,
     width: size.width,
     height: size.height,
+    ...(typeof e.ordering === 'number' ? { ordering: e.ordering } : {}),
   }));
   const edges: EdgeRef[] = Object.values(doc.edges).map((e) => ({
     sourceId: e.sourceId,
@@ -221,6 +228,72 @@ const balanceFreeAxis = (
   }
 };
 
+// -- Session 193 — manual sibling ordering ---------------------------------
+//
+// dagre has no per-node sibling-order input, so we honour `NodeBox.ordering`
+// as a post-dagre pass: for each rank whose nodes ALL carry an `ordering`,
+// permute them into ascending order using their own already-assigned free-axis
+// slots. This preserves rank (never touched) and spacing (the slot set is
+// reused verbatim), so it can't overlap or shift a rank as a whole — it only
+// swaps which node sits in which slot. Runs on dagre's centre coords in place,
+// after `balanceFreeAxis`; it's a pure function of the same (nodes, edges,
+// opts) tuple, so the per-component cache stays valid.
+//
+// Guarded two ways so it's a strict no-op for every diagram that doesn't use
+// the feature: it returns immediately when no node has an `ordering`, and it
+// skips any rank that isn't FULLY ordered (a mixed rank stays exactly as dagre
+// placed it). The manual-order setter always stamps ordering on the whole rank
+// at once, so a user-reordered rank is always fully ordered.
+const REORDER_RANK_EPS = 1;
+
+const reorderManualSiblings = (
+  g: dagre.graphlib.Graph,
+  opts: { direction: LayoutDirection },
+  nodes: NodeBox[]
+): void => {
+  const orderOf = new Map<string, number>();
+  for (const n of nodes) {
+    if (typeof n.ordering === 'number') orderOf.set(n.id, n.ordering);
+  }
+  if (orderOf.size === 0) return; // no manual order anywhere → nothing to do
+
+  const vertical = opts.direction === 'BT' || opts.direction === 'TB';
+  const freeOf = (id: string): number => {
+    const n = g.node(id);
+    return vertical ? n.x : n.y;
+  };
+  const setFree = (id: string, v: number): void => {
+    const n = g.node(id);
+    g.setNode(id, vertical ? { ...n, x: v } : { ...n, y: v });
+  };
+  const rankOf = (id: string): number => {
+    const n = g.node(id);
+    return vertical ? n.y : n.x;
+  };
+
+  // Bucket node ids by their rank-axis coordinate (dagre gives each rank one
+  // exact value; round for float safety).
+  const byRank = new Map<number, string[]>();
+  for (const id of g.nodes()) {
+    const key = Math.round(rankOf(id) / REORDER_RANK_EPS) * REORDER_RANK_EPS;
+    const arr = byRank.get(key);
+    if (arr) arr.push(id);
+    else byRank.set(key, [id]);
+  }
+
+  for (const ids of byRank.values()) {
+    if (ids.length < 2) continue;
+    if (!ids.every((id) => orderOf.has(id))) continue; // only fully-ordered ranks
+    // The rank's existing free-axis slots, ascending — reused so spacing holds.
+    const slots = ids.map(freeOf).sort((a, b) => a - b);
+    // Nodes sorted by manual order (id as a stable tie-break).
+    const sorted = [...ids].sort(
+      (a, b) => orderOf.get(a)! - orderOf.get(b)! || (a < b ? -1 : a > b ? 1 : 0)
+    );
+    sorted.forEach((id, i) => setFree(id, slots[i]!));
+  }
+};
+
 /** Centre-to-centre minimum gap reproducing dagre's edge-to-edge `nodesep`. */
 const nodeSepBetween = (extentA: number, extentB: number, nodeSep: number): number =>
   nodeSep + (extentA + extentB) / 2;
@@ -267,6 +340,8 @@ const layoutOneComponent = (
   dagre.layout(g);
   // Goal #4 — re-centre each node over its causes (see `balanceFreeAxis`).
   balanceFreeAxis(g, opts, nodes, edges);
+  // Session 193 — honour manual sibling ordering (no-op unless set).
+  reorderManualSiblings(g, opts, nodes);
 
   const positions: Record<string, Position> = {};
   let minX = Number.POSITIVE_INFINITY;
@@ -346,7 +421,7 @@ const componentCacheKey = (
 ): string => {
   const ns = [...nodes]
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
-    .map((n) => `${n.id}|${n.width}|${n.height}`)
+    .map((n) => `${n.id}|${n.width}|${n.height}|${n.ordering ?? ''}`)
     .join(',');
   const es = [...edges]
     .sort((a, b) =>
