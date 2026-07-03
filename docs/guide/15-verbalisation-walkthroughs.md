@@ -10,7 +10,7 @@ Reading aloud bypasses the autocompletion. The mouth and ear catch what the eye 
 
 Goldratt and the practitioners who followed him (Dettmer especially) treat verbalisation as discipline, not affectation. You don't whisper through it; you actually say the sentences. In a workshop, the lead asks one participant to read; everyone else listens.
 
-## TP Studio's three supports
+## TP Studio's four supports
 
 ### 1. The Read-through overlay
 
@@ -30,7 +30,7 @@ The two modes are complementary: step-through forces *discipline* (you can't ski
 
 ### 3. The VerbalisationStrip (EC-only)
 
-For Evaporating Clouds, the canonical reading is a single paragraph. The VerbalisationStrip renders it above the canvas, updating live as you edit. Settings → EC Verbal Style toggles between `neutral` ("we must") and `twoSided` ("they want / I want") framings.
+For Evaporating Clouds, the canonical reading is a single paragraph. The VerbalisationStrip renders it above the canvas, updating live as you edit. The Document Inspector's **EC verbal style** field (per-document) toggles between *Neutral* ("we must") and *Two-sided* ("I want / they want") framings.
 
 Read the strip aloud after every structural edit on an EC. The "this sounds wrong" reaction is the most reliable validator the EC has.
 

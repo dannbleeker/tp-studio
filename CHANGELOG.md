@@ -2,6 +2,71 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Docs coverage review (remote session) — USER_GUIDE + practitioner book accuracy pass
+
+A full coverage audit of the user manual and the book against the current
+feature surface (command registry, UI components, validators, exporters,
+settings), followed by the fixes. Docs-only — no code changes.
+
+**USER_GUIDE.md — staleness corrected:**
+
+- **Assumption removed from every palette listing** (six spots): it's an edge
+  annotation via the Assumption Well / `A` key, not a Type-grid entity.
+- **Per-diagram palette commands** (`New Current Reality Tree`,
+  `Load example Evaporating Cloud`, …) replaced with the current
+  `New diagram…` / `Load example…` picker form; individual
+  `Export as X` / `Import from X` commands rerouted through the
+  **Export…** / **Import…** pickers; share link → the top-bar **Share**
+  button; history panel → the top-bar clock button; Browse Lock → the
+  ⋮ overflow (the standalone lock button and `Toggle Browse Lock`
+  command no longer exist).
+- **"No TT/PRT-specific CLR rules yet" claims corrected** — documented
+  `complete-step` + `tt-action-locus-unset`, `prt-obstacle-no-io` +
+  `prt-io-no-obstacle`, `goalTree-csf-no-ncs` + `goalTree-csf-count`,
+  and `st-tactic-rollup`.
+- **Removed `cycle` rule references**; documented back-edge auto-detection.
+- **`ec-completeness` description** aligned with the actual five checks.
+- **Settings section rewritten for four tabs** — added the per-document
+  **Layout** tab (Direction / Compactness / Bias), Layout density, Edge
+  routing, and the three Creation-wizard toggles (the CRT wizard was
+  undocumented).
+- **"Pattern library…" → unified Templates library** wording.
+
+**USER_GUIDE.md — gaps filled:** a **Negative Branch Reservations** section
+(the diagram type had no home); Group **Presets**; archive/unarchive +
+show-archived-groups; *Select all entities of the same type*; **Risk
+Register CSV** and **EC Workshop Sheet** export descriptions; selection-
+toolbar TT/PRT verb rows; keyboard rows for `Cmd/Ctrl+\`, `F2`, `A`,
+`Cmd/Ctrl+D`; click-to-type zoom; the Start-page landing in "Starting up".
+Also: ToC renumbered (it had drifted), and session-number stamps stripped
+from headings/prose (changelog-speak removed from user-facing docs).
+
+**Book (`docs/guide/`) — same accuracy pass across all 17 chapters +
+appendices:** assumption-as-annotation rewrite (ch 1, 4, 5, 12 + glossary);
+cycle-rule removal + loop auto-detection (ch 3, 13 + glossary); unified
+Templates library + `New diagram…` command form (ch 2, 4, 5, 7–11);
+group-preset table corrected (Negative Branch is rose; NSP Block is the
+S&T NA/SA/PA triple; Step is the TT triple wrapper); Assumption Well
+unified in the Edge Inspector (ch 5, 12); EC verbal style lives in the
+Document Inspector (ch 15); removed `Open history panel` /
+`Branch from current revision` / `Compare with revision…` phantom
+commands (ch 14) and documented **Auto-snapshot while editing**;
+chapter 16's export groups realigned to the picker's real five
+categories (+ copy-image-to-clipboard, last-used memory); count fixes
+("three supports" → four, "Five gestures" → six, "All five" → six).
+**Structure:** chapter 6 gains a standalone-NBR callout (the NBR
+diagram type was absent from the book); chapter 13 gains a **Logic
+chip / Logic-check panel** section and the per-type rule-family map;
+appendix B gains the missing shortcuts (arrow-walk, group keys,
+`Cmd/Ctrl+\`, `F2`, `Cmd/Ctrl+D`/`+A`) and drops the phantom `?` key;
+appendix C gains the six missing rules + matrix rows and drops the
+stale "PRT rules are parked" note; appendix D rewritten for the real
+four-tab Settings dialog (the "Behavior — advanced" section it
+described doesn't exist); appendix E glossary entries corrected
+(Assumption, Back-edge, CLR count, Templates library, + Start page);
+appendix G gains PRT / Goal-Tree / feedback-loop smell rows. Foreword
++ AUTHORING version notes bumped v9 → v10.
+
 ## Session 192 (cont.) — Improvement-review batch 5 (last item): linked-file staleness + write-through Save
 
 Closes the final open item from the improvement-review backlog.

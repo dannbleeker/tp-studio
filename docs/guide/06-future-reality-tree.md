@@ -159,6 +159,8 @@ All that's left is to name the new injection to say *what* breaks the branch —
 
 A trimmed FRT is a *realistic* FRT. An untrimmed one is a plan drawn by someone who's never had a plan fail.
 
+> **🛠 When the branch deserves its own canvas.** The in-FRT Negative Branch group is right for a risk you'll trim in place. When one risk warrants a full analysis — several contributing effects, its own review conversation, a risk register to export — spin it up as a standalone **Negative Branch Reservation** document (`Cmd/Ctrl+K → New diagram… → Negative Branch Reservation`). An NBR's palette is injection / effect / UDE / desired effect, its default type is UDE (the branch's point), and two NBR-specific validators keep the shape honest: `nbr-no-negative-branch` reminds you a branch with no UDE still reads as an FRT, and `nbr-ude-disconnected` flags a UDE that doesn't trace back to the injection under scrutiny. The **Risk Register CSV** export pairs with it — each UDE becomes a risk row, its trimming injection inferred as the mitigation. Five NBR starter templates ship in the Templates library.
+
 ## Prediction vs. hope — the central discipline
 
 The distinction between prediction and hope deserves a full paragraph because it's where most FRTs go wrong.
@@ -221,7 +223,7 @@ The Document Inspector's "System Scope" section lets you write a short statement
 > - Verbalisation reads as a plausible future, not a wish-list. You'd be comfortable presenting each edge as a prediction to a skeptical colleague.
 > - The desired future state you wrote in the Document Inspector's System Scope section is visible somewhere in the top layer of desired effects.
 
-> **✏️ Now you try.** Take an injection you believe in — from the cloud above, or any "we should just…". Open an FRT (`Cmd+K → New Future Reality Tree`), seed the injection, and grow the desired effects forward until you reach the UDEs it should eliminate. Then hunt one **negative branch** (right-click → *Start Negative Branch*): what could this fix break? Trim it (*Trim this branch*). An FRT with no negative branches usually means you haven't looked hard enough.
+> **✏️ Now you try.** Take an injection you believe in — from the cloud above, or any "we should just…". Open an FRT (`Cmd+K → New diagram… → Future Reality Tree`), seed the injection, and grow the desired effects forward until you reach the UDEs it should eliminate. Then hunt one **negative branch** (right-click → *Start Negative Branch*): what could this fix break? Trim it (*Trim this branch*). An FRT with no negative branches usually means you haven't looked hard enough.
 
 🔁 **Chain to next:** the FRT tells you *what* will happen if the injections land. The Prerequisite Tree tells you *what is in the way of making them land* — the obstacles between here and there.
 

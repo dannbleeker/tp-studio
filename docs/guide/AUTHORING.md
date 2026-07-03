@@ -160,4 +160,4 @@ markdown change.
 
 ## Versioning
 
-When TP Studio's schema version bumps (currently v9), or a major UI change lands, mark the affected chapter with a `> *Last reviewed against TP Studio v…*` note near the top. Helps readers calibrate whether the screenshots they see are current.
+When TP Studio's schema version bumps (currently v10), or a major UI change lands, mark the affected chapter with a `> *Last reviewed against TP Studio v…*` note near the top. Helps readers calibrate whether the screenshots they see are current.

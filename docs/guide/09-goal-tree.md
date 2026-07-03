@@ -129,7 +129,8 @@ If you genuinely need two Goals, dismiss the warning and proceed. Just be honest
 > - **`Mark CSF`** verb: select any entity that isn't a `criticalSuccessFactor` or `goal` → single-entity toolbar → **Mark CSF**. Useful when an entity was created via Quick-Capture and arrived as a plain `effect` rather than the intended tier.
 > - **`Promote to Goal`** verb: select any non-goal entity → **Promote to Goal**. Useful when building bottom-up and discovering that one NC is actually the real strategic objective.
 > - **`goalTree-multiple-goals`** validator with the **`Convert extras to CSFs`** one-click action — fires when more than one `goal` entity exists; demotes all but the oldest.
-> - **Pattern library** (`Cmd+K → Pattern library…`) ships six Goal Tree starters: *Goal Tree starter* (generic 3-layer), *Sustainable product organization*, *Profitable subscription business*, *Trustworthy ML system*, *Effective sales team*, and *Generic IT-function goals*. Each arrives with realistic NC numbers as a calibration anchor.
+> - **`goalTree-csf-no-ncs`** and **`goalTree-csf-count`** validators — the first flags a CSF with no Necessary Conditions beneath it; the second is a document-level scope guard on Dettmer's 3–5-CSF band (fewer suggests missing make-or-break conditions; more usually means some are really NCs a tier down).
+> - **Templates library** (`Cmd+K → Browse templates…`) ships six Goal Tree starters: *Goal Tree starter* (generic 3-layer), *Sustainable product organization*, *Profitable subscription business*, *Trustworthy ML system*, *Effective sales team*, and *Generic IT-function goals*. Each arrives with realistic NC numbers as a calibration anchor.
 > - **Load example** (`Cmd+K → Load example…` → Goal Tree) — the canonical 8-entity "Customer-first" example, useful for studying the structural shape before drawing your own.
 > - **Reasoning narrative export** (`Cmd+K → Export… → Reasoning as narrative (Markdown)`) — compiles the tree into a top-down necessity argument sentence-by-sentence, suitable for a stakeholder brief or alignment doc.
 > - **Method checklist** (Document Inspector) — five Goal Tree steps tracked per document: State the Goal; List 3–5 CSFs; Identify NCs per CSF; Test necessity at every layer; Look for missing conditions. Useful for a team of analysts working the same document across sessions.
@@ -158,7 +159,7 @@ If you genuinely need two Goals, dismiss the warning and proceed. Just be honest
 > - Read-aloud passes at every chain, without invented bridge-sentences.
 > - You can describe the strategic frame in one sentence that the Goal-Tree vocabulary makes precise.
 
-> **✏️ Now you try.** State a goal for your team in one sentence. Open a Goal Tree (`Cmd+K → New Goal Tree`) and let the wizard walk you through the apex Goal, three Critical Success Factors, and the Necessary Conditions under each. Keep it to a single apex — if a second goal sneaks in, the `goalTree-multiple-goals` warning offers a one-click **Convert extras to CSFs**.
+> **✏️ Now you try.** State a goal for your team in one sentence. Open a Goal Tree (`Cmd+K → New diagram… → Goal Tree`) and let the wizard walk you through the apex Goal, three Critical Success Factors, and the Necessary Conditions under each. Keep it to a single apex — if a second goal sneaks in, the `goalTree-multiple-goals` warning offers a one-click **Convert extras to CSFs**.
 
 🔁 **Chain to next:** the Goal Tree is the strategic frame. The S&T tree is the *deployment* of that frame across the organization, one operational level at a time.
 

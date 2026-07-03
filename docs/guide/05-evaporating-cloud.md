@@ -116,9 +116,9 @@ The two-sided framing makes the political contour of the cloud visible. Useful i
 
 This is where the cloud evaporates.
 
-For each of the four B→D, C→D′ necessity arrows, list assumptions. TP Studio's **AssumptionWell** in the Inspector lets you add them as first-class entities with status (`open` / `valid` / `invalid`). When an assumption is anchored to an edge, TP Studio draws a faint dashed grey line on the canvas from the assumption entity to the midpoint of the edge it pertains to — so even with multiple assumptions in play you can see at a glance which arrow each is challenging without opening the inspector.
+For each of the four B→D, C→D′ necessity arrows, list assumptions. TP Studio's **Assumption Well** in the Edge Inspector lets you add them as edge annotations with a status you set directly (`unexamined` / `valid` / `invalid` / `challengeable`); each renders as a violet card linked to its arrow, and pressing `A` with the edge selected adds one fast. When an assumption is anchored to an edge, TP Studio draws a faint dashed grey line on the canvas from the assumption entity to the midpoint of the edge it pertains to — so even with multiple assumptions in play you can see at a glance which arrow each is challenging without opening the inspector.
 
-Pick the **B → D** arrow ("To keep queue responsive, support lead must stay on the queue"). Click the edge. The AssumptionWell shows up in the Inspector. Add:
+Pick the **B → D** arrow ("To keep queue responsive, support lead must stay on the queue"). Click the edge. The Assumption Well shows up in the Edge Inspector. Add:
 
 - *Only the support lead can resolve the hard tickets.*
 - *Tickets sufficient to keep the queue responsive must all be resolved by humans.*
@@ -160,7 +160,7 @@ Cohen frames the cloud not as a single artifact but as a *progression*. The same
 
 A fourth turns up constantly in practice: the **Firefighting** (Lieutenant) cloud — *patch the symptom now* vs. *stop it coming back* — the trap that keeps an organisation reacting instead of improving.
 
-In TP Studio this is an optional **Cloud type** label (Document panel → *Cloud type*, on EC documents): Dilemma, Conflict, UDE, Consolidated, Core, or Firefighting. It's just a label — nothing about drawing or reading the cloud changes — but tagging one drops a small chip by the title so a folder of clouds reads as a progression rather than a pile. The **Pattern library…** ships a *UDE cloud*, a *Core cloud*, and a *Firefighting cloud* as pre-tagged starting points.
+In TP Studio this is an optional **Cloud type** label (Document panel → *Cloud type*, on EC documents): Dilemma, Conflict, UDE, Consolidated, Core, or Firefighting. It's just a label — nothing about drawing or reading the cloud changes — but tagging one drops a small chip by the title so a folder of clouds reads as a progression rather than a pile. The Templates library (`Cmd/Ctrl+K → Browse templates…`) ships a *UDE cloud*, a *Core cloud*, and a *Firefighting cloud* as pre-tagged starting points.
 
 ## The resistance cloud — why people both want and fear change
 
@@ -191,7 +191,7 @@ The payoff of drawing this cloud is that it tells you exactly where the injectio
 1. **Protect security.** Resistance is a rational defense of prediction reliability — so don't let it crash. Find the areas the person genuinely cares about, then supply the information and training that keep them able to forecast *through* the change. Someone who still feels they can predict what's happening doesn't experience the change as a threat.
 2. **Offer satisfaction.** Give people a real, owning role in the change itself — a decision, a piece of the plan, something that's theirs — in an area they value. Now the change *is* the achievement, and the satisfaction need flips from fighting the change to driving it.
 
-In TP Studio terms, each channel is an **injection** that breaks an assumption on the cloud: channel 1 attacks *"this change must reduce my ability to predict"* (the assumption under the D′→C arrow); channel 2 attacks *"this change is something done to me, not by me"* (under D→B). Open the **Pattern library…** and drop in *Resistance to change — Efrat's cloud* — it arrives with those two channels already pinned as dotted **notes** beside the needs they protect (notes are non-causal, so they don't disturb the cloud's logic or the CLR checks). List the assumptions on the two arrows, and the injections almost write themselves. From there it's the standard chain: carry each injection into an FRT and check it actually buys cooperation without spawning a negative branch — change-fatigue is the usual one.
+In TP Studio terms, each channel is an **injection** that breaks an assumption on the cloud: channel 1 attacks *"this change must reduce my ability to predict"* (the assumption under the D′→C arrow); channel 2 attacks *"this change is something done to me, not by me"* (under D→B). Open **Browse templates…** and drop in *Resistance to change — Efrat's cloud* — it arrives with those two channels already pinned as dotted **notes** beside the needs they protect (notes are non-causal, so they don't disturb the cloud's logic or the CLR checks). List the assumptions on the two arrows, and the injections almost write themselves. From there it's the standard chain: carry each injection into an FRT and check it actually buys cooperation without spawning a negative branch — change-fatigue is the usual one.
 
 > **💡 Why this matters in the room:** when you hit resistance, the instinct is to push harder or sell the benefits louder. This cloud says both instincts miss — resistance is defending *security* (prediction reliability), while benefits speak only to *satisfaction*. Naming which need is in play tells you which of the two channels to reach for.
 
@@ -253,7 +253,7 @@ The resulting document is an ordinary Evaporating Cloud. Nothing about reading, 
 
 - Open the **VerbalisationStrip** and read it aloud. Does it sound like the organization talking? If not, adjust the wording in the boxes.
 - Mark the **mutex** on the D ↔ D′ edge (Inspector → Mutual exclusion).
-- Add **assumptions** to the B→D and C→D′ arrows in the AssumptionWell. On D→B ("to hit commitments, we must push on every deadline") you'll quickly find: *Any capacity held back is capacity that doesn't ship*. That assumption is breakable — a team with slack may ship more sustainably than one burning on every sprint.
+- Add **assumptions** to the B→D and C→D′ arrows in the Assumption Well. On D→B ("to hit commitments, we must push on every deadline") you'll quickly find: *Any capacity held back is capacity that doesn't ship*. That assumption is breakable — a team with slack may ship more sustainably than one burning on every sprint.
 - Draft the **injection** in the InjectionWorkbench. Mark the assumption invalid and write the resolution: *"If we establish a sustainable pace with explicit recovery cycles, we can hit commitments more reliably than by pushing every deadline — because we stop losing delivery capacity to turnover and technical debt."*
 
 The Rapid 3-cloud diagnosis is not a shortcut that skips the rigor — it's a faster **on-ramp**. You're still doing the same cloud work; you're just starting from raw frustrations rather than a finished CRT. Once the Core Cloud is evaporated, carry the injection forward into a Future Reality Tree to check it actually delivers the good effects you want, and that it doesn't spawn new problems of its own.
@@ -263,16 +263,16 @@ The Rapid 3-cloud diagnosis is not a shortcut that skips the rigor — it's a fa
 ## Sidebars
 
 > **🛠 How TP Studio helps**
-> - `Cmd+K → New Evaporating Cloud` → opens the **Creation Wizard** which guides A / B / C / D / D′ in order.
+> - `Cmd+K → New diagram… → Evaporating Cloud` → opens the **Creation Wizard** which guides A / B / C / D / D′ in order.
 > - **Reading-direction toggle** in the Wizard for A-first (default) vs. D-first (when the conflict surfaced first).
 > - **EC Verbal Style** toggle in the Document Inspector: `neutral` ("we must") or `twoSided` ("they want / I want") for two-party framing.
-> - **Cloud type** label in the Document Inspector — tag an EC as a UDE / Consolidated / Core / Firefighting cloud (the *TP Basics* progression); a chip by the title records the role. Three pre-tagged clouds ship in the Pattern library.
+> - **Cloud type** label in the Document Inspector — tag an EC as a UDE / Consolidated / Core / Firefighting cloud (the *TP Basics* progression); a chip by the title records the role. Three pre-tagged clouds ship in the Templates library.
 > - **VerbalisationStrip** above the canvas — renders the cloud as a paragraph, updates live as you edit.
-> - **AssumptionWell** in the EC inspector — first-class assumption records with `open` / `valid` / `invalid` status and links to injection entities.
+> - **Assumption Well** in the Edge Inspector — per-arrow assumption records with `unexamined` / `valid` / `invalid` / `challengeable` status and links to injection entities.
 > - **InjectionWorkbench** in the EC inspector — list every proposed injection with `implemented` toggles for FRT carry-forward.
 > - **Mutex (⚡) edge flag** on the D ↔ D′ edge. The `ec-missing-conflict` validator fires until one such edge exists.
 > - **EC Workshop Sheet PDF** — `Cmd+K → Export → EC workshop sheet` — generates a one-page PPT-style layout with the guiding questions baked in. Good for handouts.
-> - **`ECReadingInstructions` strip** above the canvas — the dismissible 1/2/3 numbered hints reminding you of the reading direction. Default-hidden after Session 89; re-enable via `Toggle EC reading guide`.
+> - **`ECReadingInstructions` strip** above the canvas — the dismissible 1/2/3 numbered hints reminding you of the reading direction. Default-hidden; re-enable via `Toggle EC reading guide`.
 
 > **💡 Practitioner tips**
 > - **D and D′ must be actions, not states.** "We want stability" isn't a want; it's a value. The want is "we want to gate this release on a 2-week soak test." Concrete actions are what people argue about in meetings.
@@ -294,7 +294,7 @@ The Rapid 3-cloud diagnosis is not a shortcut that skips the rigor — it's a fa
 > - An injection exists addressing the breakable assumption.
 > - The resolution sentence — "Once X, the conflict dissolves because Y" — is one sentence and stands up to a "really?" challenge.
 
-> **✏️ Now you try.** Find a decision your team keeps relitigating — a chronic either/or. Open an EC (`Cmd+K → New Evaporating Cloud`) and fill the five boxes: the shared goal (A), the two needs (B / C), the two conflicting wants (D / D′). Mark the D ↔ D′ conflict, then add the assumptions on each arrow and cycle their status chips until you find one that's **Invalid** — that breakable assumption is your injection.
+> **✏️ Now you try.** Find a decision your team keeps relitigating — a chronic either/or. Open an EC (`Cmd+K → New diagram… → Evaporating Cloud`) and fill the five boxes: the shared goal (A), the two needs (B / C), the two conflicting wants (D / D′). Mark the D ↔ D′ conflict, then add the assumptions on each arrow and cycle their status chips until you find one that's **Invalid** — that breakable assumption is your injection.
 
 🔁 **Chain to next:** the EC names the conflict and drafts an injection. The Future Reality Tree checks whether the injection actually delivers the desired effects without spawning new UDEs.
 

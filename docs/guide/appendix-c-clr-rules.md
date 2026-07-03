@@ -16,7 +16,7 @@ These read titles, edge endpoints, and connectivity only — they assume nothing
 | `tautology` | clarity | Each edge | A cause that merely restates its effect — a relabel, not a causal step. |
 | `indirect-effect` | existence | Converging edges | Too many causes pointing straight at one effect — the *breadth* twin of `long-arrow`; a consolidating intermediate effect is probably missing. |
 
-> The former `cycle` rule was retired in Session 176: the auto-detected back-edge colour now signals a loop on the canvas, so a separate warning was redundant. A defended loop is tagged as a back-edge and stops drawing CLR fire.
+> There is no `cycle` rule: loops are auto-detected and the loop-closing edge renders as a back-edge, so a separate warning would be redundant. The loop-focused lint below (`loop-polarity`, `reinforcing-no-delay`) interrogates a loop's dynamics instead.
 
 ## Diagram-specific rules
 
@@ -43,9 +43,21 @@ These read titles, edge endpoints, and connectivity only — they assume nothing
 | `additional-cause` | sufficiency | A desired effect a different cause could also produce. |
 | `predicted-effect-existence` | existence | An injection whose predicted *second* effect should be observable somewhere — confirm it exists, or the claim is suspect. |
 
-### NBR — Negative Branch
+### NBR — Negative Branch Reservation
 
-Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): `cause-sufficiency`, `additional-cause`, and `predicted-effect-existence` (all as above), plus the cross-diagram lint below.
+Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): `cause-sufficiency`, `additional-cause`, and `predicted-effect-existence` (all as above), plus two NBR-specific shape rules and the cross-diagram lint below.
+
+| Rule | Tier | Catches |
+| --- | --- | --- |
+| `nbr-no-negative-branch` | existence | No undesirable effect captured yet — trace the injection forward to where the chain turns negative ("yes, but…"). Without a UDE this still reads as an FRT. Document-level. |
+| `nbr-ude-disconnected` | existence | A UDE that doesn't trace back to the candidate injection — connect the chain (injection → … → UDE) or it can't inform the adopt / modify / reject call. |
+
+### PRT — Prerequisite Tree
+
+| Rule | Tier | Catches |
+| --- | --- | --- |
+| `prt-obstacle-no-io` | existence | An obstacle with no Intermediate Objective overcoming it — add the IO that removes it on the way to the goal. |
+| `prt-io-no-obstacle` | existence | An Intermediate Objective that doesn't overcome any obstacle — connect it to the obstacle it removes. |
 
 ### TT — Transition Tree
 
@@ -59,7 +71,7 @@ Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): 
 | Rule | Tier | Catches |
 | --- | --- | --- |
 | `ec-missing-conflict` | existence | Neither D ↔ D′ edge carries the lightning-bolt mutex marker — the conflict isn't declared. |
-| `ec-completeness` | existence | The brief's structural set: both Wants and both Needs present, all four necessity edges, an assumption on each arrow, at least one injection. |
+| `ec-completeness` | existence | The brief's structural set: an empty Objective (A); Needs B and C collapsing into one entity; a Need connected to anything other than A; a Want supporting the wrong Need (D → B only, D′ → C only); an arrow with no assumption recorded; no injection captured yet. |
 
 ### S&T — Strategy & Tactics Tree
 
@@ -73,6 +85,8 @@ Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): 
 | Rule | Tier | Catches |
 | --- | --- | --- |
 | `goalTree-multiple-goals` | clarity | More than one apex Goal entity. Soft + dismissible; carries a one-click **Convert extras to CSFs** action. |
+| `goalTree-csf-no-ncs` | sufficiency | A Critical Success Factor with no Necessary Conditions beneath it — add the conditions that must hold for it. |
+| `goalTree-csf-count` | clarity | A CSF count outside Dettmer's typical 3–5 band (document-level; silent at zero). Too few suggests missing make-or-break conditions; more than 5 usually means some are really NCs a tier down. |
 
 ## Cross-diagram lint (the System-Dynamics lens)
 
@@ -80,14 +94,14 @@ These ride the same edge/loop structure across several diagram types:
 
 | Rule | Tier | Fires on | Catches |
 | --- | --- | --- | --- |
-| `logic-type-mismatch` | clarity | CRT · FRT · TT · Goal Tree · NBR | An edge whose kind (sufficiency vs necessity) contradicts the diagram's primary logic. |
+| `logic-type-mismatch` | clarity | CRT · FRT · TT · EC · Goal Tree · NBR | An edge whose kind (sufficiency vs necessity) contradicts the diagram's primary logic. |
 | `loop-polarity` | clarity | CRT · FRT · NBR | A balancing (self-correcting) loop where a reinforcing (self-amplifying) one is expected, or vice versa. |
 | `long-arrow` | existence | CRT · FRT · TT · NBR | A sufficiency edge skipping three or more causal levels — the *depth* twin of `indirect-effect`. Carries a one-click **Insert a step** action. |
 | `reinforcing-no-delay` | clarity | CRT · FRT · NBR | A reinforcing loop none of whose edges carries a delay marker — it would escalate instantly; a lag is probably un-modelled. |
 
 ## Diagram-type scoping matrix
 
-`✓` = the rule runs on that diagram type. Blank = it doesn't. PRT and Freeform run the structural rules only.
+`✓` = the rule runs on that diagram type. Blank = it doesn't. Freeform runs the structural rules only.
 
 | Rule | CRT | FRT | PRT | TT | EC | Goal | S&T | Free | NBR |
 | --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
@@ -107,6 +121,8 @@ These ride the same edge/loop structure across several diagram types:
 | `crt-low-core-driver-coverage` | ✓ | | | | | | | | |
 | `crt-tied-core-drivers` | ✓ | | | | | | | | |
 | `crt-ude-wording` | ✓ | | | | | | | | |
+| `prt-obstacle-no-io` | | | ✓ | | | | | | |
+| `prt-io-no-obstacle` | | | ✓ | | | | | | |
 | `complete-step` | | | | ✓ | | | | | |
 | `tt-action-locus-unset` | | | | ✓ | | | | | |
 | `ec-missing-conflict` | | | | | ✓ | | | | |
@@ -114,9 +130,13 @@ These ride the same edge/loop structure across several diagram types:
 | `st-tactic-assumptions` | | | | | | | ✓ | | |
 | `st-tactic-rollup` | | | | | | | ✓ | | |
 | `goalTree-multiple-goals` | | | | | | ✓ | | | |
-| `logic-type-mismatch` | ✓ | ✓ | | ✓ | | ✓ | | | ✓ |
+| `goalTree-csf-no-ncs` | | | | | | ✓ | | | |
+| `goalTree-csf-count` | | | | | | ✓ | | | |
+| `nbr-no-negative-branch` | | | | | | | | | ✓ |
+| `nbr-ude-disconnected` | | | | | | | | | ✓ |
+| `logic-type-mismatch` | ✓ | ✓ | | ✓ | ✓ | ✓ | | | ✓ |
 | `loop-polarity` | ✓ | ✓ | | | | | | | ✓ |
 | `long-arrow` | ✓ | ✓ | | ✓ | | | | | ✓ |
 | `reinforcing-no-delay` | ✓ | ✓ | | | | | | | ✓ |
 
-Freeform receives only the structural rules by design — see [Chapter 11](11-freeform-diagrams.md). PRT's method-specific checks ("a goal with no IOs feeding the obstacles below") are intentionally parked; the structural set still applies.
+Freeform receives only the structural rules by design — see [Chapter 11](11-freeform-diagrams.md).

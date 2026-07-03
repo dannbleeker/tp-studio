@@ -12,10 +12,11 @@ Automatic snapshots also fire when:
 
 - A document is loaded via Import / Load example / New from template (the prior doc is auto-snapped).
 - A "safety snapshot" is captured before a Restore operation (so you can undo the undo).
+- **Every few minutes while you edit** — the *Auto-snapshot while editing* setting (Behavior tab, on by default) captures an `Auto`-labelled revision whenever the tree has actually changed since the last one, so a long single-sitting session accrues rollback points without you thinking about it. Turn it off in Settings → Behavior if you prefer manual-only snapshots.
 
 ## The History Panel
 
-TopBar → History button (or `Cmd+K → Open history panel`) opens a slide-in panel listing all revisions:
+The TopBar's **History** button (it folds into the ⋮ overflow on narrow windows) opens a slide-in panel listing all revisions:
 
 ![History panel slid out from the right with two revisions](screenshots/chapter14-revision-panel-open.png)
 
@@ -25,7 +26,7 @@ The panel groups revisions by branch. The default branch is `Main`. Branching is
 
 ## Branching
 
-`Cmd+K → Branch from current revision` (or from a revision row in the History panel) prompts for a branch name. The branch becomes a labeled lineage; subsequent snapshots after a restore-from-this-branch belong to the new branch.
+The **Branch from here** action on a revision row in the History panel prompts for a branch name. The branch becomes a labeled lineage; subsequent snapshots after a restore-from-this-branch belong to the new branch.
 
 TP Studio's branch model is intentionally lightweight. It's not git. There's no merge; there's no checkout. A branch is just a label attached to a revision (and its descendants) so the History panel can group them visually. The point is exploration — "I want to keep my current line of analysis but also try this other thing."
 
@@ -41,7 +42,7 @@ Useful when you've done significant edits and want to see *exactly* what changed
 
 ## Visual diff overlay (compare mode)
 
-Lighter than the side-by-side dialog. `Cmd+K → Compare with revision…` picks a revision and overlays a per-entity ring tint on the live canvas:
+Lighter than the side-by-side dialog. The **visual diff** action (the 👁 button) on a revision row overlays a per-entity ring tint on the live canvas:
 
 - Emerald ring = added since this revision.
 - Amber ring = changed since this revision.
@@ -54,7 +55,8 @@ Useful for "I want to know what's new in the live doc without leaving the canvas
 
 > **🛠 How TP Studio helps**
 > - `Cmd+K → Capture snapshot` (with optional label).
-> - **History panel** slide-in (TopBar button or `Cmd+K → Open history panel`).
+> - **History panel** slide-in (the TopBar History button).
+> - **Auto-snapshot while editing** (Settings → Behavior, default on) — periodic `Auto` revisions while you work.
 > - **Branch from here** action on any revision row.
 > - **Side-by-side compare** dialog.
 > - **Compare mode overlay** on the live canvas with per-entity diff tinting.

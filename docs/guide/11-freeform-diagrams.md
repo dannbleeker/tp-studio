@@ -2,7 +2,7 @@
 ### *When none of the above fits*
 
 > **🎯 What this process is for**
-> A Freeform diagram is TP Studio's escape hatch. No built-in TOC entity types; no per-diagram CLR validators; just the canvas plus whatever custom types and attributes you define. Useful when the situation is causal-but-not-canonical: stakeholder mapping, system architecture, knowledge graphs, an early-stage think where you haven't yet decided which TP it'll become.
+> A Freeform diagram is TP Studio's escape hatch. No built-in TOC entity types; no diagram-type-specific CLR validators (the structural checks still run); just the canvas plus whatever custom types and attributes you define. Useful when the situation is causal-but-not-canonical: stakeholder mapping, system architecture, knowledge graphs, an early-stage think where you haven't yet decided which TP it'll become.
 
 ## When freeform is honest
 
@@ -13,7 +13,7 @@
 ## When freeform is dishonest
 
 - **You're avoiding the discipline of a real TP.** "I'll just use freeform for now" is sometimes a flag that you haven't decided what you're really doing, and the cost of that ambiguity is high. A CRT *forces* you to find root causes; freeform lets you avoid them. If you find yourself drawing freeform when one of the structured types would apply, that's a signal.
-- **You want to skip the CLR.** The CLR validators don't fire on freeform diagrams (other than the universal `empty-title` clarity check). That's a feature for genuine non-causal diagrams; a bug for "I want my CRT but without the warnings."
+- **You want to skip the CLR.** Only the structural CLR rules fire on freeform diagrams (clarity, entity-existence, causality-existence, tautology, indirect-effect) — none of the type-pattern rules. That's a feature for genuine non-causal diagrams; a bug for "I want my CRT but without the warnings."
 
 ## Custom entity classes
 
@@ -41,10 +41,10 @@ Attributes round-trip through JSON, CSV exports, and OPML exports.
 ## Sidebars
 
 > **🛠 How TP Studio helps**
-> - `Cmd+K → New Freeform diagram`.
+> - `Cmd+K → New diagram… → Freeform`.
 > - **Custom entity classes** + **icon picker** (57 Lucide icons) in the Document Inspector.
 > - **Per-entity attributes** key/value editor in the Entity Inspector.
-> - **No diagram-type CLR firing** — only the universal `empty-title` clarity check applies.
+> - **No diagram-type-specific CLR firing** — only the universal structural rules (clarity, entity-existence, causality-existence, tautology, indirect-effect) apply; no type-pattern rules.
 > - **Group presets** still work — you can structure regions of a freeform diagram with Negative Branch / Reinforcing Loop / Archive presets.
 
 > **💡 Practitioner tips**
@@ -60,7 +60,7 @@ Attributes round-trip through JSON, CSV exports, and OPML exports.
 > - You haven't accumulated CLR-style mistakes (freeform won't catch them; you have to catch them yourself).
 > - The set of custom entity classes is small and understandable to a future reader.
 
-> **✏️ Now you try.** Find something that *isn't* a TOC shape — a decision record, an argument you're having, a dependency sketch. Open a Freeform diagram (`Cmd+K → New Freeform Diagram`) and, in the Document Inspector, define a couple of **custom entity classes** that fit your domain (e.g. *Claim*, *Evidence*, *Risk*). Map the thing. Notice which CLR rules still fire (the structural ones) and which stay quiet — that's the method getting out of your way.
+> **✏️ Now you try.** Find something that *isn't* a TOC shape — a decision record, an argument you're having, a dependency sketch. Open a Freeform diagram (`Cmd+K → New diagram… → Freeform`) and, in the Document Inspector, define a couple of **custom entity classes** that fit your domain (e.g. *Claim*, *Evidence*, *Risk*). Map the thing. Notice which CLR rules still fire (the structural ones) and which stay quiet — that's the method getting out of your way.
 
 🔁 **Chain to next:** Part 2 is done — you know every TP and when to use each. Part 3 covers the cross-cutting skills: groups, the CLR in depth, iteration via revisions and side-by-side compare.
 

@@ -7,34 +7,42 @@ A practitioner's walkthrough. Assumes familiarity with the Thinking Process — 
 1. [Starting up](#starting-up)
 2. [What you see](#what-you-see)
 3. [Working with multiple documents (tabs)](#working-with-multiple-documents-tabs)
-3. [Building a Current Reality Tree](#building-a-current-reality-tree)
-4. [Working with entities](#working-with-entities)
-5. [Connecting causes to effects](#connecting-causes-to-effects)
-6. [Working with multiple entities](#working-with-multiple-entities)
-7. [Finding and navigating](#finding-and-navigating)
-8. [Entity state and what-if analysis](#entity-state-and-what-if-analysis)
-8. [Quick Capture and CSV import](#quick-capture-and-csv-import)
-9. [Groups (organize a region of the diagram)](#groups)
-9. [AND groups (sufficient sets of causes)](#and-groups)
-7. [Assumptions on edges](#assumptions-on-edges)
-8. [The CLR panel](#the-clr-panel)
-9. [Review comments](#review-comments)
-9. [Future Reality Trees](#future-reality-trees)
-10. [Saving, exporting, and sharing](#saving-exporting-and-sharing)
-11. [Importing](#importing)
-11. [Templates library](#templates-library)
-12. [Multi-goal Goal Trees](#multi-goal-goal-trees)
-13. [Settings & themes](#settings--themes)
-14. [App modes](#app-modes)
-12. [Browse Lock](#browse-lock)
-13. [Document details](#document-details)
-14. [Accessibility](#accessibility)
-15. [Keyboard reference](#keyboard-reference)
-16. [Tips](#tips)
+4. [Building a Current Reality Tree](#building-a-current-reality-tree)
+5. [Working with entities](#working-with-entities)
+6. [Connecting causes to effects](#connecting-causes-to-effects)
+7. [Working with multiple entities](#working-with-multiple-entities)
+8. [Finding and navigating](#finding-and-navigating)
+9. [Entity state and what-if analysis](#entity-state-and-what-if-analysis)
+10. [Quick Capture and CSV import](#quick-capture-and-csv-import)
+11. [Groups (organize a region of the diagram)](#groups)
+12. [AND groups (sufficient sets of causes)](#and-groups)
+13. [Assumptions on edges](#assumptions-on-edges)
+14. [The CLR panel](#the-clr-panel)
+15. [Review comments](#review-comments)
+16. [Future Reality Trees](#future-reality-trees)
+17. [Negative Branch Reservations](#negative-branch-reservations)
+18. [Evaporating Clouds](#evaporating-clouds)
+19. [Transition Trees](#transition-trees)
+20. [Prerequisite Trees](#prerequisite-trees)
+21. [Creation wizards](#creation-wizards-goal-tree-ec-crt)
+22. [Strategy & Tactics Trees](#strategy--tactics-trees)
+23. [Freeform diagrams](#freeform-diagrams)
+24. [Saving, exporting, and sharing](#saving-exporting-and-sharing)
+25. [Importing](#importing)
+26. [Templates library](#templates-library)
+27. [Multi-goal Goal Trees](#multi-goal-goal-trees)
+28. [Settings & themes](#settings--themes)
+29. [App modes](#app-modes)
+30. [Browse Lock](#browse-lock)
+31. [Document details](#document-details)
+32. [Revision history](#revision-history-snapshots-branches-diffs)
+33. [Accessibility](#accessibility)
+34. [Keyboard reference](#keyboard-reference)
+35. [Tips](#tips)
 
 ## Starting up
 
-Open the dev server URL (typically http://localhost:5173). The first time you open it you'll see an empty canvas with a hint card centered on screen:
+Open the app URL (or the dev server, typically http://localhost:5173). TP Studio opens on the **Start page** — type what's going wrong and build a Current Reality Tree from it, pick a template, or reopen a recent tree (see [The Start page](#the-start-page)). In the editor, a blank document shows a hint card centered on screen:
 
 > **Empty diagram**
 > Double-click anywhere to add your first entity.
@@ -112,13 +120,13 @@ Each tab is fully independent: its own undo/redo history, its own autosave, its 
 
 **Keyboard shortcuts (installed app only).** When you install TP Studio as a desktop / mobile app, the native tab keys work: **`Cmd/Ctrl+T`** new tab, **`Cmd/Ctrl+W`** close tab, **`Cmd/Ctrl+1`–`9`** jump to a tab (9 = last). In a normal browser tab those keys belong to the browser, so use the palette commands instead.
 
-**Linking entities across tabs (Session 155).** Select an entity, then `Cmd/Ctrl+K` → **Link to entity in another tab…**, pick another open document and one of its entities — both entities get a *reciprocal* cross-document link. Each then shows a **"Linked to"** chip in the inspector; click it to jump to that tab and select the partner entity (walk a CRT core problem → its Core Cloud → an FRT injection in single clicks). The **×** on a chip removes the link and its mirror. It's purely a navigation aid — a link adds no causal edge and changes nothing about either diagram. If the partner's tab is closed, the chip becomes a muted **"Reopen linked tab"** — click it to reopen that document and jump straight to the partner entity, and the link goes live again (the document was never deleted, just closed; it lives in the Start page's **All trees** library meanwhile). This is the **U-Shape** linkage from Cohen's *TP Basics*.
+**Linking entities across tabs.** Select an entity, then `Cmd/Ctrl+K` → **Link to entity in another tab…**, pick another open document and one of its entities — both entities get a *reciprocal* cross-document link. Each then shows a **"Linked to"** chip in the inspector; click it to jump to that tab and select the partner entity (walk a CRT core problem → its Core Cloud → an FRT injection in single clicks). The **×** on a chip removes the link and its mirror. It's purely a navigation aid — a link adds no causal edge and changes nothing about either diagram. If the partner's tab is closed, the chip becomes a muted **"Reopen linked tab"** — click it to reopen that document and jump straight to the partner entity, and the link goes live again (the document was never deleted, just closed; it lives in the Start page's **All trees** library meanwhile). This is the **U-Shape** linkage from Cohen's *TP Basics*.
 
-**Building the U-Shape, step by step (Session 156).** Three guided moves assemble the journey on command — all opt-in, none changing the basic tools. **Mark / unmark as core problem** (`Cmd/Ctrl+K`, or the rose toggle in the Entity Inspector) flags a CRT entity as the hinge of your analysis. From there, **Create the Core Cloud from this entity…** opens a fresh Evaporating Cloud (pre-tagged as a *Core cloud*, titled after the problem) in a new tab, already linked back. Solve the cloud, then **Carry this into a new FRT…** opens a Future Reality Tree with that breakthrough as an injection, again linked back. At each step you get a new tab and a reciprocal **"Linked to"** chip, so the whole CRT → Core Cloud → FRT chain is one click apart in either direction.
+**Building the U-Shape, step by step.** Three guided moves assemble the journey on command — all opt-in, none changing the basic tools. **Mark / unmark as core problem** (`Cmd/Ctrl+K`, or the rose toggle in the Entity Inspector) flags a CRT entity as the hinge of your analysis. From there, **Create the Core Cloud from this entity…** opens a fresh Evaporating Cloud (pre-tagged as a *Core cloud*, titled after the problem) in a new tab, already linked back. Solve the cloud, then **Carry this into a new FRT…** opens a Future Reality Tree with that breakthrough as an injection, again linked back. At each step you get a new tab and a reciprocal **"Linked to"** chip, so the whole CRT → Core Cloud → FRT chain is one click apart in either direction.
 
 ## Building a Current Reality Tree
 
-The fastest way to feel the tool out: open the palette with `Cmd/Ctrl+K` and pick **Load example Current Reality Tree**. You'll get six entities, five edges, and one AND group illustrating the convention. Click around, then start a new one with `Cmd/Ctrl+K` → **New Current Reality Tree** when you're ready.
+The fastest way to feel the tool out: open the palette with `Cmd/Ctrl+K` and pick **Load example…** → Current Reality Tree. You'll get six entities, five edges, and one AND group illustrating the convention. Click around, then start a new one with `Cmd/Ctrl+K` → **New diagram…** → Current Reality Tree when you're ready.
 
 To build from scratch:
 
@@ -135,16 +143,17 @@ You can also drag from the small handle on the bottom edge of a node onto anothe
 
 ## Working with entities
 
-CRTs use four entity types:
+CRTs use three entity types:
 
 | Type | Stripe color | Role |
 | --- | --- | --- |
 | Undesirable Effect | Red | The terminal effects at the top — what the system painfully produces today. |
 | Effect | Neutral grey | Intermediate effects between root causes and UDEs. |
 | Root Cause | Amber | Terminal causes at the bottom — the leverage points. |
-| Assumption | Violet | Side-attachments to edges that make CLR challenges explicit. |
 
 FRTs replace `Undesirable Effect` and `Root Cause` with `Desired Effect` and `Injection` respectively.
+
+**Assumptions are not a palette type.** They still appear on the canvas as violet side-cards, but they belong to *edges*, not the Type grid — add one from an edge's Assumption Well in the inspector, or press `A` with the edge selected. See [Assumptions on edges](#assumptions-on-edges).
 
 **Goal-Tree extras (available in both CRT and FRT palettes).** Three additional types support Goal Tree / IO map work:
 
@@ -176,7 +185,7 @@ Use Notes for caveats, open questions, references to external docs, or workshop 
 
 **Changing the title size.** In the **Appearance** section there's a three-button **Title size** group — Compact / Regular / Large. Useful for shrinking a noisy sub-tree's labels or enlarging a key entity for emphasis. Per-entity; default is Regular.
 
-**Choosing an icon (Session 179).** Also in the **Appearance** section, the **Icon** picker gives an individual entity a custom icon from the Lucide catalogue — handy for marking a key node or adding a visual cue beyond the entity-type colour. Click **None** to fall back to the entity type's default icon. Per-entity; round-trips with the document.
+**Choosing an icon.** Also in the **Appearance** section, the **Icon** picker gives an individual entity a custom icon from the Lucide catalogue — handy for marking a key node or adding a visual cue beyond the entity-type colour. Click **None** to fall back to the entity type's default icon. Per-entity; round-trips with the document.
 
 **Collapsing one entity's downstream.** Right-click an entity that has any downstream edges and pick **Collapse downstream**. Its successors disappear from the canvas; a small `▸ +N` chip on the entity shows how many descendants are hidden. Click the chip (or right-click → **Expand downstream**) to bring them back. This is per-entity; group-level collapse — for an entire labeled group — is described under [Groups → Collapse and expand](#collapse-and-expand).
 
@@ -210,7 +219,7 @@ The canvas re-flows automatically after each change, with a 300 ms ease-out anim
 
 **Redirecting an edge's cause or effect (Edge Inspector).** Select an edge and the inspector's **Cause** and **Effect** fields are dropdowns of the document's entities, listed by title. Pick a different one to re-point that end of the edge — no canvas drag. This is the reliable way to fix the case where several edges converge on one entity and clicking the stack keeps grabbing the wrong one: select any edge in the pile, then redirect its source or target precisely from the inspector. The lists update live as you rename entities; the opposite endpoint is greyed out (an edge can't loop onto itself); and a redirect that would duplicate an existing edge is declined with a toast. Re-pointing the *effect* of an edge that belongs to an AND/OR/XOR junctor takes it out of that group (junctors are defined per shared target). Note-edges keep the plain read-out — they aren't a causal cause→effect pair. Pairs with the on-canvas drag-to-reconnect gesture; both go through the same validation.
 
-**Tagging a back-edge (acknowledged loop).** Sometimes a causal loop is *the point* — a vicious circle in a CRT, a positive reinforcing loop in an FRT. Right-click the loop-closing edge → **Tag as back-edge** (or use the **Back-edge** checkbox in the Edge Inspector). The edge renders with a thicker dashed stroke and a `↻` glyph; the cycle CLR rule stops flagging that cycle as a defect. You can untag any time from the same menu / checkbox.
+**Tagging a back-edge (acknowledged loop).** Sometimes a causal loop is *the point* — a vicious circle in a CRT, a positive reinforcing loop in an FRT. Right-click the loop-closing edge → **Tag as back-edge** (or use the **Back-edge** checkbox in the Edge Inspector). The edge renders with a thicker dashed stroke and a `↻` glyph. Tagging is usually optional: TP Studio **auto-detects cycles** and renders each loop's against-flow closing edge as a back-edge on its own, so a feedback loop is never flagged as a defect — tag explicitly when you want to choose *which* edge closes the loop, or to name it (below). You can untag any time from the same menu / checkbox.
 
 **Naming a loop and recording behaviour over time.** Once an edge is tagged as a back-edge, the Edge Inspector gains a **Loop name** field and a **Behaviour over time** textarea. Type a short name (e.g. "Delay spiral") and it renders as a label beside the R / B badge on the canvas. Use the behaviour-over-time field to note the expected system archetype or dynamic — a free-text memo that travels with the document. You can also reach the name field via right-click → **Name this loop…** on the back-edge.
 
@@ -218,7 +227,7 @@ The canvas re-flows automatically after each change, with a 300 ms ease-out anim
 
 **Marking the conflict on an Evaporating Cloud.** An EC's diagnostic depends on its two Wants being mutually exclusive. Draw an edge between the two `want` entities (start a drag from one Want's handle, release on the other), select it, and tick the **Mutual exclusion (EC)** checkbox in the Edge Inspector. The edge renders red with a ⚡ lightning-bolt glyph, and the `ec-missing-conflict` CLR rule stops firing. The checkbox only appears in the inspector when both endpoints are Wants.
 
-**EC inspector tabs (Session 77).** When the open document is an Evaporating Cloud, the right inspector grows a three-tab bar at the top:
+**EC inspector tabs.** When the open document is an Evaporating Cloud, the right inspector grows a three-tab bar at the top:
 
 - **Inspector** — the standard entity / edge inspector for whatever you've selected.
 - **Verbalisation** — the full read-aloud form of the cloud ("In order to achieve {A}, we must {B}, because {assumption-count}…"). Each "{assumption-count}" anchor is clickable and jumps to the corresponding edge's Assumption Well.
@@ -226,17 +235,17 @@ The canvas re-flows automatically after each change, with a 300 ms ease-out anim
 
 **Assumption status chips.** On an EC edge, every assumption row has a small colour-coded **status** dropdown you pick directly — **Unexamined**, **Valid**, **Invalid** (often the breakthrough — usually means the arrow is broken), or **Challengeable** (lights up the Injection Workbench). It's the most compact way to track the lifecycle of every "we're assuming X" claim.
 
-**Press `A` on a selected edge** to add a new assumption directly without opening the inspector — same as clicking **+ New assumption**. On EC edges the new row is pre-seeded with `"…because "` so the canonical "we must obtain Want because of Assumption" reading falls out for free.
+**Press `A` on a selected edge** to add a new assumption directly without opening the inspector — same as clicking **+ New assumption**. On EC edges the new row is pre-seeded with `"…because "` so the canonical "we must obtain Want because of Assumption" reading falls out for free. The Edge Inspector on an EC edge also shows a **brainstorm prompt** — the canonical "why does this arrow hold?" question for that slot pairing — with a one-click **Add as a new assumption** to capture the answer.
 
 **Verbalisation strip across the top.** When you open an EC document, a thin italic strip at the top of the canvas reads the cloud's verbal form continuously. Edit any of the 5 slot titles and the strip updates live; click an assumption-count chip in the strip to jump straight to that edge's Assumption Well.
 
 **Starting a Negative Branch from a UDE (FRT).** Right-click any entity in an FRT → **Start Negative Branch from this entity** (or use the palette command). Creates a new "Negative Branch" group (rose) rooted at that entity. The book's framing: when an FRT injection produces an unintended UDE, capture the branch leading to it and decide whether to mitigate the negative (add a corrective Action) or replace the injection. Add the causal chain leading to the UDE inside the group.
 
-**Trimming a negative branch (Session 157).** Once the branch is drawn, select the undesirable effect at its tip and run `Cmd/Ctrl+K` → **Trim this branch (add a trimming injection)**. TP Studio mints a **trimming injection** wired to that effect with a *negative* edge — the formal "inject this and the bad effect won't follow" move. Name the injection to say what breaks the branch; it's one undoable step, and it changes nothing about the rest of the diagram.
+**Trimming a negative branch.** Once the branch is drawn, select the undesirable effect at its tip and run `Cmd/Ctrl+K` → **Trim this branch (add a trimming injection)**. TP Studio mints a **trimming injection** wired to that effect with a *negative* edge — the formal "inject this and the bad effect won't follow" move. Name the injection to say what breaks the branch; it's one undoable step, and it changes nothing about the rest of the diagram.
 
-**The injection flower (Session 161).** Select an `injection` entity and click **View the injection flower** in its inspector (or `Cmd/Ctrl+K` → **View the injection flower…**). It gathers everything you've linked to that injection across other tabs and groups it into the three sides Cohen vets an injection from — **Desired effects** (a linked Future Reality Tree), **Negative branch** (a linked NBR), and **Plan** (a linked Prerequisite Tree) — plus an "Other links" catch-all. A side you haven't linked yet shows a prompt ("No negative branch linked yet — ask 'what could go wrong?'…"), and the header reads "N of 3 sides developed", so it doubles as a quick completeness check. Build the links with **"Link to entity in another tab…"**; each flower row jumps to its target. It's read-only, so it works under Browse Lock.
+**The injection flower.** Select an `injection` entity and click **View the injection flower** in its inspector (or `Cmd/Ctrl+K` → **View the injection flower…**). It gathers everything you've linked to that injection across other tabs and groups it into the three sides Cohen vets an injection from — **Desired effects** (a linked Future Reality Tree), **Negative branch** (a linked NBR), and **Plan** (a linked Prerequisite Tree) — plus an "Other links" catch-all. A side you haven't linked yet shows a prompt ("No negative branch linked yet — ask 'what could go wrong?'…"), and the header reads "N of 3 sides developed", so it doubles as a quick completeness check. Build the links with **"Link to entity in another tab…"**; each flower row jumps to its target. It's read-only, so it works under Browse Lock.
 
-**Archiving pruned alternatives.** When you've considered a branch and decided not to pursue it, the book says don't delete — archive. Palette → **Move selection to Archive group** either creates a new "Archive" group (slate, collapsed) or appends to an existing one. The archive stays visible in the inspector but folded out of the canvas, preserving the path-not-taken as a record without cluttering the live diagram.
+**Archiving pruned alternatives.** When you've considered a branch and decided not to pursue it, the book says don't delete — archive. Palette → **Move selection to Archive group** either creates a new "Archive" group (slate, collapsed) or appends to an existing one. The archive stays visible in the inspector but folded out of the canvas, preserving the path-not-taken as a record without cluttering the live diagram. Any existing group can also be archived directly — the Group Inspector's **Archive / Unarchive** button (or palette → **Archive / unarchive selected group**) dims it out of the way; **Show / hide archived groups** (palette, or the inspector's checkbox) brings archived groups back onto the canvas when you need to re-read them.
 
 **Locus (previously "Span of control").** Each entity has an optional 3-value flag in the inspector labelled **Locus**: **Control** (I can act on this directly), **Influence** (I can affect it indirectly), or **External** (I can only observe it). When set, the node shows a small letter pill — green `C`, amber `I`, neutral `E`. The book's intro and CRT Step 7 ask "have you built down to causes you actually control or influence?" — a root cause flagged External in a CRT fires a soft CLR nudge prompting you to keep digging. FRT injections and other entity types are exempt (the warning would be noise on them). Schema field name remains `spanOfControl` for backward compatibility — only the user-visible label changed.
 
@@ -246,10 +255,12 @@ When you select something on the canvas — an entity, an edge, a group, or mult
 
 **Per-selection verb list:**
 
-- **Single entity (any diagram)** — Add child · Add parent · Delete
+- **Single entity (any diagram)** — Add child · Add parent · Add comment · Delete
 - **Single entity in a CRT or FRT** — *plus* Mark as UDE · Mark as root cause (skipped when the entity already has that type)
-- **Single entity in a Goal Tree** — *plus* Add necessary condition · Promote to Goal (skipped when the entity is already a Goal)
+- **Single entity in a Goal Tree** — *plus* Add necessary condition · Promote to Goal · Mark as Critical Success Factor (each skipped when the entity already has that type)
 - **Single entity in an EC, on a Want (D / D′)** — *plus* Add prerequisite need (creates the upstream Need with a necessity edge)
+- **Single entity in a TT** — *plus* Mark as Action · Mark as Outcome · Add precondition (on an Action)
+- **Single entity in a PRT** — *plus* Mark as Obstacle · Mark as IO · Add IO for this Obstacle (on an Obstacle)
 - **Single edge** — Reverse direction · Add assumption · Cycle polarity (default → positive → negative → zero → default) · Splice · Delete
 - **Single group** — Toggle collapsed · Cycle group color (6-color palette) · Unhoist
 - **Multiple entities** — Group · *Swap* (when exactly 2 selected) · Delete N
@@ -290,13 +301,14 @@ Once a diagram has a couple of dozen entities, getting around becomes a separate
 
 **Minimap.** A small thumbnail of the whole diagram lives in the bottom-right of the canvas, with the current viewport drawn as a rectangle. Each node is tinted by its **entity type** (the same stripe colour as on the canvas), so the minimap reads as a map of where your UDEs / root causes / injections sit, not a field of identical dots; groups show in indigo. Click or drag inside it to pan; scroll to zoom. Hide it from **Settings → Display → Show minimap** if you'd rather have the canvas space back.
 
-**Zoom (`+` / `-` / `0`).** Plus zooms in, minus zooms out, `0` fits the view to all visible entities with comfortable padding. A small percentage indicator next to the bottom-center Controls shows the current zoom level.
+**Zoom (`+` / `-` / `0`).** Plus zooms in, minus zooms out, `0` fits the view to all visible entities with comfortable padding. A small percentage indicator next to the bottom-center Controls shows the current zoom level — click it to type an exact zoom percentage.
 
 **Walk the graph by selection.**
 
 - `Cmd/Ctrl+Shift+→` — selects every entity downstream of the current selection (follows outgoing edges transitively).
 - `Cmd/Ctrl+Shift+←` — selects every upstream entity.
 - Palette → **Select path between selected entities** — with exactly two entities selected, finds the shortest directed path between them and selects every entity and edge on the way. Falls back to ignoring direction if no directed path exists. Toasts if the two are disconnected.
+- Palette → **Select all entities of the same type as the selection** — select one UDE, run it, and every UDE in the document is selected. The fast path into a bulk convert or bulk title-size change.
 
 **Radial / sunburst layout.** A control in the overflow (⋮) menu — **Radial layout** / **Flow layout** — flips the layout between the default top-down dagre flow and a radial sunburst — apex at the center, contributors radiating out on concentric rings. Useful for "see the whole tree at once" screenshots, posters, or alternative reading. Click again to flip back; the preference persists across reloads. **The toggle hides on Evaporating Cloud** since EC is hand-positioned — its 5-box geometry IS the diagnostic, so flipping to radial would erase the conflict.
 
@@ -389,7 +401,7 @@ After commit, the newly created entities are pre-selected — handy for grouping
 
 ### CSV import
 
-Open the palette and pick **Import entities from CSV…**. A file picker opens. The header row is required:
+Open the palette and pick **Import…** → **Entities CSV**. A file picker opens. The header row is required:
 
 | Column | Required | Description |
 | --- | --- | --- |
@@ -424,7 +436,7 @@ A **group** is a visual container around a region of the diagram — useful when
 1. Multi-select the entities you want to gather (Shift+click, marquee, etc.).
 2. Open the palette (`Cmd/Ctrl+K`) → **Group selected entities**.
 3. A dashed labelled rectangle appears behind the selected entities. Click its title to select the group itself.
-4. With a group selected, the right-hand Inspector lets you rename it, pick a color (six tones — slate / indigo / emerald / amber / rose / violet), collapse / hoist it, and delete it.
+4. With a group selected, the right-hand Inspector lets you rename it, pick a color (six tones — slate / indigo / emerald / amber / rose / violet), apply a **Preset** (*Negative Branch*, *Positive Reinforcing Loop*, *Archive*, *Step*, *NSP Block* — writes a canonical title + color in one click; both fields stay editable), collapse / hoist / archive it, and delete it.
 
 ### Nesting
 
@@ -538,9 +550,9 @@ Hover a warning to reveal the Resolve / Reopen button. Resolution persists in th
 
 You can also see a total count at any time: `Cmd/Ctrl+K` → **Run validation** surfaces a toast with the open / resolved breakdown.
 
-**CRT build-quality checks (Session 179).** On a Current Reality Tree the validators add a set of soft construction nudges drawn from the classic CRT method: an entity that **leads to no UDE** (prune it, or connect it into the chain); a **UDE with no cause feeding it** (the tree is incomplete there); the **leading root cause explaining fewer than half the UDEs** (the tree may have two independent clusters); **two root causes tied** for the most UDEs (a hidden conflict may sit beneath — consider an Evaporating Cloud); a UDE phrased as the **absence of a solution** ("lack of…", a leading "No…") rather than an observable effect; and a **UDE count** outside the rough 3–15 range. All are dismissible like any other CLR warning.
+**CRT build-quality checks.** On a Current Reality Tree the validators add a set of soft construction nudges drawn from the classic CRT method: an entity that **leads to no UDE** (prune it, or connect it into the chain); a **UDE with no cause feeding it** (the tree is incomplete there); the **leading root cause explaining fewer than half the UDEs** (the tree may have two independent clusters); **two root causes tied** for the most UDEs (a hidden conflict may sit beneath — the warning carries a one-click **Spawn Evaporating Cloud** action); a UDE phrased as the **absence of a solution** ("lack of…", a leading "No…") rather than an observable effect; and a **UDE count** outside the rough 3–15 range. All are dismissible like any other CLR warning.
 
-**NBR shape checks (Session 181).** On a Negative Branch Reservation, two EXISTENCE-tier rules verify the canonical walk the method checklist teaches (injection → forward chain → UDEs): once you've started tracing forward from the candidate injection but captured **no UDE yet**, a nudge reminds you the document still reads as an FRT — the negative branch is the point; and a **UDE that doesn't trace back to any injection** is flagged, because an off-chain UDE can't inform the adopt / modify / reject decision (and the Risk Register export — whose mitigation inference follows the same chain — would show it as a permanently open risk). Both are dismissible; a UDE with no causes at all is left to the regular *additional-cause* nudge, which on an NBR now covers both UDEs and Desired Effects. Custom entity classes participate via their `supersetOf` — a class marked "kind of UDE / injection" counts everywhere the built-in does (validators *and* the Risk Register export).
+**NBR shape checks.** On a Negative Branch Reservation, two EXISTENCE-tier rules verify the canonical walk the method checklist teaches (injection → forward chain → UDEs): once you've started tracing forward from the candidate injection but captured **no UDE yet**, a nudge reminds you the document still reads as an FRT — the negative branch is the point; and a **UDE that doesn't trace back to any injection** is flagged, because an off-chain UDE can't inform the adopt / modify / reject decision (and the Risk Register export — whose mitigation inference follows the same chain — would show it as a permanently open risk). Both are dismissible; a UDE with no causes at all is left to the regular *additional-cause* nudge, which on an NBR now covers both UDEs and Desired Effects. Custom entity classes participate via their `supersetOf` — a class marked "kind of UDE / injection" counts everywhere the built-in does (validators *and* the Risk Register export).
 
 **Document-level warnings.** A few rules describe the diagram as a whole rather than any one box — the CRT **UDE-count** scope guard and the NBR **no-negative-branch** nudge. These carry a *document* target: they appear in the **Document Inspector** (the ⓘ button next to the title) under "Document-level warnings", and in the **CLR walkthrough**, rather than in any selection's inspector. Their dismissal is keyed to the document, so it survives adding, deleting, or re-wiring entities.
 
@@ -548,7 +560,7 @@ You can also see a total count at any time: `Cmd/Ctrl+K` → **Run validation** 
 
 **Long-arrow / missing-step warning (EXISTENCE tier).** A sufficiency edge that skips three or more causal levels — judged by the topological distance between its source and target — triggers an EXISTENCE-tier CLR warning. The diagnostic: a large skip usually means intermediate causes are assumed rather than shown, which makes the arrow hard to challenge. The warning surfaces in the CLR panel with a one-click **Insert a step** action that splices a blank entity into the middle of the edge (identical to right-click → **Splice entity into this edge**), leaving you to name the missing step.
 
-**Logic-type and loop checks (Session 179).** A **logic-type** nudge flags an edge whose kind contradicts the diagram's primary logic (sufficiency for CRT/FRT/TT/NBR; necessity for a Goal Tree). And for diagrams with a feedback loop, a **loop-polarity** check reads the loop as **Reinforcing (R)** or **Balancing (B)** — the product of the edge polarities around it — and flags a balancing (self-correcting) loop where a reinforcing (self-amplifying) one is expected. The loop-closing back-edge also carries a small **R / B badge** on the canvas, so you can see at a glance whether a cycle is a vicious/virtuous spiral (R) or a goal-seeking damper (B).
+**Logic-type and loop checks.** A **logic-type** nudge flags an edge whose kind contradicts the diagram's primary logic (sufficiency for CRT/FRT/TT/NBR; necessity for a Goal Tree). And for diagrams with a feedback loop, a **loop-polarity** check reads the loop as **Reinforcing (R)** or **Balancing (B)** — the product of the edge polarities around it — and flags a balancing (self-correcting) loop where a reinforcing (self-amplifying) one is expected. The loop-closing back-edge also carries a small **R / B badge** on the canvas, so you can see at a glance whether a cycle is a vicious/virtuous spiral (R) or a goal-seeking damper (B).
 
 **Scrutinize a single link.** Select an edge and click **Scrutinize against the CLR** in its inspector (or `Cmd/Ctrl+K` → **Scrutinize this edge**). A guided stepper walks the eight canonical Categories of Legitimate Reservation — Clarity, Entity existence, Causality existence, Cause sufficiency, Additional cause, Cause–effect reversal, Predicted-effect existence, Tautology — **one question at a time** for that single cause→effect arrow. Any warning the validators already flagged on the edge appears under the matching question; the rest are prompts for your own judgment, with a checkbox to tick each as you consider it (the ticks are a session aid — nothing is saved). This is the complement to **Start CLR walkthrough**: the walkthrough clears the warnings that *did* fire across the whole diagram, while scrutiny makes you ask *every* reservation of the link in front of you, including the ones nothing flagged. It's read-only, so it stays available under Browse Lock.
 
@@ -562,7 +574,7 @@ Mark up a diagram with questions and notes — for your future self or for a col
 
 1. Optionally **select an entity or edge** first — the composer anchors the comment to it ("Commenting on _Root cause_"). With nothing selected (or a multi-selection), it anchors to the whole diagram. A checkbox lets you switch an anchored comment back to the whole diagram.
 2. Set your name once in the **"Signing as"** field — it's remembered for next time (blank comments are signed "Anonymous"). This is a local label, not a login.
-3. Optionally tag the comment with a **CLR reservation** (Session 179) from the dropdown — one of the seven Categories of Legitimate Reservation. This turns "I disagree" into the non-threatening "I have a _causality-existence_ reservation" that TP facilitation teaches; the category shows as a small badge on the comment, and a filter appears in the panel once any comment is tagged.
+3. Optionally tag the comment with a **CLR reservation** from the dropdown — one of the seven Categories of Legitimate Reservation. This turns "I disagree" into the non-threatening "I have a _causality-existence_ reservation" that TP facilitation teaches; the category shows as a small badge on the comment, and a filter appears in the panel once any comment is tagged.
 4. Type your note and click **Comment** (or press `Cmd/Ctrl+Enter`).
 
 **Work a thread.** Each comment shows **Reply** (one level of replies), **Resolve** (and **Reopen**), and — on hover — **Edit** / **Delete**. Deleting a comment that has replies removes the whole thread (with a confirm).
@@ -581,9 +593,18 @@ Comments anchored to an entity or edge are automatically removed if you delete t
 
 The mechanics are identical to CRT — only the entity palette and convention differ.
 
-- Start one with `Cmd/Ctrl+K` → **New Future Reality Tree** (or load the example via **Load example Future Reality Tree**).
-- The four available types are: **Injection** (the change you propose), **Effect** (intermediate consequences), **Desired Effect** (what the customer feels — the top of the tree), and **Assumption**.
+- Start one with `Cmd/Ctrl+K` → **New diagram…** → Future Reality Tree (or load the example via **Load example…** → Future Reality Tree).
+- The three available types are: **Injection** (the change you propose), **Effect** (intermediate consequences), and **Desired Effect** (what the customer feels — the top of the tree). Assumptions attach to edges via the Assumption Well, as on every diagram.
 - The same CLR rules apply with two FRT-specific tweaks: cause-effect-reversal does *not* fire (it's a CRT-only heuristic), and predicted-effect-existence kicks in when an injection has no consequences attached yet.
+
+## Negative Branch Reservations
+
+A **Negative Branch Reservation (NBR)** is the "yes, but what could go wrong?" analysis: take a proposed injection and trace the causal chain *forward* to the unintended Undesirable Effects it might produce, so you can decide to adopt, modify, or reject the change. Two ways to work a negative branch:
+
+- **Inside an FRT** — right-click an entity → **Start Negative Branch from this entity** creates a rose "Negative Branch" group rooted there (described under [Connecting causes to effects](#connecting-causes-to-effects)). Right for a quick branch you'll trim in place.
+- **As its own document** — pick **Negative Branch Reservation** from `Cmd/Ctrl+K` → **New diagram…** when the risk deserves a full canvas. The palette types are **Injection** (the change under scrutiny), **Effect**, **Undesirable Effect** (the feared outcome — the default type; the branch's point), **Desired Effect**, and **Note**.
+
+Build it injection-first: state the change, chain forward through effects, land on the UDE(s). Two NBR-specific CLR rules keep the shape honest — no UDE captured yet (the document still reads as an FRT), and a UDE that doesn't trace back to any injection (see [NBR shape checks](#the-clr-panel)). Once the branch is real, select the UDE and run **Trim this branch (add a trimming injection)** to mint the injection that breaks it. The **Risk Register CSV** export (see [Saving, exporting, and sharing](#saving-exporting-and-sharing)) pairs naturally with an NBR — each UDE becomes a risk row with the trimming injection inferred as its mitigation. Five NBR starter templates live in the Templates library.
 
 ## Evaporating Clouds
 
@@ -591,14 +612,14 @@ An Evaporating Cloud (EC) surfaces a *conflict* between two strategies that both
 
 EC documents have a dedicated three-tab inspector and a top-of-canvas **verbalisation strip** that reads the cloud aloud in canonical book-form.
 
-- Start one with `Cmd/Ctrl+K` → **New Evaporating Cloud** (or load the example via **Load example Evaporating Cloud**). A blank EC arrives with all 5 boxes pre-positioned in the canonical layout — you fill in the titles, you don't have to recreate the structure.
+- Start one with `Cmd/Ctrl+K` → **New diagram…** → Evaporating Cloud (or load the example via **Load example…** → Evaporating Cloud). A blank EC arrives with all 5 boxes pre-positioned in the canonical layout — you fill in the titles, you don't have to recreate the structure.
 - The five boxes (reading right-to-left):
   - **Goal** (sky stripe, far left) — the common objective both parties share.
   - **Need 1 / Need 2** (amber, middle column) — the two prerequisites that *both* must hold for the goal to be reachable.
   - **Want 1 / Want 2** (fuchsia, far right) — the two strategies that satisfy each need but *conflict* with each other.
 - The four arrows wire D → B → A and D′ → C → A: each want satisfies its need, each need supports the common goal. The conflict between D and D′ isn't a drawn edge — it's implied by the layout (top vs. bottom on the right side).
 - **Drag any box to reposition it.** Positions persist to local storage and survive reload. Auto-layout is disabled for EC; the geometry IS the diagnostic.
-- The palette also surfaces Assumption (violet) for edge side-attachments. CLR rules apply structurally (clarity, entity-existence, causality-existence, tautology) **plus the EC-specific `ec-completeness` rule** (Session 77) that bundles five brief-prescribed checks (both wants present, both needs present, all four necessity edges, mutex flag, single conflict). The mutex-edge rule (`ec-missing-conflict`) flags when neither D ↔ D′ edge carries the lightning-bolt mutex marker.
+- Assumptions attach to the four arrows via the Assumption Well (or `A` on a selected edge) — on an EC they're the heart of the method. CLR rules apply structurally (clarity, entity-existence, causality-existence, tautology) **plus the EC-specific `ec-completeness` rule**, which checks the cloud's readiness: an empty Objective (A), Needs B and C that are the same entity, a Need connected to anything other than A, a Want supporting the wrong Need (D must support only B, D′ only C), an arrow with no assumption recorded yet, and — before the cloud can be called resolved — no injection captured. The mutex-edge rule (`ec-missing-conflict`) flags when neither D ↔ D′ edge carries the lightning-bolt mutex marker.
 
 ### Rapid 3-cloud diagnosis
 
@@ -609,34 +630,34 @@ A fast on-ramp to a Core Cloud when you don't yet have a full Current Reality Tr
 
 On finish you get a new Evaporating Cloud document tagged as a **Core cloud**, opened in its own tab, with the three source conflicts recorded in the document description (visible in the Document Inspector). Nothing you were working on is touched — the overlay only creates the new cloud when you click **Create core cloud**. From there it's an ordinary EC: edit the boxes, mark the D ↔ D′ conflict, run the CLR checks, or carry an injection forward into an FRT.
 
-### EC canvas chrome (Session 87, refined Session 89)
+### EC canvas chrome
 
-EC documents carry three workshop-oriented artifacts above the canvas, each surfacing something the BESTSELLER workshop PPT keeps prominently visible. **The reading guide is hidden by default since Session 89** — toggle it on via the palette command **Toggle EC reading guide** when you want workshop-style prompts visible above the canvas:
+EC documents carry three workshop-oriented artifacts above the canvas, each surfacing something the BESTSELLER workshop PPT keeps prominently visible. **The reading guide is hidden by default** — toggle it on via the palette command **Toggle EC reading guide** when you want workshop-style prompts visible above the canvas:
 
 - **Reading-instruction strip** — when shown, pinned across the top. A compact "Read every arrow: 1) In order to… 2) we must… 3) because…" reminder of the canonical 3-step reading pattern. Click the × to dismiss for the rest of the session.
 - **Verbalisation strip** — when shown, sits directly below the reading instructions. Reads the active cloud aloud in canonical prose, with click-through chips for each arrow's assumption count.
-- **Injections (N) chip** — top-right corner, just below the toolbar (Session 89 moved it down to clear the toolbar buttons). Live count of injection entities on the doc; click to jump the inspector to its **Injections** tab. Visible even when N = 0 so the affordance is discoverable; brightens (emerald) when injections exist.
+- **Injections (N) chip** — top-right corner, just below the toolbar. Live count of injection entities on the doc; click to jump the inspector to its **Injections** tab. Visible even when N = 0 so the affordance is discoverable; brightens (emerald) when injections exist.
 
-### Per-slot guiding questions (Session 87)
+### Per-slot guiding questions
 
 Select any of the five EC slot entities (A, B, C, D, or D′) and the **EntityInspector** surfaces the canonical guiding question for that slot above the Title field — the same question the wizard prompts with, kept available for re-reading after the wizard closes.
 
-### Verbal style: neutral vs. two-sided (Session 87)
+### Verbal style: neutral vs. two-sided
 
-Open **Document settings** (the doc-title menu, or palette command "Document settings") on an EC document to see the **EC verbal style** toggle:
+Open the Document Inspector (the ⓘ icon next to the title, or palette → **Document details…**) on an EC document to see the **EC verbal style** toggle:
 
 - **Neutral** (default) — the workshop voice: "In order to A, we must B."
 - **Two-sided** — the explicit negotiation framing the BESTSELLER PPT uses: "they want to" on the D side, "I want to" on the D′ side. Surfaces the felt conflict between two parties.
 
 The toggle persists on the document (round-trips through save/load) and updates the verbalisation strip live.
 
-**Cloud type (Session 154).** Below the verbal-style toggle, an EC document also has an optional **Cloud type** dropdown — *Dilemma, Conflict, UDE, Consolidated, Core,* or *Firefighting* — that labels the cloud's role in Cohen's *TP Basics* progression (UDE cloud → Consolidated → Core). It's purely a label: pick one and a small sky-blue chip appears next to the title; leave it "— Untyped" (the default) and nothing shows. Three ready-made clouds — **UDE cloud**, **Core cloud**, and **Firefighting cloud** — live in the **Pattern library…** picker, each pre-tagged. Nothing about drawing or reading an EC changes; the tag is just a way to record "this is the Core Cloud of my analysis."
+**Cloud type.** Below the verbal-style toggle, an EC document also has an optional **Cloud type** dropdown — *Dilemma, Conflict, UDE, Consolidated, Core,* or *Firefighting* — that labels the cloud's role in Cohen's *TP Basics* progression (UDE cloud → Consolidated → Core). It's purely a label: pick one and a small sky-blue chip appears next to the title; leave it "— Untyped" (the default) and nothing shows. Three ready-made clouds — **UDE cloud**, **Core cloud**, and **Firefighting cloud** — live in the Templates library (**Browse templates…**), each pre-tagged. Nothing about drawing or reading an EC changes; the tag is just a way to record "this is the Core Cloud of my analysis."
 
-### Reverse-direction wizard walk (Session 87)
+### Reverse-direction wizard walk
 
 When the EC creation wizard is open, look at the top of the panel for the **A → D′ / D → A** toggle. The default walks the structural top-down order (A → B → C → D → D′). The D-first option flips to the PPT's "start from the felt conflict" order (D → D′ → C → B → A) — closer to how practitioners actually experience a conflict. Either order leaves the canvas in a useful state at every step.
 
-### Clickable assumption badge on each arrow (Session 87)
+### Clickable assumption badge on each arrow
 
 Every edge that carries assumptions now shows a small violet "A" / "A_N_" pill mid-edge. Click it to select the edge AND open the EC inspector on its Assumption Well — no second click needed.
 
@@ -644,30 +665,31 @@ Every edge that carries assumptions now shows a small violet "A" / "A_N_" pill m
 
 A Transition Tree is a sequenced injection plan — the chain of actions that move you from current reality to a desired effect. Each action carries an explicit step number so the order stays legible after rearranging.
 
-- Start one with `Cmd/Ctrl+K` → **New Transition Tree** (or load the example via **Load example Transition Tree**).
-- The palette types are: **Action** (cyan, the step you take), **Effect** (grey, intermediate states the plan passes through, optional), **Desired Effect** (indigo, the outcome at the top), and **Assumption** (violet, edge side-attachments).
+- Start one with `Cmd/Ctrl+K` → **New diagram…** → Transition Tree (or load the example via **Load example…** → Transition Tree).
+- The palette types are: **Action** (cyan, the step you take), **Effect** (grey, intermediate states the plan passes through, optional), and **Desired Effect** (indigo, the outcome at the top). Assumptions attach to edges via the Assumption Well.
 - Select an Action in the inspector to see a **Step #** numeric input. Set a step number and a small "Step N" badge appears at the node's top-left. Leave it blank to hide the badge — the step field is action-only today.
-- The same Action inspector also has optional **Need** and **Working assumption** fields (Session 158) — *why* the step is needed, and the belief that makes the action sufficient. With the Action and its Step #, they form the canonical Transition-Tree step (Action ← Need ← Working Assumption). Both are free text and optional; leave them blank and nothing changes.
+- The same Action inspector also has optional **Need** and **Working assumption** fields — *why* the step is needed, and the belief that makes the action sufficient. With the Action and its Step #, they form the canonical Transition-Tree step (Action ← Need ← Working Assumption). Both are free text and optional; leave them blank and nothing changes.
 - Layout is regular dagre. If you connect the actions in order (Tab from action 1 to action 2 etc.), the flow naturally reads top-to-bottom; the step badges then act as a visible cross-check rather than the layout driver.
 - **Export the plan as a task list.** `Cmd/Ctrl+K` → **Export…** → **Task tracker CSV** turns the actions into a sequenced to-do list — one row per Action, ordered by step number (annotation-number tie-break), with columns step / action / precondition / outcome / owner / due date / status / success criteria, ready to paste into Jira, Trello, Planner, or Asana. The option only appears on a document that has Action entities (a Transition Tree is the canonical case, but any diagram with Actions exports).
-- No TT-specific CLR rules yet. The CRT/FRT heuristics simply don't fire on a TT.
+- Two TT-specific CLR rules back the step discipline: **`complete-step`** (an Action with nothing else feeding its Outcome — the precondition slot is empty; described under [Transition-Tree discipline](#transition-tree-discipline)), and **`tt-action-locus-unset`** (an Action with no [Locus](#working-with-entities) set — flag it control / influence / external so the plan reads honestly about authority). The CRT/FRT heuristics don't fire on a TT.
 
 ## Prerequisite Trees
 
 A PRT (Prerequisite Tree) surfaces what's between you and a goal — the obstacles, plus the intermediate objectives that overcome each one. Read bottom-up: do these IOs → defeat these obstacles → reach the goal.
 
-- Start one with `Cmd/Ctrl+K` → **New Prerequisite Tree** (or load the example via **Load example Prerequisite Tree**).
-- The palette types are: **Goal** (sky-500, the ambitious target at the top), **Obstacle** (rose-500, what's in the way), **Intermediate Objective** (blue-600, the steps that defeat each obstacle), and **Assumption** (violet, edge side-attachments).
+- Start one with `Cmd/Ctrl+K` → **New diagram…** → Prerequisite Tree (or load the example via **Load example…** → Prerequisite Tree).
+- The palette types are: **Goal** (sky-500, the ambitious target at the top), **Obstacle** (rose-500, what's in the way), and **Intermediate Objective** (blue-600, the steps that defeat each obstacle). Assumptions attach to edges via the Assumption Well.
 - The canvas mechanics are identical to CRT — drag-to-connect, `Tab` for child, right-click for actions. Layout is the same dagre flow; nothing about PRT requires hand-positioning.
-- No PRT-specific CLR rules yet. The CRT-only and FRT-only heuristics simply don't fire on a PRT.
-- **Export an ordered plan (Session 162).** `Cmd/Ctrl+K` → **Export…** → **Prerequisite plan (CSV)** turns the tree into a sequenced to-do list: it topologically sorts the dependency edges and emits one row per Intermediate Objective, *prerequisite-first* (an IO that another IO depends on comes earlier). Columns: step / objective / **overcomes** (the obstacle it targets) / **depends on** (earlier IOs) / owner / due date / status / notes — ready to paste into Jira, Trello, or a spreadsheet. Where a Transition Tree's task export reads explicit step numbers, the PRT has none, so the order comes from the dependencies you've drawn. The option only appears on a doc that has Intermediate Objectives.
+- Two PRT-specific CLR rules keep the obstacle/IO pairing honest: **`prt-obstacle-no-io`** (an obstacle with no Intermediate Objective overcoming it — add the IO that removes it on the way to the goal) and **`prt-io-no-obstacle`** (an IO that doesn't overcome any obstacle — connect it to the obstacle it removes). The CRT-only and FRT-only heuristics don't fire on a PRT.
+- **Export an ordered plan.** `Cmd/Ctrl+K` → **Export…** → **Prerequisite plan (CSV)** turns the tree into a sequenced to-do list: it topologically sorts the dependency edges and emits one row per Intermediate Objective, *prerequisite-first* (an IO that another IO depends on comes earlier). Columns: step / objective / **overcomes** (the obstacle it targets) / **depends on** (earlier IOs) / owner / due date / status / notes — ready to paste into Jira, Trello, or a spreadsheet. Where a Transition Tree's task export reads explicit step numbers, the PRT has none, so the order comes from the dependencies you've drawn. The option only appears on a doc that has Intermediate Objectives.
 
-## Creation wizards (Goal Tree + EC)
+## Creation wizards (Goal Tree, EC, CRT)
 
-When you open a new Goal Tree or Evaporating Cloud, a small **"Get started" panel** appears at the top-left of the canvas and walks you through the canonical structure:
+When you open a new Goal Tree, Evaporating Cloud, or Current Reality Tree, a small **"Get started" panel** appears at the top-left of the canvas and walks you through the canonical structure:
 
 - **Goal Tree**: 5 steps — the Goal, then 3 Critical Success Factors, then your first Necessary Condition. Each `Next ›` commits the entity to the canvas (auto-laid-out by dagre) and connects it to its parent with a necessity edge.
 - **Evaporating Cloud**: 5 steps — the shared objective A, then Need B, Need C, Want D, Want D′. Each `Next ›` fills the corresponding pre-seeded slot's title.
+- **Current Reality Tree**: walks you through capturing your first three UDEs — the causal chain back down to root causes stays your work.
 
 The wizard is **never blocking**. You can:
 
@@ -675,17 +697,17 @@ The wizard is **never blocking**. You can:
 - **Minimise** (chevron-up) to collapse the panel to a "Continue setup ›" pill that sits in the same spot — click it to expand again.
 - **Dismiss** (X) to close the panel for this session.
 - **Esc** to dismiss. If you have **unsaved typed text** in the current step, the first Esc surfaces an amber band ("Press Esc again to discard this draft and close the wizard") — second Esc within ~2.5s closes for real. Empty drafts close on the first press.
-- Tick **"Don't show this on new {Goal Trees|Evaporating Clouds}"** to silence the wizard for all future new diagrams of that type. Re-enable in **Settings → Behavior** or via the palette command **Reopen creation wizard** to bring it back for the current doc.
+- Tick **"Don't show this on new {Goal Trees|Evaporating Clouds|Current Reality Trees}"** to silence the wizard for all future new diagrams of that type. Re-enable in **Settings → Behavior → Creation wizards** or via the palette command **Reopen creation wizard** to bring it back for the current doc.
 
 Keyboard hint shown below the textarea: **Enter to commit · Shift+Enter for a newline · Esc to dismiss**.
 
-Want to skip straight to the canvas without the wizard? Either click Dismiss once, or turn the toggle off in Settings → Behavior. Both diagram types start with the canonical structure ready to edit — Goal Tree's empty canvas with the entity palette tuned, EC's 5 pre-seeded boxes waiting for titles.
+Want to skip straight to the canvas without the wizard? Either click Dismiss once, or turn the toggle off in Settings → Behavior → Creation wizards. Each diagram type starts with the canonical structure ready to edit anyway — Goal Tree's empty canvas with the entity palette tuned, EC's 5 pre-seeded boxes waiting for titles, CRT's blank canvas a double-click away from its first UDE.
 
 ## Strategy & Tactics Trees
 
 A **Strategy & Tactics (S&T) Tree** is Goldratt's later-work pattern for cascading strategies down into the tactics that implement them, each layer carrying its assumption set. The TP Studio implementation uses the existing TOC entity types as facet carriers — the new diagram type is a thin shell that tunes the palette and provides a method checklist.
 
-- Start one with `Cmd/Ctrl+K` → **New Strategy & Tactics Tree** (or load the example via **Load example Strategy & Tactics Tree**).
+- Start one with `Cmd/Ctrl+K` → **New diagram…** → Strategy & Tactics Tree (or load the example via **Load example…** → Strategy & Tactics Tree).
 - The palette types map onto the S&T facets:
   - **Goal** (sky) — a *strategy* at this level (the apex or a sub-level objective).
   - **Injection** (emerald) — the *tactic* that achieves the strategy. Default entity type when you double-click the empty canvas.
@@ -694,18 +716,18 @@ A **Strategy & Tactics (S&T) Tree** is Goldratt's later-work pattern for cascadi
 - Build top-down: place the apex strategy as a `goal`, place its tactic below as an `injection`, then attach `necessaryCondition` entities feeding the tactic for the assumption facets. Each tactic decomposes into the next layer down by becoming the parent of a child strategy.
 - The Document Inspector's Method checklist carries six S&T steps (apex strategy → tactic → NA → PA → SA → decompose) so you can tick off the discipline as you go.
 - **First-class 5-facet card.** Select any injection (tactic) on an S&T diagram; the inspector grows a new **S&T facets** section with four textareas — Strategy, Necessary Assumption, Parallel Assumption, Sufficiency Assumption. Filling any one of them flips the canvas card into a tall 5-row layout with the four facets stacked beneath the tactic title. The Strategy row gets an indigo accent so it stands out from the three assumption rows. Empty rows render as italic `(unset)` placeholders so the structural slot stays visible. This is the optional alternative to modeling each facet as its own entity — pick whichever style fits the level of detail you want.
-- **Inline canvas editing (Session 81).** You can now edit any of the four facet rows directly on the card without opening the inspector — **double-click** a row's value to swap it for a textarea, type, then Enter (or click outside) to commit. Esc cancels and reverts to the previous value. Shift+Enter inserts a newline. An empty input clears the facet entirely. Browse Lock blocks the edit gesture, same as for the title.
-- **CLR rules.** Structural set plus the S&T-specific **`st-tactic-assumptions`** rule: fires (clarity tier) on any tactic with fewer than three incoming `necessaryCondition` entities. The nudge prescribes Goldratt's three-facet pattern; resolve individual warnings if a tactic legitimately doesn't need all three.
+- **Inline canvas editing.** You can now edit any of the four facet rows directly on the card without opening the inspector — **double-click** a row's value to swap it for a textarea, type, then Enter (or click outside) to commit. Esc cancels and reverts to the previous value. Shift+Enter inserts a newline. An empty input clears the facet entirely. Browse Lock blocks the edit gesture, same as for the title.
+- **CLR rules.** Structural set plus two S&T-specific rules. **`st-tactic-assumptions`** fires (clarity tier) on any tactic with fewer than three incoming `necessaryCondition` entities — the nudge prescribes Goldratt's three-facet pattern; resolve individual warnings if a tactic legitimately doesn't need all three. **`st-tactic-rollup`** (sufficiency tier) fires on a *leaf* tactic — one that feeds a parent but has no child tactics beneath it — because without children the structural sufficiency claim is empty; decompose it, or dismiss the warning if the leaf is genuinely atomic.
 - **Typing an assumption's role.** Any assumption attached to an edge carries a small **kind** dropdown in its row of the Assumption Well — pick **Untyped**, **Necessary**, **Parallel**, or **Sufficient** directly — the three assumption roles the S&T pattern distinguishes (NA / PA / SA), each colour-coded. It's optional and works on every diagram type, but it's most useful here for labelling which facet an assumption fills; leave it untyped and it reads as a neutral chip.
 
 ## Freeform diagrams
 
 A **Freeform Diagram** is the non-TOC mode: no built-in type pattern matching, no method checklist, no prescribed structure. Useful when you want the entity/edge canvas for argument-mapping, brainstorm boards, or dependency sketches that don't fit any TOC tree shape.
 
-- Start one with `Cmd/Ctrl+K` → **New Freeform Diagram** (or load the example via **Load example Freeform Diagram**).
-- The default palette has only three types: **Effect** (grey, the neutral box), **Assumption** (violet, side-claim on an edge), and **Note** (yellow sticky annotation outside the causal graph).
+- Start one with `Cmd/Ctrl+K` → **New diagram…** → Freeform Diagram (or load the example via **Load example…** → Freeform Diagram).
+- The default palette has only two types: **Effect** (grey, the neutral box) and **Note** (yellow sticky annotation outside the causal graph). Assumptions attach to edges via the Assumption Well, as everywhere.
 - Pair this with **Custom entity classes** (in the Document Inspector) to define your own typology — e.g. `Evidence`, `Belief`, `Claim` for an argument map, with their own labels, colors, and icons. Custom classes appear alongside the built-in three in the palette.
-- CLR rules: only the **structural** set fires — entity-existence, causality-existence, clarity, tautology, cycle, indirect-effect. Type-pattern-matching rules (cause-effect-reversal, predicted-effect-existence, etc.) are skipped because their target entity types don't exist in the freeform palette.
+- CLR rules: only the **structural** set fires — entity-existence, causality-existence, clarity, tautology, indirect-effect. Type-pattern-matching rules (cause-effect-reversal, predicted-effect-existence, etc.) are skipped because their target entity types don't exist in the freeform palette.
 - No method checklist; the Document Inspector hides the section.
 
 ## Saving, exporting, and sharing
@@ -716,34 +738,34 @@ A **Freeform Diagram** is the non-TOC mode: no built-in type pattern matching, n
 
 **Auto-recovery.** Alongside the debounced "committed" save, a *live draft* is written synchronously on every keystroke under a separate storage key. If the browser is killed or your machine crashes before the debounce flushes, reopening the tab brings back whatever you'd typed up to the last keystroke — not just the last debounced save. A third *backup* slot holds the previous-save snapshot, so if the main slot is ever corrupted (mid-write crash, external tampering), you fall back to the prior good save instead of starting over. The recovery is silent on the happy path; if a backup or live-draft fallback fires, you'll see an info toast telling you the previous session ended unexpectedly.
 
-**Share a read-only link.** `Cmd/Ctrl+K` → **Copy read-only share link** generates a fully self-contained URL — your document is gzipped + base64-encoded into the URL's `#!share=` fragment, then copied to your clipboard. No server, no upload, no account. Paste it in an email / chat / issue tracker; when the receiver opens it, the diagram loads with Browse Lock auto-engaged so they can read and explore without accidentally editing. The receiver can toggle Browse Lock off any time to make their own working copy (the original autosaved doc is preserved as a revision they can roll back to). Soft size warning above ~4 KB: very large diagrams may get truncated by some chat clients, in which case fall back to JSON export. Share-links require a recent browser (`CompressionStream` API — Chrome 80+, Firefox 113+, Safari 16.4+).
+**Share a read-only link.** The top-bar **Share** button (or **Export…** → **Copy read-only share link**) generates a fully self-contained URL — your document is gzipped + base64-encoded into the URL's `#!share=` fragment, then copied to your clipboard. No server, no upload, no account. Paste it in an email / chat / issue tracker; when the receiver opens it, the diagram loads with Browse Lock auto-engaged so they can read and explore without accidentally editing. The receiver can toggle Browse Lock off any time to make their own working copy (the original autosaved doc is preserved as a revision they can roll back to). Soft size warning above ~4 KB: very large diagrams may get truncated by some chat clients, in which case fall back to JSON export. Share-links require a recent browser (`CompressionStream` API — Chrome 80+, Firefox 113+, Safari 16.4+).
 
-**Self-contained HTML viewer (Session 77).** `Cmd/Ctrl+K` → **Export as self-contained HTML viewer** writes a single `.html` file with all CSS / JS inlined and the source JSON embedded. The receiver opens it in any browser; the file works offline, behind firewalls, and on shared file drives. The view renders the doc title, entities, EC verbalisation (where applicable), assumptions with status chips, and injections — read-only. No network calls. Best for sending a colleague a snapshot they can open without installing anything.
+**Self-contained HTML viewer.** **Export…** → **Self-contained HTML viewer** writes a single `.html` file with all CSS / JS inlined and the source JSON embedded. The receiver opens it in any browser; the file works offline, behind firewalls, and on shared file drives. The view renders the doc title, entities, EC verbalisation (where applicable), assumptions with status chips, and injections — read-only. No network calls. Best for sending a colleague a snapshot they can open without installing anything.
 
-**Print preview (Session 77, extended Sessions 79 + 80).** `Cmd/Ctrl+K` → **Print / Save as PDF…** opens a print preview modal where you pick:
+**Print preview.** **Export…** → **Print / Save as PDF…** opens a print preview modal where you pick:
 
 - **Mode**: Standard, Workshop (high-contrast, large font, group rectangles bordered), Ink-saving (group shading removed, edges thinned, blacks softened).
-- **Page setup** (Session 178): **Size** (A4 / Letter), **Orientation** (Portrait / Landscape), and **Scale** (Fit page / Fit width). Size + orientation apply to **both** the vector PDF and browser-print (they set the PDF's page format and the browser's `@page` size). **Scale** is browser-print only: *Fit page* fits the whole tree onto one page (the overview), *Fit width* scales the tree to the page width and flows it down across multiple pages for readable detail (nodes may split at page edges — use the vector **Save as PDF** for clean multi-page slicing). The choice is remembered, so a bare `Cmd/Ctrl+P` uses it too.
-- **How-to-read legend** (checkbox, Session 178, on by default): a one-line, type-specific reading rule printed under the title — e.g. a CRT prints "read bottom-up; the core driver is the root cause that feeds the most UDEs", an EC prints the *in order to / we must / because* conflict reading, a Goal Tree prints the Goal → CSF → NC chain. Makes a printout self-explanatory for a reader who doesn't know the Thinking Process. Persisted, so a bare `Cmd/Ctrl+P` includes it too. Works in **both** the browser-print and vector-PDF paths (Session 179 — in the PDF it's wrapped under the header on every diagram page so each sheet of a multi-page export stays self-explanatory); freeform diagrams have no legend.
+- **Page setup**: **Size** (A4 / Letter), **Orientation** (Portrait / Landscape), and **Scale** (Fit page / Fit width). Size + orientation apply to **both** the vector PDF and browser-print (they set the PDF's page format and the browser's `@page` size). **Scale** is browser-print only: *Fit page* fits the whole tree onto one page (the overview), *Fit width* scales the tree to the page width and flows it down across multiple pages for readable detail (nodes may split at page edges — use the vector **Save as PDF** for clean multi-page slicing). The choice is remembered, so a bare `Cmd/Ctrl+P` uses it too.
+- **How-to-read legend** (checkbox, on by default): a one-line, type-specific reading rule printed under the title — e.g. a CRT prints "read bottom-up; the core driver is the root cause that feeds the most UDEs", an EC prints the *in order to / we must / because* conflict reading, a Goal Tree prints the Goal → CSF → NC chain. Makes a printout self-explanatory for a reader who doesn't know the Thinking Process. Persisted, so a bare `Cmd/Ctrl+P` includes it too. Works in **both** the browser-print and vector-PDF paths (in the PDF it's wrapped under the header on every diagram page so each sheet of a multi-page export stays self-explanatory); freeform diagrams have no legend.
 - **Annotation appendix** (checkbox): when on, the output includes a numbered list of every entity's description as an appendix after the diagram.
 - **Reasoning narrative** (checkbox): when on, the diagram's cause→effect read-out — one numbered sentence per link in reading order, the same narrative the on-screen verbalisation and the Markdown reasoning export produce — prints after the diagram (and after the annotation appendix when both are on). Works in both the browser-print and vector-PDF paths.
-- **Selection only** (checkbox, Session 79): when on, only selected entities + edges appear in the output. The rest of the canvas is hidden (via `visibility: hidden` for browser-print so layout positions stay intact, or by filtering the source node list for the vector PDF). Disabled when there's no selection.
+- **Selection only** (checkbox): when on, only selected entities + edges appear in the output. The rest of the canvas is hidden (via `visibility: hidden` for browser-print so layout positions stay intact, or by filtering the source node list for the vector PDF). Disabled when there's no selection.
 - **Header / footer templates**: free text with merge fields `{title}` / `{date}` / `{author}` / `{diagramType}`. The PDF path also resolves `{pageNumber}` / `{pageCount}` per page; browser-print leaves them blank and relies on the browser's running headers.
 
 Two export paths:
 
-- **Save as PDF** (primary, Session 80) downloads a true **vector PDF** built with `jspdf` + `svg2pdf.js`. Text stays text (selectable + searchable), strokes stay resolution-independent, multi-page when the diagram exceeds one page-height (sliced vertically, scaled to page-width). The annotation appendix is paginated automatically. **Font note**: the embedded fall-back is Helvetica (Latin-1 only). If your diagram's text uses characters outside Latin-1 — CJK, Cyrillic, Greek, emoji, or typographic punctuation such as em dashes / curly quotes (ordinary Western accents like é/ü are fine) — the dialog shows an **amber caution** under the buttons, because those glyphs print blank or garbled. Use the **Open print dialog** path below for accurate rendering; the EC workshop-sheet export flags the same case in its success toast.
+- **Save as PDF** (primary) downloads a true **vector PDF** built with `jspdf` + `svg2pdf.js`. Text stays text (selectable + searchable), strokes stay resolution-independent, multi-page when the diagram exceeds one page-height (sliced vertically, scaled to page-width). The annotation appendix is paginated automatically. **Font note**: the embedded fall-back is Helvetica (Latin-1 only). If your diagram's text uses characters outside Latin-1 — CJK, Cyrillic, Greek, emoji, or typographic punctuation such as em dashes / curly quotes (ordinary Western accents like é/ü are fine) — the dialog shows an **amber caution** under the buttons, because those glyphs print blank or garbled. Use the **Open print dialog** path below for accurate rendering; the EC workshop-sheet export flags the same case in its success toast.
 - **Open print dialog** hands off to the browser's print / Save-as-PDF flow with the chosen mode applied. Use this when you need system-font Unicode coverage or want to print to a real printer rather than a PDF.
 
-**The Export picker.** Everything below is reachable from one dialog: `Cmd/Ctrl+K` → **Export…** (or `Cmd/Ctrl+E`) opens a picker that groups every export by category — Images, Documents, Data, Annotations & reasoning, and Share. A few options surface only when they apply: **Risk Register CSV** when the document has UDEs, **Task tracker CSV** when it has Actions, **Prerequisite plan CSV** when it has Intermediate Objectives, and the **EC Workshop Sheet** on Evaporating Clouds. The picker also **remembers your last-used format** — reopen it and that card is focused (so Enter repeats it) and marked "Last used". The individual `Export as …` commands below still work if you know the name; the picker is just the one-stop entry point.
+**The Export picker.** Everything below is reachable from one dialog: `Cmd/Ctrl+K` → **Export…** (or `Cmd/Ctrl+E`) opens a picker that groups every export by category — Images, Documents, Data, Annotations & reasoning, and Share. A few options surface only when they apply: **Risk Register CSV** when the document has UDEs, **Task tracker CSV** when it has Actions, **Prerequisite plan CSV** when it has Intermediate Objectives, and the **EC Workshop Sheet** on Evaporating Clouds. The picker also **remembers your last-used format** — reopen it and that card is focused (so Enter repeats it) and marked "Last used". Every format below is a card in this one picker — the old individual `Export as …` palette commands were folded into it.
 
-**Export as JSON.** `Cmd/Ctrl+K` → **Export as JSON** downloads `<your-title>.tps.json`. The format is human-readable, version-stamped, and round-trip stable.
+**Export as JSON.** **Export…** → **JSON** downloads `<your-title>.tps.json`. The format is human-readable, version-stamped, and round-trip stable.
 
-**Export as redacted JSON.** `Cmd/Ctrl+K` → **Export as redacted JSON** writes the same structure as a normal JSON export but replaces every entity title with `#N`, blanks descriptions and edge labels, retitles groups as `Group N`, and drops author / document-level description. IDs, types, edges, and AND-groups are preserved exactly. Useful when you want a colleague to see the *shape* of an analysis without leaking what each node says.
+**Export as redacted JSON.** **Export…** → **Redacted JSON** writes the same structure as a normal JSON export but replaces every entity title with `#N`, blanks descriptions and edge labels, retitles groups as `Group N`, and drops author / document-level description. IDs, types, edges, and AND-groups are preserved exactly. Useful when you want a colleague to see the *shape* of an analysis without leaking what each node says.
 
 **Copy image to clipboard.** In the Export picker, **Copy image to clipboard** (the first Images option) puts the diagram on your clipboard as a PNG — click into a doc, slide, or chat and paste, no file download needed. Browsers that can't copy images to the clipboard (older Firefox/Safari) fall back to saving a PNG file, with a toast to say so.
 
-**Export as PNG.** `Cmd/Ctrl+K` → **Export as PNG (2×)** downloads `<your-title>.png` at 2× pixel density, theme-aware (white background in light mode, near-black in dark mode), cropped to fit your diagram with 32 px of padding.
+**Export as PNG.** **Export…** → **PNG (2×)** downloads `<your-title>.png` at 2× pixel density, theme-aware (white background in light mode, near-black in dark mode), cropped to fit your diagram with 32 px of padding.
 
 **Export as JPEG / SVG.** Same as PNG, different format. JPEG is smaller for sharing in chat tools that resample PNGs. SVG is sharp at any zoom and importable into design tools (Figma, Illustrator).
 
@@ -752,6 +774,10 @@ Two export paths:
 **PowerPoint deck.** **Export…** → **PowerPoint deck (.pptx)** generates a workshop-ready `.pptx` with: a cover slide (doc title, diagram type, author, date on an indigo brand band), a System scope slide when any of the seven scope fields are filled, an embedded screenshot of the canvas (a **tall diagram** is tiled across several full-width "The diagram (k / N)" slides instead of shrinking to an unreadable stamp), an EC-only "conflict" slide for Evaporating Clouds, paginated reasoning slides (one bullet per edge sentence in topological order, ≤7 per slide), a "Likely Core Driver(s)" slide for CRTs that have one, and a Method-checklist progress slide when any step is ticked. The PowerPoint vendor (~123 KB gz) is lazy-loaded behind this menu item — users who never export don't pay for it.
 
 **Export as CSV.** A single CSV file that captures every entity, edge, and group with a `kind` column discriminating them. Quoting follows RFC 4180. Entity rows are a structural superset of the format the CSV importer reads, so you can round-trip a subset of the data back in if needed.
+
+**Risk Register CSV.** On any document with UDEs (a Negative Branch Reservation is the canonical case), this export turns each UDE into a risk row — columns risk / trigger / consequence / mitigation / evidence / owner / status — ready to paste into a project risk log. The *mitigation* is inferred from a trimming injection wired to the UDE; *owner* and *evidence* read the inspector's [Owner and Evidence fields](#working-with-entities). The option appears in the Export picker only when the document has UDEs.
+
+**EC Workshop Sheet.** Evaporating Clouds get a one-page A4-landscape PDF handout — the five boxes with their arrows and the D ↔ D′ conflict, blank assumption lines per arrow, an injection box, and the guiding-questions table — ready to print for a room to fill in by hand. (Like the vector PDF export, it embeds Latin-1 fonts; the success toast warns when your text needs the browser-print path instead.)
 
 **Annotations exports.** Two human-readable variants of "everything the diagram says": **Annotations as Markdown** (`# Title`, `## #N — entity` blocks with the description below) and **Annotations as text** (the same structure, indented). Both order entities by their stable annotation number, so the printed doc reads in a predictable order regardless of where the entities sit on the canvas.
 
@@ -762,7 +788,7 @@ Two export paths:
 - **Export as Mermaid diagram** writes `<your-title>.mmd` — Mermaid `graph BT` syntax that renders inline in GitHub READMEs, Notion code blocks, Obsidian notes, and GitLab MRs. Per-entity styling is preserved via Mermaid `classDef`. AND-grouped edges use the thick-arrow (`==>`) form.
 - **Export as VGL (declarative)** writes `<your-title>.vgl` — a declarative text format with `entity { … }` and `edge a -> b` blocks. VGL-flavored rather than a strict Flying Logic VGL implementation; the format is documented in `src/domain/vglExport.ts` and is one-way (no companion importer yet).
 
-OPML, DOT, and VGL are one-way exports. Mermaid is round-trippable: **Import from Mermaid diagram…** (in the palette → File group) parses the syntax our exporter emits — frontmatter title, `graph BT/TB/LR/RL`, bracketed nodes with `<br/>` line breaks and `&quot;` escapes, `-->` plain + `==>` AND-grouped edges, inline edge labels, and `class id type_xxx` entity-type assignments. Subgraph blocks parse for their contents but the grouping isn't reconstructed. Use **Export as JSON** or **Export as Flying Logic** for full-fidelity interchange that round-trips assumptions, groups, revisions, and everything else.
+OPML, DOT, and VGL are one-way exports. Mermaid is round-trippable: **Import…** → **Mermaid diagram** parses the syntax our exporter emits — frontmatter title, `graph BT/TB/LR/RL`, bracketed nodes with `<br/>` line breaks and `&quot;` escapes, `-->` plain + `==>` AND-grouped edges, inline edge labels, and `class id type_xxx` entity-type assignments. Subgraph blocks parse for their contents but the grouping isn't reconstructed. Use **Export as JSON** or **Export as Flying Logic** for full-fidelity interchange that round-trips assumptions, groups, revisions, and everything else.
 
 **Reasoning exports** (Markdown). Compiles the diagram's causal logic into a document the user can paste into a brief, deck, or postmortem. Two shapes:
 
@@ -771,18 +797,18 @@ OPML, DOT, and VGL are one-way exports. Mermaid is round-trippable: **Import fro
 
 Both are one-way Markdown — paste them into a doc / wiki / chat. Pairs with the in-app Read-through overlay (palette → "Start read-through"), which walks the same sentences live for a verbal review.
 
-**Import.** `Cmd/Ctrl+K` → **Import from JSON…** opens a file picker. The current document is pushed to undo history before the imported one takes over, so an accidental import is recoverable with `Cmd/Ctrl+Z`. Malformed JSON files are rejected with a descriptive error instead of corrupting state.
+**Import.** `Cmd/Ctrl+K` → **Import…** → **TP Studio JSON** opens a file picker. The current document is pushed to undo history before the imported one takes over, so an accidental import is recoverable with `Cmd/Ctrl+Z`. Malformed JSON files are rejected with a descriptive error instead of corrupting state.
 
-**Save to file / Open from file (Chromium).** On Chrome / Edge, three extra palette commands let you work with a *real file on disk* instead of the browser's download / upload flow. **Open from file…** reads a `.tps.json` into a new tab. **Save to file** writes the current document back — and here's the convenience: the first save (or an open) *remembers* the file, so every **Save to file** after that **re-writes the same file in one click**, no picker. **Save to file as…** always opens the picker, for saving a copy somewhere new. A small link-chip beside the document title shows which file you're bound to — it's calm green when the file is up to date and turns **amber with "· unsaved"** the moment you edit past your last save, so you can tell at a glance whether the file on disk is current. **`Cmd/Ctrl+S` writes straight through to the bound file** (and clears the chip); with no file bound it flushes the local-storage autosave and says "Saved to this browser," exactly as before. Otherwise these are purely additive — autosave to local storage, the tabs, and the Export/Import commands above all behave exactly as before; this just adds a file on disk as a target for the same JSON. The commands are hidden on browsers without the File System Access API (Firefox / Safari), where **Export as JSON** + **Import from JSON…** remain the path. **OneDrive tip:** save into your synced `OneDrive\…` folder and the OneDrive client backs the file up and syncs it across your devices with no account linking — **Open from file…** the same file on another machine to carry on, then **Save to file** to write straight back. (If the bound file is later moved or deleted, the next **Save to file** tells you and falls back to a fresh pick.)
+**Save to file / Open from file (Chromium).** On Chrome / Edge, three extra palette commands let you work with a *real file on disk* instead of the browser's download / upload flow. **Open from file…** reads a `.tps.json` into a new tab. **Save to file** writes the current document back — and here's the convenience: the first save (or an open) *remembers* the file, so every **Save to file** after that **re-writes the same file in one click**, no picker. **Save to file as…** always opens the picker, for saving a copy somewhere new. A small link-chip beside the document title shows which file you're bound to — it's calm green when the file is up to date and turns **amber with "· unsaved"** the moment you edit past your last save, so you can tell at a glance whether the file on disk is current. **`Cmd/Ctrl+S` writes straight through to the bound file** (and clears the chip); with no file bound it flushes the local-storage autosave and says "Saved to this browser," exactly as before. Otherwise these are purely additive — autosave to local storage, the tabs, and the Export/Import commands above all behave exactly as before; this just adds a file on disk as a target for the same JSON. The commands are hidden on browsers without the File System Access API (Firefox / Safari), where **Export…** → **JSON** + **Import…** → **TP Studio JSON** remain the path. **OneDrive tip:** save into your synced `OneDrive\…` folder and the OneDrive client backs the file up and syncs it across your devices with no account linking — **Open from file…** the same file on another machine to carry on, then **Save to file** to write straight back. (If the bound file is later moved or deleted, the next **Save to file** tells you and falls back to a fresh pick.)
 
-**Flying Logic interop.** Palette → **Open Flying Logic file…** accepts `.logicx`, `.logic`, and `.xlogic` (Flying Logic 4 desktop-save) files; **Export as Flying Logic file** writes a `.logicx`. The mapping covers entities, edges, AND-junctions (Flying Logic represents these as "junctor" vertices), and groups. The reader handles both the scripting-API XML layout (flat) and the desktop app's File → Save layout (nested under `logicGraph > graph`, with attributes wrapped in `<attributes>`). FL stock classes that don't have a structural CLR analogue in TP Studio — `Generic`, `Note`, `Knowledge` — land as plain `Effect` entities; `Desirable Effect` (FL's spelling variant) maps to our `Desired Effect`. Things to know:
+**Flying Logic interop.** **Import…** → **Flying Logic file** accepts `.logicx`, `.logic`, and `.xlogic` (Flying Logic 4 desktop-save) files; **Export…** → **Flying Logic** writes a `.logicx`. The mapping covers entities, edges, AND-junctions (Flying Logic represents these as "junctor" vertices), and groups. The reader handles both the scripting-API XML layout (flat) and the desktop app's File → Save layout (nested under `logicGraph > graph`, with attributes wrapped in `<attributes>`). FL stock classes that don't have a structural CLR analogue in TP Studio — `Generic`, `Note`, `Knowledge` — land as plain `Effect` entities; `Desirable Effect` (FL's spelling variant) maps to our `Desired Effect`. Things to know:
 
 - Flying Logic doesn't store node positions in the file — both apps auto-layout on open, so a hand-arranged layout won't survive a round-trip.
 - Flying Logic has more junctor types than TP Studio (sufficient+necessary, OR, NOT-AND, etc.); we coerce everything to AND on import.
 - Edge labels, group colors, and annotation numbers are TP-Studio-specific. They survive a TP → FL → TP round-trip via custom attributes, but Flying Logic itself won't surface them.
 - The reader expects the flat XML body described in Flying Logic's public scripting docs. If a `.logicx` you receive is a ZIP archive, extract the inner XML first.
 
-**Sharing.** Two practical paths today: send the `.tps.json` file (recipient runs **Import from JSON…**) or send the `.png`.
+**Sharing.** Two practical paths today: send the `.tps.json` file (recipient runs **Import…** → **TP Studio JSON**) or send the `.png`.
 
 If the browser's storage quota is exceeded — usually because of an exceptionally large document or browser-wide storage pressure — you'll get a destructive toast: `Couldn't save to this browser: ...`. The in-memory document keeps working; export to JSON to preserve it.
 
@@ -804,14 +830,14 @@ All but CSV open the result in a **new tab**, leaving your current work untouche
 
 ## Templates library
 
-The **Templates** library (Session 186) is one curated set of starter diagrams — 69 of them, spanning *every* TOC diagram type — that you drop on the canvas and adapt. It used to be two separate libraries (a small "Templates" set and a larger "Pattern library"); they're now unified, shown identically in two places:
+The **Templates** library is one curated set of starter diagrams — 69 of them, spanning *every* TOC diagram type — that you drop on the canvas and adapt. It used to be two separate libraries (a small "Templates" set and a larger "Pattern library"); they're now unified, shown identically in two places:
 
 - **Start page → Templates** (the left sidebar). The full gallery, grouped by diagram type, each card a colored type-stripe + title + one-line description. Click a card to open it in a new tab.
-- **In the editor**, `Cmd/Ctrl+K` → **Browse templates…** (or the Building Blocks rail's "Browse templates & examples"). The same set in a filterable dialog — a chip row at the top narrows to one diagram type, or scroll through all. Click a card to load it; **Undo** from the success toast restores your previous doc.
+- **In the editor**, `Cmd/Ctrl+K` → **Browse templates…** (or **New from template…** — same dialog; also the Building Blocks rail's "Browse templates & examples"). The same set in a filterable dialog — a chip row at the top narrows to one diagram type, or scroll through all. Click a card to load it; **Undo** from the success toast restores your previous doc.
 
 **Insert a template into the diagram you're already in.** When a template's diagram type matches your open document (and that document already has content), its card in the editor dialog shows a **"+ Insert here"** button. Instead of opening the template in a new tab, this **merges** the template's whole subgraph into your current diagram — its entities, edges, AND/OR/XOR junctors, and groups are copied in with fresh ids (so nothing collides), placed with a small offset, and left selected. Use it to compose: drop a *Fixes that Fail* archetype into an existing CRT, or graft a known sub-structure onto your tree. It's one undo step — `Cmd/Ctrl+Z` removes the whole insert.
 
-The library covers Goal Trees, Evaporating Clouds — including the **change-resistance / buy-in** clouds (*Resistance to change (Efrat's cloud)*, *Speak up vs stay safe*, *Transformation vs this quarter*) — Current Reality Trees, Future Reality Trees, Prerequisite Trees, Transition Trees (the canonical Outcome ← (Precondition + Action) shape), Strategy & Tactics Trees, and Negative Branch Reservations. It also includes the **system archetypes** (Session 179) — Senge's recurring dynamics as TP trees: *Fixes that Fail*, *Escalation*, *Shifting the Burden*, *Eroding Goals* (reinforcing CRTs) and *Limits to Growth* (a balancing FRT); each is a feedback loop, so the **R / B badge** on its back-edge tells you at a glance whether it's a self-amplifying spiral (R) or a self-correcting limit (B). A **cost-accounting / product-costing CRT** captures Goldratt's "cost world" critique and pairs with the *Cost world vs throughput world* cloud.
+The library covers Goal Trees, Evaporating Clouds — including the **change-resistance / buy-in** clouds (*Resistance to change (Efrat's cloud)*, *Speak up vs stay safe*, *Transformation vs this quarter*) — Current Reality Trees, Future Reality Trees, Prerequisite Trees, Transition Trees (the canonical Outcome ← (Precondition + Action) shape), Strategy & Tactics Trees, and Negative Branch Reservations. It also includes the **system archetypes** — Senge's recurring dynamics as TP trees: *Fixes that Fail*, *Escalation*, *Shifting the Burden*, *Eroding Goals* (reinforcing CRTs) and *Limits to Growth* (a balancing FRT); each is a feedback loop, so the **R / B badge** on its back-edge tells you at a glance whether it's a self-amplifying spiral (R) or a self-correcting limit (B). A **cost-accounting / product-costing CRT** captures Goldratt's "cost world" critique and pairs with the *Cost world vs throughput world* cloud.
 
 Templates are starting points, not boilerplate — every entity is editable, deletable, and re-typable. Use one when you want to skip the "stare at a blank canvas" problem and start with the shape of the conversation. The library is distinct from **Load example…** (which loads the one canonical example per diagram type). It grows over time — drop a builder in `src/domain/patterns/` and register it in the `PATTERNS` array, and it surfaces in both the gallery and the dialog automatically.
 
@@ -823,13 +849,16 @@ The warning carries a one-click **Convert extras to CSFs** action. Clicking it k
 
 If the second goal really is a peer to the first, dismiss the warning with **Resolve** — it stays dismissed across reloads (resolved warnings persist in the document), and re-fires only if you add yet another goal.
 
+Two further Goal-Tree structural checks back Dettmer's pattern: **`goalTree-csf-no-ncs`** flags a Critical Success Factor with no Necessary Conditions beneath it (add the conditions that must hold for it), and **`goalTree-csf-count`** is a document-level scope guard — fewer than 3 CSFs suggests you're missing make-or-break conditions, more than 5 usually means some are really Necessary Conditions a tier down. Both are dismissible.
+
 ## Settings & themes
 
-`Cmd/Ctrl+,` (or **Settings…** in the palette) opens the Settings dialog with three sections:
+`Cmd/Ctrl+,` (or **Settings…** in the palette) opens the Settings dialog with four tabs:
 
 - **Appearance.** Pick a theme — seven options: `Light`, `Dark`, `High contrast` (pure black background, white text, thicker focus rings), or one of four named dark variants — `Rust` (warm dark, ember tones), `Coal` (near-black with blue tint), `Navy` (deep blue dark mode), `Ayu` (warm dark with golden accents drawn from the Sublime/VSCode theme). The four named variants layer on top of dark mode — only the body background and focus-ring accent change per variant; the rest of the UI palette stays consistent. Pick a **Color palette** — `Default`, `Colorblind-safe` (Wong palette), or `Monochrome` — one accessibility switch that recolours **node stripes, edges, the minimap, and the building-blocks rail** together. `Default` reproduces the standard colours exactly; the other two make the diagram legible without relying on hue (custom entity-class colours keep their own colour regardless).
-- **Behavior.** Pick an animation speed — `Instant` / `Slow` / `Normal` / `Fast`. On `Normal` (the baseline), TP Studio follows your operating system's **"reduce motion"** accessibility setting: enable it in the OS and canvas transitions (including the fit-view camera moves) are minimised automatically. Picking an explicit speed overrides the OS hint. Toggle **Browse Lock** (also reachable via the top-right lock button) and **Auto-snapshot while editing** (default on — periodic mid-session revision snapshots).
-- **Display.** Toggle **Show annotation numbers**, **Show entity IDs**, **Grow cards to fit text** (Session 181 — lets an entity card grow taller to show its full title, up to six lines, instead of clamping to two; off by default), **Show UDE-reach badge** (Session 52), **Show root-cause-reach badge** (Session 71), **Show action-eligibility badge** (Session 135), **Show minimap**, and **Ink-saving print mode**. Pick a **Causality reading** (none / auto / because / therefore / in order to). Pick a **Default direction for new documents** (auto / BT / TB / LR / RL) — set this when you prefer all new docs to start in a particular orientation; existing docs keep their own per-doc layout setting.
+- **Behavior.** Pick an animation speed — `Instant` / `Slow` / `Normal` / `Fast`. On `Normal` (the baseline), TP Studio follows your operating system's **"reduce motion"** accessibility setting: enable it in the OS and canvas transitions (including the fit-view camera moves) are minimised automatically. Picking an explicit speed overrides the OS hint. Toggle **Browse Lock** (also reachable via the top-right lock button), **Auto-snapshot while editing** (default on — periodic mid-session revision snapshots), the three **Creation wizards** (Goal Tree / Evaporating Cloud / Current Reality Tree), the **Selection toolbar**, and **Open documents in new tabs**.
+- **Display.** Toggle **Show annotation numbers**, **Show entity IDs**, **Grow cards to fit text** (lets an entity card grow taller to show its full title, up to six lines, instead of clamping to two; off by default), **Show UDE-reach badge**, **Show root-cause-reach badge**, **Show action-eligibility badge**, **Show minimap**, and **Ink-saving print mode**. Pick a **Causality reading** (none / auto / because / therefore / in order to). Pick a **Default direction for new documents** (auto / BT / TB / LR / RL) — set this when you prefer all new docs to start in a particular orientation; existing docs keep their own per-doc layout setting (change that on the **Layout** tab below). Pick a **Layout density** — `Compact` / `Balanced` / `Spacious` — for how tightly auto-layout packs the tree. Pick an **Edge routing** mode — `Smart` (route around obstacles, the default) or `Direct` (plain beziers) — described under [Smart edge routing](#finding-and-navigating).
+- **Layout.** Unlike the other tabs (app-wide preferences), this one is **per-document**, and only for auto-laid-out diagrams (CRT / FRT / PRT / TT / Goal Tree / S&T / NBR): **Direction** (Bottom→Top / Top→Bottom / Left→Right / Right→Left) — this is where you change an *existing* diagram's orientation — plus a **Compactness** slider (0–100, 50 = default) and a **Bias** (Auto, or gravitate toward one of the four corners), with a **Reset to defaults** when overridden. Hand-positioned diagrams (Evaporating Cloud, freeform) show an explanatory note instead.
 
 All settings persist across reloads.
 
@@ -841,11 +870,12 @@ PNG exports respect the current theme — light theme exports get a white backgr
 
 Browse Lock is a read-only mode useful for sharing your screen, reviewing with someone over a call, or letting a colleague click around without worrying they'll delete a node by mistake.
 
-Toggle it three ways:
+Toggle it two ways:
 
-- The lock icon in the top-right toolbar. It turns violet when on.
+- The **⋮ overflow menu** → **Lock for browsing** / **Unlock document**.
 - Settings → Behavior → **Browse Lock**.
-- The palette command **Toggle Browse Lock**.
+
+While locked, a **Browse Lock** chip sits in the bottom-right status strip — click it to unlock.
 
 While locked:
 
@@ -863,7 +893,7 @@ Read-only operations still work: panning, zooming, selection, the help dialog, v
 TP Studio runs in one of **five app modes** — a persisted preference that retunes the whole interface for a task. Switch from the command palette: `Cmd/Ctrl+K` → **Switch to Expert / Guided / Workshop / Presentation / Reader mode**, and a toast confirms the change. (There's no mode switcher in the toolbar — the palette is the way in. In Reader and Presentation mode the chrome is minimal, but an **Exit** affordance is always shown.)
 
 - **Expert** *(default)* — every affordance available. The full editing experience the tool ships with.
-- **Guided** — for a first-time author. The creation wizard for a new **Goal Tree** or **Evaporating Cloud** always appears, even if you previously ticked "don't show this again" (see [Creation wizards](#creation-wizards-goal-tree--ec)). Otherwise identical to Expert.
+- **Guided** — for a first-time author. The creation wizard for a new **Goal Tree**, **Evaporating Cloud**, or **Current Reality Tree** always appears, even if you previously ticked "don't show this again" (see [Creation wizards](#creation-wizards-goal-tree-ec-crt)). Otherwise identical to Expert.
 - **Workshop** — for projecting to a room. Node text is enlarged so entity titles stay legible on a shared screen.
 - **Presentation** — for read-only projection. The top bar, inspector, selection toolbar, and zoom controls are hidden, and **Browse Lock auto-engages** so a stray click can't edit the projected diagram (leaving the mode does *not* auto-unlock). A **step-through** control appears bottom-centre: the **‹** / **›** buttons — or the `←` / `→` arrow keys — walk the diagram's entities one at a time, by explicit step order first then annotation number, centring each in turn, so you can lead an audience through the causal chain without speaker notes.
 - **Reader** — a distraction-free teaching mode with coaching tooltips; it has its own section ([Reader / trainee mode](#reader--trainee-mode)) below.
@@ -913,7 +943,7 @@ The dialog also carries two collapsible sections drawn from the book's TOC metho
 
 **System Scope.** Seven structured questions Goldratt's CRT method opens with — system goal, necessary conditions, success measures, boundaries, containing system, interacting systems, inputs/outputs. They generalize to every TOC tree, so the section is available regardless of diagram type. Answer them before you start drawing entities; the discipline pays back as the tree grows. The summary line shows how many of the seven are filled, and the section auto-expands when you re-open the dialog if you've already answered any.
 
-**Performance frame (Session 163).** Two optional anchors that frame the gap the diagram closes: a **Low** note (the measure's current, unacceptable level) and a **High** note (its target). It's the gap-analysis framing from Cohen's *TP Basics* — name where a metric sits now vs. where you want it, e.g. "On-time delivery at 60%" → "Reach 98% within two quarters." General to every diagram type, collapsed by default, with a summary that shows how many of the two anchors are filled (and auto-expands when either is set). Both anchors round-trip through JSON export.
+**Performance frame.** Two optional anchors that frame the gap the diagram closes: a **Low** note (the measure's current, unacceptable level) and a **High** note (its target). It's the gap-analysis framing from Cohen's *TP Basics* — name where a metric sits now vs. where you want it, e.g. "On-time delivery at 60%" → "Reach 98% within two quarters." General to every diagram type, collapsed by default, with a summary that shows how many of the two anchors are filled (and auto-expands when either is set). Both anchors round-trip through JSON export.
 
 **Method checklist.** The canonical recipe for the current diagram type — 9 steps for a CRT, 6 for an FRT/PRT/TT, 7 for an EC. Each step is roughly one focused work session: "List 3–5 critical UDEs", "Build down to root causes", "Apply CLR challenges at every step", "Identify the Core Driver". Tick steps off as you go. Many hints reference specific TP Studio features (Find Core Drivers, Unspecified placeholders, back-edge tagging, etc.) so the checklist doubles as a discoverability surface. Switching diagram type swaps the catalog automatically; checked steps are scoped per-diagram-type, so a CRT's progress isn't lost if you also work on an EC in the same document switch.
 
@@ -923,7 +953,7 @@ System Scope and Method Checklist round-trip through JSON export. Flying Logic e
 
 ## Revision history (snapshots, branches, diffs)
 
-The history panel is a slide-in on the right edge (palette → **Open history…** or the clock icon in the top bar). Each document carries its own snapshot list, capped at 50 entries per doc. Snapshots autosave on document swaps and on every restore; they also fire **automatically every few minutes while you edit** (labelled `Auto`, only when the tree has actually changed since the last snapshot) so a long single-tab session still accrues rollback points — toggle this off under **Settings → Behavior → Auto-snapshot while editing**. "Snapshot now" at the top of the panel captures the live state manually.
+The history panel is a slide-in on the right edge (the clock icon in the top bar; on narrow windows it folds into the ⋮ overflow menu). Each document carries its own snapshot list, capped at 50 entries per doc. Snapshots autosave on document swaps and on every restore; they also fire **automatically every few minutes while you edit** (labelled `Auto`, only when the tree has actually changed since the last snapshot) so a long single-tab session still accrues rollback points — toggle this off under **Settings → Behavior → Auto-snapshot while editing**. "Snapshot now" at the top of the panel captures the live state manually.
 
 ### Comparing snapshots
 
@@ -989,6 +1019,7 @@ Same content as the in-app `?` button (top-right).
 | `Cmd/Ctrl+A` | Select every entity in the document |
 | `Cmd/Ctrl+Shift+S` | Swap two selected entities |
 | `Cmd/Ctrl+F` | Find in document |
+| `Cmd/Ctrl+\` | Close the inspector (clears the selection) |
 | `Cmd/Ctrl+Shift+→ / ←` | Select all successors / predecessors of the selection |
 | `+ / - / 0` | Zoom in / out / fit view |
 | `E` | Quick Capture (paste indented list) |
@@ -998,12 +1029,19 @@ Same content as the in-app `?` button (top-right).
 
 | Keys | Action |
 | --- | --- |
-| `Enter` | Rename |
+| `Enter` / `F2` | Rename |
 | `Alt+Enter` (in title) | Newline (multi-line title) |
 | `Tab` | Add child entity |
 | `Shift+Tab` | Add parent entity |
 | `↑` / `↓` / `← / →` | Walk to the connected neighbour in that direction (geometric — follows the on-screen layout) |
 | `Del` / `Backspace` | Delete (with confirm if connected) |
+
+**On a selected edge**
+
+| Keys | Action |
+| --- | --- |
+| `A` | Add an assumption (on an EC edge, pre-seeded with `"…because "`) |
+| `Del` / `Backspace` | Delete the edge |
 
 **On a selected group**
 
