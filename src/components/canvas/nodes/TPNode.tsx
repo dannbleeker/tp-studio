@@ -90,6 +90,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
     customEntityClasses,
     edgePalette,
     isReaderMode,
+    isEvaporating,
   } = useDocumentStore(
     useShallow((s) => {
       const doc = currentDoc(s);
@@ -111,6 +112,9 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         edgePalette: s.edgePalette,
         // Session 180 / E6 — reader mode coaching tooltip.
         isReaderMode: s.appMode === 'reader',
+        // Session 195 easter egg — evaporation one-shot. Derived boolean
+        // (like `isEditing`) so only the two Want nodes re-render on trigger.
+        isEvaporating: s.evaporatingEntityIds?.includes(entity.id) ?? false,
       };
     })
   );
@@ -227,7 +231,9 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
         // Feature #1 — neutral hover lift on a plain, unselected node (lowest
         // precedence; suppressed above whenever any other ring is active).
         // Reads as "hover", visually distinct from the indigo "selected" ring.
-        isHoverActive && 'shadow-md ring-1 ring-neutral-300/80 dark:ring-neutral-600/80'
+        isHoverActive && 'shadow-md ring-1 ring-neutral-300/80 dark:ring-neutral-600/80',
+        // Session 195 easter egg — the cloud that actually evaporates.
+        isEvaporating && 'tp-evaporating'
       )}
       style={{ width: NODE_WIDTH, minHeight: isStFormat ? ST_NODE_HEIGHT : NODE_MIN_HEIGHT }}
       onMouseEnter={() => setIsHovered(true)}

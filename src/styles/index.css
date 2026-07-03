@@ -295,6 +295,38 @@ body {
   }
 }
 
+/* Session 195 easter egg — "the cloud that actually evaporates". Played once
+ * on the two Want (D / D′) cards when an EC conflict arrow is broken by an
+ * implemented injection (see useCloudEvaporation). The card wisps upward,
+ * blurs to near-nothing, then settles back — evaporation, not deletion.
+ * Scaled by --anim-speed so reduced-motion collapses it to an instant no-op. */
+@keyframes tp-evaporate {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  45% {
+    opacity: 0.08;
+    transform: translateY(-26px) scale(1.06);
+    filter: blur(5px);
+  }
+  60% {
+    opacity: 0.08;
+    transform: translateY(-30px) scale(1.06);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.tp-evaporating {
+  animation: tp-evaporate calc(2400ms * var(--anim-speed)) ease-in-out 1 both;
+}
+
 /* F4: showcase / dim mode applied to nodes + edges that don't match an active
  * search query. Translucent rather than hidden — the surrounding causal
  * context stays visible so hits read in their actual place in the tree. */

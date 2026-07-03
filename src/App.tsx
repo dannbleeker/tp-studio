@@ -39,6 +39,9 @@ const HelpDialog = lazy(() =>
 const AboutDialog = lazy(() =>
   import('./components/about/AboutDialog').then((m) => ({ default: m.AboutDialog }))
 );
+const DiceGameDialog = lazy(() =>
+  import('./components/dice-game/DiceGameDialog').then((m) => ({ default: m.DiceGameDialog }))
+);
 const SettingsDialog = lazy(() =>
   import('./components/settings/SettingsDialog').then((m) => ({ default: m.SettingsDialog }))
 );
@@ -439,6 +442,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="About dialog">
           <AboutDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Dice game">
+          <DiceGameDialog />
         </ErrorBoundary>
         <ErrorBoundary label="Settings">
           <SettingsDialog />

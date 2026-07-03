@@ -2,6 +2,56 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Easter eggs (remote session) — Goldratt's dice game + the cloud that actually evaporates
+
+Two hidden rewards for people who know their TOC lore. Deliberately
+undocumented in USER_GUIDE/README — an easter egg advertised is an easter
+egg wasted; this entry is the only paper trail.
+
+**Goldratt's dice game** (`src/domain/diceGame.ts` +
+`components/dice-game/DiceGameDialog.tsx`): the match-bowl game from *The
+Goal* ch. 14, playable. Five stations in a line, one die each per round,
+each station passes `min(roll, upstream inventory)` downstream with
+same-round flow-through (the book's passing rule). Scoreboard, per-station
+starvation tinting, cumulative actual-vs-3.5×rounds SVG chart, auto-roll,
+and a punchline card at round 20 ("now go find your Herbie"). The sim is
+pure + seeded (mulberry32 carried in the state — no `Math.random` in
+domain), so tests assert exact games. Reached two ways:
+
+- **Hidden palette command** — new `Command.hidden` (excluded from the
+  empty-query browse view; still matched by queries and still surfaces in
+  Recent once run) + `Command.keywords` (extra `paletteScore` terms beyond
+  the label, best score wins). Typing `dice`, `herbie`, `goldratt`,
+  `the goal`, `bottleneck`, or `matchsticks` reveals "Play the Dice Game…".
+  Both fields are generic palette features, usable beyond the egg.
+- **Five clicks on the About dialog's version line** (styled as plain text
+  on purpose; counter resets when the dialog closes).
+
+Dialog is `React.lazy` like every other dialog, so none of it ships in the
+eager `index` chunk (new chunk is `unbudgeted` — reported, not gated).
+
+**The cloud that actually evaporates** (`src/domain/cloudResolution.ts` +
+`components/canvas/hooks/useCloudEvaporation.ts`): on an EC doc, when an
+assumption on the D↔D′ conflict arrow is first challenged by an
+**implemented** injection, the two Want cards play a 2.4s wisp-up-and-
+settle-back animation (`tp-evaporate` keyframes, `--anim-speed`-scaled so
+reduced-motion collapses it) + a "You evaporated the cloud. Goldratt would
+be proud." toast. Earned, not triggered — it fires only on completing the
+method properly. `resolveCloudState(doc)` deliberately reuses the
+Injection Workbench's existing semantic (ONE broken assumption evaporates
+the cloud — TOC-correct), so the two surfaces can't drift. Rising-edge
+only, baseline keyed by doc id: mount/tab-switch onto an already-broken
+cloud replays nothing, no persisted flag needed; un-implement +
+re-implement re-arms it. Transient state lives in a new
+`uiSlice/effectsSlice.ts` (one-shot canvas effects — not modal-ish, so not
+`dialogsSlice`); TPNode reads membership via its existing shallow selector
+(a derived boolean, so only the two Want nodes re-render).
+
+No schema change (nothing persists), no new dependencies. Tests: exact
+seeded-game + conservation/starvation invariants for the sim; predicate
+matrix for `resolveCloudState`; rising-edge/tab-switch/re-arm contracts
+for the hook; hidden/keyword palette behaviour; the About 5-click trigger.
+
 ## Docs coverage review (remote session) — USER_GUIDE + practitioner book accuracy pass
 
 A full coverage audit of the user manual and the book against the current

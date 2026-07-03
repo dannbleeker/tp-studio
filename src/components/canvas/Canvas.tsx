@@ -29,6 +29,7 @@ import { useArrowKeyNodeNav } from './hooks/useArrowKeyNodeNav';
 import { useCanvasClickHandlers } from './hooks/useCanvasClickHandlers';
 import { useCanvasContextMenuHandlers } from './hooks/useCanvasContextMenuHandlers';
 import { useCanvasDragHandlers } from './hooks/useCanvasDragHandlers';
+import { useCloudEvaporation } from './hooks/useCloudEvaporation';
 import { useGraphMutations } from './hooks/useGraphMutations';
 import { useGraphView } from './hooks/useGraphView';
 import { useSearchDimming } from './hooks/useSearchDimming';
@@ -136,6 +137,10 @@ function CanvasInner() {
   // Session 135 — canvas a11y slice 4. Arrow keys, when a node has
   // focus, walk to the connected neighbour in that direction.
   useArrowKeyNodeNav();
+
+  // Session 195 easter egg — one-shot celebration when an EC conflict arrow
+  // is broken by an implemented injection. No-op on non-EC docs.
+  useCloudEvaporation(doc);
 
   useEffect(() => {
     return () => setCanvasInstance(null);

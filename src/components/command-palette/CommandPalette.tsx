@@ -62,8 +62,18 @@ export function CommandPalette() {
    *     they're suppressed here.
    */
   const filtered = useMemo(() => {
-    if (!query) return COMMANDS;
-    const scored = COMMANDS.map((c) => ({ c, s: paletteScore(c.label, query) }))
+    // Session 195 — `hidden` commands are excluded from the browse view but
+    // participate in query matching (via label OR keywords) like any other
+    // command. Deliberately NOT filtered from Recent below: once discovered,
+    // an easter egg re-surfaces there — that's the reward.
+    if (!query) return COMMANDS.filter((c) => c.hidden !== true);
+    const scored = COMMANDS.map((c) => ({
+      c,
+      s: Math.max(
+        paletteScore(c.label, query),
+        ...(c.keywords ?? []).map((k) => paletteScore(k, query))
+      ),
+    }))
       .filter(({ s }) => s >= 0)
       .sort((a, b) => b.s - a.s)
       .map(({ c }) => c);
