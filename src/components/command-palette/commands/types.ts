@@ -39,6 +39,14 @@ export type Command = {
    *  field is optional so existing commands stay text-only without
    *  needing per-entry edits. */
   icon?: LucideIcon;
+  /** Session 195 — extra match terms beyond the label. `paletteScore` runs
+   *  against the label AND each keyword (best score wins), so a command can
+   *  be found by terms that would clutter its label. */
+  keywords?: string[];
+  /** Session 195 — excluded from the empty-query browse view; reachable only
+   *  by typing a matching query (or via Recent once run). The easter-egg
+   *  visibility tier: hidden until hinted, then trivially reachable. */
+  hidden?: boolean;
   run: (store: DocumentStore) => void | Promise<void>;
 };
 

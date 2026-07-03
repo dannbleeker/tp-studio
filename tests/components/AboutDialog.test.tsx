@@ -109,4 +109,19 @@ describe('AboutDialog', () => {
     act(() => useDocumentStore.getState().closeAbout());
     expect(useDocumentStore.getState().aboutOpen).toBe(false);
   });
+
+  // Session 195 easter egg — five clicks on the version line open the dice game.
+  it('opens the dice game after five clicks on the version line', () => {
+    open();
+    const { getByText } = render(<AboutDialog />);
+    const version = getByText(/Version 0\.0\.0-test/);
+    for (let i = 0; i < 4; i++) act(() => fireEvent.click(version));
+    // Four clicks: nothing happens yet.
+    expect(useDocumentStore.getState().diceGameOpen).toBe(false);
+    expect(useDocumentStore.getState().aboutOpen).toBe(true);
+    act(() => fireEvent.click(version));
+    const state = useDocumentStore.getState();
+    expect(state.diceGameOpen).toBe(true);
+    expect(state.aboutOpen).toBe(false);
+  });
 });

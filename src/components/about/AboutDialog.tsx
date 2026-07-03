@@ -1,4 +1,5 @@
 import { Shield, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
@@ -59,6 +60,24 @@ const PROJECT: LinkRow[] = [GITHUB_LINK];
 export function AboutDialog() {
   const open = useDocumentStore((s) => s.aboutOpen);
   const close = useDocumentStore((s) => s.closeAbout);
+  const openDiceGame = useDocumentStore((s) => s.openDiceGame);
+  // Session 195 easter egg — five clicks on the version line open the dice
+  // game (the second trigger besides the hidden palette command). The counter
+  // resets whenever the dialog closes so a stray click doesn't linger.
+  const [versionClicks, setVersionClicks] = useState(0);
+  useEffect(() => {
+    if (!open) setVersionClicks(0);
+  }, [open]);
+  const handleVersionClick = () => {
+    const next = versionClicks + 1;
+    if (next >= 5) {
+      setVersionClicks(0);
+      close();
+      openDiceGame();
+      return;
+    }
+    setVersionClicks(next);
+  };
 
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="about-title">
@@ -81,9 +100,15 @@ export function AboutDialog() {
             A practitioner-focused canvas for Theory of Constraints Thinking Process diagrams. Open
             source, local-first, runs in your browser.
           </p>
-          <p className="mt-3 text-neutral-500 text-xs dark:text-neutral-400">
+          {/* Deliberately unstyled-as-a-button: the egg shouldn't advertise
+              itself. `select-text` keeps the version copyable. */}
+          <button
+            type="button"
+            onClick={handleVersionClick}
+            className="mt-3 cursor-text select-text text-left text-neutral-500 text-xs dark:text-neutral-400"
+          >
             Version {__APP_VERSION__} · Build {__BUILD_DATE__}
-          </p>
+          </button>
         </section>
 
         {/* Read more */}

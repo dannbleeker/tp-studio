@@ -2,6 +2,7 @@ import type { StateCreator } from 'zustand';
 import type { RootStore } from '../types';
 import { type ConfirmSlice, confirmDefaults, createConfirmSlice } from './confirmSlice';
 import { createDialogsSlice, type DialogsSlice, dialogsDefaults } from './dialogsSlice';
+import { createEffectsSlice, type EffectsSlice, effectsDefaults } from './effectsSlice';
 import {
   createPreferencesSlice,
   type PreferencesSlice,
@@ -66,7 +67,8 @@ export type UISlice = SelectionSlice &
   SpeculationSlice &
   ToastsSlice &
   ConfirmSlice &
-  PromptSlice;
+  PromptSlice &
+  EffectsSlice;
 
 /**
  * Data-only defaults for the unified slice. Used by `resetStoreForTest` to
@@ -84,6 +86,7 @@ export const uiDefaults = (): Pick<
   | keyof ReturnType<typeof toastsDefaults>
   | keyof ReturnType<typeof confirmDefaults>
   | keyof ReturnType<typeof promptDefaults>
+  | keyof ReturnType<typeof effectsDefaults>
 > => ({
   ...selectionDefaults(),
   ...preferencesDefaults(),
@@ -94,6 +97,7 @@ export const uiDefaults = (): Pick<
   ...toastsDefaults(),
   ...confirmDefaults(),
   ...promptDefaults(),
+  ...effectsDefaults(),
 });
 
 export const createUISlice: StateCreator<RootStore, [], [], UISlice> = (...args) => ({
@@ -106,4 +110,5 @@ export const createUISlice: StateCreator<RootStore, [], [], UISlice> = (...args)
   ...createToastsSlice(...args),
   ...createConfirmSlice(...args),
   ...createPromptSlice(...args),
+  ...createEffectsSlice(...args),
 });

@@ -51,7 +51,7 @@ export function TreeCard({
         aria-label={`Open tree: ${title}`}
         className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white text-left transition hover:border-accent-400 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-accent-500"
       >
-        <div className="aspect-[5/3] w-full overflow-hidden border-neutral-200 border-b bg-neutral-50 [&>svg]:h-full [&>svg]:w-full dark:border-neutral-800 dark:bg-neutral-950">
+        <div className="aspect-[5/3] w-full overflow-hidden border-neutral-200 border-b bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950 [&>svg]:h-full [&>svg]:w-full">
           <DocumentThumbnail doc={doc} />
         </div>
         <div className="flex flex-1 flex-col gap-1.5 p-3">

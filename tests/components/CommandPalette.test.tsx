@@ -235,4 +235,45 @@ describe('CommandPalette', () => {
     expect(second.getAttribute('aria-selected')).toBe('true');
     expect(first.getAttribute('aria-selected')).toBe('false');
   });
+
+  // Session 195 easter egg — hidden commands + keyword matching.
+  describe('hidden commands', () => {
+    const optionLabels = (container: HTMLElement) =>
+      Array.from(container.querySelectorAll('button[role="option"]')).map(
+        (b) => b.textContent ?? ''
+      );
+
+    it('excludes hidden commands from the empty-query browse view', () => {
+      open();
+      const { container } = render(<CommandPalette />);
+      expect(optionLabels(container).some((l) => /Dice Game/i.test(l))).toBe(false);
+    });
+
+    it('reveals a hidden command when the query matches its label', () => {
+      open();
+      const { container } = render(<CommandPalette />);
+      act(() => fireEvent.change(container.querySelector('input')!, { target: { value: 'dice' } }));
+      expect(optionLabels(container).some((l) => /Dice Game/i.test(l))).toBe(true);
+    });
+
+    it('reveals a hidden command via a keyword the label does not contain', () => {
+      open();
+      const { container } = render(<CommandPalette />);
+      act(() =>
+        fireEvent.change(container.querySelector('input')!, { target: { value: 'herbie' } })
+      );
+      expect(optionLabels(container).some((l) => /Dice Game/i.test(l))).toBe(true);
+    });
+
+    it('running the revealed command opens the dice game dialog', () => {
+      open();
+      const { container } = render(<CommandPalette />);
+      const input = container.querySelector('input')!;
+      act(() => fireEvent.change(input, { target: { value: 'herbie' } }));
+      act(() => fireEvent.keyDown(input, { key: 'Enter' }));
+      const state = useDocumentStore.getState();
+      expect(state.paletteOpen).toBe(false);
+      expect(state.diceGameOpen).toBe(true);
+    });
+  });
 });

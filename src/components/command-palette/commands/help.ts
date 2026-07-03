@@ -59,4 +59,15 @@ export const helpCommands: Command[] = [
       // "Refresh now" toast, so nothing to add.
     },
   },
+  // Session 195 easter egg — Goldratt's dice game from *The Goal*. Hidden
+  // from the browse view; typing any of the keyword hints reveals it. The
+  // second trigger is five clicks on the About dialog's version line.
+  {
+    id: 'dice-game',
+    label: 'Play the Dice Game…',
+    group: 'Help',
+    hidden: true,
+    keywords: ['herbie', 'goldratt', 'the goal', 'bottleneck', 'matchsticks'],
+    run: (s) => s.openDiceGame(),
+  },
 ];

@@ -171,6 +171,10 @@ export type DialogsSlice = {
    *  a non-null section renders the full-screen Start shell with that sidebar
    *  item active. Reached via the Home logo; navigated via its own sidebar. */
   startSection: StartSection | null;
+  /** Session 195 easter egg — Goldratt's dice game (the match-bowl game from
+   *  *The Goal*). Opened via a hidden palette command (type "dice" / "herbie")
+   *  or five clicks on the About dialog's version line. */
+  diceGameOpen: boolean;
 
   openPalette: () => void;
   openPaletteWithQuery: (query: string) => void;
@@ -322,6 +326,10 @@ export type DialogsSlice = {
   /** Phase 3 #3 — open / close the per-injection "flower" dialog. */
   openInjectionFlower: (entityId: string) => void;
   closeInjectionFlower: () => void;
+
+  /** Session 195 easter egg — open / close the dice game. */
+  openDiceGame: () => void;
+  closeDiceGame: () => void;
 };
 
 export type DialogsDataKeys =
@@ -354,7 +362,8 @@ export type DialogsDataKeys =
   | 'compareRevisionId'
   | 'sideBySideRevisionId'
   | 'edgeScrutinyId'
-  | 'injectionFlowerEntityId';
+  | 'injectionFlowerEntityId'
+  | 'diceGameOpen';
 
 export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   paletteOpen: false,
@@ -387,6 +396,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   sideBySideRevisionId: null,
   edgeScrutinyId: null,
   injectionFlowerEntityId: null,
+  diceGameOpen: false,
 });
 
 /**
@@ -436,6 +446,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   sideBySideRevisionId: null,
   edgeScrutinyId: null,
   injectionFlowerEntityId: null,
+  diceGameOpen: false,
 
   openPalette: () => set({ paletteOpen: true, paletteInitialQuery: '' }),
   openPaletteWithQuery: (query) => set({ paletteOpen: true, paletteInitialQuery: query }),
@@ -554,4 +565,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openInjectionFlower: (entityId) => set({ injectionFlowerEntityId: entityId }),
   closeInjectionFlower: () => set({ injectionFlowerEntityId: null }),
+
+  openDiceGame: () => set({ diceGameOpen: true }),
+  closeDiceGame: () => set({ diceGameOpen: false }),
 });
