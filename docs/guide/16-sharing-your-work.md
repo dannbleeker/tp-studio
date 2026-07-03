@@ -16,43 +16,50 @@ Pick by the audience. Engineers and analysts: share link. Slide deck and stakeho
 
 `Cmd+K → Export` opens the unified picker:
 
-![Export picker dialog with three category groupings](screenshots/chapter16-export-picker.png)
+![Export picker dialog with its category groupings](screenshots/chapter16-export-picker.png)
 
-Three groups:
+Five groups — **Images**, **Documents**, **Data**, **Annotations & reasoning**, and **Share** — and the picker remembers your last-used format (reopen it and that card is focused, marked "Last used"):
 
 ### Images
 
+- **Copy image to clipboard** — puts the diagram on the clipboard as a PNG; paste straight into a doc, slide, or chat.
 - **PNG** — high-DPI raster, theme-aware. 2× density by default. Good for ad-hoc paste.
 - **JPEG** — lossy raster. Smaller files. Web-friendly.
 - **SVG** — vector. Sharp at any zoom. Importable into Figma, Illustrator, etc.
-- **PDF** — true vector PDF via jspdf + svg2pdf. Paginated if the diagram exceeds page-height. Optional annotation appendix.
-- **Print / Save as PDF…** — opens the **Print Preview Dialog** with mode picker (Standard / Workshop / Ink-saving), annotation appendix toggle, and header/footer merge fields. The browser print dialog opens after.
-- **PowerPoint deck (.pptx)** — workshop-ready `.pptx` with one slide per major section: cover (doc title + diagram type), System Scope (if filled), an embedded screenshot of the canvas, EC conflict statement (EC-only), paginated reasoning bullets (≤7 sentences/slide in topological order, assumption-edges filtered), Likely Core Driver(s) (CRT-only), and Method-checklist progress. Indigo brand band; vector content where possible. Generated client-side via lazy-loaded `pptxgenjs` — first invocation downloads the vendor chunk (~123 KB gz), subsequent exports are instant.
 
-The PDF route is the most polished for static layout. Use Print Preview for the layout knobs, the direct PDF export for unattended use, the PowerPoint deck when you need a slide each section of the analysis for a presentation.
+### Documents
 
-### Markup
+- **PDF** — true vector PDF via jspdf + svg2pdf. Paginated if the diagram exceeds page-height. Optional annotation appendix, reasoning narrative, and per-type how-to-read legend.
+- **Print / Save as PDF…** — opens the **Print Preview Dialog** with mode picker (Standard / Workshop / Ink-saving), page setup (A4 / Letter, orientation, fit page / fit width), annotation appendix + reasoning + legend toggles, and header/footer merge fields. The browser print dialog opens after.
+- **PowerPoint deck (.pptx)** — workshop-ready `.pptx` with one slide per major section: cover (doc title + diagram type), System Scope (if filled), an embedded screenshot of the canvas (a tall diagram tiles across several full-width slides instead of shrinking), EC conflict statement (EC-only), paginated reasoning bullets (≤7 sentences/slide in topological order, assumption-edges filtered), Likely Core Driver(s) (CRT-only), and Method-checklist progress. Indigo brand band; vector content where possible. Generated client-side via lazy-loaded `pptxgenjs` — first invocation downloads the vendor chunk (~123 KB gz), subsequent exports are instant.
+- **Standalone HTML viewer** — single self-contained file (covered below).
+- **EC Workshop Sheet (PDF)** — one-page PPT-style layout with guiding questions, EC-only.
 
-- **Markdown** — outline form. Paste into docs, GitHub, Notion.
+The PDF route is the most polished for static layout. Use Print Preview for the layout knobs, the direct PDF export for unattended use, the PowerPoint deck when you need a slide per section of the analysis for a presentation.
+
+### Data
+
+- **JSON** — canonical schema-versioned export; the most lossless format.
+- **Redacted JSON** — content-stripped JSON. Same structure, generic titles. Useful for sharing the *shape* of an analysis without the confidential content.
+- **CSV** — entities + edges + groups in one RFC-4180 file.
+- **Task tracker CSV** — one row per Action (step / precondition / outcome / owner / due date / status / success criteria), for pasting into Jira / Trello / Planner / Asana. Only surfaces when the doc has Action entities — a Transition Tree is the canonical source.
+- **Prerequisite plan CSV** — one row per Intermediate Objective in dependency order (objective / overcomes / depends-on / owner / due date / status / notes). Only surfaces when the doc has Intermediate Objectives — a Prerequisite Tree is the canonical source.
+- **Risk register (CSV)** — one row per UDE in the doc, with columns `risk_id / risk / trigger / consequence / mitigation / owner / status`. The exporter walks each UDE backwards through the causal graph to find any reachable injection or desired-effect; if one exists the row is `mitigated`, otherwise `open`. Owner comes from `entity.owner` (with a back-compat fallback to `entity.attributes.owner.value` for older docs). Imports cleanly into Jira / Linear / a spreadsheet. Only surfaces in the Export picker when the doc has at least one UDE — NBR diagrams and CRTs are the canonical sources; an EC has no UDEs by construction so it's hidden there.
 - **OPML** — outline form. OmniOutliner, Bike, Logseq.
 - **DOT (Graphviz)** — for tooling pipelines.
 - **Mermaid** — both export and import; round-trips with the Mermaid live editor.
 - **VGL (declarative)** — Flying Logic-flavored declarative text.
 - **Flying Logic XML** — round-trips with Flying Logic.
 
-### Reasoning + Workshop
+### Annotations & reasoning
 
 - **Reasoning narrative** — Markdown, sentence-per-edge prose. See [Chapter 15](15-verbalisation-walkthroughs.md).
 - **Reasoning outline** — Markdown, nested-list form.
-- **CSV** — entities + edges + groups in one RFC-4180 file.
-- **Task tracker CSV** — one row per Action (step / precondition / outcome / owner / due date / status / success criteria), for pasting into Jira / Trello / Planner / Asana. Only surfaces when the doc has Action entities — a Transition Tree is the canonical source.
-- **Prerequisite plan CSV** — one row per Intermediate Objective in dependency order (objective / overcomes / depends-on / owner / due date / status / notes). Only surfaces when the doc has Intermediate Objectives — a Prerequisite Tree is the canonical source.
 - **Annotations only (.md / .txt)** — just the description bodies, for content-review workflows.
-- **EC Workshop Sheet (PDF)** — one-page PPT-style layout with guiding questions, EC-only.
-- **Risk register (CSV)** — one row per UDE in the doc, with columns `risk_id / risk / trigger / consequence / mitigation / owner / status`. The exporter walks each UDE backwards through the causal graph to find any reachable injection or desired-effect; if one exists the row is `mitigated`, otherwise `open`. Owner comes from `entity.owner` (with a back-compat fallback to `entity.attributes.owner.value` for older docs). Imports cleanly into Jira / Linear / a spreadsheet. Only surfaces in the Export picker when the doc has at least one UDE — NBR diagrams and CRTs are the canonical sources; an EC has no UDEs by construction so it's hidden there.
-- **Standalone HTML viewer** — single self-contained file.
-- **JSON** — canonical schema-versioned export; the most lossless format.
-- **Redacted JSON** — content-stripped JSON. Same structure, generic titles. Useful for sharing the *shape* of an analysis without the confidential content.
+
+### Share
+
+- **Copy read-only share link** — the whole document encoded into a URL fragment (covered below; also on the top-bar **Share** button).
 
 ## Importing back
 
@@ -86,7 +93,7 @@ At every hop you get a new tab plus a reciprocal **"Linked to"** chip in the ins
 
 ## Share links
 
-`Cmd+K → Copy read-only share link`. Generates a URL that:
+The top-bar **Share** button (or **Export…** → *Copy read-only share link*). Generates a URL that:
 
 - Has the format `https://your-tp-studio-host/#!share=<base64-gzipped-json>`.
 - Encodes the entire current document in the fragment.
@@ -97,11 +104,11 @@ Trade-offs:
 
 - **Size**: a typical 20-entity CRT lands under 2 KB compressed; a 200-entity Goal Tree might push past 8 KB and trip length limits in some email clients. A toast warns when the link exceeds ~4 KB.
 - **Visibility**: the fragment is in the receiver's browser history. Treat shared diagrams as "public enough to email" — same threat model as JSON export.
-- **Hostility defense**: Session 98 added a 5 MB ceiling on the decompressed payload to defend against gzip bombs.
+- **Hostility defense**: a 5 MB ceiling on the decompressed payload defends against gzip bombs.
 
 ## Print preview
 
-`Cmd+K → Print / Save as PDF`. Opens the **Print Preview Dialog** with:
+**Export…** → *Print / Save as PDF…*. Opens the **Print Preview Dialog** with:
 
 - **Mode picker:** Standard (full color), Workshop (bold high-contrast), Ink-saving (no fills, lighter strokes). Each renders the same diagram differently for context.
 - **Annotation appendix toggle:** include an addendum listing every entity description as a numbered footnote.
@@ -112,7 +119,7 @@ Browser print dialog opens once you click Print.
 
 ## The standalone HTML viewer
 
-The most underrated export. `Cmd+K → Export → Standalone HTML viewer` generates a single `.html` file that contains:
+The most underrated export. **Export…** → *Self-contained HTML viewer* generates a single `.html` file that contains:
 
 - The full TP Studio canvas runtime, bundled.
 - The current document, base64-embedded in a `<script type="application/json">` tag.

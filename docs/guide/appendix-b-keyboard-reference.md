@@ -1,6 +1,6 @@
 # Appendix B — Keyboard reference
 
-> *Mirrors the Help dialog (`?` icon in the TopBar, or `Cmd+K → Show keyboard shortcuts`). Reproduced here for offline reference.*
+> *Mirrors the Help dialog (the `?` icon in the TopBar, or `Cmd+K → Help & keyboard shortcuts`). Reproduced here for offline reference.*
 
 ## Canvas
 
@@ -25,7 +25,7 @@
 | --- | --- |
 | `Tab` (entity selected) | Create child below the selection |
 | `Shift+Tab` (entity selected) | Create parent above the selection |
-| `Enter` (entity selected) | Enter inline title edit |
+| `Enter` / `F2` (entity selected) | Enter inline title edit |
 | `Alt+Enter` (inside inline editor) | Newline in title |
 | `Esc` (inside inline editor) | Cancel without committing the in-progress edit |
 | `A` (edge selected) | Add an assumption to the edge |
@@ -34,6 +34,17 @@
 | `Cmd/Ctrl+Shift+→` | Select all successors |
 | `Cmd/Ctrl+Shift+←` | Select all predecessors |
 | `Cmd/Ctrl+Shift+S` | Swap the two selected entities |
+| `Cmd/Ctrl+D` | Duplicate the selection in place (doesn't touch the clipboard) |
+| `↑` / `↓` / `←` / `→` (entity selected or focused) | Walk to the connected neighbour in that direction |
+
+## On a selected group
+
+| Shortcut | Action |
+| --- | --- |
+| `Enter` | Hoist into the group |
+| `→` | Expand (if collapsed) |
+| `←` | Collapse (if expanded) |
+| `Delete` / `Backspace` | Delete the group (members preserved) |
 
 ## Document-wide
 
@@ -44,10 +55,11 @@
 | `Cmd/Ctrl+P` | Print / Save as PDF |
 | `Cmd/Ctrl+K` | Open command palette |
 | `Cmd/Ctrl+F` | Open find panel |
+| `Cmd/Ctrl+\` | Close the inspector (clears the selection) |
+| `Cmd/Ctrl+A` | Select every entity in the document |
 | `Cmd/Ctrl+,` | Open settings |
 | `Cmd/Ctrl+E` | Palette pre-filtered to Export commands |
 | `E` (no modifiers, not in text field) | Open Quick Capture |
-| `?` | Open Help dialog |
 | `Cmd/Ctrl+T` | New tab *(installed app only)* |
 | `Cmd/Ctrl+W` | Close tab *(installed app only)* |
 | `Cmd/Ctrl+1`–`9` | Switch to tab 1–9, 9 = last *(installed app only)* |
@@ -60,9 +72,8 @@
 | --- | --- |
 | `New diagram…` | Diagram type picker |
 | `Load example…` | Example picker |
-| `New from template…` | Templates library |
+| `Browse templates…` / `New from template…` | The unified Templates library |
 | `Capture snapshot` | Save a revision |
-| `Open history panel` | RevisionPanel toggle |
 | `Comments` | Review-comments panel toggle |
 | `Add comment on selection` | Comment on the selected entity / edge (or the whole diagram) |
 | `Start CLR walkthrough` | Iterate open warnings |
@@ -70,14 +81,14 @@
 | `Find core driver(s)` | Highest-reach root cause |
 | `Spawn Evaporating Cloud from selected entity` | CRT → EC pivot |
 | `Splice entity into selected edge` | Create-and-splice |
-| `Group as AND` / `OR` / `XOR` | Junctor grouping |
-| `Group selected as new group` | Generic group |
+| `Group selected edges as AND` / `OR` / `XOR` | Junctor grouping |
+| `Group selected entities` | Generic group |
 | `Move selection to Archive group` | Quick archive |
 | `Toggle EC reading guide` | EC-only |
 | `Reopen creation wizard` | If you dismissed and want it back |
 | `New tab` / `Duplicate tab` / `Close tab` / `Next tab` / `Previous tab` | Tab management (works in any browser) |
 | `Forget closed documents` | Reclaim storage from documents you've closed |
-| `Copy read-only share link` | Fragment-encoded share URL |
+| *(Share button / `Export…` → Share)* | Fragment-encoded share URL |
 | `Export` | Open the unified picker |
 
 The complete list is in the palette itself — open `Cmd+K` and scroll. Categories are visible at the right edge of each row.

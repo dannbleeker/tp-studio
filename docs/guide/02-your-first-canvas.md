@@ -79,13 +79,14 @@ A few commands worth memorizing today:
 
 | Type into palette | What it does |
 | --- | --- |
-| `New diagram` | Open the picker for fresh CRT / FRT / PRT / TT / EC / Goal Tree / S&T / Freeform docs. |
+| `New diagram` | Open the picker for fresh CRT / FRT / PRT / TT / EC / Goal Tree / S&T / NBR / Freeform docs. |
 | `Load example` | Open the picker for canned example docs in every diagram type. |
-| `New from template` | Open the curated templates library (10 specs covering Goal Trees / ECs / CRTs). |
-| `Export` | Open the unified Export Picker (PNG / SVG / JPEG / PDF / Markdown / OPML / DOT / Mermaid / VGL / Flying Logic XML). |
+| `Browse templates` | Open the unified Templates library (~69 curated starters across every diagram type; `New from template` opens the same dialog). |
+| `Export` | Open the unified Export Picker (PNG / SVG / JPEG / PDF / PPTX / Markdown / OPML / DOT / Mermaid / VGL / Flying Logic XML / share link). |
 | `Capture snapshot` | Save a revision; the History panel will then let you compare or restore. |
-| `Copy read-only share link` | Generate a URL that encodes the entire doc and load it elsewhere in read-only mode. |
 | `Show keyboard shortcuts` | The full key reference. |
+
+The read-only **share link** lives on the top-bar **Share** button (and as a card in the Export picker) — it generates a URL that encodes the entire doc and loads it elsewhere in read-only mode.
 
 ## Working with multiple documents
 
@@ -117,11 +118,11 @@ Clicking any tree card, template, or the **Build** button drops you straight int
 
 You don't save. TP Studio saves continuously to localStorage. Close the tab; reopen; your work is there.
 
-You export by opening the Export picker (`Cmd+K → Export`). The picker shows everything in three groups: Images (PNG / SVG / JPEG / PDF / print preview), Markup (Markdown / OPML / DOT / Mermaid / VGL / Flying Logic XML), and Workshop (one-page EC sheet PDF, standalone HTML viewer, JSON, reasoning narrative / outline).
+You export by opening the Export picker (`Cmd+K → Export…`, or the top-bar **Export** button). The picker groups everything into five categories: **Images** (PNG / JPEG / SVG / copy to clipboard), **Documents** (PDF / print / PPTX / standalone HTML viewer / EC workshop sheet), **Data** (JSON / CSV / OPML / DOT / Mermaid / VGL / Flying Logic), **Annotations & reasoning** (Markdown narratives and outlines), and **Share**.
 
 You share by either:
 - Exporting the standalone HTML viewer (one file, no network, open by double-clicking on any machine); or
-- Generating a read-only share link (`Cmd+K → Copy read-only share link`) — a URL that contains the whole doc encoded into its fragment.
+- Generating a read-only share link (the top-bar **Share** button) — a URL that contains the whole doc encoded into its fragment.
 
 Sharing is fully covered in [Chapter 16](16-sharing-your-work.md).
 
@@ -135,7 +136,7 @@ Five minutes. No reading.
 4. Press `Cmd+K → Capture snapshot`. Name the revision "After type change".
 5. Delete C. Notice the toast at the bottom.
 6. Press `Cmd+Z` to undo. C comes back.
-7. Open the History panel (TopBar history button on `sm+` screens, or `Cmd+K → Open history panel`). You'll see your "After type change" snapshot.
+7. Open the History panel (the TopBar history button; it folds into the ⋮ overflow on narrow windows). You'll see your "After type change" snapshot.
 
 You now know more about the surface than you can remember reading. That's the point of the chapter.
 
@@ -149,10 +150,10 @@ The hardest moment in any analysis is the empty canvas with a vague problem behi
 | A vague mess, no idea where to begin | **Rapid 3-cloud diagnosis** | `Cmd+K → Rapid 3-cloud diagnosis…`. Name three symptoms and the tug-of-war behind each; it consolidates them into one Core Cloud to work from. |
 | A brain-dump, meeting notes, a bulleted list | **Quick Capture** | Press `E` (outside a text field). Paste the indented list; each line becomes an entity, indentation becomes causal nesting. |
 | A spreadsheet of items | **CSV import** | `Cmd+K → Import… → Entities CSV`. A `title,type,parent_title` header maps rows to entities and edges. |
-| A sense that "someone's drawn this shape before" | **Templates / Pattern library** | `Cmd+K → New from template…` for the curated set, or `Pattern library…` for the broader catalogue (system archetypes, domain CRTs, the classic clouds). Load one, edit it into your situation. |
+| A sense that "someone's drawn this shape before" | **Templates** | `Cmd/Ctrl+K → Browse templates…` (or `New from template…` — same dialog). One unified library: system archetypes, domain CRTs, the classic clouds, and per-type starters. Load one, edit it into your situation. |
 | A problem you can *describe* but not draw | **The AI skill** | Describe it to Claude via the `tp-studio-import` skill — "*a CRT for why onboarding churns*" — and import the `.json` it produces ([Chapter 16](16-sharing-your-work.md)). Treat it as a first draft to scrutinise, not an answer. |
 
-All five drop you onto a populated canvas with *something* to react to — and reacting is far easier than creating from nothing. From there it's the same loop: read it aloud, scrutinise the arrows, restructure, repeat.
+All six drop you onto a populated canvas with *something* to react to — and reacting is far easier than creating from nothing. From there it's the same loop: read it aloud, scrutinise the arrows, restructure, repeat.
 
 ## Where this lives in the rest of the book
 

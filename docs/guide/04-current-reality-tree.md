@@ -143,7 +143,7 @@ Before you mark the delay, the CLR walkthrough may have surfaced a warning: *"A 
 
 ### System-archetype patterns
 
-What you just drew is one of five classical feedback patterns — *system archetypes* — that Peter Senge catalogued in *The Fifth Discipline*. TP Studio ships them as ready-to-load starters in the Pattern library (`Cmd+K → Pattern library → Load archetype`):
+What you just drew is one of five classical feedback patterns — *system archetypes* — that Peter Senge catalogued in *The Fifth Discipline*. TP Studio ships them as ready-to-load starters in the Templates library (`Cmd/Ctrl+K → Browse templates…`):
 
 - **Fixes that Fail** — a symptomatic fix relieves pressure, masking the root cause, so the problem returns worse. *Counter-intuitive lesson: treat the root cause, not the symptom.*
 - **Escalation** — two parties each respond to the other's actions by raising the stakes, amplifying the conflict. *Lesson: change the measure both sides are reacting to.*
@@ -158,10 +158,10 @@ The support team's restart spiral is a textbook Fixes that Fail: the restart is 
 ## Sidebars
 
 > **🛠 How TP Studio helps**
-> - `Cmd+K → New Current Reality Tree` to start a fresh CRT.
-> - `Cmd+K → Load example Current Reality Tree` for a 6-entity reference doc to study before drawing your own.
-> - **Inspector Type grid** with one-click switching between Effect / UDE / Root Cause / Assumption.
-> - **AND grouping**: select multiple edges → `Cmd+K → Group as AND` (or right-click → Group as AND).
+> - `Cmd+K → New diagram… → Current Reality Tree` to start a fresh CRT.
+> - `Cmd+K → Load example… → Current Reality Tree` for a 6-entity reference doc to study before drawing your own.
+> - **Inspector Type grid** with one-click switching between Effect / UDE / Root Cause. (Assumptions aren't a type — they're edge annotations, added from the Edge Inspector's Assumption Well or by pressing `A` on a selected edge.)
+> - **AND grouping**: select multiple edges → `Cmd+K → Group selected edges as AND` (or right-click → Group as AND).
 > - **`Find core driver(s)`** palette command — picks the highest-reach root cause(s).
 > - **UDE-reach badge** (Settings → Display → "Show UDE-reach badge") visualizes reach per entity.
 > - **Reverse-reach badge** shows the symmetric "root causes per UDE" count, useful for verifying that each UDE has a real cause chain rather than dangling.
@@ -187,7 +187,7 @@ The support team's restart spiral is a textbook Fixes that Fail: the restart is 
 > - You can read each chain aloud without rewording.
 > - You're ready to ask the next question: *why hasn't this been fixed already?* (That's the EC in Chapter 5.)
 
-> **✏️ Now you try.** Pick a recurring frustration on your own team. Open a CRT (`Cmd+K → New Current Reality Tree`), capture three UDEs you can actually *observe*, and build each down to a root cause with `Shift+Tab`. Run `Cmd+K → Find core driver(s)` — does the cause it picks match your gut? Read the tree aloud with **Start read-through**, then clear the CLR walkthrough. If your tree reads like a to-do list, you've drawn a plan, not a diagnosis — restart with effects, not actions.
+> **✏️ Now you try.** Pick a recurring frustration on your own team. Open a CRT (`Cmd+K → New diagram… → Current Reality Tree`), capture three UDEs you can actually *observe*, and build each down to a root cause with `Shift+Tab`. Run `Cmd+K → Find core driver(s)` — does the cause it picks match your gut? Read the tree aloud with **Start read-through**, then clear the CLR walkthrough. If your tree reads like a to-do list, you've drawn a plan, not a diagnosis — restart with effects, not actions.
 
 🔁 **Chain to next:** the CRT shows you *what* is wrong. The Evaporating Cloud shows you *why nobody has fixed it yet*.
 

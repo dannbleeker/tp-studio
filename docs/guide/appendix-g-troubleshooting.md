@@ -46,6 +46,13 @@ A finished diagram that's subtly wrong is more dangerous than an obviously unfin
 | An NBR has a forward trace but no UDE. | `nbr-no-negative-branch` | It still reads as an FRT. Follow the chain to where it turns negative ("yes, but…") and name the UDE. |
 | An NBR UDE doesn't trace back to the injection. | `nbr-ude-disconnected` | Connect the chain (injection → … → UDE) — an off-chain UDE can't inform the adopt/modify/reject call. |
 
+### Prerequisite Tree
+
+| The smell | Catches it | The fix |
+| --- | --- | --- |
+| An obstacle has no Intermediate Objective overcoming it. | `prt-obstacle-no-io` | An obstacle without an IO is a complaint — write the state that dissolves it. |
+| An IO doesn't overcome any obstacle. | `prt-io-no-obstacle` | Connect it to the obstacle it removes, or ask whether it's gold-plating. |
+
 ### Transition Tree
 
 | The smell | Catches it | The fix |
@@ -58,8 +65,18 @@ A finished diagram that's subtly wrong is more dangerous than an obviously unfin
 | The smell | Catches it | The fix |
 | --- | --- | --- |
 | More than one apex Goal. | `goalTree-multiple-goals` | One-click **Convert extras to CSFs**, or genuinely split the analysis. |
+| A CSF has no Necessary Conditions beneath it. | `goalTree-csf-no-ncs` | Add the conditions that must hold for it — a bare CSF is an assertion, not a plan. |
+| Fewer than 3, or more than 5, CSFs. | `goalTree-csf-count` | Dettmer's band is 3–5: too few misses make-or-break conditions; too many usually means some are really NCs a tier down. |
 | An S&T tactic has fewer than three assumption facets. | `st-tactic-assumptions` | Add the Necessary / Parallel / Sufficiency assumptions — the facets *are* the argument. |
 | A non-apex tactic has no children. | `st-tactic-rollup` | Decompose it into the next level, or mark it a genuine leaf. |
+
+### Feedback loops (any diagram with a cycle)
+
+| The smell | Catches it | The fix |
+| --- | --- | --- |
+| An edge's kind fights the diagram's logic (a necessity arrow in a sufficiency tree, or vice versa). | `logic-type-mismatch` | Re-read the arrow aloud in both wordings; set the kind that matches the claim. |
+| A loop reads as self-correcting where you expected a spiral (or vice versa). | `loop-polarity` | Check each edge's polarity around the loop — the R/B badge is the product of them all; one mis-signed edge flips the reading. |
+| A reinforcing loop has no time lag anywhere. | `reinforcing-no-delay` | Real feedback lags. Mark the slow edge as delayed (`//`), or dismiss if the instant reading is genuinely intended. |
 
 ## The meta-fix: read it aloud
 

@@ -69,7 +69,7 @@ The table above maps the trees onto Goldratt's focusing steps. But you rarely st
 | --- | --- | --- |
 | Symptoms everywhere, no agreement on the cause | **Current Reality Tree** (Ch 4) | It traces the symptoms back to the one or two root causes that produce most of them. |
 | A chronic tug-of-war that never resolves | **Evaporating Cloud** (Ch 5) | It surfaces the real conflict holding the situation in place, and the assumption you can break. In a hurry, the **Rapid 3-cloud diagnosis** gets you to the core conflict from three symptoms. |
-| A fix you like, but you're worried about side-effects | **Future Reality Tree** (Ch 6) | It checks the injection actually delivers — and hunts the negative branches before they bite. |
+| A fix you like, but you're worried about side-effects | **Future Reality Tree** (Ch 6) | It checks the injection actually delivers — and hunts the negative branches before they bite. When one risk deserves its own canvas, capture it as a standalone **Negative Branch Reservation** document. |
 | A goal you're blocked from reaching | **Prerequisite Tree** (Ch 7) → **Transition Tree** (Ch 8) | The PRT names the obstacles and the intermediate objectives that clear them; the TT sequences the actions. |
 | Disagreement about what "good" even means | **Goal Tree** (Ch 9) | It pins the goal and the critical success factors that have to hold for it. |
 | A multi-team strategy that has to land operationally | **Strategy & Tactics Tree** (Ch 10) | It decomposes strategy into tactics, level by level, each carrying its assumptions. |
@@ -83,13 +83,13 @@ This book uses the standard TOC vocabulary throughout. Most of these words mean 
 
 | Term | Meaning | TP Studio analogue |
 | --- | --- | --- |
-| **UDE** — Undesirable Effect | A symptom the system produces that nobody wants. The starting point of a CRT. | Entity type `undesirableEffect`, red stripe. |
+| **UDE** — Undesirable Effect | A symptom the system produces that nobody wants. The starting point of a CRT. | Entity type `ude`, red stripe. |
 | **Root Cause** | A terminal cause at the bottom of a CRT — the leverage point. | Entity type `rootCause`, amber stripe. |
 | **Effect** | An intermediate node — caused by something, causing something else. | Entity type `effect`, neutral grey stripe. |
 | **Injection** | A change you propose to make. The hypothesis you'd test. | Entity type `injection`, emerald stripe. |
 | **Desired Effect** | What the system would produce instead, after the injection lands. | Entity type `desiredEffect`, indigo stripe. |
-| **Assumption** | A claim that an arrow in the diagram depends on — and that someone could plausibly challenge. | Entity type `assumption`, violet stripe; surfaces in the AssumptionWell on EC docs. |
-| **CLR** — Categories of Legitimate Reservation | The six discipline-checks that distinguish a good causal claim from a sloppy one. | The validator system; warnings surfaced in the inspector. |
+| **Assumption** | A claim that an arrow in the diagram depends on — and that someone could plausibly challenge. | Not an entity type — an edge annotation. Added from the Assumption Well in the Edge Inspector (or press `A` on a selected edge); renders as a violet card linked to its arrow. |
+| **CLR** — Categories of Legitimate Reservation | The eight discipline-checks that distinguish a good causal claim from a sloppy one. | The validator system; warnings surfaced in the inspector. |
 | **Core Driver** | The root cause that ladders up to the most UDEs. The constraint, in CRT form. | The reach-badge value; the `Find core driver(s)` palette command. |
 | **EC** — Evaporating Cloud | A 5-box conflict diagram showing why a chronic problem is *held in place* by a real tension between two real needs. | Diagram type `ec`. |
 | **CSF** — Critical Success Factor | A must-be condition for a Goal. The middle layer of a Goal Tree. | Entity type `criticalSuccessFactor`. |
@@ -102,7 +102,8 @@ This book uses the standard TOC vocabulary throughout. Most of these words mean 
 | **TT** — Transition Tree | "How do we get there?" Action / precondition / outcome triples. | Diagram type `tt`. |
 | **S&T** — Strategy & Tactics Tree | A deployment decomposition; each node is a 5-facet card (Necessary Assumption, Strategy, Parallel Assumption, Tactic, Sufficiency Assumption). | Diagram type `st`. |
 | **Verbalisation** | Reading a diagram aloud, edge by edge, in natural language. The discipline that catches what scanning silently misses. | The Verbalisation Strip; the walkthrough overlay; the reasoning narrative export. |
-| **Browse Lock** | A read-only mode you turn on before sharing or demoing the doc to prevent accidental edits. | The lock icon in the TopBar; the `browseLocked` flag. |
+| **NBR** — Negative Branch Reservation | The "yes, but…" analysis: an injection traced forward to the unintended UDE it might produce, so you can adopt, modify, or reject the change. | Diagram type `nbr`; also a group preset inside an FRT. |
+| **Browse Lock** | A read-only mode you turn on before sharing or demoing the doc to prevent accidental edits. | ⋮ overflow → *Lock for browsing*; the `browseLocked` flag. |
 
 ## Why a tool
 

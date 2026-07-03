@@ -44,9 +44,17 @@ The full list — every implemented rule, its tier, and the diagram types it fir
 **Beyond the classical six.** Most rules map onto a category Goldratt or Dettmer named. TP Studio adds two families the classical list never did — pure build-quality checks a tool is uniquely placed to compute:
 
 - **CRT build-quality** (CRT only) — *is the tree well-formed?* A UDE with no cause feeding it; a branch that leads to no UDE; a UDE count outside the rough 3–15 band; a leading root cause that explains fewer than half the UDEs; two root causes tied for the lead (a hidden conflict — with a one-click *Spawn Evaporating Cloud*); or a UDE phrased as the absence of a solution.
-- **System-dynamics lint** (CRT / FRT / TT / NBR, where loops live) — `logic-type-mismatch` (an edge whose kind fights the diagram's logic), `loop-polarity` (a balancing loop where you'd expect a reinforcing one), `long-arrow` (a jump across ≥ 3 causal levels), and `reinforcing-no-delay` (a feedback loop with no time lag).
+- **System-dynamics lint** (where loops live) — `logic-type-mismatch` (an edge whose kind fights the diagram's logic), `loop-polarity` (a balancing loop where you'd expect a reinforcing one), `long-arrow` (a jump across ≥ 3 causal levels), and `reinforcing-no-delay` (a feedback loop with no time lag). Note there is *no* cycle warning: loops are auto-detected and the loop-closing edge simply renders as a back-edge — the acknowledged-structure reading is the default, and these lint rules interrogate the loop's dynamics instead.
 
-Neither family is a textbook CLR category — they're the reservations the tool can raise automatically, leaving the contextual judgments to you.
+Each structured diagram type also carries its own shape checks: the PRT's obstacle↔IO pairing rules (`prt-obstacle-no-io`, `prt-io-no-obstacle`), the Goal Tree's CSF coverage and count guards (`goalTree-csf-no-ncs`, `goalTree-csf-count`), the NBR's branch-integrity pair (`nbr-no-negative-branch`, `nbr-ude-disconnected`), the TT's `complete-step` and `tt-action-locus-unset`, and the S&T's facet rules (`st-tactic-assumptions`, `st-tactic-rollup`). Each is introduced in its diagram's Part-2 chapter and catalogued in Appendix C.
+
+None of these is a textbook CLR category — they're the reservations the tool can raise automatically, leaving the contextual judgments to you.
+
+## The Logic chip — the whole tree at a glance
+
+You don't have to go hunting for warnings selection by selection. The top bar carries a **Logic chip** that reads the whole diagram continuously: emerald **"Logic · all clear"** when nothing is open, amber **"Logic · N to review"** when reservations remain. Click it and the **Logic check panel** opens down the right side — every open reservation in the document, grouped by tier (**Clarity → Existence → Sufficiency**), with the open / resolved split in the header. Each row names its target and the rule that fired; clicking a row selects and centres the entity or edge it's about, and the row offers **Resolve / Reopen** in place plus a one-click remedy where the rule has one. A guided-walk stepper at the top pages through the open concerns one at a time.
+
+The same read appears outside the editor: every tree card on the Start page carries a **Logic pill** computed from the identical validation, so triage ("which trees still have logic to resolve?") happens from the workspace — the **Needs review** section is exactly that filter.
 
 ## Reading warnings
 
@@ -88,6 +96,7 @@ Don't dismiss without writing the explanation. A dismissed warning with no ratio
 ## Sidebars
 
 > **🛠 How TP Studio helps**
+> - **Logic chip** in the top bar — the whole-tree open-reservation count, one click from the Logic check panel (grouped by tier, locate-on-canvas, one-click remedies).
 > - **Per-entity / per-edge Warnings list** in the Inspector.
 > - **`Cmd+K → Start CLR walkthrough`** — modal that iterates open warnings.
 > - **One-click actions** on a subset of warnings (e.g., `convert-extra-goals-to-csfs`).

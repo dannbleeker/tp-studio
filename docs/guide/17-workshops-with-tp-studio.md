@@ -19,7 +19,7 @@ For remote workshops:
 
 ## Facilitator gestures
 
-Five gestures the facilitator uses repeatedly:
+Six gestures the facilitator uses repeatedly:
 
 1. **Zoom-up annotation.** When a participant says "wait, that one — the third one from the left," hover over the node and let the zoom-up overlay surface its full title and description. Solves the "which entity?" problem instantly.
 2. **Walkthrough overlay** (`Cmd+K → Start read-through`). When the group has been building for 20 minutes and is starting to lose the thread, switch to walkthrough. Reading the diagram aloud one edge at a time *re-centers* the group on what's been said.
@@ -41,7 +41,7 @@ This is one viable shape. Adapt to your context.
 | 1:30–2:30 | First cause chain (highest-impact UDE). Ask why. Build downward. Capture snapshot when done. | `Cmd+K → Capture snapshot` |
 | 2:30–2:45 | Break. | — |
 | 2:45–3:15 | Second cause chain. Look for convergence with the first. | — |
-| 3:15–3:45 | Find core driver. CLR walkthrough. Dismiss with notes. | `Cmd+K → Find core driver`, then `Start CLR walkthrough` |
+| 3:15–3:45 | Find core driver. CLR walkthrough. Dismiss with notes. | `Cmd+K → Find core driver(s)`, then `Start CLR walkthrough` |
 | 3:45–4:00 | Walk through final CRT. Capture final snapshot. Export reasoning narrative for distribution. | `Start read-through` then `Export → Reasoning narrative` |
 
 The EC workshop is shorter — typically 2 hours — but follows the same shape: scope, build, verbalise, validate.

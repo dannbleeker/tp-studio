@@ -61,7 +61,7 @@ A causal arrow on its own claims *sufficiency*: the cause produces the effect. B
 | **OR** | Indigo circle labeled `OR` | Any one of the inbound causes is sufficient. The set is alternative. |
 | **XOR** | Rose circle labeled `XOR` | Exactly one of the inbound causes occurs; mutually exclusive alternatives. |
 
-To group edges into a junctor: select the edges (use shift-click for multi-select), then `Cmd+K → Group as AND` (or `OR` / `XOR`). The selected edges are rewired through a single junctor circle just below the target node, with one short outgoing arrow from junctor up into the target.
+To group edges into a junctor: select the edges (use shift-click for multi-select), then `Cmd+K → Group selected edges as AND` (or `OR` / `XOR`). The selected edges are rewired through a single junctor circle just below the target node, with one short outgoing arrow from junctor up into the target.
 
 Cross-kind exclusivity: an edge belongs to at most one junctor kind. If you group an AND-grouped edge into an OR, the AND group dissolves first.
 
@@ -71,9 +71,9 @@ You'll mostly use AND. It's the conjunctive that makes a CRT honest: if "Custome
 
 Sometimes a diagram has a real cycle. Customers churning *causes* lower retention metrics, which *cause* leadership pressure on the support team, which *causes* deferred refactors, which *causes* the original "resolution time exceeds 8h", which *causes* churn. Round and round.
 
-TP Studio supports flagging an edge as a **back-edge** — a deliberate loop-closer the practitioner has acknowledged as part of the structure, rather than a CLR bug. Back-edges render with a thicker dashed stroke and a small `↻` glyph mid-edge. The cycle CLR validator suppresses its warning for any cycle whose closing edge is back-tagged.
+TP Studio treats a cycle as structure to acknowledge, not a bug to flag. Cycles are **auto-detected**: the loop-closing edge — the one running against the diagram's flow — renders as a **back-edge** automatically, with a dashed stroke and a small `↻` glyph mid-edge. There is no cycle warning to suppress; the rendering *is* the acknowledgement. What the validators do watch on a loop is its dynamics: the **loop-polarity** check reads the loop as Reinforcing (R) or Balancing (B) and badges the back-edge accordingly, and **reinforcing-no-delay** nudges you when a reinforcing loop carries no delay marker (real feedback almost always lags).
 
-To tag: select the edge, Inspector → Back-edge toggle. Or right-click → "Toggle back-edge".
+You can also tag an edge as a back-edge explicitly — to choose *which* edge closes the loop, or to name the loop: select the edge, Inspector → Back-edge toggle, or right-click → "Tag as back-edge".
 
 Most diagrams don't need back-edges. Use them when the structure is genuinely a positive or negative *reinforcing loop* (Senge's term) — a feedback structure you want to study, not a CRT cycle you accidentally drew.
 
@@ -83,7 +83,7 @@ In an Evaporating Cloud, the two "Want" entities (D and D′) are *in conflict*.
 
 TP Studio represents this conflict with a **mutex edge** between D and D′: rendered red with a lightning-bolt (⚡) glyph in the middle. It's the only edge in the diagram that's bidirectional in meaning ("they conflict" rather than "A causes B").
 
-The `ec-missing-conflict` validator fires on any EC document until at least one want↔want edge is flagged as `isMutualExclusion`. Tag it via Edge Inspector → Mutual exclusion, or right-click → Toggle mutual exclusion.
+The `ec-missing-conflict` validator fires on any EC document until at least one want↔want edge is flagged as `isMutualExclusion`. Tag it via the Edge Inspector's **Mutual exclusion (EC)** checkbox (it appears when both endpoints are Wants).
 
 ## Locus
 
@@ -171,7 +171,7 @@ S&T             — 5-facet cards.          Top-down strategic deployment.
 
 Edge polarity:  default • positive • negative (−) • zero (∅)
 Junctors:       AND (violet) • OR (indigo) • XOR (rose)
-Back-edge:      thick dashed + ↻ glyph
+Back-edge:      dashed + ↻ glyph (auto-detected; R/B badge shows loop polarity)
 Mutex (EC):     red + ⚡ glyph
 Locus:          C (emerald) • I (amber) • E (neutral)
 Entity state:   T (true) • F (false) • ? (unknown/disputed) • dashed ring = speculated

@@ -8,7 +8,7 @@ A **group** in TP Studio is a labeled rectangle around a set of entities. It's s
 
 Three operations:
 
-- **Create a group:** Multi-select entities (shift-click or marquee), then `Cmd+K → Group selected as new group`. The dialog asks for a title.
+- **Create a group:** Multi-select entities (shift-click or marquee), then `Cmd+K → Group selected entities`. Rename it from the Group Inspector.
 - **Nest groups:** A group's Group Inspector exposes a "Nest into parent group" picker. Groups can hold sub-groups indefinitely.
 - **Collapse a group:** Click the chevron on the group title bar OR Group Inspector → Collapse. The group's contents disappear; the group renders as a single "collapsed-root card" the user can re-expand.
 
@@ -16,32 +16,28 @@ Three operations:
 
 | Preset | Color | Use when… |
 | --- | --- | --- |
-| **Negative Branch** | Slate | The grouped entities are a NB sub-tree (FRT-specific). |
-| **Positive Reinforcing Loop** | Emerald | The grouped entities form a reinforcing loop. |
+| **Negative Branch** | Rose | The grouped entities are a NB sub-tree (FRT-specific). |
+| **Positive Reinforcing Loop** | Emerald | The grouped entities form a reinforcing loop — pair with back-edge tagging on the closing edge. |
 | **Archive** | Slate (collapsed by default) | The grouped entities have been trimmed out of the active analysis but you want to preserve them. |
-| **Step** | Indigo | Marking a step of a multi-stage method (often used in S&T trees). |
-| **NSP Block** | Amber | Marking "Negative Side Product" — a class of negative branch. |
+| **Step** | Indigo | Wrapping one (Action + Precondition → Outcome) triple as a unit in a Transition Tree. |
+| **NSP Block** | Amber | An S&T tree's Necessary condition / Sufficient action / Parallel assumption triple. |
 
 Use them. They keep your diagrams legible to other TOC practitioners who read your work.
 
-🛠 **`Cmd+K → Move selection to Archive group`** is a one-shot that finds the existing Archive group or creates one (with the Archive preset) and moves the selected entities into it. Useful for cleaning a working diagram before presenting.
+🛠 **`Cmd+K → Move selection to Archive group`** is a one-shot that finds the existing Archive group or creates one (with the Archive preset) and moves the selected entities into it. Useful for cleaning a working diagram before presenting. Any existing group can also be **archived in place** — Group Inspector → *Archive (preserve, hide)*, or palette → *Archive / unarchive selected group* — which dims it out of the way; *Show / hide archived groups* brings archived groups back when you need to re-read the path-not-taken.
 
 ## Assumptions
 
-Assumptions are first-class entities (since schema v7). They sit beside the diagram — not on the causal path — and attach to a specific edge they pertain to.
-
-**On a CRT/FRT:** Assumptions appear as a small violet pill on the edge they pertain to. The pill is clickable; clicking it selects the edge and opens the Inspector to the assumption.
-
-**On an EC:** Assumptions live in the **AssumptionWell**, an Inspector tab specifically for the EC. Each assumption record carries:
+Assumptions are **edge annotations** — records attached to the specific arrow they pertain to, sitting beside the diagram rather than on the causal path. They are deliberately *not* an entity type: you won't find "Assumption" in any Type grid. You add one from the **Assumption Well** in the Edge Inspector (or press `A` with the edge selected), and it renders as a violet annotation card near its edge, with a faint dashed line tying the card to the arrow it challenges. Double-click the card (or use the Well) to edit it. The Well works the same on every diagram type — EC, CRT, FRT, all of them. Each assumption record carries:
 
 - A title (the claim).
-- A `status`: `open`, `valid`, `invalid`.
+- A `status` you pick directly: `unexamined`, `valid`, `invalid`, or `challengeable`.
 - A free-text rationale (description).
 - A link to a related injection (when valid: false → "and here's the fix").
 - An `implemented` flag (used in the InjectionWorkbench for FRT carry-forward).
 - A **kind** sub-type — `Necessary`, `Parallel`, `Sufficient`, or untyped. A compact chip cycles through the three roles plus untyped, mirroring the S&T facet vocabulary ([Chapter 10](10-strategy-and-tactics-tree.md)): a *necessary* assumption is the trigger that makes acting unavoidable, a *parallel* assumption is why *this* approach over the alternatives, a *sufficient* assumption is the bet that the chosen tactic actually delivers. Tagging assumptions by kind lets an S&T reviewer see at a glance which part of each micro-argument an assumption is propping up.
 
-The status field is what turns the assumption list from a brainstorm into a decision record. *Open* = "we haven't decided yet"; *valid* = "we've concluded this assumption holds"; *invalid* = "we've concluded this assumption is wrong" → this is where the cloud evaporates.
+The status field is what turns the assumption list from a brainstorm into a decision record. *Unexamined* = "we haven't decided yet"; *valid* = "we've concluded this assumption holds"; *invalid* = "we've concluded this assumption is wrong" → this is where the cloud evaporates; *challengeable* = "worth attacking" → it lights up the Injection Workbench.
 
 🛠 **Press `A`** with an edge selected to add an assumption to that edge.
 
@@ -50,13 +46,13 @@ The status field is what turns the assumption list from a brainstorm into a deci
 An injection is an entity of type `Injection`. It represents a proposed change — a thing you would *do* to the system. Injections show up:
 
 - In FRTs as the bottom-of-tree entities driving the desired-effect chain.
-- In ECs as the resolution to a broken assumption (linked from the AssumptionWell).
+- In ECs as the resolution to a broken assumption (linked from the Assumption Well).
 - In TT and PRT as the top-of-tree thing being decomposed.
 
 Two Inspector flags worth knowing:
 
 - **`implemented`**: a per-injection toggle. The **InjectionWorkbench** lists all injections in a doc; toggling `implemented` marks one as "done", visually distinct. Useful for tracking rollout progress against an FRT.
-- **Linked assumption**: when an injection was drafted as a response to a `valid: false` assumption, the link is stored explicitly so the AssumptionWell and the InjectionWorkbench cross-reference.
+- **Linked assumption**: when an injection was drafted as a response to an invalid assumption, the link is stored explicitly so the Assumption Well and the InjectionWorkbench cross-reference.
 
 ### The injection flower
 
@@ -68,7 +64,7 @@ In Cohen's *TP Basics* an injection is never vetted from one angle. You probe it
 
 > **🛠 How TP Studio helps**
 > - **Group presets** (`Cmd+K → Group inspector → Preset`).
-> - **AssumptionWell** in the EC Inspector — first-class assumption records with status + injection links.
+> - **Assumption Well** in the Edge Inspector (every diagram type) — per-edge assumption records with status + injection links.
 > - **InjectionWorkbench** in the EC Inspector — listing + status of all injections in the doc.
 > - **`View the injection flower`** — gathers one injection's cross-document links into Desired effects / Negative branch / Plan petals (+ Other links) and shows "N of 3 sides developed."
 > - **`A` shortcut** with an edge selected — adds an assumption.
