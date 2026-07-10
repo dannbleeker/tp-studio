@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-06T11:06:56.108Z",
-  "commit": "89eaf10",
+  "generatedAt": "2026-07-10T08:23:47.597Z",
+  "commit": "cf1c16d",
   "headline": {
-    "linesTsJs": 138008,
-    "tests": 4706,
-    "lineCoveragePct": 95.6,
-    "commits": 972,
-    "ageDays": 55,
-    "trackedFiles": 1105,
+    "linesTsJs": 140000,
+    "tests": 4710,
+    "lineCoveragePct": 95.68,
+    "commits": 974,
+    "ageDays": 59,
+    "trackedFiles": 1126,
     "featureManualPct": 99.6,
-    "featureBookPct": 66.1,
-    "featureExamplePct": 24.5
+    "featureBookPct": 65.8,
+    "featureExamplePct": 24.4
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 512,
-      "lines": 68302
+      "files": 533,
+      "lines": 70228
     },
     {
       "category": "Unit tests",
       "files": 407,
-      "lines": 63295
+      "lines": 63361
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.6,
-      "covered": 13133,
-      "total": 13737
+      "pct": 95.68,
+      "covered": 13398,
+      "total": 14002
     },
     "statements": {
-      "pct": 93.09,
-      "covered": 14991,
-      "total": 16103
+      "pct": 93.2,
+      "covered": 15256,
+      "total": 16368
     },
     "functions": {
-      "pct": 92.74,
-      "covered": 2900,
-      "total": 3127
+      "pct": 92.86,
+      "covered": 2955,
+      "total": 3182
     },
     "branches": {
-      "pct": 83.69,
-      "covered": 8688,
+      "pct": 83.68,
+      "covered": 8687,
       "total": 10380
     }
   },
   "tests": {
-    "unit": 4610,
+    "unit": 4614,
     "e2e": 96,
-    "durationMs": 276720,
+    "durationMs": 265147,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11580
-      },
-      {
-        "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5828
+        "ms": 11267
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5467
+        "ms": 5241
+      },
+      {
+        "file": "tests/components/EntityInspector.test.tsx",
+        "ms": 5220
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 3242
+        "ms": 2689
       },
       {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2826
+        "file": "tests/components/CommandPalette.test.tsx",
+        "ms": 2256
       }
     ]
   },
@@ -101,13 +101,17 @@
     "exporters": 14,
     "diagramTypes": 9,
     "clrCategories": 7,
-    "libraryPatterns": 59,
+    "libraryPatterns": 80,
     "commands": 100
   },
   "footprint": {
     "depsProd": 15,
     "depsDev": 32,
     "biggestFiles": [
+      {
+        "name": "domain/patterns/index.ts",
+        "lines": 749
+      },
       {
         "name": "services/exporters/pdfExport.ts",
         "lines": 688
@@ -123,10 +127,6 @@
       {
         "name": "store/uiSlice/preferencesSlice.ts",
         "lines": 604
-      },
-      {
-        "name": "domain/patterns/index.ts",
-        "lines": 573
       }
     ]
   },
@@ -195,26 +195,26 @@
     "nonNull": 105
   },
   "bundle": {
-    "jsGzipKb": 808.5,
+    "jsGzipKb": 815,
     "cssGzipKb": 19.4,
-    "totalGzipKb": 828,
+    "totalGzipKb": 834.4,
     "budgetKb": 193.4,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 55661,
     "chapters": 25,
-    "appLoc": 68302,
-    "docToCodeRatio": 0.81
+    "appLoc": 70228,
+    "docToCodeRatio": 0.79
   },
   "featureCoverage": {
-    "total": 233,
-    "manual": 232,
+    "total": 234,
+    "manual": 233,
     "manualPct": 99.6,
     "book": 154,
-    "bookPct": 66.1,
+    "bookPct": 65.8,
     "bookExample": 57,
-    "bookExamplePct": 24.5,
+    "bookExamplePct": 24.4,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -297,8 +297,8 @@
         "book": 5
       },
       "Patterns": {
-        "total": 4,
-        "manual": 4,
+        "total": 5,
+        "manual": 5,
         "book": 3
       },
       "Start": {
@@ -361,6 +361,11 @@
         }
       ],
       "noBook": [
+        {
+          "id": "patterns-goldratt-set",
+          "name": "Goldratt canon + published-case patterns",
+          "since": 193
+        },
         {
           "id": "a11y-reduced-motion",
           "name": "Honours OS reduce-motion setting",
@@ -761,17 +766,17 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 55,
-    "commits": 972,
-    "commits7d": 61,
+    "ageDays": 59,
+    "commits": 974,
+    "commits7d": 5,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 734
+        "count": 735
       },
       {
         "name": "github-actions[bot]",
-        "count": 222
+        "count": 223
       },
       {
         "name": "Claude",
@@ -783,9 +788,9 @@
       }
     ],
     "churn30d": {
-      "added": 54482,
-      "removed": 13144
+      "added": 25964,
+      "removed": 8567
     },
-    "changelogEntries": 371
+    "changelogEntries": 372
   }
 }
