@@ -39,43 +39,64 @@ import type { DiagramType, TPDocument } from '../types';
 import { buildPatternCloudCore } from './cloud-core';
 import { buildPatternCloudFirefighting } from './cloud-firefighting';
 import { buildPatternCloudUDE } from './cloud-ude';
+import { buildPatternCRTAlcoholAvailability } from './crt-alcohol-availability';
+import { buildPatternCRTCommodityPriceTrap } from './crt-commodity-price-trap';
 import { buildPatternCRTCostAccounting } from './crt-cost-accounting';
 import { buildPatternCRTEngineeringVelocity } from './crt-engineering-velocity';
 import { buildPatternCRTErodingGoals } from './crt-eroding-goals';
 import { buildPatternCRTEscalation } from './crt-escalation';
+import { buildPatternCRTFailingPlant } from './crt-failing-plant';
 import { buildPatternCRTFixesThatFail } from './crt-fixes-that-fail';
+import { buildPatternCRTForecastCommittedFashion } from './crt-forecast-committed-fashion';
 import { buildPatternCRTInventoryTurnsFalling } from './crt-inventory-turns-falling';
 import { buildPatternCRTMultiProjectBottleneck } from './crt-multi-project-bottleneck';
 import { buildPatternCRTSalesPipelineStall } from './crt-sales-pipeline-stall';
 import { buildPatternCRTShiftingTheBurden } from './crt-shifting-the-burden';
 import { buildPatternCRTTonsPerHour } from './crt-tons-per-hour';
+import { buildPatternCRTWhyProjectsSlip } from './crt-why-projects-slip';
+import { buildPatternECAlcoholPolicy } from './ec-alcohol-policy';
 import { buildPatternECBatchSize } from './ec-batch-size';
 import { buildPatternECCostVsThroughput } from './ec-cost-vs-throughput';
 import { buildPatternECDelegation } from './ec-delegation';
+import { buildPatternECDivestOrGrow } from './ec-divest-or-grow';
 import { buildPatternECEfratsChangeCloud } from './ec-efrats-change-cloud';
+import { buildPatternECForecastVsReact } from './ec-forecast-vs-react';
 import { buildPatternECInventoryVsAvailability } from './ec-inventory-vs-availability';
 import { buildPatternECPricing } from './ec-pricing';
 import { buildPatternECProfitSpendVsSave } from './ec-profit-spend-vs-save';
 import { buildPatternECProjectTaskSafety } from './ec-project-task-safety';
 import { buildPatternECSpeakUpVsStaySafe } from './ec-speak-up-vs-stay-safe';
 import { buildPatternECSpecialistVsGeneralist } from './ec-specialist-vs-generalist';
+import { buildPatternECTeenagerTrip } from './ec-teenager-trip';
 import { buildPatternECTransformationVsQuarter } from './ec-transformation-vs-quarter';
+import { buildPatternFRTAlcoholPolicyMix } from './frt-alcohol-policy-mix';
+import { buildPatternFRTCriticalChain } from './frt-critical-chain';
 import { buildPatternFRTDbrScheduling } from './frt-dbr-scheduling';
 import { buildPatternFRTLimitsToGrowth } from './frt-limits-to-growth';
+import { buildPatternFRTMarketOffer } from './frt-market-offer';
+import { buildPatternFRTPlantTurnaround } from './frt-plant-turnaround';
 import { buildPatternFRTPricingExperiment } from './frt-pricing-experiment';
+import { buildPatternFRTPullReplenishment } from './frt-pull-replenishment';
 import { buildPatternFRTScheduleAdherence } from './frt-schedule-adherence';
 import { buildPatternFRTTeamOkrs } from './frt-team-okrs';
 import { buildPatternFRTWipCap } from './frt-wip-cap';
+import { buildPatternGoalTreeAlcoholPolicy } from './goalTree-alcohol-policy';
 import { buildPatternGoalTreeEffectiveSalesTeam } from './goalTree-effective-sales-team';
 import { buildPatternGoalTreeITFunction } from './goalTree-it-function';
+import { buildPatternGoalTreeMoneyNowAndFuture } from './goalTree-money-now-and-future';
 import { buildPatternGoalTreeSubscriptionBusiness } from './goalTree-subscription-business';
 import { buildPatternGoalTreeSustainableProductOrg } from './goalTree-sustainable-product-org';
 import { buildPatternGoalTreeTrustworthyMl } from './goalTree-trustworthy-ml';
 import { buildPatternNBRAggressiveDeadlines } from './nbr-aggressive-deadlines';
+import { buildPatternNBRAlcoholBan } from './nbr-alcohol-ban';
 import { buildPatternNBRHiringFreeze } from './nbr-hiring-freeze';
+import { buildPatternNBRMarketOffer } from './nbr-market-offer';
 import { buildPatternNBROpenSourceRelease } from './nbr-open-source-release';
 import { buildPatternNBROutsourcedSupport } from './nbr-outsourced-support';
+import { buildPatternNBRRobotEfficiencies } from './nbr-robot-efficiencies';
+import { buildPatternPRTAlcoholBanRollout } from './prt-alcohol-ban-rollout';
 import { buildPatternPRTDatabaseMigration } from './prt-database-migration';
+import { buildPatternPRTMarketOfferRollout } from './prt-market-offer-rollout';
 import { buildPatternPRTNewMarketEntry } from './prt-new-market-entry';
 import { buildPatternPRTPerformanceReviews } from './prt-performance-reviews';
 import { buildPatternPRTZeroDefects } from './prt-zero-defects';
@@ -153,6 +174,44 @@ const CORE_PATTERNS: Pattern[] = [
     hint: "Goldratt's cost-world trap as a CRT — a fully-loaded product cost sprays UDEs (profitable products dropped, good orders rejected, inventory built to absorb overhead, net profit stalls while local metrics look healthy). ABC inherits the same root cause; pairs with the Cost-vs-Throughput cloud.",
     diagramType: 'crt',
     build: buildPatternCRTCostAccounting,
+  },
+  // Goldratt canon + published-case set (Session 193) — book-derived diagrams
+  // (abstracted, legally-safe wording; lineage in each file's TSDoc) plus the
+  // Mabin & Cavana 2024 open-access public-policy suite.
+  {
+    id: 'crt-failing-plant',
+    label: 'The failing plant',
+    hint: 'A retrospective CRT of the plant diagnosed in The Goal — efficiency worship floods the floor with WIP, orders run late while inventory eats the cash, and closure is months away. Reversed by the constraint-turnaround FRT.',
+    diagramType: 'crt',
+    build: buildPatternCRTFailingPlant,
+  },
+  {
+    id: 'crt-commodity-price-trap',
+    label: 'Commodity price trap',
+    hint: "The market CRT behind It's Not Luck — identical offers plus surplus capacity leave price as the only lever, until winning an order stops paying. The exit is the market-offer FRT, not deeper discounts.",
+    diagramType: 'crt',
+    build: buildPatternCRTCommodityPriceTrap,
+  },
+  {
+    id: 'crt-why-projects-slip',
+    label: 'Why projects slip',
+    hint: "Critical Chain's diagnosis as a CRT — hidden per-task safety invites late starts, per-task judging sits on early finishes, and multitasking stretches every path; padding grows and projects still overrun.",
+    diagramType: 'crt',
+    build: buildPatternCRTWhyProjectsSlip,
+  },
+  {
+    id: 'crt-forecast-committed-fashion',
+    label: 'Forecast-committed fashion',
+    hint: "The apparel analysis from The Choice — commit a season to a long-lead forecast and both tails bite: sell-outs on the winners, markdowns on the rest, and distorted sell-through trains next season's forecast.",
+    diagramType: 'crt',
+    build: buildPatternCRTForecastCommittedFashion,
+  },
+  {
+    id: 'crt-alcohol-availability',
+    label: 'Public-policy CRT (alcohol availability)',
+    hint: "Paraphrased from Mabin & Cavana's open-access NZ supermarket-alcohol case (System Dynamics Review, 2024) — proof the TP tools work on public policy, not just business.",
+    diagramType: 'crt',
+    build: buildPatternCRTAlcoholAvailability,
   },
   // System archetypes (Session 179) — Senge's recurring dynamics as CRTs, each a
   // feedback loop the R/B badge reads. See docs/EXTERNAL_TP_SOURCE_REVIEW.md (E1).
@@ -291,6 +350,35 @@ const CORE_PATTERNS: Pattern[] = [
     diagramType: 'ec',
     build: buildPatternECPricing,
   },
+  // Goldratt canon + published-case set (Session 193).
+  {
+    id: 'ec-divest-or-grow',
+    label: 'Divest or grow (conglomerate cloud)',
+    hint: "The spine conflict of It's Not Luck — the board needs cash and credit standing now (sell the subsidiaries) while the group's future needs them kept and grown. Broken by making them too valuable to dump.",
+    diagramType: 'ec',
+    build: buildPatternECDivestOrGrow,
+  },
+  {
+    id: 'ec-teenager-trip',
+    label: 'Parent vs teenager (everyday cloud)',
+    hint: "The at-home clouds of It's Not Luck — independence vs safety under one family goal; it breaks on the assumptions of the safety arrow, not by winning the argument.",
+    diagramType: 'ec',
+    build: buildPatternECTeenagerTrip,
+  },
+  {
+    id: 'ec-forecast-vs-react',
+    label: 'Forecast vs react (fashion supply)',
+    hint: "The Choice's apparel conflict — cheap early commitment vs producing to real demand, both serving one profitable season. Breaks on the 'lead times are fixed' assumption; pairs with the forecast-committed CRT.",
+    diagramType: 'ec',
+    build: buildPatternECForecastVsReact,
+  },
+  {
+    id: 'ec-alcohol-policy',
+    label: 'Public-policy cloud (alcohol sales)',
+    hint: "The policy conflict from Mabin & Cavana's NZ case (2024), paraphrased — harm reduction vs retail viability; the published injection moves the sales to a separate store nearby so both needs hold.",
+    diagramType: 'ec',
+    build: buildPatternECAlcoholPolicy,
+  },
 
   // ── FRT ────────────────────────────────────────────────────────────
   {
@@ -334,6 +422,42 @@ const CORE_PATTERNS: Pattern[] = [
     hint: 'The FRT counterpart to the tons-per-hour CRT — swap the local measure for finishing-schedule adherence; the right mix is poured, WIP drains, inventory falls, orders ship on time. AND on the on-time effect.',
     diagramType: 'frt',
     build: buildPatternFRTScheduleAdherence,
+  },
+  // Goldratt canon + published-case set (Session 193).
+  {
+    id: 'frt-plant-turnaround',
+    label: 'Constraint turnaround (five focusing steps)',
+    hint: "The Goal's turnaround as an FRT — exploit the bottleneck, subordinate release to its pace; lateness, WIP, and losses reverse until the market rewards the plant. Complements the DBR FRT with the management arc.",
+    diagramType: 'frt',
+    build: buildPatternFRTPlantTurnaround,
+  },
+  {
+    id: 'frt-market-offer',
+    label: 'Un-refusable market offer',
+    hint: "The market-offer FRT from It's Not Luck — stop selling the unit, start solving the buyer's stock problem: consumption-based supply beats any discount. Pairs with the commodity-trap CRT and its NBR.",
+    diagramType: 'frt',
+    build: buildPatternFRTMarketOffer,
+  },
+  {
+    id: 'frt-pull-replenishment',
+    label: 'Pull replenishment (distribution)',
+    hint: "Goldratt's distribution solution — factory-side in It's Not Luck, retail-side in Isn't It Obvious? — hold stock centrally, replenish daily to consumption; availability rises while inventory and write-offs fall.",
+    diagramType: 'frt',
+    build: buildPatternFRTPullReplenishment,
+  },
+  {
+    id: 'frt-critical-chain',
+    label: 'Critical-chain buffering',
+    hint: "Critical Chain's solution — pool the safety into one project buffer, hand off like relay runners, steer by buffer burn; the plan shortens and the date becomes a promise. Completes the why-projects-slip CRT.",
+    diagramType: 'frt',
+    build: buildPatternFRTCriticalChain,
+  },
+  {
+    id: 'frt-alcohol-policy-mix',
+    label: 'Policy-mix FRT (alcohol)',
+    hint: "The future-reality branch of Mabin & Cavana's NZ case (2024), paraphrased — the adjacent-store injection plus four policy levers (taxes, minimum prices, purchase limits, warnings) cut harm without wrecking retail.",
+    diagramType: 'frt',
+    build: buildPatternFRTAlcoholPolicyMix,
   },
   // System archetype (Session 179, E1) — the one FRT archetype: a balancing (B)
   // limit on a reinforcing growth engine.
@@ -380,6 +504,21 @@ const CORE_PATTERNS: Pattern[] = [
     hint: 'Quality-program PRT — culture, measurement, supplier-drift, and ECO obstacles to consistent zero-defect shipping.',
     diagramType: 'prt',
     build: buildPatternPRTZeroDefects,
+  },
+  // Goldratt canon + published-case set (Session 193).
+  {
+    id: 'prt-market-offer-rollout',
+    label: 'Market-offer rollout',
+    hint: "The implementation half of It's Not Luck — an offer nobody refuses still has to clear a price-trained sales force, long-run habits, sceptical first buyers, and working-capital rules. One IO per obstacle.",
+    diagramType: 'prt',
+    build: buildPatternPRTMarketOfferRollout,
+  },
+  {
+    id: 'prt-alcohol-ban-rollout',
+    label: 'Alcohol-ban rollout',
+    hint: "The implementation PRT from Mabin & Cavana's NZ case (2024), paraphrased and lightly condensed — legislation, convenience, retail resistance, public attitudes, and visitor awareness each get an IO.",
+    diagramType: 'prt',
+    build: buildPatternPRTAlcoholBanRollout,
   },
 
   // ── TT ─────────────────────────────────────────────────────────────
@@ -455,6 +594,28 @@ const CORE_PATTERNS: Pattern[] = [
     diagramType: 'nbr',
     build: buildPatternNBROpenSourceRelease,
   },
+  // Goldratt canon + published-case set (Session 193).
+  {
+    id: 'nbr-robot-efficiencies',
+    label: 'Automation efficiency NBR',
+    hint: "The automation lesson of The Goal as an NBR — a local efficiency number improves while WIP and carrying cost climb and not one extra order ships. Mitigated by running the asset to the bottleneck's schedule.",
+    diagramType: 'nbr',
+    build: buildPatternNBRRobotEfficiencies,
+  },
+  {
+    id: 'nbr-market-offer',
+    label: 'Market-offer NBR',
+    hint: "The reservation against It's Not Luck's consumption-based offer — the risk lifted off the buyer lands on your books and changeovers load the plant. Trimmed with a consumption floor plus constraint-aware scheduling.",
+    diagramType: 'nbr',
+    build: buildPatternNBRMarketOffer,
+  },
+  {
+    id: 'nbr-alcohol-ban',
+    label: 'Alcohol-ban NBR',
+    hint: "The published negative branch from Mabin & Cavana's NZ case (2024), paraphrased — a bare ban shifts purchases to liquor outlets, so consumption and harm can rise. Trimmed by the adjacent-store injection plus price guards.",
+    diagramType: 'nbr',
+    build: buildPatternNBRAlcoholBan,
+  },
 
   // ── Goal Tree ─────────────────────────────────────────────────────
   {
@@ -498,6 +659,21 @@ const CORE_PATTERNS: Pattern[] = [
     hint: "IT-function Goal Tree (from Dann's 2020 article) — a build-and-implement value arm and an efficient-operation arm, under a financial-restriction boundary.",
     diagramType: 'goalTree',
     build: buildPatternGoalTreeITFunction,
+  },
+  // Goldratt canon + published-case set (Session 193).
+  {
+    id: 'goalTree-money-now-and-future',
+    label: 'Make money now and in the future (T/I/OE)',
+    hint: "Goldratt's goal and three measures from The Goal in Dettmer's Goal-Tree format (the tree is Dettmer's tool, after Cohen's IO Map) — throughput, inventory, and operating expense as CSFs with constraint-focused NCs.",
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreeMoneyNowAndFuture,
+  },
+  {
+    id: 'goalTree-alcohol-policy',
+    label: 'Public-policy Goal Tree (alcohol)',
+    hint: 'A Goal Tree for the NZ alcohol case, paraphrased after Mabin & Cavana (2024) — national wellbeing at the apex; harm reduction, a viable retail economy, and public acceptance as the showstopper CSFs.',
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreeAlcoholPolicy,
   },
 
   // ── S&T ───────────────────────────────────────────────────────────

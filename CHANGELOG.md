@@ -2,6 +2,52 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 193 — Goldratt canon + published-case pattern set (21 new templates, 69 → 90)
+
+A deep-research pass first established what can honestly be derived from the TOC
+literature, then shipped it: 21 curated patterns in `src/domain/patterns/`, wired
+into the unified Templates library.
+
+**Research findings that shaped the set** (adversarially verified, multi-source):
+the five classic TP tools postdate *The Goal* — they debut as a codified suite in
+*It's Not Luck* (1994), with the EC first published in the 1990 non-fiction *What
+Is This Thing Called TOC* — so all *The Goal* / *Critical Chain* diagrams are
+labelled **retrospective reconstructions** in their TSDoc. The Goal Tree is
+Dettmer's post-2002 tool (after Oded Cohen's IO Map) and the S&T tree appears in
+no Goldratt novel, so the T/I/OE Goal Tree credits Goldratt for content and
+Dettmer/Cohen for form, and no new S&T or TT patterns were attempted (no
+node-complete published example of either exists — even Mabin & Cavana 2024
+omits both).
+
+**The sets:**
+- ***It's Not Luck*** (the novel that showcases the tools): `ec-divest-or-grow`,
+  `crt-commodity-price-trap`, `frt-market-offer` + `nbr-market-offer` +
+  `prt-market-offer-rollout` (the un-refusable-offer trilogy),
+  `frt-pull-replenishment` (also crediting *Isn't It Obvious?*), and the
+  `ec-teenager-trip` everyday cloud.
+- ***The Goal*** (retrospective): `crt-failing-plant`, `frt-plant-turnaround`,
+  `nbr-robot-efficiencies`, `goalTree-money-now-and-future` (T/I/OE).
+- ***Critical Chain***: `crt-why-projects-slip`, `frt-critical-chain`.
+- ***The Choice***: `crt-forecast-committed-fashion`, `ec-forecast-vs-react`.
+- **Mabin & Cavana 2024 public-policy suite** (*System Dynamics Review* 40(4),
+  open access; the only node-complete published TP analysis found): CRT, EC,
+  Goal Tree, NBR, FRT, and PRT on the NZ supermarket-alcohol question —
+  `crt-alcohol-availability`, `ec-alcohol-policy`, `goalTree-alcohol-policy`,
+  `nbr-alcohol-ban`, `frt-alcohol-policy-mix`, `prt-alcohol-ban-rollout`.
+
+**Legal posture** (researched against *Twin Peaks v. PIL* / *Nichols*, which
+killed scene-level paraphrase as an option): every node text is original
+abstracted wording; no character or company names from the novels; TSDoc
+references the books factually without retelling scenes; the Mabin & Cavana
+(CC BY-NC-ND) and Gupta & Kerrick material is paraphrased, never copied, with
+citation. `ec-project-task-safety`'s TSDoc now cites Gupta & Kerrick (JITIM
+23(3/4), 2014) as independent published validation of its cloud.
+
+Tests: registry-guard block pins all 21 ids + structural spot-checks (condensed
+alcohol PRT 11/10-necessity, alcohol NBR shape, failing-plant double-AND). Docs:
+USER_GUIDE Templates-library section + book ch. 2 count, `features.json`
+(`patterns-goldratt-set`, reviewedThroughSession → 193).
+
 ## Easter eggs (remote session) — Goldratt's dice game + the cloud that actually evaporates
 
 Two hidden rewards for people who know their TOC lore. Deliberately

@@ -81,7 +81,7 @@ A few commands worth memorizing today:
 | --- | --- |
 | `New diagram` | Open the picker for fresh CRT / FRT / PRT / TT / EC / Goal Tree / S&T / NBR / Freeform docs. |
 | `Load example` | Open the picker for canned example docs in every diagram type. |
-| `Browse templates` | Open the unified Templates library (~69 curated starters across every diagram type; `New from template` opens the same dialog). |
+| `Browse templates` | Open the unified Templates library (~90 curated starters across every diagram type; `New from template` opens the same dialog). |
 | `Export` | Open the unified Export Picker (PNG / SVG / JPEG / PDF / PPTX / Markdown / OPML / DOT / Mermaid / VGL / Flying Logic XML / share link). |
 | `Capture snapshot` | Save a revision; the History panel will then let you compare or restore. |
 | `Show keyboard shortcuts` | The full key reference. |

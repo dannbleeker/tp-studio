@@ -11,6 +11,13 @@ import { buildECPattern } from './ec-shared';
  * local safety sums to project safety. Injection: cut task estimates, aggregate
  * the safety into a shared project / feeding buffer, and manage by buffer
  * consumption rather than by per-task due dates.
+ *
+ * Published validation: Gupta & Kerrick, *Journal of International Technology
+ * and Information Management* 23(3/4), 2014, work the same contingency-padding
+ * conflict as a complete cloud — five entities, five surfaced assumptions
+ * under the C→D′ arrow, and an injection re-shaping how delivery commitments
+ * are evaluated. Independent confirmation of this pattern's shape; wording
+ * here is TP Studio's own.
  */
 export const buildPatternECProjectTaskSafety = (): TPDocument =>
   buildECPattern({

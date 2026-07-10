@@ -137,6 +137,72 @@ describe("goalTree-it-function (Dann's 2020 IT-function article)", () => {
   });
 });
 
+describe('Goldratt canon + published-case set (Session 193)', () => {
+  it('registers all 21 patterns of the set', () => {
+    const ids = [
+      // It's Not Luck (+ Isn't It Obvious? for pull replenishment)
+      'ec-divest-or-grow',
+      'crt-commodity-price-trap',
+      'frt-market-offer',
+      'nbr-market-offer',
+      'ec-teenager-trip',
+      'prt-market-offer-rollout',
+      'frt-pull-replenishment',
+      // The Goal (retrospective reconstructions)
+      'crt-failing-plant',
+      'frt-plant-turnaround',
+      'nbr-robot-efficiencies',
+      'goalTree-money-now-and-future',
+      // Critical Chain
+      'crt-why-projects-slip',
+      'frt-critical-chain',
+      // The Choice
+      'crt-forecast-committed-fashion',
+      'ec-forecast-vs-react',
+      // Mabin & Cavana 2024 public-policy suite
+      'crt-alcohol-availability',
+      'ec-alcohol-policy',
+      'goalTree-alcohol-policy',
+      'nbr-alcohol-ban',
+      'frt-alcohol-policy-mix',
+      'prt-alcohol-ban-rollout',
+    ];
+    for (const id of ids) {
+      expect(patternById(id), `missing pattern ${id}`).toBeDefined();
+    }
+  });
+
+  it('prt-alcohol-ban-rollout builds the condensed 5-obstacle PRT (11 entities, 10 necessity edges)', () => {
+    const doc = patternById('prt-alcohol-ban-rollout')!.build();
+    const entities = Object.values(doc.entities);
+    const edges = Object.values(doc.edges);
+    expect(entities).toHaveLength(11);
+    expect(entities.filter((e) => e.type === 'goal')).toHaveLength(1);
+    expect(entities.filter((e) => e.type === 'obstacle')).toHaveLength(5);
+    expect(entities.filter((e) => e.type === 'intermediateObjective')).toHaveLength(5);
+    expect(edges).toHaveLength(10);
+    expect(edges.every((e) => e.kind === 'necessity')).toBe(true);
+  });
+
+  it('nbr-alcohol-ban carries the published branch shape (2 injections, 3 UDEs, mitigation into the DE)', () => {
+    const doc = patternById('nbr-alcohol-ban')!.build();
+    const entities = Object.values(doc.entities);
+    expect(entities.filter((e) => e.type === 'injection')).toHaveLength(2);
+    expect(entities.filter((e) => e.type === 'ude')).toHaveLength(3);
+    expect(entities.filter((e) => e.type === 'desiredEffect')).toHaveLength(1);
+  });
+
+  it('crt-failing-plant chains two AND groups (WIP confluence + closure)', () => {
+    const doc = patternById('crt-failing-plant')!.build();
+    const groups = new Set(
+      Object.values(doc.edges)
+        .map((e) => e.andGroupId)
+        .filter(Boolean)
+    );
+    expect(groups.size).toBe(2);
+  });
+});
+
 describe("ec-efrats-change-cloud (Efrat's change cloud + breaking channels)", () => {
   it('builds the 5-box cloud + 2 non-causal channel notes, with a D↔D′ mutex', () => {
     const p = patternById('ec-efrats-change-cloud');
