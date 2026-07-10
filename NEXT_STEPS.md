@@ -1,70 +1,13 @@
 # TP Studio — backlog / next steps
 
-Shipped work lives in **CHANGELOG.md**. This file was pruned in Session 176 of ~580 lines
-of completed-and-struck-through narrative (a staleness audit verified each against CHANGELOG
-+ the `src/` tree). If something you remember building isn't listed here, it's done — check
-CHANGELOG.
+Shipped work lives in **CHANGELOG.md**. This file was pruned in Session 176 of ~580 lines of
+completed narrative and re-pruned in Session 193 (the Session-192 review backlog and the
+Session-180 hardening/tech-debt lists shipped in full — see CHANGELOG). If something you
+remember building isn't listed here, it's done — check CHANGELOG.
 
 ---
 
-## Improvement-review backlog (Session 192) — ✅ fully shipped
-
-A grounded multi-agent product/UX review produced a ranked set of improvements across 8 batches;
-**every item is now shipped & CI-green** (see the CHANGELOG "Session 192 (cont.)" entries for detail):
-
-- **Batch 1 core-authoring** · **Batch 2 accessibility** · **Batch 3 navigation** ·
-  **Batch 8 methodology** (validator correctness + two fingerprint-cache bugs).
-- **Batch 4 export/print:** copy-image-to-clipboard, PPTX tall-diagram tiling, last-used export
-  memory, non-Latin-1 PDF-font caution.
-- **Batch 5 data safety:** delete-tree Undo, in-app PromptDialog, auto-snapshot-while-editing, and
-  (last) the linked-file **unsaved-changes chip** + **⌘S write-through** to the linked file
-  (`isDirtySinceSave` / `saveToLinkedFile`).
-- **Batch 6 visual/UI:** colour-palette node stripes + minimap, corner-badge de-collision,
-  collapsible inspector sections, direct-pick `ChipSelect` state chips.
-- **Batch 7 templates/library/capture:** insert-template-into-current (`mergeDocIntoActive`),
-  Start "All trees" inline filter, Quick-Capture-into-group, manual sibling ordering (post-dagre
-  reorder + context-menu setter).
-
-Nothing from the review remains open. New work starts from the Active backlog below or a fresh
-direction. NOTE (still true): visual-snapshot fragility — anything touching the selection toolbar,
-node rendering, the minimap, or a dialog changes an `e2e/visual-*.spec.ts` baseline; refresh via the
-`update-visual-snapshots` workflow (opens a PR) as part of the slice.
-
----
-
-## Flagged in the unattended hardening pass (Session 180 cont.) — ✅ all resolved
-
-Every item from the gated sweep has been decided and closed (export-consistency, dangling-edge,
-DOT or/xor styling, print-dialog close-order, command-palette-ARIA, junctor-clearance,
-goalTree-necessity, assumption-lifecycle, and — last — the **NBR validator gap**, closed Session 181
-with the two `nbr-*` shape rules + the additional-cause widening; see CHANGELOG).
-
-**Known tech-debt — future cleanup, not urgent:**
-- ✅ **The two largest store slices are now split into sub-modules** (see CHANGELOG):
-  `docMetaSlice.ts` (1029 → `docMeta/` tabs + metadata + crossDocLinks, Session 190) and
-  `edgesSlice.ts` (561 → `edges/` connect + junctor + splice + attributes, Session 191), both
-  mirroring the `entitiesSlice` + `entities/` `create*Actions(deps)` factory pattern. Pure moves,
-  public exports unchanged. The remaining large files (`preferencesSlice` / `dialogsSlice` setter
-  bags, `TPEdge.tsx`, `edgeVisibilityGraph` / `layout` algorithms) were assessed as low-value or
-  too-tightly-coupled to split — left as-is.
-- ✅ **"Forget closed documents" now sweeps revision-less closed trees too** (Session 185, see
-  CHANGELOG) — it enumerates committed-only bodies (`listSavedDocIds`), not just the revisions map,
-  and refreshes the Start library. Per-tree Delete on the Start cards remains for individual cleanup.
-- ✅ **localStorage quota guard** (Session 185, see CHANGELOG) — the quota-mitigation cascade gained a
-  final tier: after trimming revisions + dropping inactive backups, it evicts the oldest *closed* trees
-  (never an open tab), a small conservative batch per trigger, with a loud toast. Saved trees no longer
-  grow unbounded into a hard save failure. (Tuning open if it ever matters: batch size, or a proactive
-  pre-quota nudge.)
-
-> ✅ **Assumption dual-representation collapse — DONE** (Session 181, see CHANGELOG). Fully
-> record-canonical: `'assumption'` is gone from the `EntityType` union, the ~75 `isAssumption`
-> guards are deleted (`isNonCausal` → `isNote`), the canvas renders a dedicated `TPAssumptionNode`,
-> and `edge.assumptionIds` is removed — attachment is solely `record.edgeId` via the WeakMap-cached
-> `assumptionsForEdge`. Migration v9→v10 + the importer move/clean existing docs.
-
----
-
-## Active backlog (Session 176 — Dann's review batch)
+## Active backlog
 
 ### Perf-trace `edit-heavy` scenario is noise-dominated — decision needed (Session 190)
 The scheduled Perf-trace flagged `edit-heavy` as a regression. Session 190 fixed the two real
@@ -82,22 +25,13 @@ baseline (9.2 ms) as features landed.
 wide noise floor acknowledged. Chasing it with more app code changes is **not** warranted — it's
 a measurement-infrastructure issue, and the hot path is now clean.
 
-### Overlapping edges into one entity — can't grab/redirect one (Dann)
-PROBLEM: when 2+ edges converge on one entity, you can't reliably select/drag ONE to re-route
-it — a click always grabs whichever edge is on top.
-- ✅ **Shipped (Session 177, see CHANGELOG):** the inspector-driven re-wire (Cause/Effect dropdowns →
-  `reconnectEdge`) and the canvas edge-picker (click a stack of overlapping edges → a menu to choose one).
-- ✅ **Hover-fan — SHIPPED (Session 185, see CHANGELOG).** Hovering a convergence group spreads its
-  endpoints apart so one is grabbable, snapping back on leave. `fanRank`/`fanCount` stamped at
-  emission; `TPEdge` offsets the bezier endpoint on hover and drops the routed path so it shows;
-  gated to direct routes (≤2 waypoints) to avoid the detour pop. **Open polish (small, optional):**
-  (a) it only fans direct-route convergence in flow layouts — smart-routed *detours* and radial mode
-  keep their path (fanning a detour would need to re-route, not just offset the bezier); (b) slot
-  order is by sourceId — a render-time position sort would guarantee crossing-free fanning, but would
-  couple edge emission to per-frame drag positions (a deliberate perf boundary — needs Dann's call on
-  the trade-off). Mouse-only by design. The route→bezier Y-jump and the spread's ease-in were
-  polished in a follow-up (the bezier anchors on the routed endpoints; a hover-gated 120ms `d`
-  transition).
+### Overlapping-edge hover-fan — open polish (small, optional)
+The convergence hover-fan itself shipped (Sessions 177 + 185, see CHANGELOG). Two optional
+refinements remain, neither urgent: (a) it only fans direct-route convergence in flow layouts —
+smart-routed *detours* and radial mode keep their path (fanning a detour would need a re-route,
+not just a bezier offset); (b) slot order is by sourceId — a render-time position sort would
+guarantee crossing-free fanning but would couple edge emission to per-frame drag positions
+(a deliberate perf boundary — needs Dann's call on the trade-off).
 
 ### Test-coverage — healthy (reference; no open target)
 ~97% lines / ~85% branches (Session-180 push; CI floors ratcheted to 94 lines / 82 branches). CI floor
@@ -106,19 +40,6 @@ auto-ratchets via `node ./scripts/pin-coverage-thresholds.mjs`
 Session-176/177 named gaps are closed (pure exporters, `persistenceValidators`, the emission/projection
 hooks, `canvasRef`, `CreationWizardPanel`, `pdfExport`/`pptxExport`). Revisit only if a big new module
 lands undertested.
-
-### Print — ✅ fully closed (Sessions 77–179, see CHANGELOG)
-Mature and complete: `PrintPreviewDialog` (3 modes · annotation appendix · reasoning companion ·
-selection-only · header/footer templates · page setup — A4/Letter, portrait/landscape, fit-page/fit-width),
-`Cmd/Ctrl+P`, `print.css`, a true multi-page vector PDF, and the per-type "how to read this" legend in
-**both** the browser-print and vector-PDF paths. The "bespoke per-type one-page layouts" idea is closed as
-over-engineering (see Out-of-scope — won't build).
-
-### External reviews — TOC/TP sources → `docs/EXTERNAL_TP_SOURCE_REVIEW.md` — ✅ theme complete
-Seven sources mined + cross-checked against the codebase + Cohen gap analysis (the doc is retained for
-the full rationale). **Every candidate is now shipped or explicitly dropped:** A1/A2, B, C1/C2, D and
-E1 (5 system-archetype patterns) + the tied-core-drivers Spawn-EC action (Session 179); A3, A4, E3, E5,
-E6 (Session 180 — see CHANGELOG); E2 / E4 / E7 dropped to won't-build (see Out-of-scope below).
 
 ### Start "Pick up where you left off" — prominent Resume card (deferred, Session 187)
 The UX-redesign mockup leads the resume area with ONE large "Resume →" card for the most-recently-edited
@@ -204,3 +125,6 @@ Specific to the Windows + corporate-AppLocker box this was built on.
    closed — see CHANGELOG).
 4. **Build in vertical slices** — one demo-able feature per commit; domain-first (new data-model work lands in
    `src/domain/` with tests before any UI).
+5. **Visual-snapshot fragility (durable):** anything touching the selection toolbar, node rendering, the
+   minimap, or a dialog changes an `e2e/visual-*.spec.ts` baseline — refresh via the
+   `update-visual-snapshots` workflow (opens a PR) as part of the slice.
