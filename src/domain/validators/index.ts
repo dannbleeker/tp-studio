@@ -16,7 +16,13 @@ import { ecMissingConflictRule } from './ecMissingConflict';
 import { entityExistenceRule } from './entityExistence';
 import { externalRootCauseRule } from './externalRootCause';
 import { goalTreeMultipleGoalsRule } from './goalTreeMultipleGoals';
-import { goalTreeCsfCountRule, goalTreeCsfNoNcsRule } from './goalTreeStructural';
+import {
+  goalTreeCsfCountRule,
+  goalTreeCsfNoNcsRule,
+  goalTreeJunctorRule,
+  goalTreeNcDepthRule,
+  goalTreeNcsPerCsfRule,
+} from './goalTreeStructural';
 import { indirectEffectRule } from './indirectEffect';
 import { logicTypeMismatchRule } from './logicTypeMismatch';
 import { longArrowRule } from './longArrow';
@@ -183,6 +189,13 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // a Dettmer-pattern scope nudge (analogue of crt-ude-count).
     tieredRule('sufficiency', 'goalTree-csf-no-ncs', goalTreeCsfNoNcsRule),
     tieredRule('clarity', 'goalTree-csf-count', goalTreeCsfCountRule),
+    // Session 195 — Dettmer's abbreviated IO-Map construction checklist
+    // (Fig 3.14): ≤ 3–5 NCs per CSF, ≤ two NC layers (deeper detail belongs
+    // in a PRT), single arrows only (no AND/OR/XOR junctors). All clarity —
+    // convention nudges, dismissible.
+    tieredRule('clarity', 'goalTree-ncs-per-csf', goalTreeNcsPerCsfRule),
+    tieredRule('clarity', 'goalTree-nc-depth', goalTreeNcDepthRule),
+    tieredRule('clarity', 'goalTree-junctor', goalTreeJunctorRule),
   ],
   // Session 134 / spec major gap #5 — NBR runs the FRT rule set: structural
   // rules + cause-sufficiency + additional-cause (target widened to BOTH `ude`

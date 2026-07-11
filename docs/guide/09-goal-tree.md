@@ -32,6 +32,17 @@ The structure: one Goal at top; 3-5 CSFs in the middle (the must-be conditions f
 7. **Look for missing conditions.** Conjoin all children of a parent. If their conjunction doesn't guarantee the parent, you're missing a NC. That gap is valuable — it names something the planning process hadn't named yet.
 8. **Stop when each NC is something you can plan against.** NCs that are themselves wide open (need their own Goal Tree) get bumped to the next iteration; mark them as "needs decomposition" via the Inspector's description field. At the stopping point, every leaf NC should be a condition specific enough that someone could tell you, on any given day, whether it's satisfied.
 
+### Dettmer's construction checklist
+
+Dettmer's own abbreviated checklist for building an IO Map (*The Logical Thinking Process*, 2007, Fig. 3.14) runs eight steps. Most overlap the method above; four of its disciplines are worth calling out separately because they're the ones teams actually violate — and TP Studio checks or automates each:
+
+1. **Define the system first.** Before the Goal: whose tree is this — corporation, division, team, you personally? The boundary decides who owns the Goal and which conditions are within reach. (First step of the in-app method checklist.)
+2. **Get the owners' consensus on the Goal.** The Goal is what the system's *owners* say it is, not what the analyst wishes it were. Persuasion gets much easier when everyone already knows they're working toward the same Goal and CSFs.
+3. **Bound the NC layer.** No more than 3–5 NCs per CSF, and **no more than two NC layers** in the finished tree. Anything deeper is execution planning, not destination definition — trim it here and develop it in a Prerequisite Tree. (The `goalTree-ncs-per-csf` and `goalTree-nc-depth` validators enforce both bounds as dismissible nudges.)
+4. **Single arrows only.** No AND ellipses or magnitudinal symbols — in necessity logic every child of a parent is already required, so a junctor adds nothing and OR/XOR contradict the reading. (The `goalTree-junctor` validator flags grouped edges.) Dettmer's arrangement conventions — Goal on top, connect vertically, minimize crossovers — are what the auto-layout already does for you.
+
+The checklist closes with **outside scrutiny**: insert missing CSFs and NCs, re-check connections, and keep going until a fresh reader adds nothing. In TP Studio that's a share link plus the comments panel — the last step of the method checklist.
+
 ## Worked example — the B2B SaaS GM
 
 Switch gears from the support-team CRT in Chapters 4 and 5. Imagine you're the new GM of a B2B SaaS product line, planning your first year.
@@ -130,10 +141,11 @@ If you genuinely need two Goals, dismiss the warning and proceed. Just be honest
 > - **`Promote to Goal`** verb: select any non-goal entity → **Promote to Goal**. Useful when building bottom-up and discovering that one NC is actually the real strategic objective.
 > - **`goalTree-multiple-goals`** validator with the **`Convert extras to CSFs`** one-click action — fires when more than one `goal` entity exists; demotes all but the oldest.
 > - **`goalTree-csf-no-ncs`** and **`goalTree-csf-count`** validators — the first flags a CSF with no Necessary Conditions beneath it; the second is a document-level scope guard on Dettmer's 3–5-CSF band (fewer suggests missing make-or-break conditions; more usually means some are really NCs a tier down).
+> - **`goalTree-ncs-per-csf`**, **`goalTree-nc-depth`**, and **`goalTree-junctor`** validators (from Dettmer's Fig. 3.14 construction checklist) — more than five direct NCs under one CSF; an NC deeper than two layers below a CSF (that detail belongs in a PRT); and AND/OR/XOR junctors, which have no place in a single-arrow necessity tree. All dismissible clarity nudges.
 > - **Templates library** (`Cmd+K → Browse templates…`) ships nine Goal Tree starters: *Goal Tree starter* (generic 3-layer), *Sustainable product organization*, *Profitable subscription business*, *Trustworthy ML system*, *Effective sales team*, *Generic IT-function goals*, *New technology brings increased outcome* (Goldratt's *Necessary But Not Sufficient* dictum as a two-arm tree), *Make money now and in the future (T/I/OE)*, and *Public-policy Goal Tree (alcohol)*. The business trees arrive with realistic NC numbers as a calibration anchor.
 > - **Load example** (`Cmd+K → Load example…` → Goal Tree) — the canonical 8-entity "Customer-first" example, useful for studying the structural shape before drawing your own.
 > - **Reasoning narrative export** (`Cmd+K → Export… → Reasoning as narrative (Markdown)`) — compiles the tree into a top-down necessity argument sentence-by-sentence, suitable for a stakeholder brief or alignment doc.
-> - **Method checklist** (Document Inspector) — five Goal Tree steps tracked per document: State the Goal; List 3–5 CSFs; Identify NCs per CSF; Test necessity at every layer; Look for missing conditions. Useful for a team of analysts working the same document across sessions.
+> - **Method checklist** (Document Inspector) — seven Goal Tree steps tracked per document, synced with Dettmer's Fig. 3.14 construction checklist: Define the system boundary; State the Goal; List 3–5 CSFs; Identify NCs per CSF (3–5 each, max two layers); Test necessity at every layer; Look for missing conditions; Enlist outside scrutiny. Useful for a team of analysts working the same document across sessions.
 
 > **💡 Practitioner tips**
 > - **Time-bound the Goal.** "Hit $10M ARR" is weaker than "Hit $10M ARR by EOY 2026." The time bound is what makes the tree falsifiable — and falsifiability is what makes it a planning tool rather than a wish list.

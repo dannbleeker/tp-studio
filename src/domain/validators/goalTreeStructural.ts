@@ -1,4 +1,4 @@
-import { entitiesOfType, incomingEdges } from '../graph';
+import { edgesArray, entitiesOfType, incomingEdges } from '../graph';
 import type { TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
 
@@ -73,4 +73,113 @@ export const goalTreeCsfCountRule = (doc: TPDocument): UntieredWarning[] => {
     ];
   }
   return [];
+};
+
+/**
+ * Session 195 — three build-discipline nudges from Dettmer's abbreviated
+ * IO-Map construction checklist (*The Logical Thinking Process* 2007,
+ * Fig 3.14, step 4 + step 6). All tier `clarity`: each is a scope /
+ * convention nudge the user can dismiss, not a structural defect.
+ */
+
+const MAX_NCS_PER_CSF = 5;
+
+/**
+ * Step 4's per-CSF bound: "no more than 3–5 NCs per CSF." Only the upper
+ * bound is enforced — one or two NCs under a CSF is common and fine (both
+ * shipped two-arm Goal Tree patterns have two), so a lower-bound nag would
+ * be noise. Fires on the CSF, counting direct `necessaryCondition` children.
+ */
+export const goalTreeNcsPerCsfRule = (doc: TPDocument): UntieredWarning[] => {
+  if (doc.diagramType !== 'goalTree') return [];
+  const out: UntieredWarning[] = [];
+  for (const csf of entitiesOfType(doc, 'criticalSuccessFactor')) {
+    const ncCount = incomingEdges(doc, csf.id).filter(
+      (e) => doc.entities[e.sourceId]?.type === 'necessaryCondition'
+    ).length;
+    if (ncCount > MAX_NCS_PER_CSF) {
+      out.push(
+        makeWarning(
+          doc,
+          'goalTree-ncs-per-csf',
+          { kind: 'entity', id: csf.id },
+          `This Critical Success Factor has ${ncCount} direct Necessary Conditions — Dettmer's checklist caps it at ${MAX_NCS_PER_CSF}; group some under an intermediate condition or trim the low-level ones.`
+        )
+      );
+    }
+  }
+  return out;
+};
+
+const MAX_NC_DEPTH = 2;
+
+/**
+ * Step 4's depth bound: "limit your NCs to no more than two layers," with
+ * step 8's companion advice to trim low-level NCs into execution planning.
+ * An NC directly under a CSF is layer 1; an NC under that is layer 2;
+ * anything deeper gets flagged — that detail belongs in a Prerequisite /
+ * Transition Tree, not the destination-defining IO Map. Depth is the
+ * minimum over every CSF the NC supports (the charitable reading when a
+ * shared NC feeds two parents at different depths).
+ */
+export const goalTreeNcDepthRule = (doc: TPDocument): UntieredWarning[] => {
+  if (doc.diagramType !== 'goalTree') return [];
+  // BFS down from every CSF. Children point INTO their parent (NC → CSF,
+  // deeper NC → NC), so descending means walking incoming edges.
+  const minDepth = new Map<string, number>();
+  const queue: Array<{ id: string; depth: number }> = entitiesOfType(
+    doc,
+    'criticalSuccessFactor'
+  ).map((csf) => ({ id: csf.id, depth: 0 }));
+  while (queue.length > 0) {
+    // Non-null is safe: guarded by queue.length above.
+    const { id, depth } = queue.shift()!;
+    for (const edge of incomingEdges(doc, id)) {
+      const child = doc.entities[edge.sourceId];
+      if (child?.type !== 'necessaryCondition') continue;
+      const childDepth = depth + 1;
+      const known = minDepth.get(child.id);
+      if (known !== undefined && known <= childDepth) continue; // also breaks cycles
+      minDepth.set(child.id, childDepth);
+      queue.push({ id: child.id, depth: childDepth });
+    }
+  }
+  const out: UntieredWarning[] = [];
+  for (const [id, depth] of minDepth) {
+    if (depth > MAX_NC_DEPTH) {
+      out.push(
+        makeWarning(
+          doc,
+          'goalTree-nc-depth',
+          { kind: 'entity', id },
+          `This Necessary Condition sits ${depth} layers below a CSF — Dettmer's checklist stops at ${MAX_NC_DEPTH}. Deeper detail is execution planning: consider trimming it here and developing it in a Prerequisite Tree.`
+        )
+      );
+    }
+  }
+  return out;
+};
+
+/**
+ * Step 6's connection convention: "single arrows (no ellipses or
+ * magnitudinal AND symbols)." In necessity logic every child of a parent is
+ * already required — an explicit AND junctor is redundant, and OR / XOR
+ * contradict the reading outright. Fires once per grouped edge.
+ */
+export const goalTreeJunctorRule = (doc: TPDocument): UntieredWarning[] => {
+  if (doc.diagramType !== 'goalTree') return [];
+  const out: UntieredWarning[] = [];
+  for (const edge of edgesArray(doc)) {
+    if (edge.andGroupId || edge.orGroupId || edge.xorGroupId) {
+      out.push(
+        makeWarning(
+          doc,
+          'goalTree-junctor',
+          { kind: 'edge', id: edge.id },
+          'A Goal Tree uses single arrows only — necessity children are implicitly conjoined, so an AND junctor is redundant and OR / XOR contradict the "in order to… we must…" reading. Ungroup this edge.'
+        )
+      );
+    }
+  }
+  return out;
 };

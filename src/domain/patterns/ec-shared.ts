@@ -1,6 +1,6 @@
 import { buildEdge, buildEntity } from '../examples/shared';
-import { newDocumentId } from '../ids';
-import type { CloudType, TPDocument } from '../types';
+import { newDocumentId, newEntityId } from '../ids';
+import type { Assumption, AssumptionStatus, CloudType, TPDocument } from '../types';
 
 /**
  * Shared builder for the curated Evaporating Cloud patterns.
@@ -52,6 +52,23 @@ export type ECPatternSpec = {
     /** Hand-placed canvas position — EC layout is positional, like the boxes. */
     readonly position: { readonly x: number; readonly y: number };
   }>;
+  /** Optional per-arrow assumption records (Session 195) — first used by
+   *  Efrat's cloud, which ships Dettmer's 14 published assumptions. Each
+   *  entry becomes a first-class `Assumption` in `doc.assumptions` behind
+   *  the named structural arrow, numbered after the boxes + notes so the
+   *  canvas "#N" badges read in figure order. Zero-default — omit it and
+   *  the cloud carries no assumptions, byte-for-byte as before. The mutex
+   *  (D↔D′) arrow is not addressable on purpose: the conflict evaporates
+   *  by breaking a support arrow's assumption, not the conflict itself. */
+  readonly assumptions?: ReadonlyArray<{
+    /** Which structural arrow the assumption sits behind. */
+    readonly arrow: 'd-b' | 'dPrime-c' | 'b-a' | 'c-a';
+    readonly text: string;
+    /** Lifecycle chip; defaults to 'unexamined'. Patterns set
+     *  'challengeable' where a published breaking channel targets the
+     *  assumption. */
+    readonly status?: AssumptionStatus;
+  }>;
 };
 
 /**
@@ -82,18 +99,39 @@ export const buildECPattern = (spec: ECPatternSpec): TPDocument => {
   });
 
   const entities = [a, b, c, d, dPrime, ...noteParts.map((p) => p.note)];
+  // The four structural arrows are named so optional assumption records can
+  // attach to them by role.
+  const arrowEdges = {
+    'd-b': buildEdge(d.id, b.id, { kind: 'necessity' }),
+    'dPrime-c': buildEdge(dPrime.id, c.id, { kind: 'necessity' }),
+    'b-a': buildEdge(b.id, a.id, { kind: 'necessity' }),
+    'c-a': buildEdge(c.id, a.id, { kind: 'necessity' }),
+  } as const;
   const edges = [
     // Wants → the needs they serve.
-    buildEdge(d.id, b.id, { kind: 'necessity' }),
-    buildEdge(dPrime.id, c.id, { kind: 'necessity' }),
+    arrowEdges['d-b'],
+    arrowEdges['dPrime-c'],
     // Needs → the common objective.
-    buildEdge(b.id, a.id, { kind: 'necessity' }),
-    buildEdge(c.id, a.id, { kind: 'necessity' }),
+    arrowEdges['b-a'],
+    arrowEdges['c-a'],
     // The conflict — only one of D / D′ can hold at once.
     buildEdge(d.id, dPrime.id, { kind: 'necessity', isMutualExclusion: true }),
     // Non-causal note-edges (dotted, CLR-excluded — a note endpoint).
     ...noteParts.map((p) => p.edge),
   ];
+
+  // Optional first-class assumption records (zero-default), numbered after
+  // the boxes + notes. Mirrors `addAssumptionToEdge`'s record shape.
+  const firstAssumptionNumber = 6 + noteParts.length;
+  const assumptionRecords: Assumption[] = (spec.assumptions ?? []).map((s, i) => ({
+    id: newEntityId() as string,
+    edgeId: arrowEdges[s.arrow].id,
+    text: s.text,
+    status: s.status ?? 'unexamined',
+    annotationNumber: firstAssumptionNumber + i,
+    createdAt: t,
+    updatedAt: t,
+  }));
 
   return {
     id: newDocumentId(),
@@ -102,9 +140,12 @@ export const buildECPattern = (spec: ECPatternSpec): TPDocument => {
     ...(spec.cloudType ? { cloudType: spec.cloudType } : {}),
     entities: Object.fromEntries(entities.map((e) => [e.id, e])),
     edges: Object.fromEntries(edges.map((e) => [e.id, e])),
+    ...(assumptionRecords.length
+      ? { assumptions: Object.fromEntries(assumptionRecords.map((r) => [r.id, r])) }
+      : {}),
     groups: {},
     resolvedWarnings: {},
-    nextAnnotationNumber: 6 + noteParts.length,
+    nextAnnotationNumber: firstAssumptionNumber + assumptionRecords.length,
     createdAt: t,
     updatedAt: t,
     schemaVersion: 10,

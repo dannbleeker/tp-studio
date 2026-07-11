@@ -295,22 +295,33 @@ const NBR: MethodStep[] = [
   },
 ];
 
-// Session 77 / brief §5 — Goal Tree (Dettmer's IO Map).
+// Session 77 / brief §5 — Goal Tree (Dettmer's IO Map). Session 195 synced
+// the recipe with Dettmer's abbreviated construction checklist (*The Logical
+// Thinking Process* 2007, Fig 3.14): system boundary first, owner consensus
+// on the goal, the 3–5-per-CSF / two-layer NC bounds, and outside scrutiny
+// as the closing step. (Fig 3.14's arrange/connect conventions — goal on
+// top, vertical single arrows, minimal crossovers — are what the auto-layout
+// already enforces, so they don't need a manual step.)
 const GOAL_TREE: MethodStep[] = [
+  {
+    id: 'goalTree.system',
+    label: 'Define the system boundary',
+    hint: 'Whose tree is this — company, division, team, yourself? The boundary decides who owns the Goal and which conditions are inside your reach.',
+  },
   {
     id: 'goalTree.goal',
     label: 'State the Goal',
-    hint: "One sentence. What is the system's purpose? Frame it as the positive end-state, not a problem.",
+    hint: "One sentence. What is the single outcome the system exists for? Frame it as the positive end-state, not a problem — and get the system's owners to agree to it.",
   },
   {
     id: 'goalTree.csfs',
     label: 'List 3–5 Critical Success Factors',
-    hint: 'The few high-level objectives that, together, achieve the Goal. Each must be necessary.',
+    hint: 'The few high-level objectives that, together, achieve the Goal. Each must be necessary — the last milestones before the Goal can be declared met.',
   },
   {
     id: 'goalTree.ncs',
     label: 'For each CSF, identify Necessary Conditions',
-    hint: 'What MUST be in place for this CSF? Read each edge as "in order to {CSF}, we must {NC}."',
+    hint: 'What MUST be in place for this CSF? Read each edge as "in order to {CSF}, we must {NC}." Keep to 3–5 per CSF and at most two NC layers — deeper detail is execution planning (a PRT).',
   },
   {
     id: 'goalTree.verify',
@@ -321,6 +332,11 @@ const GOAL_TREE: MethodStep[] = [
     id: 'goalTree.gaps',
     label: 'Look for missing conditions',
     hint: "Conjoin all children of a parent. If the conjunction doesn't guarantee the parent, you're missing one.",
+  },
+  {
+    id: 'goalTree.scrutiny',
+    label: 'Enlist outside scrutiny',
+    hint: 'Share the tree (copy a share link) and collect comments: missing CSFs or NCs, wrong connections, low-level NCs to trim. Stop when a fresh reader adds nothing.',
   },
 ];
 

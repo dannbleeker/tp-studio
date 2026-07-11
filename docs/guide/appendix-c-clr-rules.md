@@ -87,6 +87,9 @@ Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): 
 | `goalTree-multiple-goals` | clarity | More than one apex Goal entity. Soft + dismissible; carries a one-click **Convert extras to CSFs** action. |
 | `goalTree-csf-no-ncs` | sufficiency | A Critical Success Factor with no Necessary Conditions beneath it — add the conditions that must hold for it. |
 | `goalTree-csf-count` | clarity | A CSF count outside Dettmer's typical 3–5 band (document-level; silent at zero). Too few suggests missing make-or-break conditions; more than 5 usually means some are really NCs a tier down. |
+| `goalTree-ncs-per-csf` | clarity | More than five direct Necessary Conditions under one CSF — Dettmer's construction checklist (Fig. 3.14) caps it at 3–5; group some under an intermediate condition or trim. Upper bound only: one or two NCs per CSF is fine. |
+| `goalTree-nc-depth` | clarity | An NC nested deeper than two layers below a CSF. Dettmer's checklist stops at two — deeper detail is execution planning, better developed in a Prerequisite Tree. Depth is the shallowest path when an NC supports several parents. |
+| `goalTree-junctor` | clarity | An AND/OR/XOR-grouped edge in a Goal Tree. The IO Map uses single arrows only — necessity children are implicitly conjoined, so a junctor is redundant at best and contradictory at worst. One warning per grouped edge. |
 
 ## Cross-diagram lint (the System-Dynamics lens)
 
@@ -132,6 +135,9 @@ These ride the same edge/loop structure across several diagram types:
 | `goalTree-multiple-goals` | | | | | | ✓ | | | |
 | `goalTree-csf-no-ncs` | | | | | | ✓ | | | |
 | `goalTree-csf-count` | | | | | | ✓ | | | |
+| `goalTree-ncs-per-csf` | | | | | | ✓ | | | |
+| `goalTree-nc-depth` | | | | | | ✓ | | | |
+| `goalTree-junctor` | | | | | | ✓ | | | |
 | `nbr-no-negative-branch` | | | | | | | | | ✓ |
 | `nbr-ude-disconnected` | | | | | | | | | ✓ |
 | `logic-type-mismatch` | ✓ | ✓ | | ✓ | ✓ | ✓ | | | ✓ |

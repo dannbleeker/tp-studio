@@ -262,4 +262,49 @@ describe("ec-efrats-change-cloud (Efrat's change cloud + breaking channels)", ()
     // Two non-causal note-edges (default sufficiency kind), one per channel.
     expect(edges.filter((e) => e.kind !== 'necessity')).toHaveLength(2);
   });
+
+  it('ships the 14 published assumptions (Dettmer Fig 8.3, paraphrased) behind the four arrows', () => {
+    const doc = patternById('ec-efrats-change-cloud')!.build();
+    const assumptions = Object.values(doc.assumptions ?? {});
+    expect(assumptions).toHaveLength(14);
+
+    // Every record attaches to a real structural (non-mutex, non-note) edge.
+    const perEdge = new Map<string, number>();
+    for (const a of assumptions) {
+      const edge = doc.edges[a.edgeId];
+      expect(edge, `assumption "${a.text}" attaches to a missing edge`).toBeDefined();
+      expect(edge!.kind).toBe('necessity');
+      expect(edge!.isMutualExclusion).toBeUndefined();
+      perEdge.set(a.edgeId, (perEdge.get(a.edgeId) ?? 0) + 1);
+    }
+    // The figure's split: 3 on B→A, 4 on D→B, 4 on C→A, 3 on D′→C.
+    expect([...perEdge.values()].sort((x, y) => x - y)).toEqual([3, 3, 4, 4]);
+
+    // The D′→C three are what breaking channel 1 attacks — 'challengeable';
+    // the rest arrive unexamined.
+    const challengeable = assumptions.filter((a) => a.status === 'challengeable');
+    expect(challengeable).toHaveLength(3);
+    const wantIds = new Set(
+      Object.values(doc.entities)
+        .filter((e) => e.type === 'want')
+        .map((e) => e.id)
+    );
+    for (const a of challengeable) {
+      // Each challengeable assumption sits on a want→need arrow (D′→C).
+      expect(wantIds.has(doc.edges[a.edgeId]!.sourceId)).toBe(true);
+    }
+    expect(assumptions.filter((a) => a.status === 'unexamined')).toHaveLength(11);
+
+    // Badges number contiguously after the 5 boxes + 2 notes (#8–#21), and the
+    // channel notes cross-reference that numbering.
+    const numbers = assumptions.map((a) => a.annotationNumber).sort((x, y) => x! - y!);
+    expect(numbers).toEqual(Array.from({ length: 14 }, (_, i) => 8 + i));
+    expect(doc.nextAnnotationNumber).toBe(22);
+    const noteTexts = Object.values(doc.entities)
+      .filter((e) => e.type === 'note')
+      .map((e) => e.title)
+      .join(' ');
+    expect(noteTexts).toContain('#19–#21');
+    expect(noteTexts).toContain('#11–#14');
+  });
 });

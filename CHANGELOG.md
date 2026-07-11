@@ -2,6 +2,36 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 195 — Dettmer figure fold-in: Efrat's assumptions + IO-Map build discipline
+
+Two figures from Dettmer's *The Logical Thinking Process* (2007), folded in as
+data + validators + docs (all wording paraphrased, lineage credited):
+
+**Fig 8.3 — "Efrat's Cloud" (used there with Efrat Goldratt's permission):**
+- `ec-efrats-change-cloud` now ships **fully assumptioned** — the 14 published
+  assumptions attached as first-class `Assumption` records behind the four
+  support arrows (3 B→A, 4 D→B, 4 C→A, 3 D′→C), numbered #8–#21 in the
+  figure's order. The D′→C three arrive `challengeable` — exactly what
+  breaking channel 1 attacks — and the channel notes now cross-reference the
+  assumption numbers they break (#19–#21) or build on (#11–#14). First
+  library pattern to exercise the assumption layer end-to-end.
+- `buildECPattern` grew an optional zero-default `assumptions` spec field
+  (per-arrow text + status); every other cloud is untouched.
+
+**Fig 3.14 — the abbreviated IO-Map construction checklist:**
+- Three new dismissible clarity validators: `goalTree-ncs-per-csf` (more than
+  five direct NCs under one CSF), `goalTree-nc-depth` (an NC deeper than two
+  layers below a CSF — that detail belongs in a PRT), and `goalTree-junctor`
+  (AND/OR/XOR groups have no place in a single-arrow necessity tree — the
+  grouping verbs aren't diagram-gated, so this was reachable).
+- Goal Tree method checklist synced 5 → 7 steps: prepended "Define the system
+  boundary", appended "Enlist outside scrutiny" (pointing at share link +
+  comments), and folded the owner-consensus + 3–5-per-CSF + two-layer bounds
+  into the existing hints.
+- Guide: ch. 9 gained a "Dettmer's construction checklist" section (+ sidebar
+  sync), ch. 5's Efrat section now points at the shipped assumptions,
+  appendix C documents the three new rules.
+
 ## Session 194 — Technology-value Goal Tree pattern (90 → 91)
 
 Added `goalTree-new-technology-outcome` to the Templates library — Dann's own

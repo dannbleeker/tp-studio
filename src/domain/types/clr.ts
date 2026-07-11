@@ -116,7 +116,15 @@ export type ClrRuleId =
   | 'prt-obstacle-no-io' // an obstacle with no Intermediate Objective overcoming it
   | 'prt-io-no-obstacle' // an IO that overcomes no obstacle
   | 'goalTree-csf-no-ncs' // a Critical Success Factor with no Necessary Conditions beneath it
-  | 'goalTree-csf-count'; // Goal Tree scoped to too few / too many CSFs
+  | 'goalTree-csf-count' // Goal Tree scoped to too few / too many CSFs
+  // Session 195 — three build-discipline nudges from Dettmer's abbreviated
+  // IO-Map construction checklist (The Logical Thinking Process 2007,
+  // Fig 3.14): ≤ 3–5 NCs per CSF, ≤ two NC layers (deeper is execution
+  // planning — PRT territory), and single arrows only (no AND/OR/XOR
+  // junctors — necessity children are implicitly conjoined).
+  | 'goalTree-ncs-per-csf' // more than five direct NCs under one CSF
+  | 'goalTree-nc-depth' // an NC nested deeper than two layers below a CSF
+  | 'goalTree-junctor'; // a grouped (AND/OR/XOR) edge in a Goal Tree
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each
