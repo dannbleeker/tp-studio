@@ -137,6 +137,37 @@ describe("goalTree-it-function (Dann's 2020 IT-function article)", () => {
   });
 });
 
+describe("goalTree-new-technology-outcome (Dann's technology-value map)", () => {
+  it('builds the 1 Goal · 2 CSFs · 9 NCs shape with two nested-NC layers (11 necessity edges)', () => {
+    const p = patternById('goalTree-new-technology-outcome');
+    expect(p).toBeDefined();
+    const doc = p!.build();
+    const entities = Object.values(doc.entities);
+    const edges = Object.values(doc.edges);
+
+    expect(doc.diagramType).toBe('goalTree');
+    expect(entities).toHaveLength(12);
+    expect(entities.filter((e) => e.type === 'goal')).toHaveLength(1);
+    expect(entities.filter((e) => e.type === 'criticalSuccessFactor')).toHaveLength(2);
+    expect(entities.filter((e) => e.type === 'necessaryCondition')).toHaveLength(9);
+    expect(edges).toHaveLength(11);
+    expect(edges.every((e) => e.kind === 'necessity')).toBe(true);
+    // The arms decompose through nested NCs — 5 of the 11 edges run NC → NC
+    // (see/break/re-rule under "able to use", functions/adapt under "works").
+    const ncToNc = edges.filter(
+      (e) =>
+        doc.entities[e.sourceId]?.type === 'necessaryCondition' &&
+        doc.entities[e.targetId]?.type === 'necessaryCondition'
+    );
+    expect(ncToNc).toHaveLength(5);
+    // The Goldratt dictum rides as a description on the limitation CSF.
+    const csfLimitation = entities.find(
+      (e) => e.type === 'criticalSuccessFactor' && e.title.includes('diminishes a limitation')
+    );
+    expect(csfLimitation?.description).toContain('Necessary But Not Sufficient');
+  });
+});
+
 describe('Goldratt canon + published-case set (Session 193)', () => {
   it('registers all 21 patterns of the set', () => {
     const ids = [

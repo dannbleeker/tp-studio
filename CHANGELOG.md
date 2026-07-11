@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 194 — Technology-value Goal Tree pattern (90 → 91)
+
+Added `goalTree-new-technology-outcome` to the Templates library — Dann's own
+MindManager-era technology-value map, poured into Goal-Tree necessity form.
+Apex: *New technology brings increased outcome*; two arms, each necessary:
+
+- **The technology diminishes a limitation** (Goldratt's *Necessary But Not
+  Sufficient* dictum, carried as a description on the CSF) — needs the new
+  technical opportunities plus the ability to use them, which decomposes into
+  seeing the limitations, breaking them, and implementing new rules.
+- **The system is used** — needs a working system (functions properly + can be
+  adapted) and user adoption.
+
+Second two-arm Goal Tree after `goalTree-it-function` (same own-work verbatim
+carve-out; the soft 3–5-CSF nudge fires by design), and the first pattern to
+exercise **nested NCs** (NC → NC necessity edges, 5 of the 11 links) — pinned
+by a registry shape test. Guide chapter 9's starter list was stale at "six"
+(missing the two Session-193 trees); now lists all nine.
+
 ## Session 193 — Goldratt canon + published-case pattern set (21 new templates, 69 → 90)
 
 A deep-research pass first established what can honestly be derived from the TOC

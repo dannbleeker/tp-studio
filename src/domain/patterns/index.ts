@@ -84,6 +84,7 @@ import { buildPatternGoalTreeAlcoholPolicy } from './goalTree-alcohol-policy';
 import { buildPatternGoalTreeEffectiveSalesTeam } from './goalTree-effective-sales-team';
 import { buildPatternGoalTreeITFunction } from './goalTree-it-function';
 import { buildPatternGoalTreeMoneyNowAndFuture } from './goalTree-money-now-and-future';
+import { buildPatternGoalTreeNewTechnologyOutcome } from './goalTree-new-technology-outcome';
 import { buildPatternGoalTreeSubscriptionBusiness } from './goalTree-subscription-business';
 import { buildPatternGoalTreeSustainableProductOrg } from './goalTree-sustainable-product-org';
 import { buildPatternGoalTreeTrustworthyMl } from './goalTree-trustworthy-ml';
@@ -659,6 +660,13 @@ const CORE_PATTERNS: Pattern[] = [
     hint: "IT-function Goal Tree (from Dann's 2020 article) — a build-and-implement value arm and an efficient-operation arm, under a financial-restriction boundary.",
     diagramType: 'goalTree',
     build: buildPatternGoalTreeITFunction,
+  },
+  {
+    id: 'goalTree-new-technology-outcome',
+    label: 'New technology brings increased outcome',
+    hint: "Technology-value Goal Tree (Dann's own map, after Goldratt's Necessary But Not Sufficient) — increased outcome needs both arms: the technology diminishes a real limitation (seen, broken, re-ruled) and the system is actually used (works + adoption).",
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreeNewTechnologyOutcome,
   },
   // Goldratt canon + published-case set (Session 193).
   {
