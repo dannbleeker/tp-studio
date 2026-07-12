@@ -489,3 +489,57 @@ describe('CLR: reworded reservations (A1)', () => {
     expect(hit?.message).toMatch(/other effect it must also produce/i);
   });
 });
+
+describe('CLR: entry-point (A2 — FRT/NBR)', () => {
+  // An entry point: a cause with an outgoing effect but nothing feeding it.
+  const entryPointDoc = (
+    entry: Parameters<typeof makeEntity>[0],
+    diagram: 'frt' | 'nbr' | 'crt' = 'frt'
+  ) => {
+    const cause = makeEntity(entry);
+    const eff = makeEntity({ type: 'desiredEffect', title: 'Something improves' });
+    return { cause, doc: makeDoc([cause, eff], [makeEdge(cause.id, eff.id)], diagram) };
+  };
+
+  it('warns on a non-injection entry point that is not asserted true', () => {
+    const { cause, doc } = entryPointDoc({ type: 'effect', title: 'Suppliers cooperate' });
+    const hits = validate(doc).filter((w) => w.ruleId === 'entry-point');
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.target).toEqual({ kind: 'entity', id: cause.id });
+  });
+
+  it('stays silent when the entry point is an injection', () => {
+    const { doc } = entryPointDoc({ type: 'injection', title: 'Introduce a rubric' });
+    expect(hasRule(validate(doc), 'entry-point')).toBe(false);
+  });
+
+  it('stays silent once the entry point is marked true in current reality', () => {
+    const { doc } = entryPointDoc({ type: 'effect', title: 'Suppliers cooperate', state: 'true' });
+    expect(hasRule(validate(doc), 'entry-point')).toBe(false);
+  });
+
+  it('does not fire on a CRT (root causes are legitimately uncaused)', () => {
+    const { doc } = entryPointDoc({ type: 'rootCause', title: 'No triage rubric' }, 'crt');
+    expect(hasRule(validate(doc), 'entry-point')).toBe(false);
+  });
+
+  it('fires on an NBR too', () => {
+    const { doc } = entryPointDoc({ type: 'effect', title: 'Market stays soft' }, 'nbr');
+    expect(hasRule(validate(doc), 'entry-point')).toBe(true);
+  });
+
+  it('does not flag a node that has an incoming cause (not an entry point)', () => {
+    const root = makeEntity({ type: 'injection', title: 'Introduce a rubric' });
+    const mid = makeEntity({ type: 'effect', title: 'Rubric is followed' });
+    const top = makeEntity({ type: 'desiredEffect', title: 'Resolution time drops' });
+    const doc = makeDoc(
+      [root, mid, top],
+      [makeEdge(root.id, mid.id), makeEdge(mid.id, top.id)],
+      'frt'
+    );
+    const hits = validate(doc).filter(
+      (w) => w.ruleId === 'entry-point' && w.target.kind === 'entity' && w.target.id === mid.id
+    );
+    expect(hits).toHaveLength(0);
+  });
+});

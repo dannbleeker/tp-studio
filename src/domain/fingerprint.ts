@@ -94,7 +94,9 @@ const computeLayoutFingerprint = (doc: TPDocument): string => {
  *   - diagram type
  *   - per-entity: id, type, title, unspecified, spanOfControl,
  *     ecSlot, S&T facet presence (via the `:st` suffix used by
- *     `layoutFingerprint` so toggling a facet attribute counts)
+ *     `layoutFingerprint` so toggling a facet attribute counts),
+ *     and `state` (the FRT/NBR entry-point rule treats an entry point
+ *     asserted `true` in current reality as legitimate — Session 199 A2)
  *   - per-edge: id, source, target, andGroupId, weight, isBackEdge,
  *     delay (the loop-polarity + reinforcing-no-delay rules read these)
  *   - the assumption→edge mapping (`record.edgeId` for every
@@ -204,7 +206,11 @@ const computeValidationFingerprint = (doc: TPDocument): string => {
               return a.kind === 'string' ? (a.value.trim() !== '' ? '1' : '0') : '1';
             }).join('')}`
           : '';
-      return `${e.id}:${e.type}:${e.title}:${u}${s}${slot}${st}`;
+      // Session 199 (backlog A2) — the entry-point rule reads `state` (an entry
+      // point asserted `true` in current reality is legitimate), so a state
+      // toggle must invalidate the cache or the warning goes stale on a hit.
+      const state = e.state ? `:@${e.state}` : '';
+      return `${e.id}:${e.type}:${e.title}:${u}${s}${slot}${st}${state}`;
     })
     .sort()
     .join('|');

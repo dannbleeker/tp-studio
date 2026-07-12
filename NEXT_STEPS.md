@@ -61,7 +61,7 @@ Ch18 Kendall · Ch19 Dettmer · Ch20 Goldratt-Ashlag · Ch22 Lang · Ch23 Mabin 
 Cohen · Ch25 Scheinkopf(+App.B CLR) · Ch26 Suerken · Ch27 Cheng · Ch31 van Gelder/Ferguson ·
 Ch34 Ferguson.
 
-### A. CLR / logic correctness (A1 SHIPPED Session 199; A2–A4 in progress)
+### A. CLR / logic correctness (A1+A2 SHIPPED Session 199; A3–A4 in progress)
 Approved as a four-slice build (A1 wording+warnings · A2 entry-point rule · A3 two AND connectors ·
 A4 opt-in modes) after a plan + in-app mockup.
 - `ACTIVE (A3)` **Two AND connectors.** Split the single AND junctor into a *magnitudinal-and*
@@ -79,9 +79,10 @@ A4 opt-in modes) after a plan + in-app mockup.
 - **Predicted-Effect as two checks** — ✅ **shipped Session 199 (A1)**: (a) collateral-effect existence
   (the reworded warning); (b) timing counter-example — no structural signal, so it rides edge scrutiny.
   *Ch25 App.B Fig 25-B7.*
-- `ACTIVE (A2)` **Entry-point rule (FRT/NBR).** Every cause-only node must be current-reality-checkable
-  today OR an injection — flag orphans. *Ch25 (Scheinkopf) NBR section.* (First fix the validation
-  fingerprint to include entity `state`, or the warnings go stale on a state toggle.)
+- **Entry-point rule (FRT/NBR)** — ✅ **shipped Session 199 (A2)** as `entry-point`: a cause-only node
+  must be an injection or asserted true in current reality (entity `state`), else it's flagged. The
+  validation fingerprint now encodes `state` (with a regression test) so the warning clears on a state
+  toggle. *Ch25 (Scheinkopf) NBR section.*
 - `EXTENDS (A4)` **Progressive CLR gating.** `clr-tiered` groups by tier; also *order* it — clarity
   first, de-emphasise Level-3 until Levels 1–2 clear. *Ch25 App.B.*
 - **Compliance-as-CSF warning (Goal Tree)** — ✅ **shipped Session 199 (A1)** as `goalTree-compliance-csf`:

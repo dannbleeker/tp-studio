@@ -604,7 +604,7 @@ The mechanics are identical to CRT — only the entity palette and convention di
 
 - Start one with `Cmd/Ctrl+K` → **New diagram…** → Future Reality Tree (or load the example via **Load example…** → Future Reality Tree).
 - The three available types are: **Injection** (the change you propose), **Effect** (intermediate consequences), and **Desired Effect** (what the customer feels — the top of the tree). Assumptions attach to edges via the Assumption Well, as on every diagram.
-- The same CLR rules apply with two FRT-specific tweaks: cause-effect-reversal does *not* fire (it's a CRT-only heuristic), and predicted-effect-existence kicks in when an injection has no consequences attached yet.
+- The same CLR rules apply with a few FRT-specific tweaks: cause-effect-reversal does *not* fire (it's a CRT-only heuristic); predicted-effect-existence kicks in when an injection has no consequences attached yet; and the **entry-point rule** flags a cause-only node (something with effects but nothing causing it) that is neither an injection nor marked **true** in current reality — every entry point of a solution tree should be one or the other, so make it an injection, set its state to holding today, or connect the cause that produces it. (It runs on Negative Branch Reservations too.)
 
 ## Negative Branch Reservations
 

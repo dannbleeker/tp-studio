@@ -16,6 +16,7 @@ import { ecCompletenessRule } from './ecCompleteness';
 import { ecMissingConflictRule } from './ecMissingConflict';
 import { entityExistenceRule } from './entityExistence';
 import { entityFragmentRule } from './entityFragment';
+import { entryPointRule } from './entryPoint';
 import { externalRootCauseRule } from './externalRootCause';
 import { goalTreeComplianceCsfRule } from './goalTreeComplianceCsf';
 import { goalTreeMultipleGoalsRule } from './goalTreeMultipleGoals';
@@ -111,6 +112,9 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('sufficiency', 'cause-sufficiency', causeSufficiencyRule),
     tieredRule('sufficiency', 'additional-cause', additionalCauseRuleFor('desiredEffect')),
     tieredRule('existence', 'predicted-effect-existence', predictedEffectExistenceRule),
+    // Session 199 (backlog A2) — entry-point rule: a cause-only node must be an
+    // injection or asserted true in current reality.
+    tieredRule('existence', 'entry-point', entryPointRule),
     // Session 179 — logic-type lint + loop-polarity (Theme C2 + A2).
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
     tieredRule('clarity', 'loop-polarity', loopPolarityRule),
@@ -234,6 +238,8 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('sufficiency', 'cause-sufficiency', causeSufficiencyRule),
     tieredRule('sufficiency', 'additional-cause', additionalCauseRuleFor('ude', 'desiredEffect')),
     tieredRule('existence', 'predicted-effect-existence', predictedEffectExistenceRule),
+    // Session 199 (backlog A2) — entry-point rule (shared with FRT).
+    tieredRule('existence', 'entry-point', entryPointRule),
     tieredRule('existence', 'nbr-no-negative-branch', nbrNoNegativeBranchRule),
     tieredRule('existence', 'nbr-ude-disconnected', nbrUdeDisconnectedRule),
     // Session 179 — logic-type lint + loop-polarity (Theme C2 + A2).

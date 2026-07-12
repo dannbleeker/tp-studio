@@ -142,7 +142,13 @@ export type ClrRuleId =
   // A law / regulation / compliance condition set as a Critical Success Factor
   // on a Goal Tree — compliance is usually a Necessary Condition a few layers
   // down, not a make-or-break CSF (Dettmer). Soft clarity nudge.
-  | 'goalTree-compliance-csf';
+  | 'goalTree-compliance-csf'
+  // Session 199 (backlog A2, Scheinkopf NBR section) — the entry-point rule for
+  // Future Reality Trees / Negative Branch Reservations: a "cause-only" node
+  // (something with effects but nothing causing it) must be an injection you will
+  // introduce OR a condition asserted true in current reality — otherwise it is
+  // an unstated assumption holding the branch up. Existence tier.
+  | 'entry-point';
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each

@@ -28,6 +28,20 @@ App. B, Scheinkopf, unless noted):
   compliance is usually a Necessary Condition a few layers down — a threshold you must not breach — not a
   make-or-break CSF the goal is built around (Ch. 19, Dettmer).
 
+## Session 199 — Entry-point rule (backlog A2)
+
+- **Entry-point rule** (`entry-point`, existence tier; Future Reality Trees + Negative Branch
+  Reservations). A cause-only node — one that has effects but nothing causing it — must be either an
+  **injection** you'll deliberately introduce or a condition asserted **true in current reality** (its
+  `state` tag). Anything else is an unstated assumption holding the branch up, so it's flagged with a
+  three-way fix: make it an injection, mark its state as holding today, or connect the cause that produces
+  it. Scoped to FRT/NBR — a Current Reality Tree's entry points are its root causes, which are *supposed*
+  to be uncaused (*Handbook* Ch. 25, Scheinkopf — the NBR entry-point discipline).
+- **Cache-fingerprint fix (behind it).** The validator cache's `validationFingerprint` didn't encode
+  `Entity.state`, so this new rule — the first to read `state` — would have returned stale warnings on a
+  cache hit (toggle a node to "true" and the warning wouldn't clear). `state` is now part of the
+  per-entity fingerprint, with a regression test pinning it.
+
 ## Session 198 — Cross-tree spawn bridges (backlog C)
 
 Two new command-palette actions that seed one tree from another, following the same **unlinked-spawn**

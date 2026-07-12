@@ -118,6 +118,18 @@ describe('validationFingerprint', () => {
     // diagram-type-in-key invariant is what we're pinning.
     expect(fp('validation')).not.toBe(a);
   });
+
+  it('changes when an entity state changes (A2 — the entry-point rule reads it)', () => {
+    // Regression guard for the cache trap: the entry-point rule (FRT/NBR) treats
+    // an entry point asserted true in current reality as legitimate, so a state
+    // toggle MUST re-key the fingerprint or the warning goes stale on a hit.
+    const inj = makeEntity({ type: 'effect', title: 'Supplier ships on time' });
+    const de = makeEntity({ type: 'desiredEffect', title: 'Orders arrive early' });
+    const edge = makeEdge(inj.id, de.id);
+    const unset = validationFingerprint(makeDoc([inj, de], [edge], 'frt'));
+    const asserted = validationFingerprint(makeDoc([{ ...inj, state: 'true' }, de], [edge], 'frt'));
+    expect(asserted).not.toBe(unset);
+  });
 });
 
 describe('validationFingerprint — custom entity classes', () => {

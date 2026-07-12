@@ -43,10 +43,11 @@ These read titles, edge endpoints, and connectivity only — they assume nothing
 | `cause-sufficiency` | sufficiency | An injection/cause that probably needs a co-cause. |
 | `additional-cause` | sufficiency | A desired effect with one ungrouped cause (a different cause could also produce it), or exactly two ungrouped causes (the AND-vs-OR magnitude question). |
 | `predicted-effect-existence` | existence | An injection with no predicted effect captured yet — name a *collateral* effect it must also produce, then go and check for it (its absence challenges the injection). The companion *timing* counter-example — an effect that appears before its cause can't be caused by it — has no structural signal, so it's walked in [edge scrutiny](13-the-clr.md) rather than auto-fired. |
+| `entry-point` | existence | A cause-only node (it has effects but nothing causes it) that is *neither* an injection you'll introduce *nor* asserted true in current reality (its **state** tag isn't `true`). Every entry point of a solution tree must be one or the other — otherwise it's an unstated assumption holding the branch up. Make it an injection, mark its state as holding today, or connect the cause that produces it. |
 
 ### NBR — Negative Branch Reservation
 
-Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): `cause-sufficiency`, `additional-cause`, and `predicted-effect-existence` (all as above), plus two NBR-specific shape rules and the cross-diagram lint below.
+Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): `cause-sufficiency`, `additional-cause`, `predicted-effect-existence`, and `entry-point` (all as above), plus two NBR-specific shape rules and the cross-diagram lint below.
 
 | Rule | Tier | Catches |
 | --- | --- | --- |
@@ -122,6 +123,7 @@ These ride the same edge/loop structure across several diagram types:
 | `additional-cause` | ✓ | ✓ | | | | | | | ✓ |
 | `cause-effect-reversal` | ✓ | | | | | | | | |
 | `predicted-effect-existence` | | ✓ | | | | | | | ✓ |
+| `entry-point` | | ✓ | | | | | | | ✓ |
 | `external-root-cause` | ✓ | | | | | | | | |
 | `crt-ude-count` | ✓ | | | | | | | | |
 | `crt-ude-no-upstream` | ✓ | | | | | | | | |
