@@ -2,6 +2,23 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 198 — Strategy & Tactics template pack (backlog G)
+
+Three new Strategy & Tactics starters in the pattern library, built **on the corrected directional model**
+(backlog B) — each step is a first-class facet card (strategy + necessary ↑ / parallel ↔ / sufficiency ↓),
+authored so it opens position-clean (the apex carries no necessary assumption, leaves carry no sufficiency
+one, every decomposition fans out to ≥2 children, and the intentional-leaf rollup nudges are pre-resolved):
+
+- **Reliable Rapid Response** and **Vendor-Managed Inventory** — two Decisive-Competitive-Edge / un-refusable-
+  offer templates (Handbook Ch. 22, Lang), abstracted: sell a delivery guarantee backed by operational slack;
+  take the stockout-vs-overstock risk off the customer's shelf via consumption-driven replenishment.
+- **Viable Vision — Build / Capitalize / Sustain** — the generic three-phase Viable-Vision scaffold
+  (Ch. 34/18, Ferguson), a reusable skeleton for reaching an ambitious vision on existing resources.
+
+Shared recursive `buildSTFacetDoc` builder; a test pins that each pattern is a valid, position-clean facet
+tree. *A representative pack — the full book set (the remaining Mafia-Offer templates, the 6-level Retailer
+Viable-Vision tree, and the healthcare Viable-Vision) remains a documented extension in NEXT_STEPS §G.*
+
 ## Session 198 — Strategy & Tactics model correction (backlog B)
 
 A Strategy & Tactics tree cascades strategy through nested strategy/tactic pairs; each step carries three

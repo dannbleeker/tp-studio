@@ -156,12 +156,14 @@ fire-fighting NBR, 2 Goal Trees (personal-life + fabrication-shop), the class-pe
 and the library's first Freeform pattern. The Ch15 Five-Question CI-bundle triples were dropped as
 redundant with the Session-193 canon + shipped DBR/Critical-Chain/pull FRTs; two overlaps were
 folded into `ec-speak-up-vs-stay-safe` + `ec-cost-vs-throughput` rather than duplicated.
-- **REMAINING — S&T pack (`DECISION`/deferred behind item B, the S&T model correction):** the S&T
-  bench, held so it's built on the corrected step-assumption model, not reworked — Mafia-Offer
-  "Decisive Competitive Edge" pack (VMI / Reliable-Rapid-Response / Consumer-Goods / Projects /
-  Pay-Per-Click / Gain-Sharing, *Ch22 Lang "The Templates"*); **Retailer Viable Vision** 6-level +
-  the 5 generic VV trees + Build/Capitalize/Sustain × Base/Enhanced scaffold (*Ch34 Ferguson
-  Tables 34-1…6; Ch18*); **Healthcare/medical-practice VV** (services example, *Ch31 appendix*).
+- **S&T pack — ✅ representative set shipped Session 198** (after item B landed the corrected model): three
+  facet-based S&T starters on the directional model — **Reliable Rapid Response** + **Vendor-Managed
+  Inventory** (Decisive Competitive Edge, *Ch22 Lang*) and the **Viable Vision — Build/Capitalize/Sustain**
+  scaffold (*Ch34 Ferguson; Ch18*). Shared `buildSTFacetDoc`; each opens position-clean. See CHANGELOG S198.
+  - *Remaining extension (open, lower priority):* the rest of the Mafia-Offer sextet (Consumer-Goods /
+    Projects / Pay-Per-Click / Gain-Sharing), the full **6-level Retailer Viable Vision** tree + the 5
+    generic VV trees + the Base/Enhanced scaffold (*Ch34 Tables 34-1…6*), and the **Healthcare VV**
+    (*Ch31 appendix*) — build them the same way (facet cards on the corrected model) if the pack is wanted in full.
 
 ### H. Facilitation / change-management — DECISION (E2 was dropped S179; do NOT build unilaterally)
 The book gives far richer material than the E2 review had, so these may be worth a *re-decision* —

@@ -122,7 +122,10 @@ import { buildPatternPRTZeroDefects } from './prt-zero-defects';
 import { buildPatternSTConstraintExploitation } from './st-constraint-exploitation';
 import { buildPatternSTMarketExpansion } from './st-market-expansion';
 import { buildPatternSTQualityFirst } from './st-quality-first';
+import { buildPatternSTReliableRapidResponse } from './st-reliable-rapid-response';
 import { buildPatternSTTimeToMarket } from './st-time-to-market';
+import { buildPatternSTVendorManagedInventory } from './st-vendor-managed-inventory';
+import { buildPatternSTViableVisionScaffold } from './st-viable-vision-scaffold';
 import { buildPatternTTDealClose } from './tt-deal-close';
 import { buildPatternTTEngineerOnboarding } from './tt-engineer-onboarding';
 import { buildPatternTTFeatureRollout } from './tt-feature-rollout';
@@ -865,6 +868,30 @@ const CORE_PATTERNS: Pattern[] = [
     hint: 'Concurrent-engineering S&T — design / engineering / GTM converging on a single live brief with weekly cross-team reviews.',
     diagramType: 'st',
     build: buildPatternSTTimeToMarket,
+  },
+  // TOC Handbook set (Session 198, backlog G) — the S&T pack built on the
+  // corrected directional-facet model (backlog B): each step is a first-class
+  // facet card (strategy + necessary↑ / parallel↔ / sufficiency↓), position-clean.
+  {
+    id: 'st-reliable-rapid-response',
+    label: 'Reliable Rapid Response (Decisive Competitive Edge)',
+    hint: "Lang's un-refusable-offer family (Handbook Ch. 22), abstracted — sell a delivery guarantee; operations create the slack, sales lead with reliability. A facet-card S&T on the directional model.",
+    diagramType: 'st',
+    build: buildPatternSTReliableRapidResponse,
+  },
+  {
+    id: 'st-vendor-managed-inventory',
+    label: 'Vendor-Managed Inventory (Decisive Competitive Edge)',
+    hint: "A second Ch. 22 offer template, abstracted — take the stockout-vs-overstock risk off the customer's shelf: read real consumption, replenish fast from central stock. Facet-card S&T.",
+    diagramType: 'st',
+    build: buildPatternSTVendorManagedInventory,
+  },
+  {
+    id: 'st-viable-vision-scaffold',
+    label: 'Viable Vision — Build / Capitalize / Sustain',
+    hint: "Ferguson's generic Viable-Vision skeleton (Handbook Ch. 34/18), abstracted — reach an ambitious vision on existing resources in three phases: build the capability, capitalise on it, sustain the edge. A reusable facet-card scaffold.",
+    diagramType: 'st',
+    build: buildPatternSTViableVisionScaffold,
   },
 
   // ── Freeform ───────────────────────────────────────────────────────
