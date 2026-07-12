@@ -2,7 +2,7 @@
   "$schema": "./features.schema.json",
   "note": "Canonical catalogue of TP Studio's user-facing features — the denominator for the feature-coverage metric (scripts/build-stats.mjs). One entry per capability a user can see, do, or configure (dev infrastructure is intentionally excluded). `manual` = covered in USER_GUIDE.md; `book` = covered in a docs/guide chapter; `bookExample` = that chapter carries a worked example. Deduped from the full CHANGELOG (Sessions 1-180) in Session 180. Add a row when a user-facing feature ships and fill its coverage as the manual/book catch up.",
   "areas": ["CRT","EC","FRT","PRT","TT","GoalTree","ST","NBR","Canvas","Editing","Entities","Edges","CLR","Layout","Export","Import","Print","Comments","Revisions","Search","Palette","Settings","Workshop","Reader","Patterns","Start","General"],
-  "reviewedThroughSession": 197,
+  "reviewedThroughSession": 198,
   "features": [
     {"id":"crt-diagram","name":"Current Reality Tree","area":"CRT","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"crt-core-driver","name":"Core Driver finder","area":"CRT","since":52,"manual":true,"book":true,"bookExample":true},
@@ -26,6 +26,7 @@
     {"id":"ec-wizard-d-first","name":"EC D-first wizard walk","area":"EC","since":87,"manual":true,"book":true,"bookExample":false},
     {"id":"ec-cloud-type-wizard","name":"Cloud-type wizard modes (per-type build order + prompts + break hint)","area":"EC","since":197,"manual":true,"book":true,"bookExample":true},
     {"id":"ec-two-sided-verbal","name":"EC two-sided verbal framing","area":"EC","since":87,"manual":true,"book":true,"bookExample":true},
+    {"id":"ec-verbalisation-lead","name":"Verbalisation read-for-side toggle (D′-first)","area":"EC","since":198,"manual":true,"book":true,"bookExample":true},
     {"id":"ec-reading-strip","name":"EC reading-instruction strip","area":"EC","since":87,"manual":true,"book":true,"bookExample":false},
     {"id":"ec-slot-questions","name":"EC per-slot guiding questions","area":"EC","since":87,"manual":true,"book":true,"bookExample":false},
     {"id":"ec-injection-chip","name":"EC injections chip","area":"EC","since":87,"manual":true,"book":false,"bookExample":false},

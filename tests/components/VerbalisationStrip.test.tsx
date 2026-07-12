@@ -64,4 +64,22 @@ describe('VerbalisationStrip — collapsible canvas variant', () => {
     const { container } = render(<VerbalisationStrip />);
     expect(container.textContent).toBe('');
   });
+
+  // Session 198 (backlog D5) — read-for-side toggle.
+  it("the D'-first toggle flips aria-pressed and reorders the reading", () => {
+    seedECDoc();
+    const { container } = render(<VerbalisationStrip compact={false} />);
+    const before = container.textContent;
+    const toggle = container.querySelector(
+      '[data-component="verbalisation-lead-toggle"]'
+    ) as HTMLButtonElement;
+    expect(toggle).toBeTruthy();
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    act(() => {
+      fireEvent.click(toggle);
+    });
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    // Same cloud, reordered reading — the prose must change.
+    expect(container.textContent).not.toBe(before);
+  });
 });

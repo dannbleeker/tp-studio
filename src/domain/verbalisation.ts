@@ -129,45 +129,50 @@ const findArrow = (
 const wordingForStyle = (
   style: 'neutral' | 'twoSided'
 ): {
-  inOrderToA: string;
-  inOrderToBC: string;
-  weMustB: string;
-  weMustAlsoC: string;
-  inOrderToB: string;
-  weMustD: string;
-  inOrderToC: string;
-  weMustDPrime: string;
+  inOrderToAchieve: string;
+  needB: string;
+  needC: string;
+  inOrderTo: string;
+  wantD: string;
+  wantDPrime: string;
 } => {
   if (style === 'twoSided') {
+    // The two needs (B + C) belong to each party respectively. The PPT frames
+    // B as the OTHER side's need (satisfied by D) and C as MY side's need
+    // (satisfied by D′). Voice is tied to the SIDE, not the reading position.
     return {
-      inOrderToA: 'In order to achieve ',
-      // The two needs (B + C) belong to each party respectively. The PPT
-      // frames B as the OTHER side's need (satisfied by D) and C as MY
-      // side's need (satisfied by D′).
-      inOrderToBC: 'In order to achieve ',
-      weMustB: ', they must ',
-      weMustAlsoC: ', I must also ',
-      inOrderToB: 'In order to ',
-      weMustD: ', they want to ',
-      inOrderToC: 'In order to ',
-      weMustDPrime: ', I want to ',
+      inOrderToAchieve: 'In order to achieve ',
+      needB: ', they must ',
+      needC: ', I must ',
+      inOrderTo: 'In order to ',
+      wantD: ', they want to ',
+      wantDPrime: ', I want to ',
     };
   }
   return {
-    inOrderToA: 'In order to achieve ',
-    inOrderToBC: 'In order to achieve ',
-    weMustB: ', we must ',
-    weMustAlsoC: ', we must also ',
-    inOrderToB: 'In order to ',
-    weMustD: ', we must ',
-    inOrderToC: 'In order to ',
-    weMustDPrime: ', we must ',
+    inOrderToAchieve: 'In order to achieve ',
+    needB: ', we must ',
+    needC: ', we must ',
+    inOrderTo: 'In order to ',
+    wantD: ', we must ',
+    wantDPrime: ', we must ',
   };
 };
 
-/** Generate the structured verbalisation for an EC document. Returns
- *  an empty array for non-EC docs. */
-export const verbaliseEC = (doc: TPDocument): VerbalisationToken[] => {
+/**
+ * Generate the structured verbalisation for an EC document. Returns an empty
+ * array for non-EC docs.
+ *
+ * Session 198 (backlog D5) — `opts.leadWithC` presents the cloud from the D′
+ * side's perspective, reading the C→D′ (my-side) arc BEFORE the B→D
+ * (other-side) arc. Cohen recommends leading with the listener's own need +
+ * tactic so they feel heard first (Handbook Ch. 24). Default (`false`) is the
+ * canonical B-first reading, byte-for-byte as before.
+ */
+export const verbaliseEC = (
+  doc: TPDocument,
+  opts?: { leadWithC?: boolean }
+): VerbalisationToken[] => {
   if (doc.diagramType !== 'ec') return [];
   const slots = slotEntities(doc);
   const a = slotText(slots.a, 'a');
@@ -176,6 +181,7 @@ export const verbaliseEC = (doc: TPDocument): VerbalisationToken[] => {
   const d = slotText(slots.d, 'd');
   const dPrime = slotText(slots.dPrime, 'dPrime');
   const w = wordingForStyle(doc.ecVerbalStyle ?? 'neutral');
+  const leadWithC = opts?.leadWithC ?? false;
 
   // Arrow lookups — directed except the D↔D′ mutex, which we treat as
   // bidirectional and require the `isMutualExclusion` flag.
@@ -186,51 +192,69 @@ export const verbaliseEC = (doc: TPDocument): VerbalisationToken[] => {
     dPrimeToC: findArrow(doc, slots.dPrime?.id, slots.c?.id),
     dToDPrime: findArrow(doc, slots.d?.id, slots.dPrime?.id, true),
   };
-
-  const tokens: VerbalisationToken[] = [];
-  const push = (...t: VerbalisationToken[]): void => {
-    tokens.push(...t);
-  };
   const arrow = (k: ArrowKey): VerbalisationToken => {
-    const a = arrows[k];
-    return a
-      ? { kind: 'assumptionAnchor', edgeId: a.edgeId, assumptionCount: a.assumptionCount }
+    const found = arrows[k];
+    return found
+      ? { kind: 'assumptionAnchor', edgeId: found.edgeId, assumptionCount: found.assumptionCount }
       : { kind: 'assumptionAnchor', edgeId: '', assumptionCount: 0 };
   };
 
-  push({ kind: 'text', text: w.inOrderToA });
-  push({ kind: 'slot', slot: 'a', entityId: slots.a?.id, text: a });
-  push({ kind: 'text', text: w.weMustB });
-  push({ kind: 'slot', slot: 'b', entityId: slots.b?.id, text: b });
-  push({ kind: 'text', text: ', because ' });
-  push(arrow('bToA'));
-  push({ kind: 'text', text: `. ${w.inOrderToB.trimStart()}` });
-  push({ kind: 'slot', slot: 'b', entityId: slots.b?.id, text: b });
-  push({ kind: 'text', text: w.weMustD });
-  push({ kind: 'slot', slot: 'd', entityId: slots.d?.id, text: d });
-  push({ kind: 'text', text: ', because ' });
-  push(arrow('dToB'));
-  push({ kind: 'text', text: `. ${w.inOrderToBC.trimStart()}` });
-  push({ kind: 'slot', slot: 'a', entityId: slots.a?.id, text: a });
-  push({ kind: 'text', text: w.weMustAlsoC });
-  push({ kind: 'slot', slot: 'c', entityId: slots.c?.id, text: c });
-  push({ kind: 'text', text: ', because ' });
-  push(arrow('cToA'));
-  push({ kind: 'text', text: `. ${w.inOrderToC.trimStart()}` });
-  push({ kind: 'slot', slot: 'c', entityId: slots.c?.id, text: c });
-  push({ kind: 'text', text: w.weMustDPrime });
-  push({ kind: 'slot', slot: 'dPrime', entityId: slots.dPrime?.id, text: dPrime });
-  push({ kind: 'text', text: ', because ' });
-  push(arrow('dPrimeToC'));
-  push({ kind: 'text', text: '. But ' });
-  push({ kind: 'slot', slot: 'd', entityId: slots.d?.id, text: d });
-  push({ kind: 'text', text: ' and ' });
-  push({ kind: 'slot', slot: 'dPrime', entityId: slots.dPrime?.id, text: dPrime });
-  push({ kind: 'text', text: ' cannot coexist, because ' });
-  push(arrow('dToDPrime'));
-  push({ kind: 'text', text: '.' });
+  // "also" attaches to whichever need-arc reads SECOND (it reads as "the other
+  // need too"). Keeps the default output identical: B first (no "also"), C
+  // second ("… we must also …").
+  const alsoize = (conn: string): string => `${conn.trimEnd()} also `;
 
-  return tokens;
+  // One need→want arc: "In order to achieve A, [voice] NEED, because [x]. In
+  // order to NEED, [voice] WANT, because [y]." Both arcs open on the shared A.
+  const arc = (
+    needSlot: 'b' | 'c',
+    needTxt: string,
+    needConn: string,
+    wantSlot: 'd' | 'dPrime',
+    wantTxt: string,
+    wantConn: string,
+    needArrowKey: ArrowKey,
+    wantArrowKey: ArrowKey,
+    isSecond: boolean
+  ): VerbalisationToken[] => {
+    const needId = (needSlot === 'b' ? slots.b : slots.c)?.id;
+    const wantId = (wantSlot === 'd' ? slots.d : slots.dPrime)?.id;
+    return [
+      { kind: 'text', text: w.inOrderToAchieve },
+      { kind: 'slot', slot: 'a', entityId: slots.a?.id, text: a },
+      { kind: 'text', text: isSecond ? alsoize(needConn) : needConn },
+      { kind: 'slot', slot: needSlot, entityId: needId, text: needTxt },
+      { kind: 'text', text: ', because ' },
+      arrow(needArrowKey),
+      { kind: 'text', text: `. ${w.inOrderTo}` },
+      { kind: 'slot', slot: needSlot, entityId: needId, text: needTxt },
+      { kind: 'text', text: wantConn },
+      { kind: 'slot', slot: wantSlot, entityId: wantId, text: wantTxt },
+      { kind: 'text', text: ', because ' },
+      arrow(wantArrowKey),
+    ];
+  };
+
+  const bArc = (isSecond: boolean) =>
+    arc('b', b, w.needB, 'd', d, w.wantD, 'bToA', 'dToB', isSecond);
+  const cArc = (isSecond: boolean) =>
+    arc('c', c, w.needC, 'dPrime', dPrime, w.wantDPrime, 'cToA', 'dPrimeToC', isSecond);
+
+  const first = leadWithC ? cArc(false) : bArc(false);
+  const second = leadWithC ? bArc(true) : cArc(true);
+
+  return [
+    ...first,
+    { kind: 'text', text: '. ' },
+    ...second,
+    { kind: 'text', text: '. But ' },
+    { kind: 'slot', slot: 'd', entityId: slots.d?.id, text: d },
+    { kind: 'text', text: ' and ' },
+    { kind: 'slot', slot: 'dPrime', entityId: slots.dPrime?.id, text: dPrime },
+    { kind: 'text', text: ' cannot coexist, because ' },
+    arrow('dToDPrime'),
+    { kind: 'text', text: '.' },
+  ];
 };
 
 /**

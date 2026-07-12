@@ -214,4 +214,37 @@ describe('verbaliseEC', () => {
       expect(twoSidedAnchors).toHaveLength(neutralAnchors.length);
     });
   });
+
+  // Session 198 (backlog D5) — audience-specific reading order.
+  describe('leadWithC — present from the D′ (own) side first', () => {
+    const flatten = (tokens: ReturnType<typeof verbaliseEC>): string =>
+      tokens.map((t) => (t.kind === 'assumptionAnchor' ? '' : t.text)).join('');
+
+    it('default reads the B/D arc first, then the C/D′ arc (with "also")', () => {
+      const { doc } = buildEC({ mutexDtoDPrime: true });
+      const text = flatten(verbaliseEC(doc));
+      expect(text.indexOf('we must Need one')).toBeLessThan(text.indexOf('we must also Need two'));
+    });
+
+    it('leadWithC reads the C/D′ arc first (no "also"), then the B/D arc (with "also")', () => {
+      const { doc } = buildEC({ mutexDtoDPrime: true });
+      const text = flatten(verbaliseEC(doc, { leadWithC: true }));
+      // C now leads without "also"; B follows with "also"; mutex still closes.
+      expect(text).toContain('we must Need two');
+      expect(text.indexOf('we must Need two')).toBeLessThan(text.indexOf('we must also Need one'));
+      expect(text).toContain('But Want one and Want two cannot coexist');
+    });
+
+    it('explicit leadWith:false matches the default token-for-token', () => {
+      const { doc } = buildEC({ mutexDtoDPrime: true });
+      expect(verbaliseEC(doc, { leadWithC: false })).toEqual(verbaliseEC(doc));
+    });
+
+    it('keeps all five assumption anchors regardless of lead', () => {
+      const { doc } = buildEC({ mutexDtoDPrime: true });
+      expect(
+        verbaliseEC(doc, { leadWithC: true }).filter((t) => t.kind === 'assumptionAnchor')
+      ).toHaveLength(5);
+    });
+  });
 });

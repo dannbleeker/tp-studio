@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { ChevronDown, ChevronUp, Quote } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { verbaliseEC } from '@/domain/verbalisation';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -37,10 +37,14 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
   // read the full thing without re-clicking the chevron each time.
   const collapsed = useDocumentStore((s) => s.verbalisationStripCollapsed);
   const setCollapsed = useDocumentStore((s) => s.setVerbalisationStripCollapsed);
+  // Session 198 (D5) — optional "read from the D′ (own) side first" framing.
+  // Per-session, defaults off (canonical B-first reading). Cohen recommends
+  // presenting the cloud leading with the listener's own need + tactic.
+  const [leadWithC, setLeadWithC] = useState(false);
   // Session 135 / Perf #3 — `verbaliseEC` walks the EC graph; memoize it
   // so the strip (which subscribes to the whole doc) doesn't re-derive
   // the verbalisation on every unrelated store mutation.
-  const tokens = useMemo(() => verbaliseEC(doc), [doc]);
+  const tokens = useMemo(() => verbaliseEC(doc, { leadWithC }), [doc, leadWithC]);
   if (tokens.length === 0) return null;
 
   const isCollapsed = compact && collapsed;
@@ -145,18 +149,40 @@ export function VerbalisationStrip({ compact = true }: { compact?: boolean } = {
               );
             })}
           </p>
-          {compact && (
+          <div className="flex shrink-0 flex-col items-end gap-1 self-start">
+            {/* Session 198 (D5) — read from the D′ (own) side first. */}
             <button
               type="button"
-              onClick={() => setCollapsed(true)}
-              aria-label="Collapse EC verbalisation"
-              aria-expanded={true}
-              className="shrink-0 self-start rounded-sm p-0.5 text-neutral-400 outline-hidden transition hover:text-neutral-700 focus:ring-2 focus:ring-violet-400 dark:text-neutral-500 dark:hover:text-neutral-200"
-              title="Collapse"
+              data-component="verbalisation-lead-toggle"
+              onClick={() => setLeadWithC((v) => !v)}
+              aria-pressed={leadWithC}
+              title={
+                leadWithC
+                  ? 'Reading from the D′ (own) side first — click for cloud order'
+                  : 'Reading in cloud order — click to lead with the D′ (own) side'
+              }
+              className={clsx(
+                'rounded-xs border px-1 py-0 font-medium text-[10px] not-italic transition focus:outline-hidden focus:ring-2 focus:ring-violet-400',
+                leadWithC
+                  ? 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-300'
+                  : 'border-neutral-300 bg-neutral-50 text-neutral-500 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400'
+              )}
             >
-              <ChevronUp className="h-3 w-3" />
+              D′-first
             </button>
-          )}
+            {compact && (
+              <button
+                type="button"
+                onClick={() => setCollapsed(true)}
+                aria-label="Collapse EC verbalisation"
+                aria-expanded={true}
+                className="rounded-sm p-0.5 text-neutral-400 outline-hidden transition hover:text-neutral-700 focus:ring-2 focus:ring-violet-400 dark:text-neutral-500 dark:hover:text-neutral-200"
+                title="Collapse"
+              >
+                <ChevronUp className="h-3 w-3" />
+              </button>
+            )}
+          </div>
         </>
       )}
     </div>

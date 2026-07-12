@@ -67,6 +67,7 @@ The verbaliser is the discipline; the listener is the CLR. The builder is the an
 > - **Reasoning narrative export** — Markdown paragraph form per chain.
 > - **Reasoning outline export** — Markdown nested-list form.
 > - **EC Verbal Style toggle** — neutral vs. two-sided framing.
+> - **Read-for-side toggle** (`D′-first`) — re-reads the cloud leading with the D′ (own) side's need and tactic, following Cohen's advice to present to the listener's own side first. Defaults off (canonical B-first order).
 
 > **💡 Practitioner tips**
 > - **Aloud means aloud.** "I read it in my head" isn't verbalising.

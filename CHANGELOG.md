@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 198 — Evaporating Cloud craft (backlog D2–D6)
+
+Finishing the "EC craft" backlog section — a set of opt-in, default-preserving enhancements to how
+Evaporating Clouds are built, checked, presented, and diagnosed (Cohen Ch. 24 + Cheng Ch. 27 of the
+*TOC Handbook*).
+
+- **D5 — audience-specific verbalisation order.** The verbalisation strip gained an opt-in
+  **`D′-first`** toggle: it re-reads the cloud leading with the D′ (own) side's need + tactic before
+  the B/D side, following Cohen's advice to present to the listener's own side first so they feel
+  heard. `verbaliseEC` grew a `leadWithC` option; default (off) is the canonical B-first reading,
+  byte-for-byte as before (pinned by an explicit "matches default token-for-token" test). The
+  generator was refactored into two reusable need→want arcs, with "also" attached to whichever arc
+  reads second.
+
 ## Session 197 — Cloud-type wizard modes (backlog D1)
 
 The EC `cloud-type` tag was a dead label — nothing keyed off it. Now the **creation wizard**
