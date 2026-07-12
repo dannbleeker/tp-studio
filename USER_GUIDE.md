@@ -348,6 +348,13 @@ Drawing a CRT is half the job. The point of the diagram is to find the **Core Dr
 
 **Right-click any CRT entity → Spawn Evaporating Cloud from this entity** (also Palette → **Spawn Evaporating Cloud from selected entity**). Once you've identified the Core Driver, the book's prescription is to recast it as the Core Conflict and explore it with an EC. This action opens a fresh Evaporating Cloud document seeded with the source entity's title in the **Want 1** slot, plus blank placeholders for Goal, Need 1, Need 2, and Want 2. Your CRT isn't lost — it's auto-snapshotted to the revisions panel as part of the document swap, and you can roll back to it any time. The new EC's title is prefixed `EC from "..."` so it's identifiable in the revision list.
 
+### Cross-tree spawn bridges
+
+Two more palette actions seed one tree from another so you don't retype the shared content. Both follow the same rule as *Spawn Evaporating Cloud*: they open a **brand-new document in a new tab and never change the source**, so every diagram stays fully usable on its own — nothing gets linked or coupled together.
+
+- **Palette → Spawn Future Reality Tree from this CRT (invert the UDEs).** On a Current Reality Tree, this creates a Future Reality Tree with one desired-effect seed for each undesirable effect, titled `Reverse: <effect>` for you to rewrite into a proper positive statement, plus one starter **injection** to build toward. It's the book move that a solution tree's desired effects are the mirror image of the problem tree's undesirable effects. If the CRT has no undesirable effects yet, a toast tells you to add one first.
+- **Palette → Spawn Current Reality Tree from this Goal Tree (benchmark shortfalls).** On a Goal Tree, this creates a Current Reality Tree with one candidate undesirable effect for each **Critical Success Factor** and **Necessary Condition**, titled `<standard> is not met` — the shortfall you'd then diagnose. (A Goal Tree sets the standard; a CRT explains why reality falls short of it.) The apex goal itself isn't benchmarked — only the CSF/NC standards become candidate UDEs.
+
 ## Entity state and what-if analysis
 
 Beyond drawing the structure, you can record **what you believe is true** about each entity and let the tool propagate that belief through the causal graph.

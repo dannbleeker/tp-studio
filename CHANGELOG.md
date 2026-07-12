@@ -2,6 +2,25 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 198 — Cross-tree spawn bridges (backlog C)
+
+Two new command-palette actions that seed one tree from another, following the same **unlinked-spawn**
+posture as the existing "Spawn Evaporating Cloud" — each mints a **brand-new document in a new tab and
+never touches the source**, so a single diagram stays fully usable standalone (no cross-doc coupling):
+
+- **Spawn Future Reality Tree from this CRT (invert the UDEs).** On a Current Reality Tree, turns each
+  undesirable effect into a desired-effect seed titled *"Reverse: &lt;effect&gt;"* (for you to rewrite to the
+  positive form) plus one starter injection — the book move that a solution tree's desired effects mirror
+  the problem tree's undesirable effects *(Handbook Ch. 20, Goldratt-Ashlag)*.
+- **Spawn Current Reality Tree from this Goal Tree (benchmark shortfalls).** On a Goal Tree, turns each
+  Critical Success Factor / Necessary Condition into a candidate undesirable effect titled
+  *"&lt;standard&gt; is not met"* — the shortfall you'd then diagnose *(Handbook Ch. 19, Dettmer:
+  a Goal Tree sets the standard, a CRT explains why reality falls short)*.
+
+Both validate the source diagram type and surface a friendly toast when there's nothing to seed from.
+*(The U-Shape cross-tree overview export stays a documented follow-on in NEXT_STEPS §C — it needs
+cross-document link-walking, which the unlinked-spawn model deliberately avoids.)*
+
 ## Session 198 — Prerequisite / Transition Tree refinements (backlog E)
 
 - **Ongoing-vs-done toggle.** An optional `ongoing?` flag on a Prerequisite-Tree / Goal-Tree objective

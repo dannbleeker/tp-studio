@@ -58,6 +58,64 @@ describe('analysisCommands — spawn-ec-from-selection', () => {
   });
 });
 
+describe('analysisCommands — spawn-frt-from-crt (backlog C)', () => {
+  it('opens a fresh FRT seeded from the CRT UDEs and keeps the CRT standalone', async () => {
+    useDocumentStore.getState().newDocument('crt');
+    seedEntity('Orders ship late', 'ude');
+    seedEntity('Quality slips', 'ude');
+    await runCommand(findCommand(analysisCommands, 'spawn-frt-from-crt'));
+    // The RIGHT builder ran: the active doc is now an FRT with one
+    // desired-effect seed per source UDE (not, say, an EC).
+    expect(s().doc.diagramType).toBe('frt');
+    expect(Object.values(s().doc.entities).filter((e) => e.type === 'desiredEffect')).toHaveLength(
+      2
+    );
+    expect(s().toasts.some((t) => /future reality tree/i.test(t.message))).toBe(true);
+  });
+
+  it('toasts info and does nothing when the current doc is not a CRT', async () => {
+    useDocumentStore.getState().newDocument('ec');
+    await runCommand(findCommand(analysisCommands, 'spawn-frt-from-crt'));
+    expect(s().doc.diagramType).toBe('ec');
+    expect(s().toasts.some((t) => /current reality tree/i.test(t.message))).toBe(true);
+  });
+
+  it('toasts info when the CRT has no UDEs to invert', async () => {
+    useDocumentStore.getState().newDocument('crt');
+    seedEntity('Some cause', 'rootCause');
+    await runCommand(findCommand(analysisCommands, 'spawn-frt-from-crt'));
+    expect(s().doc.diagramType).toBe('crt');
+    expect(s().toasts.some((t) => /no undesirable effects/i.test(t.message))).toBe(true);
+  });
+});
+
+describe('analysisCommands — spawn-crt-from-goaltree (backlog C)', () => {
+  it('opens a fresh CRT with one candidate UDE per CSF/NC and keeps the Goal Tree standalone', async () => {
+    useDocumentStore.getState().newDocument('goalTree');
+    seedEntity('Reliable delivery', 'criticalSuccessFactor');
+    seedEntity('Buffers managed', 'necessaryCondition');
+    await runCommand(findCommand(analysisCommands, 'spawn-crt-from-goaltree'));
+    expect(s().doc.diagramType).toBe('crt');
+    expect(Object.values(s().doc.entities).filter((e) => e.type === 'ude')).toHaveLength(2);
+    expect(s().toasts.some((t) => /current reality tree/i.test(t.message))).toBe(true);
+  });
+
+  it('toasts info and does nothing when the current doc is not a Goal Tree', async () => {
+    // The default reset doc is a CRT (diagramType !== 'goalTree').
+    await runCommand(findCommand(analysisCommands, 'spawn-crt-from-goaltree'));
+    expect(s().doc.diagramType).toBe('crt');
+    expect(s().toasts.some((t) => /goal tree/i.test(t.message))).toBe(true);
+  });
+
+  it('toasts info when the Goal Tree has no CSF or NC to benchmark', async () => {
+    useDocumentStore.getState().newDocument('goalTree');
+    seedEntity('Win the market', 'goal');
+    await runCommand(findCommand(analysisCommands, 'spawn-crt-from-goaltree'));
+    expect(s().doc.diagramType).toBe('goalTree');
+    expect(s().toasts.some((t) => /critical success factors/i.test(t.message))).toBe(true);
+  });
+});
+
 describe('analysisCommands — start-read-through', () => {
   it('opens the read-through overlay when edges exist', async () => {
     seedChain(['A', 'B', 'C']);

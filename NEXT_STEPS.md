@@ -97,15 +97,19 @@ Ch34 Ferguson.
     noise) and a **collapsible strategy/tactic "spine" card redesign** with the Tactic between Parallel and
     Sufficiency (touches the fixed card height + the canvas==export geometry invariant — pure polish).
 
-### C. Cross-tree integration (ACTIVE / larger)
-- `ACTIVE` **CRT↔FRT invert.** One click turns UDEs into an FRT desired-effects checklist, flags
-  DEs not yet reached. *Ch20 (Goldratt-Ashlag) Layer 4.*
-- `ACTIVE` **Goal-Tree→CRT benchmark bridge.** Each CSF/NC becomes the standard; its shortfall seeds
-  a candidate UDE. *Ch19 (Dettmer) Fig 19-10.*
+### C. Cross-tree integration (spawn bridges SHIPPED Session 198; larger items remain)
+- **CRT→FRT invert** — ✅ **shipped Session 198**: palette action *"Spawn Future Reality Tree from this
+  CRT"* mints a fresh FRT with one desired-effect seed (*"Reverse: &lt;UDE&gt;"*) per undesirable effect
+  plus a starter injection. Unlinked spawn (new doc, new tab, source untouched — single diagrams stay
+  standalone). *Ch20 (Goldratt-Ashlag) Layer 4.*
+- **Goal-Tree→CRT benchmark bridge** — ✅ **shipped Session 198**: palette action *"Spawn Current
+  Reality Tree from this Goal Tree"* turns each CSF/NC standard into a candidate UDE (*"&lt;standard&gt;
+  is not met"*). Same unlinked-spawn posture. *Ch19 (Dettmer) Fig 19-10.*
 - `EXTENDS` **Injection continuity EC→FRT→PRT** (same injection ID threads the chain; builds on the
-  Injection Flower + `general-u-shape`). *Ch19 (Dettmer).*
+  Injection Flower + `general-u-shape`). *Ch19 (Dettmer).* — deferred: needs cross-doc link threading,
+  which the unlinked-spawn model deliberately avoids (would couple docs together).
 - `EXTENDS` **Auto-assembled "U-Shape" one-page overview** export (UDEs→core cloud→pivot→injections→
-  NBRs→DEs→measures). *Ch24 (Cohen) Figs 24-14/15.*
+  NBRs→DEs→measures). *Ch24 (Cohen) Figs 24-14/15.* — deferred: needs cross-document link-walking.
 - `DECISION` **Chained multi-tree "project" workflow** (Dettmer CMM 7-step + OODA overlay; Barnard
   Five-Question one-diagram-per-day). Bigger than the `method-path` stepper — scope call. *Ch19; Ch15 Table 15-3.*
 

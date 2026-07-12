@@ -1,6 +1,8 @@
 import { findCoreDrivers } from '@/domain/coreDriver';
 import { topologicalEdgeOrder } from '@/domain/edgeReading';
+import { spawnCRTFromGoalTree } from '@/domain/spawnCRT';
 import { spawnECFromConflict } from '@/domain/spawnEC';
+import { spawnFRTFromCrt } from '@/domain/spawnFRT';
 import { validate } from '@/domain/validators';
 import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
@@ -64,6 +66,62 @@ export const analysisCommands: Command[] = [
         openedNewTab
           ? 'New Evaporating Cloud opened in a new tab — fill in Goal, Needs, and the conflicting Want. (Your CRT stays in its tab.)'
           : 'New Evaporating Cloud seeded — fill in Goal, Needs, and the conflicting Want.'
+      );
+    },
+  }),
+  // Session 198 (backlog C) — cross-tree spawns. Both mint a NEW document from
+  // the current one and open it in a new tab; they never modify the source, so
+  // each diagram stays fully usable standalone (same posture as Spawn EC above).
+  withWriteGuard({
+    id: 'spawn-frt-from-crt',
+    label: 'Spawn Future Reality Tree from this CRT (invert the UDEs)',
+    group: 'File',
+    run: (s) => {
+      const doc = currentDoc(s);
+      if (doc.diagramType !== 'crt') {
+        s.showToast('info', 'Open a Current Reality Tree to invert its undesirable effects.');
+        return;
+      }
+      const udeCount = Object.values(doc.entities).filter((e) => e.type === 'ude').length;
+      if (udeCount === 0) {
+        s.showToast('info', 'No undesirable effects to invert — add at least one UDE first.');
+        return;
+      }
+      const opened = s.openDocInTab(spawnFRTFromCrt(doc));
+      s.showToast(
+        'success',
+        opened
+          ? `Future Reality Tree opened in a new tab — ${udeCount} desired-effect seed${udeCount === 1 ? '' : 's'} to rewrite to the positive form. (Your CRT stays in its tab.)`
+          : `Future Reality Tree seeded from ${udeCount} UDE${udeCount === 1 ? '' : 's'} — rewrite each to its positive form.`
+      );
+    },
+  }),
+  withWriteGuard({
+    id: 'spawn-crt-from-goaltree',
+    label: 'Spawn Current Reality Tree from this Goal Tree (benchmark shortfalls)',
+    group: 'File',
+    run: (s) => {
+      const doc = currentDoc(s);
+      if (doc.diagramType !== 'goalTree') {
+        s.showToast('info', 'Open a Goal Tree to benchmark its standards into candidate UDEs.');
+        return;
+      }
+      const count = Object.values(doc.entities).filter(
+        (e) => e.type === 'criticalSuccessFactor' || e.type === 'necessaryCondition'
+      ).length;
+      if (count === 0) {
+        s.showToast(
+          'info',
+          'No Critical Success Factors or Necessary Conditions to benchmark yet.'
+        );
+        return;
+      }
+      const opened = s.openDocInTab(spawnCRTFromGoalTree(doc));
+      s.showToast(
+        'success',
+        opened
+          ? `Current Reality Tree opened in a new tab — ${count} candidate UDE${count === 1 ? '' : 's'}, one per unmet standard. (Your Goal Tree stays in its tab.)`
+          : `Current Reality Tree seeded with ${count} candidate UDE${count === 1 ? '' : 's'}.`
       );
     },
   }),

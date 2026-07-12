@@ -12,6 +12,8 @@
     {"id":"crt-scope-nudge","name":"System-scope nudge on CRT load","area":"CRT","since":83,"manual":true,"book":false,"bookExample":false},
     {"id":"crt-build-quality-clr","name":"CRT build-quality soft warnings","area":"CRT","since":179,"manual":true,"book":true,"bookExample":false},
     {"id":"crt-spawn-ec-tied","name":"Spawn EC from tied core drivers","area":"CRT","since":179,"manual":true,"book":false,"bookExample":false},
+    {"id":"crt-spawn-frt-invert","name":"Spawn FRT from a CRT (invert the UDEs)","area":"CRT","since":198,"manual":true,"book":true,"bookExample":false},
+    {"id":"goaltree-spawn-crt-benchmark","name":"Spawn CRT from a Goal Tree (benchmark shortfalls)","area":"GoalTree","since":198,"manual":true,"book":true,"bookExample":false},
     {"id":"frt-diagram","name":"Future Reality Tree","area":"FRT","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"frt-start-nbr","name":"Start a Negative Branch from an FRT","area":"FRT","since":59,"manual":true,"book":true,"bookExample":true},
     {"id":"ec-diagram","name":"Evaporating Cloud","area":"EC","since":26,"manual":true,"book":true,"bookExample":true},
