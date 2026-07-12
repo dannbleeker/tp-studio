@@ -121,11 +121,15 @@ import { buildPatternPRTRaiseClassPerformance } from './prt-raise-class-performa
 import { buildPatternPRTZeroDefects } from './prt-zero-defects';
 import { buildPatternSTConstraintExploitation } from './st-constraint-exploitation';
 import { buildPatternSTGainSharing } from './st-gain-sharing';
+import { buildPatternSTHealthcareViableVision } from './st-healthcare-viable-vision';
+import { buildPatternSTMafiaConsumerGoods } from './st-mafia-consumer-goods';
+import { buildPatternSTMafiaProjects } from './st-mafia-projects';
 import { buildPatternSTMarketExpansion } from './st-market-expansion';
 import { buildPatternSTPayPerUse } from './st-pay-per-use';
 import { buildPatternSTQualityFirst } from './st-quality-first';
 import { buildPatternSTReliableRapidResponse } from './st-reliable-rapid-response';
 import { buildPatternSTRetailerViableVision } from './st-retailer-viable-vision';
+import { buildPatternSTRetailerViableVision6Level } from './st-retailer-viable-vision-6level';
 import { buildPatternSTTimeToMarket } from './st-time-to-market';
 import { buildPatternSTVendorManagedInventory } from './st-vendor-managed-inventory';
 import { buildPatternSTViableVisionScaffold } from './st-viable-vision-scaffold';
@@ -918,6 +922,34 @@ const CORE_PATTERNS: Pattern[] = [
     hint: "Ferguson's retail Viable-Vision (Handbook Ch. 34/18), abstracted — reach the profit vision on the existing stores by fixing availability-vs-inventory: a central pull-replenishment engine (piloted then rolled out) plus re-pointed incentives. Three levels deep, so its middle step carries all four facets.",
     diagramType: 'st',
     build: buildPatternSTRetailerViableVision,
+  },
+  {
+    id: 'st-retailer-viable-vision-6level',
+    label: 'Retailer Viable Vision (6-level)',
+    hint: 'The deep form of the retail Viable-Vision (Handbook Ch. 34/18), abstracted — the same pull-replenishment transformation decomposed six layers down (data → buffers → cadence → pilot → rollout → the review that sustains it). A long spine of full-facet intermediate steps, each with a leaf sibling — the fullest S&T shape in the library.',
+    diagramType: 'st',
+    build: buildPatternSTRetailerViableVision6Level,
+  },
+  {
+    id: 'st-healthcare-viable-vision',
+    label: 'Healthcare Viable Vision (3-level)',
+    hint: 'A care-provider Viable-Vision (Handbook Ch. 31/34), abstracted — treat more patients to better outcomes on the current beds by managing flow to the bottleneck resource (a buffer of ready patients, piloted then spread) rather than adding capacity. Three levels deep, so its middle step carries all four facets.',
+    diagramType: 'st',
+    build: buildPatternSTHealthcareViableVision,
+  },
+  {
+    id: 'st-mafia-consumer-goods',
+    label: 'Mafia offer — consumer goods',
+    hint: "The un-refusable-offer / Decisive-Competitive-Edge family (Handbook Ch. 22, Lang), abstracted — a maker who sells through retailers wins the shelf by removing the retailer's two fears at once: full availability (consumption-driven pull) plus no overstock risk (returns on consignment). Two-leaf offer tree.",
+    diagramType: 'st',
+    build: buildPatternSTMafiaConsumerGoods,
+  },
+  {
+    id: 'st-mafia-projects',
+    label: 'Mafia offer — projects',
+    hint: 'The un-refusable-offer family (Handbook Ch. 22, Lang) applied to a project/engineering firm, abstracted — sell schedule certainty no rival will underwrite: a firm date backed by a penalty, made real by a single project buffer plus releasing work to the capacity constraint. Two-leaf offer tree.',
+    diagramType: 'st',
+    build: buildPatternSTMafiaProjects,
   },
 
   // ── Freeform ───────────────────────────────────────────────────────

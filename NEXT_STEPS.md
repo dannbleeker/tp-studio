@@ -188,15 +188,18 @@ fire-fighting NBR, 2 Goal Trees (personal-life + fabrication-shop), the class-pe
 and the library's first Freeform pattern. The Ch15 Five-Question CI-bundle triples were dropped as
 redundant with the Session-193 canon + shipped DBR/Critical-Chain/pull FRTs; two overlaps were
 folded into `ec-speak-up-vs-stay-safe` + `ec-cost-vs-throughput` rather than duplicated.
-- **S&T pack — ✅ six facet templates shipped Session 198** (after item B landed the corrected model), all on
-  the directional model via `buildSTFacetDoc`, each position-clean: **Reliable Rapid Response**,
-  **Vendor-Managed Inventory**, **Pay-Per-Use**, **Gain-Sharing** (Decisive Competitive Edge, *Ch22 Lang*);
-  the **Viable Vision — Build/Capitalize/Sustain** scaffold; and a **3-level Retailer Viable Vision** whose
-  middle step carries all four facets (*Ch34 Ferguson; Ch18*). See CHANGELOG S198.
-  - *Remaining extension (open, lower priority):* the last two Mafia-Offer templates (Consumer-Goods /
-    Projects, *Ch22*), the **full 6-level Retailer Viable Vision** + the 5 generic VV trees + the
-    Base/Enhanced scaffold (*Ch34 Tables 34-1…6*), and the **Healthcare VV** (*Ch31 appendix*) — build them the
-    same way if the complete book set is wanted.
+- **S&T pack — ✅ ten facet templates shipped** (six S198 after item B landed the corrected model, four more
+  S199), all on the directional model via `buildSTFacetDoc`, each position-clean: **Reliable Rapid
+  Response**, **Vendor-Managed Inventory**, **Pay-Per-Use**, **Gain-Sharing**, **Mafia offer — Consumer
+  Goods**, **Mafia offer — Projects** (Decisive Competitive Edge / un-refusable offer, *Ch22 Lang*); the
+  **Viable Vision — Build/Capitalize/Sustain** scaffold; a **3-level** and a **full 6-level Retailer Viable
+  Vision** (*Ch34 Ferguson; Ch18*); and a **3-level Healthcare Viable Vision** (*Ch31 appendix; Ch34*). The
+  6-level Retailer VV is a long spine of full-facet intermediate steps — the fullest tree shape in the
+  library. See CHANGELOG S198/S199.
+  - *Remaining extension (deferred — curation over completeness):* the 5 generic VV trees + the
+    Base/Enhanced scaffold (*Ch34 Tables 34-1…6*). Left unbuilt on purpose: they're structural skeletons
+    without a concrete scenario, so they'd dilute the curated library rather than add teaching value. Build
+    them the same way only if the complete book set is explicitly wanted.
 
 ### H. Facilitation / change-management — DECISION (E2 was dropped S179; do NOT build unilaterally)
 The book gives far richer material than the E2 review had, so these may be worth a *re-decision* —

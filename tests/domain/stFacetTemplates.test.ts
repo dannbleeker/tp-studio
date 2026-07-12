@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { isStNodeFormat, ST_FACET_KEYS } from '@/domain/graph';
 import { buildPatternSTGainSharing } from '@/domain/patterns/st-gain-sharing';
+import { buildPatternSTHealthcareViableVision } from '@/domain/patterns/st-healthcare-viable-vision';
+import { buildPatternSTMafiaConsumerGoods } from '@/domain/patterns/st-mafia-consumer-goods';
+import { buildPatternSTMafiaProjects } from '@/domain/patterns/st-mafia-projects';
 import { buildPatternSTPayPerUse } from '@/domain/patterns/st-pay-per-use';
 import { buildPatternSTReliableRapidResponse } from '@/domain/patterns/st-reliable-rapid-response';
 import { buildPatternSTRetailerViableVision } from '@/domain/patterns/st-retailer-viable-vision';
+import { buildPatternSTRetailerViableVision6Level } from '@/domain/patterns/st-retailer-viable-vision-6level';
 import { buildPatternSTVendorManagedInventory } from '@/domain/patterns/st-vendor-managed-inventory';
 import { buildPatternSTViableVisionScaffold } from '@/domain/patterns/st-viable-vision-scaffold';
 import type { TPDocument } from '@/domain/types';
@@ -21,6 +25,10 @@ const TEMPLATES = [
   { name: 'Pay-Per-Use offer', build: buildPatternSTPayPerUse },
   { name: 'Gain-Sharing offer', build: buildPatternSTGainSharing },
   { name: 'Retailer Viable Vision (3-level)', build: buildPatternSTRetailerViableVision },
+  { name: 'Retailer Viable Vision (6-level)', build: buildPatternSTRetailerViableVision6Level },
+  { name: 'Healthcare Viable Vision (3-level)', build: buildPatternSTHealthcareViableVision },
+  { name: 'Mafia offer — consumer goods', build: buildPatternSTMafiaConsumerGoods },
+  { name: 'Mafia offer — projects', build: buildPatternSTMafiaProjects },
 ];
 
 const hasOutgoing = (doc: TPDocument, id: string): boolean =>

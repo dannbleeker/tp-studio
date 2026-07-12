@@ -56,8 +56,8 @@ export const CLR_SCRUTINY: ClrScrutinyCategory[] = [
     tier: 'existence',
     label: 'Entity existence',
     question:
-      'Do the cause and the effect each actually exist as stated — a real, present condition rather than a guess, a goal, or a label?',
-    hint: 'Name the evidence you would point to. If the entity is a vague abstraction, restate it as something observable.',
+      'Do the cause and the effect each actually exist as stated — a real, present condition in the environment you are examining, rather than a guess, a goal, or a label true only in general?',
+    hint: 'Name the evidence you would point to here — in your system, not in theory. A condition that holds elsewhere may not hold in this environment; if the entity is a vague abstraction, restate it as something observable.',
   },
   {
     ruleId: 'causality-existence',

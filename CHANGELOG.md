@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 199 — S&T template extension + CLR-scrutiny nudge (backlog G, A tails)
+
+- **Four new Strategy & Tactics templates** on the corrected directional-facet model (backlog B), each a
+  valid, position-clean facet-card tree that opens without noise:
+  - **Mafia offer — consumer goods** and **Mafia offer — projects**: the un-refusable-offer / Decisive-
+    Competitive-Edge family (*Handbook* Ch. 22, Lang), abstracted with original wording. The consumer-goods
+    offer removes the retailer's two shelf fears at once (guaranteed availability via consumption-driven
+    pull + no overstock risk via consignment returns); the projects offer sells schedule certainty (a firm
+    date backed by a penalty, made real by a single project buffer + releasing work to the capacity
+    constraint). Two-leaf offer trees.
+  - **Healthcare Viable Vision (3-level)**: a care-provider VV (*Handbook* Ch. 31/34), abstracted — treat
+    more patients to better outcomes on the current beds by managing flow to the bottleneck (a buffer of
+    ready patients, piloted then spread) rather than adding capacity. Middle step carries all four facets.
+  - **Retailer Viable Vision (6-level)**: the deep form of the retail VV, the same pull-replenishment
+    transformation decomposed six layers down (data → buffers → cadence → pilot → rollout → the sustaining
+    review). A long spine of full-facet intermediate steps, each with a leaf sibling — the fullest S&T shape
+    in the library, and the reason the pack now shows genuinely different tree depths, not just different
+    prose.
+- **CLR-scrutiny "environment" nudge** (backlog A). The Entity-existence category in the guided CLR
+  scrutiny now asks whether the cause and effect exist *in the environment you are examining* — not just in
+  general — and the hint reminds you a condition that holds elsewhere may not hold in this system. One-line
+  wording change to the static reference data; no behaviour change.
+
 ## Session 199 — Negative Branch readability (backlog E)
 
 - **Turning-point guidance.** A Negative Branch Reservation walks an injection → … → UDE *spine*; the
