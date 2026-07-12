@@ -49,6 +49,139 @@ deliberate simplification). Reviewed in the Session-187 design-fidelity pass and
 
 ---
 
+## TOC Handbook backlog (Cox & Schleier 2010) — mined 2026-07-12
+
+Source: a six-agent read of the full *Theory of Constraints Handbook* (McGraw-Hill 2010),
+Thinking-Processes chapters (5, 15, 18–20, 22–27, 31, 34), filtered against the shipped build.
+Every item carries an inline citation. **Status tags:** `ACTIVE` = fits the tool's established
+scope, buildable as-is · `EXTENDS` = refines/attaches to an already-shipped feature · `DECISION` =
+needs a Dann scope call (facilitation / audit-adjacent — see the E2/AI/audit-trail drops in
+*Out of scope* below; don't build unilaterally). Chapter authors: Ch5 Newbold · Ch15 Barnard ·
+Ch18 Kendall · Ch19 Dettmer · Ch20 Goldratt-Ashlag · Ch22 Lang · Ch23 Mabin & Davies · Ch24
+Cohen · Ch25 Scheinkopf(+App.B CLR) · Ch26 Suerken · Ch27 Cheng · Ch31 van Gelder/Ferguson ·
+Ch34 Ferguson.
+
+### A. CLR / logic correctness (ACTIVE — cheap, raises authority)
+- `ACTIVE` **Two AND connectors.** Split the single AND junctor into a *magnitudinal-and*
+  (Additional Cause: independent arrows, each removable) vs a *conceptual-and / ellipse "banana"*
+  (Cause Insufficiency: jointly required). They answer opposite reservations. *Ch25 App.B.*
+- `ACTIVE` **Additional-Cause auto-detect.** Flag the signature "≥2 arrows enter an entity with no
+  'and' connector" → prompt for a cause of ≥ equal magnitude. *Ch25 App.B.*
+- `ACTIVE` **Entity-Existence two modes.** Separate "not a complete sentence" (fragment) from
+  "doesn't exist in this environment," each own message. *Ch25 App.B Fig 25-B2.*
+- `ACTIVE` **Cause-Effect-Reversal wording.** Prompt: is the cause *why* the effect exists or *how
+  you know* it exists? ("ask why" on symptoms.) *Ch25 App.B Fig 25-B6.*
+- `ACTIVE` **Predicted-Effect as two checks.** (a) collateral-effect existence; (b) timing
+  counter-example (effect precedes cause ⇒ not the cause). *Ch25 App.B Fig 25-B7.*
+- `ACTIVE` **Entry-point rule (FRT/NBR).** Every cause-only node must be current-reality-checkable
+  today OR an injection — flag orphans. *Ch25 (Scheinkopf) NBR section.*
+- `EXTENDS` **Progressive CLR gating.** `clr-tiered` groups by tier; also *order* it — clarity
+  first, unlock Level-3 only after Levels 1–2 clear. *Ch25 App.B.*
+- `ACTIVE` **Compliance-as-CSF warning (Goal Tree).** Law/regulation/compliance entities set as a
+  CSF → nudge to demote several NC layers down. *Ch19 (Dettmer).*
+- `EXTENDS` **`goalTree-nc-depth` mode-aware.** Keep ≤2 layers when feeding a CRT; allow 5–6 in a
+  conflict-resolution mode. *Ch19 (Dettmer).*
+- `EXTENDS` **"Jonah quick-check" mode.** Fast pass on 4 rules (entity/causality × existence/clarity)
+  + read-aloud test, as an on-ramp before the full 7-category CLR. *Ch25 (Scheinkopf).*
+- Note: the Handbook's canonical CLR list is **7 categories in 3 ordered levels** and omits
+  `tautology`; ours (8th) is Dettmer's — keep it, this is not a removal.
+
+### B. Strategy & Tactics model correction (ACTIVE — genuine modeling gap)
+- `ACTIVE` **Assumptions belong on the *step*, directionally.** Today all 3 facets hang on the
+  tactic (`st-facet-card`). Remodel: **Necessary A.** justifies step→parent; **Parallel A.** bridges
+  Strategy→Tactic; **Sufficiency A.** justifies step→children. *Ch34 (Ferguson); Ch25 (Scheinkopf).*
+- `ACTIVE` **Position-aware S&T validators** (replace blanket `st-tactic-assumptions`): root has no
+  NA; leaf has no SA; single-child "fold-in" (parent must split into ≥2); Strategy-as-outcome vs
+  Tactic-as-action phrasing lint; Parallel-Assumption sufficiency bridge ("if S & PAs then T").
+  *Ch34 (Ferguson), Table 25-7 fn23.*
+- `ACTIVE` **5-slot node render (NA→S→PA→T→SA)** with S/T as the visible spine, assumptions
+  collapsible; directional read-aloud helpers (necessity up, sufficiency down). *Ch34 Figs 34-3/34-6.*
+- `EXTENDS` **S&T plain-language assumption aliases** toggle ("Assumptions Behind Strategy/Tactics /
+  Take Note!"). *Ch31 appendix.*
+- `EXTENDS` **S&T method-checklist gate:** "run a full CRT/EC/FRT analysis first; every assumption
+  must already be a validated fact of life; S&T replaces the PRT." *Ch34 (Ferguson).*
+
+### C. Cross-tree integration (ACTIVE / larger)
+- `ACTIVE` **CRT↔FRT invert.** One click turns UDEs into an FRT desired-effects checklist, flags
+  DEs not yet reached. *Ch20 (Goldratt-Ashlag) Layer 4.*
+- `ACTIVE` **Goal-Tree→CRT benchmark bridge.** Each CSF/NC becomes the standard; its shortfall seeds
+  a candidate UDE. *Ch19 (Dettmer) Fig 19-10.*
+- `EXTENDS` **Injection continuity EC→FRT→PRT** (same injection ID threads the chain; builds on the
+  Injection Flower + `general-u-shape`). *Ch19 (Dettmer).*
+- `EXTENDS` **Auto-assembled "U-Shape" one-page overview** export (UDEs→core cloud→pivot→injections→
+  NBRs→DEs→measures). *Ch24 (Cohen) Figs 24-14/15.*
+- `DECISION` **Chained multi-tree "project" workflow** (Dettmer CMM 7-step + OODA overlay; Barnard
+  Five-Question one-diagram-per-day). Bigger than the `method-path` stepper — scope call. *Ch19; Ch15 Table 15-3.*
+
+### D. Evaporating Cloud craft (ACTIVE — mostly Ch24 Cohen)
+- `EXTENDS` **Cloud-type wizard modes** (Inner-Dilemma / Day-to-Day / Fire-Fighting / UDE /
+  Consolidated) — per-type box order, guiding questions, deterministic "best-arrow-to-break" hint
+  (Table 24-9). Extends `ec-creation-wizard`/`ec-cloud-type`/`ec-slot-questions`. *Ch24.*
+- `ACTIVE` **"Storyline" pre-step** — incident free-text before the boxes. *Ch24 Step 2.*
+- `EXTENDS` **EC syntax/quality checks** (beyond `ec-completeness`): no causal words in boxes; D/D′
+  conflicting verb-led actions; B/C positive needs; diagonal jeopardy (D hurts C, D′ hurts B). *Ch24.*
+- `EXTENDS` **Three-cloud flip + consolidation grid** — side-by-side merge with one-click B↔C / D↔D′
+  flip. Extends `patterns-three-cloud`. *Ch24 "Flipping Clouds."*
+- `EXTENDS` **Audience-specific verbalisation order** ("present to [role]" reads their side first).
+  Extends `ec-two-sided-verbal` + reader mode. *Ch24.*
+- `ACTIVE` **"Reframe your Need" tutorial** (before/after: "prove my point"→"ensure I'm understood")
+  + attachable **alternative-means brainstorm sublist** on a Want/injection node. *Ch27 (Cheng).*
+
+### E. NBR / PRT / TT refinements (ACTIVE / EXTENDS)
+- `EXTENDS` **NBR readability:** typed roles (Injection/Current/Neutral/DE/UDE), backbone-vs-side,
+  +/− polarity on backbone arrows to locate the "turns negative" point. Refines `nbr-shape-clr`,
+  `nbr-trim-branch`, `edge-polarity`. *Ch24 (Cohen) Fig 24-16.*
+- `ACTIVE` **Obstacle/IO intake table** (Obstacle | show-stopper? | IO | blocking factor) → each row
+  converts to a PRT obstacle+IO pair. *Ch24 Tables 24-10/11.*
+- `EXTENDS` **TT "why" fields** + "appropriate condition" test (can act; won't cause serious
+  negatives). Extends `tt-need-assumption`/`tt-eligibility`. *Ch20 Layer 7; Ch25 (Rami Goldratt).*
+- `EXTENDS` **Ongoing-vs-done toggle** on PRT/TT objectives (continuous work shouldn't read as a
+  completable checkbox). *Ch5 (Newbold) "What is Done?"*
+
+### F. Terminology / method / UX polish (ACTIVE, small)
+- `ACTIVE` **Goal-vs-NC inline definitions** + paired examples ("more is better" vs "enough is fine").
+  *Ch38.*
+- `EXTENDS` **Goal-Tree tier labels** Conceptual / Functional / Operational. *Ch19 Fig 19-7.*
+- `ACTIVE` **Six Success Criteria checklist** on injections/FRT (excellent / win-win-win / low-risk /
+  simpler / fast-feedback / won't self-destruct). *Ch15 Table 15-4; Ch34.*
+- `EXTENDS` **Feedback-loop terminology reconciliation** on the R/B badge (TOC's "negative loop" vs
+  systems-thinking convention). *Ch23 (Mabin & Davies).*
+
+### G. Template bench (ACTIVE — highest value/effort ratio, no engine change)
+- **S&T (only 5 thin starters today, no full VV tree):** Mafia-Offer "Decisive Competitive Edge"
+  pack — VMI, Reliable-Rapid-Response, Consumer-Goods, Projects, Pay-Per-Click, Gain-Sharing
+  (*Ch22 Lang "The Templates"*); **Retailer Viable Vision** 6-level verbatim + the 5 generic VV
+  trees + Build/Capitalize/Sustain × Base/Enhanced scaffold (*Ch34 Ferguson Tables 34-1…6; Ch18*);
+  **Healthcare/medical-practice VV** (services example, *Ch31 appendix*).
+- **CRT:** Custom Label Printer (Mafia-offer case, *Ch22*); "Why change doesn't stick" / Widgets Inc.
+  (onboarding meta-example, *Ch5 Figs 5-1…3*); Five-Question CI bundles — Operations/Projects/
+  Distribution/Finance as CRT+EC+FRT triples (*Ch15 Barnard*).
+- **EC:** "The Goal" Peach-vs-machinist day-to-day cloud + Fire-Fighting→NBR tutorial (*Ch24*);
+  When/What/How-to-change meta-clouds for the archetype gallery (*Ch15 Fig 15-5*); personal burnout /
+  speak-up / college-student clouds (*Ch38*); education name-calling / bullying / Oliver-Twist clouds
+  (*Ch26 Suerken*); prison mother-son reconciliation cloud (*Ch27 Cheng*). (Parent-child "Rules"
+  overlaps `ec-teenager-trip` — skip.)
+- **Goal Tree:** Personal Life Goal Tree (5 facets) (*Ch38*); AllForm Welding IO Map (real 4-CSF
+  strategic tree) (*Ch19 Fig 19-11*).
+- **Freeform (ships 0 patterns today):** buffered red/yellow/green "to-do" list (*Ch38 Fig 38-6*).
+- **PRT:** "Be the Best Students" Ambitious Target Tree (*Ch26 Fig 26-11*).
+
+### H. Facilitation / change-management — DECISION (E2 was dropped S179; do NOT build unilaterally)
+The book gives far richer material than the E2 review had, so these may be worth a *re-decision* —
+but Dann dropped the Layers-of-Resistance panel (E2) Session 179 as "beyond a diagramming tool's
+scope," and audit-trail/AI were dropped too. Parked here pending an explicit re-open.
+- `DECISION` **Layers-of-Resistance "Get Buy-In" mode** — a guided L1–L9 flow mapping each layer to
+  the tree it needs (L1 UDEs+GoalTree, L2 CRT+3-cloud, L4 FRT, L5 NBR, L6 PRT/S&T, L7 TT, L8 risk).
+  *Ch20 (Goldratt-Ashlag) Fig 20-3.* Supporting parts: L5-vs-L6 disambiguator; layer-tagged objection
+  parking-lot (on existing comments); Layer-3 "criteria for a good solution" checklist; Layer-8 risk
+  object; "sense of ownership" framing; workshop buy-in checklist (~⅓ time to buy-in, *Ch27 Cheng*).
+- `DECISION` **CORE-cycle injection pipeline** (Urgency→Expectations→Commitment→Value→Validation)
+  replacing the binary implemented-flag. *Ch5 (Newbold).* Audit-adjacent.
+- `DECISION` **Decision-Record fields** on assumptions/injections (trigger / expected-by / inputs /
+  owner / corrective-action link). *Ch15 (Barnard).* Audit-trail-adjacent (see Out-of-scope).
+
+---
+
 ## Out of scope — won't build
 
 Items explicitly dropped, in addition to the brief's own out-of-scope list:
