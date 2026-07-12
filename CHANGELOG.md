@@ -42,6 +42,25 @@ App. B, Scheinkopf, unless noted):
   cache hit (toggle a node to "true" and the warning wouldn't clear). `state` is now part of the
   per-entity fingerprint, with a regression test pinning it.
 
+## Session 199 — Two AND connectors (backlog A3)
+
+An AND junctor now carries a **flavour** that names which reservation it answers (*Handbook* Ch. 25
+App. B, Scheinkopf):
+
+- **Conceptual AND** (the default, the "banana") — the grouped causes are *jointly required*; any one
+  missing breaks the effect. This is the *cause-insufficiency* reservation and every existing AND group
+  reads this way, byte-for-byte unchanged.
+- **Magnitudinal AND** (`andMode: 'additional'`) — the causes each *contribute independently* and each is
+  removable. This is the *additional-cause* reservation — the opposite question.
+
+Two palette commands flip a selected AND group between the two (*Mark AND group as additional cause
+(magnitudinal)* / *…as jointly required (conceptual)*); the flavour applies to the whole group. The
+magnitudinal connector is drawn as a **dashed AND⁺** ring — same geometry as today, so the canvas==export
+invariant and all five text/graph exporters are untouched; a conceptual AND stays a solid ring. Stored as
+an optional edge field, emitted only when magnitudinal so untouched diagrams round-trip identical; a
+hand-edited value is validated (only `'additional'` is legal) and dropped if it has no AND group. *(The
+text exporters describe both flavours as an AND group — the distinction is a canvas / teaching aid.)*
+
 ## Session 198 — Cross-tree spawn bridges (backlog C)
 
 Two new command-palette actions that seed one tree from another, following the same **unlinked-spawn**

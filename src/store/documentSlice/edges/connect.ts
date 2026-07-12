@@ -34,7 +34,9 @@ export type ConnectActions = {
  *  an edge's TARGET is re-pointed: a junctor groups the causes converging on
  *  ONE target, so moving the target removes the edge from that convergence. */
 const withoutJunctorGroups = (e: Edge): Edge => {
-  const { andGroupId: _a, orGroupId: _o, xorGroupId: _x, ...rest } = e;
+  // `andMode` (the A3 AND flavour) is dropped alongside the group fields — it's
+  // meaningless once the edge leaves its AND group (e.g. on re-target).
+  const { andGroupId: _a, orGroupId: _o, xorGroupId: _x, andMode: _m, ...rest } = e;
   return rest;
 };
 

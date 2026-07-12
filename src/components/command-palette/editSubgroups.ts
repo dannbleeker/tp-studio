@@ -60,6 +60,8 @@ export const EDIT_SUBGROUP: Record<string, EditSubgroup> = {
   'start-edge-join-and': 'Edges & junctors',
   'group-and': 'Edges & junctors',
   'ungroup-and': 'Edges & junctors',
+  'mark-and-additional': 'Edges & junctors',
+  'mark-and-joint': 'Edges & junctors',
   'group-or': 'Edges & junctors',
   'ungroup-or': 'Edges & junctors',
   'group-xor': 'Edges & junctors',

@@ -134,6 +134,58 @@ describe('setEdgeWeight (FL-ED1)', () => {
   });
 });
 
+// Session 199 (backlog A3) — the AND-group flavour: conceptual (joint, default)
+// vs magnitudinal (additional). setAndMode flips it across the whole group.
+describe('setAndMode (A3 — two AND connectors)', () => {
+  it('marks the whole AND group magnitudinal, then clears back to joint', () => {
+    const { e1, e2 } = seedAndGroupable();
+    useDocumentStore.getState().groupAsAnd([e1.id, e2.id]);
+    // Passing ONE edge flavours the entire group.
+    useDocumentStore.getState().setAndMode([e1.id], 'additional');
+    let after = useDocumentStore.getState().doc.edges;
+    expect(after[e1.id]?.andMode).toBe('additional');
+    expect(after[e2.id]?.andMode).toBe('additional');
+    // 'joint' clears the flag entirely (byte-identical conceptual AND).
+    useDocumentStore.getState().setAndMode([e2.id], 'joint');
+    after = useDocumentStore.getState().doc.edges;
+    expect(after[e1.id]?.andMode).toBeUndefined();
+    expect(after[e2.id]?.andMode).toBeUndefined();
+  });
+
+  it('no-ops on edges that are not in an AND group', () => {
+    const { e1 } = seedAndGroupable(); // ungrouped
+    useDocumentStore.getState().setAndMode([e1.id], 'additional');
+    expect(useDocumentStore.getState().doc.edges[e1.id]?.andMode).toBeUndefined();
+  });
+
+  it('persists the flavour across a JSON round-trip', () => {
+    const { e1, e2 } = seedAndGroupable();
+    useDocumentStore.getState().groupAsAnd([e1.id, e2.id]);
+    useDocumentStore.getState().setAndMode([e1.id], 'additional');
+    const json = JSON.parse(JSON.stringify(useDocumentStore.getState().doc));
+    expect(json.edges[e1.id].andMode).toBe('additional');
+  });
+
+  it('drops the flavour when the AND group is ungrouped (no orphan andMode)', () => {
+    const { e1, e2 } = seedAndGroupable();
+    useDocumentStore.getState().groupAsAnd([e1.id, e2.id]);
+    useDocumentStore.getState().setAndMode([e1.id], 'additional');
+    useDocumentStore.getState().ungroupAnd([e1.id, e2.id]);
+    const after = useDocumentStore.getState().doc.edges;
+    expect(after[e1.id]?.andGroupId).toBeUndefined();
+    expect(after[e1.id]?.andMode).toBeUndefined();
+    expect(after[e2.id]?.andMode).toBeUndefined();
+  });
+
+  it('drops the flavour when a co-cause is deleted and the group auto-collapses', () => {
+    const { e1, e2 } = seedAndGroupable();
+    useDocumentStore.getState().groupAsAnd([e1.id, e2.id]);
+    useDocumentStore.getState().setAndMode([e1.id], 'additional');
+    useDocumentStore.getState().deleteEdge(e1.id); // group drops to one → auto-collapse
+    expect(useDocumentStore.getState().doc.edges[e2.id]?.andMode).toBeUndefined();
+  });
+});
+
 // Session 171 — a junctor needs ≥2 inputs; dropping to one auto-collapses to a
 // plain direct edge (no lonely "AND of one"). Enforced on the delete paths.
 describe('auto-collapse single-member junctors', () => {

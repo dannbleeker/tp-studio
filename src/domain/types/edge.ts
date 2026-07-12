@@ -42,6 +42,16 @@ export type Edge = {
   targetId: EntityId;
   kind: EdgeKind;
   andGroupId?: string;
+  /** Session 199 (backlog A3, Scheinkopf App. B) — the *flavour* of an AND
+   *  group. Unset (the default) is the **conceptual** AND — the "banana": the
+   *  grouped causes are jointly required, and any one missing breaks the effect
+   *  (the *cause-insufficiency* reservation). `'additional'` marks a
+   *  **magnitudinal** AND — the causes each contribute independently and each is
+   *  removable (the *additional-cause* reservation); the two answer opposite CLR
+   *  questions. Only meaningful alongside `andGroupId`; the JunctorOverlay styles
+   *  the connector distinctly, geometry unchanged. Emitted only when
+   *  `'additional'` so untouched (conceptual) AND groups round-trip byte-identical. */
+  andMode?: 'additional';
   /** Bundle 8 / FL-ED3 — mutual-exclusion junctor across a set of
    *  edges sharing a target. Same model as `andGroupId`: edges with
    *  the same `xorGroupId` value converge into one labelled "XOR"

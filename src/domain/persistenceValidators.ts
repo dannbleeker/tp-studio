@@ -276,6 +276,11 @@ export const validateEdge = (v: unknown, label: string): Edge => {
   if (v.loopNarrative !== undefined && typeof v.loopNarrative !== 'string') {
     throw invalid(label, 'has non-string loopNarrative');
   }
+  // Session 199 (backlog A3) — the AND-group flavour. Only 'additional' is a
+  // legal value; anything else (a corrupt import) throws rather than degrading.
+  if (v.andMode !== undefined && v.andMode !== 'additional') {
+    throw invalid(label, "has invalid andMode (expected 'additional')");
+  }
   const edgeAttributes = validateAttributes(v.attributes, `${label}.attributes`);
   // Bundle 8: enforce cross-kind exclusivity. AND wins; if AND is set
   // we drop OR + XOR. Otherwise OR wins over XOR. The store actions
@@ -289,6 +294,9 @@ export const validateEdge = (v: unknown, label: string): Edge => {
     targetId: v.targetId as EntityId,
     kind: v.kind,
     ...(hasAnd ? { andGroupId: v.andGroupId as string } : {}),
+    // andMode is only meaningful on an AND group — drop it otherwise so a
+    // hand-edited file can't carry an orphan flavour with no group.
+    ...(hasAnd && v.andMode === 'additional' ? { andMode: 'additional' as const } : {}),
     ...(hasOr ? { orGroupId: v.orGroupId as string } : {}),
     ...(hasXor ? { xorGroupId: v.xorGroupId as string } : {}),
     ...(v.weight === 'positive' || v.weight === 'negative' || v.weight === 'zero'

@@ -67,6 +67,8 @@ Cross-kind exclusivity: an edge belongs to at most one junctor kind. If you grou
 
 You'll mostly use AND. It's the conjunctive that makes a CRT honest: if "Customers churn" requires BOTH "Resolution time > 8h" AND "Onboarding is poorly documented", saying "either causes churn" is overstating the strength of each. The AND junctor forces you to be honest about which combinations are sufficient.
 
+**Two flavours of AND.** The logic literature splits AND in two, and TP Studio lets you name which you mean — they answer opposite reservations. A **conceptual** AND (the default, a solid ring) is the case above: the causes are *jointly required*, none alone is enough. A **magnitudinal** AND (a dashed `AND⁺` ring) is the opposite: the causes each *contribute independently* and each is removable — any one already produces the effect, and more of them just make it bigger. Flip a group between the two from `Cmd+K → Mark AND group as additional cause (magnitudinal)` / `…as jointly required (conceptual)`. Reach for the magnitudinal flavour when you'd otherwise be tempted to draw several separate arrows but want to record that they're a deliberate set of independent contributors.
+
 ## Back-edges
 
 Sometimes a diagram has a real cycle. Customers churning *causes* lower retention metrics, which *cause* leadership pressure on the support team, which *causes* deferred refactors, which *causes* the original "resolution time exceeds 8h", which *causes* churn. Round and round.

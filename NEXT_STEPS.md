@@ -61,12 +61,15 @@ Ch18 Kendall · Ch19 Dettmer · Ch20 Goldratt-Ashlag · Ch22 Lang · Ch23 Mabin 
 Cohen · Ch25 Scheinkopf(+App.B CLR) · Ch26 Suerken · Ch27 Cheng · Ch31 van Gelder/Ferguson ·
 Ch34 Ferguson.
 
-### A. CLR / logic correctness (A1+A2 SHIPPED Session 199; A3–A4 in progress)
+### A. CLR / logic correctness (A1+A2+A3 SHIPPED Session 199; A4 in progress)
 Approved as a four-slice build (A1 wording+warnings · A2 entry-point rule · A3 two AND connectors ·
 A4 opt-in modes) after a plan + in-app mockup.
-- `ACTIVE (A3)` **Two AND connectors.** Split the single AND junctor into a *magnitudinal-and*
-  (Additional Cause: independent arrows, each removable) vs a *conceptual-and / ellipse "banana"*
-  (Cause Insufficiency: jointly required). They answer opposite reservations. *Ch25 App.B.*
+- **Two AND connectors** — ✅ **shipped Session 199 (A3)**: an optional `andMode: 'additional'` edge field
+  flavours an AND group *magnitudinal* (independent, each-removable co-causes; dashed `AND⁺` ring) vs the
+  default *conceptual* banana (jointly required; solid ring). Palette commands flip a group; geometry +
+  all five exporters untouched, so the canvas==export invariant holds and untouched diagrams round-trip
+  byte-identical. Rendered per Dann's "distinct connector, same geometry" call (not the independent-arrows
+  mockup). *Ch25 App.B.*
 - **Additional-Cause auto-detect** — ✅ **shipped Session 199 (A1)**: `additional-cause` now also fires at
   exactly two ungrouped causes (the magnitude question: each enough alone, or only together?) — the gap
   between `cause-sufficiency` (one) and `indirect-effect` (three+). *Ch25 App.B.*

@@ -46,8 +46,9 @@ export const pruneSingletonJunctors = (edges: Record<string, Edge>): Record<stri
     const gid = junctorGroupId(edge);
     if (gid && (memberCount.get(gid) ?? 0) < 2) {
       // Omit all three junctor fields (an edge carries at most one) rather than
-      // setting `undefined` — exactOptionalPropertyTypes rejects that.
-      const { andGroupId: _a, orGroupId: _o, xorGroupId: _x, ...rest } = edge;
+      // setting `undefined` — exactOptionalPropertyTypes rejects that. `andMode`
+      // (the A3 AND flavour) goes with them: it's meaningless without an AND group.
+      const { andGroupId: _a, orGroupId: _o, xorGroupId: _x, andMode: _m, ...rest } = edge;
       next[id] = rest;
       changed = true;
     } else {

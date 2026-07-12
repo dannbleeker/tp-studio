@@ -131,6 +131,20 @@ describe('validateEdge', () => {
     expect(out.xorGroupId).toBeUndefined();
   });
 
+  it('round-trips andMode="additional" on an AND group, and drops it without one (A3)', () => {
+    const withGroup = validateEdge({ ...edge, andGroupId: 'g1', andMode: 'additional' }, 'x');
+    expect(withGroup.andMode).toBe('additional');
+    // andMode is only meaningful on an AND group — a hand-edited orphan is dropped.
+    const orphan = validateEdge({ ...edge, andMode: 'additional' }, 'x');
+    expect(orphan.andMode).toBeUndefined();
+  });
+
+  it('rejects an invalid andMode value (A3)', () => {
+    expect(() => validateEdge({ ...edge, andGroupId: 'g1', andMode: 'joint' }, 'x')).toThrow(
+      /andMode/
+    );
+  });
+
   it('rejects bad core + optional fields', () => {
     expect(() => validateEdge({ ...edge, sourceId: 5 }, 'x')).toThrow(/sourceId/);
     expect(() => validateEdge({ ...edge, targetId: 5 }, 'x')).toThrow(/targetId/);

@@ -36,8 +36,9 @@ describe('computeJunctors', () => {
     id: string,
     kind: 'AND' | 'OR' | 'XOR',
     targetId: string,
-    sourceIds: string[] = []
-  ) => ({ id, kind, targetId, sourceIds, sourceKey: [...sourceIds].sort().join(',') });
+    sourceIds: string[] = [],
+    additional = false
+  ) => ({ id, kind, targetId, sourceIds, sourceKey: [...sourceIds].sort().join(','), additional });
 
   it('falls back to under the target when no causes are measured — (x + w/2, bottom + offset)', () => {
     const groups = [grp('g1', 'AND', 't1')];
@@ -46,12 +47,19 @@ describe('computeJunctors', () => {
       {
         id: 'g1',
         kind: 'AND',
+        additional: false,
         cx: 210, // 100 + 220/2 — no causes yet → fall back to the target's X
         tx: 210,
         ty: 272, // 200 + 72
         cy: 272 + JUNCTOR_CENTER_OFFSET_Y,
       },
     ]);
+  });
+
+  it('passes the additional (magnitudinal) flavour through (A3)', () => {
+    const groups = [grp('g1', 'AND', 't1', [], true)];
+    const lookup = new Map<string, Geo>([['t1', node(0, 0)]]);
+    expect(computeJunctors(groups, (id) => lookup.get(id))[0]?.additional).toBe(true);
   });
 
   it('centers over its causes (nudged toward the target) when sources are offset', () => {

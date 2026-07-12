@@ -72,6 +72,14 @@ export type JunctorActions = {
     sourceEntityId: string,
     kind?: JunctorKind
   ) => Edge | null;
+
+  /** Session 199 (backlog A3) — set the flavour of every AND group the given
+   *  edges belong to: `'additional'` (magnitudinal — independent, each-removable
+   *  co-causes) or `'joint'` (conceptual — jointly required, the default). Applies
+   *  to all edges sharing each touched group so the flavour stays consistent, and
+   *  no-ops for edges not in an AND group. `'joint'` clears the flag entirely, so
+   *  a conceptual AND round-trips byte-identical. */
+  setAndMode: (edgeIds: string[], mode: 'joint' | 'additional') => void;
 };
 
 export function createJunctorActions({ get, applyDocChange }: EdgesFactoryDeps): JunctorActions {
@@ -124,7 +132,9 @@ export function createJunctorActions({ get, applyDocChange }: EdgesFactoryDeps):
       for (const id of edgeIds) {
         const e = nextEdges[id];
         if (e?.[field]) {
-          const { [field]: _drop, ...rest } = e;
+          // Drop the group field and — for an AND ungroup — the A3 `andMode`
+          // flavour with it (harmless for OR/XOR, which never carry andMode).
+          const { [field]: _drop, andMode: _m, ...rest } = e;
           nextEdges[id] = rest as Edge;
           changed = true;
         }
@@ -182,6 +192,34 @@ export function createJunctorActions({ get, applyDocChange }: EdgesFactoryDeps):
         return touch({ ...prev, edges: nextEdges });
       });
       return newEdgeBase;
+    },
+
+    setAndMode: (edgeIds, mode) => {
+      const { doc } = get();
+      const groupIds = new Set<string>();
+      for (const id of edgeIds) {
+        const gid = doc.edges[id]?.andGroupId;
+        if (gid) groupIds.add(gid);
+      }
+      if (groupIds.size === 0) return;
+      applyDocChange((prev) => {
+        const nextEdges = { ...prev.edges };
+        let changed = false;
+        for (const [id, e] of Object.entries(prev.edges)) {
+          if (!e.andGroupId || !groupIds.has(e.andGroupId)) continue;
+          if (mode === 'additional') {
+            if (e.andMode !== 'additional') {
+              nextEdges[id] = { ...e, andMode: 'additional' };
+              changed = true;
+            }
+          } else if (e.andMode !== undefined) {
+            const { andMode: _drop, ...rest } = e;
+            nextEdges[id] = rest as Edge;
+            changed = true;
+          }
+        }
+        return changed ? touch({ ...prev, edges: nextEdges }) : prev;
+      });
     },
   };
 }

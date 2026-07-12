@@ -362,6 +362,39 @@ describe('JunctorOverlay — SVG structure', () => {
 });
 
 // ===========================================================================
+// Additional (magnitudinal) AND flavour — A3
+// ===========================================================================
+
+describe('JunctorOverlay — additional AND flavour (A3)', () => {
+  it('renders a dashed ellipse + a "+" marker for an additional AND group', () => {
+    const src1 = makeEntity({ id: 'a-1' as EntityId, title: 'Cause 1' });
+    const src2 = makeEntity({ id: 'a-2' as EntityId, title: 'Cause 2' });
+    const tgt = makeEntity({ id: 'a-t' as EntityId, title: 'Effect' });
+    const e1 = makeEdge(src1.id, tgt.id, { andGroupId: 'ga', andMode: 'additional' });
+    const e2 = makeEdge(src2.id, tgt.id, { andGroupId: 'ga', andMode: 'additional' });
+    s().setDocument(makeDoc([src1, src2, tgt], [e1, e2]));
+    rfState.nodeLookup.set(tgt.id, geo(100, 200));
+    rfState.nodeLookup.set(src1.id, geo(0, 400));
+    rfState.nodeLookup.set(src2.id, geo(200, 400));
+
+    const { container } = mountOverlay();
+    expect(container.querySelector('ellipse')?.getAttribute('stroke-dasharray')).toBe('3 2.5');
+    const texts = [...container.querySelectorAll('text')].map((t) => t.textContent);
+    expect(texts).toContain('AND');
+    expect(texts).toContain('+');
+  });
+
+  it('a conceptual (default) AND ellipse has no dash — byte-identical to before', () => {
+    seedAndGroup();
+    const { container } = mountOverlay();
+    expect(container.querySelector('ellipse')?.getAttribute('stroke-dasharray')).toBeNull();
+    // And no stray "+" marker.
+    const texts = [...container.querySelectorAll('text')].map((t) => t.textContent);
+    expect(texts).not.toContain('+');
+  });
+});
+
+// ===========================================================================
 // Per-kind stroke colors on the text label and ellipse
 // ===========================================================================
 
@@ -526,13 +559,21 @@ describe('computeJunctors — source node missing from nodeLookup', () => {
     // Group has a source ['s-missing'] but only the target is in the lookup.
     // Line 195: `if (!sn) continue` — the source node is absent.
     // Result: sourceXs stays empty → junctorCenterX returns targetX (fallback).
-    type G = { id: string; kind: 'AND'; targetId: string; sourceIds: string[]; sourceKey: string };
+    type G = {
+      id: string;
+      kind: 'AND';
+      targetId: string;
+      sourceIds: string[];
+      sourceKey: string;
+      additional: boolean;
+    };
     const grp: G = {
       id: 'g1',
       kind: 'AND',
       targetId: 't1',
       sourceIds: ['s-missing'],
       sourceKey: 's-missing',
+      additional: false,
     };
     const lookup = new Map([
       [
@@ -552,13 +593,21 @@ describe('computeJunctors — source node missing from nodeLookup', () => {
 
   it('covers the source measured?.width nullish branch when source node has no measured', () => {
     // Source node present but `measured` is undefined → uses NODE_WIDTH fallback (line 196).
-    type G = { id: string; kind: 'OR'; targetId: string; sourceIds: string[]; sourceKey: string };
+    type G = {
+      id: string;
+      kind: 'OR';
+      targetId: string;
+      sourceIds: string[];
+      sourceKey: string;
+      additional: boolean;
+    };
     const grp: G = {
       id: 'g2',
       kind: 'OR',
       targetId: 't2',
       sourceIds: ['s-unmeasured'],
       sourceKey: 's-unmeasured',
+      additional: false,
     };
     const lookup = new Map([
       [
@@ -582,8 +631,22 @@ describe('computeJunctors — source node missing from nodeLookup', () => {
 
 describe('computeJunctors — deterministic output for identical inputs', () => {
   it('returns the same geometry values across two calls', () => {
-    type G = { id: string; kind: 'AND'; targetId: string; sourceIds: string[]; sourceKey: string };
-    const grp: G = { id: 'g1', kind: 'AND', targetId: 't1', sourceIds: ['s1'], sourceKey: 's1' };
+    type G = {
+      id: string;
+      kind: 'AND';
+      targetId: string;
+      sourceIds: string[];
+      sourceKey: string;
+      additional: boolean;
+    };
+    const grp: G = {
+      id: 'g1',
+      kind: 'AND',
+      targetId: 't1',
+      sourceIds: ['s1'],
+      sourceKey: 's1',
+      additional: false,
+    };
     const lookup = new Map([
       [
         't1',

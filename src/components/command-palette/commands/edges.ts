@@ -117,6 +117,42 @@ export const edgeCommands: Command[] = [
       s.ungroupAnd(ids);
     },
   }),
+  // Session 199 (backlog A3) — flip an AND group between the two CLR flavours.
+  // Conceptual (joint / "banana") = the causes are jointly required; magnitudinal
+  // (additional) = each cause contributes independently and is removable.
+  withWriteGuard({
+    id: 'mark-and-additional',
+    label: 'Mark AND group as additional cause (magnitudinal)',
+    group: 'Edit',
+    run: (s) => {
+      const ids = getSelectedEdges().map((e) => e.id);
+      const doc = currentDoc(s);
+      if (!ids.some((id) => doc.edges[id]?.andGroupId)) {
+        s.showToast('info', 'Select an AND-grouped edge first — the flavour applies to its group.');
+        return;
+      }
+      s.setAndMode(ids, 'additional');
+      s.showToast(
+        'success',
+        'Marked magnitudinal — each cause contributes independently (each removable). Shown as a dashed AND⁺.'
+      );
+    },
+  }),
+  withWriteGuard({
+    id: 'mark-and-joint',
+    label: 'Mark AND group as jointly required (conceptual)',
+    group: 'Edit',
+    run: (s) => {
+      const ids = getSelectedEdges().map((e) => e.id);
+      const doc = currentDoc(s);
+      if (!ids.some((id) => doc.edges[id]?.andGroupId)) {
+        s.showToast('info', 'Select an AND-grouped edge first — the flavour applies to its group.');
+        return;
+      }
+      s.setAndMode(ids, 'joint');
+      s.showToast('success', 'Marked jointly required — all causes together produce the effect.');
+    },
+  }),
   // Bundle 8 / FL-ED4: OR junctor.
   withWriteGuard({
     id: 'group-or',

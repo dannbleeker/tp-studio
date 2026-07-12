@@ -307,6 +307,11 @@ export const mergeDocIntoActive = (source: TPDocument): { entities: number; edge
       ...(src.loopNarrative !== undefined ? { loopNarrative: src.loopNarrative } : {}),
       ...(src.attributes !== undefined ? { attributes: src.attributes } : {}),
       ...(andGroupId !== undefined ? { andGroupId } : {}),
+      // Carry the A3 AND flavour, but only alongside a preserved AND group —
+      // otherwise it's a meaningless orphan (matches the persistence guard).
+      ...(andGroupId !== undefined && src.andMode === 'additional'
+        ? { andMode: 'additional' as const }
+        : {}),
       ...(orGroupId !== undefined ? { orGroupId } : {}),
       ...(xorGroupId !== undefined ? { xorGroupId } : {}),
     };

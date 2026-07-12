@@ -68,6 +68,9 @@ const KIND_STROKE: Record<JunctorKind, string> = {
 type Junctor = {
   id: string;
   kind: JunctorKind;
+  // Session 199 (A3) — a magnitudinal / additional-cause AND (styled distinctly,
+  // geometry unchanged). Only ever true for AND groups.
+  additional: boolean;
   cx: number; // junctor center X (== target top-handle X)
   cy: number; // junctor center Y (target top + offset)
   tx: number; // target top-handle X
@@ -89,6 +92,9 @@ type JunctorGroup = {
   targetId: string;
   sourceIds: string[];
   sourceKey: string;
+  // Session 199 (A3) — true when any member edge carries `andMode: 'additional'`
+  // (magnitudinal AND). Only meaningful for AND groups.
+  additional: boolean;
 };
 
 // Session 135 / Perf #7 — equality fn skips re-renders when the
@@ -101,6 +107,7 @@ const junctorGroupsEqual = arrayShallowEqualByKeys<JunctorGroup>([
   'kind',
   'targetId',
   'sourceKey',
+  'additional',
 ]);
 
 /**
@@ -117,17 +124,31 @@ const junctorGroupsCache = new WeakMap<TPDocument['edges'], JunctorGroup[]>();
 const computeJunctorGroups = (edges: TPDocument['edges']): JunctorGroup[] => {
   const cached = junctorGroupsCache.get(edges);
   if (cached) return cached;
-  const byGroup = new Map<string, { kind: JunctorKind; targetId: string; sourceIds: string[] }>();
+  const byGroup = new Map<
+    string,
+    { kind: JunctorKind; targetId: string; sourceIds: string[]; additional: boolean }
+  >();
   for (const edge of Object.values(edges)) {
     for (const { kind, field } of KIND_FIELDS) {
       const gid = edge[field];
       if (!gid) continue;
       // All edges in a junctor group share the target; the first edge fixes
       // kind + targetId, and every edge contributes its source so the circle
-      // can center over the causes.
+      // can center over the causes. `andMode: 'additional'` on any AND-group
+      // member flavours the whole group magnitudinal.
+      const isAdditional = kind === 'AND' && edge.andMode === 'additional';
       const existing = byGroup.get(gid);
-      if (existing) existing.sourceIds.push(edge.sourceId);
-      else byGroup.set(gid, { kind, targetId: edge.targetId, sourceIds: [edge.sourceId] });
+      if (existing) {
+        existing.sourceIds.push(edge.sourceId);
+        existing.additional = existing.additional || isAdditional;
+      } else {
+        byGroup.set(gid, {
+          kind,
+          targetId: edge.targetId,
+          sourceIds: [edge.sourceId],
+          additional: isAdditional,
+        });
+      }
     }
   }
   const result = [...byGroup.entries()].map(([id, v]) => ({
@@ -136,6 +157,7 @@ const computeJunctorGroups = (edges: TPDocument['edges']): JunctorGroup[] => {
     targetId: v.targetId,
     sourceIds: v.sourceIds,
     sourceKey: [...v.sourceIds].sort().join(','),
+    additional: v.additional,
   }));
   junctorGroupsCache.set(edges, result);
   return result;
@@ -196,7 +218,15 @@ export const computeJunctors = (
       sourceXs.push(sn.internals.positionAbsolute.x + (sn.measured?.width ?? NODE_WIDTH) / 2);
     }
     const cx = junctorCenterX(sourceXs, tX);
-    out.push({ id: g.id, kind: g.kind, cx, cy: tY + JUNCTOR_CENTER_OFFSET_Y, tx: tX, ty: tY });
+    out.push({
+      id: g.id,
+      kind: g.kind,
+      additional: g.additional,
+      cx,
+      cy: tY + JUNCTOR_CENTER_OFFSET_Y,
+      tx: tX,
+      ty: tY,
+    });
   }
   return out;
 };
@@ -204,7 +234,15 @@ export const computeJunctors = (
 // Session 138 — content equality so the React Flow store subscription only
 // re-renders the overlay when a junctor's geometry actually changed (a
 // target moved / resized), not on every unrelated store tick.
-const junctorsEqual = arrayShallowEqualByKeys<Junctor>(['id', 'kind', 'cx', 'cy', 'tx', 'ty']);
+const junctorsEqual = arrayShallowEqualByKeys<Junctor>([
+  'id',
+  'kind',
+  'additional',
+  'cx',
+  'cy',
+  'tx',
+  'ty',
+]);
 
 export function JunctorOverlay() {
   const transform = useRFStore((s) => s.transform);
@@ -328,6 +366,9 @@ export function JunctorOverlay() {
                   the pointer, and the vertical radius (`ry`) is unchanged so
                   the bezier terminus still lands on it. Lights up while a
                   connection is dragged over it. */}
+              {/* Session 199 (A3) — a magnitudinal / additional-cause AND is
+                  styled with a DASHED ring + a superscript "+" (geometry
+                  unchanged). A conceptual AND (and every OR / XOR) stays solid. */}
               <ellipse
                 cx={j.cx}
                 cy={j.cy}
@@ -336,6 +377,7 @@ export function JunctorOverlay() {
                 fill="white"
                 stroke={stroke}
                 strokeWidth={connecting && hoveredGroup === j.id ? 3 : 1.5}
+                strokeDasharray={j.additional ? '3 2.5' : undefined}
                 style={
                   connecting && hoveredGroup === j.id
                     ? { pointerEvents: 'none', filter: `drop-shadow(0 0 5px ${stroke}cc)` }
@@ -354,6 +396,20 @@ export function JunctorOverlay() {
               >
                 {j.kind}
               </text>
+              {j.additional && (
+                <text
+                  x={j.cx + JUNCTOR_RADIUS_X - 2}
+                  y={j.cy - JUNCTOR_RADIUS + 5}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize="11"
+                  fontWeight="700"
+                  fill={stroke}
+                  style={{ userSelect: 'none', pointerEvents: 'none' }}
+                >
+                  +
+                </text>
+              )}
             </g>
           );
         })}

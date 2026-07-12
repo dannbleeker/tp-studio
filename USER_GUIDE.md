@@ -498,6 +498,15 @@ To **ungroup**: select one of the AND-grouped edges; the inspector shows the gro
 
 The cause-sufficiency CLR warning automatically suppresses itself on edges that are part of an AND group.
 
+### Two kinds of AND — jointly required vs. additional causes
+
+The logic literature draws a distinction inside "AND", and TP Studio lets you name which one you mean — the two answer **opposite** Categories-of-Legitimate-Reservation questions:
+
+- **Conceptual AND** (the default) — the causes are *jointly required*: none alone is enough, and removing any one breaks the effect. This is the *cause-insufficiency* reservation, and it's what every AND group means until you say otherwise. Drawn as a solid violet "AND" ring.
+- **Magnitudinal AND** — the causes each *contribute independently*, and each is *removable*: any one on its own already produces the effect, and more of them just make it larger. This is the *additional-cause* reservation. Drawn as a **dashed "AND⁺" ring** so it reads differently at a glance.
+
+To switch a group's flavour, select any edge in it and run `Cmd/Ctrl+K` → **Mark AND group as additional cause (magnitudinal)** or **…as jointly required (conceptual)**. The choice applies to the whole group and travels with the document (a conceptual AND stores nothing extra, so older diagrams are unchanged). It's a modelling aid on the connector, not a new validator; the text-based exports (Mermaid, DOT, reasoning narrative, Flying Logic, VGL) describe both as an AND group.
+
 ### OR and XOR junctors
 
 The same shift-click + "Group as …" pattern works for two more junctor kinds. Each junctor is its own circle with its own kind label and color:

@@ -144,6 +144,7 @@
     {"id":"clr-edge-scrutiny","name":"Per-edge CLR scrutiny dialog","area":"CLR","since":160,"manual":true,"book":true,"bookExample":false},
     {"id":"clr-logic-mismatch","name":"Logic-type mismatch lint","area":"CLR","since":179,"manual":true,"book":false,"bookExample":false},
     {"id":"clr-entry-point","name":"FRT/NBR entry-point rule (injection or true-in-reality)","area":"CLR","since":199,"manual":true,"book":true,"bookExample":false},
+    {"id":"and-connector-flavour","name":"Two AND connectors (conceptual vs magnitudinal/additional)","area":"Edges","since":199,"manual":true,"book":true,"bookExample":false},
     {"id":"clr-long-arrow","name":"Long-arrow / missing-step warning","area":"CLR","since":180,"manual":true,"book":true,"bookExample":true},
     {"id":"clr-reinforcing-no-delay","name":"Reinforcing-loop no-delay warning","area":"CLR","since":180,"manual":true,"book":true,"bookExample":true},
     {"id":"clr-panel","name":"Logic-check status chip + CLR panel","area":"CLR","since":182,"manual":true,"book":false,"bookExample":false},

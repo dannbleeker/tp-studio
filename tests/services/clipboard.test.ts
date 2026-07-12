@@ -338,4 +338,19 @@ describe('mergeDocIntoActive (Session 193 — insert a template into the current
     useDocumentStore.getState().undo();
     expect(Object.keys(useDocumentStore.getState().doc.entities)).toHaveLength(1);
   });
+
+  it('carries the A3 AND flavour (andMode) across the insert', () => {
+    // A magnitudinal AND group inserted from a template must stay magnitudinal —
+    // not silently downgrade to a solid conceptual AND.
+    const { source } = makeSource();
+    for (const e of Object.values(source.edges)) {
+      if (e.andGroupId) e.andMode = 'additional';
+    }
+    mergeDocIntoActive(source);
+    const inserted = Object.values(useDocumentStore.getState().doc.edges).filter(
+      (e) => e.andGroupId
+    );
+    expect(inserted).toHaveLength(2);
+    expect(inserted.every((e) => e.andMode === 'additional')).toBe(true);
+  });
 });

@@ -36,6 +36,8 @@ These read titles, edge endpoints, and connectivity only — they assume nothing
 | `crt-tied-core-drivers` | clarity | Two or more root causes tie for the most UDEs — a hidden conflict may sit beneath. Carries a one-click **Spawn Evaporating Cloud** action. |
 | `crt-ude-wording` | clarity | A UDE phrased as the *absence of a solution* ("lack of…", a leading "No…") rather than an observable effect. |
 
+> **Two AND connectors.** An AND junctor answers one of two opposite reservations, and you can name which: a **conceptual** AND (the default, solid ring) means the causes are *jointly required* — the `cause-sufficiency` question; a **magnitudinal** AND (a dashed `AND⁺` ring) means the causes each *contribute independently and are removable* — the `additional-cause` question. Flip a group between them from the palette (*Mark AND group as additional cause* / *…as jointly required*). It's a modelling aid on the connector, not a separate validator — see [Chapter 3](03-reading-a-diagram.md).
+
 ### FRT — Future Reality Tree
 
 | Rule | Tier | Catches |
