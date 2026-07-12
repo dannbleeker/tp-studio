@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-12T13:29:35.498Z",
-  "commit": "aafa5d7",
+  "generatedAt": "2026-07-12T13:44:43.868Z",
+  "commit": "a8fdd47",
   "headline": {
-    "linesTsJs": 143489,
-    "tests": 4775,
-    "lineCoveragePct": 95.76,
-    "commits": 1030,
+    "linesTsJs": 143787,
+    "tests": 4779,
+    "lineCoveragePct": 95.77,
+    "commits": 1033,
     "ageDays": 62,
-    "trackedFiles": 1151,
+    "trackedFiles": 1156,
     "featureManualPct": 99.6,
-    "featureBookPct": 66.7,
-    "featureExamplePct": 24.7
+    "featureBookPct": 66.8,
+    "featureExamplePct": 25
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 555,
-      "lines": 72667
+      "files": 559,
+      "lines": 72899
     },
     {
       "category": "Unit tests",
-      "files": 410,
-      "lines": 64406
+      "files": 411,
+      "lines": 64472
     },
     {
       "category": "E2E tests (Playwright)",
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.76,
-      "covered": 13647,
-      "total": 14250
+      "pct": 95.77,
+      "covered": 13674,
+      "total": 14277
     },
     "statements": {
-      "pct": 93.29,
-      "covered": 15524,
-      "total": 16639
+      "pct": 93.31,
+      "covered": 15553,
+      "total": 16668
     },
     "functions": {
-      "pct": 93.05,
-      "covered": 3029,
-      "total": 3255
+      "pct": 93.07,
+      "covered": 3036,
+      "total": 3262
     },
     "branches": {
-      "pct": 83.86,
-      "covered": 8807,
-      "total": 10502
+      "pct": 83.85,
+      "covered": 8817,
+      "total": 10514
     }
   },
   "tests": {
-    "unit": 4679,
+    "unit": 4683,
     "e2e": 96,
-    "durationMs": 272145,
+    "durationMs": 274200,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11169
+        "ms": 11160
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5951
+        "ms": 6129
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5288
+        "ms": 5023
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 3237
+        "ms": 3227
       },
       {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2935
+        "file": "tests/components/CommandPalette.test.tsx",
+        "ms": 2415
       }
     ]
   },
@@ -101,7 +101,7 @@
     "exporters": 14,
     "diagramTypes": 9,
     "clrCategories": 7,
-    "libraryPatterns": 99,
+    "libraryPatterns": 102,
     "commands": 100
   },
   "footprint": {
@@ -110,7 +110,7 @@
     "biggestFiles": [
       {
         "name": "domain/patterns/index.ts",
-        "lines": 923
+        "lines": 950
       },
       {
         "name": "services/exporters/pdfExport.ts",
@@ -195,26 +195,26 @@
     "nonNull": 106
   },
   "bundle": {
-    "jsGzipKb": 826.9,
+    "jsGzipKb": 830.5,
     "cssGzipKb": 19.5,
-    "totalGzipKb": 846.4,
+    "totalGzipKb": 850,
     "budgetKb": 207,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 57438,
     "chapters": 25,
-    "appLoc": 72667,
+    "appLoc": 72899,
     "docToCodeRatio": 0.79
   },
   "featureCoverage": {
-    "total": 243,
-    "manual": 242,
+    "total": 244,
+    "manual": 243,
     "manualPct": 99.6,
-    "book": 162,
-    "bookPct": 66.7,
-    "bookExample": 60,
-    "bookExamplePct": 24.7,
+    "book": 163,
+    "bookPct": 66.8,
+    "bookExample": 61,
+    "bookExamplePct": 25,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -247,9 +247,9 @@
         "book": 3
       },
       "ST": {
-        "total": 4,
-        "manual": 4,
-        "book": 4
+        "total": 5,
+        "manual": 5,
+        "book": 5
       },
       "NBR": {
         "total": 3,
@@ -772,16 +772,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 62,
-    "commits": 1030,
-    "commits7d": 58,
+    "commits": 1033,
+    "commits7d": 61,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 758
+        "count": 759
       },
       {
         "name": "github-actions[bot]",
-        "count": 256
+        "count": 258
       },
       {
         "name": "Claude",
@@ -793,9 +793,9 @@
       }
     ],
     "churn30d": {
-      "added": 30250,
-      "removed": 9765
+      "added": 30616,
+      "removed": 9813
     },
-    "changelogEntries": 378
+    "changelogEntries": 379
   }
 }
