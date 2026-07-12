@@ -133,7 +133,16 @@ export type ClrRuleId =
   // junctors — necessity children are implicitly conjoined).
   | 'goalTree-ncs-per-csf' // more than five direct NCs under one CSF
   | 'goalTree-nc-depth' // an NC nested deeper than two layers below a CSF
-  | 'goalTree-junctor'; // a grouped (AND/OR/XOR) edge in a Goal Tree
+  | 'goalTree-junctor' // a grouped (AND/OR/XOR) edge in a Goal Tree
+  // Session 199 (backlog A1) — CLR wording + new soft warnings:
+  // A single-word entity title on a causal / necessity tree — a cause or effect
+  // should be a complete statement of what is happening, not a bare label
+  // (the entity-existence "not a complete sentence" reservation). Soft clarity nudge.
+  | 'entity-fragment'
+  // A law / regulation / compliance condition set as a Critical Success Factor
+  // on a Goal Tree — compliance is usually a Necessary Condition a few layers
+  // down, not a make-or-break CSF (Dettmer). Soft clarity nudge.
+  | 'goalTree-compliance-csf';
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each

@@ -32,7 +32,7 @@ export const causeEffectReversalRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'cause-effect-reversal',
           { kind: 'entity', id: e.id },
-          'A Root Cause should not have incoming causes — possible cause/effect reversal.'
+          'A Root Cause should not have incoming causes. Check the arrow: does that cause make this happen, or is it just how you know this is here? If the latter, the arrow is reversed.'
         )
       );
     }
@@ -45,7 +45,7 @@ export const causeEffectReversalRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'cause-effect-reversal',
           { kind: 'entity', id: e.id },
-          'A UDE should not have outgoing effects — possible cause/effect reversal.'
+          'A UDE should not have outgoing effects. Check the arrow: does this make the effect happen, or is the effect just how you know this UDE is here? If the latter, the arrow is reversed.'
         )
       );
     }

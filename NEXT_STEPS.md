@@ -61,27 +61,35 @@ Ch18 Kendall · Ch19 Dettmer · Ch20 Goldratt-Ashlag · Ch22 Lang · Ch23 Mabin 
 Cohen · Ch25 Scheinkopf(+App.B CLR) · Ch26 Suerken · Ch27 Cheng · Ch31 van Gelder/Ferguson ·
 Ch34 Ferguson.
 
-### A. CLR / logic correctness (ACTIVE — cheap, raises authority)
-- `ACTIVE` **Two AND connectors.** Split the single AND junctor into a *magnitudinal-and*
+### A. CLR / logic correctness (A1 SHIPPED Session 199; A2–A4 in progress)
+Approved as a four-slice build (A1 wording+warnings · A2 entry-point rule · A3 two AND connectors ·
+A4 opt-in modes) after a plan + in-app mockup.
+- `ACTIVE (A3)` **Two AND connectors.** Split the single AND junctor into a *magnitudinal-and*
   (Additional Cause: independent arrows, each removable) vs a *conceptual-and / ellipse "banana"*
   (Cause Insufficiency: jointly required). They answer opposite reservations. *Ch25 App.B.*
-- `ACTIVE` **Additional-Cause auto-detect.** Flag the signature "≥2 arrows enter an entity with no
-  'and' connector" → prompt for a cause of ≥ equal magnitude. *Ch25 App.B.*
-- `ACTIVE` **Entity-Existence two modes.** Separate "not a complete sentence" (fragment) from
-  "doesn't exist in this environment," each own message. *Ch25 App.B Fig 25-B2.*
-- `ACTIVE` **Cause-Effect-Reversal wording.** Prompt: is the cause *why* the effect exists or *how
-  you know* it exists? ("ask why" on symptoms.) *Ch25 App.B Fig 25-B6.*
-- `ACTIVE` **Predicted-Effect as two checks.** (a) collateral-effect existence; (b) timing
-  counter-example (effect precedes cause ⇒ not the cause). *Ch25 App.B Fig 25-B7.*
-- `ACTIVE` **Entry-point rule (FRT/NBR).** Every cause-only node must be current-reality-checkable
-  today OR an injection — flag orphans. *Ch25 (Scheinkopf) NBR section.*
-- `EXTENDS` **Progressive CLR gating.** `clr-tiered` groups by tier; also *order* it — clarity
-  first, unlock Level-3 only after Levels 1–2 clear. *Ch25 App.B.*
-- `ACTIVE` **Compliance-as-CSF warning (Goal Tree).** Law/regulation/compliance entities set as a
-  CSF → nudge to demote several NC layers down. *Ch19 (Dettmer).*
-- `EXTENDS` **`goalTree-nc-depth` mode-aware.** Keep ≤2 layers when feeding a CRT; allow 5–6 in a
+- **Additional-Cause auto-detect** — ✅ **shipped Session 199 (A1)**: `additional-cause` now also fires at
+  exactly two ungrouped causes (the magnitude question: each enough alone, or only together?) — the gap
+  between `cause-sufficiency` (one) and `indirect-effect` (three+). *Ch25 App.B.*
+- **Entity-Existence "not a complete sentence"** — ✅ **shipped Session 199 (A1)** as `entity-fragment`: a
+  single-word title on a causal / necessity tree, self-excluding the terse-by-design diagrams. *(The
+  separate "doesn't exist in this environment" mode stays contextual — it lives in edge scrutiny.)*
+  *Ch25 App.B Fig 25-B2.*
+- **Cause-Effect-Reversal wording** — ✅ **shipped Session 199 (A1)**: the warning + scrutiny question now
+  ask whether the cause *makes* the effect or is only *how you know* it's there. *Ch25 App.B Fig 25-B6.*
+- **Predicted-Effect as two checks** — ✅ **shipped Session 199 (A1)**: (a) collateral-effect existence
+  (the reworded warning); (b) timing counter-example — no structural signal, so it rides edge scrutiny.
+  *Ch25 App.B Fig 25-B7.*
+- `ACTIVE (A2)` **Entry-point rule (FRT/NBR).** Every cause-only node must be current-reality-checkable
+  today OR an injection — flag orphans. *Ch25 (Scheinkopf) NBR section.* (First fix the validation
+  fingerprint to include entity `state`, or the warnings go stale on a state toggle.)
+- `EXTENDS (A4)` **Progressive CLR gating.** `clr-tiered` groups by tier; also *order* it — clarity
+  first, de-emphasise Level-3 until Levels 1–2 clear. *Ch25 App.B.*
+- **Compliance-as-CSF warning (Goal Tree)** — ✅ **shipped Session 199 (A1)** as `goalTree-compliance-csf`:
+  a compliance-worded CSF → soft nudge to demote it to a Necessary Condition a few layers down.
+  *Ch19 (Dettmer).*
+- `EXTENDS (A4)` **`goalTree-nc-depth` mode-aware.** Keep ≤2 layers when feeding a CRT; allow 5–6 in a
   conflict-resolution mode. *Ch19 (Dettmer).*
-- `EXTENDS` **"Jonah quick-check" mode.** Fast pass on 4 rules (entity/causality × existence/clarity)
+- `EXTENDS (A4)` **"Jonah quick-check" mode.** Fast pass on 4 rules (entity/causality × existence/clarity)
   + read-aloud test, as an on-ramp before the full 7-category CLR. *Ch25 (Scheinkopf).*
 - Note: the Handbook's canonical CLR list is **7 categories in 3 ordered levels** and omits
   `tautology`; ours (8th) is Dettmer's — keep it, this is not a removal.

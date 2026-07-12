@@ -60,6 +60,20 @@ export const additionalCauseRuleFor = (first: EntityType, ...rest: EntityType[])
               'Only one cause is captured — could a different, independent cause also produce this effect? If so, add it and model the alternatives as an OR.'
             )
           );
+        } else if (incoming.length === 2 && incoming.every((edge) => !junctorGroupId(edge))) {
+          // Session 199 (backlog A1) — the magnitude reservation. Exactly two
+          // ungrouped causes with no connector is the gap between `cause-
+          // sufficiency` (one cause) and `indirect-effect` (three or more): are
+          // these each enough alone, or only enough together? Capped at two so
+          // it never double-fires with `indirect-effect`.
+          out.push(
+            makeWarning(
+              doc,
+              'additional-cause',
+              { kind: 'entity', id: e.id },
+              'Two independent causes feed this with no connector — is each one enough on its own (leave them separate, or model as an OR), or only enough together (group them as an AND)?'
+            )
+          );
         }
       }
     }

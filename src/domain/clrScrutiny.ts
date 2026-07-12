@@ -88,16 +88,16 @@ export const CLR_SCRUTINY: ClrScrutinyCategory[] = [
     tier: 'existence',
     label: 'Cause–effect reversal',
     question:
-      'Are the cause and the effect the right way round? Could the arrow actually point the other way?',
-    hint: 'Try reading the arrow backwards. If the reverse reads truer, flip the edge.',
+      'Is the cause the reason the effect exists, or only how you know the effect is there? If it is just your evidence, the arrow points the wrong way.',
+    hint: 'Read it backwards. On symptoms it is easy to draw "we know X because Y" instead of "Y causes X" — if the reverse reads truer, flip the edge.',
   },
   {
     ruleId: 'predicted-effect-existence',
     tier: 'existence',
     label: 'Predicted-effect existence',
     question:
-      'If the cause is real, what OTHER effect must also exist? Can you go and find that effect in reality?',
-    hint: 'Name a side-effect the cause must produce, then check for it. Its absence challenges the cause.',
+      'Two checks: (a) if the cause is real, what OTHER effect must also exist — can you find it? And (b) does the effect ever appear BEFORE the cause? If it does, this cannot be the cause.',
+    hint: 'Name a collateral effect the cause must produce, then look for it — its absence challenges the cause. And if the effect predates the cause, the timing rules the arrow out.',
   },
   {
     ruleId: 'tautology',

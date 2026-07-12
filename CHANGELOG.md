@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 199 — CLR sharpening (backlog A1)
+
+First slice of the Categories-of-Legitimate-Reservation backlog (Section A). All strictly additive, soft,
+and dismissible; new reservation IDs render in the existing tiered Logic-check panel (*Handbook* Ch. 25
+App. B, Scheinkopf, unless noted):
+
+- **"Not a complete statement" check** (`entity-fragment`, clarity tier). A single-word entity title on a
+  causal / necessity tree gets a nudge — a cause or effect should state *what is happening* ("Backlog
+  grows"), not name a thing ("Backlog"). Self-excludes the terse-by-design diagrams (Evaporating Cloud,
+  Strategy & Tactics, Freeform) and exempts `unspecified` placeholders. The sharpest, lowest-false-positive
+  half of the entity-existence reservation (Fig 25-B2).
+- **Additional-cause magnitude prompt.** The `additional-cause` rule now also fires at **exactly two**
+  ungrouped causes — the gap between `cause-sufficiency` (one cause) and `indirect-effect` (three or more):
+  is each cause enough on its own (leave them separate, or model as an OR), or only enough together (group
+  as an AND)? Silent at three-plus, where `indirect-effect` owns the shape.
+- **Cause-effect-reversal reworded** to pose the diagnostic question directly: does the cause *make* the
+  effect happen, or is it only *how you know* the effect is there? (Fig 25-B6 — "ask why" on symptoms.)
+- **Predicted-effect reworded** to ask for a *collateral* effect the injection must also produce (then go
+  and check for it). Its companion **timing counter-example** — an effect that appears before its cause
+  can't be caused by it — has no structural signal, so it now rides the per-edge scrutiny stepper rather
+  than firing as an always-on warning (Fig 25-B7).
+- **Compliance-as-CSF warning** (`goalTree-compliance-csf`, clarity tier). A Critical Success Factor whose
+  title reads as compliance (law / regulation / GDPR / audit / certification…) gets a soft nudge:
+  compliance is usually a Necessary Condition a few layers down — a threshold you must not breach — not a
+  make-or-break CSF the goal is built around (Ch. 19, Dettmer).
+
 ## Session 198 — Cross-tree spawn bridges (backlog C)
 
 Two new command-palette actions that seed one tree from another, following the same **unlinked-spawn**

@@ -15,7 +15,9 @@ import { ecBoxCausalWordsRule } from './ecBoxSyntax';
 import { ecCompletenessRule } from './ecCompleteness';
 import { ecMissingConflictRule } from './ecMissingConflict';
 import { entityExistenceRule } from './entityExistence';
+import { entityFragmentRule } from './entityFragment';
 import { externalRootCauseRule } from './externalRootCause';
+import { goalTreeComplianceCsfRule } from './goalTreeComplianceCsf';
 import { goalTreeMultipleGoalsRule } from './goalTreeMultipleGoals';
 import {
   goalTreeCsfCountRule,
@@ -59,6 +61,11 @@ import { ttActionLocusUnsetRule } from './ttActionLocusUnset';
 const STRUCTURAL_RULES: TieredRule[] = [
   tieredRule('clarity', 'clarity', clarityRule),
   tieredRule('existence', 'entity-existence', entityExistenceRule),
+  // Session 199 (backlog A1) — the "not a complete statement" half of entity
+  // existence: a single-word title on a causal / necessity tree. The rule
+  // self-excludes the terse-by-design diagram types (EC / S&T / Freeform), so
+  // registering it structurally only reaches CRT / FRT / NBR / PRT / TT / Goal Tree.
+  tieredRule('clarity', 'entity-fragment', entityFragmentRule),
   tieredRule('existence', 'causality-existence', causalityExistenceRule),
   tieredRule('clarity', 'tautology', tautologyRule),
   // Block C addition (E2). (The E3 cycle rule was removed Session 176 — the
@@ -209,6 +216,9 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('clarity', 'goalTree-ncs-per-csf', goalTreeNcsPerCsfRule),
     tieredRule('clarity', 'goalTree-nc-depth', goalTreeNcDepthRule),
     tieredRule('clarity', 'goalTree-junctor', goalTreeJunctorRule),
+    // Session 199 (backlog A1, Dettmer Ch. 19) — a compliance condition placed
+    // at the CSF tier is usually a Necessary Condition a few layers down.
+    tieredRule('clarity', 'goalTree-compliance-csf', goalTreeComplianceCsfRule),
   ],
   // Session 134 / spec major gap #5 — NBR runs the FRT rule set: structural
   // rules + cause-sufficiency + additional-cause (target widened to BOTH `ude`

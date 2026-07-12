@@ -12,6 +12,7 @@ These read titles, edge endpoints, and connectivity only — they assume nothing
 | --- | --- | --- | --- |
 | `clarity` | clarity | Any non-note entity | A title over 25 words (tighten to one statement) **or** a title ending in `?` (make it declarative). |
 | `entity-existence` | existence | Any entity | An empty title — the slot asserts a state of the world but doesn't say what. |
+| `entity-fragment` | clarity | Any non-note entity on a causal / necessity tree | A single-word title — a cause or effect should state *what is happening* ("Backlog grows"), not name a thing ("Backlog"). Skips the terse-by-design types (EC / S&T / Freeform); exempts `unspecified` placeholders. |
 | `causality-existence` | existence | Each edge | A standing once-per-edge reservation: does this drawn arrow correspond to something real? Resolve it once you're confident in the link. |
 | `tautology` | clarity | Each edge | A cause that merely restates its effect — a relabel, not a causal step. |
 | `indirect-effect` | existence | Converging edges | Too many causes pointing straight at one effect — the *breadth* twin of `long-arrow`; a consolidating intermediate effect is probably missing. |
@@ -25,8 +26,8 @@ These read titles, edge endpoints, and connectivity only — they assume nothing
 | Rule | Tier | Catches |
 | --- | --- | --- |
 | `cause-sufficiency` | sufficiency | A sufficiency edge that probably needs a co-cause — where AND-groups are born. |
-| `additional-cause` | sufficiency | A UDE that a *different*, independent cause could also produce (model with an OR-junctor). |
-| `cause-effect-reversal` | existence | An edge whose typed reading suggests the arrow points the wrong way. |
+| `additional-cause` | sufficiency | A UDE with **one** ungrouped cause (could a *different*, independent cause also produce it? — model with an OR), **or exactly two** ungrouped causes with no connector (the magnitude question: is each enough alone, or only enough together — an AND?). Silent at three or more, where `indirect-effect` takes over. |
+| `cause-effect-reversal` | existence | A Root Cause with incoming edges, or a UDE with outgoing ones. Asks whether the cause *makes* the effect happen or is only *how you know* the effect is there — if the latter, the arrow is reversed. |
 | `external-root-cause` | clarity | A root cause flagged Locus = **External** — push one level deeper; the real driver is usually within control or influence. |
 | `crt-ude-count` | clarity | A CRT scoped to too few (< 3) or too many (> 15) UDEs. |
 | `crt-ude-no-upstream` | existence | A UDE with no incoming cause — the tree is incomplete there. |
@@ -40,8 +41,8 @@ These read titles, edge endpoints, and connectivity only — they assume nothing
 | Rule | Tier | Catches |
 | --- | --- | --- |
 | `cause-sufficiency` | sufficiency | An injection/cause that probably needs a co-cause. |
-| `additional-cause` | sufficiency | A desired effect a different cause could also produce. |
-| `predicted-effect-existence` | existence | An injection whose predicted *second* effect should be observable somewhere — confirm it exists, or the claim is suspect. |
+| `additional-cause` | sufficiency | A desired effect with one ungrouped cause (a different cause could also produce it), or exactly two ungrouped causes (the AND-vs-OR magnitude question). |
+| `predicted-effect-existence` | existence | An injection with no predicted effect captured yet — name a *collateral* effect it must also produce, then go and check for it (its absence challenges the injection). The companion *timing* counter-example — an effect that appears before its cause can't be caused by it — has no structural signal, so it's walked in [edge scrutiny](13-the-clr.md) rather than auto-fired. |
 
 ### NBR — Negative Branch Reservation
 
@@ -92,6 +93,7 @@ Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): 
 | `goalTree-ncs-per-csf` | clarity | More than five direct Necessary Conditions under one CSF — Dettmer's construction checklist (Fig. 3.14) caps it at 3–5; group some under an intermediate condition or trim. Upper bound only: one or two NCs per CSF is fine. |
 | `goalTree-nc-depth` | clarity | An NC nested deeper than two layers below a CSF. Dettmer's checklist stops at two — deeper detail is execution planning, better developed in a Prerequisite Tree. Depth is the shallowest path when an NC supports several parents. |
 | `goalTree-junctor` | clarity | An AND/OR/XOR-grouped edge in a Goal Tree. The IO Map uses single arrows only — necessity children are implicitly conjoined, so a junctor is redundant at best and contradictory at worst. One warning per grouped edge. |
+| `goalTree-compliance-csf` | clarity | A Critical Success Factor whose title reads as *compliance* (law, regulation, GDPR, audit, certification…). Compliance is usually a Necessary Condition a few layers down — a threshold you must not breach — not a make-or-break CSF the goal is built around. Soft + dismissible. |
 
 ## Cross-diagram lint (the System-Dynamics lens)
 
@@ -112,6 +114,7 @@ These ride the same edge/loop structure across several diagram types:
 | --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
 | `clarity` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `entity-existence` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `entity-fragment` | ✓ | ✓ | ✓ | ✓ | | ✓ | | | ✓ |
 | `causality-existence` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `tautology` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `indirect-effect` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -142,6 +145,7 @@ These ride the same edge/loop structure across several diagram types:
 | `goalTree-ncs-per-csf` | | | | | | ✓ | | | |
 | `goalTree-nc-depth` | | | | | | ✓ | | | |
 | `goalTree-junctor` | | | | | | ✓ | | | |
+| `goalTree-compliance-csf` | | | | | | ✓ | | | |
 | `nbr-no-negative-branch` | | | | | | | | | ✓ |
 | `nbr-ude-disconnected` | | | | | | | | | ✓ |
 | `logic-type-mismatch` | ✓ | ✓ | | ✓ | ✓ | ✓ | | | ✓ |

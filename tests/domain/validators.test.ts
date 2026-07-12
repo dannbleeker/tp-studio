@@ -123,11 +123,40 @@ describe('CLR: additional cause', () => {
     expect(hits[0]!.target).toEqual({ kind: 'entity', id: ude.id });
   });
 
-  it('self-silences once a second cause is added (alternatives now present)', () => {
+  it('fires the magnitude reservation at exactly two ungrouped causes (A1)', () => {
+    // Session 199 (backlog A1): two independent causes with no connector is the
+    // gap between cause-sufficiency (one cause) and indirect-effect (three+) —
+    // are they each enough alone, or only enough together? One hit on the effect.
     const c1 = makeEntity({ title: 'Slow shipping' });
     const c2 = makeEntity({ title: 'Poor support' });
     const ude = makeEntity({ type: 'ude', title: 'Customer churn' });
     const edges = [makeEdge(c1.id, ude.id), makeEdge(c2.id, ude.id)];
+    const hits = validate(makeDoc([c1, c2, ude], edges, 'crt')).filter(
+      (w) => w.ruleId === 'additional-cause'
+    );
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.target).toEqual({ kind: 'entity', id: ude.id });
+    expect(hits[0]!.message).toMatch(/each one enough on its own|only enough together/);
+  });
+
+  it('self-silences the magnitude reservation at three or more causes (indirect-effect territory)', () => {
+    const c1 = makeEntity({ title: 'Slow shipping' });
+    const c2 = makeEntity({ title: 'Poor support' });
+    const c3 = makeEntity({ title: 'Confusing returns' });
+    const ude = makeEntity({ type: 'ude', title: 'Customer churn' });
+    const edges = [makeEdge(c1.id, ude.id), makeEdge(c2.id, ude.id), makeEdge(c3.id, ude.id)];
+    const warnings = validate(makeDoc([c1, c2, c3, ude], edges, 'crt'));
+    expect(hasRule(warnings, 'additional-cause')).toBe(false);
+  });
+
+  it('self-silences the magnitude reservation once the two causes are AND-grouped', () => {
+    const c1 = makeEntity({ title: 'Slow shipping' });
+    const c2 = makeEntity({ title: 'Poor support' });
+    const ude = makeEntity({ type: 'ude', title: 'Customer churn' });
+    const edges = [
+      makeEdge(c1.id, ude.id, { andGroupId: 'g1' }),
+      makeEdge(c2.id, ude.id, { andGroupId: 'g1' }),
+    ];
     const warnings = validate(makeDoc([c1, c2, ude], edges, 'crt'));
     expect(hasRule(warnings, 'additional-cause')).toBe(false);
   });
@@ -377,5 +406,86 @@ describe('warning tier stamping (Block C / E5)', () => {
     for (const w of warnings) {
       expect(['clarity', 'existence', 'sufficiency']).toContain(w.tier);
     }
+  });
+});
+
+describe('CLR: entity-fragment (A1 — not a complete statement)', () => {
+  it('warns on a single-word title on a causal tree', () => {
+    const e = makeEntity({ type: 'effect', title: 'Backlog' });
+    const hits = validate(makeDoc([e], [], 'crt')).filter((w) => w.ruleId === 'entity-fragment');
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.target).toEqual({ kind: 'entity', id: e.id });
+  });
+
+  it('stays silent once the title is a multi-word statement', () => {
+    const e = makeEntity({ type: 'effect', title: 'Backlog grows' });
+    const warnings = validate(makeDoc([e], [], 'crt'));
+    expect(hasRule(warnings, 'entity-fragment')).toBe(false);
+  });
+
+  it('is tagged to the clarity tier', () => {
+    const e = makeEntity({ type: 'effect', title: 'Burnout' });
+    const hit = validate(makeDoc([e], [], 'crt')).find((w) => w.ruleId === 'entity-fragment');
+    expect(hit?.tier).toBe('clarity');
+  });
+
+  it('exempts unspecified placeholders and note entities', () => {
+    const unspec = makeEntity({ type: 'effect', title: 'Placeholder', unspecified: true });
+    const note = makeEntity({ type: 'note', title: 'Reminder' });
+    const warnings = validate(makeDoc([unspec, note], [], 'crt'));
+    expect(hasRule(warnings, 'entity-fragment')).toBe(false);
+  });
+
+  it('does not fire on the terse-by-design diagrams (EC / S&T / Freeform)', () => {
+    for (const dt of ['ec', 'st', 'freeform'] as const) {
+      const e = makeEntity({ type: 'effect', title: 'Survive' });
+      const warnings = validate(makeDoc([e], [], dt));
+      expect(hasRule(warnings, 'entity-fragment'), `${dt} should not fragment-warn`).toBe(false);
+    }
+  });
+});
+
+describe('CLR: goalTree-compliance-csf (A1)', () => {
+  it('nudges a compliance condition placed at the CSF tier', () => {
+    const csf = makeEntity({
+      type: 'criticalSuccessFactor',
+      title: 'Full GDPR compliance maintained',
+    });
+    const hits = validate(makeDoc([csf], [], 'goalTree')).filter(
+      (w) => w.ruleId === 'goalTree-compliance-csf'
+    );
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.target).toEqual({ kind: 'entity', id: csf.id });
+  });
+
+  it('stays silent on a genuine success-driver CSF', () => {
+    const csf = makeEntity({ type: 'criticalSuccessFactor', title: 'Reliable rapid delivery' });
+    const warnings = validate(makeDoc([csf], [], 'goalTree'));
+    expect(hasRule(warnings, 'goalTree-compliance-csf')).toBe(false);
+  });
+
+  it('only fires on Goal Trees, not other diagrams', () => {
+    const csf = makeEntity({ type: 'criticalSuccessFactor', title: 'Regulatory approval secured' });
+    const warnings = validate(makeDoc([csf], [], 'crt'));
+    expect(hasRule(warnings, 'goalTree-compliance-csf')).toBe(false);
+  });
+});
+
+describe('CLR: reworded reservations (A1)', () => {
+  it('cause-effect-reversal poses the why-vs-how-you-know question', () => {
+    const a = makeEntity({ title: 'Some cause' });
+    const rc = makeEntity({ type: 'rootCause', title: 'Root cause' });
+    const hit = validate(makeDoc([a, rc], [makeEdge(a.id, rc.id)], 'crt')).find(
+      (w) => w.ruleId === 'cause-effect-reversal'
+    );
+    expect(hit?.message).toMatch(/how you know/i);
+  });
+
+  it('predicted-effect asks for a collateral effect to check for', () => {
+    const inj = makeEntity({ type: 'injection', title: 'Refund policy' });
+    const hit = validate(makeDoc([inj], [], 'frt')).find(
+      (w) => w.ruleId === 'predicted-effect-existence'
+    );
+    expect(hit?.message).toMatch(/other effect it must also produce/i);
   });
 });
