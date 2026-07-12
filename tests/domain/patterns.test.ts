@@ -349,6 +349,18 @@ describe('TOC Handbook set (Session 196) — Cox & Schleier (2010)', () => {
     }
   });
 
+  it('the fire-fighting EC pairs with a well-formed NBR (2 injections, 2 UDEs, 1 DE)', () => {
+    expect(patternById('ec-contact-vs-procedure')?.diagramType).toBe('ec');
+    const nbr = patternById('nbr-contact-customer');
+    expect(nbr).toBeDefined();
+    const doc = nbr!.build();
+    const entities = Object.values(doc.entities);
+    expect(doc.diagramType).toBe('nbr');
+    expect(entities.filter((e) => e.type === 'injection')).toHaveLength(2);
+    expect(entities.filter((e) => e.type === 'ude')).toHaveLength(2);
+    expect(entities.filter((e) => e.type === 'desiredEffect')).toHaveLength(1);
+  });
+
   it('the burnout and student clouds each carry the source’s four arrow assumptions', () => {
     for (const id of ['ec-life-goals-vs-necessities', 'ec-study-vs-enjoy']) {
       const doc = patternById(id)!.build();

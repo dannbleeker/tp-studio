@@ -56,6 +56,7 @@ import { buildPatternCRTTonsPerHour } from './crt-tons-per-hour';
 import { buildPatternCRTWhyProjectsSlip } from './crt-why-projects-slip';
 import { buildPatternECAlcoholPolicy } from './ec-alcohol-policy';
 import { buildPatternECBatchSize } from './ec-batch-size';
+import { buildPatternECContactVsProcedure } from './ec-contact-vs-procedure';
 import { buildPatternECCostVsThroughput } from './ec-cost-vs-throughput';
 import { buildPatternECDelegation } from './ec-delegation';
 import { buildPatternECDivestOrGrow } from './ec-divest-or-grow';
@@ -100,6 +101,7 @@ import { buildPatternGoalTreeSustainableProductOrg } from './goalTree-sustainabl
 import { buildPatternGoalTreeTrustworthyMl } from './goalTree-trustworthy-ml';
 import { buildPatternNBRAggressiveDeadlines } from './nbr-aggressive-deadlines';
 import { buildPatternNBRAlcoholBan } from './nbr-alcohol-ban';
+import { buildPatternNBRContactCustomer } from './nbr-contact-customer';
 import { buildPatternNBRHiringFreeze } from './nbr-hiring-freeze';
 import { buildPatternNBRMarketOffer } from './nbr-market-offer';
 import { buildPatternNBROpenSourceRelease } from './nbr-open-source-release';
@@ -464,6 +466,13 @@ const CORE_PATTERNS: Pattern[] = [
     diagramType: 'ec',
     build: buildPatternECHowToChange,
   },
+  {
+    id: 'ec-contact-vs-procedure',
+    label: 'Call the customer vs follow the procedure',
+    hint: 'Cohen’s fire-fighting cloud (Handbook Ch. 24) — a one-off blaze whose real fix is amending the rule; pairs with the contact-the-customer NBR that tests the obvious injection.',
+    diagramType: 'ec',
+    build: buildPatternECContactVsProcedure,
+  },
 
   // ── FRT ────────────────────────────────────────────────────────────
   {
@@ -700,6 +709,15 @@ const CORE_PATTERNS: Pattern[] = [
     hint: "The published negative branch from Mabin & Cavana's NZ case (2024), paraphrased — a bare ban shifts purchases to liquor outlets, so consumption and harm can rise. Trimmed by the adjacent-store injection plus price guards.",
     diagramType: 'nbr',
     build: buildPatternNBRAlcoholBan,
+  },
+  // TOC Handbook set (Session 196) — the negative branch of the fire-fighting
+  // injection, pairing with the ec-contact-vs-procedure cloud (Handbook Ch. 24).
+  {
+    id: 'nbr-contact-customer',
+    label: 'Contact-the-customer NBR',
+    hint: "Cohen's EC→NBR handoff (Handbook Ch. 24) — letting the clerk call the customer ships the order but risks looking unprofessional; trimmed by allowing it only when the account manager is away.",
+    diagramType: 'nbr',
+    build: buildPatternNBRContactCustomer,
   },
 
   // ── Goal Tree ─────────────────────────────────────────────────────
