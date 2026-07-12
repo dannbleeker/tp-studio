@@ -180,6 +180,30 @@ export const documentCommands: Command[] = [
     group: 'Review',
     run: (s) => s.openDocSettings(),
   },
+  // Session 199 (backlog A4) — opt-in Goal-Tree NC-depth mode. Default (strict)
+  // holds Necessary Conditions to Dettmer's two layers — right when the Goal Tree
+  // feeds a CRT; conflict-resolution mode relaxes the `goalTree-nc-depth` rule for
+  // a deeper stand-alone tree.
+  withWriteGuard({
+    id: 'toggle-nc-depth-mode',
+    label: 'Toggle conflict-resolution NC depth (Goal Tree)',
+    group: 'Review',
+    run: (s) => {
+      const doc = currentDoc(s);
+      if (doc.diagramType !== 'goalTree') {
+        s.showToast('info', 'The Necessary-Condition depth mode applies to Goal Trees.');
+        return;
+      }
+      const next = doc.ncDepthMode === 'conflict-resolution' ? undefined : 'conflict-resolution';
+      s.setNcDepthMode(next);
+      s.showToast(
+        'success',
+        next
+          ? 'Conflict-resolution mode on — deeper Necessary-Condition chains allowed (up to 5 layers).'
+          : "Strict mode — Necessary Conditions held to Dettmer's two layers (right when the Goal Tree feeds a CRT)."
+      );
+    },
+  }),
   // Session 90 — `Open history…` removed from the palette: it's
   // already reachable via the History icon-button in the TopBar (sm+)
   // and the KebabMenu (xs). Duplicate entry was just visual noise.

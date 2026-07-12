@@ -126,6 +126,12 @@ export type TPDocument = {
    *  EC docs; purely a label, nothing keys off it. Omitted from JSON when unset.
    *  See {@link CloudType}. */
   cloudType?: CloudType;
+  /** Session 199 (backlog A4) — Goal-Tree Necessary-Condition depth mode. Unset
+   *  (the default) enforces Dettmer's ≤2 NC layers, right when the Goal Tree
+   *  feeds a CRT. `'conflict-resolution'` relaxes the `goalTree-nc-depth` rule to
+   *  allow the deeper chains a stand-alone conflict-resolution Goal Tree needs.
+   *  Only meaningful on Goal-Tree docs; omitted from JSON when unset. */
+  ncDepthMode?: 'conflict-resolution';
   /** Gap-analysis performance anchors (TP Basics gap #5) — optional facilitation
    *  notes that frame the gap a diagram addresses. `performanceLow` records the
    *  current / unacceptable level of the measure in question; `performanceHigh`

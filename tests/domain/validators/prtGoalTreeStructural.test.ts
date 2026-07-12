@@ -185,6 +185,28 @@ describe('Goal-Tree build-discipline rules (Session 195, Dettmer Fig 3.14)', () 
     expect(goalTreeNcDepthRule(doc)).toHaveLength(0);
   });
 
+  it('conflict-resolution mode (A4) relaxes the depth cap to five layers', () => {
+    // Build a CSF with an N-deep NC chain (layer 1..depth).
+    const chain = (depth: number, mode?: 'conflict-resolution') => {
+      const csf = makeEntity({ type: 'criticalSuccessFactor', title: 'CSF' });
+      const ncs = Array.from({ length: depth }, (_, i) =>
+        makeEntity({ type: 'necessaryCondition', title: `Layer ${i + 1}` })
+      );
+      const edges = ncs.map((nc, i) =>
+        makeEdge(nc.id, i === 0 ? csf.id : ncs[i - 1]!.id, { kind: 'necessity' })
+      );
+      const doc = makeDoc([csf, ...ncs], edges, 'goalTree');
+      return mode ? { ...doc, ncDepthMode: mode } : doc;
+    };
+    // Depth 5 fires under strict (cap 2) but NOT in conflict-resolution mode.
+    expect(goalTreeNcDepthRule(chain(5)).length).toBeGreaterThan(0);
+    expect(goalTreeNcDepthRule(chain(5, 'conflict-resolution'))).toHaveLength(0);
+    // Even conflict-resolution mode still flags beyond its cap of five (layer 6).
+    const deep = goalTreeNcDepthRule(chain(6, 'conflict-resolution'));
+    expect(deep).toHaveLength(1);
+    expect(deep[0]!.message).toMatch(/limit here is 5/);
+  });
+
   it('flags AND / OR / XOR grouped edges in a Goal Tree, one warning per edge', () => {
     const csf = makeEntity({ type: 'criticalSuccessFactor', title: 'CSF' });
     const nc1 = makeEntity({ type: 'necessaryCondition', title: 'NC 1' });

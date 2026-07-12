@@ -42,6 +42,16 @@ App. B, Scheinkopf, unless noted):
   cache hit (toggle a node to "true" and the warning wouldn't clear). `state` is now part of the
   per-entity fingerprint, with a regression test pinning it.
 
+## Session 199 — Opt-in modes (backlog A4)
+
+- **Goal-Tree NC-depth mode.** The `goalTree-nc-depth` rule normally holds Necessary Conditions to
+  Dettmer's two layers — right when the Goal Tree feeds a Current Reality Tree. An opt-in
+  `ncDepthMode: 'conflict-resolution'` (palette: *Toggle conflict-resolution NC depth (Goal Tree)*) relaxes
+  the cap to five layers for a deeper stand-alone conflict-resolution tree. Doc-level, omitted from JSON
+  when unset (strict is byte-identical); a corrupt import drops to strict. The validation fingerprint now
+  keys on the mode so a toggle re-runs the depth check rather than serving a stale result (Ch. 19,
+  Dettmer). *(More A4 opt-in modes — progressive CLR gating, the Jonah quick-check — follow.)*
+
 ## Session 199 — Two AND connectors (backlog A3)
 
 An AND junctor now carries a **flavour** that names which reservation it answers (*Handbook* Ch. 25

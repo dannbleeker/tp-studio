@@ -112,6 +112,9 @@ export const goalTreeNcsPerCsfRule = (doc: TPDocument): UntieredWarning[] => {
 };
 
 const MAX_NC_DEPTH = 2;
+// Session 199 (backlog A4) — a stand-alone conflict-resolution Goal Tree (not
+// feeding a CRT) legitimately runs deeper; the opt-in mode relaxes the cap.
+const MAX_NC_DEPTH_RELAXED = 5;
 
 /**
  * Step 4's depth bound: "limit your NCs to no more than two layers," with
@@ -121,9 +124,14 @@ const MAX_NC_DEPTH = 2;
  * Transition Tree, not the destination-defining IO Map. Depth is the
  * minimum over every CSF the NC supports (the charitable reading when a
  * shared NC feeds two parents at different depths).
+ *
+ * The cap relaxes to {@link MAX_NC_DEPTH_RELAXED} when the doc opts into
+ * `ncDepthMode: 'conflict-resolution'` (Session 199 A4) — a stand-alone Goal
+ * Tree isn't bound by the "feeding a CRT" depth discipline.
  */
 export const goalTreeNcDepthRule = (doc: TPDocument): UntieredWarning[] => {
   if (doc.diagramType !== 'goalTree') return [];
+  const maxDepth = doc.ncDepthMode === 'conflict-resolution' ? MAX_NC_DEPTH_RELAXED : MAX_NC_DEPTH;
   // BFS down from every CSF. Children point INTO their parent (NC → CSF,
   // deeper NC → NC), so descending means walking incoming edges.
   const minDepth = new Map<string, number>();
@@ -146,13 +154,13 @@ export const goalTreeNcDepthRule = (doc: TPDocument): UntieredWarning[] => {
   }
   const out: UntieredWarning[] = [];
   for (const [id, depth] of minDepth) {
-    if (depth > MAX_NC_DEPTH) {
+    if (depth > maxDepth) {
       out.push(
         makeWarning(
           doc,
           'goalTree-nc-depth',
           { kind: 'entity', id },
-          `This Necessary Condition sits ${depth} layers below a CSF — Dettmer's checklist stops at ${MAX_NC_DEPTH}. Deeper detail is execution planning: consider trimming it here and developing it in a Prerequisite Tree.`
+          `This Necessary Condition sits ${depth} layers below a CSF — the limit here is ${maxDepth}. Deeper detail is execution planning: consider trimming it here and developing it in a Prerequisite Tree.`
         )
       );
     }

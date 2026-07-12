@@ -149,7 +149,10 @@ const validationFpCache = new WeakMap<
       TPDocument['resolvedWarnings'],
       WeakMap<
         NonNullable<TPDocument['assumptions']>,
-        WeakMap<NonNullable<TPDocument['customEntityClasses']>, { dt: string; str: string }>
+        WeakMap<
+          NonNullable<TPDocument['customEntityClasses']>,
+          { dt: string; nc: string; str: string }
+        >
       >
     >
   >
@@ -163,7 +166,11 @@ export const validationFingerprint = (doc: TPDocument): string => {
   let byAssumptions = byResolved?.get(doc.resolvedWarnings);
   let byClasses = byAssumptions?.get(assumptionsKey);
   const hit = byClasses?.get(classesKey);
-  if (hit && hit.dt === doc.diagramType) return hit.str;
+  // `diagramType` + `ncDepthMode` are primitives (can't key a WeakMap), so they
+  // live beside the string and are re-checked on a hit — a mode toggle leaves the
+  // entities/edges refs intact, so without this the goalTree-nc-depth rule would
+  // serve stale warnings (Session 199 A4).
+  if (hit && hit.dt === doc.diagramType && hit.nc === (doc.ncDepthMode ?? '')) return hit.str;
 
   const str = computeValidationFingerprint(doc);
   if (!byEdges) {
@@ -182,7 +189,7 @@ export const validationFingerprint = (doc: TPDocument): string => {
     byClasses = new WeakMap();
     byAssumptions.set(assumptionsKey, byClasses);
   }
-  byClasses.set(classesKey, { dt: doc.diagramType, str });
+  byClasses.set(classesKey, { dt: doc.diagramType, nc: doc.ncDepthMode ?? '', str });
   return str;
 };
 
@@ -245,5 +252,6 @@ const computeValidationFingerprint = (doc: TPDocument): string => {
     .map((c) => `${c.id}>${c.supersetOf ?? ''}`)
     .sort()
     .join(',');
-  return `${doc.diagramType}|${entitySig}|${edgeSig}|${resolvedSig}|${assumptionSig}|${classesSig}`;
+  // `ncDepthMode` (A4) is a doc-level field the goalTree-nc-depth rule reads.
+  return `${doc.diagramType}:${doc.ncDepthMode ?? ''}|${entitySig}|${edgeSig}|${resolvedSig}|${assumptionSig}|${classesSig}`;
 };

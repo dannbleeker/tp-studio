@@ -76,6 +76,13 @@ export type MetadataActions = {
    */
   setCloudType: (cloudType: CloudType | undefined) => void;
   /**
+   * Session 199 (backlog A4) — set the Goal-Tree NC-depth mode on the active doc.
+   * `'conflict-resolution'` relaxes the `goalTree-nc-depth` rule to allow deeper
+   * NC chains; `undefined` restores Dettmer's strict ≤2 layers. Coalesces under
+   * `doc-nc-depth-mode`.
+   */
+  setNcDepthMode: (mode: 'conflict-resolution' | undefined) => void;
+  /**
    * Phase 3 (TP completeness #5) — set the gap-analysis performance anchors on
    * the active doc: `performanceLow` (current / unacceptable level) and
    * `performanceHigh` (target / desired level). A blank value clears the field.
@@ -268,6 +275,21 @@ export function createMetadataActions({
           return touch({ ...prev, cloudType });
         },
         { coalesceKey: 'doc-cloud-type' }
+      );
+    },
+
+    setNcDepthMode: (mode) => {
+      applyDocChange(
+        (prev) => {
+          if (mode === undefined) {
+            if (prev.ncDepthMode === undefined) return prev;
+            const { ncDepthMode: _drop, ...rest } = prev;
+            return touch(rest as TPDocument);
+          }
+          if (prev.ncDepthMode === mode) return prev;
+          return touch({ ...prev, ncDepthMode: mode });
+        },
+        { coalesceKey: 'doc-nc-depth-mode' }
       );
     },
 

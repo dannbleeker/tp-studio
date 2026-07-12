@@ -130,6 +130,18 @@ describe('validationFingerprint', () => {
     const asserted = validationFingerprint(makeDoc([{ ...inj, state: 'true' }, de], [edge], 'frt'));
     expect(asserted).not.toBe(unset);
   });
+
+  it('changes when the Goal-Tree NC-depth mode toggles (A4 — the rule reads it)', () => {
+    // Same cache trap as `state`: the goalTree-nc-depth rule reads doc.ncDepthMode,
+    // and a mode toggle leaves the entities/edges refs intact — so the fingerprint
+    // must re-key or the depth warnings go stale on a hit.
+    const csf = makeEntity({ type: 'criticalSuccessFactor', title: 'CSF' });
+    const strict = makeDoc([csf], [], 'goalTree');
+    const relaxed = { ...strict, ncDepthMode: 'conflict-resolution' as const };
+    // Same entities/edges references — only the doc-level mode differs.
+    expect(relaxed.entities).toBe(strict.entities);
+    expect(validationFingerprint(relaxed)).not.toBe(validationFingerprint(strict));
+  });
 });
 
 describe('validationFingerprint — custom entity classes', () => {

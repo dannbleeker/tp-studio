@@ -106,6 +106,11 @@ export const importFromJSON = (raw: string): TPDocument => {
   const cloudType: CloudType | undefined = isCloudType(parsed.cloudType)
     ? parsed.cloudType
     : undefined;
+  // Session 199 A4 — Goal-Tree NC-depth mode. Soft validation: only the one
+  // known value survives; anything else drops to strict (an absent / corrupt
+  // value still loads).
+  const ncDepthMode: 'conflict-resolution' | undefined =
+    parsed.ncDepthMode === 'conflict-resolution' ? 'conflict-resolution' : undefined;
   // TP Basics #5 — gap-analysis performance anchors. Soft validation: keep a
   // non-blank string, otherwise drop (an absent / corrupt value still loads).
   const performanceLow =
@@ -140,6 +145,7 @@ export const importFromJSON = (raw: string): TPDocument => {
     ...(comments && Object.keys(comments).length > 0 ? { comments } : {}),
     ...(ecVerbalStyle ? { ecVerbalStyle } : {}),
     ...(cloudType ? { cloudType } : {}),
+    ...(ncDepthMode ? { ncDepthMode } : {}),
     ...(performanceLow ? { performanceLow } : {}),
     ...(performanceHigh ? { performanceHigh } : {}),
     createdAt: typeof parsed.createdAt === 'number' ? parsed.createdAt : Date.now(),
