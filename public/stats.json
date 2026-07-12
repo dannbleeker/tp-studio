@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-11T22:45:12.199Z",
-  "commit": "44030b9",
+  "generatedAt": "2026-07-12T06:45:50.570Z",
+  "commit": "4809623",
   "headline": {
     "linesTsJs": 140582,
     "tests": 4719,
     "lineCoveragePct": 95.7,
-    "commits": 982,
+    "commits": 985,
     "ageDays": 61,
     "trackedFiles": 1127,
     "featureManualPct": 99.6,
@@ -51,8 +51,8 @@
       "total": 14063
     },
     "statements": {
-      "pct": 93.23,
-      "covered": 15323,
+      "pct": 93.24,
+      "covered": 15324,
       "total": 16435
     },
     "functions": {
@@ -61,35 +61,35 @@
       "total": 3192
     },
     "branches": {
-      "pct": 83.74,
-      "covered": 8715,
+      "pct": 83.76,
+      "covered": 8717,
       "total": 10407
     }
   },
   "tests": {
     "unit": 4623,
     "e2e": 96,
-    "durationMs": 225637,
+    "durationMs": 268789,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 9447
-      },
-      {
-        "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5066
+        "ms": 11375
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 3881
+        "ms": 5354
       },
       {
-        "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2324
+        "file": "tests/components/EntityInspector.test.tsx",
+        "ms": 5313
       },
       {
         "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 1930
+        "ms": 2654
+      },
+      {
+        "file": "tests/components/export/ExportPickerDialog.test.tsx",
+        "ms": 2416
       }
     ]
   },
@@ -195,9 +195,9 @@
     "nonNull": 106
   },
   "bundle": {
-    "jsGzipKb": 816.8,
+    "jsGzipKb": 816.7,
     "cssGzipKb": 19.4,
-    "totalGzipKb": 836.2,
+    "totalGzipKb": 836.1,
     "budgetKb": 193.4,
     "withinBudget": true
   },
@@ -767,16 +767,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 61,
-    "commits": 982,
-    "commits7d": 11,
+    "commits": 985,
+    "commits7d": 14,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 738
+        "count": 739
       },
       {
         "name": "github-actions[bot]",
-        "count": 228
+        "count": 230
       },
       {
         "name": "Claude",
@@ -788,8 +788,8 @@
       }
     ],
     "churn30d": {
-      "added": 25715,
-      "removed": 8459
+      "added": 25893,
+      "removed": 8504
     },
     "changelogEntries": 374
   }
