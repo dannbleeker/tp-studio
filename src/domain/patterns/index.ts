@@ -82,6 +82,7 @@ import { buildPatternECTeenagerTrip } from './ec-teenager-trip';
 import { buildPatternECTransformationVsQuarter } from './ec-transformation-vs-quarter';
 import { buildPatternECWhatToChange } from './ec-what-to-change';
 import { buildPatternECWhenToChange } from './ec-when-to-change';
+import { buildPatternFreeformBufferedTodo } from './freeform-buffered-todo';
 import { buildPatternFRTAlcoholPolicyMix } from './frt-alcohol-policy-mix';
 import { buildPatternFRTCriticalChain } from './frt-critical-chain';
 import { buildPatternFRTDbrScheduling } from './frt-dbr-scheduling';
@@ -95,9 +96,11 @@ import { buildPatternFRTTeamOkrs } from './frt-team-okrs';
 import { buildPatternFRTWipCap } from './frt-wip-cap';
 import { buildPatternGoalTreeAlcoholPolicy } from './goalTree-alcohol-policy';
 import { buildPatternGoalTreeEffectiveSalesTeam } from './goalTree-effective-sales-team';
+import { buildPatternGoalTreeFabricationShop } from './goalTree-fabrication-shop';
 import { buildPatternGoalTreeITFunction } from './goalTree-it-function';
 import { buildPatternGoalTreeMoneyNowAndFuture } from './goalTree-money-now-and-future';
 import { buildPatternGoalTreeNewTechnologyOutcome } from './goalTree-new-technology-outcome';
+import { buildPatternGoalTreePersonalLife } from './goalTree-personal-life';
 import { buildPatternGoalTreeSubscriptionBusiness } from './goalTree-subscription-business';
 import { buildPatternGoalTreeSustainableProductOrg } from './goalTree-sustainable-product-org';
 import { buildPatternGoalTreeTrustworthyMl } from './goalTree-trustworthy-ml';
@@ -114,6 +117,7 @@ import { buildPatternPRTDatabaseMigration } from './prt-database-migration';
 import { buildPatternPRTMarketOfferRollout } from './prt-market-offer-rollout';
 import { buildPatternPRTNewMarketEntry } from './prt-new-market-entry';
 import { buildPatternPRTPerformanceReviews } from './prt-performance-reviews';
+import { buildPatternPRTRaiseClassPerformance } from './prt-raise-class-performance';
 import { buildPatternPRTZeroDefects } from './prt-zero-defects';
 import { buildPatternSTConstraintExploitation } from './st-constraint-exploitation';
 import { buildPatternSTMarketExpansion } from './st-market-expansion';
@@ -631,6 +635,14 @@ const CORE_PATTERNS: Pattern[] = [
     diagramType: 'prt',
     build: buildPatternPRTAlcoholBanRollout,
   },
+  // TOC Handbook set (Session 196) — an education Ambitious Target Tree (Ch. 26).
+  {
+    id: 'prt-raise-class-performance',
+    label: 'Raise class performance (Ambitious Target)',
+    hint: "Suerken's TOC-for-Education Ambitious Target Tree (Handbook Ch. 26) — a class turns each obstacle from blaming others into an intermediate objective it can own. A warm, non-business PRT.",
+    diagramType: 'prt',
+    build: buildPatternPRTRaiseClassPerformance,
+  },
 
   // ── TT ─────────────────────────────────────────────────────────────
   {
@@ -802,6 +814,21 @@ const CORE_PATTERNS: Pattern[] = [
     diagramType: 'goalTree',
     build: buildPatternGoalTreeAlcoholPolicy,
   },
+  // TOC Handbook set (Session 196) — Cox & Schleier (2010), abstracted.
+  {
+    id: 'goalTree-personal-life',
+    label: 'Personal Life Goal Tree',
+    hint: 'The life-goals model (Handbook Ch. 38) — a satisfying life decomposed into five facets (health, family, community, work, professional growth), each with its keep-it-healthy conditions. A stuck facet is a candidate for its own cloud.',
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreePersonalLife,
+  },
+  {
+    id: 'goalTree-fabrication-shop',
+    label: 'Fabrication-shop strategic Goal Tree',
+    hint: "Dettmer's strategic IO map (Handbook Ch. 19), abstracted — higher profitability via four CSFs (competitive edge, reliable delivery, quality, cash) on constraint-management conditions. A valid four-CSF tree.",
+    diagramType: 'goalTree',
+    build: buildPatternGoalTreeFabricationShop,
+  },
 
   // ── S&T ───────────────────────────────────────────────────────────
   {
@@ -839,6 +866,16 @@ const CORE_PATTERNS: Pattern[] = [
     diagramType: 'st',
     build: buildPatternSTTimeToMarket,
   },
+
+  // ── Freeform ───────────────────────────────────────────────────────
+  // TOC Handbook set (Session 196) — the library's first Freeform pattern.
+  {
+    id: 'freeform-buffered-todo',
+    label: 'Buffered to-do list',
+    hint: "A personal buffer-management board (Handbook Ch. 38) — the day's tasks in red / yellow / green time buffers; as red clears or Murphy strikes, pull the next yellow up. TOC's buffer vocabulary applied to daily planning.",
+    diagramType: 'freeform',
+    build: buildPatternFreeformBufferedTodo,
+  },
 ];
 
 /**
@@ -859,7 +896,17 @@ const TEMPLATE_PATTERNS: Pattern[] = TEMPLATE_SPECS.map((spec) => ({
 /** The unified curated-starter library ("Templates" in the UI) — the core
  *  patterns plus the folded templates, stably grouped by diagram-type block so
  *  the in-editor dialog's "All" view and the Start gallery both read cleanly. */
-const TYPE_BLOCK_ORDER: DiagramType[] = ['crt', 'ec', 'frt', 'prt', 'tt', 'nbr', 'goalTree', 'st'];
+const TYPE_BLOCK_ORDER: DiagramType[] = [
+  'crt',
+  'ec',
+  'frt',
+  'prt',
+  'tt',
+  'nbr',
+  'goalTree',
+  'st',
+  'freeform',
+];
 const typeRank = (t: DiagramType): number => {
   const i = TYPE_BLOCK_ORDER.indexOf(t);
   return i === -1 ? TYPE_BLOCK_ORDER.length : i;

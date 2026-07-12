@@ -349,6 +349,28 @@ describe('TOC Handbook set (Session 196) — Cox & Schleier (2010)', () => {
     }
   });
 
+  it('registers the Goal Trees (personal 5-CSF, fabrication-shop 4-CSF), PRT, and first Freeform', () => {
+    const personal = patternById('goalTree-personal-life')!.build();
+    expect(
+      Object.values(personal.entities).filter((e) => e.type === 'criticalSuccessFactor')
+    ).toHaveLength(5);
+    const shop = patternById('goalTree-fabrication-shop')!.build();
+    expect(
+      Object.values(shop.entities).filter((e) => e.type === 'criticalSuccessFactor')
+    ).toHaveLength(4);
+
+    const prt = patternById('prt-raise-class-performance')!.build();
+    expect(Object.values(prt.entities).filter((e) => e.type === 'obstacle')).toHaveLength(5);
+    expect(
+      Object.values(prt.entities).filter((e) => e.type === 'intermediateObjective')
+    ).toHaveLength(5);
+
+    // The library's first freeform pattern — it should surface for that type.
+    const freeforms = patternsForDiagram('freeform');
+    expect(freeforms.map((p) => p.id)).toContain('freeform-buffered-todo');
+    expect(patternById('freeform-buffered-todo')!.build().diagramType).toBe('freeform');
+  });
+
   it('registers the two CRTs; why-change-stalls has an AND junctor and two UDEs', () => {
     expect(patternById('crt-forecast-error-supply')?.diagramType).toBe('crt');
     const doc = patternById('crt-why-change-stalls')!.build();
