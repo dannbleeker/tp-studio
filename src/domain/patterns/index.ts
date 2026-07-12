@@ -60,13 +60,20 @@ import { buildPatternECCostVsThroughput } from './ec-cost-vs-throughput';
 import { buildPatternECDelegation } from './ec-delegation';
 import { buildPatternECDivestOrGrow } from './ec-divest-or-grow';
 import { buildPatternECEfratsChangeCloud } from './ec-efrats-change-cloud';
+import { buildPatternECExpediteVsHold } from './ec-expedite-vs-hold';
 import { buildPatternECForecastVsReact } from './ec-forecast-vs-react';
 import { buildPatternECInventoryVsAvailability } from './ec-inventory-vs-availability';
+import { buildPatternECLifeGoalsVsNecessities } from './ec-life-goals-vs-necessities';
 import { buildPatternECPricing } from './ec-pricing';
 import { buildPatternECProfitSpendVsSave } from './ec-profit-spend-vs-save';
 import { buildPatternECProjectTaskSafety } from './ec-project-task-safety';
+import { buildPatternECReconcileVsSelfProtect } from './ec-reconcile-vs-self-protect';
 import { buildPatternECSpeakUpVsStaySafe } from './ec-speak-up-vs-stay-safe';
 import { buildPatternECSpecialistVsGeneralist } from './ec-specialist-vs-generalist';
+import { buildPatternECStandingVsSafety } from './ec-standing-vs-safety';
+import { buildPatternECStudyVsEnjoy } from './ec-study-vs-enjoy';
+import { buildPatternECSurvivalVsConscience } from './ec-survival-vs-conscience';
+import { buildPatternECTeaseVsRespect } from './ec-tease-vs-respect';
 import { buildPatternECTeenagerTrip } from './ec-teenager-trip';
 import { buildPatternECTransformationVsQuarter } from './ec-transformation-vs-quarter';
 import { buildPatternFRTAlcoholPolicyMix } from './frt-alcohol-policy-mix';
@@ -379,6 +386,57 @@ const CORE_PATTERNS: Pattern[] = [
     hint: "The policy conflict from Mabin & Cavana's NZ case (2024), paraphrased — harm reduction vs retail viability; the published injection moves the sales to a separate store nearby so both needs hold.",
     diagramType: 'ec',
     build: buildPatternECAlcoholPolicy,
+  },
+  // TOC Handbook set (Session 196) — Cohen's daily-management + Cox/Schleier's
+  // personal-dilemma clouds from the Cox & Schleier Handbook (2010), abstracted.
+  {
+    id: 'ec-expedite-vs-hold',
+    label: 'Expedite now vs hold the setup',
+    hint: "Cohen's canonical day-to-day shop-floor cloud (Handbook Ch. 24, after The Goal) — reset the line for a rush order now vs finish the planned run; the archetypal me-vs-the-other-side conflict.",
+    diagramType: 'ec',
+    build: buildPatternECExpediteVsHold,
+  },
+  {
+    id: 'ec-life-goals-vs-necessities',
+    label: "Life goals vs life's necessities (burnout)",
+    hint: 'The white-collar-burnout dilemma (Handbook Ch. 38) — pour finite time and energy into your goals vs into life’s necessary conditions; a clean goal-vs-NC conflict, with the source’s assumptions.',
+    diagramType: 'ec',
+    build: buildPatternECLifeGoalsVsNecessities,
+  },
+  {
+    id: 'ec-study-vs-enjoy',
+    label: 'Study vs enjoy (student cloud)',
+    hint: 'The classic student dilemma (Handbook Ch. 38) — spend time studying vs on the wider college experience; an everyday work-vs-play cloud that reads cleanly in necessity logic, with the source’s assumptions.',
+    diagramType: 'ec',
+    build: buildPatternECStudyVsEnjoy,
+  },
+  {
+    id: 'ec-tease-vs-respect',
+    label: 'Tease for fun vs be respected (playground)',
+    hint: 'A TOC-for-Education playground cloud (Handbook Ch. 26) — tease to have fun vs stop, to be respected; ships with the two sides’ assumptions and the published injection as a complete surface-and-break example.',
+    diagramType: 'ec',
+    build: buildPatternECTeaseVsRespect,
+  },
+  {
+    id: 'ec-standing-vs-safety',
+    label: 'Assert standing vs stay safe (bullying)',
+    hint: 'The group-bullying cloud (Handbook Ch. 26) — haze to assert standing vs refuse, to stay safe; the standing sought is itself put at risk by the hazing.',
+    diagramType: 'ec',
+    build: buildPatternECStandingVsSafety,
+  },
+  {
+    id: 'ec-survival-vs-conscience',
+    label: 'Survival vs conscience (literature)',
+    hint: 'A "cloud in literature" example (Handbook Ch. 26) — steal to get money vs keep a clear conscience; surfaces the hidden "I must steal" assumption and brainstorms honest alternatives (note).',
+    diagramType: 'ec',
+    build: buildPatternECSurvivalVsConscience,
+  },
+  {
+    id: 'ec-reconcile-vs-self-protect',
+    label: 'Reconcile vs protect myself (family)',
+    hint: 'A family-reconciliation cloud (Handbook Ch. 27) — reach out to rebuild the relationship vs keep distance to avoid being hurt again; reframing the guarded side’s need opens the way through.',
+    diagramType: 'ec',
+    build: buildPatternECReconcileVsSelfProtect,
   },
 
   // ── FRT ────────────────────────────────────────────────────────────

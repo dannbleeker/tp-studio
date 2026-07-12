@@ -308,3 +308,46 @@ describe("ec-efrats-change-cloud (Efrat's change cloud + breaking channels)", ()
     expect(noteTexts).toContain('#11–#14');
   });
 });
+
+describe('TOC Handbook set (Session 196) — Cox & Schleier (2010)', () => {
+  // Book-derived starter bench mined from the Theory of Constraints Handbook,
+  // abstracted (no company/character/person names) with per-file lineage TSDoc.
+  // Ids are hard-listed here as each commit lands so a removal fires red.
+  it('registers the EC starter bench (personal / education / rehabilitation)', () => {
+    for (const id of [
+      'ec-expedite-vs-hold',
+      'ec-life-goals-vs-necessities',
+      'ec-study-vs-enjoy',
+      'ec-tease-vs-respect',
+      'ec-standing-vs-safety',
+      'ec-survival-vs-conscience',
+      'ec-reconcile-vs-self-protect',
+    ]) {
+      const p = patternById(id);
+      expect(p, `missing ${id}`).toBeDefined();
+      expect(p!.diagramType).toBe('ec');
+    }
+  });
+
+  it('the tease and survival clouds ship the published injection as a non-causal note', () => {
+    for (const id of ['ec-tease-vs-respect', 'ec-survival-vs-conscience']) {
+      const doc = patternById(id)!.build();
+      const notes = Object.values(doc.entities).filter((e) => e.type === 'note');
+      expect(notes, id).toHaveLength(1);
+    }
+  });
+
+  it('the burnout and student clouds each carry the source’s four arrow assumptions', () => {
+    for (const id of ['ec-life-goals-vs-necessities', 'ec-study-vs-enjoy']) {
+      const doc = patternById(id)!.build();
+      const assumptions = Object.values(doc.assumptions ?? {});
+      expect(assumptions, id).toHaveLength(4);
+      // One per structural support arrow; none on the D↔D′ mutex.
+      for (const a of assumptions) {
+        const edge = doc.edges[a.edgeId];
+        expect(edge?.kind, id).toBe('necessity');
+        expect(edge?.isMutualExclusion, id).toBeUndefined();
+      }
+    }
+  });
+});
