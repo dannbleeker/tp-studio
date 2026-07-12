@@ -433,7 +433,7 @@ describe('TPNode — Locus pill (spanOfControl)', () => {
  */
 
 describe('TPNode — S&T 5-facet rendering (Session 76)', () => {
-  it('renders the four facet rows (NA / Strategy / PA / SA) on an S&T-formatted injection', () => {
+  it('renders the four facet rows (Necessary / Strategy / Parallel / Sufficiency) on an S&T-formatted injection', () => {
     // An injection with ANY of the four reserved facet attributes
     // renders as a multi-row card; partial fills still render the
     // card so the user sees the missing rows as a visible nudge.
@@ -449,9 +449,9 @@ describe('TPNode — S&T 5-facet rendering (Session 76)', () => {
     };
     const { container } = mountWithRF(<TPNode {...makeNodeProps({ entity })} />);
     expect(container.textContent).toContain('Strategy');
-    expect(container.textContent).toContain('NA');
-    expect(container.textContent).toContain('PA');
-    expect(container.textContent).toContain('SA');
+    expect(container.textContent).toContain('Necessary');
+    expect(container.textContent).toContain('Parallel');
+    expect(container.textContent).toContain('Sufficiency');
     expect(container.textContent).toContain('Improve focus');
     expect(container.textContent).toContain('Teams want clarity');
   });
@@ -470,9 +470,9 @@ describe('TPNode — S&T 5-facet rendering (Session 76)', () => {
     // The four facet labels still render — the other three rows
     // show their placeholder rather than going missing.
     expect(container.textContent).toContain('Strategy');
-    expect(container.textContent).toContain('NA');
-    expect(container.textContent).toContain('PA');
-    expect(container.textContent).toContain('SA');
+    expect(container.textContent).toContain('Necessary');
+    expect(container.textContent).toContain('Parallel');
+    expect(container.textContent).toContain('Sufficiency');
   });
 
   it('does NOT render the S&T card on a non-injection entity even with facet attributes', () => {

@@ -27,12 +27,16 @@ export function StFacetRow({
   entityId,
   attrKey,
   label,
+  title,
   value,
   accent,
 }: {
   entityId: string;
   attrKey: string;
   label: string;
+  /** Hover tooltip spelling out the facet's full plain-language meaning +
+   *  direction (Session 198, backlog B — replaces the old cryptic NA/PA/SA). */
+  title?: string;
   value: string | undefined;
   accent?: boolean;
 }) {
@@ -76,11 +80,12 @@ export function StFacetRow({
   return (
     <div className="flex items-baseline gap-1">
       <span
+        title={title}
         className={clsx(
-          'shrink-0 font-semibold uppercase tracking-wide',
+          'shrink-0 truncate font-semibold tracking-wide',
           accent ? 'text-accent-700 dark:text-accent-300' : 'text-neutral-500 dark:text-neutral-400'
         )}
-        style={{ width: 48 }}
+        style={{ width: 62 }}
       >
         {label}
       </span>

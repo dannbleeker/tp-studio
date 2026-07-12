@@ -3,14 +3,17 @@ import { TextArea } from '../settings/formPrimitives';
 import { Field } from './Field';
 
 /**
- * Session 76 — first-class S&T 5-facet inputs. Surfaces only on an
- * injection entity inside an `'st'` diagram. The four reserved
- * attribute keys (Strategy, NA, PA, SA) round-trip through JSON via
- * the existing B7 attribute machinery; the tactic itself is the
- * entity's `title`. Filling any of the four facets flips the canvas
- * card into the tall 5-row layout.
+ * Session 76 — first-class S&T (Strategy & Tactics) facet inputs; Session 198
+ * (backlog B) — directional, plain-language. Surfaces only on an injection entity
+ * inside an `'st'` diagram. Each step declares three assumptions, each with a
+ * DIRECTION (Handbook Ch. 34, Ferguson):
+ *   - **Necessary** — why the step is needed (points up to its parent).
+ *   - **Parallel** — why this tactic is the right way to reach the strategy.
+ *   - **Sufficiency** — why the step needs sub-steps (points down to its children).
+ * The entity's `title` is the tactic; the four reserved attribute keys
+ * (`ST_FACET_KEYS`) round-trip through JSON via the B7 attribute machinery.
  *
- * Extracted verbatim from `EntityInspector.tsx` (Session 169 structural tier).
+ * Extracted from `EntityInspector.tsx` (Session 169 structural tier).
  */
 export function StFacetsSection({
   entity,
@@ -18,7 +21,7 @@ export function StFacetsSection({
   onSet,
   onClear,
 }: {
-  entity: { attributes?: Record<string, { kind: string; value: unknown }> };
+  entity: { title?: string; attributes?: Record<string, { kind: string; value: unknown }> };
   locked: boolean;
   onSet: (key: string, value: string) => void;
   onClear: (key: string) => void;
@@ -27,34 +30,52 @@ export function StFacetsSection({
     const v = entity.attributes?.[key];
     return v?.kind === 'string' && typeof v.value === 'string' ? v.value : '';
   };
+
+  // Directional order top-to-bottom, matching the canvas card:
+  // Necessary (up) · Strategy · Parallel · Sufficiency (down).
   const rows: { label: string; key: string; placeholder: string }[] = [
-    {
-      label: 'Strategy',
-      key: ST_FACET_KEYS.strategy,
-      placeholder: 'What this tactic achieves (the parent objective).',
-    },
     {
       label: 'Necessary Assumption',
       key: ST_FACET_KEYS.necessaryAssumption,
-      placeholder: 'Why the strategy itself matters.',
+      placeholder: 'Why this step is needed — what makes it a must for the level above.',
+    },
+    {
+      label: 'Strategy',
+      key: ST_FACET_KEYS.strategy,
+      placeholder: 'The outcome this step achieves (what, not how).',
     },
     {
       label: 'Parallel Assumption',
       key: ST_FACET_KEYS.parallelAssumption,
-      placeholder: 'Why THIS tactic is the right approach (vs. alternatives).',
+      placeholder: 'Why THIS tactic is the right way to reach the strategy (vs. alternatives).',
     },
     {
       label: 'Sufficiency Assumption',
       key: ST_FACET_KEYS.sufficiencyAssumption,
-      placeholder: 'Why the tactic actually achieves the strategy.',
+      placeholder: "Why this step isn't enough alone — what its sub-steps must add.",
     },
   ];
+
+  // Directional read-aloud, built only from the facets that are filled.
+  const tactic = entity.title?.trim() || 'this tactic';
+  const strat = readFacet(ST_FACET_KEYS.strategy).trim();
+  const na = readFacet(ST_FACET_KEYS.necessaryAssumption).trim();
+  const pa = readFacet(ST_FACET_KEYS.parallelAssumption).trim();
+  const sa = readFacet(ST_FACET_KEYS.sufficiencyAssumption).trim();
+  const readAloud: string[] = [];
+  if (strat)
+    readAloud.push(`In order to ${strat}, we do "${tactic}"${pa ? `, because ${pa}` : ''}.`);
+  else if (pa) readAloud.push(`We do "${tactic}", because ${pa}.`);
+  if (na) readAloud.push(`This step is necessary because ${na}.`);
+  if (sa) readAloud.push(`It is not enough on its own — ${sa} — so it needs sub-steps.`);
+
   return (
     <Field label="S&T facets" as="group">
       <div className="flex flex-col gap-2">
         <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-          Goldratt's S&T pattern: the entity title is the <b>tactic</b>. Fill in the four companion
-          facets to render the node as a first-class S&T card.
+          The entity title is the <b>tactic</b>. Each assumption has a direction: <b>necessary</b>{' '}
+          justifies the step up to its parent, <b>parallel</b> bridges the strategy and the tactic,
+          and <b>sufficiency</b> justifies the step down to its sub-steps.
         </p>
         {rows.map((row) => {
           const value = readFacet(row.key);
@@ -79,6 +100,14 @@ export function StFacetsSection({
             </div>
           );
         })}
+        {readAloud.length > 0 && (
+          <p
+            data-component="st-read-aloud"
+            className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-[11px] text-neutral-600 leading-snug italic dark:border-neutral-800 dark:bg-neutral-900/40 dark:text-neutral-300"
+          >
+            Read it aloud: {readAloud.join(' ')}
+          </p>
+        )}
       </div>
     </Field>
   );

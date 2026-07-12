@@ -437,26 +437,30 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
             <StFacetRow
               entityId={entity.id}
               attrKey={ST_FACET_KEYS.necessaryAssumption}
-              label="NA"
+              label="Necessary"
+              title="Necessary assumption — why this step is needed by the level above (points up to its parent)"
               value={stNaText}
             />
             <StFacetRow
               entityId={entity.id}
               attrKey={ST_FACET_KEYS.strategy}
               label="Strategy"
+              title="Strategy — the outcome this step achieves (what, not how)"
               value={stStrategyText}
               accent
             />
             <StFacetRow
               entityId={entity.id}
               attrKey={ST_FACET_KEYS.parallelAssumption}
-              label="PA"
+              label="Parallel"
+              title="Parallel assumption — why this tactic is the right way to reach the strategy"
               value={stPaText}
             />
             <StFacetRow
               entityId={entity.id}
               attrKey={ST_FACET_KEYS.sufficiencyAssumption}
-              label="SA"
+              label="Sufficiency"
+              title="Sufficiency assumption — why this step needs its sub-steps (points down to its children)"
               value={stSaText}
             />
           </div>
