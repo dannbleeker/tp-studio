@@ -34,6 +34,7 @@ import { prtIoNoObstacleRule, prtObstacleNoIoRule } from './prtStructural';
 import { reinforcingNoDelayRule } from './reinforcingNoDelay';
 import { type TieredRule, tieredRule } from './shared';
 import { stTacticAssumptionsRule } from './stTacticAssumptions';
+import { stTacticFoldInRule } from './stTacticFoldIn';
 import { stTacticRollupRule } from './stTacticRollup';
 import { tautologyRule } from './tautology';
 import { ttActionLocusUnsetRule } from './ttActionLocusUnset';
@@ -158,12 +159,12 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // clean statement, not a cause-and-effect sentence. Soft clarity nudge.
     tieredRule('clarity', 'ec-box-causal-words', ecBoxCausalWordsRule),
   ],
-  // FL-DT4 — Strategy & Tactics Tree. Structural rules plus the
-  // discipline rule: every tactic should declare three assumption
-  // facets (NA, PA, SA). Tier `clarity` — the prescription is a nudge,
-  // not a structural defect, and the user can resolve specific
-  // warnings via WarningsList if a particular tactic genuinely doesn't
-  // need all three.
+  // FL-DT4 — Strategy & Tactics Tree. Structural rules plus the discipline
+  // rules. Session 198 (backlog B): the assumptions rule is now position-aware
+  // (the necessary assumption applies only to a step with a parent, sufficiency
+  // only to a step with children); the fold-in rule flags a one-child
+  // decomposition. Tier `clarity` for the assumptions nudge; `sufficiency` for
+  // the structural rollup/fold-in checks.
   st: [
     ...STRUCTURAL_RULES,
     tieredRule('clarity', 'st-tactic-assumptions', stTacticAssumptionsRule),
@@ -172,6 +173,9 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // tactics. Tier `sufficiency` (parallel to `cause-sufficiency`
     // and `complete-step`).
     tieredRule('sufficiency', 'st-tactic-rollup', stTacticRollupRule),
+    // Session 198 (backlog B) — a step that decomposes into exactly one
+    // sub-step should split into ≥2 or fold the child back in.
+    tieredRule('sufficiency', 'st-tactic-fold-in', stTacticFoldInRule),
   ],
   // FL-DT5 — Freeform diagrams skip every type-pattern-matching CLR rule
   // by definition (no built-in TOC types in the canonical palette). Only

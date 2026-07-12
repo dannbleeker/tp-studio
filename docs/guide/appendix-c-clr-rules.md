@@ -78,8 +78,9 @@ Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): 
 
 | Rule | Tier | Catches |
 | --- | --- | --- |
-| `st-tactic-assumptions` | clarity | A tactic with fewer than three Necessary-Condition feeders (the NA / PA / SA facet pattern). |
-| `st-tactic-rollup` | sufficiency | A non-apex tactic with no child tactics — a layer that should decompose but doesn't. |
+| `st-tactic-assumptions` | clarity | A step missing one of the assumptions its **position** calls for: the *necessary* assumption (only when the step has a parent), the *parallel* assumption (always), or the *sufficiency* assumption (only when the step has children). The apex is not asked for a necessary assumption; a leaf is not asked for a sufficiency assumption. |
+| `st-tactic-rollup` | sufficiency | A non-apex step with no child steps — a layer that should decompose but doesn't. |
+| `st-tactic-fold-in` | sufficiency | A step that decomposes into exactly **one** sub-step — a real decomposition needs two or more jointly-sufficient sub-steps, else the single child should fold back in. |
 
 ### Goal Tree
 
@@ -134,6 +135,7 @@ These ride the same edge/loop structure across several diagram types:
 | `ec-box-causal-words` | | | | | ✓ | | | | |
 | `st-tactic-assumptions` | | | | | | | ✓ | | |
 | `st-tactic-rollup` | | | | | | | ✓ | | |
+| `st-tactic-fold-in` | | | | | | | ✓ | | |
 | `goalTree-multiple-goals` | | | | | | ✓ | | | |
 | `goalTree-csf-no-ncs` | | | | | | ✓ | | | |
 | `goalTree-csf-count` | | | | | | ✓ | | | |

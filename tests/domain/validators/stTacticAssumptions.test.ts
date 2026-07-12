@@ -23,62 +23,98 @@ const facetsFor = (warnings: ReturnType<typeof validate>, entityId: string) =>
 const allForRule = (warnings: ReturnType<typeof validate>) =>
   warnings.filter((w) => w.ruleId === RULE);
 
+/** The comma-separated missing-assumption names from the warning message. */
+const missingList = (msg?: string): string[] => {
+  const list = msg?.match(/missing its (.+?) assumptions?\./)?.[1];
+  return list ? list.split(', ') : [];
+};
+
 beforeEach(() => {
   resetIds();
 });
 
-describe('CLR: st-tactic-assumptions', () => {
-  it('fires on an injection with zero facets filled (apex tactic)', () => {
+// Edge convention: an edge runs child → parent. So an entity's OUTGOING edge
+// points at its parent; an INCOMING edge comes from a child.
+describe('CLR: st-tactic-assumptions (position-aware, backlog B)', () => {
+  it('an apex leaf (no parent, no children) is asked only for the parallel assumption', () => {
     const t = tactic('Adopt new pricing tactic');
-    const warnings = validate(makeDoc([t], [], 'st'));
-    const hits = facetsFor(warnings, t.id);
+    const hits = facetsFor(validate(makeDoc([t], [], 'st')), t.id);
     expect(hits.length).toBe(1);
     expect(hits[0]!.target).toEqual({ kind: 'entity', id: t.id });
+    expect(missingList(hits[0]!.message)).toEqual(['parallel']);
+  });
+
+  it('a middle step (parent + children) is asked for all three — exact message', () => {
+    const parent = makeEntity({ type: 'goal', title: 'Parent strategy' });
+    const step = tactic('Middle step');
+    const child = tactic('Child', [ST_FACET_KEYS.parallelAssumption]); // filled so we isolate `step`
+    const doc = makeDoc(
+      [parent, step, child],
+      [makeEdge(step.id, parent.id), makeEdge(child.id, step.id)],
+      'st'
+    );
+    const hits = facetsFor(validate(doc), step.id);
+    expect(hits.length).toBe(1);
     expect(hits[0]!.message).toBe(
-      "Tactic missing 3 assumption facets (Necessary, Parallel, Sufficiency) — Goldratt's S&T prescribes a Necessary, Parallel, and Sufficiency assumption per tactic."
+      'Step is missing its necessary, parallel, sufficiency assumptions. A Strategy & Tactics step declares why it is needed (necessary — points up to its parent), why this tactic fits the strategy (parallel), and, when it has sub-steps, why those are needed (sufficiency — points down to its children).'
     );
   });
 
-  it('reports the exact number + names of missing facets (1 present → 2 missing)', () => {
-    const t = tactic('Tactic', [ST_FACET_KEYS.necessaryAssumption]);
-    const hits = facetsFor(validate(makeDoc([t], [], 'st')), t.id);
-    expect(hits.length).toBe(1);
-    expect(hits[0]!.message).toContain(
-      'Tactic missing 2 assumption facets (Parallel, Sufficiency)'
+  it('the apex (no parent) is NOT nagged for a necessary assumption', () => {
+    const apex = tactic('Apex'); // has a child below, no parent above
+    const child = tactic('Child', [ST_FACET_KEYS.parallelAssumption]);
+    const doc = makeDoc([apex, child], [makeEdge(child.id, apex.id)], 'st');
+    expect(missingList(facetsFor(validate(doc), apex.id)[0]!.message)).toEqual([
+      'parallel',
+      'sufficiency',
+    ]);
+  });
+
+  it('a leaf (no children) is NOT nagged for a sufficiency assumption', () => {
+    const parent = makeEntity({ type: 'goal', title: 'Parent' });
+    const leaf = tactic('Leaf tactic');
+    const doc = makeDoc([parent, leaf], [makeEdge(leaf.id, parent.id)], 'st');
+    expect(missingList(facetsFor(validate(doc), leaf.id)[0]!.message)).toEqual([
+      'necessary',
+      'parallel',
+    ]);
+  });
+
+  it('uses singular "assumption" when exactly one is missing (plural killer)', () => {
+    const parent = makeEntity({ type: 'goal', title: 'Parent' });
+    const leaf = tactic('Leaf', [ST_FACET_KEYS.necessaryAssumption]); // needs necessary+parallel; has necessary
+    const doc = makeDoc([parent, leaf], [makeEdge(leaf.id, parent.id)], 'st');
+    const msg = facetsFor(validate(doc), leaf.id)[0]!.message;
+    expect(msg).toContain('missing its parallel assumption.');
+    expect(msg).not.toContain('parallel assumptions.');
+  });
+
+  it('does NOT fire when all position-required facets are filled', () => {
+    const parent = makeEntity({ type: 'goal', title: 'Parent' });
+    // A leaf with a parent needs necessary + parallel (no children → no sufficiency).
+    const leaf = tactic('Leaf', [
+      ST_FACET_KEYS.necessaryAssumption,
+      ST_FACET_KEYS.parallelAssumption,
+    ]);
+    const doc = makeDoc([parent, leaf], [makeEdge(leaf.id, parent.id)], 'st');
+    expect(facetsFor(validate(doc), leaf.id).length).toBe(0);
+  });
+
+  it('does NOT count necessaryCondition child entities toward the facets', () => {
+    const parent = makeEntity({ type: 'goal', title: 'Parent' });
+    const step = tactic('Step');
+    const nc = makeEntity({ type: 'necessaryCondition', title: 'NA' });
+    const doc = makeDoc(
+      [parent, step, nc],
+      [makeEdge(step.id, parent.id), makeEdge(nc.id, step.id)],
+      'st'
     );
-  });
-
-  it('uses singular "facet" when exactly one is missing (plural killer)', () => {
-    const t = tactic('Tactic', [
-      ST_FACET_KEYS.necessaryAssumption,
-      ST_FACET_KEYS.parallelAssumption,
+    // step has a parent (→parent) and a child (nc→step) ⇒ all three required.
+    expect(missingList(facetsFor(validate(doc), step.id)[0]!.message)).toEqual([
+      'necessary',
+      'parallel',
+      'sufficiency',
     ]);
-    const hits = facetsFor(validate(makeDoc([t], [], 'st')), t.id);
-    expect(hits.length).toBe(1);
-    expect(hits[0]!.message).toContain('Tactic missing 1 assumption facet (Sufficiency)');
-    expect(hits[0]!.message).not.toContain('1 assumption facets');
-  });
-
-  it('does NOT fire when all three facets are filled', () => {
-    const t = tactic('Tactic', [
-      ST_FACET_KEYS.necessaryAssumption,
-      ST_FACET_KEYS.parallelAssumption,
-      ST_FACET_KEYS.sufficiencyAssumption,
-    ]);
-    expect(facetsFor(validate(makeDoc([t], [], 'st')), t.id).length).toBe(0);
-  });
-
-  it('does NOT count necessaryCondition child entities (the fixed bug)', () => {
-    // Three NC children feed the tactic, but zero facet attributes are filled —
-    // the old edge-counting rule passed this; the facet-based rule flags 3.
-    const t = tactic('Tactic');
-    const na = makeEntity({ type: 'necessaryCondition', title: 'NA' });
-    const pa = makeEntity({ type: 'necessaryCondition', title: 'PA' });
-    const sa = makeEntity({ type: 'necessaryCondition', title: 'SA' });
-    const edges = [makeEdge(na.id, t.id), makeEdge(pa.id, t.id), makeEdge(sa.id, t.id)];
-    const hits = facetsFor(validate(makeDoc([t, na, pa, sa], edges, 'st')), t.id);
-    expect(hits.length).toBe(1);
-    expect(hits[0]!.message).toContain('missing 3 assumption facets');
   });
 
   it('only flags injection entities, not necessaryCondition or other types', () => {
@@ -88,15 +124,6 @@ describe('CLR: st-tactic-assumptions', () => {
     const ruleHits = allForRule(validate(makeDoc([t, nc, effect], [], 'st')));
     expect(ruleHits.length).toBe(1);
     expect(ruleHits[0]!.target).toEqual({ kind: 'entity', id: t.id });
-  });
-
-  it('flags each under-specified injection independently', () => {
-    const t1 = tactic('Tactic one'); // 0 facets → 3 missing
-    const t2 = tactic('Tactic two', [ST_FACET_KEYS.necessaryAssumption]); // 1 facet → 2 missing
-    const warnings = validate(makeDoc([t1, t2], [], 'st'));
-    expect(allForRule(warnings).length).toBe(2);
-    expect(facetsFor(warnings, t1.id)[0]!.message).toContain('missing 3 assumption facets');
-    expect(facetsFor(warnings, t2.id)[0]!.message).toContain('missing 2 assumption facets');
   });
 
   it('does NOT fire on a non-st diagram even with an injection lacking facets', () => {

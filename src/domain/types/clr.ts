@@ -91,6 +91,10 @@ export type ClrRuleId =
   // child injection feeding it via the structural graph. A tactic
   // with no children that ISN'T explicitly marked leaf is suspicious.
   | 'st-tactic-rollup'
+  // Session 198 (backlog B, Ch.34 Ferguson): a Strategy & Tactics step that
+  // decomposes into exactly ONE sub-step — a real decomposition needs ≥2
+  // jointly-sufficient children, else the single child should fold back in.
+  | 'st-tactic-fold-in'
   // Session 179 — external-source review batch (docs/EXTERNAL_TP_SOURCE_REVIEW.md).
   // Theme B — CRT build-quality nudges:
   | 'crt-dead-branch' // a non-UDE entity that leads to no UDE (trim it)
