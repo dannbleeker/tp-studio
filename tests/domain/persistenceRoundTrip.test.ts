@@ -47,6 +47,7 @@ describe('persistence round-trip — every optional Entity field', () => {
       owner: 'Alice (interim VP)',
       lastValidatedAt: 1_734_500_000_000,
       unspecified: false, // explicit `false` should be omitted on round-trip
+      ongoing: true, // backlog E — true-only-emit flag
       spanOfControl: 'influence',
       tier: 'functional',
       ecSlot: 'a',
@@ -120,6 +121,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     // "only emit `true`" rule — assert that explicitly so future
     // changes to the emit rule surface here.
     expect(survived.unspecified).toBeUndefined();
+    expect(survived.ongoing).toBe(true);
     expect(survived.spanOfControl).toBe('influence');
     expect(survived.tier).toBe('functional');
     expect(survived.ecSlot).toBe('a');
@@ -189,6 +191,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     expect(survived.owner).toBeUndefined();
     expect(survived.lastValidatedAt).toBeUndefined();
     expect(survived.unspecified).toBeUndefined();
+    expect(survived.ongoing).toBeUndefined();
     expect(survived.spanOfControl).toBeUndefined();
     expect(survived.tier).toBeUndefined();
     expect(survived.ecSlot).toBeUndefined();

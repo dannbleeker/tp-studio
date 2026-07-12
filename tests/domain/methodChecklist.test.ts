@@ -70,4 +70,9 @@ describe('METHOD_BY_DIAGRAM catalog', () => {
     expect(ecIds).toContain('ec.syntax');
     expect(ecIds).toContain('ec.jeopardy');
   });
+
+  // Session 198 (backlog E) — the TT appropriate-condition step.
+  it('pins the TT method-step id tt.appropriate-condition', () => {
+    expect(METHOD_BY_DIAGRAM.tt.map((s) => s.id)).toContain('tt.appropriate-condition');
+  });
 });

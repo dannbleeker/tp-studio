@@ -121,7 +121,7 @@ describe('DocumentInspector — Method Checklist section', () => {
       d.textContent?.includes('Method checklist')
     ) as HTMLDetailsElement;
     expect(details).toBeTruthy();
-    expect(details.textContent).toContain('6 steps');
+    expect(details.textContent).toContain('7 steps');
     expect(details.textContent).toContain('Transition Tree');
   });
 

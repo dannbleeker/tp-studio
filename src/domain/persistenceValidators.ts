@@ -200,6 +200,7 @@ export const validateEntity = (v: unknown, label: string): Entity => {
     ...(typeof v.icon === 'string' && v.icon.length > 0 ? { icon: v.icon } : {}),
     ...(typeof v.lastValidatedAt === 'number' ? { lastValidatedAt: v.lastValidatedAt } : {}),
     ...(v.unspecified === true ? { unspecified: true as const } : {}),
+    ...(v.ongoing === true ? { ongoing: true as const } : {}),
     ...(v.spanOfControl === 'control' ||
     v.spanOfControl === 'influence' ||
     v.spanOfControl === 'external'

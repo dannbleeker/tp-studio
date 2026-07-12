@@ -370,6 +370,11 @@ export type Entity = {
    *  diagram type. The user clears the flag once they've articulated the
    *  thing the placeholder stood for. */
   unspecified?: boolean;
+  /** Session 198 (backlog E) — marks a PRT/Goal-Tree objective as *ongoing*
+   *  (continuous work) rather than a one-time deliverable, so it doesn't read as
+   *  a completable checkbox (Newbold, Handbook Ch. 5 "What is Done?"). Advisory;
+   *  the node shows an "ongoing" chip. Omitted from JSON when unset. */
+  ongoing?: boolean;
   /** Session 77 / brief §4 — explicit Evaporating Cloud slot binding.
    *  Only set on EC entities; identifies which of the canonical five
    *  boxes this entity inhabits. Previously EC slots were encoded

@@ -2,6 +2,20 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 198 — Prerequisite / Transition Tree refinements (backlog E)
+
+- **Ongoing-vs-done toggle.** An optional `ongoing?` flag on a Prerequisite-Tree / Goal-Tree objective
+  (intermediate objective or goal): an inspector checkbox (in Advanced) marks continuous work, and the
+  canvas node shows an **"↻ ongoing"** chip so it doesn't read as a one-time, completable step (Newbold,
+  Ch. 5 "What is Done?"). Round-trips through JSON; omitted when unset.
+- **Transition-Tree "appropriate condition" test.** A new `tt.appropriate-condition` method step: for each
+  action, can you actually take it (span of control + precondition true) and will it avoid serious
+  negative side-effects (spin off a Negative Branch if unsure)? The "why" of each action already lives in
+  its Need field. *(Ch. 20 Layer 7; Ch. 25.)*
+
+*(The Obstacle/IO intake table and the fuller NBR typed-roles/polarity work remain open in NEXT_STEPS §E —
+both need net-new UI + a batched-create store action.)*
+
 ## Session 198 — Terminology / method / UX polish (backlog F)
 
 Four small, additive quality-of-life items:

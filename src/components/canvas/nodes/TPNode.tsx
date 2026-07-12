@@ -352,6 +352,16 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
             aria-hidden
           />
           <span>{meta.label}</span>
+          {/* Session 198 (backlog E) — ongoing (continuous) objective chip, so a
+              continuous objective doesn't read as a one-time, completable step. */}
+          {entity.ongoing && (
+            <span
+              className="rounded-full bg-sky-100 px-1 font-normal text-[9px] text-sky-700 normal-case dark:bg-sky-950 dark:text-sky-300"
+              title="Ongoing — continuous work, not a one-time step"
+            >
+              ↻ ongoing
+            </span>
+          )}
           {/*
             Locus (TOC-reading; previously "Span of control"):
             single-letter pill after the type label. See

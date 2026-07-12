@@ -129,16 +129,18 @@ Ch34 Ferguson.
   reframe hint on the EC Need boxes (B/C), plus an "Alternative means" brainstorm list on Want/injection
   nodes backed by a new optional `alternativeMeans` entity field. *Ch27 (Cheng).*
 
-### E. NBR / PRT / TT refinements (ACTIVE / EXTENDS)
-- `EXTENDS` **NBR readability:** typed roles (Injection/Current/Neutral/DE/UDE), backbone-vs-side,
-  +/− polarity on backbone arrows to locate the "turns negative" point. Refines `nbr-shape-clr`,
-  `nbr-trim-branch`, `edge-polarity`. *Ch24 (Cohen) Fig 24-16.*
+### E. NBR / PRT / TT refinements (partly ACTIVE)
+- **Ongoing-vs-done toggle** — ✅ **shipped Session 198**: an optional `ongoing?` flag on a PRT/Goal-Tree
+  objective (intermediateObjective / goal), with an inspector checkbox and a canvas "↻ ongoing" chip so
+  continuous work doesn't read as a completable checkbox. *Ch5 (Newbold) "What is Done?"*
+- **TT "why" + "appropriate condition" test** — ✅ **shipped Session 198**: the "why" already rode on the
+  action's Need field; added the `tt.appropriate-condition` method step (can you act — span of control +
+  precondition true? and will it avoid serious negatives — spin off an NBR?). *Ch20 Layer 7; Ch25.*
 - `ACTIVE` **Obstacle/IO intake table** (Obstacle | show-stopper? | IO | blocking factor) → each row
-  converts to a PRT obstacle+IO pair. *Ch24 Tables 24-10/11.*
-- `EXTENDS` **TT "why" fields** + "appropriate condition" test (can act; won't cause serious
-  negatives). Extends `tt-need-assumption`/`tt-eligibility`. *Ch20 Layer 7; Ch25 (Rami Goldratt).*
-- `EXTENDS` **Ongoing-vs-done toggle** on PRT/TT objectives (continuous work shouldn't read as a
-  completable checkbox). *Ch5 (Newbold) "What is Done?"*
+  converts to a PRT obstacle+IO pair. *Ch24 Tables 24-10/11.* **Open** — needs a net-new batched-create
+  store action + a table UI (no reuse today).
+- `EXTENDS` **NBR readability:** typed roles (Injection/Current/Neutral/DE/UDE), backbone-vs-side,
+  +/− polarity on backbone arrows to locate the "turns negative" point. *Ch24 (Cohen) Fig 24-16.* **Open.**
 
 ### F. Terminology / method / UX polish — ✅ COMPLETE Session 198
 - **Goal-vs-NC inline definitions** — ✅ **shipped Session 198**: an inspector note card on Goal-Tree

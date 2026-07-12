@@ -161,6 +161,11 @@ const TT: MethodStep[] = [
     hint: 'Each step is structurally complete when its outcome has BOTH an action and a non-action precondition feeding it.',
   },
   {
+    id: 'tt.appropriate-condition',
+    label: 'Test each action for its appropriate condition',
+    hint: 'For every action ask two things (Ch. 20 Layer 7; Ch. 25): (1) can you actually take it — is it within your span of control, and its precondition true? and (2) will it avoid serious negative side-effects (spin off a Negative Branch Reservation if you are unsure)? Record the "why" of each action in its Need field.',
+  },
+  {
     id: 'tt.clr',
     label: 'Apply CLR challenges (including Complete-Step)',
     hint: 'The TT-specific Complete-Step rule fires on any action whose outcome lacks a precondition sibling.',

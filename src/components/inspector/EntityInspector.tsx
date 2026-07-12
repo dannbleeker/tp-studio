@@ -435,6 +435,29 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           </label>
         </Field>
 
+        {/* Session 198 (backlog E) — mark a PRT / Goal-Tree objective as ongoing
+            (continuous) so it doesn't read as a one-time, completable step. */}
+        {(entity.type === 'intermediateObjective' || entity.type === 'goal') && (
+          <Field label="Ongoing objective" as="group">
+            <label className="flex items-start gap-2 text-neutral-600 text-xs dark:text-neutral-300">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={entity.ongoing === true}
+                disabled={locked}
+                onChange={(e) =>
+                  updateEntity(entityId, { ongoing: e.target.checked ? true : undefined })
+                }
+              />
+              <span>
+                Mark as continuous work rather than a one-time deliverable. The node shows an
+                "ongoing" chip so it doesn't read as a completable checkbox (Newbold's "What is
+                Done?").
+              </span>
+            </label>
+          </Field>
+        )}
+
         <Field label="Locus" as="group">
           {/*
             TOC-reading (CRT Step 7): "have you built down to causes you

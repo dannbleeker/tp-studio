@@ -492,6 +492,20 @@ describe('TPNode — S&T 5-facet rendering (Session 76)', () => {
   });
 });
 
+describe('TPNode — ongoing objective chip (backlog E)', () => {
+  it('renders an "ongoing" chip when the entity is flagged ongoing', () => {
+    const base = createEntity({
+      type: 'intermediateObjective',
+      title: 'Keep the queue healthy',
+      annotationNumber: 1,
+    });
+    const on = mountWithRF(<TPNode {...makeNodeProps({ entity: { ...base, ongoing: true } })} />);
+    expect(on.container.textContent).toContain('ongoing');
+    const off = mountWithRF(<TPNode {...makeNodeProps({ entity: base })} />);
+    expect(off.container.textContent).not.toContain('ongoing');
+  });
+});
+
 describe('TPNode — hidden-descendant chip on the collapse button', () => {
   it('shows the count when collapsed with hidden children', () => {
     const entity = createEntity({ type: 'effect', title: 'collapsed', annotationNumber: 1 });
