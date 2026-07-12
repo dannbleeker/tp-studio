@@ -48,11 +48,13 @@ import { buildPatternCRTEscalation } from './crt-escalation';
 import { buildPatternCRTFailingPlant } from './crt-failing-plant';
 import { buildPatternCRTFixesThatFail } from './crt-fixes-that-fail';
 import { buildPatternCRTForecastCommittedFashion } from './crt-forecast-committed-fashion';
+import { buildPatternCRTForecastErrorSupply } from './crt-forecast-error-supply';
 import { buildPatternCRTInventoryTurnsFalling } from './crt-inventory-turns-falling';
 import { buildPatternCRTMultiProjectBottleneck } from './crt-multi-project-bottleneck';
 import { buildPatternCRTSalesPipelineStall } from './crt-sales-pipeline-stall';
 import { buildPatternCRTShiftingTheBurden } from './crt-shifting-the-burden';
 import { buildPatternCRTTonsPerHour } from './crt-tons-per-hour';
+import { buildPatternCRTWhyChangeStalls } from './crt-why-change-stalls';
 import { buildPatternCRTWhyProjectsSlip } from './crt-why-projects-slip';
 import { buildPatternECAlcoholPolicy } from './ec-alcohol-policy';
 import { buildPatternECBatchSize } from './ec-batch-size';
@@ -255,6 +257,21 @@ const CORE_PATTERNS: Pattern[] = [
     hint: 'Senge archetype as a CRT — closing the gap by lowering the goal ratchets the standard down each pass: a reinforcing (R) erosion. Break it by holding the goal and lifting performance.',
     diagramType: 'crt',
     build: buildPatternCRTErodingGoals,
+  },
+  // TOC Handbook set (Session 196) — Cox & Schleier (2010), abstracted.
+  {
+    id: 'crt-forecast-error-supply',
+    label: 'Volume-curve forecast trap',
+    hint: "The customer-side CRT behind Lang's un-refusable offer (Handbook Ch. 22) — volume pricing forces months of forecasting; the forecast is always wrong, so both tails bite (stockout and overstock). Exit via the market-offer FRT.",
+    diagramType: 'crt',
+    build: buildPatternCRTForecastErrorSupply,
+  },
+  {
+    id: 'crt-why-change-stalls',
+    label: "Why a promising change doesn't stick",
+    hint: "Newbold's uptake-problem CRT (Handbook Ch. 5) — no urgency → half-hearted adoption, scarce resources, no ownership → momentum never builds → the old ways return. An AND junctor + a skepticism sub-branch; a good onboarding example.",
+    diagramType: 'crt',
+    build: buildPatternCRTWhyChangeStalls,
   },
 
   // ── EC ─────────────────────────────────────────────────────────────

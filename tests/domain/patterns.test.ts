@@ -349,6 +349,19 @@ describe('TOC Handbook set (Session 196) — Cox & Schleier (2010)', () => {
     }
   });
 
+  it('registers the two CRTs; why-change-stalls has an AND junctor and two UDEs', () => {
+    expect(patternById('crt-forecast-error-supply')?.diagramType).toBe('crt');
+    const doc = patternById('crt-why-change-stalls')!.build();
+    const entities = Object.values(doc.entities);
+    expect(entities.filter((e) => e.type === 'ude')).toHaveLength(2);
+    const andGroups = new Set(
+      Object.values(doc.edges)
+        .map((e) => e.andGroupId)
+        .filter(Boolean)
+    );
+    expect(andGroups.size).toBe(1);
+  });
+
   it('the fire-fighting EC pairs with a well-formed NBR (2 injections, 2 UDEs, 1 DE)', () => {
     expect(patternById('ec-contact-vs-procedure')?.diagramType).toBe('ec');
     const nbr = patternById('nbr-contact-customer');
