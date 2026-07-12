@@ -26,6 +26,14 @@ Evaporating Clouds are built, checked, presented, and diagnosed (Cohen Ch. 24 + 
   an assumption (Cohen's syntax rule). Two companion EC method-checklist steps make the judgment calls
   a lint can't: **"Tidy the box wording"** (clean statements; D/D′ are actions, B/C are needs) and
   **"Read the diagonals"** (does D jeopardize C, and D′ jeopardize B?). Warning only, never blocks.
+- **D6 — reframe your Need + alternative means.** Cheng's Ch. 27 craft, in two additive surfaces.
+  (1) A **"Need or position?"** hint on the two EC Need boxes (B/C) in the inspector: a Need is an
+  interest, not a demand — reframe *"prove my point"* → *"be understood"*, because the cloud usually
+  only breaks once the real need is named. (2) An **"Alternative means"** brainstorm list on **Want**
+  and **injection** nodes: a Want is only one means to its Need (an injection only one way to break
+  the conflict), so the list captures other candidates beside the node — one may dissolve the conflict
+  without the fight. Stored in a new optional `alternativeMeans` entity field (round-trips; omitted
+  when empty; blank rows trimmed away on load).
 
 ## Session 197 — Cloud-type wizard modes (backlog D1)
 

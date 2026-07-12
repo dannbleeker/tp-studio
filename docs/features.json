@@ -27,6 +27,8 @@
     {"id":"ec-wizard-d-first","name":"EC D-first wizard walk","area":"EC","since":87,"manual":true,"book":true,"bookExample":false},
     {"id":"ec-cloud-type-wizard","name":"Cloud-type wizard modes (per-type build order + prompts + break hint)","area":"EC","since":197,"manual":true,"book":true,"bookExample":true},
     {"id":"ec-storyline","name":"EC wizard storyline pre-step","area":"EC","since":198,"manual":true,"book":true,"bookExample":true},
+    {"id":"ec-alternative-means","name":"Alternative-means brainstorm list on Want/injection nodes","area":"EC","since":198,"manual":true,"book":true,"bookExample":false},
+    {"id":"ec-reframe-need","name":"Reframe-your-Need hint on EC Need boxes","area":"EC","since":198,"manual":true,"book":true,"bookExample":false},
     {"id":"ec-two-sided-verbal","name":"EC two-sided verbal framing","area":"EC","since":87,"manual":true,"book":true,"bookExample":true},
     {"id":"ec-verbalisation-lead","name":"Verbalisation read-for-side toggle (D′-first)","area":"EC","since":198,"manual":true,"book":true,"bookExample":true},
     {"id":"ec-reading-strip","name":"EC reading-instruction strip","area":"EC","since":87,"manual":true,"book":true,"bookExample":false},

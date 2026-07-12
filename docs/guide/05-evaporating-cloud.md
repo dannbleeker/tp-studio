@@ -137,6 +137,8 @@ Read each one aloud. Some are clearly false; some are clearly true; one or two a
 
 In our example: **"Only the support lead can resolve the hard tickets"** is the key. If two L2 agents could be trained on the hardest 20% of tickets, the lead's queue time drops, freeing the drafting time, *without* sacrificing queue responsiveness. Both wants get satisfied. The mutex was a habit, not a fact.
 
+🛠 **How TP Studio helps — reframe the Need, then brainstorm means (Ch. 27, Cheng):** Two nudges make the break easier to find. First, when you select a **Need** box (B or C) the inspector shows a **"Need or position?"** reminder — a Need is an *interest*, not a demand. A cloud that won't break is often carrying a positional need in disguise: restate *"prove my point"* as the interest beneath it, *"be understood,"* and a whole family of new means opens up. Second, a **Want** (D/D′) is only *one* means to its Need — so Want and injection nodes carry an **"Alternative means"** list in the inspector. Jot the other candidates there (*retrain L2s*, *reduce inbound volume*, *batch the structure work*) and keep the brainstorm pinned to the node it's about; the one that satisfies the Need without colliding with the other side is your injection.
+
 That false assumption is the **injection**. In the Inspector's InjectionWorkbench, mark it as `valid: false` (i.e., we've decided this assumption is wrong). Add a new entity titled **Train 2 L2 agents on the hardest 20% of ticket types** and mark it as type `Injection`. Link it to the assumption.
 
 The cloud has evaporated.

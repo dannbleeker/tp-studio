@@ -1,6 +1,7 @@
 import { isClrCategory } from './clrCategory';
 import { isEdgeKind, isEntityType, isObject, isStringArray } from './guards';
 import {
+  validateAlternativeMeans,
   validateAttributes,
   validateEntityLinks,
   validateEvidenceArray,
@@ -157,6 +158,11 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   }
   const attributes = validateAttributes(v.attributes, `${label}.attributes`);
   const evidence = validateEvidenceArray(v.evidence, `${label}.evidence`);
+  // Session 198 (D6) — alternative-means brainstorm list (want / injection).
+  const alternativeMeans = validateAlternativeMeans(
+    v.alternativeMeans,
+    `${label}.alternativeMeans`
+  );
   // Session 135 / spec gap #3 Phase 1A — cross-diagram traceability
   // reference. Absent on most entities; round-trips when set.
   const importedFrom = validateImportedFromRef(v.importedFrom, `${label}.importedFrom`);
@@ -195,6 +201,7 @@ export const validateEntity = (v: unknown, label: string): Entity => {
       : {}),
     ...(attributes ? { attributes } : {}),
     ...(evidence ? { evidence } : {}),
+    ...(alternativeMeans ? { alternativeMeans } : {}),
     ...(importedFrom ? { importedFrom } : {}),
     ...(links ? { links } : {}),
     ...(v.state === 'true' || v.state === 'false' || v.state === 'unknown' || v.state === 'disputed'

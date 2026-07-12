@@ -87,6 +87,8 @@ describe('persistence round-trip — every optional Entity field', () => {
       },
       // Session 135 / spec gap #4 Phase 1A — entity-state tag.
       state: 'disputed',
+      // Session 198 (D6) — alternative-means brainstorm list.
+      alternativeMeans: ['Ship weekly instead', 'Pair the lead with QA'],
     });
 
     const doc = makeDoc([ent], []);
@@ -162,6 +164,9 @@ describe('persistence round-trip — every optional Entity field', () => {
 
     // Session 135 / spec gap #4 Phase 1A — entity-state tag.
     expect(survived.state).toBe('disputed');
+
+    // Session 198 (D6) — alternative-means brainstorm list.
+    expect(survived.alternativeMeans).toEqual(['Ship weekly instead', 'Pair the lead with QA']);
   });
 
   it('preserves a minimal entity (no optionals) without inventing fields', () => {
@@ -188,6 +193,27 @@ describe('persistence round-trip — every optional Entity field', () => {
     expect(survived.evidence).toBeUndefined();
     expect(survived.importedFrom).toBeUndefined();
     expect(survived.state).toBeUndefined();
+    expect(survived.alternativeMeans).toBeUndefined();
+  });
+
+  it('trims and drops blank entries from alternativeMeans on re-import; empty → undefined', () => {
+    resetIds();
+    // A brainstorm list with padding + blank rows, as the live editor may leave
+    // it before persist. The validator trims each entry and drops the blanks.
+    const ent = makeEntity({
+      type: 'want',
+      title: 'Stay on the queue',
+      alternativeMeans: ['  Delegate triage  ', '', '   ', 'Batch the interrupts'],
+    });
+    const doc = makeDoc([ent], []);
+    const survived = importFromJSON(exportToJSON(doc)).entities[ent.id];
+    expect(survived?.alternativeMeans).toEqual(['Delegate triage', 'Batch the interrupts']);
+
+    resetIds();
+    const blankOnly = makeEntity({ type: 'want', title: 'W', alternativeMeans: ['', '  '] });
+    const doc2 = makeDoc([blankOnly], []);
+    const survived2 = importFromJSON(exportToJSON(doc2)).entities[blankOnly.id];
+    expect(survived2?.alternativeMeans).toBeUndefined();
   });
 
   it('preserves an importedFrom ref with only the required fields (no sourceTitle / importedAt)', () => {

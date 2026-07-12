@@ -21,6 +21,7 @@ import {
 } from '../ui/buttonClasses';
 import { InsetCard } from '../ui/InsetCard';
 import { ActionFields } from './ActionFields';
+import { AlternativeMeansSection } from './AlternativeMeansSection';
 import { CollapsibleSection } from './CollapsibleSection';
 import { EntityLinksSection } from './EntityLinksSection';
 import { EntityProvenanceSection } from './EntityProvenanceSection';
@@ -122,6 +123,28 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
             {EC_SLOT_LABEL[ecSlot]}
           </p>
           <p className="italic leading-snug">{EC_SLOT_GUIDING_QUESTIONS[ecSlot]}</p>
+        </InsetCard>
+      )}
+
+      {/* Session 198 (D6) — reframe-your-Need nudge on the two Need boxes (B/C).
+          Cheng's Ch. 27 point: a Need is an interest, not a position. Restating
+          a positional need as the interest beneath it opens up alternative means
+          and is often what lets the cloud break. */}
+      {showGuidingQuestion && (ecSlot === 'b' || ecSlot === 'c') && (
+        <InsetCard
+          tone="amber"
+          role="note"
+          aria-label="Reframe your Need"
+          data-component="ec-reframe-need"
+        >
+          <p className="mb-1 font-semibold text-[10px] text-amber-700 uppercase tracking-wider dark:text-amber-300">
+            Need or position?
+          </p>
+          <p className="leading-snug">
+            A Need is an interest, not a demand. Reframe a positional need into the interest beneath
+            it — e.g. <em>"prove my point"</em> → <em>"be understood"</em>. The cloud usually only
+            breaks once the real need is on the table.
+          </p>
         </InsetCard>
       )}
 
@@ -314,6 +337,15 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
             View the injection flower
           </Button>
         </Field>
+      )}
+
+      {/* Session 198 (D6) — alternative-means brainstorm on Wants + injections. */}
+      {(entity.type === 'want' || entity.type === 'injection') && (
+        <AlternativeMeansSection
+          entity={entity}
+          locked={locked}
+          onChange={(next) => updateEntity(entityId, { alternativeMeans: next })}
+        />
       )}
 
       <EntityProvenanceSection

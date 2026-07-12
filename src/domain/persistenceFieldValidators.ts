@@ -189,6 +189,25 @@ export const validateEvidenceArray = (v: unknown, label: string): EvidenceItem[]
 };
 
 /**
+ * Session 198 (backlog D6) — validate the `alternativeMeans` brainstorm list.
+ * Lenient per item (a non-string entry is dropped, not fatal — brainstorm notes
+ * aren't load-bearing structure), and each surviving string is trimmed. Blank
+ * entries are discarded; empty / absent → undefined so entities without a
+ * brainstorm don't carry an empty array on round-trip.
+ */
+export const validateAlternativeMeans = (v: unknown, label: string): string[] | undefined => {
+  if (v === undefined || v === null) return undefined;
+  if (!Array.isArray(v)) throw invalid(label, 'must be an array');
+  const out: string[] = [];
+  for (const raw of v) {
+    if (typeof raw !== 'string') continue;
+    const trimmed = raw.trim();
+    if (trimmed.length > 0) out.push(trimmed);
+  }
+  return out.length > 0 ? out : undefined;
+};
+
+/**
  * B7 — validate the `attributes` map on an entity. Strict: any
  * invalid value throws (with the offending key in the label). Returns
  * undefined when the input is absent or empty — entities without

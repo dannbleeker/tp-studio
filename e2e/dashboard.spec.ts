@@ -39,7 +39,12 @@ test.describe('Live dashboard (dashboard.html)', () => {
       await expect(page.locator(id)).not.toHaveText('…');
     }
     await expect(page.locator('#m-lines')).toHaveText(/\d/);
-    await expect(page.locator('#m-cov')).toHaveText(/%/);
+    // Coverage renders as a "NN%" figure when stats.json carries a coverage
+    // headline, or as the "—" no-data glyph when it's null (a legitimate state:
+    // the Stats workflow occasionally refreshes stats.json with `coverage: null`
+    // when the summary isn't available at generation time). Accept either — the
+    // `not "…"` loop above already proves the cell left its loading placeholder.
+    await expect(page.locator('#m-cov')).toHaveText(/%|—/);
 
     // The CI-metrics tables/bars actually rendered rows from the JSON.
     await expect(page.locator('#code-rows tr').first()).toBeVisible();

@@ -128,8 +128,9 @@ Ch34 Ferguson.
   flip. Extends `patterns-three-cloud`. *Ch24 "Flipping Clouds."*
 - **Audience-specific verbalisation order** — ✅ **shipped Session 198 (D5)**: the verbalisation
   strip's opt-in `D′-first` toggle reads the cloud leading with the D′ (own) side; default off.
-- `ACTIVE` **"Reframe your Need" tutorial** (before/after: "prove my point"→"ensure I'm understood")
-  + attachable **alternative-means brainstorm sublist** on a Want/injection node. *Ch27 (Cheng).*
+- **"Reframe your Need" + alternative means** — ✅ **shipped Session 198 (D6)**: a "Need or position?"
+  reframe hint on the EC Need boxes (B/C), plus an "Alternative means" brainstorm list on Want/injection
+  nodes backed by a new optional `alternativeMeans` entity field. *Ch27 (Cheng).*
 
 ### E. NBR / PRT / TT refinements (ACTIVE / EXTENDS)
 - `EXTENDS` **NBR readability:** typed roles (Injection/Current/Neutral/DE/UDE), backbone-vs-side,

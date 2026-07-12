@@ -380,6 +380,16 @@ export type Entity = {
    *  unset, so docs that don't use attributes don't carry an empty map.
    *  See {@link AttrValue}. */
   attributes?: Record<string, AttrValue>;
+  /** Session 198 (backlog D6) — alternative-means brainstorm list.
+   *  Cheng's Ch. 27 method: a Want (D/D′) is only *one* means to its Need,
+   *  and an injection is only *one* way to break the conflict. Listing other
+   *  candidate means beside the entity keeps the brainstorm attached to the
+   *  node it belongs to — one of the alternatives may satisfy the same Need
+   *  without triggering the conflict. Surfaces in the EntityInspector on
+   *  `want` and `injection` entities as an add/edit/remove list. Blank
+   *  entries are dropped and the field is omitted from JSON when empty, like
+   *  every other optional field. */
+  alternativeMeans?: readonly string[];
   createdAt: number;
   updatedAt: number;
 };
