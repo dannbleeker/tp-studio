@@ -7,6 +7,7 @@ import {
 import { useGraphEdgeEmission } from '@/components/canvas/hooks/useGraphEdgeEmission';
 import type { GraphProjection } from '@/components/canvas/hooks/useGraphProjection';
 import { resetStoreForTest, useDocumentStore } from '@/store';
+import { makeDoc, makeEdge, makeEntity } from '../../domain/helpers';
 import { seedEntity } from '../../helpers/seedDoc';
 
 beforeEach(() => {
@@ -156,6 +157,37 @@ describe('useGraphEdgeEmission', () => {
       } as unknown as GraphProjection;
       const agg = emit(collapse).find((e) => e.id === `agg:G->${c.id}`);
       expect(agg?.data?.fanCount).toBeUndefined();
+    });
+  });
+
+  describe('NBR spine emphasis (backlog E)', () => {
+    it('dims side branches, marks the turning point, leaves the spine unstamped', () => {
+      const inj = makeEntity({ type: 'injection', title: 'Inj' });
+      const mid = makeEntity({ type: 'effect', title: 'Mid' });
+      const ude = makeEntity({ type: 'ude', title: 'UDE' });
+      const side = makeEntity({ type: 'effect', title: 'Side' });
+      const up = makeEdge(inj.id, mid.id);
+      const turn = makeEdge(mid.id, ude.id, { weight: 'negative' });
+      const sideEdge = makeEdge(inj.id, side.id);
+      s().setDocument(makeDoc([inj, mid, ude, side], [up, turn, sideEdge], 'nbr'));
+      const edges = emit();
+      const byId = (id: string) => edges.find((e) => e.id === id);
+      // Spine edges stay unstamped (no dim, byte-identical).
+      expect(byId(up.id)?.data?.onBackbone).toBeUndefined();
+      expect(byId(turn.id)?.data?.onBackbone).toBeUndefined();
+      // Turning point marked; side branch dimmed.
+      expect(byId(turn.id)?.data?.isTurningPoint).toBe(true);
+      expect(byId(sideEdge.id)?.data?.onBackbone).toBe(false);
+      expect(byId(sideEdge.id)?.data?.isTurningPoint).toBeUndefined();
+    });
+
+    it('stamps nothing on a non-NBR diagram', () => {
+      const a = seedEntity('A'); // default CRT
+      const b = seedEntity('B');
+      s().connect(a.id, b.id);
+      const edge = emit()[0];
+      expect(edge?.data?.onBackbone).toBeUndefined();
+      expect(edge?.data?.isTurningPoint).toBeUndefined();
     });
   });
 });

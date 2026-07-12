@@ -113,6 +113,13 @@ export type TPEdgeData = {
    *  group (its fan size). Stamped alongside `fanRank` only when >1; when 1 or
    *  absent, `TPEdge` does not fan. */
   fanCount?: number;
+  /** Session 199 (backlog E) — NBR readability. `onBackbone: false` marks an
+   *  edge OFF the injection→UDE spine (a side branch) so `TPEdge` dims it;
+   *  backbone edges and all non-NBR edges leave it undefined (no dimming).
+   *  `isTurningPoint` marks the spine edge where the branch turns negative.
+   *  Both stamped NBR-only by `useGraphEdgeEmission` from `nbrBackbone(doc)`. */
+  onBackbone?: boolean;
+  isTurningPoint?: boolean;
 };
 
 /**

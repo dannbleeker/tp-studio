@@ -12,8 +12,13 @@ Reverse chronological. Entries are grouped by build session, not by release — 
   ties the (already-wired) negative polarity to the method — mark the arrow where the chain first turns
   against you. Read-only, derived (nothing stored); the ± polarity itself has been rendered on NBR edges
   since Session 180 (*Handbook* Ch. 24, Cohen). *(The entity type already labels each node's role —
-  Injection / Effect / Desired Effect / UDE — so the "typed roles" ask is largely met by the existing
-  node label; an on-canvas emphasis of the spine vs. side branches is a noted follow-on.)*
+  Injection / Effect / Desired Effect / UDE — so the "typed roles" ask is met by the existing node label.)*
+- **On-canvas spine emphasis.** The canvas now draws the branch the way you read it: the injection→UDE
+  spine stays at full strength while **side branches dim** (0.4 opacity, arrowhead included), and the
+  turning-point edge carries a rose **"turning point"** badge. Stamped NBR-only in the edge emission
+  (`nbrBackbone` computed once, like the loop-polarity pass) via two optional `TPEdgeData` fields that are
+  absent on every non-NBR edge — so all other diagrams render byte-identically and no export / e2e visual
+  baseline changes.
 
 ## Session 199 — Prerequisite-Tree Obstacle/Objective intake table (backlog E)
 

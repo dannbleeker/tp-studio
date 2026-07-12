@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { effectiveBackEdgeIds } from '@/domain/backEdges';
 import { edgesArray, openCommentCountsByAnchor } from '@/domain/graph';
 import { type LoopPolarity, loopsWithPolarity } from '@/domain/loopAnalysis';
+import { nbrBackbone } from '@/domain/nbrBackbone';
 import type { TPDocument } from '@/domain/types';
 import { EDGE_ARROW_AND_MARKER_ID, EDGE_ARROW_MARKER_ID } from '../edges/edgeArrowhead';
 import type { TPEdge } from '../edges/flow-types';
@@ -79,6 +80,10 @@ export const useGraphEdgeEmission = (
         loopPolarityByEdge.set(loop.closingEdgeId, loop.polarity);
       }
     }
+
+    // Session 199 (backlog E) — NBR readability. `null` off an NBR, so the
+    // stamps below are inert (and byte-identical) on every other diagram type.
+    const backbone = nbrBackbone(doc);
 
     type Bucket = {
       sourceId: string;
@@ -213,6 +218,15 @@ export const useGraphEdgeEmission = (
           ...(delay ? { delay: true } : {}),
           ...(loopName ? { loopName } : {}),
           ...(fanCount > 1 ? { fanRank, fanCount } : {}),
+          // NBR spine (backlog E): only stamp `onBackbone: false` on a SIDE
+          // branch (so TPEdge dims it) — backbone + non-NBR edges stay unstamped
+          // and byte-identical. The turning point is the spine's first negative edge.
+          ...(backbone && !isAggregated && !backbone.backboneEdgeIds.has(b.sample.id)
+            ? { onBackbone: false }
+            : {}),
+          ...(backbone && !isAggregated && backbone.turningPointEdgeId === b.sample.id
+            ? { isTurningPoint: true }
+            : {}),
         },
         ...(isJunctorEdge
           ? {}
@@ -239,6 +253,7 @@ export const useGraphEdgeEmission = (
     doc.comments,
     doc.entities,
     doc.groups,
+    doc.diagramType,
     projection,
     routes,
     backEdgeIds,

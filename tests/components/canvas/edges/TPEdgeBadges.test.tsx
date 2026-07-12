@@ -13,6 +13,7 @@ import {
   LoopNameBadge,
   LoopPolarityBadge,
   MutexBadge,
+  TurningPointBadge,
   WeightBadge,
 } from '@/components/canvas/edges/TPEdgeBadges';
 
@@ -86,6 +87,16 @@ describe('MutexBadge', () => {
 });
 
 // ---------------------------------------------------------------------------
+describe('TurningPointBadge (E)', () => {
+  it('renders the "turning point" label above the row (labelY-30)', () => {
+    const { getByRole } = render(<TurningPointBadge labelX={40} labelY={90} />);
+    const badge = getByRole('img', { name: /turning point/i });
+    expect(badge.textContent).toBe('turning point');
+    // Offset: labelX+0=40, labelY-30=60.
+    expect(badge.getAttribute('style')).toContain('translate(40px, 60px)');
+  });
+});
+
 // WeightBadge — negative vs zero branch
 // ---------------------------------------------------------------------------
 describe('WeightBadge', () => {

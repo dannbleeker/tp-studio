@@ -88,6 +88,25 @@ export const WeightBadge = memo(function WeightBadge({
   );
 });
 
+/** Session 199 (backlog E) — NBR turning point: the spine edge where the branch
+ *  turns negative ("yes, but…"). Sits above the badge row so it clears the rose
+ *  WeightBadge `−` this edge also carries. NBR-only (stamped by the emission). */
+export const TurningPointBadge = memo(function TurningPointBadge({ labelX, labelY }: Anchor) {
+  return (
+    <EdgeLabelRenderer>
+      <div
+        className="nodrag nopan pointer-events-none absolute select-none rounded-full border border-rose-400 bg-rose-50 px-1.5 font-semibold text-[9px] text-rose-700 shadow-xs dark:border-rose-700 dark:bg-rose-950 dark:text-rose-200"
+        style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY - 30}px)` }}
+        title="Turning point — where the negative branch turns from helpful to harmful"
+        role="img"
+        aria-label="Turning point of the negative branch"
+      >
+        turning point
+      </div>
+    </EdgeLabelRenderer>
+  );
+});
+
 /** R/B pill on a cycle's loop-closing back-edge (the System-Dynamics lens):
  *  Reinforcing (R, emerald — self-amplifying: vicious in a CRT, virtuous in an
  *  FRT) vs Balancing (B, sky — self-correcting / goal-seeking). Sits one slot

@@ -30,6 +30,7 @@ import {
   LoopNameBadge,
   LoopPolarityBadge,
   MutexBadge,
+  TurningPointBadge,
   WeightBadge,
 } from './TPEdgeBadges';
 import { useJunctorCenterX, useJunctorSourceAnchor } from './useJunctorCenterX';
@@ -179,6 +180,10 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // Theme A — A4 delay marker (`//`) + A3 loop name label (back-edges only).
   const delay = props.data?.delay === true;
   const loopName = props.data?.loopName;
+  // Session 199 (backlog E) — NBR spine readability. `onBackbone === false` marks
+  // a side branch (dim it); the turning point is the spine's first negative edge.
+  const dimmed = props.data?.onBackbone === false;
+  const isTurningPoint = props.data?.isTurningPoint === true;
   const edgeView = useDocumentStore(
     useShallow((s) => {
       const doc = currentDoc(s);
@@ -528,6 +533,9 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           strokeDasharray,
           filter: selectedFilter,
           cursor: isHoverActive ? 'pointer' : undefined,
+          // NBR side branch (backlog E): dim it so the injection→UDE spine reads
+          // as the main line. `undefined` off an NBR / on the spine → no attribute.
+          opacity: dimmed ? 0.4 : undefined,
           // Hover-fan eases the spread in (the arrowhead below tracks it). Only
           // while the fan is active, so a node drag's per-frame `d` changes don't
           // animate and rubber-band the edge behind the node.
@@ -545,6 +553,8 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
           fill={stroke}
           style={{
             pointerEvents: 'none',
+            // Dim the arrowhead with its stroke on a dimmed NBR side branch (E).
+            opacity: dimmed ? 0.4 : undefined,
             // Track the path's fan tween so the arrowhead doesn't jump ahead of the
             // curve tip during the spread (same gate as the path: hover only).
             ...(fanActive ? { transition: `transform ${FAN_TRANSITION_MS}ms ease-out` } : {}),
@@ -595,6 +605,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
       {weight && weight !== 'positive' && (
         <WeightBadge labelX={labelX} labelY={labelY} weight={weight} />
       )}
+      {isTurningPoint && <TurningPointBadge labelX={labelX} labelY={labelY} />}
       {aggregateCount > 1 && (
         <AggregateBadge labelX={labelX} labelY={labelY} count={aggregateCount} />
       )}
