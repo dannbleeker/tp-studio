@@ -329,6 +329,18 @@ describe('TOC Handbook set (Session 196) — Cox & Schleier (2010)', () => {
     }
   });
 
+  it('registers the three change-core-conflict meta-clouds', () => {
+    for (const id of ['ec-when-to-change', 'ec-what-to-change', 'ec-how-to-change']) {
+      const p = patternById(id);
+      expect(p, `missing ${id}`).toBeDefined();
+      expect(p!.diagramType).toBe('ec');
+      // All three share the "ongoing success" objective (the A box).
+      const doc = p!.build();
+      const goal = Object.values(doc.entities).find((e) => e.type === 'goal');
+      expect(goal?.title.toLowerCase(), id).toContain('ongoing success');
+    }
+  });
+
   it('the tease and survival clouds ship the published injection as a non-causal note', () => {
     for (const id of ['ec-tease-vs-respect', 'ec-survival-vs-conscience']) {
       const doc = patternById(id)!.build();

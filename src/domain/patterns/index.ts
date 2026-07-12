@@ -62,6 +62,7 @@ import { buildPatternECDivestOrGrow } from './ec-divest-or-grow';
 import { buildPatternECEfratsChangeCloud } from './ec-efrats-change-cloud';
 import { buildPatternECExpediteVsHold } from './ec-expedite-vs-hold';
 import { buildPatternECForecastVsReact } from './ec-forecast-vs-react';
+import { buildPatternECHowToChange } from './ec-how-to-change';
 import { buildPatternECInventoryVsAvailability } from './ec-inventory-vs-availability';
 import { buildPatternECLifeGoalsVsNecessities } from './ec-life-goals-vs-necessities';
 import { buildPatternECPricing } from './ec-pricing';
@@ -76,6 +77,8 @@ import { buildPatternECSurvivalVsConscience } from './ec-survival-vs-conscience'
 import { buildPatternECTeaseVsRespect } from './ec-tease-vs-respect';
 import { buildPatternECTeenagerTrip } from './ec-teenager-trip';
 import { buildPatternECTransformationVsQuarter } from './ec-transformation-vs-quarter';
+import { buildPatternECWhatToChange } from './ec-what-to-change';
+import { buildPatternECWhenToChange } from './ec-when-to-change';
 import { buildPatternFRTAlcoholPolicyMix } from './frt-alcohol-policy-mix';
 import { buildPatternFRTCriticalChain } from './frt-critical-chain';
 import { buildPatternFRTDbrScheduling } from './frt-dbr-scheduling';
@@ -437,6 +440,29 @@ const CORE_PATTERNS: Pattern[] = [
     hint: 'A family-reconciliation cloud (Handbook Ch. 27) — reach out to rebuild the relationship vs keep distance to avoid being hurt again; reframing the guarded side’s need opens the way through.',
     diagramType: 'ec',
     build: buildPatternECReconcileVsSelfProtect,
+  },
+  // Barnard's three generic "core conflicts of change" (Handbook Ch. 15) —
+  // meta-clouds about the act of changing, a diagnostic before picking a project.
+  {
+    id: 'ec-when-to-change',
+    label: 'When to change: now vs not yet',
+    hint: 'First of Barnard’s core conflicts of change (Handbook Ch. 15) — improve now vs hold stability; a meta-cloud about whether to change at all.',
+    diagramType: 'ec',
+    build: buildPatternECWhenToChange,
+  },
+  {
+    id: 'ec-what-to-change',
+    label: 'What to change: only what must vs all that can',
+    hint: 'Second of Barnard’s core conflicts of change (Handbook Ch. 15) — protect scarce resources vs capitalise on every opportunity; breaks on focusing resources on the few high-leverage points.',
+    diagramType: 'ec',
+    build: buildPatternECWhatToChange,
+  },
+  {
+    id: 'ec-how-to-change',
+    label: 'How to change: cautious vs aggressive rollout',
+    hint: 'Third of Barnard’s core conflicts of change (Handbook Ch. 15) — fully resource each change vs chase the best results, framed as start/stop timing.',
+    diagramType: 'ec',
+    build: buildPatternECHowToChange,
   },
 
   // ── FRT ────────────────────────────────────────────────────────────
