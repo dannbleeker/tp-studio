@@ -141,3 +141,33 @@ describe('CreationWizardPanel — EC cloud-type modes (D1)', () => {
     expect(container.querySelector('[data-component="ec-wizard-order"]')).toBeTruthy();
   });
 });
+
+/**
+ * Session 198 (backlog D2) — optional storyline pre-step. Default-collapsed;
+ * writes to the document description; EC-only.
+ */
+describe('CreationWizardPanel — storyline pre-step (D2)', () => {
+  it('the EC wizard has a collapsed storyline field that writes to the doc description', () => {
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    const { container } = render(<CreationWizardPanel />);
+    const details = container.querySelector(
+      '[data-component="ec-wizard-storyline"]'
+    ) as HTMLDetailsElement;
+    expect(details).toBeTruthy();
+    expect(details.open).toBe(false); // default collapsed — wizard unchanged unless opened
+    const ta = details.querySelector('textarea[aria-label="Storyline"]') as HTMLTextAreaElement;
+    expect(ta).toBeTruthy();
+    act(() =>
+      fireEvent.change(ta, {
+        target: { value: 'The order was late and I was told to reset the line.' },
+      })
+    );
+    expect(useDocumentStore.getState().doc.description).toContain('was late');
+  });
+
+  it('does not render the storyline field on a Goal Tree wizard', () => {
+    act(() => useDocumentStore.getState().newDocument('goalTree'));
+    const { container } = render(<CreationWizardPanel />);
+    expect(container.querySelector('[data-component="ec-wizard-storyline"]')).toBeNull();
+  });
+});

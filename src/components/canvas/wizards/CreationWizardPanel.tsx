@@ -95,6 +95,8 @@ export function CreationWizardPanel() {
     setShowECWizard,
     setShowCRTWizard,
     setCloudType,
+    setDocumentMeta,
+    description,
     entities,
     addEntity,
     updateEntity,
@@ -111,6 +113,8 @@ export function CreationWizardPanel() {
       setShowECWizard: s.setShowECWizard,
       setShowCRTWizard: s.setShowCRTWizard,
       setCloudType: s.setCloudType,
+      setDocumentMeta: s.setDocumentMeta,
+      description: currentDoc(s).description,
       entities: currentDoc(s).entities,
       addEntity: s.addEntity,
       updateEntity: s.updateEntity,
@@ -563,6 +567,36 @@ export function CreationWizardPanel() {
           {isFinalStep ? 'Finish' : 'Next ›'}
         </button>
       </div>
+
+      {/* Session 198 (D2) — optional storyline pre-step. Cohen's step 2: write
+          the incident factually, as an objective report, to unleash the
+          intuition and gather the raw material before (or alongside) filling
+          the boxes. Default-collapsed <details> so the wizard is unchanged
+          unless opened; saved to the document's description. */}
+      {kind === 'ec' && (
+        <details
+          data-component="ec-wizard-storyline"
+          className="rounded-md border border-neutral-200 text-[11px] dark:border-neutral-800"
+        >
+          <summary className="cursor-pointer select-none px-2 py-1 text-neutral-600 dark:text-neutral-300">
+            Storyline (optional) — write the incident first
+          </summary>
+          <div className="px-2 pb-2">
+            <textarea
+              aria-label="Storyline"
+              value={description ?? ''}
+              rows={3}
+              placeholder="Who / what / when / where? What did I want to do? Why? What did I feel forced to do? Why?"
+              onChange={(e) => setDocumentMeta({ description: e.target.value })}
+              className="w-full resize-none rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-900 text-xs outline-hidden focus:border-accent-400 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+            />
+            <p className="mt-1 text-[10px] text-neutral-500 italic dark:text-neutral-400">
+              An objective incident report to gather the raw material for the boxes. Saved to the
+              document's description.
+            </p>
+          </div>
+        </details>
+      )}
 
       <label className="flex items-center gap-1.5 text-[11px] text-neutral-600 dark:text-neutral-400">
         <input

@@ -118,7 +118,8 @@ Ch34 Ferguson.
   selector drives Cohen's per-type build order + guiding questions + best-arrow-to-break hint (all six
   types); Generic stays the default (see CHANGELOG). *A per-type reading order for the verbalisation
   strip (feeds D5) was deferred.*
-- `ACTIVE` **"Storyline" pre-step** — incident free-text before the boxes. *Ch24 Step 2.*
+- **"Storyline" pre-step** — ✅ **shipped Session 198 (D2)**: optional default-collapsed incident
+  free-text in the EC wizard → doc description. *Ch24 Step 2.*
 - `EXTENDS` **EC syntax/quality checks** (beyond `ec-completeness`): no causal words in boxes; D/D′
   conflicting verb-led actions; B/C positive needs; diagonal jeopardy (D hurts C, D′ hurts B). *Ch24.*
 - `EXTENDS` **Three-cloud flip + consolidation grid** — side-by-side merge with one-click B↔C / D↔D′

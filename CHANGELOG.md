@@ -15,6 +15,11 @@ Evaporating Clouds are built, checked, presented, and diagnosed (Cohen Ch. 24 + 
   byte-for-byte as before (pinned by an explicit "matches default token-for-token" test). The
   generator was refactored into two reusable need→want arcs, with "also" attached to whichever arc
   reads second.
+- **D2 — storyline pre-step.** The EC creation wizard gained an optional, default-collapsed
+  **"Storyline"** field (Cohen's step 2): write the incident factually — "Who / what / when / where?
+  What did I want to do? Why? What did I feel forced to do? Why?" — to gather the raw material
+  before filling the boxes. Saved to the document's description; EC-only; nothing changes unless
+  it's opened.
 
 ## Session 197 — Cloud-type wizard modes (backlog D1)
 
