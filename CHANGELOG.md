@@ -26,6 +26,11 @@ questions**, and a **"best arrow to break" hint**.
 - Tests: `tests/domain/ecGuiding.test.ts` (spec shape) + `CreationWizardPanelECOrder.test.tsx`
   (default preservation, type-switch walk/prompt/tag, restore-to-generic). Docs: `features.json`
   (`ec-cloud-type-wizard`, reviewedThroughSession → 197), USER_GUIDE + guide ch. 5.
+- **Incidental fix (found while verifying D1 in-app):** the print reasoning companion
+  (`PrintReasoning`) keyed its `<li>` list by the sentence text, so any diagram with repeated
+  readings — e.g. a fresh EC whose five empty boxes all read "…Untitled entity…" — tripped React's
+  duplicate-key warning ("may cause children to be duplicated and/or omitted"). Now keyed by list
+  position; guarded by a `console.error`-spy regression test.
 
 ## Session 196 — TOC Handbook (Cox & Schleier) starter bench (18 new templates, 91 → 109)
 

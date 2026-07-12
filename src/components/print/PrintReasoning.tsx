@@ -30,8 +30,16 @@ export function PrintReasoning() {
         </p>
       ) : (
         <ol style={{ paddingLeft: '24pt', margin: 0 }}>
-          {sentences.map((s) => (
-            <li key={s} style={{ marginBottom: '6pt', fontSize: '11pt', lineHeight: 1.4 }}>
+          {/* Index-prefixed key: reasoning sentences can legitimately repeat
+              (e.g. an EC whose boxes are still empty reads "…Untitled entity…"
+              five times), so keying by the sentence alone collided. The
+              position prefix keeps keys unique across identical text. */}
+          {sentences.map((s, i) => (
+            <li
+              // biome-ignore lint/suspicious/noArrayIndexKey: sentences legitimately repeat (identical empty-box readings); the position prefix is exactly what makes the key unique.
+              key={`${i}-${s}`}
+              style={{ marginBottom: '6pt', fontSize: '11pt', lineHeight: 1.4 }}
+            >
               {s}
             </li>
           ))}
