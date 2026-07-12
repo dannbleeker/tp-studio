@@ -61,9 +61,9 @@ Ch18 Kendall · Ch19 Dettmer · Ch20 Goldratt-Ashlag · Ch22 Lang · Ch23 Mabin 
 Cohen · Ch25 Scheinkopf(+App.B CLR) · Ch26 Suerken · Ch27 Cheng · Ch31 van Gelder/Ferguson ·
 Ch34 Ferguson.
 
-### A. CLR / logic correctness (A1+A2+A3 SHIPPED Session 199; A4 in progress)
-Approved as a four-slice build (A1 wording+warnings · A2 entry-point rule · A3 two AND connectors ·
-A4 opt-in modes) after a plan + in-app mockup.
+### A. CLR / logic correctness — ✅ COMPLETE Session 199 (A1–A4)
+Built as a four-slice program (A1 wording+warnings · A2 entry-point rule · A3 two AND connectors ·
+A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversarial review where warranted.
 - **Two AND connectors** — ✅ **shipped Session 199 (A3)**: an optional `andMode: 'additional'` edge field
   flavours an AND group *magnitudinal* (independent, each-removable co-causes; dashed `AND⁺` ring) vs the
   default *conceptual* banana (jointly required; solid ring). Palette commands flip a group; geometry +
@@ -86,15 +86,18 @@ A4 opt-in modes) after a plan + in-app mockup.
   must be an injection or asserted true in current reality (entity `state`), else it's flagged. The
   validation fingerprint now encodes `state` (with a regression test) so the warning clears on a state
   toggle. *Ch25 (Scheinkopf) NBR section.*
-- `EXTENDS (A4)` **Progressive CLR gating.** `clr-tiered` groups by tier; also *order* it — clarity
-  first, de-emphasise Level-3 until Levels 1–2 clear. *Ch25 App.B.*
+- **Progressive CLR gating** — ✅ **shipped Session 199 (A4)** as *Focus mode*: an opt-in toggle in the
+  Logic-check panel de-emphasises a later tier (collapsed to header + count, expandable) until the earlier
+  tiers are clear. Local view state, off by default. *Ch25 App.B.*
 - **Compliance-as-CSF warning (Goal Tree)** — ✅ **shipped Session 199 (A1)** as `goalTree-compliance-csf`:
   a compliance-worded CSF → soft nudge to demote it to a Necessary Condition a few layers down.
   *Ch19 (Dettmer).*
-- `EXTENDS (A4)` **`goalTree-nc-depth` mode-aware.** Keep ≤2 layers when feeding a CRT; allow 5–6 in a
-  conflict-resolution mode. *Ch19 (Dettmer).*
-- `EXTENDS (A4)` **"Jonah quick-check" mode.** Fast pass on 4 rules (entity/causality × existence/clarity)
-  + read-aloud test, as an on-ramp before the full 7-category CLR. *Ch25 (Scheinkopf).*
+- **`goalTree-nc-depth` mode-aware** — ✅ **shipped Session 199 (A4)** as `ncDepthMode:
+  'conflict-resolution'`: opt-in doc flag relaxing the depth cap from 2 to 5 for a stand-alone tree.
+  *Ch19 (Dettmer).*
+- **Jonah quick-check** — ✅ **shipped Session 199 (A4)**: a palette-opened 4-question read-aloud stepper
+  (entity/causality × existence/clarity) as an on-ramp before the full CLR walk. Read-only. *Ch25
+  (Scheinkopf).*
 - Note: the Handbook's canonical CLR list is **7 categories in 3 ordered levels** and omits
   `tautology`; ours (8th) is Dettmer's — keep it, this is not a removal.
 

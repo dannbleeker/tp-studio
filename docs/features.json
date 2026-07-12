@@ -142,6 +142,7 @@
     {"id":"clr-cycle","name":"Cycle / indirect-effect rules","area":"CLR","since":48,"manual":true,"book":true,"bookExample":false},
     {"id":"clr-walkthrough","name":"Guided CLR walkthrough","area":"CLR","since":57,"manual":true,"book":true,"bookExample":true},
     {"id":"clr-edge-scrutiny","name":"Per-edge CLR scrutiny dialog","area":"CLR","since":160,"manual":true,"book":true,"bookExample":false},
+    {"id":"clr-jonah-quick-check","name":"Jonah quick-check (fast 4-question pass)","area":"CLR","since":199,"manual":true,"book":true,"bookExample":false},
     {"id":"clr-logic-mismatch","name":"Logic-type mismatch lint","area":"CLR","since":179,"manual":true,"book":false,"bookExample":false},
     {"id":"clr-entry-point","name":"FRT/NBR entry-point rule (injection or true-in-reality)","area":"CLR","since":199,"manual":true,"book":true,"bookExample":false},
     {"id":"goaltree-nc-depth-mode","name":"Goal Tree conflict-resolution NC-depth mode","area":"GoalTree","since":199,"manual":true,"book":true,"bookExample":false},

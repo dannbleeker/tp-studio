@@ -176,6 +176,12 @@ export type DialogsSlice = {
    *  or five clicks on the About dialog's version line. */
   diceGameOpen: boolean;
 
+  /** Session 199 (backlog A4) — the Jonah quick-check: a fast four-question
+   *  read-aloud pass over the whole diagram (entity / causality × existence /
+   *  clarity) as an on-ramp before the full CLR walk. Read-only, mutates and
+   *  persists nothing. */
+  jonahQuickCheckOpen: boolean;
+
   openPalette: () => void;
   openPaletteWithQuery: (query: string) => void;
   closePalette: () => void;
@@ -330,6 +336,10 @@ export type DialogsSlice = {
   /** Session 195 easter egg — open / close the dice game. */
   openDiceGame: () => void;
   closeDiceGame: () => void;
+
+  /** Session 199 (backlog A4) — open / close the Jonah quick-check dialog. */
+  openJonahQuickCheck: () => void;
+  closeJonahQuickCheck: () => void;
 };
 
 export type DialogsDataKeys =
@@ -363,7 +373,8 @@ export type DialogsDataKeys =
   | 'sideBySideRevisionId'
   | 'edgeScrutinyId'
   | 'injectionFlowerEntityId'
-  | 'diceGameOpen';
+  | 'diceGameOpen'
+  | 'jonahQuickCheckOpen';
 
 export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   paletteOpen: false,
@@ -397,6 +408,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   edgeScrutinyId: null,
   injectionFlowerEntityId: null,
   diceGameOpen: false,
+  jonahQuickCheckOpen: false,
 });
 
 /**
@@ -447,6 +459,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   edgeScrutinyId: null,
   injectionFlowerEntityId: null,
   diceGameOpen: false,
+  jonahQuickCheckOpen: false,
 
   openPalette: () => set({ paletteOpen: true, paletteInitialQuery: '' }),
   openPaletteWithQuery: (query) => set({ paletteOpen: true, paletteInitialQuery: query }),
@@ -568,4 +581,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openDiceGame: () => set({ diceGameOpen: true }),
   closeDiceGame: () => set({ diceGameOpen: false }),
+
+  openJonahQuickCheck: () => set({ jonahQuickCheckOpen: true }),
+  closeJonahQuickCheck: () => set({ jonahQuickCheckOpen: false }),
 });

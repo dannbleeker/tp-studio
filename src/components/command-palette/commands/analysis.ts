@@ -214,6 +214,15 @@ export const analysisCommands: Command[] = [
       s.startClrWalkthrough(warnings.map((w) => w.id));
     },
   },
+  // Session 199 (backlog A4) — the Jonah quick-check: a fast four-question
+  // read-aloud pass over the whole diagram (entity/causality × existence/clarity)
+  // as an on-ramp before the full CLR walk. Read-only guided surface, no guard.
+  {
+    id: 'jonah-quick-check',
+    label: 'Jonah quick-check (fast 4-question pass)',
+    group: 'Review',
+    run: (s) => s.openJonahQuickCheck(),
+  },
   // Phase 3 #7 — per-edge CLR scrutiny. Distinct from the walkthrough
   // above (which steps the warnings that already fired across the whole
   // doc): this walks ALL eight canonical CLR questions for one selected

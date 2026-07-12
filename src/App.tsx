@@ -138,6 +138,11 @@ const EdgeScrutinyDialog = lazy(() =>
     default: m.EdgeScrutinyDialog,
   }))
 );
+const JonahQuickCheckDialog = lazy(() =>
+  import('./components/inspector/JonahQuickCheckDialog').then((m) => ({
+    default: m.JonahQuickCheckDialog,
+  }))
+);
 const InjectionFlowerDialog = lazy(() =>
   import('./components/inspector/InjectionFlowerDialog').then((m) => ({
     default: m.InjectionFlowerDialog,
@@ -496,6 +501,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Edge scrutiny dialog">
           <EdgeScrutinyDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Jonah quick-check dialog">
+          <JonahQuickCheckDialog />
         </ErrorBoundary>
         <ErrorBoundary label="Injection flower dialog">
           <InjectionFlowerDialog />

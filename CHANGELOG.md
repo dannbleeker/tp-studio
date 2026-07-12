@@ -44,6 +44,11 @@ App. B, Scheinkopf, unless noted):
 
 ## Session 199 — Opt-in modes (backlog A4)
 
+- **Jonah quick-check.** A palette command (*Jonah quick-check (fast 4-question pass)*) opens a small
+  stepper dialog with four read-aloud questions on the two axes a Jonah checks first — entity vs. causality
+  × existence vs. clarity — as a fast on-ramp before the full Categories-of-Legitimate-Reservation walk.
+  Read-only guided surface: it reads nothing from the doc, mutates nothing, and the "considered" ticks
+  reset when it closes (*Handbook* Ch. 25, Scheinkopf).
 - **Progressive CLR gating (Focus mode).** A new opt-in toggle in the Logic-check panel header focuses the
   walk one tier at a time — Clarity → Existence → Sufficiency. When on, a later tier is de-emphasised
   (collapsed to its header + an "N to review · clears after …" line) until the earlier tiers have no open
