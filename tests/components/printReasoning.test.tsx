@@ -1,7 +1,8 @@
 import { cleanup, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { act } from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrintReasoning } from '@/components/print/PrintReasoning';
-import { resetStoreForTest } from '@/store';
+import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedChain } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);
@@ -27,5 +28,17 @@ describe('PrintReasoning', () => {
     const { container } = render(<PrintReasoning />);
     expect(container.textContent).toContain('No edges drawn yet');
     expect(container.querySelector('ol')).toBeNull();
+  });
+
+  it('renders a fresh EC (identical empty-box readings) without duplicate-key warnings', () => {
+    // A fresh EC has five empty boxes, so every arrow reads the same sentence.
+    // The list keys by position, not text, so React must not warn about
+    // duplicate keys (which "may cause children to be duplicated and/or omitted").
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    render(<PrintReasoning />);
+    const keyWarnings = errSpy.mock.calls.filter((c) => String(c[0]).includes('same key'));
+    expect(keyWarnings).toEqual([]);
+    errSpy.mockRestore();
   });
 });
