@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-12T11:48:23.867Z",
-  "commit": "875a67c",
+  "generatedAt": "2026-07-12T12:01:43.075Z",
+  "commit": "e61e4ca",
   "headline": {
-    "linesTsJs": 142994,
-    "tests": 4758,
-    "lineCoveragePct": 95.74,
-    "commits": 1017,
+    "linesTsJs": 143102,
+    "tests": 4761,
+    "lineCoveragePct": 95.75,
+    "commits": 1020,
     "ageDays": 62,
     "trackedFiles": 1149,
     "featureManualPct": 99.6,
-    "featureBookPct": 66.4,
-    "featureExamplePct": 24.9
+    "featureBookPct": 66.5,
+    "featureExamplePct": 24.8
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
       "files": 554,
-      "lines": 72476
+      "lines": 72525
     },
     {
       "category": "Unit tests",
       "files": 409,
-      "lines": 64102
+      "lines": 64161
     },
     {
       "category": "E2E tests (Playwright)",
@@ -41,55 +41,55 @@
     {
       "category": "Docs (Markdown)",
       "files": 43,
-      "lines": 6786
+      "lines": 6788
     }
   ],
   "coverage": {
     "lines": {
-      "pct": 95.74,
-      "covered": 13607,
-      "total": 14212
+      "pct": 95.75,
+      "covered": 13613,
+      "total": 14216
     },
     "statements": {
-      "pct": 93.28,
-      "covered": 15480,
-      "total": 16595
+      "pct": 93.29,
+      "covered": 15489,
+      "total": 16602
     },
     "functions": {
-      "pct": 92.97,
-      "covered": 3016,
-      "total": 3244
+      "pct": 93.04,
+      "covered": 3023,
+      "total": 3249
     },
     "branches": {
-      "pct": 83.78,
-      "covered": 8776,
-      "total": 10474
+      "pct": 83.81,
+      "covered": 8780,
+      "total": 10476
     }
   },
   "tests": {
-    "unit": 4662,
+    "unit": 4665,
     "e2e": 96,
-    "durationMs": 262768,
+    "durationMs": 262204,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10889
+        "ms": 11219
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5484
+        "ms": 5833
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5046
+        "ms": 5142
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 3192
+        "ms": 2939
       },
       {
         "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2540
+        "ms": 2224
       }
     ]
   },
@@ -195,26 +195,26 @@
     "nonNull": 106
   },
   "bundle": {
-    "jsGzipKb": 825.4,
-    "cssGzipKb": 19.4,
-    "totalGzipKb": 844.8,
+    "jsGzipKb": 825.8,
+    "cssGzipKb": 19.5,
+    "totalGzipKb": 845.3,
     "budgetKb": 207,
     "withinBudget": true
   },
   "docs": {
-    "bookWords": 56802,
+    "bookWords": 56908,
     "chapters": 25,
-    "appLoc": 72476,
+    "appLoc": 72525,
     "docToCodeRatio": 0.78
   },
   "featureCoverage": {
-    "total": 241,
-    "manual": 240,
+    "total": 242,
+    "manual": 241,
     "manualPct": 99.6,
-    "book": 160,
-    "bookPct": 66.4,
+    "book": 161,
+    "bookPct": 66.5,
     "bookExample": 60,
-    "bookExamplePct": 24.9,
+    "bookExamplePct": 24.8,
     "byArea": {
       "CRT": {
         "total": 8,
@@ -227,9 +227,9 @@
         "book": 2
       },
       "EC": {
-        "total": 23,
-        "manual": 23,
-        "book": 22
+        "total": 24,
+        "manual": 24,
+        "book": 23
       },
       "PRT": {
         "total": 2,
@@ -772,16 +772,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 62,
-    "commits": 1017,
-    "commits7d": 45,
+    "commits": 1020,
+    "commits7d": 48,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 753
+        "count": 754
       },
       {
         "name": "github-actions[bot]",
-        "count": 248
+        "count": 250
       },
       {
         "name": "Claude",
@@ -793,8 +793,8 @@
       }
     ],
     "churn30d": {
-      "added": 29221,
-      "removed": 9276
+      "added": 29415,
+      "removed": 9351
     },
     "changelogEntries": 377
   }
