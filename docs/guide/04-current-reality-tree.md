@@ -167,6 +167,7 @@ The support team's restart spiral is a textbook Fixes that Fail: the restart is 
 > - **Reverse-reach badge** shows the symmetric "root causes per UDE" count, useful for verifying that each UDE has a real cause chain rather than dangling.
 > - **CLR walkthrough**: `Cmd+K → Start CLR walkthrough` iterates open warnings.
 > - **Read-through overlay**: `Cmd+K → Start read-through` — the verbalisation discipline made gesture.
+> - **`Spawn Future Reality Tree from this CRT (invert the UDEs)`** — palette command. Once the CRT is honest, this seeds a fresh FRT in a new tab with one desired-effect placeholder per UDE (titled `Reverse: <effect>`, for you to rewrite into a proper positive statement) plus a starter injection. It never changes the CRT and creates no link between the two — it just saves retyping the effect list. See [Chapter 6](06-future-reality-tree.md).
 
 > **💡 Practitioner tips**
 > - **Start with UDEs, not causes.** Resist the urge to write your hypothesized causes first. Let the causes emerge from "why does that happen?" questioning. A CRT built top-down from UDEs is more honest than one built bottom-up from preferred conclusions.

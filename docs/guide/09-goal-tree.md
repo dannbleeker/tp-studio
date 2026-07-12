@@ -87,6 +87,8 @@ Look at the Goal Tree. Under "Net retention >= 110%", one of the NCs is "Expansi
 
 When you see this, flag it. In TP Studio: select the NC from the Goal Tree, open the Inspector's description field, and add a cross-reference note to the CRT entity. The formal linking mechanism between diagrams is a cross-doc entity import (`Cmd+K → Import entity from another doc…`) which creates a shadow copy with a back-reference; for a soft annotation, a description note is sufficient. Either way, the convergence becomes visible in a team review.
 
+If you have the Goal Tree but *haven't drawn the CRT yet*, TP Studio can give you a running start on it. `Cmd+K → Spawn Current Reality Tree from this Goal Tree (benchmark shortfalls)` opens a fresh CRT in a new tab with one candidate undesirable effect for each CSF and NC — each phrased as its shortfall, `<standard> is not met`. It's a mechanical inversion, not a diagnosis: you still have to decide which of those shortfalls is actually happening, delete the ones that aren't, and build the cause chains beneath the ones that are. But it saves you retyping the standards, and it frames the diagnostic work as "which of the things that *must* be true are currently *not* true?" Because it's an unlinked spawn — a brand-new document, the Goal Tree left exactly as it was — the two diagrams stay independent; nothing you do in the candidate CRT reaches back into the Goal Tree.
+
 ## Worked example II — a product-function transformation
 
 A second example, at a different altitude: a Head of Product who has just taken over a struggling product function. The team ships late, morale is low, and stakeholder confidence is near zero. She needs to align her VP on what recovery looks like before diving into diagnosis.
@@ -146,6 +148,7 @@ If you genuinely need two Goals, dismiss the warning and proceed. Just be honest
 > - **Load example** (`Cmd+K → Load example…` → Goal Tree) — the canonical 8-entity "Customer-first" example, useful for studying the structural shape before drawing your own.
 > - **Reasoning narrative export** (`Cmd+K → Export… → Reasoning as narrative (Markdown)`) — compiles the tree into a top-down necessity argument sentence-by-sentence, suitable for a stakeholder brief or alignment doc.
 > - **Method checklist** (Document Inspector) — seven Goal Tree steps tracked per document, synced with Dettmer's Fig. 3.14 construction checklist: Define the system boundary; State the Goal; List 3–5 CSFs; Identify NCs per CSF (3–5 each, max two layers); Test necessity at every layer; Look for missing conditions; Enlist outside scrutiny. Useful for a team of analysts working the same document across sessions.
+> - **`Spawn Current Reality Tree from this Goal Tree (benchmark shortfalls)`** — palette command. Turns the Goal Tree's design brief into a diagnostic starting point: it mints a fresh CRT in a new tab with one candidate undesirable effect per CSF/NC (titled `<standard> is not met`) — the shortfalls you'd then investigate. An unlinked spawn — the Goal Tree is left untouched and nothing is linked between the two documents.
 
 > **💡 Practitioner tips**
 > - **Time-bound the Goal.** "Hit $10M ARR" is weaker than "Hit $10M ARR by EOY 2026." The time bound is what makes the tree falsifiable — and falsifiability is what makes it a planning tool rather than a wish list.

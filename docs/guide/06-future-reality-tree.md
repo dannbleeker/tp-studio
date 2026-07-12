@@ -187,7 +187,8 @@ The Document Inspector's "System Scope" section lets you write a short statement
 
 > **🛠 How TP Studio helps**
 > - `Cmd+K → New diagram… → Future Reality Tree` to start fresh; `Load example…` for a reference FRT.
-> - `Cmd+K → Carry this into a new FRT…` — from a selected injection in an EC, spawns a new FRT with the injection pre-placed and cross-linked.
+> - `Cmd+K → Carry this into a new FRT…` — from a selected injection in an EC, spawns a new FRT with the injection pre-placed and cross-linked. Use this when you want the FRT tied back to the injection it came from.
+> - `Cmd+K → Spawn Future Reality Tree from this CRT (invert the UDEs)` — the *unlinked* alternative, run from a CRT: it seeds an FRT with one desired-effect placeholder per undesirable effect (`Reverse: <effect>`) plus a starter injection, and leaves the CRT completely untouched. Two different starting points: carry the *injection* across when you already know the change; invert the *UDEs* when you'd rather begin from the outcomes you want and work down to the injection. Neither couples the documents — every diagram stays usable on its own.
 > - **Group presets**: Negative Branch (rose), Positive Reinforcing Loop (emerald), Archive (slate, collapsed) — Group Inspector → Preset. Catalog in `src/domain/groupPresets.ts`.
 > - **Back-edge toggle** in the Edge Inspector — marks the loop-closing edge of a reinforcing cycle. The edge renders as a back-arc so the loop is visually unmistakable.
 > - **Edge polarity** — `Cmd+K → Cycle edge polarity` or the Edge Inspector's polarity picker. A negative-polarity edge means "this injection *prevents* the effect" — essential for trimming injections. A polarity badge on each edge makes suppression relationships visible at a glance.
