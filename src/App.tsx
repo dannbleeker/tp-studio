@@ -143,6 +143,11 @@ const JonahQuickCheckDialog = lazy(() =>
     default: m.JonahQuickCheckDialog,
   }))
 );
+const ObstacleIoIntakeDialog = lazy(() =>
+  import('./components/prt/ObstacleIoIntakeDialog').then((m) => ({
+    default: m.ObstacleIoIntakeDialog,
+  }))
+);
 const InjectionFlowerDialog = lazy(() =>
   import('./components/inspector/InjectionFlowerDialog').then((m) => ({
     default: m.InjectionFlowerDialog,
@@ -504,6 +509,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Jonah quick-check dialog">
           <JonahQuickCheckDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Obstacle/IO intake dialog">
+          <ObstacleIoIntakeDialog />
         </ErrorBoundary>
         <ErrorBoundary label="Injection flower dialog">
           <InjectionFlowerDialog />

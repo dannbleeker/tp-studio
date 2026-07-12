@@ -373,6 +373,21 @@ export const toolCommands: Command[] = [
       s.connect(io.id, obstacleId);
     },
   }),
+  // Session 199 (backlog E) — batch intake: open a table to capture many
+  // obstacle → objective pairs at once. PRT-only; the Apply mints them in one
+  // undo step.
+  withWriteGuard({
+    id: 'obstacle-io-intake',
+    label: 'Add obstacles + objectives (intake table)…',
+    group: 'Edit',
+    run: (s) => {
+      if (currentDoc(s).diagramType !== 'prt') {
+        s.showToast('info', 'The obstacle/objective intake table is for Prerequisite Trees.');
+        return;
+      }
+      s.openObstacleIoIntake();
+    },
+  }),
   // Session 97 — cycle an edge through the 4 polarity states
   // (undefined → positive → negative → zero → undefined). One verb
   // instead of a sub-menu; users click repeatedly to land where they

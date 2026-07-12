@@ -182,6 +182,9 @@ export type DialogsSlice = {
    *  persists nothing. */
   jonahQuickCheckOpen: boolean;
 
+  /** Session 199 (backlog E) — the PRT Obstacle/Objective intake table dialog. */
+  obstacleIoIntakeOpen: boolean;
+
   openPalette: () => void;
   openPaletteWithQuery: (query: string) => void;
   closePalette: () => void;
@@ -340,6 +343,10 @@ export type DialogsSlice = {
   /** Session 199 (backlog A4) — open / close the Jonah quick-check dialog. */
   openJonahQuickCheck: () => void;
   closeJonahQuickCheck: () => void;
+
+  /** Session 199 (backlog E) — open / close the Obstacle/Objective intake dialog. */
+  openObstacleIoIntake: () => void;
+  closeObstacleIoIntake: () => void;
 };
 
 export type DialogsDataKeys =
@@ -374,7 +381,8 @@ export type DialogsDataKeys =
   | 'edgeScrutinyId'
   | 'injectionFlowerEntityId'
   | 'diceGameOpen'
-  | 'jonahQuickCheckOpen';
+  | 'jonahQuickCheckOpen'
+  | 'obstacleIoIntakeOpen';
 
 export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   paletteOpen: false,
@@ -409,6 +417,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   injectionFlowerEntityId: null,
   diceGameOpen: false,
   jonahQuickCheckOpen: false,
+  obstacleIoIntakeOpen: false,
 });
 
 /**
@@ -460,6 +469,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   injectionFlowerEntityId: null,
   diceGameOpen: false,
   jonahQuickCheckOpen: false,
+  obstacleIoIntakeOpen: false,
 
   openPalette: () => set({ paletteOpen: true, paletteInitialQuery: '' }),
   openPaletteWithQuery: (query) => set({ paletteOpen: true, paletteInitialQuery: query }),
@@ -584,4 +594,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openJonahQuickCheck: () => set({ jonahQuickCheckOpen: true }),
   closeJonahQuickCheck: () => set({ jonahQuickCheckOpen: false }),
+
+  openObstacleIoIntake: () => set({ obstacleIoIntakeOpen: true }),
+  closeObstacleIoIntake: () => set({ obstacleIoIntakeOpen: false }),
 });

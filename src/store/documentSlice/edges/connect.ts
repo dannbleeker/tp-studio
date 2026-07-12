@@ -9,8 +9,27 @@ import type { Edge, Entity, Patch } from '@/domain/types';
 import { edgePatch, prunedSpread, touch } from '../docMutate';
 import type { EdgesFactoryDeps } from './shared';
 
+/**
+ * Session 199 (backlog E) — one row of the Prerequisite-Tree Obstacle/Objective
+ * intake table. Each row mints an obstacle + the Intermediate Objective that
+ * overcomes it. `showStopper` and `blockingFactor` are optional metadata homed
+ * on the obstacle (a boolean attribute + the description) — no schema change.
+ */
+export type ObstacleIoRow = {
+  obstacle: string;
+  io: string;
+  showStopper?: boolean;
+  blockingFactor?: string;
+};
+
 export type ConnectActions = {
   connect: (sourceId: string, targetId: string) => Edge | null;
+  /** Session 199 (backlog E) — batched intake: mint an obstacle + IO + the
+   *  `IO → obstacle` necessity edge for every non-blank row, in ONE undo step.
+   *  When the PRT has a single apex `goal`, each new obstacle is also wired to it
+   *  (necessity) so the pairs aren't left unrooted. Blank rows are skipped;
+   *  returns the created entities (selected), or `[]` if nothing was minted. */
+  addObstacleIoRows: (rows: ObstacleIoRow[]) => Entity[];
   /** Phase 3 #4 (TP completeness — NBR trimming) — "Trim this branch": mint a
    *  *trimming injection* and connect it to `effectId` with a NEGATIVE-weight
    *  edge (the injection works against the undesirable effect), in one undoable
@@ -92,6 +111,88 @@ export function createConnectActions({
       );
       get().selectEntity(injection.id);
       return injection;
+    },
+
+    addObstacleIoRows: (rows) => {
+      const clean = rows
+        .map((r) => ({
+          obstacle: r.obstacle.trim(),
+          io: r.io.trim(),
+          showStopper: r.showStopper === true,
+          blockingFactor: r.blockingFactor?.trim() ?? '',
+        }))
+        // A row needs at least one of the two texts to be worth minting.
+        .filter((r) => r.obstacle !== '' || r.io !== '');
+      if (clean.length === 0) return [];
+
+      const { doc } = get();
+      // Root each obstacle to the apex goal only when there's exactly one — with
+      // zero or several goals the right parent is ambiguous, so leave them free.
+      const goals = Object.values(doc.entities).filter((e) => e.type === 'goal');
+      const apexGoalId = goals.length === 1 ? goals[0]?.id : undefined;
+
+      let ann = doc.nextAnnotationNumber;
+      const newEntities: Record<string, Entity> = {};
+      const newEdges: Record<string, Edge> = {};
+      const createdEntities: Entity[] = [];
+
+      for (const r of clean) {
+        const baseObstacle = createEntity({
+          type: 'obstacle',
+          title: r.obstacle,
+          annotationNumber: ann++,
+        });
+        // show-stopper → boolean attribute; blocking-factor → description. Both
+        // omitted when empty (emit-or-omit; no `undefined`/`false` persisted).
+        const obstacle: Entity = {
+          ...baseObstacle,
+          ...(r.showStopper
+            ? {
+                attributes: {
+                  ...baseObstacle.attributes,
+                  showStopper: { kind: 'bool', value: true },
+                },
+              }
+            : {}),
+          ...(r.blockingFactor !== '' ? { description: r.blockingFactor } : {}),
+        };
+        const io = createEntity({
+          type: 'intermediateObjective',
+          title: r.io,
+          annotationNumber: ann++,
+        });
+        newEntities[obstacle.id] = obstacle;
+        newEntities[io.id] = io;
+        createdEntities.push(obstacle, io);
+
+        // IO → obstacle (necessity): the objective overcomes the obstacle.
+        const ioEdge: Edge = {
+          ...createEdge({ sourceId: io.id, targetId: obstacle.id }),
+          kind: 'necessity',
+        };
+        newEdges[ioEdge.id] = ioEdge;
+
+        if (apexGoalId) {
+          // obstacle → goal (necessity): removing the obstacle is required for the goal.
+          const goalEdge: Edge = {
+            ...createEdge({ sourceId: obstacle.id, targetId: apexGoalId }),
+            kind: 'necessity',
+          };
+          newEdges[goalEdge.id] = goalEdge;
+        }
+      }
+
+      // ONE applyDocChange = ONE undo step for the whole table.
+      applyDocChange((prev) =>
+        touch({
+          ...prev,
+          entities: { ...prev.entities, ...newEntities },
+          edges: { ...prev.edges, ...newEdges },
+          nextAnnotationNumber: ann,
+        })
+      );
+      get().selectEntities(createdEntities.map((e) => e.id));
+      return createdEntities;
     },
 
     updateEdge: (id, patch) => {

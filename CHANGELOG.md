@@ -2,6 +2,17 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 199 — Prerequisite-Tree Obstacle/Objective intake table (backlog E)
+
+- **Obstacle/Objective intake table.** A new palette command (*Add obstacles + objectives (intake
+  table)…*, Prerequisite Trees only) opens an editable table — one row per Obstacle and the Intermediate
+  Objective that overcomes it, plus an optional "show-stopper?" flag and a "blocking factor" note. **Apply
+  mints every row in a single undo step**: each row becomes an obstacle + an IO + the `objective → obstacle`
+  necessity edge, and when the tree has a single apex goal, each obstacle is also wired to it so the pairs
+  aren't left unrooted. The show-stopper flag rides a boolean attribute on the obstacle and the
+  blocking-factor note its description — no schema change (*Handbook* Ch. 24, Cohen, Tables 24-10/11). Turns
+  a workshop's obstacle brainstorm into a wired PRT skeleton in one paste, instead of one pair at a time.
+
 ## Session 199 — CLR sharpening (backlog A1)
 
 First slice of the Categories-of-Legitimate-Reservation backlog (Section A). All strictly additive, soft,

@@ -54,7 +54,7 @@ For each obstacle, write the IO that dissolves it. Keep the IO as a *state to be
 
 Connect each IO to its obstacle (IO → obstacle), and each obstacle to the injection (obstacle → injection). The canvas now shows a wide, flat structure: four IO–obstacle pairs feeding the injection.
 
-🛠 **How TP Studio helps:** Select any `obstacle` entity and run `Cmd+K → Add Intermediate Objective for this Obstacle (PRT)`. TP Studio mints a new `intermediateObjective` entity, opens its title for editing, and connects it to the selected obstacle automatically. You can also use `Cmd+K → Mark entity as Obstacle (PRT)` and `Cmd+K → Mark entity as Intermediate Objective (PRT)` to retype entities you've already written as plain effects.
+🛠 **How TP Studio helps:** Select any `obstacle` entity and run `Cmd+K → Add Intermediate Objective for this Obstacle (PRT)`. TP Studio mints a new `intermediateObjective` entity, opens its title for editing, and connects it to the selected obstacle automatically. You can also use `Cmd+K → Mark entity as Obstacle (PRT)` and `Cmd+K → Mark entity as Intermediate Objective (PRT)` to retype entities you've already written as plain effects. When you're coming out of a workshop with a *list* of obstacles rather than one at a time, `Cmd+K → Add obstacles + objectives (intake table)…` opens a table — one row per obstacle and the IO that overcomes it (plus an optional show-stopper flag and a blocking-factor note) — and Apply wires the whole batch in a single undo step, rooting each obstacle to the goal if there's a single apex.
 
 ### Step 3 — Add dependency edges
 

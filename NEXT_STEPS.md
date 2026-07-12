@@ -155,9 +155,11 @@ A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversaria
 - **TT "why" + "appropriate condition" test** — ✅ **shipped Session 198**: the "why" already rode on the
   action's Need field; added the `tt.appropriate-condition` method step (can you act — span of control +
   precondition true? and will it avoid serious negatives — spin off an NBR?). *Ch20 Layer 7; Ch25.*
-- `ACTIVE` **Obstacle/IO intake table** (Obstacle | show-stopper? | IO | blocking factor) → each row
-  converts to a PRT obstacle+IO pair. *Ch24 Tables 24-10/11.* **Open** — needs a net-new batched-create
-  store action + a table UI (no reuse today).
+- **Obstacle/IO intake table** — ✅ **shipped Session 199**: palette *"Add obstacles + objectives (intake
+  table)…"* (PRT-only) opens an editable table (Obstacle | show-stopper? | IO | blocking factor); Apply
+  mints obstacle + IO + objective→obstacle necessity edge per row in ONE undo step (single-apex-goal
+  rooting when present). show-stopper → obstacle attribute, blocking-factor → description; batched-create
+  `addObstacleIoRows` mirrors `trimBranch`. *Ch24 Tables 24-10/11.*
 - `EXTENDS` **NBR readability:** typed roles (Injection/Current/Neutral/DE/UDE), backbone-vs-side,
   +/− polarity on backbone arrows to locate the "turns negative" point. *Ch24 (Cohen) Fig 24-16.* **Open.**
 
