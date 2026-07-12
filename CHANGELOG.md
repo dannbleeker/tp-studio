@@ -4,20 +4,25 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 
 ## Session 198 — Strategy & Tactics template pack (backlog G)
 
-Three new Strategy & Tactics starters in the pattern library, built **on the corrected directional model**
+Six new Strategy & Tactics starters in the pattern library, built **on the corrected directional model**
 (backlog B) — each step is a first-class facet card (strategy + necessary ↑ / parallel ↔ / sufficiency ↓),
 authored so it opens position-clean (the apex carries no necessary assumption, leaves carry no sufficiency
 one, every decomposition fans out to ≥2 children, and the intentional-leaf rollup nudges are pre-resolved):
 
-- **Reliable Rapid Response** and **Vendor-Managed Inventory** — two Decisive-Competitive-Edge / un-refusable-
-  offer templates (Handbook Ch. 22, Lang), abstracted: sell a delivery guarantee backed by operational slack;
-  take the stockout-vs-overstock risk off the customer's shelf via consumption-driven replenishment.
+- **Reliable Rapid Response**, **Vendor-Managed Inventory**, **Pay-Per-Use**, and **Gain-Sharing** — four
+  Decisive-Competitive-Edge / un-refusable-offer templates (Handbook Ch. 22, Lang), abstracted: sell a
+  delivery guarantee backed by operational slack; take the stockout-vs-overstock risk off the customer's
+  shelf via consumption-driven replenishment; swap the upfront licence for pay-per-use; price on the
+  customer's realised gain with your fee at risk.
 - **Viable Vision — Build / Capitalize / Sustain** — the generic three-phase Viable-Vision scaffold
   (Ch. 34/18, Ferguson), a reusable skeleton for reaching an ambitious vision on existing resources.
+- **Retailer Viable Vision (3-level)** — a deeper retail Viable-Vision tree (central pull replenishment,
+  piloted then rolled out, plus re-pointed incentives) whose **middle step carries all four facets** — the
+  fullest illustration of the directional model (a necessary assumption up AND a sufficiency assumption down).
 
-Shared recursive `buildSTFacetDoc` builder; a test pins that each pattern is a valid, position-clean facet
-tree. *A representative pack — the full book set (the remaining Mafia-Offer templates, the 6-level Retailer
-Viable-Vision tree, and the healthcare Viable-Vision) remains a documented extension in NEXT_STEPS §G.*
+Shared recursive `buildSTFacetDoc` builder (arbitrary nesting depth); a test pins that each pattern is a
+valid, position-clean facet tree. *The remaining book set (the last two Mafia-Offer templates, the full
+generic Viable-Vision set, and the healthcare Viable-Vision) stays a documented extension in NEXT_STEPS §G.*
 
 - **Review follow-ups (B + G).** An adversarial review of the S&T change surfaced two real defects, now
   fixed: (1) the `indirect-effect` structural rule (a *causal* "≥3 direct causes → missing intermediate?"

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { isStNodeFormat, ST_FACET_KEYS } from '@/domain/graph';
+import { buildPatternSTGainSharing } from '@/domain/patterns/st-gain-sharing';
+import { buildPatternSTPayPerUse } from '@/domain/patterns/st-pay-per-use';
 import { buildPatternSTReliableRapidResponse } from '@/domain/patterns/st-reliable-rapid-response';
+import { buildPatternSTRetailerViableVision } from '@/domain/patterns/st-retailer-viable-vision';
 import { buildPatternSTVendorManagedInventory } from '@/domain/patterns/st-vendor-managed-inventory';
 import { buildPatternSTViableVisionScaffold } from '@/domain/patterns/st-viable-vision-scaffold';
 import type { TPDocument } from '@/domain/types';
@@ -15,6 +18,9 @@ const TEMPLATES = [
   { name: 'Reliable Rapid Response', build: buildPatternSTReliableRapidResponse },
   { name: 'Vendor-Managed Inventory', build: buildPatternSTVendorManagedInventory },
   { name: 'Viable Vision scaffold', build: buildPatternSTViableVisionScaffold },
+  { name: 'Pay-Per-Use offer', build: buildPatternSTPayPerUse },
+  { name: 'Gain-Sharing offer', build: buildPatternSTGainSharing },
+  { name: 'Retailer Viable Vision (3-level)', build: buildPatternSTRetailerViableVision },
 ];
 
 const hasOutgoing = (doc: TPDocument, id: string): boolean =>

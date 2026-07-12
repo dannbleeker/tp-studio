@@ -120,9 +120,12 @@ import { buildPatternPRTPerformanceReviews } from './prt-performance-reviews';
 import { buildPatternPRTRaiseClassPerformance } from './prt-raise-class-performance';
 import { buildPatternPRTZeroDefects } from './prt-zero-defects';
 import { buildPatternSTConstraintExploitation } from './st-constraint-exploitation';
+import { buildPatternSTGainSharing } from './st-gain-sharing';
 import { buildPatternSTMarketExpansion } from './st-market-expansion';
+import { buildPatternSTPayPerUse } from './st-pay-per-use';
 import { buildPatternSTQualityFirst } from './st-quality-first';
 import { buildPatternSTReliableRapidResponse } from './st-reliable-rapid-response';
+import { buildPatternSTRetailerViableVision } from './st-retailer-viable-vision';
 import { buildPatternSTTimeToMarket } from './st-time-to-market';
 import { buildPatternSTVendorManagedInventory } from './st-vendor-managed-inventory';
 import { buildPatternSTViableVisionScaffold } from './st-viable-vision-scaffold';
@@ -892,6 +895,29 @@ const CORE_PATTERNS: Pattern[] = [
     hint: "Ferguson's generic Viable-Vision skeleton (Handbook Ch. 34/18), abstracted — reach an ambitious vision on existing resources in three phases: build the capability, capitalise on it, sustain the edge. A reusable facet-card scaffold.",
     diagramType: 'st',
     build: buildPatternSTViableVisionScaffold,
+  },
+  // Session 198 (backlog G extension) — the rest of the Decisive-Competitive-Edge
+  // offer family + a multi-level Viable Vision, all facet cards on the corrected model.
+  {
+    id: 'st-pay-per-use',
+    label: 'Pay-Per-Use offer (Decisive Competitive Edge)',
+    hint: "A Ch. 22 offer template, abstracted — swap the upfront licence for consumption pricing to remove the buyer's capital risk; needs trustworthy metering + funding the usage-ramp cash gap. Facet-card S&T.",
+    diagramType: 'st',
+    build: buildPatternSTPayPerUse,
+  },
+  {
+    id: 'st-gain-sharing',
+    label: 'Gain-Sharing offer (Decisive Competitive Edge)',
+    hint: "A Ch. 22 offer template, abstracted — price on the customer's realised gain (put your fee at risk) to win the doubters; needs an agreed baseline + control of the levers that move the gain. Facet-card S&T.",
+    diagramType: 'st',
+    build: buildPatternSTGainSharing,
+  },
+  {
+    id: 'st-retailer-viable-vision',
+    label: 'Retailer Viable Vision (3-level)',
+    hint: "Ferguson's retail Viable-Vision (Handbook Ch. 34/18), abstracted — reach the profit vision on the existing stores by fixing availability-vs-inventory: a central pull-replenishment engine (piloted then rolled out) plus re-pointed incentives. Three levels deep, so its middle step carries all four facets.",
+    diagramType: 'st',
+    build: buildPatternSTRetailerViableVision,
   },
 
   // ── Freeform ───────────────────────────────────────────────────────
