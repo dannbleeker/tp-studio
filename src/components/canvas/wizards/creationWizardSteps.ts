@@ -13,6 +13,7 @@
  * No behavior change — the component imports these exactly as before.
  */
 import { EC_SLOTS_BY_ORDER, type ECSlot } from '@/domain/ecGuiding';
+import type { CloudType } from '@/domain/types';
 
 export type StepDef = {
   prompt: string;
@@ -74,6 +75,156 @@ export const EC_STEPS: StepDef[] = EC_SLOTS_BY_ORDER.aFirst.map((slot) => EC_STE
 export const EC_STEPS_D_FIRST: StepDef[] = EC_SLOTS_BY_ORDER.dFirst.map(
   (slot) => EC_STEP_BY_SLOT[slot]
 );
+
+/**
+ * Session 197 (backlog D1) — per-cloud-type wizard prompts. Original app-voice
+ * paraphrases of Cohen's guiding-question tables (Handbook Ch. 24, Tables
+ * 24-2 / 24-4 / 24-5 / 24-6). Consumed by the wizard ONLY when the user opts
+ * into a cloud type; the walk order for each type lives in
+ * `EC_CLOUD_TYPE_ORDER` (`@/domain/ecGuiding`). The generic default keeps
+ * `EC_STEP_BY_SLOT` above.
+ */
+export const EC_STEPS_BY_CLOUD_TYPE: Record<CloudType, Record<ECSlot, StepDef>> = {
+  // Inner Dilemma — a one-person conflict; D is the forced option, D′ preferred.
+  dilemma: {
+    d: {
+      prompt: 'Which action do you feel under the most pressure to take? (the distasteful one — D)',
+      placeholder: 'e.g. "Take the safe, expected assignment"',
+    },
+    dPrime: {
+      prompt: 'Which action would you most prefer? (D′)',
+      placeholder: 'e.g. "Take the risky, stretching assignment"',
+    },
+    c: {
+      prompt: 'What need of yours does your preferred action D′ satisfy? (C)',
+      placeholder: 'e.g. "Grow and be challenged"',
+    },
+    b: {
+      prompt: 'What need of yours does the forced action D satisfy? (B)',
+      placeholder: 'e.g. "Feel secure and not fail"',
+    },
+    a: {
+      prompt: 'What common objective is met when both need B and need C are satisfied? (A)',
+      placeholder: 'e.g. "Have a fulfilling career"',
+    },
+  },
+  // Day-to-Day Conflict — two parties; the other side is B-D, you are C-D′.
+  conflict: {
+    d: {
+      prompt: 'What tactic does the other side want to take? (D)',
+      placeholder: 'e.g. "Ship on the original date"',
+    },
+    dPrime: {
+      prompt: 'What tactic do you want to take? (D′)',
+      placeholder: 'e.g. "Slip the date to harden quality"',
+    },
+    c: {
+      prompt: 'What need are you trying to satisfy with your tactic D′? (C)',
+      placeholder: 'e.g. "Protect the product\'s reliability"',
+    },
+    b: {
+      prompt: 'What need is the other side trying to satisfy, as you see it? (B)',
+      placeholder: 'e.g. "Keep the launch commitment"',
+    },
+    a: {
+      prompt: 'What objective do you both share, met when needs B and C both hold? (A)',
+      placeholder: 'e.g. "Win and keep the customer"',
+    },
+  },
+  // Fire-Fighting — the fire triggers the cloud but is not a box; entry point
+  // is the endangered need B.
+  firefighting: {
+    b: {
+      prompt: 'What important need does this fire put at risk? (B)',
+      placeholder: 'e.g. "Get the order shipped on time"',
+    },
+    d: {
+      prompt: 'What action would meet that endangered need B? (D)',
+      placeholder: 'e.g. "Let the clerk call the customer directly"',
+    },
+    dPrime: {
+      prompt: 'What procedure or rule currently prevents that action? (D′)',
+      placeholder: 'e.g. "Only the account manager contacts customers"',
+    },
+    c: {
+      prompt: 'What need does that procedure D′ protect? (C)',
+      placeholder: 'e.g. "Keep customer contact consistent"',
+    },
+    a: {
+      prompt: 'What common objective is met when both B and C hold? (A)',
+      placeholder: 'e.g. "Serve customers reliably"',
+    },
+  },
+  // UDE cloud — the "Z" walk B → D → C → D′ → A.
+  ude: {
+    b: {
+      prompt: 'What important need does this undesirable effect put at risk? (B)',
+      placeholder: 'e.g. "Deliver on our promised dates"',
+    },
+    d: {
+      prompt: 'What action would meet that endangered need B? (D)',
+      placeholder: 'e.g. "Hold generous safety stock everywhere"',
+    },
+    c: {
+      prompt: 'What other important need stops you from always taking that action? (C)',
+      placeholder: 'e.g. "Keep cash and carrying cost down"',
+    },
+    dPrime: {
+      prompt: 'What do you do instead, to meet that other need C? (D′)',
+      placeholder: 'e.g. "Keep stock lean"',
+    },
+    a: {
+      prompt: 'What common objective is met when both B and C hold? (A)',
+      placeholder: 'e.g. "Run a profitable, dependable operation"',
+    },
+  },
+  // Consolidated / Generic — the core conflict merged from several UDE clouds.
+  consolidated: {
+    a: {
+      prompt: 'What shared objective sits above all the conflicts you are consolidating? (A)',
+      placeholder: 'e.g. "Ongoing success"',
+    },
+    b: {
+      prompt: 'What need shows up across them on one side? (B)',
+      placeholder: 'e.g. "Deliver results now"',
+    },
+    c: {
+      prompt: 'What need shows up across them on the other side? (C)',
+      placeholder: 'e.g. "Protect the long term"',
+    },
+    d: {
+      prompt: 'What generic action do the one-side wants boil down to? (D)',
+      placeholder: 'e.g. "Push hard for this quarter"',
+    },
+    dPrime: {
+      prompt: 'What generic action do the other-side wants boil down to? (D′)',
+      placeholder: 'e.g. "Invest in the future"',
+    },
+  },
+  // Core cloud — the recurring conflict under many UDEs.
+  core: {
+    a: {
+      prompt: 'What objective does this recurring conflict serve? (A)',
+      placeholder: 'e.g. "Run a healthy organization"',
+    },
+    b: {
+      prompt: 'What need drives one side? (B)',
+      placeholder: 'e.g. "Maximize local efficiency"',
+    },
+    c: {
+      prompt: 'What need drives the other side? (C)',
+      placeholder: 'e.g. "Protect overall flow"',
+    },
+    d: {
+      prompt: 'What does one side keep wanting to do? (D)',
+      placeholder: 'e.g. "Keep every resource busy"',
+    },
+    dPrime: {
+      prompt: 'What does the other side keep wanting to do? (D′)',
+      placeholder: 'e.g. "Let non-constraints idle"',
+    },
+  },
+};
 
 /**
  * Session 136 — CRT creation wizard prompts. The Current Reality Tree

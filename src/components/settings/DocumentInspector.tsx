@@ -356,7 +356,8 @@ export function DocumentInspector() {
             </select>
             <p className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
               Optional — marks this cloud's role in the progression (UDE → Consolidated → Core), per
-              Cohen's <em>TP Basics</em>. Purely a label; nothing else changes.
+              Cohen's <em>TP Basics</em>. The creation wizard reads it to tailor the build order and
+              prompts; afterwards it's just a label.
             </p>
           </Field>
         )}

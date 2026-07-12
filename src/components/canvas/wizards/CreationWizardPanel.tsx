@@ -2,14 +2,29 @@ import clsx from 'clsx';
 import { ChevronUp, GripVertical, Sparkles, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { EC_SLOTS_BY_ORDER, type WizardOrder } from '@/domain/ecGuiding';
+import { CLOUD_TYPE_LABEL, CLOUD_TYPES } from '@/domain/cloudType';
+import {
+  EC_CLOUD_TYPE_BREAK_HINT,
+  EC_CLOUD_TYPE_ORDER,
+  EC_SLOTS_BY_ORDER,
+  type ECSlot,
+  type ECWizardMode,
+  type WizardOrder,
+} from '@/domain/ecGuiding';
 import { entitiesOfType } from '@/domain/graph';
 import type { Entity } from '@/domain/types';
 import { log } from '@/services/logger';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { ECSlotIndicator } from '../overlays/ECSlotIndicator';
-import { CRT_STEPS, EC_STEPS, EC_STEPS_D_FIRST, GOAL_TREE_STEPS } from './creationWizardSteps';
+import {
+  CRT_STEPS,
+  EC_STEPS,
+  EC_STEPS_BY_CLOUD_TYPE,
+  EC_STEPS_D_FIRST,
+  GOAL_TREE_STEPS,
+  type StepDef,
+} from './creationWizardSteps';
 import { useDraggablePanel } from './useDraggablePanel';
 
 /**
@@ -79,6 +94,7 @@ export function CreationWizardPanel() {
     setShowGoalTreeWizard,
     setShowECWizard,
     setShowCRTWizard,
+    setCloudType,
     entities,
     addEntity,
     updateEntity,
@@ -94,6 +110,7 @@ export function CreationWizardPanel() {
       setShowGoalTreeWizard: s.setShowGoalTreeWizard,
       setShowECWizard: s.setShowECWizard,
       setShowCRTWizard: s.setShowCRTWizard,
+      setCloudType: s.setCloudType,
       entities: currentDoc(s).entities,
       addEntity: s.addEntity,
       updateEntity: s.updateEntity,
@@ -114,8 +131,13 @@ export function CreationWizardPanel() {
   // felt conflict") walk. Local to the panel rather than persisted —
   // the user picks per session; defaults to A-first.
   const [wizardOrder, setWizardOrder] = useState<WizardOrder>('aFirst');
+  // Session 197 (D1) — optional cloud-type mode for the EC wizard. `'generic'`
+  // (the default) preserves the shipped A-first/D-first behaviour exactly and
+  // never sets `doc.cloudType`; picking a type switches the walk order + prompts
+  // to Cohen's per-type recipe.
+  const [mode, setMode] = useState<ECWizardMode>('generic');
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
-  const stepKey = state ? `${state.kind}-${state.step}-${wizardOrder}` : null;
+  const stepKey = state ? `${state.kind}-${state.step}-${mode}-${wizardOrder}` : null;
 
   // Reset draft + refocus on every step change (including re-opens via
   // the palette command "Reopen creation wizard"). Depends on stepKey
@@ -153,14 +175,18 @@ export function CreationWizardPanel() {
 
   if (!state) return null;
   const kind = state.kind;
-  const steps =
-    kind === 'goalTree'
-      ? GOAL_TREE_STEPS
-      : kind === 'crt'
-        ? CRT_STEPS
-        : wizardOrder === 'dFirst'
-          ? EC_STEPS_D_FIRST
-          : EC_STEPS;
+  // EC-only: the active slot order + step prompts depend on the chosen mode.
+  // `'generic'` reuses the shipped A-first/D-first constants byte-for-byte; a
+  // cloud type uses Cohen's per-type order + prompts (Session 197 / D1).
+  const ecSlotOrder: readonly ECSlot[] =
+    mode === 'generic' ? EC_SLOTS_BY_ORDER[wizardOrder] : EC_CLOUD_TYPE_ORDER[mode];
+  const ecSteps: StepDef[] =
+    mode === 'generic'
+      ? wizardOrder === 'dFirst'
+        ? EC_STEPS_D_FIRST
+        : EC_STEPS
+      : EC_CLOUD_TYPE_ORDER[mode].map((slot) => EC_STEPS_BY_CLOUD_TYPE[mode][slot]);
+  const steps = kind === 'goalTree' ? GOAL_TREE_STEPS : kind === 'crt' ? CRT_STEPS : ecSteps;
   const step = state.step;
   const isFinalStep = step >= steps.length - 1;
   const isDone = step >= steps.length;
@@ -189,7 +215,7 @@ export function CreationWizardPanel() {
       // `ecSlot` bindings — find the matching one and update its
       // title. Session 87: the slot at step N depends on the chosen
       // wizard order (A-first vs. D-first).
-      const targetSlot = EC_SLOTS_BY_ORDER[wizardOrder][step];
+      const targetSlot = ecSlotOrder[step];
       if (!targetSlot) return;
       const target = Object.values(entities).find((e) => e.ecSlot === targetSlot);
       if (target) {
@@ -267,6 +293,11 @@ export function CreationWizardPanel() {
         <p className="font-medium text-emerald-700 text-sm dark:text-emerald-300">
           ✓ Wizard complete — keep building from here.
         </p>
+        {mode !== 'generic' && (
+          <p className="text-[11px] text-neutral-600 dark:text-neutral-400">
+            {EC_CLOUD_TYPE_BREAK_HINT[mode]}
+          </p>
+        )}
         <button
           type="button"
           onClick={close}
@@ -342,44 +373,84 @@ export function CreationWizardPanel() {
           toggle resets the step to 0 so the prompt at index 0 lines
           up with the new lead slot. */}
       {kind === 'ec' && (
-        <fieldset
-          data-component="ec-wizard-order"
-          aria-label="Wizard walk order"
-          className="flex gap-1 border-0 p-0 text-[10px]"
-        >
-          {(
-            [
-              { id: 'aFirst' as const, label: 'A → D′ (top-down)' },
-              { id: 'dFirst' as const, label: 'D → A (from the conflict)' },
-            ] satisfies { id: WizardOrder; label: string }[]
-          ).map((opt) => {
-            const active = wizardOrder === opt.id;
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                aria-pressed={active}
-                onClick={() => {
-                  if (wizardOrder === opt.id) return;
-                  setWizardOrder(opt.id);
-                  // We don't rewind `state.step` — the user keeps their
-                  // place and the prompt at that index simply reflects
-                  // the new order. Fine for a single-action-per-step
-                  // wizard; any missed slot can be filled directly on
-                  // the canvas later.
-                }}
-                className={clsx(
-                  'flex-1 rounded-xs border px-1.5 py-0.5 font-medium transition',
-                  active
-                    ? 'border-accent-400 bg-accent-100 text-accent-800 dark:border-accent-500 dark:bg-accent-900 dark:text-accent-200'
-                    : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800'
-                )}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </fieldset>
+        <div className="flex flex-col gap-1.5">
+          {/* Session 197 (D1) — optional cloud-type selector. Left at
+              "Generic (default)" it changes nothing; picking a type switches
+              the wizard to Cohen's per-type walk + prompts and tags the doc. */}
+          <label
+            data-component="ec-wizard-cloud-type"
+            className="flex items-center gap-1.5 text-[10px] text-neutral-600 dark:text-neutral-300"
+          >
+            <span className="shrink-0 font-medium">Cloud type</span>
+            <select
+              aria-label="Cloud type"
+              value={mode}
+              onChange={(e) => {
+                const next = e.target.value as ECWizardMode;
+                setMode(next);
+                setCloudType(next === 'generic' ? undefined : next);
+              }}
+              className="min-w-0 flex-1 rounded-xs border border-neutral-200 bg-white px-1 py-0.5 text-neutral-700 outline-hidden focus:border-accent-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+            >
+              <option value="generic">Generic (default)</option>
+              {CLOUD_TYPES.map((ct) => (
+                <option key={ct} value={ct}>
+                  {CLOUD_TYPE_LABEL[ct]}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {/* Walk-order toggle — only in generic mode; a chosen cloud type
+              prescribes its own order (Cohen's tables), so the toggle hides. */}
+          {mode === 'generic' && (
+            <fieldset
+              data-component="ec-wizard-order"
+              aria-label="Wizard walk order"
+              className="flex gap-1 border-0 p-0 text-[10px]"
+            >
+              {(
+                [
+                  { id: 'aFirst' as const, label: 'A → D′ (top-down)' },
+                  { id: 'dFirst' as const, label: 'D → A (from the conflict)' },
+                ] satisfies { id: WizardOrder; label: string }[]
+              ).map((opt) => {
+                const active = wizardOrder === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => {
+                      if (wizardOrder === opt.id) return;
+                      // We don't rewind `state.step` — the user keeps their place
+                      // and the prompt at that index reflects the new order.
+                      setWizardOrder(opt.id);
+                    }}
+                    className={clsx(
+                      'flex-1 rounded-xs border px-1.5 py-0.5 font-medium transition',
+                      active
+                        ? 'border-accent-400 bg-accent-100 text-accent-800 dark:border-accent-500 dark:bg-accent-900 dark:text-accent-200'
+                        : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </fieldset>
+          )}
+
+          {/* Cohen's best-arrow-to-break recommendation for the chosen type. */}
+          {mode !== 'generic' && (
+            <p
+              data-component="ec-wizard-break-hint"
+              className="rounded-xs bg-accent-50 px-1.5 py-0.5 text-[10px] text-accent-700 dark:bg-accent-950 dark:text-accent-300"
+            >
+              {EC_CLOUD_TYPE_BREAK_HINT[mode]}
+            </p>
+          )}
+        </div>
       )}
 
       {/* Per-step progress indicator. A series of dots; current one
@@ -415,7 +486,7 @@ export function CreationWizardPanel() {
           same conceptual shape. */}
       {kind === 'ec' && (
         <div className="flex justify-center text-accent-600 dark:text-accent-300">
-          <ECSlotIndicator targetSlot={EC_SLOTS_BY_ORDER[wizardOrder][step] ?? null} />
+          <ECSlotIndicator targetSlot={ecSlotOrder[step] ?? null} />
         </div>
       )}
       <label className="flex flex-col gap-1">

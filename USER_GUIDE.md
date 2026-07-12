@@ -651,11 +651,13 @@ Open the Document Inspector (the ⓘ icon next to the title, or palette → **Do
 
 The toggle persists on the document (round-trips through save/load) and updates the verbalisation strip live.
 
-**Cloud type.** Below the verbal-style toggle, an EC document also has an optional **Cloud type** dropdown — *Dilemma, Conflict, UDE, Consolidated, Core,* or *Firefighting* — that labels the cloud's role in Cohen's *TP Basics* progression (UDE cloud → Consolidated → Core). It's purely a label: pick one and a small sky-blue chip appears next to the title; leave it "— Untyped" (the default) and nothing shows. Three ready-made clouds — **UDE cloud**, **Core cloud**, and **Firefighting cloud** — live in the Templates library (**Browse templates…**), each pre-tagged. Nothing about drawing or reading an EC changes; the tag is just a way to record "this is the Core Cloud of my analysis."
+**Cloud type.** Below the verbal-style toggle, an EC document also has an optional **Cloud type** dropdown — *Dilemma, Conflict, UDE, Consolidated, Core,* or *Firefighting* — that labels the cloud's role in Cohen's *TP Basics* progression (UDE cloud → Consolidated → Core). After creation it's just a label: pick one and a small sky-blue chip appears next to the title; leave it "— Untyped" (the default) and nothing shows. But the **creation wizard** now also reads the type: pick one there and the wizard walks Cohen's per-type build order, shows that type's guiding questions, and suggests the arrow to break (see below). Three ready-made clouds — **UDE cloud**, **Core cloud**, and **Firefighting cloud** — live in the Templates library (**Browse templates…**), each pre-tagged.
 
 ### Reverse-direction wizard walk
 
 When the EC creation wizard is open, look at the top of the panel for the **A → D′ / D → A** toggle. The default walks the structural top-down order (A → B → C → D → D′). The D-first option flips to the PPT's "start from the felt conflict" order (D → D′ → C → B → A) — closer to how practitioners actually experience a conflict. Either order leaves the canvas in a useful state at every step.
+
+Above the toggle sits an optional **Cloud type** selector, defaulting to **Generic** — which is exactly the wizard described above. Pick a specific type (Dilemma, Conflict, Fire-fighting, UDE, Consolidated, Core) and the wizard switches to Cohen's recipe for that kind of cloud: its own build order (a fire-fighting cloud, for instance, starts from the endangered need B and walks B → D → D′ → C → A), its own guiding questions per box, and a small hint recommending which arrow to try to break. Picking a type also tags the document (the A → D′ / D → A toggle hides, since the type prescribes its order); switching back to Generic restores the default and clears the tag. Nothing about a Generic cloud changes.
 
 ### Clickable assumption badge on each arrow
 

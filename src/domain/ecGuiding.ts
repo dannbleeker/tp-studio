@@ -21,6 +21,8 @@
  * placeholders — the wizard prompts a NEW user through creation; the
  * inspector reminds a returning user what each slot is FOR.
  */
+import type { CloudType } from './types';
+
 export type ECSlot = 'a' | 'b' | 'c' | 'd' | 'dPrime';
 
 /** Canonical ordered list of every EC slot, in the structural (A-first)
@@ -66,4 +68,45 @@ export const EC_SLOT_LABEL: Record<ECSlot, string> = {
   c: 'C · Second need',
   d: 'D · First want',
   dPrime: 'D′ · Conflicting want',
+};
+
+/**
+ * Session 197 (backlog D1) — cloud-type-aware wizard modes.
+ *
+ * Cohen's Ch. 24 of the *TOC Handbook* (Cox & Schleier 2010) builds each
+ * kind of Evaporating Cloud in a different order and recommends a different
+ * arrow to break (Table 24-9 + the per-type question tables 24-2/24-4/24-5/
+ * 24-6). The EC creation wizard reads these when the user OPTS IN to a cloud
+ * type; the `'generic'` default leaves the existing A-first/D-first walk and
+ * prompts exactly as before, and never touches `doc.cloudType`.
+ *
+ * Data split: the build ORDER + break HINT (below, domain-level) live here;
+ * the per-type prompt COPY lives beside the other wizard copy in
+ * `components/canvas/wizards/creationWizardSteps.ts` (`EC_STEPS_BY_CLOUD_TYPE`).
+ * (A reading/present order per type is deferred to backlog D5, which is the
+ * feature that will consume it.)
+ */
+export type ECWizardMode = 'generic' | CloudType;
+
+/** Per-cloud-type build/fill order. Two are new (firefighting / ude); the
+ *  rest reuse the generic walks so there is one source for each order. */
+export const EC_CLOUD_TYPE_ORDER: Record<CloudType, readonly ECSlot[]> = {
+  dilemma: EC_SLOTS_BY_ORDER.dFirst, // D → D′ → C → B → A
+  conflict: EC_SLOTS_BY_ORDER.dFirst, // D → D′ → C → B → A
+  firefighting: ['b', 'd', 'dPrime', 'c', 'a'], // the endangered need is the entry point
+  ude: ['b', 'd', 'c', 'dPrime', 'a'], // the "Z" walk
+  consolidated: EC_SLOTS_BY_ORDER.aFirst, // A → B → C → D → D′
+  core: EC_SLOTS_BY_ORDER.aFirst,
+};
+
+/** Cohen's "best arrow to break" recommendation per cloud type. Surfaced in
+ *  the wizard's completion panel + a caption while a type is active. */
+export const EC_CLOUD_TYPE_BREAK_HINT: Record<CloudType, string> = {
+  dilemma: 'Cohen suggests trying to break the C–D′ or D–D′ arrow.',
+  conflict: 'Cohen suggests breaking on your own side — the C–D′ arrow (or D–D′).',
+  firefighting: 'Cohen suggests breaking D–D′ — fold the emergency action into the procedure.',
+  ude: 'Cohen suggests breaking D–D′ (for a customer-facing UDE, aim at C–D′).',
+  consolidated:
+    'Cohen suggests breaking D–D′ for the consolidated cloud, then each source cloud for specifics.',
+  core: 'Cohen suggests breaking the D–D′ arrow.',
 };

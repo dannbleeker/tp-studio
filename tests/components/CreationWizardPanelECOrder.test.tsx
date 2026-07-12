@@ -82,3 +82,62 @@ describe('CreationWizardPanel — EC walk order', () => {
     expect(checked.textContent).toContain('A');
   });
 });
+
+/**
+ * Session 197 (backlog D1) — optional cloud-type wizard modes. The load-bearing
+ * requirement is that the DEFAULT stays exactly the current generic wizard;
+ * per-type modes are opt-in via the cloud-type selector.
+ */
+describe('CreationWizardPanel — EC cloud-type modes (D1)', () => {
+  const openEC = () => {
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    return render(<CreationWizardPanel />);
+  };
+  const cloudSelect = (c: HTMLElement) =>
+    c.querySelector('[data-component="ec-wizard-cloud-type"] select') as HTMLSelectElement;
+
+  it('default preservation: generic mode, order toggle present, generic prompt, no cloud-type tag', () => {
+    const { container } = openEC();
+    expect(cloudSelect(container).value).toBe('generic');
+    // The shipped A-first/D-first toggle and the generic A prompt are unchanged.
+    expect(container.querySelector('[data-component="ec-wizard-order"]')).toBeTruthy();
+    expect(container.textContent).toContain('shared objective (A)');
+    // No break hint, and the document is NOT tagged with a cloud type.
+    expect(container.querySelector('[data-component="ec-wizard-break-hint"]')).toBeNull();
+    expect(useDocumentStore.getState().doc.cloudType).toBeUndefined();
+  });
+
+  it('picking a cloud type switches the walk + prompts, hides the toggle, and tags the doc', () => {
+    const { container } = openEC();
+    act(() => fireEvent.change(cloudSelect(container), { target: { value: 'firefighting' } }));
+    // Order toggle hidden (the type prescribes its order); break hint shown; doc tagged.
+    expect(container.querySelector('[data-component="ec-wizard-order"]')).toBeNull();
+    expect(
+      container.querySelector('[data-component="ec-wizard-break-hint"]')?.textContent
+    ).toContain('Cohen suggests');
+    expect(useDocumentStore.getState().doc.cloudType).toBe('firefighting');
+    // Fire-fighting leads with the endangered need B; step 0 commits to slot B.
+    expect(container.textContent).toContain('put at risk');
+    const ta = container.querySelector('textarea') as HTMLTextAreaElement;
+    act(() => fireEvent.change(ta, { target: { value: 'Get the order shipped on time' } }));
+    act(() => fireEvent.keyDown(ta, { key: 'Enter' }));
+    const bSlot = Object.values(useDocumentStore.getState().doc.entities).find(
+      (e) => e.ecSlot === 'b'
+    );
+    expect(bSlot?.title).toBe('Get the order shipped on time');
+    // Slot A remains untouched (it is the last step of the fire-fighting walk).
+    const aSlot = Object.values(useDocumentStore.getState().doc.entities).find(
+      (e) => e.ecSlot === 'a'
+    );
+    expect(aSlot?.title).toBe('');
+  });
+
+  it('switching back to Generic restores the default walk and clears the tag', () => {
+    const { container } = openEC();
+    act(() => fireEvent.change(cloudSelect(container), { target: { value: 'ude' } }));
+    expect(useDocumentStore.getState().doc.cloudType).toBe('ude');
+    act(() => fireEvent.change(cloudSelect(container), { target: { value: 'generic' } }));
+    expect(useDocumentStore.getState().doc.cloudType).toBeUndefined();
+    expect(container.querySelector('[data-component="ec-wizard-order"]')).toBeTruthy();
+  });
+});

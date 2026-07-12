@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 197 — Cloud-type wizard modes (backlog D1)
+
+The EC `cloud-type` tag was a dead label — nothing keyed off it. Now the **creation wizard**
+optionally reads it to walk Cohen's per-type recipe (*TOC Handbook* Ch. 24, Table 24-9 + the
+per-type question tables): each cloud type gets its own **build order**, its own **guiding
+questions**, and a **"best arrow to break" hint**.
+
+- **Default preserved (the hard requirement).** A new EC opens in **Generic** mode — the shipped
+  A-first/D-first walk, the generic prompts, `doc.cloudType` left unset — byte-for-byte as before.
+  The per-type modes are opt-in via a new "Cloud type" selector in the wizard; a
+  default-preservation test pins this.
+- **Per-type walks:** dilemma/conflict build D→D′→C→B→A (reusing the D-first order, different
+  questions each); **fire-fighting** B→D→D′→C→A and **UDE** B→D→C→D′→A are new orders (the
+  endangered need is the entry point); consolidated/core build A→B→C→D→D′. Picking a type tags the
+  doc (`setCloudType`) and hides the A/D toggle (the type prescribes the order); switching back to
+  Generic clears the tag.
+- Data: `EC_CLOUD_TYPE_ORDER` + `EC_CLOUD_TYPE_BREAK_HINT` (`domain/ecGuiding.ts`) +
+  `EC_STEPS_BY_CLOUD_TYPE` (per-type prompt copy, original app-voice paraphrases of Cohen's tables,
+  beside the other wizard copy). The DocumentInspector cloud-type help no longer says "nothing else
+  changes." (A per-type *reading* order for the verbalisation strip is deferred to backlog D5, which
+  will consume it.)
+- Tests: `tests/domain/ecGuiding.test.ts` (spec shape) + `CreationWizardPanelECOrder.test.tsx`
+  (default preservation, type-switch walk/prompt/tag, restore-to-generic). Docs: `features.json`
+  (`ec-cloud-type-wizard`, reviewedThroughSession → 197), USER_GUIDE + guide ch. 5.
+
 ## Session 196 — TOC Handbook (Cox & Schleier) starter bench (18 new templates, 91 → 109)
 
 A read of the *Theory of Constraints Handbook* (Cox & Schleier, McGraw-Hill 2010)

@@ -114,9 +114,10 @@ Ch34 Ferguson.
   Five-Question one-diagram-per-day). Bigger than the `method-path` stepper — scope call. *Ch19; Ch15 Table 15-3.*
 
 ### D. Evaporating Cloud craft (ACTIVE — mostly Ch24 Cohen)
-- `EXTENDS` **Cloud-type wizard modes** (Inner-Dilemma / Day-to-Day / Fire-Fighting / UDE /
-  Consolidated) — per-type box order, guiding questions, deterministic "best-arrow-to-break" hint
-  (Table 24-9). Extends `ec-creation-wizard`/`ec-cloud-type`/`ec-slot-questions`. *Ch24.*
+- **Cloud-type wizard modes** — ✅ **shipped Session 197 (D1)**: the wizard's optional "Cloud type"
+  selector drives Cohen's per-type build order + guiding questions + best-arrow-to-break hint (all six
+  types); Generic stays the default (see CHANGELOG). *A per-type reading order for the verbalisation
+  strip (feeds D5) was deferred.*
 - `ACTIVE` **"Storyline" pre-step** — incident free-text before the boxes. *Ch24 Step 2.*
 - `EXTENDS` **EC syntax/quality checks** (beyond `ec-completeness`): no causal words in boxes; D/D′
   conflicting verb-led actions; B/C positive needs; diagonal jeopardy (D hurts C, D′ hurts B). *Ch24.*
