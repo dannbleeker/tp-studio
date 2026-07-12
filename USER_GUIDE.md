@@ -855,6 +855,10 @@ If the second goal really is a peer to the first, dismiss the warning with **Res
 
 Two further Goal-Tree structural checks back Dettmer's pattern: **`goalTree-csf-no-ncs`** flags a Critical Success Factor with no Necessary Conditions beneath it (add the conditions that must hold for it), and **`goalTree-csf-count`** is a document-level scope guard — fewer than 3 CSFs suggests you're missing make-or-break conditions, more than 5 usually means some are really Necessary Conditions a tier down. Both are dismissible.
 
+Two Goal-Tree authoring aids (Session 198): selecting a Goal / CSF / Necessary Condition shows an **inline definition note** distinguishing an optimizing **Goal** ("more is better") from a threshold **Necessary Condition** ("enough is fine") — the most common modelling slip. The inspector's **Advanced** section also offers an optional **Tier** label — Conceptual / Functional / Operational (Dettmer's altitudes) — a display aid that round-trips with the document.
+
+For a **proposed solution** (an `injection` on an FRT / PRT / NBR), the inspector carries a collapsible **Six Success Criteria** checklist (excellent · win-win-win · low-risk · simpler · fast-feedback · won't self-destruct, after Barnard, Ch. 15) — a quick quality gate; a good injection clears all six. And on the canvas, the **R/B feedback-loop badge** tooltip now spells out the reinforcing/balancing ("positive/negative feedback") synonyms and notes that a balancing loop is *not* the same thing as a Negative Branch.
+
 ## Settings & themes
 
 `Cmd/Ctrl+,` (or **Settings…** in the palette) opens the Settings dialog with four tabs:

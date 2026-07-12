@@ -61,6 +61,13 @@ export type EntityTitleSize = 'sm' | 'md' | 'lg';
  */
 export type SpanOfControl = 'control' | 'influence' | 'external';
 
+/** Session 198 (backlog F) — Goal-Tree layer label (Dettmer, Handbook Ch. 19
+ *  Fig 19-7): a node's altitude in the tree. `conceptual` = the apex goal /
+ *  top strategy; `functional` = the Critical Success Factors that must all hold;
+ *  `operational` = the Necessary Conditions people act on. Optional + advisory —
+ *  a display aid, nothing keys off it. */
+export type GoalTier = 'conceptual' | 'functional' | 'operational';
+
 /**
  * B7 — user-defined attributes. A discriminated union of the four
  * canonical primitive shapes a user might want to attach to an entity:
@@ -342,6 +349,10 @@ export type Entity = {
    *  a root cause carries `'external'` (those are usually not the real
    *  root — the chain should descend further). See {@link SpanOfControl}. */
   spanOfControl?: SpanOfControl;
+  /** Session 198 (backlog F) — optional Goal-Tree layer label (Conceptual /
+   *  Functional / Operational). Advisory display aid on a Goal Tree; omitted from
+   *  JSON when unset. See {@link GoalTier}. */
+  tier?: GoalTier;
   /** Book-derived (TOC-reading set): an inarticulate placeholder. The user
    *  knows there's a precondition / condition / cause here but can't yet
    *  name it; flagging the entity as `unspecified` makes the slot real

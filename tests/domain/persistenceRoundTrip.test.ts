@@ -48,6 +48,7 @@ describe('persistence round-trip — every optional Entity field', () => {
       lastValidatedAt: 1_734_500_000_000,
       unspecified: false, // explicit `false` should be omitted on round-trip
       spanOfControl: 'influence',
+      tier: 'functional',
       ecSlot: 'a',
       attributes: {
         priority: { kind: 'int', value: 1 },
@@ -120,6 +121,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     // changes to the emit rule surface here.
     expect(survived.unspecified).toBeUndefined();
     expect(survived.spanOfControl).toBe('influence');
+    expect(survived.tier).toBe('functional');
     expect(survived.ecSlot).toBe('a');
 
     // Attributes — full tagged union shape
@@ -188,6 +190,7 @@ describe('persistence round-trip — every optional Entity field', () => {
     expect(survived.lastValidatedAt).toBeUndefined();
     expect(survived.unspecified).toBeUndefined();
     expect(survived.spanOfControl).toBeUndefined();
+    expect(survived.tier).toBeUndefined();
     expect(survived.ecSlot).toBeUndefined();
     expect(survived.attributes).toBeUndefined();
     expect(survived.evidence).toBeUndefined();
@@ -264,6 +267,33 @@ describe('persistence round-trip — every optional Entity field', () => {
     withMixed.entities.e1.alternativeMeans = [42, 'keep me', null, '  keep two  '];
     const survived = importFromJSON(JSON.stringify(withMixed)).entities.e1;
     expect(survived?.alternativeMeans).toEqual(['keep me', 'keep two']);
+  });
+
+  it('rejects an entity with an unknown Goal-Tree tier value (backlog F)', () => {
+    const malformed = JSON.stringify({
+      schemaVersion: 10,
+      id: 'doc-tier',
+      diagramType: 'goalTree',
+      title: 'bad-tier',
+      nextAnnotationNumber: 2,
+      groups: {},
+      resolvedWarnings: {},
+      createdAt: 1,
+      updatedAt: 1,
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'necessaryCondition',
+          title: 'x',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          tier: 'strategic', // not conceptual | functional | operational
+        },
+      },
+      edges: {},
+    });
+    expect(() => importFromJSON(malformed)).toThrow(/tier/i);
   });
 
   it('rejects an entity with an unknown state value', () => {

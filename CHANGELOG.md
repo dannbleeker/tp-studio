@@ -2,6 +2,23 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 198 — Terminology / method / UX polish (backlog F)
+
+Four small, additive quality-of-life items:
+
+- **Goal-vs-Necessary-Condition definitions** — an inspector note on a Goal Tree's goal / CSF / NC nodes
+  spelling out the most common modelling mistake: a **Goal** is an optimizing objective (*more is better*),
+  a **Necessary Condition** is a threshold (*enough is fine*). *(Ch. 38.)*
+- **Goal-Tree tier labels** — an optional `tier?` field (Conceptual / Functional / Operational, Dettmer's
+  altitudes) with a picker in the inspector's Advanced section. Advisory; round-trips through JSON,
+  omitted when unset. *(Ch. 19 Fig 19-7.)*
+- **Six Success Criteria checklist** — a collapsible checklist on an injection (excellent / win-win-win /
+  low-risk / simpler / fast-feedback / won't self-destruct) to pressure-test a proposed solution. Stored
+  as reserved boolean entity attributes — no schema change. *(Ch. 15 Table 15-4, Barnard; Ch. 34.)*
+- **Feedback-loop terminology reconciliation** — the reinforcing/balancing (R/B) loop badge tooltip now
+  names the "positive/negative feedback" synonyms and flags that a balancing loop is *not* the same as a
+  Negative Branch, reconciling the systems-dynamics and TOC vocabularies. *(Ch. 23, Mabin & Davies.)*
+
 ## Session 198 — Strategy & Tactics template pack (backlog G)
 
 Six new Strategy & Tactics starters in the pattern library, built **on the corrected directional model**

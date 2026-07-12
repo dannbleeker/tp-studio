@@ -140,14 +140,18 @@ Ch34 Ferguson.
 - `EXTENDS` **Ongoing-vs-done toggle** on PRT/TT objectives (continuous work shouldn't read as a
   completable checkbox). *Ch5 (Newbold) "What is Done?"*
 
-### F. Terminology / method / UX polish (ACTIVE, small)
-- `ACTIVE` **Goal-vs-NC inline definitions** + paired examples ("more is better" vs "enough is fine").
+### F. Terminology / method / UX polish — ✅ COMPLETE Session 198
+- **Goal-vs-NC inline definitions** — ✅ **shipped Session 198**: an inspector note card on Goal-Tree
+  goal / CSF / NC nodes spelling out "more is better" (Goal) vs "enough is fine" (Necessary Condition).
   *Ch38.*
-- `EXTENDS` **Goal-Tree tier labels** Conceptual / Functional / Operational. *Ch19 Fig 19-7.*
-- `ACTIVE` **Six Success Criteria checklist** on injections/FRT (excellent / win-win-win / low-risk /
-  simpler / fast-feedback / won't self-destruct). *Ch15 Table 15-4; Ch34.*
-- `EXTENDS` **Feedback-loop terminology reconciliation** on the R/B badge (TOC's "negative loop" vs
-  systems-thinking convention). *Ch23 (Mabin & Davies).*
+- **Goal-Tree tier labels** — ✅ **shipped Session 198**: an optional `tier?` field (Conceptual /
+  Functional / Operational) with an inspector picker on Goal-Tree nodes. *Ch19 Fig 19-7.*
+- **Six Success Criteria checklist** — ✅ **shipped Session 198**: a collapsible checklist on injection
+  entities (excellent / win-win-win / low-risk / simpler / fast-feedback / won't self-destruct), stored
+  as reserved boolean attributes (no schema change). *Ch15 Table 15-4; Ch34.*
+- **Feedback-loop terminology reconciliation** — ✅ **shipped Session 198**: the R/B badge tooltip now
+  names the "positive/negative feedback" synonyms and distinguishes a balancing loop from a Negative
+  Branch. *Ch23 (Mabin & Davies).*
 
 ### G. Template bench — non-S&T SHIPPED Session 196 (91 → 109); S&T pack remains
 The non-S&T book bench shipped (18 patterns; see CHANGELOG Session 196): the EC starter clouds

@@ -33,8 +33,30 @@ import { EntityStateSection } from './EntityStateSection';
 // free-form key/value editor surface is gone.
 import { Field } from './Field';
 import { MarkdownField } from './MarkdownField';
+import { SixCriteriaSection } from './SixCriteriaSection';
 import { StFacetsSection } from './StFacetsSection';
 import { WarningsList } from './WarningsList';
+
+// Session 198 (backlog F) — inline Goal-vs-NC definitions. The distinction is the
+// most common Goal-Tree modelling mistake: a Goal is an *optimizing* objective
+// ("more is better"), a Necessary Condition is a *threshold* ("enough is fine").
+const GOAL_TREE_DEFS: Record<
+  'goal' | 'criticalSuccessFactor' | 'necessaryCondition',
+  { label: string; body: string }
+> = {
+  goal: {
+    label: 'Goal — more is better',
+    body: 'An optimizing objective with no "enough" — the single apex the whole tree serves. If you could always want more of it, it is a Goal, not a Necessary Condition.',
+  },
+  criticalSuccessFactor: {
+    label: 'Critical Success Factor — make-or-break',
+    body: "A high-level necessary condition the goal cannot be reached without — a small set of must-haves (Dettmer's band is 3–5). Each is a threshold, not an outcome to maximize.",
+  },
+  necessaryCondition: {
+    label: 'Necessary Condition — enough is fine',
+    body: 'A threshold that must hold for its parent — "enough", not "more is better". It states what must be true, not an outcome to optimize. If it reads like something you would always want more of, it is really a Goal.',
+  },
+};
 
 export function EntityInspector({ entityId, warnings }: { entityId: string; warnings: Warning[] }) {
   const entity = useEntity(entityId);
@@ -109,6 +131,14 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
   // so the prompt stays available after the wizard closes.
   const ecSlot: ECSlot | undefined = entity.ecSlot;
   const showGuidingQuestion = diagramType === 'ec' && ecSlot !== undefined;
+  // Backlog F — the Goal-vs-NC definition note (narrowed for a safe index access).
+  const goalTreeDef =
+    diagramType === 'goalTree' &&
+    (entity.type === 'goal' ||
+      entity.type === 'criticalSuccessFactor' ||
+      entity.type === 'necessaryCondition')
+      ? GOAL_TREE_DEFS[entity.type]
+      : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -145,6 +175,20 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
             it — e.g. <em>"prove my point"</em> → <em>"be understood"</em>. The cloud usually only
             breaks once the real need is on the table.
           </p>
+        </InsetCard>
+      )}
+
+      {goalTreeDef && (
+        <InsetCard
+          tone="emerald"
+          role="note"
+          aria-label="Goal Tree entity meaning"
+          data-component="goaltree-type-note"
+        >
+          <p className="mb-1 font-semibold text-[10px] text-emerald-700 uppercase tracking-wider dark:text-emerald-300">
+            {goalTreeDef.label}
+          </p>
+          <p className="leading-snug">{goalTreeDef.body}</p>
         </InsetCard>
       )}
 
@@ -348,6 +392,17 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
         />
       )}
 
+      {/* Session 198 (backlog F) — Six Success Criteria gate on an injection. Not
+          on S&T, where an injection is a tactic card (its own facet discipline). */}
+      {entity.type === 'injection' && diagramType !== 'st' && (
+        <SixCriteriaSection
+          entity={entity}
+          locked={locked}
+          onSet={(key) => setEntityAttribute(entityId, key, { kind: 'bool', value: true })}
+          onClear={(key) => removeEntityAttribute(entityId, key)}
+        />
+      )}
+
       <EntityProvenanceSection
         entity={entity}
         entityId={entityId}
@@ -416,6 +471,39 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
             })}
           </div>
         </Field>
+
+        {/* Session 198 (backlog F) — optional Goal-Tree layer label (Dettmer's
+            Conceptual / Functional / Operational tiers). Advisory display aid. */}
+        {diagramType === 'goalTree' && (
+          <Field label="Tier" as="group">
+            <div className="grid grid-cols-4 gap-1.5 text-xs" data-component="goaltree-tier">
+              {(
+                [
+                  { id: undefined, label: 'Unset' },
+                  { id: 'conceptual', label: 'Conceptual' },
+                  { id: 'functional', label: 'Functional' },
+                  { id: 'operational', label: 'Operational' },
+                ] as const
+              ).map((opt) => {
+                const selected = (entity.tier ?? null) === (opt.id ?? null);
+                return (
+                  <button
+                    key={opt.label}
+                    type="button"
+                    disabled={locked}
+                    onClick={() => updateEntity(entityId, { tier: opt.id })}
+                    className={clsx(
+                      TOGGLE_BUTTON_BASE,
+                      selected ? SELECTED_BUTTON_CLASS : UNSELECTED_BUTTON_CLASS
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+        )}
       </CollapsibleSection>
 
       <EntityStateSection

@@ -110,8 +110,8 @@ export const LoopPolarityBadge = memo(function LoopPolarityBadge({
         style={{ transform: `translate(-50%, -50%) translate(${labelX + 48}px, ${labelY - 14}px)` }}
         title={
           reinforcing
-            ? 'Reinforcing loop (R) — self-amplifying (vicious in a CRT, virtuous in an FRT)'
-            : 'Balancing loop (B) — self-correcting / goal-seeking'
+            ? 'Reinforcing loop (R) — a self-amplifying "positive feedback" cycle (vicious in a CRT, virtuous in an FRT)'
+            : 'Balancing loop (B) — a self-correcting / goal-seeking cycle; control theory and some TOC texts call this a "negative feedback loop" (not the same thing as a Negative Branch)'
         }
         role="img"
         aria-label={`Feedback loop: ${reinforcing ? 'reinforcing' : 'balancing'}`}

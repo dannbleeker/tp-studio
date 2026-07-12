@@ -151,6 +151,15 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   ) {
     throw invalid(label, `has invalid spanOfControl "${String(v.spanOfControl)}"`);
   }
+  // Session 198 (backlog F): optional Goal-Tree tier label.
+  if (
+    v.tier !== undefined &&
+    v.tier !== 'conceptual' &&
+    v.tier !== 'functional' &&
+    v.tier !== 'operational'
+  ) {
+    throw invalid(label, `has invalid tier "${String(v.tier)}"`);
+  }
   // Session 77: optional ecSlot binding.
   const validEcSlots = ['a', 'b', 'c', 'd', 'dPrime'] as const;
   if (v.ecSlot !== undefined && !(validEcSlots as readonly unknown[]).includes(v.ecSlot)) {
@@ -195,6 +204,9 @@ export const validateEntity = (v: unknown, label: string): Entity => {
     v.spanOfControl === 'influence' ||
     v.spanOfControl === 'external'
       ? { spanOfControl: v.spanOfControl }
+      : {}),
+    ...(v.tier === 'conceptual' || v.tier === 'functional' || v.tier === 'operational'
+      ? { tier: v.tier }
       : {}),
     ...((validEcSlots as readonly unknown[]).includes(v.ecSlot)
       ? { ecSlot: v.ecSlot as (typeof validEcSlots)[number] }
