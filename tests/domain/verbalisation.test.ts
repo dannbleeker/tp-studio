@@ -124,6 +124,25 @@ describe('verbaliseEC', () => {
     expect(text).toContain('But Want one and Want two cannot coexist');
   });
 
+  it('pins the exact default verbalisation string (byte-identity guard, review follow-up)', () => {
+    // D5's load-bearing invariant is that the default (leadWithC:false, neutral)
+    // output is byte-for-byte what it was before the arc/alsoize refactor. The
+    // other tests only check substrings + internal consistency, so a connector
+    // or spacing change ("also" placement, ', because ', the sentence joins)
+    // could regress silently. This golden string is the canary.
+    const { doc } = buildEC({
+      assumptionsOn: { bToA: ['a1', 'a2'], dToDPrime: ['a3'] },
+      mutexDtoDPrime: true,
+    });
+    expect(verbalisedECText(doc)).toBe(
+      'In order to achieve Shared objective, we must Need one, because [2 assumptions]. ' +
+        'In order to Need one, we must Want one, because [no assumptions yet]. ' +
+        'In order to achieve Shared objective, we must also Need two, because [no assumptions yet]. ' +
+        'In order to Need two, we must Want two, because [no assumptions yet]. ' +
+        'But Want one and Want two cannot coexist, because [1 assumption].'
+    );
+  });
+
   it('uses placeholder copy when slots are empty', () => {
     const { doc } = buildEC({ titles: { a: '', b: '', c: '', d: '', dPrime: '' } });
     const text = verbalisedECText(doc);
@@ -245,6 +264,31 @@ describe('verbaliseEC', () => {
       expect(
         verbaliseEC(doc, { leadWithC: true }).filter((t) => t.kind === 'assumptionAnchor')
       ).toHaveLength(5);
+    });
+
+    it('reorders the anchors to match the swapped arcs — right edge + count lead (review follow-up)', () => {
+      // Guards the click-through wiring: each anchor carries the edgeId that
+      // opens its Assumption Well, so leading with C must move cToA's anchor to
+      // the front (not just reorder the prose). Distinct counts (bToA=2, cToA=1)
+      // plus edgeId identity pin the mapping.
+      const { doc } = buildEC({
+        assumptionsOn: { bToA: ['b1', 'b2'], cToA: ['c1'] },
+        mutexDtoDPrime: true,
+      });
+      const anchorsOf = (opts?: { leadWithC?: boolean }) =>
+        verbaliseEC(doc, opts).filter(
+          (t): t is Extract<typeof t, { kind: 'assumptionAnchor' }> => t.kind === 'assumptionAnchor'
+        );
+      const def = anchorsOf(); // [bToA, dToB, cToA, dPrimeToC, dToDPrime]
+      const led = anchorsOf({ leadWithC: true }); // [cToA, dPrimeToC, bToA, dToB, dToDPrime]
+      // The C/D′ arc now leads: first anchor == default's third (cToA), count 1.
+      expect(led[0]?.edgeId).toBe(def[2]?.edgeId);
+      expect(led[0]?.assumptionCount).toBe(1);
+      // The B/D arc follows: default's first anchor (bToA, count 2) now sits third.
+      expect(led[2]?.edgeId).toBe(def[0]?.edgeId);
+      expect(led[2]?.assumptionCount).toBe(2);
+      // The mutex closes both readings unchanged.
+      expect(led[4]?.edgeId).toBe(def[4]?.edgeId);
     });
   });
 });

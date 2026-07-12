@@ -116,8 +116,8 @@ Ch34 Ferguson.
 ### D. Evaporating Cloud craft — ✅ COMPLETE Session 197–198 (D1–D6; mostly Ch24 Cohen, D6 Ch27 Cheng)
 - **Cloud-type wizard modes** — ✅ **shipped Session 197 (D1)**: the wizard's optional "Cloud type"
   selector drives Cohen's per-type build order + guiding questions + best-arrow-to-break hint (all six
-  types); Generic stays the default (see CHANGELOG). *A per-type reading order for the verbalisation
-  strip (feeds D5) was deferred.*
+  types); Generic stays the default (see CHANGELOG). *A per-TYPE reading order for the verbalisation
+  strip remains unbuilt — D5 shipped only the per-SIDE `D′-first` toggle, which doesn't read cloudType.*
 - **"Storyline" pre-step** — ✅ **shipped Session 198 (D2)**: optional default-collapsed incident
   free-text in the EC wizard → doc description. *Ch24 Step 2.*
 - **EC syntax/quality checks** — ✅ **shipped Session 198 (D3)**: `ec-box-causal-words` soft rule

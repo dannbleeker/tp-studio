@@ -99,6 +99,43 @@ describe('ThreeCloudWizard', () => {
     expect(after.hold).toBeLessThan(after.fire);
   });
 
+  it('propagates a flip into the committed core-cloud provenance (backlog D4)', () => {
+    act(() => {
+      s().openThreeCloud();
+    });
+    const view = render(<ThreeCloudWizard />);
+    const set = (label: string, value: string): void => {
+      act(() => {
+        fireEvent.change(view.getByLabelText(label), { target: { value } });
+      });
+    };
+
+    set('Undesirable effect 1', 'Releases slip');
+    set('Action you take 1', 'Firefight');
+    set('Action you feel you should take instead 1', 'Hold the plan');
+    set('Undesirable effect 2', 'Bugs recur');
+    set('Undesirable effect 3', 'Burnout');
+
+    act(() => {
+      fireEvent.click(view.getByRole('button', { name: /Next: consolidate/i }));
+    });
+    // Flip cloud 1, then fill the core and create.
+    act(() => {
+      fireEvent.click(view.getByRole('button', { name: /Flip cloud 1/i }));
+    });
+    set('A · Common objective', 'Deliver sustainably');
+    set('B · First need', 'Hit commitments');
+    set('C · Second need', 'Stay healthy');
+    set('D · First want', 'Push hard');
+    set('D′ · Conflicting want', 'Hold capacity back');
+    act(() => {
+      fireEvent.click(view.getByRole('button', { name: /Create core cloud/i }));
+    });
+
+    // The provenance block must reflect the FLIPPED order (D and D′ swapped).
+    expect(s().doc.description).toContain('pulled between "Hold the plan" and "Firefight"');
+  });
+
   it('keeps "Next" disabled until all three UDEs are named', () => {
     act(() => {
       s().openThreeCloud();

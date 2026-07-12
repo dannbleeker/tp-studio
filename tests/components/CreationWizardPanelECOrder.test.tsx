@@ -140,6 +140,27 @@ describe('CreationWizardPanel — EC cloud-type modes (D1)', () => {
     expect(useDocumentStore.getState().doc.cloudType).toBeUndefined();
     expect(container.querySelector('[data-component="ec-wizard-order"]')).toBeTruthy();
   });
+
+  it('does not leak a chosen cloud type into the next EC wizard session (review follow-up)', () => {
+    // The panel never unmounts (it returns null while closed), so per-session
+    // state (`mode`) must re-seed each session or a type picked for doc #1 leaks
+    // into doc #2's wizard — breaking the "fresh EC wizard = generic" invariant.
+    // Drive TWO sessions on the SAME mounted component (openEC renders once).
+    const { container } = openEC();
+    act(() => fireEvent.change(cloudSelect(container), { target: { value: 'firefighting' } }));
+    expect(container.querySelector('[data-component="ec-wizard-order"]')).toBeNull(); // typed mode
+    expect(useDocumentStore.getState().doc.cloudType).toBe('firefighting');
+
+    // Start a brand-new EC on the same component — a fresh session.
+    act(() => useDocumentStore.getState().newDocument('ec'));
+
+    // Back to the generic default: select reset, order toggle back, no break
+    // hint, and the new doc is untouched by the previous session's type.
+    expect(cloudSelect(container).value).toBe('generic');
+    expect(container.querySelector('[data-component="ec-wizard-order"]')).toBeTruthy();
+    expect(container.querySelector('[data-component="ec-wizard-break-hint"]')).toBeNull();
+    expect(useDocumentStore.getState().doc.cloudType).toBeUndefined();
+  });
 });
 
 /**

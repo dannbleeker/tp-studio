@@ -97,6 +97,8 @@ export function CreationWizardPanel() {
     setCloudType,
     setDocumentMeta,
     description,
+    cloudType,
+    docId,
     entities,
     addEntity,
     updateEntity,
@@ -115,6 +117,8 @@ export function CreationWizardPanel() {
       setCloudType: s.setCloudType,
       setDocumentMeta: s.setDocumentMeta,
       description: currentDoc(s).description,
+      cloudType: currentDoc(s).cloudType,
+      docId: currentDoc(s).id,
       entities: currentDoc(s).entities,
       addEntity: s.addEntity,
       updateEntity: s.updateEntity,
@@ -155,6 +159,28 @@ export function CreationWizardPanel() {
     setSkipNoticeOn(false);
     inputRef.current?.focus();
   }, [stepKey]);
+
+  // Session 198 (review follow-up) — `mode` + `wizardOrder` are per-session UI
+  // state on a component that never unmounts (it only returns null while
+  // closed). Without this, a cloud type or D-first walk chosen in one wizard
+  // session would leak into the NEXT session on a different document, quietly
+  // breaking the D1 invariant that a fresh EC wizard is the generic default.
+  // Reset both whenever a new session begins — tracked by the target doc's id,
+  // so a close→reopen or a switch to another doc both re-seed. `mode` re-seeds
+  // from the doc's own `cloudType` (undefined ⇒ 'generic'), so reopening the
+  // wizard on an already-typed doc reflects it rather than snapping to generic.
+  const sessionDocRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!state) {
+      sessionDocRef.current = null;
+      return;
+    }
+    if (sessionDocRef.current !== docId) {
+      sessionDocRef.current = docId;
+      setMode(cloudType ?? 'generic');
+      setWizardOrder('aFirst');
+    }
+  }, [state, docId, cloudType]);
 
   // Auto-disarm Esc + auto-hide the skip notice after ~2.5s so the
   // hints don't linger forever.

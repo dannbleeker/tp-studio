@@ -41,6 +41,15 @@ Evaporating Clouds are built, checked, presented, and diagnosed (Cohen Ch. 24 + 
   fly often lands one back-to-front. Flipping realigns it before you read down the columns. Pure
   `flipConflict` domain helper (involutive); all local wizard state, nothing persists until you
   create the core cloud.
+- **Section-D review follow-ups.** An adversarial multi-agent review of D1–D6 surfaced two real
+  defects, now fixed: (1) the EC creation wizard's per-session `mode` / `wizardOrder` state leaked
+  across sessions (the panel never unmounts), so a cloud type picked for one EC reappeared on the
+  next — it now re-seeds from the target doc's `cloudType` on each fresh session, restoring the
+  "fresh wizard = generic default" invariant; (2) `summariseConflicts` numbered survivors by
+  original index, so a blank non-last conflict produced a gap ("2." with no "1.") — it now numbers
+  after filtering. Plus test-hardening: a golden byte-identity string for the default verbalisation,
+  `leadWithC` anchor edge/count wiring, malformed `alternativeMeans` imports, flip→create
+  provenance, and the two D3 method-step ids.
 
 ## Session 197 — Cloud-type wizard modes (backlog D1)
 

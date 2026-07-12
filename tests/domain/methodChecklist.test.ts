@@ -60,4 +60,14 @@ describe('METHOD_BY_DIAGRAM catalog', () => {
       }
     }
   });
+
+  // Session 198 (backlog D3, review follow-up) — these two ids are part of the
+  // JSON wire format (a doc's checked-off methodChecklist map keys). Pin them by
+  // id so a rename can't silently drop users' checkmarks past the generic
+  // invariants above.
+  it('pins the D3 EC method-step ids ec.syntax + ec.jeopardy', () => {
+    const ecIds = METHOD_BY_DIAGRAM.ec.map((s) => s.id);
+    expect(ecIds).toContain('ec.syntax');
+    expect(ecIds).toContain('ec.jeopardy');
+  });
 });

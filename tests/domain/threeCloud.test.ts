@@ -135,6 +135,17 @@ describe('summariseConflicts', () => {
     expect(text).not.toContain('pulled between');
   });
 
+  it('numbers survivors sequentially when a non-last conflict is blank (review follow-up)', () => {
+    // A leading blank must NOT leave a gap ("2." with no "1.") — the survivors
+    // are renumbered from 1 after the blanks are dropped.
+    const text = summariseConflicts([
+      { ude: '', doNow: '', doInstead: '' },
+      { ude: 'Bugs recur', doNow: '', doInstead: '' },
+      { ude: 'Burnout', doNow: '', doInstead: '' },
+    ]);
+    expect(text).toBe('Consolidated from a 3-cloud rapid diagnosis:\n1. Bugs recur.\n2. Burnout.');
+  });
+
   it('returns an empty string when nothing is named', () => {
     expect(summariseConflicts([{ ude: '  ', doNow: 'x', doInstead: 'y' }])).toBe('');
     expect(summariseConflicts([])).toBe('');

@@ -128,16 +128,17 @@ const titleForSlot = (core: CoreCloud): Record<ECSlot, string> => ({
  * yields a clean note.
  */
 export const summariseConflicts = (conflicts: ReadonlyArray<CloudConflict>): string => {
+  // Drop blank conflicts first, THEN number the survivors 1..N — otherwise a
+  // blank in a non-last slot leaves a gap in the numbering (e.g. "2." with no
+  // "1."). Numbering the filtered list keeps the note clean, as documented.
   const lines = conflicts
+    .filter((c) => c.ude.trim())
     .map((c, i) => {
-      const ude = c.ude.trim();
-      if (!ude) return '';
       const doNow = c.doNow.trim();
       const doInstead = c.doInstead.trim();
       const tension = doNow && doInstead ? ` — pulled between "${doNow}" and "${doInstead}"` : '';
-      return `${i + 1}. ${ude}${tension}.`;
-    })
-    .filter(Boolean);
+      return `${i + 1}. ${c.ude.trim()}${tension}.`;
+    });
   if (lines.length === 0) return '';
   return ['Consolidated from a 3-cloud rapid diagnosis:', ...lines].join('\n');
 };

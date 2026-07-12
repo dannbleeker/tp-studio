@@ -231,6 +231,41 @@ describe('persistence round-trip — every optional Entity field', () => {
     expect(survived?.importedFrom?.importedAt).toBeUndefined();
   });
 
+  it('rejects a non-array alternativeMeans and drops non-string items (review follow-up)', () => {
+    // validateAlternativeMeans throws on a non-array and silently drops
+    // non-string entries — mirror the malformed-import guards the sibling
+    // optional fields already have.
+    const withStringified = JSON.stringify({
+      schemaVersion: 10,
+      id: 'doc-am1',
+      diagramType: 'ec',
+      title: 'bad-alt-means',
+      nextAnnotationNumber: 2,
+      groups: {},
+      resolvedWarnings: {},
+      createdAt: 1,
+      updatedAt: 1,
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'want',
+          title: 'x',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          alternativeMeans: 'not-an-array',
+        },
+      },
+      edges: {},
+    });
+    expect(() => importFromJSON(withStringified)).toThrow(/alternativeMeans/i);
+
+    const withMixed = JSON.parse(withStringified);
+    withMixed.entities.e1.alternativeMeans = [42, 'keep me', null, '  keep two  '];
+    const survived = importFromJSON(JSON.stringify(withMixed)).entities.e1;
+    expect(survived?.alternativeMeans).toEqual(['keep me', 'keep two']);
+  });
+
   it('rejects an entity with an unknown state value', () => {
     // Session 135 / spec gap #4 Phase 1A — entity-state.
     // The validator enumerates the allowed state values; anything

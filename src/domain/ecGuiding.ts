@@ -83,8 +83,9 @@ export const EC_SLOT_LABEL: Record<ECSlot, string> = {
  * Data split: the build ORDER + break HINT (below, domain-level) live here;
  * the per-type prompt COPY lives beside the other wizard copy in
  * `components/canvas/wizards/creationWizardSteps.ts` (`EC_STEPS_BY_CLOUD_TYPE`).
- * (A reading/present order per type is deferred to backlog D5, which is the
- * feature that will consume it.)
+ * (D5 shipped only a per-SIDE verbalisation toggle (`verbaliseEC`'s `leadWithC`),
+ * which does not read `cloudType`; a per-TYPE reading/presentation order remains
+ * unbuilt and would be a separate follow-up.)
  */
 export type ECWizardMode = 'generic' | CloudType;
 
