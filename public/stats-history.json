@@ -222,7 +222,7 @@
   {
     "date": "2026-07-12",
     "linesTsJs": 144735,
-    "coveragePct": 95.78,
+    "coveragePct": 95.76,
     "tests": 4799,
     "bundleKb": 853.7,
     "mutationScore": 74.02,
