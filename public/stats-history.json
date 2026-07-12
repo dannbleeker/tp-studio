@@ -221,10 +221,10 @@
   },
   {
     "date": "2026-07-12",
-    "linesTsJs": 143799,
-    "coveragePct": 95.76,
+    "linesTsJs": 143981,
+    "coveragePct": 95.77,
     "tests": 4779,
-    "bundleKb": 850,
+    "bundleKb": 851.6,
     "mutationScore": 74.02,
     "featureManualPct": 99.6,
     "featureBookPct": 66.8,
