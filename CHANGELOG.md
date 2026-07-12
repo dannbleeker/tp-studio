@@ -44,6 +44,11 @@ App. B, Scheinkopf, unless noted):
 
 ## Session 199 — Opt-in modes (backlog A4)
 
+- **Progressive CLR gating (Focus mode).** A new opt-in toggle in the Logic-check panel header focuses the
+  walk one tier at a time — Clarity → Existence → Sufficiency. When on, a later tier is de-emphasised
+  (collapsed to its header + an "N to review · clears after …" line) until the earlier tiers have no open
+  reservations left. It never *hides*: a gated tier expands on click, and the toggle is off by default, so
+  the panel is unchanged until you ask for the focus. Local view state — nothing persisted.
 - **Goal-Tree NC-depth mode.** The `goalTree-nc-depth` rule normally holds Necessary Conditions to
   Dettmer's two layers — right when the Goal Tree feeds a Current Reality Tree. An opt-in
   `ncDepthMode: 'conflict-resolution'` (palette: *Toggle conflict-resolution NC depth (Goal Tree)*) relaxes

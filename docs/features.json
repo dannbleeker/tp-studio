@@ -149,6 +149,7 @@
     {"id":"clr-long-arrow","name":"Long-arrow / missing-step warning","area":"CLR","since":180,"manual":true,"book":true,"bookExample":true},
     {"id":"clr-reinforcing-no-delay","name":"Reinforcing-loop no-delay warning","area":"CLR","since":180,"manual":true,"book":true,"bookExample":true},
     {"id":"clr-panel","name":"Logic-check status chip + CLR panel","area":"CLR","since":182,"manual":true,"book":false,"bookExample":false},
+    {"id":"clr-progressive-gating","name":"Progressive CLR gating (Focus mode)","area":"CLR","since":199,"manual":true,"book":false,"bookExample":false},
     {"id":"layout-dagre","name":"Auto-layout (dagre)","area":"Layout","since":1,"manual":true,"book":true,"bookExample":false},
     {"id":"layout-radial","name":"Radial / sunburst layout","area":"Layout","since":27,"manual":true,"book":false,"bookExample":false},
     {"id":"layout-direction","name":"Layout direction setting","area":"Layout","since":47,"manual":true,"book":true,"bookExample":false},

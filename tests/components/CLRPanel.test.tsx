@@ -1,10 +1,24 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CLRPanel } from '@/components/inspector/CLRPanel';
-import { resetStoreForTest } from '@/store';
+import { resetStoreForTest, useDocumentStore } from '@/store';
+import { makeDoc, makeEdge, makeEntity } from '../domain/helpers';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);
+
+/** Seed a CRT with open reservations in all three tiers: clarity (a question
+ *  title), existence (a blank / disconnected entity), sufficiency (a UDE with a
+ *  single ungrouped cause → additional-cause). */
+const seedMultiTier = () => {
+  const q = makeEntity({ type: 'effect', title: 'Is it broken?' });
+  const cause = makeEntity({ type: 'effect', title: 'Slow shipping' });
+  const ude = makeEntity({ type: 'ude', title: 'Customer churn' });
+  const blank = makeEntity({ type: 'effect', title: '' });
+  useDocumentStore
+    .getState()
+    .setDocument(makeDoc([q, cause, ude, blank], [makeEdge(cause.id, ude.id)], 'crt'));
+};
 
 /**
  * CLRPanel is the tree-level Logic-check audit (the CLR differentiator promoted
@@ -28,5 +42,28 @@ describe('CLRPanel header', () => {
   it('shows the open-reservation count in the header', () => {
     render(<CLRPanel />);
     expect(screen.getByText(/to review/)).toBeTruthy();
+  });
+});
+
+describe('CLRPanel — progressive gating (A4, opt-in)', () => {
+  it('gates later tiers behind earlier ones only after Focus mode is toggled on', () => {
+    seedMultiTier();
+    render(<CLRPanel />);
+    // Default (gating off): every tier header is shown, no "clears after" copy.
+    expect(screen.queryByText(/clears after/)).toBeNull();
+    // Turn Focus mode on → Existence + Sufficiency collapse behind Clarity.
+    fireEvent.click(screen.getByTitle(/Focus mode/));
+    expect(screen.getAllByText(/clears after Clarity/).length).toBeGreaterThan(0);
+  });
+
+  it('expands a gated tier on click (never truly hidden)', () => {
+    seedMultiTier();
+    render(<CLRPanel />);
+    fireEvent.click(screen.getByTitle(/Focus mode/));
+    // The Existence tier is gated — click its collapsed row to expand it.
+    const gatedRow = screen.getAllByText(/clears after Clarity/)[0]!;
+    fireEvent.click(gatedRow);
+    // Once expanded, existence-tier reservation messages surface.
+    expect(screen.getAllByText(/disconnected from the graph|no title/i).length).toBeGreaterThan(0);
   });
 });

@@ -5,6 +5,8 @@ import {
   ChevronDown,
   ChevronUp,
   Crosshair,
+  ListFilter,
+  Lock,
   ScanSearch,
   Wand2,
   X,
@@ -50,12 +52,31 @@ export function CLRPanel() {
   const selectEdge = useDocumentStore((s) => s.selectEdge);
   const showToast = useDocumentStore((s) => s.showToast);
   const [walkIdx, setWalkIdx] = useState(0);
+  // Session 199 (A4) — progressive gating (opt-in, local, default off): focus one
+  // tier at a time (Clarity → Existence → Sufficiency), de-emphasising a later
+  // tier until the earlier ones are clear. Never hides — a gated tier keeps its
+  // header + count and expands on click.
+  const [focusMode, setFocusMode] = useState(false);
+  const [expandedTiers, setExpandedTiers] = useState<ReadonlySet<ClrTier>>(() => new Set());
 
   const open = warnings.filter((w) => !w.resolved);
   const resolvedCount = warnings.length - open.length;
 
   const byTier: Record<ClrTier, Warning[]> = { clarity: [], existence: [], sufficiency: [] };
   for (const w of warnings) byTier[w.tier].push(w);
+
+  const openByTier: Record<ClrTier, number> = {
+    clarity: byTier.clarity.filter((w) => !w.resolved).length,
+    existence: byTier.existence.filter((w) => !w.resolved).length,
+    sufficiency: byTier.sufficiency.filter((w) => !w.resolved).length,
+  };
+  // A tier is unlocked when gating is off, or every EARLIER tier has no open
+  // reservations left. Clarity is always unlocked (nothing precedes it).
+  const tierUnlocked = (tier: ClrTier): boolean => {
+    if (!focusMode) return true;
+    const idx = TIER_ORDER.indexOf(tier);
+    return TIER_ORDER.slice(0, idx).every((t) => openByTier[t] === 0);
+  };
 
   // Select + centre the warning's target on the canvas (CommentsPanel pattern).
   // Document-targeted reservations have no canvas location — they only highlight
@@ -129,6 +150,22 @@ export function CLRPanel() {
           </p>
         </div>
         <div className="flex items-center gap-1">
+          {warnings.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setFocusMode((v) => !v)}
+              aria-pressed={focusMode}
+              title="Focus mode — work one tier at a time (Clarity → Existence → Sufficiency)"
+              className={clsx(
+                'rounded-md border p-1 transition',
+                focusMode
+                  ? 'border-accent-300 bg-accent-50 text-accent-700 dark:border-accent-500 dark:bg-accent-950/40 dark:text-accent-200'
+                  : 'border-neutral-200 text-neutral-500 hover:bg-neutral-100 dark:border-neutral-800 dark:hover:bg-neutral-800'
+              )}
+            >
+              <ListFilter className="h-3.5 w-3.5" aria-hidden />
+            </button>
+          )}
           {open.length > 0 && (
             <div
               className="flex items-center rounded-md border border-neutral-200 dark:border-neutral-800"
@@ -179,6 +216,34 @@ export function CLRPanel() {
               const ws = byTier[tier];
               if (ws.length === 0) return null;
               const meta = TIER_META[tier];
+              const openCount = openByTier[tier];
+              // Gated: earlier tiers still have open reservations, and the user
+              // hasn't manually expanded this one. Collapse (never hide) it.
+              const gated = openCount > 0 && !tierUnlocked(tier) && !expandedTiers.has(tier);
+              if (gated) {
+                const priorLabels = TIER_ORDER.slice(0, TIER_ORDER.indexOf(tier))
+                  .filter((t) => openByTier[t] > 0)
+                  .map((t) => TIER_META[t].label)
+                  .join(' & ');
+                return (
+                  <section key={tier}>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedTiers((prev) => new Set(prev).add(tier))}
+                      className="flex w-full items-center justify-between gap-2 rounded-md border border-neutral-200 border-dashed px-2.5 py-2 text-left opacity-70 transition hover:opacity-100 dark:border-neutral-800"
+                    >
+                      <span className="flex items-center gap-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
+                        <Lock className="h-3 w-3" aria-hidden />
+                        {meta.label}
+                      </span>
+                      <span className="flex items-center gap-1 normal-case text-[10px] text-neutral-500 tracking-normal dark:text-neutral-400">
+                        {openCount} to review · clears after {priorLabels}
+                        <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                      </span>
+                    </button>
+                  </section>
+                );
+              }
               const sorted = [...ws].sort((a, b) => Number(a.resolved) - Number(b.resolved));
               return (
                 <section key={tier} className="flex flex-col gap-1.5">
