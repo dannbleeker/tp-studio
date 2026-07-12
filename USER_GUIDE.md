@@ -604,7 +604,7 @@ A **Negative Branch Reservation (NBR)** is the "yes, but what could go wrong?" a
 - **Inside an FRT** — right-click an entity → **Start Negative Branch from this entity** creates a rose "Negative Branch" group rooted there (described under [Connecting causes to effects](#connecting-causes-to-effects)). Right for a quick branch you'll trim in place.
 - **As its own document** — pick **Negative Branch Reservation** from `Cmd/Ctrl+K` → **New diagram…** when the risk deserves a full canvas. The palette types are **Injection** (the change under scrutiny), **Effect**, **Undesirable Effect** (the feared outcome — the default type; the branch's point), **Desired Effect**, and **Note**.
 
-Build it injection-first: state the change, chain forward through effects, land on the UDE(s). Two NBR-specific CLR rules keep the shape honest — no UDE captured yet (the document still reads as an FRT), and a UDE that doesn't trace back to any injection (see [NBR shape checks](#the-clr-panel)). Once the branch is real, select the UDE and run **Trim this branch (add a trimming injection)** to mint the injection that breaks it. The **Risk Register CSV** export (see [Saving, exporting, and sharing](#saving-exporting-and-sharing)) pairs naturally with an NBR — each UDE becomes a risk row with the trimming injection inferred as its mitigation. Five NBR starter templates live in the Templates library.
+Build it injection-first: state the change, chain forward through effects, land on the UDE(s). Two NBR-specific CLR rules keep the shape honest — no UDE captured yet (the document still reads as an FRT), and a UDE that doesn't trace back to any injection (see [NBR shape checks](#the-clr-panel)). Once the branch is real, select the UDE and run **Trim this branch (add a trimming injection)** to mint the injection that breaks it. The **Risk Register CSV** export (see [Saving, exporting, and sharing](#saving-exporting-and-sharing)) pairs naturally with an NBR — each UDE becomes a risk row with the trimming injection inferred as its mitigation. Nine NBR starter templates live in the Templates library.
 
 ## Evaporating Clouds
 
@@ -830,7 +830,7 @@ All but CSV open the result in a **new tab**, leaving your current work untouche
 
 ## Templates library
 
-The **Templates** library is one curated set of starter diagrams — 90 of them, spanning *every* TOC diagram type — that you drop on the canvas and adapt. It used to be two separate libraries (a small "Templates" set and a larger "Pattern library"); they're now unified, shown identically in two places:
+The **Templates** library is one curated set of starter diagrams — over 100 of them, spanning *every* TOC diagram type (Freeform included) — that you drop on the canvas and adapt. It used to be two separate libraries (a small "Templates" set and a larger "Pattern library"); they're now unified, shown identically in two places:
 
 - **Start page → Templates** (the left sidebar). The full gallery, grouped by diagram type, each card a colored type-stripe + title + one-line description. Click a card to open it in a new tab.
 - **In the editor**, `Cmd/Ctrl+K` → **Browse templates…** (or **New from template…** — same dialog; also the Building Blocks rail's "Browse templates & examples"). The same set in a filterable dialog — a chip row at the top narrows to one diagram type, or scroll through all. Click a card to load it; **Undo** from the success toast restores your previous doc.

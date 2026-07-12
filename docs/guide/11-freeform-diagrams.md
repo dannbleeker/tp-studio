@@ -46,6 +46,7 @@ Attributes round-trip through JSON, CSV exports, and OPML exports.
 > - **Per-entity attributes** key/value editor in the Entity Inspector.
 > - **No diagram-type-specific CLR firing** — only the universal structural rules (clarity, entity-existence, causality-existence, tautology, indirect-effect) apply; no type-pattern rules.
 > - **Group presets** still work — you can structure regions of a freeform diagram with Negative Branch / Reinforcing Loop / Archive presets.
+> - **A starter to borrow.** The Templates library (`Cmd+K → Browse templates…` → Freeform) now ships one Freeform pattern — *Buffered to-do list*, a red/yellow/green buffer board after the TOC Handbook Ch. 38 — a worked example of using freeform for a non-causal layout.
 
 > **💡 Practitioner tips**
 > - **Use freeform sparingly.** If 30% of your TP Studio docs are freeform, look at whether you'd benefit from being more disciplined about TP selection.

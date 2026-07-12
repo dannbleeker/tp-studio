@@ -2,6 +2,54 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 196 — TOC Handbook (Cox & Schleier) starter bench (18 new templates, 91 → 109)
+
+A read of the *Theory of Constraints Handbook* (Cox & Schleier, McGraw-Hill 2010)
+Thinking-Processes chapters, filtered against the shipped library, added a book-sourced
+starter bench — 18 patterns broadening coverage into personal, education, rehabilitation,
+and change-management domains, plus the library's **first Freeform pattern**.
+
+**The sets:**
+- **Evaporating Clouds (11)** — daily-management + personal/education/rehab clouds, Barnard's
+  three change-core-conflict meta-clouds, and a fire-fighting cloud: `ec-expedite-vs-hold`
+  (Ch. 24), `ec-life-goals-vs-necessities` / `ec-study-vs-enjoy` (Ch. 38), `ec-tease-vs-respect`
+  / `ec-standing-vs-safety` / `ec-survival-vs-conscience` (Ch. 26), `ec-reconcile-vs-self-protect`
+  (Ch. 27), `ec-when-to-change` / `ec-what-to-change` / `ec-how-to-change` (Ch. 15),
+  `ec-contact-vs-procedure` (Ch. 24).
+- **CRT (2)** — `crt-forecast-error-supply` (Ch. 22, Lang), `crt-why-change-stalls` (Ch. 5,
+  Newbold — an AND-junctor onboarding meta-example).
+- **NBR (1)** — `nbr-contact-customer` (Ch. 24), the negative branch of the fire-fighting
+  injection; a worked EC → NBR handoff.
+- **Goal Tree (2)** — `goalTree-personal-life` (Ch. 38, five life facets),
+  `goalTree-fabrication-shop` (Ch. 19, Dettmer — a valid four-CSF IO map).
+- **PRT (1)** — `prt-raise-class-performance` (Ch. 26, a TOC-for-Education Ambitious Target Tree).
+- **Freeform (1, the library's first)** — `freeform-buffered-todo` (Ch. 38), a red/yellow/green
+  buffer board; `'freeform'` joins `TYPE_BLOCK_ORDER` and auto-surfaces a filter chip.
+
+**Dedup → enrich, not discard.** Where a book item overlapped a shipped pattern, its additive
+value was folded into the existing pattern rather than added as a duplicate:
+`ec-speak-up-vs-stay-safe` gained the Ch. 38 athlete/coach assumptions + injection;
+`ec-cost-vs-throughput` gained Barnard's "an idle resource is a major waste" (challengeable)
+assumption + a DBR injection note. The Ch. 15 Five-Question CI "bundles" were **not** added —
+their CRT/FRT halves duplicate the Session-193 canon and the shipped DBR / Critical-Chain /
+pull-replenishment FRTs, and the Barnard Why/What/To-what/How *chaining* belongs to a future
+workflow feature, not a template.
+
+**Legal posture** (same as Session 193): every node text is original abstracted wording; no
+company / character / person names from the Handbook's worked cases (the plant-floor,
+label-printer, welding-shop, and change-case company names, and the education / prison personal
+identifiers, are all dropped); each builder's TSDoc references the Handbook chapter + author
+factually without retelling scenes and ends "Node text is original."
+
+**S&T deferred.** The Mafia-Offer "decisive competitive edge" pack + the Viable-Vision trees are
+held for a later delivery, after the S&T assumption-model correction (they'd otherwise be built
+on the current model and need rework).
+
+Tests: a new `TOC Handbook set (Session 196)` block in `patterns.test.ts` hard-lists the ids and
+spot-checks the assumption / note / AND-junctor / CSF / obstacle shapes and the enrichments.
+Docs: `features.json` (`patterns-toc-handbook-set`, `reviewedThroughSession` → 196), guide
+sidebars (ch. 6 / 7 / 9 / 11 counts), library totals (ch. 2, USER_GUIDE, glossary).
+
 ## Session 195 — Dettmer figure fold-in: Efrat's assumptions + IO-Map build discipline
 
 Two figures from Dettmer's *The Logical Thinking Process* (2007), folded in as

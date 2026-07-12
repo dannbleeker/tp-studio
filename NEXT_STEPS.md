@@ -147,24 +147,19 @@ Ch34 Ferguson.
 - `EXTENDS` **Feedback-loop terminology reconciliation** on the R/B badge (TOC's "negative loop" vs
   systems-thinking convention). *Ch23 (Mabin & Davies).*
 
-### G. Template bench (ACTIVE — highest value/effort ratio, no engine change)
-- **S&T (only 5 thin starters today, no full VV tree):** Mafia-Offer "Decisive Competitive Edge"
-  pack — VMI, Reliable-Rapid-Response, Consumer-Goods, Projects, Pay-Per-Click, Gain-Sharing
-  (*Ch22 Lang "The Templates"*); **Retailer Viable Vision** 6-level verbatim + the 5 generic VV
-  trees + Build/Capitalize/Sustain × Base/Enhanced scaffold (*Ch34 Ferguson Tables 34-1…6; Ch18*);
-  **Healthcare/medical-practice VV** (services example, *Ch31 appendix*).
-- **CRT:** Custom Label Printer (Mafia-offer case, *Ch22*); "Why change doesn't stick" / Widgets Inc.
-  (onboarding meta-example, *Ch5 Figs 5-1…3*); Five-Question CI bundles — Operations/Projects/
-  Distribution/Finance as CRT+EC+FRT triples (*Ch15 Barnard*).
-- **EC:** "The Goal" Peach-vs-machinist day-to-day cloud + Fire-Fighting→NBR tutorial (*Ch24*);
-  When/What/How-to-change meta-clouds for the archetype gallery (*Ch15 Fig 15-5*); personal burnout /
-  speak-up / college-student clouds (*Ch38*); education name-calling / bullying / Oliver-Twist clouds
-  (*Ch26 Suerken*); prison mother-son reconciliation cloud (*Ch27 Cheng*). (Parent-child "Rules"
-  overlaps `ec-teenager-trip` — skip.)
-- **Goal Tree:** Personal Life Goal Tree (5 facets) (*Ch38*); AllForm Welding IO Map (real 4-CSF
-  strategic tree) (*Ch19 Fig 19-11*).
-- **Freeform (ships 0 patterns today):** buffered red/yellow/green "to-do" list (*Ch38 Fig 38-6*).
-- **PRT:** "Be the Best Students" Ambitious Target Tree (*Ch26 Fig 26-11*).
+### G. Template bench — non-S&T SHIPPED Session 196 (91 → 109); S&T pack remains
+The non-S&T book bench shipped (18 patterns; see CHANGELOG Session 196): the EC starter clouds
+(daily / personal / education / rehab + the 3 change-meta clouds + fire-fighting), 2 CRTs, the
+fire-fighting NBR, 2 Goal Trees (personal-life + fabrication-shop), the class-performance PRT,
+and the library's first Freeform pattern. The Ch15 Five-Question CI-bundle triples were dropped as
+redundant with the Session-193 canon + shipped DBR/Critical-Chain/pull FRTs; two overlaps were
+folded into `ec-speak-up-vs-stay-safe` + `ec-cost-vs-throughput` rather than duplicated.
+- **REMAINING — S&T pack (`DECISION`/deferred behind item B, the S&T model correction):** the S&T
+  bench, held so it's built on the corrected step-assumption model, not reworked — Mafia-Offer
+  "Decisive Competitive Edge" pack (VMI / Reliable-Rapid-Response / Consumer-Goods / Projects /
+  Pay-Per-Click / Gain-Sharing, *Ch22 Lang "The Templates"*); **Retailer Viable Vision** 6-level +
+  the 5 generic VV trees + Build/Capitalize/Sustain × Base/Enhanced scaffold (*Ch34 Ferguson
+  Tables 34-1…6; Ch18*); **Healthcare/medical-practice VV** (services example, *Ch31 appendix*).
 
 ### H. Facilitation / change-management — DECISION (E2 was dropped S179; do NOT build unilaterally)
 The book gives far richer material than the E2 review had, so these may be worth a *re-decision* —

@@ -396,6 +396,19 @@ describe('TOC Handbook set (Session 196) — Cox & Schleier (2010)', () => {
     expect(entities.filter((e) => e.type === 'desiredEffect')).toHaveLength(1);
   });
 
+  it('dedup enrichment: speak-up and cost-vs-throughput now carry the folded-in assumptions', () => {
+    // ec-speak-up gains the athlete/coach assumptions (Ch38) + injection note.
+    const speak = patternById('ec-speak-up-vs-stay-safe')!.build();
+    expect(Object.values(speak.assumptions ?? {})).toHaveLength(2);
+    expect(Object.values(speak.entities).filter((e) => e.type === 'note')).toHaveLength(1);
+    // ec-cost-vs-throughput gains Barnard's "idle resource is waste" (challengeable) + DBR note.
+    const cost = patternById('ec-cost-vs-throughput')!.build();
+    const costAssumptions = Object.values(cost.assumptions ?? {});
+    expect(costAssumptions).toHaveLength(1);
+    expect(costAssumptions[0]!.status).toBe('challengeable');
+    expect(Object.values(cost.entities).filter((e) => e.type === 'note')).toHaveLength(1);
+  });
+
   it('the burnout and student clouds each carry the source’s four arrow assumptions', () => {
     for (const id of ['ec-life-goals-vs-necessities', 'ec-study-vs-enjoy']) {
       const doc = patternById(id)!.build();
