@@ -43,9 +43,16 @@ describe('S&T facet template pack (backlog G, corrected model)', () => {
         expect(open.some((w) => w.ruleId === 'st-tactic-fold-in')).toBe(false);
       });
 
-      it('pre-resolves the leaf rollup nudges so it opens clean', () => {
-        const open = validate(build()).filter((w) => !w.resolved);
-        expect(open.some((w) => w.ruleId === 'st-tactic-rollup')).toBe(false);
+      it('opens clean — no open warnings beyond the by-design per-edge causality nudge', () => {
+        // Assert the FULL open-warning set (not just the S&T rule ids) is empty
+        // apart from `causality-existence`, the universal per-edge review nudge
+        // that stays open on every pattern in the app by design. A scoped check
+        // had let a spurious indirect-effect warning slip through on the 3-child
+        // apex (backlog B/G review).
+        const open = validate(build()).filter(
+          (w) => !w.resolved && w.ruleId !== 'causality-existence'
+        );
+        expect(open).toEqual([]);
       });
 
       it('apex carries no necessary assumption; each leaf carries no sufficiency assumption', () => {

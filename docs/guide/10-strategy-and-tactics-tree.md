@@ -38,11 +38,11 @@ A complete S&T tree at organizational scale might be 40-100 nodes, decomposed ac
 
 ## Understanding the five facets deeply
 
-### The Necessary Assumption — why this matters
+### The Necessary Assumption — why the step is needed (points up)
 
-The NA is the trigger, the environmental pressure that makes this level of the tree non-optional. At the apex, the NA answers: *what changed in the world, in the market, or in the organization that made this program necessary?* Lower in the tree, the NA inherits from the parent: *given that the parent tactic commits to X, why does this particular sub-strategy have to exist?*
+The necessary assumption points **up**: it justifies a step to its *parent*. It answers, for a non-apex step: *given that the parent's tactic commits to X, why does this particular sub-step have to exist?* Because it justifies the step to the level above, **the apex carries no necessary assumption** — nothing sits above it. The reason the whole program exists doesn't live in an apex facet; it lives in the analysis you did *before* opening the tree (the Current Reality Tree, the Evaporating Cloud, the Future Reality Tree) and in the apex's own strategy.
 
-A good NA is falsifiable. "It's important for us to grow" is not an NA — it's a value that's always been true. "Without 30% growth by Q3 next year, we miss Series C metrics, and our runway ends in Q4" is an NA: it could be wrong, you can check it, and if it's wrong, the strategy it anchors has no foundation.
+A good necessary assumption is falsifiable. "It's important for us to grow" is not one — it's a value that's always been true. "The parent's tactic can't hold unless this sub-step delivers Y by Q3, and today nothing does" is: it could be wrong, you can check it, and if it's wrong, the step it anchors has no foundation.
 
 The NA is also the canary for strategic drift. If you complete a tactic and then revisit the NA six months later, has the underlying trigger still held? If not, the tactic may have been appropriate for a world that no longer exists.
 
@@ -64,7 +64,7 @@ The tactic is action-shaped and observable. "Establish relationships with health
 
 At organizational scale, the tactic at one level becomes the *strategy* at the next level down. The decomposition works because each child node asks: *to achieve this parent tactic as its strategy, what does this team specifically do?* That recursive structure is why the S&T can span from CEO level to an individual contributor's sprint backlog without losing the thread.
 
-### The Sufficiency Assumption — the bet that connects action to outcome
+### The Sufficiency Assumption — why the step must decompose (points down)
 
 The SA is where most strategic plans are the weakest. It is the *downward* assumption: it says the tactic alone is **not** sufficient — the step must be broken into sub-steps that, together, close the gap. That is why a leaf (a step with no sub-steps) carries no sufficiency assumption, while any step you decompose does: the SA is the argument for *why* the decomposition is needed. Write it as an explicit, challengeable claim about the mechanism: "Hiring 2 healthcare-specialist account executives will generate 3 design-partner logos within 6 months, which will generate 12 paid logos within 18 months, sufficient to hit the vertical revenue target — and to get there we need the two sub-steps below." Now you know the bet you're making, and you can check it.
 
@@ -78,77 +78,73 @@ The setup: the board and CEO have agreed that scattered horizontal GTM is preven
 
 ### Step 1 — Open an S&T diagram
 
-`Cmd+K → New diagram…`. In the picker, select **Strategy & Tactics Tree**. The canvas opens empty with the method checklist visible in the Document Inspector — six steps, all unchecked. Check off the first two (`st.apex` and `st.tactic`) as you complete them.
+`Cmd+K → New diagram…`. In the picker, select **Strategy & Tactics Tree**. The canvas opens empty with the method checklist visible in the Document Inspector — seven steps, all unchecked. The first, `st.analysis-first`, you've already done (this deployment tree comes *after* the diagnosis, and the board's decision here rests on that analysis); tick it, then work down through `st.apex`, `st.tactic`, and the rest as you go.
 
 ### Step 2 — The apex node
 
 Double-click the canvas. Type the tactic for the apex: **"Run an 18-month focused vertical go-to-market for the healthcare compliance segment."** Press Enter. The entity is created. In the Inspector's Entity Type grid, it should already be typed as `injection` for an S&T diagram — this is the tactic type.
 
-Now open the **S&T facets** section in the Inspector (it appears automatically for injection entities in an `st` diagram). Fill the four companion facets:
+Now open the **S&T facets** section in the Inspector (it appears automatically for injection entities in an `st` diagram). The apex is the top of the tree, so fill the facets its position calls for — a strategy, a parallel assumption, and a sufficiency assumption. It has **no necessary assumption** (nothing sits above it to justify the step to); the reason the program exists lives in the analysis that preceded the tree.
 
 - **Strategy:** "We are the recognized go-to vendor for mid-market healthcare compliance automation."
-- **Necessary Assumption:** "Horizontal GTM has limited deal velocity and win rate. Without a focused wedge we cannot win competitive deals against point-solution specialists, and we will miss our Series B metrics by Q4 next year."
 - **Parallel Assumption:** "Healthcare chosen over FinTech because the compliance moat (HIPAA, HITRUST) is more durable and the ICP is more willing to pay for integration. EdTech chosen against because procurement cycles are 2x longer. Healthcare chosen over Manufacturing because our existing integrations are 80% already compliant."
-- **Sufficiency Assumption:** "3 design-partner healthcare logos → 12 paid within 12 months → $2M ARR new vertical revenue, sufficient to justify a dedicated vertical pod and hit Series B metrics."
+- **Sufficiency Assumption:** "The GTM push alone isn't enough — it needs three things in combination: a healthcare-compliant product, a specialist sales motion, and referenceable logos. That's why this step decomposes into the three sub-steps below; together they are what makes the vertical push sufficient."
 
-As soon as you fill in the Strategy facet, the canvas node expands from a single-row entity into the tall **5-row card** with each facet visible as its own labeled row. Click any row directly on the canvas to inline-edit it.
+As soon as you fill in the Strategy facet, the canvas node expands from a single-row entity into the tall **facet card** with each filled facet visible as its own labeled row (the necessary-assumption row stays empty on the apex — that's correct). Click any row directly on the canvas to inline-edit it.
 
 ![S&T example diagram](screenshots/chapter10-st-example.png)
 
-Read the apex node aloud, facet by facet. "Because horizontal GTM is limiting us (NA), we're committing to become the recognized healthcare compliance vendor (Strategy). We chose healthcare over FinTech and EdTech because (PA). We'll execute this by running an 18-month focused vertical GTM push (Tactic). We trust this will work because 3 design partners → 12 paid → $2M ARR (SA)." The argument should sound like something a board member would recognize from the off-site.
+Read the apex node aloud, facet by facet. "In order to become the recognized healthcare compliance vendor (Strategy), we'll run an 18-month focused vertical GTM push (Tactic). We chose healthcare over FinTech and EdTech because … (Parallel). And the push alone isn't enough — it needs a compliant product, a specialist sales motion, and reference logos together (Sufficiency), which is why it breaks into the three sub-steps below." The argument should sound like something a board member would recognize from the off-site.
 
 ### Step 3 — Three child strategies
 
-The apex tactic — running the focused GTM — decomposes into three parallel sub-strategies. Each is its own full S&T node. Add each one by double-clicking the canvas, then connect them to the apex with a downward edge (the apex's tactic is each child's parent context).
+The apex tactic — running the focused GTM — decomposes into three parallel sub-steps. Each is its own full S&T node. Add each one by double-clicking the canvas, then connect it to the apex with an edge (each child feeds its parent). In this 2-level example the three children are **leaves** — they don't decompose further — so each carries a strategy, a **necessary** assumption (why the apex needs it), and a **parallel** assumption, but **no sufficiency assumption** (a leaf has no sub-steps to justify). The bet that these three are *jointly* sufficient for the apex lives in the apex's sufficiency assumption above, and you'd test it in a Future Reality Tree.
 
 **Child 1: Product readiness for healthcare**
 
 - **Tactic:** "Build HIPAA-compliant audit logging and two HITRUST-mapped feature flags by Q2."
 - **Strategy:** "Product is healthcare-compliant out of the box — no custom implementation work needed for design partners."
-- **NA:** "Healthcare CISOs will not approve a vendor that requires custom compliance work — our current product requires 3-4 weeks of post-sale configuration, which killed two deals last quarter."
-- **PA:** "Audit logging + 2 feature flags chosen over a full HITRUST certification (18 months, $300K) because certification can follow design-partner acquisition; it's a prerequisite for scaling, not for closing the first 3 logos."
-- **SA:** "When design-partner security reviews begin, our product passes baseline checks without custom work, removing the deal blocker that killed Q3 deals."
+- **Necessary:** "The apex's push can't land without this: healthcare CISOs won't approve a vendor that requires custom compliance work, and our current product needs 3-4 weeks of post-sale configuration, which killed two deals last quarter."
+- **Parallel:** "Audit logging + 2 feature flags chosen over a full HITRUST certification (18 months, $300K) because certification can follow design-partner acquisition; it's a prerequisite for scaling, not for closing the first 3 logos."
 
 **Child 2: Sales motion for the vertical**
 
 - **Tactic:** "Hire 1 healthcare-specialist AE and retrain 2 existing AEs on healthcare-specific discovery and objection handling."
 - **Strategy:** "Sales team can run a healthcare-specific discovery call and close motion without generalist toolkits."
-- **NA:** "Current AEs use horizontal messaging; healthcare buyers consistently say they 'didn't feel understood.' Of 6 healthcare POCs last year, 4 stalled at discovery."
-- **PA:** "Specialist AE hire chosen over sales training alone because healthcare discovery requires institutional knowledge our team doesn't have. External hire can mentor the two retrained AEs, creating a pod."
-- **SA:** "A 3-person specialist pod running vertical discovery will convert 50% of qualified healthcare opportunities to POC, up from 17% today."
+- **Necessary:** "The apex needs a motion that lands: current AEs use horizontal messaging and healthcare buyers consistently say they 'didn't feel understood' — of 6 healthcare POCs last year, 4 stalled at discovery."
+- **Parallel:** "Specialist AE hire chosen over sales training alone because healthcare discovery requires institutional knowledge our team doesn't have. External hire can mentor the two retrained AEs, creating a pod."
 
 **Child 3: Reference engine**
 
 - **Tactic:** "Sign 3 design-partner healthcare logos at 60% list price; deliver weekly executive sponsors for mutual case studies."
 - **Strategy:** "We have 3 named, referenceable healthcare logos within 12 months."
-- **NA:** "Healthcare procurement is reference-heavy — the top objection in every deal is 'we've never heard of you.' Without logos, sales cycles are 6+ months regardless of product quality."
-- **PA:** "Design partner model chosen over standard discounting because design partners provide structured feedback + case study rights in exchange for pricing, yielding both product intelligence and references simultaneously."
-- **SA:** "3 referenceable logos reduce average healthcare sales cycle from 6 months to 3 and convert the 4 currently-stalled opportunities, yielding $1.2M ARR in the first 12 months."
+- **Necessary:** "The apex's push stalls without proof: healthcare procurement is reference-heavy — the top objection in every deal is 'we've never heard of you,' and without logos, sales cycles run 6+ months regardless of product quality."
+- **Parallel:** "Design partner model chosen over standard discounting because design partners provide structured feedback + case-study rights in exchange for pricing, yielding both product intelligence and references simultaneously."
 
 ### Step 4 — Verbalize and challenge each node
 
 Read each child node back to the team. For each one, the most valuable questions are not "do we agree with the strategy?" but:
 
-- "Is the NA still true?" (Could someone argue that horizontal GTM is actually working and we're over-indexing on a few bad deals?)
-- "Is the PA defensible?" (Why not EdTech? Why not certification-first?)
-- "Is the SA realistic?" (3 logos in 12 months — what's our assumption about deal cycle time?)
+- "Is each child's **necessary** assumption still true?" (Could someone argue that horizontal GTM is actually working and we're over-indexing on a few bad deals?)
+- "Is each **parallel** assumption defensible?" (Why not EdTech? Why not certification-first?)
+- "Is the apex's **sufficiency** assumption right — are these three sub-steps *jointly* enough?" (Product + sales motion + references: is anything missing, or is one of them not actually required?)
 
-The facet structure converts strategic disagreement from vague ("I'm not sure about healthcare") into specific ("I think the PA for Child 1 is wrong — I believe certification is a prerequisite for closing the first logo, not just scaling"). Specific challenges are answerable. Vague ones aren't.
+The facet structure converts strategic disagreement from vague ("I'm not sure about healthcare") into specific ("I think the parallel assumption for Child 1 is wrong — I believe certification is a prerequisite for closing the first logo, not just scaling"). Specific challenges are answerable. Vague ones aren't.
 
 ### Step 5 — Check completeness
 
 Open the CLR walkthrough panel. The `st-tactic-assumptions` validator reads the three assumption facets stored on each tactic (the Inspector's **S&T facets** section) and asks for the ones the step's position calls for: the necessary assumption if the step has a parent, the sufficiency assumption if it has children, the parallel assumption always. The warning names which required assumptions are still empty — so the apex is never nagged for a necessary assumption, nor a leaf for a sufficiency one. Fill the facets in the inspector rather than adding separate assumption nodes; the facets are the argument.
 
-Check the method checklist in the Document Inspector. Tick off `st.na`, `st.pa`, `st.sa`, and `st.decompose` as you complete them. When all six steps are checked, you're through the prescribed method.
+Check the method checklist in the Document Inspector. Tick off `st.na`, `st.pa`, `st.sa`, and `st.decompose` as you complete them. When all seven steps are checked — starting with `st.analysis-first` — you're through the prescribed method.
 
 ### Step 6 — Stop
 
 How do you know the S&T is done?
 
-- Every node has all five facets. No empty rows on any canvas card.
+- Every node has the facets its position calls for — a strategy, a tactic, a parallel assumption, plus a necessary assumption on every non-apex step and a sufficiency assumption on every step you decomposed. (The apex has no necessary assumption; a leaf has no sufficiency assumption — those rows staying empty is correct, not incomplete.)
 - Leaf tactics are operational: a named team can schedule the work this sprint.
 - Each parent's tactic is covered by the children's strategies in combination — no coverage gap.
-- You've challenged at least the PA on every node. If you haven't, you haven't used the tree.
+- You've challenged at least the parallel assumption on every node. If you haven't, you haven't used the tree.
 - You can hand the tree to a deployment lead and they build a rollout calendar from it without structural questions.
 
 ## S&T vs. Goal Tree vs. project plan
@@ -171,7 +167,7 @@ The handoff point between levels is the parent tactic becoming the child strateg
 
 This handoff is where strategy most often breaks down in practice. The parent believes the tactic is clear; the child interprets it differently; the children's combined output doesn't add up to the parent's tactic; and nobody notices until the program review six months later. The S&T tree makes the handoff explicit — it's the PA and SA at the parent level that define what the children must collectively deliver, and the NA at each child level that confirms the child understood what was handed down.
 
-> **💡 Practitioner tip:** when reviewing a multi-level S&T tree for the first time, check the parent's SA against each child's Strategy. If the child's Strategy doesn't obviously contribute to the parent's SA being true, there's a coverage gap — the parent's bet that "doing the tactic will achieve the strategy" isn't supported by the children. This is the most common structural defect in large S&T trees.
+> **💡 Practitioner tip:** when reviewing a multi-level S&T tree for the first time, check the parent's sufficiency assumption against the children's strategies *together*. If the children's combined strategies don't obviously make the parent's sufficiency bet true, there's a coverage gap — the parent's claim that its sub-steps are jointly sufficient isn't supported by what the children actually deliver. This is the most common structural defect in large S&T trees.
 
 ## Why facet-level disagreement is productive
 
@@ -179,7 +175,7 @@ Most strategy processes either avoid surfacing disagreement (the HIPPO wins) or 
 
 When you and a colleague disagree about a child strategy, the S&T makes you both more precise. Instead of "I don't think this is the right approach," you say: "I accept the NA. I accept the Strategy outcome. I disagree with the PA — I think FinTech compliance has a more durable moat than healthcare compliance, and here's the evidence." That's answerable. You go look at the evidence. You update the PA or you don't. Either way you've had a real conversation about the strategy rather than a political one.
 
-Facet-level disagreements cluster, and the clustering tells you something useful. If everyone agrees with the NA and Strategy but multiple people flag the SA, the team's shared concern is *whether the tactic actually delivers* — a causal chain doubt. If everyone flags the PA, the team's concern is *whether this was the right choice among alternatives* — a comparative judgment. Those are different conversations requiring different evidence, and the S&T lets you have them without conflating them.
+Facet-level disagreements cluster, and the clustering tells you something useful. If everyone agrees with the necessary assumption and the strategy but multiple people flag the sufficiency assumption, the team's shared concern is *whether the decomposition is really complete* — do these sub-steps together cover the parent? If everyone flags the parallel assumption, the concern is *whether this was the right choice among alternatives* — a comparative judgment. Those are different conversations requiring different evidence, and the S&T lets you have them without conflating them.
 
 ## Sidebars
 
@@ -191,14 +187,14 @@ Facet-level disagreements cluster, and the clustering tells you something useful
 > - **`st-tactic-assumptions` validator** (CLR clarity tier) reads the three assumption facets on each tactic and, position-aware, asks for the necessary assumption only when the step has a parent, the sufficiency assumption only when it has children, and the parallel assumption always. The message names which required assumptions are missing.
 > - **`st-tactic-fold-in` validator** (CLR sufficiency tier) flags a step that decomposes into exactly one sub-step — a real decomposition needs two or more jointly-sufficient sub-steps, or the single child should fold back in.
 > - **`st-tactic-rollup` validator** (CLR sufficiency tier) fires on a non-apex tactic (`injection`) with no child tactics feeding up into it — a layer that should decompose into the next level down but doesn't. Add its children, or accept it as a genuine leaf.
-> - **6-step method checklist** in the Document Inspector (`st.apex` → `st.tactic` → `st.na` → `st.pa` → `st.sa` → `st.decompose`) — tick each step as you complete it. Tracks progress on the prescribed build sequence and surfaces in any PPTX export.
+> - **7-step method checklist** in the Document Inspector (`st.analysis-first` → `st.apex` → `st.tactic` → `st.na` → `st.pa` → `st.sa` → `st.decompose`) — tick each step as you complete it. The first step is the reminder to do the full analysis before building this deployment tree. Tracks progress on the prescribed build sequence and surfaces in any PPTX export.
 
 > **💡 Practitioner tips**
 > - **Fill the PA before you fill the Tactic.** Writing the PA forces you to name the alternatives you rejected, which sharpens the tactic you chose. If you write the Tactic first, the PA tends to become post-hoc justification rather than genuine comparative reasoning.
-> - **NA and SA are about argument, not summary.** "NA: It's important to grow" is useless. "NA: Without 30% growth we don't hit Series C metrics, and Series C is needed by Q3 2027" is an NA: it could be wrong, you can check it, and if it's wrong, the node needs to change.
-> - **The SA is your public bet.** Write it as a falsifiable causal claim: "doing X will produce Y within Z months because [mechanism]." Now your team — and you, six months from now — can check whether the bet held and why it did or didn't.
+> - **The necessary assumption is about argument, not summary.** "This step matters" is useless. "The parent's tactic stalls unless this step delivers 30% growth by Q3 2027" is a necessary assumption: it could be wrong, you can check it, and if it's wrong, the node needs to change. (The apex has none — nothing sits above it to justify the step to.)
+> - **The sufficiency assumption is your decomposition bet.** Write it as a falsifiable claim about why the tactic alone isn't enough: "this step needs sub-steps A and B together, because the tactic on its own leaves gap G." Now your team — and you, six months from now — can check whether the sub-steps really were jointly sufficient. (A leaf has none — it isn't decomposed.)
 > - **A full org-scale S&T is rarely built.** For most purposes the two-level version (apex + 3-5 children) is the sweet spot: it's presentable in an hour, it exposes the major assumptions, and it surfaces the primary decomposition disagreements. Go deeper only when the children's tactics need their own argument defended — when there's genuine ambiguity about whether the child's approach is right.
-> - **Read the tree from leaf to apex for a coherence check.** Starting at any leaf, ask: does this tactic's SA contribute to its parent strategy? Does the parent's SA contribute to *its* parent's strategy? A leaf whose SA doesn't eventually ladder up to the apex strategy outcome is either misplaced or working on the wrong thing.
+> - **Read the tree top-down for a coherence check.** At each decomposed step, ask: do the children's strategies, *together*, deliver what the parent's sufficiency assumption says they must? And does each child's necessary assumption really follow from the parent's tactic? A child whose strategy doesn't contribute to its parent's sufficiency bet is either misplaced or working on the wrong thing.
 
 > **⚠ Common mistakes**
 > - **Skipping facets to "get to the point."** The facets *are* the point. Without them the S&T tree is just a project plan with extra boxes — no assumptions declared, no alternatives documented, no causal claims to challenge. You save 20 minutes of thinking and lose most of the tree's value.
@@ -215,7 +211,7 @@ Facet-level disagreements cluster, and the clustering tells you something useful
 > - Every PA names the alternatives that were rejected and why.
 > - You can hand the tree to a deployment lead and they build a rollout calendar from it without coming back with structural questions.
 
-> **✏️ Now you try.** Take a strategy you're rolling out. Open an S&T tree (`Cmd+K → New diagram… → Strategy & Tactics Tree`), place the apex strategy as a Goal and its tactic below as an Injection, then fill the tactic's **S&T facets** in the inspector — Necessary Assumption, Strategy, Parallel Assumption, Sufficiency Assumption. Writing the Parallel Assumption (the alternatives you rejected) *before* the Tactic is the move that sharpens the choice.
+> **✏️ Now you try.** Take a strategy you're rolling out. Open an S&T tree (`Cmd+K → New diagram… → Strategy & Tactics Tree`), add the apex step as an **Injection** and fill its **S&T facets** in the inspector — Strategy, Parallel Assumption, and (once it has sub-steps) Sufficiency Assumption; the apex has no Necessary Assumption. Then add each sub-step as its own injection connected up to the apex, giving each a Necessary Assumption + Parallel Assumption. Writing the Parallel Assumption (the alternatives you rejected) *before* the Tactic is the move that sharpens the choice.
 
 🔁 **Chain to next:** the seven structured TPs (CRT, EC, FRT, PRT, TT, Goal Tree, S&T) are the canonical kit. The freeform diagram is for *when the structure doesn't fit*.
 

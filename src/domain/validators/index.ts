@@ -166,7 +166,12 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
   // decomposition. Tier `clarity` for the assumptions nudge; `sufficiency` for
   // the structural rollup/fold-in checks.
   st: [
-    ...STRUCTURAL_RULES,
+    // Session 198 (backlog B/G review) — `indirect-effect` is a CAUSAL nudge
+    // ("≥3 direct causes into one effect — could some chain through an
+    // intermediate?"). A Strategy & Tactics step legitimately fans out to ≥3
+    // jointly-sufficient sub-steps (Ferguson's decompositions), so on 'st' the
+    // rule is a false positive; drop it here.
+    ...STRUCTURAL_RULES.filter((r) => r.ruleId !== 'indirect-effect'),
     tieredRule('clarity', 'st-tactic-assumptions', stTacticAssumptionsRule),
     // Session 135 — S&T tactic-rollup structural check. Fires on
     // non-apex `injection` (tactic) entities that lack child

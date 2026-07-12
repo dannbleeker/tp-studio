@@ -19,6 +19,16 @@ Shared recursive `buildSTFacetDoc` builder; a test pins that each pattern is a v
 tree. *A representative pack — the full book set (the remaining Mafia-Offer templates, the 6-level Retailer
 Viable-Vision tree, and the healthcare Viable-Vision) remains a documented extension in NEXT_STEPS §G.*
 
+- **Review follow-ups (B + G).** An adversarial review of the S&T change surfaced two real defects, now
+  fixed: (1) the `indirect-effect` structural rule (a *causal* "≥3 direct causes → missing intermediate?"
+  nudge) fired on the Viable-Vision template's 3-way apex — a wide fan-out of jointly-sufficient sub-steps
+  is idiomatic S&T, not a causal smell, so the rule no longer runs on `'st'` diagrams (the template test
+  now asserts the full open-warning set is empty apart from the by-design per-edge nudge); (2) the guide
+  chapter's deep-dives + worked example + sidebars (and the USER_GUIDE S&T section) still taught the pre-B
+  model — the apex with a necessary assumption, leaves with sufficiency assumptions, "every node has all
+  five facets", the six-step checklist, and one sidebar that inverted the sufficiency direction — all
+  reconciled to the shipped directional/position-aware model.
+
 ## Session 198 — Strategy & Tactics model correction (backlog B)
 
 A Strategy & Tactics tree cascades strategy through nested strategy/tactic pairs; each step carries three
