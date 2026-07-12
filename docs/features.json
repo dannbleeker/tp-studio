@@ -49,6 +49,7 @@
     {"id":"st-diagram","name":"Strategy & Tactics tree","area":"ST","since":75,"manual":true,"book":true,"bookExample":true},
     {"id":"st-facet-card","name":"S&T 5-facet tactic card","area":"ST","since":76,"manual":true,"book":true,"bookExample":true},
     {"id":"st-assumption-subtyping","name":"S&T assumption sub-typing","area":"ST","since":135,"manual":true,"book":true,"bookExample":false},
+    {"id":"st-directional-assumptions","name":"S&T directional assumptions (position-aware validators + plain labels + fold-in + analysis-first gate)","area":"ST","since":198,"manual":true,"book":true,"bookExample":false},
     {"id":"nbr-diagram","name":"Negative Branch Reservation","area":"NBR","since":134,"manual":true,"book":false,"bookExample":false},
     {"id":"nbr-trim-branch","name":"NBR trim-branch injection","area":"NBR","since":157,"manual":true,"book":false,"bookExample":false},
     {"id":"nbr-shape-clr","name":"NBR negative-branch shape rules","area":"NBR","since":181,"manual":true,"book":true,"bookExample":false},

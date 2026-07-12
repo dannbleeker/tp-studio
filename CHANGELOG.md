@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 198 — Strategy & Tactics model correction (backlog B)
+
+A Strategy & Tactics tree cascades strategy through nested strategy/tactic pairs; each step carries three
+assumptions that the tool previously treated as an undifferentiated, position-blind checklist with cryptic
+"NA / PA / SA" labels. Corrected toward Ferguson's directional model (Handbook Ch. 34), strictly additively
+— no schema change, the four stored facet keys untouched, existing docs load and render unchanged.
+
+- **Position-aware validators.** The assumptions rule (`st-tactic-assumptions`) is now directional: the
+  **necessary** assumption is asked for only when a step has a parent (the apex, with nothing above it, is
+  no longer nagged for one), the **sufficiency** assumption only when a step has children (a leaf is no
+  longer nagged for one), and the **parallel** assumption on every step. A new `st-tactic-fold-in` rule
+  flags a step that decomposes into exactly one sub-step — a real decomposition needs two or more
+  jointly-sufficient children, else the single child should fold back in.
+- **Directional, plain-language labels + read-aloud.** The tactic card and inspector drop "NA / PA / SA"
+  for spelled-out, directional labels — **Necessary** (points up to the parent), **Parallel** (bridges
+  strategy ↔ tactic), **Sufficiency** (points down to the children) — each with a hover tooltip. The
+  inspector reorders to that sequence, rewrites its placeholders to the directional meaning, and adds a
+  read-aloud line built from the filled facets.
+- **Analysis-first method gate.** The S&T method checklist gains a leading step — run the full Current
+  Reality Tree / Evaporating Cloud / Future Reality Tree analysis first; every assumption should already
+  be a validated fact of life; the Strategy & Tactics tree replaces the Prerequisite Tree — and the six
+  build steps are reworded to encode the up/bridge/down directions.
+
 ## Session 198 — Evaporating Cloud craft (backlog D2–D6)
 
 Finishing the "EC craft" backlog section — a set of opt-in, default-preserving enhancements to how

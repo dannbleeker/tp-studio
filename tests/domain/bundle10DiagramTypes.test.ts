@@ -48,9 +48,11 @@ describe('FL-DT4 — Strategy & Tactics Tree', () => {
     expect(HANDLE_ORIENTATION.st).toBe('vertical');
   });
 
-  it('carries a method checklist with the six S&T steps', () => {
+  it('carries a method checklist with the seven S&T steps', () => {
     const steps = METHOD_BY_DIAGRAM.st;
-    expect(steps).toHaveLength(6);
+    // Session 198 (backlog B) — the analysis-first gate was added ahead of the
+    // original six build steps.
+    expect(steps).toHaveLength(7);
     expect(steps.every((s) => s.id.startsWith('st.'))).toBe(true);
     // Spot-check the load-bearing step labels.
     const labels = steps.map((s) => s.label.toLowerCase());
@@ -59,6 +61,8 @@ describe('FL-DT4 — Strategy & Tactics Tree', () => {
     expect(labels.some((l) => l.includes('necessary'))).toBe(true);
     expect(labels.some((l) => l.includes('parallel'))).toBe(true);
     expect(labels.some((l) => l.includes('sufficiency'))).toBe(true);
+    // The analysis-first gate is the new first step.
+    expect(steps[0]?.id).toBe('st.analysis-first');
   });
 
   it('createDocument produces a fresh empty S&T doc', () => {

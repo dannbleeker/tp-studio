@@ -220,40 +220,46 @@ const EC: MethodStep[] = [
   },
 ];
 
-// FL-DT4 — Strategy & Tactics Tree. Goldratt's recipe for building an
-// S&T cascade: anchor the apex strategy, articulate each layer's tactic
-// + the three assumption facets (necessary / parallel / sufficiency),
-// then recursively decompose. Six steps; matches the book's pacing.
+// FL-DT4 — Strategy & Tactics Tree. Goldratt's recipe for building an S&T
+// cascade: FIRST do the diagnosis, then anchor the apex strategy, articulate each
+// layer's tactic + the three DIRECTIONAL assumptions (necessary points up to the
+// parent, parallel bridges strategy↔tactic, sufficiency points down to the
+// children), then recursively decompose. Session 198 (backlog B, Ch.34 Ferguson).
 const ST: MethodStep[] = [
+  {
+    id: 'st.analysis-first',
+    label: 'Do the analysis first — the Strategy & Tactics tree comes last',
+    hint: 'Run the full diagnosis before deploying: a Current Reality Tree to find the core problem, an Evaporating Cloud to surface the conflict, a Future Reality Tree to test the fix. Every assumption you record here should already be a validated fact of life — the Strategy & Tactics tree replaces the Prerequisite Tree as the deployment document.',
+  },
   {
     id: 'st.apex',
     label: 'State the apex strategy',
-    hint: 'The top-level objective the whole tree decomposes from — what does success at the highest level look like?',
+    hint: 'The top-level objective the whole tree decomposes from — what does success at the highest level look like? The apex has no parent, so it carries no necessary assumption.',
   },
   {
     id: 'st.tactic',
     label: 'Name the tactic that achieves the strategy',
-    hint: 'The "how" of the current layer. Action-verb framing: "Re-engineer X," "Establish Y," "Roll out Z."',
+    hint: 'The "how" of the current step. Action-verb framing: "Re-engineer X," "Establish Y," "Roll out Z." The strategy is the outcome (what); the tactic is the action (how).',
   },
   {
     id: 'st.na',
-    label: 'List the Necessary Assumptions',
-    hint: 'What must be true for the strategy itself to matter? If these fail, the strategy is irrelevant — not just unmet.',
+    label: 'State the Necessary Assumption (why the step is needed)',
+    hint: 'Why must this step exist at all? The necessary assumption justifies the step UPWARD to its parent — what the level above needs from it. The apex has none (nothing sits above it).',
   },
   {
     id: 'st.pa',
-    label: 'List the Parallel Assumptions',
-    hint: 'What must be true for THIS tactic to be the right approach? Alternatives might work if the parallel assumptions change.',
+    label: 'State the Parallel Assumption (why this tactic fits)',
+    hint: 'Why is THIS tactic the right way to reach the strategy, versus the alternatives? The parallel assumption bridges the step’s own strategy and tactic — "if the strategy and these assumptions hold, then this tactic."',
   },
   {
     id: 'st.sa',
-    label: 'List the Sufficiency Assumptions',
-    hint: 'What must be true for the tactic to actually achieve the strategy? These are the "expected effect" claims.',
+    label: 'State the Sufficiency Assumption (why it needs sub-steps)',
+    hint: "Why isn't this step enough on its own? The sufficiency assumption justifies breaking it DOWNWARD into sub-steps that are jointly sufficient. A leaf, with no children, carries none.",
   },
   {
     id: 'st.decompose',
-    label: 'Decompose the tactic into child strategies',
-    hint: "Each tactic becomes the strategy of the next layer down. Repeat until you've reached implementation-level granularity.",
+    label: 'Decompose into two or more jointly-sufficient sub-steps',
+    hint: 'Split the step into the sub-steps that together are sufficient for it — two or more (a single sub-step should fold back in). Each sub-step’s strategy is what the parent tactic needs from it. Repeat until a named team can plan against the leaf.',
   },
 ];
 

@@ -2,7 +2,7 @@
 ### *Deploying operationally*
 
 > **🎯 What this process is for**
-> A Strategy & Tactics Tree (S&T) is the deployment-grade decomposition of a strategy across an organization, from CEO-level down to individual contributor. Each node is a 5-facet card holding Necessary Assumption (why the strategy matters), Strategy (what), Parallel Assumption (why this specific approach), Tactic (how), and Sufficiency Assumption (why that's enough). Used for cross-functional rollouts, big strategic programs, and as the working document for a TOC-style strategic deployment.
+> A Strategy & Tactics Tree (S&T) is the deployment-grade decomposition of a strategy across an organization, from CEO-level down to individual contributor. Each node (a "step") is a 5-facet card, and each assumption has a *direction*: Necessary Assumption (why this step is needed — points **up** to its parent), Strategy (the outcome — what), Parallel Assumption (why this specific tactic fits the strategy), Tactic (the action — how), and Sufficiency Assumption (why the step needs sub-steps — points **down** to its children). Used for cross-functional rollouts, big strategic programs, and as the working document for a TOC-style strategic deployment.
 
 ## The premise
 
@@ -12,27 +12,28 @@ S&T came late to the TOC tradition — Goldratt formalized it in the early 2000s
 
 That framing has a consequence: the S&T's value is not primarily in drawing it, but in *reading and challenging* it. A well-built S&T tree exposes every implicit bet the strategy rests on — and does so in a form that invites targeted disagreement. When a department head says "I don't agree with this strategy," the S&T converts that vague objection into a pointed question: *which facet, on which node, do you think is wrong?* That conversion — from diffuse resistance to specific, answerable challenge — is most of what the S&T is for.
 
-The facet names that follow are Goldratt's. The one-line characterizations are how this book reads them in practice.
+The facet names that follow are Goldratt's. The one-line characterizations are how this book reads them in practice. In TP Studio the card shows the plain, directional labels — **Necessary**, **Strategy**, **Parallel**, **Tactic**, **Sufficiency** — each with a tooltip; the arrows below are the direction each assumption points.
 
-| Facet | A reading |
-| --- | --- |
-| **Necessary Assumption** (NA) | The world-state above us has changed enough that *not* acting at this layer has become unacceptable. Captures the trigger handed down from the parent node — why this level of the strategy tree must exist at all. |
-| **Strategy** | A statement of the result we commit to deliver at this layer — what good looks like, not how we get there. Phrased as an outcome, not an action. |
-| **Parallel Assumption** (PA) | Of the strategies that *could* respond to the NA, why this one. Captures the comparative choice — the alternatives considered and what made this one the right pick. |
-| **Tactic** | The concrete things people will do. Verbs, not aspirations. Granular enough that you can tell whether they happened. In TP Studio, the entity *title* is the tactic. |
-| **Sufficiency Assumption** (SA) | If we complete the tactic, the strategy is fulfilled. Captures the bet that Tactic → Strategy is a real causal chain, not a hopeful one. |
+| Facet | Direction | A reading |
+| --- | --- | --- |
+| **Necessary** | ↑ up to parent | The world-state above us has changed enough that *not* acting at this step has become unacceptable. Captures the trigger handed down from the parent — why this step must exist at all. **The apex has none** (nothing sits above it). |
+| **Strategy** | — | A statement of the result we commit to deliver at this step — what good looks like, not how we get there. Phrased as an outcome, not an action. |
+| **Parallel** | ↔ strategy ⇄ tactic | Of the tactics that *could* deliver the strategy, why this one. Bridges the step's strategy and its tactic — the comparative choice and what made this pick right. |
+| **Tactic** | — | The concrete things people will do. Verbs, not aspirations. Granular enough that you can tell whether they happened. In TP Studio, the entity *title* is the tactic. |
+| **Sufficiency** | ↓ down to children | Why the tactic alone is *not* enough — what the step's sub-steps must add to be jointly sufficient. It is the assumption that justifies decomposing the step. **A leaf has none** (it has no sub-steps). |
 
-Notice the structure: NA frames *why act here*, Strategy commits *to what*, PA defends *why this way*, Tactic tells *who does what*, and SA asserts *this will work*. Together they trace the full argument from environmental pressure (NA) through the chosen response (Strategy + Tactic) to the trust that the response actually closes the loop (SA). Every missing facet is a hidden assumption — one the team is making implicitly, and therefore cannot challenge.
+Notice the structure: Necessary frames *why act here* (up to the parent), Strategy commits *to what*, Parallel defends *why this way* (strategy ⇄ tactic), Tactic tells *who does what*, and Sufficiency asserts *why sub-steps are needed* (down to the children). Together they trace the full argument from the pressure handed down (Necessary) through the chosen response (Strategy + Tactic) to why it must be broken down further (Sufficiency). Every missing facet is a hidden assumption — one the team is making implicitly, and therefore cannot challenge. The `st-tactic-assumptions` validator asks for exactly the assumptions a step's **position** calls for, so it never nags the apex for a necessary assumption or a leaf for a sufficiency assumption.
 
 A complete S&T tree at organizational scale might be 40-100 nodes, decomposed across 4-6 levels. Few teams ever build one. The skill matters mostly when you're either *running* a TOC-style deployment or *evaluating one someone else built*. For most practitioners the S&T is a reading tool as much as a drawing tool — you sit down with a strategy document and ask, node by node, whether the five facets are actually there, and whether they're any good.
 
 ## The method, neutral of tool
 
-1. **State the apex strategy.** The top-level node is the entire program's commitment. Fill all five facets before doing anything else. If you can't fill the NA for the apex, you don't yet understand why the program exists.
+0. **Do the analysis first — the S&T tree comes last.** The Strategy & Tactics tree is a *deployment* document, not a diagnosis. Run the full analysis before you build it: a Current Reality Tree to find the core problem, an Evaporating Cloud to surface the conflict, a Future Reality Tree to test the fix. Every assumption you record in the tree should already be a validated fact of life. The S&T tree replaces the Prerequisite Tree as the thing you hand to the teams who deploy.
+1. **State the apex strategy.** The top-level node is the entire program's commitment. Fill its facets before doing anything else. The apex has no parent, so it carries no necessary assumption — but it does need a strategy, a tactic, and (once it has sub-steps) a sufficiency assumption.
 2. **Name the tactic that achieves it.** The apex's tactic is the highest-level action — the "we will do X" from which everything else decomposes.
-3. **Decompose into 3-5 child strategies.** Each child S&T node represents a sub-strategy that *contributes to fulfilling* the parent's tactic. The parent tactic is the child's context; the child's NA captures what it inherits from the parent.
-4. **Fill all five facets at every level before going deeper.** Partially-filled nodes are worse than no nodes — they imply completeness they don't deliver. The `st-tactic-assumptions` validator fires on any tactic that lacks all three assumption types.
-5. **Continue down until the leaf tactic is operational** — a thing a named team can plan against within their existing decision-making authority.
+3. **Decompose into 3-5 child strategies.** Each child step *contributes to fulfilling* the parent's tactic. The parent tactic is the child's context; the child's necessary assumption captures why the parent needs it.
+4. **Fill the facets each step's position calls for.** Partially-filled nodes are worse than no nodes — they imply completeness they don't deliver. The `st-tactic-assumptions` validator asks a step for the necessary assumption only if it has a parent, the sufficiency assumption only if it has children, and the parallel assumption always.
+5. **Split each step into two or more jointly-sufficient sub-steps.** A decomposition into a single sub-step is a smell — if one child is enough on its own it should fold back into the parent; the `st-tactic-fold-in` validator flags the one-child case. Continue down until the leaf tactic is operational — a thing a named team can plan against within their existing decision-making authority.
 6. **Audit the completed tree.** Read each chain of argument from root to leaf. Every parent's tactic should be reachable by the children's strategies in combination. If there are gaps — places where the children's combined output doesn't quite cover the parent's tactic — the tree is incomplete, not the children.
 
 ## Understanding the five facets deeply
@@ -65,7 +66,7 @@ At organizational scale, the tactic at one level becomes the *strategy* at the n
 
 ### The Sufficiency Assumption — the bet that connects action to outcome
 
-The SA is where most strategic plans are the weakest. It says: *doing the tactic will produce the strategy outcome*. That is a causal claim. It can be wrong. Write it as an explicit assertion that can be challenged: "Hiring 2 healthcare-specialist account executives will generate 3 design-partner logos within 6 months, which will generate 12 paid logos within 18 months, sufficient to hit the vertical revenue target." Now you know the mechanism you're betting on, and you can check it.
+The SA is where most strategic plans are the weakest. It is the *downward* assumption: it says the tactic alone is **not** sufficient — the step must be broken into sub-steps that, together, close the gap. That is why a leaf (a step with no sub-steps) carries no sufficiency assumption, while any step you decompose does: the SA is the argument for *why* the decomposition is needed. Write it as an explicit, challengeable claim about the mechanism: "Hiring 2 healthcare-specialist account executives will generate 3 design-partner logos within 6 months, which will generate 12 paid logos within 18 months, sufficient to hit the vertical revenue target — and to get there we need the two sub-steps below." Now you know the bet you're making, and you can check it.
 
 If the SA turns out to be wrong — the design partners don't convert — you haven't just learned "the strategy didn't work." You've learned *which facet was wrong*, and the tree points you to the NA and PA of the child node responsible, which in turn tells you what the alternative tactic should be.
 
@@ -136,7 +137,7 @@ The facet structure converts strategic disagreement from vague ("I'm not sure ab
 
 ### Step 5 — Check completeness
 
-Open the CLR walkthrough panel. The `st-tactic-assumptions` validator fires on any `injection` entity in an S&T diagram that has fewer than three incoming `necessaryCondition` edges. In the TP Studio S&T model, NA, PA, and SA are all represented as `necessaryCondition` entities feeding into the tactic node. If you've filled the four facets in the Inspector's S&T facets section, TP Studio creates those edges automatically — but if you added assumptions manually as separate entities without using the facets section, check that each tactic has all three.
+Open the CLR walkthrough panel. The `st-tactic-assumptions` validator reads the three assumption facets stored on each tactic (the Inspector's **S&T facets** section) and asks for the ones the step's position calls for: the necessary assumption if the step has a parent, the sufficiency assumption if it has children, the parallel assumption always. The warning names which required assumptions are still empty — so the apex is never nagged for a necessary assumption, nor a leaf for a sufficiency one. Fill the facets in the inspector rather than adding separate assumption nodes; the facets are the argument.
 
 Check the method checklist in the Document Inspector. Tick off `st.na`, `st.pa`, `st.sa`, and `st.decompose` as you complete them. When all six steps are checked, you're through the prescribed method.
 
@@ -187,7 +188,8 @@ Facet-level disagreements cluster, and the clustering tells you something useful
 > - `Cmd+K → Load example…` → select **Strategy & Tactics Tree** to load a 2-level reference tree demonstrating the 5-facet rendering.
 > - **5-facet card rendering**: an `injection` entity in an `st` diagram with any of the four reserved attribute keys (`stStrategy` / `stNecessaryAssumption` / `stParallelAssumption` / `stSufficiencyAssumption`) filled in renders as a tall 5-row card with labeled rows. Click any row on the canvas to inline-edit it. The entity title is always the Tactic row.
 > - **S&T facets section** in the Entity Inspector — surfaces automatically for injection entities in `st` diagrams. The four input fields map to the four reserved attribute keys; filling any one triggers the tall-card layout.
-> - **`st-tactic-assumptions` validator** (CLR clarity tier) fires on any `injection` entity in an S&T diagram with fewer than three incoming `necessaryCondition` edges — one for NA, one for PA, one for SA. The warning message names how many facets are missing.
+> - **`st-tactic-assumptions` validator** (CLR clarity tier) reads the three assumption facets on each tactic and, position-aware, asks for the necessary assumption only when the step has a parent, the sufficiency assumption only when it has children, and the parallel assumption always. The message names which required assumptions are missing.
+> - **`st-tactic-fold-in` validator** (CLR sufficiency tier) flags a step that decomposes into exactly one sub-step — a real decomposition needs two or more jointly-sufficient sub-steps, or the single child should fold back in.
 > - **`st-tactic-rollup` validator** (CLR sufficiency tier) fires on a non-apex tactic (`injection`) with no child tactics feeding up into it — a layer that should decompose into the next level down but doesn't. Add its children, or accept it as a genuine leaf.
 > - **6-step method checklist** in the Document Inspector (`st.apex` → `st.tactic` → `st.na` → `st.pa` → `st.sa` → `st.decompose`) — tick each step as you complete it. Tracks progress on the prescribed build sequence and surfaces in any PPTX export.
 
@@ -206,8 +208,8 @@ Facet-level disagreements cluster, and the clustering tells you something useful
 > - **Building the whole tree before challenging any node.** An S&T built by one person in isolation is just that person's assumptions, formalized. The value comes from presenting each node — especially the PA and SA — to the people who will execute it, and watching where they push back.
 
 > **🛑 When to stop**
-> - Every node has all five facets filled. No empty rows on any canvas card.
-> - The `st-tactic-assumptions` validator has no open warnings — each tactic has a NA, PA, and SA.
+> - Every node has the facets its position calls for — a strategy, a tactic, a parallel assumption, plus a necessary assumption on every non-apex step and a sufficiency assumption on every step you decomposed.
+> - The `st-tactic-assumptions` and `st-tactic-fold-in` validators have no open warnings.
 > - Leaf tactics are operational: a named team can schedule the work without needing to ask structural questions.
 > - Each parent's tactic is covered by the combined strategies of its children. No coverage gap.
 > - Every PA names the alternatives that were rejected and why.

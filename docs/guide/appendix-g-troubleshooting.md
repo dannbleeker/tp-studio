@@ -67,8 +67,9 @@ A finished diagram that's subtly wrong is more dangerous than an obviously unfin
 | More than one apex Goal. | `goalTree-multiple-goals` | One-click **Convert extras to CSFs**, or genuinely split the analysis. |
 | A CSF has no Necessary Conditions beneath it. | `goalTree-csf-no-ncs` | Add the conditions that must hold for it — a bare CSF is an assertion, not a plan. |
 | Fewer than 3, or more than 5, CSFs. | `goalTree-csf-count` | Dettmer's band is 3–5: too few misses make-or-break conditions; too many usually means some are really NCs a tier down. |
-| An S&T tactic has fewer than three assumption facets. | `st-tactic-assumptions` | Add the Necessary / Parallel / Sufficiency assumptions — the facets *are* the argument. |
-| A non-apex tactic has no children. | `st-tactic-rollup` | Decompose it into the next level, or mark it a genuine leaf. |
+| An S&T step is missing an assumption its position calls for. | `st-tactic-assumptions` | Add the ones named: the necessary assumption (steps with a parent), the parallel assumption (always), the sufficiency assumption (steps with children) — the facets *are* the argument. The apex needs no necessary assumption; a leaf needs no sufficiency one. |
+| A non-apex step has no children. | `st-tactic-rollup` | Decompose it into the next level, or mark it a genuine leaf. |
+| A step decomposes into exactly one sub-step. | `st-tactic-fold-in` | Split it into two or more jointly-sufficient sub-steps, or fold the single child back in. |
 
 ### Feedback loops (any diagram with a cycle)
 

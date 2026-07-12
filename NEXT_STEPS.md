@@ -86,20 +86,16 @@ Ch34 Ferguson.
 - Note: the Handbook's canonical CLR list is **7 categories in 3 ordered levels** and omits
   `tautology`; ours (8th) is Dettmer's — keep it, this is not a removal.
 
-### B. Strategy & Tactics model correction (ACTIVE — genuine modeling gap)
-- `ACTIVE` **Assumptions belong on the *step*, directionally.** Today all 3 facets hang on the
-  tactic (`st-facet-card`). Remodel: **Necessary A.** justifies step→parent; **Parallel A.** bridges
-  Strategy→Tactic; **Sufficiency A.** justifies step→children. *Ch34 (Ferguson); Ch25 (Scheinkopf).*
-- `ACTIVE` **Position-aware S&T validators** (replace blanket `st-tactic-assumptions`): root has no
-  NA; leaf has no SA; single-child "fold-in" (parent must split into ≥2); Strategy-as-outcome vs
-  Tactic-as-action phrasing lint; Parallel-Assumption sufficiency bridge ("if S & PAs then T").
-  *Ch34 (Ferguson), Table 25-7 fn23.*
-- `ACTIVE` **5-slot node render (NA→S→PA→T→SA)** with S/T as the visible spine, assumptions
-  collapsible; directional read-aloud helpers (necessity up, sufficiency down). *Ch34 Figs 34-3/34-6.*
-- `EXTENDS` **S&T plain-language assumption aliases** toggle ("Assumptions Behind Strategy/Tactics /
-  Take Note!"). *Ch31 appendix.*
-- `EXTENDS` **S&T method-checklist gate:** "run a full CRT/EC/FRT analysis first; every assumption
-  must already be a validated fact of life; S&T replaces the PRT." *Ch34 (Ferguson).*
+### B. Strategy & Tactics model correction — ✅ COMPLETE Session 198 (mostly Ch34 Ferguson)
+- **Directional assumptions + position-aware validators** — ✅ **shipped Session 198**: `st-tactic-assumptions`
+  is now position-aware (necessary only with a parent, sufficiency only with children, parallel always);
+  new `st-tactic-fold-in` flags a one-child decomposition; the card/inspector labels became plain
+  directional words (Necessary ↑ / Parallel ↔ / Sufficiency ↓) with tooltips + a read-aloud line; the
+  method checklist gained the analysis-first gate (run CRT/EC/FRT first; S&T replaces the PRT) and the
+  build steps were reworded directionally. See CHANGELOG S198 + appendix-c.
+  - *Deferred (noted):* the fuzzy **Strategy-as-outcome vs Tactic-as-action phrasing lint** (false-positive
+    noise) and a **collapsible strategy/tactic "spine" card redesign** with the Tactic between Parallel and
+    Sufficiency (touches the fixed card height + the canvas==export geometry invariant — pure polish).
 
 ### C. Cross-tree integration (ACTIVE / larger)
 - `ACTIVE` **CRT↔FRT invert.** One click turns UDEs into an FRT desired-effects checklist, flags
