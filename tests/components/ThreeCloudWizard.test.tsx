@@ -57,6 +57,48 @@ describe('ThreeCloudWizard', () => {
     expect(s().threeCloudOpen).toBe(false);
   });
 
+  it('flips D/D′ on a single cloud in the consolidation grid (backlog D4)', () => {
+    act(() => {
+      s().openThreeCloud();
+    });
+    const view = render(<ThreeCloudWizard />);
+    const set = (label: string, value: string): void => {
+      act(() => {
+        fireEvent.change(view.getByLabelText(label), { target: { value } });
+      });
+    };
+
+    set('Undesirable effect 1', 'Releases slip');
+    set('Action you take 1', 'Firefight');
+    set('Action you feel you should take instead 1', 'Hold the plan');
+    set('Undesirable effect 2', 'Bugs recur');
+    set('Undesirable effect 3', 'Burnout');
+
+    act(() => {
+      fireEvent.click(view.getByRole('button', { name: /Next: consolidate/i }));
+    });
+
+    const flip = view.getByRole('button', { name: /Flip cloud 1/i });
+    const card = flip.closest('div.rounded-md') as HTMLElement;
+    const order = (): { fire: number; hold: number } => {
+      const t = card.textContent ?? '';
+      return { fire: t.indexOf('Firefight'), hold: t.indexOf('Hold the plan') };
+    };
+
+    // Before flip: D = "Firefight" precedes D′ = "Hold the plan".
+    const before = order();
+    expect(before.fire).toBeGreaterThanOrEqual(0);
+    expect(before.fire).toBeLessThan(before.hold);
+
+    act(() => {
+      fireEvent.click(flip);
+    });
+
+    // After flip: "Hold the plan" now occupies the D slot, ahead of "Firefight".
+    const after = order();
+    expect(after.hold).toBeLessThan(after.fire);
+  });
+
   it('keeps "Next" disabled until all three UDEs are named', () => {
     act(() => {
       s().openThreeCloud();

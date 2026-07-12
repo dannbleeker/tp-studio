@@ -227,7 +227,9 @@ Fill in the six fields. The wizard doesn't ask you to resolve anything yet — i
 
 ### Step 2 — Consolidate to a single Core Cloud
 
-The second step shows the three do-vs-should-do pairs side by side and asks you to find the one cloud underneath all of them. This is the consolidation move at the heart of the method: multiple UDE clouds that share a shape collapse into one Core Cloud.
+The second step shows the three do-vs-should-do pairs side by side in a **consolidation grid** and asks you to find the one cloud underneath all of them. This is the consolidation move at the heart of the method: multiple UDE clouds that share a shape collapse into one Core Cloud.
+
+🛠 **Line the clouds up first (Cohen's "Flipping Clouds", Ch. 24):** consolidation only works if the three clouds point the same way — every **D** the same *kind* of move, every **D′** its opposite. When you capture on the fly it's easy to write one cloud back-to-front (your "what I do" is another cloud's "what I should do instead"). The grid gives each row a **⇄ Flip** button that swaps its D and D′, so you can realign a reversed cloud with one click before reading down the columns. A cloud whose D′ obviously belongs with the others' Ds is the tell.
 
 Look at the D column — *push hard on every deadline*, *skip the integration window*, *load the team fully*. What need does that pattern serve? Something like: **Hit commitments this quarter**. There's real pressure behind it — contracts, stakeholders, sprint goals.
 

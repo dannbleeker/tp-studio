@@ -34,6 +34,13 @@ Evaporating Clouds are built, checked, presented, and diagnosed (Cohen Ch. 24 + 
   the conflict), so the list captures other candidates beside the node — one may dissolve the conflict
   without the fight. Stored in a new optional `alternativeMeans` entity field (round-trips; omitted
   when empty; blank rows trimmed away on load).
+- **D4 — flipping clouds.** The Rapid 3-cloud diagnosis wizard's consolidation step is now a
+  **grid**: each captured cloud shows its D and D′ sides with a one-click **⇄ Flip** button that
+  swaps them. Cohen's "Flipping Clouds" (Ch. 24) — consolidation only works when the three clouds
+  point the same way (every D the same kind of move, every D′ its opposite), and capturing on the
+  fly often lands one back-to-front. Flipping realigns it before you read down the columns. Pure
+  `flipConflict` domain helper (involutive); all local wizard state, nothing persists until you
+  create the core cloud.
 
 ## Session 197 — Cloud-type wizard modes (backlog D1)
 

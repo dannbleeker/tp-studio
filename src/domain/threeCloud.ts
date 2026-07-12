@@ -94,6 +94,21 @@ export const CONFLICT_FIELD_COPY: Record<
   },
 };
 
+/**
+ * Session 198 (backlog D4) — Cohen's "Flipping Clouds" (Handbook Ch. 24). Before
+ * three clouds can be consolidated, their sides must line up: every D should be
+ * the same *kind* of move and every D′ its opposite. A cloud captured with its
+ * sides reversed is realigned by **flipping** it — swapping D (`doNow`) and D′
+ * (`doInstead`). Pure + involutive (flip twice = identity), so the grid can
+ * offer a one-click toggle. The `ude` is the felt symptom, unaffected by which
+ * side is labelled D.
+ */
+export const flipConflict = (c: CloudConflict): CloudConflict => ({
+  ude: c.ude,
+  doNow: c.doInstead,
+  doInstead: c.doNow,
+});
+
 const DEFAULT_TITLE = 'Core cloud — 3-cloud diagnosis';
 
 /** Map a Core Cloud's fields onto the five EC slots used by the seeded doc. */

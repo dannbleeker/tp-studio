@@ -217,6 +217,7 @@
     {"id":"patterns-goldratt-set","name":"Goldratt canon + published-case patterns","area":"Patterns","since":193,"manual":true,"book":false,"bookExample":false},
     {"id":"patterns-toc-handbook-set","name":"TOC Handbook (Cox & Schleier) pattern set","area":"Patterns","since":196,"manual":true,"book":false,"bookExample":false},
     {"id":"patterns-three-cloud","name":"Rapid 3-cloud diagnosis wizard","area":"EC","since":180,"manual":true,"book":true,"bookExample":true},
+    {"id":"three-cloud-flip","name":"3-cloud consolidation grid + per-cloud D/D′ flip","area":"EC","since":198,"manual":true,"book":true,"bookExample":false},
     {"id":"general-tabs","name":"Multi-document tabs","area":"General","since":138,"manual":true,"book":true,"bookExample":true},
     {"id":"general-pwa","name":"PWA install + offline","area":"General","since":89,"manual":true,"book":true,"bookExample":false},
     {"id":"general-about","name":"About dialog","area":"General","since":111,"manual":true,"book":false,"bookExample":false},

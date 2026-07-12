@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, ArrowRight, Sparkles, X } from 'lucide-react';
 import { type RefObject, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -12,6 +12,7 @@ import {
   type CloudConflict,
   CONFLICT_FIELD_COPY,
   type CoreCloud,
+  flipConflict,
   THREE_CLOUD_COUNT,
 } from '@/domain/threeCloud';
 import { useDelayedFocus } from '@/hooks/useDelayedFocus';
@@ -120,32 +121,59 @@ function ConsolidateStep({
   core,
   title,
   onCoreField,
+  onFlip,
   onTitle,
 }: {
   conflicts: CloudConflict[];
   core: CoreCloud;
   title: string;
   onCoreField: (key: keyof CoreCloud, value: string) => void;
+  onFlip: (index: number) => void;
   onTitle: (value: string) => void;
 }) {
   return (
     <div className={stepClass}>
       <div className="rounded-lg border border-accent-100 bg-accent-50/50 p-3 dark:border-accent-900/40 dark:bg-accent-950/20">
         <p className={labelClass}>The three conflicts</p>
-        <ul className="mt-1 flex flex-col gap-1 text-[11px] text-neutral-700 dark:text-neutral-200">
+        <p className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+          Line them up so every <strong>D</strong> is the same kind of move and every{' '}
+          <strong>D′</strong> its opposite — <em>flip</em> any that are reversed — then write the
+          one conflict beneath them.
+        </p>
+        <div className="mt-2 flex flex-col gap-1.5">
           {conflicts.map((c, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length positional slots, never reordered.
-            <li key={i}>
-              <span className="font-medium">{c.ude.trim() || `Cloud ${i + 1}`}</span>
-              {c.doNow.trim() && c.doInstead.trim() ? (
-                <span className="text-neutral-500 dark:text-neutral-400">
-                  {' '}
-                  — {c.doNow} vs {c.doInstead}
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length positional slots, never reordered.
+              key={i}
+              className="rounded-md border border-neutral-200/70 bg-white/50 p-2 dark:border-neutral-800/70 dark:bg-neutral-900/30"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-[11px] text-neutral-700 dark:text-neutral-200">
+                  {c.ude.trim() || `Cloud ${i + 1}`}
                 </span>
-              ) : null}
-            </li>
+                <button
+                  type="button"
+                  onClick={() => onFlip(i)}
+                  aria-label={`Flip cloud ${i + 1} (swap D and D′)`}
+                  className="flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                >
+                  <ArrowLeftRight className="h-3 w-3" aria-hidden />
+                  Flip
+                </button>
+              </div>
+              <div className="mt-1 grid grid-cols-[1.25rem_1fr] gap-x-2 gap-y-0.5 text-[11px]">
+                <span className="font-semibold text-neutral-400">D</span>
+                <span className="text-neutral-700 dark:text-neutral-200">
+                  {c.doNow.trim() || '—'}
+                </span>
+                <span className="font-semibold text-neutral-400">D′</span>
+                <span className="text-neutral-700 dark:text-neutral-200">
+                  {c.doInstead.trim() || '—'}
+                </span>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
       <p className={hintClass}>
         What single conflict sits under all three? Write the one core cloud — the shared objective,
@@ -212,6 +240,11 @@ export function ThreeCloudWizard() {
   const setCoreField = (key: keyof CoreCloud, value: string): void => {
     setCore((prev) => ({ ...prev, [key]: value }));
   };
+  // D4 — "Flipping Clouds": swap D/D′ on one captured cloud to align it with the
+  // others before consolidating.
+  const flipConflictAt = (index: number): void => {
+    setConflicts((prev) => prev.map((c, j) => (j === index ? flipConflict(c) : c)));
+  };
 
   const allUdesNamed = conflicts.every((c) => c.ude.trim() !== '');
   const allCoreFilled = (Object.values(core) as string[]).every((v) => v.trim() !== '');
@@ -251,6 +284,7 @@ export function ThreeCloudWizard() {
           core={core}
           title={title}
           onCoreField={setCoreField}
+          onFlip={flipConflictAt}
           onTitle={setTitle}
         />
       )}

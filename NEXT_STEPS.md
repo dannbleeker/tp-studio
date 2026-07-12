@@ -113,7 +113,7 @@ Ch34 Ferguson.
 - `DECISION` **Chained multi-tree "project" workflow** (Dettmer CMM 7-step + OODA overlay; Barnard
   Five-Question one-diagram-per-day). Bigger than the `method-path` stepper — scope call. *Ch19; Ch15 Table 15-3.*
 
-### D. Evaporating Cloud craft (ACTIVE — mostly Ch24 Cohen)
+### D. Evaporating Cloud craft — ✅ COMPLETE Session 197–198 (D1–D6; mostly Ch24 Cohen, D6 Ch27 Cheng)
 - **Cloud-type wizard modes** — ✅ **shipped Session 197 (D1)**: the wizard's optional "Cloud type"
   selector drives Cohen's per-type build order + guiding questions + best-arrow-to-break hint (all six
   types); Generic stays the default (see CHANGELOG). *A per-type reading order for the verbalisation
@@ -124,8 +124,9 @@ Ch34 Ferguson.
   flags boxes that read as cause-and-effect sentences (if/because/therefore/in order to/sure to); two
   EC method steps cover the human calls — "tidy the box wording" (D/D′ actions, B/C needs) and "read
   the diagonals" (D hurts C, D′ hurts B). *Ch24.*
-- `EXTENDS` **Three-cloud flip + consolidation grid** — side-by-side merge with one-click B↔C / D↔D′
-  flip. Extends `patterns-three-cloud`. *Ch24 "Flipping Clouds."*
+- **Three-cloud flip + consolidation grid** — ✅ **shipped Session 198 (D4)**: the 3-cloud wizard's
+  consolidation step is a grid with a per-cloud ⇄ flip (swaps D/D′) to align the three before writing
+  the core cloud. Pure `flipConflict` helper. *Ch24 "Flipping Clouds."*
 - **Audience-specific verbalisation order** — ✅ **shipped Session 198 (D5)**: the verbalisation
   strip's opt-in `D′-first` toggle reads the cloud leading with the D′ (own) side; default off.
 - **"Reframe your Need" + alternative means** — ✅ **shipped Session 198 (D6)**: a "Need or position?"

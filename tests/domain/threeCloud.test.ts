@@ -4,6 +4,7 @@ import { exportToJSON, importFromJSON } from '@/domain/persistenceJson';
 import {
   buildThreeCloudCoreDoc,
   type CloudConflict,
+  flipConflict,
   summariseConflicts,
   type ThreeCloudInput,
 } from '@/domain/threeCloud';
@@ -38,6 +39,22 @@ const titleOfSlot = (
   doc: ReturnType<typeof buildThreeCloudCoreDoc>,
   slot: ECSlot
 ): string | undefined => Object.values(doc.entities).find((e) => e.ecSlot === slot)?.title;
+
+describe('flipConflict (backlog D4 — Flipping Clouds)', () => {
+  it('swaps D and D′, leaving the undesirable effect untouched', () => {
+    const flipped = flipConflict({
+      ude: 'Releases slip',
+      doNow: 'Firefight',
+      doInstead: 'Hold plan',
+    });
+    expect(flipped).toEqual({ ude: 'Releases slip', doNow: 'Hold plan', doInstead: 'Firefight' });
+  });
+
+  it('is involutive — flipping twice returns the original', () => {
+    const original = sampleConflicts[0]!;
+    expect(flipConflict(flipConflict(original))).toEqual(original);
+  });
+});
 
 describe('buildThreeCloudCoreDoc', () => {
   it('produces an EC document tagged as a core cloud', () => {
