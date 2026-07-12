@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 199 — Negative Branch readability (backlog E)
+
+- **Turning-point guidance.** A Negative Branch Reservation walks an injection → … → UDE *spine*; the
+  **turning point** is the edge where it flips from "so far so good" to "yes, but…". A new pure
+  derivation (`nbrBackbone`) traces the longest directed injection→UDE spine and finds its first
+  negative-polarity edge, and the Edge Inspector now surfaces it: select the turning-point arrow on an NBR
+  and it's called out in rose ("this is where the branch turns negative"); on any other NBR arrow, a hint
+  ties the (already-wired) negative polarity to the method — mark the arrow where the chain first turns
+  against you. Read-only, derived (nothing stored); the ± polarity itself has been rendered on NBR edges
+  since Session 180 (*Handbook* Ch. 24, Cohen). *(The entity type already labels each node's role —
+  Injection / Effect / Desired Effect / UDE — so the "typed roles" ask is largely met by the existing
+  node label; an on-canvas emphasis of the spine vs. side branches is a noted follow-on.)*
+
 ## Session 199 — Prerequisite-Tree Obstacle/Objective intake table (backlog E)
 
 - **Obstacle/Objective intake table.** A new palette command (*Add obstacles + objectives (intake

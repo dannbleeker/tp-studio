@@ -160,8 +160,14 @@ A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversaria
   mints obstacle + IO + objective→obstacle necessity edge per row in ONE undo step (single-apex-goal
   rooting when present). show-stopper → obstacle attribute, blocking-factor → description; batched-create
   `addObstacleIoRows` mirrors `trimBranch`. *Ch24 Tables 24-10/11.*
-- `EXTENDS` **NBR readability:** typed roles (Injection/Current/Neutral/DE/UDE), backbone-vs-side,
-  +/− polarity on backbone arrows to locate the "turns negative" point. *Ch24 (Cohen) Fig 24-16.* **Open.**
+- **NBR readability** — ✅ **shipped Session 199**: a pure `nbrBackbone` derivation (longest directed
+  injection→UDE spine + first negative edge = the turning point); the Edge Inspector calls out the
+  turning-point arrow and ties negative polarity to the method. +/− polarity itself was already rendered
+  on NBR edges (S180). Typed roles are already the node's type label (Injection/Effect/DE/UDE), so no
+  separate pill was added. *Ch24 (Cohen) Fig 24-16.*
+  - *Remaining follow-on (optional polish):* on-canvas emphasis of the spine vs. side branches (dim
+    side branches + a turning-point badge) — needs the edge-emission integration; deferred to keep the
+    readability change low-risk.
 
 ### F. Terminology / method / UX polish — ✅ COMPLETE Session 198
 - **Goal-vs-NC inline definitions** — ✅ **shipped Session 198**: an inspector note card on Goal-Tree

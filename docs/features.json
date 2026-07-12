@@ -64,6 +64,7 @@
     {"id":"nbr-diagram","name":"Negative Branch Reservation","area":"NBR","since":134,"manual":true,"book":false,"bookExample":false},
     {"id":"nbr-trim-branch","name":"NBR trim-branch injection","area":"NBR","since":157,"manual":true,"book":false,"bookExample":false},
     {"id":"nbr-shape-clr","name":"NBR negative-branch shape rules","area":"NBR","since":181,"manual":true,"book":true,"bookExample":false},
+    {"id":"nbr-turning-point","name":"NBR backbone spine + turning-point guidance","area":"NBR","since":199,"manual":true,"book":true,"bookExample":false},
     {"id":"canvas-nodes","name":"Canvas entity cards","area":"Canvas","since":1,"manual":true,"book":true,"bookExample":true},
     {"id":"canvas-grow-cards","name":"Grow cards to fit text","area":"Canvas","since":181,"manual":true,"book":false,"bookExample":false},
     {"id":"blocks-rail","name":"Building Blocks rail","area":"Canvas","since":182,"manual":true,"book":false,"bookExample":false},

@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { EdgeInspector } from '@/components/inspector/EdgeInspector';
 import { resetStoreForTest, useDocumentStore } from '@/store';
+import { makeDoc, makeEdge, makeEntity } from '../domain/helpers';
 import { seedAndGroupable, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);
@@ -589,5 +590,37 @@ describe('AssumptionWell — EC "…because" prefix', () => {
     expect(assns).toHaveLength(1);
     // CRT assumptions still start empty.
     expect(assns[0]?.text).toBe('');
+  });
+});
+
+describe('EdgeInspector — NBR turning-point guidance (E)', () => {
+  const seedNbr = () => {
+    const inj = makeEntity({ type: 'injection', title: 'Cut approvals' });
+    const mid = makeEntity({ type: 'effect', title: 'Deploys speed up' });
+    const ude = makeEntity({ type: 'ude', title: 'Bad changes ship faster' });
+    const up = makeEdge(inj.id, mid.id);
+    const turn = makeEdge(mid.id, ude.id, { weight: 'negative' }); // the turning point
+    useDocumentStore.getState().setDocument(makeDoc([inj, mid, ude], [up, turn], 'nbr'));
+    return { up, turn };
+  };
+
+  it('flags the negative turning-point edge with the strong note', () => {
+    const { turn } = seedNbr();
+    const { container } = render(<EdgeInspector edgeId={turn.id} warnings={[]} />);
+    expect(container.textContent).toContain('Turning point.');
+    expect(container.textContent).toContain('yes, but');
+  });
+
+  it('shows the generic tag-it guidance on a non-turning-point NBR edge', () => {
+    const { up } = seedNbr();
+    const { container } = render(<EdgeInspector edgeId={up.id} warnings={[]} />);
+    expect(container.textContent).not.toContain('Turning point.');
+    expect(container.textContent).toContain('the reservation is all about');
+  });
+
+  it('shows no NBR guidance on a non-NBR diagram', () => {
+    const { edge } = seedConnectedPair(); // default CRT doc
+    const { container } = render(<EdgeInspector edgeId={edge.id} warnings={[]} />);
+    expect(container.textContent).not.toContain('turning point');
   });
 });

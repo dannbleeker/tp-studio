@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { Lightbulb, ListChecks, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { nbrBackbone } from '@/domain/nbrBackbone';
 import type { EdgeWeight, Entity, Warning } from '@/domain/types';
 import { useEdge, useEntity } from '@/hooks/useSelected';
 import { useDocumentStore } from '@/store';
@@ -68,6 +69,13 @@ function JunctorGroupField({
 
 export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: Warning[] }) {
   const edge = useEdge(edgeId);
+  // Session 199 (backlog E) — is this the turning point of an NBR's negative
+  // branch? Derived (nbrBackbone is WeakMap-cached, so this stays cheap).
+  const isNbrTurningPoint = useDocumentStore((s) =>
+    currentDoc(s).diagramType === 'nbr'
+      ? nbrBackbone(currentDoc(s))?.turningPointEdgeId === edgeId
+      : false
+  );
   const source = useEntity(edge?.sourceId);
   const target = useEntity(edge?.targetId);
   // Session 94 (Top-30 #2) — consolidated 12 individual subscriptions
@@ -250,6 +258,21 @@ export function EdgeInspector({ edgeId, warnings }: { edgeId: string; warnings: 
             );
           })}
         </div>
+        {/* Session 199 (backlog E) — NBR-only polarity guidance. Ties the (already
+            wired) negative polarity to the turning-point of the negative branch —
+            where the injection's chain flips to the undesirable effect. */}
+        {diagramType === 'nbr' &&
+          (isNbrTurningPoint ? (
+            <p className="mt-1 text-[11px] text-rose-600 leading-snug dark:text-rose-300">
+              <strong>Turning point.</strong> This is where the branch turns negative — the "yes,
+              but…" that makes the injection risky. Keep it marked <strong>negative</strong>.
+            </p>
+          ) : (
+            <p className="mt-1 text-[11px] text-neutral-500 leading-snug dark:text-neutral-400">
+              On a negative branch, mark the arrow where the chain first turns against you as{' '}
+              <strong>negative</strong> — that's the "turning point" the reservation is all about.
+            </p>
+          ))}
       </Field>
 
       <Field label="Delay" as="group">
