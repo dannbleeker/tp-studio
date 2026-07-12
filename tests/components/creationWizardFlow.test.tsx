@@ -28,7 +28,8 @@ const openWizard = (kind: 'goalTree' | 'crt' | 'ec') => {
 const fillNext = (value: string) => {
   // The step input is the first textbox; on EC an optional "Storyline" textarea
   // (Session 198 / D2) sits below it, so scope to the leading step field.
-  act(() => fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value } }));
+  const stepInput = screen.getAllByRole('textbox')[0] as HTMLElement;
+  act(() => fireEvent.change(stepInput, { target: { value } }));
   act(() =>
     fireEvent.click(screen.getByText(/Next|Finish/).closest('button') as HTMLButtonElement)
   );

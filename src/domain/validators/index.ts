@@ -11,6 +11,7 @@ import { crtDeadBranchRule } from './crtDeadBranch';
 import { crtUdeCountRule } from './crtUdeCount';
 import { crtUdeNoUpstreamRule } from './crtUdeNoUpstream';
 import { crtUdeWordingRule } from './crtUdeWording';
+import { ecBoxCausalWordsRule } from './ecBoxSyntax';
 import { ecCompletenessRule } from './ecCompleteness';
 import { ecMissingConflictRule } from './ecMissingConflict';
 import { entityExistenceRule } from './entityExistence';
@@ -153,6 +154,9 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // Improvement review — EC support edges are uniformly necessity-typed, so
     // the logic-type lint applies (the D↔D′ mutex edge is skipped in the rule).
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),
+    // Session 198 (backlog D3) — Cohen's box-syntax rule: a cloud box is a
+    // clean statement, not a cause-and-effect sentence. Soft clarity nudge.
+    tieredRule('clarity', 'ec-box-causal-words', ecBoxCausalWordsRule),
   ],
   // FL-DT4 — Strategy & Tactics Tree. Structural rules plus the
   // discipline rule: every tactic should declare three assumption
@@ -327,6 +331,7 @@ export { completeStepRule } from './completeStep';
 // that no consumer references were dropped — tests can still target a
 // single rule via direct `./clarity` imports if needed later, with no
 // boilerplate cost.
+export { ecBoxCausalWordsRule } from './ecBoxSyntax';
 export { ecMissingConflictRule } from './ecMissingConflict';
 export { externalRootCauseRule } from './externalRootCause';
 export type { UntieredWarning, ValidatorRule } from './shared';

@@ -72,6 +72,7 @@ Runs the FRT-style set (a negative branch is an FRT subtree that ends in UDEs): 
 | --- | --- | --- |
 | `ec-missing-conflict` | existence | Neither D ↔ D′ edge carries the lightning-bolt mutex marker — the conflict isn't declared. |
 | `ec-completeness` | existence | The brief's structural set: an empty Objective (A); Needs B and C collapsing into one entity; a Need connected to anything other than A; a Want supporting the wrong Need (D → B only, D′ → C only); an arrow with no assumption recorded; no injection captured yet. |
+| `ec-box-causal-words` | clarity | A cloud box whose title reads as a cause-and-effect sentence — it contains *if*, *because*, *therefore*, *in order to*, or *sure to*. Cohen's syntax rule: a box is a clean statement; the reasoning belongs on the arrow as an assumption. |
 
 ### S&T — Strategy & Tactics Tree
 
@@ -130,6 +131,7 @@ These ride the same edge/loop structure across several diagram types:
 | `tt-action-locus-unset` | | | | ✓ | | | | | |
 | `ec-missing-conflict` | | | | | ✓ | | | | |
 | `ec-completeness` | | | | | ✓ | | | | |
+| `ec-box-causal-words` | | | | | ✓ | | | | |
 | `st-tactic-assumptions` | | | | | | | ✓ | | |
 | `st-tactic-rollup` | | | | | | | ✓ | | |
 | `goalTree-multiple-goals` | | | | | | ✓ | | | |

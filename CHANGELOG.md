@@ -20,6 +20,12 @@ Evaporating Clouds are built, checked, presented, and diagnosed (Cohen Ch. 24 + 
   What did I want to do? Why? What did I feel forced to do? Why?" — to gather the raw material
   before filling the boxes. Saved to the document's description; EC-only; nothing changes unless
   it's opened.
+- **D3 — box-syntax checks.** A new soft clarity rule **`ec-box-causal-words`** flags any cloud box
+  whose title reads as a cause-and-effect sentence — it contains *if / because / therefore / in order
+  to / sure to* — because a box should be a clean statement and the reasoning belongs on the arrow as
+  an assumption (Cohen's syntax rule). Two companion EC method-checklist steps make the judgment calls
+  a lint can't: **"Tidy the box wording"** (clean statements; D/D′ are actions, B/C are needs) and
+  **"Read the diagonals"** (does D jeopardize C, and D′ jeopardize B?). Warning only, never blocks.
 
 ## Session 197 — Cloud-type wizard modes (backlog D1)
 

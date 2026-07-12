@@ -189,9 +189,19 @@ const EC: MethodStep[] = [
     hint: 'Each Need is the prerequisite condition the corresponding Want is trying to satisfy.',
   },
   {
+    id: 'ec.syntax',
+    label: 'Tidy the box wording — clean statements, right kinds',
+    hint: 'Each box is a statement, not a cause-and-effect sentence (no "if / because / in order to" — those belong on the arrows). D and D′ are actions; B and C are the positive needs they serve.',
+  },
+  {
     id: 'ec.verbalize',
     label: 'Verbalize each edge as a necessary-condition statement',
     hint: '"In order to satisfy [Need], we must obtain [Want]" — read every edge aloud before continuing.',
+  },
+  {
+    id: 'ec.jeopardy',
+    label: 'Read the diagonals — does each side jeopardize the other?',
+    hint: 'Say it aloud: "Doing D puts need C in jeopardy; doing D′ puts need B in jeopardy." If a diagonal doesn\'t bite, the conflict isn\'t real yet.',
   },
   {
     id: 'ec.assumptions',

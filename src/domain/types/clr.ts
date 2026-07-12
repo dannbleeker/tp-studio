@@ -65,6 +65,11 @@ export type ClrRuleId =
   // completeness check (empty A, B≡C, B/C only feed A, D/D′ only feed
   // their need, missing assumption per arrow, missing injection).
   | 'ec-completeness'
+  // EC-specific (Session 198, backlog D3): a cloud box whose title reads as a
+  // cause-and-effect sentence (if / because / in order to …). Cohen's syntax
+  // rule (Handbook Ch. 24) — boxes are clean statements; causality lives on
+  // the arrows. Soft clarity nudge.
+  | 'ec-box-causal-words'
   // Goal Tree-specific (Session 79): more than one apex `goal` entity
   // on a Goal Tree document. Soft warning — the user can dismiss it
   // and continue, OR click the action button to convert extra goals

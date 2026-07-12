@@ -98,6 +98,8 @@ Both wants are concrete actions. They conflict because the lead is one person �
 
 The wizard closes; the canvas now shows the 5-box EC. Click the edge between D and D′ (if it exists; otherwise, draw it). Inspector → Mutual exclusion toggle → on. The edge turns red with a ⚡ glyph. The `ec-missing-conflict` validator stops firing.
 
+🛠 **How TP Studio helps — box syntax:** Cohen's rule is that a box is a clean *statement*, never a cause-and-effect sentence. If a box title carries a causal connector — *if*, *because*, *therefore*, *in order to*, *sure to* — the `ec-box-causal-words` clarity warning nudges you to move the reasoning onto the arrow as an assumption, where it belongs. Two judgment calls a lint can't make live in the EC **method checklist** instead: *"tidy the box wording"* (D and D′ are actions; B and C are the positive needs they serve) and *"read the diagonals"* — say aloud "doing D puts need C in jeopardy; doing D′ puts need B in jeopardy." If a diagonal doesn't bite, the conflict isn't real yet.
+
 ## Step 8 — Verbalize
 
 Open the **VerbalisationStrip** above the canvas (it's there by default on EC docs). It renders the cloud as a paragraph:

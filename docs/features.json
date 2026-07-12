@@ -22,6 +22,7 @@
     {"id":"ec-assumption-well","name":"EC Assumption Well","area":"EC","since":77,"manual":true,"book":true,"bookExample":true},
     {"id":"ec-injection-workbench","name":"EC injection workbench","area":"EC","since":77,"manual":true,"book":true,"bookExample":true},
     {"id":"ec-completeness-clr","name":"EC completeness CLR rules","area":"EC","since":77,"manual":true,"book":true,"bookExample":false},
+    {"id":"ec-box-syntax-clr","name":"EC box-syntax lint (causal words) + jeopardy/syntax method steps","area":"EC","since":198,"manual":true,"book":true,"bookExample":false},
     {"id":"ec-creation-wizard","name":"EC creation wizard","area":"EC","since":78,"manual":true,"book":true,"bookExample":true},
     {"id":"ec-wizard-d-first","name":"EC D-first wizard walk","area":"EC","since":87,"manual":true,"book":true,"bookExample":false},
     {"id":"ec-cloud-type-wizard","name":"Cloud-type wizard modes (per-type build order + prompts + break hint)","area":"EC","since":197,"manual":true,"book":true,"bookExample":true},

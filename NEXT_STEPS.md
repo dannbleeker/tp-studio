@@ -120,8 +120,10 @@ Ch34 Ferguson.
   strip (feeds D5) was deferred.*
 - **"Storyline" pre-step** — ✅ **shipped Session 198 (D2)**: optional default-collapsed incident
   free-text in the EC wizard → doc description. *Ch24 Step 2.*
-- `EXTENDS` **EC syntax/quality checks** (beyond `ec-completeness`): no causal words in boxes; D/D′
-  conflicting verb-led actions; B/C positive needs; diagonal jeopardy (D hurts C, D′ hurts B). *Ch24.*
+- **EC syntax/quality checks** — ✅ **shipped Session 198 (D3)**: `ec-box-causal-words` soft rule
+  flags boxes that read as cause-and-effect sentences (if/because/therefore/in order to/sure to); two
+  EC method steps cover the human calls — "tidy the box wording" (D/D′ actions, B/C needs) and "read
+  the diagonals" (D hurts C, D′ hurts B). *Ch24.*
 - `EXTENDS` **Three-cloud flip + consolidation grid** — side-by-side merge with one-click B↔C / D↔D′
   flip. Extends `patterns-three-cloud`. *Ch24 "Flipping Clouds."*
 - **Audience-specific verbalisation order** — ✅ **shipped Session 198 (D5)**: the verbalisation
