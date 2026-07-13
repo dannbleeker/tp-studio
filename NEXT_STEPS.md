@@ -130,11 +130,12 @@ A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversaria
   CRT → EC/FRT/NBR → PRT/TT → S&T), with per-stage create / spawn / open + progress. App-level state in
   localStorage (no schema change); reuses the shipped spawn bridges. Palette: *Analysis journey…*. See
   CHANGELOG S200. *Ch15 Table 15-3 (Barnard); Ch19 (Dettmer).*
-  - *Remaining bigger options (deferred, scope calls):* **L2 first-class Projects** — a Start-screen
-    projects gallery + multiple concurrent named projects + membership management (heavier persisted
-    container + navigation surface); and **CMM 7-step / OODA framework presets** — alternate journey
-    frameworks beside Barnard's five questions (Dettmer's Constraint Management Model, an OODA overlay).
-    Build either only on an explicit ask.
+  - *Remaining option (deferred, scope call):* **L2 first-class Projects** — a Start-screen projects
+    gallery + multiple concurrent named projects + membership management (heavier persisted container +
+    navigation surface). Build only on an explicit ask.
+  - ✗ **Declined (Dann, 2026-07-13):** **CMM 7-step / OODA framework presets** (alternate journey
+    frameworks beside Barnard's five questions). Barnard's five questions are the shipped spine; extra
+    frameworks add UI without diagramming value. Won't build.
 
 ### D. Evaporating Cloud craft — ✅ COMPLETE Session 197–198 (D1–D6; mostly Ch24 Cohen, D6 Ch27 Cheng)
 - **Cloud-type wizard modes** — ✅ **shipped Session 197 (D1)**: the wizard's optional "Cloud type"
@@ -209,19 +210,18 @@ folded into `ec-speak-up-vs-stay-safe` + `ec-cost-vs-throughput` rather than dup
     without a concrete scenario, so they'd dilute the curated library rather than add teaching value. Build
     them the same way only if the complete book set is explicitly wanted.
 
-### H. Facilitation / change-management — DECISION (E2 was dropped S179; do NOT build unilaterally)
-The book gives far richer material than the E2 review had, so these may be worth a *re-decision* —
-but Dann dropped the Layers-of-Resistance panel (E2) Session 179 as "beyond a diagramming tool's
-scope," and audit-trail/AI were dropped too. Parked here pending an explicit re-open.
-- `DECISION` **Layers-of-Resistance "Get Buy-In" mode** — a guided L1–L9 flow mapping each layer to
-  the tree it needs (L1 UDEs+GoalTree, L2 CRT+3-cloud, L4 FRT, L5 NBR, L6 PRT/S&T, L7 TT, L8 risk).
-  *Ch20 (Goldratt-Ashlag) Fig 20-3.* Supporting parts: L5-vs-L6 disambiguator; layer-tagged objection
-  parking-lot (on existing comments); Layer-3 "criteria for a good solution" checklist; Layer-8 risk
-  object; "sense of ownership" framing; workshop buy-in checklist (~⅓ time to buy-in, *Ch27 Cheng*).
-- `DECISION` **CORE-cycle injection pipeline** (Urgency→Expectations→Commitment→Value→Validation)
-  replacing the binary implemented-flag. *Ch5 (Newbold).* Audit-adjacent.
-- `DECISION` **Decision-Record fields** on assumptions/injections (trigger / expected-by / inputs /
-  owner / corrective-action link). *Ch15 (Barnard).* Audit-trail-adjacent (see Out-of-scope).
+### H. Facilitation / change-management — ✗ DECLINED (Dann, 2026-07-13)
+Reviewed and **declined** — facilitation- and audit-adjacent, beyond a diagramming tool's scope
+(consistent with the E2 / AI / audit-trail drops in *Out of scope*). Kept here for the record; re-open
+only on an explicit ask.
+- ✗ **Layers-of-Resistance "Get Buy-In" mode** — a guided L1–L9 flow mapping each layer to the tree it
+  needs (L1 UDEs+GoalTree, L2 CRT+3-cloud, L4 FRT, L5 NBR, L6 PRT/S&T, L7 TT, L8 risk). *Ch20
+  (Goldratt-Ashlag) Fig 20-3.* (The E2 Layers-of-Resistance panel was already dropped S179; this richer
+  re-decision is declined too.)
+- ✗ **CORE-cycle injection pipeline** (Urgency→Expectations→Commitment→Value→Validation) replacing the
+  binary implemented-flag. *Ch5 (Newbold).* Audit-adjacent.
+- ✗ **Decision-Record fields** on assumptions/injections (trigger / expected-by / inputs / owner /
+  corrective-action link). *Ch15 (Barnard).* Audit-trail-adjacent.
 
 ---
 
