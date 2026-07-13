@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 202 — Hover-fan: crossing-free slot order (backlog polish)
+
+- **Converging edges fan without crossing.** When several edges converge on one node and you hover the
+  group, they spread apart so an overlapping one can be grabbed. The slot order used to be by source id
+  (position-blind), so when the id order didn't match the sources' left-to-right layout the fanned edges
+  could cross. The slots are now ordered by each edge's **live source X** — a left-hand source always gets
+  a left-hand slot — so the fan never crosses.
+- **No perf-boundary cost.** The fan is hover-only over a static layout (node drags don't fan), so the
+  position sort runs only while a group is hovered — the edge-emission memo stays structural-only (no node
+  positions), exactly as before. Emission stamps the convergence group's source ids (`fanSiblings`); the
+  render layer (`TPEdge`) refines the left-to-right order from live positions at hover time, read
+  imperatively with no new subscription (so a node drag pays nothing). Falls back to the stable source-id
+  order if a position is momentarily unavailable. *(Closes the backlog hover-fan slot-sort item; the
+  detour / radial-mode fanning item stays deferred.)*
+
 ## Session 201 — Open Flying Logic files by double-click (PWA file handling)
 
 - **Double-click a Flying Logic file → it opens in TP Studio.** The web manifest now declares a

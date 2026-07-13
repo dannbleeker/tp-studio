@@ -29,3 +29,23 @@ export function hoverFanActive(opts: {
 export function hoverFanOffsetX(fanRank: number, fanCount: number, spacing: number): number {
   return (fanRank - (fanCount - 1) / 2) * spacing;
 }
+
+/**
+ * The crossing-free rank for `selfSourceId` among its convergence `siblings`,
+ * ordered left-to-right by source X (tiebreak by id for determinism). Assigning
+ * the fan slots in this order means an edge from a left-hand source gets a
+ * left-hand slot, so fanned siblings never cross. Returns `-1` when `selfSourceId`
+ * isn't among the siblings (caller falls back to the stable sourceId order).
+ *
+ * Pure — `TPEdge` supplies the live positions on hover (a static layout), so this
+ * never runs against per-frame drag positions.
+ */
+export function fanRankByPositions(
+  selfSourceId: string,
+  siblings: { id: string; x: number }[]
+): number {
+  const ordered = [...siblings].sort(
+    (a, b) => a.x - b.x || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+  );
+  return ordered.findIndex((s) => s.id === selfSourceId);
+}

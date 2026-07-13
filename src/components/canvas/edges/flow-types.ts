@@ -102,17 +102,16 @@ export type TPEdgeData = {
    *  (`Edge.loopName`); drives the loop-name label in `TPEdge`. Stamped by
    *  `useGraphEdgeEmission`. Omitted when unnamed. */
   loopName?: string;
-  /** Hover-fan (Session 185) — this edge's rank (0-based) within the group of
-   *  real, non-junctor edges converging on the same target. Stamped by
-   *  `useGraphEdgeEmission` only when the group has 2+ members; `TPEdge` reads it
-   *  on hover to spread the converging edges apart so one can be grabbed directly.
-   *  Order is a stable sourceId sort (this layer is position-free). Omitted when
-   *  the edge doesn't converge with any sibling. */
-  fanRank?: number;
-  /** Hover-fan (Session 185) — total number of edges in this edge's convergence
-   *  group (its fan size). Stamped alongside `fanRank` only when >1; when 1 or
-   *  absent, `TPEdge` does not fan. */
-  fanCount?: number;
+  /** Hover-fan (Session 185) — the source ids of the real, non-junctor edges
+   *  converging on the same target as this edge (including its own source),
+   *  in a stable sourceId sort. Stamped by `useGraphEdgeEmission` only when the
+   *  group has 2+ members; omitted for an edge with no converging sibling.
+   *  `TPEdge` reads it on hover to spread the converging edges apart so one can
+   *  be grabbed. This layer is position-free, so the sourceId order is only a
+   *  deterministic fallback — `TPEdge` refines the left-to-right slot order from
+   *  live node positions at hover time (crossing-free), which needs no positions
+   *  here. Group size (the old `fanCount`) is just `fanSiblings.length`. */
+  fanSiblings?: string[];
   /** Session 199 (backlog E) — NBR readability. `onBackbone: false` marks an
    *  edge OFF the injection→UDE spine (a side branch) so `TPEdge` dims it;
    *  backbone edges and all non-NBR edges leave it undefined (no dimming).

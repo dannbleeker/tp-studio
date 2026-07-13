@@ -193,11 +193,12 @@ export const useGraphEdgeEmission = (
       // Theme A — A4 delay marker + A3 loop name (real, non-aggregated edges only).
       const delay = isAggregated ? false : b.sample.delay === true;
       const loopName = isAggregated ? undefined : b.sample.loopName;
-      // Hover-fan rank/count for this edge's convergence group (real edges only;
-      // aggregated/junctor edges were excluded when the groups were built).
+      // Hover-fan: the source ids of this edge's convergence group (real edges
+      // only; aggregated/junctor edges were excluded when the groups were built).
+      // Position-free here — TPEdge refines the left-to-right slot order from live
+      // positions at hover time; the sourceId sort is just a stable fallback.
       const fanSources = isAggregated ? undefined : fanSourcesByTarget.get(b.targetId);
-      const fanCount = fanSources && fanSources.length > 1 ? fanSources.length : 0;
-      const fanRank = fanCount > 1 ? fanSources!.indexOf(b.sourceId) : 0;
+      const hasFanGroup = fanSources !== undefined && fanSources.length > 1;
       const edge: TPEdge = {
         id: isAggregated ? `agg:${b.sourceId}->${b.targetId}` : b.sample.id,
         source: b.sourceId,
@@ -217,7 +218,7 @@ export const useGraphEdgeEmission = (
           ...(loopPolarity ? { loopPolarity } : {}),
           ...(delay ? { delay: true } : {}),
           ...(loopName ? { loopName } : {}),
-          ...(fanCount > 1 ? { fanRank, fanCount } : {}),
+          ...(hasFanGroup ? { fanSiblings: fanSources } : {}),
           // NBR spine (backlog E): only stamp `onBackbone: false` on a SIDE
           // branch (so TPEdge dims it) — backbone + non-NBR edges stay unstamped
           // and byte-identical. The turning point is the spine's first negative edge.

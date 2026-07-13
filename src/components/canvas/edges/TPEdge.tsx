@@ -9,13 +9,14 @@ import { memo, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/domain/constants';
 import { EDGE_PALETTES } from '@/domain/tokens';
+import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { ChallengeButton } from './ChallengeButton';
 import { ARROW_TRIANGLE_D, arrowheadOnPath, arrowheadTransform } from './edgeArrowhead';
 import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
-import { hoverFanActive, hoverFanOffsetX } from './hoverFan';
+import { fanRankByPositions, hoverFanActive, hoverFanOffsetX } from './hoverFan';
 import { junctorKindField } from './junctorGeometry';
 import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
 import {
@@ -59,6 +60,25 @@ const EDGE_INTERACTION_WIDTH = 56;
  *  the 56px edge hit-tolerance so the hovered edge stays under the pointer as the
  *  group spreads (no hover flicker for the common 2–3-edge convergence). */
 const FAN_SPACING = 16;
+
+/**
+ * Crossing-free fan rank for `selfSource` among its convergence `siblings`, from
+ * the sources' LIVE node X — read imperatively via the cached React Flow instance
+ * (no store subscription), so this is paid only while a group is actually fanning
+ * (hover, static layout) and never on a node drag. Falls back to the stable
+ * sourceId order if the instance isn't ready or any sibling position is missing.
+ */
+function fanRankLive(siblings: string[], selfSource: string): number {
+  const flow = getCanvasInstance();
+  const withX = siblings.map((id) => {
+    const x =
+      flow?.getInternalNode(id)?.internals.positionAbsolute.x ?? flow?.getNode(id)?.position.x;
+    return { id, x: x ?? Number.NaN };
+  });
+  if (withX.some((s) => Number.isNaN(s.x))) return siblings.indexOf(selfSource);
+  const rank = fanRankByPositions(selfSource, withX);
+  return rank >= 0 ? rank : siblings.indexOf(selfSource);
+}
 
 /** Hover-fan (Session 185) — the spread eases in over this duration. Gated to the
  *  active hover (below) so node drags, which also change the path `d`, never pick
@@ -247,15 +267,17 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // a detoured route stays put so it doesn't snap from its obstacle detour to a
   // straight bezier (the "pop"). A fanned edge drops its routed path (below) and
   // falls back to this bezier, so the endpoint offset actually shows.
-  const fanCount = props.data?.fanCount ?? 0;
+  const fanSiblings = props.data?.fanSiblings;
+  const fanCount = fanSiblings?.length ?? 0;
   const fanActive = hoverFanActive({
     isFanGroupHovered,
     fanCount,
     routeWaypointCount: props.data?.route?.waypoints?.length ?? 0,
   });
-  const fanOffsetX = fanActive
-    ? hoverFanOffsetX(props.data?.fanRank ?? 0, fanCount, FAN_SPACING)
-    : 0;
+  // Slot order is refined left-to-right by live source X (crossing-free), only
+  // while fanning; the sourceId order in `fanSiblings` is the fallback.
+  const fanRank = fanActive && fanSiblings ? fanRankLive(fanSiblings, props.source) : 0;
+  const fanOffsetX = fanActive ? hoverFanOffsetX(fanRank, fanCount, FAN_SPACING) : 0;
   // When fanning, anchor the bezier on the routed path's OWN endpoints (a direct
   // route is `[sourceAnchor, targetAnchor]`) so hovering only spreads the target X
   // — no incidental vertical or source jump from swapping the route for the bezier.

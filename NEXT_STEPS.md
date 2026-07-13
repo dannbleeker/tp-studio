@@ -26,12 +26,11 @@ wide noise floor acknowledged. Chasing it with more app code changes is **not** 
 a measurement-infrastructure issue, and the hot path is now clean.
 
 ### Overlapping-edge hover-fan — open polish (small, optional)
-The convergence hover-fan itself shipped (Sessions 177 + 185, see CHANGELOG). Two optional
-refinements remain, neither urgent: (a) it only fans direct-route convergence in flow layouts —
-smart-routed *detours* and radial mode keep their path (fanning a detour would need a re-route,
-not just a bezier offset); (b) slot order is by sourceId — a render-time position sort would
-guarantee crossing-free fanning but would couple edge emission to per-frame drag positions
-(a deliberate perf boundary — needs Dann's call on the trade-off).
+The convergence hover-fan itself shipped (Sessions 177 + 185, see CHANGELOG). One optional refinement
+remains, not urgent: it only fans direct-route convergence in flow layouts — smart-routed *detours* and
+radial mode keep their path (fanning a detour would need a re-route, not just a bezier offset).
+*(The sourceId-vs-position slot-order item shipped **Session 202** — the fan now orders slots by live
+source X, so converging edges never cross; the emission memo stays position-free. See CHANGELOG S202.)*
 
 ### Test-coverage — healthy (reference; no open target)
 ~97% lines / ~85% branches (Session-180 push; CI floors ratcheted to 94 lines / 82 branches). CI floor
