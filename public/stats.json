@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-13T09:15:35.984Z",
-  "commit": "5cbc894",
+  "generatedAt": "2026-07-13T09:43:44.957Z",
+  "commit": "2883549",
   "headline": {
     "linesTsJs": 148327,
     "tests": 4894,
     "lineCoveragePct": 95.73,
-    "commits": 1081,
+    "commits": 1083,
     "ageDays": 62,
     "trackedFiles": 1190,
     "featureManualPct": 99.6,
@@ -61,35 +61,35 @@
       "total": 3452
     },
     "branches": {
-      "pct": 83.93,
-      "covered": 9199,
+      "pct": 83.92,
+      "covered": 9198,
       "total": 10960
     }
   },
   "tests": {
     "unit": 4798,
     "e2e": 96,
-    "durationMs": 283853,
+    "durationMs": 282014,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11794
+        "ms": 11529
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5638
+        "ms": 5523
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5243
+        "ms": 5215
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2758
+        "ms": 2757
       },
       {
         "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 2556
+        "ms": 2537
       }
     ]
   },
@@ -782,16 +782,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 62,
-    "commits": 1081,
-    "commits7d": 109,
+    "commits": 1083,
+    "commits7d": 111,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 779
+        "count": 780
       },
       {
         "name": "github-actions[bot]",
-        "count": 286
+        "count": 287
       },
       {
         "name": "Claude",
@@ -803,8 +803,8 @@
       }
     ],
     "churn30d": {
-      "added": 36329,
-      "removed": 10922
+      "added": 34903,
+      "removed": 10578
     },
     "changelogEntries": 391
   }
