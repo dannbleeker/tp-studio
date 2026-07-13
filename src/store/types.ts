@@ -4,10 +4,11 @@
 
 import type { DocumentSlice } from './documentSlice';
 import type { HistorySlice } from './historySlice';
+import type { JourneySlice } from './journeySlice';
 import type { RevisionsSlice } from './revisionsSlice';
 import type { UISlice } from './uiSlice';
 
-export type RootStore = DocumentSlice & UISlice & HistorySlice & RevisionsSlice;
+export type RootStore = DocumentSlice & UISlice & HistorySlice & RevisionsSlice & JourneySlice;
 
 // Alias retained for backwards compatibility with the original single-file store.
 export type DocumentStore = RootStore;

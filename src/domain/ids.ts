@@ -35,3 +35,10 @@ export const newRevisionId = (): RevisionId => nanoid(10) as RevisionId;
  * (e.g. global evidence registry) has one place to update.
  */
 export const newEvidenceId = (): string => nanoid();
+
+/**
+ * §C — id for an Analysis journey. Plain `string` (not branded): a journey is
+ * app-level state with at most one active at a time, so there is no global
+ * namespace to brand against. Kept here so all id factories share one home.
+ */
+export const newJourneyId = (): string => nanoid();

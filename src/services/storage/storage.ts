@@ -34,6 +34,9 @@ export const STORAGE_KEYS = {
    *  document id. Capped to `REVISIONS_PER_DOC_CAP` per doc; oldest dropped
    *  on overflow. */
   revisions: 'tp-studio:revisions:v1',
+  /** §C — the single active Analysis journey (opt-in guided multi-tree flow).
+   *  JSON-encoded `AnalysisJourney`; absent when no journey is running. */
+  journey: 'tp-studio:journey:v1',
 } as const;
 
 const hasLocalStorage = (): boolean => typeof globalThis.localStorage !== 'undefined';

@@ -10,6 +10,7 @@ import {
 } from '@/services/storage/storage';
 import { createDocumentSlice, documentDefaults } from './documentSlice';
 import { createHistorySlice, historyDefaults } from './historySlice';
+import { createJourneySlice, journeyDefaults } from './journeySlice';
 import { createRevisionsSlice, revisionsDefaults } from './revisionsSlice';
 import type { RootStore } from './types';
 import { createUISlice, uiDefaults } from './uiSlice';
@@ -36,6 +37,7 @@ export const useDocumentStore = create<RootStore>()((...a) => ({
   ...createUISlice(...a),
   ...createHistorySlice(...a),
   ...createRevisionsSlice(...a),
+  ...createJourneySlice(...a),
 }));
 
 // H1 — populate the revisions panel with the boot doc's history. The
@@ -190,6 +192,7 @@ export const resetStoreForTest = (): void => {
     ...uiDefaults(),
     ...historyDefaults(),
     ...revisionsDefaults(),
+    ...journeyDefaults(),
     // Auto-snapshot is a time-based background feature (fires on edit-commit once
     // an interval has elapsed). Off in tests so ordinary edits don't emit
     // surprise 'Auto' revisions; the auto-snapshot suite enables it explicitly.

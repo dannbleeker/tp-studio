@@ -174,6 +174,9 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
         savedDocsVersion: get().savedDocsVersion + 1,
         startSection: section,
       });
+      // §C — a permanently deleted tree can't stay a journey member (no-op when
+      // it isn't one, or when no journey is running).
+      get().removeDocFromJourney(id);
       // Undo affordance — deleting a saved tree used to be instant + irreversible
       // (starkly asymmetric with the app's crash-recovery discipline). Re-persist
       // the body + restore the swept inbound links, and refresh the Start library.
