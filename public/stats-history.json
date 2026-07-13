@@ -233,12 +233,12 @@
   {
     "date": "2026-07-13",
     "linesTsJs": 148184,
-    "coveragePct": 95.72,
+    "coveragePct": 95.7,
     "tests": 4890,
     "bundleKb": 868.2,
     "mutationScore": 74.02,
     "featureManualPct": 99.6,
-    "featureBookPct": 68.6,
-    "featureExamplePct": 23.4
+    "featureBookPct": 68.7,
+    "featureExamplePct": 23.3
   }
 ]
