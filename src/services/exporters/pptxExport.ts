@@ -1,7 +1,7 @@
 import type { Node } from '@xyflow/react';
 import type PptxGenJSDefault from 'pptxgenjs';
 import { findCoreDrivers } from '@/domain/coreDriver';
-import { ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
+import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { entitiesOfType } from '@/domain/graph';
 import { METHOD_BY_DIAGRAM } from '@/domain/methodChecklist';
 import { buildReasoningSentences } from '@/domain/reasoningExport';
@@ -434,7 +434,7 @@ export const exportPPTX = async (
       addSlideTitle(slide, 'Likely Core Driver(s)');
       slide.addText(
         drivers.slice(0, 5).map((d) => ({
-          text: `${d.entity.title || 'Untitled'} (${ENTITY_TYPE_META[d.entity.type].label}) — reaches ${d.reachedUdeCount} UDE${d.reachedUdeCount === 1 ? '' : 's'}`,
+          text: `${d.entity.title || 'Untitled'} (${resolveEntityTypeMeta(d.entity.type, doc.customEntityClasses).label}) — reaches ${d.reachedUdeCount} UDE${d.reachedUdeCount === 1 ? '' : 's'}`,
           options: { bullet: true },
         })),
         {

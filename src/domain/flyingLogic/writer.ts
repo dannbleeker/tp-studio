@@ -1,3 +1,4 @@
+import { resolveEntityTypeMeta } from '../entityTypeMeta';
 import type { EntityType, TPDocument } from '../types';
 import { ENTITY_TYPE_TO_FL, escapeXml } from './typeMaps';
 
@@ -106,7 +107,9 @@ export const exportToFlyingLogic = (doc: TPDocument): string => {
   // Symbols (entity classes the doc actually uses)
   lines.push('  <symbols>');
   for (const type of usedTypes) {
-    lines.push(`    <entityClass name="${escapeXml(ENTITY_TYPE_TO_FL[type])}"/>`);
+    const flClass =
+      ENTITY_TYPE_TO_FL[type] ?? resolveEntityTypeMeta(type, doc.customEntityClasses).label;
+    lines.push(`    <entityClass name="${escapeXml(flClass)}"/>`);
   }
   lines.push('  </symbols>');
 
@@ -117,9 +120,10 @@ export const exportToFlyingLogic = (doc: TPDocument): string => {
   for (const entity of Object.values(doc.entities)) {
     const eid = eidByEntity.get(entity.id);
     if (eid === undefined) continue;
-    lines.push(
-      `      <vertex eid="${eid}" type="entity" entityClass="${escapeXml(ENTITY_TYPE_TO_FL[entity.type])}">`
-    );
+    const flClass =
+      ENTITY_TYPE_TO_FL[entity.type] ??
+      resolveEntityTypeMeta(entity.type, doc.customEntityClasses).label;
+    lines.push(`      <vertex eid="${eid}" type="entity" entityClass="${escapeXml(flClass)}">`);
     lines.push(
       `        <attribute key="title" class="java.lang.String">${escapeXml(entity.title)}</attribute>`
     );

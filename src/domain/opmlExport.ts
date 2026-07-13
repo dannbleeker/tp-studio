@@ -1,4 +1,4 @@
-import { ENTITY_TYPE_META } from './entityTypeMeta';
+import { resolveEntityTypeMeta } from './entityTypeMeta';
 import { outgoingEdges, structuralEntities } from './graph';
 import type { Entity, TPDocument } from './types';
 
@@ -69,7 +69,7 @@ export const exportToOpml = (doc: TPDocument): string => {
   const renderOne = (id: string, depth: number): string[] => {
     const e = doc.entities[id];
     if (!e) return [];
-    const meta = ENTITY_TYPE_META[e.type];
+    const meta = resolveEntityTypeMeta(e.type, doc.customEntityClasses);
     const indent = '  '.repeat(depth + 2); // +2 for <opml> + <body>
     const text = escapeXml(e.title || 'Untitled');
     const attrs = [

@@ -1,4 +1,4 @@
-import { ENTITY_TYPE_META } from './entityTypeMeta';
+import { resolveEntityTypeMeta } from './entityTypeMeta';
 import { structuralEntities } from './graph';
 import type { TPDocument } from './types';
 
@@ -70,7 +70,7 @@ export const exportToVgl = (doc: TPDocument): string => {
   const entities = structuralEntities(doc).sort((a, b) => a.annotationNumber - b.annotationNumber);
 
   for (const e of entities) {
-    const className = ENTITY_TYPE_META[e.type].label;
+    const className = resolveEntityTypeMeta(e.type, doc.customEntityClasses).label;
     out.push(`  entity ${tid(e.id)} class:${q(className)} {`);
     out.push(`    title: ${q(e.title || 'Untitled')}`);
     out.push(`    annotation: ${e.annotationNumber}`);
