@@ -2,6 +2,34 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 205 — Adversarial bug hunt: 13 fixes
+
+A multi-agent bug hunt (8 area finders → 3-skeptic adversarial verification, reading the real code)
+surfaced 15 confirmed defects. 13 are fixed here, each with a regression test; 2 are recorded for a
+focused follow-on (see NEXT_STEPS).
+
+- **Exporters crashed on any custom entity class** (VGL, OPML, Flying Logic, PPTX). They read the
+  built-in-only `ENTITY_TYPE_META[type]` and threw on a custom class id — a user with any custom class
+  couldn't export via these formats. Now resolve through `resolveEntityTypeMeta`.
+- **`reverseEdge` corrupted junctor groups.** Reversing one edge of an AND/OR/XOR group re-pointed its
+  target, leaving a persisted mixed-target group that rendered an incoherent junction. Now strips the
+  junctor membership on reversal and prunes the group left with one member.
+- **`openTab` duplicated an already-open id.** Re-importing a doc that kept its id pushed a duplicate
+  `tabOrder` entry — closing it dropped both copies (the doc vanished). Now replaces the tab in place.
+- **Flying Logic round-trip reset Goal Tree / NBR docs to CRT** — the reader's known-diagram list omitted
+  both; import fell back to CRT, losing the type / palette / method checklist. Added both.
+- **Cascade delete left assumption-anchored comments dangling** — three delete mutators called
+  `pruneComments` without the freshly-pruned assumptions, so a comment on an orphaned assumption survived.
+- **Junctor cause-edges detached from their AND/OR/XOR circle on hover** — a junctor edge sharing its
+  target with plain edges was wrongly given `fanSiblings` and computed a negative fan offset. Junctor
+  edges are now excluded from the `fanSiblings` stamp (plus a defensive rank clamp).
+- **Lower-severity:** `st-tactic-fold-in` no longer false-fires on legacy goal-node S&T patterns (counts
+  only tactic/injection children); the JSON importer's rebuilt annotation counter now includes assumption
+  numbers (no more duplicate `#N` badges); `deleteSavedDoc`'s Undo now restores journey membership too.
+
+Recorded for follow-up (NEXT_STEPS): `findCycles` misses simple cycles that share a closing edge (needs
+Johnson's-per-SCC); junctor terminus X vs circle X disagree in horizontal (EC) layouts.
+
 ## Session 204 — Perf-trace gate: best-of-N metric (fixes `all-actions` too)
 
 - **The perf-trace gate now uses best-of-N, so neither scenario false-fails on runner noise.** The

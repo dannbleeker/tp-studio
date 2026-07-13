@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDocument } from '@/domain/factory';
+import { exportToJSON, importFromJSON } from '@/domain/persistence';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 
@@ -82,5 +83,45 @@ describe('cascade delete prunes assumption-anchored comments (bug-hunt #7)', () 
     // The assumption orphaned and was pruned; its comment must be pruned in
     // lockstep, not left dangling.
     expect(Object.keys(s().doc.comments ?? {})).toHaveLength(0);
+  });
+});
+
+describe('nextAnnotationNumber rebuild includes assumptions (bug-hunt #13)', () => {
+  it('does not re-mint a number an assumption already holds', () => {
+    const a = seedEntity('A'); // annotation 1
+    const b = seedEntity('B'); // annotation 2
+    const edge = s().connect(a.id, b.id);
+    if (!edge) throw new Error('setup');
+    const assumption = s().addAssumptionToEdge(edge.id); // annotation 3 — the max
+    const annNum = assumption?.annotationNumber;
+    if (annNum === undefined) throw new Error('setup');
+
+    // Re-import a copy whose nextAnnotationNumber was dropped (a tolerated-absent
+    // field → the importer recomputes it).
+    const raw = JSON.parse(exportToJSON(s().doc));
+    delete raw.nextAnnotationNumber;
+    const reimported = importFromJSON(JSON.stringify(raw));
+
+    // Must clear the assumption's number, not collide with it.
+    expect(reimported.nextAnnotationNumber).toBe(annNum + 1);
+  });
+});
+
+describe('deleteSavedDoc Undo restores journey membership (bug-hunt #14)', () => {
+  it('re-enrols a deleted member tree when the delete is undone', () => {
+    s().newDocument('crt');
+    s().startJourney(); // enrols the active CRT under 'what'
+    const id = s().activeDocId;
+    s().openTab(createDocument('frt')); // FRT active; the CRT is now a background tab
+    expect(s().journey?.members.some((m) => m.docId === id)).toBe(true);
+
+    s().deleteSavedDoc(id);
+    expect(s().journey?.members.some((m) => m.docId === id)).toBe(false);
+
+    s()
+      .toasts.find((t) => t.action?.label === 'Undo')
+      ?.action?.run();
+
+    expect(s().journey?.members.some((m) => m.docId === id)).toBe(true);
   });
 });

@@ -175,7 +175,9 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
         startSection: section,
       });
       // §C — a permanently deleted tree can't stay a journey member (no-op when
-      // it isn't one, or when no journey is running).
+      // it isn't one, or when no journey is running). Capture its enrolment first
+      // so Undo can restore it.
+      const journeyMember = get().journey?.members.find((m) => m.docId === id);
       get().removeDocFromJourney(id);
       // Undo affordance — deleting a saved tree used to be instant + irreversible
       // (starkly asymmetric with the app's crash-recovery discipline). Re-persist
@@ -196,6 +198,14 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
                 docs: { ...get().docs, ...restoredOpen },
                 doc: restoredOpen[get().activeDocId] ?? get().doc,
               });
+              // §C — fully reverse the delete by re-enrolling the tree in its journey.
+              if (journeyMember) {
+                get().addDocToJourney(
+                  journeyMember.docId,
+                  journeyMember.stageId,
+                  journeyMember.diagramType
+                );
+              }
             },
           },
         });

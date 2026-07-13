@@ -47,6 +47,20 @@ describe('st-tactic-fold-in rule', () => {
     ).toHaveLength(0);
   });
 
+  it('does not fire when the only child is a legacy sub-strategy (goal), not a tactic (bug-hunt #12)', () => {
+    // Legacy S&T model: goal = sub-strategy, injection = tactic. A tactic whose
+    // single incoming edge comes from a sub-strategy goal (not another tactic)
+    // must not read as a lone sub-step — that's a false positive on curated
+    // first-party patterns (st-quality-first et al.).
+    resetIds();
+    const parent = makeEntity({ type: 'injection', title: 'Tactic' });
+    const subStrategy = makeEntity({ type: 'goal', title: 'Sub-strategy goal' });
+    const doc = makeDoc([parent, subStrategy], [makeEdge(subStrategy.id, parent.id)], 'st');
+    expect(
+      stTacticFoldInRule(doc).filter((w) => w.target.kind === 'entity' && w.target.id === parent.id)
+    ).toHaveLength(0);
+  });
+
   it('skips an unspecified placeholder', () => {
     resetIds();
     const parent = makeEntity({ type: 'injection', title: 'Placeholder', unspecified: true });

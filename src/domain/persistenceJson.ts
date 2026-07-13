@@ -75,10 +75,23 @@ export const importFromJSON = (raw: string): TPDocument => {
   // annotation + 1) rather than failing the load. `author` / `description` are
   // cosmetic — a non-string value is simply dropped by the conditional spread in
   // the returned object below, so no guard (and no hard-fail) is needed here.
+  const maxEntityAnn = Object.values(entities).reduce((m, e) => Math.max(m, e.annotationNumber), 0);
+  // Assumptions share the entity annotation counter (assumptions.ts mints from
+  // the same `nextAnnotationNumber`), so a rebuild must include them — else the
+  // reconstructed counter can re-mint a number an assumption already holds, and
+  // two elements render the same `#N` badge.
+  const rawAssumptions = (parsed.assumptions ?? {}) as Record<
+    string,
+    { annotationNumber?: unknown }
+  >;
+  const maxAssumptionAnn = Object.values(rawAssumptions).reduce(
+    (m, a) => (typeof a?.annotationNumber === 'number' ? Math.max(m, a.annotationNumber) : m),
+    0
+  );
   const nextAnnotationNumber: number =
     typeof parsed.nextAnnotationNumber === 'number'
       ? parsed.nextAnnotationNumber
-      : Object.values(entities).reduce((m, e) => Math.max(m, e.annotationNumber), 0) + 1;
+      : Math.max(maxEntityAnn, maxAssumptionAnn) + 1;
   const layoutConfig = validateLayoutConfig(parsed.layoutConfig);
   const systemScope = validateSystemScope(parsed.systemScope);
   const methodChecklist = validateMethodChecklist(parsed.methodChecklist);

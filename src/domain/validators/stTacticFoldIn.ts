@@ -26,7 +26,15 @@ export const stTacticFoldInRule = (doc: TPDocument): UntieredWarning[] => {
     // Skip unspecified placeholders — the slot isn't articulated yet (mirrors
     // st-tactic-rollup).
     if (e.unspecified === true) continue;
-    if (incomingEdges(doc, e.id).length !== 1) continue;
+    // Count only tactic (injection) children as sub-steps. In the facet model
+    // every sub-step is an injection, so this is identical there; in the legacy
+    // goal=strategy / injection=tactic model it stops a single sub-strategy (goal)
+    // or assumption (necessaryCondition) child from reading as a lone sub-step and
+    // false-firing on curated first-party patterns.
+    const tacticChildren = incomingEdges(doc, e.id).filter(
+      (edge) => doc.entities[edge.sourceId]?.type === 'injection'
+    );
+    if (tacticChildren.length !== 1) continue;
     out.push(
       makeWarning(
         doc,

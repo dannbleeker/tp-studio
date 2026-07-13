@@ -47,6 +47,23 @@ tree, then a gallery of the rest. The shipped Start renders every recent tree as
 deliberate simplification). Reviewed in the Session-187 design-fidelity pass and **deferred by decision**
 (Dann) — the uniform grid stays. Revisit only if the resume hierarchy proves worth the extra layout.
 
+### Known bugs — recorded from the Session-205 adversarial bug hunt (13 of 15 fixed; see CHANGELOG)
+Two confirmed defects were recorded rather than rushed at the end of the hunt — each is an uncommon graph
+shape and each needs a focused rewrite, not a one-line patch:
+
+- **`findCycles` misses simple cycles that share a closing edge** (`src/domain/graphReach.ts`). The DFS
+  back-edge walk yields a *cycle basis*, not every simple cycle, so when two loops share their closing
+  edge only one is reported. `loopsWithPolarity` (reinforcing/balancing loop detection) and any consumer
+  assuming completeness can therefore miss a loop. Fix properly with **Johnson's algorithm per non-trivial
+  SCC** (Tarjan SCC → Johnson elementary-circuit enumeration); audit `loopsWithPolarity` and
+  `effectiveBackEdgeIds` when it lands. Medium effort; triggers only on multi-loop graphs sharing an edge.
+- **Junctor terminus X vs `JunctorOverlay` circle X disagree ~width/8 in horizontal (EC) layouts**
+  (`src/components/canvas/edges/useJunctorCenterX.ts`). It feeds React Flow's `props.targetX` (the
+  right-edge X for a horizontal target handle) where `JunctorOverlay` uses the target's CENTRE X, so the
+  AND/OR/XOR circle and the edges' meeting point drift apart. Derive centre X from the node's
+  `positionAbsolute.x + measuredWidth/2` in both places. Low effort; needs a junctor group inside an
+  EC/horizontal diagram (uncommon). 2/3 verifier confidence.
+
 ---
 
 ## TOC Handbook backlog (Cox & Schleier 2010) — mined 2026-07-12
