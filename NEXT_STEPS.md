@@ -129,9 +129,22 @@ A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversaria
   CRT → EC/FRT/NBR → PRT/TT → S&T), with per-stage create / spawn / open + progress. App-level state in
   localStorage (no schema change); reuses the shipped spawn bridges. Palette: *Analysis journey…*. See
   CHANGELOG S200. *Ch15 Table 15-3 (Barnard); Ch19 (Dettmer).*
-  - *Remaining option (deferred, scope call):* **L2 first-class Projects** — a Start-screen projects
-    gallery + multiple concurrent named projects + membership management (heavier persisted container +
-    navigation surface). Build only on an explicit ask.
+  - *Parked — saved for later (Dann, 2026-07-13; "not now, might pick up later"):* **L2 first-class
+    Projects** — the heavier form of the Analysis journey. On top of L1 it adds: (1) **multiple concurrent
+    named projects** (a `projects: Project[]` collection + `activeProjectId`; each project its own named
+    journey — members + progress); (2) a **Start-screen Projects gallery** (a new `startSection` + gallery
+    component + sidebar entry, mirroring the All-trees / Recent / Templates pattern) so projects become a
+    navigation surface, not just a palette dialog; (3) **membership management** (add / remove / move a
+    tree between projects; project tags on tree cards in the All-trees library; "new tree in this
+    project"). Still app-level state in localStorage — **no doc-schema migration**, canvas==export
+    untouched; a one-time migration turns today's single L1 journey into "Project 1". Rough size ~4–5
+    slices (data model + migration → gallery → membership → per-project journey view → docs).
+    *Trade-off:* it introduces a **navigation concept** ("projects") into a tool that's currently trees +
+    tabs + one journey — earns its keep when juggling several analyses, adds surface for single-analysis
+    use (hence a scope call). *Resolve before building:* (a) one project per tree, or a tree in several?
+    (b) does opening a project **scope** the workspace (filter All-trees / the tab strip) or is it just a
+    labelled grouping? (c) entry in the Start sidebar only, or also a top-bar switcher? (Framework isn't a
+    variable — Barnard's five questions only, since CMM/OODA were declined.) Build only on an explicit ask.
   - ✗ **Declined (Dann, 2026-07-13):** **CMM 7-step / OODA framework presets** (alternate journey
     frameworks beside Barnard's five questions). Barnard's five questions are the shipped spine; extra
     frameworks add UI without diagramming value. Won't build.
