@@ -113,6 +113,16 @@ const STAGE_FOR_TYPE: Partial<Record<DiagramType, JourneyStageId>> = (() => {
 export const stageForDiagramType = (dt: DiagramType): JourneyStageId | undefined =>
   STAGE_FOR_TYPE[dt];
 
+/** The still-existing member docIds enrolled under a stage (UI: the Open action). */
+export const stageMemberDocIds = (
+  journey: AnalysisJourney,
+  stageId: JourneyStageId,
+  existingDocIds: ReadonlySet<string>
+): DocumentId[] =>
+  journey.members
+    .filter((m) => m.stageId === stageId && existingDocIds.has(m.docId))
+    .map((m) => m.docId);
+
 /**
  * Status for every stage at once. A stage is `done` when the user ticked it or a
  * still-existing member tree is enrolled under it; the earliest not-done stage is

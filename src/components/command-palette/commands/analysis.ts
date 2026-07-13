@@ -223,6 +223,17 @@ export const analysisCommands: Command[] = [
     group: 'Review',
     run: (s) => s.openJonahQuickCheck(),
   },
+  // §C — the Analysis journey: an opt-in guide over the several trees of one
+  // analysis, walked through Barnard's five questions. Opens a dialog that
+  // groups the trees and offers create/spawn/open per stage. Read-only chrome
+  // (the journey record is app-level state, not a doc mutation) → no guard.
+  {
+    id: 'analysis-journey',
+    label: 'Analysis journey (guide the multi-tree flow)…',
+    group: 'Review',
+    keywords: ['project', 'chain', 'barnard', 'five questions', 'workflow', 'sequence', 'roadmap'],
+    run: (s) => s.openAnalysisJourney(),
+  },
   // Phase 3 #7 — per-edge CLR scrutiny. Distinct from the walkthrough
   // above (which steps the warnings that already fired across the whole
   // doc): this walks ALL eight canonical CLR questions for one selected

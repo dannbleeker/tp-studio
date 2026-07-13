@@ -148,6 +148,11 @@ const ObstacleIoIntakeDialog = lazy(() =>
     default: m.ObstacleIoIntakeDialog,
   }))
 );
+const AnalysisJourneyDialog = lazy(() =>
+  import('./components/journey/AnalysisJourneyDialog').then((m) => ({
+    default: m.AnalysisJourneyDialog,
+  }))
+);
 const InjectionFlowerDialog = lazy(() =>
   import('./components/inspector/InjectionFlowerDialog').then((m) => ({
     default: m.InjectionFlowerDialog,
@@ -512,6 +517,9 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="Obstacle/IO intake dialog">
           <ObstacleIoIntakeDialog />
+        </ErrorBoundary>
+        <ErrorBoundary label="Analysis journey dialog">
+          <AnalysisJourneyDialog />
         </ErrorBoundary>
         <ErrorBoundary label="Injection flower dialog">
           <InjectionFlowerDialog />

@@ -185,6 +185,9 @@ export type DialogsSlice = {
   /** Session 199 (backlog E) — the PRT Obstacle/Objective intake table dialog. */
   obstacleIoIntakeOpen: boolean;
 
+  /** §C — the Analysis journey dialog (opt-in guided multi-tree flow). */
+  analysisJourneyOpen: boolean;
+
   openPalette: () => void;
   openPaletteWithQuery: (query: string) => void;
   closePalette: () => void;
@@ -347,6 +350,10 @@ export type DialogsSlice = {
   /** Session 199 (backlog E) — open / close the Obstacle/Objective intake dialog. */
   openObstacleIoIntake: () => void;
   closeObstacleIoIntake: () => void;
+
+  /** §C — open / close the Analysis journey dialog. */
+  openAnalysisJourney: () => void;
+  closeAnalysisJourney: () => void;
 };
 
 export type DialogsDataKeys =
@@ -382,7 +389,8 @@ export type DialogsDataKeys =
   | 'injectionFlowerEntityId'
   | 'diceGameOpen'
   | 'jonahQuickCheckOpen'
-  | 'obstacleIoIntakeOpen';
+  | 'obstacleIoIntakeOpen'
+  | 'analysisJourneyOpen';
 
 export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   paletteOpen: false,
@@ -418,6 +426,7 @@ export const dialogsDefaults = (): Pick<DialogsSlice, DialogsDataKeys> => ({
   diceGameOpen: false,
   jonahQuickCheckOpen: false,
   obstacleIoIntakeOpen: false,
+  analysisJourneyOpen: false,
 });
 
 /**
@@ -470,6 +479,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
   diceGameOpen: false,
   jonahQuickCheckOpen: false,
   obstacleIoIntakeOpen: false,
+  analysisJourneyOpen: false,
 
   openPalette: () => set({ paletteOpen: true, paletteInitialQuery: '' }),
   openPaletteWithQuery: (query) => set({ paletteOpen: true, paletteInitialQuery: query }),
@@ -597,4 +607,7 @@ export const createDialogsSlice: StateCreator<RootStore, [], [], DialogsSlice> =
 
   openObstacleIoIntake: () => set({ obstacleIoIntakeOpen: true }),
   closeObstacleIoIntake: () => set({ obstacleIoIntakeOpen: false }),
+
+  openAnalysisJourney: () => set({ analysisJourneyOpen: true }),
+  closeAnalysisJourney: () => set({ analysisJourneyOpen: false }),
 });
