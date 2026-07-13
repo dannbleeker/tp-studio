@@ -10,6 +10,7 @@ import { installFlushOnLifecycleEvents } from './services/storage/persistDebounc
 // `triggerInstallPrompt()` so the "Install TP Studio…" entry has
 // something to consume.
 import './services/pwa/pwaInstall';
+import { registerLaunchFileHandler } from './services/pwa/fileHandlers';
 import { initPwaUpdateToast } from './services/pwa/pwaUpdate';
 import { installSystemScopeNudgeWatcher } from './services/systemScopeNudge';
 import { maybeInstallTestHook } from './services/testHook';
@@ -31,6 +32,10 @@ installSystemScopeNudgeWatcher();
 // existing tab picks up the new SW the next time the user opens
 // the app. No-op during dev (`devOptions.enabled: false`).
 initPwaUpdateToast();
+// PWA file handling — if the OS launched TP Studio by opening a Flying Logic
+// file (installed Chromium only), import it and open it in a new tab. No-op
+// where the File Handling API is absent.
+registerLaunchFileHandler();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element #root not found in index.html');

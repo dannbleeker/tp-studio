@@ -8,6 +8,10 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
 import { VitePWA } from 'vite-plugin-pwa';
+import {
+  FLYING_LOGIC_FILE_EXTENSIONS,
+  FLYING_LOGIC_FILE_MIME,
+} from './src/services/pwa/fileHandlerTypes';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -267,6 +271,15 @@ export default defineConfig(({ command, mode }) => ({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
+          },
+        ],
+        // Double-click a Flying Logic file → launch the installed TP Studio and
+        // hand it the file (consumed by `registerLaunchFileHandler`). Chromium
+        // only; the association is offered when the user installs the PWA.
+        file_handlers: [
+          {
+            action: '/',
+            accept: { [FLYING_LOGIC_FILE_MIME]: [...FLYING_LOGIC_FILE_EXTENSIONS] },
           },
         ],
       },

@@ -2,6 +2,21 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 201 — Open Flying Logic files by double-click (PWA file handling)
+
+- **Double-click a Flying Logic file → it opens in TP Studio.** The web manifest now declares a
+  **`file_handlers`** association for **`.xlogic`** (Flying Logic 4's saved extension), **`.logicx`** (what
+  our own exporter writes), and **`.logic`**, and a `launchQueue` consumer (`registerLaunchFileHandler`)
+  imports the launched file via the existing `importFromFlyingLogic` and opens it in a new tab — the same
+  result as *Import → Flying Logic file*, just triggered by the OS. A parse failure surfaces a toast; an
+  empty launch is ignored.
+- **Chromium only, and after install.** File handling is a Chrome / Edge capability that requires **TP
+  Studio to be installed as an app** (*Install TP Studio…* in the palette / the browser's install prompt);
+  the OS association is offered when you install and updates once the new manifest deploys. The consumer is
+  a safe no-op where the API is absent (Firefox / Safari, or a plain browser tab), so nothing else changes.
+  The extension list is a single shared constant (`fileHandlerTypes.ts`) used by both the manifest and the
+  runtime handler, so the two can't drift.
+
 ## Session 200 — Analysis journey: guided multi-tree flow (backlog §C)
 
 The chained multi-tree "project" workflow (§C), built as an opt-in **Analysis journey** — a guide over

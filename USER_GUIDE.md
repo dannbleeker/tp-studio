@@ -851,6 +851,8 @@ Both are one-way Markdown — paste them into a doc / wiki / chat. Pairs with th
 - Edge labels, group colors, and annotation numbers are TP-Studio-specific. They survive a TP → FL → TP round-trip via custom attributes, but Flying Logic itself won't surface them.
 - The reader expects the flat XML body described in Flying Logic's public scripting docs. If a `.logicx` you receive is a ZIP archive, extract the inner XML first.
 
+**Double-click to open (installed app, Chromium).** Once you **install TP Studio as an app** on Chrome or Edge (*Install TP Studio…* in the palette, or the browser's install prompt), double-clicking a Flying Logic file (`.xlogic`, `.logicx`, or `.logic`) in your file manager opens it straight in TP Studio — the OS launches the app and imports the file into a new tab, the same as **Import… → Flying Logic file**. You approve the file association when you install; it starts working once the current version has deployed to your installed app. This is a Chromium capability — Firefox and Safari can't register the association, so use the palette import there.
+
 **Sharing.** Two practical paths today: send the `.tps.json` file (recipient runs **Import…** → **TP Studio JSON**) or send the `.png`.
 
 If the browser's storage quota is exceeded — usually because of an exceptionally large document or browser-wide storage pressure — you'll get a destructive toast: `Couldn't save to this browser: ...`. The in-memory document keeps working; export to JSON to preserve it.
