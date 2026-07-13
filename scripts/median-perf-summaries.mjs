@@ -15,7 +15,13 @@
  * than any single iteration.
  *
  * Aggregation rules:
- *   - `scripting_percentiles.*` (p50/p75/p95/p99/max/count) → median.
+ *   - `scripting_percentiles.*` (p50/p75/p95/p99/max/count) → BEST-of-N (min).
+ *     This is the gate-driving block. CI perf noise is one-sided — contention,
+ *     GC pauses, and JIT warmup only ever ADD time — so the fastest iteration is
+ *     the least-contaminated estimate of true cost. Best-of-N stays stable even
+ *     when a MAJORITY of iterations are contended, where a median is dragged up
+ *     (observed Session 203: 2 of 3 all-actions iterations spiked, so its
+ *     median-of-3 tripped the gate on pure runner noise). Session 204.
  *   - `totals_ms.*` (scripting/layout/paint) → median.
  *   - `long_tasks.count_over_50ms`, `long_tasks.total_ms` → median.
  *   - `events`, `trace_size_kb` → median.
@@ -50,6 +56,13 @@ export const median = (xs) => {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 };
 
+/** Numeric minimum — the "best of N". Used for the gate-driving scripting
+ *  percentiles: CI perf noise is one-sided (contention / GC / JIT warmup only
+ *  ADD time), so the fastest iteration is the least-contaminated estimate of
+ *  true cost, and it stays stable even when a majority of iterations spike (a
+ *  median can be dragged up in that case). Exported for unit testing. */
+export const min = (xs) => (xs.length === 0 ? Number.NaN : Math.min(...xs));
+
 /** Round to two decimals — matches the spec's own toFixed(2). */
 const round2 = (n) => +n.toFixed(2);
 
@@ -62,18 +75,22 @@ export const medianSummary = (summaries) => {
   const first = summaries[0];
   const result = { ...first };
 
-  const medianAt = (path) => {
+  const aggAt = (path, fn) => {
     const xs = summaries
       .map((s) => path.reduce((o, k) => o?.[k], s))
       .filter((v) => typeof v === 'number');
     if (xs.length === 0) return undefined;
-    return round2(median(xs));
+    return round2(fn(xs));
   };
+  const medianAt = (path) => aggAt(path, median);
 
-  // scripting_percentiles — the gate-driving block.
+  // scripting_percentiles — the gate-driving block. Uses BEST-of-N (min), not
+  // median: CI perf noise is one-sided, so the fastest iteration best estimates
+  // true cost and is immune to spikes that can dominate a median when a majority
+  // of iterations are contended (as observed for all-actions — 2 of 3 spiked).
   const sp = { ...first.scripting_percentiles };
   for (const k of Object.keys(sp)) {
-    const v = medianAt(['scripting_percentiles', k]);
+    const v = aggAt(['scripting_percentiles', k], min);
     if (v !== undefined) sp[k] = v;
   }
   result.scripting_percentiles = sp;
@@ -100,9 +117,12 @@ export const medianSummary = (summaries) => {
   if (ev !== undefined) result.events = ev;
   if (ts !== undefined) result.trace_size_kb = ts;
 
-  // Annotate the median so a future reader of the artifact knows what
-  // they're looking at + can spot a noisy run.
+  // Annotate so a future reader of the artifact knows what they're looking at +
+  // can spot a noisy run. `_median_of_n` is the iteration count (totals /
+  // long_tasks are median-of-n); `_scripting_agg` flags that the gate-driving
+  // percentiles are the best (min) of those iterations.
   result._median_of_n = summaries.length;
+  result._scripting_agg = `best-of-${summaries.length} (min)`;
   result._samples = summaries.map((s) => ({
     p95_ms: s.scripting_percentiles?.p95_ms,
     p99_ms: s.scripting_percentiles?.p99_ms,
@@ -154,7 +174,7 @@ const main = async () => {
 
     const p95s = merged._samples.map((s) => s.p95_ms);
     console.log(
-      `✓ ${scenario}: median-of-${numbered.length} → p95 ${merged.scripting_percentiles.p95_ms} ms ` +
+      `✓ ${scenario}: best-of-${numbered.length} → p95 ${merged.scripting_percentiles.p95_ms} ms ` +
         `(samples: ${p95s.join(', ')})`
     );
   }

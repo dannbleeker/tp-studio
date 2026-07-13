@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error — .mjs ESM module without a .d.ts; tested for behaviour.
-import { median, medianSummary } from '../../scripts/median-perf-summaries.mjs';
+import { median, medianSummary, min } from '../../scripts/median-perf-summaries.mjs';
 
 /**
- * Session 135 — guards for the median-of-N perf-trace aggregator. The
- * full disk round-trip is exercised by the Perf-trace workflow; this
- * suite locks the pure-function contract: numeric leaves are medianed,
- * composite leaves fall through to the first sample, and the canonical
- * `_samples` annotation surfaces every iteration's p95/p99 so a
- * borderline gate trip is debuggable from the workflow log alone.
+ * Session 135 / 204 — guards for the perf-trace aggregator. The full disk
+ * round-trip is exercised by the Perf-trace workflow; this suite locks the
+ * pure-function contract: the gate-driving `scripting_percentiles` are BEST-of-N
+ * (min p95), the informational totals / long-tasks are medianed, composite leaves
+ * fall through to the first sample, and the canonical `_samples` annotation
+ * surfaces every iteration's p95/p99 so a borderline gate trip is debuggable from
+ * the workflow log alone.
  */
 
 const buildSummary = (overrides: {
@@ -48,16 +49,28 @@ describe('median (utility)', () => {
   });
 });
 
+describe('min (utility)', () => {
+  it('returns the smallest value', () => {
+    expect(min([8.12, 3.15, 6.4])).toBe(3.15);
+  });
+
+  it('is order-independent and handles a single value', () => {
+    expect(min([9, 1, 5])).toBe(1);
+    expect(min([4.2])).toBe(4.2);
+  });
+});
+
 describe('medianSummary — perf-trace aggregation', () => {
-  it("medians the gate-driving percentile (the noisy run's outlier is outvoted)", () => {
+  it('takes the BEST (min) of the gate-driving percentiles — spikes never dominate', () => {
     const merged = medianSummary([
-      buildSummary({ p95: 8.12, p99: 35.0 }), // noisy high run (failed gate)
-      buildSummary({ p95: 3.15, p99: 33.5 }), // noisy low rerun
-      buildSummary({ p95: 6.4, p99: 34.0 }), // a "real" middle measurement
+      buildSummary({ p95: 8.12, p99: 35.0 }), // contended run
+      buildSummary({ p95: 3.15, p99: 33.5 }), // least-contended run
+      buildSummary({ p95: 6.4, p99: 34.0 }), // partially contended
     ]);
-    // Median of {3.15, 6.40, 8.12} = 6.40 — well within the 25% gate vs 6.45 baseline.
-    expect(merged.scripting_percentiles.p95_ms).toBe(6.4);
-    expect(merged.scripting_percentiles.p99_ms).toBe(34);
+    // best-of-N: min{3.15, 6.40, 8.12} = 3.15 — the noise-free floor, even if a
+    // majority of samples were high (which would drag a median up).
+    expect(merged.scripting_percentiles.p95_ms).toBe(3.15);
+    expect(merged.scripting_percentiles.p99_ms).toBe(33.5);
   });
 
   it('annotates the median with _median_of_n and per-iteration _samples', () => {

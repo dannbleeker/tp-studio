@@ -1,20 +1,21 @@
 {
   "_comment": "Session 132 / Tier 3 #12 — checked-in perf-trace baseline. The Perf trace workflow's regression-check step compares each scenario's measured `scripting_percentiles.p95_ms` against the matching `p95_ms` here and fails if the measurement is more than `regressionThresholdPct` percent worse than the baseline. Update the values here when a deliberate change makes the perf number genuinely better or worse; the diff in this file is what reviewers see when shipping a perf-relevant change.",
   "_note_thresholds": "regressionThresholdPct: a single CI run carries real variance (GC pause timing, runner host load, V8 JIT warmup). 25% leaves headroom for that noise while still catching real 2-3x regressions. Tighten only after multiple runs converge on a stable mean.",
-  "_note_median_of_n": "Session 135 — the Perf trace workflow now runs the spec 3 times per scenario and feeds the MEDIAN p95 to this check (see scripts/median-perf-summaries.mjs). One observed run swung 8.12 ms ↔ 3.15 ms for `all-actions` on the same commit, tripping the 25% gate on pure runner noise; median-of-3 outvotes single-run outliers. The per-iteration summaries are retained in the workflow artifact for forensics. Threshold left at 25%; tighten once a few weeks of median data establish the post-median noise floor.",
+  "_note_metric": "Session 204 — the gate metric is BEST-of-N (min p95), not median (see scripts/median-perf-summaries.mjs). CI perf noise is one-sided (contention / GC / JIT only add time), so the fastest of the N iterations is the least-contaminated estimate of true cost and is immune to spikes that dominate a median when a majority of iterations are contended — which is exactly what tripped all-actions under median-of-3 (2 of 3 iterations spiked 2.8→12 ms). The workflow now runs 5 iterations. Baselines here are the best-of-N floor; per-scenario `thresholdPct` absorbs the residual BETWEEN-runner-host variance (which no within-run aggregation can remove).",
   "regressionThresholdPct": 25,
   "scenarios": {
     "all-actions": {
-      "_baselined_from": "Session 131 perf-trace run (commit ace4762). Recorded after Tier 2 maintainability refactors landed.",
-      "p95_ms": 6.45,
-      "p99_ms": 33.96
+      "_baselined_from": "Re-baselined Session 204 to the best-of-N floor. The true value is ~2.5 ms (observed best-of-3 across runs: 2.32, 2.81 — stable between hosts); the old 6.45 (Session 131) was a median inflated by contention spikes. 3.0 = a small margin above the floor.",
+      "p95_ms": 3.0,
+      "p99_ms": 30.0,
+      "thresholdPct": 40
     },
     "edit-heavy": {
-      "_baselined_from": "Re-baselined Session 203 from the 2026-07-13 scheduled perf-trace on main (median-of-3 p95 15.14 ms; central of the observed cross-run medians 14.4 / 15.1 / 18.3 / 21.2 ≈ 16.7). The Session-131 baseline (9.2) was stale: the 100-node reconciliation cost grew legitimately as features landed — the hot path is clean (see NEXT_STEPS), so this is a re-baseline, not a regression to chase.",
-      "_note_threshold": "35% per-scenario override. edit-heavy's residual variance is BETWEEN runner hosts, not within a run — its three within-run samples are near-identical (15.12 / 15.25 / 15.14), so median-of-N can't shrink it. 35% over 16.7 ms (~22.5 ms) clears the observed cross-host high (~21 ms) with margin; a real 1.35x+ regression still fails. all-actions keeps the global 25%.",
+      "_baselined_from": "Re-baselined Session 203/204. best-of-N floor ~15 ms on a fast host, ~21 ms on a slow one (observed best-of-3: 15.12, 20.81) — the shift is BETWEEN runner hosts, which best-of-N can't remove. 16.7 is a central floor; the Session-131 baseline (9.2) was stale, the cost grew legitimately (hot path clean; see NEXT_STEPS).",
+      "_note_threshold": "40% per-scenario override, covering the ~15–21 ms cross-host floor: 40% over 16.7 ms (~23.4 ms) clears the observed slow-host high (~21 ms) with margin; a real 1.4x+ regression still fails. all-actions carries its own 40% for the same reason.",
       "p95_ms": 16.7,
       "p99_ms": 34.6,
-      "thresholdPct": 35
+      "thresholdPct": 40
     }
   }
 }
