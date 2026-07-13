@@ -210,7 +210,9 @@ export function createConnectActions({
         // Drop assumptions that annotated the now-removed edge (otherwise the
         // record dangles with an edgeId that resolves to nothing).
         const assumptions = pruneAssumptions(prev.assumptions, edges, prev.entities);
-        const comments = pruneComments(prev.comments, edges, prev.entities);
+        // Pass the freshly-pruned assumptions so a comment anchored to an
+        // assumption that just orphaned is dropped in lockstep (else it dangles).
+        const comments = pruneComments(prev.comments, edges, prev.entities, assumptions);
         return touch({
           ...prev,
           edges,

@@ -144,8 +144,10 @@ export function createEntityCrudActions({
         // back-links. Conditional spread keeps `assumptions` absent when the
         // doc never had any.
         const assumptions = pruneAssumptions(prev.assumptions, edges, rest);
-        // Prune comments anchored to the removed entity or any cascaded edge.
-        const comments = pruneComments(prev.comments, edges, rest);
+        // Prune comments anchored to the removed entity, any cascaded edge, or an
+        // assumption that just orphaned (pass the pruned assumptions, else those
+        // comments dangle).
+        const comments = pruneComments(prev.comments, edges, rest, assumptions);
         return touch({
           ...prev,
           entities: rest,
@@ -261,7 +263,9 @@ export function createEntityCrudActions({
         // leaving a survivor tagged with a now-vacuous and/or/xor group id.
         const nextEdges = pruneSingletonJunctors(explicitlyDeleted);
         const assumptions = pruneAssumptions(prev.assumptions, nextEdges, entities);
-        const comments = pruneComments(prev.comments, nextEdges, entities);
+        // Pass the pruned assumptions so assumption-anchored comments whose
+        // assumption just orphaned are dropped in lockstep.
+        const comments = pruneComments(prev.comments, nextEdges, entities, assumptions);
         return touch({
           ...prev,
           entities,

@@ -75,9 +75,13 @@ function fanRankLive(siblings: string[], selfSource: string): number {
       flow?.getInternalNode(id)?.internals.positionAbsolute.x ?? flow?.getNode(id)?.position.x;
     return { id, x: x ?? Number.NaN };
   });
-  if (withX.some((s) => Number.isNaN(s.x))) return siblings.indexOf(selfSource);
+  // Never return a negative rank — a negative offset would slide the edge off its
+  // endpoint. `indexOf` is -1 only when `selfSource` isn't among its siblings
+  // (shouldn't happen now junctor edges are excluded from fanSiblings), so clamp.
+  const fallback = Math.max(0, siblings.indexOf(selfSource));
+  if (withX.some((s) => Number.isNaN(s.x))) return fallback;
   const rank = fanRankByPositions(selfSource, withX);
-  return rank >= 0 ? rank : siblings.indexOf(selfSource);
+  return rank >= 0 ? rank : fallback;
 }
 
 /** Hover-fan (Session 185) — the spread eases in over this duration. Gated to the

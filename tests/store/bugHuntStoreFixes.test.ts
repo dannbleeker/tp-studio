@@ -61,3 +61,26 @@ describe('openTab guard against a duplicate id (bug-hunt #2)', () => {
     expect(s().doc.title).toBe('D-reimported');
   });
 });
+
+describe('cascade delete prunes assumption-anchored comments (bug-hunt #7)', () => {
+  it('drops a comment anchored to an assumption whose edge is deleted', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const edge = s().connect(a.id, b.id);
+    if (!edge) throw new Error('setup');
+    const assumption = s().addAssumptionToEdge(edge.id, 'because X');
+    if (!assumption) throw new Error('setup');
+    const comment = s().addComment(
+      { kind: 'assumption', assumptionId: assumption.id },
+      'note on the assumption'
+    );
+    expect(comment).not.toBeNull();
+    expect(Object.keys(s().doc.comments ?? {})).toHaveLength(1);
+
+    s().deleteEdge(edge.id);
+
+    // The assumption orphaned and was pruned; its comment must be pruned in
+    // lockstep, not left dangling.
+    expect(Object.keys(s().doc.comments ?? {})).toHaveLength(0);
+  });
+});

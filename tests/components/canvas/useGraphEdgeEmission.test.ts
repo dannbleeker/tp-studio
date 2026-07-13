@@ -159,6 +159,34 @@ describe('useGraphEdgeEmission', () => {
       const agg = emit(collapse).find((e) => e.id === `agg:G->${c.id}`);
       expect(agg?.data?.fanSiblings).toBeUndefined();
     });
+
+    it('does not stamp a junctor edge that shares its target with plain edges (bug-hunt #9)', () => {
+      // AND{A→C, B→C} plus independent plain D→C, E→C. The junctor edges must NOT
+      // pick up the plain siblings — else on hover they mis-compute a negative fan
+      // offset and slide off the AND circle.
+      const a = seedEntity('A');
+      const b = seedEntity('B');
+      const c = seedEntity('C');
+      const d = seedEntity('D');
+      const e = seedEntity('E');
+      const eAC = s().connect(a.id, c.id);
+      const eBC = s().connect(b.id, c.id);
+      s().connect(d.id, c.id);
+      s().connect(e.id, c.id);
+      s().groupAsAnd([eAC?.id ?? '', eBC?.id ?? '']);
+      const toC = emit().filter((edge) => edge.target === c.id);
+      // The junctor edges (from A, B) carry no fanSiblings.
+      const junctorSources = new Set<string>([a.id, b.id]);
+      expect(
+        toC
+          .filter((edge) => junctorSources.has(edge.source))
+          .every((edge) => edge.data?.fanSiblings === undefined)
+      ).toBe(true);
+      // The plain edges (from D, E) still fan among themselves.
+      for (const edge of toC.filter((edge) => edge.source === d.id || edge.source === e.id)) {
+        expect([...(edge.data?.fanSiblings ?? [])].sort()).toEqual([d.id, e.id].sort());
+      }
+    });
   });
 
   describe('NBR spine emphasis (backlog E)', () => {

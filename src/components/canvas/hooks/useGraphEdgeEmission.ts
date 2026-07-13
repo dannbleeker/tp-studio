@@ -193,11 +193,16 @@ export const useGraphEdgeEmission = (
       // Theme A — A4 delay marker + A3 loop name (real, non-aggregated edges only).
       const delay = isAggregated ? false : b.sample.delay === true;
       const loopName = isAggregated ? undefined : b.sample.loopName;
-      // Hover-fan: the source ids of this edge's convergence group (real edges
-      // only; aggregated/junctor edges were excluded when the groups were built).
-      // Position-free here — TPEdge refines the left-to-right slot order from live
-      // positions at hover time; the sourceId sort is just a stable fallback.
-      const fanSources = isAggregated ? undefined : fanSourcesByTarget.get(b.targetId);
+      // Hover-fan: the source ids of this edge's convergence group (real,
+      // non-junctor edges only). A junctor edge converges at its AND/OR/XOR
+      // circle, not at the target, so it must NOT fan — and it was excluded when
+      // `fanSourcesByTarget` was built, so it must be excluded from the LOOKUP too
+      // (else it picks up the target's plain-edge siblings and, not finding its
+      // own source among them, computes a negative offset that slides its terminus
+      // off the junctor circle on hover). Position-free here — TPEdge refines the
+      // left-to-right slot order from live positions at hover time.
+      const fanSources =
+        isAggregated || isJunctorEdge ? undefined : fanSourcesByTarget.get(b.targetId);
       const hasFanGroup = fanSources !== undefined && fanSources.length > 1;
       const edge: TPEdge = {
         id: isAggregated ? `agg:${b.sourceId}->${b.targetId}` : b.sample.id,
