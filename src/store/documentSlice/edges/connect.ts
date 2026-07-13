@@ -228,8 +228,18 @@ export function createConnectActions({
         // existing edge — that would create two parallel edges between the
         // same endpoints, which we don't model.
         if (hasEdge(prev, current.targetId, current.sourceId)) return prev;
-        const next: Edge = { ...current, sourceId: current.targetId, targetId: current.sourceId };
-        return touch({ ...prev, edges: { ...prev.edges, [id]: next } });
+        // A reversal re-points the target (the old source becomes the new
+        // target), so a junctor-grouped edge would break the group's
+        // same-target invariant. Strip its junctor membership (mirrors
+        // reconnectEdge's target-move handling) and prune any group left with a
+        // single member back to a plain edge.
+        const flipped = withoutJunctorGroups({
+          ...current,
+          sourceId: current.targetId,
+          targetId: current.sourceId,
+        });
+        const edges = pruneSingletonJunctors({ ...prev.edges, [id]: flipped });
+        return touch({ ...prev, edges });
       });
     },
 

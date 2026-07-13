@@ -1,5 +1,6 @@
 import { createDocument, createEdge, createEntity, createGroup } from '../factory';
 import type {
+  DiagramType,
   Edge,
   EdgeId,
   Entity,
@@ -161,12 +162,12 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
     tt: true,
     ec: true,
     st: true,
+    goalTree: true,
+    nbr: true,
     freeform: true,
   };
   const diagramType =
-    diagramTypeAttr && KNOWN_DIAGRAMS[diagramTypeAttr]
-      ? (diagramTypeAttr as 'crt' | 'frt' | 'prt' | 'tt' | 'ec' | 'st' | 'freeform')
-      : 'crt';
+    diagramTypeAttr && KNOWN_DIAGRAMS[diagramTypeAttr] ? (diagramTypeAttr as DiagramType) : 'crt';
   const baseDoc = createDocument(diagramType);
   const seedTitle = rootAttrs.get('title');
   const seedAuthor = rootAttrs.get('author');

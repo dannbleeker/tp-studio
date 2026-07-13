@@ -244,6 +244,16 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
     // ── Multi-doc tabs (Phase 5, Batch 5.1) — the tab engine ─────────────
     openTab: (doc) => {
       const state = get();
+      // Guard: a doc whose id is ALREADY open (e.g. re-importing a file that kept
+      // its id, or a colleague's copy that preserved it) must not push a second
+      // `tabOrder` entry — a duplicate breaks the tab strip's React keys and lets
+      // closeTab drop both copies at once. Switch to that tab and replace its body
+      // with the incoming doc via the existing (tested) swap actions.
+      if (state.docs[doc.id]) {
+        if (state.activeDocId !== doc.id) get().switchTab(doc.id);
+        get().setDocument(doc);
+        return;
+      }
       // Persist the outgoing tab before leaving it: flush any pending
       // debounced write, then force-commit its body — a never-edited tab
       // has no pending write to flush, and its body must be in storage for
