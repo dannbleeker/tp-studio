@@ -112,7 +112,7 @@ A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversaria
     noise) and a **collapsible strategy/tactic "spine" card redesign** with the Tactic between Parallel and
     Sufficiency (touches the fixed card height + the canvas==export geometry invariant — pure polish).
 
-### C. Cross-tree integration (spawn bridges SHIPPED Session 198; larger items remain)
+### C. Cross-tree integration (spawn bridges SHIPPED S198; Analysis journey SHIPPED S200; cross-doc-link items remain)
 - **CRT→FRT invert** — ✅ **shipped Session 198**: palette action *"Spawn Future Reality Tree from this
   CRT"* mints a fresh FRT with one desired-effect seed (*"Reverse: &lt;UDE&gt;"*) per undesirable effect
   plus a starter injection. Unlinked spawn (new doc, new tab, source untouched — single diagrams stay
@@ -125,8 +125,16 @@ A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversaria
   which the unlinked-spawn model deliberately avoids (would couple docs together).
 - `EXTENDS` **Auto-assembled "U-Shape" one-page overview** export (UDEs→core cloud→pivot→injections→
   NBRs→DEs→measures). *Ch24 (Cohen) Figs 24-14/15.* — deferred: needs cross-document link-walking.
-- `DECISION` **Chained multi-tree "project" workflow** (Dettmer CMM 7-step + OODA overlay; Barnard
-  Five-Question one-diagram-per-day). Bigger than the `method-path` stepper — scope call. *Ch19; Ch15 Table 15-3.*
+- **Chained multi-tree "project" workflow** — ✅ **shipped Session 200 as the L1 "Analysis journey"**: an
+  opt-in guide over the trees of one analysis, walked through **Barnard's five questions** (Goal Tree →
+  CRT → EC/FRT/NBR → PRT/TT → S&T), with per-stage create / spawn / open + progress. App-level state in
+  localStorage (no schema change); reuses the shipped spawn bridges. Palette: *Analysis journey…*. See
+  CHANGELOG S200. *Ch15 Table 15-3 (Barnard); Ch19 (Dettmer).*
+  - *Remaining bigger options (deferred, scope calls):* **L2 first-class Projects** — a Start-screen
+    projects gallery + multiple concurrent named projects + membership management (heavier persisted
+    container + navigation surface); and **CMM 7-step / OODA framework presets** — alternate journey
+    frameworks beside Barnard's five questions (Dettmer's Constraint Management Model, an OODA overlay).
+    Build either only on an explicit ask.
 
 ### D. Evaporating Cloud craft — ✅ COMPLETE Session 197–198 (D1–D6; mostly Ch24 Cohen, D6 Ch27 Cheng)
 - **Cloud-type wizard modes** — ✅ **shipped Session 197 (D1)**: the wizard's optional "Cloud type"

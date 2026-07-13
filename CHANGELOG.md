@@ -2,6 +2,29 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 200 — Analysis journey: guided multi-tree flow (backlog §C)
+
+The chained multi-tree "project" workflow (§C), built as an opt-in **Analysis journey** — a guide over
+the several trees of *one* analysis, walked through **Barnard's five questions** (*Handbook* Ch. 15
+Table 15-3). It's the "connective tissue" the gap analysis called for: it ties the already-shipped
+pieces — the method stepper, the CRT→FRT / Goal Tree→CRT spawn bridges, the multi-tab engine — into one
+narrative, without a new kind of document.
+
+- **The five stages** map to the trees they need: *Why change?* → Goal Tree · *What to change?* → CRT ·
+  *What to change to?* → EC / FRT / NBR · *How to cause the change?* → PRT / TT · *How to sustain it?* →
+  S&T. Each stage shows its status (done / active / to-do, derived from which member trees exist), the
+  diagram types it covers, and a context action: **Open** an existing tree, **Spawn** the next one via
+  the shipped bridge (FRT from a CRT, CRT from a Goal Tree), or **Create** it. A progress bar tracks the
+  five; a per-stage "Mark done" covers stages handled outside a tree; "End journey" drops the grouping
+  (the trees are untouched).
+- **Opt-in, zero-default, no schema change.** Nothing exists until you start a journey from the palette
+  (*Analysis journey (guide the multi-tree flow)…*, Review group). The journey is **app-level state in
+  localStorage** (`tp-studio:journey:v1`), never on a `TPDocument` — so `schemaVersion` stays 10 and every
+  existing surface is byte-identical when no journey is running. A deleted tree is pruned from the journey.
+- Built on shipped machinery — "Create" mints a normal tree, "Spawn" reuses `spawnFRTFromCrt` /
+  `spawnCRTFromGoalTree` — so there's nothing new to learn. Pure model + derivations in
+  `domain/analysisJourney.ts`; state in `store/journeySlice.ts`; UI in `components/journey`.
+
 ## Session 199 — S&T template extension + CLR-scrutiny nudge (backlog G, A tails)
 
 - **Four new Strategy & Tactics templates** on the corrected directional-facet model (backlog B), each a

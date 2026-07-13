@@ -89,6 +89,22 @@ When the diagram in front of you reaches a milestone, a suggestion appears on th
 
 Need the space? **Collapse the strip** with the chevron at its right edge — it hides completely, and you can bring it back any time from the top-bar **⋮ overflow → Show method path**. Your choice is remembered across reloads.
 
+## Analysis journey
+
+Where the method path shows where *one* diagram sits, an **Analysis journey** guides a whole analysis across the *several* trees it needs. It's opt-in — open it from the palette (`Cmd/Ctrl+K` → **Analysis journey (guide the multi-tree flow)…**) and press **Start journey**. Nothing changes on your trees until you build them.
+
+A journey walks **Barnard's five questions**, each mapped to the tree(s) that answer it:
+
+1. **Why change?** — the goal and the gap (**Goal Tree**)
+2. **What to change?** — the core problem (**CRT**)
+3. **What to change to?** — break the conflict, design the future (**EC → FRT**, vetted with an **NBR**)
+4. **How to cause the change?** — the plan (**PRT → TT**)
+5. **How to sustain it?** — measure and keep improving (**S&T**)
+
+Each stage shows its status — done, active, or to-do, worked out from which trees you've built — and a single action: **Open** a tree you already have, **Spawn** the next one from the last (a Future Reality Tree from your CRT, or a CRT from your Goal Tree — the same [spawn bridges](#cross-tree-spawn-bridges) used on their own), or **Create** it. A progress bar tracks the five; a per-stage **Mark done** covers a stage you handled outside a tree; **End journey** drops the grouping and leaves every tree exactly as it was.
+
+A journey is a lightweight guide, not a new document — it lives in your browser, groups the trees of one analysis by which question each answers, and never touches the trees themselves. Only one journey is active at a time. *(Barnard, TOC Handbook Ch. 15.)*
+
 ## The Start page
 
 TP Studio **opens on the Start page** — a full-screen workspace that sits in front of the editor — and the **logo** (top-left) returns you to it any time. It has a persistent left sidebar that switches the main view:
