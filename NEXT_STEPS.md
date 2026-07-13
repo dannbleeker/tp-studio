@@ -9,21 +9,17 @@ remember building isn't listed here, it's done — check CHANGELOG.
 
 ## Active backlog
 
-### Perf-trace `edit-heavy` scenario is noise-dominated — decision needed (Session 190)
-The scheduled Perf-trace flagged `edit-heavy` as a regression. Session 190 fixed the two real
-wastes behind it — the edge router and the reach-count BFS both re-ran on every *entity* edit
-because they keyed on the `doc.entities` reference (now keyed on stable structural signatures;
-see CHANGELOG). `all-actions` improved robustly and repeatably (p95 6.45 → ~1.9–2.7 ms, ~60 %).
-But `edit-heavy` p95 measured **18.27 → 14.36 → 21.16 ms across three commits that only *removed*
-work** — i.e. it swings ±40 % run-to-run even at median-of-3, so the 25 % gate trips on runner
-variance, not a real app regression. The residual cost is the inherent O(N) node-array rebuild +
-React reconciliation of 100 nodes per edit, which has grown legitimately since the Session-131
-baseline (9.2 ms) as features landed.
-**Open decision (Dann's CI call) — pick one, none shipped unilaterally:** (a) raise the
-`edit-heavy` sample count (median-of-5/7) to shrink variance; (b) widen the threshold for
-`edit-heavy` specifically; or (c) re-baseline `edit-heavy` to a realistic central value with the
-wide noise floor acknowledged. Chasing it with more app code changes is **not** warranted — it's
-a measurement-infrastructure issue, and the hot path is now clean.
+### Perf-trace `edit-heavy` gate — ✅ RESOLVED Session 203 (re-baseline + per-scenario threshold)
+Session 190 fixed the two real wastes behind the flag (the edge router + reach-count BFS now key on stable
+structural signatures, not `doc.entities`; `all-actions` p95 6.45 → ~4 ms). The residual `edit-heavy` cost
+is the inherent O(N) node-array rebuild + React reconciliation of 100 nodes per edit, which grew
+legitimately since the Session-131 baseline (9.2 ms) as features landed — the hot path is clean.
+**Fix (Dann's call, S203):** the 2026-07-13 scheduled run measured `edit-heavy` at a tight **15.1 ms**
+within-run (samples 15.12 / 15.25 / 15.14), so the ±40 % "noise" is **between runner hosts**, not within a
+run — median-of-N can't shrink it. So (c)+(b): re-baselined `edit-heavy` p95 **9.2 → 16.7 ms** (the
+cross-run central value) and gave it a **per-scenario 35 % threshold** covering the observed ~14–21 ms
+host-to-host floor (a real 1.35x+ regression still fails); `all-actions` keeps the global 25 %. Option (a)
+— more samples — was rejected: it can't reduce host-to-host variance. See CHANGELOG S203.
 
 ### Overlapping-edge hover-fan — open polish (small, optional)
 The convergence hover-fan itself shipped (Sessions 177 + 185, see CHANGELOG). One optional refinement

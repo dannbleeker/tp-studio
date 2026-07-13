@@ -2,6 +2,19 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 203 — Perf-trace `edit-heavy` gate: re-baseline + per-scenario threshold (backlog)
+
+- **The `edit-heavy` perf-trace gate no longer false-fails.** It had been tripping for two reasons: its
+  baseline (9.2 ms, Session 131) was **stale** — the real cost grew legitimately to ~15 ms as features
+  landed on the 100-node reconciliation — and its p95 varies **between** CI runner hosts, not within a run
+  (the three within-run samples on 2026-07-13 were near-identical: 15.12 / 15.25 / 15.14), a floor that
+  running the spec more times can't shrink. Fixed by re-baselining `edit-heavy` p95 to the cross-run
+  central value (**16.7 ms**) and giving it a **per-scenario 35 % threshold** covering the observed
+  ~14–21 ms host-to-host floor with margin — a genuine 1.35x+ regression still fails, and `all-actions`
+  keeps the global 25 %. The regression checker (`check-perf-regression.mjs`) gained a `thresholdPct`
+  per-scenario override (unit-tested `scenarioThreshold`, entrypoint-guarded so it's importable). No
+  app-code change — the hot path was already clean (Session 190); this is measurement infrastructure.
+
 ## Session 202 — Hover-fan: crossing-free slot order (backlog polish)
 
 - **Converging edges fan without crossing.** When several edges converge on one node and you hover the

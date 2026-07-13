@@ -19,12 +19,12 @@
  *   3. Update `perf-baseline.json` in the same commit that introduces
  *      the deliberate perf change. The diff is the audit trail.
  *
- * Threshold rationale (25%): a single CI run carries real variance —
- * GC pause timing, runner host load, V8 JIT warmup. The Session 131
- * perf-trace report measured 24% improvement on one metric and "flat
- * within noise" on another, which suggests noise ≈ 10-15% in normal
- * conditions. 25% catches real 2-3x regressions while staying above
- * the noise floor.
+ * Threshold rationale: the default `regressionThresholdPct` (25%) covers a
+ * single run's variance — GC pause timing, runner host load, V8 JIT warmup —
+ * while still catching real 2-3x regressions. A scenario may override it with
+ * its own `thresholdPct` (see `scenarioThreshold`): `edit-heavy`'s variance is
+ * BETWEEN runner hosts, not within a run, which median-of-N can't shrink, so it
+ * carries a wider (35%) gate without loosening the others.
  */
 
 import { readFile } from 'node:fs/promises';
@@ -42,6 +42,20 @@ const TRACE_DIR = join(PROJECT_ROOT, 'perf-trace-output');
  */
 
 const loadJson = async (path) => JSON.parse(await readFile(path, 'utf8'));
+
+/**
+ * The regression threshold for a scenario: its own `thresholdPct` when set to a
+ * positive number, else the baseline's global `regressionThresholdPct`. This lets
+ * a scenario with an irreducible noise floor carry a wider gate without loosening
+ * the others — `edit-heavy`'s residual variance is BETWEEN runner hosts (its three
+ * within-run samples are near-identical), which median-of-N can't shrink, so it
+ * gets a per-scenario threshold covering that host-to-host floor. Exported for
+ * unit testing.
+ */
+export const scenarioThreshold = (scenarioBaseline, globalThreshold) =>
+  typeof scenarioBaseline?.thresholdPct === 'number' && scenarioBaseline.thresholdPct > 0
+    ? scenarioBaseline.thresholdPct
+    : globalThreshold;
 
 /** Format a delta as `+N.NN% (was X → Y)` so the log line reads naturally. */
 const fmt = (current, baseline) => {
@@ -61,7 +75,9 @@ const main = async () => {
 
   console.log(`Perf-trace regression check`);
   console.log(`  Baseline: ${BASELINE_PATH}`);
-  console.log(`  Threshold: > ${threshold}% slower than baseline triggers a fail.`);
+  console.log(
+    `  Default threshold: > ${threshold}% slower than baseline fails (per-scenario overrides apply).`
+  );
   console.log('');
 
   const regressions = [];
@@ -85,23 +101,25 @@ const main = async () => {
       process.exit(2);
     }
     const baselineP95 = baselineScenario.p95_ms;
+    const scenThreshold = scenarioThreshold(baselineScenario, threshold);
     const deltaPct = ((p95 - baselineP95) / baselineP95) * 100;
-    const status = deltaPct > threshold ? 'FAIL' : deltaPct > threshold / 2 ? 'WARN' : 'OK';
+    const status = deltaPct > scenThreshold ? 'FAIL' : deltaPct > scenThreshold / 2 ? 'WARN' : 'OK';
 
-    const line = `  ${status === 'FAIL' ? '✘' : status === 'WARN' ? '~' : '✓'} ${scenario.padEnd(14)} p95 ${fmt(p95, baselineP95)}`;
+    const thrTag = scenThreshold === threshold ? '' : ` [thr ${scenThreshold}%]`;
+    const line = `  ${status === 'FAIL' ? '✘' : status === 'WARN' ? '~' : '✓'} ${scenario.padEnd(14)} p95 ${fmt(p95, baselineP95)}${thrTag}`;
     console.log(line);
 
     if (status === 'FAIL') {
-      regressions.push({ scenario, baselineP95, p95, deltaPct });
+      regressions.push({ scenario, baselineP95, p95, deltaPct, threshold: scenThreshold });
     }
   }
 
   if (regressions.length > 0) {
     console.log('');
-    console.log(`✘ ${regressions.length} regression(s) exceeded the ${threshold}% threshold:`);
+    console.log(`✘ ${regressions.length} regression(s) exceeded their threshold:`);
     for (const r of regressions) {
       console.log(
-        `    ${r.scenario}: p95 ${r.p95.toFixed(2)} ms (baseline ${r.baselineP95.toFixed(2)} ms, +${r.deltaPct.toFixed(1)}%)`
+        `    ${r.scenario}: p95 ${r.p95.toFixed(2)} ms (baseline ${r.baselineP95.toFixed(2)} ms, +${r.deltaPct.toFixed(1)}%, threshold ${r.threshold}%)`
       );
     }
     console.log('');
@@ -113,7 +131,12 @@ const main = async () => {
   console.log(`✓ No scenarios regressed beyond the threshold.`);
 };
 
-main().catch((err) => {
-  console.error('Unexpected error:', err);
-  process.exit(2);
-});
+// Canonical ESM "is this the entrypoint?" gate — run `main` only when invoked
+// directly by node, so a unit test can import `scenarioThreshold` without the
+// script reading files / calling process.exit.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((err) => {
+    console.error('Unexpected error:', err);
+    process.exit(2);
+  });
+}
