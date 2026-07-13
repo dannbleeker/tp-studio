@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-13T18:21:24.776Z",
-  "commit": "9cdaf48",
+  "generatedAt": "2026-07-13T19:12:38.357Z",
+  "commit": "b41125f",
   "headline": {
-    "linesTsJs": 148467,
-    "tests": 4902,
-    "lineCoveragePct": 95.66,
-    "commits": 1090,
+    "linesTsJs": 148500,
+    "tests": 4904,
+    "lineCoveragePct": 95.68,
+    "commits": 1092,
     "ageDays": 63,
     "trackedFiles": 1191,
     "featureManualPct": 99.6,
@@ -21,7 +21,7 @@
     {
       "category": "Unit tests",
       "files": 425,
-      "lines": 66160
+      "lines": 66173
     },
     {
       "category": "E2E tests (Playwright)",
@@ -31,7 +31,7 @@
     {
       "category": "Build scripts",
       "files": 20,
-      "lines": 4296
+      "lines": 4316
     },
     {
       "category": "Styles (CSS)",
@@ -46,18 +46,18 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.66,
-      "covered": 14149,
+      "pct": 95.68,
+      "covered": 14152,
       "total": 14790
     },
     "statements": {
-      "pct": 93.17,
-      "covered": 16118,
+      "pct": 93.19,
+      "covered": 16121,
       "total": 17299
     },
     "functions": {
-      "pct": 92.74,
-      "covered": 3207,
+      "pct": 92.82,
+      "covered": 3210,
       "total": 3458
     },
     "branches": {
@@ -67,29 +67,29 @@
     }
   },
   "tests": {
-    "unit": 4806,
+    "unit": 4808,
     "e2e": 96,
-    "durationMs": 247451,
+    "durationMs": 265211,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10432
+        "ms": 10928
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5047
+        "ms": 5733
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4899
+        "ms": 4851
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2611
+        "ms": 3022
       },
       {
-        "file": "tests/components/EdgeInspector.test.tsx",
-        "ms": 2394
+        "file": "tests/components/comments/CommentsPanel.test.tsx",
+        "ms": 2731
       }
     ]
   },
@@ -782,16 +782,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 63,
-    "commits": 1090,
-    "commits7d": 117,
+    "commits": 1092,
+    "commits7d": 119,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 783
+        "count": 784
       },
       {
         "name": "github-actions[bot]",
-        "count": 291
+        "count": 292
       },
       {
         "name": "Claude",
@@ -803,9 +803,9 @@
       }
     ],
     "churn30d": {
-      "added": 31934,
-      "removed": 9509
+      "added": 31883,
+      "removed": 9349
     },
-    "changelogEntries": 393
+    "changelogEntries": 394
   }
 }
