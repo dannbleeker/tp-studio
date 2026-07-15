@@ -1,6 +1,7 @@
 import { type Node as RFNode, useStore as useRFStore } from '@xyflow/react';
 import { useMemo } from 'react';
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
+import { effectiveLayoutMode } from '@/domain/layoutStrategy';
 import { useDocumentStore } from '@/store';
 import {
   type Box,
@@ -112,7 +113,9 @@ export const useRadialRoute = (params: {
     isJunctorEdge,
     hasMutexOverride,
   } = params;
-  const isRadialMode = useDocumentStore((s) => s.layoutMode === 'radial');
+  const isRadialMode = useDocumentStore(
+    (s) => effectiveLayoutMode(s.doc.diagramType, s.layoutMode) === 'radial'
+  );
   const radialNodes = useRFStore((s) => (isRadialMode ? s.nodes : null), radialNodesEqual);
   return useMemo(() => {
     if (!isRadialMode || !radialNodes) return null;

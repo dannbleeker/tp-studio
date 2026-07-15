@@ -1,3 +1,4 @@
+import type { LayoutMode } from '@/store/uiSlice/types';
 import type { DiagramType } from './types';
 
 /**
@@ -82,3 +83,28 @@ export const HANDLE_ORIENTATION: Record<DiagramType, HandleOrientation> = {
   goalTree: 'vertical',
   nbr: 'vertical',
 };
+
+/**
+ * Diagram types that FORCE the radial layout regardless of the global
+ * `layoutMode` toggle. The Interference Diagram is inherently a hub-and-spoke
+ * radial map — the objective sits at the centre with interferences radiating
+ * outward — so the flow/radial toggle is meaningless for it.
+ *
+ * Kept as a separate `Partial<Record>` rather than a third `LayoutStrategy`
+ * value on purpose: `layoutMode` is a *global* persisted preference, so a
+ * forced-radial diagram must compute radial positions WITHOUT mutating that
+ * preference — otherwise opening an ID would flip a CRT in another tab into
+ * radial too. Every layout-computation read of `layoutMode` routes through
+ * `effectiveLayoutMode` below so the override is honoured in one place.
+ */
+export const FORCE_RADIAL: Partial<Record<DiagramType, boolean>> = {};
+
+/**
+ * The layout mode a given diagram type actually renders in. Forced-radial
+ * types (see `FORCE_RADIAL`) always compute radial; every other type honours
+ * the global `layoutMode`. While `FORCE_RADIAL` is empty this is the identity
+ * on `mode`, so wiring the layout reads through it is behaviour-preserving.
+ */
+export function effectiveLayoutMode(diagramType: DiagramType, mode: LayoutMode): LayoutMode {
+  return FORCE_RADIAL[diagramType] ? 'radial' : mode;
+}

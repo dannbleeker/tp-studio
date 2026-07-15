@@ -3,7 +3,7 @@ import { anchoredAssumptionIds, placeAssumptionsNearEdges } from '@/domain/assum
 import { NODE_MIN_HEIGHT, NODE_WIDTH } from '@/domain/constants';
 import { layoutFingerprint } from '@/domain/fingerprint';
 import { edgesArray } from '@/domain/graph';
-import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
+import { effectiveLayoutMode, LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { radialLayout } from '@/domain/radialLayout';
 import type { TPDocument } from '@/domain/types';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
@@ -157,6 +157,11 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   const sizeOpts: NodeSizeOpts = { growToFit: growCardsToFitText, appMode };
 
   const strategy = LAYOUT_STRATEGY[doc.diagramType];
+  // Forced-radial diagram types (e.g. the Interference Diagram) always compute
+  // radial regardless of the global `layoutMode`; every other type honours it.
+  // Routing all three layout-computation reads below through this single value
+  // keeps the fingerprint, the radial memo, and the dagre effect in lockstep.
+  const effMode = effectiveLayoutMode(doc.diagramType, layoutMode);
   // Goal #4 — auto-layout is authoritative: `entity.position` is honored
   // ONLY for `manual` diagrams (EC), read directly in the manual branch
   // below. Auto diagrams (dagre + radial) ignore stored positions entirely
@@ -169,7 +174,7 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
     .sort()
     .join(
       ','
-    )}|ec:${[...projection.hiddenCountByCollapser.keys()].sort().join(',')}|cfg:${layoutConfigKey(doc.layoutConfig)}|s:${strategy}|m:${layoutMode}|g:${growCardsToFitText ? 1 : 0}|am:${appMode}`;
+    )}|ec:${[...projection.hiddenCountByCollapser.keys()].sort().join(',')}|cfg:${layoutConfigKey(doc.layoutConfig)}|s:${strategy}|m:${effMode}|g:${growCardsToFitText ? 1 : 0}|am:${appMode}`;
 
   // Manual-layout diagrams (Evaporating Cloud) skip the layout engine
   // entirely: positions live on the entities themselves. Compute
@@ -189,7 +194,7 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   // Radial layout is a small hand-rolled algorithm (no dagre dep) so it
   // can also run synchronously.
   const radialPositions = useFingerprintMemo(() => {
-    if (strategy === 'manual' || layoutMode !== 'radial') return null;
+    if (strategy === 'manual' || effMode !== 'radial') return null;
     const { nodes, edges } = buildLayoutInputs(doc, projection, sizeOpts);
     // Auto-layout authoritative — radial output wins; stored positions ignored.
     return radialLayout(nodes, edges);
@@ -213,10 +218,10 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   // (per-doc `layoutConfig.rankSep` / `.nodeSep` overrides still win).
   const densityMultiplier =
     layoutDensity === 'compact' ? 0.75 : layoutDensity === 'spacious' ? 1.5 : 1.0;
-  // biome-ignore lint/correctness/useExhaustiveDependencies: by design — we re-run when the structural fingerprint OR the density preset changes; doc/projection/layoutMode are closed-over and read at effect time. Listing them as deps would re-fire the layout on title-only edits, defeating the fingerprint gate.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: by design — we re-run when the structural fingerprint OR the density preset changes; doc/projection/effMode are closed-over and read at effect time (effMode is folded into `fp`). Listing them as deps would re-fire the layout on title-only edits, defeating the fingerprint gate.
   useEffect(() => {
     if (strategy === 'manual') return;
-    if (layoutMode === 'radial') return;
+    if (effMode === 'radial') return;
     if (dagreState.fp === fp && dagreState.density === layoutDensity) return;
     let cancelled = false;
     void (async () => {
