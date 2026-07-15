@@ -78,6 +78,11 @@ const DIAGRAM_CARDS: DiagramCard[] = [
     use: 'Pair every layer of a strategy with the tactic that achieves it, recursively down to action.',
   },
   {
+    type: 'id',
+    short: 'ID',
+    use: 'Map what interferes with a goal around a central objective, rank the interferences by lost time, and pair each with a fix.',
+  },
+  {
     type: 'freeform',
     short: 'Freeform',
     use: 'Argument mapping, brainstorm, or anything that needs the canvas without TOC type constraints.',

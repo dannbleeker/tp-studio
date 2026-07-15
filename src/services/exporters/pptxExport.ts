@@ -51,6 +51,7 @@ const DIAGRAM_LABELS: Record<TPDocument['diagramType'], string> = {
   goalTree: 'Goal Tree',
   freeform: 'Freeform Diagram',
   nbr: 'Negative Branch Reservation',
+  id: 'Interference Diagram',
 };
 
 // ─── Canvas-slide layout + tall-diagram tiling ─────────────────────────

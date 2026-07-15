@@ -38,7 +38,16 @@ export type DiagramType =
   // mitigation injections (reactive) or replacement injections
   // (proactive redesign) that prevent the branch. Edges read
   // sufficient-cause forward — same framing as FRT.
-  | 'nbr';
+  | 'nbr'
+  // Interference Diagram (Sproull & Nelson, *Epiphanized*, App. 4; orig.
+  // Bob Fox, TOC Center). A hub-and-spoke map for answering "what to change"
+  // fast without a full CRT: a single central objective (either "exploit the
+  // constraint" or a strategic goal), a ring of `obstacle` interferences that
+  // block it — each optionally carrying a quantified time/impact value — and a
+  // paired `intermediateObjective` per interference. Unlike the logic trees the
+  // arrows are NON-logical "intuition" arrows (no sufficiency/necessity), so no
+  // causal CLR rules run. Thin shell over the entity model, forced radial.
+  | 'id';
 
 export type ClrRuleId =
   | 'clarity'

@@ -153,7 +153,7 @@ export interface TpTestHook {
    * exposed in production).
    */
   newDocument: (
-    diagramType: 'crt' | 'frt' | 'prt' | 'tt' | 'ec' | 'goalTree' | 'st' | 'freeform'
+    diagramType: 'crt' | 'frt' | 'prt' | 'tt' | 'ec' | 'goalTree' | 'st' | 'freeform' | 'nbr' | 'id'
   ) => void;
   /**
    * Session 131 — read an entity's current type. Pairs with
@@ -183,7 +183,17 @@ export interface TpTestHook {
    * with meaningful, distinct labels regardless of activation order.
    */
   openTab: (
-    diagramType: 'crt' | 'frt' | 'prt' | 'tt' | 'ec' | 'goalTree' | 'st' | 'freeform',
+    diagramType:
+      | 'crt'
+      | 'frt'
+      | 'prt'
+      | 'tt'
+      | 'ec'
+      | 'goalTree'
+      | 'st'
+      | 'freeform'
+      | 'nbr'
+      | 'id',
     title?: string
   ) => void;
   /**

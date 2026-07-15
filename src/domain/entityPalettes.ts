@@ -69,6 +69,11 @@ export const PALETTE_BY_DIAGRAM: Record<DiagramType, EntityType[]> = {
   // universal annotations) — no new entity type is needed because the
   // structural role differs but the building blocks are the same.
   nbr: ['injection', 'effect', 'ude', 'desiredEffect', ...UNIVERSAL_ANNOTATION_CLASSES],
+  // Interference Diagram — reuses the PRT triple with no new entity type. An
+  // `obstacle` is an interference (the working set, listed first); its paired
+  // `intermediateObjective` is the injection that removes it; the single
+  // `goal` is the central objective. Non-logical intuition arrows; radial.
+  id: ['obstacle', 'intermediateObjective', 'goal', ...UNIVERSAL_ANNOTATION_CLASSES],
 };
 
 /**
@@ -86,6 +91,7 @@ export const DIAGRAM_TYPE_LABEL: Record<DiagramType, string> = {
   freeform: 'Freeform Diagram',
   goalTree: 'Goal Tree',
   nbr: 'Negative Branch Reservation',
+  id: 'Interference Diagram',
 };
 
 /**
@@ -103,6 +109,7 @@ export const DIAGRAM_SHORT_LABEL: Record<DiagramType, string> = {
   freeform: 'Freeform',
   goalTree: 'Goal Tree',
   nbr: 'NBR',
+  id: 'ID',
 };
 
 /**
@@ -125,6 +132,8 @@ export const DIAGRAM_TYPE_COLOR: Record<DiagramType, string> = {
   freeform: ENTITY_STRIPE_COLOR.effect,
   goalTree: ENTITY_STRIPE_COLOR.goal,
   nbr: ENTITY_STRIPE_COLOR.obstacle,
+  // The Interference Diagram reads as its interferences — the obstacle stripe.
+  id: ENTITY_STRIPE_COLOR.obstacle,
 };
 
 /**
@@ -160,6 +169,9 @@ const DEFAULT_ENTITY_TYPE_BY_DIAGRAM: Record<DiagramType, EntityType> = {
   // UDE in the negative branch (the whole point of the diagram is
   // mapping the bad outcomes).
   nbr: 'ude',
+  // Interference Diagram: the center objective is pre-seeded, so a double-click
+  // on empty space most likely adds another interference (obstacle).
+  id: 'obstacle',
 };
 
 export const defaultEntityType = (diagramType: DiagramType): EntityType =>

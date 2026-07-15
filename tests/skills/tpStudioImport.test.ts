@@ -62,6 +62,7 @@ const ALL_DIAGRAM_TYPES: Record<DiagramType, true> = {
   freeform: true,
   goalTree: true,
   nbr: true,
+  id: true,
 };
 
 const ALL_ENTITY_TYPES: Record<EntityType, true> = {

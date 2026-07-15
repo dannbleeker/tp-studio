@@ -79,6 +79,7 @@ export const petalRoleForDiagram = (dt: DiagramType | null): FlowerPetalRole => 
     case 'st':
     case 'freeform':
     case 'goalTree':
+    case 'id':
     case null:
       return 'related';
     default:

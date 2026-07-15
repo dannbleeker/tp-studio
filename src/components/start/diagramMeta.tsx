@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   Cloud,
+  Crosshair,
   Footprints,
   ListChecks,
   type LucideIcon,
@@ -83,6 +84,12 @@ export const DIAGRAM_META: Record<DiagramType, DiagramMeta> = {
     color: DIAGRAM_TYPE_COLOR.freeform,
     icon: Shapes,
   },
+  id: {
+    label: DIAGRAM_TYPE_LABEL.id,
+    tag: DIAGRAM_SHORT_LABEL.id,
+    color: DIAGRAM_TYPE_COLOR.id,
+    icon: Crosshair,
+  },
 };
 
 /**
@@ -100,6 +107,7 @@ export const DIAGRAM_ORDER: DiagramType[] = [
   'tt',
   'st',
   'nbr',
+  'id',
   'freeform',
 ];
 

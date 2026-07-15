@@ -250,6 +250,19 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     // Session 180 (Theme A / A4) — reinforcing loop with no delay.
     tieredRule('clarity', 'reinforcing-no-delay', reinforcingNoDelayRule),
   ],
+  // Interference Diagram — a curated, NON-causal subset. ID arrows are
+  // intuition arrows (they say "this blocks that", not sufficiency/necessity),
+  // so the causal structural rules (`causality-existence`, `indirect-effect`)
+  // would false-fire and are dropped. Only the type-agnostic hygiene rules run:
+  // clarity, entity-existence, the full-statement nudge, and tautology. The two
+  // ID-specific structural checks (one central objective; every interference
+  // has a paired intermediate objective) land in a follow-up.
+  id: [
+    tieredRule('clarity', 'clarity', clarityRule),
+    tieredRule('existence', 'entity-existence', entityExistenceRule),
+    tieredRule('clarity', 'entity-fragment', entityFragmentRule),
+    tieredRule('clarity', 'tautology', tautologyRule),
+  ],
 };
 
 /**

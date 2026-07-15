@@ -50,6 +50,9 @@ export const LAYOUT_STRATEGY: Record<DiagramType, LayoutStrategy> = {
   // Session 77: Goal Tree — strict top-to-bottom hierarchy. Auto-layout
   // handles it cleanly via dagre with `direction: 'TB'`.
   goalTree: 'auto',
+  // Interference Diagram — auto-layout (positions are computed, not stored),
+  // but forced to the radial engine via FORCE_RADIAL below rather than dagre.
+  id: 'auto',
 };
 
 /**
@@ -82,6 +85,7 @@ export const HANDLE_ORIENTATION: Record<DiagramType, HandleOrientation> = {
   freeform: 'vertical',
   goalTree: 'vertical',
   nbr: 'vertical',
+  id: 'vertical',
 };
 
 /**
@@ -97,7 +101,9 @@ export const HANDLE_ORIENTATION: Record<DiagramType, HandleOrientation> = {
  * radial too. Every layout-computation read of `layoutMode` routes through
  * `effectiveLayoutMode` below so the override is honoured in one place.
  */
-export const FORCE_RADIAL: Partial<Record<DiagramType, boolean>> = {};
+export const FORCE_RADIAL: Partial<Record<DiagramType, boolean>> = {
+  id: true,
+};
 
 /**
  * The layout mode a given diagram type actually renders in. Forced-radial

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 10,
+  "id": "id-example",
+  "diagramType": "id",
+  "title": "XYZ machine — Interference Diagram",
+  "nextAnnotationNumber": 8,
+  "createdAt": 1735689600000,
+  "updatedAt": 1735689600000,
+  "groups": {},
+  "resolvedWarnings": {},
+  "entities": {
+    "obj": {
+      "id": "obj",
+      "type": "goal",
+      "title": "More throughput from the XYZ machine",
+      "annotationNumber": 1,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "intf1": {
+      "id": "intf1",
+      "type": "obstacle",
+      "title": "Parts are not available to work",
+      "annotationNumber": 2,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "io1": {
+      "id": "io1",
+      "type": "intermediateObjective",
+      "title": "Parts are kitted and ready at the machine",
+      "annotationNumber": 3,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "intf2": {
+      "id": "intf2",
+      "type": "obstacle",
+      "title": "Operator has to find their own parts",
+      "annotationNumber": 4,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "io2": {
+      "id": "io2",
+      "type": "intermediateObjective",
+      "title": "Parts are delivered to the operator",
+      "annotationNumber": 5,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "intf3": {
+      "id": "intf3",
+      "type": "obstacle",
+      "title": "The machine breaks down",
+      "annotationNumber": 6,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    },
+    "io3": {
+      "id": "io3",
+      "type": "intermediateObjective",
+      "title": "Preventive maintenance (priority #1)",
+      "annotationNumber": 7,
+      "createdAt": 1735689600000,
+      "updatedAt": 1735689600000
+    }
+  },
+  "edges": {
+    "e1": { "id": "e1", "sourceId": "intf1", "targetId": "obj", "kind": "sufficiency" },
+    "e2": { "id": "e2", "sourceId": "io1", "targetId": "intf1", "kind": "sufficiency" },
+    "e3": { "id": "e3", "sourceId": "intf2", "targetId": "obj", "kind": "sufficiency" },
+    "e4": { "id": "e4", "sourceId": "io2", "targetId": "intf2", "kind": "sufficiency" },
+    "e5": { "id": "e5", "sourceId": "intf3", "targetId": "obj", "kind": "sufficiency" },
+    "e6": { "id": "e6", "sourceId": "io3", "targetId": "intf3", "kind": "sufficiency" }
+  }
+}

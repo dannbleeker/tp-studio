@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/shallow';
-import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
+import { FORCE_RADIAL, LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -50,7 +50,9 @@ export const useToolbarActions = (): ToolbarActions =>
       historyPanelOpen: s.historyPanelOpen,
       commentsPanelOpen: s.commentsPanelOpen,
       inspectorHidden: s.inspectorHidden,
-      showLayoutToggle: LAYOUT_STRATEGY[currentDoc(s).diagramType] === 'auto',
+      showLayoutToggle:
+        LAYOUT_STRATEGY[currentDoc(s).diagramType] === 'auto' &&
+        !FORCE_RADIAL[currentDoc(s).diagramType],
       canUndo: s.past.length > 0,
       canRedo: s.future.length > 0,
       toggleTheme: s.toggleTheme,

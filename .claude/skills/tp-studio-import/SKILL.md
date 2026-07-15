@@ -89,6 +89,7 @@ way for "any of" / "exactly one of".)
 | `goalTree` | Goal Tree | a `goal` | `goal`, `criticalSuccessFactor`, `necessaryCondition` | `necessity` |
 | `st` | Strategy & Tactics | a `goal` | `goal`, `injection` (tactic), `necessaryCondition` | `sufficiency` |
 | `nbr` | Negative Branch | a `ude` | `injection`, `effect`, `ude`, `desiredEffect` | `sufficiency` |
+| `id` | Interference Diagram | a `goal` (centre) | `goal` (centre), `obstacle` (interference), `intermediateObjective` (fix) | `sufficiency` |
 | `freeform` | Freeform map | none | `effect`, `note`, any built-in type | `sufficiency` |
 
 `note` is valid in every diagram (a free-floating annotation; it can have no

@@ -22,6 +22,9 @@ const DIAGRAM_TYPES: ReadonlySet<DiagramType> = new Set<DiagramType>([
   // reload / import / share-link. Kept in sync now; the guard↔union sync test
   // in `tests/skills/tpStudioImport.test.ts` fails if a future type drifts again.
   'nbr',
+  // Interference Diagram — must be here too, or importFromJSON / the
+  // localStorage loader silently drops it on reload (the NBR bug above).
+  'id',
 ]);
 export const isDiagramType = (v: unknown): v is DiagramType =>
   typeof v === 'string' && DIAGRAM_TYPES.has(v as DiagramType);

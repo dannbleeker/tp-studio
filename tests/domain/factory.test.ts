@@ -18,12 +18,26 @@ describe('createDocument', () => {
   });
 
   it.each(
-    ALL_DIAGRAM_TYPES.filter((t) => t !== 'ec')
+    // EC seeds the 5-box conflict; ID seeds its single central objective.
+    ALL_DIAGRAM_TYPES.filter((t) => t !== 'ec' && t !== 'id')
   )('%s starts blank (no seeded entities / edges)', (type) => {
     const doc = createDocument(type);
     expect(doc.entities).toEqual({});
     expect(doc.edges).toEqual({});
     expect(doc.nextAnnotationNumber).toBe(1);
+  });
+
+  it('ID starts pre-seeded with a single central objective and no edges', () => {
+    // The Interference Diagram is defined relative to its hub, so a fresh ID
+    // seeds exactly one `goal` (the objective) and nothing else — the user
+    // radiates interferences outward from it. No position is set: ID is
+    // forced-radial auto-layout, so radialLayout computes coordinates.
+    const doc = createDocument('id');
+    const entities = Object.values(doc.entities);
+    expect(entities).toHaveLength(1);
+    expect(entities[0]?.type).toBe('goal');
+    expect(doc.edges).toEqual({});
+    expect(doc.nextAnnotationNumber).toBe(2);
   });
 
   it('EC starts pre-seeded with the 5 boxes at canonical positions and the 4 sufficiency edges', () => {

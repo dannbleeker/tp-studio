@@ -96,6 +96,31 @@ const seedEC = (now: number): DocSeed => {
 };
 
 /**
+ * Seed a blank Interference Diagram with just the central objective. The ID is
+ * defined relative to its hub, so seeding one `goal` gives the radial layout an
+ * apex to centre and makes "this is the objective" visible immediately; the
+ * user then adds interferences around it (method checklist / example builder).
+ * No position is set — ID is forced-radial auto-layout, so `radialLayout`
+ * computes coordinates and stored positions are ignored.
+ */
+const seedID = (now: number): DocSeed => {
+  const goalId = newEntityId();
+  const goal: Entity = {
+    id: goalId,
+    type: 'goal',
+    title: '',
+    annotationNumber: 1,
+    createdAt: now,
+    updatedAt: now,
+  };
+  return {
+    entities: { [goalId]: goal },
+    edges: {},
+    nextAnnotationNumber: 2,
+  };
+};
+
+/**
  * Per-diagram-type initial-content factory. CRT/FRT/PRT/TT all start blank;
  * Evaporating Cloud pre-seeds five boxes at canonical coordinates via
  * `seedEC` above. The `now` argument is the document-level timestamp so
@@ -126,6 +151,9 @@ export const INITIAL_DOC_BY_DIAGRAM: Record<DiagramType, (now: number) => DocSee
   // valid (a user reasoning forward from a candidate injection
   // already in their head).
   nbr: () => emptySeed(),
+  // Interference Diagram — seeds the single central objective; the user
+  // radiates interferences (obstacles) outward from it.
+  id: seedID,
 };
 
 export const createDocument = (diagramType: DiagramType): TPDocument => {

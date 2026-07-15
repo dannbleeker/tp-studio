@@ -17,6 +17,7 @@ const TYPE_LABEL: Record<DiagramType, string> = {
   goalTree: 'Goal Tree',
   st: 'Strategy & Tactics Tree',
   nbr: 'Negative Branch Reservation',
+  id: 'Interference Diagram',
   freeform: 'Diagram',
 };
 
@@ -30,6 +31,7 @@ const READING_RULE: Record<DiagramType, string> = {
     'Read top-down — "in order to [the Goal] we must satisfy [each Critical Success Factor]; in order to each CSF we must meet [its Necessary Conditions]." Goal at the top, CSFs in the middle, NCs at the base.',
   st: 'Each node carries five facets — Necessary Assumption (why act now), Strategy (the outcome), Parallel Assumption (why this approach), Tactic (what we will do), Sufficiency Assumption (why the tactic is enough). Read top-down, parent strategy to child strategies.',
   nbr: 'Read bottom-up from the injection — trace forward to the undesirable effect it might also cause, through the turning point, to the mitigation that keeps the branch from following.',
+  id: 'The central objective is what you want more of; each surrounding interference is something that blocks it (optionally with the time it costs). The arrows are intuition, not logic — clearing an interference via its intermediate objective frees the objective.',
   freeform: '',
 };
 

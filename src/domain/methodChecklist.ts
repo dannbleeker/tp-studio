@@ -361,6 +361,39 @@ const GOAL_TREE: MethodStep[] = [
   },
 ];
 
+// Interference Diagram (Sproull & Nelson, *Epiphanized*, App. 4). The recipe
+// covers both uses: constraint-exploitation (quantify the time each interference
+// steals, then attack the biggest) and strategy development (interferences to a
+// goal, each countered by an injection). The arrows are intuition, not logic —
+// so there's no "read each edge aloud" CLR step here.
+const ID: MethodStep[] = [
+  {
+    id: 'id.objective',
+    label: 'State the central objective',
+    hint: "The one thing you want more of — either 'fully exploit the constraint' or a strategic goal. It sits at the hub; keep it high enough to matter to everyone in the room.",
+  },
+  {
+    id: 'id.interferences',
+    label: 'Surface the interferences',
+    hint: 'Ask "what stops us getting more of that?" Add each obstacle around the objective. Keep statements short, and let the people who do the work name them — filter gripes from real system interferences.',
+  },
+  {
+    id: 'id.quantify',
+    label: 'Quantify the time each steals',
+    hint: 'Estimate the time each interference costs (minutes per day or week, consistent units). This ranks them by impact so you focus on the vital few — the Pareto move.',
+  },
+  {
+    id: 'id.injections',
+    label: 'Pair each interference with an injection',
+    hint: 'For every interference ask "what must exist so this is no longer a problem?" That intermediate objective is the fix — one per interference.',
+  },
+  {
+    id: 'id.act',
+    label: 'Attack the biggest interferences first',
+    hint: "Reduce or eliminate the top-ranked interferences to free the most time; the ones you can't remove (breaks, lunch), off-load or cover instead.",
+  },
+];
+
 /**
  * Per-diagram-type canonical step list. Adding a new diagram type makes
  * TypeScript fail at compile time until a matching entry lands here — same
@@ -373,6 +406,7 @@ export const METHOD_BY_DIAGRAM: Record<DiagramType, MethodStep[]> = {
   tt: TT,
   ec: EC,
   st: ST,
+  id: ID,
   freeform: FREEFORM,
   goalTree: GOAL_TREE,
   nbr: NBR,
