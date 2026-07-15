@@ -5,6 +5,7 @@ import { actionEligibility } from '@/domain/actionEligibility';
 import { EC_SLOT_GUIDING_QUESTIONS, EC_SLOT_LABEL, type ECSlot } from '@/domain/ecGuiding';
 import { CUSTOM_CLASS_ICONS } from '@/domain/entityTypeIcons';
 import { paletteForDoc, resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
+import { INTERFERENCE_IMPACT_KEY } from '@/domain/interference';
 import type { EntityType, Warning } from '@/domain/types';
 import { usePropagatedStates } from '@/hooks/usePropagatedStates';
 import { useEntity } from '@/hooks/useSelected';
@@ -32,6 +33,7 @@ import { EntityStateSection } from './EntityStateSection';
 // feature uses it for built-in keys (ST_FACET_KEYS); only the
 // free-form key/value editor surface is gone.
 import { Field } from './Field';
+import { InterferenceMetricSection } from './InterferenceMetricSection';
 import { MarkdownField } from './MarkdownField';
 import { SixCriteriaSection } from './SixCriteriaSection';
 import { StFacetsSection } from './StFacetsSection';
@@ -389,6 +391,19 @@ export function EntityInspector({ entityId, warnings }: { entityId: string; warn
           entity={entity}
           locked={locked}
           onChange={(next) => updateEntity(entityId, { alternativeMeans: next })}
+        />
+      )}
+
+      {/* Interference Diagram — the time/impact an interference steals (the
+          Pareto input the ranking readout sorts by). Obstacle-only, ID-only. */}
+      {diagramType === 'id' && entity.type === 'obstacle' && (
+        <InterferenceMetricSection
+          entity={entity}
+          locked={locked}
+          onSet={(minutes) =>
+            setEntityAttribute(entityId, INTERFERENCE_IMPACT_KEY, { kind: 'int', value: minutes })
+          }
+          onClear={() => removeEntityAttribute(entityId, INTERFERENCE_IMPACT_KEY)}
         />
       )}
 
