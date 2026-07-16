@@ -51,7 +51,7 @@ export type AnalysisJourney = {
 };
 
 /**
- * The shipped framework. `why`→Goal Tree · `what`→CRT · `to-what`→EC/FRT/NBR ·
+ * The shipped framework. `why`→Goal Tree · `what`→CRT/ID · `to-what`→EC/FRT/NBR ·
  * `how`→PRT/TT · `sustain`→S&T. Each diagram type belongs to exactly one stage.
  */
 export const BARNARD_FIVE_QUESTIONS: readonly JourneyStage[] = [
@@ -66,8 +66,13 @@ export const BARNARD_FIVE_QUESTIONS: readonly JourneyStage[] = [
     id: 'what',
     question: 'What to change?',
     purpose: 'Find the core problem',
-    diagramTypes: ['crt'],
-    hint: 'Trace the undesirable effects down to the one core problem worth solving.',
+    // CRT is the full analysis; the Interference Diagram is the book's faster
+    // route to "what to change" — the interferences to a goal, without building
+    // a whole tree (Sproull & Nelson, *Epiphanized*, App. 4). Create still mints
+    // a CRT (the primary, first entry); an ID enrolled during a journey counts
+    // toward this stage too.
+    diagramTypes: ['crt', 'id'],
+    hint: 'Trace the undesirable effects down to the one core problem — a full CRT, or an Interference Diagram for a faster read.',
   },
   {
     id: 'to-what',

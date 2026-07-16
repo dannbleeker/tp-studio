@@ -57,6 +57,7 @@ describe('analysisJourney — framework', () => {
   it('maps each diagram type back to exactly one stage (freeform to none)', () => {
     expect(stageForDiagramType('goalTree')).toBe('why');
     expect(stageForDiagramType('crt')).toBe('what');
+    expect(stageForDiagramType('id')).toBe('what');
     expect(stageForDiagramType('ec')).toBe('to-what');
     expect(stageForDiagramType('frt')).toBe('to-what');
     expect(stageForDiagramType('nbr')).toBe('to-what');

@@ -4,6 +4,8 @@ import { rankInterferences } from '@/domain/interferenceRanking';
 import { spawnCRTFromGoalTree } from '@/domain/spawnCRT';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import { spawnFRTFromCrt } from '@/domain/spawnFRT';
+import { spawnGoalTreeFromID } from '@/domain/spawnGoalTree';
+import { spawnPRTFromID } from '@/domain/spawnPRT';
 import { validate } from '@/domain/validators';
 import { currentDoc } from '@/store/selectors';
 import { type Command, withWriteGuard } from './types';
@@ -156,6 +158,63 @@ export const analysisCommands: Command[] = [
         opened
           ? `Current Reality Tree opened in a new tab — ${count} candidate UDE${count === 1 ? '' : 's'}, one per unmet standard. (Your Goal Tree stays in its tab.)`
           : `Current Reality Tree seeded with ${count} candidate UDE${count === 1 ? '' : 's'}.`
+      );
+    },
+  }),
+  // Interference Diagram → the two halves of the book's "ID/IO Simplified
+  // Strategy": a Prerequisite Tree (the interferences + fixes as a dependency
+  // plan) and a Goal Tree / IO Map (the fixes as the necessity structure to the
+  // objective). Both mint a new document and never touch the source.
+  withWriteGuard({
+    id: 'spawn-prt-from-id',
+    label: 'Spawn Prerequisite Tree from this Interference Diagram',
+    group: 'File',
+    run: (s) => {
+      const doc = currentDoc(s);
+      if (doc.diagramType !== 'id') {
+        s.showToast('info', 'Open an Interference Diagram to turn its interferences into a plan.');
+        return;
+      }
+      const count = Object.values(doc.entities).filter((e) => e.type === 'obstacle').length;
+      if (count === 0) {
+        s.showToast('info', 'No interferences to plan around — add at least one first.');
+        return;
+      }
+      const opened = s.openDocInTab(spawnPRTFromID(doc));
+      s.showToast(
+        'success',
+        opened
+          ? `Prerequisite Tree opened in a new tab — ${count} obstacle${count === 1 ? '' : 's'} with their intermediate objectives. (Your ID stays in its tab.)`
+          : `Prerequisite Tree seeded from ${count} interference${count === 1 ? '' : 's'}.`
+      );
+    },
+  }),
+  withWriteGuard({
+    id: 'spawn-goaltree-from-id',
+    label: 'Spawn Goal Tree from this Interference Diagram (the IO map)',
+    group: 'File',
+    run: (s) => {
+      const doc = currentDoc(s);
+      if (doc.diagramType !== 'id') {
+        s.showToast('info', 'Open an Interference Diagram to arrange its fixes into an IO map.');
+        return;
+      }
+      const count = Object.values(doc.entities).filter(
+        (e) => e.type === 'intermediateObjective'
+      ).length;
+      if (count === 0) {
+        s.showToast(
+          'info',
+          'No intermediate objectives yet — pair each interference with a fix first.'
+        );
+        return;
+      }
+      const opened = s.openDocInTab(spawnGoalTreeFromID(doc));
+      s.showToast(
+        'success',
+        opened
+          ? `Goal Tree opened in a new tab — ${count} critical success factor${count === 1 ? '' : 's'} to decompose into necessary conditions. (Your ID stays in its tab.)`
+          : `Goal Tree seeded from ${count} intermediate objective${count === 1 ? '' : 's'}.`
       );
     },
   }),
