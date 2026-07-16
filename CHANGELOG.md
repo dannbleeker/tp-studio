@@ -323,6 +323,10 @@ Johnson's-per-SCC); junctor terminus X vs circle X disagree in horizontal (EC) l
   keeps the global 25 %. The regression checker (`check-perf-regression.mjs`) gained a `thresholdPct`
   per-scenario override (unit-tested `scenarioThreshold`, entrypoint-guarded so it's importable). No
   app-code change — the hot path was already clean (Session 190); this is measurement infrastructure.
+  The residual `edit-heavy` cost is mechanically the **inherent O(N) node-array rebuild + React
+  reconciliation of 100 nodes per edit** — irreducible, not rot. If you find 16.7 ms pinned in
+  `perf-baseline.json` and assume it's decay, it isn't: don't re-chase it. (Re-baseline + threshold were
+  **Dann's call**, not an autonomous loosening of the gate.)
 
 ## Session 202 — Hover-fan: crossing-free slot order (backlog polish)
 
@@ -358,7 +362,8 @@ Johnson's-per-SCC); junctor terminus X vs circle X disagree in horizontal (EC) l
 
 The chained multi-tree "project" workflow (§C), built as an opt-in **Analysis journey** — a guide over
 the several trees of *one* analysis, walked through **Barnard's five questions** (*Handbook* Ch. 15
-Table 15-3). It's the "connective tissue" the gap analysis called for: it ties the already-shipped
+Table 15-3; the stage→tree mapping also draws on Ch. 19, Dettmer). It's the "connective tissue" the gap
+analysis called for: it ties the already-shipped
 pieces — the method stepper, the CRT→FRT / Goal Tree→CRT spawn bridges, the multi-tab engine — into one
 narrative, without a new kind of document.
 
@@ -409,7 +414,8 @@ narrative, without a new kind of document.
   and it's called out in rose ("this is where the branch turns negative"); on any other NBR arrow, a hint
   ties the (already-wired) negative polarity to the method — mark the arrow where the chain first turns
   against you. Read-only, derived (nothing stored); the ± polarity itself has been rendered on NBR edges
-  since Session 180 (*Handbook* Ch. 24, Cohen). *(The entity type already labels each node's role —
+  since Session 180 (*Handbook* Ch. 24, Cohen, **Fig 24-16** — the source diagram this rendering is
+  modelled on; go back to it to check fidelity or extend). *(The entity type already labels each node's role —
   Injection / Effect / Desired Effect / UDE — so the "typed roles" ask is met by the existing node label.)*
 - **On-canvas spine emphasis.** The canvas now draws the branch the way you read it: the injection→UDE
   spine stays at full strength while **side branches dim** (0.4 opacity, arrowhead included), and the
@@ -428,6 +434,9 @@ narrative, without a new kind of document.
   aren't left unrooted. The show-stopper flag rides a boolean attribute on the obstacle and the
   blocking-factor note its description — no schema change (*Handbook* Ch. 24, Cohen, Tables 24-10/11). Turns
   a workshop's obstacle brainstorm into a wired PRT skeleton in one paste, instead of one pair at a time.
+  The batched-create store action is **`addObstacleIoRows`**, deliberately modelled on **`trimBranch`**'s
+  one-`applyDocChange` pattern — that's how batched creates are done in this codebase; follow it rather
+  than re-deriving a new shape.
 
 ## Session 199 — CLR sharpening (backlog A1)
 
@@ -455,6 +464,16 @@ App. B, Scheinkopf, unless noted):
   compliance is usually a Necessary Condition a few layers down — a threshold you must not breach — not a
   make-or-break CSF the goal is built around (Ch. 19, Dettmer).
 
+**Standing decision — our CLR list is 8, and that is deliberate.** The *Handbook*'s canonical list is
+**7 categories in 3 ordered levels** and omits `tautology`; ours carries an 8th because we follow
+**Dettmer's** teaching layout. A future Handbook-driven review will notice the mismatch — **keep the 8th.
+This is not a removal.** (Recorded here because the backlog section that used to hold this guard was
+pruned in Session 206; `docs/guide/13-the-clr.md` records the Dettmer attribution but not this conflict.)
+
+Also deliberate: the *"doesn't exist in this environment"* half of entity-existence is **not** a validator
+rule — it has no structural signal, so it lives in the per-edge scrutiny stepper. Don't re-propose it as a
+"missing rule".
+
 ## Session 199 — Entry-point rule (backlog A2)
 
 - **Entry-point rule** (`entry-point`, existence tier; Future Reality Trees + Negative Branch
@@ -480,7 +499,8 @@ App. B, Scheinkopf, unless noted):
   walk one tier at a time — Clarity → Existence → Sufficiency. When on, a later tier is de-emphasised
   (collapsed to its header + an "N to review · clears after …" line) until the earlier tiers have no open
   reservations left. It never *hides*: a gated tier expands on click, and the toggle is off by default, so
-  the panel is unchanged until you ask for the focus. Local view state — nothing persisted.
+  the panel is unchanged until you ask for the focus. Local view state — nothing persisted
+  (*Handbook* Ch. 25 App. B).
 - **Goal-Tree NC-depth mode.** The `goalTree-nc-depth` rule normally holds Necessary Conditions to
   Dettmer's two layers — right when the Goal Tree feeds a Current Reality Tree. An opt-in
   `ncDepthMode: 'conflict-resolution'` (palette: *Toggle conflict-resolution NC depth (Goal Tree)*) relaxes
@@ -508,6 +528,11 @@ an optional edge field, emitted only when magnitudinal so untouched diagrams rou
 hand-edited value is validated (only `'additional'` is legal) and dropped if it has no AND group. *(The
 text exporters describe both flavours as an AND group — the distinction is a canvas / teaching aid.)*
 
+Rendered per **Dann's "distinct connector, same geometry" call** — the mockup that drew magnitudinal
+co-causes as *independent arrows* was rejected. Geometry-sameness is therefore a deliberate decision, not
+an implementation convenience: it's what keeps the canvas==export invariant intact. Don't re-litigate the
+independent-arrows rendering without re-opening that trade. *(Ch25 App.B.)*
+
 ## Session 198 — Cross-tree spawn bridges (backlog C)
 
 Two new command-palette actions that seed one tree from another, following the same **unlinked-spawn**
@@ -517,11 +542,12 @@ never touches the source**, so a single diagram stays fully usable standalone (n
 - **Spawn Future Reality Tree from this CRT (invert the UDEs).** On a Current Reality Tree, turns each
   undesirable effect into a desired-effect seed titled *"Reverse: &lt;effect&gt;"* (for you to rewrite to the
   positive form) plus one starter injection — the book move that a solution tree's desired effects mirror
-  the problem tree's undesirable effects *(Handbook Ch. 20, Goldratt-Ashlag)*.
+  the problem tree's undesirable effects *(Handbook Ch. 20, Goldratt-Ashlag — **Layer 4** of the
+  buy-in model)*.
 - **Spawn Current Reality Tree from this Goal Tree (benchmark shortfalls).** On a Goal Tree, turns each
   Critical Success Factor / Necessary Condition into a candidate undesirable effect titled
   *"&lt;standard&gt; is not met"* — the shortfall you'd then diagnose *(Handbook Ch. 19, Dettmer:
-  a Goal Tree sets the standard, a CRT explains why reality falls short)*.
+  a Goal Tree sets the standard, a CRT explains why reality falls short — **Fig 19-10**)*.
 
 Both validate the source diagram type and surface a friendly toast when there's nothing to seed from.
 *(The U-Shape cross-tree overview export stays a documented follow-on in NEXT_STEPS §C — it needs
@@ -538,8 +564,10 @@ cross-document link-walking, which the unlinked-spawn model deliberately avoids.
   negative side-effects (spin off a Negative Branch if unsure)? The "why" of each action already lives in
   its Need field. *(Ch. 20 Layer 7; Ch. 25.)*
 
-*(The Obstacle/IO intake table and the fuller NBR typed-roles/polarity work remain open in NEXT_STEPS §E —
-both need net-new UI + a batched-create store action.)*
+*(At the time of writing, the Obstacle/IO intake table and the fuller NBR typed-roles/polarity work were
+still open — both needed net-new UI + a batched-create store action.)* **Correction, Session 206:** both
+shipped in **Session 199** — the intake table (`addObstacleIoRows`) and the NBR readability/turning-point
+work, each with its own entry above. Nothing from §E remains open.
 
 ## Session 198 — Terminology / method / UX polish (backlog F)
 
@@ -577,8 +605,10 @@ one, every decomposition fans out to ≥2 children, and the intentional-leaf rol
   fullest illustration of the directional model (a necessary assumption up AND a sufficiency assumption down).
 
 Shared recursive `buildSTFacetDoc` builder (arbitrary nesting depth); a test pins that each pattern is a
-valid, position-clean facet tree. *The remaining book set (the last two Mafia-Offer templates, the full
-generic Viable-Vision set, and the healthcare Viable-Vision) stays a documented extension in NEXT_STEPS §G.*
+valid, position-clean facet tree. *The remaining book set stays a documented extension in NEXT_STEPS §G.*
+**Correction, Session 206:** the last two Mafia-Offer templates and the healthcare Viable-Vision shipped in
+Session 199 (below) — only the 5 generic Viable-Vision trees + the Base/Enhanced scaffold
+(*Ch34 Tables 34-1…6*) are still deferred, on curation-over-completeness grounds.
 
 - **Review follow-ups (B + G).** An adversarial review of the S&T change surfaced two real defects, now
   fixed: (1) the `indirect-effect` structural rule (a *causal* "≥3 direct causes → missing intermediate?"
@@ -588,7 +618,8 @@ generic Viable-Vision set, and the healthcare Viable-Vision) stays a documented 
   chapter's deep-dives + worked example + sidebars (and the USER_GUIDE S&T section) still taught the pre-B
   model — the apex with a necessary assumption, leaves with sufficiency assumptions, "every node has all
   five facets", the six-step checklist, and one sidebar that inverted the sufficiency direction — all
-  reconciled to the shipped directional/position-aware model.
+  reconciled to the shipped directional/position-aware model. The rules reference in **`appendix-c`** was
+  reconciled to the corrected model in the same pass.
 
 ## Session 198 — Strategy & Tactics model correction (backlog B)
 
@@ -682,7 +713,9 @@ questions**, and a **"best arrow to break" hint**.
   `EC_STEPS_BY_CLOUD_TYPE` (per-type prompt copy, original app-voice paraphrases of Cohen's tables,
   beside the other wizard copy). The DocumentInspector cloud-type help no longer says "nothing else
   changes." (A per-type *reading* order for the verbalisation strip is deferred to backlog D5, which
-  will consume it.)
+  will consume it.) **Correction, Session 206:** D5 did *not* consume it — it shipped only the per-SIDE
+  `D′-first` toggle, which never reads `cloudType`. The per-TYPE reading order remains unbuilt and is
+  tracked in NEXT_STEPS.
 - Tests: `tests/domain/ecGuiding.test.ts` (spec shape) + `CreationWizardPanelECOrder.test.tsx`
   (default preservation, type-switch walk/prompt/tag, restore-to-generic). Docs: `features.json`
   (`ec-cloud-type-wizard`, reviewedThroughSession → 197), USER_GUIDE + guide ch. 5.
@@ -1673,10 +1706,12 @@ the group's endpoints apart at the shared target so each is grabbable; they snap
 - Polish (same session): the spread now anchors on the routed path's own endpoints, so hover-in
   moves only the X — no vertical jump from the route→bezier swap — and eases in over 120ms (the
   `transition` is gated to the active hover, so node drags, which also change the path `d`, don't
-  rubber-band). Remaining follow-ups (see NEXT_STEPS): fans only direct-route convergence in flow
+  rubber-band). Remaining follow-ups at the time of writing: fans only direct-route convergence in flow
   layouts (smart-routed detours + radial keep their path); sourceId slot ordering — a render-time
   position sort would guarantee crossing-free fanning but would couple edge emission to per-frame
-  drag positions (a deliberate perf boundary).
+  drag positions (a deliberate perf boundary). **Correction, Session 206:** both follow-ups have since
+  shipped — slot ordering by live source X in **Session 202** (the emission memo stayed position-free),
+  and detours + radial in **Session 206**. Nothing from the hover-fan remains open.
 
 **Closed-library hygiene.** "Forget closed documents" (palette) used to scan only the revisions
 map, so a closed tree that was never snapshotted — the common case since Session 184 keeps every

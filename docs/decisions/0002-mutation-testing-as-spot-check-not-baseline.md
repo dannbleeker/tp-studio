@@ -60,6 +60,8 @@ Treat Stryker mutation testing as an **on-demand spot-check tool**, not a contin
 ## References
 
 - `stryker.config.mjs` — config with `ignoreStatic: true` + `dryRunTimeoutMinutes: 15` + the exclusion list.
-- `NEXT_STEPS.md` — Tier 3 #11 (mutation baseline) — superseded by this ADR; the planning text there is now stale.
+- `NEXT_STEPS.md` — formerly Tier 3 #11 (mutation baseline); superseded by this ADR and since pruned from
+  that file (which now carries only unshipped work). **This ADR is the home of record** — there is no
+  planning text left there to consult.
 - `CHANGELOG.md` Session 121 — the original Stryker dial-in pass + the 88.24% data point.
 - `CHANGELOG.md` Session 132 — this ADR.

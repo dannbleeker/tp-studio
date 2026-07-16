@@ -3,7 +3,8 @@ import { createDocument } from './factory';
 import type { TPDocument } from './types';
 
 /**
- * E3 — the 3-Cloud rapid-diagnosis method (a-dato source; NEXT_STEPS Theme E).
+ * E3 — the 3-Cloud rapid-diagnosis method (a-dato source; the E-theme taxonomy lives in
+ * `docs/EXTERNAL_TP_SOURCE_REVIEW.md`, not NEXT_STEPS).
  *
  * A fast on-ramp alternative to a full Current Reality Tree: name three
  * undesirable effects, surface the conflict behind each, then **consolidate**

@@ -1,40 +1,45 @@
 ---
 name: show-backlog
-description: Display the TP Studio backlog grouped by status (open, parked, placeholder, won't-build), pulled from NEXT_STEPS.md + recent CHANGELOG entries. Matches the format Dann asks for repeatedly during sessions.
+description: Display the TP Studio backlog grouped by status (open, deferred, parked, declined), pulled from NEXT_STEPS.md + recent CHANGELOG entries. Matches the format Dann asks for repeatedly during sessions.
 ---
 
 Pull the current backlog and render it in the format Dann likes. Steps:
 
 1. Read `NEXT_STEPS.md` end-to-end.
 2. Read the last 3 session entries from `CHANGELOG.md` for "recently completed" context.
-3. Check open CI failures via `gh run list --branch main --limit 5 --json conclusion,headBranch,name`. Surface any current failure prominently.
+3. Check open CI failures via `gh run list --branch main --limit 5 --json conclusion,headBranch,name` (there is no `jq` on this box — use `gh`'s own `--jq`). Surface any current failure prominently.
 4. Group the items by status using the exact headings below.
+
+NEXT_STEPS.md carries ONLY unshipped work; its own top-level sections are the source of the grouping:
+*Open* · *Deferred by decision* · *Parked pending an explicit ask* · *Known bugs* · *Declined* ·
+*Out of scope* · *Reference*. Map them straight through — don't invent a status the file doesn't use.
 
 ## Output format
 
 ```markdown
 # TP Studio — Backlog (post Session N)
 
-## 🎯 Critical-path v3-brief
-<one-line status — usually "all closed">
-
-## 🟢 Actively open (work could start tomorrow)
+## 🟢 Open (work could start tomorrow)
 
 | Item | Effort | Notes |
 | ---  | ---    | ---   |
 | ...
 
-## 📌 Placeholders (need a fleshing-out conversation first)
+## 🟠 Deferred by decision (reviewed, consciously not built)
 
-| Placeholder | What needs scoping |
-| ---         | ---                |
+| Item | Why deferred |
+| ---  | ---          |
 
-## 🟡 Parked
+## 🟡 Parked pending an explicit ask
 
-| Item | Reason parked |
-| ---  | ---           |
+| Item | What needs deciding first |
+| ---  | ---                       |
 
-## 🔴 Deliberately won't build
+## 🐛 Known bugs
+
+<if any open; note that a closed-without-fix record is NOT an open bug — surface it only if asked>
+
+## 🔴 Declined / out of scope
 
 <comma-separated terse list>
 
@@ -54,8 +59,9 @@ Pull the current backlog and render it in the format Dann likes. Steps:
 ## Discipline
 
 - **Don't fabricate items.** Everything below the headings must trace back to either NEXT_STEPS.md or CHANGELOG.md. If a section would be empty, omit it.
-- **Don't expand parked items into "open."** Parked items have a reason — surface the reason, don't quietly drop it.
-- **Don't lose the "what's blocking the next step?" thread.** If an item depends on another (FL-CO2 on FL-EX8), note the dependency.
+- **Don't expand parked or deferred items into "open."** Both have a reason — surface the reason, don't quietly drop it. *Deferred* = reviewed and consciously not built; *Parked* = needs a Dann decision first. They are not the same status.
+- **Don't lose the "what's blocking the next step?" thread.** If an item depends on another, note the dependency.
+- **The buildable list is deliberately near-empty.** As of Session 206 exactly one item is Open. That's the honest answer, not a lookup failure — don't pad it by promoting deferred/declined work.
 - **Honest effort labels.** Small / Medium / Large only — no fake precision like "2.5h."
 - **Top-3 next-priority is your judgment call.** Default to: (1) anything unblocking other parked items, (2) low-cost / high-tidiness items like the 1-hour optimization pass, (3) biggest open feature.
 

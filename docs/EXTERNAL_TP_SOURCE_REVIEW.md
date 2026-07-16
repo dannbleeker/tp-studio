@@ -129,7 +129,13 @@ Dann's pick, not recommended as a first slice.
 > tags + heatmap), and **E7** (leverage-point flag) were dropped to won't-build —
 > E2 is facilitation scaffolding beyond the tool's scope, E4 drifts toward
 > financial modelling, E7 is redundant with the core-driver analysis. **E1, E3,
-> E5, E6** remain greenlight-pending candidates. See NEXT_STEPS.md.
+> E5, E6** were greenlight-pending candidates at the time.
+>
+> **Update (Session 206):** all four have since **shipped** — **E1** system-archetype pattern starters
+> (Session 179), **E3** 3-Cloud rapid-diagnosis wizard, **E5** long-arrow / missing-step warning, and
+> **E6** Reader / Trainee Mode (all Session 180). See CHANGELOG for each. **Nothing from Theme E is
+> pending**; only E2 / E4 / E7 remain won't-build. (NEXT_STEPS no longer tracks these — it carries only
+> unshipped work.)
 
 | Candidate | Tag | Size | Source | Notes |
 |---|---|---|---|---|

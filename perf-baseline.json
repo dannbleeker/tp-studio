@@ -11,7 +11,7 @@
       "thresholdPct": 40
     },
     "edit-heavy": {
-      "_baselined_from": "Re-baselined Session 203/204. best-of-N floor ~15 ms on a fast host, ~21 ms on a slow one (observed best-of-3: 15.12, 20.81) — the shift is BETWEEN runner hosts, which best-of-N can't remove. 16.7 is a central floor; the Session-131 baseline (9.2) was stale, the cost grew legitimately (hot path clean; see NEXT_STEPS).",
+      "_baselined_from": "Re-baselined Session 203/204. best-of-N floor ~15 ms on a fast host, ~21 ms on a slow one (observed best-of-3: 15.12, 20.81) — the shift is BETWEEN runner hosts, which best-of-N can't remove. 16.7 is a central floor; the Session-131 baseline (9.2) was stale, the cost grew legitimately (hot path clean; see CHANGELOG S203/S204). The residual cost is the inherent O(N) node-array rebuild + React reconciliation of 100 nodes per edit — irreducible, not rot: don't re-chase it.",
       "_note_threshold": "40% per-scenario override, covering the ~15–21 ms cross-host floor: 40% over 16.7 ms (~23.4 ms) clears the observed slow-host high (~21 ms) with margin; a real 1.4x+ regression still fails. all-actions carries its own 40% for the same reason.",
       "p95_ms": 16.7,
       "p99_ms": 34.6,

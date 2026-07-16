@@ -1,255 +1,123 @@
 # TP Studio — backlog / next steps
 
-Shipped work lives in **CHANGELOG.md**. This file was pruned in Session 176 of ~580 lines of
-completed narrative, re-pruned in Session 193 (the Session-192 review backlog and the Session-180
-hardening/tech-debt lists shipped in full), and pruned again in Session 206 (the adversarial hunt's
-13 confirmed bugs + both Session-205 carry-overs all shipped; sections E and G reached COMPLETE).
-If something you remember building isn't listed here, it's done — check CHANGELOG.
+**This file carries only what is NOT shipped** — open items, deferrals, parked designs, declined calls,
+and the reference tail. Shipped work lives in **CHANGELOG.md**, which is the home of record for what was
+built and why. If something you remember building isn't listed here, it's done — check CHANGELOG.
 
-**Genuinely open right now: nothing.** The last open item (the *Overlapping-edge hover-fan* polish)
-shipped in Session 206. Everything on this page is shipped, deferred by decision, parked pending an
-explicit ask (L2 Projects, §C), or declined (§H / *Out of scope*).
+Pruned in Sessions 176, 193, and 206. The Session-206 pass removed the last of the shipped narrative after
+verifying, section by section, that CHANGELOG genuinely carried it — the citations, decisions and
+rationale that lived only here were migrated into their CHANGELOG session entries rather than deleted.
+
+**Genuinely open right now: one item** — the EC per-TYPE verbalisation reading order below. Everything
+else is deferred by decision, parked pending an explicit ask (L2 Projects), or declined.
+
+> **The §-letters** (§B, §C, §D, §G…) index the *TOC Handbook backlog* — a six-agent read of the
+> *Theory of Constraints Handbook* (Cox & Schleier, McGraw-Hill 2010), mined 2026-07-12 and organised
+> A–H. Most of that program shipped and now lives in **CHANGELOG** under headings that keep the letter
+> (e.g. *"Session 199 — Two AND connectors (backlog A3)"*). Only the letters with unshipped remainder
+> still have a heading here, so a letter you don't find below (§A, §D, §E, §F) means that section is done
+> — look it up in CHANGELOG, not here.
 
 ---
 
-## Active backlog
+## Open
 
-### Perf-trace gate — ✅ RESOLVED Session 203–204 (best-of-N metric + re-baseline + per-scenario threshold)
-Session 190 fixed the two real wastes behind the flag (the edge router + reach-count BFS now key on stable
-structural signatures, not `doc.entities`; `all-actions` p95 6.45 → ~4 ms). The residual `edit-heavy` cost
-is the inherent O(N) node-array rebuild + React reconciliation of 100 nodes per edit, which grew
-legitimately since the Session-131 baseline (9.2 ms) as features landed — the hot path is clean.
-**Fix (Dann's call, S203):** the 2026-07-13 scheduled run measured `edit-heavy` at a tight **15.1 ms**
-within-run (samples 15.12 / 15.25 / 15.14), so the ±40 % "noise" is **between runner hosts**, not within a
-run — median-of-N can't shrink it. So (c)+(b): re-baselined `edit-heavy` p95 **9.2 → 16.7 ms** (the
-cross-run central value) and gave it a **per-scenario 35 % threshold** covering the observed ~14–21 ms
-host-to-host floor (a real 1.35x+ regression still fails). **Follow-up (S204):** the verification run then
-tripped `all-actions` — same class of noise but *within* a run (its p95 swung 2.8 → 12 ms; 2 of 3
-iterations spiked, so median-of-3 was itself a spike). So the gate metric changed from median-of-3 to
-**best-of-5 (min p95)**: CI noise is one-sided, so the fastest iteration is the cleanest estimate and is
-immune to a majority of spikes. Both scenarios re-baselined to their best-of-N floor (`all-actions`
-6.45 → 3.0, its true ~2.5 ms; `edit-heavy` 16.7) with per-scenario thresholds (40 %) for the residual
-between-host variance. Verified end-to-end against the failing run's own samples. See CHANGELOG S203/S204.
+### EC per-TYPE verbalisation reading order (small; backlog §D)
+The verbalisation strip doesn't read the cloud type. `verbaliseEC` (`src/domain/verbalisation.ts`) takes
+only `doc.ecVerbalStyle` + the per-SIDE `leadWithC` flag; `cloudType` appears nowhere in it, and
+`VerbalisationStrip.tsx` holds `leadWithC` as local `useState`.
 
-### Overlapping-edge hover-fan — ✅ COMPLETE Session 206 (detours + radial both fan)
-The fan shipped in Sessions 177 + 185; the sourceId-vs-position slot order shipped Session 202; the last
-two exclusions — smart-routed *detours* and *radial* mode — shipped Session 206.
+**The seam is ready:** Session 197 shipped `EC_CLOUD_TYPE_ORDER` (`src/domain/ecGuiding.ts`), but only the
+wizard consumes it — `verbaliseEC` would need to read it keyed on `doc.cloudType`. Note the per-SIDE
+`D′-first` toggle is a **distinct axis** and does not cover this; Session 197's CHANGELOG entry predicted
+D5 would "consume it" and D5 did not (that entry now carries the correction). *Ch24 (Cohen).*
 
-The reason recorded here for holding detours back ("would need a re-route") was **wrong**, and the
-correction is worth keeping as a bug-class marker: the fan was never refusing to re-route, it was
-*replacing* the routed path with a straight bezier, which erased the detour — and the
-`routeWaypointCount <= 2` gate hid that damage rather than fixing it. `routeEdge` already builds its path
-as `bezierThroughWaypoints(waypoints)`, so nudging the final waypoint and re-running that same pure helper
-spreads the arrival while preserving every corner the router computed. No A*, no re-route. Radial fell out
-of the same insight: the lateral-X spread *is* the perpendicular-to-approach spread for a due-north
-approach, so radial is the general case rather than a special one — both layouts now share one rule
-(`fanPerpendicularOffset` + angular rank). See CHANGELOG S206.
+---
 
-### Test-coverage — healthy (reference; no open target)
-~97% lines / ~85% branches (Session-180 push; CI floors ratcheted to 94 lines / 82 branches). CI floor
-auto-ratchets via `node ./scripts/pin-coverage-thresholds.mjs`
-(run once happy; never run two `--coverage` processes at once — shared `coverage/.tmp`). All the
-Session-176/177 named gaps are closed (pure exporters, `persistenceValidators`, the emission/projection
-hooks, `canvasRef`, `CreationWizardPanel`, `pdfExport`/`pptxExport`). Revisit only if a big new module
-lands undertested.
+## Deferred by decision
 
-### Start "Pick up where you left off" — prominent Resume card (deferred, Session 187)
+### Start "Pick up where you left off" — prominent Resume card (Session 187)
 The UX-redesign mockup leads the resume area with ONE large "Resume →" card for the most-recently-edited
 tree, then a gallery of the rest. The shipped Start renders every recent tree as an equal-weight card (a
 deliberate simplification). Reviewed in the Session-187 design-fidelity pass and **deferred by decision**
 (Dann) — the uniform grid stays. Revisit only if the resume hierarchy proves worth the extra layout.
 
-### Known bugs — none open
-The Session-206 adversarial hunt (8 lenses -> 17 candidates -> 13 confirmed by 3 skeptics each) is
-**fully shipped**, along with both Session-205 carry-overs. See CHANGELOG Session 206 for each fix and
-the repro it was verified against.
+### §B — Strategy & Tactics polish (Session 198)
+- **Strategy-as-outcome vs Tactic-as-action phrasing lint** — a fuzzy rule checking a strategy reads as an
+  outcome and a tactic as an action. Deferred as **unbuildable-as-specified: false-positive noise.** Not
+  merely un-started — don't re-attempt it without a sharper signal.
+- **Collapsible strategy/tactic "spine" card redesign** (Tactic between Parallel and Sufficiency).
+  Deferred: pure polish that **touches the fixed card height + the canvas==export geometry invariant.**
+  That constraint is the reason, so it survives re-derivation attempts.
 
-One finding was closed WITHOUT a fix, recorded so it isn't re-hunted:
-- **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
-  (`edgeRouting.ts:243`). A verification skeptic refuted it on impact and I agree; correctness is
-  arguable. Re-open only if a real mis-routed edge is reported.
+### §C — cross-doc-link items (blocked by a deliberate design invariant)
+Both need cross-document link threading, which **the unlinked-spawn model deliberately avoids** — spawning
+mints a new doc and never touches the source, so single diagrams stay standalone. Building either would
+couple documents together. That's the invariant, not a to-do; re-open it consciously or not at all.
+- **Injection continuity EC→FRT→PRT** — the same injection ID threads the chain; builds on the
+  shipped Injection Flower + `general-u-shape`. *Ch19 (Dettmer).*
+- **Auto-assembled "U-Shape" one-page overview** export (UDEs→core cloud→pivot→injections→
+  NBRs→DEs→measures). *Ch24 (Cohen) Figs 24-14/15 — the figures that specify the layout.*
+  (CHANGELOG S198 names this section as the item's home of record.)
 
+### §G — the generic Viable-Vision set (curation over completeness)
+The 5 generic VV trees + the Base/Enhanced scaffold (*Ch34 Tables 34-1…6*). **Left unbuilt on purpose:**
+they're structural skeletons without a concrete scenario, so they'd dilute the curated library rather than
+add teaching value. The seam is ready (`buildSTFacetDoc`) — only the scope call is missing. Build them the
+same way **only if the complete book set is explicitly wanted.**
+(CHANGELOG S198 names this section as the extension's home of record.)
 
 ---
 
-## TOC Handbook backlog (Cox & Schleier 2010) — mined 2026-07-12
+## Parked pending an explicit ask
 
-Source: a six-agent read of the full *Theory of Constraints Handbook* (McGraw-Hill 2010),
-Thinking-Processes chapters (5, 15, 18–20, 22–27, 31, 34), filtered against the shipped build.
-Every item carries an inline citation. **Status tags:** `ACTIVE` = fits the tool's established
-scope, buildable as-is · `EXTENDS` = refines/attaches to an already-shipped feature · `DECISION` =
-needs a Dann scope call (facilitation / audit-adjacent — see the E2/AI/audit-trail drops in
-*Out of scope* below; don't build unilaterally). Chapter authors: Ch5 Newbold · Ch15 Barnard ·
-Ch18 Kendall · Ch19 Dettmer · Ch20 Goldratt-Ashlag · Ch22 Lang · Ch23 Mabin & Davies · Ch24
-Cohen · Ch25 Scheinkopf(+App.B CLR) · Ch26 Suerken · Ch27 Cheng · Ch31 van Gelder/Ferguson ·
-Ch34 Ferguson.
+### L2 first-class Projects (from the §C program; see CHANGELOG S200 for the shipped L1)
+*Parked — saved for later (Dann, 2026-07-13; "not now, might pick up later").* The heavier form of the
+shipped L1 Analysis journey. On top of L1 it adds:
 
-### A. CLR / logic correctness — ✅ COMPLETE Session 199 (A1–A4)
-Built as a four-slice program (A1 wording+warnings · A2 entry-point rule · A3 two AND connectors ·
-A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversarial review where warranted.
-- **Two AND connectors** — ✅ **shipped Session 199 (A3)**: an optional `andMode: 'additional'` edge field
-  flavours an AND group *magnitudinal* (independent, each-removable co-causes; dashed `AND⁺` ring) vs the
-  default *conceptual* banana (jointly required; solid ring). Palette commands flip a group; geometry +
-  all five exporters untouched, so the canvas==export invariant holds and untouched diagrams round-trip
-  byte-identical. Rendered per Dann's "distinct connector, same geometry" call (not the independent-arrows
-  mockup). *Ch25 App.B.*
-- **Additional-Cause auto-detect** — ✅ **shipped Session 199 (A1)**: `additional-cause` now also fires at
-  exactly two ungrouped causes (the magnitude question: each enough alone, or only together?) — the gap
-  between `cause-sufficiency` (one) and `indirect-effect` (three+). *Ch25 App.B.*
-- **Entity-Existence "not a complete sentence"** — ✅ **shipped Session 199 (A1)** as `entity-fragment`: a
-  single-word title on a causal / necessity tree, self-excluding the terse-by-design diagrams. *(The
-  separate "doesn't exist in this environment" mode stays contextual — it lives in edge scrutiny.)*
-  *Ch25 App.B Fig 25-B2.*
-- **Cause-Effect-Reversal wording** — ✅ **shipped Session 199 (A1)**: the warning + scrutiny question now
-  ask whether the cause *makes* the effect or is only *how you know* it's there. *Ch25 App.B Fig 25-B6.*
-- **Predicted-Effect as two checks** — ✅ **shipped Session 199 (A1)**: (a) collateral-effect existence
-  (the reworded warning); (b) timing counter-example — no structural signal, so it rides edge scrutiny.
-  *Ch25 App.B Fig 25-B7.*
-- **Entry-point rule (FRT/NBR)** — ✅ **shipped Session 199 (A2)** as `entry-point`: a cause-only node
-  must be an injection or asserted true in current reality (entity `state`), else it's flagged. The
-  validation fingerprint now encodes `state` (with a regression test) so the warning clears on a state
-  toggle. *Ch25 (Scheinkopf) NBR section.*
-- **Progressive CLR gating** — ✅ **shipped Session 199 (A4)** as *Focus mode*: an opt-in toggle in the
-  Logic-check panel de-emphasises a later tier (collapsed to header + count, expandable) until the earlier
-  tiers are clear. Local view state, off by default. *Ch25 App.B.*
-- **Compliance-as-CSF warning (Goal Tree)** — ✅ **shipped Session 199 (A1)** as `goalTree-compliance-csf`:
-  a compliance-worded CSF → soft nudge to demote it to a Necessary Condition a few layers down.
-  *Ch19 (Dettmer).*
-- **`goalTree-nc-depth` mode-aware** — ✅ **shipped Session 199 (A4)** as `ncDepthMode:
-  'conflict-resolution'`: opt-in doc flag relaxing the depth cap from 2 to 5 for a stand-alone tree.
-  *Ch19 (Dettmer).*
-- **Jonah quick-check** — ✅ **shipped Session 199 (A4)**: a palette-opened 4-question read-aloud stepper
-  (entity/causality × existence/clarity) as an on-ramp before the full CLR walk. Read-only. *Ch25
-  (Scheinkopf).*
-- Note: the Handbook's canonical CLR list is **7 categories in 3 ordered levels** and omits
-  `tautology`; ours (8th) is Dettmer's — keep it, this is not a removal.
+1. **Multiple concurrent named projects** — a `projects: Project[]` collection + `activeProjectId`; each
+   project its own named journey (members + progress).
+2. **A Start-screen Projects gallery** — a new `startSection` + gallery component + sidebar entry,
+   mirroring the All-trees / Recent / Templates pattern, so projects become a navigation surface rather
+   than just a palette dialog.
+3. **Membership management** — add / remove / move a tree between projects; project tags on tree cards in
+   the All-trees library; "new tree in this project".
 
-### B. Strategy & Tactics model correction — ✅ COMPLETE Session 198 (mostly Ch34 Ferguson)
-- **Directional assumptions + position-aware validators** — ✅ **shipped Session 198**: `st-tactic-assumptions`
-  is now position-aware (necessary only with a parent, sufficiency only with children, parallel always);
-  new `st-tactic-fold-in` flags a one-child decomposition; the card/inspector labels became plain
-  directional words (Necessary ↑ / Parallel ↔ / Sufficiency ↓) with tooltips + a read-aloud line; the
-  method checklist gained the analysis-first gate (run CRT/EC/FRT first; S&T replaces the PRT) and the
-  build steps were reworded directionally. See CHANGELOG S198 + appendix-c.
-  - *Deferred (noted):* the fuzzy **Strategy-as-outcome vs Tactic-as-action phrasing lint** (false-positive
-    noise) and a **collapsible strategy/tactic "spine" card redesign** with the Tactic between Parallel and
-    Sufficiency (touches the fixed card height + the canvas==export geometry invariant — pure polish).
+Still app-level state in localStorage — **no doc-schema migration**, canvas==export untouched; a one-time
+migration turns today's single L1 journey into "Project 1". Rough size **~4–5 slices** (data model +
+migration → gallery → membership → per-project journey view → docs).
 
-### C. Cross-tree integration (spawn bridges SHIPPED S198; Analysis journey SHIPPED S200; cross-doc-link items remain)
-- **CRT→FRT invert** — ✅ **shipped Session 198**: palette action *"Spawn Future Reality Tree from this
-  CRT"* mints a fresh FRT with one desired-effect seed (*"Reverse: &lt;UDE&gt;"*) per undesirable effect
-  plus a starter injection. Unlinked spawn (new doc, new tab, source untouched — single diagrams stay
-  standalone). *Ch20 (Goldratt-Ashlag) Layer 4.*
-- **Goal-Tree→CRT benchmark bridge** — ✅ **shipped Session 198**: palette action *"Spawn Current
-  Reality Tree from this Goal Tree"* turns each CSF/NC standard into a candidate UDE (*"&lt;standard&gt;
-  is not met"*). Same unlinked-spawn posture. *Ch19 (Dettmer) Fig 19-10.*
-- `EXTENDS` **Injection continuity EC→FRT→PRT** (same injection ID threads the chain; builds on the
-  Injection Flower + `general-u-shape`). *Ch19 (Dettmer).* — deferred: needs cross-doc link threading,
-  which the unlinked-spawn model deliberately avoids (would couple docs together).
-- `EXTENDS` **Auto-assembled "U-Shape" one-page overview** export (UDEs→core cloud→pivot→injections→
-  NBRs→DEs→measures). *Ch24 (Cohen) Figs 24-14/15.* — deferred: needs cross-document link-walking.
-- **Chained multi-tree "project" workflow** — ✅ **shipped Session 200 as the L1 "Analysis journey"**: an
-  opt-in guide over the trees of one analysis, walked through **Barnard's five questions** (Goal Tree →
-  CRT → EC/FRT/NBR → PRT/TT → S&T), with per-stage create / spawn / open + progress. App-level state in
-  localStorage (no schema change); reuses the shipped spawn bridges. Palette: *Analysis journey…*. See
-  CHANGELOG S200. *Ch15 Table 15-3 (Barnard); Ch19 (Dettmer).*
-  - *Parked — saved for later (Dann, 2026-07-13; "not now, might pick up later"):* **L2 first-class
-    Projects** — the heavier form of the Analysis journey. On top of L1 it adds: (1) **multiple concurrent
-    named projects** (a `projects: Project[]` collection + `activeProjectId`; each project its own named
-    journey — members + progress); (2) a **Start-screen Projects gallery** (a new `startSection` + gallery
-    component + sidebar entry, mirroring the All-trees / Recent / Templates pattern) so projects become a
-    navigation surface, not just a palette dialog; (3) **membership management** (add / remove / move a
-    tree between projects; project tags on tree cards in the All-trees library; "new tree in this
-    project"). Still app-level state in localStorage — **no doc-schema migration**, canvas==export
-    untouched; a one-time migration turns today's single L1 journey into "Project 1". Rough size ~4–5
-    slices (data model + migration → gallery → membership → per-project journey view → docs).
-    *Trade-off:* it introduces a **navigation concept** ("projects") into a tool that's currently trees +
-    tabs + one journey — earns its keep when juggling several analyses, adds surface for single-analysis
-    use (hence a scope call). *Resolve before building:* (a) one project per tree, or a tree in several?
-    (b) does opening a project **scope** the workspace (filter All-trees / the tab strip) or is it just a
-    labelled grouping? (c) entry in the Start sidebar only, or also a top-bar switcher? (Framework isn't a
-    variable — Barnard's five questions only, since CMM/OODA were declined.) Build only on an explicit ask.
-  - ✗ **Declined (Dann, 2026-07-13):** **CMM 7-step / OODA framework presets** (alternate journey
-    frameworks beside Barnard's five questions). Barnard's five questions are the shipped spine; extra
-    frameworks add UI without diagramming value. Won't build.
+*Trade-off:* it introduces a **navigation concept** ("projects") into a tool that's currently trees + tabs
++ one journey — earns its keep when juggling several analyses, adds surface for single-analysis use (hence
+a scope call).
 
-### D. Evaporating Cloud craft — ✅ COMPLETE Session 197–198 (D1–D6; mostly Ch24 Cohen, D6 Ch27 Cheng)
-- **Cloud-type wizard modes** — ✅ **shipped Session 197 (D1)**: the wizard's optional "Cloud type"
-  selector drives Cohen's per-type build order + guiding questions + best-arrow-to-break hint (all six
-  types); Generic stays the default (see CHANGELOG). *A per-TYPE reading order for the verbalisation
-  strip remains unbuilt — D5 shipped only the per-SIDE `D′-first` toggle, which doesn't read cloudType.*
-- **"Storyline" pre-step** — ✅ **shipped Session 198 (D2)**: optional default-collapsed incident
-  free-text in the EC wizard → doc description. *Ch24 Step 2.*
-- **EC syntax/quality checks** — ✅ **shipped Session 198 (D3)**: `ec-box-causal-words` soft rule
-  flags boxes that read as cause-and-effect sentences (if/because/therefore/in order to/sure to); two
-  EC method steps cover the human calls — "tidy the box wording" (D/D′ actions, B/C needs) and "read
-  the diagonals" (D hurts C, D′ hurts B). *Ch24.*
-- **Three-cloud flip + consolidation grid** — ✅ **shipped Session 198 (D4)**: the 3-cloud wizard's
-  consolidation step is a grid with a per-cloud ⇄ flip (swaps D/D′) to align the three before writing
-  the core cloud. Pure `flipConflict` helper. *Ch24 "Flipping Clouds."*
-- **Audience-specific verbalisation order** — ✅ **shipped Session 198 (D5)**: the verbalisation
-  strip's opt-in `D′-first` toggle reads the cloud leading with the D′ (own) side; default off.
-- **"Reframe your Need" + alternative means** — ✅ **shipped Session 198 (D6)**: a "Need or position?"
-  reframe hint on the EC Need boxes (B/C), plus an "Alternative means" brainstorm list on Want/injection
-  nodes backed by a new optional `alternativeMeans` entity field. *Ch27 (Cheng).*
+*Resolve before building:* (a) one project per tree, or a tree in several? (b) does opening a project
+**scope** the workspace (filter All-trees / the tab strip) or is it just a labelled grouping? (c) entry in
+the Start sidebar only, or also a top-bar switcher? (Framework isn't a variable — Barnard's five questions
+only, since CMM/OODA were declined.) **Build only on an explicit ask.**
 
-### E. NBR / PRT / TT refinements — ✅ COMPLETE Sessions 198–199
-- **Ongoing-vs-done toggle** — ✅ **shipped Session 198**: an optional `ongoing?` flag on a PRT/Goal-Tree
-  objective (intermediateObjective / goal), with an inspector checkbox and a canvas "↻ ongoing" chip so
-  continuous work doesn't read as a completable checkbox. *Ch5 (Newbold) "What is Done?"*
-- **TT "why" + "appropriate condition" test** — ✅ **shipped Session 198**: the "why" already rode on the
-  action's Need field; added the `tt.appropriate-condition` method step (can you act — span of control +
-  precondition true? and will it avoid serious negatives — spin off an NBR?). *Ch20 Layer 7; Ch25.*
-- **Obstacle/IO intake table** — ✅ **shipped Session 199**: palette *"Add obstacles + objectives (intake
-  table)…"* (PRT-only) opens an editable table (Obstacle | show-stopper? | IO | blocking factor); Apply
-  mints obstacle + IO + objective→obstacle necessity edge per row in ONE undo step (single-apex-goal
-  rooting when present). show-stopper → obstacle attribute, blocking-factor → description; batched-create
-  `addObstacleIoRows` mirrors `trimBranch`. *Ch24 Tables 24-10/11.*
-- **NBR readability** — ✅ **shipped Session 199** (derivation + inspector, then the on-canvas emphasis):
-  a pure `nbrBackbone` derivation (longest directed injection→UDE spine + first negative edge = the
-  turning point); the Edge Inspector calls out the turning-point arrow and ties negative polarity to the
-  method; and on the canvas the spine reads as the main line while **side branches dim (0.4 opacity)** and
-  the turning-point edge carries a rose **"turning point"** badge (stamped NBR-only in the edge emission,
-  so non-NBR edges are byte-identical). +/− polarity itself was already rendered on NBR edges (S180);
-  typed roles are already the node's type label (Injection/Effect/DE/UDE). *Ch24 (Cohen) Fig 24-16.*
+---
 
-### F. Terminology / method / UX polish — ✅ COMPLETE Session 198
-- **Goal-vs-NC inline definitions** — ✅ **shipped Session 198**: an inspector note card on Goal-Tree
-  goal / CSF / NC nodes spelling out "more is better" (Goal) vs "enough is fine" (Necessary Condition).
-  *Ch38.*
-- **Goal-Tree tier labels** — ✅ **shipped Session 198**: an optional `tier?` field (Conceptual /
-  Functional / Operational) with an inspector picker on Goal-Tree nodes. *Ch19 Fig 19-7.*
-- **Six Success Criteria checklist** — ✅ **shipped Session 198**: a collapsible checklist on injection
-  entities (excellent / win-win-win / low-risk / simpler / fast-feedback / won't self-destruct), stored
-  as reserved boolean attributes (no schema change). *Ch15 Table 15-4; Ch34.*
-- **Feedback-loop terminology reconciliation** — ✅ **shipped Session 198**: the R/B badge tooltip now
-  names the "positive/negative feedback" synonyms and distinguishes a balancing loop from a Negative
-  Branch. *Ch23 (Mabin & Davies).*
+## Known bugs — none open
 
-### G. Template bench — ✅ COMPLETE (non-S&T Session 196, 91 → 109; S&T pack Sessions 198–199)
-The non-S&T book bench shipped (18 patterns; see CHANGELOG Session 196): the EC starter clouds
-(daily / personal / education / rehab + the 3 change-meta clouds + fire-fighting), 2 CRTs, the
-fire-fighting NBR, 2 Goal Trees (personal-life + fabrication-shop), the class-performance PRT,
-and the library's first Freeform pattern. The Ch15 Five-Question CI-bundle triples were dropped as
-redundant with the Session-193 canon + shipped DBR/Critical-Chain/pull FRTs; two overlaps were
-folded into `ec-speak-up-vs-stay-safe` + `ec-cost-vs-throughput` rather than duplicated.
-- **S&T pack — ✅ ten facet templates shipped** (six S198 after item B landed the corrected model, four more
-  S199), all on the directional model via `buildSTFacetDoc`, each position-clean: **Reliable Rapid
-  Response**, **Vendor-Managed Inventory**, **Pay-Per-Use**, **Gain-Sharing**, **Mafia offer — Consumer
-  Goods**, **Mafia offer — Projects** (Decisive Competitive Edge / un-refusable offer, *Ch22 Lang*); the
-  **Viable Vision — Build/Capitalize/Sustain** scaffold; a **3-level** and a **full 6-level Retailer Viable
-  Vision** (*Ch34 Ferguson; Ch18*); and a **3-level Healthcare Viable Vision** (*Ch31 appendix; Ch34*). The
-  6-level Retailer VV is a long spine of full-facet intermediate steps — the fullest tree shape in the
-  library. See CHANGELOG S198/S199.
-  - *Remaining extension (deferred — curation over completeness):* the 5 generic VV trees + the
-    Base/Enhanced scaffold (*Ch34 Tables 34-1…6*). Left unbuilt on purpose: they're structural skeletons
-    without a concrete scenario, so they'd dilute the curated library rather than add teaching value. Build
-    them the same way only if the complete book set is explicitly wanted.
+One finding was closed **without a fix**, recorded so it isn't re-hunted:
+- **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
+  (`edgeRouting.ts:243` — `if (path.length === 2)`, reached only after `blockers.length === 0` returns).
+  A Session-206 verification skeptic **refuted it on impact** and I agree; **correctness is arguable**.
+  Nothing at the code site marks it as reviewed-and-accepted, so this note is the only artifact tying the
+  decision to the code. **Re-open only if a real mis-routed edge is reported.**
 
-### H. Facilitation / change-management — ✗ DECLINED (Dann, 2026-07-13)
+This matters because the recurring adversarial hunts (S205: 8 finders → 3 skeptics; S206: 8 lenses, 60
+agents) will surface `edgeRouting.ts:243` again. The note is load-bearing *because* it says "nothing to do
+here" — delete it and the next hunt re-litigates a call already made.
+
+---
+
+## Declined — kept for the record
+
+### H. Facilitation / change-management (Dann, 2026-07-13)
 Reviewed and **declined** — facilitation- and audit-adjacent, beyond a diagramming tool's scope
-(consistent with the E2 / AI / audit-trail drops in *Out of scope*). Kept here for the record; re-open
-only on an explicit ask.
+(consistent with the E2 / AI / audit-trail drops in *Out of scope*). Re-open only on an explicit ask.
 - ✗ **Layers-of-Resistance "Get Buy-In" mode** — a guided L1–L9 flow mapping each layer to the tree it
   needs (L1 UDEs+GoalTree, L2 CRT+3-cloud, L4 FRT, L5 NBR, L6 PRT/S&T, L7 TT, L8 risk). *Ch20
   (Goldratt-Ashlag) Fig 20-3.* (The E2 Layers-of-Resistance panel was already dropped S179; this richer
@@ -258,6 +126,15 @@ only on an explicit ask.
   binary implemented-flag. *Ch5 (Newbold).* Audit-adjacent.
 - ✗ **Decision-Record fields** on assumptions/injections (trigger / expected-by / inputs / owner /
   corrective-action link). *Ch15 (Barnard).* Audit-trail-adjacent.
+
+### Other declined calls
+- ✗ **CMM 7-step / OODA framework presets** (Dann, 2026-07-13) — alternate journey frameworks beside
+  Barnard's five questions. Barnard's five questions are the shipped spine; extra frameworks add UI
+  without diagramming value. Won't build. (This is what makes "framework isn't a variable" true for L2
+  Projects above.)
+- ✗ **Ch15 Five-Question CI-bundle triples** (template bench) — dropped as redundant with the Session-193
+  canon + the shipped DBR / Critical-Chain / pull FRTs; two overlaps were folded into
+  `ec-speak-up-vs-stay-safe` + `ec-cost-vs-throughput` rather than duplicated.
 
 ---
 
@@ -272,9 +149,9 @@ Items explicitly dropped, in addition to the brief's own out-of-scope list:
 - **Enterprise integration** (SSO/SAML/OIDC, M365/Google/Slack/Teams/Confluence/SharePoint/Jira/Azure DevOps),
   **audit trail / GDPR / data retention**, **stakeholder sign-off** — all dropped Session 135 (tied to the
   multi-user/server identity model). TP Studio is a browser-local PWA.
-- **Cloud sync / accounts / auth** — the auth-free *local-file* alternative shipped Session 153 (Save to file
-  / Save as… / Open from file via the File System Access API → a synced `OneDrive\…` folder, with one-click
-  re-save via an IndexedDB `FileSystemFileHandle`). Chromium-only; Firefox/Safari keep download/upload.
+- **Cloud sync / accounts / auth** — stays out *because* the auth-free local-file alternative shipped
+  (Session 153; save/open straight to a synced folder — see CHANGELOG). That carve-out is the reason the
+  boundary holds; revisit only if the alternative stops covering the need.
 - **AI integration** (problem→tool router, UDE/assumption extraction, CLR objection generation, injection
   brainstorming, NBR detection, executive summary, facilitation prompts) — dropped Session 134. Stays
   deterministic + offline-first. Re-open only if a product direction needs it.
@@ -297,23 +174,41 @@ Items explicitly dropped, in addition to the brief's own out-of-scope list:
 
 ---
 
-## Known environment quirks
+## Reference
 
+### Test-coverage — healthy (no open target)
+~97% lines / ~85% branches (Session-180 push; CI floors ratcheted to 94 lines / 82 branches). CI floor
+auto-ratchets via `node ./scripts/pin-coverage-thresholds.mjs`
+(run once happy; never run two `--coverage` processes at once — shared `coverage/.tmp`). All the
+Session-176/177 named gaps are closed. Revisit only if a big new module lands undertested.
+
+### Perf-trace gate — resolved; don't re-chase it
+The gate is best-of-5 (min p95) with per-scenario thresholds. `perf-baseline.json` is the source of truth
+and carries richer rationale than any prose here. The residual `edit-heavy` cost is the inherent O(N)
+node-array rebuild + React reconciliation of 100 nodes per edit — **irreducible, not rot.** Full history:
+CHANGELOG S203/S204.
+
+### Known environment quirks
 Specific to the Windows + corporate-AppLocker box this was built on.
 
 - **AppLocker blocks specific native binaries, not all of `node_modules`** (signature/hash-based). CONFIRMED
   blocked (Session 175): **`biome.exe`** (@biomejs) and the **bundled Playwright Chromium** (errno -4094 /
   "blocked by group policy"). esbuild is fine, so `tsc` / `vite build` / `vite preview` / `vitest` all run via
   `node ./node_modules/<pkg>/bin/...`. **Workarounds:** e2e via `test.use({ channel: 'msedge' })` (system Edge);
+  Playwright can also drive the installed Chrome locally via
+  `chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe' })` (Program
+  Files is allow-listed) — that's the way to get real interaction + geometry on this box;
   **biome runs via the node bin** (`node ./node_modules/@biomejs/biome/bin/biome check --write src tests` — only the `.exe` shim is blocked, confirmed Session 180; run it locally pre-push) → commit via the **PowerShell tool** with `git commit --no-verify -F <msgfile>` (the
   Bash-only `pre-bash-gate.cjs` hook ignores non-Bash tools) and **push via Bash** so the `vite build` push-gate
   still runs. Autofix with `--write` (formatter + organizeImports) and `--write --unsafe` (Tailwind
   `useSortedClasses` class sorting); also run `node ./scripts/check-bundle-size.mjs` so a budget overflow
-  doesn't surface only on CI. (The old hand-match-biome-by-eye workflow is obsolete now the node bin runs.)
+  doesn't surface only on CI.
 - **Background Bash lacks `node` on PATH** (exit 127) and starts in the OneDrive Desktop dir, not the repo. Run
   long-lived node tasks (preview server, vitest) via the **PowerShell tool** (`run_in_background`), and prefix
   every foreground Bash command with `cd /c/devtools/tp-studio &&` (unconditionally) — or, for git/gh, use
   `git -C /c/devtools/tp-studio …`, which is robust to cwd drift with nothing to forget.
+- **No `jq` on this box** — use `gh`'s built-in `--jq`, and query runs by the full 40-char SHA (a short SHA
+  returns nothing).
 - **`pnpm dlx` is blocked**; `pnpm install` from `package.json` works. **PowerShell Constrained Language Mode**
   breaks `npm.ps1` — invoke npm/pnpm from Bash or `.cmd` shims.
 - **OneDrive sync + `node_modules`** is slow/lock-prone → project lives at `C:\devtools\tp-studio`.
@@ -333,8 +228,9 @@ Specific to the Windows + corporate-AppLocker box this was built on.
    AppLocker-blocked on this box, so run them via node bins (see Known environment quirks).
 2. **Open the durable docs** — README.md (architecture), USER_GUIDE.md (features), CHANGELOG.md (history),
    SECURITY.md (threat model), docs/RENDER_ENGINE_NOTES.md (canvas rendering).
-3. **Pick from the Active backlog above**, or take a fresh product direction (the original spec gaps are all
-   closed — see CHANGELOG).
+3. **Pick from Open / Deferred above**, or take a fresh product direction (the original spec gaps are all
+   closed — see CHANGELOG). The buildable list is deliberately near-empty; most remaining entries are
+   decisions, not tasks.
 4. **Build in vertical slices** — one demo-able feature per commit; domain-first (new data-model work lands in
    `src/domain/` with tests before any UI).
 5. **Visual-snapshot fragility (durable):** anything touching the selection toolbar, node rendering, the
