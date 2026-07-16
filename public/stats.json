@@ -1,37 +1,37 @@
 {
-  "generatedAt": "2026-07-16T05:19:25.224Z",
-  "commit": "f84cd1c",
+  "generatedAt": "2026-07-16T08:27:46.717Z",
+  "commit": "c37308f",
   "headline": {
-    "linesTsJs": 150350,
-    "tests": 4954,
-    "lineCoveragePct": 95.43,
-    "commits": 1110,
+    "linesTsJs": 150671,
+    "tests": 4975,
+    "lineCoveragePct": 95.48,
+    "commits": 1114,
     "ageDays": 65,
-    "trackedFiles": 1211,
+    "trackedFiles": 1213,
     "featureManualPct": 99.6,
-    "featureBookPct": 66.4,
-    "featureExamplePct": 22.5
+    "featureBookPct": 69.4,
+    "featureExamplePct": 24
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
       "files": 590,
-      "lines": 77032
+      "lines": 77065
     },
     {
       "category": "Unit tests",
-      "files": 434,
-      "lines": 66859
+      "files": 435,
+      "lines": 67130
     },
     {
       "category": "E2E tests (Playwright)",
       "files": 15,
-      "lines": 2143
+      "lines": 2159
     },
     {
       "category": "Build scripts",
       "files": 20,
-      "lines": 4316
+      "lines": 4317
     },
     {
       "category": "Styles (CSS)",
@@ -40,20 +40,20 @@
     },
     {
       "category": "Docs (Markdown)",
-      "files": 43,
-      "lines": 6808
+      "files": 44,
+      "lines": 6905
     }
   ],
   "coverage": {
     "lines": {
-      "pct": 95.43,
-      "covered": 14329,
-      "total": 15015
+      "pct": 95.48,
+      "covered": 14344,
+      "total": 15022
     },
     "statements": {
-      "pct": 92.98,
-      "covered": 16316,
-      "total": 17547
+      "pct": 93.05,
+      "covered": 16334,
+      "total": 17554
     },
     "functions": {
       "pct": 92.55,
@@ -61,35 +61,35 @@
       "total": 3517
     },
     "branches": {
-      "pct": 83.55,
-      "covered": 9260,
-      "total": 11082
+      "pct": 83.75,
+      "covered": 9290,
+      "total": 11092
     }
   },
   "tests": {
-    "unit": 4858,
+    "unit": 4879,
     "e2e": 96,
-    "durationMs": 217707,
+    "durationMs": 287367,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 8541
+        "ms": 11137
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 3818
+        "ms": 5748
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 3659
+        "ms": 5118
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2608
+        "ms": 2849
       },
       {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 1894
+        "file": "tests/components/EdgeInspector.test.tsx",
+        "ms": 2453
       }
     ]
   },
@@ -142,16 +142,16 @@
         "pct": 0
       },
       {
-        "file": "components/inspector/InterferenceMetricSection.tsx",
-        "pct": 0
-      },
-      {
         "file": "components/start/LearnSection.tsx",
         "pct": 0
       },
       {
         "file": "components/start/TreeList.tsx",
         "pct": 0
+      },
+      {
+        "file": "services/shareCurrentDoc.ts",
+        "pct": 9.09
       }
     ],
     "churnHotspots": [
@@ -197,24 +197,24 @@
   "bundle": {
     "jsGzipKb": 852.8,
     "cssGzipKb": 19.7,
-    "totalGzipKb": 872.4,
+    "totalGzipKb": 872.5,
     "budgetKb": 207,
     "withinBudget": true
   },
   "docs": {
-    "bookWords": 58866,
-    "chapters": 25,
-    "appLoc": 77032,
-    "docToCodeRatio": 0.76
+    "bookWords": 60680,
+    "chapters": 26,
+    "appLoc": 77065,
+    "docToCodeRatio": 0.79
   },
   "featureCoverage": {
     "total": 271,
     "manual": 270,
     "manualPct": 99.6,
-    "book": 180,
-    "bookPct": 66.4,
-    "bookExample": 61,
-    "bookExamplePct": 22.5,
+    "book": 188,
+    "bookPct": 69.4,
+    "bookExample": 65,
+    "bookExamplePct": 24,
     "byArea": {
       "CRT": {
         "total": 9,
@@ -264,7 +264,7 @@
       "ID": {
         "total": 8,
         "manual": 8,
-        "book": 0
+        "book": 8
       },
       "Canvas": {
         "total": 24,
@@ -366,46 +366,6 @@
         }
       ],
       "noBook": [
-        {
-          "id": "id-diagram",
-          "name": "Interference Diagram",
-          "since": 206
-        },
-        {
-          "id": "id-impact",
-          "name": "Per-interference time/impact field",
-          "since": 206
-        },
-        {
-          "id": "id-modes",
-          "name": "Two ID modes (constraint-exploitation + strategy)",
-          "since": 206
-        },
-        {
-          "id": "id-structural-clr",
-          "name": "ID structural CLR (one objective; interference needs a fix)",
-          "since": 206
-        },
-        {
-          "id": "id-ranking",
-          "name": "Interference Pareto ranking readout",
-          "since": 206
-        },
-        {
-          "id": "id-csv",
-          "name": "Interference ranking CSV export",
-          "since": 206
-        },
-        {
-          "id": "id-spawn-prt",
-          "name": "Spawn PRT from an Interference Diagram",
-          "since": 206
-        },
-        {
-          "id": "id-spawn-goaltree",
-          "name": "Spawn Goal Tree from an Interference Diagram (ID/IO Simplified Strategy)",
-          "since": 206
-        },
         {
           "id": "import-flying-logic-file-handler",
           "name": "Open Flying Logic files by double-click (PWA file handler)",
@@ -827,16 +787,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 65,
-    "commits": 1110,
-    "commits7d": 137,
+    "commits": 1114,
+    "commits7d": 141,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 796
+        "count": 799
       },
       {
         "name": "github-actions[bot]",
-        "count": 298
+        "count": 299
       },
       {
         "name": "Claude",
@@ -848,8 +808,8 @@
       }
     ],
     "churn30d": {
-      "added": 33576,
-      "removed": 9132
+      "added": 34124,
+      "removed": 9211
     },
     "changelogEntries": 396
   }
