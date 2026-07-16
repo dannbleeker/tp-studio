@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-16T17:31:21.087Z",
-  "commit": "f8e0504",
+  "generatedAt": "2026-07-16T18:00:54.744Z",
+  "commit": "0a45ddc",
   "headline": {
     "linesTsJs": 152435,
     "tests": 5045,
     "lineCoveragePct": 95.55,
-    "commits": 1140,
+    "commits": 1142,
     "ageDays": 66,
-    "trackedFiles": 1216,
+    "trackedFiles": 1218,
     "featureManualPct": 99.6,
     "featureBookPct": 69.4,
     "featureExamplePct": 24
@@ -40,8 +40,8 @@
     },
     {
       "category": "Docs (Markdown)",
-      "files": 44,
-      "lines": 6913
+      "files": 46,
+      "lines": 7052
     }
   ],
   "coverage": {
@@ -69,27 +69,27 @@
   "tests": {
     "unit": 4949,
     "e2e": 96,
-    "durationMs": 220483,
+    "durationMs": 288401,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 7948
+        "ms": 10816
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4189
+        "ms": 5798
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 3342
+        "ms": 5317
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2085
+        "ms": 2660
       },
       {
-        "file": "tests/components/canvas/overlays/PresentationStepThrough.test.tsx",
-        "ms": 1740
+        "file": "tests/components/CommandPalette.test.tsx",
+        "ms": 2475
       }
     ]
   },
@@ -787,16 +787,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 66,
-    "commits": 1140,
-    "commits7d": 167,
+    "commits": 1142,
+    "commits7d": 169,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 810
+        "count": 811
       },
       {
         "name": "github-actions[bot]",
-        "count": 314
+        "count": 315
       },
       {
         "name": "Claude",
@@ -808,8 +808,8 @@
       }
     ],
     "churn30d": {
-      "added": 37069,
-      "removed": 10247
+      "added": 37245,
+      "removed": 10286
     },
     "changelogEntries": 406
   }
