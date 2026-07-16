@@ -83,6 +83,60 @@ describe('linkSelectedEntityTo — reciprocal cross-tab links', () => {
   });
 });
 
+// Session 206 (bug hunt) — linking deliberately pushes NO history entry (a link
+// is metadata, not content). But that meant undoing an EARLIER content edit
+// restored a snapshot predating the link, silently stripping it from this doc
+// while the reciprocal mirror survived in the other document — which was never
+// on this undo stack. The two docs then disagreed about a link the user never
+// asked to remove, and no further undo could reconcile them.
+describe('undo / redo — cross-doc links survive (metadata, off the history stack)', () => {
+  const linksOf = (docId: string, entityId: string) =>
+    s().docs[did(docId)]?.entities[entityId]?.links;
+
+  it('does not strip a link when undoing an unrelated earlier edit', () => {
+    setupTwoTabs();
+    // (1) an unrelated content edit — its snapshot predates the link
+    s().updateEntity(eid('a1'), { title: 'hello' });
+    // (2) link the pair (no history entry, by design)
+    s().selectEntity(eid('a1'));
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    expect(linksOf('doc-a', 'a1')).toEqual([{ docId: 'doc-b', entityId: 'b1' }]);
+
+    // (3) undo the TITLE edit — must not take the link with it
+    s().undo();
+
+    // Pre-fix: doc-a's link vanished while doc-b kept its mirror.
+    expect(linksOf('doc-a', 'a1')).toEqual([{ docId: 'doc-b', entityId: 'b1' }]);
+    expect(linksOf('doc-b', 'b1')).toEqual([{ docId: 'doc-a', entityId: 'a1' }]);
+    // The undo itself still did its job.
+    expect(s().docs[did('doc-a')]?.entities.a1?.title).not.toBe('hello');
+  });
+
+  it('keeps both halves in agreement across undo then redo', () => {
+    setupTwoTabs();
+    s().updateEntity(eid('a1'), { title: 'hello' });
+    s().selectEntity(eid('a1'));
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    s().undo();
+    s().redo();
+    expect(linksOf('doc-a', 'a1')).toEqual([{ docId: 'doc-b', entityId: 'b1' }]);
+    expect(linksOf('doc-b', 'b1')).toEqual([{ docId: 'doc-a', entityId: 'a1' }]);
+    expect(s().docs[did('doc-a')]?.entities.a1?.title).toBe('hello');
+  });
+
+  it('still lets unlinkEntity remove the link after an undo', () => {
+    setupTwoTabs();
+    s().updateEntity(eid('a1'), { title: 'hello' });
+    s().selectEntity(eid('a1'));
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+    s().undo();
+    // The explicit removal path is the one that IS meant to drop a link.
+    s().unlinkEntity(eid('a1'), { docId: did('doc-b'), entityId: eid('b1') });
+    expect(linksOf('doc-a', 'a1')).toBeUndefined();
+    expect(linksOf('doc-b', 'b1')).toBeUndefined();
+  });
+});
+
 describe('unlinkEntity — reciprocal removal', () => {
   it('removes the link from both entities (dropping the empty array)', () => {
     setupTwoTabs();

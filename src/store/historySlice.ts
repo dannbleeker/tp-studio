@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import { COALESCE_WINDOW_MS, HISTORY_LIMIT } from '@/domain/constants';
+import { preserveLinks } from '@/domain/preserveLinks';
 import type { DocumentId, TPDocument } from '@/domain/types';
 import { persistDebounced } from '@/services/storage/persistDebounced';
 import { setActiveDoc } from './activeDoc';
@@ -109,13 +110,18 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     const doc = currentDoc(state);
     const last = past[past.length - 1];
     if (!last) return;
-    persistDebounced(last.doc);
+    // Session 206 fix — cross-doc links are metadata and deliberately carry no
+    // history entry, so a snapshot predating a link would otherwise strip it on
+    // restore while the reciprocal mirror survived in the other doc. Carry the
+    // live links across. See `preserveLinks`.
+    const restored = preserveLinks(last.doc, doc);
+    persistDebounced(restored);
     // Batch 5.1 — undo may restore a doc with a DIFFERENT id (undoing a
     // replace-mode setDocument). `setActiveDoc` swaps the ACTIVE tab to the
     // restored doc (rekeying if the id changed) while leaving every other
     // open tab untouched.
     set({
-      ...setActiveDoc(state, last.doc),
+      ...setActiveDoc(state, restored),
       past: past.slice(0, -1),
       future: [...future, { doc, t: Date.now() }],
       editingEntityId: null,
@@ -133,12 +139,14 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     const doc = currentDoc(state);
     const next = future[future.length - 1];
     if (!next) return;
-    persistDebounced(next.doc);
+    // Symmetric with undo — links are metadata, off the history stack by design.
+    const restored = preserveLinks(next.doc, doc);
+    persistDebounced(restored);
     // Batch 5.1 — symmetric with undo: redo may restore a different doc
     // id, so route through `setActiveDoc` (active-tab swap, other tabs
     // untouched).
     set({
-      ...setActiveDoc(state, next.doc),
+      ...setActiveDoc(state, restored),
       future: future.slice(0, -1),
       past: [...past, { doc, t: Date.now() }],
       editingEntityId: null,

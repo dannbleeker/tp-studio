@@ -57,11 +57,11 @@ archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
 
 **Tier 2 — real, worth a follow-up session:**
 
-- **Undo of an unrelated edit deletes a cross-doc link but leaves the mirror behind**
-  (`crossDocLinks.ts:132`) — the two docs disagree about the link. Effort M.
 - **`TPEdge.isJunctorEdge` misses emission's synthetic-endpoint case** (`TPEdge.tsx:137`) — a junctor
   edge crossing a collapsed-group boundary gets endpoint redirection AND an arrowhead, terminating in
   mid-air. Effort M.
+
+*(The undo-strips-a-cross-doc-link asymmetry shipped **Session 206**.)*
 
 *(`findCoreDrivers` on a looped CRT and the `indirect-effect`-on-Goal-Tree misregistration shipped
 **Session 206**.)*

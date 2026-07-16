@@ -2,6 +2,23 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — bug fix: undo silently broke one half of a cross-doc link
+
+Linking two entities across tabs deliberately pushes **no history entry** — a link is metadata, not
+content (the same rationale as `markSystemScopeNudgeShown`). The consequence went unnoticed: undoing
+some *earlier* content edit restored a snapshot taken before the link existed, which stripped the link
+from that document — while the reciprocal mirror survived in the other one, which was never on this
+undo stack. The two docs then disagreed about a link the user never asked to remove, and no further
+undo could reconcile them.
+
+Since links are off the history stack *by design*, the consistent reading is that they must survive a
+restore: undoing a title edit has no business destroying a link, least of all only one half of it.
+`preserveLinks` now carries the live links onto any restored snapshot of the same document (undo and
+redo alike). A replace-mode restore of a *different* document is left alone, an entity being restored
+by undoing its deletion keeps what it carried, and an unchanged doc returns by identity so the
+memo gates don't fire. The explicit removal path (`unlinkEntity`) is untouched — that's the one that
+*is* meant to drop a link, and it still clears both halves.
+
 ## Session 206 — bug hunt: PRT-plan drop + an FL prototype hole
 
 Both regression tests were run against the reverted source to confirm they fail pre-fix.
