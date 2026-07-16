@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — findCycles rewritten as Tarjan SCC + Johnson (the last Session-205 carry-over)
+
+`findCycles` reported a cycle *basis*, not every elementary circuit. The DFS marked nodes `visited`
+globally and never unmarked them, so a second loop arriving at an already-finished node found nothing
+on the recursion stack and was silently dropped. `loopsWithPolarity` (the R/B loop badges) and
+`effectiveBackEdgeIds` (the auto-drawn loop closers) both inherited the blind spot.
+
+**The recorded symptom — "misses cycles that share a closing edge" — turned out to understate it.** A
+differential test against brute-force enumeration shows the old walk finding **10 of 84** circuits on a
+complete 5-node digraph: it only ever found the 2-cycles, missing every longer circuit once the graph
+overlapped at all.
+
+Now Tarjan SCC + Johnson's algorithm, which is complete by construction: vertices are searched in a
+fixed order and each start considers only the subgraph above it, so every circuit is enumerated exactly
+once — when the start is its minimum vertex. Because that order is the sorted entity ids, each circuit
+also arrives already rotated to start at its smallest id, which is precisely the canonical form
+`backEdges` documents a dependency on. Johnson's blocking map keeps it to O((V+E)(C+1)) rather than a
+naive exponential search, and `MAX_CYCLES` caps enumeration so a pathological document degrades (some
+loops lose a badge) instead of hanging the canvas — unreachable for real diagrams.
+
+Tested differentially against an exhaustive reference over 300 random digraphs plus a dense case whose
+84 circuits match the closed form for K₅ — because the defect being replaced passed every test the repo
+had, and shaped examples alone wouldn't have caught it. (A by-catch: the store rejects self-loops, but
+`importFromJSON` accepts them, so the self-loop path is reachable via a hand-edited file / share link /
+FL import and is now pinned as such.)
+
 ## Session 206 — bug fix: undo silently broke one half of a cross-doc link
 
 Linking two entities across tabs deliberately pushes **no history entry** — a link is metadata, not

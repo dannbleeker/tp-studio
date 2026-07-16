@@ -75,11 +75,8 @@ archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
 - **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
   (`edgeRouting.ts:243`) — a skeptic refuted this on impact; correctness is arguable.
 *(The PRT-plan note/cycle skew and the `mapEntityType` prototype hole shipped **Session 206**.)*
-- **`findCycles` misses simple cycles that share a closing edge** (`graphReach.ts`, carried from the
-  Session-205 hunt). The DFS back-edge walk yields a *cycle basis*, not every simple cycle, so when two
-  loops share their closing edge only one is reported; `loopsWithPolarity` can miss a loop. Fix with
-  **Johnson's algorithm per non-trivial SCC** (Tarjan → Johnson); audit `loopsWithPolarity` and
-  `effectiveBackEdgeIds` when it lands. Effort M.
+*(`findCycles` — the last Session-205 carry-over — shipped **Session 206** as Tarjan SCC + Johnson.
+The recorded symptom understated it: on a dense graph the old walk found 10 of 84 circuits.)*
 
 
 ---
