@@ -48,6 +48,43 @@ describe('useGraphEdgeEmission', () => {
     expect(ac?.markerEnd).toBeUndefined(); // the junctor circle owns the arrow
     expect(ac?.data?.andGroupId).toBeDefined();
     expect(ac?.selectable).toBe(true);
+    // Session 206 — the verdict is stamped, so TPEdge never re-derives it.
+    expect(ac?.data?.isJunctorEdge).toBe(true);
+    expect(ac?.data?.isAggregated).toBeUndefined();
+  });
+
+  // Session 206 (bug hunt) — an edge is aggregated when it bundles several edges
+  // OR when an endpoint is a collapsed-group stand-in. TPEdge only ever saw
+  // `aggregateCount`, which isn't even stamped at count 1, so a junctor edge
+  // crossing a collapsed-group boundary read as a junctor edge THERE while
+  // emission had already decided it wasn't HERE: emission stamped an arrowhead,
+  // TPEdge redirected the endpoint onto a junctor circle drawn for the hidden
+  // target, and the arrow pointed at empty canvas. Emission's verdicts are now
+  // stamped into `data` and TPEdge reads them.
+  it('does not treat a junctor edge as a junctor edge once its target is collapsed away', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const c = seedEntity('C');
+    const eAC = s().connect(a.id, c.id);
+    const eBC = s().connect(b.id, c.id);
+    s().groupAsAnd([eAC?.id ?? '', eBC?.id ?? '']);
+    // Collapse the EFFECT (C) into group G. Each cause edge keeps count 1 — only
+    // its endpoint becomes synthetic, which is precisely the half TPEdge missed.
+    const collapsed = {
+      remap: (id: string) => (id === c.id ? 'G' : id),
+    } as unknown as GraphProjection;
+    const edges = emit(collapsed);
+    const ac = edges.find((e) => e.id === `agg:${a.id}->G`);
+    expect(ac).toBeDefined();
+    // Count is 1 — so `aggregateCount` is (correctly) not stamped at all, which
+    // is exactly why TPEdge's `aggregateCount <= 1` re-derive said "junctor".
+    expect(ac?.data?.aggregateCount).toBeUndefined();
+    expect(ac?.data?.andGroupId).toBeDefined(); // still junctor-GROUPED…
+    expect(ac?.data?.isJunctorEdge).toBeUndefined(); // …but NOT a junctor edge
+    expect(ac?.data?.isAggregated).toBe(true); // synthetic endpoint ⇒ aggregated
+    // And it keeps its arrowhead — there's no junctor circle to hand it to. The
+    // `_AND_` marker is the documented tag for an *aggregated junctor* edge.
+    expect(ac?.markerEnd).toBe(EDGE_ARROW_AND_MARKER_ID);
   });
 
   it('collapses multiple edges on one remapped pair into a non-selectable agg edge that keeps its arrowhead', () => {

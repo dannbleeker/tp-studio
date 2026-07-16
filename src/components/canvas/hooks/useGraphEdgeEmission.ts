@@ -215,6 +215,16 @@ export const useGraphEdgeEmission = (
           ...(orGroupId ? { orGroupId } : {}),
           ...(xorGroupId ? { xorGroupId } : {}),
           ...(b.count > 1 ? { aggregateCount: b.count } : {}),
+          // Session 206 — stamp THIS layer's verdicts rather than leave TPEdge to
+          // re-derive them from `aggregateCount`, which it cannot do correctly:
+          // the `isSyntheticEndpoint` half never reached it, and `aggregateCount`
+          // isn't even stamped at count 1. The two drifted, so a junctor edge
+          // crossing a collapsed-group boundary got an arrowhead from here AND an
+          // endpoint redirected onto a junctor circle drawn for the hidden
+          // target. Both omitted when false, so a plain edge's `data` stays
+          // byte-identical (the memo comparator shallow-compares `data`).
+          ...(isAggregated ? { isAggregated: true } : {}),
+          ...(isJunctorEdge ? { isJunctorEdge: true } : {}),
           ...(assumptionCount > 0 ? { assumptionCount } : {}),
           ...(openCommentCount > 0 ? { openCommentCount } : {}),
           ...(route ? { route } : {}),

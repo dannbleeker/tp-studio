@@ -57,11 +57,8 @@ archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
 
 **Tier 2 — real, worth a follow-up session:**
 
-- **`TPEdge.isJunctorEdge` misses emission's synthetic-endpoint case** (`TPEdge.tsx:137`) — a junctor
-  edge crossing a collapsed-group boundary gets endpoint redirection AND an arrowhead, terminating in
-  mid-air. Effort M.
-
-*(The undo-strips-a-cross-doc-link asymmetry shipped **Session 206**.)*
+*(The undo-strips-a-cross-doc-link asymmetry and the `TPEdge.isJunctorEdge` synthetic-endpoint drift
+both shipped **Session 206** — the Session-206 hunt's backlog is now empty.)*
 
 *(`findCoreDrivers` on a looped CRT and the `indirect-effect`-on-Goal-Tree misregistration shipped
 **Session 206**.)*

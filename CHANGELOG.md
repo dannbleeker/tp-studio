@@ -2,6 +2,32 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — an arrowhead into empty canvas (the last hunt bug)
+
+A junctor edge whose effect sat inside a collapsed group drew its arrowhead ~49px past the node, into
+blank canvas. Two layers were deriving the same predicate and disagreeing:
+
+- `useGraphEdgeEmission` had it right — an edge is aggregated when it bundles several edges **or** when
+  an endpoint is a collapsed-group stand-in, so a junctor edge crossing that boundary is not a junctor
+  edge, and it keeps its arrowhead (there's no junctor circle left to hand the arrow to).
+- `TPEdge` re-derived it as `isJunctorGroup && aggregateCount <= 1` — and *could not* get it right: the
+  synthetic-endpoint half never reached it, and `aggregateCount` isn't even stamped when the count is 1.
+  So it redirected the endpoint onto a junctor circle positioned for the now-hidden target, while
+  emission had already stamped an arrowhead.
+
+Rather than pass the missing input down, emission now stamps its **verdicts** (`isJunctorEdge`,
+`isAggregated`) into the edge's `data` and `TPEdge` reads them. That deletes the duplicate derivation
+instead of patching it — this was the third defect of that exact shape this session (`TPEdge` vs
+`JunctorOverlay` on the junctor's centre-X, then its centre-Y, now `TPEdge` vs emission here), so the
+fix targets the class, not the instance. Both flags are omitted when false, leaving every other edge's
+`data` byte-identical (the memo comparator shallow-compares `data`, so absent-vs-false is the
+difference between no churn and re-rendering every edge).
+
+Folded in the same drift's quieter half: `TPEdge` also re-derived `isAggregated` as `aggregateCount > 1`
+to gate the causality label, so a collapsed-group stand-in edge captioned itself "because" / "in order
+to" — borrowing one arbitrary sample edge's label to speak for the whole bundle, while emission had
+already stripped that edge's assumptions, route and badges for exactly that reason.
+
 ## Session 206 — CLR warning-id collisions: one dismissal silenced a different reservation
 
 > **One-off reset (Dann's call).** Stored "resolved" marks for **`ec-completeness`** and

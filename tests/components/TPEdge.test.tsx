@@ -1,6 +1,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { ARROW_TRIANGLE_D } from '@/components/canvas/edges/edgeArrowhead';
 import type { TPEdgeData } from '@/components/canvas/edges/flow-types';
 import { TPEdge } from '@/components/canvas/edges/TPEdge';
 import { buildExampleEC } from '@/domain/examples/ec';
@@ -52,6 +53,51 @@ describe('TPEdge', () => {
   it('is memoized with a displayName', () => {
     // `React.memo` wrapping should preserve displayName for DevTools.
     expect(TPEdge.displayName).toBe('TPEdge');
+  });
+
+  // Session 206 (bug hunt) — TPEdge used to re-derive "is this a junctor edge?"
+  // as `isJunctorGroup && aggregateCount <= 1`, which it cannot get right: an
+  // edge is also aggregated when an endpoint is a collapsed-group stand-in, and
+  // that half never reaches here (`aggregateCount` isn't stamped at count 1). So
+  // a junctor edge whose target was collapsed away kept the junctor endpoint
+  // redirection — onto a circle drawn for the now-hidden target — while emission
+  // had already given it an arrowhead. The arrow pointed at empty canvas.
+  describe('junctor endpoint redirection follows emission’s verdict', () => {
+    /** The arrowhead's placement transform, or null when no arrow rendered. */
+    const arrowTransform = (data: TPEdgeData): string | null => {
+      const { container } = render(
+        <ReactFlowProvider>
+          <svg aria-label="test host">
+            <title>test edge host</title>
+            <TPEdge {...makeEdgeProps(data, { markerEnd: 'tp-edge-arrow-and' })} />
+          </svg>
+        </ReactFlowProvider>
+      );
+      return (
+        container.querySelector(`path[d="${ARROW_TRIANGLE_D}"]`)?.getAttribute('transform') ?? null
+      );
+    };
+
+    it('leaves the endpoint alone for a junctor-GROUPED edge emission ruled aggregated', () => {
+      // What emission produces for a junctor edge across a collapsed-group
+      // boundary: still `andGroupId`-stamped, but NO `isJunctorEdge`, and it
+      // carries an arrowhead (there is no junctor circle to hand the arrow to).
+      const plain = arrowTransform({});
+      const collapsedJunctor = arrowTransform({ andGroupId: 'g1' });
+      expect(plain).not.toBeNull();
+      expect(collapsedJunctor).not.toBeNull();
+      // Pre-fix the endpoint was pushed to the junctor terminal offset, so this
+      // differed from a plain edge's — the arrow floated off the node.
+      expect(collapsedJunctor).toBe(plain);
+    });
+
+    it('still redirects the endpoint when emission says it IS a junctor edge', () => {
+      const plain = arrowTransform({});
+      const junctor = arrowTransform({ andGroupId: 'g1', isJunctorEdge: true });
+      // A real junctor edge terminates at the circle, not the node — so its
+      // placement must NOT match the plain edge's.
+      expect(junctor).not.toBe(plain);
+    });
   });
 
   describe('mutex edge routing (Session 87 UX fix #5)', () => {

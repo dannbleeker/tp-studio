@@ -134,7 +134,16 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   );
   const isJunctorGroup = junctor !== null;
   const aggregateCount = props.data?.aggregateCount ?? 0;
-  const isJunctorEdge = isJunctorGroup && aggregateCount <= 1;
+  // Session 206 — read the emission layer's verdicts; do NOT re-derive them.
+  // This used to be `isJunctorGroup && aggregateCount <= 1`, which cannot be
+  // right: an edge is also aggregated when an endpoint is a collapsed-group
+  // stand-in, and that half never arrives here (`aggregateCount` isn't even
+  // stamped at count 1). So a junctor edge crossing a collapsed-group boundary
+  // read as a junctor edge here while emission had already decided it wasn't —
+  // it stamped an arrowhead, we redirected the endpoint onto a junctor circle
+  // positioned for the now-hidden target, and the arrow pointed at empty canvas.
+  // `isJunctorGroup` still resolves the group field/id for `useJunctorCenterX`.
+  const isJunctorEdge = props.data?.isJunctorEdge === true;
 
   // Redirect the bezier endpoint to the junctor's BOTTOM perimeter (not its
   // center) so source-side curves stop before entering the white-filled
@@ -431,7 +440,13 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // `diagramType` were previously individual `useDocumentStore` calls;
   // Session 105 consolidated them into `edgeView` above. The
   // resolution logic below is unchanged.
-  const isAggregated = aggregateCount > 1;
+  // Session 206 — emission's verdict, not `aggregateCount > 1`. An edge standing
+  // in for a collapsed group has no single underlying edge to speak for, so it
+  // shouldn't borrow one sample edge's causality label ("because" / "in order
+  // to") to caption the whole bundle — which is exactly what the local re-derive
+  // did at count 1, while emission had already stripped that edge's assumptions,
+  // route and badges for the same reason.
+  const isAggregated = props.data?.isAggregated === true;
   const resolvedCausalityLabel: string | undefined = (() => {
     if (causalityLabel === 'none') return undefined;
     if (causalityLabel !== 'auto') return causalityLabel;

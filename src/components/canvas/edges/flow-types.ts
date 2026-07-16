@@ -59,6 +59,33 @@ export type TPEdgeData = {
   /** When >1, this edge represents N aggregated edges across a collapsed-group
    *  boundary. Rendered with a small count badge; not selectable for editing. */
   aggregateCount?: number;
+  /** Session 206 — the emission layer's OWN verdicts, stamped rather than
+   *  re-derived downstream.
+   *
+   *  `TPEdge` used to recompute both from `aggregateCount`, which it cannot do
+   *  correctly: an edge is aggregated when it bundles several edges **or** when
+   *  an endpoint is a collapsed-group stand-in (`isSyntheticEndpoint`), and the
+   *  second half never reaches `TPEdge` — `aggregateCount` isn't even stamped
+   *  when the count is 1. So a junctor edge crossing a collapsed-group boundary
+   *  read as a junctor edge here while emission had already (correctly) decided
+   *  it wasn't, and the two disagreed: emission gave it an arrowhead, `TPEdge`
+   *  redirected its endpoint onto a junctor circle drawn for the hidden target —
+   *  an arrow into empty canvas.
+   *
+   *  Both are omitted when false, so a plain edge's `data` is unchanged (the
+   *  memo comparator shallow-compares `data`'s keys).
+   *
+   *  True when this edge stands in for something other than one real edge:
+   *  several bundled edges, or an endpoint remapped to a collapsed group. Such
+   *  an edge has no single underlying edge to speak for, so per-edge adornments
+   *  (assumptions, route, badges, the causality label) don't apply to it. */
+  isAggregated?: true;
+  /** True when this edge terminates at an AND/OR/XOR junctor circle rather than
+   *  at its target node — i.e. junctor-grouped AND not {@link isAggregated}.
+   *  Drives the endpoint redirection in `TPEdge`; complements `markerEnd`, which
+   *  emission drops on exactly these edges so the junctor's own outgoing line
+   *  owns the arrow. */
+  isJunctorEdge?: true;
   /** Session 135 / Perf #17 — number of assumptions attached to this edge
    *  (the first-class `Assumption` records keyed to it via `record.edgeId`),
    *  precomputed once in `useGraphEdgeEmission`. Lets `TPEdge` read an O(1)
