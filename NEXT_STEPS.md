@@ -57,11 +57,6 @@ archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
 
 **Tier 2 — real, worth a follow-up session:**
 
-- **PRT-plan export drops cycle-trapped IOs when notes are edge targets** (`prtPlan.ts:129`). The Kahn
-  loop pushes any target reaching in-degree 0 — including notes, which `structuralEntities` excluded —
-  so the `order.length < entities.length` recovery guard compares two different populations and each
-  reached note masks one cycle-trapped IO. Violates the function's own "nothing is silently dropped"
-  docblock; the pinned test passes only because its fixture has no notes. Effort S–M.
 - **Undo of an unrelated edit deletes a cross-doc link but leaves the mirror behind**
   (`crossDocLinks.ts:132`) — the two docs disagree about the link. Effort M.
 - **`TPEdge.isJunctorEdge` misses emission's synthetic-endpoint case** (`TPEdge.tsx:137`) — a junctor
@@ -79,9 +74,7 @@ archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
   keys, so they need a migration decision, not a quick patch.
 - **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
   (`edgeRouting.ts:243`) — a skeptic refuted this on impact; correctness is arguable.
-- **`mapEntityType` resolves `Object.prototype` members** (`flyingLogic/typeMaps.ts:106`) — an FL
-  `entityClass="toString"` yields a Function as `entity.type` instead of falling back to `'effect'`.
-  Effort S.
+*(The PRT-plan note/cycle skew and the `mapEntityType` prototype hole shipped **Session 206**.)*
 - **`findCycles` misses simple cycles that share a closing edge** (`graphReach.ts`, carried from the
   Session-205 hunt). The DFS back-edge walk yields a *cycle basis*, not every simple cycle, so when two
   loops share their closing edge only one is reported; `loopsWithPolarity` can miss a loop. Fix with

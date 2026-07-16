@@ -2,6 +2,26 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — bug hunt: PRT-plan drop + an FL prototype hole
+
+Both regression tests were run against the reverted source to confirm they fail pre-fix.
+
+- **The PRT plan silently dropped objectives caught in a cycle whenever a note was an edge target.**
+  `orderedIntermediateObjectives` excludes notes from `entities` but let note-terminated edges into the
+  graph, so a reached note picked up an `inDegree` entry, got popped into `order`, and inflated
+  `order.length`. The recovery guard compares that against `entities.length` — two different
+  populations — so each reached note masked exactly one cycle-trapped IO, which vanished from both the
+  CSV and the "Exported N objectives" toast (it re-calls the same function). That broke the function's
+  own "nothing is silently dropped" contract, and the existing cycle test passed only because its
+  fixture had no notes. The graph is now restricted to structural endpoints. Notes have been freely
+  connectable since Session 136 and FL imports tether them to entities, so the shape is reachable.
+- **A Flying Logic `entityClass` could smuggle a Function in as an entity type.** `mapEntityType`
+  indexed a plain object, so `entityClass="toString"` (or `constructor` / `valueOf` /
+  `hasOwnProperty`) resolved to the INHERITED `Object.prototype` member; `??` only guards
+  null/undefined, so the function passed straight through as `entity.type`. TypeScript couldn't catch
+  it — `Record<string, EntityType>` asserts the index already IS an EntityType. Now guarded with
+  `Object.hasOwn`.
+
 ## Session 206 — bug hunt tier 2: three more, each firing on the app's own content
 
 Every regression test below was run against the reverted source to confirm it fails pre-fix.

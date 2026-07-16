@@ -103,7 +103,16 @@ export const VALID_GROUP_COLORS: ReadonlySet<GroupColor> = new Set([
  */
 export const mapEntityType = (flClass: string | null): EntityType => {
   if (!flClass) return 'effect';
-  return FL_TO_ENTITY_TYPE[flClass] ?? 'effect';
+  // Session 206 fix — a bare index reaches Object.prototype, so an FL file with
+  // `entityClass="toString"` (or "constructor" / "valueOf" / "hasOwnProperty" …)
+  // resolved to the INHERITED function. `??` only guards null/undefined, so that
+  // function sailed through as the entity's `type` — a Function where an
+  // EntityType belongs, from a merely odd input file. TypeScript can't catch it:
+  // `Record<string, EntityType>` claims the index is an EntityType. `Object.hasOwn`
+  // restricts the lookup to real mappings, so anything else falls back as intended.
+  return Object.hasOwn(FL_TO_ENTITY_TYPE, flClass)
+    ? (FL_TO_ENTITY_TYPE[flClass] ?? 'effect')
+    : 'effect';
 };
 
 // Session 94 added `__ENTITY_TYPE_TO_FL_FOR_TEST` as a test-mode alias

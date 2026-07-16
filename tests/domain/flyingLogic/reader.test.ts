@@ -22,6 +22,36 @@ const fl = (graph: string, rootAttrs = '') =>
 const entity = (eid: string, title: string, attrs = '') =>
   `<vertex eid="${eid}" type="entity" entityClass="Effect"><attribute key="title">${title}</attribute>${attrs}</vertex>`;
 
+// Session 206 (bug hunt) — `mapEntityType` indexed a plain object, so an FL
+// `entityClass` naming an Object.prototype member resolved to the INHERITED
+// value (a Function) and `??` passed it straight through as `entity.type`.
+// TypeScript couldn't catch it: `Record<string, EntityType>` claims the index
+// already IS an EntityType.
+describe('importFromFlyingLogic — entityClass prototype pollution', () => {
+  const withClass = (flClass: string) =>
+    fl(
+      `<vertices><vertex eid="1" type="entity" entityClass="${flClass}"><attribute key="title">A</attribute></vertex></vertices><edges></edges>`
+    );
+
+  it.each([
+    'toString',
+    'constructor',
+    'valueOf',
+    'hasOwnProperty',
+  ])('falls back to effect for entityClass=%s instead of yielding a Function', (flClass) => {
+    const doc = importFromFlyingLogic(withClass(flClass));
+    const created = Object.values(doc.entities)[0];
+    expect(created).toBeDefined();
+    expect(typeof created?.type).toBe('string');
+    expect(created?.type).toBe('effect');
+  });
+
+  it('still maps a real FL class', () => {
+    const doc = importFromFlyingLogic(withClass('Undesirable Effect'));
+    expect(Object.values(doc.entities)[0]?.type).toBe('ude');
+  });
+});
+
 describe('importFromFlyingLogic — diagram type', () => {
   it('preserves a known tp-studio-diagram-type', () => {
     const doc = importFromFlyingLogic(

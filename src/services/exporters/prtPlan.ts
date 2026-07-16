@@ -77,11 +77,21 @@ const notesFor = (entity: Entity): string => {
  */
 export const orderedIntermediateObjectives = (doc: TPDocument): Entity[] => {
   const entities = structuralEntities(doc);
-  const edges = Object.values(doc.edges).filter((e) => {
-    const src = doc.entities[e.sourceId];
-    const tgt = doc.entities[e.targetId];
-    return src !== undefined && tgt !== undefined;
-  });
+  // Session 206 fix — restrict the graph to STRUCTURAL endpoints, not merely to
+  // edges whose endpoints exist. `entities` already excludes notes, but the old
+  // filter let a note-terminated edge through: the note then picked up an
+  // `inDegree` entry, got popped into `order`, and inflated `order.length`. The
+  // recovery guard below compares that against `entities.length` — two different
+  // populations — so every reached note masked exactly one cycle-trapped IO,
+  // which then vanished from the exported plan (and from the "Exported N
+  // objectives" toast, which re-calls this function). That silently broke this
+  // function's own "nothing is silently dropped" contract. Notes have been
+  // freely connectable since Session 136, and FL imports tether them to
+  // entities, so the shape is reachable in the wild.
+  const structuralIds = new Set(entities.map((e) => e.id));
+  const edges = Object.values(doc.edges).filter(
+    (e) => structuralIds.has(e.sourceId) && structuralIds.has(e.targetId)
+  );
 
   const inDegree = new Map<string, number>();
   for (const e of entities) inDegree.set(e.id, 0);

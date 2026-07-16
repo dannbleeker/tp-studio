@@ -124,4 +124,36 @@ describe('orderedIntermediateObjectives', () => {
       .sort();
     expect(titles).toEqual(['Cyclic A', 'Cyclic B']);
   });
+
+  // Session 206 (bug hunt) — the cycle test above passed only because its
+  // fixture has no notes. Notes are excluded from `entities` but WERE allowed
+  // into the Kahn queue, so each note reached by an edge landed in `order` and
+  // inflated its length; the recovery guard compares `order.length` against
+  // `entities.length` — different populations — so each reached note masked
+  // exactly one cycle-trapped IO, which then vanished from the plan.
+  it('does not drop cycle-trapped IOs when notes are edge targets', () => {
+    const ioA = seedEntity('Cyclic A', 'intermediateObjective');
+    const ioB = seedEntity('Cyclic B', 'intermediateObjective');
+    const free = seedEntity('Free', 'intermediateObjective');
+    const note1 = seedEntity('Note 1', 'note');
+    const note2 = seedEntity('Note 2', 'note');
+    connect(ioA.id, ioB.id);
+    connect(ioB.id, ioA.id); // the cycle
+    connect(free.id, note1.id); // two notes reached by an edge — the masks
+    connect(free.id, note2.id);
+    const titles = orderedIntermediateObjectives(doc())
+      .map((e) => e.title)
+      .sort();
+    // Pre-fix this returned just ['Free'] — the two cycle-trapped IOs were
+    // silently dropped, and the "Exported N objectives" toast agreed with it.
+    expect(titles).toEqual(['Cyclic A', 'Cyclic B', 'Free']);
+  });
+
+  it('never returns a note, even when one is an edge target', () => {
+    const io = seedEntity('Real objective', 'intermediateObjective');
+    const note = seedEntity('A note', 'note');
+    connect(io.id, note.id);
+    const types = orderedIntermediateObjectives(doc()).map((e) => e.type);
+    expect(types).toEqual(['intermediateObjective']);
+  });
 });
