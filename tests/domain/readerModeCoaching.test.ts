@@ -43,6 +43,7 @@ const STRUCTURED_DIAGRAM_TYPES: DiagramType[] = [
   'goalTree',
   'st',
   'nbr',
+  'id',
 ];
 
 describe('ENTITY_TYPE_COACHING', () => {

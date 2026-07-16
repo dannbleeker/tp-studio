@@ -164,6 +164,7 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
     st: true,
     goalTree: true,
     nbr: true,
+    id: true,
     freeform: true,
   };
   const diagramType =

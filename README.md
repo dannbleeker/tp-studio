@@ -1,6 +1,6 @@
 # TP Studio
 
-A practitioner-focused canvas for **Theory of Constraints Thinking Process** diagrams. Open source, local-first, runs in your browser. Build the full set of TP diagrams — Current Reality, Future Reality, Prerequisite, Transition and Negative Branch trees, Evaporating Clouds, Goal Trees, Strategy & Tactics trees, plus free-form canvases — let the tool auto-layout (or hand-position for EC), and surface Categories of Legitimate Reservation (CLR) as soft warnings.
+A practitioner-focused canvas for **Theory of Constraints Thinking Process** diagrams. Open source, local-first, runs in your browser. Build the full set of TP diagrams — Current Reality, Future Reality, Prerequisite, Transition and Negative Branch trees, Evaporating Clouds, Goal Trees, Strategy & Tactics trees, Interference Diagrams, plus free-form canvases — let the tool auto-layout (or hand-position for EC), and surface Categories of Legitimate Reservation (CLR) as soft warnings.
 
 **Live demo:** <https://tp-studio.struktureretsundfornuft.dk/> — installs as a desktop / mobile PWA, works fully offline after first visit. Chrome and Edge will offer an Install prompt after a couple of visits; or open the command palette (`Ctrl/Cmd+K`) and pick **Install TP Studio…** to install on demand.
 
@@ -109,7 +109,7 @@ Tunable magic numbers (history limit, coalesce window, CLR thresholds, layout se
 
 ## Data model
 
-The model is a typed directed graph. One canonical schema; the nine diagram types are projections of it. See [src/domain/types/](src/domain/types) (split into `document.ts`, `entity.ts`, `edge.ts`, `clr.ts`, …).
+The model is a typed directed graph. One canonical schema; the ten diagram types are projections of it. See [src/domain/types/](src/domain/types) (split into `document.ts`, `entity.ts`, `edge.ts`, `clr.ts`, …).
 
 ```ts
 type TPDocument = {
@@ -187,7 +187,7 @@ Run `pnpm test`. Run `pnpm test:watch` while developing.
 
 ## Status
 
-TP Studio is **feature-complete and heavily polished across 180+ build sessions** — all nine diagram types, the full CLR rule set, the complete export pack (JSON / CSV / PNG / JPEG / SVG / Flying Logic XML / annotations / multi-page vector PDF / PPTX), share links, self-contained HTML export, PWA install + offline, revision history with side-by-side compare and named branches, multi-document tabs with a persistent tree library, a Start workspace home, the Building-Blocks rail + Logic-check panel + method-path stepper, review comments, the unified Templates library, and a 25-chapter practitioner book.
+TP Studio is **feature-complete and heavily polished across 180+ build sessions** — all ten diagram types, the full CLR rule set, the complete export pack (JSON / CSV / PNG / JPEG / SVG / Flying Logic XML / annotations / multi-page vector PDF / PPTX), share links, self-contained HTML export, PWA install + offline, revision history with side-by-side compare and named branches, multi-document tabs with a persistent tree library, a Start workspace home, the Building-Blocks rail + Logic-check panel + method-path stepper, review comments, the unified Templates library, and a 25-chapter practitioner book.
 
 The **change history is the source of truth** — see [CHANGELOG.md](CHANGELOG.md); what's planned next is in [NEXT_STEPS.md](NEXT_STEPS.md).
 

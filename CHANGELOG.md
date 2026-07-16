@@ -2,6 +2,37 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — Interference Diagram (the 10th diagram type)
+
+Added the **Interference Diagram (ID)** from Sproull & Nelson's *Epiphanized* (App. 4) — the fast,
+intuitive tool for "what to change" without a full CRT: a central objective at the hub with the
+interferences that block it radiating around, each optionally quantified and paired with a fix. Its
+arrows are non-logical intuition arrows, so no causal CLR runs on it; it opens forced-radial.
+
+- **Type registration.** `'id'` is the tenth `DiagramType`, reusing `obstacle`/`intermediateObjective`/
+  `goal` (no new entity type). Landed the full exhaustive-map cascade (palette, labels, colour, default
+  entity, initial-doc seed of one central objective, print/PPTX labels, guards Set, type-picker card,
+  Start tile, method checklist for both modes, worked example, `tp-studio-import` skill example).
+- **Forced radial.** A behaviour-preserving prep commit routed the three `layoutMode` reads through a new
+  `effectiveLayoutMode(diagramType, mode)` helper; `FORCE_RADIAL.id = true` then makes an ID always render
+  radial (objective centred via inward edges) with the flow/radial toggle suppressed.
+- **Per-interference time/impact.** A bespoke "Time lost" inspector control on ID obstacles, stored under
+  the reserved `id-impact` int attribute (no schema change).
+- **Curated CLR + two ID checks.** Only the non-causal hygiene rules run; added `id-interference-no-io`
+  (an interference with no paired fix) and `id-multiple-central-objectives` (document-anchored).
+- **Pareto ranking + CSV.** `rankInterferences` ranks by lost time with share-of-total; the
+  **Rank interferences by impact** command highlights + toasts them, and **Export → Interference ranking
+  (CSV)** writes the sheet (ID-only, obstacle-gated).
+- **ID/IO Simplified Strategy spawns.** `Spawn Prerequisite Tree from this ID` (radial → dependency plan)
+  and `Spawn Goal Tree from this ID` (the IO map). The ID also joins the Analysis Journey's "what" stage
+  as the book's faster route to "what to change".
+- **Starter patterns.** Two Pattern-library entries — constraint-exploitation (time-quantified, J40 line)
+  and strategy-development (event-driven revenue obstacles).
+- **Docs + tests.** USER_GUIDE section + spawn-bridge entries, README counts (nine → ten), features.json
+  rows, Flying-Logic reader round-trip (`id` added to `KNOWN_DIAGRAMS`), and an `id.test.ts` registry-
+  coverage guard mirroring the NBR one. A dedicated book-guide chapter is a follow-up (NBR-style: the ID
+  is covered in USER_GUIDE, not yet the book).
+
 ## Session 205 — Adversarial bug hunt: 13 fixes
 
 A multi-agent bug hunt (8 area finders → 3-skeptic adversarial verification, reading the real code)

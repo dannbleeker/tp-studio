@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { printLegendFor } from '@/domain/printLegend';
 import type { DiagramType } from '@/domain/types';
 
-const STRUCTURED: DiagramType[] = ['crt', 'frt', 'prt', 'tt', 'ec', 'goalTree', 'st', 'nbr'];
+const STRUCTURED: DiagramType[] = ['crt', 'frt', 'prt', 'tt', 'ec', 'goalTree', 'st', 'nbr', 'id'];
 
 describe('printLegendFor', () => {
   it('returns a "How to read this …" line for every structured diagram type', () => {

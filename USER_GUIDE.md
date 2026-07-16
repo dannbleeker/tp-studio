@@ -26,19 +26,20 @@ A practitioner's walkthrough. Assumes familiarity with the Thinking Process — 
 20. [Prerequisite Trees](#prerequisite-trees)
 21. [Creation wizards](#creation-wizards-goal-tree-ec-crt)
 22. [Strategy & Tactics Trees](#strategy--tactics-trees)
-23. [Freeform diagrams](#freeform-diagrams)
-24. [Saving, exporting, and sharing](#saving-exporting-and-sharing)
-25. [Importing](#importing)
-26. [Templates library](#templates-library)
-27. [Multi-goal Goal Trees](#multi-goal-goal-trees)
-28. [Settings & themes](#settings--themes)
-29. [App modes](#app-modes)
-30. [Browse Lock](#browse-lock)
-31. [Document details](#document-details)
-32. [Revision history](#revision-history-snapshots-branches-diffs)
-33. [Accessibility](#accessibility)
-34. [Keyboard reference](#keyboard-reference)
-35. [Tips](#tips)
+23. [Interference Diagrams](#interference-diagrams)
+24. [Freeform diagrams](#freeform-diagrams)
+25. [Saving, exporting, and sharing](#saving-exporting-and-sharing)
+26. [Importing](#importing)
+27. [Templates library](#templates-library)
+28. [Multi-goal Goal Trees](#multi-goal-goal-trees)
+29. [Settings & themes](#settings--themes)
+30. [App modes](#app-modes)
+31. [Browse Lock](#browse-lock)
+32. [Document details](#document-details)
+33. [Revision history](#revision-history-snapshots-branches-diffs)
+34. [Accessibility](#accessibility)
+35. [Keyboard reference](#keyboard-reference)
+36. [Tips](#tips)
 
 ## Starting up
 
@@ -370,6 +371,25 @@ Two more palette actions seed one tree from another so you don't retype the shar
 
 - **Palette → Spawn Future Reality Tree from this CRT (invert the UDEs).** On a Current Reality Tree, this creates a Future Reality Tree with one desired-effect seed for each undesirable effect, titled `Reverse: <effect>` for you to rewrite into a proper positive statement, plus one starter **injection** to build toward. It's the book move that a solution tree's desired effects are the mirror image of the problem tree's undesirable effects. If the CRT has no undesirable effects yet, a toast tells you to add one first.
 - **Palette → Spawn Current Reality Tree from this Goal Tree (benchmark shortfalls).** On a Goal Tree, this creates a Current Reality Tree with one candidate undesirable effect for each **Critical Success Factor** and **Necessary Condition**, titled `<standard> is not met` — the shortfall you'd then diagnose. (A Goal Tree sets the standard; a CRT explains why reality falls short of it.) The apex goal itself isn't benchmarked — only the CSF/NC standards become candidate UDEs.
+- **Palette → Spawn Prerequisite Tree from this Interference Diagram.** On an Interference Diagram, turns the hub-and-spoke into a dependency plan: the central objective becomes the PRT's apex goal, each interference an obstacle, and each interference's paired fix the Intermediate Objective that overcomes it. (An unpaired interference gets a placeholder IO to fill in.)
+- **Palette → Spawn Goal Tree from this Interference Diagram (the IO map).** The other half of the book's *ID/IO Simplified Strategy*: the objective becomes the Goal and each intermediate objective a Critical Success Factor beneath it, seeding the IO map you then decompose into Necessary Conditions.
+
+## Interference Diagrams
+
+An **Interference Diagram (ID)** is the fast, intuitive tool from Sproull & Nelson's *Epiphanized* (Appendix 4). Instead of building a full Current Reality Tree, you put what you want in the centre and list everything that gets in the way around it. Unlike the logic trees, **its arrows carry no sufficiency or necessity** — they just point from an interference at the objective it blocks, so no causal CLR challenges run on an ID. It opens in a **radial** layout with the objective at the hub (the flow/radial toggle is hidden — an ID is always radial).
+
+**The palette.** An ID uses three types plus notes: a **Goal** (the central objective — one per diagram), **Obstacles** (the interferences radiating around it), and **Intermediate Objectives** (the fix paired with each interference). A fresh ID starts with just the central objective; double-click empty space to add interferences.
+
+**Two ways to use it** (both shipped as starter patterns under **Load pattern library…**):
+
+- **Constraint exploitation.** Put a constraint at the hub ("more throughput from the XYZ line") and let the people who do the work list what steals its time. Give each interference a **Time lost** value in its inspector (minutes per day/week, kept consistent) — that's the input to the Pareto ranking.
+- **Strategy development.** Put a strategic objective at the hub ("increase yearly revenue") and surface the cross-functional obstacles blocking it. These are usually event-driven rather than time-driven, so you can skip the minutes; the value is naming them and pairing each with an injection.
+
+**Rank the interferences.** `Cmd/Ctrl+K` → **Rank interferences by impact** highlights every interference and toasts them in descending order of lost time with each one's share of the total — the "attack the vital few" move. Export the same table with **Export… → Interference ranking (CSV)** (rank / interference / minutes / % of total / paired fix); the option appears only on an ID that has interferences.
+
+**Two soft checks** run on an ID: a nudge if any interference has **no paired intermediate objective** (the analysis isn't actionable until every interference has a fix), and one if the diagram has **more than one central objective** (an ID maps interferences around a single goal — split the second into its own diagram).
+
+**Carry it forward.** When the analysis is done, the two [spawn bridges](#cross-tree-spawn-bridges) above turn it into a **Prerequisite Tree** (the plan) or a **Goal Tree / IO map** (the strategy) — the book's *ID/IO Simplified Strategy*.
 
 ## Entity state and what-if analysis
 

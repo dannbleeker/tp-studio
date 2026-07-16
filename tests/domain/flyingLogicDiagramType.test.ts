@@ -12,6 +12,7 @@ describe('Flying Logic round-trip preserves the diagram type (bug-hunt #5)', () 
   for (const dt of [
     'goalTree',
     'nbr',
+    'id',
     'crt',
     'frt',
     'prt',
