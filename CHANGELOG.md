@@ -2,6 +2,34 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — bug hunt tier 1: three silent data-loss / layout defects
+
+The three highest-value findings from the hunt, each with a regression test **verified to fail against
+the pre-fix code** (the test was run against the reverted source, not just asserted to be right).
+
+- **A reload silently reverted the document you just opened.** `performDocumentSwap` rekeyed
+  `activeDocId` + `tabOrder` via `setActiveDoc` but never called `persistTabsManifest`, and
+  `persistActiveDoc` explicitly disclaims manifest ownership — so nobody wrote it. The manifest kept
+  naming the OUTGOING doc, and boot restored that. Palette → "New diagram" routes through the same
+  helper, so this hit every user with no pref flip needed. Now persists the post-swap ids (taking
+  `tabOrder` from the swap result, never `[doc.id]` — that would drop every background tab).
+  *(The naive "reload and see" repro falsely passes unless a manifest is seeded first: with none
+  stored, boot falls through to the legacy single-doc migration path and lands on the right doc for
+  the wrong reason. The tests assert on the manifest directly.)*
+- **A Flying Logic round-trip rewrote every necessity edge to sufficiency**, corrupting the logic of
+  an Evaporating Cloud or Goal Tree — reachable by double-clicking a `.logicx`, which the PWA file
+  handler imports straight into a tab. The writer never emitted `edge.kind`, and the reader rebuilt
+  every edge through `createEdge`, whose hardcoded `'sufficiency'` won. This contradicted the writer's
+  own "lossless" docblock and the v6→v7 migration, which forces `necessity` on EC for exactly this
+  invariant. Now round-trips via `tp-studio-kind` (emitted always, so a TP-Studio-authored sufficiency
+  edge is distinguishable from a native FL file carrying no attribute — which falls back on the
+  diagram's primary logic). **`Edge.isMutualExclusion` died to the same gap** and is fixed with it.
+- **Revealing an archived group stacked its entities at (0,0).** The layout fingerprint omitted
+  `showArchivedGroups`, so flipping the pref widened the visible set (via `useGraphProjection`) without
+  moving `fp` — the dagre effect early-returned and the revealed entities never got positions, leaving
+  `useGraphNodeEmission` to fall back to the origin. `useEdgeRoutes` already listed the pref as a cache
+  dep and *claimed* to mirror `useGraphPositions`; the mirror is now real.
+
 ## Session 206 — adversarial bug hunt (8 lenses → 17 candidates → 13 confirmed) + 3 fixes
 
 Ran an 8-lens adversarial hunt (60 agents; every candidate had to survive 3 skeptics trying to refute

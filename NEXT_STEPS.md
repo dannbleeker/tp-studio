@@ -52,36 +52,8 @@ Three shipped in Session 206 (junctor centre-X drift, the ID `aria-label` drop, 
 — see CHANGELOG). The rest are recorded with their repro rather than rushed. Ranked by severity ×
 reachability.
 
-**Tier 1 — highest value, all small:**
-
-- **Tab manifest is never written on a document swap → a reload reverts to the previous document**
-  (`src/store/documentSlice/docMeta/tabs.ts:118`). `performDocumentSwap` mutates `activeDocId`/`tabOrder`
-  via `setActiveDoc` but never calls `persistTabsManifest`, and `persistActiveDoc` explicitly disclaims
-  manifest ownership — so nobody writes it. **Repro:** palette → New diagram → `newDocument('frt')`;
-  in-memory type is `frt` but `readTabsManifest()` still points at the old doc; reload boots back to
-  `crt`. Hits **every user** (`newDocument` needs no pref flip); also replace-mode import and undo/redo
-  across a swap. Fix: `persistTabsManifest({ activeDocId, tabOrder })` from the post-`setActiveDoc`
-  state (NOT `[doc.id]`, which would drop background tabs); same at the historySlice rekey sites.
-  ⚠ A naive repro falsely passes unless you seed a manifest first (boot falls to the legacy
-  single-doc migration path). Effort S.
-- **Flying Logic round-trip silently rewrites every necessity edge to sufficiency**
-  (`src/domain/flyingLogic/reader.ts:305`, `:357`; writer `:184-239`). The writer never emits
-  `edge.kind`; the reader rebuilds via `createEdge`, which hardcodes `kind:'sufficiency'`.
-  **Repro:** `importFromFlyingLogic(exportToFlyingLogic(createDocument('ec')))` → all 4 edges come back
-  `sufficiency` instead of `necessity`; same for the Goal Tree example. Reachable via the PWA
-  file-handler (`fileHandlers.ts:34` opens `.logicx` straight into a tab). The writer's docblock claims
-  only positions/settings are lossy, and `v6ToV7.ts:78` forces `isEC ? 'necessity'` — the invariant is
-  load-bearing everywhere else. Fix: emit `tp-studio-kind` (mirror the existing `tp-studio-weight`
-  pattern), honour it at both reader push sites, fall back to `isEC || goalTree ? 'necessity'`.
-  **`Edge.isMutualExclusion` is dropped by the same gap** — fix both together. Effort S–M.
-- **Layout fingerprint omits `showArchivedGroups` → revealed entities all stack at (0,0)**
-  (`src/components/canvas/hooks/useGraphPositions.ts:177`). `fp` doesn't move when the pref flips, so
-  the dagre effect early-returns and the newly-visible entities never get positions
-  (`useGraphNodeEmission.ts:219` falls back to `{x:0,y:0}`). **Repro:** archived group G with E1–E3,
-  pref off (the default) → tick "Show archived groups" → all three render on top of each other at the
-  origin until an unrelated structural edit advances the fingerprint. Fix: append
-  `|ar:${showArchivedGroups ? 1 : 0}` to `fp`. Note `useEdgeRoutes.ts:633` already lists the pref as a
-  dep and *claims* to mirror useGraphPositions — the mirror is broken. Effort S.
+*(Tier 1 — the tab-manifest revert, the Flying-Logic necessity→sufficiency corruption, and the
+archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
 
 **Tier 2 — real, worth a follow-up session:**
 

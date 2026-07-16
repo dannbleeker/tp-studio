@@ -106,21 +106,31 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
   // Shared "swap the active document" sequence used by `setDocument` and
   // `newDocument`: snapshot the outgoing doc as a revision (suppressed on a
   // restore swap; skipped for an empty fresh-boot doc), persist the incoming
-  // doc synchronously (explicit user intent), rebuild the single-tab
-  // map/order around it + reset ephemeral UI state, push the outgoing doc onto
-  // history, and refresh the revisions panel. Extracted so the two callers
+  // doc synchronously (explicit user intent), rekey the active tab around it +
+  // reset ephemeral UI state, persist the tabs manifest, push the outgoing doc
+  // onto history, and refresh the revisions panel. Extracted so the two callers
   // can't drift out of sync.
   const performDocumentSwap = (doc: TPDocument, reason: string): void => {
     const prev = currentDoc(get());
     autoSnapshotOutgoing(prev, reason);
     persistDebounced(doc);
     flushPersist();
+    const swapped = setActiveDoc(get(), doc);
     set({
-      ...setActiveDoc(get(), doc),
+      ...swapped,
       ...activeDocEphemeralReset(),
       past: pushHistoryEntry(get().past, { doc: prev, t: Date.now() }),
       future: [],
     });
+    // Session 206 fix — the swap rekeys `activeDocId` and remaps the active
+    // tab's slot in `tabOrder`, but nothing persisted that: `persistDebounced` /
+    // `flushPersist` write the doc BODY only, and `persistActiveDoc` explicitly
+    // disclaims manifest ownership. Left unwritten, the manifest still named the
+    // OUTGOING doc, so a reload silently reverted the swap — including after a
+    // plain palette "New diagram" (`newDocument`), which needs no pref flip and
+    // so hit every user. Persist the POST-swap ids: take `tabOrder` from
+    // `swapped`, never `[doc.id]` — that would drop every background tab.
+    persistTabsManifest({ activeDocId: swapped.activeDocId, tabOrder: swapped.tabOrder });
     get().reloadRevisionsForActiveDoc();
   };
 

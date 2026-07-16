@@ -154,6 +154,16 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
   // (else cards would grow but positions wouldn't, overlapping).
   const growCardsToFitText = useDocumentStore((s) => s.growCardsToFitText);
   const appMode = useDocumentStore((s) => s.appMode);
+  // Session 206 fix — revealing an archived group changes the VISIBLE set (via
+  // `useGraphProjection`, which reads this pref) but touches nothing the layout
+  // fingerprint was built from: the doc is unchanged, and archived is not
+  // collapsed. So `fp` held still, the dagre effect early-returned, and the
+  // newly-visible entities never got positions — `useGraphNodeEmission` then fell
+  // back to `{x:0, y:0}` and stacked them all at the origin, on top of whatever
+  // dagre had already placed there, until an unrelated structural edit moved the
+  // fingerprint. Folding the pref in is the same discipline the `growCardsToFitText`
+  // comment above documents. (`useEdgeRoutes` already lists it as a cache dep.)
+  const showArchivedGroups = useDocumentStore((s) => s.showArchivedGroups);
   const sizeOpts: NodeSizeOpts = { growToFit: growCardsToFitText, appMode };
 
   const strategy = LAYOUT_STRATEGY[doc.diagramType];
@@ -174,7 +184,7 @@ export const useGraphPositions = (doc: TPDocument, projection: GraphProjection):
     .sort()
     .join(
       ','
-    )}|ec:${[...projection.hiddenCountByCollapser.keys()].sort().join(',')}|cfg:${layoutConfigKey(doc.layoutConfig)}|s:${strategy}|m:${effMode}|g:${growCardsToFitText ? 1 : 0}|am:${appMode}`;
+    )}|ec:${[...projection.hiddenCountByCollapser.keys()].sort().join(',')}|cfg:${layoutConfigKey(doc.layoutConfig)}|s:${strategy}|m:${effMode}|g:${growCardsToFitText ? 1 : 0}|am:${appMode}|ar:${showArchivedGroups ? 1 : 0}`;
 
   // Manual-layout diagrams (Evaporating Cloud) skip the layout engine
   // entirely: positions live on the entities themselves. Compute

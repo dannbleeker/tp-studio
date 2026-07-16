@@ -250,6 +250,46 @@ describe('Batch 5.1 — manifest persistence', () => {
     s().switchTab(aId);
     expect(readTabsManifest()).toEqual({ activeDocId: aId, tabOrder: [aId, b.id] });
   });
+
+  // Session 206 (bug hunt) — `performDocumentSwap` rekeyed activeDocId/tabOrder
+  // but never wrote the manifest, so a reload read a manifest still naming the
+  // OUTGOING doc and silently reverted the swap. `newDocument` routes through
+  // the same helper, so this hit every user with no pref flip needed.
+  //
+  // NOTE: these assert on the manifest directly rather than "reload and see".
+  // A boot-level repro FALSELY PASSES unless a manifest already exists — with
+  // none stored, boot falls through to the legacy single-doc migration path and
+  // picks up the right doc for the wrong reason.
+  it('newDocument writes the manifest so a reload does not revert the swap', () => {
+    const aId = s().activeDocId;
+    // Seed a manifest naming the outgoing doc — the state a real session is in.
+    expect(readTabsManifest()?.activeDocId ?? aId).toBe(aId);
+    s().newDocument('frt');
+    const after = s().activeDocId;
+    expect(after).not.toBe(aId);
+    expect(readTabsManifest()).toEqual({ activeDocId: after, tabOrder: [after] });
+  });
+
+  it('setDocument (replace-mode load) writes the manifest', () => {
+    const aId = s().activeDocId;
+    const loaded = createDocument('prt');
+    s().setDocument(loaded);
+    expect(readTabsManifest()).toEqual({ activeDocId: loaded.id, tabOrder: [loaded.id] });
+    expect(loaded.id).not.toBe(aId);
+  });
+
+  it('a swap keeps every background tab in the persisted manifest', () => {
+    // The regression's tempting fix — persisting `[doc.id]` — would drop the
+    // background tab from the manifest and lose it on reload.
+    const aId = s().activeDocId;
+    const b = createDocument('frt');
+    s().openTab(b); // b is active, a is a background tab
+    const replacement = createDocument('tt');
+    s().setDocument(replacement); // replaces b in place, a must survive
+    const manifest = readTabsManifest();
+    expect(manifest?.activeDocId).toBe(replacement.id);
+    expect(manifest?.tabOrder).toEqual([aId, replacement.id]);
+  });
 });
 
 describe('Batch 5.4 — boot restores all tabs (tabStateFromLoad)', () => {

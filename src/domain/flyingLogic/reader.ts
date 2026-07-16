@@ -253,9 +253,24 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
     // Bundle 8 — polarity tag. Round-tripped via `tp-studio-weight`
     // attribute on the edge. Unknown values fall to undefined (no tag).
     weight?: EdgeWeight | undefined;
+    // Session 206 fix — the edge's logic kind + the EC mutex flag. Previously
+    // neither was carried, so every edge was rebuilt with `createEdge`'s
+    // hardcoded 'sufficiency', silently rewriting an EC / Goal Tree's necessity
+    // semantics on a round-trip.
+    kind: EdgeKind;
+    mutex?: boolean;
   };
   const isEdgeWeight = (v: string | undefined): v is EdgeWeight =>
     v === 'positive' || v === 'negative' || v === 'zero';
+  type EdgeKind = 'sufficiency' | 'necessity';
+  const isEdgeKind = (v: string | undefined): v is EdgeKind =>
+    v === 'sufficiency' || v === 'necessity';
+  // A file written by TP Studio carries `tp-studio-kind` on every edge. A NATIVE
+  // Flying Logic file carries none, so fall back on the diagram's primary logic:
+  // an Evaporating Cloud and a Goal Tree read "in order to X we must Y".
+  const fallbackKind: EdgeKind =
+    diagramType === 'ec' || diagramType === 'goalTree' ? 'necessity' : 'sufficiency';
+  const kindOf = (v: string | undefined): EdgeKind => (isEdgeKind(v) ? v : fallbackKind);
   const rawEdges: RawEdge[] = [];
   if (edgesEl) {
     for (const el of Array.from(edgesEl.children)) {
@@ -270,6 +285,8 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
         target,
         label: attrs.get('label'),
         tpStudioId: attrs.get('tp-studio-edge-id'),
+        kind: kindOf(attrs.get('tp-studio-kind')),
+        ...(attrs.get('tp-studio-mutex') === 'true' ? { mutex: true } : {}),
         ...(isEdgeWeight(weightAttr) ? { weight: weightAttr } : {}),
       });
     }
@@ -306,6 +323,9 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
     finalEdges.push({
       ...created,
       id: (e.tpStudioId || created.id) as EdgeId,
+      // `createEdge` hardcodes 'sufficiency'; restore the carried kind.
+      kind: e.kind,
+      ...(e.mutex ? { isMutualExclusion: true } : {}),
       ...(e.label ? { label: e.label } : {}),
       ...(e.weight ? { weight: e.weight } : {}),
     });
@@ -363,6 +383,9 @@ export const importFromFlyingLogic = (xml: string): TPDocument => {
         ...created,
         ...groupFields,
         id: (inE.tpStudioId || created.id) as EdgeId,
+        // `createEdge` hardcodes 'sufficiency'; restore the carried kind.
+        kind: inE.kind,
+        ...(inE.mutex ? { isMutualExclusion: true } : {}),
         ...(inE.label ? { label: inE.label } : {}),
         ...(inE.weight ? { weight: inE.weight } : {}),
       });

@@ -112,6 +112,45 @@ describe('useGraphPositions', () => {
     expect(typeof result.current[b.id]!.y).toBe('number');
   });
 
+  // Session 206 (bug hunt) — revealing an archived group widens the VISIBLE set
+  // (useGraphProjection reads `showArchivedGroups`) but moves nothing the layout
+  // fingerprint was built from, so the dagre effect early-returned and the
+  // newly-visible entities never got positions. useGraphNodeEmission then fell
+  // back to {x:0,y:0} and stacked them all at the origin.
+  it('recomputes positions when showArchivedGroups reveals more entities', {
+    timeout: 15_000,
+  }, async () => {
+    const seedDoc = createDocument('crt');
+    useDocumentStore.setState({ doc: seedDoc });
+    const { addEntity, connect } = useDocumentStore.getState();
+    const a = addEntity({ type: 'effect', title: 'Visible cause' });
+    const b = addEntity({ type: 'effect', title: 'Visible effect' });
+    const archived = addEntity({ type: 'effect', title: 'Archived member' });
+    connect(a.id, b.id);
+    connect(archived.id, b.id);
+    const doc = useDocumentStore.getState().doc;
+
+    // Pref OFF (the default): the projection hides the archived entity.
+    useDocumentStore.setState({ showArchivedGroups: false });
+    const { result, rerender } = renderHook(
+      ({ projection }) => useGraphPositions(doc, projection),
+      { initialProps: { projection: projectionFor([a.id, b.id]) } }
+    );
+    await waitFor(() => expect(Object.keys(result.current).sort()).toEqual([a.id, b.id].sort()), {
+      timeout: 10_000,
+    });
+    expect(result.current[archived.id]).toBeUndefined();
+
+    // Reveal the archived group: the pref flips and the projection widens.
+    useDocumentStore.setState({ showArchivedGroups: true });
+    rerender({ projection: projectionFor([a.id, b.id, archived.id]) });
+
+    // Pre-fix this never resolved — `fp` was unchanged, so the dagre effect
+    // early-returned and the revealed entity stayed position-less (→ 0,0).
+    await waitFor(() => expect(result.current[archived.id]).toBeDefined(), { timeout: 10_000 });
+    expect(typeof result.current[archived.id]!.x).toBe('number');
+  });
+
   it('returns synchronous positions for a radial layout', () => {
     // Radial is hand-rolled + synchronous (no dagre import) — positions
     // should be present on the very first render, like the EC path. This is

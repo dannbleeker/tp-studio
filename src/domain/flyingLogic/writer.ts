@@ -1,6 +1,28 @@
 import { resolveEntityTypeMeta } from '../entityTypeMeta';
-import type { EntityType, TPDocument } from '../types';
+import type { Edge, EntityType, TPDocument } from '../types';
 import { ENTITY_TYPE_TO_FL, escapeXml } from './typeMaps';
+
+/**
+ * Session 206 fix — the edge's TOC semantics: its logic `kind` and the EC
+ * mutual-exclusion flag. Neither was ever emitted, so the reader rebuilt every
+ * edge through `createEdge`, whose hardcoded `kind: 'sufficiency'` silently
+ * rewrote the necessity logic of an Evaporating Cloud or Goal Tree on a
+ * round-trip — contradicting this file's own "lossless" claim, and the v6→v7
+ * migration which forces `necessity` on EC for exactly this invariant.
+ *
+ * `kind` is emitted ALWAYS (not only for necessity) so the reader can tell
+ * "TP Studio deliberately wrote sufficiency here" from "a native FL file with no
+ * attribute", where it falls back on the diagram type instead.
+ */
+const edgeSemanticsAttrs = (edge: Edge): string[] => {
+  const out = [
+    `<attribute key="tp-studio-kind" class="java.lang.String">${edge.kind ?? 'sufficiency'}</attribute>`,
+  ];
+  if (edge.isMutualExclusion) {
+    out.push(`<attribute key="tp-studio-mutex" class="java.lang.String">true</attribute>`);
+  }
+  return out;
+};
 
 /**
  * Serialize a TPDocument as Flying Logic XML. Returns a string ready to be
@@ -15,6 +37,8 @@ import { ENTITY_TYPE_TO_FL, escapeXml } from './typeMaps';
  *     `tp-studio-and-group-id`, `tp-studio-or-group-id`,
  *     `tp-studio-xor-group-id`)
  *   - Bundle 8 edge polarity (`tp-studio-weight`) — positive / negative / zero.
+ *   - Edge logic kind (`tp-studio-kind`) + the EC mutex flag (`tp-studio-mutex`)
+ *     — see {@link edgeSemanticsAttrs}.
  *   - Annotation numbers (`tp-studio-annotation`)
  *   - Group colors (`tp-studio-color`)
  *   - Diagram type + nextAnnotation counter on the root
@@ -208,6 +232,7 @@ export const exportToFlyingLogic = (doc: TPDocument): string => {
             `<attribute key="tp-studio-weight" class="java.lang.String">${edge.weight}</attribute>`
           );
         }
+        sourceAttrs.push(...edgeSemanticsAttrs(edge));
         // source → junctor
         lines.push(
           `      <edge source="${sourceEid}" target="${junctorEid}">${sourceAttrs.join('')}</edge>`
@@ -235,6 +260,7 @@ export const exportToFlyingLogic = (doc: TPDocument): string => {
         `<attribute key="tp-studio-weight" class="java.lang.String">${edge.weight}</attribute>`
       );
     }
+    attrs.push(...edgeSemanticsAttrs(edge));
     lines.push(`      <edge source="${sourceEid}" target="${targetEid}">${attrs.join('')}</edge>`);
   }
   lines.push('    </edges>');
