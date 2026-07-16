@@ -257,8 +257,40 @@ describe('verbsForBranch', () => {
     expect(ids).toContain('mark-as-obstacle');
   });
 
-  it('TT/PRT verbs do not leak into other diagram types', () => {
-    // Default seed is CRT. None of the TT or PRT verbs should appear.
+  // Interference Diagram slot verbs (interference / fix), reusing the PRT
+  // re-type commands under ID-native verb ids.
+  it('ID context surfaces mark-as-interference + mark-as-fix for a plain effect', () => {
+    useDocumentStore.getState().newDocument('id');
+    const a = seedEntity('A', 'effect');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('mark-as-interference');
+    expect(ids).toContain('mark-as-fix');
+    expect(ids).not.toContain('add-fix-for-interference');
+  });
+
+  it('ID context surfaces add-fix-for-interference on an interference (obstacle)', () => {
+    useDocumentStore.getState().newDocument('id');
+    const a = seedEntity('A', 'obstacle');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).toContain('add-fix-for-interference');
+    // An interference drops mark-as-interference (already one) but keeps mark-as-fix.
+    expect(ids).not.toContain('mark-as-interference');
+    expect(ids).toContain('mark-as-fix');
+  });
+
+  it('ID context drops mark-as-fix when the entity is already an intermediate objective', () => {
+    useDocumentStore.getState().newDocument('id');
+    const a = seedEntity('A', 'intermediateObjective');
+    const state = useDocumentStore.getState();
+    const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
+    expect(ids).not.toContain('mark-as-fix');
+    expect(ids).toContain('mark-as-interference');
+  });
+
+  it('TT/PRT/ID verbs do not leak into other diagram types', () => {
+    // Default seed is CRT. None of the TT / PRT / ID slot verbs should appear.
     const a = seedEntity('A', 'effect');
     const state = useDocumentStore.getState();
     const ids = verbsForBranch({ kind: 'single-entity', id: a.id }, state).map((v) => v.id);
@@ -268,6 +300,9 @@ describe('verbsForBranch', () => {
     expect(ids).not.toContain('mark-as-obstacle');
     expect(ids).not.toContain('mark-as-io');
     expect(ids).not.toContain('add-io-for-obstacle');
+    expect(ids).not.toContain('mark-as-interference');
+    expect(ids).not.toContain('mark-as-fix');
+    expect(ids).not.toContain('add-fix-for-interference');
   });
 
   it('single-edge branch now surfaces add-assumption-to-edge', () => {

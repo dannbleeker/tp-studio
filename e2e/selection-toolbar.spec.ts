@@ -136,7 +136,7 @@ test.describe('SelectionToolbar e2e', () => {
    * targets, select it, click the verb, assert the store-side effect.
    */
   type VerbCase = {
-    diagramType: 'crt' | 'frt' | 'goalTree' | 'tt' | 'prt';
+    diagramType: 'crt' | 'frt' | 'goalTree' | 'tt' | 'prt' | 'id';
     seedType: string;
     verbLabel: RegExp;
     /** Read on the entity after the click; must equal `expectedType`. */
@@ -178,6 +178,12 @@ test.describe('SelectionToolbar e2e', () => {
       verbLabel: /Mark as Obstacle/i,
       expectedType: 'obstacle',
     },
+    {
+      diagramType: 'id',
+      seedType: 'effect',
+      verbLabel: /Mark as interference/i,
+      expectedType: 'obstacle',
+    },
   ];
 
   for (const { diagramType, seedType, verbLabel, expectedType } of verbCases) {
@@ -190,7 +196,17 @@ test.describe('SelectionToolbar e2e', () => {
       const id = await page.evaluate(
         ({ dt, st }) => {
           window.__TP_TEST__!.newDocument(
-            dt as 'crt' | 'frt' | 'prt' | 'tt' | 'ec' | 'goalTree' | 'st' | 'freeform'
+            dt as
+              | 'crt'
+              | 'frt'
+              | 'prt'
+              | 'tt'
+              | 'ec'
+              | 'goalTree'
+              | 'st'
+              | 'freeform'
+              | 'nbr'
+              | 'id'
           );
           const created = window.__TP_TEST__!.seed({
             // biome-ignore lint/suspicious/noExplicitAny: EntityType union belongs to the test-hook surface.

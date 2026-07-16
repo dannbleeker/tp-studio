@@ -278,6 +278,7 @@ When you select something on the canvas — an entity, an edge, a group, or mult
 - **Single entity in an EC, on a Want (D / D′)** — *plus* Add prerequisite need (creates the upstream Need with a necessity edge)
 - **Single entity in a TT** — *plus* Mark as Action · Mark as Outcome · Add precondition (on an Action)
 - **Single entity in a PRT** — *plus* Mark as Obstacle · Mark as IO · Add IO for this Obstacle (on an Obstacle)
+- **Single entity in an Interference Diagram** — *plus* Mark as interference · Mark as fix · Add fix for this interference (on an interference)
 - **Single edge** — Reverse direction · Add assumption · Cycle polarity (default → positive → negative → zero → default) · Splice · Delete
 - **Single group** — Toggle collapsed · Cycle group color (6-color palette) · Unhoist
 - **Multiple entities** — Group · *Swap* (when exactly 2 selected) · Delete N

@@ -216,6 +216,39 @@ export const verbsForSingleEntity = (id: string, state: DocumentStore): Verb[] =
       });
     }
   }
+  // **Interference Diagram** slot verbs. Interferences are obstacles and their
+  // fixes are intermediate objectives — the same working set as a PRT — so the
+  // verbs reuse the PRT re-type / add-IO commands with ID-native labels
+  // (interference / fix). The commands themselves aren't diagram-gated.
+  if (diagramType === 'id' && entity) {
+    if (entity.type !== 'obstacle') {
+      verbs.push({
+        id: 'mark-as-interference',
+        label: 'Mark as interference',
+        shortLabel: 'Interference',
+        writes: true,
+        paletteCommandId: 'mark-as-obstacle',
+      });
+    }
+    if (entity.type !== 'intermediateObjective') {
+      verbs.push({
+        id: 'mark-as-fix',
+        label: 'Mark as fix',
+        shortLabel: 'Fix',
+        writes: true,
+        paletteCommandId: 'mark-as-io',
+      });
+    }
+    if (entity.type === 'obstacle') {
+      verbs.push({
+        id: 'add-fix-for-interference',
+        label: 'Add fix for this interference',
+        shortLabel: 'Add fix',
+        writes: true,
+        paletteCommandId: 'add-io-for-obstacle',
+      });
+    }
+  }
   // Session 179 (Theme D) — surface the existing select-successors /
   // -predecessors actions (already palette + keyboard commands) on the
   // right-click menu + toolbar too. Inline `run` rather than `paletteCommandId`
