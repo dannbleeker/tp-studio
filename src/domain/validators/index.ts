@@ -205,7 +205,14 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
   // is just out of Dettmer's pattern. The rule carries a one-click
   // "Convert extras to CSFs" action via the WARNING_ACTIONS registry.
   goalTree: [
-    ...STRUCTURAL_RULES,
+    // Session 206 (bug hunt) — `indirect-effect` is a CAUSAL nudge ("≥3 direct
+    // causes into one effect — could some chain through an intermediate?"). On a
+    // Goal Tree it contradicts the rule registered three lines below it:
+    // `goalTree-csf-count` enforces Dettmer's 3–5 CSFs, all of which point at the
+    // single Goal — the exact shape `indirect-effect` flags. So a textbook-correct
+    // Goal Tree got told off for being textbook-correct, including the app's own
+    // shipped example. Same false positive, same fix, as 'st' below.
+    ...STRUCTURAL_RULES.filter((r) => r.ruleId !== 'indirect-effect'),
     tieredRule('clarity', 'goalTree-multiple-goals', goalTreeMultipleGoalsRule),
     // Session 179 — logic-type lint, necessity logic (Theme C2).
     tieredRule('clarity', 'logic-type-mismatch', logicTypeMismatchRule),

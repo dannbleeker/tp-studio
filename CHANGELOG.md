@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — bug hunt tier 2: three more, each firing on the app's own content
+
+Every regression test below was run against the reverted source to confirm it fails pre-fix.
+
+- **The Core Driver finder gave up on any CRT whose causes sit in a reinforcing loop.** The fallback
+  pool was "entities with no structural incoming edge" — inside a cycle nobody qualifies, so the pool
+  came back empty and `findCoreDrivers` returned `[]`, while `udeReachCounts` (computed two lines
+  earlier) happily reported those same entities reaching UDEs. The panel then told the user their CRT
+  "needs at least one UDE reached from a root cause" about a CRT that has exactly that — **including on
+  the shipped `crt-fixes-that-fail` pattern**, a pure 4-node cycle, so the app's own template made its
+  headline feature look broken. Loop-closing edges are now discounted via `effectiveBackEdgeIds` — the
+  same auto-detection the canvas uses to draw the loop arrow, so the entry point we score is the one a
+  reader already reads as the loop's start.
+- **`indirect-effect` was registered on Goal Trees, where it contradicted the rule beside it.** It's a
+  causal nudge ("≥3 direct causes into one effect"), but `goalTree-csf-count` *enforces* Dettmer's 3–5
+  CSFs, all pointing at the single Goal — precisely the shape `indirect-effect` flags. A
+  textbook-correct Goal Tree was warned for being textbook-correct, the shipped example included. Now
+  filtered out for `goalTree`, exactly as `st` already does for the same reason.
+- **The junctor circle drifted height/2 off its edges in horizontal (EC) layouts** — the Y-axis twin of
+  the centre-X drift fixed earlier this session, and the same root cause: handle-vs-box geometry.
+  `JunctorOverlay` looked only for a *bottom* target handle; a horizontal diagram renders a *right* one,
+  so the lookup missed and fell through to the box bottom while TPEdge kept terminating the cause-edges
+  at the right handle's centre Y. The axis is now derived from which handle exists, so no diagram type
+  needs threading through.
+
 ## Session 206 — bug hunt tier 1: three silent data-loss / layout defects
 
 The three highest-value findings from the hunt, each with a regression test **verified to fail against

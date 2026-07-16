@@ -99,6 +99,47 @@ describe('computeJunctors', () => {
     expect(out[0]?.cy).toBe(292 + JUNCTOR_CENTER_OFFSET_Y);
   });
 
+  // Session 206 (bug hunt) — the Y-axis twin of the `useJunctorCenterX` centre-X
+  // drift fixed the same session. A horizontal (EC) layout renders the target
+  // handle on the RIGHT (`targetPosition = Position.Right`), so the
+  // bottom-handle lookup missed and fell through to the box BOTTOM — while
+  // TPEdge kept terminating the cause-edges at the right handle's CENTRE Y. The
+  // circle and the edges disagreed by height/2.
+  it('anchors to the right handle centre-Y in a horizontal (EC) layout', () => {
+    const groups = [grp('g1', 'AND', 't1')];
+    const horizontal: Geo = {
+      internals: {
+        positionAbsolute: { x: 100, y: 200 },
+        // No 'bottom' handle exists on a horizontal diagram.
+        handleBounds: { target: [{ position: 'right', y: 26, height: 20 }] },
+      },
+      measured: { width: 220, height: 72 },
+    };
+    const out = computeJunctors(groups, () => horizontal);
+    // The right handle's centre Y is 200 + 26 + 10 = 236 — where the edges meet.
+    // Pre-fix this returned the box bottom, 200 + 72 = 272 (out by height/2).
+    expect(out[0]?.ty).toBe(236);
+    expect(out[0]?.ty).not.toBe(272);
+    expect(out[0]?.cy).toBe(236 + JUNCTOR_CENTER_OFFSET_Y);
+  });
+
+  it('still prefers the bottom handle when both are present (vertical wins)', () => {
+    const groups = [grp('g1', 'AND', 't1')];
+    const both: Geo = {
+      internals: {
+        positionAbsolute: { x: 100, y: 200 },
+        handleBounds: {
+          target: [
+            { position: 'right', y: 26, height: 20 },
+            { position: 'bottom', y: 72, height: 20 },
+          ],
+        },
+      },
+      measured: { width: 220, height: 72 },
+    };
+    expect(computeJunctors(groups, () => both)[0]?.ty).toBe(292);
+  });
+
   it('tracks the target when its position changes (the floating-circle fix)', () => {
     const groups = [grp('g1', 'AND', 't1')];
     const before = computeJunctors(groups, () => node(0, 0));

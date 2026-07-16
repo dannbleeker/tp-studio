@@ -309,6 +309,32 @@ describe('CLR: indirect-effect (Block C / E2)', () => {
     expect(hasRule(warnings, 'indirect-effect')).toBe(false);
   });
 
+  // Session 206 (bug hunt) — `indirect-effect` is a CAUSAL nudge, but it was
+  // registered on `goalTree`, where it contradicted `goalTree-csf-count`
+  // registered beside it: Dettmer's 3–5 CSFs all point at the single Goal, which
+  // is exactly the ≥3-incoming shape this rule flags. A textbook-correct Goal
+  // Tree (including the app's own shipped example) got warned for being correct.
+  it('is NOT registered on a Goal Tree — 3+ CSFs into the Goal is the required shape', () => {
+    const goal = makeEntity({ type: 'goal', title: 'Make money now and in the future' });
+    const csfs = ['Sales grow', 'Costs are controlled', 'Customers stay'].map((title) =>
+      makeEntity({ type: 'criticalSuccessFactor', title })
+    );
+    const edges = csfs.map((c) => ({ ...makeEdge(c.id, goal.id), kind: 'necessity' as const }));
+    const warnings = validate(makeDoc([goal, ...csfs], edges, 'goalTree'));
+    expect(hasRule(warnings, 'indirect-effect')).toBe(false);
+    // The count rule is happy with exactly this shape — that's the contradiction.
+    expect(hasRule(warnings, 'goalTree-csf-count')).toBe(false);
+  });
+
+  it('stays registered on a CRT (the causal diagram it was written for)', () => {
+    const target = makeEntity({ type: 'ude', title: 'Effect' });
+    const causes = ['A', 'B', 'C'].map((t) => makeEntity({ type: 'effect', title: `Cause ${t}` }));
+    const edges = causes.map((c) => makeEdge(c.id, target.id));
+    expect(hasRule(validate(makeDoc([target, ...causes], edges, 'crt')), 'indirect-effect')).toBe(
+      true
+    );
+  });
+
   it('exempts AND-grouped edges from the count', () => {
     const target = makeEntity({ title: 'Effect' });
     const a = makeEntity({ title: 'Cause A' });

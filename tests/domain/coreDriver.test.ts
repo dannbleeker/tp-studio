@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { findCoreDrivers, udeReachCounts } from '@/domain/coreDriver';
+import { buildPatternCRTFixesThatFail } from '@/domain/patterns/crt-fixes-that-fail';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
@@ -107,5 +108,36 @@ describe('findCoreDrivers', () => {
     s.connect(rc.id, u2.id);
     const candidates = findCoreDrivers(doc());
     expect(candidates[0]?.reachedUdeIds).toEqual(expect.arrayContaining([u1.id, u2.id]));
+  });
+
+  // Session 206 (bug hunt) — the fallback pool was "entities with no structural
+  // incoming edge". Inside a reinforcing loop every member has one, so the whole
+  // loop was excluded, the pool came back empty, and findCoreDrivers returned []
+  // — while udeReachCounts happily reported those same entities reaching UDEs.
+  // The panel then claimed the CRT "needs at least one UDE reached from a root
+  // cause" about a CRT that has exactly that. Back-edges are now discounted.
+  it('still finds a Core Driver when the causes sit in a reinforcing loop', () => {
+    const a = seedEntity('A', 'effect');
+    const b = seedEntity('B', 'effect');
+    const ude = seedEntity('UDE', 'ude');
+    const s = useDocumentStore.getState();
+    s.connect(a.id, b.id);
+    s.connect(b.id, a.id); // closes the loop — the auto-detected back edge
+    s.connect(a.id, ude.id);
+    // The reach map always saw these entities…
+    expect(udeReachCounts(doc()).size).toBeGreaterThan(0);
+    // …so the driver finder must not come back empty.
+    const candidates = findCoreDrivers(doc());
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(candidates[0]?.reachedUdeCount).toBe(1);
+    expect([a.id, b.id]).toContain(candidates[0]?.entity.id);
+  });
+
+  it('finds a Core Driver on the shipped crt-fixes-that-fail pattern (a pure cycle)', () => {
+    // The pattern ships with no rootCause entity and a closed loop, so it hit
+    // the empty-pool path — the app's own template made its headline feature
+    // claim the tree was unanalysable.
+    const patternDoc = buildPatternCRTFixesThatFail();
+    expect(findCoreDrivers(patternDoc).length).toBeGreaterThan(0);
   });
 });

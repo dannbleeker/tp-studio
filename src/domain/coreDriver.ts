@@ -1,3 +1,4 @@
+import { effectiveBackEdgeIds } from './backEdges';
 import {
   entitiesOfType,
   getEntity,
@@ -194,11 +195,25 @@ const computeCoreDrivers = (doc: TPDocument): CoreDriverCandidate[] => {
   if (explicit.length > 0) {
     pool = explicit;
   } else {
+    // Session 206 fix — ignore loop-closing (back) edges when deciding what
+    // counts as a structural leaf. Inside a cycle EVERY member has a structural
+    // incoming edge, so the plain "no incoming" test excluded the whole loop,
+    // left `pool` empty, and returned [] — even though those entities
+    // demonstrably reach UDEs (`udeReachCounts` counts them just above). The
+    // Core Driver panel then told the user their CRT "needs at least one UDE
+    // reached from a root cause" on a doc that has exactly that, and it fired on
+    // the shipped `crt-fixes-that-fail` pattern (a pure 4-node cycle with no
+    // rootCause). `effectiveBackEdgeIds` is the same auto-detection the canvas
+    // uses to draw the loop-closing arrow, so the entry point we pick here is
+    // the one a reader already sees as the loop's "start".
+    const backEdges = effectiveBackEdgeIds(doc);
     pool = [];
     for (const e of structuralEntities(doc)) {
       const ins = filterStructural(
         doc,
-        incomingEdges(doc, e.id).map((edge) => edge.sourceId)
+        incomingEdges(doc, e.id)
+          .filter((edge) => !backEdges.has(edge.id))
+          .map((edge) => edge.sourceId)
       );
       if (ins.length === 0) pool.push(e);
     }

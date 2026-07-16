@@ -198,15 +198,31 @@ export const computeJunctors = (
     const tWidth = target.measured?.width ?? NODE_WIDTH;
     const tHeight = target.measured?.height ?? NODE_MIN_HEIGHT;
     const tX = tPos.x + tWidth / 2;
-    // Anchor to the bottom target handle's ACTUAL connection point — where
-    // React Flow terminates the converging cause-edges — not the measured box
-    // bottom. The Bottom handle sits ~its own height below the box, so the
-    // box-bottom anchor left the cause-edges stopping short of the circle.
+    // Anchor to the target handle's ACTUAL connection point — where React Flow
+    // terminates the converging cause-edges — not the measured box edge.
+    //
+    // Which handle that is depends on the diagram's axis, and we read it off the
+    // measured bounds rather than threading the diagram type in:
+    //   - vertical trees  → a Bottom handle, sitting ~its own height BELOW the
+    //     box; the edges meet at its lower edge.
+    //   - horizontal (EC) → a Right handle (TPNode renders
+    //     `targetPosition = Position.Right`); the edges meet at its CENTRE Y.
+    //
+    // Session 206 fix — only the Bottom case was handled, so on a horizontal
+    // layout the lookup missed and fell through to the box BOTTOM, while TPEdge
+    // kept terminating the cause-edges at the right handle's centre Y. The
+    // circle and the edges drifted apart by height/2. (This is the Y-axis twin
+    // of the centre-X drift fixed in `useJunctorCenterX` the same session: both
+    // were handle-vs-box geometry going wrong in horizontal layouts.)
     // Falls back to the box bottom before handle bounds are measured.
-    const bottomHandle = target.internals.handleBounds?.target?.find(
-      (h) => h.position === 'bottom'
-    );
-    const tY = bottomHandle ? tPos.y + bottomHandle.y + bottomHandle.height : tPos.y + tHeight;
+    const handles = target.internals.handleBounds?.target;
+    const bottomHandle = handles?.find((h) => h.position === 'bottom');
+    const rightHandle = handles?.find((h) => h.position === 'right');
+    const tY = bottomHandle
+      ? tPos.y + bottomHandle.y + bottomHandle.height
+      : rightHandle
+        ? tPos.y + rightHandle.y + rightHandle.height / 2
+        : tPos.y + tHeight;
     // Center the circle over the group's CAUSES (not pinned under the target),
     // so each cause rises into it from below instead of sweeping in from the
     // side. `tx`/`ty` stay at the target, so the short line up to the effect

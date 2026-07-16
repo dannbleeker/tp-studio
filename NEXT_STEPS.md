@@ -62,18 +62,14 @@ archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
   so the `order.length < entities.length` recovery guard compares two different populations and each
   reached note masks one cycle-trapped IO. Violates the function's own "nothing is silently dropped"
   docblock; the pinned test passes only because its fixture has no notes. Effort S–M.
-- **`findCoreDrivers` returns `[]` when the root causes sit in a reinforcing loop**
-  (`coreDriver.ts:198`). The fallback pool is "entities with no structural incoming edges" — in a cycle
-  nobody qualifies. **Fires on the shipped `crt-fixes-that-fail` pattern** (a pure 4-node cycle), where
-  the toast then claims "needs at least one UDE reached from a root cause" — factually false.
-  Fix: subtract `effectiveBackEdgeIds` when computing fallback in-degree. Effort M.
 - **Undo of an unrelated edit deletes a cross-doc link but leaves the mirror behind**
   (`crossDocLinks.ts:132`) — the two docs disagree about the link. Effort M.
-- **`indirect-effect` is registered on `goalTree`** (`validators/index.ts:208`), where it contradicts the
-  Goal-Tree rules beside it and fires on the app's own shipped Goal Tree example. Effort S.
 - **`TPEdge.isJunctorEdge` misses emission's synthetic-endpoint case** (`TPEdge.tsx:137`) — a junctor
   edge crossing a collapsed-group boundary gets endpoint redirection AND an arrowhead, terminating in
   mid-air. Effort M.
+
+*(`findCoreDrivers` on a looped CRT and the `indirect-effect`-on-Goal-Tree misregistration shipped
+**Session 206**.)*
 
 **Tier 3 — real but low-value / needs a design call:**
 
@@ -83,10 +79,6 @@ archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
   keys, so they need a migration decision, not a quick patch.
 - **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
   (`edgeRouting.ts:243`) — a skeptic refuted this on impact; correctness is arguable.
-- **JunctorOverlay anchors to the box bottom in horizontal (EC) layouts** while TPEdge uses the RIGHT
-  handle's centre Y (`JunctorOverlay.tsx:206`) — the **Y-axis twin** of the centre-X drift fixed in
-  Session 206. Same root cause class (handle-vs-box geometry in horizontal layouts); circle and edges
-  disagree by height/2. Effort S–M.
 - **`mapEntityType` resolves `Object.prototype` members** (`flyingLogic/typeMaps.ts:106`) — an FL
   `entityClass="toString"` yields a Function as `entity.type` instead of falling back to `'effect'`.
   Effort S.
