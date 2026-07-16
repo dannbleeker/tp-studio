@@ -157,7 +157,12 @@ export type ClrRuleId =
   // (something with effects but nothing causing it) must be an injection you will
   // introduce OR a condition asserted true in current reality — otherwise it is
   // an unstated assumption holding the branch up. Existence tier.
-  | 'entry-point';
+  | 'entry-point'
+  // Interference Diagram structural rules. The ID has no sufficiency/necessity
+  // logic (its arrows are intuition), so these two are the only ID-specific
+  // reservations — both structural, both soft:
+  | 'id-interference-no-io' // an interference with no paired intermediate objective
+  | 'id-multiple-central-objectives'; // more than one central objective (goal) on one ID
 
 /**
  * Three-level CLR taxonomy used by Block C's tiered warning view. Each

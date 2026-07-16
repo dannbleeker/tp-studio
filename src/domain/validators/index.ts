@@ -27,6 +27,7 @@ import {
   goalTreeNcDepthRule,
   goalTreeNcsPerCsfRule,
 } from './goalTreeStructural';
+import { idInterferenceNoIoRule, idMultipleCentralObjectivesRule } from './idStructural';
 import { indirectEffectRule } from './indirectEffect';
 import { logicTypeMismatchRule } from './logicTypeMismatch';
 import { longArrowRule } from './longArrow';
@@ -262,6 +263,11 @@ const RULES_BY_DIAGRAM: Record<DiagramType, TieredRule[]> = {
     tieredRule('existence', 'entity-existence', entityExistenceRule),
     tieredRule('clarity', 'entity-fragment', entityFragmentRule),
     tieredRule('clarity', 'tautology', tautologyRule),
+    // ID-specific structural checks. `existence` — an interference with no fix
+    // is a gap in the analysis; `clarity` — a second central objective is a
+    // scope nudge, not an error.
+    tieredRule('existence', 'id-interference-no-io', idInterferenceNoIoRule),
+    tieredRule('clarity', 'id-multiple-central-objectives', idMultipleCentralObjectivesRule),
   ],
 };
 
