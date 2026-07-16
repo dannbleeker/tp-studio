@@ -8,8 +8,10 @@ import { WarningsList } from '@/components/inspector/WarningsList';
 import { TextInput } from '@/components/settings/formPrimitives';
 import { Button } from '@/components/ui/Button';
 import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '@/components/ui/buttonClasses';
+import { InsetCard } from '@/components/ui/InsetCard';
 import { Modal } from '@/components/ui/Modal';
 import { CLOUD_TYPE_LABEL, CLOUD_TYPES } from '@/domain/cloudType';
+import { EC_CLOUD_TYPE_BREAK_HINT } from '@/domain/ecGuiding';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
 import { METHOD_BY_DIAGRAM, type MethodStep } from '@/domain/methodChecklist';
 import type { CloudType, DiagramType, SystemScope } from '@/domain/types';
@@ -357,8 +359,29 @@ export function DocumentInspector() {
             <p className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
               Optional — marks this cloud's role in the progression (UDE → Consolidated → Core), per
               Cohen's <em>TP Basics</em>. The creation wizard reads it to tailor the build order and
-              prompts; afterwards it's just a label.
+              prompts; afterwards it keeps Cohen's break hint to hand.
             </p>
+            {/* Session 206 — Cohen's per-type "best arrow to break" hint used to live
+                only in the creation wizard's completion panel, so it vanished the
+                moment the wizard closed — the same failure mode the guiding questions
+                had before Session 197 lifted them into the inspector. Breaking the
+                cloud is what you do AFTER building it, while working the assumptions,
+                which is exactly when the hint was gone. Read-only, derived from
+                `cloudType`; nothing is stored. */}
+            {cloudType && (
+              <InsetCard
+                tone="amber"
+                role="note"
+                aria-label="Best arrow to break"
+                data-component="ec-break-hint"
+                className="mt-2"
+              >
+                <p className="mb-1 font-semibold text-[10px] text-amber-700 uppercase tracking-wider dark:text-amber-300">
+                  Best arrow to break
+                </p>
+                <p className="leading-snug">{EC_CLOUD_TYPE_BREAK_HINT[cloudType]}</p>
+              </InsetCard>
+            )}
           </Field>
         )}
 

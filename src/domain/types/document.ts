@@ -61,9 +61,13 @@ export type SystemScope = {
  * Cloud progression role — Oded Cohen's *TP Basics* (gap analysis #1). An
  * optional label marking which kind of cloud an Evaporating Cloud is in the
  * escalation UDE → Consolidated → Core. The six cloud types from the source:
- * Dilemma, Conflict, UDE, Consolidated, Core, Firefighting. Purely a label —
- * nothing keys off it; unset = untyped (today's behaviour). Only meaningful on
- * EC docs. Display labels + ordering live in `src/domain/cloudType.ts`.
+ * Dilemma, Conflict, UDE, Consolidated, Core, Firefighting. Unset = untyped. Only
+ * meaningful on EC docs. Display labels + ordering live in `src/domain/cloudType.ts`.
+ *
+ * It does NOT change the diagram — reading, editing and breaking a typed cloud are
+ * identical to an untyped one (a per-TYPE *reading* order was declined in Session
+ * 206; see NEXT_STEPS). What it drives is GUIDANCE: the creation wizard's build
+ * order + prompts, and Cohen's per-type break hint in the Document Inspector.
  */
 export type CloudType = 'dilemma' | 'conflict' | 'ude' | 'consolidated' | 'core' | 'firefighting';
 
@@ -123,8 +127,9 @@ export type TPDocument = {
   ecVerbalStyle?: 'neutral' | 'twoSided';
   /** Cloud progression role (TP Basics gap #1) — optional label for which kind
    *  of cloud this EC is (UDE → Consolidated → Core, etc.). Only meaningful on
-   *  EC docs; purely a label, nothing keys off it. Omitted from JSON when unset.
-   *  See {@link CloudType}. */
+   *  EC docs; drives guidance (wizard build order + prompts, the Document
+   *  Inspector's break hint), never the diagram itself. Omitted from JSON when
+   *  unset. See {@link CloudType}. */
   cloudType?: CloudType;
   /** Session 199 (backlog A4) — Goal-Tree Necessary-Condition depth mode. Unset
    *  (the default) enforces Dettmer's ≤2 NC layers, right when the Goal Tree

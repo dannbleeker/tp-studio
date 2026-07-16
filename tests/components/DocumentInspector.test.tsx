@@ -185,6 +185,64 @@ describe('DocumentInspector — Cloud type (EC only)', () => {
   });
 });
 
+// Session 206 — Cohen's per-type "best arrow to break" hint was rendered ONLY by
+// the creation wizard's completion panel, so it disappeared when the wizard
+// closed. Breaking the cloud happens afterwards, while working the assumptions —
+// exactly when the hint was unavailable. It now rides the Document Inspector,
+// derived from `cloudType` (the same fix Session 197 applied to the guiding
+// questions). These tests pin the gap, not just the render: the hint must be
+// reachable with NO wizard mounted.
+describe('DocumentInspector — per-type break hint (backlog D re-scope)', () => {
+  const breakHint = (root: ParentNode): HTMLElement | null =>
+    root.querySelector('[data-component="ec-break-hint"]');
+
+  it('shows Cohen’s break hint for a typed cloud, with no wizard on screen', () => {
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    act(() => useDocumentStore.getState().setCloudType('firefighting'));
+    open();
+    const { container } = render(<DocumentInspector />);
+    const hint = breakHint(container);
+    expect(hint).toBeTruthy();
+    // The real per-type copy, not a placeholder — this is the whole point.
+    expect(hint?.textContent).toContain('fold the emergency action into the procedure');
+  });
+
+  it('is absent on an untyped cloud (there is no per-type hint to give)', () => {
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    open();
+    const { container } = render(<DocumentInspector />);
+    expect(breakHint(container)).toBeNull();
+  });
+
+  it('is absent on a non-EC diagram even if a stale cloudType lingers', () => {
+    // `cloudType` is only meaningful on an EC; a doc that changed type shouldn't
+    // leak an EC break hint into, say, a Transition Tree.
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    act(() => useDocumentStore.getState().setCloudType('core'));
+    act(() => useDocumentStore.getState().newDocument('tt'));
+    open();
+    const { container } = render(<DocumentInspector />);
+    expect(breakHint(container)).toBeNull();
+  });
+
+  it('tracks the selected type — switching type switches the hint', () => {
+    act(() => useDocumentStore.getState().newDocument('ec'));
+    open();
+    const { container } = render(<DocumentInspector />);
+    const select = container.querySelector('select[aria-label="Cloud type"]') as HTMLSelectElement;
+
+    act(() => fireEvent.change(select, { target: { value: 'dilemma' } }));
+    expect(breakHint(container)?.textContent).toContain('C–D′ or D–D′');
+
+    act(() => fireEvent.change(select, { target: { value: 'consolidated' } }));
+    expect(breakHint(container)?.textContent).toContain('then each source cloud for specifics');
+
+    // Back to untyped — the hint goes away rather than sticking at the last type.
+    act(() => fireEvent.change(select, { target: { value: '' } }));
+    expect(breakHint(container)).toBeNull();
+  });
+});
+
 describe('DocumentInspector — Performance frame (Phase 3 #5)', () => {
   const perfDetails = (root: ParentNode): HTMLDetailsElement =>
     Array.from(root.querySelectorAll('details')).find((d) =>

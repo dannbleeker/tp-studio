@@ -8,8 +8,10 @@ Pruned in Sessions 176, 193, and 206. The Session-206 pass removed the last of t
 verifying, section by section, that CHANGELOG genuinely carried it — the citations, decisions and
 rationale that lived only here were migrated into their CHANGELOG session entries rather than deleted.
 
-**Genuinely open right now: one item** — the EC per-TYPE verbalisation reading order below. Everything
-else is deferred by decision, parked pending an explicit ask (L2 Projects), or declined.
+**Genuinely open right now: nothing.** The last open item — the EC per-TYPE verbalisation reading order —
+was **declined in Session 206** once recon showed the doctrine doesn't support it (see *Declined*). Its
+real itch was re-scoped and shipped instead: Cohen's per-type break hint now rides the Document Inspector.
+Everything on this page is deferred by decision, parked pending an explicit ask (L2 Projects), or declined.
 
 > **The §-letters** (§B, §C, §D, §G…) index the *TOC Handbook backlog* — a six-agent read of the
 > *Theory of Constraints Handbook* (Cox & Schleier, McGraw-Hill 2010), mined 2026-07-12 and organised
@@ -17,20 +19,6 @@ else is deferred by decision, parked pending an explicit ask (L2 Projects), or d
 > (e.g. *"Session 199 — Two AND connectors (backlog A3)"*). Only the letters with unshipped remainder
 > still have a heading here, so a letter you don't find below (§A, §D, §E, §F) means that section is done
 > — look it up in CHANGELOG, not here.
-
----
-
-## Open
-
-### EC per-TYPE verbalisation reading order (small; backlog §D)
-The verbalisation strip doesn't read the cloud type. `verbaliseEC` (`src/domain/verbalisation.ts`) takes
-only `doc.ecVerbalStyle` + the per-SIDE `leadWithC` flag; `cloudType` appears nowhere in it, and
-`VerbalisationStrip.tsx` holds `leadWithC` as local `useState`.
-
-**The seam is ready:** Session 197 shipped `EC_CLOUD_TYPE_ORDER` (`src/domain/ecGuiding.ts`), but only the
-wizard consumes it — `verbaliseEC` would need to read it keyed on `doc.cloudType`. Note the per-SIDE
-`D′-first` toggle is a **distinct axis** and does not cover this; Session 197's CHANGELOG entry predicted
-D5 would "consume it" and D5 did not (that entry now carries the correction). *Ch24 (Cohen).*
 
 ---
 
@@ -126,6 +114,33 @@ Reviewed and **declined** — facilitation- and audit-adjacent, beyond a diagram
   binary implemented-flag. *Ch5 (Newbold).* Audit-adjacent.
 - ✗ **Decision-Record fields** on assumptions/injections (trigger / expected-by / inputs / owner /
   corrective-action link). *Ch15 (Barnard).* Audit-trail-adjacent.
+
+### EC per-TYPE verbalisation reading order — ✗ declined Session 206 (not supported by the doctrine)
+"Make the verbalisation strip read a cloud in an order chosen by its `cloudType`." Reconned before
+building and **declined** — the premise doesn't survive contact with either the doctrine or the code.
+
+- **The doctrine says the reading doesn't vary by type.** `docs/guide/05-evaporating-cloud.md:43` gives
+  one type-agnostic reading (Goldratt's A-first). Line 167: after creation the type is a label. Line 258,
+  of a Core-tagged cloud: *"Nothing about reading, editing, or breaking it changes"* — then says to read
+  it aloud. Cohen's Ch24 Table 24-9 is cited for **build order + break hint only**. The one reading
+  variation in the guide is keyed to **audience** (the shipped `D′-first` toggle), not type.
+- **The "ready seam" was not a seam.** `EC_CLOUD_TYPE_ORDER` is a **build/fill** order (its own docblock
+  says so) — a flat 5-slot sequence for a wizard that commits one box per step. `verbaliseEC` composes two
+  need→want **arcs** (a fixed 12-token sentence pair each); it never composes slots. Different kinds of
+  thing; the earlier claim here that the seam was ready was simply wrong.
+- **Forced through, it's mostly a no-op.** Of six types: `ude` already *is* the default reading;
+  `consolidated`/`core` are A-first, which the reading already does. `dilemma`/`conflict` (D-first) would
+  need a new generator inverting necessity direction; `firefighting` interleaves the arcs, which the arc
+  model can't express. Three no-ops, two rewrites, one incoherent.
+- **Where it came from:** a *forward-reference prediction* in our own CHANGELOG (S197: "deferred to
+  backlog D5, which will consume it") — not from Cohen. D5 shipped only the per-SIDE toggle. Session 206
+  corrected that line's status but inherited its premise and promoted the assumption to a backlog item.
+  **Lesson: don't write changelog forward-references that assert what a future session will do** — they
+  outlive their context and get mistaken for a requirement.
+
+**The real itch was re-scoped and shipped (S206):** the type genuinely did nothing after creation, and
+Cohen's per-type break hint was trapped in the creation wizard's completion panel. It now rides the
+Document Inspector, so it's there while you work the assumptions. See CHANGELOG S206.
 
 ### Other declined calls
 - ✗ **CMM 7-step / OODA framework presets** (Dann, 2026-07-13) — alternate journey frameworks beside

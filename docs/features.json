@@ -38,6 +38,7 @@
     {"id":"ec-injection-chip","name":"EC injections chip","area":"EC","since":87,"manual":true,"book":false,"bookExample":false},
     {"id":"ec-verbal-style","name":"EC verbalisation style setting","area":"EC","since":133,"manual":true,"book":true,"bookExample":false},
     {"id":"ec-cloud-type","name":"EC cloud-type tag","area":"EC","since":154,"manual":true,"book":true,"bookExample":true},
+    {"id":"ec-break-hint-inspector","name":"Per-type break hint in the Document Inspector","area":"EC","since":206,"manual":true,"book":true,"bookExample":false},
     {"id":"prt-diagram","name":"Prerequisite Tree","area":"PRT","since":20,"manual":true,"book":true,"bookExample":true},
     {"id":"prt-plan-csv","name":"PRT ordered-plan CSV export","area":"PRT","since":162,"manual":true,"book":true,"bookExample":true},
     {"id":"ongoing-objective","name":"Ongoing-vs-done toggle on PRT/Goal-Tree objectives","area":"PRT","since":198,"manual":true,"book":true,"bookExample":false},

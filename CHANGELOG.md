@@ -2,6 +2,46 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — Cohen's break hint outlives the wizard (and a backlog item declined)
+
+**Declined: the EC per-TYPE verbalisation reading order.** The last open backlog item asked the
+verbalisation strip to read a cloud in an order chosen by its `cloudType`. Reconned before building, and
+the premise doesn't survive contact with the doctrine or the code:
+
+- The guide gives **one type-agnostic reading** (`05-evaporating-cloud.md:43`, Goldratt's A-first). Cohen's
+  Ch24 Table 24-9 ties the type to **build order + break hint only**. The one reading variation we
+  document is keyed to **audience** — the `D′-first` toggle — which already shipped in D5.
+- The "ready seam" wasn't one. `EC_CLOUD_TYPE_ORDER` is a **build/fill** order — a flat 5-slot sequence
+  for a wizard that commits one box per step. `verbaliseEC` composes two need→want **arcs**, never slots.
+- Forced through it's mostly a no-op: `ude` already *is* the default reading, `consolidated`/`core` are
+  A-first which the reading already does; `dilemma`/`conflict` would need a new generator inverting
+  necessity direction, and `firefighting` interleaves the arcs, which the arc model can't express.
+
+The item traced back to a **forward-reference prediction in this changelog** (S197: "deferred to backlog
+D5, which will consume it") rather than to Cohen. D5 shipped only the per-SIDE toggle; Session 206 fixed
+that line's status but inherited its premise and promoted the assumption to a backlog item. Reasoning
+preserved in NEXT_STEPS "Declined" so it isn't re-derived. *Lesson: don't write changelog
+forward-references that assert what a future session will do.*
+
+**Shipped instead — the itch underneath.** `cloudType` genuinely did nothing after creation, and Cohen's
+per-type **"best arrow to break"** hint (`EC_CLOUD_TYPE_BREAK_HINT`, shipped S197) rendered *only* in the
+creation wizard's completion panel — so it vanished the moment the wizard closed. Breaking the cloud is
+what you do *afterwards*, while working the assumptions; the hint was gone exactly when it was wanted.
+This is the same failure mode Session 197 fixed for the guiding questions by lifting them into the
+inspector ("they vanish when the wizard closes").
+
+A typed EC now carries its break hint in the **Document Inspector**, under the Cloud type dropdown
+(amber `InsetCard`, `data-component="ec-break-hint"`, mirroring the shipped `ec-guiding-question` card).
+Read-only and derived from `cloudType` — no schema change, no store action, nothing on the canvas, so the
+canvas==export invariant and every visual baseline are untouched. Untyped clouds and non-EC diagrams
+render exactly as before.
+
+Four tests, each verified to fail against a *different* mutation: removing the card fails the two
+"hint shows / tracks the selected type" cases; rendering it unconditionally fails the two "absent when
+untyped / absent on a non-EC" guards. Also swept the now-false claims that the type is "just a label" —
+`document.ts` (both doc comments), `ecGuiding.ts`, the DocumentInspector help text, USER_GUIDE, and guide
+ch.5 (three places, including the Core-cloud "nothing changes" line).
+
 ## Session 206 — the hover-fan's last two exclusions (a gate that hid its own bug)
 
 The convergence hover-fan spread only *direct-route* convergence in *flow* layouts. Detours and radial

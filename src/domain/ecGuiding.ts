@@ -84,8 +84,11 @@ export const EC_SLOT_LABEL: Record<ECSlot, string> = {
  * the per-type prompt COPY lives beside the other wizard copy in
  * `components/canvas/wizards/creationWizardSteps.ts` (`EC_STEPS_BY_CLOUD_TYPE`).
  * (D5 shipped only a per-SIDE verbalisation toggle (`verbaliseEC`'s `leadWithC`),
- * which does not read `cloudType`; a per-TYPE reading/presentation order remains
- * unbuilt and would be a separate follow-up.)
+ * which does not read `cloudType`. A per-TYPE *reading* order was then **declined**
+ * in Session 206: the guide gives one type-agnostic reading, Cohen ties the type to
+ * build order + break hint only, and `EC_CLOUD_TYPE_ORDER` below is a BUILD order —
+ * a flat slot sequence the arc-based `verbaliseEC` cannot consume. Don't re-derive
+ * it; the reasoning is in NEXT_STEPS "Declined".)
  */
 export type ECWizardMode = 'generic' | CloudType;
 
@@ -100,8 +103,10 @@ export const EC_CLOUD_TYPE_ORDER: Record<CloudType, readonly ECSlot[]> = {
   core: EC_SLOTS_BY_ORDER.aFirst,
 };
 
-/** Cohen's "best arrow to break" recommendation per cloud type. Surfaced in
- *  the wizard's completion panel + a caption while a type is active. */
+/** Cohen's "best arrow to break" recommendation per cloud type. Surfaced in the
+ *  wizard's completion panel + a caption while a type is active, and (Session 206)
+ *  in the Document Inspector for any typed cloud — breaking happens after the
+ *  wizard closes, so the hint has to outlive it. */
 export const EC_CLOUD_TYPE_BREAK_HINT: Record<CloudType, string> = {
   dilemma: 'Cohen suggests trying to break the C–D′ or D–D′ arrow.',
   conflict: 'Cohen suggests breaking on your own side — the C–D′ arrow (or D–D′).',

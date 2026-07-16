@@ -66,7 +66,7 @@ Underneath: a conflict. Let's draw it.
 
 ![EC creation wizard at step 1](screenshots/chapter05-ec-wizard-step1.png)
 
-🛠 **How TP Studio helps:** The EC creation wizard is a 5-step guided dialog that fills the slots in order (A → B → C → D → D′). Each step commits the current entity live, so partial dismissals leave the canvas in a useful state. The Wizard's "from the conflict" toggle reverses the order to D-first (D → D′ → B → C → A) — useful when the cover-label conflict is what surfaced first in conversation and the goal is the thing you haven't yet articulated. An optional **Cloud type** selector (defaulting to *Generic*, which is this wizard unchanged) tailors the walk to Cohen's recipe for a specific kind of cloud — Dilemma, Conflict, Fire-fighting, UDE, Consolidated or Core each get their own build order, guiding questions, and a "best arrow to break" hint. A collapsed **Storyline** field at the foot of the panel (Cohen's step 2) lets you write the incident factually first — who/what/when/where, what you wanted, what you felt forced to do — to gather raw material before the boxes; it saves to the document's description.
+🛠 **How TP Studio helps:** The EC creation wizard is a 5-step guided dialog that fills the slots in order (A → B → C → D → D′). Each step commits the current entity live, so partial dismissals leave the canvas in a useful state. The Wizard's "from the conflict" toggle reverses the order to D-first (D → D′ → B → C → A) — useful when the cover-label conflict is what surfaced first in conversation and the goal is the thing you haven't yet articulated. An optional **Cloud type** selector (defaulting to *Generic*, which is this wizard unchanged) tailors the walk to Cohen's recipe for a specific kind of cloud — Dilemma, Conflict, Fire-fighting, UDE, Consolidated or Core each get their own build order, guiding questions, and a "best arrow to break" hint (the hint also stays in the Document panel after the wizard closes, since breaking the cloud is the next thing you do). A collapsed **Storyline** field at the foot of the panel (Cohen's step 2) lets you write the incident factually first — who/what/when/where, what you wanted, what you felt forced to do — to gather raw material before the boxes; it saves to the document's description.
 
 ### Step 2 — Write A
 
@@ -164,7 +164,7 @@ Cohen frames the cloud not as a single artifact but as a *progression*. The same
 
 A fourth turns up constantly in practice: the **Firefighting** (Lieutenant) cloud — *patch the symptom now* vs. *stop it coming back* — the trap that keeps an organisation reacting instead of improving.
 
-In TP Studio this is an optional **Cloud type** (Document panel → *Cloud type*, on EC documents): Dilemma, Conflict, UDE, Consolidated, Core, or Firefighting. After creation it's just a label — tagging one drops a small chip by the title so a folder of clouds reads as a progression rather than a pile — but the **creation wizard** reads it to tailor the build order, guiding questions, and break-arrow hint for that kind of cloud. The Templates library (`Cmd/Ctrl+K → Browse templates…`) ships a *UDE cloud*, a *Core cloud*, and a *Firefighting cloud* as pre-tagged starting points.
+In TP Studio this is an optional **Cloud type** (Document panel → *Cloud type*, on EC documents): Dilemma, Conflict, UDE, Consolidated, Core, or Firefighting. Tagging one drops a small chip by the title so a folder of clouds reads as a progression rather than a pile. The type never changes the *diagram* — a typed cloud reads, edits and breaks exactly like an untyped one — what it drives is **guidance**: the **creation wizard** reads it to tailor the build order and guiding questions, and the **Document panel** keeps Cohen's *"best arrow to break"* hint for that type on screen afterwards, which is when you actually need it. The Templates library (`Cmd/Ctrl+K → Browse templates…`) ships a *UDE cloud*, a *Core cloud*, and a *Firefighting cloud* as pre-tagged starting points.
 
 ## The resistance cloud — why people both want and fear change
 
@@ -255,7 +255,7 @@ The three UDEs — slipping releases, recurring bugs, burnout — all fall out o
 
 ### From here, it's a standard cloud
 
-The resulting document is an ordinary Evaporating Cloud. Nothing about reading, editing, or breaking it changes:
+The resulting document is an ordinary Evaporating Cloud. Nothing about reading, editing, or breaking it changes — being tagged *Core* only means the Document panel now shows Cohen's break hint for a Core cloud:
 
 - Open the **VerbalisationStrip** and read it aloud. Does it sound like the organization talking? If not, adjust the wording in the boxes.
 - Mark the **mutex** on the D ↔ D′ edge (Inspector → Mutual exclusion).
