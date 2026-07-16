@@ -168,3 +168,44 @@ describe('CLR: ec-completeness', () => {
     expect(warns).toHaveLength(0);
   });
 });
+
+/**
+ * Session 206 (bug hunt) — `ec-completeness` raises several DIFFERENT
+ * reservations, and more than one can land on the same target: an empty
+ * Objective and "no injection yet" both target slot A, and a Want pointing at
+ * the wrong Need can also be the edge that carries no assumption. Warning ids
+ * were `${ruleId}:${target.kind}:${target.id}`, so those pairs collided and one
+ * `resolvedWarnings` entry silenced both — dismissing "no injection" on a fresh
+ * cloud also dismissed "Objective (A) is empty", which the user never saw again.
+ */
+describe('CLR: ec-completeness — distinct reservations get distinct ids', () => {
+  const ecWarns = (doc: TPDocument) => validate(doc).filter((w) => w.ruleId === 'ec-completeness');
+  /** A blank fresh cloud: empty A, no injection anywhere. Both fire on A. */
+  const freshCloud = (): TPDocument =>
+    makeDoc([makeEntity({ ecSlot: 'a', title: '   ' })], [], 'ec');
+
+  it('gives the empty-Objective and no-injection reservations different ids', () => {
+    const warns = ecWarns(freshCloud());
+    const empty = warns.find((w) => w.message.includes('Objective (A) is empty'));
+    const noInj = warns.find((w) => w.message.includes('No injection yet'));
+    expect(empty).toBeDefined();
+    expect(noInj).toBeDefined();
+    // Both target slot A — pre-fix they shared one id.
+    expect(empty?.target).toEqual(noInj?.target);
+    expect(empty?.id).not.toBe(noInj?.id);
+  });
+
+  it('resolving one leaves the other still open', () => {
+    // One doc reused throughout — a re-mint would give slot A a new id and the
+    // stored resolution would miss for the wrong reason.
+    const doc = freshCloud();
+    const noInj = ecWarns(doc).find((w) => w.message.includes('No injection yet'));
+    expect(noInj).toBeDefined();
+    // The user dismisses ONLY "no injection".
+    const resolvedWarnings: Record<string, true> = { [noInj?.id ?? '']: true };
+    const after = ecWarns({ ...doc, resolvedWarnings });
+    expect(after.find((w) => w.message.includes('No injection yet'))?.resolved).toBe(true);
+    // Pre-fix this came back resolved too — silently gone from the user's list.
+    expect(after.find((w) => w.message.includes('Objective (A) is empty'))?.resolved).toBe(false);
+  });
+});

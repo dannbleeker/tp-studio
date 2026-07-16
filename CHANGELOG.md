@@ -2,6 +2,35 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — CLR warning-id collisions: one dismissal silenced a different reservation
+
+> **One-off reset (Dann's call).** Stored "resolved" marks for **`ec-completeness`** and
+> **`additional-cause`** are invalidated by this change — those warnings come back once, to be
+> dismissed on their own terms. No other rule is affected. There is no migration because a faithful one
+> is impossible: the old key recorded *that* something was dismissed, never *which* of the rule's
+> reservations, so the information needed to migrate was never stored. That is precisely why a reset
+> was the only honest option.
+
+A warning's id was `${ruleId}:${target.kind}:${target.id}`, and `resolvedWarnings` is keyed by it. Two
+*different* reservations from one rule against one target therefore shared an id, and dismissing either
+dismissed both:
+
+- **`ec-completeness`** collided *simultaneously*. A fresh cloud trips both "Objective (A) is empty" and
+  "No injection yet" — both targeting slot A — so dismissing one silently dismissed the other. Same for
+  a Want pointing at the wrong Need when that edge also carries no assumption, and for a B≡C duplicate
+  that also supports something other than A. Three colliding pairs across the rule's six reservations.
+- **`additional-cause`** collided *across time*, which is worse. Its three reservations are mutually
+  exclusive per entity, so they never co-fire — but resolve "No causes captured", add a cause, and the
+  quite different "Only one cause — could an independent cause also produce this?" inherited the
+  resolved id and **never surfaced**. The user was denied a reservation they had never seen, with no way
+  to get it back.
+
+`makeWarning` now takes an optional `variant` that extends the id to
+`${ruleId}:${variant}:${target.kind}:${target.id}`. It is **opt-in by design**: omitting it reproduces
+the original id byte-for-byte, which is what confines the reset to the two rules that needed it rather
+than resetting all forty-odd. A test pins that scoping, because the id format is a persisted key and
+changing it silently discards people's dismissals.
+
 ## Session 206 — findCycles rewritten as Tarjan SCC + Johnson (the last Session-205 carry-over)
 
 `findCycles` reported a cycle *basis*, not every elementary circuit. The DFS marked nodes `visited`

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import type { TPDocument } from '@/domain/types';
 import { validate } from '@/domain/validators';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
 
@@ -35,6 +36,18 @@ describe('CLR: entity existence', () => {
     const e = makeEntity({ title: '   ' });
     const warnings = validate(makeDoc([e], []));
     expect(hasRule(warnings, 'entity-existence')).toBe(true);
+  });
+
+  // Session 206 — the `variant` discriminator added for the ec-completeness /
+  // additional-cause id collisions is OPT-IN precisely so it doesn't touch
+  // anything else: a rule that raises one reservation per target keeps its
+  // original id, and therefore its users' stored resolutions. This pins that
+  // scoping — the id format below is a persisted key (`resolvedWarnings`), so
+  // changing it silently resets people's dismissals.
+  it('keeps the original id format for a rule with one reservation per target', () => {
+    const e = makeEntity({ title: '   ' });
+    const w = validate(makeDoc([e], [])).find((x) => x.ruleId === 'entity-existence');
+    expect(w?.id).toBe(`entity-existence:entity:${e.id}`);
   });
 
   it('warns on disconnected entity once graph is non-trivial', () => {
@@ -147,6 +160,65 @@ describe('CLR: additional cause', () => {
     const edges = [makeEdge(c1.id, ude.id), makeEdge(c2.id, ude.id), makeEdge(c3.id, ude.id)];
     const warnings = validate(makeDoc([c1, c2, c3, ude], edges, 'crt'));
     expect(hasRule(warnings, 'additional-cause')).toBe(false);
+  });
+
+  // Session 206 (bug hunt) — the rule's three reservations are mutually
+  // exclusive per entity, so they never co-fire; the collision was across TIME.
+  // Every one used the id `additional-cause:entity:<ude>`, so resolving "No
+  // causes captured" and then ADDING a cause handed the (quite different) "only
+  // one cause — could an independent cause also produce this?" reservation an id
+  // that was already marked resolved. It never surfaced: the user was silently
+  // denied a reservation they'd never seen, with no way to get it back.
+  describe('distinct reservations get distinct ids (across-time collision)', () => {
+    const causeless = () => {
+      const ude = makeEntity({ type: 'ude', title: 'Customer churn' });
+      return { ude, doc: makeDoc([ude], [], 'crt') };
+    };
+    const hitsFor = (doc: TPDocument) =>
+      validate(doc).filter((w) => w.ruleId === 'additional-cause');
+
+    it('does not pre-resolve the single-cause reservation after the no-causes one was resolved', () => {
+      // 1. A causeless UDE warns "No causes captured"; the user resolves it.
+      const { ude, doc } = causeless();
+      const noCauses = hitsFor(doc)[0];
+      expect(noCauses?.message).toContain('No causes captured');
+      const resolvedWarnings: Record<string, true> = { [noCauses?.id ?? '']: true };
+
+      // 2. The user adds a cause. A DIFFERENT reservation now applies.
+      const cause = makeEntity({ title: 'Slow shipping' });
+      const withCause: TPDocument = {
+        ...makeDoc([cause, ude], [makeEdge(cause.id, ude.id)], 'crt'),
+        resolvedWarnings,
+      };
+      const single = hitsFor(withCause)[0];
+      expect(single?.message).toContain('Only one cause is captured');
+      // Pre-fix: `resolved: true` — inherited from the unrelated resolution.
+      expect(single?.resolved).toBe(false);
+      expect(single?.id).not.toBe(noCauses?.id);
+    });
+
+    it('keeps the two-cause magnitude reservation distinct from the single-cause one', () => {
+      const c1 = makeEntity({ title: 'Slow shipping' });
+      const c2 = makeEntity({ title: 'Poor support' });
+      const ude = makeEntity({ type: 'ude', title: 'Customer churn' });
+      const single = hitsFor(makeDoc([c1, ude], [makeEdge(c1.id, ude.id)], 'crt'))[0];
+      const two = hitsFor(
+        makeDoc([c1, c2, ude], [makeEdge(c1.id, ude.id), makeEdge(c2.id, ude.id)], 'crt')
+      )[0];
+      expect(single?.id).not.toBe(two?.id);
+      // Same rule, same target — only the reservation differs.
+      expect(single?.target).toEqual(two?.target);
+    });
+
+    it('restores an earlier reservation mark when the shape returns', () => {
+      // Resolve "no causes", add a cause, then remove it again: the original
+      // reservation is the same one, so its resolution must still stand.
+      const { ude, doc } = causeless();
+      const noCauses = hitsFor(doc)[0];
+      const resolvedWarnings: Record<string, true> = { [noCauses?.id ?? '']: true };
+      const backToCauseless: TPDocument = { ...makeDoc([ude], [], 'crt'), resolvedWarnings };
+      expect(hitsFor(backToCauseless)[0]?.resolved).toBe(true);
+    });
   });
 
   it('self-silences the magnitude reservation once the two causes are AND-grouped', () => {

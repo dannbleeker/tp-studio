@@ -58,7 +58,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'ec-completeness',
         { kind: 'entity', id: slots.a.id },
-        'Objective (A) is empty — state the common goal both sides agree on.'
+        'Objective (A) is empty — state the common goal both sides agree on.',
+        'empty-objective'
       )
     );
   }
@@ -70,7 +71,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'ec-completeness',
         { kind: 'entity', id: slots.b.id },
-        'Needs B and C are the same entity — split them so each side has its own.'
+        'Needs B and C are the same entity — split them so each side has its own.',
+        'needs-identical'
       )
     );
   }
@@ -89,7 +91,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'ec-completeness',
           { kind: 'entity', id: ent.id },
-          `Need ${slot.toUpperCase()} connects to something other than A — each Need must only support the Objective.`
+          `Need ${slot.toUpperCase()} connects to something other than A — each Need must only support the Objective.`,
+          'need-extra-support'
         )
       );
     }
@@ -108,7 +111,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
             doc,
             'ec-completeness',
             { kind: 'edge', id: e.id },
-            `Want ${want.ecSlot === 'd' ? 'D' : 'D′'} supports an unexpected target — each Want should feed only its own Need.`
+            `Want ${want.ecSlot === 'd' ? 'D' : 'D′'} supports an unexpected target — each Want should feed only its own Need.`,
+            'want-wrong-target'
           )
         );
       }
@@ -152,7 +156,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'ec-completeness',
           { kind: 'edge', id: edge.id },
-          `No assumption recorded on ${arrow.label} — surface at least one before the cloud is "complete".`
+          `No assumption recorded on ${arrow.label} — surface at least one before the cloud is "complete".`,
+          'missing-assumption'
         )
       );
     }
@@ -162,6 +167,11 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
   // targets the objective (A) since that's the most visible entity
   // and the brief frames "the cloud is resolved" against the doc as
   // a whole, not a specific edge.
+  //
+  // Session 206 — this shares its target (A) with Rule 1's empty-objective
+  // check, and a fresh cloud trips BOTH: blank boxes and no injection yet. They
+  // used to share one id, so dismissing "no injection" silently dismissed
+  // "Objective (A) is empty" too. The `variant` keeps them apart.
   const hasInjection = Object.values(doc.entities).some((e) => e.type === 'injection');
   if (!hasInjection && slots.a) {
     out.push(
@@ -169,7 +179,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'ec-completeness',
         { kind: 'entity', id: slots.a.id },
-        'No injection yet — add an injection that challenges an assumption to mark the cloud "resolved".'
+        'No injection yet — add an injection that challenges an assumption to mark the cloud "resolved".',
+        'no-injection'
       )
     );
   }

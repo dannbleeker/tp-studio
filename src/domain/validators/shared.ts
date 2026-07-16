@@ -54,24 +54,43 @@ export const tieredRule = (tier: ClrTier, ruleId: ClrRuleId, fn: ValidatorRule):
   fn,
 });
 
-const warningId = (ruleId: ClrRuleId, target: WarningTarget): string =>
+const warningId = (ruleId: ClrRuleId, target: WarningTarget, variant?: string): string => {
+  // Session 206 — `variant` disambiguates two DIFFERENT reservations that one
+  // rule can raise against the SAME target. Without it they shared an id, so
+  // `resolvedWarnings[id] = true` resolved both — either at once (`ec-completeness`
+  // fires "Objective (A) is empty" and "No injection yet" on entity A together)
+  // or across time (`additional-cause` swaps which of its three reservations
+  // applies as causes are added, and the new one silently inherited the old
+  // one's resolution — suppressing a reservation the user never saw).
+  //
+  // Optional ON PURPOSE: omitting it reproduces the original id byte-for-byte,
+  // so only rules that opt in have their stored resolutions invalidated. A
+  // blanket format change would have reset every rule's resolutions.
+  const rule = variant ? `${ruleId}:${variant}` : ruleId;
   // A document target has no id — and that's the point: the warning id is
   // stable for the document's lifetime, so a stored resolution can't be
   // orphaned by edits the way an "earliest entity" stand-in anchor could.
-  target.kind === 'document' ? `${ruleId}:document` : `${ruleId}:${target.kind}:${target.id}`;
+  return target.kind === 'document' ? `${rule}:document` : `${rule}:${target.kind}:${target.id}`;
+};
 
 /**
  * Build a `Warning` carrying the rule id, target, message, and a `resolved`
  * flag pulled from `doc.resolvedWarnings`. Stable ids let the user resolve
  * a warning once and have the resolution persist across re-validations.
+ *
+ * Pass `variant` when one rule can raise more than one DISTINCT reservation
+ * against the same target — it keeps their ids (and therefore their stored
+ * resolutions) apart. See {@link warningId}. Rules that raise at most one
+ * reservation per target omit it and keep their original ids.
  */
 export const makeWarning = (
   doc: TPDocument,
   ruleId: ClrRuleId,
   target: WarningTarget,
-  message: string
+  message: string,
+  variant?: string
 ): UntieredWarning => {
-  const id = warningId(ruleId, target);
+  const id = warningId(ruleId, target, variant);
   return {
     id,
     ruleId,

@@ -42,13 +42,21 @@ export const additionalCauseRuleFor = (first: EntityType, ...rest: EntityType[])
     for (const t of terminalTypes) {
       for (const e of entitiesOfBuiltin(doc, t)) {
         const incoming = incomingEdges(doc, e.id);
+        // Session 206 — each branch carries its own `variant`. The three are
+        // mutually exclusive per entity, so they never co-fire; the bug was
+        // across TIME. Resolving "no causes", then adding one, used to hand the
+        // (quite different) "only one cause" reservation the same id — which was
+        // already marked resolved, so it never surfaced. Same again at two
+        // causes. Distinct ids mean each reservation is resolved on its own
+        // terms, and re-entering an earlier shape restores that shape's mark.
         if (incoming.length === 0) {
           out.push(
             makeWarning(
               doc,
               'additional-cause',
               { kind: 'entity', id: e.id },
-              'No causes captured. Are there causes you haven’t added?'
+              'No causes captured. Are there causes you haven’t added?',
+              'no-causes'
             )
           );
         } else if (incoming.length === 1 && incoming[0] && !junctorGroupId(incoming[0])) {
@@ -57,7 +65,8 @@ export const additionalCauseRuleFor = (first: EntityType, ...rest: EntityType[])
               doc,
               'additional-cause',
               { kind: 'entity', id: e.id },
-              'Only one cause is captured — could a different, independent cause also produce this effect? If so, add it and model the alternatives as an OR.'
+              'Only one cause is captured — could a different, independent cause also produce this effect? If so, add it and model the alternatives as an OR.',
+              'single-cause'
             )
           );
         } else if (incoming.length === 2 && incoming.every((edge) => !junctorGroupId(edge))) {
@@ -71,7 +80,8 @@ export const additionalCauseRuleFor = (first: EntityType, ...rest: EntityType[])
               doc,
               'additional-cause',
               { kind: 'entity', id: e.id },
-              'Two independent causes feed this with no connector — is each one enough on its own (leave them separate, or model as an OR), or only enough together (group them as an AND)?'
+              'Two independent causes feed this with no connector — is each one enough on its own (leave them separate, or model as an OR), or only enough together (group them as an AND)?',
+              'two-causes'
             )
           );
         }

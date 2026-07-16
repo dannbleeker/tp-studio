@@ -68,12 +68,11 @@ archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
 
 **Tier 3 — real but low-value / needs a design call:**
 
-- **`ec-completeness` emits two warnings sharing one id** (`ecCompleteness.ts:171`) and
-  **`additional-cause` reuses one id for three distinct reservations** (`additionalCause.ts:54`) —
-  resolving the first silently suppresses the others. Both fixes change persisted `resolvedWarnings`
-  keys, so they need a migration decision, not a quick patch.
 - **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
-  (`edgeRouting.ts:243`) — a skeptic refuted this on impact; correctness is arguable.
+  (`edgeRouting.ts:243`) — a skeptic refuted this on impact; correctness is arguable. Treated as closed
+  unless someone reports a real mis-routed edge.
+*(The `ec-completeness` / `additional-cause` warning-id collisions shipped **Session 206** — Dann took
+the one-off reset of those two rules' stored resolutions, the only faithful option.)*
 *(The PRT-plan note/cycle skew and the `mapEntityType` prototype hole shipped **Session 206**.)*
 *(`findCycles` — the last Session-205 carry-over — shipped **Session 206** as Tarjan SCC + Johnson.
 The recorded symptom understated it: on a dense graph the old walk found 10 of 84 circuits.)*
