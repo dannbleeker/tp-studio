@@ -1,5 +1,9 @@
 import { displayTitle } from '@/domain/entityPalettes';
-import { type InterferenceRankItem, rankInterferences } from '@/domain/interferenceRanking';
+import {
+  type InterferenceRankItem,
+  rankInterferences,
+  wholePercents,
+} from '@/domain/interferenceRanking';
 import type { TPDocument } from '@/domain/types';
 import { csvRow, slug, triggerDownload } from './shared';
 
@@ -33,6 +37,8 @@ const pairedIoTitle = (doc: TPDocument, item: InterferenceRankItem): string => {
  */
 export const buildInterferenceRankCsv = (doc: TPDocument): string => {
   const items = rankInterferences(doc);
+  // Apportioned so the column sums to exactly 100 (see `wholePercents`).
+  const pcts = wholePercents(items);
   const lines: string[] = [csvRow([...HEADER])];
   items.forEach((item, i) => {
     lines.push(
@@ -42,7 +48,7 @@ export const buildInterferenceRankCsv = (doc: TPDocument): string => {
         // Blank rather than 0 when no estimate was given — "unset" reads
         // differently from "genuinely costs nothing".
         item.minutes > 0 ? item.minutes : '',
-        `${Math.round(item.pctOfTotal * 100)}%`,
+        `${pcts[i] ?? 0}%`,
         pairedIoTitle(doc, item),
       ])
     );

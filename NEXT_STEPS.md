@@ -47,22 +47,83 @@ tree, then a gallery of the rest. The shipped Start renders every recent tree as
 deliberate simplification). Reviewed in the Session-187 design-fidelity pass and **deferred by decision**
 (Dann) — the uniform grid stays. Revisit only if the resume hierarchy proves worth the extra layout.
 
-### Known bugs — recorded from the Session-205 adversarial bug hunt (13 of 15 fixed; see CHANGELOG)
-Two confirmed defects were recorded rather than rushed at the end of the hunt — each is an uncommon graph
-shape and each needs a focused rewrite, not a one-line patch:
+### Known bugs — Session-206 adversarial hunt (8 lenses → 17 candidates → 13 confirmed by 3 skeptics each)
+Three shipped in Session 206 (junctor centre-X drift, the ID `aria-label` drop, the ID Pareto 101%
+— see CHANGELOG). The rest are recorded with their repro rather than rushed. Ranked by severity ×
+reachability.
 
-- **`findCycles` misses simple cycles that share a closing edge** (`src/domain/graphReach.ts`). The DFS
-  back-edge walk yields a *cycle basis*, not every simple cycle, so when two loops share their closing
-  edge only one is reported. `loopsWithPolarity` (reinforcing/balancing loop detection) and any consumer
-  assuming completeness can therefore miss a loop. Fix properly with **Johnson's algorithm per non-trivial
-  SCC** (Tarjan SCC → Johnson elementary-circuit enumeration); audit `loopsWithPolarity` and
-  `effectiveBackEdgeIds` when it lands. Medium effort; triggers only on multi-loop graphs sharing an edge.
-- **Junctor terminus X vs `JunctorOverlay` circle X disagree ~width/8 in horizontal (EC) layouts**
-  (`src/components/canvas/edges/useJunctorCenterX.ts`). It feeds React Flow's `props.targetX` (the
-  right-edge X for a horizontal target handle) where `JunctorOverlay` uses the target's CENTRE X, so the
-  AND/OR/XOR circle and the edges' meeting point drift apart. Derive centre X from the node's
-  `positionAbsolute.x + measuredWidth/2` in both places. Low effort; needs a junctor group inside an
-  EC/horizontal diagram (uncommon). 2/3 verifier confidence.
+**Tier 1 — highest value, all small:**
+
+- **Tab manifest is never written on a document swap → a reload reverts to the previous document**
+  (`src/store/documentSlice/docMeta/tabs.ts:118`). `performDocumentSwap` mutates `activeDocId`/`tabOrder`
+  via `setActiveDoc` but never calls `persistTabsManifest`, and `persistActiveDoc` explicitly disclaims
+  manifest ownership — so nobody writes it. **Repro:** palette → New diagram → `newDocument('frt')`;
+  in-memory type is `frt` but `readTabsManifest()` still points at the old doc; reload boots back to
+  `crt`. Hits **every user** (`newDocument` needs no pref flip); also replace-mode import and undo/redo
+  across a swap. Fix: `persistTabsManifest({ activeDocId, tabOrder })` from the post-`setActiveDoc`
+  state (NOT `[doc.id]`, which would drop background tabs); same at the historySlice rekey sites.
+  ⚠ A naive repro falsely passes unless you seed a manifest first (boot falls to the legacy
+  single-doc migration path). Effort S.
+- **Flying Logic round-trip silently rewrites every necessity edge to sufficiency**
+  (`src/domain/flyingLogic/reader.ts:305`, `:357`; writer `:184-239`). The writer never emits
+  `edge.kind`; the reader rebuilds via `createEdge`, which hardcodes `kind:'sufficiency'`.
+  **Repro:** `importFromFlyingLogic(exportToFlyingLogic(createDocument('ec')))` → all 4 edges come back
+  `sufficiency` instead of `necessity`; same for the Goal Tree example. Reachable via the PWA
+  file-handler (`fileHandlers.ts:34` opens `.logicx` straight into a tab). The writer's docblock claims
+  only positions/settings are lossy, and `v6ToV7.ts:78` forces `isEC ? 'necessity'` — the invariant is
+  load-bearing everywhere else. Fix: emit `tp-studio-kind` (mirror the existing `tp-studio-weight`
+  pattern), honour it at both reader push sites, fall back to `isEC || goalTree ? 'necessity'`.
+  **`Edge.isMutualExclusion` is dropped by the same gap** — fix both together. Effort S–M.
+- **Layout fingerprint omits `showArchivedGroups` → revealed entities all stack at (0,0)**
+  (`src/components/canvas/hooks/useGraphPositions.ts:177`). `fp` doesn't move when the pref flips, so
+  the dagre effect early-returns and the newly-visible entities never get positions
+  (`useGraphNodeEmission.ts:219` falls back to `{x:0,y:0}`). **Repro:** archived group G with E1–E3,
+  pref off (the default) → tick "Show archived groups" → all three render on top of each other at the
+  origin until an unrelated structural edit advances the fingerprint. Fix: append
+  `|ar:${showArchivedGroups ? 1 : 0}` to `fp`. Note `useEdgeRoutes.ts:633` already lists the pref as a
+  dep and *claims* to mirror useGraphPositions — the mirror is broken. Effort S.
+
+**Tier 2 — real, worth a follow-up session:**
+
+- **PRT-plan export drops cycle-trapped IOs when notes are edge targets** (`prtPlan.ts:129`). The Kahn
+  loop pushes any target reaching in-degree 0 — including notes, which `structuralEntities` excluded —
+  so the `order.length < entities.length` recovery guard compares two different populations and each
+  reached note masks one cycle-trapped IO. Violates the function's own "nothing is silently dropped"
+  docblock; the pinned test passes only because its fixture has no notes. Effort S–M.
+- **`findCoreDrivers` returns `[]` when the root causes sit in a reinforcing loop**
+  (`coreDriver.ts:198`). The fallback pool is "entities with no structural incoming edges" — in a cycle
+  nobody qualifies. **Fires on the shipped `crt-fixes-that-fail` pattern** (a pure 4-node cycle), where
+  the toast then claims "needs at least one UDE reached from a root cause" — factually false.
+  Fix: subtract `effectiveBackEdgeIds` when computing fallback in-degree. Effort M.
+- **Undo of an unrelated edit deletes a cross-doc link but leaves the mirror behind**
+  (`crossDocLinks.ts:132`) — the two docs disagree about the link. Effort M.
+- **`indirect-effect` is registered on `goalTree`** (`validators/index.ts:208`), where it contradicts the
+  Goal-Tree rules beside it and fires on the app's own shipped Goal Tree example. Effort S.
+- **`TPEdge.isJunctorEdge` misses emission's synthetic-endpoint case** (`TPEdge.tsx:137`) — a junctor
+  edge crossing a collapsed-group boundary gets endpoint redirection AND an arrowhead, terminating in
+  mid-air. Effort M.
+
+**Tier 3 — real but low-value / needs a design call:**
+
+- **`ec-completeness` emits two warnings sharing one id** (`ecCompleteness.ts:171`) and
+  **`additional-cause` reuses one id for three distinct reservations** (`additionalCause.ts:54`) —
+  resolving the first silently suppresses the others. Both fixes change persisted `resolvedWarnings`
+  keys, so they need a migration decision, not a quick patch.
+- **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
+  (`edgeRouting.ts:243`) — a skeptic refuted this on impact; correctness is arguable.
+- **JunctorOverlay anchors to the box bottom in horizontal (EC) layouts** while TPEdge uses the RIGHT
+  handle's centre Y (`JunctorOverlay.tsx:206`) — the **Y-axis twin** of the centre-X drift fixed in
+  Session 206. Same root cause class (handle-vs-box geometry in horizontal layouts); circle and edges
+  disagree by height/2. Effort S–M.
+- **`mapEntityType` resolves `Object.prototype` members** (`flyingLogic/typeMaps.ts:106`) — an FL
+  `entityClass="toString"` yields a Function as `entity.type` instead of falling back to `'effect'`.
+  Effort S.
+- **`findCycles` misses simple cycles that share a closing edge** (`graphReach.ts`, carried from the
+  Session-205 hunt). The DFS back-edge walk yields a *cycle basis*, not every simple cycle, so when two
+  loops share their closing edge only one is reported; `loopsWithPolarity` can miss a loop. Fix with
+  **Johnson's algorithm per non-trivial SCC** (Tarjan → Johnson); audit `loopsWithPolarity` and
+  `effectiveBackEdgeIds` when it lands. Effort M.
+
 
 ---
 

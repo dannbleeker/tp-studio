@@ -24,19 +24,21 @@ const numberArrayEqual = (a: number[] | null, b: number[] | null): boolean =>
  * caller keeps React Flow's target-handle X.
  *
  * This MUST agree with `JunctorOverlay`'s circle placement, so it runs the same
- * `junctorCenterX` against the SAME live node positions. Two gated subscriptions,
- * both no-ops for ordinary edges:
+ * `junctorCenterX` against the SAME live node positions. Three gated
+ * subscriptions, all no-ops for ordinary edges:
  *   1. the group's source ids (structure-only — stable across position churn);
  *   2. those sources' live center-X via React Flow's `nodeLookup` (so the
- *      terminus tracks a re-layout / drag exactly like the circle does).
+ *      terminus tracks a re-layout / drag exactly like the circle does);
+ *   3. the TARGET's live center-X, read the same way (see below).
  */
 export const useJunctorCenterX = (params: {
   isJunctorEdge: boolean;
   groupField: 'andGroupId' | 'orGroupId' | 'xorGroupId' | null;
   groupId: string | undefined;
+  targetId: string;
   targetX: number;
 }): number | null => {
-  const { isJunctorEdge, groupField, groupId, targetX } = params;
+  const { isJunctorEdge, groupField, groupId, targetId, targetX } = params;
   const sourceIds = useDocumentStoreWith(
     (s) =>
       isJunctorEdge && groupField && groupId
@@ -53,9 +55,25 @@ export const useJunctorCenterX = (params: {
     }
     return xs;
   }, numberArrayEqual);
+  // The target's CENTER X, derived from the node box exactly as `JunctorOverlay`
+  // derives it (`positionAbsolute.x + measuredWidth / 2`).
+  //
+  // Session 206 fix: this used React Flow's `props.targetX`, which is the target
+  // HANDLE's X. On a vertical tree the target handle is Bottom, so its X is ~the
+  // node's center and the two agreed by luck. On a HORIZONTAL (EC) layout the
+  // target handle is Right — i.e. center + width/2 — so feeding it to
+  // `junctorCenterX` slid the edges' meeting point `nudge * width/2` (= width/8
+  // at the default 0.25 nudge) away from the circle the overlay drew. Reading the
+  // box center makes both sides agree on every axis. Falls back to the handle X
+  // until React Flow has measured the node (matching the sourceXs fallback).
+  const targetCenterX = useRFStore((s) => {
+    if (!isJunctorEdge) return null;
+    const n = s.nodeLookup.get(targetId);
+    return n ? n.internals.positionAbsolute.x + (n.measured?.width ?? NODE_WIDTH) / 2 : null;
+  });
   return useMemo(
-    () => (isJunctorEdge && sourceXs ? junctorCenterX(sourceXs, targetX) : null),
-    [isJunctorEdge, sourceXs, targetX]
+    () => (isJunctorEdge && sourceXs ? junctorCenterX(sourceXs, targetCenterX ?? targetX) : null),
+    [isJunctorEdge, sourceXs, targetCenterX, targetX]
   );
 };
 

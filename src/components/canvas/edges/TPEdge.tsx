@@ -153,6 +153,7 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
     isJunctorEdge,
     groupField: junctor?.field ?? null,
     groupId: junctor?.groupId,
+    targetId: props.target,
     targetX: props.targetX,
   });
   const effectiveTargetX = junctorCenter ?? props.targetX;

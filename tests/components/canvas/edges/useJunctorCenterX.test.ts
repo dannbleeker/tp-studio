@@ -104,6 +104,7 @@ describe('useJunctorCenterX', () => {
         isJunctorEdge: false,
         groupField: 'andGroupId',
         groupId: 'g1',
+        targetId: 'target-node',
         targetX: 500,
       })
     );
@@ -116,6 +117,7 @@ describe('useJunctorCenterX', () => {
         isJunctorEdge: true,
         groupField: null,
         groupId: undefined,
+        targetId: 'target-node',
         targetX: 300,
       })
     );
@@ -135,6 +137,7 @@ describe('useJunctorCenterX', () => {
         isJunctorEdge: true,
         groupField: 'andGroupId',
         groupId: 'nonexistent-group',
+        targetId: 'target-node',
         targetX: 400,
       })
     );
@@ -161,11 +164,73 @@ describe('useJunctorCenterX', () => {
         isJunctorEdge: true,
         groupField: 'andGroupId',
         groupId: 'g1',
+        targetId: 'target-node',
         targetX: 600,
       })
     );
     // sourceXs = [100, 300] → mid=200, nudge=0.25, target=600 → 200 + 0.25*400 = 300
     expect(result.current).toBe(300);
+  });
+
+  // Session 206 regression (recorded by the Session-205 bug hunt): the hook fed
+  // React Flow's `props.targetX` — the target HANDLE's X — into `junctorCenterX`,
+  // while `JunctorOverlay` fed the target's BOX CENTER. On a vertical tree the
+  // target handle is Bottom (X ≈ center) so the two agreed by luck; on a
+  // HORIZONTAL (EC) layout the handle is Right (center + width/2), sliding the
+  // edges' meeting point `nudge * width/2` = width/8 off the drawn circle.
+  it('derives the center from the target BOX CENTER, not the handle X (horizontal/EC drift)', () => {
+    const e1 = makeEntity({ title: 'cause-a' });
+    const e2 = makeEntity({ title: 'cause-b' });
+    const e3 = makeEntity({ title: 'effect' });
+    const doc = makeDoc(
+      [e1, e2, e3],
+      [makeEdge(e1.id, e3.id, { andGroupId: 'gh' }), makeEdge(e2.id, e3.id, { andGroupId: 'gh' })]
+    );
+    act(() => {
+      useDocumentStore.setState({ doc });
+    });
+    rfState.nodeLookup.set(e1.id, nodeEntry(100 - NODE_WIDTH / 2));
+    rfState.nodeLookup.set(e2.id, nodeEntry(300 - NODE_WIDTH / 2));
+    // The target's BOX CENTER is 600 — the value JunctorOverlay computes.
+    rfState.nodeLookup.set(e3.id, nodeEntry(600 - NODE_WIDTH / 2));
+    // …but on a horizontal layout React Flow reports the target handle on the
+    // node's RIGHT edge, and that is what `props.targetX` carries.
+    const rightEdgeHandleX = 600 + NODE_WIDTH / 2;
+    const { result } = renderHook(() =>
+      useJunctorCenterX({
+        isJunctorEdge: true,
+        groupField: 'andGroupId',
+        groupId: 'gh',
+        targetId: e3.id,
+        targetX: rightEdgeHandleX,
+      })
+    );
+    // mid=200, center-derived target=600 → 200 + 0.25*(600-200) = 300.
+    expect(result.current).toBe(300);
+    // Pre-fix this returned 300 + NODE_WIDTH/8 — the drift off the circle.
+    expect(result.current).not.toBe(300 + NODE_WIDTH / 8);
+  });
+
+  it('falls back to the handle X until React Flow has measured the target', () => {
+    const e1 = makeEntity({ title: 'cause' });
+    const e2 = makeEntity({ title: 'effect' });
+    const doc = makeDoc([e1, e2], [makeEdge(e1.id, e2.id, { andGroupId: 'gm' })]);
+    act(() => {
+      useDocumentStore.setState({ doc });
+    });
+    rfState.nodeLookup.set(e1.id, nodeEntry(100 - NODE_WIDTH / 2));
+    // e2 (the target) deliberately absent from nodeLookup.
+    const { result } = renderHook(() =>
+      useJunctorCenterX({
+        isJunctorEdge: true,
+        groupField: 'andGroupId',
+        groupId: 'gm',
+        targetId: e2.id,
+        targetX: 500,
+      })
+    );
+    // mid=100, no measured target → falls back to targetX=500 → 100 + 0.25*400 = 200.
+    expect(result.current).toBe(200);
   });
 
   it('returns targetX when isJunctorEdge=true but sourceId nodes are absent from nodeLookup', () => {
@@ -182,6 +247,7 @@ describe('useJunctorCenterX', () => {
         isJunctorEdge: true,
         groupField: 'andGroupId',
         groupId: 'g2',
+        targetId: 'target-node',
         targetX: 750,
       })
     );
@@ -202,6 +268,7 @@ describe('useJunctorCenterX', () => {
         isJunctorEdge: true,
         groupField: 'orGroupId',
         groupId: 'or-1',
+        targetId: 'target-node',
         targetX: 200,
       })
     );
@@ -303,6 +370,7 @@ describe('equality helpers via hook re-render stability', () => {
         isJunctorEdge: true,
         groupField: 'andGroupId',
         groupId: 'gStable',
+        targetId: 'target-node',
         targetX: 500,
       })
     );
@@ -328,6 +396,7 @@ describe('equality helpers via hook re-render stability', () => {
         isJunctorEdge: true,
         groupField: 'andGroupId',
         groupId: 'gChange',
+        targetId: 'target-node',
         targetX: 500,
       })
     );
@@ -349,6 +418,7 @@ describe('equality helpers via hook re-render stability', () => {
         isJunctorEdge: false,
         groupField: null,
         groupId: undefined,
+        targetId: 'target-node',
         targetX: 100,
       })
     );

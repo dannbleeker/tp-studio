@@ -23,6 +23,24 @@ const input = () => screen.getByRole('spinbutton') as HTMLInputElement;
 describe('InterferenceMetricSection', () => {
   afterEach(cleanup);
 
+  // Session 206 regression: the control passed a JSX `aria-label`, which
+  // `TextInput` drops (it forwards the camelCase `ariaLabel` prop). The Field's
+  // visible label is not wired to the input via htmlFor/id, so the spinbutton
+  // was left with NO accessible name — invisible to a screen reader.
+  it('gives the input an accessible name', () => {
+    render(
+      <InterferenceMetricSection
+        entity={makeInterference()}
+        locked={false}
+        onSet={() => {}}
+        onClear={() => {}}
+      />
+    );
+    expect(input().getAttribute('aria-label')).toBe('Time this interference steals');
+    // The accessible name must be queryable the way assistive tech resolves it.
+    expect(screen.getByLabelText('Time this interference steals')).toBe(input());
+  });
+
   it('reflects the stored impact value', () => {
     render(
       <InterferenceMetricSection

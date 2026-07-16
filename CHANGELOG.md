@@ -2,6 +2,42 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — adversarial bug hunt (8 lenses → 17 candidates → 13 confirmed) + 3 fixes
+
+Ran an 8-lens adversarial hunt (60 agents; every candidate had to survive 3 skeptics trying to refute
+it on correctness / reachability / intent). 13 confirmed; the three cheapest-and-clearly-ours shipped
+here, the rest are recorded in NEXT_STEPS with repros rather than rushed.
+
+Fixed, both in code the ID feature shipped hours earlier:
+
+- **The Time-lost input had no accessible name.** `InterferenceMetricSection` passed a JSX
+  `aria-label`, but `TextInput` forwards the camelCase `ariaLabel` prop — so the attribute was silently
+  dropped and the spinbutton was nameless to a screen reader (the `Field` label isn't wired to it via
+  htmlFor/id). This also explains why the component test had to query by role instead of label; the test
+  now asserts the accessible name directly.
+- **The interference Pareto column didn't add up.** Rounding each share independently made the shipped
+  constraint-exploitation pattern (90/60/45/30/30) export **101%** — on the very sheet the method uses to
+  settle "which interference do we attack first". Both the CSV and the ranking toast now read whole
+  percentages from a new `wholePercents` helper (largest-remainder/Hare), which sums to exactly 100 by
+  construction.
+
+## Session 206 — bug fix: junctor terminus drifted off its circle in horizontal layouts
+
+Fixes one of the two defects the Session-205 adversarial hunt recorded but didn't rush
+(`src/components/canvas/edges/useJunctorCenterX.ts`).
+
+`useJunctorCenterX` fed React Flow's `props.targetX` into `junctorCenterX`, but that's the target
+**handle's** X — while `JunctorOverlay` fed the target's **box centre**. On a vertical tree the target
+handle is Bottom, so its X ≈ the node centre and the two agreed by accident. On a **horizontal (EC)**
+layout the handle sits on the node's RIGHT edge (centre + width/2), so the cause-edges' meeting point
+slid `nudge × width/2` — **width/8**, i.e. 27.5px at the default 0.25 nudge and a 220px card — away from
+the AND/OR/XOR circle the overlay drew. The circle and the edges visibly disagreed.
+
+Both sides now derive the centre identically from the node box (`positionAbsolute.x + measuredWidth/2`)
+via `nodeLookup`, falling back to the handle X until React Flow has measured the node. `targetId` is now
+a required hook param so no caller can silently regress to the handle X. Regression test pins the exact
+drift (asserts 300, not 300 + width/8) and was verified to fail against the pre-fix code (327.5).
+
 ## Session 206 — Interference Diagram (the 10th diagram type)
 
 Added the **Interference Diagram (ID)** from Sproull & Nelson's *Epiphanized* (App. 4) — the fast,

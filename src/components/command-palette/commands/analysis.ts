@@ -1,6 +1,6 @@
 import { findCoreDrivers } from '@/domain/coreDriver';
 import { topologicalEdgeOrder } from '@/domain/edgeReading';
-import { rankInterferences } from '@/domain/interferenceRanking';
+import { rankInterferences, wholePercents } from '@/domain/interferenceRanking';
 import { spawnCRTFromGoalTree } from '@/domain/spawnCRT';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import { spawnFRTFromCrt } from '@/domain/spawnFRT';
@@ -71,11 +71,14 @@ export const analysisCommands: Command[] = [
         );
         return;
       }
+      // Apportioned across the FULL ranking (not the top 3) so the percentages
+      // quoted here match the CSV's column, which sums to exactly 100.
+      const pcts = wholePercents(items);
       const headline = items
         .slice(0, 3)
         .map(
           (it, i) =>
-            `#${i + 1} "${(it.entity.title || 'Untitled').slice(0, 24)}" ${it.minutes} (${Math.round(it.pctOfTotal * 100)}%)`
+            `#${i + 1} "${(it.entity.title || 'Untitled').slice(0, 24)}" ${it.minutes} (${pcts[i] ?? 0}%)`
         )
         .join(', ');
       s.showToast('success', `Top interferences: ${headline}.`);

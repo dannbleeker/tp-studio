@@ -34,7 +34,11 @@ export function InterferenceMetricSection({
           value={current?.toString() ?? ''}
           placeholder="—"
           disabled={locked}
-          aria-label="Time this interference steals"
+          // `TextInput` forwards `ariaLabel` (camelCase) onto the input's
+          // aria-label; a JSX `aria-label` here is silently dropped, leaving the
+          // spinbutton with no accessible name (the Field's label is not wired
+          // to it via htmlFor/id).
+          ariaLabel="Time this interference steals"
           onChange={(raw) => {
             if (raw === '') {
               onClear();

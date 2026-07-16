@@ -66,3 +66,35 @@ const computeRanking = (doc: TPDocument): InterferenceRankItem[] => {
   });
   return items;
 };
+
+/**
+ * Whole-number percentages for a ranked list that sum to exactly 100 — the
+ * largest-remainder (Hare) method: floor every share, then hand the leftover
+ * points to the largest fractional parts.
+ *
+ * Rounding each row independently drifts: the shipped constraint-exploitation
+ * pattern (90/60/45/30/30 = 255) rounds to 35+24+18+12+12 = **101%**. A Pareto
+ * sheet whose column doesn't add up undercuts the very conversation it exists to
+ * settle, so both the CSV and the ranking toast read their percentages here.
+ *
+ * Returns one entry per item, in the items' order. All-zero when nothing carries
+ * an impact (there is no total to apportion), matching `pctOfTotal`'s 0 fallback.
+ */
+export const wholePercents = (items: readonly InterferenceRankItem[]): number[] => {
+  const total = items.reduce((sum, i) => sum + i.minutes, 0);
+  if (total <= 0) return items.map(() => 0);
+  const exact = items.map((i) => (i.minutes / total) * 100);
+  const out = exact.map((v) => Math.floor(v));
+  let leftover = 100 - out.reduce((sum, v) => sum + v, 0);
+  // Largest fractional part wins the next point; ties break by rank order so the
+  // result is deterministic (and the bigger interference keeps the higher share).
+  const byFrac = exact
+    .map((v, idx) => ({ idx, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac || a.idx - b.idx);
+  for (const { idx } of byFrac) {
+    if (leftover <= 0) break;
+    out[idx] = (out[idx] ?? 0) + 1;
+    leftover--;
+  }
+  return out;
+};
