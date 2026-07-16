@@ -5,7 +5,7 @@ This is the book-length companion to TP Studio. Where the [USER_GUIDE](../../USE
 
 ## Reading paths
 
-**New to TOC and TP Studio.** Read linearly from front to back. Part 1 grounds you in TOC's premise; Part 2 walks each diagram type — the seven thinking processes plus Freeform; Part 3 covers the cross-cutting skills (CLR validation, groups, iteration); Part 4 takes you from solo work to workshops and shareable outputs.
+**New to TOC and TP Studio.** Read linearly from front to back. Part 1 grounds you in TOC's premise; Part 2 walks each diagram type — the seven core thinking processes, the Interference Diagram, and Freeform; Part 3 covers the cross-cutting skills (CLR validation, groups, iteration); Part 4 takes you from solo work to workshops and shareable outputs.
 
 **TOC-fluent, new to TP Studio.** Skim [Chapter 1](01-the-system-has-a-goal.md) for naming conventions, work through [Chapter 2](02-your-first-canvas.md) for orientation, then jump to whichever process chapter (Part 2) you need. Each process chapter is self-contained.
 
@@ -30,6 +30,7 @@ This is the book-length companion to TP Studio. Where the [USER_GUIDE](../../USE
 9. [Goal Tree](09-goal-tree.md) — *What does success look like?*
 10. [Strategy & Tactics Tree](10-strategy-and-tactics-tree.md) — *Deploying operationally*
 11. [Freeform diagrams](11-freeform-diagrams.md) — *When none of the above fits*
+- [Interference Diagram](18-interference-diagram.md) — *What's stealing what we want?* (a lighter route to "what to change"; added after the original run, so it sits as chapter 18)
 
 ### Part 3 — Across the canvas
 12. [Groups, assumptions, injections](12-groups-assumptions-injections.md)

@@ -9,14 +9,6 @@ remember building isn't listed here, it's done — check CHANGELOG.
 
 ## Active backlog
 
-### Interference Diagram — dedicated book-guide chapter (small, optional)
-The ID shipped in full in Session 206 (see CHANGELOG) and is documented in USER_GUIDE. It does **not**
-yet have a dedicated `docs/guide/` book chapter — it follows the NBR precedent (`book:false` in
-features.json), since inserting a chapter renumbers the 04–11 diagram-type run plus the epub/pdf/README
-mirrors. Revisit if the ID earns a full teaching chapter; if so, add `docs/guide/NN-interference-diagram.md`,
-register it in `scripts/lib/bookChapters.mjs` + `docs/guide/README.md`, flip the `id-*` features.json
-`book` flags, and add a guide-screenshot scene.
-
 ### Perf-trace gate — ✅ RESOLVED Session 203–204 (best-of-N metric + re-baseline + per-scenario threshold)
 Session 190 fixed the two real wastes behind the flag (the edge router + reach-count BFS now key on stable
 structural signatures, not `doc.entities`; `all-actions` p95 6.45 → ~4 ms). The residual `edit-heavy` cost

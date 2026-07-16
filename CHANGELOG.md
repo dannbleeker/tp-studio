@@ -28,10 +28,12 @@ arrows are non-logical intuition arrows, so no causal CLR runs on it; it opens f
   as the book's faster route to "what to change".
 - **Starter patterns.** Two Pattern-library entries — constraint-exploitation (time-quantified, J40 line)
   and strategy-development (event-driven revenue obstacles).
-- **Docs + tests.** USER_GUIDE section + spawn-bridge entries, README counts (nine → ten), features.json
-  rows, Flying-Logic reader round-trip (`id` added to `KNOWN_DIAGRAMS`), and an `id.test.ts` registry-
-  coverage guard mirroring the NBR one. A dedicated book-guide chapter is a follow-up (NBR-style: the ID
-  is covered in USER_GUIDE, not yet the book).
+- **Selection-toolbar slot verbs.** An ID entity offers Mark as interference / Mark as fix / Add fix for
+  this interference (reusing the PRT re-type commands), with unit + e2e coverage.
+- **Docs + tests.** USER_GUIDE section + spawn-bridge + toolbar-verb entries, README counts (nine → ten),
+  features.json rows, a full book-guide chapter (**18 — Interference Diagram**), Flying-Logic reader
+  round-trip (`id` added to `KNOWN_DIAGRAMS`), and an `id.test.ts` registry-coverage guard mirroring the
+  NBR one.
 
 ## Session 205 — Adversarial bug hunt: 13 fixes
 

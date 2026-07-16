@@ -45,6 +45,7 @@ export const CHAPTER_FILES = [
   '15-verbalisation-walkthroughs.md',
   '16-sharing-your-work.md',
   '17-workshops-with-tp-studio.md',
+  '18-interference-diagram.md',
   'appendix-a-case-study.md',
   'appendix-b-keyboard-reference.md',
   'appendix-c-clr-rules.md',
