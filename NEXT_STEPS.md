@@ -1,9 +1,14 @@
 # TP Studio — backlog / next steps
 
 Shipped work lives in **CHANGELOG.md**. This file was pruned in Session 176 of ~580 lines of
-completed narrative and re-pruned in Session 193 (the Session-192 review backlog and the
-Session-180 hardening/tech-debt lists shipped in full — see CHANGELOG). If something you
-remember building isn't listed here, it's done — check CHANGELOG.
+completed narrative, re-pruned in Session 193 (the Session-192 review backlog and the Session-180
+hardening/tech-debt lists shipped in full), and pruned again in Session 206 (the adversarial hunt's
+13 confirmed bugs + both Session-205 carry-overs all shipped; sections E and G reached COMPLETE).
+If something you remember building isn't listed here, it's done — check CHANGELOG.
+
+**Genuinely open right now: one item** — the *Overlapping-edge hover-fan* polish below (small,
+optional). Everything else on this page is shipped, deferred by decision, parked pending an explicit
+ask (L2 Projects, §C), or declined (§H / *Out of scope*).
 
 ---
 
@@ -47,32 +52,15 @@ tree, then a gallery of the rest. The shipped Start renders every recent tree as
 deliberate simplification). Reviewed in the Session-187 design-fidelity pass and **deferred by decision**
 (Dann) — the uniform grid stays. Revisit only if the resume hierarchy proves worth the extra layout.
 
-### Known bugs — Session-206 adversarial hunt (8 lenses → 17 candidates → 13 confirmed by 3 skeptics each)
-Three shipped in Session 206 (junctor centre-X drift, the ID `aria-label` drop, the ID Pareto 101%
-— see CHANGELOG). The rest are recorded with their repro rather than rushed. Ranked by severity ×
-reachability.
+### Known bugs — none open
+The Session-206 adversarial hunt (8 lenses -> 17 candidates -> 13 confirmed by 3 skeptics each) is
+**fully shipped**, along with both Session-205 carry-overs. See CHANGELOG Session 206 for each fix and
+the repro it was verified against.
 
-*(Tier 1 — the tab-manifest revert, the Flying-Logic necessity→sufficiency corruption, and the
-archived-group (0,0) stacking — all shipped **Session 206**. See CHANGELOG.)*
-
-**Tier 2 — real, worth a follow-up session:**
-
-*(The undo-strips-a-cross-doc-link asymmetry and the `TPEdge.isJunctorEdge` synthetic-endpoint drift
-both shipped **Session 206** — the Session-206 hunt's backlog is now empty.)*
-
-*(`findCoreDrivers` on a looped CRT and the `indirect-effect`-on-Goal-Tree misregistration shipped
-**Session 206**.)*
-
-**Tier 3 — real but low-value / needs a design call:**
-
+One finding was closed WITHOUT a fix, recorded so it isn't re-hunted:
 - **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
-  (`edgeRouting.ts:243`) — a skeptic refuted this on impact; correctness is arguable. Treated as closed
-  unless someone reports a real mis-routed edge.
-*(The `ec-completeness` / `additional-cause` warning-id collisions shipped **Session 206** — Dann took
-the one-off reset of those two rules' stored resolutions, the only faithful option.)*
-*(The PRT-plan note/cycle skew and the `mapEntityType` prototype hole shipped **Session 206**.)*
-*(`findCycles` — the last Session-205 carry-over — shipped **Session 206** as Tarjan SCC + Johnson.
-The recorded symptom understated it: on a dense graph the old walk found 10 of 84 circuits.)*
+  (`edgeRouting.ts:243`). A verification skeptic refuted it on impact and I agree; correctness is
+  arguable. Re-open only if a real mis-routed edge is reported.
 
 
 ---
@@ -198,7 +186,7 @@ A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversaria
   reframe hint on the EC Need boxes (B/C), plus an "Alternative means" brainstorm list on Want/injection
   nodes backed by a new optional `alternativeMeans` entity field. *Ch27 (Cheng).*
 
-### E. NBR / PRT / TT refinements (partly ACTIVE)
+### E. NBR / PRT / TT refinements — ✅ COMPLETE Sessions 198–199
 - **Ongoing-vs-done toggle** — ✅ **shipped Session 198**: an optional `ongoing?` flag on a PRT/Goal-Tree
   objective (intermediateObjective / goal), with an inspector checkbox and a canvas "↻ ongoing" chip so
   continuous work doesn't read as a completable checkbox. *Ch5 (Newbold) "What is Done?"*
@@ -231,7 +219,7 @@ A4 opt-in modes) after a plan + in-app mockup; all shipped green with adversaria
   names the "positive/negative feedback" synonyms and distinguishes a balancing loop from a Negative
   Branch. *Ch23 (Mabin & Davies).*
 
-### G. Template bench — non-S&T SHIPPED Session 196 (91 → 109); S&T pack remains
+### G. Template bench — ✅ COMPLETE (non-S&T Session 196, 91 → 109; S&T pack Sessions 198–199)
 The non-S&T book bench shipped (18 patterns; see CHANGELOG Session 196): the EC starter clouds
 (daily / personal / education / rehab + the 3 change-meta clouds + fire-fighting), 2 CRTs, the
 fire-fighting NBR, 2 Goal Trees (personal-life + fabrication-shop), the class-performance PRT,
