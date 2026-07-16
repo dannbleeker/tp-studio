@@ -18,6 +18,7 @@ export {
   exportPNG,
   exportSVG,
 } from './image';
+export { buildInterferenceRankCsv, exportInterferenceRank } from './interferenceRank';
 export {
   exportDOT,
   exportMermaid,

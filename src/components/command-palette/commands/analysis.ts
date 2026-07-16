@@ -1,5 +1,6 @@
 import { findCoreDrivers } from '@/domain/coreDriver';
 import { topologicalEdgeOrder } from '@/domain/edgeReading';
+import { rankInterferences } from '@/domain/interferenceRanking';
 import { spawnCRTFromGoalTree } from '@/domain/spawnCRT';
 import { spawnECFromConflict } from '@/domain/spawnEC';
 import { spawnFRTFromCrt } from '@/domain/spawnFRT';
@@ -43,6 +44,39 @@ export const analysisCommands: Command[] = [
           .join(', ');
         s.showToast('info', `Core driver candidates: ${headline}.`);
       }
+    },
+  },
+  {
+    id: 'rank-interferences',
+    label: 'Rank interferences by impact',
+    group: 'Review',
+    keywords: ['pareto', 'interference', 'impact', 'time', 'lost'],
+    run: (s) => {
+      const items = rankInterferences(currentDoc(s));
+      if (items.length === 0) {
+        s.showToast(
+          'info',
+          'No interferences to rank — add interferences to an Interference Diagram first.'
+        );
+        return;
+      }
+      // Highlight every interference on the canvas, ranked order in the toast.
+      s.selectEntities(items.map((it) => it.entity.id));
+      if (!items.some((it) => it.minutes > 0)) {
+        s.showToast(
+          'info',
+          `${items.length} interference${items.length === 1 ? '' : 's'} — set each one's "Time lost" to rank them by impact.`
+        );
+        return;
+      }
+      const headline = items
+        .slice(0, 3)
+        .map(
+          (it, i) =>
+            `#${i + 1} "${(it.entity.title || 'Untitled').slice(0, 24)}" ${it.minutes} (${Math.round(it.pctOfTotal * 100)}%)`
+        )
+        .join(', ');
+      s.showToast('success', `Top interferences: ${headline}.`);
     },
   },
   withWriteGuard({

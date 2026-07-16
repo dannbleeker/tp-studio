@@ -11,6 +11,7 @@ import {
   exportDOT,
   exportFlyingLogic,
   exportHTMLViewer,
+  exportInterferenceRank,
   exportJPEG,
   exportJSON,
   exportMermaid,
@@ -57,12 +58,17 @@ type ExportAction = {
   hint: string;
   /** Optional filter — only render when the current diagram matches. */
   onlyOnECDoc?: boolean;
+  /** Optional filter — only render on an Interference Diagram. Needed because
+   *  the interference-ranking CSV keys on `obstacle` entities, which also live
+   *  on a PRT; gating on the diagram type keeps it off PRT docs. */
+  onlyOnIDDoc?: boolean;
   /** Optional predicate — only render when the doc contains at least one
    *  entity matching the filter (e.g. `'ude'` for the risk-register
    *  export, which would otherwise produce an empty CSV; `'action'`
    *  for the TT-task export added Session 135; `'intermediateObjective'`
-   *  for the PRT-plan export added Session 162). */
-  requiresEntityType?: 'ude' | 'action' | 'intermediateObjective';
+   *  for the PRT-plan export added Session 162; `'obstacle'` for the
+   *  interference-ranking CSV, paired with `onlyOnIDDoc`). */
+  requiresEntityType?: 'ude' | 'action' | 'intermediateObjective' | 'obstacle';
   run: (s: RootStore) => void | Promise<void>;
 };
 
@@ -237,6 +243,26 @@ const EXPORT_CATEGORIES: ExportCategory[] = [
           );
         },
       },
+      {
+        // Phase 5 — Interference Diagram Pareto CSV. One row per interference,
+        // ranked by the time it steals, with its share of the total and the
+        // paired intermediate objective. Gated on BOTH `onlyOnIDDoc` (so it
+        // never leaks onto a PRT, which also has obstacles) AND
+        // `requiresEntityType: 'obstacle'` (so a fresh ID with no interferences
+        // doesn't offer an empty sheet).
+        id: 'interference-rank',
+        label: 'Interference ranking (CSV)',
+        hint: 'One row per interference, ranked by lost time: rank / interference / minutes / % of total / paired fix.',
+        onlyOnIDDoc: true,
+        requiresEntityType: 'obstacle',
+        run: (s) => {
+          const n = exportInterferenceRank(currentDoc(s));
+          s.showToast(
+            'success',
+            `Exported ${n} interference${n === 1 ? '' : 's'} ranked by impact.`
+          );
+        },
+      },
     ],
   },
   {
@@ -388,6 +414,12 @@ export function ExportPickerDialog() {
   const hasAnyIntermediateObjective = useDocumentStore(
     (s) => entitiesOfType(currentDoc(s), 'intermediateObjective').length > 0
   );
+  // Parallel guard for the interference-ranking CSV. Obstacles double as ID
+  // interferences; paired with the `onlyOnIDDoc` gate below, this keeps the
+  // option off empty IDs (and off PRTs). Same O(1) cached lookup.
+  const hasAnyObstacle = useDocumentStore(
+    (s) => entitiesOfType(currentDoc(s), 'obstacle').length > 0
+  );
 
   // Session 193 — remember the last export format. Reopening the picker
   // auto-focuses that item (so Enter repeats the last export) and marks it
@@ -406,10 +438,11 @@ export function ExportPickerDialog() {
 
   // Availability of each gated entity type, keyed by the `requiresEntityType`
   // value — so the per-item filter below is one lookup instead of an if-ladder.
-  const hasEntityType: Record<'ude' | 'action' | 'intermediateObjective', boolean> = {
+  const hasEntityType: Record<'ude' | 'action' | 'intermediateObjective' | 'obstacle', boolean> = {
     ude: hasAnyUde,
     action: hasAnyAction,
     intermediateObjective: hasAnyIntermediateObjective,
+    obstacle: hasAnyObstacle,
   };
 
   const handlePick = async (action: ExportAction): Promise<void> => {
@@ -435,6 +468,7 @@ export function ExportPickerDialog() {
         {EXPORT_CATEGORIES.map((cat) => {
           const visible = cat.items.filter((it) => {
             if (it.onlyOnECDoc && diagramType !== 'ec') return false;
+            if (it.onlyOnIDDoc && diagramType !== 'id') return false;
             if (it.requiresEntityType && !hasEntityType[it.requiresEntityType]) return false;
             return true;
           });
