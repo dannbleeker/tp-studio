@@ -63,6 +63,24 @@ describe('spawnPRTFromID', () => {
     spawnPRTFromID(src);
     expect(JSON.stringify(src)).toBe(before);
   });
+
+  it('synthesizes fallback titles when the ID has no objective and a blank interference', () => {
+    const blank = makeEntity({ type: 'obstacle', title: '   ' });
+    const prt = spawnPRTFromID(makeDoc([blank], [], 'id'));
+    expect(Object.values(prt.entities).find((e) => e.type === 'goal')!.title).toBe('Objective');
+    expect(Object.values(prt.entities).find((e) => e.type === 'obstacle')!.title).toBe('Obstacle');
+    // Unpaired + blank interference → the generic synthesized-IO phrase.
+    expect(Object.values(prt.entities).find((e) => e.type === 'intermediateObjective')!.title).toBe(
+      'Overcome: the interference'
+    );
+  });
+
+  it('names the spawned doc after the source, falling back when the ID is untitled', () => {
+    expect(spawnPRTFromID(sampleID()).title).toBe('PRT from "Test document"');
+    expect(spawnPRTFromID({ ...sampleID(), title: '' }).title).toBe(
+      'PRT from "Interference Diagram"'
+    );
+  });
 });
 
 describe('spawnGoalTreeFromID', () => {
@@ -91,5 +109,21 @@ describe('spawnGoalTreeFromID', () => {
     const before = JSON.stringify(src);
     spawnGoalTreeFromID(src);
     expect(JSON.stringify(src)).toBe(before);
+  });
+
+  it('synthesizes fallback titles when the ID has no objective and a blank fix', () => {
+    const blankIo = makeEntity({ type: 'intermediateObjective', title: '  ' });
+    const gt = spawnGoalTreeFromID(makeDoc([blankIo], [], 'id'));
+    expect(Object.values(gt.entities).find((e) => e.type === 'goal')!.title).toBe('Goal');
+    expect(Object.values(gt.entities).find((e) => e.type === 'criticalSuccessFactor')!.title).toBe(
+      'Critical success factor'
+    );
+  });
+
+  it('names the spawned doc after the source, falling back when the ID is untitled', () => {
+    expect(spawnGoalTreeFromID(sampleID()).title).toBe('Goal Tree from "Test document"');
+    expect(spawnGoalTreeFromID({ ...sampleID(), title: '' }).title).toBe(
+      'Goal Tree from "Interference Diagram"'
+    );
   });
 });

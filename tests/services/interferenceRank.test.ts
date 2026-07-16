@@ -1,6 +1,9 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { INTERFERENCE_IMPACT_KEY } from '@/domain/interference';
-import { buildInterferenceRankCsv } from '@/services/exporters/interferenceRank';
+import {
+  buildInterferenceRankCsv,
+  exportInterferenceRank,
+} from '@/services/exporters/interferenceRank';
 import { makeDoc, makeEdge, makeEntity, resetIds } from '../domain/helpers';
 
 beforeEach(resetIds);
@@ -41,5 +44,33 @@ describe('buildInterferenceRankCsv', () => {
     expect(r[1]).toBe('1,Measured,40,100%,(none)');
     // The unmeasured one sorts last with an empty minutes cell + 0%.
     expect(r[2]).toBe('2,Unmeasured,,0%,(none)');
+  });
+});
+
+describe('exportInterferenceRank — download row count', () => {
+  const fakeUrl = 'blob:http://localhost/fake-object-url';
+
+  beforeEach(() => {
+    // jsdom implements neither URL.createObjectURL nor revokeObjectURL; fake
+    // timers keep triggerDownload's deferred revoke from firing post-test.
+    vi.stubGlobal('URL', {
+      ...URL,
+      createObjectURL: vi.fn(() => fakeUrl),
+      revokeObjectURL: vi.fn(),
+    });
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('returns one row per interference', () => {
+    const impact = (v: number) => ({
+      attributes: { [INTERFERENCE_IMPACT_KEY]: { kind: 'int' as const, value: v } },
+    });
+    const a = makeEntity({ type: 'obstacle', title: 'A', ...impact(90) });
+    const b = makeEntity({ type: 'obstacle', title: 'B', ...impact(30) });
+    expect(exportInterferenceRank(makeDoc([a, b], [], 'id'))).toBe(2);
   });
 });

@@ -15,6 +15,11 @@ describe('rankInterferences', () => {
     expect(rankInterferences(makeDoc([o], [], 'prt'))).toEqual([]);
   });
 
+  it('returns [] for an ID with no interferences (only a central objective)', () => {
+    const goal = makeEntity({ type: 'goal', title: 'More throughput' });
+    expect(rankInterferences(makeDoc([goal], [], 'id'))).toEqual([]);
+  });
+
   it('ranks interferences by impact descending, computing share of total', () => {
     const a = makeEntity({ type: 'obstacle', title: 'Parts unavailable', ...impact(90) });
     const b = makeEntity({ type: 'obstacle', title: 'Breaks', ...impact(60) });
