@@ -6,9 +6,9 @@ hardening/tech-debt lists shipped in full), and pruned again in Session 206 (the
 13 confirmed bugs + both Session-205 carry-overs all shipped; sections E and G reached COMPLETE).
 If something you remember building isn't listed here, it's done — check CHANGELOG.
 
-**Genuinely open right now: one item** — the *Overlapping-edge hover-fan* polish below (small,
-optional). Everything else on this page is shipped, deferred by decision, parked pending an explicit
-ask (L2 Projects, §C), or declined (§H / *Out of scope*).
+**Genuinely open right now: nothing.** The last open item (the *Overlapping-edge hover-fan* polish)
+shipped in Session 206. Everything on this page is shipped, deferred by decision, parked pending an
+explicit ask (L2 Projects, §C), or declined (§H / *Out of scope*).
 
 ---
 
@@ -31,12 +31,19 @@ immune to a majority of spikes. Both scenarios re-baselined to their best-of-N f
 6.45 → 3.0, its true ~2.5 ms; `edit-heavy` 16.7) with per-scenario thresholds (40 %) for the residual
 between-host variance. Verified end-to-end against the failing run's own samples. See CHANGELOG S203/S204.
 
-### Overlapping-edge hover-fan — open polish (small, optional)
-The convergence hover-fan itself shipped (Sessions 177 + 185, see CHANGELOG). One optional refinement
-remains, not urgent: it only fans direct-route convergence in flow layouts — smart-routed *detours* and
-radial mode keep their path (fanning a detour would need a re-route, not just a bezier offset).
-*(The sourceId-vs-position slot-order item shipped **Session 202** — the fan now orders slots by live
-source X, so converging edges never cross; the emission memo stays position-free. See CHANGELOG S202.)*
+### Overlapping-edge hover-fan — ✅ COMPLETE Session 206 (detours + radial both fan)
+The fan shipped in Sessions 177 + 185; the sourceId-vs-position slot order shipped Session 202; the last
+two exclusions — smart-routed *detours* and *radial* mode — shipped Session 206.
+
+The reason recorded here for holding detours back ("would need a re-route") was **wrong**, and the
+correction is worth keeping as a bug-class marker: the fan was never refusing to re-route, it was
+*replacing* the routed path with a straight bezier, which erased the detour — and the
+`routeWaypointCount <= 2` gate hid that damage rather than fixing it. `routeEdge` already builds its path
+as `bezierThroughWaypoints(waypoints)`, so nudging the final waypoint and re-running that same pure helper
+spreads the arrival while preserving every corner the router computed. No A*, no re-route. Radial fell out
+of the same insight: the lateral-X spread *is* the perpendicular-to-approach spread for a due-north
+approach, so radial is the general case rather than a special one — both layouts now share one rule
+(`fanPerpendicularOffset` + angular rank). See CHANGELOG S206.
 
 ### Test-coverage — healthy (reference; no open target)
 ~97% lines / ~85% branches (Session-180 push; CI floors ratcheted to 94 lines / 82 branches). CI floor

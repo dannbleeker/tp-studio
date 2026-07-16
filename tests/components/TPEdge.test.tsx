@@ -100,6 +100,58 @@ describe('TPEdge', () => {
     });
   });
 
+  // Session 206 — the hover-fan used to hold DETOURED routes back entirely: it
+  // fanned by dropping the routed path for a straight bezier, which erased the
+  // obstacle detour, so a `routeWaypointCount <= 2` gate excluded them. The fan
+  // now nudges the detour's final waypoint and rebuilds with the router's own
+  // `bezierThroughWaypoints`, so the detour survives and the arrival spreads.
+  describe('hover-fan on a detoured route', () => {
+    /** A 3-waypoint route: the middle point is the corner the router bent around. */
+    const detour = {
+      d: 'M0,0 C0,20 50,20 50,40 C50,60 100,80 100,100',
+      waypoints: [
+        { x: 0, y: 0 },
+        { x: 50, y: 40 },
+        { x: 100, y: 100 },
+      ],
+    };
+    const renderEdge = (data: TPEdgeData): string | null => {
+      const { container } = render(
+        <ReactFlowProvider>
+          <svg aria-label="test host">
+            <title>test edge host</title>
+            <TPEdge {...makeEdgeProps(data)} />
+          </svg>
+        </ReactFlowProvider>
+      );
+      // BaseEdge renders the visible path first.
+      return container.querySelector('path')?.getAttribute('d') ?? null;
+    };
+
+    it('leaves a detour untouched at rest', () => {
+      expect(renderEdge({ route: detour, fanSiblings: ['a', 'other'] })).toBe(detour.d);
+    });
+
+    it('spreads the detour’s ARRIVAL by the fan offset', () => {
+      useDocumentStore.setState({ hoveredEdgeTargetId: 'b' });
+      const fanned = renderEdge({ route: detour, fanSiblings: ['a', 'other'] });
+      // A 2-member group spreads ±FAN_SPACING/2 = ±8, so the arrival leaves
+      // x=100 for 92 or 108. Asserting the actual displacement — not merely
+      // "the path changed" — because rebuilding the route changes the curve on
+      // its own, so a weaker assertion would pass even with the offset removed.
+      expect(fanned).toMatch(/(92|108),100/);
+    });
+
+    it('keeps the detour’s corner while fanning (no snap to a straight bezier)', () => {
+      useDocumentStore.setState({ hoveredEdgeTargetId: 'b' });
+      const fanned = renderEdge({ route: detour, fanSiblings: ['a', 'other'] });
+      // The router's corner still anchors the path. The "pop" the old gate was
+      // protecting against would have thrown this away for a 2-point bezier —
+      // which is why detours were excluded from fanning rather than fanned.
+      expect(fanned).toContain('50,40');
+    });
+  });
+
   describe('mutex edge routing (Session 87 UX fix #5)', () => {
     it('renders a straight-line path between two vertically-stacked wants', () => {
       // Load the EC example so the store carries 2 wants at canonical

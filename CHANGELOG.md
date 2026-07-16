@@ -2,6 +2,33 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 206 — the hover-fan's last two exclusions (a gate that hid its own bug)
+
+The convergence hover-fan spread only *direct-route* convergence in *flow* layouts. Detours and radial
+mode were listed on the backlog as needing "a re-route, not just a bezier offset". That reason was wrong,
+and the wrongness was the bug: the fan wasn't refusing to re-route — it was **replacing** the routed path
+with a straight bezier, which erased the obstacle detour the router had computed. The
+`routeWaypointCount <= 2` gate didn't protect detours; it hid the damage by excluding them.
+
+`routeEdge` already builds its path as `bezierThroughWaypoints(waypoints)`, so the fix is to nudge the
+final waypoint and re-run that same pure helper (`offsetLastWaypoint`): the arrival spreads, every corner
+the router computed survives, and no A* runs. The gate is gone — route shape was never the fan's business.
+
+Radial fell out of the same insight rather than needing a second mechanism. A flow layout stacks causes
+below their effect, so they all arrive heading due north — and the perpendicular of due north *is*
+lateral X. The lateral spread the fan always used was the perpendicular-to-approach spread all along,
+just in the one orientation where the two coincide. So radial is the general case, not a special one:
+`fanPerpendicularOffset` spreads across each edge's own approach heading (reproducing the flow fan
+byte-identically for a vertical approach), and `fanRankByAngle` ranks slots by approach angle — the
+property that actually generalises, since around a hub two sources on opposite sides can share an X while
+arriving from opposite directions, making X order meaningless there.
+
+Verified in a real browser (Chromium, both layouts, 3 causes → 1 effect). At rest all three edges arrive
+at one point. On hover in flow: −16 / 0 / +16, pure lateral, middle unmoved. On hover in radial: the same
+16px magnitude but along *different* vectors per edge — (+13.0, +9.3) and (+9.6, −12.8) — each
+perpendicular to its own approach. The dispatch-driven hover used for radial was first validated against
+flow, where it reproduced the real-pointer numbers exactly.
+
 ## Session 206 — an arrowhead into empty canvas (the last hunt bug)
 
 A junctor edge whose effect sat inside a collapsed group drew its arrowhead ~49px past the node, into

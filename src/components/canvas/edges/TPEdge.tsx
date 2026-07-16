@@ -8,6 +8,8 @@ import { BaseEdge, type EdgeProps, getBezierPath, Position } from '@xyflow/react
 import { memo, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { EDGE_RECONNECT_HANDLE_RADIUS, JUNCTOR_EDGE_TERMINAL_OFFSET_Y } from '@/domain/constants';
+import { bezierThroughWaypoints } from '@/domain/edgeBezier';
+import type { Point } from '@/domain/edgeGeometry';
 import { EDGE_PALETTES } from '@/domain/tokens';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -16,7 +18,14 @@ import { ChallengeButton } from './ChallengeButton';
 import { ARROW_TRIANGLE_D, arrowheadOnPath, arrowheadTransform } from './edgeArrowhead';
 import { resolveEdgeVisuals } from './edgeVisuals';
 import type { TPEdge as TPEdgeType } from './flow-types';
-import { fanRankByPositions, hoverFanActive, hoverFanOffsetX } from './hoverFan';
+import {
+  fanPerpendicularOffset,
+  fanRankByAngle,
+  fanRankByPositions,
+  hoverFanActive,
+  hoverFanOffsetX,
+  offsetLastWaypoint,
+} from './hoverFan';
 import { junctorKindField } from './junctorGeometry';
 import { computeMutexPath, resolveEdgePath } from './resolveEdgePath';
 import {
@@ -81,6 +90,25 @@ function fanRankLive(siblings: string[], selfSource: string): number {
   const fallback = Math.max(0, siblings.indexOf(selfSource));
   if (withX.some((s) => Number.isNaN(s.x))) return fallback;
   const rank = fanRankByPositions(selfSource, withX);
+  return rank >= 0 ? rank : fallback;
+}
+
+/**
+ * Session 206 — the radial counterpart of {@link fanRankLive}: the fan rank from
+ * the sources' LIVE positions ordered by the ANGLE they approach `target` from.
+ * Same imperative read (no store subscription, hover-only) and same fallback to
+ * the stable sourceId order when a position is missing.
+ */
+function fanRankLiveAngular(siblings: string[], selfSource: string, target: Point): number {
+  const flow = getCanvasInstance();
+  const withXY = siblings.map((id) => {
+    const internal = flow?.getInternalNode(id)?.internals.positionAbsolute;
+    const pos = internal ?? flow?.getNode(id)?.position;
+    return { id, x: pos?.x ?? Number.NaN, y: pos?.y ?? Number.NaN };
+  });
+  const fallback = Math.max(0, siblings.indexOf(selfSource));
+  if (withXY.some((s) => Number.isNaN(s.x) || Number.isNaN(s.y))) return fallback;
+  const rank = fanRankByAngle(selfSource, withXY, target);
   return rank >= 0 ? rank : fallback;
 }
 
@@ -283,19 +311,26 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // falls back to this bezier, so the endpoint offset actually shows.
   const fanSiblings = props.data?.fanSiblings;
   const fanCount = fanSiblings?.length ?? 0;
-  const fanActive = hoverFanActive({
-    isFanGroupHovered,
-    fanCount,
-    routeWaypointCount: props.data?.route?.waypoints?.length ?? 0,
-  });
+  const fanActive = hoverFanActive({ isFanGroupHovered, fanCount });
   // Slot order is refined left-to-right by live source X (crossing-free), only
   // while fanning; the sourceId order in `fanSiblings` is the fallback.
   const fanRank = fanActive && fanSiblings ? fanRankLive(fanSiblings, props.source) : 0;
   const fanOffsetX = fanActive ? hoverFanOffsetX(fanRank, fanCount, FAN_SPACING) : 0;
-  // When fanning, anchor the bezier on the routed path's OWN endpoints (a direct
-  // route is `[sourceAnchor, targetAnchor]`) so hovering only spreads the target X
-  // — no incidental vertical or source jump from swapping the route for the bezier.
-  const fanWaypoints = fanActive ? props.data?.route?.waypoints : undefined;
+  // Session 206 — a DETOURED route fans too now: nudge only its final waypoint
+  // and rebuild with the router's OWN `bezierThroughWaypoints`, so the detour
+  // survives and only the arrival spreads. The fan used to drop the route for a
+  // straight bezier, which erased the detour — that "pop" is why detours were
+  // gated out of fanning entirely rather than fanned properly.
+  const routeWaypoints = props.data?.route?.waypoints;
+  const fannedDetourWaypoints =
+    fanActive && routeWaypoints && routeWaypoints.length > 2
+      ? offsetLastWaypoint(routeWaypoints, fanOffsetX)
+      : undefined;
+  // When fanning a DIRECT route, anchor the bezier on the route's OWN endpoints
+  // (a direct route is `[sourceAnchor, targetAnchor]`) so hovering only spreads
+  // the target X — no incidental vertical or source jump from swapping the route
+  // for the bezier. A detour renders its rebuilt path above, so it skips this.
+  const fanWaypoints = fanActive && !fannedDetourWaypoints ? routeWaypoints : undefined;
   const fanFrom = fanWaypoints && fanWaypoints.length >= 2 ? fanWaypoints[0] : undefined;
   const fanTo =
     fanWaypoints && fanWaypoints.length >= 2 ? fanWaypoints[fanWaypoints.length - 1] : undefined;
@@ -400,13 +435,35 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // case so the resolver below falls through to the routed path or the default
   // bezier. (See the hook for the full rationale on why the flag gates the
   // React Flow `nodes` subscription independently.)
+  // Session 206 — the radial half of the hover-fan. A flow layout stacks a
+  // target's causes below it, so they all arrive heading "up" and a lateral-X
+  // shove spreads them. A radial layout puts the target at a hub with its causes
+  // around it, so the same shove is meaningless — two sources on opposite sides
+  // can share an X. Instead: spread the ARRIVAL perpendicular to each edge's own
+  // approach, ranked by approach angle. That IS the flow gesture generalised —
+  // the perpendicular of a due-north approach is lateral X — it just stops being
+  // an accident of the layout.
+  //
+  // No mode check needed: `useRadialRoute` returns null outside radial mode, so
+  // this offset is computed-but-inert in flow layouts (hover-only either way).
+  const radialFanRank =
+    fanActive && fanSiblings
+      ? fanRankLiveAngular(fanSiblings, props.source, { x: props.targetX, y: effectiveTargetY })
+      : 0;
+  const radialFanTarget = fanActive
+    ? fanPerpendicularOffset(
+        { x: props.sourceX, y: props.sourceY },
+        { x: props.targetX, y: effectiveTargetY },
+        hoverFanOffsetX(radialFanRank, fanCount, FAN_SPACING)
+      )
+    : { x: props.targetX, y: effectiveTargetY };
   const radialRoute = useRadialRoute({
     source: props.source,
     target: props.target,
     sourceX: props.sourceX,
     sourceY: props.sourceY,
-    targetX: props.targetX,
-    effectiveTargetY,
+    targetX: radialFanTarget.x,
+    effectiveTargetY: radialFanTarget.y,
     isJunctorEdge,
     hasMutexOverride,
   });
@@ -426,13 +483,20 @@ function TPEdgeImpl(props: EdgeProps<TPEdgeType>) {
   // route's waypoints* (see `resolveEdgePath`), so it rides a bent detour
   // instead of sitting at the straight bezier midpoint (which can land inside
   // an obstacle the route bends around).
-  // Hover-fan (Session 185) drops the routed path so the fanned bezier renders.
-  const routedPath = fanActive ? undefined : props.data?.route?.d;
+  // Hover-fan: a DIRECT route drops its path so the fanned bezier renders
+  // (Session 185); a DETOUR keeps its shape and renders the rebuilt path whose
+  // final waypoint carries the fan offset (Session 206).
+  const routedPath = fanActive
+    ? fannedDetourWaypoints
+      ? bezierThroughWaypoints(fannedDetourWaypoints)
+      : undefined
+    : props.data?.route?.d;
   const { path, labelX, labelY } = resolveEdgePath({
     mutex: mutexPath,
     radial: radialRoute,
     routedPath,
-    routeWaypoints: fanActive ? undefined : props.data?.route?.waypoints,
+    // The label rides the fanned waypoints so it tracks the spread detour.
+    routeWaypoints: fanActive ? fannedDetourWaypoints : props.data?.route?.waypoints,
     bezier: { path: bezierPath, labelX: bezierLabelX, labelY: bezierLabelY },
   });
 
