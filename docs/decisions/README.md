@@ -64,7 +64,7 @@ Don't write an ADR for:
 
 ## Naming
 
-Slug should be short and searchable. `0003-lazy-dagre-via-await-import.md` over `0003-lazy-loading-discussion.md`.
+Slug should be short and searchable. `NNNN-lazy-dagre-via-await-import.md` over `NNNN-lazy-loading-discussion.md`.
 
 ## Index
 
@@ -72,3 +72,5 @@ The list below is alphabetical-by-slug for now. Once it grows past ~20 entries, 
 
 - [0001 — Lazy-load dagre via `await import` instead of `manualChunks` split](0001-lazy-dagre-via-await-import.md)
 - [0002 — Mutation testing as a spot-check tool, not a per-module baseline](0002-mutation-testing-as-spot-check-not-baseline.md)
+- [0003 — The CLR list is eight categories (Dettmer's), not the Handbook's seven](0003-clr-list-is-eight-not-the-handbooks-seven.md)
+- [0004 — Magnitudinal AND is a distinct connector, not a distinct geometry](0004-magnitudinal-and-distinct-connector-same-geometry.md)

@@ -464,11 +464,9 @@ App. B, Scheinkopf, unless noted):
   compliance is usually a Necessary Condition a few layers down — a threshold you must not breach — not a
   make-or-break CSF the goal is built around (Ch. 19, Dettmer).
 
-**Standing decision — our CLR list is 8, and that is deliberate.** The *Handbook*'s canonical list is
-**7 categories in 3 ordered levels** and omits `tautology`; ours carries an 8th because we follow
-**Dettmer's** teaching layout. A future Handbook-driven review will notice the mismatch — **keep the 8th.
-This is not a removal.** (Recorded here because the backlog section that used to hold this guard was
-pruned in Session 206; `docs/guide/13-the-clr.md` records the Dettmer attribution but not this conflict.)
+**Standing decision — our CLR list is 8, and that is deliberate.** The *Handbook*'s canon is 7 categories
+in 3 ordered levels and omits `tautology`; we follow **Dettmer's** eight. Keep the 8th — this is not a
+removal. Full rationale: **ADR `docs/decisions/0003-clr-list-is-eight-not-the-handbooks-seven.md`**.
 
 Also deliberate: the *"doesn't exist in this environment"* half of entity-existence is **not** a validator
 rule — it has no structural signal, so it lives in the per-edge scrutiny stepper. Don't re-propose it as a
@@ -528,10 +526,10 @@ an optional edge field, emitted only when magnitudinal so untouched diagrams rou
 hand-edited value is validated (only `'additional'` is legal) and dropped if it has no AND group. *(The
 text exporters describe both flavours as an AND group — the distinction is a canvas / teaching aid.)*
 
-Rendered per **Dann's "distinct connector, same geometry" call** — the mockup that drew magnitudinal
-co-causes as *independent arrows* was rejected. Geometry-sameness is therefore a deliberate decision, not
-an implementation convenience: it's what keeps the canvas==export invariant intact. Don't re-litigate the
-independent-arrows rendering without re-opening that trade. *(Ch25 App.B.)*
+Rendered per **Dann's "distinct connector, same geometry" call** — the *independent-arrows* mockup was
+rejected to keep the canvas==export invariant intact. Geometry-sameness is a decision, not an
+implementation convenience. Full rationale: **ADR
+`docs/decisions/0004-magnitudinal-and-distinct-connector-same-geometry.md`**. *(Ch25 App.B.)*
 
 ## Session 198 — Cross-tree spawn bridges (backlog C)
 
