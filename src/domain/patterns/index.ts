@@ -104,6 +104,8 @@ import { buildPatternGoalTreePersonalLife } from './goalTree-personal-life';
 import { buildPatternGoalTreeSubscriptionBusiness } from './goalTree-subscription-business';
 import { buildPatternGoalTreeSustainableProductOrg } from './goalTree-sustainable-product-org';
 import { buildPatternGoalTreeTrustworthyMl } from './goalTree-trustworthy-ml';
+import { buildPatternIDConstraintExploitation } from './id-constraint-exploitation';
+import { buildPatternIDStrategy } from './id-strategy';
 import { buildPatternNBRAggressiveDeadlines } from './nbr-aggressive-deadlines';
 import { buildPatternNBRAlcoholBan } from './nbr-alcohol-ban';
 import { buildPatternNBRContactCustomer } from './nbr-contact-customer';
@@ -759,6 +761,22 @@ const CORE_PATTERNS: Pattern[] = [
     build: buildPatternNBRContactCustomer,
   },
 
+  // ── ID ─────────────────────────────────────────────────────────────
+  {
+    id: 'id-constraint-exploitation',
+    label: 'Constraint exploitation ID',
+    hint: "The book's first ID use (Epiphanized App. 4 / Ch. 8) — a constraint at the hub, the interferences that steal its time each quantified in minutes and paired with a fix. Run 'Rank interferences by impact' to Pareto them.",
+    diagramType: 'id',
+    build: buildPatternIDConstraintExploitation,
+  },
+  {
+    id: 'id-strategy',
+    label: 'Strategy development ID',
+    hint: "The book's second ID use — a strategic objective at the hub and the cross-functional obstacles blocking it, each paired with an injection. Feed it forward with 'Spawn Goal Tree from this Interference Diagram'.",
+    diagramType: 'id',
+    build: buildPatternIDStrategy,
+  },
+
   // ── Goal Tree ─────────────────────────────────────────────────────
   {
     id: 'goalTree-default',
@@ -988,6 +1006,7 @@ const TYPE_BLOCK_ORDER: DiagramType[] = [
   'prt',
   'tt',
   'nbr',
+  'id',
   'goalTree',
   'st',
   'freeform',
