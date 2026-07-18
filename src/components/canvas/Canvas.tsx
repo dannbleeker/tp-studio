@@ -18,6 +18,7 @@ import {
   NODE_STRIPE_PALETTES,
 } from '@/domain/tokens';
 import type { EntityType } from '@/domain/types';
+import { useIsCoarsePointer } from '@/hooks/useMediaQuery';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { setCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -32,6 +33,7 @@ import { useCanvasDragHandlers } from './hooks/useCanvasDragHandlers';
 import { useCloudEvaporation } from './hooks/useCloudEvaporation';
 import { useGraphMutations } from './hooks/useGraphMutations';
 import { useGraphView } from './hooks/useGraphView';
+import { useLongPressContextMenu } from './hooks/useLongPressContextMenu';
 import { useSearchDimming } from './hooks/useSearchDimming';
 import { TPAssumptionNode } from './nodes/TPAssumptionNode';
 import { TPCollapsedGroupNode } from './nodes/TPCollapsedGroupNode';
@@ -133,6 +135,12 @@ function CanvasInner() {
   const { onNodeDrag, onNodeDragStop } = useCanvasDragHandlers(doc, nodes);
   const { onNodeContextMenu, onEdgeContextMenu, onPaneContextMenu } =
     useCanvasContextMenuHandlers();
+  // Touch long-press → context menu (mouse keeps React Flow's right-click path).
+  const longPress = useLongPressContextMenu();
+  // Coarse pointer (finger / stylus): one-finger drag pans the canvas rather
+  // than drawing a marquee — panning is the primary navigation gesture on touch,
+  // and multi-select-by-rubber-band has no natural one-finger equivalent there.
+  const isCoarse = useIsCoarsePointer();
 
   // Session 135 — canvas a11y slice 4. Arrow keys, when a node has
   // focus, walk to the connected neighbour in that direction.
@@ -211,6 +219,12 @@ function CanvasInner() {
         if (!guardWriteOrToast()) return;
         addEntity({ type: defaultEntityType(doc.diagramType), startEditing: true });
       }}
+      onPointerDown={longPress.onPointerDown}
+      onPointerMove={longPress.onPointerMove}
+      onPointerUp={longPress.onPointerUp}
+      onPointerCancel={longPress.onPointerCancel}
+      onContextMenuCapture={longPress.onContextMenuCapture}
+      onClickCapture={longPress.onClickCapture}
     >
       <ReactFlow
         nodes={nodes}
@@ -268,8 +282,12 @@ function CanvasInner() {
         // edit anyway) so we hand left-click to the panner instead so
         // the canvas stays navigable without reaching for a different
         // mouse button.
-        selectionOnDrag={!locked}
-        panOnDrag={locked ? [0, 1, 2] : [1, 2]}
+        // Locked or coarse-pointer: left-drag (button 0) pans. On a fine
+        // pointer while unlocked, left-drag stays a marquee selection
+        // (`selectionOnDrag`) and pan is on middle/right — the desktop
+        // power-user default.
+        selectionOnDrag={!locked && !isCoarse}
+        panOnDrag={locked || isCoarse ? [0, 1, 2] : [1, 2]}
         nodesDraggable={false}
         nodesConnectable={!locked}
         // Goal #2 — raise React Flow's 20px snap-to-handle window so a

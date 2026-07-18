@@ -2,6 +2,31 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 208 — touch interactions (bottom-sheet inspector · long-press menu · touch canvas)
+
+The deeper half of the mobile work — making the *canvas itself* usable with a finger, not just fitting the
+chrome onto a small screen. Additive + pointer/viewport-gated; desktop is byte-identical (verified with
+rendered screenshots at 390 / 1280 px, plus 10 new unit/component tests).
+
+- **Bottom-sheet inspector on phones.** Below `sm` the inspector renders as a draggable bottom sheet
+  (`InspectorSheet`) instead of the 320px side slide-over, which on a phone would cover the whole canvas.
+  Two snaps — half (52vh) / full (88vh) — via a grabber drag; swipe the grabber down to dismiss (clears the
+  selection, same contract as the desktop X / backdrop). The tab bar + scrollable body are shared verbatim
+  with the desktop `<aside>`, so both surfaces edit identically. Gated by a new SSR-safe `useMediaQuery` hook
+  (`useIsPhoneViewport` / `useIsCoarsePointer`, built on `useSyncExternalStore`).
+- **Long-press context menu.** Touch has no right-click, and a long-press didn't surface through React
+  Flow's `onNodeContextMenu`, so the rename / delete / group / comment actions were unreachable on touch. A
+  new `useLongPressContextMenu` pointer detector opens the *same* menu on a 500ms stationary touch/pen hold
+  — resolving the pressed element to an entity / edge / pane target and swallowing the trailing tap so the
+  menu isn't immediately closed. Mouse keeps React Flow's native right-click path untouched.
+- **One-finger pan on touch.** With a coarse pointer, left-drag now pans the canvas (`panOnDrag` /
+  `selectionOnDrag` are pointer-aware) — panning is the primary touch navigation gesture, and marquee-select
+  has no natural one-finger equivalent. Fine pointers keep the desktop marquee default.
+- **Finger-sized targets.** `@media (pointer: coarse)` grows React Flow connection handles (28px hit box,
+  8px visible dot unchanged — so edges can be drawn with a finger) and the selection-toolbar buttons.
+- **SelectionToolbar hidden on phones** — redundant with the bottom sheet (full editing) + the long-press
+  menu (same quick verbs), and it would overlap the sheet.
+
 ## Session 207 — mobile-friendly chrome pass
 
 Closing the phone/tablet gaps in the editor chrome. The chrome already collapsed gracefully across the
