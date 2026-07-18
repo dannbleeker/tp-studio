@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-16T19:16:49.284Z",
-  "commit": "3980634",
+  "generatedAt": "2026-07-18T19:03:22.710Z",
+  "commit": "9448480",
   "headline": {
-    "linesTsJs": 152526,
-    "tests": 5049,
-    "lineCoveragePct": 95.53,
-    "commits": 1144,
-    "ageDays": 66,
-    "trackedFiles": 1218,
+    "linesTsJs": 153059,
+    "tests": 5059,
+    "lineCoveragePct": 95.45,
+    "commits": 1147,
+    "ageDays": 68,
+    "trackedFiles": 1223,
     "featureManualPct": 99.6,
     "featureBookPct": 69.5,
     "featureExamplePct": 23.9
@@ -15,13 +15,13 @@
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 591,
-      "lines": 77705
+      "files": 594,
+      "lines": 78074
     },
     {
       "category": "Unit tests",
-      "files": 437,
-      "lines": 68345
+      "files": 439,
+      "lines": 68509
     },
     {
       "category": "E2E tests (Playwright)",
@@ -36,7 +36,7 @@
     {
       "category": "Styles (CSS)",
       "files": 2,
-      "lines": 830
+      "lines": 867
     },
     {
       "category": "Docs (Markdown)",
@@ -46,56 +46,56 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.53,
-      "covered": 14500,
-      "total": 15177
+      "pct": 95.45,
+      "covered": 14587,
+      "total": 15281
     },
     "statements": {
-      "pct": 93.11,
-      "covered": 16525,
-      "total": 17746
+      "pct": 93,
+      "covered": 16618,
+      "total": 17868
     },
     "functions": {
-      "pct": 92.73,
-      "covered": 3294,
-      "total": 3552
+      "pct": 92.64,
+      "covered": 3312,
+      "total": 3575
     },
     "branches": {
-      "pct": 83.95,
-      "covered": 9450,
-      "total": 11256
+      "pct": 83.79,
+      "covered": 9485,
+      "total": 11319
     }
   },
   "tests": {
-    "unit": 4953,
+    "unit": 4963,
     "e2e": 96,
-    "durationMs": 280975,
+    "durationMs": 284738,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 10640
+        "ms": 11835
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5266
+        "ms": 5747
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5216
+        "ms": 5455
+      },
+      {
+        "file": "tests/components/comments/CommentsPanel.test.tsx",
+        "ms": 2898
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2928
-      },
-      {
-        "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 2279
+        "ms": 2827
       }
     ]
   },
   "domain": {
-    "components": 136,
-    "hooks": 19,
+    "components": 137,
+    "hooks": 20,
     "storeSlices": 17,
     "validators": 4,
     "exporters": 14,
@@ -157,7 +157,7 @@
     "churnHotspots": [
       {
         "file": "components/canvas/Canvas.tsx",
-        "commits": 68
+        "commits": 69
       },
       {
         "file": "App.tsx",
@@ -195,16 +195,16 @@
     "nonNull": 106
   },
   "bundle": {
-    "jsGzipKb": 854.2,
-    "cssGzipKb": 19.7,
-    "totalGzipKb": 873.9,
+    "jsGzipKb": 855.4,
+    "cssGzipKb": 19.9,
+    "totalGzipKb": 875.3,
     "budgetKb": 207,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 60753,
     "chapters": 26,
-    "appLoc": 77705,
+    "appLoc": 78074,
     "docToCodeRatio": 0.78
   },
   "featureCoverage": {
@@ -786,17 +786,17 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 66,
-    "commits": 1144,
-    "commits7d": 171,
+    "ageDays": 68,
+    "commits": 1147,
+    "commits7d": 169,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 812
+        "count": 813
       },
       {
         "name": "github-actions[bot]",
-        "count": 316
+        "count": 318
       },
       {
         "name": "Claude",
@@ -808,9 +808,9 @@
       }
     ],
     "churn30d": {
-      "added": 37441,
-      "removed": 10335
+      "added": 37652,
+      "removed": 10209
     },
-    "changelogEntries": 407
+    "changelogEntries": 409
   }
 }
