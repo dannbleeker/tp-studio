@@ -2,6 +2,54 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 208 — touch interactions (bottom-sheet inspector · long-press menu · touch canvas)
+
+The deeper half of the mobile work — making the *canvas itself* usable with a finger, not just fitting the
+chrome onto a small screen. Additive + pointer/viewport-gated; desktop is byte-identical (verified with
+rendered screenshots at 390 / 1280 px, plus 10 new unit/component tests).
+
+- **Bottom-sheet inspector on phones.** Below `sm` the inspector renders as a draggable bottom sheet
+  (`InspectorSheet`) instead of the 320px side slide-over, which on a phone would cover the whole canvas.
+  Two snaps — half (52vh) / full (88vh) — via a grabber drag; swipe the grabber down to dismiss (clears the
+  selection, same contract as the desktop X / backdrop). The tab bar + scrollable body are shared verbatim
+  with the desktop `<aside>`, so both surfaces edit identically. Gated by a new SSR-safe `useMediaQuery` hook
+  (`useIsPhoneViewport` / `useIsCoarsePointer`, built on `useSyncExternalStore`).
+- **Long-press context menu.** Touch has no right-click, and a long-press didn't surface through React
+  Flow's `onNodeContextMenu`, so the rename / delete / group / comment actions were unreachable on touch. A
+  new `useLongPressContextMenu` pointer detector opens the *same* menu on a 500ms stationary touch/pen hold
+  — resolving the pressed element to an entity / edge / pane target and swallowing the trailing tap so the
+  menu isn't immediately closed. Mouse keeps React Flow's native right-click path untouched.
+- **One-finger pan on touch.** With a coarse pointer, left-drag now pans the canvas (`panOnDrag` /
+  `selectionOnDrag` are pointer-aware) — panning is the primary touch navigation gesture, and marquee-select
+  has no natural one-finger equivalent. Fine pointers keep the desktop marquee default.
+- **Finger-sized targets.** `@media (pointer: coarse)` grows React Flow connection handles (28px hit box,
+  8px visible dot unchanged — so edges can be drawn with a finger) and the selection-toolbar buttons.
+- **SelectionToolbar hidden on phones** — redundant with the bottom sheet (full editing) + the long-press
+  menu (same quick verbs), and it would overlap the sheet.
+
+## Session 207 — mobile-friendly chrome pass
+
+Closing the phone/tablet gaps in the editor chrome. The chrome already collapsed gracefully across the
+desktop 1024–1920 px band (the S182 content-priority rules), but below `sm` a handful of affordances were
+either unreachable or crowded off-screen. All changes are responsive-only — no domain, schema, store, or
+canvas-logic changes; verified with rendered screenshots at 375 / 700 / 1280 px.
+
+- **The command palette is reachable on phones again.** `CommandSearch` was `hidden lg:flex` and the
+  overflow ⋮ carries no palette entry, so below `lg` the ⌘K surface was keyboard-only — i.e. unreachable
+  on a touch device. It now renders a compact search-icon button below `lg` (40 px touch target) that
+  opens the same palette; the full field is unchanged at `lg+`.
+- **Zoom / fit controls show on phones.** `CanvasNav` was `hidden sm:flex` and the MiniMap is also
+  `sm`-gated, so a phone had *no* zoom UI at all — only pinch. The chip is now visible at every width; its
+  `ml-28` MiniMap-dodge offset is dropped below `sm` (where the MiniMap is hidden and the corner is clear).
+- **Building Blocks rail no longer crushes the phone canvas.** At 236 px the rail ate most of a phone
+  screen, and it defaults to expanded. Hidden below `sm` (returns at `sm+`); creation stays available via
+  canvas double-click and the palette.
+- **Tab close (✕) is usable on touch.** It was `opacity-0` until hover — invisible on touch. Now always
+  visible below `sm`; the hover-reveal is kept at `sm+` to stay clean on the desktop layout.
+- **Bigger touch targets.** A `@media (pointer: coarse)` block grows the floating canvas-nav chip and the
+  top-bar action buttons to a comfortable hit size — scoped so the fixed-height tab strip and the dense
+  inspector body are untouched.
+
 ## Session 206 — Cohen's break hint outlives the wizard (and a backlog item declined)
 
 **Declined: the EC per-TYPE verbalisation reading order.** The last open backlog item asked the

@@ -67,8 +67,10 @@ Your work auto-saves to this browser on every change. Closing the tab and reopen
 | Overflow (⋮) | Top-right | Theme, Browse Lock, Help, layout mode, and the rest. |
 | Canvas | Center | The infinite dot-grid where your diagram lives. |
 | Zoom controls | Bottom-center | Zoom in, zoom out, fit-to-view. |
-| Inspector | Right panel | Slides in when you select an entity or edge. Holds title, type, description, CLR warnings, and delete. Shares the dock with the CLR panel — opening one closes the other. |
+| Inspector | Right panel | Slides in when you select an entity or edge. Holds title, type, description, CLR warnings, and delete. Shares the dock with the CLR panel — opening one closes the other. On a phone it opens as a **bottom sheet** instead — drag the grabber to expand it (half / full) or swipe it down to close. |
 | Toasts | Bottom-center, overlay | Brief confirmations: "Saved", "Loaded example CRT", "3 open CLR concerns", etc. |
+
+**On a touch device.** The full toolset works with a finger: **tap** a node or edge to select it (the inspector opens as a bottom sheet), **long-press** anything to open its right-click menu (rename, delete, group, comment, convert…), **drag one finger** to pan and **pinch** to zoom, and drag from a node's connection dot — its touch target is enlarged — to draw an edge to another node. The Building Blocks rail and the floating selection toolbar fold away on phones to give the canvas full width; add entities by double-tapping the canvas or from the command palette (the ⌕ button in the top bar).
 
 **The command palette.** The command-search field — or `Cmd/Ctrl+K` from anywhere — opens the palette, the fastest route to any action. Before you type, commands are grouped into labelled sections (**File / Edit / View / Review / Export / Help**) with your **five most-recent** commands pinned in a "Recent" group at the top; start typing and that structure gives way to a ranked search across every command. Typing an **entity or group title** also surfaces **"Go to: …"** rows — pick one to jump the viewport + selection straight to that node (the same jump the Find panel does, so you can navigate to a named node from the palette without reaching for `Cmd/Ctrl+F`). `Cmd/Ctrl+E` opens the palette pre-filtered to Export.
 
@@ -78,7 +80,7 @@ The rail down the left edge is the type-led way to add entities. It lists exactl
 
 - **Click a block** to create that entity and drop it at the centre of your current view, ready to name.
 - Blocks that belong to **other** diagram types show dimmed, with a hint of where they live — a quiet map of the whole vocabulary without cluttering the active palette.
-- **Collapse** the rail with the chevron in its header when you want more canvas; the choice is remembered per browser.
+- **Collapse** the rail with the chevron in its header when you want more canvas; the choice is remembered per browser. On phone-sized screens the rail hides automatically to give the canvas full width — double-click the canvas or use the command palette (`Ctrl/Cmd+K`) to add entities there.
 
 The rail is additive — double-clicking the canvas to create an entity still works exactly as before.
 

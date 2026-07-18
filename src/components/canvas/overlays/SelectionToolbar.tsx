@@ -41,6 +41,7 @@ import { branchFor, type Verb, verbsForBranch } from '@/domain/selectionVerbs';
 import { paletteKbdForCommand } from '@/domain/shortcuts';
 import { Z } from '@/domain/zLayers';
 import { useCanvasInteractionState } from '@/hooks/useCanvasInteractionState';
+import { useIsPhoneViewport } from '@/hooks/useMediaQuery';
 import { getSelectionViewportRect } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -91,6 +92,10 @@ export function SelectionToolbar() {
   // X-button click flips it explicitly without firing a verb.
   const tipDismissed = useDocumentStore((s) => s.selectionToolbarTipDismissed);
   const dismissTip = useDocumentStore((s) => s.dismissSelectionToolbarTip);
+  // Phone: the floating toolbar is redundant with the bottom-sheet inspector
+  // (full editing) and the long-press context menu (same quick verbs), and it
+  // would overlap the sheet. Hide it there — the two touch surfaces cover it.
+  const isPhone = useIsPhoneViewport();
   const selection = useDocumentStore((s) => s.selection);
   // Junctor-topology hash — the verb list reads `edges` in exactly ONE place:
   // `verbsForBranch`'s `multi-edges` branch, whose `any{And,Or,Xor}Grouped` checks
@@ -214,6 +219,7 @@ export function SelectionToolbar() {
     transform,
   ]);
 
+  if (isPhone) return null;
   if (!rect) return null;
   if (verbs.length === 0) return null;
 

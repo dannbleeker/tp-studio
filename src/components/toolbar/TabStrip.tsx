@@ -121,7 +121,10 @@ export function TabStrip() {
               type="button"
               aria-label={`Close ${chip.title}`}
               onClick={() => closeTab(chip.id)}
-              className="shrink-0 cursor-pointer rounded-sm p-0.5 text-neutral-400 opacity-0 transition hover:bg-neutral-300/60 hover:text-neutral-700 focus:opacity-100 group-hover:opacity-100 dark:hover:bg-neutral-700/60 dark:hover:text-neutral-200"
+              // Always visible below `sm` — touch devices have no hover, so a
+              // hover-reveal ✕ is unreachable there. At `sm+` it stays hidden
+              // until hover/focus to keep the strip clean on the desktop layout.
+              className="shrink-0 cursor-pointer rounded-sm p-0.5 text-neutral-400 opacity-100 transition hover:bg-neutral-300/60 hover:text-neutral-700 focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-neutral-700/60 dark:hover:text-neutral-200"
             >
               <X className="h-3 w-3" />
             </button>

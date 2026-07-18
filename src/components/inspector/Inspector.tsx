@@ -5,6 +5,7 @@ import { validationFingerprint } from '@/domain/fingerprint';
 import type { Warning } from '@/domain/types';
 import { validate } from '@/domain/validators';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
+import { useIsPhoneViewport } from '@/hooks/useMediaQuery';
 import { useSelectionShape } from '@/hooks/useSelectionShape';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -14,6 +15,7 @@ import { EdgeInspector } from './EdgeInspector';
 import { EntityInspector } from './EntityInspector';
 import { GroupInspector } from './GroupInspector';
 import { InjectionWorkbench } from './InjectionWorkbench';
+import { InspectorSheet } from './InspectorSheet';
 import { MultiInspector } from './MultiInspector';
 
 type ECTab = 'inspector' | 'verbalisation' | 'injections';
@@ -80,6 +82,64 @@ export function Inspector() {
       : selection.kind === 'edges' && singleId
         ? (warningsByTarget.edgeMap.get(singleId) ?? EMPTY)
         : EMPTY;
+
+  // Phone gate — below `sm` the inspector renders as a bottom sheet
+  // (`InspectorSheet`) rather than the right-edge slide-over below.
+  const isPhone = useIsPhoneViewport();
+
+  // The tab bar + scrollable content — shared verbatim between the desktop
+  // `<aside>` and the phone bottom sheet, so both surfaces edit the same way.
+  const body = (
+    <>
+      {isEC && (
+        <TabBar
+          ariaLabel="Evaporating Cloud inspector views"
+          active={ecTab}
+          onChange={setECTab}
+          tabs={
+            [
+              { id: 'inspector', label: 'Inspector' },
+              { id: 'verbalisation', label: 'Verbalisation' },
+              { id: 'injections', label: 'Injections' },
+            ] satisfies { id: ECTab; label: string }[]
+          }
+        />
+      )}
+      <div className="flex-1 overflow-y-auto p-4">
+        {isEC && ecTab === 'verbalisation' && (
+          <Suspense fallback={null}>
+            <VerbalisationStrip compact={false} />
+          </Suspense>
+        )}
+        {isEC && ecTab === 'injections' && <InjectionWorkbench />}
+        {(!isEC || ecTab === 'inspector') && (
+          <>
+            {isMulti && selection.kind === 'entities' && (
+              <MultiInspector kind="entities" ids={selection.ids} />
+            )}
+            {isMulti && selection.kind === 'edges' && (
+              <MultiInspector kind="edges" ids={selection.ids} />
+            )}
+            {isSingleGroup && singleId && <GroupInspector groupId={singleId} />}
+            {selection.kind === 'entities' && singleId && !isSingleGroup && (
+              <EntityInspector entityId={singleId} warnings={selectionWarnings} />
+            )}
+            {selection.kind === 'edges' && singleId && (
+              <EdgeInspector edgeId={singleId} warnings={selectionWarnings} />
+            )}
+          </>
+        )}
+      </div>
+    </>
+  );
+
+  if (isPhone) {
+    return (
+      <InspectorSheet open={open} title={headerLabel} onClose={clearSelection}>
+        {body}
+      </InspectorSheet>
+    );
+  }
 
   return (
     <>
@@ -164,45 +224,7 @@ export function Inspector() {
               <X className="h-4 w-4" />
             </Button>
           </header>
-          {isEC && (
-            <TabBar
-              ariaLabel="Evaporating Cloud inspector views"
-              active={ecTab}
-              onChange={setECTab}
-              tabs={
-                [
-                  { id: 'inspector', label: 'Inspector' },
-                  { id: 'verbalisation', label: 'Verbalisation' },
-                  { id: 'injections', label: 'Injections' },
-                ] satisfies { id: ECTab; label: string }[]
-              }
-            />
-          )}
-          <div className="flex-1 overflow-y-auto p-4">
-            {isEC && ecTab === 'verbalisation' && (
-              <Suspense fallback={null}>
-                <VerbalisationStrip compact={false} />
-              </Suspense>
-            )}
-            {isEC && ecTab === 'injections' && <InjectionWorkbench />}
-            {(!isEC || ecTab === 'inspector') && (
-              <>
-                {isMulti && selection.kind === 'entities' && (
-                  <MultiInspector kind="entities" ids={selection.ids} />
-                )}
-                {isMulti && selection.kind === 'edges' && (
-                  <MultiInspector kind="edges" ids={selection.ids} />
-                )}
-                {isSingleGroup && singleId && <GroupInspector groupId={singleId} />}
-                {selection.kind === 'entities' && singleId && !isSingleGroup && (
-                  <EntityInspector entityId={singleId} warnings={selectionWarnings} />
-                )}
-                {selection.kind === 'edges' && singleId && (
-                  <EdgeInspector edgeId={singleId} warnings={selectionWarnings} />
-                )}
-              </>
-            )}
-          </div>
+          {body}
         </div>
       </aside>
     </>

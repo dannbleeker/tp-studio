@@ -96,7 +96,7 @@ export function BlocksRail() {
 
   if (collapsed) {
     return (
-      <div className="flex w-9 shrink-0 flex-col items-center border-neutral-200 border-r bg-neutral-50 py-2 dark:border-neutral-800 dark:bg-neutral-900 print:hidden">
+      <div className="hidden w-9 shrink-0 flex-col items-center border-neutral-200 border-r bg-neutral-50 py-2 sm:flex dark:border-neutral-800 dark:bg-neutral-900 print:hidden">
         <button
           type="button"
           onClick={() => setCollapsed(false)}
@@ -114,7 +114,10 @@ export function BlocksRail() {
   return (
     <aside
       aria-label="Building blocks"
-      className="flex w-[236px] shrink-0 flex-col border-neutral-200 border-r bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 print:hidden"
+      // Hidden below `sm`: at 236px the rail would eat most of a phone screen.
+      // Entity creation stays available via canvas double-click + the command
+      // palette; the rail returns at `sm+` where there's room beside the canvas.
+      className="hidden w-[236px] shrink-0 flex-col border-neutral-200 border-r bg-neutral-50 sm:flex dark:border-neutral-800 dark:bg-neutral-900 print:hidden"
     >
       <div className="flex items-start justify-between gap-2 px-3 pt-3 pb-2">
         <div className="min-w-0">

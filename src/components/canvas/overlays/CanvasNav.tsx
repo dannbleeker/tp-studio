@@ -51,7 +51,11 @@ export function CanvasNav() {
   return (
     <div
       data-component={DataComponent.CanvasNav}
-      className="pointer-events-auto absolute bottom-3 left-1/2 z-10 ml-28 hidden -translate-x-1/2 select-none items-center gap-0.5 rounded-md border border-neutral-200 bg-white/95 p-0.5 shadow-xs sm:flex dark:border-neutral-800 dark:bg-neutral-900/95"
+      // Visible at every width — on phones this is the ONLY zoom/fit affordance
+      // (the MiniMap + CanvasNav's old `sm:` gate both hid it below 640px). The
+      // `ml-28` nudge only dodges the MiniMap, which itself only shows at `sm+`,
+      // so drop the offset on phone-narrow viewports where the corner is clear.
+      className="pointer-events-auto absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 select-none items-center gap-0.5 rounded-md border border-neutral-200 bg-white/95 p-0.5 shadow-xs sm:ml-28 dark:border-neutral-800 dark:bg-neutral-900/95"
     >
       <button
         type="button"

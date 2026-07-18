@@ -15,24 +15,38 @@ export function CommandSearch() {
   const paletteAria = shortcutToAria(SHORTCUT_BY_ID.palette?.keys ?? '');
 
   return (
-    <button
-      type="button"
-      onClick={togglePalette}
-      aria-keyshortcuts={paletteAria}
-      aria-label="Search or run a command"
-      title={`Search or run a command  ${cmdKey}+K`}
-      // Hidden below `lg` (content-priority responsive collapse from the
-      // redesign mockup): on narrower viewports the centre search field gives
-      // up its space first so the title + right-hand action clusters never wrap
-      // or scroll. The ⌘K palette stays fully reachable via the shortcut and
-      // the TopBar overflow ▾ at every width.
-      className="pointer-events-auto hidden w-full max-w-md items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-neutral-500 text-xs transition hover:border-neutral-300 hover:bg-neutral-50 lg:flex dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:border-neutral-700"
-    >
-      <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
-      <span className="flex-1 truncate text-left">Search or run a command…</span>
-      <kbd className="hidden shrink-0 rounded-sm border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500 sm:inline dark:border-neutral-800 dark:bg-neutral-900">
-        {cmdKey}+K
-      </kbd>
-    </button>
+    <>
+      {/* Full search field — `lg`+ only. On narrower viewports the centre field
+          gives up its space first so the title + right-hand clusters never wrap
+          or scroll (content-priority collapse from the redesign mockup). */}
+      <button
+        type="button"
+        onClick={togglePalette}
+        aria-keyshortcuts={paletteAria}
+        aria-label="Search or run a command"
+        title={`Search or run a command  ${cmdKey}+K`}
+        className="pointer-events-auto hidden w-full max-w-md items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-neutral-500 text-xs transition hover:border-neutral-300 hover:bg-neutral-50 lg:flex dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:border-neutral-700"
+      >
+        <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
+        <span className="flex-1 truncate text-left">Search or run a command…</span>
+        <kbd className="hidden shrink-0 rounded-sm border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500 sm:inline dark:border-neutral-800 dark:bg-neutral-900">
+          {cmdKey}+K
+        </kbd>
+      </button>
+      {/* Compact icon fallback below `lg` — keeps the ⌘K palette a tap away on
+          phones/tablets, where the field is collapsed and there's no keyboard
+          shortcut to reach it. `min-h`/`min-w` give it a comfortable touch
+          target. */}
+      <button
+        type="button"
+        onClick={togglePalette}
+        aria-keyshortcuts={paletteAria}
+        aria-label="Search or run a command"
+        title="Search or run a command"
+        className="pointer-events-auto grid h-9 min-h-[40px] w-9 min-w-[40px] place-items-center rounded-md border border-neutral-200 bg-white text-neutral-500 transition hover:border-neutral-300 hover:bg-neutral-50 lg:hidden dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:border-neutral-700"
+      >
+        <Search className="h-4 w-4" aria-hidden />
+      </button>
+    </>
   );
 }
