@@ -78,7 +78,7 @@ The rail down the left edge is the type-led way to add entities. It lists exactl
 
 - **Click a block** to create that entity and drop it at the centre of your current view, ready to name.
 - Blocks that belong to **other** diagram types show dimmed, with a hint of where they live — a quiet map of the whole vocabulary without cluttering the active palette.
-- **Collapse** the rail with the chevron in its header when you want more canvas; the choice is remembered per browser.
+- **Collapse** the rail with the chevron in its header when you want more canvas; the choice is remembered per browser. On phone-sized screens the rail hides automatically to give the canvas full width — double-click the canvas or use the command palette (`Ctrl/Cmd+K`) to add entities there.
 
 The rail is additive — double-clicking the canvas to create an entity still works exactly as before.
 

@@ -155,6 +155,27 @@ body {
   --text-node: 16px;
 }
 
+/*
+ * Touch ergonomics — on coarse pointers (finger / stylus) the chrome's
+ * compact icon buttons sit below a comfortable hit target. Grow their tap
+ * area on touch WITHOUT changing the mouse/desktop layout (no width query,
+ * so a touch-laptop keeps its dense look under the mouse). Scoped to two
+ * flexible-height containers — the floating canvas-nav chip and the top-bar
+ * action cluster — so nothing inside the fixed-height tab strip gets clipped,
+ * and the scrollable inspector's dense controls are left untouched.
+ */
+@media (pointer: coarse) {
+  [data-component="canvas-nav"] button {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  [data-component="top-bar"] button {
+    min-height: 38px;
+    min-width: 38px;
+  }
+}
+
 /* High-contrast layer: pure black background, pure white text, thicker
  * focus rings. Layers on top of .dark — applied together. */
 .theme-hc body {
