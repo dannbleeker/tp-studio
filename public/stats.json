@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-07-18T19:03:22.710Z",
-  "commit": "9448480",
+  "generatedAt": "2026-07-20T09:38:17.765Z",
+  "commit": "8ebc916",
   "headline": {
     "linesTsJs": 153059,
     "tests": 5059,
-    "lineCoveragePct": 95.45,
-    "commits": 1147,
-    "ageDays": 68,
+    "lineCoveragePct": 95.43,
+    "commits": 1149,
+    "ageDays": 69,
     "trackedFiles": 1223,
     "featureManualPct": 99.6,
     "featureBookPct": 69.5,
@@ -46,50 +46,50 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.45,
-      "covered": 14587,
+      "pct": 95.43,
+      "covered": 14584,
       "total": 15281
     },
     "statements": {
-      "pct": 93,
-      "covered": 16618,
+      "pct": 92.98,
+      "covered": 16614,
       "total": 17868
     },
     "functions": {
-      "pct": 92.64,
-      "covered": 3312,
+      "pct": 92.55,
+      "covered": 3309,
       "total": 3575
     },
     "branches": {
-      "pct": 83.79,
-      "covered": 9485,
+      "pct": 83.78,
+      "covered": 9484,
       "total": 11319
     }
   },
   "tests": {
     "unit": 4963,
     "e2e": 96,
-    "durationMs": 284738,
+    "durationMs": 283978,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11835
+        "ms": 11439
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5747
+        "ms": 5481
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5455
-      },
-      {
-        "file": "tests/components/comments/CommentsPanel.test.tsx",
-        "ms": 2898
+        "ms": 5275
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2827
+        "ms": 3071
+      },
+      {
+        "file": "tests/components/CommandPalette.test.tsx",
+        "ms": 2610
       }
     ]
   },
@@ -131,7 +131,7 @@
     ]
   },
   "quality": {
-    "mutationScore": 74.02,
+    "mutationScore": 72.95,
     "leastCovered": [
       {
         "file": "components/canvas/edges/ChallengeButton.tsx",
@@ -786,9 +786,9 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 68,
-    "commits": 1147,
-    "commits7d": 169,
+    "ageDays": 69,
+    "commits": 1149,
+    "commits7d": 66,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -796,7 +796,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 318
+        "count": 320
       },
       {
         "name": "Claude",
@@ -808,8 +808,8 @@
       }
     ],
     "churn30d": {
-      "added": 37652,
-      "removed": 10209
+      "added": 37715,
+      "removed": 10261
     },
     "changelogEntries": 409
   }
