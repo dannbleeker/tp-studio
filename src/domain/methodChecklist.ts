@@ -1,3 +1,5 @@
+import { en } from '@/i18n/locales/en';
+import type { Messages } from '@/i18n/types';
 import type { DiagramType } from './types';
 
 /**
@@ -11,9 +13,14 @@ import type { DiagramType } from './types';
  * The step ids are stable, lowercase, dot-prefixed by diagram type
  * (`crt.scope`, `frt.injections`, etc.) so a doc's `methodChecklist` map
  * survives a switch of diagram type without colliding — unknown keys are
- * silently ignored on read. Updating a step's label is fine, but changing
- * an id is a breaking change that drops the existing checkmark; treat ids
- * as part of the JSON wire format.
+ * silently ignored on read. Changing an id is a breaking change that drops
+ * the existing checkmark; treat ids as part of the JSON wire format.
+ *
+ * Session 209 — the labels and hints moved to the message catalogue
+ * (`src/i18n/locales/en.ts`, under `method`), keyed by those same step ids.
+ * Because the id was ALREADY the wire-format key, there is no second key to
+ * keep in sync. This file keeps what is structure rather than copy: which
+ * steps exist and in what order.
  *
  * Labels and hints are kept concise; the checklist is meant to be glanceable
  * in the Document Inspector dialog, not a full method tutorial.
@@ -25,381 +32,100 @@ export type MethodStep = {
   hint?: string;
 };
 
-const CRT: MethodStep[] = [
-  {
-    id: 'crt.scope',
-    label: 'Define the system scope',
-    hint: 'Fill in the System Scope section above — goal, boundaries, success measures.',
-  },
-  {
-    id: 'crt.udes',
-    label: 'List 3–5 critical UDEs',
-    hint: 'The painful effects you want to eliminate. Concrete, observable, present-tense.',
-  },
-  {
-    id: 'crt.connect',
-    label: 'Connect UDEs into causal chains',
-    hint: 'Read each edge aloud as "X exists, therefore Y exists." If it doesn\'t read true, restructure.',
-  },
-  {
-    id: 'crt.deepen',
-    label: 'Build down to root causes',
-    hint: 'Keep asking "why does this happen?" until you hit a cause you actually control or influence.',
-  },
-  {
-    id: 'crt.clr',
-    label: 'Apply CLR challenges at every step',
-    hint: 'Clarity → Existence → Sufficiency. Resolve each open warning or restructure the diagram.',
-  },
-  {
-    id: 'crt.span',
-    label: 'Test against your locus — control / influence / external',
-    hint: 'A root cause outside what you can affect is rarely the real root — keep digging.',
-  },
-  {
-    id: 'crt.loops',
-    label: 'Look for reinforcing loops',
-    hint: 'Vicious circles explain why UDEs persist. Tag loop-closing edges as back-edges (right-click the edge).',
-  },
-  {
-    id: 'crt.archive',
-    label: "Archive rejected branches, don't delete them",
-    hint: 'Move pruned alternatives into a group so the path-not-taken stays visible.',
-  },
-  {
-    id: 'crt.core',
-    label: 'Identify the Core Driver',
-    hint: 'Run "Find core driver(s)" from the palette — the single cause whose elimination clears the most UDEs.',
-  },
+const CRT: readonly string[] = [
+  'crt.scope',
+  'crt.udes',
+  'crt.connect',
+  'crt.deepen',
+  'crt.clr',
+  'crt.span',
+  'crt.loops',
+  'crt.archive',
+  'crt.core',
 ];
 
-const FRT: MethodStep[] = [
-  {
-    id: 'frt.scope',
-    label: 'Define the desired future state',
-    hint: 'Use the System Scope section — what does success look like, measurably?',
-  },
-  {
-    id: 'frt.injections',
-    label: 'Choose your initial injections',
-    hint: "The actions or conditions you'll introduce into the system. Start with one; add more as the tree demands.",
-  },
-  {
-    id: 'frt.build',
-    label: 'Build up causal chains to the Desired Effects',
-    hint: 'Each edge should read "X exists, therefore Y exists" — the injections drive the desired effects via intermediate states.',
-  },
-  {
-    id: 'frt.clr',
-    label: 'Apply CLR challenges, especially predicted-effect existence',
-    hint: 'Are the predicted intermediate effects realistic? Are sufficient conditions stated?',
-  },
-  {
-    id: 'frt.negative',
-    label: 'Watch for Negative Branches',
-    hint: 'Each injection can spawn unintended UDEs. Capture them as a sub-tree and either mitigate or pick a different injection.',
-  },
-  {
-    id: 'frt.reinforce',
-    label: 'Design positive reinforcing loops',
-    hint: 'Self-sustaining loops where success feeds itself. Tag the loop-closing edge as a back-edge to model it explicitly.',
-  },
+const FRT: readonly string[] = [
+  'frt.scope',
+  'frt.injections',
+  'frt.build',
+  'frt.clr',
+  'frt.negative',
+  'frt.reinforce',
 ];
 
-const PRT: MethodStep[] = [
-  {
-    id: 'prt.scope',
-    label: 'State the ambitious objective',
-    hint: 'Use the System Scope section — what would be a clearly bold but achievable target?',
-  },
-  {
-    id: 'prt.obstacles',
-    label: 'Identify the obstacles in the way',
-    hint: "What's keeping you from the objective? Brainstorm freely; you'll prune later.",
-  },
-  {
-    id: 'prt.io',
-    label: 'For each obstacle, define an Intermediate Objective',
-    hint: 'The condition that, once met, removes that obstacle. Pair them 1-to-1 if possible.',
-  },
-  {
-    id: 'prt.sequence',
-    label: 'Sequence the IOs',
-    hint: 'Which IOs depend on others? PRT reads bottom-up — earliest prerequisites at the bottom.',
-  },
-  {
-    id: 'prt.clr',
-    label: 'Apply CLR challenges',
-    hint: 'Especially entity-existence (is this really an obstacle?) and sufficiency (does meeting the IO actually remove it?).',
-  },
-  {
-    id: 'prt.archive',
-    label: 'Archive pruned alternatives',
-    hint: "Don't delete considered-but-rejected IOs — group + collapse them so the rationale stays.",
-  },
+const PRT: readonly string[] = [
+  'prt.scope',
+  'prt.obstacles',
+  'prt.io',
+  'prt.sequence',
+  'prt.clr',
+  'prt.archive',
 ];
 
-const TT: MethodStep[] = [
-  {
-    id: 'tt.scope',
-    label: 'State the desired outcome',
-    hint: "Use the System Scope section — what's the end state this plan produces?",
-  },
-  {
-    id: 'tt.actions',
-    label: 'List the actions required',
-    hint: 'The do-something steps. Action-verb framing: "Audit X," "Draft Y," "Roll out Z."',
-  },
-  {
-    id: 'tt.preconditions',
-    label: 'Identify a precondition for each action',
-    hint: "The existing reality that lets each action work. If you can't name it, use an Unspecified placeholder (EntityInspector checkbox) and come back.",
-  },
-  {
-    id: 'tt.triples',
-    label: 'Build the (Action + Precondition → Outcome) triples',
-    hint: 'Each step is structurally complete when its outcome has BOTH an action and a non-action precondition feeding it.',
-  },
-  {
-    id: 'tt.appropriate-condition',
-    label: 'Test each action for its appropriate condition',
-    hint: 'For every action ask two things (Ch. 20 Layer 7; Ch. 25): (1) can you actually take it — is it within your span of control, and its precondition true? and (2) will it avoid serious negative side-effects (spin off a Negative Branch Reservation if you are unsure)? Record the "why" of each action in its Need field.',
-  },
-  {
-    id: 'tt.clr',
-    label: 'Apply CLR challenges (including Complete-Step)',
-    hint: 'The TT-specific Complete-Step rule fires on any action whose outcome lacks a precondition sibling.',
-  },
-  {
-    id: 'tt.unspecified',
-    label: 'Capture inarticulate reservations as Unspecified placeholders',
-    hint: "When you sense something belongs but can't name it yet, add a placeholder Precondition and keep moving.",
-  },
+const TT: readonly string[] = [
+  'tt.scope',
+  'tt.actions',
+  'tt.preconditions',
+  'tt.triples',
+  'tt.appropriate-condition',
+  'tt.clr',
+  'tt.unspecified',
 ];
 
-const EC: MethodStep[] = [
-  {
-    id: 'ec.conflict',
-    label: 'State the recurring conflict in two sentences',
-    hint: '"I want X, but I also want Y\'." Verbalize before drawing.',
-  },
-  {
-    id: 'ec.goal',
-    label: 'Articulate the common goal both sides serve',
-    hint: 'The Goal box (leftmost) — what positive outcome both Wants are trying to produce.',
-  },
-  {
-    id: 'ec.needs',
-    label: 'Name both Needs',
-    hint: 'Each Need is the prerequisite condition the corresponding Want is trying to satisfy.',
-  },
-  {
-    id: 'ec.syntax',
-    label: 'Tidy the box wording — clean statements, right kinds',
-    hint: 'Each box is a statement, not a cause-and-effect sentence (no "if / because / in order to" — those belong on the arrows). D and D′ are actions; B and C are the positive needs they serve.',
-  },
-  {
-    id: 'ec.verbalize',
-    label: 'Verbalize each edge as a necessary-condition statement',
-    hint: '"In order to satisfy [Need], we must obtain [Want]" — read every edge aloud before continuing.',
-  },
-  {
-    id: 'ec.jeopardy',
-    label: 'Read the diagonals — does each side jeopardize the other?',
-    hint: 'Say it aloud: "Doing D puts need C in jeopardy; doing D′ puts need B in jeopardy." If a diagonal doesn\'t bite, the conflict isn\'t real yet.',
-  },
-  {
-    id: 'ec.assumptions',
-    label: 'Brainstorm "…because" assumptions on each edge',
-    hint: 'Every assumption should start with "…because" — the new-assumption input pre-fills the prefix on EC edges.',
-  },
-  {
-    id: 'ec.clr',
-    label: 'Apply CLR challenges on each assumption',
-    hint: 'Especially clarity (is it stated as a fact rather than an opinion?) and existence (is it actually true here?).',
-  },
-  {
-    id: 'ec.injection',
-    label: 'Find an injection that breaks the conflict',
-    hint: 'A condition that lets you have both Wants — or makes one Want unnecessary. Spawn a follow-up FRT to test it.',
-  },
+const EC: readonly string[] = [
+  'ec.conflict',
+  'ec.goal',
+  'ec.needs',
+  'ec.syntax',
+  'ec.verbalize',
+  'ec.jeopardy',
+  'ec.assumptions',
+  'ec.clr',
+  'ec.injection',
 ];
 
-// FL-DT4 — Strategy & Tactics Tree. Goldratt's recipe for building an S&T
-// cascade: FIRST do the diagnosis, then anchor the apex strategy, articulate each
-// layer's tactic + the three DIRECTIONAL assumptions (necessary points up to the
-// parent, parallel bridges strategy↔tactic, sufficiency points down to the
-// children), then recursively decompose. Session 198 (backlog B, Ch.34 Ferguson).
-const ST: MethodStep[] = [
-  {
-    id: 'st.analysis-first',
-    label: 'Do the analysis first — the Strategy & Tactics tree comes last',
-    hint: 'Run the full diagnosis before deploying: a Current Reality Tree to find the core problem, an Evaporating Cloud to surface the conflict, a Future Reality Tree to test the fix. Every assumption you record here should already be a validated fact of life — the Strategy & Tactics tree replaces the Prerequisite Tree as the deployment document.',
-  },
-  {
-    id: 'st.apex',
-    label: 'State the apex strategy',
-    hint: 'The top-level objective the whole tree decomposes from — what does success at the highest level look like? The apex has no parent, so it carries no necessary assumption.',
-  },
-  {
-    id: 'st.tactic',
-    label: 'Name the tactic that achieves the strategy',
-    hint: 'The "how" of the current step. Action-verb framing: "Re-engineer X," "Establish Y," "Roll out Z." The strategy is the outcome (what); the tactic is the action (how).',
-  },
-  {
-    id: 'st.na',
-    label: 'State the Necessary Assumption (why the step is needed)',
-    hint: 'Why must this step exist at all? The necessary assumption justifies the step UPWARD to its parent — what the level above needs from it. The apex has none (nothing sits above it).',
-  },
-  {
-    id: 'st.pa',
-    label: 'State the Parallel Assumption (why this tactic fits)',
-    hint: 'Why is THIS tactic the right way to reach the strategy, versus the alternatives? The parallel assumption bridges the step’s own strategy and tactic — "if the strategy and these assumptions hold, then this tactic."',
-  },
-  {
-    id: 'st.sa',
-    label: 'State the Sufficiency Assumption (why it needs sub-steps)',
-    hint: "Why isn't this step enough on its own? The sufficiency assumption justifies breaking it DOWNWARD into sub-steps that are jointly sufficient. A leaf, with no children, carries none.",
-  },
-  {
-    id: 'st.decompose',
-    label: 'Decompose into two or more jointly-sufficient sub-steps',
-    hint: 'Split the step into the sub-steps that together are sufficient for it — two or more (a single sub-step should fold back in). Each sub-step’s strategy is what the parent tactic needs from it. Repeat until a named team can plan against the leaf.',
-  },
+const ST: readonly string[] = [
+  'st.analysis-first',
+  'st.apex',
+  'st.tactic',
+  'st.na',
+  'st.pa',
+  'st.sa',
+  'st.decompose',
 ];
 
-// FL-DT5 — Freeform diagrams have no canonical recipe. Empty checklist
-// is intentional: the Document Inspector simply hides the section. If
-// users later request a "general thinking-on-paper" checklist we can
-// add one without a schema change.
-const FREEFORM: MethodStep[] = [];
+const FREEFORM: readonly string[] = [];
 
-// Session 134 / spec major gap #5 — NBR (Negative Branch Reservation).
-// The discipline: pick a candidate injection, trace forward, find where
-// the chain spawns UDEs, then decide reactive mitigation vs proactive
-// redesign for each. Step ids are dot-prefixed `nbr.*` like the others.
-const NBR: MethodStep[] = [
-  {
-    id: 'nbr.injection',
-    label: 'State the candidate injection',
-    hint: 'The change you\'re considering. Concrete and singular — "we add a 1-week QA gate", not "improve quality".',
-  },
-  {
-    id: 'nbr.forward',
-    label: 'Trace forward to the desired effects',
-    hint: "The reason you'd adopt this injection in the first place. Same chains as an FRT.",
-  },
-  {
-    id: 'nbr.turning-point',
-    label: 'Identify the negative-branch turning point',
-    hint: 'The first effect where the chain starts heading somewhere bad. Often a side-consequence the FRT skipped.',
-  },
-  {
-    id: 'nbr.udes',
-    label: 'Articulate each UDE in the branch',
-    hint: 'Present-tense, observable, concrete. Same standard as CRT UDEs.',
-  },
-  {
-    id: 'nbr.mitigation',
-    label: 'Choose mitigation: reactive or proactive',
-    hint: "Reactive = an action that breaks the chain after the UDE starts. Proactive = swap the original injection for one that doesn't spawn the branch.",
-  },
-  {
-    id: 'nbr.clr',
-    label: 'Apply CLR to the branch',
-    hint: "A weak NBR is one where the UDE actually wouldn't follow — challenge the if-then steps before you over-invest in mitigation.",
-  },
-  {
-    id: 'nbr.decision',
-    label: 'Decide: adopt, modify, or reject the injection',
-    hint: 'Capture the call so a reviewer six months from now knows you considered the branch and chose deliberately.',
-  },
+const NBR: readonly string[] = [
+  'nbr.injection',
+  'nbr.forward',
+  'nbr.turning-point',
+  'nbr.udes',
+  'nbr.mitigation',
+  'nbr.clr',
+  'nbr.decision',
 ];
 
-// Session 77 / brief §5 — Goal Tree (Dettmer's IO Map). Session 195 synced
-// the recipe with Dettmer's abbreviated construction checklist (*The Logical
-// Thinking Process* 2007, Fig 3.14): system boundary first, owner consensus
-// on the goal, the 3–5-per-CSF / two-layer NC bounds, and outside scrutiny
-// as the closing step. (Fig 3.14's arrange/connect conventions — goal on
-// top, vertical single arrows, minimal crossovers — are what the auto-layout
-// already enforces, so they don't need a manual step.)
-const GOAL_TREE: MethodStep[] = [
-  {
-    id: 'goalTree.system',
-    label: 'Define the system boundary',
-    hint: 'Whose tree is this — company, division, team, yourself? The boundary decides who owns the Goal and which conditions are inside your reach.',
-  },
-  {
-    id: 'goalTree.goal',
-    label: 'State the Goal',
-    hint: "One sentence. What is the single outcome the system exists for? Frame it as the positive end-state, not a problem — and get the system's owners to agree to it.",
-  },
-  {
-    id: 'goalTree.csfs',
-    label: 'List 3–5 Critical Success Factors',
-    hint: 'The few high-level objectives that, together, achieve the Goal. Each must be necessary — the last milestones before the Goal can be declared met.',
-  },
-  {
-    id: 'goalTree.ncs',
-    label: 'For each CSF, identify Necessary Conditions',
-    hint: 'What MUST be in place for this CSF? Read each edge as "in order to {CSF}, we must {NC}." Keep to 3–5 per CSF and at most two NC layers — deeper detail is execution planning (a PRT).',
-  },
-  {
-    id: 'goalTree.verify',
-    label: 'Test necessity at every layer',
-    hint: "If a parent could still be achieved without a child, that child isn't necessary — restructure.",
-  },
-  {
-    id: 'goalTree.gaps',
-    label: 'Look for missing conditions',
-    hint: "Conjoin all children of a parent. If the conjunction doesn't guarantee the parent, you're missing one.",
-  },
-  {
-    id: 'goalTree.scrutiny',
-    label: 'Enlist outside scrutiny',
-    hint: 'Share the tree (copy a share link) and collect comments: missing CSFs or NCs, wrong connections, low-level NCs to trim. Stop when a fresh reader adds nothing.',
-  },
+const GOAL_TREE: readonly string[] = [
+  'goalTree.system',
+  'goalTree.goal',
+  'goalTree.csfs',
+  'goalTree.ncs',
+  'goalTree.verify',
+  'goalTree.gaps',
+  'goalTree.scrutiny',
 ];
 
-// Interference Diagram (Sproull & Nelson, *Epiphanized*, App. 4). The recipe
-// covers both uses: constraint-exploitation (quantify the time each interference
-// steals, then attack the biggest) and strategy development (interferences to a
-// goal, each countered by an injection). The arrows are intuition, not logic —
-// so there's no "read each edge aloud" CLR step here.
-const ID: MethodStep[] = [
-  {
-    id: 'id.objective',
-    label: 'State the central objective',
-    hint: "The one thing you want more of — either 'fully exploit the constraint' or a strategic goal. It sits at the hub; keep it high enough to matter to everyone in the room.",
-  },
-  {
-    id: 'id.interferences',
-    label: 'Surface the interferences',
-    hint: 'Ask "what stops us getting more of that?" Add each obstacle around the objective. Keep statements short, and let the people who do the work name them — filter gripes from real system interferences.',
-  },
-  {
-    id: 'id.quantify',
-    label: 'Quantify the time each steals',
-    hint: 'Estimate the time each interference costs (minutes per day or week, consistent units). This ranks them by impact so you focus on the vital few — the Pareto move.',
-  },
-  {
-    id: 'id.injections',
-    label: 'Pair each interference with an injection',
-    hint: 'For every interference ask "what must exist so this is no longer a problem?" That intermediate objective is the fix — one per interference.',
-  },
-  {
-    id: 'id.act',
-    label: 'Attack the biggest interferences first',
-    hint: "Reduce or eliminate the top-ranked interferences to free the most time; the ones you can't remove (breaks, lunch), off-load or cover instead.",
-  },
+const ID: readonly string[] = [
+  'id.objective',
+  'id.interferences',
+  'id.quantify',
+  'id.injections',
+  'id.act',
 ];
 
-/**
- * Per-diagram-type canonical step list. Adding a new diagram type makes
- * TypeScript fail at compile time until a matching entry lands here — same
- * discipline as `DIAGRAM_TYPE_LABEL` and `EXAMPLE_BY_DIAGRAM`.
- */
-export const METHOD_BY_DIAGRAM: Record<DiagramType, MethodStep[]> = {
+/** Step ids per diagram type, in presentation order. Structure, not copy. */
+const IDS_BY_DIAGRAM: Record<DiagramType, readonly string[]> = {
   crt: CRT,
   frt: FRT,
   prt: PRT,
@@ -413,10 +139,50 @@ export const METHOD_BY_DIAGRAM: Record<DiagramType, MethodStep[]> = {
 };
 
 /**
+ * Resolve a diagram's checklist against a locale catalogue.
+ *
+ * React callers should pass `useT()` so the checklist follows the active
+ * language. An id with no catalogue entry is skipped rather than rendered as
+ * a raw key — a partially-translated locale should show fewer steps, never
+ * `crt.scope` as a label.
+ */
+export const methodStepsFor = (messages: Messages, diagramType: DiagramType): MethodStep[] => {
+  const ids = IDS_BY_DIAGRAM[diagramType] ?? [];
+  const out: MethodStep[] = [];
+  for (const id of ids) {
+    const copy = messages.method[id as keyof Messages['method']];
+    if (!copy) continue;
+    out.push({ id, label: copy.label, ...('hint' in copy ? { hint: copy.hint } : {}) });
+  }
+  return out;
+};
+
+/**
+ * English view of the checklist, for callers outside a React render (the
+ * PPTX and reasoning exporters) and for tests. Same fallback contract as
+ * `Warning.message`: real copy, always available, just not locale-aware.
+ */
+export const METHOD_BY_DIAGRAM: Record<DiagramType, MethodStep[]> = {
+  crt: methodStepsFor(en, 'crt'),
+  frt: methodStepsFor(en, 'frt'),
+  prt: methodStepsFor(en, 'prt'),
+  tt: methodStepsFor(en, 'tt'),
+  ec: methodStepsFor(en, 'ec'),
+  st: methodStepsFor(en, 'st'),
+  id: methodStepsFor(en, 'id'),
+  freeform: methodStepsFor(en, 'freeform'),
+  goalTree: methodStepsFor(en, 'goalTree'),
+  nbr: methodStepsFor(en, 'nbr'),
+};
+
+/**
  * Flat list of every known step id across all diagram types. Used by tests
  * to catch typos / duplicates in the catalog, and could surface in a future
  * import-validation pass to drop unknown checklist keys.
+ *
+ * Built from the id table rather than from `METHOD_BY_DIAGRAM` so it stays
+ * complete even if a catalogue entry is missing.
  */
 export const ALL_METHOD_STEP_IDS: ReadonlySet<string> = new Set(
-  Object.values(METHOD_BY_DIAGRAM).flatMap((steps) => steps.map((s) => s.id))
+  Object.values(IDS_BY_DIAGRAM).flat()
 );

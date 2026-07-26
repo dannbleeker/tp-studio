@@ -13,9 +13,10 @@ import { Modal } from '@/components/ui/Modal';
 import { CLOUD_TYPE_LABEL, CLOUD_TYPES } from '@/domain/cloudType';
 import { EC_CLOUD_TYPE_BREAK_HINT } from '@/domain/ecGuiding';
 import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
-import { METHOD_BY_DIAGRAM, type MethodStep } from '@/domain/methodChecklist';
+import { type MethodStep, methodStepsFor } from '@/domain/methodChecklist';
 import type { CloudType, DiagramType, SystemScope } from '@/domain/types';
 import { validate } from '@/domain/validators';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -82,6 +83,7 @@ const SYSTEM_SCOPE_FIELDS: Array<{
 ];
 
 export function DocumentInspector() {
+  const t = useT();
   const open = useDocumentStore((s) => s.docSettingsOpen);
   const close = useDocumentStore((s) => s.closeDocSettings);
   const locked = useDocumentStore((s) => s.browseLocked);
@@ -132,7 +134,7 @@ export function DocumentInspector() {
     }))
   );
 
-  const steps = METHOD_BY_DIAGRAM[diagramType] ?? [];
+  const steps = methodStepsFor(t, diagramType);
   const doneCount = steps.filter((s) => methodChecklist[s.id] === true).length;
 
   // Session 181 — document-targeted CLR warnings (UDE count, missing negative
@@ -408,7 +410,7 @@ function MethodChecklist({
   locked: boolean;
   onToggle: (stepId: string, done: boolean) => void;
 }) {
-  const steps: MethodStep[] = METHOD_BY_DIAGRAM[diagramType] ?? [];
+  const steps: MethodStep[] = methodStepsFor(useT(), diagramType);
   return (
     <ol className="flex flex-col gap-1.5">
       {steps.map((step, idx) => {

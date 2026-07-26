@@ -169,6 +169,269 @@ export const en = {
   },
 
   /**
+   * Per-diagram-type method checklist copy, keyed by step id.
+   *
+   * The ids are already part of the JSON wire format (a doc's `methodChecklist`
+   * map is keyed by them), so they were the natural catalogue keys — there is no
+   * second key to keep in sync. `methodChecklist.ts` keeps the ids and their
+   * per-diagram ORDER; only the copy lives here.
+   */
+  method: {
+    'crt.scope': {
+      label: 'Define the system scope',
+      hint: 'Fill in the System Scope section above — goal, boundaries, success measures.',
+    },
+    'crt.udes': {
+      label: 'List 3–5 critical UDEs',
+      hint: 'The painful effects you want to eliminate. Concrete, observable, present-tense.',
+    },
+    'crt.connect': {
+      label: 'Connect UDEs into causal chains',
+      hint: 'Read each edge aloud as "X exists, therefore Y exists." If it doesn\'t read true, restructure.',
+    },
+    'crt.deepen': {
+      label: 'Build down to root causes',
+      hint: 'Keep asking "why does this happen?" until you hit a cause you actually control or influence.',
+    },
+    'crt.clr': {
+      label: 'Apply CLR challenges at every step',
+      hint: 'Clarity → Existence → Sufficiency. Resolve each open warning or restructure the diagram.',
+    },
+    'crt.span': {
+      label: 'Test against your locus — control / influence / external',
+      hint: 'A root cause outside what you can affect is rarely the real root — keep digging.',
+    },
+    'crt.loops': {
+      label: 'Look for reinforcing loops',
+      hint: 'Vicious circles explain why UDEs persist. Tag loop-closing edges as back-edges (right-click the edge).',
+    },
+    'crt.archive': {
+      label: "Archive rejected branches, don't delete them",
+      hint: 'Move pruned alternatives into a group so the path-not-taken stays visible.',
+    },
+    'crt.core': {
+      label: 'Identify the Core Driver',
+      hint: 'Run "Find core driver(s)" from the palette — the single cause whose elimination clears the most UDEs.',
+    },
+    'frt.scope': {
+      label: 'Define the desired future state',
+      hint: 'Use the System Scope section — what does success look like, measurably?',
+    },
+    'frt.injections': {
+      label: 'Choose your initial injections',
+      hint: "The actions or conditions you'll introduce into the system. Start with one; add more as the tree demands.",
+    },
+    'frt.build': {
+      label: 'Build up causal chains to the Desired Effects',
+      hint: 'Each edge should read "X exists, therefore Y exists" — the injections drive the desired effects via intermediate states.',
+    },
+    'frt.clr': {
+      label: 'Apply CLR challenges, especially predicted-effect existence',
+      hint: 'Are the predicted intermediate effects realistic? Are sufficient conditions stated?',
+    },
+    'frt.negative': {
+      label: 'Watch for Negative Branches',
+      hint: 'Each injection can spawn unintended UDEs. Capture them as a sub-tree and either mitigate or pick a different injection.',
+    },
+    'frt.reinforce': {
+      label: 'Design positive reinforcing loops',
+      hint: 'Self-sustaining loops where success feeds itself. Tag the loop-closing edge as a back-edge to model it explicitly.',
+    },
+    'prt.scope': {
+      label: 'State the ambitious objective',
+      hint: 'Use the System Scope section — what would be a clearly bold but achievable target?',
+    },
+    'prt.obstacles': {
+      label: 'Identify the obstacles in the way',
+      hint: "What's keeping you from the objective? Brainstorm freely; you'll prune later.",
+    },
+    'prt.io': {
+      label: 'For each obstacle, define an Intermediate Objective',
+      hint: 'The condition that, once met, removes that obstacle. Pair them 1-to-1 if possible.',
+    },
+    'prt.sequence': {
+      label: 'Sequence the IOs',
+      hint: 'Which IOs depend on others? PRT reads bottom-up — earliest prerequisites at the bottom.',
+    },
+    'prt.clr': {
+      label: 'Apply CLR challenges',
+      hint: 'Especially entity-existence (is this really an obstacle?) and sufficiency (does meeting the IO actually remove it?).',
+    },
+    'prt.archive': {
+      label: 'Archive pruned alternatives',
+      hint: "Don't delete considered-but-rejected IOs — group + collapse them so the rationale stays.",
+    },
+    'tt.scope': {
+      label: 'State the desired outcome',
+      hint: "Use the System Scope section — what's the end state this plan produces?",
+    },
+    'tt.actions': {
+      label: 'List the actions required',
+      hint: 'The do-something steps. Action-verb framing: "Audit X," "Draft Y," "Roll out Z."',
+    },
+    'tt.preconditions': {
+      label: 'Identify a precondition for each action',
+      hint: "The existing reality that lets each action work. If you can't name it, use an Unspecified placeholder (EntityInspector checkbox) and come back.",
+    },
+    'tt.triples': {
+      label: 'Build the (Action + Precondition → Outcome) triples',
+      hint: 'Each step is structurally complete when its outcome has BOTH an action and a non-action precondition feeding it.',
+    },
+    'tt.appropriate-condition': {
+      label: 'Test each action for its appropriate condition',
+      hint: 'For every action ask two things (Ch. 20 Layer 7; Ch. 25): (1) can you actually take it — is it within your span of control, and its precondition true? and (2) will it avoid serious negative side-effects (spin off a Negative Branch Reservation if you are unsure)? Record the "why" of each action in its Need field.',
+    },
+    'tt.clr': {
+      label: 'Apply CLR challenges (including Complete-Step)',
+      hint: 'The TT-specific Complete-Step rule fires on any action whose outcome lacks a precondition sibling.',
+    },
+    'tt.unspecified': {
+      label: 'Capture inarticulate reservations as Unspecified placeholders',
+      hint: "When you sense something belongs but can't name it yet, add a placeholder Precondition and keep moving.",
+    },
+    'ec.conflict': {
+      label: 'State the recurring conflict in two sentences',
+      hint: '"I want X, but I also want Y\'." Verbalize before drawing.',
+    },
+    'ec.goal': {
+      label: 'Articulate the common goal both sides serve',
+      hint: 'The Goal box (leftmost) — what positive outcome both Wants are trying to produce.',
+    },
+    'ec.needs': {
+      label: 'Name both Needs',
+      hint: 'Each Need is the prerequisite condition the corresponding Want is trying to satisfy.',
+    },
+    'ec.syntax': {
+      label: 'Tidy the box wording — clean statements, right kinds',
+      hint: 'Each box is a statement, not a cause-and-effect sentence (no "if / because / in order to" — those belong on the arrows). D and D′ are actions; B and C are the positive needs they serve.',
+    },
+    'ec.verbalize': {
+      label: 'Verbalize each edge as a necessary-condition statement',
+      hint: '"In order to satisfy [Need], we must obtain [Want]" — read every edge aloud before continuing.',
+    },
+    'ec.jeopardy': {
+      label: 'Read the diagonals — does each side jeopardize the other?',
+      hint: 'Say it aloud: "Doing D puts need C in jeopardy; doing D′ puts need B in jeopardy." If a diagonal doesn\'t bite, the conflict isn\'t real yet.',
+    },
+    'ec.assumptions': {
+      label: 'Brainstorm "…because" assumptions on each edge',
+      hint: 'Every assumption should start with "…because" — the new-assumption input pre-fills the prefix on EC edges.',
+    },
+    'ec.clr': {
+      label: 'Apply CLR challenges on each assumption',
+      hint: 'Especially clarity (is it stated as a fact rather than an opinion?) and existence (is it actually true here?).',
+    },
+    'ec.injection': {
+      label: 'Find an injection that breaks the conflict',
+      hint: 'A condition that lets you have both Wants — or makes one Want unnecessary. Spawn a follow-up FRT to test it.',
+    },
+    'st.analysis-first': {
+      label: 'Do the analysis first — the Strategy & Tactics tree comes last',
+      hint: 'Run the full diagnosis before deploying: a Current Reality Tree to find the core problem, an Evaporating Cloud to surface the conflict, a Future Reality Tree to test the fix. Every assumption you record here should already be a validated fact of life — the Strategy & Tactics tree replaces the Prerequisite Tree as the deployment document.',
+    },
+    'st.apex': {
+      label: 'State the apex strategy',
+      hint: 'The top-level objective the whole tree decomposes from — what does success at the highest level look like? The apex has no parent, so it carries no necessary assumption.',
+    },
+    'st.tactic': {
+      label: 'Name the tactic that achieves the strategy',
+      hint: 'The "how" of the current step. Action-verb framing: "Re-engineer X," "Establish Y," "Roll out Z." The strategy is the outcome (what); the tactic is the action (how).',
+    },
+    'st.na': {
+      label: 'State the Necessary Assumption (why the step is needed)',
+      hint: 'Why must this step exist at all? The necessary assumption justifies the step UPWARD to its parent — what the level above needs from it. The apex has none (nothing sits above it).',
+    },
+    'st.pa': {
+      label: 'State the Parallel Assumption (why this tactic fits)',
+      hint: 'Why is THIS tactic the right way to reach the strategy, versus the alternatives? The parallel assumption bridges the step’s own strategy and tactic — "if the strategy and these assumptions hold, then this tactic."',
+    },
+    'st.sa': {
+      label: 'State the Sufficiency Assumption (why it needs sub-steps)',
+      hint: "Why isn't this step enough on its own? The sufficiency assumption justifies breaking it DOWNWARD into sub-steps that are jointly sufficient. A leaf, with no children, carries none.",
+    },
+    'st.decompose': {
+      label: 'Decompose into two or more jointly-sufficient sub-steps',
+      hint: 'Split the step into the sub-steps that together are sufficient for it — two or more (a single sub-step should fold back in). Each sub-step’s strategy is what the parent tactic needs from it. Repeat until a named team can plan against the leaf.',
+    },
+    'nbr.injection': {
+      label: 'State the candidate injection',
+      hint: 'The change you\'re considering. Concrete and singular — "we add a 1-week QA gate", not "improve quality".',
+    },
+    'nbr.forward': {
+      label: 'Trace forward to the desired effects',
+      hint: "The reason you'd adopt this injection in the first place. Same chains as an FRT.",
+    },
+    'nbr.turning-point': {
+      label: 'Identify the negative-branch turning point',
+      hint: 'The first effect where the chain starts heading somewhere bad. Often a side-consequence the FRT skipped.',
+    },
+    'nbr.udes': {
+      label: 'Articulate each UDE in the branch',
+      hint: 'Present-tense, observable, concrete. Same standard as CRT UDEs.',
+    },
+    'nbr.mitigation': {
+      label: 'Choose mitigation: reactive or proactive',
+      hint: "Reactive = an action that breaks the chain after the UDE starts. Proactive = swap the original injection for one that doesn't spawn the branch.",
+    },
+    'nbr.clr': {
+      label: 'Apply CLR to the branch',
+      hint: "A weak NBR is one where the UDE actually wouldn't follow — challenge the if-then steps before you over-invest in mitigation.",
+    },
+    'nbr.decision': {
+      label: 'Decide: adopt, modify, or reject the injection',
+      hint: 'Capture the call so a reviewer six months from now knows you considered the branch and chose deliberately.',
+    },
+    'goalTree.system': {
+      label: 'Define the system boundary',
+      hint: 'Whose tree is this — company, division, team, yourself? The boundary decides who owns the Goal and which conditions are inside your reach.',
+    },
+    'goalTree.goal': {
+      label: 'State the Goal',
+      hint: "One sentence. What is the single outcome the system exists for? Frame it as the positive end-state, not a problem — and get the system's owners to agree to it.",
+    },
+    'goalTree.csfs': {
+      label: 'List 3–5 Critical Success Factors',
+      hint: 'The few high-level objectives that, together, achieve the Goal. Each must be necessary — the last milestones before the Goal can be declared met.',
+    },
+    'goalTree.ncs': {
+      label: 'For each CSF, identify Necessary Conditions',
+      hint: 'What MUST be in place for this CSF? Read each edge as "in order to {CSF}, we must {NC}." Keep to 3–5 per CSF and at most two NC layers — deeper detail is execution planning (a PRT).',
+    },
+    'goalTree.verify': {
+      label: 'Test necessity at every layer',
+      hint: "If a parent could still be achieved without a child, that child isn't necessary — restructure.",
+    },
+    'goalTree.gaps': {
+      label: 'Look for missing conditions',
+      hint: "Conjoin all children of a parent. If the conjunction doesn't guarantee the parent, you're missing one.",
+    },
+    'goalTree.scrutiny': {
+      label: 'Enlist outside scrutiny',
+      hint: 'Share the tree (copy a share link) and collect comments: missing CSFs or NCs, wrong connections, low-level NCs to trim. Stop when a fresh reader adds nothing.',
+    },
+    'id.objective': {
+      label: 'State the central objective',
+      hint: "The one thing you want more of — either 'fully exploit the constraint' or a strategic goal. It sits at the hub; keep it high enough to matter to everyone in the room.",
+    },
+    'id.interferences': {
+      label: 'Surface the interferences',
+      hint: 'Ask "what stops us getting more of that?" Add each obstacle around the objective. Keep statements short, and let the people who do the work name them — filter gripes from real system interferences.',
+    },
+    'id.quantify': {
+      label: 'Quantify the time each steals',
+      hint: 'Estimate the time each interference costs (minutes per day or week, consistent units). This ranks them by impact so you focus on the vital few — the Pareto move.',
+    },
+    'id.injections': {
+      label: 'Pair each interference with an injection',
+      hint: 'For every interference ask "what must exist so this is no longer a problem?" That intermediate objective is the fix — one per interference.',
+    },
+    'id.act': {
+      label: 'Attack the biggest interferences first',
+      hint: "Reduce or eliminate the top-ranked interferences to free the most time; the ones you can't remove (breaks, lunch), off-load or cover instead.",
+    },
+  },
+
+  /**
    * CLR warning copy, keyed by `<ruleId>` or `<ruleId>.<variant>`.
    *
    * Flat rather than nested because `validate()` has to emit a *serializable*

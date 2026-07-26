@@ -11,9 +11,22 @@ rationale that lived only here were migrated into their CHANGELOG session entrie
 **Open — i18n follow-ups (Session 209).** The architecture shipped with English only; these are the
 deliberate leftovers, in rough priority order:
 
-- **Remaining UI-string extraction (~2,500 literals).** Converted so far: Settings appearance tab, the full
-  CLR warning pipeline, reader-mode coaching. Everything else still renders hardcoded English. Migrate
-  opportunistically — the pseudo-locale test is the tool for spotting what's left.
+- **Remaining UI-string extraction (~1,100–1,300 unique literals).** Converted so far: Settings appearance
+  tab, the full CLR warning pipeline, reader-mode coaching (~120 strings). Everything else still renders
+  hardcoded English. Migrate opportunistically — the pseudo-locale test is the tool for spotting what's
+  left.
+
+  *Counting note.* An earlier figure of "~2,500" was a raw `grep` upper bound (any single-quoted
+  capitalised string in `src/`, 2,684 hits) and overstated the job badly. It double-counted duplicates
+  (875 raw vs **686 unique** in `src/components`), swept in non-copy like `'Escape'`, and — the big one —
+  included **1,182 pattern/example/template diagram-content strings**, which are a separate per-locale
+  *document* job, not catalogue work (see the pattern-library item below). The real chrome surface is:
+
+  | Area | Unique strings | Notes |
+  | --- | --- | --- |
+  | `src/components` | ~686 | 246 `aria-label`/`title`/`placeholder`, 367 `label:`/`hint:` option arrays |
+  | `src/domain` (excl. patterns) | ~378 | `methodChecklist.ts` alone is 110 — the largest single block, and its ids are already stable wire-format keys, so it is the cheapest big win |
+  | `src/services` + `store` + `hooks` | ~92 | mostly toast copy |
 - **Retire `Warning.message`.** It exists as the English fallback + parameter-correctness canary. Removing
   it means migrating ~276 message-string assertions across ~41 test files to assert on
   `(ruleId, variant, params)` instead of rendered copy. Worth doing once a second locale exists.
