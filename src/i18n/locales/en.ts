@@ -304,6 +304,53 @@ export const en = {
   },
 
   /**
+   * Diagram-type display names, and the EC cloud-type tag.
+   *
+   * `label` is the full name; `short` is the acronym-or-short-name used in
+   * compact chrome (the Building Blocks rail, the method-path stepper). Most
+   * `short` values are acronyms that stay put across locales — but not all
+   * ("Freeform", "Goal Tree" are English words), which is why they are
+   * catalogue entries rather than assumed invariant.
+   */
+  diagram: {
+    crt: { label: 'Current Reality Tree', short: 'CRT' },
+    frt: { label: 'Future Reality Tree', short: 'FRT' },
+    prt: { label: 'Prerequisite Tree', short: 'PRT' },
+    tt: { label: 'Transition Tree', short: 'TT' },
+    ec: { label: 'Evaporating Cloud', short: 'EC' },
+    st: { label: 'Strategy & Tactics Tree', short: 'S&T' },
+    freeform: { label: 'Freeform Diagram', short: 'Freeform' },
+    goalTree: { label: 'Goal Tree', short: 'Goal Tree' },
+    nbr: { label: 'Negative Branch Reservation', short: 'NBR' },
+    id: { label: 'Interference Diagram', short: 'ID' },
+  },
+
+  cloudType: {
+    dilemma: {
+      label: 'Dilemma cloud',
+      breakHint: 'Cohen suggests trying to break the C–D′ or D–D′ arrow.',
+    },
+    conflict: {
+      label: 'Conflict cloud',
+      breakHint: 'Cohen suggests breaking on your own side — the C–D′ arrow (or D–D′).',
+    },
+    ude: {
+      label: 'UDE cloud',
+      breakHint: 'Cohen suggests breaking D–D′ (for a customer-facing UDE, aim at C–D′).',
+    },
+    consolidated: {
+      label: 'Consolidated cloud',
+      breakHint:
+        'Cohen suggests breaking D–D′ for the consolidated cloud, then each source cloud for specifics.',
+    },
+    core: { label: 'Core cloud', breakHint: 'Cohen suggests breaking the D–D′ arrow.' },
+    firefighting: {
+      label: 'Firefighting cloud',
+      breakHint: 'Cohen suggests breaking D–D′ — fold the emergency action into the procedure.',
+    },
+  },
+
+  /**
    * Document Inspector dialog.
    *
    * Interpolated entries here take a CONCRETE param object, unlike the `clr`

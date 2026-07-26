@@ -10,9 +10,9 @@ import { Button } from '@/components/ui/Button';
 import { SELECTED_BUTTON_CLASS, UNSELECTED_BUTTON_CLASS } from '@/components/ui/buttonClasses';
 import { InsetCard } from '@/components/ui/InsetCard';
 import { Modal } from '@/components/ui/Modal';
-import { CLOUD_TYPE_LABEL, CLOUD_TYPES } from '@/domain/cloudType';
-import { EC_CLOUD_TYPE_BREAK_HINT } from '@/domain/ecGuiding';
-import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
+import { CLOUD_TYPES, cloudTypeLabel } from '@/domain/cloudType';
+import { ecBreakHint } from '@/domain/ecGuiding';
+import { diagramLabel } from '@/domain/entityPalettes';
 import { type MethodStep, methodStepsFor } from '@/domain/methodChecklist';
 import type { CloudType, DiagramType, SystemScope } from '@/domain/types';
 import { validate } from '@/domain/validators';
@@ -263,7 +263,7 @@ export function DocumentInspector() {
               {d.stepsDone({
                 done: doneCount,
                 total: steps.length,
-                diagram: DIAGRAM_TYPE_LABEL[diagramType],
+                diagram: diagramLabel(t, diagramType),
               })}
             </span>
           </summary>
@@ -325,7 +325,7 @@ export function DocumentInspector() {
               <option value="">{d.cloudTypeUntyped}</option>
               {CLOUD_TYPES.map((ct) => (
                 <option key={ct} value={ct}>
-                  {CLOUD_TYPE_LABEL[ct]}
+                  {cloudTypeLabel(t, ct)}
                 </option>
               ))}
             </select>
@@ -350,14 +350,14 @@ export function DocumentInspector() {
                 <p className="mb-1 font-semibold text-[10px] text-amber-700 uppercase tracking-wider dark:text-amber-300">
                   {d.bestArrowToBreak}
                 </p>
-                <p className="leading-snug">{EC_CLOUD_TYPE_BREAK_HINT[cloudType]}</p>
+                <p className="leading-snug">{ecBreakHint(t, cloudType)}</p>
               </InsetCard>
             )}
           </Field>
         )}
 
         <dl className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs dark:border-neutral-800 dark:bg-neutral-900">
-          <Stat label={d.statType} value={DIAGRAM_TYPE_LABEL[diagramType]} />
+          <Stat label={d.statType} value={diagramLabel(t, diagramType)} />
           <div className="mt-2 grid grid-cols-2 gap-3 text-center">
             <Stat label={d.statEntities} value={String(entityCount)} center />
             <Stat label={d.statEdges} value={String(edgeCount)} center />

@@ -81,12 +81,7 @@ describe('pseudo-locale', () => {
         act(() => useDocumentStore.getState().openDocSettings());
         return render(<DocumentInspector />);
       },
-      // Domain-level display constants not yet routed through the catalogue:
-      // `DIAGRAM_TYPE_LABEL` (rendered raw as the Type stat's VALUE — inside
-      // the method-checklist summary it is interpolated into a catalogue
-      // string and so does get tagged). Tracked in NEXT_STEPS; converting
-      // `entityPalettes` / `cloudType` is its own chunk.
-      allowed: ['Current Reality Tree'],
+      allowed: [],
     },
   ];
 

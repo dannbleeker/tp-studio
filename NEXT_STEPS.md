@@ -15,10 +15,13 @@ deliberate leftovers, in rough priority order:
   dialog (4 tabs), the Document Inspector, the full CLR warning pipeline, the 63-step method checklist,
   and reader-mode coaching — roughly 380 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
   pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
-  is what proves the conversion is complete. Next up: `entityPalettes.ts` / `cloudType.ts` display
-  constants (`DIAGRAM_TYPE_LABEL`, `CLOUD_TYPE_LABEL`, `EC_CLOUD_TYPE_BREAK_HINT` — the Document
-  Inspector's only remaining allow-list entry depends on them), then `shortcuts.ts` (38),
-  `clrScrutiny.ts` (16), `analysisJourney.ts` (15).
+  is what proves the conversion is complete. Next up: the six components still reading the English
+  `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` views (`MethodStepper`, `TitleBadge`, `BlocksRail`,
+  `PatternLibraryDialog`, `AnalysisJourneyDialog`, `DiagramTypePickerDialog`) — each also has
+  surrounding hardcoded copy, so convert them whole rather than swapping only the label; plus
+  `start/diagramMeta.tsx`, whose table is built at MODULE scope and needs restructuring into a
+  function before it can read a catalogue. Then `shortcuts.ts` (38), `clrScrutiny.ts` (16),
+  `analysisJourney.ts` (15).
 
   *Counting note.* An earlier figure of "~2,500" was a raw `grep` upper bound (any single-quoted
   capitalised string in `src/`, 2,684 hits) and overstated the job badly. It double-counted duplicates
