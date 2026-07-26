@@ -86,11 +86,7 @@ export function AnalysisJourneyDialog() {
             <Route className="h-5 w-5" aria-hidden />
             <span className="font-medium text-sm">{jd.startHeading}</span>
           </div>
-          <p className="text-neutral-600 text-sm dark:text-neutral-300">
-            A journey groups the trees of one analysis and tracks the five questions — why change,
-            what to change, what to change to, how to cause it, and how to sustain it. Each stage
-            tells you which tree to build and lets you create, spawn, or open it in place.
-          </p>
+          <p className="text-neutral-600 text-sm dark:text-neutral-300">{jd.startBlurb}</p>
           <button
             type="button"
             onClick={() => startJourney()}

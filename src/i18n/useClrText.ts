@@ -25,13 +25,14 @@ export const useClrText = (): {
   const message = useCallback(
     (warning: Warning): string =>
       warning.messageKey
-        ? resolveClrMessage(messages, warning.messageKey, warning.params)
+        ? resolveClrMessage(messages, warning.messageKey, warning.params, warning.message)
         : warning.message,
     [messages]
   );
 
   const actionLabel = useCallback(
-    (action: WarningAction): string => resolveClrActionLabel(messages, action.actionId),
+    (action: WarningAction): string =>
+      resolveClrActionLabel(messages, action.actionId, action.label),
     [messages]
   );
 

@@ -2,70 +2,147 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
-## Session 209 — multi-language architecture (English-only shipping locale)
+## Session 209 — multi-language architecture (English-only, no language picker)
 
-The seams for a second locale, with exactly one locale shipped. Nothing user-visible changes except a
-Language row in Settings that has one option. Reverses the long-standing `i18n (English only)` line in
-NEXT_STEPS — see `docs/I18N.md` for the full contract.
+The seams for a second locale, with exactly one locale shipped and **no language control offered**.
+Nothing about the app changes for a user today. This reverses the long-standing `i18n (English only)`
+line that sat in the won't-build tail of NEXT_STEPS. Full contract: **`docs/I18N.md`**.
 
-- **No language picker is shown.** `SELECTABLE_LOCALES` holds only `en`, and the Settings Language row
-  is gated on there being more than one entry — a one-option dropdown is a choice that isn't one, and it
-  would invite users to expect a translated app that doesn't exist yet. The preference, its persistence,
-  the tampered-value fallback and `<html lang>` all work regardless; only the control is withheld. It
-  appears by itself the moment a second locale is registered.
+### The architecture
+
 - **Hand-rolled typed catalogue, no dependency.** `src/i18n/locales/en.ts` is the source of truth;
   `type Messages = typeof en` makes a missing key, an extra key, or a changed interpolation signature a
   `tsc` error in any future locale. Deliberately **not** `as const` — that would narrow every value to its
   own string literal and demand a Danish catalogue contain the literal `'Undesirable Effect'`. Static copy
   is a `string`, interpolated copy is a `(params) => string` arrow, so a locale can't quietly drop a
   parameter and ICU placeholder parsing stays out of the app.
-- **`useT()` returns the catalogue object, not a `t('a.b.c')` lookup.** Every access is checked against
+- **`useT()` returns the catalogue object**, not a `t('a.b.c')` lookup. Every access is checked against
   `Messages`; a typo is a compile error, not a runtime placeholder.
 - **Locale lives in the Zustand preferences slice, not a React context.** `createContext` appears zero
   times in `src/`, there is no shared test render helper, and 119 test files call RTL `render()` directly —
   a provider would have meant ~119 test diffs. As a preference it costs zero test churn and
-  `resetStoreForTest` resets it for free. Blob-backed like `appMode`; an unrecognized stored value degrades
-  to English via the same `isLocale` guard the persistence layer uses.
+  `resetStoreForTest` resets it for free. An unrecognized stored value degrades to English via the same
+  `isLocale` guard the persistence layer uses.
+- **No language picker is shown.** `SELECTABLE_LOCALES` holds only `en`, and the Settings row is gated on
+  there being more than one entry — a one-option dropdown is a choice that isn't one, and it would imply a
+  translated app that doesn't exist. The preference, its persistence, the tampered-value fallback and
+  `<html lang>` all work regardless; only the control is withheld, and it appears by itself when a second
+  locale is registered.
+
+### Crossing the domain / React boundary
+
+Domain modules keep the STRUCTURE — which rules, steps, shortcuts exist and in what order — and the
+catalogue holds the COPY, keyed by an id that was already stable. A resolver renders it for React callers;
+an English-rendered view stays for callers outside a render (the exporters, `factory.ts`'s persisted
+default document title), which is also what keeps existing assertions passing.
+
 - **CLR warnings carry a key, not copy.** `validate(doc)` is memoized twice (a `WeakMap` plus a 32-entry
-  fingerprint LRU), so threading a catalogue into it would have meant keying both caches on the locale.
-  Instead `makeWarning` takes a `messageKey` + `params`, and the inspector resolves them. All 35 validator
-  files converted (~57 messages + 3 action labels); `ruleId` and the existing `variant` discriminator
-  already formed the key space. `Warning.message` is **retained**, rendered in English from the same
-  catalogue entry the UI uses — so every existing assertion keeps working *and* a mis-named interpolation
-  parameter shows up immediately in the validator suite instead of reaching a user.
+  fingerprint LRU), so threading a catalogue in would have meant keying both caches on the locale. Instead
+  `makeWarning` takes `messageKey` + `params`. All 35 validator files converted; `ruleId` plus the existing
+  `variant` discriminator already formed the key space. `Warning.message` is retained, rendered in English
+  from the same catalogue entry the UI uses — so a mis-named interpolation parameter surfaces immediately
+  in the validator suite instead of reaching a user.
+- Same split applied to the 63-step method checklist (step ids were already the JSON wire-format key), the
+  38 keyboard shortcuts, the 7-CLR scrutiny stepper, Barnard's five journey questions and the method-path
+  prompts (`NextStep` carries `labelKey`).
+
+### Copy quality
+
 - **Real plural + list rules, with zero copy change.** `Intl.PluralRules` replaces the
-  `n === 1 ? '' : 's'` ternaries; `Intl.ListFormat` replaces `missing.join(', ')` in
-  `st-tactic-assumptions`. The list formatter uses `type: 'unit'`, **not** `'conjunction'` — conjunction
-  would add "and" plus the Oxford comma and silently reword shipped English. Unit keeps en byte-identical
-  to the pre-i18n wording while still deferring punctuation to the locale (da yields
-  "necessary, parallel og sufficiency" from the same call). Every existing assertion passes untouched.
-- **Pseudo-locale as a CI check.** `pseudo` derives every string from `en` and wraps it in `⟦…⟧`, so text a
-  converted surface renders *without* brackets is a literal that never went through `useT`. It is a real
-  selectable locale (excluded from the Settings dropdown) reached only through the registry's dynamic
-  import — a ~200 B chunk production never loads. `tests/i18n/pseudoLocale.test.tsx` renders the Settings
-  appearance tab in it and asserts every visible string is tagged.
-- **Converted this session:** the whole Settings dialog (all four tabs + the reset confirm/toast), the
-  Document Inspector (including its `MarkdownField` Edit/Preview tabs and the diagram / cloud-type
-  display constants it renders), the Help dialog, the toolbar title badge + method-path stepper,
-  the 38 keyboard-shortcut labels + their group headings, the 7-CLR scrutiny stepper, Barnard's five
-  journey questions, the method-path next-step prompts, the About dialog + the doc-links it shares with
-  Help, the diagram-type picker, the Templates dialog chrome, the Building-Blocks rail, the
-  Analysis-journey dialog, the Start
-  surface's per-diagram chrome, the full
-  CLR warning pipeline, the 63-step method checklist, and reader-mode coaching (whose copy no longer
-  lives duplicated in `readerModeCoaching.ts`). The pseudo-locale test renders each Settings tab and
-  asserts every visible string is bracket-tagged, with a per-tab allow-list — so a newly hardcoded
-  string fails the suite instead of blending into a permissive filter. The only standing allowance is
-  the `LOCALE_LABEL` autonym "English", which is deliberately not translated.
+  `n === 1 ? '' : 's'` ternaries; `Intl.ListFormat` replaces `join(', ')` in `st-tactic-assumptions` using
+  `type: 'unit'`, **not** `'conjunction'` — conjunction would add "and" plus the Oxford comma and silently
+  reword shipped English. Unit keeps en byte-identical while still deferring punctuation to the locale.
+- **Interpolate, never concatenate.** Sentences that were glued together (`${label} — used in ${diagram}`,
+  `New ${diagram} created.`, the `{n}. {step}` ordinal) are single catalogue functions taking the parts, so
+  word order around them belongs to the translator. Build-time values (the security-audit date, version,
+  copyright year) are parameters rather than baked into the string.
+- **No user-visible English changed anywhere in this work.**
+
+### Verification
+
+- **Pseudo-locale.** `pseudo` derives every string from `en` and wraps it in `⟦…⟧`, so text a converted
+  surface renders *without* brackets is a literal that never went through `useT`. Reached only through the
+  registry's dynamic import — a ~200 B chunk production never loads.
+  `tests/i18n/pseudoLocale.test.tsx` renders **twelve surfaces** and asserts every visible string is
+  tagged, with a per-surface allow-list so a new hardcoded string has to be argued for rather than blending
+  into a permissive filter. Eleven are at `[]`; the twelfth, the Building-Blocks rail, allows exactly the
+  `ENTITY_TYPE_META` labels and meanings — **derived from that module rather than transcribed**, so the
+  exception names its cause, cannot drift as the palette is edited, and still fails on a string hardcoded
+  in the component. Two narrow, semantic exemptions: `<kbd>` content (key combos are keyboard input, built
+  per-platform from `${M}`) and bare digits.
+  **It does not test layout** — it brackets but does not expand length, so it catches a missing translation
+  and not a longer one overflowing a control. Recorded in `docs/I18N.md`.
+- It earned its keep: it caught a hardcoded ordinal separator, strings living in a shared sub-component
+  (`MarkdownField`'s Edit/Preview), and the "Method path" strip label — none of which a read-through found.
+
+### Converted
+
+Eleven surfaces render with an empty allow-list: the four Settings tabs, the Document Inspector, Help,
+About, the diagram-type picker, the Analysis-journey dialog, the toolbar title badge and the method-path
+stepper — plus the Building-Blocks rail with its derived allowance. The Templates dialog is converted but
+deliberately **not** asserted: its cards render the 222 parked pattern strings, and an allow-list that
+large would rot faster than it guards. Alongside them: the full CLR pipeline, the
+method checklist, the keyboard shortcuts, the scrutiny stepper, the journey questions, the shared
+doc-links, the Start surface's per-diagram chrome and reader-mode coaching — roughly **635 strings**.
+No component reads an English label view any more; `DIAGRAM_SHORT_LABEL` was deleted outright once its
+last caller was converted.
+
+### Other
+
 - **`TPDocument.locale?`** — a reserved seam. Persisted and soft-validated like `cloudType` (an
-  unrecognized value drops so a doc from a newer build still opens), but nothing reads it yet. Purely
+  unrecognized value drops, so a doc from a newer build still opens), but nothing reads it yet. Purely
   additive: stays `schemaVersion 10`, no migration.
-- **`<html lang>`** now follows the locale (a fourth effect in `useThemeClass`) — React 19's metadata
-  hoisting covers `<title>` but not attributes on `<html>`, and the CSP forbids a pre-hydration script.
-- **Bundle went DOWN.** Eager `index` measured 106.4 KB gz before, 102.1 KB after — deduplicating the
-  coaching copy and dropping `logicTypeMismatch`'s `READING` map more than paid for the catalogue. No
-  budget re-pin. `src/i18n/` is deliberately **not** in `manualChunks` (see the Session 135 note at
-  `vite.config.ts:313-332`).
+- **`<html lang>`** follows the locale (a fourth effect in `useThemeClass`) — React 19's metadata hoisting
+  covers `<title>` but not attributes on `<html>`, and the CSP forbids a pre-hydration script.
+- **Bundle went DOWN.** Eager `index` measured 106.4 KB gz before, ~101.5 KB after: deduplicating the
+  coaching copy, dropping `logicTypeMismatch`'s `READING` map and removing the per-card `short` duplicate
+  more than paid for the catalogue. No budget re-pin. `src/i18n/` is deliberately **not** in `manualChunks`
+  (see the Session 135 note at `vite.config.ts:313-332`).
+- **One real bug found and fixed mid-refactor:** `AllTreesGallery`'s search `useMemo` filters on the
+  diagram tag, which became locale-dependent, but its dependency array still listed `[trees, q]`. A locale
+  switch would have left results filtered against the previous locale's tags — invisible to tests, because
+  only one locale ships.
+
+### Closing bug hunt
+
+A multi-agent sweep over the branch before merge — the i18n diff specifically, plus a broader pass over
+persistence, store, graph and exporters. Findings that were real:
+
+- **Two hardcoded English strings survived in surfaces the docs claimed were guarded** — the
+  Building-Blocks rail's "Browse templates & examples", and the Analysis-journey dialog's start blurb,
+  which was rendered inline in JSX while an identical, orphaned `journeyDialog.startBlurb` sat in the
+  catalogue. Both fixed. **The interesting part is why they survived**: `docs/I18N.md` listed thirteen
+  surfaces as pseudo-locale-guarded, the test rendered ten, and neither of these was among them. The
+  claim was the bug; the two literals were its symptom. Both surfaces are now in the test, and the doc
+  says what the test actually does.
+- **Two doc comments in `src/i18n/` asserted behaviour the code didn't have.** `useClrText`'s "a warning
+  whose key is missing from a partially-translated locale still shows real copy" was false — the resolver
+  returned `undefined`. Rather than delete the claim, both resolvers now take the English fallback the
+  types already promise (`Warning.message` / `WarningAction.label`), so the documented contract is
+  behaviour. `pseudo.ts`'s "preserves every key and every function arity" was half-true: the wrapper is
+  variadic, so `.length` is 0. Comment corrected; the cast it justified still holds on value KIND.
+- **Two latent traps with one-line fixes.** `pseudoValue` had no `Array.isArray` branch, so an
+  array-valued catalogue entry would have come back as `{0: …, 1: …}`; and the `Intl` caches in
+  `format.ts` keyed on the locale alone while hard-coding their options at the construction site — the
+  first ordinal plural or conjunction list would have silently shared a cached formatter. Neither is
+  reachable today, which is exactly when they are cheap to close.
+- **`Applied: {action}` was an English sentence wrapping a translated label**, in two converted files, with
+  the same event worded two different ways ("No handler for" / "No handler registered for"). One
+  catalogue entry now covers both.
+
+Findings recorded rather than fixed, because fixing them would half-convert a surface or needs a design
+call, are in NEXT_STEPS: `CreationWizardPanel`'s three English-constant reads (its resolvers exist and its
+Document-Inspector twin already uses them, but the rest of that wizard is unconverted), the concatenation
+debt inventory, and `ENTITY_TYPE_META` as the next block to move.
+
+### Parked deliberately (see NEXT_STEPS)
+
+Three items stopped for structural reasons, not effort: the **pattern picker metadata** (222 strings,
+9.2 KB gz, currently on the lazy `patterns` chunk — moving it into the eagerly-imported `en.ts` would
+breach the index budget, so it needs a lazy catalogue *segment*); **toast copy** (~25 sites firing outside
+any render, needing the same `(messageKey, params)` seam `Warning` uses); and **generated prose**
+(`verbalisation.ts`, `edgeReading.ts`), where word ORDER is the translatable thing and per-locale sentence
+templates are required rather than a string swap.
 
 ## Session 208 — touch interactions (bottom-sheet inspector · long-press menu · touch canvas)
 

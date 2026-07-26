@@ -13,15 +13,24 @@ import type { ClrActionId, ClrMessageKey, ClrParams, Messages } from './types';
 export const resolveClrMessage = (
   messages: Messages,
   key: ClrMessageKey,
-  params?: ClrParams
+  params?: ClrParams,
+  fallback = ''
 ): string => {
-  const entry = messages.clr[key];
-  // Static entries are plain strings; interpolated ones are arrows. No cast
-  // is needed — every function in the CLR section takes `ClrParams`, so the
-  // narrowed union is directly callable.
-  return typeof entry === 'function' ? entry(params ?? {}) : entry;
+  // Widened to include `undefined` on purpose. `Messages` makes a missing key
+  // a compile error, so this branch is unreachable for a catalogue that went
+  // through `tsc` — but `Warning.message` documents a runtime fallback
+  // contract, and without this the contract was a comment rather than
+  // behaviour: a hand-authored or JSON-loaded locale with a hole would render
+  // the literal `undefined`.
+  const entry: string | ((p: ClrParams) => string) | undefined = messages.clr[key];
+  // Static entries are plain strings; interpolated ones are arrows.
+  if (typeof entry === 'function') return entry(params ?? {});
+  return entry ?? fallback;
 };
 
 /** Render a one-click remedy label from its `WarningAction.actionId`. */
-export const resolveClrActionLabel = (messages: Messages, actionId: ClrActionId): string =>
-  messages.clrAction[actionId];
+export const resolveClrActionLabel = (
+  messages: Messages,
+  actionId: ClrActionId,
+  fallback = ''
+): string => messages.clrAction[actionId] ?? fallback;

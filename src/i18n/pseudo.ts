@@ -33,6 +33,11 @@ const pseudoValue = (value: unknown): unknown => {
     const fn = value as (...args: readonly unknown[]) => string;
     return (...args: readonly unknown[]): string => wrap(fn(...args));
   }
+  // Before the plain-object branch: `typeof [] === 'object'`, so without this an
+  // array-valued entry would come back as `{0: …, 1: …}` and a `.map()` at the
+  // call site would throw. No catalogue entry is an array today; this is here so
+  // that stays a harmless fact rather than a trap for the first one that is.
+  if (Array.isArray(value)) return value.map(pseudoValue);
   if (value !== null && typeof value === 'object') {
     return Object.fromEntries(
       Object.entries(value).map(([key, nested]) => [key, pseudoValue(nested)])
@@ -43,7 +48,13 @@ const pseudoValue = (value: unknown): unknown => {
 
 /**
  * The one cast in the module. `pseudoValue` walks an arbitrary object graph so
- * it cannot be generically typed, but it preserves every key and every
- * function arity by construction — the output is `Messages` by shape.
+ * it cannot be generically typed, but it preserves every key and every value
+ * KIND by construction — string for string, callable for callable, object for
+ * object — so the output is `Messages` by shape.
+ *
+ * It does NOT preserve function arity: the wrapper is variadic, so `.length` is
+ * 0 where the original may have been 1. Nothing reads `.length`, and `Messages`
+ * does not constrain it, so the cast still holds — but don't reach for `.length`
+ * as a discriminator anywhere in the i18n layer.
  */
 export const pseudoMessages = (base: Messages): Messages => pseudoValue(base) as Messages;

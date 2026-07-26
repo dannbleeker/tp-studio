@@ -35,7 +35,12 @@ const BCP47 = 'en';
 type Param = ClrParams[string] | undefined;
 
 const num = (v: Param): number => (typeof v === 'number' ? v : Number(v ?? 0));
-const str = (v: Param): string => (Array.isArray(v) ? v.join(', ') : String(v ?? ''));
+// The array branch goes through `formatList` rather than `join(', ')` so a
+// list-valued param that lands in a `str()` slot is still punctuated by this
+// catalogue's locale. No CLR message routes an array here today — `list()` +
+// `formatList` is the intended path — but hardcoding the English comma would
+// make the next one silently wrong.
+const str = (v: Param): string => (Array.isArray(v) ? formatList(BCP47, v) : String(v ?? ''));
 const list = (v: Param): readonly string[] =>
   Array.isArray(v) ? v : v === undefined ? [] : [String(v)];
 
@@ -541,6 +546,7 @@ export const en = {
     collapse: 'Collapse',
     collapseAria: 'Collapse building blocks',
     subtitle: 'Click to add a correctly-typed entity.',
+    browseTemplates: 'Browse templates & examples',
     add: (p: { entity: string }) => `Add ${p.entity}`,
     usedIn: (p: { entity: string; diagram: string }) => `${p.entity} — used in ${p.diagram}`,
     inDiagram: (p: { diagram: string }) => `in ${p.diagram} →`,
@@ -1208,6 +1214,22 @@ export const en = {
 
     'tt-action-locus-unset':
       'Action has no locus set — flag it as control / influence / external so the plan reads honestly about authority.',
+  },
+
+  /**
+   * Toasts fired after a one-click remedy runs. Kept OUT of `clrAction` — that
+   * object is indexed by `ClrActionId` and an extra key there would look like a
+   * remedy that doesn't exist. These are built in a component (so `useT` is in
+   * scope) and handed to `showToast` as finished text; toasts are ephemeral, so
+   * freezing the copy at the locale in force when the button was clicked is
+   * correct rather than a workaround.
+   *
+   * The two call sites previously said "No handler for" and "No handler
+   * registered for" for the same event; one entry now covers both.
+   */
+  clrActionToast: {
+    applied: (p: { action: string }) => `Applied: ${p.action}`,
+    noHandler: (p: { actionId: string }) => `No handler for "${p.actionId}".`,
   },
 
   /** One-click remedy labels, keyed by `WarningAction.actionId`. */

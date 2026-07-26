@@ -2,8 +2,10 @@ import { cleanup, render } from '@testing-library/react';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AboutDialog } from '@/components/about/AboutDialog';
+import { BlocksRail } from '@/components/canvas/BlocksRail';
 import { DiagramTypePickerDialog } from '@/components/diagrams/DiagramTypePickerDialog';
 import { HelpDialog } from '@/components/help/HelpDialog';
+import { AnalysisJourneyDialog } from '@/components/journey/AnalysisJourneyDialog';
 import { DocumentInspector } from '@/components/settings/DocumentInspector';
 import { AppearanceTab } from '@/components/settings/tabs/AppearanceTab';
 import { BehaviorTab } from '@/components/settings/tabs/BehaviorTab';
@@ -11,6 +13,7 @@ import { DisplayTab } from '@/components/settings/tabs/DisplayTab';
 import { LayoutTab } from '@/components/settings/tabs/LayoutTab';
 import { MethodStepper } from '@/components/toolbar/MethodStepper';
 import { TitleBadge } from '@/components/toolbar/TitleBadge';
+import { ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
 import { PSEUDO_PREFIX, PSEUDO_SUFFIX } from '@/i18n/pseudo';
 import { isLocaleLoaded, peekMessages, preloadLocale } from '@/i18n/registry';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -77,7 +80,18 @@ describe('pseudo-locale', () => {
    * hardcoded string fails the test rather than blending into a permissive
    * filter — the exceptions have to be argued for, one at a time.
    */
-  const TABS: { name: string; render: () => ReturnType<typeof render>; allowed: string[] }[] = [
+  const TABS: {
+    name: string;
+    render: () => ReturnType<typeof render>;
+    allowed: string[];
+    /**
+     * Text sourced from a named, still-unconverted module, filtered out before
+     * the `allowed` comparison. Derived from the module rather than transcribed
+     * so the exception names its cause and cannot drift as that module is
+     * edited — and so a string hardcoded in the COMPONENT still fails.
+     */
+    allowedFrom?: () => Set<string>;
+  }[] = [
     {
       name: 'Appearance',
       render: () => render(<AppearanceTab />),
@@ -123,7 +137,44 @@ describe('pseudo-locale', () => {
       },
       allowed: [],
     },
+    {
+      name: 'Building blocks rail',
+      render: () => render(<BlocksRail />),
+      allowed: [],
+      // The rail's rows ARE `ENTITY_TYPE_META` — the built-in type labels and
+      // their one-line meanings, which live in `src/domain/entityTypeMeta.ts`
+      // and have not been moved to the catalogue yet (they are read by the
+      // canvas, the inspector and two exporters, so they move as one piece).
+      // Everything the rail itself renders — heading, subtitle, the add/usedIn
+      // labels, the templates link — is asserted to be catalogued.
+      allowedFrom: () =>
+        new Set(
+          Object.values(ENTITY_TYPE_META).flatMap((m) =>
+            m.meaning ? [m.label, m.meaning] : [m.label]
+          )
+        ),
+    },
+    {
+      name: 'Analysis journey dialog',
+      render: () => {
+        act(() => {
+          useDocumentStore.getState().newDocument('crt');
+          useDocumentStore.getState().openAnalysisJourney();
+        });
+        return render(<AnalysisJourneyDialog />);
+      },
+      allowed: [],
+    },
   ];
+
+  /*
+   * Deliberately NOT covered here: `PatternLibraryDialog`. Its chrome goes
+   * through the catalogue, but it also renders ~222 pattern titles and
+   * descriptions that are parked outside it on purpose (see `docs/I18N.md`).
+   * A text-level assertion would need those 222 strings in `allowed`, which
+   * would rot on every library edit and drown the signal the test exists for.
+   * Covering it needs the lazy catalogue segment, not a bigger allow-list.
+   */
 
   for (const tab of TABS) {
     it(`renders the ${tab.name} tab with no un-catalogued text`, async () => {
@@ -133,11 +184,13 @@ describe('pseudo-locale', () => {
       });
 
       const { container } = tab.render();
+      const fromUnconverted = tab.allowedFrom?.() ?? new Set<string>();
       const untagged = visibleText(container).filter(
         (text) =>
           !(text.startsWith(PSEUDO_PREFIX) && text.endsWith(PSEUDO_SUFFIX)) &&
           // Pure digits are values, not copy (the compactness slider readout).
-          !/^\d+$/.test(text)
+          !/^\d+$/.test(text) &&
+          !fromUnconverted.has(text)
       );
 
       expect(untagged).toEqual(tab.allowed);

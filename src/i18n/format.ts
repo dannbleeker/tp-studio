@@ -20,13 +20,21 @@
  */
 export type PluralForms = Partial<Record<Intl.LDMLPluralRule, string>> & { other: string };
 
+/**
+ * Cache keys carry the OPTIONS as well as the locale, even though only one
+ * option set exists at each construction site today. Keying on the locale alone
+ * works right up until someone adds an ordinal plural or a conjunction list —
+ * at which point the two configs silently share one cached formatter and the
+ * bug looks like a locale problem rather than a cache problem.
+ */
 const pluralRulesCache = new Map<string, Intl.PluralRules>();
 
 const pluralRulesFor = (locale: string): Intl.PluralRules => {
-  const hit = pluralRulesCache.get(locale);
+  const key = `${locale}|cardinal`;
+  const hit = pluralRulesCache.get(key);
   if (hit) return hit;
-  const rules = new Intl.PluralRules(locale);
-  pluralRulesCache.set(locale, rules);
+  const rules = new Intl.PluralRules(locale, { type: 'cardinal' });
+  pluralRulesCache.set(key, rules);
   return rules;
 };
 
@@ -47,8 +55,9 @@ const listFormatCache = new Map<string, Intl.ListFormat>();
  * da-DK yields "necessary, parallel og sufficiency" from the same call.
  */
 export const formatList = (locale: string, items: readonly string[]): string => {
-  const hit = listFormatCache.get(locale);
+  const key = `${locale}|long|unit`;
+  const hit = listFormatCache.get(key);
   const fmt = hit ?? new Intl.ListFormat(locale, { style: 'long', type: 'unit' });
-  if (!hit) listFormatCache.set(locale, fmt);
+  if (!hit) listFormatCache.set(key, fmt);
   return fmt.format(items);
 };

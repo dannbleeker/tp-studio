@@ -16,6 +16,7 @@ import { displayTitle } from '@/domain/entityTypeMeta';
 import type { ClrTier, TPDocument, Warning, WarningTarget } from '@/domain/types';
 import { useDocWarnings } from '@/hooks/useDocWarnings';
 import { useClrText } from '@/i18n/useClrText';
+import { useT } from '@/i18n/useT';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { runWarningAction } from '@/services/warningActions';
 import { useDocumentStore } from '@/store';
@@ -45,6 +46,7 @@ const targetLabel = (target: WarningTarget, doc: TPDocument): string => {
 
 export function CLRPanel() {
   const clr = useClrText();
+  const msg = useT();
   const doc = useDocumentStore((s) => currentDoc(s));
   const warnings = useDocWarnings();
   const resolveWarning = useDocumentStore((s) => s.resolveWarning);
@@ -118,7 +120,9 @@ export function CLRPanel() {
     const ok = runWarningAction(state, currentDoc(state), w);
     showToast(
       ok ? 'success' : 'info',
-      ok ? `Applied: ${clr.actionLabel(w.action)}` : `No handler for "${w.action.actionId}".`
+      ok
+        ? msg.clrActionToast.applied({ action: clr.actionLabel(w.action) })
+        : msg.clrActionToast.noHandler({ actionId: w.action.actionId })
     );
   };
 

@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { AlertCircle, CheckCircle2, Wand2 } from 'lucide-react';
 import type { ClrTier, Warning } from '@/domain/types';
 import { useClrText } from '@/i18n/useClrText';
+import { useT } from '@/i18n/useT';
 import { runWarningAction } from '@/services/warningActions';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -33,6 +34,7 @@ const orderByResolution = (ws: Warning[]): Warning[] => {
 
 export function WarningsList({ warnings }: { warnings: Warning[] }) {
   const clr = useClrText();
+  const msg = useT();
   const resolveWarning = useDocumentStore((s) => s.resolveWarning);
   const unresolveWarning = useDocumentStore((s) => s.unresolveWarning);
   const showToast = useDocumentStore((s) => s.showToast);
@@ -42,9 +44,9 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
     const state = useDocumentStore.getState();
     const ok = runWarningAction(state, currentDoc(state), w);
     if (ok) {
-      showToast('success', `Applied: ${clr.actionLabel(w.action)}`);
+      showToast('success', msg.clrActionToast.applied({ action: clr.actionLabel(w.action) }));
     } else {
-      showToast('info', `No handler registered for "${w.action.actionId}".`);
+      showToast('info', msg.clrActionToast.noHandler({ actionId: w.action.actionId }));
     }
   };
 

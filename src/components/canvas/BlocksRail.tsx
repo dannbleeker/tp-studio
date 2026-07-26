@@ -214,7 +214,7 @@ export function BlocksRail() {
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-neutral-600 transition hover:bg-white hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-950 dark:hover:text-neutral-100"
         >
           <LayoutTemplate className="h-4 w-4 shrink-0" aria-hidden />
-          Browse templates &amp; examples
+          {br.browseTemplates}
         </button>
       </div>
     </aside>
