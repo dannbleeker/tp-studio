@@ -1,5 +1,7 @@
 import { X } from 'lucide-react';
-import { SHORTCUT_GROUP_TITLE, SHORTCUTS_BY_GROUP, type ShortcutGroup } from '@/domain/shortcuts';
+import { type ShortcutGroup, shortcutGroupTitle, shortcutsByGroupFor } from '@/domain/shortcuts';
+import type { Messages } from '@/i18n/types';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { LEARN_LINKS, LinkRowItem } from '../about/docLinks';
 import { Button } from '../ui/Button';
@@ -26,34 +28,18 @@ const GROUP_ORDER: ShortcutGroup[] = ['global', 'entity', 'group', 'canvas'];
  * Keeping the list inline (not in the registry) because the registry's
  * `keys` field assumes a keyboard binding; gestures don't have one.
  */
-const GESTURES: { label: string; gesture: string }[] = [
-  {
-    label: 'Marquee-select multiple entities',
-    gesture: 'Drag on empty canvas',
-  },
-  {
-    label: 'Splice an entity into an edge',
-    gesture: 'Alt + drag entity onto edge',
-  },
-  {
-    label: 'Connect two entities',
-    gesture: 'Drag from one handle to another',
-  },
-  {
-    label: 'Alt-click target to connect from selection',
-    gesture: 'Alt + click target',
-  },
-  {
-    label: 'Pin an entity (manual positioning)',
-    gesture: 'Drag the entity card',
-  },
-  {
-    label: 'Rename an entity',
-    gesture: 'Double-click the entity',
-  },
-];
+const GESTURE_ORDER = [
+  'marquee',
+  'splice',
+  'connect',
+  'altConnect',
+  'pin',
+  'rename',
+] as const satisfies readonly (keyof Messages['help']['gesture'])[];
 
 export function HelpDialog() {
+  const t = useT();
+  const byGroup = shortcutsByGroupFor(t);
   const open = useDocumentStore((s) => s.helpOpen);
   const close = useDocumentStore((s) => s.closeHelp);
   // Session 111 — footer link to the About dialog. Cheap discovery
@@ -68,9 +54,9 @@ export function HelpDialog() {
           id="help-title"
           className="font-semibold text-neutral-900 text-sm dark:text-neutral-100"
         >
-          Help
+          {t.help.title}
         </h2>
-        <Button variant="ghost" size="icon" onClick={close} aria-label="Close help">
+        <Button variant="ghost" size="icon" onClick={close} aria-label={t.help.close}>
           <X className="h-4 w-4" />
         </Button>
       </header>
@@ -81,7 +67,7 @@ export function HelpDialog() {
             `docLinks` so the two can't drift. */}
         <section>
           <h3 className="mb-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-            Learn TP Studio
+            {t.help.learn}
           </h3>
           <div className="-mx-2">
             {LEARN_LINKS.map((row) => (
@@ -90,12 +76,12 @@ export function HelpDialog() {
           </div>
         </section>
         {GROUP_ORDER.map((group) => {
-          const rows = SHORTCUTS_BY_GROUP[group];
+          const rows = byGroup[group];
           if (rows.length === 0) return null;
           return (
             <section key={group}>
               <h3 className="mb-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-                {SHORTCUT_GROUP_TITLE[group]}
+                {shortcutGroupTitle(t, group)}
               </h3>
               <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-sm">
                 {rows.map((r) => (
@@ -117,19 +103,22 @@ export function HelpDialog() {
             sections so users who came for keys see those first. */}
         <section>
           <h3 className="mb-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-            Mouse & touch gestures
+            {t.help.gestures}
           </h3>
           <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-sm">
-            {GESTURES.map((g) => (
-              <div key={g.label} className="contents">
-                <dt className="text-neutral-700 dark:text-neutral-200">{g.label}</dt>
-                <dd>
-                  <span className="rounded-sm border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[11px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
-                    {g.gesture}
-                  </span>
-                </dd>
-              </div>
-            ))}
+            {GESTURE_ORDER.map((key) => {
+              const g = t.help.gesture[key];
+              return (
+                <div key={key} className="contents">
+                  <dt className="text-neutral-700 dark:text-neutral-200">{g.label}</dt>
+                  <dd>
+                    <span className="rounded-sm border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[11px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
+                      {g.gesture}
+                    </span>
+                  </dd>
+                </div>
+              );
+            })}
           </dl>
         </section>
         {/* Session 111 — link to About dialog. The Help dialog is
@@ -145,7 +134,7 @@ export function HelpDialog() {
             }}
             className="text-accent-600 text-xs hover:underline dark:text-accent-400"
           >
-            About this app →
+            {t.help.aboutLink}
           </button>
         </section>
       </div>

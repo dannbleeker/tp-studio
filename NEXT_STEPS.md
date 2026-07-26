@@ -11,18 +11,20 @@ rationale that lived only here were migrated into their CHANGELOG session entrie
 **Open — i18n follow-ups (Session 209).** The architecture shipped with English only; these are the
 deliberate leftovers, in rough priority order:
 
-- **Remaining UI-string extraction (~900–1,100 unique literals).** Converted so far: the whole Settings
-  dialog (4 tabs), the Document Inspector, the full CLR warning pipeline, the 63-step method checklist,
-  and reader-mode coaching — roughly 380 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
+- **Remaining UI-string extraction (~850–1,050 unique literals).** Converted so far: the whole Settings
+  dialog (4 tabs), the Document Inspector, the Help dialog, the toolbar title badge + method-path
+  stepper, the full CLR warning pipeline, the 63-step method checklist, the 38 keyboard shortcuts,
+  and reader-mode coaching — roughly 480 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
   pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
   is what proves the conversion is complete. Next up: the four components still reading the English
   `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` views (`BlocksRail`, `PatternLibraryDialog`,
   `AnalysisJourneyDialog`, `DiagramTypePickerDialog`) — each also carries surrounding hardcoded
   copy, so convert them whole rather than swapping only the label; plus `start/diagramMeta.tsx`,
   whose table is built at MODULE scope and needs restructuring into a function before it can read a
-  catalogue. Then the domain blocks: `methodPath.ts` (the stepper's next-step labels — the one
-  string `MethodStepper` still renders raw), `shortcuts.ts` (38), `clrScrutiny.ts` (16),
-  `analysisJourney.ts` (15).
+  catalogue; and `docLinks.ts` (`LEARN_LINKS`, shared by the Help and About dialogs — convert it
+  together with About so the two can't drift; it is the Help dialog's only allow-list entry).
+  Then the remaining domain blocks: `methodPath.ts` (the stepper's next-step labels — the one
+  string `MethodStepper` still renders raw), `clrScrutiny.ts` (16), `analysisJourney.ts` (15).
 
   *Counting note.* An earlier figure of "~2,500" was a raw `grep` upper bound (any single-quoted
   capitalised string in `src/`, 2,684 hits) and overstated the job badly. It double-counted duplicates
@@ -33,7 +35,7 @@ deliberate leftovers, in rough priority order:
   | Area | Unique strings | Notes |
   | --- | --- | --- |
   | `src/components` | ~600 left | was ~686; the four Settings tabs are now converted |
-  | `src/domain` (excl. patterns) | ~250 left | was ~378; `methodChecklist.ts` (110) is now converted |
+  | `src/domain` (excl. patterns) | ~200 left | was ~378; `methodChecklist.ts` (110) and `shortcuts.ts` (42) are now converted |
   | `src/services` + `store` + `hooks` | ~92 | mostly toast copy |
 - **Retire `Warning.message`.** It exists as the English fallback + parameter-correctness canary. Removing
   it means migrating ~276 message-string assertions across ~41 test files to assert on

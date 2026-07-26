@@ -303,6 +303,99 @@ export const en = {
     },
   },
 
+  /**
+   * Keyboard-shortcut labels, keyed by shortcut id, plus the group headings.
+   *
+   * `shortcuts.ts` keeps what is structure — the id, the key combination, the
+   * group, and where the binding lives — and the copy lives here. The ids are
+   * already stable (the registry test asserts each `'hook'` entry's id appears
+   * in a `// reg: <id>` comment in `useGlobalKeyboard`), so they were the
+   * natural catalogue keys.
+   */
+  shortcut: {
+    groups: {
+      global: 'Global',
+      entity: 'On a selected entity',
+      group: 'On a selected group',
+      canvas: 'Canvas',
+    },
+    label: {
+      palette: 'Command palette',
+      undo: 'Undo',
+      redo: 'Redo',
+      save: 'Save',
+      'export-menu': 'Export menu',
+      print: 'Print / Save as PDF',
+      find: 'Find in document',
+      settings: 'Settings',
+      'quick-capture': 'Quick Capture (paste an indented list)',
+      'copy-cut-paste': 'Copy / cut / paste selection',
+      duplicate: 'Duplicate selection',
+      'select-all': 'Select all entities',
+      'swap-entities': 'Swap two selected entities',
+      'select-successors': 'Select all successors',
+      'select-predecessors': 'Select all predecessors',
+      zoom: 'Zoom in / out / fit view',
+      'toggle-inspector': 'Close inspector',
+      'add-assumption-on-edge': 'Add assumption on selected edge',
+      escape: 'Close panel / unhoist / deselect',
+      'new-tab': 'New tab (installed app)',
+      'close-tab': 'Close tab (installed app)',
+      'switch-tab': 'Switch to tab 1–9 (installed app)',
+      rename: 'Rename',
+      'newline-in-title': 'Newline inside the title (multi-line titles)',
+      'add-child': 'Add child entity',
+      'add-parent': 'Add parent entity',
+      'move-to-effect': 'Walk to the connected neighbour above',
+      'move-to-cause': 'Walk to the connected neighbour below',
+      'move-to-sibling': 'Walk to the connected neighbour left / right',
+      'delete-entity': 'Delete entity',
+      'hoist-group': 'Hoist into group',
+      'expand-group': 'Expand collapsed group',
+      'collapse-group': 'Collapse expanded group',
+      'delete-group': 'Delete group (members preserved)',
+      'canvas-double-click': 'New entity at cursor',
+      'canvas-right-click': 'Context menu',
+      'canvas-shift-click-edge': 'Multi-select edges (for AND grouping)',
+      'canvas-drag-handle': 'Connect entities',
+    },
+  },
+
+  /** Help dialog: headings, the About link, and the pointer-gesture list. */
+  help: {
+    title: 'Help',
+    close: 'Close help',
+    learn: 'Learn TP Studio',
+    gestures: 'Mouse & touch gestures',
+    aboutLink: 'About this app →',
+    gesture: {
+      marquee: {
+        label: 'Marquee-select multiple entities',
+        gesture: 'Drag on empty canvas',
+      },
+      splice: {
+        label: 'Splice an entity into an edge',
+        gesture: 'Alt + drag entity onto edge',
+      },
+      connect: {
+        label: 'Connect two entities',
+        gesture: 'Drag from one handle to another',
+      },
+      altConnect: {
+        label: 'Alt-click target to connect from selection',
+        gesture: 'Alt + click target',
+      },
+      pin: {
+        label: 'Pin an entity (manual positioning)',
+        gesture: 'Drag the entity card',
+      },
+      rename: {
+        label: 'Rename an entity',
+        gesture: 'Double-click the entity',
+      },
+    },
+  },
+
   /** Toolbar: the document title badge and the method-path stepper. */
   toolbar: {
     documentTitle: 'Document title',

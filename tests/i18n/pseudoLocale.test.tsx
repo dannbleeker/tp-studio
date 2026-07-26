@@ -1,6 +1,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { HelpDialog } from '@/components/help/HelpDialog';
 import { DocumentInspector } from '@/components/settings/DocumentInspector';
 import { AppearanceTab } from '@/components/settings/tabs/AppearanceTab';
 import { BehaviorTab } from '@/components/settings/tabs/BehaviorTab';
@@ -22,14 +23,23 @@ afterEach(cleanup);
  * that never went through `useT`.
  */
 
-/** Visible text nodes under `el`, trimmed, ignoring whitespace-only nodes. */
+/**
+ * Visible text nodes under `el`, trimmed, ignoring whitespace-only nodes.
+ *
+ * `<kbd>` content is skipped: it is keyboard input, not prose. Key combos are
+ * built in `shortcuts.ts` from `${M}+K` (⌘ on macOS, Ctrl elsewhere) and match
+ * what is printed on the user's keyboard, so they are deliberately outside the
+ * catalogue. This is a semantic exemption for one element type — NOT a general
+ * "hidden text doesn't count" rule, which would also have swallowed real copy
+ * like TitleBadge's aria-hidden "· unsaved".
+ */
 const visibleText = (el: HTMLElement): string[] => {
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
   const out: string[] = [];
   let node = walker.nextNode();
   while (node) {
     const text = node.textContent?.trim() ?? '';
-    if (text !== '') out.push(text);
+    if (text !== '' && !node.parentElement?.closest('kbd')) out.push(text);
     node = walker.nextNode();
   }
   return out;
@@ -87,6 +97,22 @@ describe('pseudo-locale', () => {
     },
     { name: 'Title badge', render: () => render(<TitleBadge />), allowed: [] },
     { name: 'Method stepper', render: () => render(<MethodStepper />), allowed: [] },
+    {
+      name: 'Help dialog',
+      render: () => {
+        act(() => useDocumentStore.getState().openHelp());
+        return render(<HelpDialog />);
+      },
+      // `LEARN_LINKS` lives in `docLinks.ts`, shared with the About dialog, and
+      // is not converted yet — converting it belongs with the About dialog so
+      // the two can't drift. Tracked in NEXT_STEPS.
+      allowed: [
+        'User Guide',
+        'Reference for every feature and shortcut.',
+        'Causal Thinking with TP Studio (PDF)',
+        'The practitioner book — ~50,000 words, 17 chapters. Best for desktop reading.',
+      ],
+    },
   ];
 
   for (const tab of TABS) {
