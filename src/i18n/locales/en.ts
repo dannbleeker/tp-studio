@@ -512,6 +512,40 @@ export const en = {
     loadedToast: (p: { diagram: string }) => `Loaded example ${p.diagram}.`,
   },
 
+  /** The Templates (pattern library) dialog. */
+  patternLibrary: {
+    title: 'Templates',
+    subtitle:
+      'Curated starter diagrams for every TOC diagram type. Pick one to open it (in a new tab by default).',
+    close: 'Close templates',
+    filterLegend: 'Filter by diagram type',
+    filterAll: 'All',
+    listLabel: 'Templates',
+    empty: 'No templates registered for this diagram type yet.',
+    load: (p: { pattern: string }) => `Load template: ${p.pattern}`,
+    insertHere: '+ Insert here',
+    insertTitle: 'Insert this template into the current diagram (Undo to remove)',
+    openedToast: (p: { pattern: string }) => `Opened template "${p.pattern}" in a new tab.`,
+    loadedToast: (p: { pattern: string }) => `Loaded template "${p.pattern}".`,
+    insertedToast: (p: { pattern: string; entities: number }) =>
+      `Inserted "${p.pattern}" — ${p.entities} ${plural(BCP47, p.entities, {
+        one: 'entity',
+        other: 'entities',
+      })} added. Undo to remove.`,
+  },
+
+  /** The canvas Building-Blocks rail. */
+  blocksRail: {
+    title: 'Building blocks',
+    show: 'Show building blocks',
+    collapse: 'Collapse',
+    collapseAria: 'Collapse building blocks',
+    subtitle: 'Click to add a correctly-typed entity.',
+    add: (p: { entity: string }) => `Add ${p.entity}`,
+    usedIn: (p: { entity: string; diagram: string }) => `${p.entity} — used in ${p.diagram}`,
+    inDiagram: (p: { diagram: string }) => `in ${p.diagram} →`,
+  },
+
   /** Help dialog: headings, the About link, and the pointer-gesture list. */
   help: {
     title: 'Help',

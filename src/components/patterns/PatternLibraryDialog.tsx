@@ -1,8 +1,9 @@
 import clsx from 'clsx';
 import { useState } from 'react';
-import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
+import { diagramLabel } from '@/domain/entityPalettes';
 import { PATTERNS } from '@/domain/patterns';
 import type { DiagramType } from '@/domain/types';
+import { useT } from '@/i18n/useT';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { mergeDocIntoActive } from '@/services/clipboard';
 import { useDocumentStore } from '@/store';
@@ -47,6 +48,8 @@ const fitViewAfterLoad = (): void => {
 };
 
 export function PatternLibraryDialog() {
+  const t = useT();
+  const pl = t.patternLibrary;
   const state = useDocumentStore((s) => s.patternLibraryOpen);
   const close = useDocumentStore((s) => s.closePatternLibrary);
   const setDocument = useDocumentStore((s) => s.setDocument);
@@ -79,8 +82,8 @@ export function PatternLibraryDialog() {
     showToast(
       'success',
       openedNewTab
-        ? `Opened template "${pattern.label}" in a new tab.`
-        : `Loaded template "${pattern.label}".`,
+        ? pl.openedToast({ pattern: pattern.label })
+        : pl.loadedToast({ pattern: pattern.label }),
       undoRestoreAction(openedNewTab, previousDoc, setDocument)
     );
     close();
@@ -94,10 +97,7 @@ export function PatternLibraryDialog() {
     if (!pattern) return;
     const { entities } = mergeDocIntoActive(pattern.build());
     fitViewAfterLoad();
-    showToast(
-      'success',
-      `Inserted "${pattern.label}" — ${entities} entit${entities === 1 ? 'y' : 'ies'} added. Undo to remove.`
-    );
+    showToast('success', pl.insertedToast({ pattern: pattern.label, entities }));
     close();
   };
 
@@ -105,9 +105,9 @@ export function PatternLibraryDialog() {
     <LargeDialog
       open={true}
       onClose={close}
-      title="Templates"
-      subtitle="Curated starter diagrams for every TOC diagram type. Pick one to open it (in a new tab by default)."
-      closeAriaLabel="Close templates"
+      title={pl.title}
+      subtitle={pl.subtitle}
+      closeAriaLabel={pl.close}
     >
       {/* Session 135 — `<fieldset>` + visually-hidden `<legend>` is
           the canonical accessible pattern for "a labelled group of
@@ -117,10 +117,10 @@ export function PatternLibraryDialog() {
           layout via `sr-only`. UA-default fieldset chrome (border,
           padding, inline margin) is reset with `border-0 p-0 m-0`. */}
       <fieldset className="m-0 mb-3 flex flex-wrap gap-1.5 border-0 p-0">
-        <legend className="sr-only">Filter by diagram type</legend>
+        <legend className="sr-only">{pl.filterLegend}</legend>
         {chips.map((c) => {
           const isActive = filter === c;
-          const label = c === 'all' ? 'All' : DIAGRAM_TYPE_LABEL[c];
+          const label = c === 'all' ? pl.filterAll : diagramLabel(t, c);
           const count =
             c === 'all' ? PATTERNS.length : PATTERNS.filter((p) => p.diagramType === c).length;
           return (
@@ -144,12 +144,12 @@ export function PatternLibraryDialog() {
 
       {visible.length === 0 ? (
         <p className="px-1 py-6 text-center text-neutral-500 text-sm dark:text-neutral-400">
-          No templates registered for this diagram type yet.
+          {pl.empty}
         </p>
       ) : (
         <ul
           className="grid grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3"
-          aria-label="Templates"
+          aria-label={pl.listLabel}
         >
           {visible.map((pattern) => {
             const canInsert = docHasEntities && pattern.diagramType === docType;
@@ -158,7 +158,7 @@ export function PatternLibraryDialog() {
                 <button
                   type="button"
                   onClick={() => handlePick(pattern.id)}
-                  aria-label={`Load template: ${pattern.label}`}
+                  aria-label={pl.load({ pattern: pattern.label })}
                   className={clsx(
                     'group flex h-full w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
                     'hover:border-accent-400 hover:bg-accent-50/40',
@@ -167,7 +167,7 @@ export function PatternLibraryDialog() {
                   )}
                 >
                   <span className="self-start rounded-sm bg-accent-100 px-1.5 py-0 font-semibold text-[9px] text-accent-700 uppercase tracking-wide dark:bg-accent-950 dark:text-accent-200">
-                    {DIAGRAM_TYPE_LABEL[pattern.diagramType]}
+                    {diagramLabel(t, pattern.diagramType)}
                   </span>
                   <h3 className="font-medium text-neutral-900 text-sm leading-tight dark:text-neutral-100">
                     {pattern.label}
@@ -183,10 +183,10 @@ export function PatternLibraryDialog() {
                   <button
                     type="button"
                     onClick={() => handleInsert(pattern.id)}
-                    title="Insert this template into the current diagram (Undo to remove)"
+                    title={pl.insertTitle}
                     className="absolute top-2 right-2 z-10 rounded-md border border-accent-300 bg-white/95 px-1.5 py-0.5 font-medium text-[10px] text-accent-700 shadow-sm transition hover:bg-accent-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 dark:border-accent-700 dark:bg-neutral-900/95 dark:text-accent-300 dark:hover:bg-accent-950"
                   >
-                    + Insert here
+                    {pl.insertHere}
                   </button>
                 )}
               </li>

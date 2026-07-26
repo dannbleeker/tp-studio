@@ -16,13 +16,17 @@ deliberate leftovers, in rough priority order:
   dialog, the diagram-type picker, the toolbar title badge, and the method-path stepper. Converted alongside them: the full CLR
   warning pipeline, the 63-step method checklist, the 38 keyboard shortcuts, the 7-CLR scrutiny
   stepper, Barnard's five journey questions, the shared doc-links, and reader-mode coaching — roughly
-  590 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
+  615 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
   pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
-  is what proves the conversion is complete. Next up: the three components still reading the English
-  `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` views (`BlocksRail`, `PatternLibraryDialog`,
-  `AnalysisJourneyDialog`) — each also carries surrounding hardcoded copy, so convert them whole
-  rather than swapping only the label. The Start surface's `diagramMeta.tsx` is done — its
-  module-scope table is now icon-only, with label/tag resolved per locale.
+  is what proves the conversion is complete. Next up: `AnalysisJourneyDialog`, the last component
+  reading an English label view.
+
+  **Then `patterns/index.ts` — 113 `label` + `hint` pairs (~226 strings).** This is the pattern
+  library's PICKER METADATA and unlike the pattern documents themselves it IS catalogue work: each
+  `Pattern` already has a stable `id`, and the label/hint pair is chrome describing the pattern, not
+  content inside it. It is also the reason `PatternLibraryDialog` cannot join the pseudo-locale test
+  yet — its cards render `pattern.label` / `pattern.hint`, so the dialog's own chrome is converted
+  but the test would need a 226-entry allow-list. Convert the metadata, then add the dialog.
   With `clrScrutiny.ts`, `analysisJourney.ts` and `methodPath.ts` done, the domain static blocks are
   finished — what is left in `src/domain` is mostly generated prose (`verbalisation.ts`,
   `edgeReading.ts`, the exporters' section headers) where word ORDER is language-specific, not just

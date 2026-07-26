@@ -44,7 +44,8 @@ NEXT_STEPS — see `docs/I18N.md` for the full contract.
   display constants it renders), the Help dialog, the toolbar title badge + method-path stepper,
   the 38 keyboard-shortcut labels + their group headings, the 7-CLR scrutiny stepper, Barnard's five
   journey questions, the method-path next-step prompts, the About dialog + the doc-links it shares with
-  Help, the diagram-type picker, the Start surface's per-diagram chrome, the full
+  Help, the diagram-type picker, the Templates dialog chrome, the Building-Blocks rail, the Start
+  surface's per-diagram chrome, the full
   CLR warning pipeline, the 63-step method checklist, and reader-mode coaching (whose copy no longer
   lives duplicated in `readerModeCoaching.ts`). The pseudo-locale test renders each Settings tab and
   asserts every visible string is bracket-tagged, with a per-tab allow-list — so a newly hardcoded
