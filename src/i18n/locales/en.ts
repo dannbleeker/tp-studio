@@ -495,6 +495,23 @@ export const en = {
     copyrightTail: 'for full attribution.',
   },
 
+  /** The "New diagram" / "Load example" picker. */
+  diagramPicker: {
+    newTitle: 'New diagram',
+    exampleTitle: 'Load example diagram',
+    newSubtitle:
+      'Pick a diagram type to start fresh. Existing doc is preserved on Undo from the success toast.',
+    exampleSubtitle:
+      'Pick a diagram type and we load a worked example so you can see the shape before building your own.',
+    close: 'Close diagram picker',
+    listLabel: 'Diagram types',
+    pickNew: (p: { diagram: string }) => `New: ${p.diagram}`,
+    pickExample: (p: { diagram: string }) => `Load example: ${p.diagram}`,
+    createdToast: (p: { diagram: string }) => `New ${p.diagram} created.`,
+    loadedNewTabToast: (p: { diagram: string }) => `Loaded example ${p.diagram} in a new tab.`,
+    loadedToast: (p: { diagram: string }) => `Loaded example ${p.diagram}.`,
+  },
+
   /** Help dialog: headings, the About link, and the pointer-gesture list. */
   help: {
     title: 'Help',
@@ -563,16 +580,56 @@ export const en = {
    * catalogue entries rather than assumed invariant.
    */
   diagram: {
-    crt: { label: 'Current Reality Tree', short: 'CRT' },
-    frt: { label: 'Future Reality Tree', short: 'FRT' },
-    prt: { label: 'Prerequisite Tree', short: 'PRT' },
-    tt: { label: 'Transition Tree', short: 'TT' },
-    ec: { label: 'Evaporating Cloud', short: 'EC' },
-    st: { label: 'Strategy & Tactics Tree', short: 'S&T' },
-    freeform: { label: 'Freeform Diagram', short: 'Freeform' },
-    goalTree: { label: 'Goal Tree', short: 'Goal Tree' },
-    nbr: { label: 'Negative Branch Reservation', short: 'NBR' },
-    id: { label: 'Interference Diagram', short: 'ID' },
+    crt: {
+      label: 'Current Reality Tree',
+      short: 'CRT',
+      use: 'Map the chains of cause and effect behind a problem — find the few root causes that produce many UDEs.',
+    },
+    frt: {
+      label: 'Future Reality Tree',
+      short: 'FRT',
+      use: 'Lay out the future state you want, plus the injections that get you there from the current reality.',
+    },
+    prt: {
+      label: 'Prerequisite Tree',
+      short: 'PRT',
+      use: 'Plan past obstacles — what intermediate objectives must hold before the goal becomes reachable?',
+    },
+    tt: {
+      label: 'Transition Tree',
+      short: 'TT',
+      use: 'Sequence the concrete actions that turn each intermediate objective into the next, step by step.',
+    },
+    ec: {
+      label: 'Evaporating Cloud',
+      short: 'EC',
+      use: 'Diagnose a conflict — surface the two opposing wants, the needs behind them, and the shared objective.',
+    },
+    st: {
+      label: 'Strategy & Tactics Tree',
+      short: 'S&T',
+      use: 'Pair every layer of a strategy with the tactic that achieves it, recursively down to action.',
+    },
+    freeform: {
+      label: 'Freeform Diagram',
+      short: 'Freeform',
+      use: 'Argument mapping, brainstorm, or anything that needs the canvas without TOC type constraints.',
+    },
+    goalTree: {
+      label: 'Goal Tree',
+      short: 'Goal Tree',
+      use: 'Decompose a goal into critical success factors and the necessary conditions that hold them up.',
+    },
+    nbr: {
+      label: 'Negative Branch Reservation',
+      short: 'NBR',
+      use: 'Trace forward from a candidate injection to its unintended consequences — and the mitigation that breaks the chain.',
+    },
+    id: {
+      label: 'Interference Diagram',
+      short: 'ID',
+      use: 'Map what interferes with a goal around a central objective, rank the interferences by lost time, and pair each with a fix.',
+    },
   },
 
   cloudType: {

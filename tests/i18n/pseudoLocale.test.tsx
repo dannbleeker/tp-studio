@@ -2,6 +2,7 @@ import { cleanup, render } from '@testing-library/react';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AboutDialog } from '@/components/about/AboutDialog';
+import { DiagramTypePickerDialog } from '@/components/diagrams/DiagramTypePickerDialog';
 import { HelpDialog } from '@/components/help/HelpDialog';
 import { DocumentInspector } from '@/components/settings/DocumentInspector';
 import { AppearanceTab } from '@/components/settings/tabs/AppearanceTab';
@@ -111,6 +112,14 @@ describe('pseudo-locale', () => {
       render: () => {
         act(() => useDocumentStore.getState().openAbout());
         return render(<AboutDialog />);
+      },
+      allowed: [],
+    },
+    {
+      name: 'Diagram type picker',
+      render: () => {
+        act(() => useDocumentStore.getState().openDiagramPicker('new'));
+        return render(<DiagramTypePickerDialog />);
       },
       allowed: [],
     },
