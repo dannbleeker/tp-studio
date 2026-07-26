@@ -26,7 +26,17 @@ import type { TPDocument } from './types';
  * quotes are HTML-escaped because Mermaid's parser doesn't accept escaped
  * quotes inside `"..."`.
  */
-const mermaidLabel = (s: string): string => s.replace(/"/g, '&quot;').replace(/\r?\n/g, '<br/>');
+const mermaidLabel = (s: string): string =>
+  s
+    .replace(/"/g, '&quot;')
+    // Square brackets close the node declaration. Mermaid's own parser tolerates
+    // a `]` inside a quoted label, but OUR importer's `NODE_DECL_RE` matches
+    // `\[[^\]]*\]`, so `Cost [USD] is high` round-tripped as "no nodes found"
+    // (or, with edges present, degraded the title to the raw internal id).
+    // Escaped as HTML entities, which `decodeLabel` reverses.
+    .replace(/\[/g, '&#91;')
+    .replace(/\]/g, '&#93;')
+    .replace(/\r?\n/g, '<br/>');
 
 /** Coerce an entity id to a safe Mermaid identifier (alphanumeric + underscore). */
 const mermaidId = (id: string): string => `n_${id.replace(/[^a-zA-Z0-9_]/g, '_')}`;
@@ -39,9 +49,14 @@ export const exportToMermaid = (doc: TPDocument): string => {
   const lines: string[] = [];
   // Document title becomes a Mermaid title directive — supported by the
   // current Mermaid release; older renderers will quietly ignore it.
+  // QUOTED. The frontmatter is YAML, so an unquoted `Rev 2: the sequel` is a
+  // mapping-inside-a-mapping and the whole diagram fails to render on
+  // mermaid.live and GitHub; a leading `#` becomes a comment and the title
+  // silently becomes null.
   const title = (doc.title || 'Untitled').replace(/\r?\n/g, ' ').trim();
+  const yamlTitle = `"${title.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
   lines.push('---');
-  lines.push(`title: ${title}`);
+  lines.push(`title: ${yamlTitle}`);
   lines.push('---');
   lines.push('graph BT');
 
@@ -54,10 +69,12 @@ export const exportToMermaid = (doc: TPDocument): string => {
   }
 
   // Edges
+  // See `dotExport` — nodes come from `structuralEntities`, so checking only
+  // that the endpoints are entities emitted edges to undeclared note nodes,
+  // which Mermaid auto-creates under their raw internal id.
+  const declared = new Set(structural.map((e) => e.id));
   for (const edge of Object.values(doc.edges)) {
-    const src = doc.entities[edge.sourceId];
-    const tgt = doc.entities[edge.targetId];
-    if (!src || !tgt) continue;
+    if (!declared.has(edge.sourceId) || !declared.has(edge.targetId)) continue;
     const arrow = edge.andGroupId ? '==>' : '-->';
     if (edge.label?.trim()) {
       lines.push(

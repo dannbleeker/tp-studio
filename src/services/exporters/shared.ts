@@ -51,6 +51,21 @@ export const triggerDataUrlDownload = (dataUrl: string, filename: string): void 
 };
 
 /**
+ * Cells beginning with one of these are interpreted as a FORMULA by Excel,
+ * Google Sheets and LibreOffice — `=cmd|'/c calc'!A1` is the canonical demo, and
+ * `@`, `+`, `-` and a leading tab reach the same parser. TP Studio's CSVs exist
+ * to be handed to trackers and leadership, so a title a user typed must never
+ * execute in the spreadsheet that receives it.
+ *
+ * The mitigation is the standard one: prefix a single quote, which spreadsheets
+ * treat as "this cell is literal text". `csvImport` strips it again, so TP
+ * Studio's own CSV round-trip is unchanged.
+ */
+export const CSV_FORMULA_LEAD = /^[=+\-@\t\r]/;
+/** Exported so `csvImport` strips exactly what the exporters add. */
+export const CSV_FORMULA_GUARD = "'";
+
+/**
  * Session 135 — RFC 4180-safe CSV cell escaper. Quotes any cell
  * containing `,`, `"`, newline, or CR; doubles up internal quotes.
  * Empty / null / undefined values produce the empty cell. Shared so
@@ -61,8 +76,11 @@ export const csvCell = (raw: string | number | undefined | null): string => {
   if (raw === undefined || raw === null) return '';
   const s = String(raw);
   if (s.length === 0) return '';
-  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
+  // Neutralise the formula lead BEFORE quoting, so the guard character ends up
+  // inside the quoted cell rather than outside it.
+  const safe = CSV_FORMULA_LEAD.test(s) ? `${CSV_FORMULA_GUARD}${s}` : s;
+  if (/[",\n\r]/.test(safe)) return `"${safe.replace(/"/g, '""')}"`;
+  return safe;
 };
 
 /**

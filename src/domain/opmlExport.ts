@@ -28,8 +28,25 @@ import type { Entity, TPDocument } from './types';
  *   - `_note`        — the markdown description (OmniOutliner convention)
  */
 
+/**
+ * Characters XML 1.0 forbids OUTRIGHT — they cannot be escaped, numerically or
+ * otherwise, so a file containing one simply fails to open. `\t`, `\n` and `\r`
+ * are the three C0 codes that ARE legal and are kept.
+ *
+ * The entry point is real: `validateEntity` only type-checks titles, and CSV
+ * import trims whitespace, which does not remove `\x01`. So a title pasted from
+ * a badly-encoded source produced an export nothing could read.
+ */
+// biome-ignore lint/suspicious/noControlCharactersInRegex: matching the illegal control characters is the point
+const XML_ILLEGAL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g;
+
 const escapeXml = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  s
+    .replace(XML_ILLEGAL, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 
 export const exportToOpml = (doc: TPDocument): string => {
   // Structural entities only — assumptions are edge-attached and don't fit
@@ -42,12 +59,18 @@ export const exportToOpml = (doc: TPDocument): string => {
   // tree (or null for roots). Picked deterministically by lowest-numbered
   // outgoing target — a stable rule so two runs over the same doc produce
   // byte-identical output.
+  const structuralIds = new Set(structural.map((e) => e.id));
   const outlineParentOf = new Map<string, string | null>();
   for (const e of structural) {
     const outs = outgoingEdges(doc, e.id);
     const targets = outs
       .map((edge) => doc.entities[edge.targetId])
-      .filter((t): t is Entity => t !== undefined)
+      // STRUCTURAL targets only. `childrenOf` is keyed on structural ids, so
+      // picking a note as the outline parent made `childrenOf.get(parent)?.push`
+      // a silent no-op — and the child then wasn't a root either, so it vanished
+      // from the file entirely. One `effect` plus one `note` wired
+      // `effect → note` (legal since Session 136) produced an EMPTY <body>.
+      .filter((t): t is Entity => t !== undefined && structuralIds.has(t.id))
       .sort((a, b) => a.annotationNumber - b.annotationNumber);
     outlineParentOf.set(e.id, targets[0]?.id ?? null);
   }
@@ -66,9 +89,17 @@ export const exportToOpml = (doc: TPDocument): string => {
     );
   }
 
+  // Cycle guard. An entity inside a reinforcing loop always has an outgoing
+  // structural edge, so it is never a root — and following the tree from the
+  // roots never reaches it. Reinforcing loops are routine in a CRT, so those
+  // members were silently missing from the export. `emitted` both stops the
+  // recursion from looping and lets the caller find who was never reached.
+  const emitted = new Set<string>();
+
   const renderOne = (id: string, depth: number): string[] => {
     const e = doc.entities[id];
-    if (!e) return [];
+    if (!e || emitted.has(id)) return [];
+    emitted.add(id);
     const meta = resolveEntityTypeMeta(e.type, doc.customEntityClasses);
     const indent = '  '.repeat(depth + 2); // +2 for <opml> + <body>
     const text = escapeXml(e.title || 'Untitled');
@@ -99,6 +130,13 @@ export const exportToOpml = (doc: TPDocument): string => {
   out.push('  </head>');
   out.push('  <body>');
   for (const r of roots) out.push(...renderOne(r.id, 0));
+  // Anything still unemitted is inside a cycle with no acyclic entry point.
+  // Promote each to a top-level outline (lowest annotation number first, so the
+  // choice is deterministic) rather than dropping it. The loop's remaining
+  // members render underneath it, since the guard above only blocks re-entry.
+  for (const e of structural) {
+    if (!emitted.has(e.id)) out.push(...renderOne(e.id, 0));
+  }
   out.push('  </body>');
   out.push('</opml>');
   return `${out.join('\n')}\n`;

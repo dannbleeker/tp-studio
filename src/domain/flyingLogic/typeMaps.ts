@@ -84,8 +84,25 @@ export const FL_TO_ENTITY_TYPE: Record<string, EntityType> = {
   Note: 'note',
 };
 
+export /**
+ * Characters XML 1.0 forbids OUTRIGHT — they cannot be escaped, numerically or
+ * otherwise, so a file containing one simply fails to open. `\t`, `\n` and `\r`
+ * are the three C0 codes that ARE legal and are kept.
+ *
+ * The entry point is real: `validateEntity` only type-checks titles, and CSV
+ * import trims whitespace, which does not remove `\x01`. So a title pasted from
+ * a badly-encoded source produced an export nothing could read.
+ */
+// biome-ignore lint/suspicious/noControlCharactersInRegex: matching the illegal control characters is the point
+const XML_ILLEGAL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g;
+
 export const escapeXml = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  s
+    .replace(XML_ILLEGAL, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 
 export const VALID_GROUP_COLORS: ReadonlySet<GroupColor> = new Set([
   'slate',

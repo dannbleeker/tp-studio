@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { exportToMermaid } from '@/domain/mermaidExport';
+import { importFromMermaid } from '@/domain/mermaidImport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedAndGroupable, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
@@ -12,7 +13,9 @@ describe('exportToMermaid (Block D / N3)', () => {
   it('emits a Mermaid graph with frontmatter title and BT direction', () => {
     useDocumentStore.getState().setTitle('My CRT');
     const md = exportCurrent();
-    expect(md).toContain('---\ntitle: My CRT\n---');
+    // Quoted: the frontmatter is YAML, so a title containing `:` or leading `#`
+    // breaks every renderer when emitted bare.
+    expect(md).toContain('---\ntitle: "My CRT"\n---');
     expect(md).toContain('graph BT');
   });
 
@@ -68,5 +71,30 @@ describe('exportToMermaid (Block D / N3)', () => {
     const safeA = a.id.replace(/[^a-zA-Z0-9_]/g, '_');
     const safeB = b.id.replace(/[^a-zA-Z0-9_]/g, '_');
     expect(md).toContain(`n_${safeA} -->|"because"| n_${safeB}`);
+  });
+});
+
+/**
+ * Session 209 — two round-trip breaks in one file.
+ *
+ * A `]` in a title closed the node declaration early, so `NODE_DECL_RE` in
+ * `mermaidImport` failed to match and the re-import reported "no nodes found"
+ * (or, with edges present, degraded the title to the raw internal id).
+ *
+ * And the YAML frontmatter title was emitted unquoted, so `Rev 2: the sequel`
+ * parsed as a nested mapping and the whole diagram failed to render on
+ * mermaid.live and GitHub — a `#hashtag` title silently became null.
+ */
+describe('mermaid export survives punctuation in user text', () => {
+  it('round-trips a title containing square brackets', () => {
+    useDocumentStore.getState().addEntity({ type: 'effect', title: 'Cost [USD] is high' });
+    const back = importFromMermaid(exportCurrent());
+    expect(Object.values(back.entities).map((e) => e.title)).toContain('Cost [USD] is high');
+  });
+
+  it('round-trips a document title containing a colon', () => {
+    useDocumentStore.getState().setTitle('Rev 2: the sequel');
+    useDocumentStore.getState().addEntity({ type: 'effect', title: 'Something' });
+    expect(importFromMermaid(exportCurrent()).title).toBe('Rev 2: the sequel');
   });
 });

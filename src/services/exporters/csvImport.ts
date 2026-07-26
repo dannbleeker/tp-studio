@@ -2,6 +2,7 @@ import { isEntityType } from '@/domain/guards';
 import type { EntityType } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { pickFile } from '../exporters/picker';
+import { CSV_FORMULA_GUARD, CSV_FORMULA_LEAD } from '../exporters/shared';
 
 /**
  * Bulk CSV entity import (FL-QC2).
@@ -24,6 +25,20 @@ export type CsvRow = {
   type: EntityType;
   description?: string;
   parentTitle?: string;
+};
+
+/**
+ * Undo the exporters' formula-injection guard. They prefix `'` to any cell
+ * starting with `= + - @` or a tab so spreadsheets treat it as literal text;
+ * stripping it here keeps TP Studio's own CSV round-trip exact. A cell the user
+ * genuinely began with `'` is unaffected — the guard is only removed when what
+ * follows is a lead character the exporter would have guarded.
+ */
+const unguard = (raw: string | undefined): string => {
+  const trimmed = raw?.trim() ?? '';
+  if (!trimmed.startsWith(CSV_FORMULA_GUARD)) return trimmed;
+  const rest = trimmed.slice(CSV_FORMULA_GUARD.length);
+  return CSV_FORMULA_LEAD.test(rest) ? rest : trimmed;
 };
 
 export type CsvParseResult =
@@ -133,10 +148,10 @@ export const parseEntitiesCsv = (text: string): CsvParseResult => {
     const rec = records[i]!;
     if (isBlankRecord(rec)) continue; // skip blank lines between rows
     const cells = rec.cells;
-    const title = cells[idx.title]?.trim() ?? '';
+    const title = unguard(cells[idx.title]);
     const type = cells[idx.type]?.trim() ?? '';
-    const description = idx.description !== -1 ? cells[idx.description]?.trim() : undefined;
-    const parentTitle = idx.parentTitle !== -1 ? cells[idx.parentTitle]?.trim() : undefined;
+    const description = idx.description !== -1 ? unguard(cells[idx.description]) : undefined;
+    const parentTitle = idx.parentTitle !== -1 ? unguard(cells[idx.parentTitle]) : undefined;
     const lineNo = rec.line;
     if (!title) {
       errors.push({ line: lineNo, message: 'Empty title.' });
@@ -162,30 +177,51 @@ export const parseEntitiesCsv = (text: string): CsvParseResult => {
  * wires edges from `parent_title` to each row whose title matched. Returns
  * a summary for the success toast.
  */
-export const applyCsvRows = (rows: CsvRow[]): { entities: number; edges: number } => {
-  if (rows.length === 0) return { entities: 0, edges: 0 };
+export const applyCsvRows = (
+  rows: CsvRow[]
+): { entities: number; edges: number; ambiguousParents: number } => {
+  if (rows.length === 0) return { entities: 0, edges: 0, ambiguousParents: 0 };
   const state = useDocumentStore.getState();
+  // Each row's OWN id, positionally. `parent_title` still resolves by title
+  // (that is the format's contract), but a row's own identity must not: keying
+  // both by title meant a repeated title overwrote the map entry, so the second
+  // row's edge silently attached to the first row's entity and the row that
+  // should have had a parent got none. A 4-row file with one duplicate produced
+  // 4 entities and 2 edges where 3 were expected, one silent orphan, and a
+  // success toast reporting no problem. Duplicate statement text is ordinary in
+  // a workshop CSV.
+  const idByRow: string[] = [];
   const idByTitle = new Map<string, string>();
+  /** Titles that appear more than once — a `parent_title` naming one of these
+   *  is genuinely ambiguous, so it is reported rather than guessed at. */
+  const ambiguousTitles = new Set<string>();
 
   for (const row of rows) {
     const entity = state.addEntity({ type: row.type, title: row.title });
     if (row.description) state.updateEntity(entity.id, { description: row.description });
-    idByTitle.set(row.title, entity.id);
+    idByRow.push(entity.id);
+    if (idByTitle.has(row.title)) ambiguousTitles.add(row.title);
+    else idByTitle.set(row.title, entity.id);
   }
 
   let edges = 0;
-  for (const row of rows) {
+  let ambiguousParents = 0;
+  for (const [i, row] of rows.entries()) {
     if (!row.parentTitle) continue;
+    if (ambiguousTitles.has(row.parentTitle)) {
+      ambiguousParents += 1;
+      continue;
+    }
     const parentId = idByTitle.get(row.parentTitle);
-    const childId = idByTitle.get(row.title);
+    const childId = idByRow[i];
     if (parentId && childId) {
       const e = state.connect(parentId, childId);
       if (e) edges += 1;
     }
   }
 
-  state.selectEntities([...idByTitle.values()]);
-  return { entities: rows.length, edges };
+  state.selectEntities(idByRow);
+  return { entities: rows.length, edges, ambiguousParents };
 };
 
 /**

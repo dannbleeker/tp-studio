@@ -41,10 +41,28 @@ export const MIGRATIONS: readonly Migration[] = [
   v9ToV10,
 ];
 
+/**
+ * Read a document's schema version, tolerating a NUMERIC STRING.
+ *
+ * `"schemaVersion": "10"` used to fall through to `1`, which then ran the whole
+ * v1→v10 chain over an already-current document. `v1ToV2` renumbers every
+ * `annotationNumber` from scratch, so entities at #7 and #9 came back as #2 and
+ * #1 — silently breaking `[title](#42)` cross-references and duplicating badges.
+ * Hand- and LLM-authored JSON is a first-class input here (the
+ * `tp-studio-import` skill), and quoting a number is the single most common way
+ * to get that wrong.
+ *
+ * A version we can't read at all still means 1: that IS the pre-versioning
+ * format, which carried no `schemaVersion` field.
+ */
 const readVersion = (doc: RawDocument): SchemaVersion => {
   if (typeof doc === 'object' && doc !== null && !Array.isArray(doc)) {
     const v = (doc as Record<string, unknown>).schemaVersion;
     if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.trim() !== '') {
+      const parsed = Number(v);
+      if (Number.isInteger(parsed) && parsed >= 1) return parsed;
+    }
   }
   return 1;
 };

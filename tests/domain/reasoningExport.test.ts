@@ -509,7 +509,7 @@ describe('exportReasoningOutline — common shape', () => {
     expect(md).toContain('reaches 2 UDEs');
   });
 
-  it('renderCausesInto: cycle guard — a pure cycle has no terminals, outline is structurally empty', () => {
+  it('renderCausesInto: cycle guard — a pure cycle has no terminals, and says so', () => {
     // A→B and B→A: both nodes have outgoing structural edges so neither is a
     // terminal. findTerminals returns [] → "No structural entities yet."
     // This exercises the `findTerminals` filter and the back-edge path.
@@ -522,7 +522,11 @@ describe('exportReasoningOutline — common shape', () => {
     // Should not throw / hang
     const md = exportReasoningOutline(d);
     expect(md).toBeTruthy();
-    expect(md).toContain('*No structural entities yet.*');
+    // Was `*No structural entities yet.*` — a message that flatly contradicted
+    // the two entities and two edges in the document. A pure cycle has no
+    // terminal to read down from; say that instead.
+    expect(md).toContain('inside a loop');
+    expect(md).not.toContain('No structural entities yet');
   });
 
   it('renderCausesInto: visited guard prevents duplicate bullets on a diamond (A→C, B→C, A→B)', () => {

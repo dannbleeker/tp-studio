@@ -1,5 +1,6 @@
 import { findParentGroup } from '@/domain/groups';
 import type { TPDocument } from '@/domain/types';
+import { CSV_FORMULA_GUARD, CSV_FORMULA_LEAD } from './shared';
 
 /**
  * Round-trippable CSV export of the entire document (FL-EX5).
@@ -30,13 +31,19 @@ const HEADER = [
   'description',
 ] as const;
 
+// Formula-injection guard — see `shared.ts`. This exporter keeps its own
+// escaper because its header/row shape is the round-trip format, but the guard
+// characters and the sentinel must stay identical to what `csvImport` strips.
 /** RFC 4180-safe escaper: wrap in quotes if the cell has a comma, quote, or newline; double up any embedded quote. */
 const csvCell = (raw: string | number | undefined): string => {
   if (raw === undefined || raw === null) return '';
   const s = String(raw);
   if (s.length === 0) return '';
-  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
+  // Neutralise the formula lead BEFORE quoting, so the guard character ends up
+  // inside the quoted cell rather than outside it.
+  const safe = CSV_FORMULA_LEAD.test(s) ? `${CSV_FORMULA_GUARD}${s}` : s;
+  if (/[",\n\r]/.test(safe)) return `"${safe.replace(/"/g, '""')}"`;
+  return safe;
 };
 
 const row = (cells: (string | number | undefined)[]): string => cells.map(csvCell).join(',');

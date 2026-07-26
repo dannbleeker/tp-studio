@@ -53,10 +53,15 @@ export const exportToDot = (doc: TPDocument): string => {
   }
   lines.push('');
 
+  // Membership of the DECLARED node set, not of `doc.entities`. Nodes come from
+  // `structuralEntities`, which excludes notes — but this loop only checked that
+  // the endpoints exist as entities, so an edge touching a note (legal since
+  // Session 136) emitted a reference to a node never declared. Graphviz then
+  // auto-creates it, labelled with the mangled internal id. The file header
+  // already claimed such edges were omitted; now they are.
+  const declared = new Set(structural.map((e) => e.id));
   for (const edge of Object.values(doc.edges)) {
-    const src = doc.entities[edge.sourceId];
-    const tgt = doc.entities[edge.targetId];
-    if (!src || !tgt) continue;
+    if (!declared.has(edge.sourceId) || !declared.has(edge.targetId)) continue;
     const attrs: string[] = [];
     if (edge.label?.trim()) attrs.push(`label="${escapeDot(edge.label.trim())}"`);
     // Distinguish junctor groups by line style — plain DOT can't draw the
