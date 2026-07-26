@@ -23,12 +23,25 @@ deliberate leftovers, in rough priority order:
   English mirror is exactly how two copies drift apart. `DIAGRAM_TYPE_LABEL` survives only for
   non-React callers (the exporters, and `factory.ts`'s persisted default document title).
 
-  **Then `patterns/index.ts` — 113 `label` + `hint` pairs (~226 strings).** This is the pattern
-  library's PICKER METADATA and unlike the pattern documents themselves it IS catalogue work: each
-  `Pattern` already has a stable `id`, and the label/hint pair is chrome describing the pattern, not
-  content inside it. It is also the reason `PatternLibraryDialog` cannot join the pseudo-locale test
-  yet — its cards render `pattern.label` / `pattern.hint`, so the dialog's own chrome is converted
-  but the test would need a 226-entry allow-list. Convert the metadata, then add the dialog.
+  **`patterns/index.ts` — 111 `label` + `hint` pairs (222 strings) — BLOCKED on a lazy-catalogue
+  seam, not on effort.** This is picker METADATA, and unlike the pattern documents it would otherwise
+  be ordinary catalogue work: each `Pattern` has a stable `id`, and the label/hint describe the
+  pattern rather than living inside it.
+
+  The blocker is measured, not hypothetical. That copy is **9.2 KB gzipped** and today rides the
+  LAZY `patterns` chunk (41.9 KB, unbudgeted, loaded only when the Templates dialog opens). `en.ts`
+  is statically imported — it has to be, so first paint is never untranslated — so moving the copy
+  into it drags 9.2 KB onto the EAGER path. `index` is 101.5 KB against a 109.5 KB ceiling, so that
+  lands at ~110.7 KB and **fails the bundle gate**.
+
+  Doing it properly needs a *lazy catalogue segment*: a `PatternMessages` type with its own
+  per-locale registry, imported only from the lazy chunk, so pattern copy travels with the code that
+  renders it. That is a design addition (a second, parallel loader) rather than more extraction, and
+  it buys nothing until a second locale exists — so it is parked deliberately rather than half-built.
+
+  Consequence: `PatternLibraryDialog` stays out of the pseudo-locale test. Its own chrome is
+  converted, but its cards render `pattern.label` / `pattern.hint`, and a 222-entry allow-list would
+  be noise pretending to be a guardrail.
   With `clrScrutiny.ts`, `analysisJourney.ts` and `methodPath.ts` done, the domain static blocks are
   finished — what is left in `src/domain` is mostly generated prose (`verbalisation.ts`,
   `edgeReading.ts`, the exporters' section headers) where word ORDER is language-specific, not just
@@ -45,7 +58,18 @@ deliberate leftovers, in rough priority order:
   | --- | --- | --- |
   | `src/components` | ~600 left | was ~686; the four Settings tabs are now converted |
   | `src/domain` (excl. patterns) | ~155 left | was ~378; the static blocks are done — what remains is generated prose (verbalisation / edgeReading / exporters), a design problem rather than extraction |
-  | `src/services` + `store` + `hooks` | ~92 | mostly toast copy |
+  | `src/services` + `store` + `hooks` | ~92 | mostly toast copy — needs the toast seam below |
+
+  **Toast copy (~25 `showToast` call sites in `store/` + `services/`) needs a key seam, like CLR
+  warnings did.** These fire from store actions and plain services — outside any React render — so
+  they cannot call `useT()`. Reading `en` directly would "convert" them while leaving them
+  permanently English. Threading the store in creates a cycle: `store/index.ts` cannot import a
+  module that imports `@/store`.
+
+  The shape that works is the one `Warning` already uses: `showToast` takes a `(messageKey, params)`
+  pair, the `Toast` record carries it, and `Toaster` — which IS in a render — resolves it against the
+  active locale. Same trade as `Warning.message`: keep an English-rendered `message` alongside so
+  existing assertions and any non-React consumer keep working.
 - **Retire `Warning.message`.** It exists as the English fallback + parameter-correctness canary. Removing
   it means migrating ~276 message-string assertions across ~41 test files to assert on
   `(ruleId, variant, params)` instead of rendered copy. Worth doing once a second locale exists.
