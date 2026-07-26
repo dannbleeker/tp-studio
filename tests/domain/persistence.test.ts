@@ -126,3 +126,22 @@ describe('localStorage round-trip', () => {
     expect(backupRaw === null || !backupRaw.includes('sentinel-A')).toBe(true);
   });
 });
+
+/**
+ * Session 209b — `clearLocalStorage` dropped the committed and backup slots but
+ * not the legacy LIVE draft, so a "cleared" document was resurrected on the
+ * next boot through the legacy recovery path.
+ */
+describe('clearLocalStorage clears every legacy slot', () => {
+  it('removes the live draft, not just committed + backup', () => {
+    resetIds();
+    const doc = makeDoc([makeEntity({ title: 'Should not survive' })], []);
+    saveToLocalStorage(doc);
+    globalThis.localStorage.setItem('tp-studio:active-document-live:v1', JSON.stringify(doc));
+
+    clearLocalStorage();
+
+    expect(globalThis.localStorage.getItem('tp-studio:active-document-live:v1')).toBeNull();
+    expect(loadFromLocalStorage()).toBeNull();
+  });
+});

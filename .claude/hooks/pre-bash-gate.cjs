@@ -65,7 +65,14 @@ const main = () => {
       failures.push(`tsc --noEmit failed:\n${tail.slice(-2000)}`);
     }
     try {
-      execSync('node_modules/.bin/biome check', {
+      // SCOPED to `src tests`, matching package.json's `lint` script and what
+      // CI actually runs. Unscoped, this walked the whole repo including
+      // `public/` — and the moment the Stats workflow started committing a
+      // generated `public/dashboard.html`, the hook blocked EVERY commit over
+      // lint findings in a file CI never checks. A gate that fails on something
+      // CI passes isn't a gate, it's a detour: the only way through is
+      // CLAUDE_SKIP_COMMIT_GATE=1, which switches off the tsc check too.
+      execSync('node_modules/.bin/biome check src tests', {
         cwd: PROJECT_ROOT,
         stdio: 'pipe',
       });

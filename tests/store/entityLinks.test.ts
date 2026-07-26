@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { documentCommands } from '@/components/command-palette/commands/document';
-import { importFromJSON } from '@/domain/persistence';
+import { importFromJSON, loadSavedDoc } from '@/domain/persistence';
 import type { DocumentId, EntityId, TPDocument } from '@/domain/types';
+import { flushPersist } from '@/services/storage/persistDebounced';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 
 /**
@@ -235,5 +236,44 @@ describe('"Link to entity in another tab…" command guards', () => {
     setupTwoTabs();
     await linkCmd.run(s());
     expect(s().linkEntityPickerOpen).toBe(true);
+  });
+});
+
+/**
+ * Session 209b — cross-doc link writes bypass `applyDocChange` on purpose
+ * (links are metadata and carry no history entry), but they were also bypassing
+ * the DEBOUNCE SCHEDULER: the link was committed straight to storage with
+ * `saveDocToLocalStorage` while an ordinary edit made moments earlier was still
+ * pending. When that pending write landed it wrote the PRE-LINK document over
+ * the committed slot, so the source lost its link while the target kept its
+ * mirror — the asymmetric corruption `preserveLinks` exists to prevent, with no
+ * history entry to undo it.
+ *
+ * The fix flushes first, ordering the two writes. This test reproduces the race
+ * through the real scheduler: edit (schedules a debounced write), link, then let
+ * the pending write land.
+ */
+describe('a link is not clobbered by an in-flight debounced write', () => {
+  it('survives the pending write that was scheduled before it', () => {
+    setupTwoTabs();
+
+    // An ordinary edit: routes through `applyDocChange`, which schedules a
+    // DEBOUNCED write of the pre-link document.
+    s().updateEntity(eid('a1'), { title: 'Edited just before linking' });
+
+    // The link commits straight to storage.
+    s().linkSelectedEntityTo(did('doc-b'), eid('b1'));
+
+    // Let anything still pending land, exactly as the 200ms timer would.
+    flushPersist();
+
+    // Read the committed slot back: the link must be there. Previously the
+    // late-landing pre-link write erased it here while `doc-b` kept its mirror.
+    const stored = loadSavedDoc(did('doc-a'));
+    expect(stored?.entities.a1?.links).toEqual([{ docId: 'doc-b', entityId: 'b1' }]);
+
+    // And the two sides still agree — that is the invariant that was broken.
+    const storedB = loadSavedDoc(did('doc-b'));
+    expect(storedB?.entities.b1?.links).toEqual([{ docId: 'doc-a', entityId: 'a1' }]);
   });
 });

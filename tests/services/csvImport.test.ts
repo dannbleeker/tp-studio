@@ -140,3 +140,41 @@ describe('applyCsvRows', () => {
     expect(summary.edges).toBe(0);
   });
 });
+
+/**
+ * Session 209b — a row's own identity was keyed by TITLE, so a repeated title
+ * overwrote the map and the second row's edge silently attached to the first
+ * row's entity. The row that should have had a parent got none, and the toast
+ * reported success. Duplicate statement text is ordinary in a workshop CSV.
+ */
+describe('applyCsvRows with duplicate titles', () => {
+  const rows = (csv: string) => {
+    const r = parseEntitiesCsv(csv);
+    if (!r.ok) throw new Error(`parse failed: ${JSON.stringify(r.errors)}`);
+    return r.rows;
+  };
+
+  it('gives each row its own entity even when two share a title', () => {
+    const parsed = rows(
+      ['title,type,parent_title', 'Root,effect,', 'Dup,effect,Root', 'Dup,effect,Root'].join('\n')
+    );
+    const summary = applyCsvRows(parsed);
+
+    expect(summary.entities).toBe(3);
+    // Both "Dup" rows hang off Root — previously the second row's edge was
+    // wired to the FIRST Dup's entity, leaving one orphan and 1 edge short.
+    expect(summary.edges).toBe(2);
+    const titles = Object.values(useDocumentStore.getState().doc.entities).map((e) => e.title);
+    expect(titles.filter((t) => t === 'Dup')).toHaveLength(2);
+  });
+
+  it('reports an ambiguous parent_title instead of guessing', () => {
+    const parsed = rows(
+      ['title,type,parent_title', 'Dup,effect,', 'Dup,effect,', 'Child,effect,Dup'].join('\n')
+    );
+    const summary = applyCsvRows(parsed);
+
+    expect(summary.ambiguousParents).toBe(1);
+    expect(summary.edges).toBe(0);
+  });
+});

@@ -4,6 +4,7 @@ import {
   decodeSvgDataUrl,
   estimateAppendixPages,
   estimateReasoningPages,
+  renderAppendix,
   resolvePagePlaceholders,
 } from '@/services/exporters/pdfExport';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -117,5 +118,116 @@ describe('estimateReasoningPages', () => {
   it('grows with the number + length of sentences', () => {
     const many = Array.from({ length: 80 }, (_, i) => `Step ${i}: ${'cause '.repeat(10)}`);
     expect(estimateReasoningPages(many, 297, 186)).toBeGreaterThan(1);
+  });
+});
+
+/**
+ * Session 209b — the appendix ran its page-break check ONCE per entity, before
+ * drawing the whole block, so an entry taller than a page marched off the bottom
+ * and the overflow was invisible in the output. Separately, the header line was
+ * drawn with a bare `pdf.text` instead of `splitTextToSize`, so a long title was
+ * clipped at the right margin rather than wrapping.
+ *
+ * A fake jsPDF records what would have been drawn. That is enough to assert both
+ * properties without a real DOM/SVG pipeline (which e2e covers).
+ */
+describe('renderAppendix pagination', () => {
+  type Drawn = { text: string; y: number; page: number };
+
+  const fakePdf = () => {
+    let page = 1;
+    const drawn: Drawn[] = [];
+    const pdf = {
+      setFontSize: () => undefined,
+      setFont: () => undefined,
+      setTextColor: () => undefined,
+      setDrawColor: () => undefined,
+      setFillColor: () => undefined,
+      rect: () => undefined,
+      line: () => undefined,
+      addPage: () => {
+        page += 1;
+      },
+      // ~90 chars per line at the appendix body size across the usable width.
+      splitTextToSize: (t: string, _w: number) => {
+        const words = String(t).split(' ');
+        const lines: string[] = [];
+        let cur = '';
+        for (const w of words) {
+          if ((cur + ' ' + w).trim().length > 90) {
+            lines.push(cur.trim());
+            cur = w;
+          } else {
+            cur = `${cur} ${w}`;
+          }
+        }
+        if (cur.trim()) lines.push(cur.trim());
+        return lines.length > 0 ? lines : [''];
+      },
+      text: (t: string, _x: number, y: number) => {
+        drawn.push({ text: String(t), y, page });
+      },
+    };
+    return { pdf, drawn: () => drawn };
+  };
+
+  const A4 = { pageWidthMm: 210, pageHeightMm: 297 };
+
+  const docWith = (description: string, title = 'A title') => {
+    resetStoreForTest();
+    const s = useDocumentStore.getState();
+    const e = s.addEntity({ type: 'effect', title });
+    s.updateEntity(e.id, { description });
+    return useDocumentStore.getState().doc;
+  };
+
+  it('breaks the page per LINE, so a block taller than a page never runs off it', () => {
+    // Deliberately far past one page. An earlier draft of this test used ~50
+    // wrapped lines, which still FIT — so it passed against the broken code and
+    // guarded nothing. Sized so the overflow is unambiguous.
+    const long = Array.from({ length: 600 }, (_, i) => `Sentence number ${i} padded out.`).join(
+      ' '
+    );
+    const { pdf, drawn } = fakePdf();
+
+    renderAppendix(
+      pdf as unknown as import('jspdf').jsPDF,
+      docWith(long),
+      A4,
+      'header',
+      'footer',
+      2,
+      9
+    );
+
+    const lines = drawn();
+    expect(lines.length).toBeGreaterThan(180);
+    // Nothing is drawn below the printable area on any page. The old code only
+    // checked once per entity, so everything after the first page's worth was
+    // written past the bottom margin.
+    const bottomLimit = A4.pageHeightMm;
+    for (const l of lines) expect(l.y).toBeLessThan(bottomLimit);
+    // And it genuinely spilled onto further pages rather than piling up.
+    expect(Math.max(...lines.map((l) => l.page))).toBeGreaterThan(1);
+  });
+
+  it('wraps a long header line instead of clipping it at the margin', () => {
+    const longTitle = `Prefix ${'wordy '.repeat(40)}suffix`;
+    const { pdf, drawn } = fakePdf();
+
+    renderAppendix(
+      pdf as unknown as import('jspdf').jsPDF,
+      docWith('Short body.', longTitle),
+      A4,
+      'header',
+      'footer',
+      2,
+      3
+    );
+
+    // The title arrives as several drawn lines, not one over-long string.
+    const titleLines = drawn().filter((l) => l.text.includes('wordy'));
+    expect(titleLines.length).toBeGreaterThan(1);
+    for (const l of titleLines) expect(l.text.length).toBeLessThanOrEqual(90);
   });
 });
