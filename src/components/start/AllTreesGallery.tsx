@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useT } from '@/i18n/useT';
 import { diagramMetaFor } from './diagramMeta';
 import { TreeGallery } from './TreeGallery';
 import type { SavedTree } from './useSavedTrees';
@@ -13,6 +14,7 @@ import type { SavedTree } from './useSavedTrees';
  * an in-place filter of the gallery you're looking at.
  */
 export function AllTreesGallery({ trees }: { trees: SavedTree[] }) {
+  const messages = useT();
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
 
@@ -20,10 +22,12 @@ export function AllTreesGallery({ trees }: { trees: SavedTree[] }) {
     if (!q) return trees;
     return trees.filter((t) => {
       const title = (t.doc.title || 'Untitled').toLowerCase();
-      const tag = diagramMetaFor(t.doc.diagramType).tag.toLowerCase();
+      const tag = diagramMetaFor(messages, t.doc.diagramType).tag.toLowerCase();
       return title.includes(q) || tag.includes(q);
     });
-  }, [trees, q]);
+    // `messages` matters: the filter matches on the diagram TAG, which is now
+    // locale-dependent, so a locale switch has to recompute the list.
+  }, [trees, q, messages]);
 
   return (
     <div className="flex flex-col gap-4">

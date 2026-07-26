@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { useShallow } from 'zustand/react/shallow';
 import { PATTERNS, type Pattern } from '@/domain/patterns';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { diagramMetaFor, groupByDiagramType } from './diagramMeta';
 
@@ -13,6 +14,7 @@ import { diagramMetaFor, groupByDiagramType } from './diagramMeta';
  * serves the full Templates page and the Start view's strip (`limitPerGroup`).
  */
 export function TemplateGallery({ limitPerGroup }: { limitPerGroup?: number }) {
+  const messages = useT();
   const { openDocInTab, showToast } = useDocumentStore(
     useShallow((s) => ({ openDocInTab: s.openDocInTab, showToast: s.showToast }))
   );
@@ -30,7 +32,7 @@ export function TemplateGallery({ limitPerGroup }: { limitPerGroup?: number }) {
   return (
     <div className="flex flex-col gap-7">
       {groups.map(({ type, items }) => {
-        const meta = diagramMetaFor(type);
+        const meta = diagramMetaFor(messages, type);
         const Icon = meta.icon;
         const shown = typeof limitPerGroup === 'number' ? items.slice(0, limitPerGroup) : items;
         const overflow = items.length - shown.length;

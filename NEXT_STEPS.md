@@ -16,14 +16,13 @@ deliberate leftovers, in rough priority order:
   dialog, the diagram-type picker, the toolbar title badge, and the method-path stepper. Converted alongside them: the full CLR
   warning pipeline, the 63-step method checklist, the 38 keyboard shortcuts, the 7-CLR scrutiny
   stepper, Barnard's five journey questions, the shared doc-links, and reader-mode coaching — roughly
-  580 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
+  590 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
   pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
   is what proves the conversion is complete. Next up: the three components still reading the English
   `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` views (`BlocksRail`, `PatternLibraryDialog`,
   `AnalysisJourneyDialog`) — each also carries surrounding hardcoded copy, so convert them whole
-  rather than swapping only the label; plus `start/diagramMeta.tsx`, whose table is built at MODULE
-  scope and needs restructuring into a function before it can read a catalogue, and which also
-  duplicates the diagram label/short pair the catalogue now owns.
+  rather than swapping only the label. The Start surface's `diagramMeta.tsx` is done — its
+  module-scope table is now icon-only, with label/tag resolved per locale.
   With `clrScrutiny.ts`, `analysisJourney.ts` and `methodPath.ts` done, the domain static blocks are
   finished — what is left in `src/domain` is mostly generated prose (`verbalisation.ts`,
   `edgeReading.ts`, the exporters' section headers) where word ORDER is language-specific, not just
