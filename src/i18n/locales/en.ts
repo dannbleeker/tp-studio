@@ -56,6 +56,12 @@ const ST_FACET_NOUN: Record<string, string> = {
 };
 
 export const en = {
+  /** Shared primitives used by more than one surface. */
+  common: {
+    edit: 'Edit',
+    preview: 'Preview',
+  },
+
   settings: {
     tabs: {
       appearance: 'Appearance',
@@ -295,6 +301,86 @@ export const en = {
         tip: 'Read: "In order to (parent), we must (child)." The child is required — without it the parent cannot be achieved. To challenge: is this truly necessary, or is there another way?',
       },
     },
+  },
+
+  /**
+   * Document Inspector dialog.
+   *
+   * Interpolated entries here take a CONCRETE param object, unlike the `clr`
+   * section's loose `ClrParams`. The CLR resolver has to be generic over ~57
+   * heterogeneous messages routed through one channel; these are called
+   * directly from the component, so the signature can be exact and `tsc`
+   * checks the call site.
+   */
+  docInspector: {
+    heading: 'Document',
+    close: 'Close document inspector',
+    title: 'Title',
+    author: 'Author',
+    authorPlaceholder: 'Optional',
+    description: 'Description',
+    descriptionPlaceholder: "Goal of this tree, who it's for, what's in scope — supports markdown.",
+    documentWarnings: 'Document-level warnings',
+
+    systemScope: 'System Scope',
+    scopeAnswered: (p: { answered: number; total: number }) => `${p.answered}/${p.total} answered`,
+    scopeIntro:
+      'CRT Step 1 — answer these before drawing entities. The discipline pays back as the tree grows.',
+    scope: {
+      goal: 'System goal',
+      goalPlaceholder: 'What is this system / situation for?',
+      necessaryConditions: 'Necessary conditions for the goal',
+      necessaryConditionsPlaceholder:
+        'What must be true (in the world) for the goal to be reachable?',
+      successMeasures: 'Measurements of success',
+      successMeasuresPlaceholder:
+        "How will we know it's working? Specific, observable, quantifiable.",
+      boundaries: 'System boundaries',
+      boundariesPlaceholder:
+        "What's inside the system under analysis vs. context that just affects it?",
+      containingSystem: 'Containing system',
+      containingSystemPlaceholder: 'What larger system / organization / process is this inside?',
+      interactingSystems: 'Interacting systems',
+      interactingSystemsPlaceholder:
+        'Other systems that significantly affect or are affected by this one.',
+      inputsOutputs: 'Inputs / outputs',
+      inputsOutputsPlaceholder: 'What flows in (work, materials, information) and what flows out?',
+    },
+
+    performanceFrame: 'Performance frame',
+    anchorsFilled: (p: { filled: number }) => `${p.filled}/2 anchors`,
+    performanceIntro:
+      "Frame the gap this diagram closes: the measure's current (unacceptable) level and its target (desired) level. Optional — a facilitation note that travels with the document.",
+    performanceLow: 'Low — current / unacceptable',
+    performanceLowPlaceholder: 'e.g. On-time delivery sits at 60%.',
+    performanceHigh: 'High — target / desired',
+    performanceHighPlaceholder: 'e.g. Reach 98% on-time delivery within two quarters.',
+
+    methodChecklist: 'Method checklist',
+    stepsDone: (p: { done: number; total: number; diagram: string }) =>
+      `${p.done}/${p.total} steps — ${p.diagram}`,
+    methodIntro:
+      'The canonical recipe for this diagram type. Each step is roughly one focused work session.',
+    // The ordinal separator is part of the copy, not punctuation the component
+    // should assume: not every locale numbers a list "1." — some use "1)" and
+    // some use different numerals entirely.
+    methodStep: (p: { n: number; label: string }) => `${p.n}. ${p.label}`,
+
+    ecVerbalStyle: 'EC verbal style',
+    ecNeutral: 'Neutral ("we must")',
+    ecTwoSided: 'Two-sided ("I" vs "they")',
+    ecVerbalStyleNote:
+      'Switches the verbalisation strip between the workshop-default neutral voice ("In order to A, we must B") and the BESTSELLER PPT\'s two-party framing ("they want to" / "I want to") that surfaces the felt negotiation.',
+
+    cloudType: 'Cloud type',
+    cloudTypeUntyped: '— Untyped',
+    cloudTypeNote:
+      "Optional — marks this cloud's role in the progression (UDE → Consolidated → Core), per Cohen's TP Basics. The creation wizard reads it to tailor the build order and prompts; afterwards it keeps Cohen's break hint to hand.",
+    bestArrowToBreak: 'Best arrow to break',
+
+    statType: 'Type',
+    statEntities: 'Entities',
+    statEdges: 'Edges',
   },
 
   /**

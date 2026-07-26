@@ -40,50 +40,24 @@ const EMPTY_CHECKLIST: Record<string, boolean> = {};
  * benefits from naming its goal, boundaries, and success measures up
  * front — so the section is universal rather than per-diagram.
  */
-const SYSTEM_SCOPE_FIELDS: Array<{
-  key: keyof SystemScope;
-  label: string;
-  placeholder: string;
-}> = [
-  {
-    key: 'goal',
-    label: 'System goal',
-    placeholder: 'What is this system / situation for?',
-  },
-  {
-    key: 'necessaryConditions',
-    label: 'Necessary conditions for the goal',
-    placeholder: 'What must be true (in the world) for the goal to be reachable?',
-  },
-  {
-    key: 'successMeasures',
-    label: 'Measurements of success',
-    placeholder: "How will we know it's working? Specific, observable, quantifiable.",
-  },
-  {
-    key: 'boundaries',
-    label: 'System boundaries',
-    placeholder: "What's inside the system under analysis vs. context that just affects it?",
-  },
-  {
-    key: 'containingSystem',
-    label: 'Containing system',
-    placeholder: 'What larger system / organization / process is this inside?',
-  },
-  {
-    key: 'interactingSystems',
-    label: 'Interacting systems',
-    placeholder: 'Other systems that significantly affect or are affected by this one.',
-  },
-  {
-    key: 'inputsOutputs',
-    label: 'Inputs / outputs',
-    placeholder: 'What flows in (work, materials, information) and what flows out?',
-  },
-];
+/**
+ * Scope questions, in presentation order. Structure only — the label and
+ * placeholder for each key live in the message catalogue under
+ * `docInspector.scope`, so this list stays a pure ordering concern.
+ */
+const SYSTEM_SCOPE_KEYS = [
+  'goal',
+  'necessaryConditions',
+  'successMeasures',
+  'boundaries',
+  'containingSystem',
+  'interactingSystems',
+  'inputsOutputs',
+] as const satisfies readonly (keyof SystemScope)[];
 
 export function DocumentInspector() {
   const t = useT();
+  const d = t.docInspector;
   const open = useDocumentStore((s) => s.docSettingsOpen);
   const close = useDocumentStore((s) => s.closeDocSettings);
   const locked = useDocumentStore((s) => s.browseLocked);
@@ -155,37 +129,37 @@ export function DocumentInspector() {
           id="doc-inspector-title"
           className="font-semibold text-neutral-900 text-sm dark:text-neutral-100"
         >
-          Document
+          {d.heading}
         </h2>
-        <Button variant="ghost" size="icon" onClick={close} aria-label="Close document inspector">
+        <Button variant="ghost" size="icon" onClick={close} aria-label={d.close}>
           <X className="h-4 w-4" />
         </Button>
       </header>
 
       <div className="max-h-[70vh] space-y-4 overflow-y-auto px-4 py-4">
-        <Field label="Title">
+        <Field label={d.title}>
           <TextInput value={title} onChange={setTitle} disabled={locked} />
         </Field>
 
-        <Field label="Author">
+        <Field label={d.author}>
           <TextInput
             value={author}
-            placeholder="Optional"
+            placeholder={d.authorPlaceholder}
             onChange={(next) => setMeta({ author: next })}
             disabled={locked}
           />
         </Field>
 
         <MarkdownField
-          label="Description"
+          label={d.description}
           value={description}
           onChange={(next) => setMeta({ description: next })}
-          placeholder="Goal of this tree, who it's for, what's in scope — supports markdown."
+          placeholder={d.descriptionPlaceholder}
           locked={locked}
         />
 
         {docWarnings.length > 0 && (
-          <Field label="Document-level warnings" as="group">
+          <Field label={d.documentWarnings} as="group">
             <WarningsList warnings={docWarnings} />
           </Field>
         )}
@@ -204,22 +178,22 @@ export function DocumentInspector() {
           {...(Object.keys(systemScope).length > 0 ? { open: true } : {})}
         >
           <summary className="cursor-pointer select-none px-3 py-2 font-semibold text-neutral-600 text-xs uppercase tracking-wider dark:text-neutral-300">
-            System Scope
+            {d.systemScope}
             <span className="ml-2 font-normal text-neutral-400 normal-case tracking-normal">
-              {Object.keys(systemScope).length}/{SYSTEM_SCOPE_FIELDS.length} answered
+              {d.scopeAnswered({
+                answered: Object.keys(systemScope).length,
+                total: SYSTEM_SCOPE_KEYS.length,
+              })}
             </span>
           </summary>
           <div className="space-y-3 border-neutral-200 border-t px-3 py-3 dark:border-neutral-800">
-            <p className="text-neutral-500 text-xs dark:text-neutral-400">
-              CRT Step 1 — answer these before drawing entities. The discipline pays back as the
-              tree grows.
-            </p>
-            {SYSTEM_SCOPE_FIELDS.map(({ key, label, placeholder }) => (
-              <Field key={key} label={label}>
+            <p className="text-neutral-500 text-xs dark:text-neutral-400">{d.scopeIntro}</p>
+            {SYSTEM_SCOPE_KEYS.map((key) => (
+              <Field key={key} label={d.scope[key]}>
                 <textarea
                   rows={2}
                   value={systemScope[key] ?? ''}
-                  placeholder={placeholder}
+                  placeholder={d.scope[`${key}Placeholder`]}
                   onChange={(e) => setSystemScope({ [key]: e.target.value })}
                   disabled={locked}
                   className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
@@ -241,32 +215,30 @@ export function DocumentInspector() {
           {...(performanceLow || performanceHigh ? { open: true } : {})}
         >
           <summary className="cursor-pointer select-none px-3 py-2 font-semibold text-neutral-600 text-xs uppercase tracking-wider dark:text-neutral-300">
-            Performance frame
+            {d.performanceFrame}
             <span className="ml-2 font-normal text-neutral-400 normal-case tracking-normal">
-              {[performanceLow, performanceHigh].filter((v) => v.trim().length > 0).length}/2
-              anchors
+              {d.anchorsFilled({
+                filled: [performanceLow, performanceHigh].filter((v) => v.trim().length > 0).length,
+              })}
             </span>
           </summary>
           <div className="space-y-3 border-neutral-200 border-t px-3 py-3 dark:border-neutral-800">
-            <p className="text-neutral-500 text-xs dark:text-neutral-400">
-              Frame the gap this diagram closes: the measure's current (unacceptable) level and its
-              target (desired) level. Optional — a facilitation note that travels with the document.
-            </p>
-            <Field label="Low — current / unacceptable">
+            <p className="text-neutral-500 text-xs dark:text-neutral-400">{d.performanceIntro}</p>
+            <Field label={d.performanceLow}>
               <textarea
                 rows={2}
                 value={performanceLow}
-                placeholder="e.g. On-time delivery sits at 60%."
+                placeholder={d.performanceLowPlaceholder}
                 onChange={(e) => setPerformanceLow(e.target.value)}
                 disabled={locked}
                 className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
               />
             </Field>
-            <Field label="High — target / desired">
+            <Field label={d.performanceHigh}>
               <textarea
                 rows={2}
                 value={performanceHigh}
-                placeholder="e.g. Reach 98% on-time delivery within two quarters."
+                placeholder={d.performanceHighPlaceholder}
                 onChange={(e) => setPerformanceHigh(e.target.value)}
                 disabled={locked}
                 className="w-full resize-y rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
@@ -286,16 +258,17 @@ export function DocumentInspector() {
           {...(doneCount > 0 ? { open: true } : {})}
         >
           <summary className="cursor-pointer select-none px-3 py-2 font-semibold text-neutral-600 text-xs uppercase tracking-wider dark:text-neutral-300">
-            Method checklist
+            {d.methodChecklist}
             <span className="ml-2 font-normal text-neutral-400 normal-case tracking-normal">
-              {doneCount}/{steps.length} steps — {DIAGRAM_TYPE_LABEL[diagramType]}
+              {d.stepsDone({
+                done: doneCount,
+                total: steps.length,
+                diagram: DIAGRAM_TYPE_LABEL[diagramType],
+              })}
             </span>
           </summary>
           <div className="space-y-2 border-neutral-200 border-t px-3 py-3 dark:border-neutral-800">
-            <p className="text-neutral-500 text-xs dark:text-neutral-400">
-              The canonical recipe for this diagram type. Each step is roughly one focused work
-              session.
-            </p>
+            <p className="text-neutral-500 text-xs dark:text-neutral-400">{d.methodIntro}</p>
             <MethodChecklist
               diagramType={diagramType}
               checked={methodChecklist}
@@ -306,12 +279,12 @@ export function DocumentInspector() {
         </details>
 
         {diagramType === 'ec' && (
-          <Field label="EC verbal style">
+          <Field label={d.ecVerbalStyle}>
             <div className="grid grid-cols-2 gap-1.5 text-xs">
               {(
                 [
-                  { id: 'neutral' as const, label: 'Neutral ("we must")' },
-                  { id: 'twoSided' as const, label: 'Two-sided ("I" vs "they")' },
+                  { id: 'neutral' as const, label: d.ecNeutral },
+                  { id: 'twoSided' as const, label: d.ecTwoSided },
                 ] satisfies { id: 'neutral' | 'twoSided'; label: string }[]
               ).map((opt) => {
                 const active = ecVerbalStyle === opt.id;
@@ -333,17 +306,15 @@ export function DocumentInspector() {
               })}
             </div>
             <p className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-              Switches the verbalisation strip between the workshop-default neutral voice ("In order
-              to A, we must B") and the BESTSELLER PPT's two-party framing ("they want to" / "I want
-              to") that surfaces the felt negotiation.
+              {d.ecVerbalStyleNote}
             </p>
           </Field>
         )}
 
         {diagramType === 'ec' && (
-          <Field label="Cloud type">
+          <Field label={d.cloudType}>
             <select
-              aria-label="Cloud type"
+              aria-label={d.cloudType}
               value={cloudType ?? ''}
               disabled={locked}
               onChange={(e) =>
@@ -351,7 +322,7 @@ export function DocumentInspector() {
               }
               className="w-full rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-neutral-700 text-sm outline-hidden focus:border-accent-400 focus:ring-1 focus:ring-accent-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
             >
-              <option value="">— Untyped</option>
+              <option value="">{d.cloudTypeUntyped}</option>
               {CLOUD_TYPES.map((ct) => (
                 <option key={ct} value={ct}>
                   {CLOUD_TYPE_LABEL[ct]}
@@ -359,9 +330,7 @@ export function DocumentInspector() {
               ))}
             </select>
             <p className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-              Optional — marks this cloud's role in the progression (UDE → Consolidated → Core), per
-              Cohen's <em>TP Basics</em>. The creation wizard reads it to tailor the build order and
-              prompts; afterwards it keeps Cohen's break hint to hand.
+              {d.cloudTypeNote}
             </p>
             {/* Session 206 — Cohen's per-type "best arrow to break" hint used to live
                 only in the creation wizard's completion panel, so it vanished the
@@ -374,12 +343,12 @@ export function DocumentInspector() {
               <InsetCard
                 tone="amber"
                 role="note"
-                aria-label="Best arrow to break"
+                aria-label={d.bestArrowToBreak}
                 data-component="ec-break-hint"
                 className="mt-2"
               >
                 <p className="mb-1 font-semibold text-[10px] text-amber-700 uppercase tracking-wider dark:text-amber-300">
-                  Best arrow to break
+                  {d.bestArrowToBreak}
                 </p>
                 <p className="leading-snug">{EC_CLOUD_TYPE_BREAK_HINT[cloudType]}</p>
               </InsetCard>
@@ -388,10 +357,10 @@ export function DocumentInspector() {
         )}
 
         <dl className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs dark:border-neutral-800 dark:bg-neutral-900">
-          <Stat label="Type" value={DIAGRAM_TYPE_LABEL[diagramType]} />
+          <Stat label={d.statType} value={DIAGRAM_TYPE_LABEL[diagramType]} />
           <div className="mt-2 grid grid-cols-2 gap-3 text-center">
-            <Stat label="Entities" value={String(entityCount)} center />
-            <Stat label="Edges" value={String(edgeCount)} center />
+            <Stat label={d.statEntities} value={String(entityCount)} center />
+            <Stat label={d.statEdges} value={String(edgeCount)} center />
           </div>
         </dl>
       </div>
@@ -410,7 +379,9 @@ function MethodChecklist({
   locked: boolean;
   onToggle: (stepId: string, done: boolean) => void;
 }) {
-  const steps: MethodStep[] = methodStepsFor(useT(), diagramType);
+  const t = useT();
+  const d = t.docInspector;
+  const steps: MethodStep[] = methodStepsFor(t, diagramType);
   return (
     <ol className="flex flex-col gap-1.5">
       {steps.map((step, idx) => {
@@ -436,7 +407,7 @@ function MethodChecklist({
                     : 'text-neutral-800 dark:text-neutral-100'
                 }`}
               >
-                {idx + 1}. {step.label}
+                {d.methodStep({ n: idx + 1, label: step.label })}
               </span>
               {step.hint && (
                 <span className="mt-0.5 block text-neutral-500 text-xs dark:text-neutral-400">

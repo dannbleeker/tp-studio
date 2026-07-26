@@ -11,12 +11,14 @@ rationale that lived only here were migrated into their CHANGELOG session entrie
 **Open — i18n follow-ups (Session 209).** The architecture shipped with English only; these are the
 deliberate leftovers, in rough priority order:
 
-- **Remaining UI-string extraction (~950–1,150 unique literals).** Converted so far: the whole Settings
-  dialog (4 tabs), the full CLR warning pipeline, the 63-step method checklist, and reader-mode coaching
-  — roughly 330 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
+- **Remaining UI-string extraction (~900–1,100 unique literals).** Converted so far: the whole Settings
+  dialog (4 tabs), the Document Inspector, the full CLR warning pipeline, the 63-step method checklist,
+  and reader-mode coaching — roughly 380 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
   pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
-  is what proves the conversion is complete. Next up: `DocumentInspector` (the largest remaining single
-  dialog), then `shortcuts.ts` (38), `clrScrutiny.ts` (16), `analysisJourney.ts` (15).
+  is what proves the conversion is complete. Next up: `entityPalettes.ts` / `cloudType.ts` display
+  constants (`DIAGRAM_TYPE_LABEL`, `CLOUD_TYPE_LABEL`, `EC_CLOUD_TYPE_BREAK_HINT` — the Document
+  Inspector's only remaining allow-list entry depends on them), then `shortcuts.ts` (38),
+  `clrScrutiny.ts` (16), `analysisJourney.ts` (15).
 
   *Counting note.* An earlier figure of "~2,500" was a raw `grep` upper bound (any single-quoted
   capitalised string in `src/`, 2,684 hits) and overstated the job badly. It double-counted duplicates

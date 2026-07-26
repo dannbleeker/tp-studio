@@ -1,6 +1,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { DocumentInspector } from '@/components/settings/DocumentInspector';
 import { AppearanceTab } from '@/components/settings/tabs/AppearanceTab';
 import { BehaviorTab } from '@/components/settings/tabs/BehaviorTab';
 import { DisplayTab } from '@/components/settings/tabs/DisplayTab';
@@ -74,6 +75,19 @@ describe('pseudo-locale', () => {
     { name: 'Behavior', render: () => render(<BehaviorTab />), allowed: [] },
     { name: 'Display', render: () => render(<DisplayTab />), allowed: [] },
     { name: 'Layout', render: () => render(<LayoutTab />), allowed: [] },
+    {
+      name: 'Document inspector',
+      render: () => {
+        act(() => useDocumentStore.getState().openDocSettings());
+        return render(<DocumentInspector />);
+      },
+      // Domain-level display constants not yet routed through the catalogue:
+      // `DIAGRAM_TYPE_LABEL` (rendered raw as the Type stat's VALUE — inside
+      // the method-checklist summary it is interpolated into a catalogue
+      // string and so does get tagged). Tracked in NEXT_STEPS; converting
+      // `entityPalettes` / `cloudType` is its own chunk.
+      allowed: ['Current Reality Tree'],
+    },
   ];
 
   for (const tab of TABS) {
