@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-26T16:53:40.889Z",
-  "commit": "073903b",
+  "generatedAt": "2026-07-26T17:20:52.713Z",
+  "commit": "dd84954",
   "headline": {
-    "linesTsJs": 156349,
+    "linesTsJs": 156379,
     "tests": 5118,
-    "lineCoveragePct": null,
-    "commits": 1178,
+    "lineCoveragePct": 95.27,
+    "commits": 1182,
     "ageDays": 76,
     "trackedFiles": 1237,
     "featureManualPct": 99.6,
@@ -21,12 +21,12 @@
     {
       "category": "Unit tests",
       "files": 442,
-      "lines": 69597
+      "lines": 69610
     },
     {
       "category": "E2E tests (Playwright)",
       "files": 15,
-      "lines": 2159
+      "lines": 2176
     },
     {
       "category": "Build scripts",
@@ -44,31 +44,52 @@
       "lines": 7293
     }
   ],
-  "coverage": null,
+  "coverage": {
+    "lines": {
+      "pct": 95.27,
+      "covered": 15002,
+      "total": 15746
+    },
+    "statements": {
+      "pct": 92.85,
+      "covered": 17100,
+      "total": 18415
+    },
+    "functions": {
+      "pct": 92.37,
+      "covered": 3451,
+      "total": 3736
+    },
+    "branches": {
+      "pct": 83.59,
+      "covered": 9685,
+      "total": 11585
+    }
+  },
   "tests": {
     "unit": 5022,
     "e2e": 96,
-    "durationMs": 296394,
+    "durationMs": 299143,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 9906
+        "ms": 11276
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 6130
-      },
-      {
-        "file": "tests/domain/graphReach.test.ts",
-        "ms": 5622
+        "ms": 6123
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5540
+        "ms": 5781
+      },
+      {
+        "file": "tests/domain/graphReach.test.ts",
+        "ms": 5363
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2871
+        "ms": 2761
       }
     ]
   },
@@ -111,7 +132,28 @@
   },
   "quality": {
     "mutationScore": 72.95,
-    "leastCovered": [],
+    "leastCovered": [
+      {
+        "file": "components/canvas/edges/ChallengeButton.tsx",
+        "pct": 0
+      },
+      {
+        "file": "components/canvas/nodes/EntityCoachingTooltip.tsx",
+        "pct": 0
+      },
+      {
+        "file": "components/start/LearnSection.tsx",
+        "pct": 0
+      },
+      {
+        "file": "components/start/TreeList.tsx",
+        "pct": 0
+      },
+      {
+        "file": "services/shareCurrentDoc.ts",
+        "pct": 9.09
+      }
+    ],
     "churnHotspots": [
       {
         "file": "components/canvas/Canvas.tsx",
@@ -774,8 +816,8 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 76,
-    "commits": 1178,
-    "commits7d": 29,
+    "commits": 1182,
+    "commits7d": 33,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -783,11 +825,11 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 322
+        "count": 323
       },
       {
         "name": "Claude",
-        "count": 31
+        "count": 33
       },
       {
         "name": "dannbleeker",
@@ -795,8 +837,8 @@
       }
     ],
     "churn30d": {
-      "added": 37106,
-      "removed": 10061
+      "added": 37244,
+      "removed": 10171
     },
     "changelogEntries": 411
   }
