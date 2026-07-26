@@ -372,8 +372,13 @@ const drawLegend = (pdf: import('jspdf').jsPDF, legendLines: readonly string[]):
  * Render the annotation appendix as one or more PDF pages.
  * Entities are listed in `annotationNumber` order (the same order the
  * Markdown annotation export uses, so they line up).
+ *
+ * Exported for direct test coverage: the full `exportToVectorPdf` pipeline needs
+ * a real DOM + SVG + jsPDF and is covered by e2e, but the pagination arithmetic
+ * here is exactly where a long entry used to march off the bottom of the page
+ * invisibly. A fake `pdf` recorder makes that assertable.
  */
-const renderAppendix = (
+export const renderAppendix = (
   pdf: import('jspdf').jsPDF,
   doc: TPDocument,
   geometry: {

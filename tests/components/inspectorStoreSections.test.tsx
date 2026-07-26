@@ -36,6 +36,54 @@ describe('EvidenceList', () => {
     expect(evidenceOf(e.id)).toHaveLength(1);
   });
 
+  /**
+   * Session 209b — an unsafe scheme (`file:`, `javascript:`, `data:`) was
+   * accepted here without comment, survived export, and was then silently
+   * deleted by `validateEvidenceArray` on the next load. The policy is right;
+   * the entry/load asymmetry and the silence were the defect. The row now says
+   * so at the point of entry.
+   */
+  it('warns at entry that an unsafe citation URL will not be stored', () => {
+    const e = seedEntity('Effect');
+    const { queryByText, rerender } = render(
+      <EvidenceList
+        entityId={e.id}
+        evidence={[
+          {
+            id: 'ev1',
+            description: 'A citation',
+            url: 'https://example.com/paper',
+            source: 'policy',
+            strength: 'strong',
+            createdAt: 1,
+            updatedAt: 1,
+          },
+        ]}
+        ownerHint={undefined}
+      />
+    );
+    expect(queryByText(/won't be saved/i)).toBeNull();
+
+    rerender(
+      <EvidenceList
+        entityId={e.id}
+        evidence={[
+          {
+            id: 'ev1',
+            description: 'A citation',
+            url: 'file:///C:/Users/dann/secret.pdf',
+            source: 'policy',
+            strength: 'strong',
+            createdAt: 1,
+            updatedAt: 1,
+          },
+        ]}
+        ownerHint={undefined}
+      />
+    );
+    expect(queryByText(/won't be saved/i)).not.toBeNull();
+  });
+
   it('surfaces a toast when adding to an entity that has gone away', () => {
     seedEntity('Effect');
     const before = s().toasts.length;

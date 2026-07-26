@@ -190,3 +190,157 @@ describe('applyMigrations', () => {
     expect(() => applyMigrations({ schemaVersion: 5 }, [], 1)).toThrow(/newer than this app/);
   });
 });
+
+/**
+ * Session 209b — three migration-layer findings, each with no coverage before.
+ */
+describe('migration-layer regressions (Session 209b)', () => {
+  it('reads a QUOTED schemaVersion instead of treating the doc as v1', () => {
+    // `"schemaVersion": "10"` fell through to the pre-versioning default and
+    // re-ran the whole v1->v10 chain over an already-current document. `v1ToV2`
+    // renumbers every annotation, so entities at #7 and #9 came back as #2 and
+    // #1 — breaking `[title](#42)` references and duplicating badges. Hand- and
+    // LLM-authored JSON is a first-class input here.
+    const doc = {
+      schemaVersion: String(CURRENT_SCHEMA_VERSION),
+      id: 'd1',
+      diagramType: 'crt',
+      title: 'Quoted version',
+      entities: {
+        a: { id: 'a', type: 'effect', title: 'A', annotationNumber: 7, createdAt: 1, updatedAt: 1 },
+        b: { id: 'b', type: 'effect', title: 'B', annotationNumber: 9, createdAt: 1, updatedAt: 1 },
+      },
+      edges: {},
+      groups: {},
+      resolvedWarnings: {},
+      nextAnnotationNumber: 10,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const out = migrateToCurrent(doc) as typeof doc;
+    expect(out.entities.a.annotationNumber).toBe(7);
+    expect(out.entities.b.annotationNumber).toBe(9);
+  });
+
+  it('v6->v7 does not mutate its input (the loop is documented as pure)', () => {
+    // The fixture has to make v6->v7 actually WRITE: it minted first-class
+    // assumption records into `raw.assumptions` by alias, so the mutation only
+    // shows up when there is an assumption-entity with a host edge to convert.
+    // An empty `assumptions: {}` proves nothing.
+    const raw = {
+      schemaVersion: 6,
+      id: 'd1',
+      diagramType: 'ec',
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'effect',
+          title: 'Cause',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        a1: {
+          id: 'a1',
+          type: 'assumption',
+          title: 'The belief behind the arrow',
+          annotationNumber: 2,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      edges: {
+        ed1: {
+          id: 'ed1',
+          sourceId: 'e1',
+          targetId: 'e1',
+          kind: 'necessity',
+          assumptionIds: ['a1'],
+        },
+      },
+      groups: {},
+      resolvedWarnings: {},
+      assumptions: {},
+      nextAnnotationNumber: 3,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const before = JSON.stringify(raw);
+    // Through the real registry: if ANY step writes into its input, the
+    // serialized original changes.
+    migrateToCurrent(raw);
+    expect(JSON.stringify(raw)).toBe(before);
+  });
+
+  it('v9->v10 does not leave groups pointing at the entities it removed', () => {
+    // The pivot turns assumption-ENTITIES into first-class records. Groups that
+    // contained them kept the now-dangling ids, and that state persisted
+    // through every export and every later save.
+    const raw = {
+      schemaVersion: 9,
+      id: 'd1',
+      diagramType: 'ec',
+      entities: {
+        e1: {
+          id: 'e1',
+          type: 'effect',
+          title: 'Real',
+          annotationNumber: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        a1: {
+          id: 'a1',
+          type: 'assumption',
+          title: 'An assumption',
+          annotationNumber: 2,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      edges: {
+        ed1: {
+          id: 'ed1',
+          sourceId: 'e1',
+          targetId: 'e1',
+          kind: 'necessity',
+          assumptionIds: ['a1'],
+        },
+      },
+      groups: {
+        g1: {
+          id: 'g1',
+          title: 'Mixed',
+          color: 'indigo',
+          memberIds: ['e1', 'a1'],
+          collapsed: false,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        g2: {
+          id: 'g2',
+          title: 'Only assumptions',
+          color: 'indigo',
+          memberIds: ['a1'],
+          collapsed: false,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      resolvedWarnings: {},
+      nextAnnotationNumber: 3,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const out = migrateToCurrent(raw) as {
+      entities: Record<string, unknown>;
+      groups: Record<string, { memberIds: string[] }>;
+    };
+
+    expect(out.entities.a1).toBeUndefined();
+    expect(out.groups.g1?.memberIds).toEqual(['e1']);
+    // A group left with nothing is dropped rather than kept as a phantom,
+    // matching what `deleteEntity` does.
+    expect(out.groups.g2).toBeUndefined();
+  });
+});
