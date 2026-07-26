@@ -28,10 +28,12 @@ NEXT_STEPS — see `docs/I18N.md` for the full contract.
   already formed the key space. `Warning.message` is **retained**, rendered in English from the same
   catalogue entry the UI uses — so every existing assertion keeps working *and* a mis-named interpolation
   parameter shows up immediately in the validator suite instead of reaching a user.
-- **Real plural + list rules.** `Intl.PluralRules` replaces the `n === 1 ? '' : 's'` ternaries;
-  `Intl.ListFormat` replaces `missing.join(', ')` in `st-tactic-assumptions`. The latter is the one genuine
-  copy change: English now reads "necessary, parallel, and sufficiency" (Oxford comma), so four assertions
-  in two test files were updated.
+- **Real plural + list rules, with zero copy change.** `Intl.PluralRules` replaces the
+  `n === 1 ? '' : 's'` ternaries; `Intl.ListFormat` replaces `missing.join(', ')` in
+  `st-tactic-assumptions`. The list formatter uses `type: 'unit'`, **not** `'conjunction'` — conjunction
+  would add "and" plus the Oxford comma and silently reword shipped English. Unit keeps en byte-identical
+  to the pre-i18n wording while still deferring punctuation to the locale (da yields
+  "necessary, parallel og sufficiency" from the same call). Every existing assertion passes untouched.
 - **Pseudo-locale as a CI check.** `pseudo` derives every string from `en` and wraps it in `⟦…⟧`, so text a
   converted surface renders *without* brackets is a literal that never went through `useT`. It is a real
   selectable locale (excluded from the Settings dropdown) reached only through the registry's dynamic

@@ -92,8 +92,12 @@ describe('plural + list formatting', () => {
     expect(plural('en', 2, { other: 'many' })).toBe('many');
   });
 
-  it('joins lists with a conjunction instead of a bare comma', () => {
-    expect(formatList('en', ['a', 'b', 'c'])).toContain('and');
+  it('defers list punctuation to the locale without altering English copy', () => {
+    // `type: 'unit'` — English stays exactly as the pre-i18n `join(', ')`
+    // produced it, with no conjunction and no Oxford comma, while a locale
+    // that punctuates lists differently still gets its own rendering.
+    expect(formatList('en', ['a', 'b', 'c'])).toBe('a, b, c');
     expect(formatList('en', ['solo'])).toBe('solo');
+    expect(formatList('da', ['a', 'b', 'c'])).toBe('a, b og c');
   });
 });

@@ -36,13 +36,19 @@ export const plural = (locale: string, count: number, forms: PluralForms): strin
 const listFormatCache = new Map<string, Intl.ListFormat>();
 
 /**
- * Conjunction list formatting ("a, b and c"). Replaces the bare
- * `missing.join(', ')` in `stTacticAssumptions`, which hard-coded English
- * list punctuation and omitted the conjunction entirely.
+ * List formatting, replacing the bare `missing.join(', ')` that hard-coded
+ * English comma punctuation into `stTacticAssumptions`.
+ *
+ * `type: 'unit'` rather than `'conjunction'` deliberately. Conjunction adds
+ * "and" plus, for en, the Oxford comma — which changes copy that reads fine
+ * today ("necessary, parallel, sufficiency" became "necessary, parallel, and
+ * sufficiency"). Unit keeps English byte-identical to the pre-i18n wording
+ * while still deferring punctuation to the locale, which is the whole point:
+ * da-DK yields "necessary, parallel og sufficiency" from the same call.
  */
 export const formatList = (locale: string, items: readonly string[]): string => {
   const hit = listFormatCache.get(locale);
-  const fmt = hit ?? new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' });
+  const fmt = hit ?? new Intl.ListFormat(locale, { style: 'long', type: 'unit' });
   if (!hit) listFormatCache.set(locale, fmt);
   return fmt.format(items);
 };

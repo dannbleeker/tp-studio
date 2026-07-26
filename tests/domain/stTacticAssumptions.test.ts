@@ -26,14 +26,7 @@ const messageFor = (doc: ReturnType<typeof makeDoc>, id: string): string | undef
 
 const missingList = (msg?: string): string[] => {
   const list = msg?.match(/missing its (.+?) assumptions?\./)?.[1];
-  if (!list) return [];
-  // The rule builds this list with `Intl.ListFormat` now, which uses the
-  // Oxford comma for en (", and sufficiency"). These assertions are about
-  // WHICH facets are missing; list punctuation belongs to the catalogue.
-  return list
-    .split(/,\s*|\s+and\s+/)
-    .map((s) => s.replace(/^and\s+/, '').trim())
-    .filter((s) => s !== '');
+  return list ? list.split(', ') : [];
 };
 
 describe('st-tactic-assumptions rule (position-aware)', () => {
