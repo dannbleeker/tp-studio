@@ -103,10 +103,11 @@ last caller was converted.
   switch would have left results filtered against the previous locale's tags — invisible to tests, because
   only one locale ships.
 
-### Closing bug hunt
+### Closing bug hunt — the i18n diff
 
-A multi-agent sweep over the branch before merge — the i18n diff specifically, plus a broader pass over
-persistence, store, graph and exporters. Findings that were real:
+A multi-agent sweep over the branch before merge. It also ran a broader pass over persistence, store,
+graph and exporters, which found enough that it became its own piece of work — see the next section.
+Findings in the i18n diff itself:
 
 - **Two hardcoded English strings survived in surfaces the docs claimed were guarded** — the
   Building-Blocks rail's "Browse templates & examples", and the Analysis-journey dialog's start blurb,
@@ -143,6 +144,101 @@ breach the index budget, so it needs a lazy catalogue *segment*); **toast copy**
 any render, needing the same `(messageKey, params)` seam `Warning` uses); and **generated prose**
 (`verbalisation.ts`, `edgeReading.ts`), where word ORDER is the translatable thing and per-locale sentence
 templates are required rather than a string swap.
+
+## Session 209b — the app-wide bug program (26 fixes, mostly silent data loss)
+
+The broader review that ran alongside the i18n merge check came back with far more than a merge check
+warranted, including several ways to lose a document without being told. Fixed here rather than filed,
+each with a regression test. Nothing below is i18n-related; these are all pre-existing.
+
+### Losing documents
+
+- **A custom entity class made a document permanently unloadable.** `paletteForDoc` feeds every
+  `customEntityClasses` key into the Inspector's Type picker, which writes it onto the entity — but
+  `validateEntity` admitted only the 14 built-ins and hard-threw on anything else, rejecting the WHOLE
+  document. With backup rotation, the second save left committed, live and backup all unparseable and
+  the tree disappeared from the tab strip AND from Start → All trees, silently. `resolveEntityTypeMeta`
+  has always had a graceful branch for an unknown type, so the render path was already total; the strict
+  guard bought a typo check at the price of total document loss.
+- **The quota cascade fired once per failed WRITE, not once per save.** One keystroke issues 2 writes and
+  a debounced commit issues 4, and the in-flight latch cleared in a `finally` — so with the cheap tiers
+  exhausted, typing a single character evicted 10 closed trees and a commit evicted 20. Invisibly:
+  `showToast` deduped on `(kind, message)` and the message never varied. The latch now clears on a task
+  boundary, tier 3 has a wall-clock floor, and its toast carries a running total.
+- **Eviction deleted the documents it could NOT parse first** — `updatedAt ?? 0` sorted them to the front
+  of the queue, and the likeliest reason a doc is unparseable is that a newer build wrote it. A stale PWA
+  shell destroyed the user's newest work first.
+- **Deleting or evicting a tree left its revision history behind** — up to 50 full document snapshots,
+  the largest per-doc payload — so tier 3 freed almost nothing and re-fired.
+- **Undo/redo across a document swap never rewrote the tabs manifest**, so the undo was silently reverted
+  on reload. Same hole `performDocumentSwap` closed in Session 206, via the other path that rekeys the
+  active tab.
+- **`setDocument` lacked `openTab`'s id-collision guard**, so a replace-mode load whose id names a
+  background tab overwrote that tab's in-memory doc and deduped its slot out of `tabOrder`.
+- **A tab whose body failed to parse vanished with no signal**, and a boot that fell back to a fresh CRT
+  never rewrote the manifest — so every reload minted another blank doc while the user's real doc sat
+  unreferenced.
+- **`writeTextToHandle` committed a failed write.** `createWritable()` opens an empty swap file and
+  `close()` commits it, so `finally { close() }` truncated the user's linked file on disk. The existing
+  test asserted the broken behaviour by name.
+
+### Telling the truth
+
+- **"JSON (redacted)" is now an ALLOWLIST.** It blanked five named fields and passed everything else
+  through a `...rest` spread, so every optional field added since leaked by default — assumption text,
+  entity owner, attribute values, evidence descriptions and URLs, working assumptions, system scope,
+  comments — from a feature whose entire job is not leaking.
+- **Revisions no longer claim more history than storage holds.** Writes discarded their success boolean
+  and published regardless; the quota listener, which runs synchronously inside the failing write, would
+  trim the stored map and reload — and the caller's unconditional `set` then overwrote the trimmed list.
+- **`restoreSnapshot` stopped failing silently**, and a toast carrying an ACTION is never deduped —
+  deleting two trees both titled "Untitled" collapsed the second toast and with it the only remaining
+  copy of that document body.
+- **CSV import reported success while dropping edges.** A row's own identity was keyed by title, so a
+  repeated title made the second row's edge attach to the first row's entity.
+
+### Correctness under scale and punctuation
+
+- **`validationFingerprint` was not injective.** Entity records were an unescaped concatenation joined by
+  `|` with free text interpolated raw, so `{n1:"A", n2:"B"}` and `{n1:"A:|n2:effect:B"}` hashed
+  identically — and the LRU is module-global and shared across tabs and saved docs, so one document
+  rendered warnings targeting entity ids it does not contain.
+- **`findCycles` was O(V²) and blew the stack.** A full Tarjan pass per vertex: 11.7 s on a plain ACYCLIC
+  chain of 7000 entities, `RangeError` past ~8000 — on the canvas render path. SCCs are computed once and
+  both searches are iterative.
+- **A quoted `schemaVersion` was treated as version 1**, re-running the whole v1→v10 chain and renumbering
+  every annotation. Hand- and LLM-authored JSON is a first-class input and quoting a number is the
+  commonest way to get it wrong.
+- **CSV formula injection** — a title beginning `= + - @` became a live formula in the tracker or the
+  board deck the file was handed to.
+- **XML control characters** made OPML and Flying Logic files that simply don't open.
+- **OPML dropped entities and whole subtrees** — an entity whose edge pointed at a note was neither child
+  nor root and vanished (one effect plus one note produced an empty `<body>`), and cycle members were
+  unreachable from any root.
+- **DOT / Mermaid / VGL emitted edges to nodes they never declared**, which the receiving tool
+  auto-creates under the mangled internal id — something all three file headers already claimed not to do.
+- **Mermaid broke on ordinary punctuation**: a `]` in a title made re-import report "no nodes found", and
+  an unquoted YAML frontmatter title meant `Rev 2: the sequel` failed to render anywhere.
+- **Mermaid import produced documents the app itself cannot produce** — no self-loop or duplicate-pair
+  guard, unlike `connect`.
+- **Cross-doc link writes bypassed the debounce scheduler**, so an in-flight write could land afterwards
+  and overwrite the link while the target kept its mirror — the asymmetric corruption `preserveLinks`
+  exists to prevent, with no history entry to undo.
+- **`mergeDocIntoActive` flattened nested groups**, dropped any group whose members were all groups, and
+  left merged entities without their custom-class definitions.
+
+### The tail
+
+`clearLocalStorage` missed the legacy live-draft slot · an unsafe evidence URL was accepted at entry and
+deleted at load with nothing said · `v6ToV7` mutated its input against the registry's documented purity ·
+`v9ToV10` left group members pointing at entities it had removed · non-Latin titles all downloaded as
+`untitled.<ext>` · the PDF appendix broke pages once per entity rather than per line, so a long block
+marched off the bottom invisibly.
+
+### Also fixed by the reasoning outline
+
+A document made only of a cycle reported "*No structural entities yet.*" with entities and edges plainly
+present — the one message guaranteed to read as a bug.
 
 ## Session 208 — touch interactions (bottom-sheet inspector · long-press menu · touch canvas)
 

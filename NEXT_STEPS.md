@@ -209,7 +209,35 @@ only, since CMM/OODA were declined.) **Build only on an explicit ask.**
 
 ## Known bugs — none open
 
-One finding was closed **without a fix**, recorded so it isn't re-hunted:
+Session 209 ran an app-wide review (persistence · store · graph · exporters) and **fixed all 26 confirmed
+findings** rather than filing them — see CHANGELOG *Session 209b*. What that review left as SUSPICIOUS,
+mechanism traced but no trigger established, is recorded here so it isn't re-derived:
+
+- **No cross-browser-tab coordination at all** — no `BroadcastChannel`, no `storage` listener anywhere in
+  `src/`. Two browser windows share one `tp-studio:tabs:v1` manifest and the same per-doc slots,
+  last-writer-wins, and window A's quota mitigation can evict a doc window B has open. Plausible for a
+  diagramming tool; no repro was built. This is a design gap, not a bug to hunt — decide whether
+  multi-window is supported before building anything.
+- **`useFingerprintMemo` hides its closure from `useExhaustiveDependencies`.** None of its 6 call sites
+  reads the message catalogue or any un-fingerprinted field today. If one ever does, nothing will warn.
+- **`findCycles` caches on `doc.edges` but reads `doc.entities`** — verified stale across two docs
+  sharing an edges object, but no live-app path reaches it (the store cascades edge deletion, imports
+  prune dangling edges).
+- **Writes that widen `tabOrder` persist before the state update** (`openTab`), so during those writes
+  the quota listener's open-set is briefly stale.
+- **`nextAnnotationNumber` is trusted verbatim on import** — rebuilt only when absent, so a file claiming
+  `1` with entities at `#7` mints duplicate badges.
+- **`validateAttributes` / `validateMethodChecklist` / `validateCustomEntityClasses` assign into a bare
+  `{}`** without the reserved-key guard `validateRecord` has. No UI can name an attribute `__proto__`.
+- **A single NaN-coordinate obstacle disables obstacle avoidance for the whole routing pass** — closed
+  today by `persistenceValidators`, so this is defence-in-depth only.
+- **`ttTasks` / `prtPlan` use exact `type ===` where `riskRegister` uses `entitiesOfBuiltin`** — a custom
+  class with `supersetOf: 'action'` is an action everywhere except the TT task CSV.
+- **`htmlExport`'s `btoa(unescape(encodeURIComponent(…)))` throws on a lone surrogate.** Not reproduced.
+- **`csvImport` / `whiteboardImport` call `addEntity` once per row**, each a full `applyDocChange` — a
+  5000-line paste means 5000 undo steps and 5000 doc clones, with no row cap.
+
+One older finding was closed **without a fix**, recorded so it isn't re-hunted:
 - **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
   (`edgeRouting.ts:243` — `if (path.length === 2)`, reached only after `blockers.length === 0` returns).
   A Session-206 verification skeptic **refuted it on impact** and I agree; **correctness is arguable**.
