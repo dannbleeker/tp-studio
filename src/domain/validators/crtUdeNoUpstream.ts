@@ -22,7 +22,8 @@ export const crtUdeNoUpstreamRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'crt-ude-no-upstream',
           { kind: 'entity', id: ude.id },
-          `UDE "${displayTitle(ude)}" has no cause feeding it — the tree is incomplete until it connects to the causal chain.`
+          'crt-ude-no-upstream',
+          { title: displayTitle(ude) }
         )
       );
     }

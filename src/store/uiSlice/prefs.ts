@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE, isLocale } from '@/i18n/locale';
 import {
   readJSON,
   readString,
@@ -192,6 +193,10 @@ export const readInitialPrefs = (): Required<StoredPrefs> => {
       // on a first-run / pre-Session-178 stored pref, keeps the legend on.
       showLegend: raw?.printLayout?.showLegend !== false,
     },
+    // Guarded with the same `isLocale` predicate the persistence layer uses,
+    // so a hand-edited or downgrade-stale value degrades to English instead
+    // of putting an unknown locale id into the store.
+    locale: isLocale(raw?.locale) ? raw.locale : DEFAULT_LOCALE,
   };
 };
 

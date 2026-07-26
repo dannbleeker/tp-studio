@@ -1,7 +1,7 @@
 import { findCoreDrivers } from '../coreDriver';
 import { entitiesOfType } from '../graph';
 import type { TPDocument } from '../types';
-import { makeWarning, type UntieredWarning } from './shared';
+import { makeWarning, makeWarningAction, type UntieredWarning } from './shared';
 
 /**
  * Session 179 (Theme B) — two diagnostic nudges built on `findCoreDrivers`,
@@ -31,7 +31,8 @@ export const crtLowCoreDriverCoverageRule = (doc: TPDocument): UntieredWarning[]
       doc,
       'crt-low-core-driver-coverage',
       { kind: 'entity', id: top.entity.id },
-      `The leading root cause explains only ${top.reachedUdeCount} of ${totalUdes} UDEs (${pct}%) — the tree may have two independent clusters, or some UDEs aren't connected yet.`
+      'crt-low-core-driver-coverage',
+      { reached: top.reachedUdeCount, total: totalUdes, pct }
     ),
   ];
 };
@@ -55,11 +56,12 @@ export const crtTiedCoreDriversRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'crt-tied-core-drivers',
         { kind: 'entity', id: first.entity.id },
-        `Two root causes each reach ${first.reachedUdeCount} UDEs — no single core driver has emerged. A hidden conflict may sit beneath the tree; spawn an Evaporating Cloud to surface it.`
+        'crt-tied-core-drivers',
+        { count: first.reachedUdeCount }
       ),
       // One-click remedy: seed an EC from this conflict candidate (handled by
       // the WARNING_ACTIONS registry, reusing the spawn-EC flow).
-      action: { actionId: 'spawn-ec-from-conflict', label: 'Spawn Evaporating Cloud' },
+      action: makeWarningAction('spawn-ec-from-conflict'),
     },
   ];
 };

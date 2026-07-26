@@ -23,12 +23,7 @@ export const reinforcingNoDelayRule = (doc: TPDocument): UntieredWarning[] => {
     const target = loop.closingEdgeId ?? loop.edgeIds[0];
     if (!target) continue;
     out.push(
-      makeWarning(
-        doc,
-        'reinforcing-no-delay',
-        { kind: 'edge', id: target },
-        'This reinforcing loop has no delay — taken literally it escalates instantly. Is a time lag missing? Mark the lagged edge as delayed.'
-      )
+      makeWarning(doc, 'reinforcing-no-delay', { kind: 'edge', id: target }, 'reinforcing-no-delay')
     );
   }
   return out;

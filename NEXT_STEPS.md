@@ -8,10 +8,31 @@ Pruned in Sessions 176, 193, and 206. The Session-206 pass removed the last of t
 verifying, section by section, that CHANGELOG genuinely carried it — the citations, decisions and
 rationale that lived only here were migrated into their CHANGELOG session entries rather than deleted.
 
-**Genuinely open right now: nothing.** The last open item — the EC per-TYPE verbalisation reading order —
-was **declined in Session 206** once recon showed the doctrine doesn't support it (see *Declined*). Its
-real itch was re-scoped and shipped instead: Cohen's per-type break hint now rides the Document Inspector.
-Everything on this page is deferred by decision, parked pending an explicit ask (L2 Projects), or declined.
+**Open — i18n follow-ups (Session 209).** The architecture shipped with English only; these are the
+deliberate leftovers, in rough priority order:
+
+- **Remaining UI-string extraction (~2,500 literals).** Converted so far: Settings appearance tab, the full
+  CLR warning pipeline, reader-mode coaching. Everything else still renders hardcoded English. Migrate
+  opportunistically — the pseudo-locale test is the tool for spotting what's left.
+- **Retire `Warning.message`.** It exists as the English fallback + parameter-correctness canary. Removing
+  it means migrating ~276 message-string assertions across ~41 test files to assert on
+  `(ruleId, variant, params)` instead of rendered copy. Worth doing once a second locale exists.
+- **Pattern library + examples (~13,900 words, 104 files).** NOT a catalogue job: titles are positional
+  arguments to `buildEntity(...)`, and translating a TOC tree is re-authoring diagrams — a bad translation
+  makes our own CLR validators fire on the library's content. Needs per-locale document files with an
+  English fallback, selected at the registry level.
+- **A lint rule banning new hardcoded JSX text** in converted directories, so the migration doesn't
+  regress. Needs tuning against ~140 component files before it can be error-level.
+- **Parked pending an actual second locale:** `navigator.language` auto-detect · `?lang=` URL override ·
+  localised PWA manifest + `og:locale` · consuming `TPDocument.locale` (verbalisation, causality edge
+  labels, print legend) · `docs/guide/**` (its own translation project with a PDF/EPUB pipeline).
+
+**Genuinely open right now: the i18n follow-ups listed above** (opened in Session 209 when the
+multi-language architecture shipped English-only). Before that the page was empty of open items: the
+previous last one — the EC per-TYPE verbalisation reading order — was **declined in Session 206** once
+recon showed the doctrine doesn't support it (see *Declined*). Its real itch was re-scoped and shipped
+instead: Cohen's per-type break hint now rides the Document Inspector. Everything else on this page is
+deferred by decision, parked pending an explicit ask (L2 Projects), or declined.
 
 > **The §-letters** (§B, §C, §D, §G…) index the *TOC Handbook backlog* — a six-agent read of the
 > *Theory of Constraints Handbook* (Cox & Schleier, McGraw-Hill 2010), mined 2026-07-12 and organised
@@ -171,7 +192,9 @@ Items explicitly dropped, in addition to the brief's own out-of-scope list:
   brainstorming, NBR detection, executive summary, facilitation prompts) — dropped Session 134. Stays
   deterministic + offline-first. Re-open only if a product direction needs it.
 - Project management / calendars / MS Project export · Bayesian / evidence-based propagation · COA analysis ·
-  mobile-first (480px is the floor) · full print stylesheets (minimal `print.css` shipped) · i18n (English only).
+  mobile-first (480px is the floor) · full print stylesheets (minimal `print.css` shipped).
+  **i18n moved out of this line in Session 209** — the architecture now exists (English-only shipping
+  locale); see *Open* below and `docs/I18N.md`.
 - **H5 confidence-weighted what-if** (needed `Entity.confidence`+`Edge.weight`, dropped Session 71/84).
 - **FL-EX8 multi-document tabs** (explored S91, cancelled — single-document by design) and its dependents
   (FL-CO2 cross-doc hyperlinks; portfolio-view). NOTE: per-doc **tabs** later shipped differently (Session 138);

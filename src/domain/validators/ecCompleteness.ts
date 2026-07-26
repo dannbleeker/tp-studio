@@ -58,7 +58,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'ec-completeness',
         { kind: 'entity', id: slots.a.id },
-        'Objective (A) is empty — state the common goal both sides agree on.',
+        'ec-completeness.empty-objective',
+        undefined,
         'empty-objective'
       )
     );
@@ -71,7 +72,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'ec-completeness',
         { kind: 'entity', id: slots.b.id },
-        'Needs B and C are the same entity — split them so each side has its own.',
+        'ec-completeness.needs-identical',
+        undefined,
         'needs-identical'
       )
     );
@@ -91,7 +93,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'ec-completeness',
           { kind: 'entity', id: ent.id },
-          `Need ${slot.toUpperCase()} connects to something other than A — each Need must only support the Objective.`,
+          'ec-completeness.need-extra-support',
+          { slot },
           'need-extra-support'
         )
       );
@@ -111,7 +114,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
             doc,
             'ec-completeness',
             { kind: 'edge', id: e.id },
-            `Want ${want.ecSlot === 'd' ? 'D' : 'D′'} supports an unexpected target — each Want should feed only its own Need.`,
+            'ec-completeness.want-wrong-target',
+            { slot: want.ecSlot === 'd' ? 'd' : 'dPrime' },
             'want-wrong-target'
           )
         );
@@ -156,7 +160,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'ec-completeness',
           { kind: 'edge', id: edge.id },
-          `No assumption recorded on ${arrow.label} — surface at least one before the cloud is "complete".`,
+          'ec-completeness.missing-assumption',
+          { arrow: arrow.label },
           'missing-assumption'
         )
       );
@@ -179,7 +184,8 @@ export const ecCompletenessRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'ec-completeness',
         { kind: 'entity', id: slots.a.id },
-        'No injection yet — add an injection that challenges an assumption to mark the cloud "resolved".',
+        'ec-completeness.no-injection',
+        undefined,
         'no-injection'
       )
     );

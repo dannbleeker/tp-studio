@@ -3,6 +3,8 @@
 // unions + the lightweight Warning record; no imports from elsewhere
 // in the types/ folder.
 
+import type { ClrActionId, ClrMessageKey, ClrParams } from '@/i18n/types';
+
 export type DiagramType =
   | 'crt'
   | 'frt'
@@ -195,15 +197,34 @@ export type WarningTarget =
  * warning and dispatches store mutations.
  */
 export type WarningAction = {
-  /** Stable id resolved against the WARNING_ACTIONS registry at click time. */
-  actionId: string;
+  /** Stable id resolved against the WARNING_ACTIONS registry at click time —
+   *  and, since it is already a stable key, the catalogue key for the button
+   *  label (see `resolveClrActionLabel`). */
+  actionId: ClrActionId;
+  /** English label. Same fallback contract as `Warning.message`. */
   label: string;
 };
 
 export type Warning = {
   id: string;
   ruleId: ClrRuleId;
+  /**
+   * Copy rendered in ENGLISH, always — `validate()` is memoized on the
+   * document alone (a `WeakMap` plus a fingerprint LRU in
+   * `validators/index.ts`), so resolving copy per-locale in here would mean
+   * keying both caches on the locale too.
+   *
+   * Renderers should prefer {@link messageKey} and treat this as the fallback.
+   * It is retained deliberately rather than removed: it keeps every existing
+   * message assertion working, and because it renders through the same
+   * catalogue entry the UI uses, a mis-named interpolation parameter shows up
+   * immediately in the validator tests instead of silently reaching a user.
+   */
   message: string;
+  /** Catalogue key for {@link message}; resolved by `resolveClrMessage`. */
+  messageKey?: ClrMessageKey;
+  /** Interpolation parameters for {@link messageKey}. */
+  params?: ClrParams;
   target: WarningTarget;
   resolved: boolean;
   /** Three-level CLR taxonomy (Block C / E5). Stamped by `validate()` from

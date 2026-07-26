@@ -23,12 +23,12 @@ import { CUSTOM_CLASS_ICONS, type CustomClassIconName } from '@/domain/entityTyp
 import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import { isStNodeFormat, ST_FACET_KEYS } from '@/domain/graph';
 import { HANDLE_ORIENTATION } from '@/domain/layoutStrategy';
+import { useZoomLevel } from '@/hooks/useZoomLevel';
 // Session 135 — sibling-file extractions of the StFacetRow sub-component
 // and the corner-badge JSX. Pulled out of TPNode.tsx to keep this file
 // focused on the everyday-card render + edit machinery; see those
 // files for the per-piece rationale.
-import { ENTITY_TYPE_COACHING } from '@/domain/readerModeCoaching';
-import { useZoomLevel } from '@/hooks/useZoomLevel';
+import { useT } from '@/i18n/useT';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -118,6 +118,11 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
       };
     })
   );
+  // Reader-mode coaching copy for this entity type, in the active locale.
+  // Custom entity classes have no catalogue entry and resolve to `undefined`,
+  // which is what suppresses the tooltip for them.
+  const coachingByType = useT().coaching.entity;
+  const entityCoaching = coachingByType[entity.type as keyof typeof coachingByType];
   // Goal #2 — while a connection is dragged onto THIS node, ring it to signal
   // "release to connect here" (rose if the drop would be rejected — self-loop
   // / duplicate). React Flow tracks the in-progress `toNode` + `isValid`; the
@@ -261,7 +266,7 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           are outside the causal graph (no type metadata in the coaching
           registry for them beyond the fallback label), so we still show the
           tooltip — the coaching entry for 'note' explains this. Custom entity
-          classes that aren't in ENTITY_TYPE_COACHING fall back gracefully to
+          classes that aren't in the coaching catalogue fall back gracefully to
           nothing (the registry only covers built-in types). */}
       {isReaderMode && (
         <NodeToolbar
@@ -270,11 +275,11 @@ function TPNodeImpl({ data, selected }: NodeProps<TPNodeType>) {
           offset={8}
           className="pointer-events-none"
         >
-          {ENTITY_TYPE_COACHING[entity.type as keyof typeof ENTITY_TYPE_COACHING] && (
+          {entityCoaching && (
             <EntityCoachingTooltip
               Icon={EntityIcon}
               stripeColor={meta.stripeColor}
-              coaching={ENTITY_TYPE_COACHING[entity.type as keyof typeof ENTITY_TYPE_COACHING]}
+              coaching={entityCoaching}
             />
           )}
         </NodeToolbar>

@@ -27,7 +27,12 @@ export const entityExistenceRule = (doc: TPDocument): UntieredWarning[] => {
   for (const e of entities) {
     if (e.title.trim() === '' && e.unspecified !== true) {
       out.push(
-        makeWarning(doc, 'entity-existence', { kind: 'entity', id: e.id }, 'Entity has no title.')
+        makeWarning(
+          doc,
+          'entity-existence',
+          { kind: 'entity', id: e.id },
+          'entity-existence.no-title'
+        )
       );
       continue;
     }
@@ -40,7 +45,7 @@ export const entityExistenceRule = (doc: TPDocument): UntieredWarning[] => {
             doc,
             'entity-existence',
             { kind: 'entity', id: e.id },
-            'Entity is disconnected from the graph.'
+            'entity-existence.disconnected'
           )
         );
       }

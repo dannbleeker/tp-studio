@@ -30,7 +30,8 @@ export const ecBoxCausalWordsRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'ec-box-causal-words',
           { kind: 'entity', id: entity.id },
-          `EC box "${entity.title}" reads as a cause-and-effect sentence (if / because / in order to …) — a cloud box should be a clean statement. Move the reasoning onto the arrow as an assumption.`
+          'ec-box-causal-words',
+          { title: entity.title }
         )
       );
     }

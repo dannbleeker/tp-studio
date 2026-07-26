@@ -28,12 +28,9 @@ export const crtDeadBranchRule = (doc: TPDocument): UntieredWarning[] => {
     if (e.type === 'ude') continue;
     if (reach.has(e.id)) continue;
     out.push(
-      makeWarning(
-        doc,
-        'crt-dead-branch',
-        { kind: 'entity', id: e.id },
-        `"${displayTitle(e)}" doesn't lead to any UDE — prune or archive it, or connect it into the causal chain.`
-      )
+      makeWarning(doc, 'crt-dead-branch', { kind: 'entity', id: e.id }, 'crt-dead-branch', {
+        title: displayTitle(e),
+      })
     );
   }
   return out;

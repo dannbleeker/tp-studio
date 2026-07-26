@@ -36,6 +36,7 @@ export type {
   EdgePalette,
   EdgeRouting,
   LayoutMode,
+  Locale,
   SearchOptions,
   Selection,
   StoredPrefs,

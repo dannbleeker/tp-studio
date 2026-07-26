@@ -1,4 +1,14 @@
-import type { ClrRuleId, ClrTier, TPDocument, Warning, WarningTarget } from '../types';
+import { resolveClrMessage } from '@/i18n/clr';
+import { en } from '@/i18n/locales/en';
+import type { ClrActionId, ClrMessageKey, ClrParams } from '@/i18n/types';
+import type {
+  ClrRuleId,
+  ClrTier,
+  TPDocument,
+  Warning,
+  WarningAction,
+  WarningTarget,
+} from '../types';
 
 /**
  * Shared infrastructure for the per-rule CLR validator files. Each rule
@@ -74,9 +84,17 @@ const warningId = (ruleId: ClrRuleId, target: WarningTarget, variant?: string): 
 };
 
 /**
- * Build a `Warning` carrying the rule id, target, message, and a `resolved`
- * flag pulled from `doc.resolvedWarnings`. Stable ids let the user resolve
- * a warning once and have the resolution persist across re-validations.
+ * Build a `Warning` carrying the rule id, target, message key + parameters,
+ * and a `resolved` flag pulled from `doc.resolvedWarnings`. Stable ids let the
+ * user resolve a warning once and have the resolution persist across
+ * re-validations.
+ *
+ * Rules pass a CATALOGUE KEY, not copy. `validate()` is memoized on the
+ * document alone, so it must stay locale-free; the key + params travel up to
+ * the inspector, which resolves them against the active locale. The English
+ * `message` is rendered here from that same catalogue entry so every existing
+ * consumer and test keeps working — and so a mis-named parameter produces a
+ * visibly wrong English string that the validator suite catches at once.
  *
  * Pass `variant` when one rule can raise more than one DISTINCT reservation
  * against the same target — it keeps their ids (and therefore their stored
@@ -87,18 +105,31 @@ export const makeWarning = (
   doc: TPDocument,
   ruleId: ClrRuleId,
   target: WarningTarget,
-  message: string,
+  messageKey: ClrMessageKey,
+  params?: ClrParams,
   variant?: string
 ): UntieredWarning => {
   const id = warningId(ruleId, target, variant);
   return {
     id,
     ruleId,
-    message,
+    message: resolveClrMessage(en, messageKey, params),
+    messageKey,
+    ...(params ? { params } : {}),
     target,
     resolved: doc.resolvedWarnings[id] === true,
   };
 };
+
+/**
+ * Build a one-click remedy descriptor. `actionId` is already the stable key
+ * the WARNING_ACTIONS registry dispatches on, so it doubles as the catalogue
+ * key for the button label — there is no second key to keep in sync.
+ */
+export const makeWarningAction = (actionId: ClrActionId): WarningAction => ({
+  actionId,
+  label: en.clrAction[actionId],
+});
 
 /** Word count over an entity title — splits on any whitespace run after a trim. */
 export const countWords = (s: string): number => {

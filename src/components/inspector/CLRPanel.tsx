@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { displayTitle } from '@/domain/entityTypeMeta';
 import type { ClrTier, TPDocument, Warning, WarningTarget } from '@/domain/types';
 import { useDocWarnings } from '@/hooks/useDocWarnings';
+import { useClrText } from '@/i18n/useClrText';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { runWarningAction } from '@/services/warningActions';
 import { useDocumentStore } from '@/store';
@@ -43,6 +44,7 @@ const targetLabel = (target: WarningTarget, doc: TPDocument): string => {
 };
 
 export function CLRPanel() {
+  const clr = useClrText();
   const doc = useDocumentStore((s) => currentDoc(s));
   const warnings = useDocWarnings();
   const resolveWarning = useDocumentStore((s) => s.resolveWarning);
@@ -116,7 +118,7 @@ export function CLRPanel() {
     const ok = runWarningAction(state, currentDoc(state), w);
     showToast(
       ok ? 'success' : 'info',
-      ok ? `Applied: ${w.action.label}` : `No handler for "${w.action.actionId}".`
+      ok ? `Applied: ${clr.actionLabel(w.action)}` : `No handler for "${w.action.actionId}".`
     );
   };
 
@@ -236,7 +238,7 @@ export function CLRPanel() {
                         <Lock className="h-3 w-3" aria-hidden />
                         {meta.label}
                       </span>
-                      <span className="flex items-center gap-1 normal-case text-[10px] text-neutral-500 tracking-normal dark:text-neutral-400">
+                      <span className="flex items-center gap-1 text-[10px] text-neutral-500 normal-case tracking-normal dark:text-neutral-400">
                         {openCount} to review · clears after {priorLabels}
                         <ChevronDown className="h-3.5 w-3.5" aria-hidden />
                       </span>
@@ -294,7 +296,7 @@ export function CLRPanel() {
                                   w.resolved && 'line-through decoration-neutral-400'
                                 )}
                               >
-                                {w.message}
+                                {clr.message(w)}
                               </p>
                               <p className="mt-0.5 text-[10px] uppercase tracking-wider opacity-60">
                                 {w.ruleId}
@@ -303,7 +305,7 @@ export function CLRPanel() {
                                 <button
                                   type="button"
                                   onClick={() => runAction(w)}
-                                  aria-label={`${w.action.label} (one-click remedy)`}
+                                  aria-label={`${clr.actionLabel(w.action)} (one-click remedy)`}
                                   className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 font-semibold text-[10px] text-amber-900 transition hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
                                 >
                                   <Wand2 className="h-3 w-3" aria-hidden />
@@ -317,7 +319,9 @@ export function CLRPanel() {
                                 w.resolved ? unresolveWarning(w.id) : resolveWarning(w.id)
                               }
                               aria-label={
-                                w.resolved ? `Reopen: ${w.message}` : `Resolve: ${w.message}`
+                                w.resolved
+                                  ? `Reopen: ${clr.message(w)}`
+                                  : `Resolve: ${clr.message(w)}`
                               }
                               className="shrink-0 rounded-sm px-1.5 py-0.5 font-medium text-[10px] text-neutral-600 opacity-0 transition hover:bg-white/60 focus:opacity-100 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
                             >

@@ -43,7 +43,7 @@ export const ecMissingConflictRule = (doc: TPDocument): UntieredWarning[] => {
       doc,
       'ec-missing-conflict',
       { kind: 'entity', id: target.id },
-      'No mutual-exclusion edge between the two Wants — is this really a conflict?'
+      'ec-missing-conflict'
     ),
   ];
 };

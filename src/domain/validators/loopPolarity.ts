@@ -1,3 +1,4 @@
+import type { ClrMessageKey } from '@/i18n/types';
 import { loopsWithPolarity } from '../loopAnalysis';
 import type { DiagramType, TPDocument } from '../types';
 import { makeWarning, type UntieredWarning } from './shared';
@@ -16,21 +17,27 @@ import { makeWarning, type UntieredWarning } from './shared';
  * are skipped. Anchored on the loop-closing (back-)edge. This turns "is this
  * loop a feature or a bug?" into a glanceable answer.
  */
-const MESSAGE: Partial<Record<DiagramType, string>> = {
-  crt: 'This loop is balancing (self-correcting) — but a persistent UDE usually rides a reinforcing (vicious) cycle. Check the edge polarities.',
-  nbr: 'This loop is balancing (self-correcting) — a negative branch that sustains itself usually rides a reinforcing cycle. Check the edge polarities.',
-  frt: 'This loop is balancing (self-limiting) — an injection that counteracts itself is usually unintended. Check the edge polarities.',
+/**
+ * Keyed per diagram type rather than parameterized: the three variants are
+ * genuinely different sentences (a balancing loop means something different in
+ * a CRT than in an FRT), not one sentence with a substituted noun. A
+ * translator needs to rewrite each, so each gets its own catalogue key.
+ */
+const MESSAGE_KEY: Partial<Record<DiagramType, ClrMessageKey>> = {
+  crt: 'loop-polarity.crt',
+  nbr: 'loop-polarity.nbr',
+  frt: 'loop-polarity.frt',
 };
 
 export const loopPolarityRule = (doc: TPDocument): UntieredWarning[] => {
-  const message = MESSAGE[doc.diagramType];
-  if (!message) return [];
+  const messageKey = MESSAGE_KEY[doc.diagramType];
+  if (!messageKey) return [];
   const out: UntieredWarning[] = [];
   for (const loop of loopsWithPolarity(doc)) {
     if (loop.polarity !== 'balancing') continue;
     const target = loop.closingEdgeId ?? loop.edgeIds[0];
     if (!target) continue;
-    out.push(makeWarning(doc, 'loop-polarity', { kind: 'edge', id: target }, message));
+    out.push(makeWarning(doc, 'loop-polarity', { kind: 'edge', id: target }, messageKey));
   }
   return out;
 };

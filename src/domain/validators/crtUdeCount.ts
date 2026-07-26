@@ -22,22 +22,18 @@ export const crtUdeCountRule = (doc: TPDocument): UntieredWarning[] => {
   if (count === 0) return [];
   if (count < MIN_UDES) {
     return [
-      makeWarning(
-        doc,
-        'crt-ude-count',
-        { kind: 'document' },
-        `This CRT has ${count} UDE${count === 1 ? '' : 's'} — with fewer than ${MIN_UDES}, a system-wide root cause is hard to trust. Add the other effects you're seeing.`
-      ),
+      makeWarning(doc, 'crt-ude-count', { kind: 'document' }, 'crt-ude-count.too-few', {
+        count,
+        min: MIN_UDES,
+      }),
     ];
   }
   if (count > MAX_UDES) {
     return [
-      makeWarning(
-        doc,
-        'crt-ude-count',
-        { kind: 'document' },
-        `This CRT has ${count} UDEs — more than ${MAX_UDES} usually means the scope is too wide for one tree; consider splitting it.`
-      ),
+      makeWarning(doc, 'crt-ude-count', { kind: 'document' }, 'crt-ude-count.too-many', {
+        count,
+        max: MAX_UDES,
+      }),
     ];
   }
   return [];

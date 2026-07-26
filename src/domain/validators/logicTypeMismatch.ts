@@ -27,11 +27,6 @@ const PRIMARY_LOGIC: Partial<Record<DiagramType, EdgeKind>> = {
   ec: 'necessity',
 };
 
-const READING: Record<EdgeKind, string> = {
-  sufficiency: '"X exists, therefore Y"',
-  necessity: '"in order to Y, X must hold"',
-};
-
 export const logicTypeMismatchRule = (doc: TPDocument): UntieredWarning[] => {
   const expected = PRIMARY_LOGIC[doc.diagramType];
   if (!expected) return [];
@@ -46,7 +41,8 @@ export const logicTypeMismatchRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'logic-type-mismatch',
           { kind: 'edge', id: edge.id },
-          `This diagram reads in ${expected} logic ${READING[expected]}, but this link is typed ${edge.kind} — check that it reads correctly.`
+          'logic-type-mismatch',
+          { expected, actual: edge.kind }
         )
       );
     }

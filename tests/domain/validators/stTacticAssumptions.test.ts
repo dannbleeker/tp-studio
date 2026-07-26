@@ -23,10 +23,26 @@ const facetsFor = (warnings: ReturnType<typeof validate>, entityId: string) =>
 const allForRule = (warnings: ReturnType<typeof validate>) =>
   warnings.filter((w) => w.ruleId === RULE);
 
-/** The comma-separated missing-assumption names from the warning message. */
+/**
+ * The missing-assumption names from the warning message.
+ *
+ * The rule now builds this list with `Intl.ListFormat` instead of
+ * `join(', ')`, so English gains a conjunction on the final item
+ * ("necessary, parallel and sufficiency"). Stripping it here keeps these
+ * assertions about WHICH facets are missing, which is what they are actually
+ * pinning — the list punctuation is the catalogue's business and varies by
+ * locale.
+ */
 const missingList = (msg?: string): string[] => {
   const list = msg?.match(/missing its (.+?) assumptions?\./)?.[1];
-  return list ? list.split(', ') : [];
+  if (!list) return [];
+  // `Intl.ListFormat` uses the Oxford comma for en, so the final element
+  // arrives as ", and sufficiency" — split on either separator, then shed a
+  // leftover leading conjunction.
+  return list
+    .split(/,\s*|\s+and\s+/)
+    .map((s) => s.replace(/^and\s+/, '').trim())
+    .filter((s) => s !== '');
 };
 
 beforeEach(() => {
@@ -56,7 +72,7 @@ describe('CLR: st-tactic-assumptions (position-aware, backlog B)', () => {
     const hits = facetsFor(validate(doc), step.id);
     expect(hits.length).toBe(1);
     expect(hits[0]!.message).toBe(
-      'Step is missing its necessary, parallel, sufficiency assumptions. A Strategy & Tactics step declares why it is needed (necessary — points up to its parent), why this tactic fits the strategy (parallel), and, when it has sub-steps, why those are needed (sufficiency — points down to its children).'
+      'Step is missing its necessary, parallel, and sufficiency assumptions. A Strategy & Tactics step declares why it is needed (necessary — points up to its parent), why this tactic fits the strategy (parallel), and, when it has sub-steps, why those are needed (sufficiency — points down to its children).'
     );
   });
 

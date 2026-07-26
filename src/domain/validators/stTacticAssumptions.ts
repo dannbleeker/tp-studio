@@ -77,7 +77,8 @@ export const stTacticAssumptionsRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'st-tactic-assumptions',
         { kind: 'entity', id: e.id },
-        `Step is missing its ${missing.join(', ')} assumption${missing.length === 1 ? '' : 's'}. A Strategy & Tactics step declares why it is needed (necessary — points up to its parent), why this tactic fits the strategy (parallel), and, when it has sub-steps, why those are needed (sufficiency — points down to its children).`
+        'st-tactic-assumptions',
+        { missing }
       )
     );
   }

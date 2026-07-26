@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { BCP47_BY_LOCALE } from '@/i18n/locale';
 import { useDocumentStore } from '@/store';
 
 const ANIM_SPEED_MULTIPLIER = {
@@ -25,6 +26,7 @@ export function useThemeClass() {
   const theme = useDocumentStore((s) => s.theme);
   const animationSpeed = useDocumentStore((s) => s.animationSpeed);
   const printInkSaver = useDocumentStore((s) => s.printInkSaver);
+  const locale = useDocumentStore((s) => s.locale);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -61,4 +63,13 @@ export function useThemeClass() {
     // user can opt in from Settings without touching the on-screen rendering.
     document.documentElement.classList.toggle('print-ink-saver', printInkSaver);
   }, [printInkSaver]);
+
+  useEffect(() => {
+    // `index.html` ships a static `lang="en"`; keep it in step with the chosen
+    // locale so screen readers pick the right pronunciation rules and voice.
+    // This has to be an effect — React 19's metadata hoisting covers `<title>`
+    // and `<meta>` (see `DocumentMeta.tsx`) but not attributes on `<html>`,
+    // and the CSP at index.html forbids a pre-hydration inline script.
+    document.documentElement.lang = BCP47_BY_LOCALE[locale];
+  }, [locale]);
 }

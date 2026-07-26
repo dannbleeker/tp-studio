@@ -55,7 +55,8 @@ export const additionalCauseRuleFor = (first: EntityType, ...rest: EntityType[])
               doc,
               'additional-cause',
               { kind: 'entity', id: e.id },
-              'No causes captured. Are there causes you haven’t added?',
+              'additional-cause.no-causes',
+              undefined,
               'no-causes'
             )
           );
@@ -65,7 +66,8 @@ export const additionalCauseRuleFor = (first: EntityType, ...rest: EntityType[])
               doc,
               'additional-cause',
               { kind: 'entity', id: e.id },
-              'Only one cause is captured — could a different, independent cause also produce this effect? If so, add it and model the alternatives as an OR.',
+              'additional-cause.single-cause',
+              undefined,
               'single-cause'
             )
           );
@@ -80,7 +82,8 @@ export const additionalCauseRuleFor = (first: EntityType, ...rest: EntityType[])
               doc,
               'additional-cause',
               { kind: 'entity', id: e.id },
-              'Two independent causes feed this with no connector — is each one enough on its own (leave them separate, or model as an OR), or only enough together (group them as an AND)?',
+              'additional-cause.two-causes',
+              undefined,
               'two-causes'
             )
           );

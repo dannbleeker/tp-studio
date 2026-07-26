@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { CLR_SCRUTINY } from '@/domain/clrScrutiny';
 import type { ClrRuleId, ClrTier, Edge, TPDocument, Warning } from '@/domain/types';
 import { validate } from '@/domain/validators';
+import { useClrText } from '@/i18n/useClrText';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
@@ -76,6 +77,7 @@ function EdgeScrutinyBody({
   edge: Edge;
   onClose: () => void;
 }) {
+  const clr = useClrText();
   const [stepIndex, setStepIndex] = useState(0);
   const [reviewed, setReviewed] = useState<Set<ClrRuleId>>(() => new Set());
 
@@ -194,7 +196,7 @@ function EdgeScrutinyBody({
               <ul className="flex flex-col gap-1">
                 {flagged.map((w) => (
                   <li key={w.id} className="text-amber-800 text-xs dark:text-amber-200">
-                    {w.message}
+                    {clr.message(w)}
                   </li>
                 ))}
               </ul>

@@ -26,6 +26,7 @@ export type {
   EdgePalette,
   EdgeRouting,
   LayoutMode,
+  Locale,
   Selection,
   Theme,
   Toast,

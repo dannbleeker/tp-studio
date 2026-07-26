@@ -45,7 +45,7 @@ export const ttActionLocusUnsetRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'tt-action-locus-unset',
         { kind: 'entity', id: e.id },
-        'Action has no locus set — flag it as control / influence / external so the plan reads honestly about authority.'
+        'tt-action-locus-unset'
       )
     );
   }

@@ -1,6 +1,6 @@
 import { entitiesOfType } from '../graph';
 import type { TPDocument } from '../types';
-import { makeWarning, type UntieredWarning } from './shared';
+import { makeWarning, makeWarningAction, type UntieredWarning } from './shared';
 
 /**
  * Session 79 — Goal Tree multi-goal soft warning.
@@ -34,12 +34,10 @@ export const goalTreeMultipleGoalsRule = (doc: TPDocument): UntieredWarning[] =>
         doc,
         'goalTree-multiple-goals',
         { kind: 'entity', id: apex.id },
-        `Goal Tree has ${goals.length} goals — Dettmer's pattern is a single apex Goal with 3-5 CSFs below.`
+        'goalTree-multiple-goals',
+        { count: goals.length }
       ),
-      action: {
-        actionId: 'convert-extra-goals-to-csfs',
-        label: 'Convert extras to CSFs',
-      },
+      action: makeWarningAction('convert-extra-goals-to-csfs'),
     },
   ];
 };

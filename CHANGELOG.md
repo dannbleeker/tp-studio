@@ -2,6 +2,53 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 209 — multi-language architecture (English-only shipping locale)
+
+The seams for a second locale, with exactly one locale shipped. Nothing user-visible changes except a
+Language row in Settings that has one option. Reverses the long-standing `i18n (English only)` line in
+NEXT_STEPS — see `docs/I18N.md` for the full contract.
+
+- **Hand-rolled typed catalogue, no dependency.** `src/i18n/locales/en.ts` is the source of truth;
+  `type Messages = typeof en` makes a missing key, an extra key, or a changed interpolation signature a
+  `tsc` error in any future locale. Deliberately **not** `as const` — that would narrow every value to its
+  own string literal and demand a Danish catalogue contain the literal `'Undesirable Effect'`. Static copy
+  is a `string`, interpolated copy is a `(params) => string` arrow, so a locale can't quietly drop a
+  parameter and ICU placeholder parsing stays out of the app.
+- **`useT()` returns the catalogue object, not a `t('a.b.c')` lookup.** Every access is checked against
+  `Messages`; a typo is a compile error, not a runtime placeholder.
+- **Locale lives in the Zustand preferences slice, not a React context.** `createContext` appears zero
+  times in `src/`, there is no shared test render helper, and 119 test files call RTL `render()` directly —
+  a provider would have meant ~119 test diffs. As a preference it costs zero test churn and
+  `resetStoreForTest` resets it for free. Blob-backed like `appMode`; an unrecognized stored value degrades
+  to English via the same `isLocale` guard the persistence layer uses.
+- **CLR warnings carry a key, not copy.** `validate(doc)` is memoized twice (a `WeakMap` plus a 32-entry
+  fingerprint LRU), so threading a catalogue into it would have meant keying both caches on the locale.
+  Instead `makeWarning` takes a `messageKey` + `params`, and the inspector resolves them. All 35 validator
+  files converted (~57 messages + 3 action labels); `ruleId` and the existing `variant` discriminator
+  already formed the key space. `Warning.message` is **retained**, rendered in English from the same
+  catalogue entry the UI uses — so every existing assertion keeps working *and* a mis-named interpolation
+  parameter shows up immediately in the validator suite instead of reaching a user.
+- **Real plural + list rules.** `Intl.PluralRules` replaces the `n === 1 ? '' : 's'` ternaries;
+  `Intl.ListFormat` replaces `missing.join(', ')` in `st-tactic-assumptions`. The latter is the one genuine
+  copy change: English now reads "necessary, parallel, and sufficiency" (Oxford comma), so four assertions
+  in two test files were updated.
+- **Pseudo-locale as a CI check.** `pseudo` derives every string from `en` and wraps it in `⟦…⟧`, so text a
+  converted surface renders *without* brackets is a literal that never went through `useT`. It is a real
+  selectable locale (excluded from the Settings dropdown) reached only through the registry's dynamic
+  import — a ~200 B chunk production never loads. `tests/i18n/pseudoLocale.test.tsx` renders the Settings
+  appearance tab in it and asserts every visible string is tagged.
+- **Converted this session:** the Settings appearance tab, the full CLR warning pipeline, and reader-mode
+  coaching (whose copy no longer lives duplicated in `readerModeCoaching.ts`).
+- **`TPDocument.locale?`** — a reserved seam. Persisted and soft-validated like `cloudType` (an
+  unrecognized value drops so a doc from a newer build still opens), but nothing reads it yet. Purely
+  additive: stays `schemaVersion 10`, no migration.
+- **`<html lang>`** now follows the locale (a fourth effect in `useThemeClass`) — React 19's metadata
+  hoisting covers `<title>` but not attributes on `<html>`, and the CSP forbids a pre-hydration script.
+- **Bundle went DOWN.** Eager `index` measured 106.4 KB gz before, 102.1 KB after — deduplicating the
+  coaching copy and dropping `logicTypeMismatch`'s `READING` map more than paid for the catalogue. No
+  budget re-pin. `src/i18n/` is deliberately **not** in `manualChunks` (see the Session 135 note at
+  `vite.config.ts:313-332`).
+
 ## Session 208 — touch interactions (bottom-sheet inspector · long-press menu · touch canvas)
 
 The deeper half of the mobile work — making the *canvas itself* usable with a finger, not just fitting the

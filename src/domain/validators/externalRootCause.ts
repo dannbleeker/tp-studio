@@ -25,12 +25,7 @@ export const externalRootCauseRule = (doc: TPDocument): UntieredWarning[] => {
     if (e.type !== 'rootCause') continue;
     if (e.spanOfControl !== 'external') continue;
     out.push(
-      makeWarning(
-        doc,
-        'external-root-cause',
-        { kind: 'entity', id: e.id },
-        'Root cause flagged as external — is it really the root? Keep digging toward something you control or influence.'
-      )
+      makeWarning(doc, 'external-root-cause', { kind: 'entity', id: e.id }, 'external-root-cause')
     );
   }
   return out;

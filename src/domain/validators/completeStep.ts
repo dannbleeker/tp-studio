@@ -57,14 +57,7 @@ export const completeStepRule = (doc: TPDocument): UntieredWarning[] => {
       if (hasPrecondition) continue;
 
       seenEdgeIds.add(edge.id);
-      out.push(
-        makeWarning(
-          doc,
-          'complete-step',
-          { kind: 'edge', id: edge.id },
-          'Action has no precondition — what existing condition lets it produce this outcome?'
-        )
-      );
+      out.push(makeWarning(doc, 'complete-step', { kind: 'edge', id: edge.id }, 'complete-step'));
     }
   }
   return out;
