@@ -246,3 +246,49 @@ describe('validationFingerprint — edge fields rules read', () => {
     expect(or).not.toBe(xor);
   });
 });
+
+/**
+ * Session 209 — the per-entity record was an unescaped concatenation joined by
+ * `|`, with the free-text title interpolated raw. A title containing the two
+ * delimiters forged extra records, so two structurally different documents
+ * produced the same fingerprint.
+ *
+ * That is not academic: the validation LRU is module-global and shared across
+ * tabs AND saved documents (`useSavedTrees` runs `validate` over every tree in
+ * the library), so unrelated documents genuinely meet in that cache. The
+ * observable failure was a document rendering warnings that targeted entity ids
+ * it does not contain.
+ */
+describe('validationFingerprint is injective across free text', () => {
+  it('a title carrying the record delimiters cannot forge another entity', () => {
+    resetIds();
+    const twoEntities = makeDoc(
+      [
+        makeEntity({ id: 'n1' as never, title: 'A', annotationNumber: 1 }),
+        makeEntity({ id: 'n2' as never, title: 'B', annotationNumber: 2 }),
+      ],
+      []
+    );
+    resetIds();
+    const oneEntityWithAMaliciousTitle = makeDoc(
+      [makeEntity({ id: 'n1' as never, title: 'A:|n2:effect:B', annotationNumber: 1 })],
+      []
+    );
+
+    expect(validationFingerprint(twoEntities)).not.toBe(
+      validationFingerprint(oneEntityWithAMaliciousTitle)
+    );
+  });
+
+  it('still ignores fields no rule reads', () => {
+    resetIds();
+    const base = makeDoc([makeEntity({ id: 'n1' as never, title: 'A' })], []);
+    const moved = {
+      ...base,
+      entities: {
+        n1: { ...base.entities.n1, position: { x: 99, y: 99 }, description: 'irrelevant' },
+      },
+    } as typeof base;
+    expect(validationFingerprint(moved)).toBe(validationFingerprint(base));
+  });
+});

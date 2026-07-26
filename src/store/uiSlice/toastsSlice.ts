@@ -44,8 +44,16 @@ export const createToastsSlice: StateCreator<RootStore, [], [], ToastsSlice> = (
     // this one. Several validators sometimes fire on a single edit and
     // would otherwise stack identical toasts on top of each other. The
     // queue is short (≤5 in practice) so the linear scan is free.
+    //
+    // A toast carrying an ACTION is never deduped, even against an identical
+    // message. The action closure is not decoration — for `deleteSavedDoc` it
+    // holds the only remaining copy of the deleted document body. Deleting two
+    // trees both titled "Untitled" produces the same message twice, and the old
+    // rule silently dropped the second toast and with it the second Undo. The
+    // dedupe exists to stop repeated *notifications* piling up, not to discard
+    // an offer the user may need.
     const existing = get().toasts;
-    if (existing.some((t) => t.kind === kind && t.message === message)) return;
+    if (!options?.action && existing.some((t) => t.kind === kind && t.message === message)) return;
     const id = nanoid(8);
     // Session 88 (S14) — action is optional; spread keeps the shape
     // clean for the common two-arg call. The action's `run` is stored

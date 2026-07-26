@@ -79,7 +79,7 @@ export interface TpTestHook {
    * UI's RevisionPanel button (which would itself need to be open).
    * Returns the new revision's id.
    */
-  takeRevision: (label?: string) => string;
+  takeRevision: (label?: string) => string | null;
   /**
    * Session 101 — open the SideBySideDialog against the given
    * revision id. Wraps `useDocumentStore.openSideBySide(id)`. The

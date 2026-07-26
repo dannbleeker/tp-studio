@@ -25,7 +25,7 @@ interface TpTestHook {
   connect: (sourceId: string, targetId: string) => string | null;
   confirmAndDeleteEntity: (id: string) => Promise<void>;
   // Session 101 — revision seeding for the SideBySide visual e2e.
-  takeRevision: (label?: string) => string;
+  takeRevision: (label?: string) => string | null;
   openSideBySide: (revisionId: string) => void;
   // Session 108 — edit-heavy perf trace scenario.
   editEntityTitle: (id: string, title: string) => void;

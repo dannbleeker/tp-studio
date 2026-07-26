@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RevisionPanel } from '@/components/history/RevisionPanel';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { seedEntity } from '../helpers/seedDoc';
+import { seedEntity, takeSnapshot } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);
 afterEach(cleanup);
@@ -28,7 +28,7 @@ describe('RevisionPanel', () => {
 
   it('renders on-screen and lists snapshots when open', () => {
     seedEntity('A');
-    act(() => useDocumentStore.getState().captureSnapshot('baseline'));
+    act(() => takeSnapshot('baseline'));
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container, getByText } = render(<RevisionPanel />);
     const aside = container.querySelector('aside')!;
@@ -67,7 +67,7 @@ describe('RevisionPanel', () => {
 
   it('Restore button rolls the doc back to the snapshot', () => {
     seedEntity('A');
-    act(() => useDocumentStore.getState().captureSnapshot('baseline'));
+    act(() => takeSnapshot('baseline'));
     seedEntity('B');
     expect(Object.keys(useDocumentStore.getState().doc.entities)).toHaveLength(2);
     act(() => useDocumentStore.getState().openHistoryPanel());
@@ -80,7 +80,7 @@ describe('RevisionPanel', () => {
 
   it('Delete button prompts and removes when confirmed', async () => {
     seedEntity('A');
-    act(() => useDocumentStore.getState().captureSnapshot('drop me'));
+    act(() => takeSnapshot('drop me'));
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
     const del = container.querySelector(
@@ -99,7 +99,7 @@ describe('RevisionPanel', () => {
 
   it('Rename pencil flips to an input and Enter commits the new label', () => {
     seedEntity('A');
-    const id = useDocumentStore.getState().captureSnapshot('old');
+    const id = takeSnapshot('old');
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
     const pencil = container.querySelector(
@@ -115,7 +115,7 @@ describe('RevisionPanel', () => {
 
   it('Compare button opens compareRevisionId and shows info toast', () => {
     seedEntity('A');
-    const id = useDocumentStore.getState().captureSnapshot('compare-me');
+    const id = takeSnapshot('compare-me');
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
     const compareBtn = container.querySelector(
@@ -128,7 +128,7 @@ describe('RevisionPanel', () => {
 
   it('Side-by-side button sets sideBySideRevisionId in the store', () => {
     seedEntity('A');
-    const id = useDocumentStore.getState().captureSnapshot('side-by-side-me');
+    const id = takeSnapshot('side-by-side-me');
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
     const sideBySideBtn = container.querySelector(
@@ -145,7 +145,7 @@ describe('RevisionPanel', () => {
   // run before we assert.
   it('Branch button opens a prompt and branches on submit', async () => {
     seedEntity('A');
-    useDocumentStore.getState().captureSnapshot('branch-source');
+    takeSnapshot('branch-source');
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
     const branchBtn = container.querySelector(
@@ -166,7 +166,7 @@ describe('RevisionPanel', () => {
 
   it('Branch button does nothing when the prompt is cancelled (resolves null)', async () => {
     seedEntity('A');
-    useDocumentStore.getState().captureSnapshot('branch-cancel');
+    takeSnapshot('branch-cancel');
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
     const branchBtn = container.querySelector(
@@ -183,7 +183,7 @@ describe('RevisionPanel', () => {
 
   it('Branch button does nothing when the prompt returns an empty/whitespace string', async () => {
     seedEntity('A');
-    useDocumentStore.getState().captureSnapshot('branch-empty');
+    takeSnapshot('branch-empty');
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
     const branchBtn = container.querySelector(
@@ -201,7 +201,7 @@ describe('RevisionPanel', () => {
   it('Multiple named branches render separate sections, Main first', () => {
     seedEntity('A');
     // Capture a main snapshot first
-    useDocumentStore.getState().captureSnapshot('main-snap');
+    takeSnapshot('main-snap');
     // Capture two more with a branch name via branchFromRevision
     const state = useDocumentStore.getState();
     const mainRevId = state.revisions[0]!.id;
@@ -221,7 +221,7 @@ describe('RevisionPanel', () => {
     seedEntity('A');
     // Create a main snapshot
     const state = useDocumentStore.getState();
-    const mainRevId = state.captureSnapshot('main-snap');
+    const mainRevId = takeSnapshot('main-snap');
     // Branch twice to create two named branches
     state.branchFromRevision(mainRevId, 'alpha');
     state.branchFromRevision(mainRevId, 'beta');
@@ -252,7 +252,7 @@ describe('RevisionPanel', () => {
 
   it('Delete button does NOT remove when the confirm dialog is rejected', async () => {
     seedEntity('A');
-    act(() => useDocumentStore.getState().captureSnapshot('keep me'));
+    act(() => takeSnapshot('keep me'));
     act(() => useDocumentStore.getState().openHistoryPanel());
     const { container } = render(<RevisionPanel />);
     const del = container.querySelector(
