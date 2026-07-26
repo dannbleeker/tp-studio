@@ -99,6 +99,18 @@ const activeDocEphemeralReset = () => ({
   // diagram / template pickers, a Start tree card, the hero "Build a CRT")
   // exits Start without each call site having to remember to.
   startSection: null,
+  // Hoist is a view of ONE group in ONE document. Carried across a swap, the
+  // incoming doc doesn't contain that group, so `visibleEntityIdsForHoist`
+  // returns an empty set and the canvas renders nothing — while `Breadcrumb`
+  // also returns null, removing the affordance that would let the user climb
+  // back out. `groupsSlice` already guards this exact shape for `deleteGroup`;
+  // a doc swap is the same event by another route.
+  hoistedGroupId: null,
+  // Same class of bug, opposite symptom: the creation wizard is bound to the
+  // diagram type it was opened for, so a wizard left open across a tab switch
+  // kept answering into the NEW document — a Goal-Tree wizard minting Goal-Tree
+  // entities inside a CRT.
+  creationWizard: null,
   ...speculationDefaults(),
 });
 

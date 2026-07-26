@@ -32,7 +32,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { newDocumentId } from '@/domain/ids';
-import { persistTabsManifest } from '@/domain/persistence';
+import { persistTabsManifest, saveDocToLocalStorage } from '@/domain/persistence';
 import { docBackupKey } from '@/services/storage/keys';
 import { STORAGE_KEYS, writeString } from '@/services/storage/storage';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -276,5 +276,119 @@ describe('non-quota storage error', () => {
     expect(toasts).toHaveLength(1);
     expect(toasts[0]!.kind).toBe('error');
     expect(toasts[0]!.message).toContain('storage is disabled');
+  });
+});
+
+// ── quota cascade: amplification + eviction safety ───────────────────────────
+
+/**
+ * These cover the Session-209 finding: ONE user save issues several `setItem`
+ * calls (2 for a live-draft write, 4 for a debounced commit) and each failure
+ * invoked the listener independently, so the destructive final tier ran once per
+ * failed WRITE rather than once per save — 10 closed trees per keystroke, behind
+ * a single deduped toast.
+ */
+describe('quota cascade — tier 3 eviction is bounded', () => {
+  const realSetItem = Storage.prototype.setItem;
+
+  /** Fail EVERY setItem, as a genuinely full quota does. */
+  const mockQuotaAlways = (): void => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      const err = new Error('quota exceeded');
+      (err as Error & { name: string }).name = 'QuotaExceededError';
+      throw err;
+    });
+  };
+
+  const seedClosedTree = (title: string, updatedAt: number): string => {
+    const id = newDocumentId();
+    saveDocToLocalStorage({
+      ...s().doc,
+      id,
+      title,
+      updatedAt,
+    });
+    return id;
+  };
+
+  it('evicts one batch for a burst of failed writes, not one batch per write', () => {
+    for (let i = 0; i < 12; i++) seedClosedTree(`tree ${i}`, i);
+    const before = Object.keys(globalThis.localStorage).filter((k) =>
+      k.endsWith(':committed:v2')
+    ).length;
+    mockQuotaAlways();
+    // Four failing writes in one synchronous turn — what a single debounced
+    // commit produces.
+    for (let i = 0; i < 4; i++) writeString('tp-studio:probe', 'x');
+    vi.restoreAllMocks();
+
+    const after = Object.keys(globalThis.localStorage).filter((k) =>
+      k.endsWith(':committed:v2')
+    ).length;
+    // One batch (5), not four batches (20 — i.e. everything).
+    expect(before - after).toBe(5);
+  });
+
+  it('never evicts a document it could not parse', () => {
+    const good = seedClosedTree('parseable', 1);
+    // A body written by a newer build: unparseable to us, and with the old
+    // `?? 0` sort key it went to the FRONT of the deletion queue.
+    const unreadable = newDocumentId();
+    globalThis.localStorage.setItem(
+      `tp-studio:doc:${unreadable}:committed:v2`,
+      JSON.stringify({ schemaVersion: 999, id: unreadable })
+    );
+    mockQuotaAlways();
+    writeString('tp-studio:probe', 'x');
+    vi.restoreAllMocks();
+
+    expect(
+      globalThis.localStorage.getItem(`tp-studio:doc:${unreadable}:committed:v2`)
+    ).not.toBeNull();
+    expect(globalThis.localStorage.getItem(`tp-studio:doc:${good}:committed:v2`)).toBeNull();
+  });
+
+  it('evicting a tree takes its revision history with it', () => {
+    const id = seedClosedTree('doomed', 1);
+    // ONE revision, so tier 1's halving finds nothing to drop and the cascade
+    // reaches tier 3. Revisions are the largest per-doc payload, so evicting the
+    // body while leaving them behind freed almost nothing and guaranteed the
+    // cascade re-fired and ate more trees.
+    seedRevisions(id, 1);
+    // Quota applies to every key EXCEPT the revisions map: shrinking an existing
+    // key is the one write that still succeeds when storage is full, because the
+    // browser frees the old value first. An unconditional mock would make the
+    // reclaim untestable rather than broken.
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key: string, value: string) => {
+      if (key === STORAGE_KEYS.revisions) {
+        Storage.prototype.getItem.call(globalThis.localStorage, key);
+        realSetItem.call(globalThis.localStorage, key, value);
+        return;
+      }
+      const err = new Error('quota exceeded');
+      (err as Error & { name: string }).name = 'QuotaExceededError';
+      throw err;
+    });
+    writeString('tp-studio:probe', 'x');
+    vi.restoreAllMocks();
+
+    const map = JSON.parse(globalThis.localStorage.getItem(STORAGE_KEYS.revisions) ?? '{}');
+    expect(map[id]).toBeUndefined();
+  });
+});
+
+describe('quota cascade — tier 1a reclaims orphaned revision history', () => {
+  it('drops revisions for a doc that has no body and no tab, before touching live data', () => {
+    seedRevisions('a-tree-that-no-longer-exists', 6);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
+      const err = new Error('quota exceeded');
+      (err as Error & { name: string }).name = 'QuotaExceededError';
+      throw err;
+    });
+    writeString('tp-studio:probe', 'x');
+
+    const map = JSON.parse(globalThis.localStorage.getItem(STORAGE_KEYS.revisions) ?? '{}');
+    expect(map['a-tree-that-no-longer-exists']).toBeUndefined();
+    expect(s().toasts[0]?.message).toMatch(/deleted tree/i);
   });
 });

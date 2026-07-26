@@ -78,11 +78,20 @@ describe('validateEntity — optional-field + enum guards', () => {
     expect(out.position).toEqual({ x: 1, y: 2 });
   });
 
-  it('rejects a non-object / missing id / bad type / non-string title', () => {
+  it('rejects a non-object / missing id / non-string title', () => {
     expect(() => validateEntity(null, 'e')).toThrow(/object/);
     expect(() => validateEntity({ ...entity, id: 5 }, 'e')).toThrow(/id/);
-    expect(() => validateEntity({ ...entity, type: 'nope' }, 'e')).toThrow(/type/);
     expect(() => validateEntity({ ...entity, title: 5 }, 'e')).toThrow(/title/);
+  });
+
+  // A custom-class id is a legitimate `type`, and an id whose class has been
+  // deleted must still load — rejecting the entity rejects the whole document,
+  // which is how a doc using a custom class became permanently unopenable.
+  // Only a non-string / empty type is structurally invalid.
+  it('accepts a non-builtin type verbatim, and rejects only a non-string one', () => {
+    expect(validateEntity({ ...entity, type: 'myClass' }, 'e').type).toBe('myClass');
+    expect(() => validateEntity({ ...entity, type: 5 }, 'e')).toThrow(/type/);
+    expect(() => validateEntity({ ...entity, type: '' }, 'e')).toThrow(/type/);
   });
 
   it('rejects invalid enum values', () => {

@@ -228,6 +228,65 @@ export const removeDocFromStorage = (id: DocumentId): void => {
 };
 
 /**
+ * Drop the revision history of one or more docs, in a single rewrite of the
+ * shared `revisions:v1` map.
+ *
+ * Separate from `removeDocFromStorage` on purpose: that runs per doc, and
+ * folding a whole-map rewrite into it would make the bulk paths (eviction,
+ * "Forget closed documents") quadratic. `forgetClosedDocs` builds its own
+ * surviving map and does not need this; the callers that delete a doc one at a
+ * time do.
+ *
+ * Without this, deleting a tree left up to 50 full document snapshots behind —
+ * the single largest per-doc payload — so a "deleted" tree kept most of its
+ * bytes, and re-importing the same file (ids are preserved on export) brought
+ * its history back from the dead.
+ */
+export const dropRevisionsForDocs = (ids: readonly string[]): void => {
+  if (ids.length === 0) return;
+  const drop = new Set<string>(ids);
+  rewriteRevisions((docId) => !drop.has(docId));
+};
+
+/**
+ * Quota mitigation, tier 1a — drop revision history belonging to docs that no
+ * longer have a body in storage and aren't open in a tab.
+ *
+ * This is where the "deleting a tree leaves its revisions behind" leak is
+ * reclaimed. It is NOT reclaimed at delete time on purpose: `deleteSavedDoc`
+ * offers an Undo that re-persists the body, and dropping the history there
+ * would make that Undo lossy. Sweeping orphans under storage pressure gets the
+ * bytes back at the only moment it matters, and cannot lose anything the user
+ * can still reach. Returns how many docs' histories were dropped.
+ */
+export const dropOrphanedRevisions = (openIds: ReadonlySet<string>): number => {
+  const alive = new Set<string>([...listSavedDocIds(), ...openIds]);
+  return rewriteRevisions((docId) => alive.has(docId));
+};
+
+/** Rewrite `revisions:v1`, keeping only doc ids for which `keep` is true.
+ *  Returns the number of dropped entries; writes nothing when none matched. */
+const rewriteRevisions = (keep: (docId: string) => boolean): number => {
+  const raw = readString(STORAGE_KEYS.revisions);
+  if (raw === null) return 0;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return 0;
+  }
+  if (!isObject(parsed)) return 0;
+  const next: Record<string, unknown> = {};
+  let removed = 0;
+  for (const [docId, list] of Object.entries(parsed)) {
+    if (keep(docId)) next[docId] = list;
+    else removed += 1;
+  }
+  if (removed > 0) writeString(STORAGE_KEYS.revisions, JSON.stringify(next));
+  return removed;
+};
+
+/**
  * Phase 6 quota mitigation — drop ONLY the backup slot for one doc (the
  * lowest-value per-doc data; its committed + live bodies remain). Returns
  * whether a backup slot actually existed, so callers can count what they
@@ -280,16 +339,29 @@ export const loadSavedDoc = (id: DocumentId): TPDocument | null => loadDocByIdWi
  * export anything they want to keep. Returns how many trees were removed.
  */
 export const evictOldestClosedTrees = (openIds: ReadonlySet<string>, batch: number): number => {
-  const closed = listSavedDocIds()
-    .filter((id) => !openIds.has(id))
-    .map((id) => ({ id, updatedAt: loadSavedDoc(id)?.updatedAt ?? 0 }))
-    .sort((a, b) => a.updatedAt - b.updatedAt);
-  let evicted = 0;
-  for (const { id } of closed.slice(0, Math.max(0, batch))) {
-    removeDocFromStorage(id);
-    evicted += 1;
+  const closed: { id: DocumentId; updatedAt: number }[] = [];
+  for (const id of listSavedDocIds()) {
+    if (openIds.has(id)) continue;
+    const doc = loadSavedDoc(id);
+    // A doc we cannot parse is SKIPPED, not evicted first. The old code used
+    // `?? 0` for the sort key, which put every unreadable doc at the front of
+    // the deletion queue — and the most likely reason a doc is unreadable is
+    // that a NEWER build wrote it (`applyMigrations` throws for a version above
+    // ours, and the PWA's `registerType: 'prompt'` means a stale shell can run
+    // for days). So the first thing deleted was the user's newest work, exactly
+    // the data we understand least well. If nothing parseable is closed, this
+    // tier frees nothing and the caller falls through to telling the user.
+    if (!doc) continue;
+    closed.push({ id, updatedAt: doc.updatedAt });
   }
-  return evicted;
+  closed.sort((a, b) => a.updatedAt - b.updatedAt);
+  const victims = closed.slice(0, Math.max(0, batch));
+  for (const { id } of victims) removeDocFromStorage(id);
+  // Revisions are the LARGEST payload per doc (up to 50 full document
+  // snapshots), so evicting bodies while leaving them behind freed little and
+  // guaranteed the cascade re-fired and ate more trees.
+  dropRevisionsForDocs(victims.map((v) => v.id));
+  return victims.length;
 };
 
 /** Validate a parsed manifest shape. Returns `null` if absent / malformed. */

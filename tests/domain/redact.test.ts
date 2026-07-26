@@ -93,3 +93,93 @@ describe('redactDocument', () => {
     expect(afterTitle).toBe(beforeTitle);
   });
 });
+
+/**
+ * The property that actually matters, expressed once rather than field by field:
+ * serialize a document with EVERY free-text field populated with a unique
+ * marker, redact it, and assert not one marker survives.
+ *
+ * Written this way on purpose. The previous implementation was a denylist —
+ * five named fields blanked, everything else passed through by `...rest` — so
+ * each optional field added since (owner, evidence, attributes, need,
+ * workingAssumption, attestation, alternativeMeans, assumption text, comments,
+ * systemScope) leaked, and a per-field test suite would only have caught the
+ * fields someone remembered to write a test for. This one fails the moment any
+ * new prose field reaches the export without being considered.
+ */
+describe('redactDocument leaks no free text', () => {
+  it('drops every user-authored string, not just the five it used to name', () => {
+    const { id: aId } = seedEntity('SECRET-title');
+    const doc = useDocumentStore.getState().doc;
+    const entity = doc.entities[aId];
+    if (!entity) throw new Error('seed failed');
+
+    const loaded = {
+      ...doc,
+      title: 'SECRET-doctitle',
+      author: 'SECRET-author',
+      description: 'SECRET-docdesc',
+      systemScope: { boundary: 'SECRET-boundary', outside: 'SECRET-outside' },
+      comments: {
+        c1: {
+          id: 'c1',
+          body: 'SECRET-comment',
+          author: 'SECRET-commentauthor',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      customEntityClasses: { cls: { id: 'cls', label: 'SECRET-classlabel' } },
+      assumptions: {
+        a1: {
+          id: 'a1',
+          edgeId: 'e1',
+          text: 'SECRET-assumption',
+          status: 'open',
+          source: 'SECRET-assumptionsource',
+          annotationNumber: 9,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+      entities: {
+        [aId]: {
+          ...entity,
+          description: 'SECRET-desc',
+          owner: 'SECRET-owner',
+          need: 'SECRET-need',
+          workingAssumption: 'SECRET-workingassumption',
+          attestation: 'SECRET-attestation',
+          alternativeMeans: ['SECRET-altmeans'],
+          attributes: { k: { kind: 'text', value: 'SECRET-attrvalue' } },
+          evidence: [
+            {
+              id: 'ev1',
+              description: 'SECRET-evidence',
+              url: 'https://example.com/SECRET-url',
+              source: 'document',
+              strength: 'strong',
+              validatedBy: 'SECRET-validatedby',
+              createdAt: 1,
+              updatedAt: 1,
+            },
+          ],
+          importedFrom: { docId: 'd', entityId: 'e', sourceTitle: 'SECRET-sourcetitle' },
+        },
+      },
+    } as unknown as Parameters<typeof redactDocument>[0];
+
+    const serialized = JSON.stringify(redactDocument(loaded));
+    expect(serialized).not.toMatch(/SECRET-/);
+  });
+
+  it('still preserves the structure a shared sample is for', () => {
+    const { a, b, edge } = seedConnectedPair();
+    const redacted = redactDocument(useDocumentStore.getState().doc);
+    expect(Object.keys(redacted.entities).sort()).toEqual([a.id, b.id].sort());
+    const redactedEdge = redacted.edges[edge.id];
+    expect(redactedEdge?.sourceId).toBe(a.id);
+    expect(redactedEdge?.targetId).toBe(b.id);
+    expect(redactedEdge?.kind).toBe(edge.kind);
+  });
+});

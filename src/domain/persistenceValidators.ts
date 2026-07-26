@@ -1,5 +1,5 @@
 import { isClrCategory } from './clrCategory';
-import { isEdgeKind, isEntityType, isObject, isStringArray } from './guards';
+import { isEdgeKind, isObject, isStringArray } from './guards';
 import {
   validateAlternativeMeans,
   validateAttributes,
@@ -19,6 +19,7 @@ import type {
   Entity,
   EntityId,
   EntityState,
+  EntityType,
   Group,
   GroupColor,
   GroupId,
@@ -61,10 +62,41 @@ const VALID_GROUP_COLORS: ReadonlySet<GroupColor> = new Set([
   'violet',
 ]);
 
+/**
+ * An entity's `type` is one of the 14 built-ins OR a custom-class id.
+ *
+ * This used to hard-throw on anything but a built-in, which rejected the WHOLE
+ * document — and the app can put a custom-class id there through ordinary use:
+ * `paletteForDoc` feeds every `doc.customEntityClasses` key into the Inspector's
+ * Type picker, which writes it straight onto the entity. A doc saved that way
+ * could not be read back, and because the writers rotate a backup on each
+ * commit, a second save left every storage slot unparseable and the tree
+ * vanished from both the tab strip and Start → All trees, silently.
+ *
+ * So an unrecognised type is now non-fatal at this boundary. `resolveEntityTypeMeta`
+ * has always had a third branch for exactly this ("a doc imported with a class
+ * definition that's since been deleted still renders"), so the render path is
+ * already total — the strict guard here bought a typo check at the price of
+ * total document loss, which is never the better trade. A type we don't
+ * recognise degrades to an "unknown type" node; the document opens, and the
+ * value is preserved verbatim so re-importing the file that defines the class
+ * makes the entity correct again.
+ *
+ * Deliberately NOT solved by passing the doc's `customEntityClasses` key set in:
+ * that still loses the document when a class is deleted while entities use it
+ * (`deleteCustomEntityClass` does not retype them), which is the same failure
+ * one step further out.
+ */
 export const validateEntity = (v: unknown, label: string): Entity => {
   if (!isObject(v)) throw invalid(label, 'must be an object');
   if (typeof v.id !== 'string') throw invalid(label, 'has no id');
-  if (!isEntityType(v.type)) throw invalid(label, `has invalid type "${String(v.type)}"`);
+  // Any non-empty string, not `isEntityType`. See the docblock: a custom-class
+  // id is a legitimate value here, and an unrecognised one must not cost the
+  // document. The nominal type stays the built-in union — the same fiction the
+  // Inspector already relies on with `type as EntityType`.
+  if (typeof v.type !== 'string' || v.type === '') {
+    throw invalid(label, `has invalid type "${String(v.type)}"`);
+  }
   if (typeof v.title !== 'string') throw invalid(label, 'has non-string title');
   if (!isFiniteNumber(v.annotationNumber)) {
     throw invalid(label, 'has non-finite annotationNumber');
@@ -178,7 +210,9 @@ export const validateEntity = (v: unknown, label: string): Entity => {
   const links = validateEntityLinks(v.links, `${label}.links`);
   return {
     id: v.id as EntityId,
-    type: v.type,
+    // See the docblock — `Entity.type` is nominally the built-in union but has
+    // always carried custom-class ids too.
+    type: v.type as EntityType,
     title: v.title,
     annotationNumber: v.annotationNumber,
     createdAt: v.createdAt,

@@ -78,9 +78,17 @@ export const ensureWritePermission = async (handle: FileSystemFileHandle): Promi
 };
 
 /**
- * Write `text` to an already-resolved file handle (createWritable → write →
- * close). Always closes the stream — a half-open writable can leave a 0-byte
- * file. Throws on a genuine write failure (permission denied, disk error).
+ * Write `text` to an already-resolved file handle.
+ *
+ * `close()` COMMITS the swap file; `abort()` discards it. `createWritable()`
+ * defaults to `keepExistingData: false`, so the swap starts empty — which means
+ * a `finally { close() }` does the opposite of safe: a write that fails partway
+ * (disk full, a sync client holding a lock, revoked permission) commits a
+ * truncated or 0-byte file OVER the user's data. That is the one failure in
+ * this app that destroys a file outside the browser.
+ *
+ * So: commit only on success, `abort()` on failure, and let the original error
+ * propagate — an `abort()` that itself fails must not mask why the write did.
  */
 export const writeTextToHandle = async (
   handle: FileSystemFileHandle,
@@ -89,9 +97,13 @@ export const writeTextToHandle = async (
   const writable = await handle.createWritable();
   try {
     await writable.write(text);
-  } finally {
-    await writable.close();
+  } catch (err) {
+    // Swallowing an abort failure is deliberate: the write error is the one
+    // worth reporting, and the swap file is discarded either way.
+    await writable.abort?.().catch(() => undefined);
+    throw err;
   }
+  await writable.close();
 };
 
 export type SaveResult =

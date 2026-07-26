@@ -1,7 +1,7 @@
 import type { CausalityLabel } from '@/store/uiSlice/types';
 import { findCoreDrivers } from './coreDriver';
 import { renderEdgeSentence, resolveEdgeConnector, topologicalEdgeOrder } from './edgeReading';
-import { DIAGRAM_TYPE_LABEL, ENTITY_TYPE_META } from './entityTypeMeta';
+import { DIAGRAM_TYPE_LABEL, resolveEntityTypeMeta } from './entityTypeMeta';
 import {
   assumptionsForEdge,
   entitiesOfType,
@@ -251,7 +251,9 @@ export const exportReasoningOutline = (
       for (const term of terminals) {
         lines.push(
           '',
-          `### ${term.title.trim() || 'Untitled'} (${ENTITY_TYPE_META[term.type].label})`
+          // `resolveEntityTypeMeta` — a custom-class id indexes `ENTITY_TYPE_META`
+          // to `undefined`, and `.label` on that threw out of the export.
+          `### ${term.title.trim() || 'Untitled'} (${resolveEntityTypeMeta(term.type, doc.customEntityClasses).label})`
         );
         const visited = new Set<string>();
         renderCausesInto(lines, doc, term.id, visited, 0, label);
