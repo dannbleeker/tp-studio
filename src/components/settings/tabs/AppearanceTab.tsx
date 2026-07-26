@@ -1,8 +1,7 @@
 import clsx from 'clsx';
 import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
-import { LOCALE_LABEL, SELECTABLE_LOCALES } from '@/i18n/locale';
-import type { Locale } from '@/i18n/types';
+import { isLocale, LOCALE_LABEL, SELECTABLE_LOCALES } from '@/i18n/locale';
 import { useT } from '@/i18n/useT';
 import type { EdgePalette, Theme } from '@/store';
 import { useDocumentStore } from '@/store';
@@ -18,11 +17,10 @@ import { RadioGroup, Section, Select } from '../formPrimitives';
  *
  * The `Theme` union itself is unchanged — this is purely a
  * presentation swap inside the dialog.
- */
-/**
- * Swatch colours stay literal here — they mirror the CSS variables each theme
- * sets and are presentation, not copy. Only the labels/hints moved to the
- * catalogue, keyed by theme id.
+ *
+ * Session 209 — the labels and hints moved to the message catalogue, keyed by
+ * theme id. The hexes stay here: they are presentation, not copy, and have no
+ * business being translatable.
  */
 type ThemeSwatch = {
   id: Theme;
@@ -140,7 +138,13 @@ export function AppearanceTab() {
             scales past the grid without a layout blowout. */}
         <Select
           value={locale}
-          onChange={(next) => setLocale(next as Locale)}
+          // `Select` hands back a bare `string`. Narrowing with the same guard
+          // the persistence layer uses — rather than asserting `as Locale` —
+          // keeps this correct if the option list and the union ever drift
+          // apart, and matches how a tampered stored value is handled.
+          onChange={(next) => {
+            if (isLocale(next)) setLocale(next);
+          }}
           ariaLabel={t.settings.appearance.language}
           options={SELECTABLE_LOCALES.map((id) => ({ value: id, label: LOCALE_LABEL[id] }))}
         />
