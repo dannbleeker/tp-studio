@@ -1,6 +1,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { AboutDialog } from '@/components/about/AboutDialog';
 import { HelpDialog } from '@/components/help/HelpDialog';
 import { DocumentInspector } from '@/components/settings/DocumentInspector';
 import { AppearanceTab } from '@/components/settings/tabs/AppearanceTab';
@@ -103,15 +104,15 @@ describe('pseudo-locale', () => {
         act(() => useDocumentStore.getState().openHelp());
         return render(<HelpDialog />);
       },
-      // `LEARN_LINKS` lives in `docLinks.ts`, shared with the About dialog, and
-      // is not converted yet — converting it belongs with the About dialog so
-      // the two can't drift. Tracked in NEXT_STEPS.
-      allowed: [
-        'User Guide',
-        'Reference for every feature and shortcut.',
-        'Causal Thinking with TP Studio (PDF)',
-        'The practitioner book — ~50,000 words, 17 chapters. Best for desktop reading.',
-      ],
+      allowed: [],
+    },
+    {
+      name: 'About dialog',
+      render: () => {
+        act(() => useDocumentStore.getState().openAbout());
+        return render(<AboutDialog />);
+      },
+      allowed: [],
     },
   ];
 

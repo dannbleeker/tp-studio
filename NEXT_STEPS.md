@@ -11,19 +11,19 @@ rationale that lived only here were migrated into their CHANGELOG session entrie
 **Open — i18n follow-ups (Session 209).** The architecture shipped with English only; these are the
 deliberate leftovers, in rough priority order:
 
-- **Remaining UI-string extraction (~800–1,000 unique literals).** Converted so far: the whole Settings
-  dialog (4 tabs), the Document Inspector, the Help dialog, the toolbar title badge + method-path
-  stepper, the full CLR warning pipeline, the 63-step method checklist, the 38 keyboard shortcuts,
-  the 7-CLR scrutiny stepper, Barnard's five journey questions, and reader-mode coaching — roughly
-  525 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
+- **Remaining UI-string extraction (~780–980 unique literals).** Nine surfaces now render with an EMPTY
+  pseudo-locale allow-list: the four Settings tabs, the Document Inspector, the Help dialog, the About
+  dialog, the toolbar title badge, and the method-path stepper. Converted alongside them: the full CLR
+  warning pipeline, the 63-step method checklist, the 38 keyboard shortcuts, the 7-CLR scrutiny
+  stepper, Barnard's five journey questions, the shared doc-links, and reader-mode coaching — roughly
+  550 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
   pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
   is what proves the conversion is complete. Next up: the four components still reading the English
   `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` views (`BlocksRail`, `PatternLibraryDialog`,
   `AnalysisJourneyDialog`, `DiagramTypePickerDialog`) — each also carries surrounding hardcoded
   copy, so convert them whole rather than swapping only the label; plus `start/diagramMeta.tsx`,
   whose table is built at MODULE scope and needs restructuring into a function before it can read a
-  catalogue; and `docLinks.ts` (`LEARN_LINKS`, shared by the Help and About dialogs — convert it
-  together with About so the two can't drift; it is the Help dialog's only allow-list entry).
+  catalogue.
   With `clrScrutiny.ts`, `analysisJourney.ts` and `methodPath.ts` done, the domain static blocks are
   finished — what is left in `src/domain` is mostly generated prose (`verbalisation.ts`,
   `edgeReading.ts`, the exporters' section headers) where word ORDER is language-specific, not just

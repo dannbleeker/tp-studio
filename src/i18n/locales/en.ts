@@ -452,6 +452,49 @@ export const en = {
     frt: 'Injection in place — plan the rollout with a Prerequisite Tree',
     prt: 'Objectives set — sequence the steps in a Transition Tree',
   },
+  /**
+   * Documentation / project links, shared by the Help and About dialogs, plus
+   * the About dialog's own chrome. `docLinks.tsx` keeps the hrefs and icons;
+   * only the copy lives here, keyed by link id.
+   */
+  docLinks: {
+    userGuide: {
+      label: 'User Guide',
+      hint: 'Reference for every feature and shortcut.',
+    },
+    bookPdf: {
+      label: 'Causal Thinking with TP Studio (PDF)',
+      hint: 'The practitioner book — ~50,000 words, 17 chapters. Best for desktop reading.',
+    },
+    bookEpub: {
+      label: 'Causal Thinking with TP Studio (EPUB)',
+      hint: 'Same book, reflowable. Email to your Kindle or open in any e-reader app.',
+    },
+    notices: { label: 'Third-party notices & trademarks' },
+    github: { label: 'Source code on GitHub' },
+    security: {
+      label: 'Security & threat model',
+      // Interpolated: the audit date is a build-time define that refreshes when
+      // SECURITY.md's "Last reviewed:" line moves.
+      hint: (p: { audit: string }) => `Last audit: ${p.audit}.`,
+    },
+  },
+
+  about: {
+    title: 'About TP Studio',
+    close: 'Close about',
+    tagline:
+      'A practitioner-focused canvas for Theory of Constraints Thinking Process diagrams. Open source, local-first, runs in your browser.',
+    versionLine: (p: { version: string; build: string }) =>
+      `Version ${p.version} · Build ${p.build}`,
+    readMore: 'Read more',
+    project: 'Project',
+    copyright: (p: { years: string }) =>
+      `© ${p.years} Dann Bleeker Pedersen. "Flying Logic" is a trademark of its owner. See`,
+    noticesLinkText: 'third-party notices',
+    copyrightTail: 'for full attribution.',
+  },
+
   /** Help dialog: headings, the About link, and the pointer-gesture list. */
   help: {
     title: 'Help',

@@ -1,4 +1,6 @@
 import { BookOpen, Code2, ExternalLink, FileText, Scale } from 'lucide-react';
+import type { Messages } from '@/i18n/types';
+import { useT } from '@/i18n/useT';
 
 /**
  * Shared documentation / project links, consumed by BOTH the About dialog and
@@ -20,46 +22,49 @@ export const USER_GUIDE_PATH = '/user-guide.html';
 export const NOTICES_PATH = '/notices.html';
 export const GITHUB_URL = 'https://github.com/dannbleeker/tp-studio';
 
+/**
+ * A documentation link. `linkKey` addresses the copy in the message catalogue
+ * (`en.docLinks`) — this module owns the href and the icon, which are not
+ * translatable, and nothing else.
+ */
 export type LinkRow = {
   href: string;
   Icon: typeof BookOpen;
-  label: string;
-  hint?: string;
+  linkKey: keyof Messages['docLinks'];
   external?: boolean;
+  /** Params for the few entries whose hint interpolates (security's audit date). */
+  hintParams?: { audit: string };
 };
 
 export const USER_GUIDE_LINK: LinkRow = {
   href: USER_GUIDE_PATH,
   Icon: FileText,
-  label: 'User Guide',
-  hint: 'Reference for every feature and shortcut.',
+  linkKey: 'userGuide',
 };
 
 export const BOOK_PDF_LINK: LinkRow = {
   href: BOOK_PDF_PATH,
   Icon: BookOpen,
-  label: 'Causal Thinking with TP Studio (PDF)',
-  hint: 'The practitioner book — ~50,000 words, 17 chapters. Best for desktop reading.',
+  linkKey: 'bookPdf',
 };
 
 export const BOOK_EPUB_LINK: LinkRow = {
   href: BOOK_EPUB_PATH,
   Icon: BookOpen,
-  label: 'Causal Thinking with TP Studio (EPUB)',
-  hint: 'Same book, reflowable. Email to your Kindle or open in any e-reader app.',
+  linkKey: 'bookEpub',
 };
 
 export const NOTICES_LINK: LinkRow = {
   href: NOTICES_PATH,
   Icon: Scale,
-  label: 'Third-party notices & trademarks',
+  linkKey: 'notices',
 };
 
 export const GITHUB_LINK: LinkRow = {
   href: GITHUB_URL,
   Icon: Code2,
-  label: 'Source code on GitHub',
   external: true,
+  linkKey: 'github',
 };
 
 /**
@@ -69,7 +74,16 @@ export const GITHUB_LINK: LinkRow = {
  */
 export const LEARN_LINKS: LinkRow[] = [USER_GUIDE_LINK, BOOK_PDF_LINK];
 
-export function LinkRowItem({ href, Icon, label, hint, external }: LinkRow) {
+export function LinkRowItem({ href, Icon, linkKey, external, hintParams }: LinkRow) {
+  const copy = useT().docLinks[linkKey];
+  const label = copy.label;
+  // Only `security` interpolates; the rest are plain strings.
+  const hint =
+    'hint' in copy
+      ? typeof copy.hint === 'function'
+        ? copy.hint(hintParams ?? { audit: '' })
+        : copy.hint
+      : undefined;
   return (
     <a
       href={href}
