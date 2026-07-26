@@ -11,10 +11,12 @@ rationale that lived only here were migrated into their CHANGELOG session entrie
 **Open — i18n follow-ups (Session 209).** The architecture shipped with English only; these are the
 deliberate leftovers, in rough priority order:
 
-- **Remaining UI-string extraction (~1,100–1,300 unique literals).** Converted so far: Settings appearance
-  tab, the full CLR warning pipeline, reader-mode coaching (~120 strings). Everything else still renders
-  hardcoded English. Migrate opportunistically — the pseudo-locale test is the tool for spotting what's
-  left.
+- **Remaining UI-string extraction (~950–1,150 unique literals).** Converted so far: the whole Settings
+  dialog (4 tabs), the full CLR warning pipeline, the 63-step method checklist, and reader-mode coaching
+  — roughly 330 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
+  pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
+  is what proves the conversion is complete. Next up: `DocumentInspector` (the largest remaining single
+  dialog), then `shortcuts.ts` (38), `clrScrutiny.ts` (16), `analysisJourney.ts` (15).
 
   *Counting note.* An earlier figure of "~2,500" was a raw `grep` upper bound (any single-quoted
   capitalised string in `src/`, 2,684 hits) and overstated the job badly. It double-counted duplicates
@@ -24,8 +26,8 @@ deliberate leftovers, in rough priority order:
 
   | Area | Unique strings | Notes |
   | --- | --- | --- |
-  | `src/components` | ~686 | 246 `aria-label`/`title`/`placeholder`, 367 `label:`/`hint:` option arrays |
-  | `src/domain` (excl. patterns) | ~378 | `methodChecklist.ts` alone is 110 — the largest single block, and its ids are already stable wire-format keys, so it is the cheapest big win |
+  | `src/components` | ~600 left | was ~686; the four Settings tabs are now converted |
+  | `src/domain` (excl. patterns) | ~250 left | was ~378; `methodChecklist.ts` (110) is now converted |
   | `src/services` + `store` + `hooks` | ~92 | mostly toast copy |
 - **Retire `Warning.message`.** It exists as the English fallback + parameter-correctness canary. Removing
   it means migrating ~276 message-string assertions across ~41 test files to assert on

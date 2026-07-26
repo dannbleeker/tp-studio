@@ -64,6 +64,135 @@ export const en = {
       layout: 'Layout',
     },
     restoreDefaults: 'Restore defaults',
+    resetConfirm:
+      'Reset every setting (Appearance / Behavior / Display / Layout) back to its factory default? Documents on the canvas are not affected.',
+    resetConfirmLabel: 'Reset',
+    resetDone: 'Settings restored to defaults.',
+    behavior: {
+      section: 'Behavior',
+      animationSpeed: 'Animation speed',
+      animationSpeedNote:
+        '\u201CNormal\u201D follows your system\u2019s \u201Creduce motion\u201D accessibility setting \u2014 enable it in your OS and animations are minimised automatically.',
+      speeds: {
+        instant: 'Instant',
+        instantHint: 'No animation',
+        slow: 'Slow',
+        default: 'Normal',
+        defaultHint: '1\u00d7 baseline speed',
+        fast: 'Fast',
+      },
+      browseLock: 'Browse Lock',
+      browseLockHint:
+        'Read-only mode \u2014 disables editing across the canvas, inspector, and shortcuts',
+      autoSnapshot: 'Auto-snapshot while editing',
+      autoSnapshotHint:
+        'Periodically snapshot the current tree as you edit (every few minutes, only when it changed) so you can compare / restore / branch mid-session. Snapshots also fire on document swap regardless.',
+      creationWizards: 'Creation wizards',
+      goalTreeWizard: 'Goal Tree',
+      goalTreeWizardHint:
+        'Open the guided 5-step panel when you create a new Goal Tree. Off = empty canvas, you build manually.',
+      ecWizard: 'Evaporating Cloud',
+      ecWizardHint:
+        'Open the guided 5-step panel when you create a new EC. Off = the 5 pre-seeded boxes appear ready to edit.',
+      crtWizard: 'Current Reality Tree',
+      crtWizardHint:
+        'Open the guided 3-step UDE-elicitation panel when you create a new CRT. Off = empty canvas, you list UDEs manually.',
+      selectionToolbar: 'Selection toolbar',
+      selectionToolbarHint:
+        'Show a small floating toolbar above the selected entity / edge with the top 3-5 verbs scoped to its kind. Off = palette + context menu only.',
+      openDocsInNewTab: 'Open documents in new tabs',
+      openDocsInNewTabHint:
+        'On = importing, loading a pattern / template / example, or opening a shared link opens a new tab. Off = the load replaces the current document.',
+    },
+    display: {
+      section: 'Display',
+      annotationNumbers: 'Show annotation numbers',
+      annotationNumbersHint: 'A small #N badge on each entity',
+      entityIds: 'Show entity IDs',
+      entityIdsHint: 'Mono-font caption below each title',
+      growCards: 'Grow cards to fit text',
+      growCardsHint:
+        'Let entity cards grow taller to show the full title, up to 6 lines. Off keeps the fixed card height with a 2-line clamp.',
+      reachBadge: 'Show UDE-reach badge',
+      reachBadgeHint:
+        'On each entity, a bottom-left pill counting how many UDEs it transitively reaches (the Core Driver signal). Hidden on diagrams without UDEs.',
+      reverseReachBadge: 'Show root-cause-reach badge',
+      reverseReachBadgeHint:
+        'On each entity, a bottom-right pill counting how many root causes transitively feed it. Useful on Goal Trees / FRTs where multiple injections converge. Hidden on diagrams without root causes.',
+      actionEligibility: 'Show action-eligibility badge',
+      actionEligibilityHint:
+        'On Transition Tree Action nodes, a right-edge \u2713 / \u2717 / \u2026 pill: eligible (every precondition true), blocked (one is false), or pending (undecided). Reflects entity states; the full readout is in the Inspector.',
+      minimap: 'Show minimap',
+      minimapHint: 'Bottom-left thumbnail of the whole diagram',
+      inkSaver: 'Ink-saving print mode',
+      inkSaverHint:
+        'When on, Print / Save as PDF drops colour fills (only the entity-type label is colorized)',
+      causalityReading: 'Causality reading',
+      causality: {
+        none: 'None',
+        noneHint: 'No fallback label',
+        auto: 'Auto',
+        autoHint: 'CRT/FRT/TT \u2192 "because", PRT/EC \u2192 "in order to"',
+        because: 'Because',
+        becauseHint: 'Sufficient-cause read, bottom-up',
+        therefore: 'Therefore',
+        thereforeHint: 'Sufficient-cause read, top-down',
+        inOrderTo: 'In order to',
+        inOrderToHint: 'Necessary-condition read (PRT/EC)',
+      },
+      defaultDirection: 'Default direction for new documents',
+      directions: {
+        auto: 'Auto',
+        autoHint: 'Each diagram type picks its own default',
+        bt: 'Bottom \u2192 Top',
+        btHint: 'CRT / FRT default',
+        tb: 'Top \u2192 Bottom',
+        lr: 'Left \u2192 Right',
+        rl: 'Right \u2192 Left',
+      },
+      layoutDensity: 'Layout density',
+      density: {
+        compact: 'Compact',
+        compactHint: 'Pull entities closer (0.75\u00d7 spacing) \u2014 dense maps',
+        balanced: 'Balanced',
+        balancedHint: 'Default \u2014 tightened in Session 136',
+        spacious: 'Spacious',
+        spaciousHint: 'Loosen for projector / accessibility (1.5\u00d7 spacing)',
+      },
+      edgeRouting: 'Edge routing',
+      routing: {
+        smart: 'Smart (avoid obstacles)',
+        smartHint: 'Routes edges around non-endpoint node bodies (default)',
+        direct: 'Direct (curves through anything)',
+        directHint: 'Pre-routing behavior \u2014 every edge is React Flow\u2019s default bezier',
+      },
+    },
+    layout: {
+      section: 'Layout',
+      direction: 'Direction',
+      directions: {
+        bt: 'Bottom \u2192 Top',
+        btHint: 'Default for CRT / FRT',
+        tb: 'Top \u2192 Bottom',
+        tbHint: 'Goal at top',
+        lr: 'Left \u2192 Right',
+        rl: 'Right \u2192 Left',
+      },
+      compactness: 'Compactness',
+      compactnessHint:
+        'Tighten or loosen the spacing dagre uses between entities. 50 is the app default.',
+      bias: 'Bias',
+      biases: {
+        auto: 'Auto',
+        autoHint: 'Dagre balances',
+        ul: 'Upper-left',
+        ur: 'Upper-right',
+        dl: 'Lower-left',
+        dr: 'Lower-right',
+      },
+      resetLayout: 'Reset layout to defaults',
+      resetToDefaults: 'Reset to defaults',
+    },
     appearance: {
       section: 'Appearance',
       theme: 'Theme',

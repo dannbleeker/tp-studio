@@ -39,8 +39,12 @@ NEXT_STEPS — see `docs/I18N.md` for the full contract.
   selectable locale (excluded from the Settings dropdown) reached only through the registry's dynamic
   import — a ~200 B chunk production never loads. `tests/i18n/pseudoLocale.test.tsx` renders the Settings
   appearance tab in it and asserts every visible string is tagged.
-- **Converted this session:** the Settings appearance tab, the full CLR warning pipeline, and reader-mode
-  coaching (whose copy no longer lives duplicated in `readerModeCoaching.ts`).
+- **Converted this session:** the whole Settings dialog (all four tabs + the reset confirm/toast), the full
+  CLR warning pipeline, the 63-step method checklist, and reader-mode coaching (whose copy no longer
+  lives duplicated in `readerModeCoaching.ts`). The pseudo-locale test renders each Settings tab and
+  asserts every visible string is bracket-tagged, with a per-tab allow-list — so a newly hardcoded
+  string fails the suite instead of blending into a permissive filter. The only standing allowance is
+  the `LOCALE_LABEL` autonym "English", which is deliberately not translated.
 - **`TPDocument.locale?`** — a reserved seam. Persisted and soft-validated like `cloudType` (an
   unrecognized value drops so a doc from a newer build still opens), but nothing reads it yet. Purely
   additive: stays `schemaVersion 10`, no migration.

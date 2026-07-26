@@ -2,6 +2,9 @@ import { cleanup, render } from '@testing-library/react';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AppearanceTab } from '@/components/settings/tabs/AppearanceTab';
+import { BehaviorTab } from '@/components/settings/tabs/BehaviorTab';
+import { DisplayTab } from '@/components/settings/tabs/DisplayTab';
+import { LayoutTab } from '@/components/settings/tabs/LayoutTab';
 import { PSEUDO_PREFIX, PSEUDO_SUFFIX } from '@/i18n/pseudo';
 import { isLocaleLoaded, peekMessages, preloadLocale } from '@/i18n/registry';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -53,20 +56,42 @@ describe('pseudo-locale', () => {
     expect(messages.clr['clarity.too-long']({ limit: 25 })).toContain(PSEUDO_PREFIX);
   });
 
-  it('renders the Settings appearance tab with no un-catalogued text', async () => {
-    await preloadLocale('pseudo');
-    act(() => {
-      useDocumentStore.getState().setLocale('pseudo');
+  /**
+   * Every converted Settings tab, each with the text it is ALLOWED to render
+   * un-tagged. Keeping the allowances explicit and per-tab means a newly
+   * hardcoded string fails the test rather than blending into a permissive
+   * filter — the exceptions have to be argued for, one at a time.
+   */
+  const TABS: { name: string; render: () => ReturnType<typeof render>; allowed: string[] }[] = [
+    {
+      name: 'Appearance',
+      render: () => render(<AppearanceTab />),
+      // `LOCALE_LABEL` values are autonyms — a language names itself in its
+      // own language — so these are deliberately not routed through the
+      // catalogue.
+      allowed: ['English'],
+    },
+    { name: 'Behavior', render: () => render(<BehaviorTab />), allowed: [] },
+    { name: 'Display', render: () => render(<DisplayTab />), allowed: [] },
+    { name: 'Layout', render: () => render(<LayoutTab />), allowed: [] },
+  ];
+
+  for (const tab of TABS) {
+    it(`renders the ${tab.name} tab with no un-catalogued text`, async () => {
+      await preloadLocale('pseudo');
+      act(() => {
+        useDocumentStore.getState().setLocale('pseudo');
+      });
+
+      const { container } = tab.render();
+      const untagged = visibleText(container).filter(
+        (text) =>
+          !(text.startsWith(PSEUDO_PREFIX) && text.endsWith(PSEUDO_SUFFIX)) &&
+          // Pure digits are values, not copy (the compactness slider readout).
+          !/^\d+$/.test(text)
+      );
+
+      expect(untagged).toEqual(tab.allowed);
     });
-
-    const { container } = render(<AppearanceTab />);
-    const untagged = visibleText(container).filter(
-      (text) => !text.startsWith(PSEUDO_PREFIX) || !text.endsWith(PSEUDO_SUFFIX)
-    );
-
-    // `LOCALE_LABEL` values are autonyms and deliberately NOT translated — a
-    // language names itself in its own language — so "English" is expected
-    // here and is the only permitted exception.
-    expect(untagged).toEqual(['English']);
-  });
+  }
 });
