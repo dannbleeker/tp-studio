@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { createEdge, createEntity } from '@/domain/factory';
 import { newGroupId } from '@/domain/ids';
-import type { Edge, Entity, Group, TPDocument } from '@/domain/types';
+import type { Edge, Entity, Group, GroupId, TPDocument } from '@/domain/types';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -320,13 +320,23 @@ export const mergeDocIntoActive = (source: TPDocument): { entities: number; edge
 
   // Carry entity groups with fresh ids + remapped member ids (drop empties —
   // a group whose members didn't come across would be a phantom).
+  // Groups are minted FIRST, so a nested group's id is in the map before any
+  // parent remaps its members. `idMap` held only entity mappings, so a group
+  // whose members are groups mapped them all to `undefined`: nesting was
+  // flattened, and a group containing only groups hit `memberIds.length === 0`
+  // and was dropped along with everything under it.
+  const groupIdMap = new Map<string, GroupId>();
+  for (const g of Object.values(source.groups ?? {})) groupIdMap.set(g.id, newGroupId());
+
   const newGroups: Record<string, Group> = {};
   for (const g of Object.values(source.groups ?? {})) {
     const memberIds = g.memberIds
-      .map((mid) => idMap.get(mid))
+      .map((mid) => idMap.get(mid) ?? groupIdMap.get(mid))
       .filter((x): x is string => x !== undefined);
+    // Still drop a group nothing came across for — that would be a phantom.
     if (memberIds.length === 0) continue;
-    const gid = newGroupId();
+    const gid = groupIdMap.get(g.id);
+    if (gid === undefined) continue;
     newGroups[gid] = { ...g, id: gid, memberIds };
   }
 
@@ -341,6 +351,18 @@ export const mergeDocIntoActive = (source: TPDocument): { entities: number; edge
       ...Object.fromEntries(newEdges.map((e) => [e.id, e])),
     },
     groups: { ...doc.groups, ...newGroups },
+    // Merged entities keep their custom-class TYPE, so the class DEFINITION has
+    // to come with them or every one renders as "unknown type". Existing
+    // definitions win — the active doc's own classes are not silently
+    // redefined by an incoming file that happens to reuse an id.
+    ...(source.customEntityClasses
+      ? {
+          customEntityClasses: {
+            ...source.customEntityClasses,
+            ...(doc.customEntityClasses ?? {}),
+          },
+        }
+      : {}),
     nextAnnotationNumber: startAnnotation + newEntities.length,
     updatedAt: Date.now(),
   };

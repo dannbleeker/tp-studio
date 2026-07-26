@@ -1,6 +1,10 @@
 import type { StateCreator } from 'zustand';
 import { createDocument } from '@/domain/factory';
-import { loadAllTabsWithStatus, type TabsLoadResult } from '@/domain/persistence';
+import {
+  loadAllTabsWithStatus,
+  persistTabsManifest,
+  type TabsLoadResult,
+} from '@/domain/persistence';
 import type { DocumentId, TPDocument } from '@/domain/types';
 import { type ActiveDocFields, activeDocState } from '../activeDoc';
 import type { RootStore } from '../types';
@@ -64,6 +68,18 @@ export const tabStateFromLoad = (load: TabsLoadResult): ActiveDocFields => {
 // slots, so a reload restores every open tab (not just the active one).
 const initialLoad = loadAllTabsWithStatus();
 const initialTabState = tabStateFromLoad(initialLoad);
+// When the manifest path yielded nothing usable, `tabStateFromLoad` mints a
+// fresh CRT — but nothing used to rewrite the manifest, so every reload re-read
+// the same dead manifest and minted ANOTHER blank doc while the user's edited
+// doc sat unreferenced in storage. (The no-manifest case self-heals through the
+// legacy dual-write; this one couldn't.) Point the manifest at what we actually
+// booted into.
+if (initialTabState.activeDocId !== initialLoad.activeDocId) {
+  persistTabsManifest({
+    activeDocId: initialTabState.activeDocId,
+    tabOrder: initialTabState.tabOrder,
+  });
+}
 
 /**
  * FL-EX9 — boot-time recovery signal. The App component reads this on
@@ -75,9 +91,14 @@ const initialTabState = tabStateFromLoad(initialLoad);
 export const bootRecoveryStatus: {
   recoveredFromBackup: boolean;
   recoveredFromLiveDraftOnly: boolean;
+  /** Tabs the manifest listed whose body couldn't be read from any slot. The
+   *  recovery flags only describe the ACTIVE doc, so a background tab that
+   *  failed to parse used to disappear with no message at all. */
+  lostTabs: number;
 } = {
   recoveredFromBackup: initialLoad.recoveredFromBackup,
   recoveredFromLiveDraftOnly: initialLoad.recoveredFromLiveDraftOnly,
+  lostTabs: initialLoad.lostTabs,
 };
 
 /**

@@ -354,3 +354,57 @@ describe('mergeDocIntoActive (Session 193 — insert a template into the current
     expect(inserted.every((e) => e.andMode === 'additional')).toBe(true);
   });
 });
+
+/**
+ * Session 209 — `idMap` held only ENTITY mappings, so a nested group's
+ * group-members mapped to `undefined`: nesting was flattened, and a group whose
+ * members are all groups hit `memberIds.length === 0` and was dropped along
+ * with everything under it. Custom-class definitions weren't carried either, so
+ * merged entities using one rendered as "unknown type".
+ */
+describe('mergeDocIntoActive preserves nesting and class definitions', () => {
+  it('remaps a group whose members are other groups', () => {
+    resetIds();
+    const a = makeEntity({ title: 'A' });
+    const b = makeEntity({ title: 'B' });
+    const source = makeDoc([a, b], []);
+    const inner: Group = {
+      id: 'g-inner' as GroupId,
+      title: 'Inner',
+      color: 'indigo',
+      memberIds: [a.id, b.id],
+      collapsed: false,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const outer: Group = {
+      ...inner,
+      id: 'g-outer' as GroupId,
+      title: 'Outer',
+      memberIds: ['g-inner' as never],
+    };
+    source.groups = { 'g-inner': inner, 'g-outer': outer };
+    source.customEntityClasses = { risk: { id: 'risk', label: 'Risk' } };
+
+    mergeDocIntoActive(source);
+
+    const groups = Object.values(useDocumentStore.getState().doc.groups);
+    const mergedInner = groups.find((g) => g.title === 'Inner');
+    const mergedOuter = groups.find((g) => g.title === 'Outer');
+    expect(mergedInner).toBeTruthy();
+    // Was dropped entirely: its only member was a group, which mapped to
+    // undefined and left `memberIds` empty.
+    expect(mergedOuter).toBeTruthy();
+    expect(mergedOuter?.memberIds).toEqual([mergedInner?.id]);
+  });
+
+  it('carries the custom-class definitions the merged entities reference', () => {
+    resetIds();
+    const source = makeDoc([makeEntity({ title: 'A' })], []);
+    source.customEntityClasses = { risk: { id: 'risk', label: 'Risk' } };
+
+    mergeDocIntoActive(source);
+
+    expect(useDocumentStore.getState().doc.customEntityClasses?.risk?.label).toBe('Risk');
+  });
+});

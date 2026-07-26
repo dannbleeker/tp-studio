@@ -145,6 +145,9 @@ export const loadFromLocalStorage = (): TPDocument | null => loadFromLocalStorag
 export const clearLocalStorage = (): void => {
   removeKey(STORAGE_KEYS.doc);
   removeKey(STORAGE_KEYS.docBackup);
+  // The legacy LIVE draft too. Leaving it behind meant a "cleared" document was
+  // resurrected on the next boot through the legacy recovery path.
+  removeKey(STORAGE_KEYS.docLive);
   // Session 135 security audit — also drop the in-memory Perf #27 cache.
   // Otherwise a subsequent `saveToLocalStorage` would write the stale
   // pre-clear payload to the backup slot (the canonical state at that
@@ -438,6 +441,14 @@ export type TabsLoadResult = {
   recoveredFromBackup: boolean;
   recoveredFromLiveDraftOnly: boolean;
   migratedFromLegacy: boolean;
+  /**
+   * Tabs the manifest listed whose body could not be loaded from ANY slot.
+   *
+   * The recovery flags above only describe the ACTIVE doc, so a background tab
+   * that failed to parse was dropped from `tabOrder` and never mentioned: two
+   * tabs in, one tab out, nothing said. The boot handler surfaces this.
+   */
+  lostTabs: number;
 };
 
 export const loadAllTabsWithStatus = (): TabsLoadResult => {
@@ -471,6 +482,7 @@ export const loadAllTabsWithStatus = (): TabsLoadResult => {
       recoveredFromBackup,
       recoveredFromLiveDraftOnly,
       migratedFromLegacy: false,
+      lostTabs: manifest.tabOrder.length - survivingOrder.length,
     };
   }
 
@@ -491,6 +503,7 @@ export const loadAllTabsWithStatus = (): TabsLoadResult => {
       recoveredFromBackup: legacy.recoveredFromBackup,
       recoveredFromLiveDraftOnly: legacy.recoveredFromLiveDraftOnly,
       migratedFromLegacy: true,
+      lostTabs: 0,
     };
   }
 
@@ -502,5 +515,6 @@ export const loadAllTabsWithStatus = (): TabsLoadResult => {
     recoveredFromBackup: false,
     recoveredFromLiveDraftOnly: false,
     migratedFromLegacy: false,
+    lostTabs: 0,
   };
 };

@@ -270,6 +270,16 @@ export function App() {
         'Recovered unsaved edits — the committed snapshot was unreadable, but your live draft was intact.'
       );
     }
+    // Independent of the two above, which only ever describe the ACTIVE doc. A
+    // background tab whose body failed to parse was dropped from the order and
+    // never mentioned — two tabs in, one out, in silence.
+    if (bootRecoveryStatus.lostTabs > 0) {
+      const n = bootRecoveryStatus.lostTabs;
+      showToast(
+        'error',
+        `Couldn't reopen ${n} tab${n === 1 ? '' : 's'} — ${n === 1 ? 'its' : 'their'} saved copy was unreadable. Any other open tabs are unaffected.`
+      );
+    }
   }, [showToast]);
 
   // FL-CO1: if the URL fragment carries a share payload, load the

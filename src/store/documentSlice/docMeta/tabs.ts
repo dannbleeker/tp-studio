@@ -148,6 +148,24 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
 
   return {
     setDocument: (doc) => {
+      const state = get();
+      // Same collision guard `openTab` has, which `setDocument` lacked. A
+      // replace-mode load whose id names a BACKGROUND tab used to run the
+      // rekey in `setActiveDoc`: the active tab took the id, the background
+      // tab's in-memory doc was overwritten by the incoming body, its
+      // `tabOrder` slot was deduped away, and the reduced order was persisted.
+      // Any unsaved edits in that tab were gone. Trigger: doc B open in tab 2,
+      // "open documents in new tabs" off, import B.json from tab 1.
+      //
+      // Switching first turns it into the ordinary same-id replace — the doc
+      // lands in the tab that already holds it, which is also what the user
+      // means. `openTab`'s guard routes through here after switching, so the
+      // recursion is one level deep and terminates on the same-id path.
+      if (doc.id !== state.activeDocId && state.docs[doc.id]) {
+        state.switchTab(doc.id);
+        get().setDocument(doc);
+        return;
+      }
       performDocumentSwap(doc, 'document swap');
     },
 

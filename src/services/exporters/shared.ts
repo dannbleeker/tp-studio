@@ -17,7 +17,12 @@ export const slug = (s: string): string =>
   s
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
+    // Unicode letters and digits, not `[a-z0-9]`. The ASCII-only class stripped
+    // every character of a CJK / Cyrillic / Arabic / Greek title, so EVERY such
+    // document downloaded as `untitled.<ext>` and they all collided in the
+    // downloads folder. The characters excluded here are the ones a filesystem
+    // or a shell would object to, which is what the sanitising is for.
+    .replace(/[^\p{Letter}\p{Number}]+/gu, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60) || 'untitled';
 

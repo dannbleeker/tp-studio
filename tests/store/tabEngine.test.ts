@@ -301,6 +301,7 @@ describe('Batch 5.4 — boot restores all tabs (tabStateFromLoad)', () => {
       recoveredFromBackup: false,
       recoveredFromLiveDraftOnly: false,
       migratedFromLegacy: false,
+      lostTabs: 0,
     });
     expect(st.tabOrder).toHaveLength(1);
     expect(Object.keys(st.docs)).toHaveLength(1);
@@ -318,6 +319,7 @@ describe('Batch 5.4 — boot restores all tabs (tabStateFromLoad)', () => {
       recoveredFromBackup: false,
       recoveredFromLiveDraftOnly: false,
       migratedFromLegacy: false,
+      lostTabs: 0,
     };
     const st = tabStateFromLoad(load);
     expect(st.activeDocId).toBe(b.id);
@@ -351,5 +353,34 @@ describe('Batch 5.4 — boot restores all tabs (tabStateFromLoad)', () => {
     const restored = tabStateFromLoad(loadAllTabsWithStatus());
     expect(restored.tabOrder).toEqual([aId, b.id]); // both survive
     expect(restored.activeDocId).toBe(b.id);
+  });
+});
+
+/**
+ * Session 209 — `setDocument` lacked the id-collision guard `openTab` has. A
+ * replace-mode load whose id names a BACKGROUND tab ran the rekey in
+ * `setActiveDoc`: the active tab took the id, the background tab's in-memory
+ * doc was overwritten by the incoming body, its `tabOrder` slot was deduped
+ * away, and the reduced order was persisted. Unsaved edits in that tab were
+ * gone.
+ */
+describe('setDocument does not clobber a background tab with the same id', () => {
+  it('switches to the tab that already holds the id instead of collapsing it', () => {
+    const first = s().activeDocId;
+    const b = createDocument('frt');
+    b.title = 'Doc B';
+    s().openTab(b);
+    s().switchTab(first);
+    expect(s().tabOrder).toHaveLength(2);
+
+    // A replace-mode load of a file carrying doc B's id.
+    s().setDocument({ ...b, title: 'Doc B, reimported' });
+
+    expect(s().tabOrder).toHaveLength(2);
+    expect(s().tabOrder).toContain(first);
+    expect(s().activeDocId).toBe(b.id);
+    expect(s().docs[b.id]?.title).toBe('Doc B, reimported');
+    // The first tab's body is untouched.
+    expect(s().docs[first]).toBeDefined();
   });
 });

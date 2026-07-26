@@ -113,10 +113,32 @@ export const v9ToV10: Migration = {
       }
     }
 
+    // Groups referenced the assumption-entities that just stopped being
+    // entities. Left in place, `memberIds` pointed at ids `entities` no longer
+    // contains — tolerated downstream, but it persisted through every export
+    // and every subsequent save. A group emptied by the sweep is dropped rather
+    // than kept as a phantom, matching what `deleteEntity` does.
+    let groupsField: Record<string, unknown> | undefined;
+    if (isPlainObject(raw.groups) && movedIds.size > 0) {
+      groupsField = {};
+      for (const [gid, g] of Object.entries(raw.groups)) {
+        if (!isPlainObject(g) || !Array.isArray(g.memberIds)) {
+          groupsField[gid] = g;
+          continue;
+        }
+        const memberIds = g.memberIds.filter(
+          (mid) => typeof mid !== 'string' || !movedIds.has(mid)
+        );
+        if (memberIds.length === 0) continue;
+        groupsField[gid] = memberIds.length === g.memberIds.length ? g : { ...g, memberIds };
+      }
+    }
+
     return {
       ...raw,
       entities: nextEntities,
       assumptions: nextAssumptions,
+      ...(groupsField ? { groups: groupsField } : {}),
       // Only override comments when a rewrite happened; otherwise the `...raw`
       // spread keeps the original map (or its absence) untouched.
       ...(commentsField ? { comments: commentsField } : {}),

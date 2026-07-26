@@ -419,19 +419,27 @@ const renderAppendix = (
 
   for (const entity of items) {
     pdf.setFontSize(APPENDIX_BODY_FONT_PT);
-    const headerLine = `#${entity.annotationNumber} — ${entity.title || '(untitled)'}`;
-    const bodyLines = pdf.splitTextToSize(entity.description ?? '', usableWidthMm);
-    const blockHeight = APPENDIX_LINE_HEIGHT_MM * (bodyLines.length + 1) + 2;
-    if (cursorY + blockHeight > bottomCutoff) {
-      startNewPage();
-      cursorY = MARGIN_MM + HEADER_BAND_MM + 4;
-    }
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(headerLine, MARGIN_MM, cursorY);
-    cursorY += APPENDIX_LINE_HEIGHT_MM;
-    pdf.setFont('helvetica', 'normal');
-    for (const line of bodyLines) {
-      pdf.text(line, MARGIN_MM, cursorY);
+    // WRAPPED, like the body. A long title used to be drawn as a single
+    // `pdf.text` call and was simply clipped at the right margin.
+    const headerLines: string[] = pdf.splitTextToSize(
+      `#${entity.annotationNumber} — ${entity.title || '(untitled)'}`,
+      usableWidthMm
+    );
+    const bodyLines: string[] = pdf.splitTextToSize(entity.description ?? '', usableWidthMm);
+    const allLines = [
+      ...headerLines.map((t) => ({ t, bold: true })),
+      ...bodyLines.map((t) => ({ t, bold: false })),
+    ];
+    // Page-break PER LINE, not once per entity. The old check ran a single time
+    // before drawing the whole block, so an entry taller than a page marched
+    // off the bottom and the overflow was invisible in the output.
+    for (const { t, bold } of allLines) {
+      if (cursorY + APPENDIX_LINE_HEIGHT_MM > bottomCutoff) {
+        startNewPage();
+        cursorY = MARGIN_MM + HEADER_BAND_MM + 4;
+      }
+      pdf.setFont('helvetica', bold ? 'bold' : 'normal');
+      pdf.text(t, MARGIN_MM, cursorY);
       cursorY += APPENDIX_LINE_HEIGHT_MM;
     }
     cursorY += 2;
