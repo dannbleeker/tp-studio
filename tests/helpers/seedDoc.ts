@@ -110,3 +110,15 @@ export const seedTab = (diagramType: DiagramType = 'crt'): DocumentId => {
   useDocumentStore.getState().newDocument(diagramType);
   return useDocumentStore.getState().doc.id;
 };
+
+/**
+ * `captureSnapshot` returns `null` when the write doesn't land (storage full or
+ * disabled) — the in-memory revision list is deliberately not published in that
+ * case. Tests that exercise the happy path want the id, so fail loudly rather
+ * than threading `| null` through every assertion.
+ */
+export const takeSnapshot = (label?: string): string => {
+  const id = useDocumentStore.getState().captureSnapshot(label);
+  if (id === null) throw new Error('captureSnapshot did not persist');
+  return id;
+};

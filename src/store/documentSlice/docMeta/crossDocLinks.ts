@@ -11,6 +11,7 @@
 import { saveDocToLocalStorage } from '@/domain/persistence';
 import type { DocumentId, Entity, EntityId, EntityLink, TPDocument } from '@/domain/types';
 import { buildCoreCloudSeed, buildInjectionFRTSeed } from '@/domain/uShape';
+import { flushPersist } from '@/services/storage/persistDebounced';
 import { setActiveDoc } from '../../activeDoc';
 import { touch } from '../docMutate';
 import type { DocMetaFactoryDeps } from './shared';
@@ -43,6 +44,22 @@ const withLinks = (entity: Entity, links: EntityLink[]): Entity => {
   const { links: _drop, ...rest } = entity;
   return rest;
 };
+
+/**
+ * Cross-doc link writes bypass `applyDocChange` on purpose — links are metadata
+ * and carry no history entry (cf. `markSystemScopeNudgeShown`). But that also
+ * meant they bypassed the DEBOUNCE SCHEDULER: a link committed straight to
+ * storage with `saveDocToLocalStorage`, while an edit made moments earlier was
+ * still pending. When that pending write landed it wrote the PRE-LINK document
+ * over the committed slot and deleted the live draft, so the source lost its
+ * link while the target kept its mirror — exactly the asymmetric-link corruption
+ * `domain/preserveLinks.ts` exists to prevent, and with no history entry there
+ * is no undo to reconcile it.
+ *
+ * Flushing first orders the two writes: the pending edit commits, then the link
+ * is written on top of it.
+ */
+const flushBeforeLinkWrite = (): void => flushPersist();
 
 export function createCrossDocLinkActions({ get, set }: DocMetaFactoryDeps): CrossDocLinkActions {
   // Phase 2b (U-Shape) — shared spawn: bake a reciprocal link onto the seed's
@@ -77,6 +94,7 @@ export function createCrossDocLinkActions({ get, set }: DocMetaFactoryDeps): Cro
         },
       },
     });
+    flushBeforeLinkWrite();
     set(setActiveDoc(state, nextSource));
     saveDocToLocalStorage(nextSource);
     get().openTab(seedWithLink);
@@ -129,6 +147,7 @@ export function createCrossDocLinkActions({ get, set }: DocMetaFactoryDeps): Cro
       // `setActiveDoc` preserves it while replacing the active source doc. No
       // history entry on either side — links are metadata (cf.
       // `markSystemScopeNudgeShown`).
+      flushBeforeLinkWrite();
       set(
         setActiveDoc({ ...state, docs: { ...state.docs, [targetDocId]: nextTarget } }, nextSource)
       );
@@ -155,6 +174,7 @@ export function createCrossDocLinkActions({ get, set }: DocMetaFactoryDeps): Cro
       });
 
       // Drop the mirror from the target entity when its tab is open.
+      flushBeforeLinkWrite();
       let nextDocs = state.docs;
       const targetDoc = state.docs[link.docId];
       const targetEntity = targetDoc?.entities[link.entityId];

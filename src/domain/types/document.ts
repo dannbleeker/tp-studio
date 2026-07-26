@@ -3,6 +3,7 @@
 // "root" of the domain type graph; every concrete data structure
 // referenced by the store ultimately flows back here.
 
+import type { Locale } from '@/i18n/types';
 import type { Assumption } from './assumption';
 import type { DiagramType } from './clr';
 import type { Comment } from './comment';
@@ -137,6 +138,15 @@ export type TPDocument = {
    *  allow the deeper chains a stand-alone conflict-resolution Goal Tree needs.
    *  Only meaningful on Goal-Tree docs; omitted from JSON when unset. */
   ncDepthMode?: 'conflict-resolution';
+  /** Language this document's own content is written in.
+   *
+   *  Reserved seam — PERSISTED AND VALIDATED, but nothing reads it yet. It
+   *  exists now so that when per-document language does land (verbalisation,
+   *  causality edge labels, printed legends), a document authored today
+   *  already round-trips the field instead of needing a schema bump then.
+   *  The UI language is a user preference and lives in the store, not here.
+   *  Omitted from JSON when unset. */
+  locale?: Locale;
   /** Gap-analysis performance anchors (TP Basics gap #5) — optional facilitation
    *  notes that frame the gap a diagram addresses. `performanceLow` records the
    *  current / unacceptable level of the measure in question; `performanceHigh`

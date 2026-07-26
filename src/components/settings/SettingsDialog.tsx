@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { TabBar } from '@/components/ui/TabBar';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { AppearanceTab } from './tabs/AppearanceTab';
 import { BehaviorTab } from './tabs/BehaviorTab';
@@ -22,14 +23,8 @@ import { LayoutTab } from './tabs/LayoutTab';
  * Session 112–114 maintainability backlog.
  */
 type SettingsTab = 'appearance' | 'behavior' | 'display' | 'layout';
-const TABS: { id: SettingsTab; label: string }[] = [
-  { id: 'appearance', label: 'Appearance' },
-  { id: 'behavior', label: 'Behavior' },
-  { id: 'display', label: 'Display' },
-  { id: 'layout', label: 'Layout' },
-];
-
 export function SettingsDialog() {
+  const t = useT();
   const open = useDocumentStore((s) => s.settingsOpen);
   const close = useDocumentStore((s) => s.closeSettings);
   const confirm = useDocumentStore((s) => s.confirm);
@@ -44,14 +39,20 @@ export function SettingsDialog() {
   // its factory default — see `resetPreferencesToDefaults` in the
   // preferences slice for the canonical list.
   const handleReset = async () => {
-    const ok = await confirm(
-      'Reset every setting (Appearance / Behavior / Display / Layout) back to its factory default? Documents on the canvas are not affected.',
-      { confirmLabel: 'Reset' }
-    );
+    const ok = await confirm(t.settings.resetConfirm, {
+      confirmLabel: t.settings.resetConfirmLabel,
+    });
     if (!ok) return;
     resetPreferencesToDefaults();
-    showToast('success', 'Settings restored to defaults.');
+    showToast('success', t.settings.resetDone);
   };
+
+  const TABS: { id: SettingsTab; label: string }[] = [
+    { id: 'appearance', label: t.settings.tabs.appearance },
+    { id: 'behavior', label: t.settings.tabs.behavior },
+    { id: 'display', label: t.settings.tabs.display },
+    { id: 'layout', label: t.settings.tabs.layout },
+  ];
 
   return (
     <Modal open={open} onDismiss={close} widthClass="max-w-md" labelledBy="settings-title">
@@ -92,7 +93,7 @@ export function SettingsDialog() {
       <footer className="flex items-center justify-end border-neutral-200 border-t px-4 py-2 dark:border-neutral-800">
         <Button variant="softNeutral" size="xs" onClick={handleReset}>
           <RotateCcw className="h-3.5 w-3.5" />
-          Restore defaults
+          {t.settings.restoreDefaults}
         </Button>
       </footer>
     </Modal>

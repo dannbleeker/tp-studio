@@ -93,6 +93,9 @@ export function RevisionPanel() {
             variant="softViolet"
             onClick={() => {
               const id = captureSnapshot();
+              // `null` means the write failed — the storage listener has
+              // already surfaced why, so don't also claim success.
+              if (id === null) return;
               showToast('success', 'Snapshot captured.');
               setRecentId(id);
               setRecentTimer(() => setRecentId((cur) => (cur === id ? null : cur)), 1500);

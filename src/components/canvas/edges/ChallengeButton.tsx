@@ -1,6 +1,6 @@
 import { EdgeLabelRenderer } from '@xyflow/react';
-import { EDGE_KIND_COACHING } from '@/domain/readerModeCoaching';
 import type { EdgeId, EdgeKind } from '@/domain/types';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 
 /**
@@ -33,7 +33,7 @@ export function ChallengeButton({
   labelY: number;
 }) {
   const startCommentAt = useDocumentStore((s) => s.startCommentAt);
-  const coaching = EDGE_KIND_COACHING[edgeKind];
+  const coaching = useT().coaching.edge[edgeKind];
 
   return (
     <EdgeLabelRenderer>

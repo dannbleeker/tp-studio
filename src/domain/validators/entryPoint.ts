@@ -34,14 +34,7 @@ export const entryPointRule = (doc: TPDocument): UntieredWarning[] => {
     if (incomingEdges(doc, e.id).length > 0) continue; // something causes it — not an entry point
     if (isOfBuiltin(e.type, 'injection', doc.customEntityClasses)) continue; // a deliberate change
     if (e.state === 'true') continue; // asserted to hold in current reality
-    out.push(
-      makeWarning(
-        doc,
-        'entry-point',
-        { kind: 'entity', id: e.id },
-        'This is an entry point — it has effects but nothing causes it — yet it is neither an injection nor marked true in current reality. Make it an injection, mark its state as holding today, or connect the cause that produces it.'
-      )
-    );
+    out.push(makeWarning(doc, 'entry-point', { kind: 'entity', id: e.id }, 'entry-point'));
   }
   return out;
 };

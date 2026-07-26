@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { Eye, Pencil } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
+import { useT } from '@/i18n/useT';
 import { Field } from './Field';
 
 /**
@@ -43,6 +44,7 @@ export function MarkdownField({
   rows?: number;
   locked?: boolean;
 }) {
+  const t = useT();
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
   const effectiveMode = locked ? 'preview' : mode;
 
@@ -55,11 +57,11 @@ export function MarkdownField({
             <div className="flex items-center gap-0.5 rounded-md border border-neutral-200 bg-neutral-100 p-0.5 dark:border-neutral-800 dark:bg-neutral-900">
               <ModeButton active={effectiveMode === 'edit'} onClick={() => setMode('edit')}>
                 <Pencil className="h-3 w-3" />
-                Edit
+                {t.common.edit}
               </ModeButton>
               <ModeButton active={effectiveMode === 'preview'} onClick={() => setMode('preview')}>
                 <Eye className="h-3 w-3" />
-                Preview
+                {t.common.preview}
               </ModeButton>
             </div>
           )}

@@ -1,5 +1,6 @@
 import { Shield, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
@@ -40,11 +41,12 @@ const SECURITY_PATH = '/security.html';
 const SECURITY_LINK: LinkRow = {
   href: SECURITY_PATH,
   Icon: Shield,
-  label: 'Security & threat model',
+  linkKey: 'security',
   // Session 136 — surface the latest audit pointer here so it's visible without
   // clicking through (refreshes automatically when SECURITY.md's `Last
-  // reviewed:` line moves forward).
-  hint: `Last audit: ${__SECURITY_AUDIT_LABEL__}.`,
+  // reviewed:` line moves forward). The date is a build-time define, so it is a
+  // PARAMETER to the catalogue entry rather than part of the copy.
+  hintParams: { audit: __SECURITY_AUDIT_LABEL__ },
 };
 
 const READ_MORE: LinkRow[] = [
@@ -58,6 +60,7 @@ const READ_MORE: LinkRow[] = [
 const PROJECT: LinkRow[] = [GITHUB_LINK];
 
 export function AboutDialog() {
+  const a = useT().about;
   const open = useDocumentStore((s) => s.aboutOpen);
   const close = useDocumentStore((s) => s.closeAbout);
   const openDiceGame = useDocumentStore((s) => s.openDiceGame);
@@ -86,9 +89,9 @@ export function AboutDialog() {
           id="about-title"
           className="font-semibold text-neutral-900 text-sm dark:text-neutral-100"
         >
-          About TP Studio
+          {a.title}
         </h2>
-        <Button variant="ghost" size="icon" onClick={close} aria-label="Close about">
+        <Button variant="ghost" size="icon" onClick={close} aria-label={a.close}>
           <X className="h-4 w-4" />
         </Button>
       </header>
@@ -97,8 +100,7 @@ export function AboutDialog() {
         {/* Tagline + build metadata */}
         <section>
           <p className="text-neutral-700 text-sm leading-relaxed dark:text-neutral-300">
-            A practitioner-focused canvas for Theory of Constraints Thinking Process diagrams. Open
-            source, local-first, runs in your browser.
+            {a.tagline}
           </p>
           {/* Deliberately unstyled-as-a-button: the egg shouldn't advertise
               itself. `select-text` keeps the version copyable. */}
@@ -107,14 +109,14 @@ export function AboutDialog() {
             onClick={handleVersionClick}
             className="mt-3 cursor-text select-text text-left text-neutral-500 text-xs dark:text-neutral-400"
           >
-            Version {__APP_VERSION__} · Build {__BUILD_DATE__}
+            {a.versionLine({ version: __APP_VERSION__, build: __BUILD_DATE__ })}
           </button>
         </section>
 
         {/* Read more */}
         <section>
           <h3 className="mb-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-            Read more
+            {a.readMore}
           </h3>
           <div className="-mx-2">
             {READ_MORE.map((row) => (
@@ -126,7 +128,7 @@ export function AboutDialog() {
         {/* Project */}
         <section>
           <h3 className="mb-1.5 font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-            Project
+            {a.project}
           </h3>
           <div className="-mx-2">
             {PROJECT.map((row) => (
@@ -137,17 +139,16 @@ export function AboutDialog() {
 
         {/* Copyright + trademark notice */}
         <footer className="border-neutral-200 border-t pt-4 text-[11px] text-neutral-500 leading-relaxed dark:border-neutral-800 dark:text-neutral-400">
-          © {__COPYRIGHT_YEARS__} Dann Bleeker Pedersen. &quot;Flying Logic&quot; is a trademark of
-          its owner. See{' '}
+          {a.copyright({ years: __COPYRIGHT_YEARS__ })}{' '}
           <a
             href={NOTICES_PATH}
             target="_blank"
             rel="noopener noreferrer"
             className="text-accent-700 underline dark:text-accent-300"
           >
-            third-party notices
+            {a.noticesLinkText}
           </a>{' '}
-          for full attribution.
+          {a.copyrightTail}
         </footer>
       </div>
     </Modal>

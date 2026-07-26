@@ -21,6 +21,9 @@
  * placeholders — the wizard prompts a NEW user through creation; the
  * inspector reminds a returning user what each slot is FOR.
  */
+import { en } from '@/i18n/locales/en';
+import type { Messages } from '@/i18n/types';
+import { CLOUD_TYPES } from './cloudType';
 import type { CloudType } from './types';
 
 export type ECSlot = 'a' | 'b' | 'c' | 'd' | 'dPrime';
@@ -107,12 +110,10 @@ export const EC_CLOUD_TYPE_ORDER: Record<CloudType, readonly ECSlot[]> = {
  *  wizard's completion panel + a caption while a type is active, and (Session 206)
  *  in the Document Inspector for any typed cloud — breaking happens after the
  *  wizard closes, so the hint has to outlive it. */
-export const EC_CLOUD_TYPE_BREAK_HINT: Record<CloudType, string> = {
-  dilemma: 'Cohen suggests trying to break the C–D′ or D–D′ arrow.',
-  conflict: 'Cohen suggests breaking on your own side — the C–D′ arrow (or D–D′).',
-  firefighting: 'Cohen suggests breaking D–D′ — fold the emergency action into the procedure.',
-  ude: 'Cohen suggests breaking D–D′ (for a customer-facing UDE, aim at C–D′).',
-  consolidated:
-    'Cohen suggests breaking D–D′ for the consolidated cloud, then each source cloud for specifics.',
-  core: 'Cohen suggests breaking the D–D′ arrow.',
-};
+export const EC_CLOUD_TYPE_BREAK_HINT: Record<CloudType, string> = Object.fromEntries(
+  CLOUD_TYPES.map((c) => [c, en.cloudType[c].breakHint])
+) as Record<CloudType, string>;
+
+/** Locale-aware break hint. */
+export const ecBreakHint = (messages: Messages, cloudType: CloudType): string =>
+  messages.cloudType[cloudType].breakHint;

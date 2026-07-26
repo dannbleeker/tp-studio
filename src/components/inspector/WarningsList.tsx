@@ -1,6 +1,8 @@
 import clsx from 'clsx';
 import { AlertCircle, CheckCircle2, Wand2 } from 'lucide-react';
 import type { ClrTier, Warning } from '@/domain/types';
+import { useClrText } from '@/i18n/useClrText';
+import { useT } from '@/i18n/useT';
 import { runWarningAction } from '@/services/warningActions';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -31,6 +33,8 @@ const orderByResolution = (ws: Warning[]): Warning[] => {
 };
 
 export function WarningsList({ warnings }: { warnings: Warning[] }) {
+  const clr = useClrText();
+  const msg = useT();
   const resolveWarning = useDocumentStore((s) => s.resolveWarning);
   const unresolveWarning = useDocumentStore((s) => s.unresolveWarning);
   const showToast = useDocumentStore((s) => s.showToast);
@@ -40,9 +44,9 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
     const state = useDocumentStore.getState();
     const ok = runWarningAction(state, currentDoc(state), w);
     if (ok) {
-      showToast('success', `Applied: ${w.action.label}`);
+      showToast('success', msg.clrActionToast.applied({ action: clr.actionLabel(w.action) }));
     } else {
-      showToast('info', `No handler registered for "${w.action.actionId}".`);
+      showToast('info', msg.clrActionToast.noHandler({ actionId: w.action.actionId }));
     }
   };
 
@@ -108,7 +112,7 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
                   )}
                   <div className="flex-1">
                     <p className={clsx(w.resolved && 'line-through decoration-neutral-400')}>
-                      {w.message}
+                      {clr.message(w)}
                     </p>
                     <p className="mt-0.5 text-[10px] uppercase tracking-wider opacity-60">
                       {w.ruleId}
@@ -117,11 +121,11 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
                       <button
                         type="button"
                         onClick={() => runAction(w)}
-                        aria-label={`${w.action.label} (one-click remedy)`}
+                        aria-label={`${clr.actionLabel(w.action)} (one-click remedy)`}
                         className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 font-semibold text-[10px] text-amber-900 transition hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
                       >
                         <Wand2 className="h-3 w-3" aria-hidden />
-                        {w.action.label}
+                        {clr.actionLabel(w.action)}
                       </button>
                     )}
                   </div>
@@ -130,8 +134,8 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
                     onClick={() => (w.resolved ? unresolveWarning(w.id) : resolveWarning(w.id))}
                     aria-label={
                       w.resolved
-                        ? `Reopen warning: ${w.message}`
-                        : `Mark warning resolved: ${w.message}`
+                        ? `Reopen warning: ${clr.message(w)}`
+                        : `Mark warning resolved: ${clr.message(w)}`
                     }
                     className="shrink-0 rounded-sm px-1.5 py-0.5 font-medium text-[10px] text-neutral-600 opacity-0 transition hover:bg-white/60 focus:opacity-100 group-hover:opacity-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60"
                   >

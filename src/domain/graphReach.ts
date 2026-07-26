@@ -133,31 +133,60 @@ const stronglyConnectedComponents = (
   const out: string[][] = [];
   let counter = 0;
 
-  const strongConnect = (v: string): void => {
+  // Iterative, not recursive. The recursive form's depth equals the longest
+  // simple path, so it threw `RangeError: Maximum call stack size exceeded` on a
+  // plain acyclic CHAIN of ~8000+ entities — and `findCycles` sits on the canvas
+  // render path via `effectiveBackEdgeIds`, so the throw killed the render
+  // rather than degrading. An explicit frame stack has no such ceiling.
+  const push = (v: string): void => {
     index.set(v, counter);
     low.set(v, counter);
     counter++;
     stack.push(v);
     onStack.add(v);
-    for (const w of adj.get(v) ?? []) {
-      if (!inSub(w)) continue;
-      if (!index.has(w)) {
-        strongConnect(w);
-        low.set(v, Math.min(low.get(v) ?? 0, low.get(w) ?? 0));
-      } else if (onStack.has(w)) {
-        low.set(v, Math.min(low.get(v) ?? 0, index.get(w) ?? 0));
+  };
+
+  const strongConnect = (start: string): void => {
+    push(start);
+    // Each frame remembers how far through `v`'s adjacency it got, which is what
+    // the call stack was doing implicitly.
+    const work: { v: string; next: number }[] = [{ v: start, next: 0 }];
+    while (work.length > 0) {
+      const frame = work[work.length - 1];
+      if (!frame) break;
+      const neighbours = adj.get(frame.v) ?? [];
+      let descended = false;
+      while (frame.next < neighbours.length) {
+        const w = neighbours[frame.next];
+        frame.next++;
+        if (w === undefined || !inSub(w)) continue;
+        if (!index.has(w)) {
+          push(w);
+          work.push({ v: w, next: 0 });
+          descended = true;
+          break;
+        }
+        if (onStack.has(w)) {
+          low.set(frame.v, Math.min(low.get(frame.v) ?? 0, index.get(w) ?? 0));
+        }
       }
-    }
-    if ((low.get(v) ?? 0) === (index.get(v) ?? 0)) {
-      const comp: string[] = [];
-      for (;;) {
-        const w = stack.pop();
-        if (w === undefined) break;
-        onStack.delete(w);
-        comp.push(w);
-        if (w === v) break;
+      if (descended) continue;
+      const v = frame.v;
+      if ((low.get(v) ?? 0) === (index.get(v) ?? 0)) {
+        const comp: string[] = [];
+        for (;;) {
+          const w = stack.pop();
+          if (w === undefined) break;
+          onStack.delete(w);
+          comp.push(w);
+          if (w === v) break;
+        }
+        out.push(comp);
       }
-      out.push(comp);
+      work.pop();
+      // The `low.set(parent, min(parent, child))` the recursive form did on return.
+      const parent = work[work.length - 1];
+      if (parent) low.set(parent.v, Math.min(low.get(parent.v) ?? 0, low.get(v) ?? 0));
     }
   };
 
@@ -234,75 +263,128 @@ export const findCycles = (doc: TPDocument): string[][] => {
   const path: string[] = [];
   let capped = false;
 
-  const unblock = (u: string): void => {
-    blocked.delete(u);
-    const waiting = blockMap.get(u);
-    if (!waiting) return;
-    for (const w of [...waiting]) {
-      waiting.delete(w);
-      if (blocked.has(w)) unblock(w);
+  /** Johnson's UNBLOCK, worklist form — depth here is bounded by the SCC size. */
+  const unblock = (start: string): void => {
+    const pending = [start];
+    while (pending.length > 0) {
+      const u = pending.pop();
+      if (u === undefined) continue;
+      blocked.delete(u);
+      const waiting = blockMap.get(u);
+      if (!waiting) continue;
+      for (const w of [...waiting]) {
+        waiting.delete(w);
+        if (blocked.has(w)) pending.push(w);
+      }
     }
   };
 
-  /** Johnson's CIRCUIT: extend `path` from `v`, reporting any route back to
-   *  `root`. Returns whether a circuit was found through `v` (which decides
-   *  whether `v` is unblocked now or parked on its successors' block lists). */
-  const circuit = (v: string, root: string, scc: ReadonlySet<string>): boolean => {
-    let found = false;
-    path.push(v);
-    blocked.add(v);
-    for (const w of adj.get(v) ?? []) {
-      if (!scc.has(w)) continue;
-      if (w === root) {
-        const cycle = [...path];
-        cycles.set(cycle.join('->'), cycle);
-        found = true;
-        if (cycles.size >= MAX_CYCLES) {
-          capped = true;
+  /**
+   * Johnson's CIRCUIT: extend `path` from `root`, recording every route back to
+   * it. A frame's `found` decides whether its vertex is unblocked now or parked
+   * on its successors' block lists.
+   *
+   * Iterative for the same reason as Tarjan above: recursion depth here is the
+   * length of the simple path being explored, so a long cycle blew the stack —
+   * a 4000-entity ring threw `RangeError` rather than returning a cycle.
+   */
+  const circuit = (root: string, scc: ReadonlySet<string>): void => {
+    const frames: { v: string; next: number; found: boolean }[] = [
+      { v: root, next: 0, found: false },
+    ];
+    path.push(root);
+    blocked.add(root);
+
+    while (frames.length > 0) {
+      const frame = frames[frames.length - 1];
+      if (!frame) break;
+      const neighbours = adj.get(frame.v) ?? [];
+      let descended = false;
+      while (frame.next < neighbours.length && !capped) {
+        const w = neighbours[frame.next];
+        frame.next++;
+        if (w === undefined || !scc.has(w)) continue;
+        if (w === root) {
+          const cycle = [...path];
+          cycles.set(cycle.join('->'), cycle);
+          frame.found = true;
+          if (cycles.size >= MAX_CYCLES) capped = true;
+          continue;
+        }
+        if (!blocked.has(w)) {
+          path.push(w);
+          blocked.add(w);
+          frames.push({ v: w, next: 0, found: false });
+          descended = true;
           break;
         }
-      } else if (!blocked.has(w) && circuit(w, root, scc)) {
-        found = true;
-        if (capped) break;
       }
-    }
-    if (found) {
-      unblock(v);
-    } else {
-      // No circuit through `v` on this pass: park `v` on each successor's list
-      // so it's reconsidered only if that successor ever unblocks.
-      for (const w of adj.get(v) ?? []) {
-        if (!scc.has(w)) continue;
-        let waiting = blockMap.get(w);
-        if (!waiting) {
-          waiting = new Set<string>();
-          blockMap.set(w, waiting);
+      if (descended && !capped) continue;
+      if (capped) {
+        // Unwind without bookkeeping — the enumeration is abandoned wholesale,
+        // and `blocked` / `blockMap` are cleared before the next root anyway.
+        while (frames.length > 0) {
+          frames.pop();
+          path.pop();
         }
-        waiting.add(v);
+        return;
       }
+      if (frame.found) {
+        unblock(frame.v);
+      } else {
+        // No circuit through `v` on this pass: park `v` on each successor's list
+        // so it's reconsidered only if that successor ever unblocks.
+        for (const w of neighbours) {
+          if (!scc.has(w)) continue;
+          let waiting = blockMap.get(w);
+          if (!waiting) {
+            waiting = new Set<string>();
+            blockMap.set(w, waiting);
+          }
+          waiting.add(frame.v);
+        }
+      }
+      path.pop();
+      frames.pop();
+      const parent = frames[frames.length - 1];
+      if (parent && frame.found) parent.found = true;
     }
-    path.pop();
-    return found;
   };
 
-  for (let s = 0; s < nodes.length && !capped; s++) {
-    const root = nodes[s];
-    if (root === undefined) continue;
-    // Only vertices at or after `root` in the order are in play, so any circuit
-    // found here has `root` as its minimum — the guarantee that each circuit is
-    // enumerated exactly once, already canonically rotated.
-    const remaining = nodes.slice(s);
-    const remainingSet = new Set(remaining);
-    const scc = stronglyConnectedComponents(remaining, adj, (id) => remainingSet.has(id)).find(
-      (c) => c.includes(root)
+  // SCCs are computed ONCE for the whole graph, not once per root.
+  //
+  // The previous loop ran a full Tarjan pass over `nodes.slice(s)` for every
+  // vertex, making the whole thing O(V·(V+E)) — measured on a simple ACYCLIC
+  // chain: 167 ms at n=1000, 1.7 s at n=3000, 11.7 s at n=7000, on a code path
+  // that re-runs on every `doc.edges` change and feeds the canvas.
+  //
+  // Every elementary circuit lives inside one SCC, so partitioning up front is
+  // enough. Restricting each root's search to `itsSCC ∩ {vertices ≥ root}` keeps
+  // Johnson's "each circuit is enumerated exactly once, when its root is its
+  // minimum vertex" guarantee — and therefore the canonical rotation callers
+  // depend on. Not recomputing SCCs of that shrinking subgraph prunes slightly
+  // less than the paper does, which costs blocked-set work in the rare
+  // many-circuit case and saves a quadratic factor in every other.
+  //
+  // On an acyclic graph every SCC is a single vertex with no self-loop, so the
+  // whole search short-circuits after one Tarjan pass.
+  const orderIndex = new Map(nodes.map((id, i) => [id, i]));
+  for (const component of stronglyConnectedComponents(nodes, adj, () => true)) {
+    if (capped) break;
+    const sorted = [...component].sort(
+      (a, b) => (orderIndex.get(a) ?? 0) - (orderIndex.get(b) ?? 0)
     );
-    if (!scc) continue;
-    const sccSet = new Set(scc);
     // A one-vertex SCC hosts a circuit only through a self-loop.
-    if (scc.length === 1 && !(adj.get(root) ?? []).includes(root)) continue;
-    blocked.clear();
-    blockMap.clear();
-    circuit(root, root, sccSet);
+    const only = sorted.length === 1 ? sorted[0] : undefined;
+    if (only !== undefined && !(adj.get(only) ?? []).includes(only)) continue;
+    for (let s = 0; s < sorted.length && !capped; s++) {
+      const root = sorted[s];
+      if (root === undefined) continue;
+      const sccSet = new Set(sorted.slice(s));
+      blocked.clear();
+      blockMap.clear();
+      circuit(root, sccSet);
+    }
   }
 
   const result = [...cycles.values()];

@@ -18,12 +18,7 @@ export const causeSufficiencyRule = (doc: TPDocument): UntieredWarning[] => {
     const single = incoming[0];
     if (incoming.length === 1 && single && !junctorGroupId(single)) {
       out.push(
-        makeWarning(
-          doc,
-          'cause-sufficiency',
-          { kind: 'edge', id: single.id },
-          'Is this cause alone enough? Consider grouping with another as an AND.'
-        )
+        makeWarning(doc, 'cause-sufficiency', { kind: 'edge', id: single.id }, 'cause-sufficiency')
       );
     }
   }

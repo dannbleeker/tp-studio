@@ -1,3 +1,5 @@
+import { en } from '@/i18n/locales/en';
+import type { Messages } from '@/i18n/types';
 import type { CloudType } from './types';
 
 /**
@@ -20,14 +22,14 @@ export const CLOUD_TYPES: readonly CloudType[] = [
   'firefighting',
 ];
 
-export const CLOUD_TYPE_LABEL: Record<CloudType, string> = {
-  dilemma: 'Dilemma cloud',
-  conflict: 'Conflict cloud',
-  ude: 'UDE cloud',
-  consolidated: 'Consolidated cloud',
-  core: 'Core cloud',
-  firefighting: 'Firefighting cloud',
-};
+/** English view; React callers should use {@link cloudTypeLabel}. */
+export const CLOUD_TYPE_LABEL: Record<CloudType, string> = Object.fromEntries(
+  CLOUD_TYPES.map((c) => [c, en.cloudType[c].label])
+) as Record<CloudType, string>;
+
+/** Locale-aware cloud-type label. */
+export const cloudTypeLabel = (messages: Messages, cloudType: CloudType): string =>
+  messages.cloudType[cloudType].label;
 
 /** Trust-boundary guard for persistence: is `value` one of the six cloud types? */
 export const isCloudType = (value: unknown): value is CloudType =>

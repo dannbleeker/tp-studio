@@ -1,9 +1,11 @@
 import clsx from 'clsx';
 import { AlertTriangle, Check } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { CLR_SCRUTINY } from '@/domain/clrScrutiny';
+import { scrutinyFor } from '@/domain/clrScrutiny';
 import type { ClrRuleId, ClrTier, Edge, TPDocument, Warning } from '@/domain/types';
 import { validate } from '@/domain/validators';
+import { useClrText } from '@/i18n/useClrText';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
@@ -76,6 +78,11 @@ function EdgeScrutinyBody({
   edge: Edge;
   onClose: () => void;
 }) {
+  const clr = useClrText();
+  const messages = useT();
+  // One resolve per render rather than three: `scrutinyFor` rebuilds the
+  // 8-row stepper from the catalogue each call.
+  const categories = useMemo(() => scrutinyFor(messages), [messages]);
   const [stepIndex, setStepIndex] = useState(0);
   const [reviewed, setReviewed] = useState<Set<ClrRuleId>>(() => new Set());
 
@@ -93,8 +100,8 @@ function EdgeScrutinyBody({
     return map;
   }, [doc, edge.id]);
 
-  const total = CLR_SCRUTINY.length;
-  const category = CLR_SCRUTINY[stepIndex];
+  const total = categories.length;
+  const category = categories[stepIndex];
   if (!category) return null; // unreachable: stepIndex is clamped 0..total-1
 
   const cause = doc.entities[edge.sourceId];
@@ -135,7 +142,7 @@ function EdgeScrutinyBody({
 
         {/* Progress dots — clickable to jump to any question. */}
         <ol className="flex flex-wrap gap-1.5" aria-label="CLR questions">
-          {CLR_SCRUTINY.map((c, i) => {
+          {categories.map((c, i) => {
             const done = reviewed.has(c.ruleId);
             const current = i === stepIndex;
             return (
@@ -194,7 +201,7 @@ function EdgeScrutinyBody({
               <ul className="flex flex-col gap-1">
                 {flagged.map((w) => (
                   <li key={w.id} className="text-amber-800 text-xs dark:text-amber-200">
-                    {w.message}
+                    {clr.message(w)}
                   </li>
                 ))}
               </ul>

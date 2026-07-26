@@ -19,14 +19,7 @@ export const tautologyRule = (doc: TPDocument): UntieredWarning[] => {
     const child = doc.entities[sole.targetId];
     if (!child) continue;
     if (similarity(e.title, child.title) >= SIMILARITY_THRESHOLD) {
-      out.push(
-        makeWarning(
-          doc,
-          'tautology',
-          { kind: 'entity', id: e.id },
-          'This statement is nearly identical to its effect — possible tautology.'
-        )
-      );
+      out.push(makeWarning(doc, 'tautology', { kind: 'entity', id: e.id }, 'tautology'));
     }
   }
   return out;

@@ -6,6 +6,7 @@
  */
 
 import type { EdgeId, EntityId, GroupId } from '@/domain/types';
+import type { Locale } from '@/i18n/types';
 
 /**
  * Multi-selection model. Each variant holds ordered, de-duplicated id
@@ -168,6 +169,10 @@ export type PrintLayout = {
   showLegend: boolean;
 };
 
+/** Re-exported so consumers reach the locale union through `@/store` like
+ *  every other preference union, without importing `@/i18n` directly. */
+export type { Locale };
+
 /** Subset of UI state that gets persisted via `prefs.ts`. */
 export type StoredPrefs = {
   animationSpeed?: AnimationSpeed;
@@ -265,4 +270,8 @@ export type StoredPrefs = {
   /** Session 178 — print page setup (paper / orientation / fit scale).
    *  Defaults to A4 · portrait · fit-to-one-page (today's behaviour). */
   printLayout?: PrintLayout;
+  /** UI language. Only `en` is offered in Settings today; the field exists
+   *  so a stored choice survives once more locales ship. An unrecognized
+   *  value falls back to `en` rather than throwing — see `prefs.ts`. */
+  locale?: Locale;
 };

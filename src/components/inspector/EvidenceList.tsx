@@ -208,6 +208,20 @@ function EvidenceRow({
           className="h-[26px] min-w-[160px] flex-1 text-xs"
           ariaLabel="Evidence URL"
         />
+        {/* Say so at ENTRY. `isSafeHref` also runs at the import boundary, where
+            an unsafe URL is dropped outright — so a `file:` or `javascript:`
+            citation typed here was accepted, survived export, and then silently
+            disappeared on the next load with nothing ever explaining why. The
+            policy is right; the silence and the entry/load asymmetry were the
+            defect. */}
+        {item.url && !isSafeHref(item.url) && (
+          <span
+            className="text-[10px] text-amber-700 dark:text-amber-400"
+            title="Only link schemes that can be opened safely are stored. This one is removed when the document is saved or shared."
+          >
+            won't be saved
+          </span>
+        )}
         {/* Render the citation link only for a safe scheme. The live-edit path
             writes the raw input straight to state (bypassing the import-time
             validator), so this guard is the runtime defense against a

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { seedEntity } from '../helpers/seedDoc';
+import { seedEntity, takeSnapshot } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);
 afterEach(resetStoreForTest);
@@ -9,7 +9,7 @@ describe('H3 — branchFromRevision', () => {
   it('creates a new revision with the branch tag + parentRevisionId pointing at source', () => {
     seedEntity('A');
     const s = useDocumentStore.getState();
-    const sourceId = s.captureSnapshot('Baseline');
+    const sourceId = takeSnapshot('Baseline');
     const branchedId = s.branchFromRevision(sourceId, 'experiment');
     expect(branchedId).not.toBeNull();
     const branched = useDocumentStore.getState().revisions.find((r) => r.id === branchedId);
@@ -25,7 +25,7 @@ describe('H3 — branchFromRevision', () => {
 
   it('returns null on empty / whitespace-only branch name', () => {
     seedEntity('A');
-    const sourceId = useDocumentStore.getState().captureSnapshot('Baseline');
+    const sourceId = takeSnapshot('Baseline');
     expect(useDocumentStore.getState().branchFromRevision(sourceId, '')).toBeNull();
     expect(useDocumentStore.getState().branchFromRevision(sourceId, '   ')).toBeNull();
   });
@@ -34,7 +34,7 @@ describe('H3 — branchFromRevision', () => {
     seedEntity('A');
     const docBefore = useDocumentStore.getState().doc;
     const s = useDocumentStore.getState();
-    const sourceId = s.captureSnapshot('Baseline');
+    const sourceId = takeSnapshot('Baseline');
     s.branchFromRevision(sourceId, 'experiment');
     expect(useDocumentStore.getState().doc).toBe(docBefore);
   });
@@ -42,7 +42,7 @@ describe('H3 — branchFromRevision', () => {
   it('clones the source doc — mutating the branched doc later does not affect the source', () => {
     seedEntity('A');
     const s = useDocumentStore.getState();
-    const sourceId = s.captureSnapshot('Baseline');
+    const sourceId = takeSnapshot('Baseline');
     const sourceDocBefore = useDocumentStore
       .getState()
       .revisions.find((r) => r.id === sourceId)?.doc;
@@ -59,7 +59,7 @@ describe('H3 — restoreSnapshot wires parentRevisionId on safety capture', () =
   it('the safety snapshot points at the restored revision', () => {
     seedEntity('A');
     const s = useDocumentStore.getState();
-    const id = s.captureSnapshot('Baseline');
+    const id = takeSnapshot('Baseline');
     s.restoreSnapshot(id);
     const list = useDocumentStore.getState().revisions;
     // Top of list is the safety capture from the restore.
@@ -70,7 +70,7 @@ describe('H3 — restoreSnapshot wires parentRevisionId on safety capture', () =
   it('safety capture inherits the branch name of the restored revision', () => {
     seedEntity('A');
     const s = useDocumentStore.getState();
-    const baseId = s.captureSnapshot('Baseline');
+    const baseId = takeSnapshot('Baseline');
     const branchedId = s.branchFromRevision(baseId, 'fork-1');
     if (!branchedId) throw new Error('branch failed');
     s.restoreSnapshot(branchedId);

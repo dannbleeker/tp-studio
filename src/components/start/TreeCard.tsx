@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { formatRelativeTime } from '@/components/history/formatTime';
 import type { DocumentId, TPDocument } from '@/domain/types';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { DocumentThumbnail } from '@/templates/thumbnail';
 import { diagramMetaFor } from './diagramMeta';
@@ -24,6 +25,7 @@ export function TreeCard({
   doc: TPDocument;
   openWarnings: number;
 }) {
+  const messages = useT();
   const { openSavedDoc, deleteSavedDoc, confirm } = useDocumentStore(
     useShallow((s) => ({
       openSavedDoc: s.openSavedDoc,
@@ -31,7 +33,7 @@ export function TreeCard({
       confirm: s.confirm,
     }))
   );
-  const meta = diagramMetaFor(doc.diagramType);
+  const meta = diagramMetaFor(messages, doc.diagramType);
   const Icon = meta.icon;
   const title = doc.title?.trim() || 'Untitled';
 

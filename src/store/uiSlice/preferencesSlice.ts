@@ -1,4 +1,5 @@
 import type { StateCreator } from 'zustand';
+import { DEFAULT_LOCALE } from '@/i18n/locale';
 import type { RootStore } from '../types';
 import { readInitialPrefs, readInitialTheme, writePrefs, writeTheme } from './prefs';
 import type {
@@ -9,6 +10,7 @@ import type {
   EdgePalette,
   EdgeRouting,
   LayoutMode,
+  Locale,
   PrintLayout,
   Theme,
 } from './types';
@@ -22,6 +24,8 @@ import type {
  * `get()` after the `set()` lands.
  */
 export type PreferencesSlice = {
+  /** Active UI language. Drives `useT()`; see `src/i18n/`. */
+  locale: Locale;
   theme: Theme;
   animationSpeed: AnimationSpeed;
   edgePalette: EdgePalette;
@@ -134,6 +138,7 @@ export type PreferencesSlice = {
    *  and by the Print dialog for the vector PDF. */
   printLayout: PrintLayout;
 
+  setLocale: (locale: Locale) => void;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
   setAnimationSpeed: (speed: AnimationSpeed) => void;
@@ -204,6 +209,7 @@ export type PreferencesSlice = {
 };
 
 export type PreferencesDataKeys =
+  | 'locale'
   | 'theme'
   | 'animationSpeed'
   | 'edgePalette'
@@ -245,6 +251,7 @@ export type PreferencesDataKeys =
  * what's sitting in localStorage when the suite starts.
  */
 export const preferencesDefaults = (): Pick<PreferencesSlice, PreferencesDataKeys> => ({
+  locale: DEFAULT_LOCALE,
   theme: 'light',
   animationSpeed: 'default',
   edgePalette: 'default',
@@ -354,10 +361,12 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       edgeRouting: s.edgeRouting,
       openDocsInNewTab: s.openDocsInNewTab,
       printLayout: s.printLayout,
+      locale: s.locale,
     });
   };
 
   return {
+    locale: initialPrefs.locale,
     theme: readInitialTheme(),
     animationSpeed: initialPrefs.animationSpeed,
     edgePalette: initialPrefs.edgePalette,
@@ -393,6 +402,13 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
     openDocsInNewTab: initialPrefs.openDocsInNewTab,
     printLayout: initialPrefs.printLayout,
 
+    setLocale: (locale) => {
+      // Blob-backed like every preference except `theme` (whose separate
+      // localStorage key predates `prefs:v1`): `set()` first, then
+      // `persistPrefs()` reads the fresh value back through `get()`.
+      set({ locale });
+      persistPrefs();
+    },
     setTheme: (theme) => {
       writeTheme(theme);
       set({ theme });
@@ -563,6 +579,7 @@ export const createPreferencesSlice: StateCreator<RootStore, [], [], Preferences
       const d = preferencesDefaults();
       writeTheme(d.theme);
       set({
+        locale: d.locale,
         theme: d.theme,
         animationSpeed: d.animationSpeed,
         edgePalette: d.edgePalette,

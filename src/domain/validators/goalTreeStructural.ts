@@ -30,7 +30,7 @@ export const goalTreeCsfNoNcsRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'goalTree-csf-no-ncs',
           { kind: 'entity', id: csf.id },
-          'This Critical Success Factor has no Necessary Conditions beneath it — add the conditions that must hold for it.'
+          'goalTree-csf-no-ncs'
         )
       );
     }
@@ -54,22 +54,19 @@ export const goalTreeCsfCountRule = (doc: TPDocument): UntieredWarning[] => {
   if (count === 0) return [];
   if (count < MIN_CSF) {
     return [
-      makeWarning(
-        doc,
-        'goalTree-csf-count',
-        { kind: 'document' },
-        `This Goal Tree has ${count} Critical Success Factor${count === 1 ? '' : 's'} — Dettmer's pattern is typically ${MIN_CSF}–${MAX_CSF}; you may be missing some make-or-break conditions.`
-      ),
+      makeWarning(doc, 'goalTree-csf-count', { kind: 'document' }, 'goalTree-csf-count.too-few', {
+        count,
+        min: MIN_CSF,
+        max: MAX_CSF,
+      }),
     ];
   }
   if (count > MAX_CSF) {
     return [
-      makeWarning(
-        doc,
-        'goalTree-csf-count',
-        { kind: 'document' },
-        `This Goal Tree has ${count} Critical Success Factors — more than ${MAX_CSF} usually means some are really Necessary Conditions a tier down.`
-      ),
+      makeWarning(doc, 'goalTree-csf-count', { kind: 'document' }, 'goalTree-csf-count.too-many', {
+        count,
+        max: MAX_CSF,
+      }),
     ];
   }
   return [];
@@ -103,7 +100,8 @@ export const goalTreeNcsPerCsfRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'goalTree-ncs-per-csf',
           { kind: 'entity', id: csf.id },
-          `This Critical Success Factor has ${ncCount} direct Necessary Conditions — Dettmer's checklist caps it at ${MAX_NCS_PER_CSF}; group some under an intermediate condition or trim the low-level ones.`
+          'goalTree-ncs-per-csf',
+          { count: ncCount, max: MAX_NCS_PER_CSF }
         )
       );
     }
@@ -156,12 +154,10 @@ export const goalTreeNcDepthRule = (doc: TPDocument): UntieredWarning[] => {
   for (const [id, depth] of minDepth) {
     if (depth > maxDepth) {
       out.push(
-        makeWarning(
-          doc,
-          'goalTree-nc-depth',
-          { kind: 'entity', id },
-          `This Necessary Condition sits ${depth} layers below a CSF — the limit here is ${maxDepth}. Deeper detail is execution planning: consider trimming it here and developing it in a Prerequisite Tree.`
-        )
+        makeWarning(doc, 'goalTree-nc-depth', { kind: 'entity', id }, 'goalTree-nc-depth', {
+          depth,
+          max: maxDepth,
+        })
       );
     }
   }
@@ -180,12 +176,7 @@ export const goalTreeJunctorRule = (doc: TPDocument): UntieredWarning[] => {
   for (const edge of edgesArray(doc)) {
     if (edge.andGroupId || edge.orGroupId || edge.xorGroupId) {
       out.push(
-        makeWarning(
-          doc,
-          'goalTree-junctor',
-          { kind: 'edge', id: edge.id },
-          'A Goal Tree uses single arrows only — necessity children are implicitly conjoined, so an AND junctor is redundant and OR / XOR contradict the "in order to… we must…" reading. Ungroup this edge.'
-        )
+        makeWarning(doc, 'goalTree-junctor', { kind: 'edge', id: edge.id }, 'goalTree-junctor')
       );
     }
   }

@@ -27,7 +27,7 @@ export const predictedEffectExistenceRule = (doc: TPDocument): UntieredWarning[]
           doc,
           'predicted-effect-existence',
           { kind: 'entity', id: e.id },
-          'If this injection holds, name one other effect it must also produce — then you can go and check for it. None captured yet.'
+          'predicted-effect-existence'
         )
       );
     }

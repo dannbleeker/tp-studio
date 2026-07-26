@@ -6,6 +6,7 @@ import { validationFingerprint } from '@/domain/fingerprint';
 import { validate } from '@/domain/validators';
 import { useFingerprintMemo } from '@/hooks/useFingerprintMemo';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useClrText } from '@/i18n/useClrText';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { Button } from '../ui/Button';
@@ -248,6 +249,7 @@ function ClrWalkthroughBody({
   onResolve: (id: string) => void;
   onOpenInInspector: (target: ReturnType<typeof validate>[number]['target']) => void;
 }) {
+  const clr = useClrText();
   const warning = liveWarnings.find((w) => w.id === warningId);
   const doc = useDocumentStore((s) => currentDoc(s));
   if (!warning) {
@@ -280,7 +282,7 @@ function ClrWalkthroughBody({
       </span>
       <p className="text-neutral-500 text-xs dark:text-neutral-400">{targetLabel}</p>
       <p className="text-base text-neutral-900 leading-snug dark:text-neutral-100">
-        {warning.message}
+        {clr.message(warning)}
       </p>
       <div className="flex flex-wrap gap-2">
         <Button variant="softViolet" size="sm" onClick={() => onResolve(warning.id)}>

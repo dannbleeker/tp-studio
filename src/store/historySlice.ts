@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand';
 import { COALESCE_WINDOW_MS, HISTORY_LIMIT } from '@/domain/constants';
+import { persistTabsManifest } from '@/domain/persistence';
 import { preserveLinks } from '@/domain/preserveLinks';
 import type { DocumentId, TPDocument } from '@/domain/types';
 import { persistDebounced } from '@/services/storage/persistDebounced';
@@ -99,6 +100,25 @@ export const historyDefaults = (): Pick<HistorySlice, 'past' | 'future' | 'histo
   historyByDoc: {},
 });
 
+/**
+ * Undo / redo can restore a doc with a DIFFERENT id — undoing a replace-mode
+ * `setDocument`, or a palette "New diagram". `setActiveDoc` rekeys the active
+ * tab's slot in `tabOrder`, but only in memory: `persistDebounced` writes the doc
+ * BODY, and `persistActiveDoc` explicitly disclaims manifest ownership. So
+ * nothing rewrote the manifest, and a reload reopened the doc the undo had just
+ * undone while the user's tree became reachable only from Start → All trees.
+ *
+ * This is the same hole `performDocumentSwap` closed in Session 206; the history
+ * slice performs the same rekey and needed the same write.
+ */
+const persistManifestIfRekeyed = (
+  previousActiveId: DocumentId,
+  swapped: { activeDocId: DocumentId; tabOrder: DocumentId[] }
+): void => {
+  if (swapped.activeDocId === previousActiveId) return;
+  persistTabsManifest({ activeDocId: swapped.activeDocId, tabOrder: swapped.tabOrder });
+};
+
 export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> = (set, get) => ({
   past: [],
   future: [],
@@ -120,8 +140,9 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     // replace-mode setDocument). `setActiveDoc` swaps the ACTIVE tab to the
     // restored doc (rekeying if the id changed) while leaving every other
     // open tab untouched.
+    const swapped = setActiveDoc(state, restored);
     set({
-      ...setActiveDoc(state, restored),
+      ...swapped,
       past: past.slice(0, -1),
       future: [...future, { doc, t: Date.now() }],
       editingEntityId: null,
@@ -131,6 +152,7 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
       // Matches how delete + document-swap already reset selection.
       selection: { kind: 'none' },
     });
+    persistManifestIfRekeyed(state.activeDocId, swapped);
   },
 
   redo: () => {
@@ -145,8 +167,9 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
     // Batch 5.1 — symmetric with undo: redo may restore a different doc
     // id, so route through `setActiveDoc` (active-tab swap, other tabs
     // untouched).
+    const swapped = setActiveDoc(state, restored);
     set({
-      ...setActiveDoc(state, restored),
+      ...swapped,
       future: future.slice(0, -1),
       past: [...past, { doc, t: Date.now() }],
       editingEntityId: null,
@@ -154,5 +177,6 @@ export const createHistorySlice: StateCreator<RootStore, [], [], HistorySlice> =
       // ids, so clear rather than leave a dangling selection.
       selection: { kind: 'none' },
     });
+    persistManifestIfRekeyed(state.activeDocId, swapped);
   },
 });

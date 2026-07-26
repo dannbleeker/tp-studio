@@ -99,6 +99,18 @@ const activeDocEphemeralReset = () => ({
   // diagram / template pickers, a Start tree card, the hero "Build a CRT")
   // exits Start without each call site having to remember to.
   startSection: null,
+  // Hoist is a view of ONE group in ONE document. Carried across a swap, the
+  // incoming doc doesn't contain that group, so `visibleEntityIdsForHoist`
+  // returns an empty set and the canvas renders nothing — while `Breadcrumb`
+  // also returns null, removing the affordance that would let the user climb
+  // back out. `groupsSlice` already guards this exact shape for `deleteGroup`;
+  // a doc swap is the same event by another route.
+  hoistedGroupId: null,
+  // Same class of bug, opposite symptom: the creation wizard is bound to the
+  // diagram type it was opened for, so a wizard left open across a tab switch
+  // kept answering into the NEW document — a Goal-Tree wizard minting Goal-Tree
+  // entities inside a CRT.
+  creationWizard: null,
   ...speculationDefaults(),
 });
 
@@ -136,6 +148,24 @@ export function createTabActions({ get, set }: DocMetaFactoryDeps): TabActions {
 
   return {
     setDocument: (doc) => {
+      const state = get();
+      // Same collision guard `openTab` has, which `setDocument` lacked. A
+      // replace-mode load whose id names a BACKGROUND tab used to run the
+      // rekey in `setActiveDoc`: the active tab took the id, the background
+      // tab's in-memory doc was overwritten by the incoming body, its
+      // `tabOrder` slot was deduped away, and the reduced order was persisted.
+      // Any unsaved edits in that tab were gone. Trigger: doc B open in tab 2,
+      // "open documents in new tabs" off, import B.json from tab 1.
+      //
+      // Switching first turns it into the ordinary same-id replace — the doc
+      // lands in the tab that already holds it, which is also what the user
+      // means. `openTab`'s guard routes through here after switching, so the
+      // recursion is one level deep and terminates on the same-id path.
+      if (doc.id !== state.activeDocId && state.docs[doc.id]) {
+        state.switchTab(doc.id);
+        get().setDocument(doc);
+        return;
+      }
       performDocumentSwap(doc, 'document swap');
     },
 

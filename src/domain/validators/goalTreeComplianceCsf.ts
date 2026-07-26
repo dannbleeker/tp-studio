@@ -30,7 +30,8 @@ export const goalTreeComplianceCsfRule = (doc: TPDocument): UntieredWarning[] =>
           doc,
           'goalTree-compliance-csf',
           { kind: 'entity', id: csf.id },
-          `"${csf.title}" reads as compliance — that is usually a Necessary Condition a few layers down (a threshold you must not breach), not a make-or-break Critical Success Factor the goal is built around.`
+          'goalTree-compliance-csf',
+          { title: csf.title }
         )
       );
     }

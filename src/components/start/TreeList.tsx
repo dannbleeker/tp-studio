@@ -1,4 +1,5 @@
 import { formatRelativeTime } from '@/components/history/formatTime';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { diagramMetaFor } from './diagramMeta';
 import { LogicPill } from './LogicPill';
@@ -11,12 +12,13 @@ import type { SavedTree } from './useSavedTrees';
  * the Logic pills agree with everywhere else.
  */
 export function TreeList({ trees, emptyMessage }: { trees: SavedTree[]; emptyMessage: string }) {
+  const messages = useT();
   const openSavedDoc = useDocumentStore((s) => s.openSavedDoc);
   if (trees.length === 0) return <TreesEmpty message={emptyMessage} />;
   return (
     <ul className="divide-y divide-neutral-200 overflow-hidden rounded-lg border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
       {trees.map(({ id, doc, openWarnings }) => {
-        const meta = diagramMetaFor(doc.diagramType);
+        const meta = diagramMetaFor(messages, doc.diagramType);
         const Icon = meta.icon;
         const title = doc.title?.trim() || 'Untitled';
         return (

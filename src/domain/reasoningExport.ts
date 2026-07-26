@@ -1,7 +1,7 @@
 import type { CausalityLabel } from '@/store/uiSlice/types';
 import { findCoreDrivers } from './coreDriver';
 import { renderEdgeSentence, resolveEdgeConnector, topologicalEdgeOrder } from './edgeReading';
-import { DIAGRAM_TYPE_LABEL, ENTITY_TYPE_META } from './entityTypeMeta';
+import { DIAGRAM_TYPE_LABEL, resolveEntityTypeMeta } from './entityTypeMeta';
 import {
   assumptionsForEdge,
   entitiesOfType,
@@ -246,12 +246,22 @@ export const exportReasoningOutline = (
   } else {
     const terminals = findTerminals(doc);
     if (terminals.length === 0) {
-      lines.push('*No structural entities yet.*');
+      // A document made only of a cycle has no terminal, and this used to
+      // report "*No structural entities yet.*" with entities and edges plainly
+      // present — the one message guaranteed to read as a bug. Reinforcing
+      // loops are ordinary in a CRT, so say what is actually true.
+      lines.push(
+        structuralEntities(doc).length === 0
+          ? '*No structural entities yet.*'
+          : '*Every entity here is inside a loop, so there is no end-effect to read down from. Break a loop (or mark a back edge) to get an outline.*'
+      );
     } else {
       for (const term of terminals) {
         lines.push(
           '',
-          `### ${term.title.trim() || 'Untitled'} (${ENTITY_TYPE_META[term.type].label})`
+          // `resolveEntityTypeMeta` — a custom-class id indexes `ENTITY_TYPE_META`
+          // to `undefined`, and `.label` on that threw out of the export.
+          `### ${term.title.trim() || 'Untitled'} (${resolveEntityTypeMeta(term.type, doc.customEntityClasses).label})`
         );
         const visited = new Set<string>();
         renderCausesInto(lines, doc, term.id, visited, 0, label);

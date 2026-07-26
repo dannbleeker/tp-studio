@@ -46,14 +46,35 @@ describe('writeTextToHandle', () => {
     expect(close).toHaveBeenCalled();
   });
 
-  it('always closes the writable even if write() throws', async () => {
+  // This test used to assert the opposite ("always closes the writable even if
+  // write() throws") and so enshrined a bug: `close()` COMMITS the swap file,
+  // which `createWritable()` opens EMPTY — so a failed write committed a
+  // truncated file over the user's data on disk. `abort()` discards it.
+  it('aborts without committing when write() throws', async () => {
     const close = vi.fn().mockResolvedValue(undefined);
+    const abort = vi.fn().mockResolvedValue(undefined);
     const write = vi.fn().mockRejectedValue(new Error('disk full'));
     const handle = {
-      createWritable: vi.fn().mockResolvedValue({ write, close }),
+      createWritable: vi.fn().mockResolvedValue({ write, close, abort }),
     } as unknown as FileSystemFileHandle;
     await expect(writeTextToHandle(handle, 'x')).rejects.toThrow('disk full');
-    expect(close).toHaveBeenCalled();
+    expect(abort).toHaveBeenCalled();
+    expect(close).not.toHaveBeenCalled();
+  });
+
+  it('still surfaces the write error when abort() is unavailable or itself fails', async () => {
+    const close = vi.fn().mockResolvedValue(undefined);
+    const write = vi.fn().mockRejectedValue(new Error('disk full'));
+    const abort = vi.fn().mockRejectedValue(new Error('abort failed'));
+    const noAbort = {
+      createWritable: vi.fn().mockResolvedValue({ write, close }),
+    } as unknown as FileSystemFileHandle;
+    const failingAbort = {
+      createWritable: vi.fn().mockResolvedValue({ write, close, abort }),
+    } as unknown as FileSystemFileHandle;
+    await expect(writeTextToHandle(noAbort, 'x')).rejects.toThrow('disk full');
+    await expect(writeTextToHandle(failingAbort, 'x')).rejects.toThrow('disk full');
+    expect(close).not.toHaveBeenCalled();
   });
 });
 

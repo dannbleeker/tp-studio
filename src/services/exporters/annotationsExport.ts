@@ -1,4 +1,4 @@
-import { ENTITY_TYPE_META } from '@/domain/entityTypeMeta';
+import { resolveEntityTypeMeta } from '@/domain/entityTypeMeta';
 import type { TPDocument } from '@/domain/types';
 
 /**
@@ -15,7 +15,10 @@ const collect = (doc: TPDocument): Entry[] =>
     .map((e) => ({
       n: e.annotationNumber,
       title: e.title.trim() || 'Untitled',
-      type: ENTITY_TYPE_META[e.type].label,
+      // `resolveEntityTypeMeta`, not a direct index: a custom-class id is a
+      // legitimate `entity.type`, and `ENTITY_TYPE_META[custom]` is `undefined`
+      // — reading `.label` off it threw and took the whole export down.
+      type: resolveEntityTypeMeta(e.type, doc.customEntityClasses).label,
       description: e.description?.trim() ?? '',
     }))
     .sort((a, b) => a.n - b.n);

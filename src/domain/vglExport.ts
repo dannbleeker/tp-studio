@@ -94,10 +94,11 @@ export const exportToVgl = (doc: TPDocument): string => {
     or: new Map(),
     xor: new Map(),
   };
+  // See `dotExport` — vertices come from `structuralEntities`, so an edge
+  // touching a note referenced a vertex this file never declares.
+  const declared = new Set(entities.map((e) => e.id));
   for (const edge of Object.values(doc.edges)) {
-    const src = doc.entities[edge.sourceId];
-    const tgt = doc.entities[edge.targetId];
-    if (!src || !tgt) continue;
+    if (!declared.has(edge.sourceId) || !declared.has(edge.targetId)) continue;
     const kind = JUNCTOR_KINDS.find((k) => groupFieldOf(edge, k));
     const key = kind && groupFieldOf(edge, kind);
     if (kind && key) {

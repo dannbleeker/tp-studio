@@ -1,3 +1,5 @@
+import { en } from '@/i18n/locales/en';
+import type { Messages } from '@/i18n/types';
 import { ENTITY_STRIPE_COLOR, VIOLET_500 } from './tokens';
 import type { CustomEntityClass, DiagramType, EntityType, TPDocument } from './types';
 
@@ -81,36 +83,34 @@ export const PALETTE_BY_DIAGRAM: Record<DiagramType, EntityType[]> = {
  * new diagram type to `DiagramType` and this map together. UI strings never
  * spell out the acronym themselves; they read from here.
  */
-export const DIAGRAM_TYPE_LABEL: Record<DiagramType, string> = {
-  crt: 'Current Reality Tree',
-  frt: 'Future Reality Tree',
-  prt: 'Prerequisite Tree',
-  tt: 'Transition Tree',
-  ec: 'Evaporating Cloud',
-  st: 'Strategy & Tactics Tree',
-  freeform: 'Freeform Diagram',
-  goalTree: 'Goal Tree',
-  nbr: 'Negative Branch Reservation',
-  id: 'Interference Diagram',
-};
+/**
+ * Every diagram type, in registry order. Exists so the label records can be
+ * built from the catalogue without hand-listing the keys twice.
+ */
+const DIAGRAM_TYPES = [
+  'crt',
+  'frt',
+  'prt',
+  'tt',
+  'ec',
+  'st',
+  'freeform',
+  'goalTree',
+  'nbr',
+  'id',
+] as const satisfies readonly DiagramType[];
+
+export const DIAGRAM_TYPE_LABEL: Record<DiagramType, string> = Object.fromEntries(
+  DIAGRAM_TYPES.map((d) => [d, en.diagram[d].label])
+) as Record<DiagramType, string>;
 
 /**
  * Short labels for compact chrome (the Building Blocks rail's cross-diagram
- * hints, the method-path stepper) — acronyms where they exist, short names else.
- * Mirror of `DIAGRAM_TYPE_LABEL`; add a new diagram type to both together.
+ * hints, the method-path stepper) live ONLY in the message catalogue now —
+ * every consumer goes through `diagramShortLabel`. The English mirror that used
+ * to sit here was deleted once the last caller was converted; an unread English
+ * view is exactly how the two copies drift apart.
  */
-export const DIAGRAM_SHORT_LABEL: Record<DiagramType, string> = {
-  crt: 'CRT',
-  frt: 'FRT',
-  prt: 'PRT',
-  tt: 'TT',
-  ec: 'EC',
-  st: 'S&T',
-  freeform: 'Freeform',
-  goalTree: 'Goal Tree',
-  nbr: 'NBR',
-  id: 'ID',
-};
 
 /**
  * A representative "brand" colour per diagram type — the dot used by compact
@@ -225,3 +225,16 @@ export const isOfBuiltin = (
  * local to their exporters on purpose: the suffix carries meaning there.
  */
 export const displayTitle = (e: { title: string }): string => e.title.trim() || '(untitled)';
+
+/**
+ * Locale-aware diagram labels. React callers should prefer these over the
+ * `DIAGRAM_*_LABEL` records, which are the English view kept for callers
+ * outside a React render (the exporters, and `factory.ts`'s default document
+ * title — that one becomes persisted user data, so it stays English on
+ * purpose rather than shifting with the UI language).
+ */
+export const diagramLabel = (messages: Messages, diagramType: DiagramType): string =>
+  messages.diagram[diagramType].label;
+
+export const diagramShortLabel = (messages: Messages, diagramType: DiagramType): string =>
+  messages.diagram[diagramType].short;

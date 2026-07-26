@@ -25,7 +25,7 @@ src/
     types/          — TPDocument / Entity / Edge / Group / Assumption shapes; SchemaVersion
     factory.ts      — createDocument / createEntity / createEdge (default state)
     persistence.ts  — barrel → persistenceJson (import/export) + persistenceStorage (localStorage + tab slots)
-    migrations.ts   — schema v1 → v9 (current); CURRENT_SCHEMA_VERSION
+    migrations/     — schema v1 → v10 (current); CURRENT_SCHEMA_VERSION
     graph.ts        — barrel → graphCore (cached queries/indices) / graphReach / graphPrune
     edgeRouting.ts  — barrel → edgeGeometry / edgeBezier / edgeVisibilityGraph (visibility-graph + A*)
     validators/     — CLR rules per diagram type; patterns/ — the library diagrams
@@ -36,6 +36,8 @@ src/
   components/     — canvas/ (Canvas + TPNode + TPEdge + overlays) · inspector/ · command-palette/ ·
                     toolbar/ · comments/ · settings/ · ui/
   services/       — side-effecting code: persistence schedule, exporters/, fileSystemAccess, logger.ts
+  i18n/           — message catalogue + locale registry. `locales/en.ts` is the source of truth;
+                    `Messages = typeof en` makes a future locale compile-checked. See docs/I18N.md.
   hooks/          — shared React hooks
 tests/            — Vitest tests, mirroring src/
 e2e/              — Playwright specs (+ Linux-only visual snapshots)
@@ -46,10 +48,16 @@ docs/             — guide/ (the practitioner book) + design notes
 ## Conventions
 
 - **Domain-first.** Data-model changes land in `src/domain/` first (types + factory + persistence + validator + test), then the store, then UI — never the other way around.
-- **Additive-by-default.** New persisted fields are *optional* on `TPDocument` / `Entity` so old docs load unchanged — schema stays `9`, no migration. This discipline is what keeps the basic tools simple while features accrete.
+- **Additive-by-default.** New persisted fields are *optional* on `TPDocument` / `Entity` so old docs load unchanged — schema stays `10`, no migration. This discipline is what keeps the basic tools simple while features accrete.
 - **One slice per concern.** Doc-touching actions live in `documentSlice/*` and route through `applyDocChange` so persistence + history happen automatically. UI-only state lives in `uiSlice/*`.
 - **Strict TypeScript, no `any`** — prefer `unknown` + narrowing. The rare legitimate escape uses `// biome-ignore lint/suspicious/noExplicitAny: <reason>`.
 - **Comments explain _why_, not _what_** — capture the decision, the trade-off, the alternative rejected. (The `session-reviewer` agent flags new comments that just narrate code.)
+- **User-facing copy goes through the message catalogue** (`src/i18n/locales/en.ts`) on any surface that
+  has already been converted — `useT()` in a render, a `(messageKey, params)` pair for anything below the
+  React boundary (see `Warning` and `NextStep`). Domain modules keep the STRUCTURE (which rules/steps/
+  shortcuts exist, in what order) and the catalogue holds the COPY, keyed by an id that is already stable.
+  Interpolate rather than concatenate, so word order stays the translator's. `docs/I18N.md` is the contract;
+  `NEXT_STEPS.md` tracks which surfaces are converted and the three seams still parked.
 - **Logging goes through `src/services/logger.ts`** (`log.{info,warn,error}`), never raw `console.*` in committed source.
 - **Docs stay in sync, same session as code:** CHANGELOG.md (always) · USER_GUIDE.md + README.md (user-facing) · NEXT_STEPS.md (backlog). The book is `docs/guide/*.md` — commit only the Markdown; a GH Actions workflow rebuilds the PDF/EPUB.
 
@@ -128,8 +136,8 @@ These bite often — work around them, don't fight them:
 
 ## Current state highlights
 
-- **schemaVersion 9** — migrations registry handles v1 → v9 (`src/domain/migrations.ts`). New fields are optional, so most changes need no migration.
-- **~2500+ Vitest** unit/component tests + a Playwright e2e suite. The full TP-completeness arc vs Cohen's *TP Basics* (Cloud progression + U-Shape + the smaller gaps) has shipped; recent work is rendering/UX polish + maintainability.
+- **schemaVersion 10** — migrations registry handles v1 → v10 (`src/domain/migrations/`). New fields are optional, so most changes need no migration.
+- **~5,190 Vitest** unit/component tests across 436 files + a Playwright e2e suite. The full TP-completeness arc vs Cohen's *TP Basics* (Cloud progression + U-Shape + the smaller gaps) has shipped; recent work is rendering/UX polish + maintainability.
 - **Bundle ceilings** are enforced by `node scripts/check-bundle-size.mjs` (part of the gate); CI fails on regressions.
 
 ## Where to look for "why was this built like this?"

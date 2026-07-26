@@ -1,3 +1,5 @@
+import { isLocale } from '@/i18n/locale';
+import type { Locale } from '@/i18n/types';
 import { errorMessage } from '@/services/errors';
 import { isCloudType } from './cloudType';
 import { pruneDanglingEdges, pruneSingletonJunctors } from './graphPrune';
@@ -124,6 +126,10 @@ export const importFromJSON = (raw: string): TPDocument => {
   // value still loads).
   const ncDepthMode: 'conflict-resolution' | undefined =
     parsed.ncDepthMode === 'conflict-resolution' ? 'conflict-resolution' : undefined;
+  // Document language. Soft validation like every other optional enum here: a
+  // doc saved by a NEWER build carrying a locale this build doesn't know must
+  // still open, so an unrecognized value drops rather than throwing.
+  const locale: Locale | undefined = isLocale(parsed.locale) ? parsed.locale : undefined;
   // TP Basics #5 — gap-analysis performance anchors. Soft validation: keep a
   // non-blank string, otherwise drop (an absent / corrupt value still loads).
   const performanceLow =
@@ -159,6 +165,7 @@ export const importFromJSON = (raw: string): TPDocument => {
     ...(ecVerbalStyle ? { ecVerbalStyle } : {}),
     ...(cloudType ? { cloudType } : {}),
     ...(ncDepthMode ? { ncDepthMode } : {}),
+    ...(locale ? { locale } : {}),
     ...(performanceLow ? { performanceLow } : {}),
     ...(performanceHigh ? { performanceHigh } : {}),
     createdAt: typeof parsed.createdAt === 'number' ? parsed.createdAt : Date.now(),

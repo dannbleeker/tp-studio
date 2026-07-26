@@ -4,14 +4,135 @@
 and the reference tail. Shipped work lives in **CHANGELOG.md**, which is the home of record for what was
 built and why. If something you remember building isn't listed here, it's done — check CHANGELOG.
 
-Pruned in Sessions 176, 193, and 206. The Session-206 pass removed the last of the shipped narrative after
+Pruned in Sessions 176, 193, 206, and 209. The Session-206 pass removed the last of the shipped narrative after
 verifying, section by section, that CHANGELOG genuinely carried it — the citations, decisions and
 rationale that lived only here were migrated into their CHANGELOG session entries rather than deleted.
 
-**Genuinely open right now: nothing.** The last open item — the EC per-TYPE verbalisation reading order —
-was **declined in Session 206** once recon showed the doctrine doesn't support it (see *Declined*). Its
-real itch was re-scoped and shipped instead: Cohen's per-type break hint now rides the Document Inspector.
-Everything on this page is deferred by decision, parked pending an explicit ask (L2 Projects), or declined.
+**Open — i18n follow-ups (Session 209).** The architecture shipped with English only and **no language
+picker** — the Settings row is gated on `SELECTABLE_LOCALES.length > 1`, so nothing is offered until a
+real second locale exists. These are the deliberate leftovers, in rough priority order:
+
+- **Remaining UI-string extraction (~780–980 unique literals).** Eleven surfaces now render with an EMPTY
+  pseudo-locale allow-list: the four Settings tabs, the Document Inspector, the Help dialog, the About
+  dialog, the diagram-type picker, the toolbar title badge, the method-path stepper, and the
+  Analysis-journey dialog. A twelfth — the Building-Blocks rail — is asserted with an allow-list derived
+  from `ENTITY_TYPE_META`, which is the one un-converted source it renders. Converted alongside them: the full CLR
+  warning pipeline, the 63-step method checklist, the 38 keyboard shortcuts, the 7-CLR scrutiny
+  stepper, Barnard's five journey questions, the shared doc-links, and reader-mode coaching — roughly
+  635 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
+  pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
+  is what proves the conversion is complete. **No component reads an English label view any more** —
+  `DIAGRAM_SHORT_LABEL` was deleted outright once its last caller was converted, since an unread
+  English mirror is exactly how two copies drift apart. `DIAGRAM_TYPE_LABEL` survives only for
+  non-React callers (the exporters, and `factory.ts`'s persisted default document title).
+
+  **`ENTITY_TYPE_META` (14 labels + 14 meanings) is the highest-value block left**, and the one the
+  Session-209 bug hunt surfaced: it is the TP vocabulary itself (Undesirable Effect, Root Cause, Goal…)
+  and it is what the Building-Blocks rail, the canvas nodes, the type picker and the inspector all
+  render. It moves as ONE piece — `reasoningExport.ts` and the PPTX exporter read it from outside React,
+  so it needs the retained-English-view treatment `Warning.message` got, not a straight swap. Until then
+  the rail's pseudo-locale allowance is derived from it (see `tests/i18n/pseudoLocale.test.tsx`).
+
+  **Half-converted components (they call `useT` but still render literals)** — these are the ones to
+  finish first, because a surface that is *mostly* catalogued reads as done: `AllTreesGallery.tsx`
+  (search placeholder, aria-label, both empty states, `'Untitled'`), `EdgeScrutinyDialog.tsx` (title,
+  subtitle, close aria-label), `TreeCard.tsx` (`'Untitled'`, delete title), `TemplateGallery.tsx`.
+  Adding each to `tests/i18n/pseudoLocale.test.tsx` is what proves it finished.
+
+  **Blind spot to remember: `useFingerprintMemo` hides its closure from the linter.** Biome's
+  `useExhaustiveDependencies` (on at error via `recommended`) is what catches an undeclared catalogue
+  dependency — it caught the real one this session, in `AllTreesGallery`. It cannot see inside
+  `useFingerprintMemo(compute, fingerprint)`. None of its 6 call sites reads the catalogue today; if one
+  ever does, the fingerprint needs a locale segment and nothing will warn.
+
+  **Concatenation debt — copy assembled at the call site rather than in the catalogue.** These compile
+  and read correctly in English but cannot be translated as-is, so they are second-locale blockers, not
+  bugs today. In rough severity order: `AboutDialog.tsx:142-151` splits one sentence into three
+  catalogue fragments around a link (`copyright` deliberately ends on a dangling "See"); the theme
+  `title={label} — {hint}` glue in `AppearanceTab.tsx`; `TemplateGallery.tsx` appending an English `s`
+  to a translated noun; the `({count})` parentheses in `PatternLibraryDialog.tsx`; `journeyDialog`'s
+  bare-noun `createFallbackNoun` fed into a verb phrase; TitleBadge's separator-carrying
+  `'· unsaved'` suffix. Plus four surviving manual `n === 1 ? '' : 's'` ternaries that should call
+  `plural()` (`EdgeScrutinyDialog`, `nodeAriaLabels`, `verbalisation`, `command-palette/analysis`), and
+  two bare `localeCompare()` calls that collate in the HOST locale rather than the app's
+  (`EdgeInspector.tsx`, `entityPalettes.ts`). Fix each as its surface is converted, not as a sweep.
+
+  **`patterns/index.ts` — 111 `label` + `hint` pairs (222 strings) — BLOCKED on a lazy-catalogue
+  seam, not on effort.** This is picker METADATA, and unlike the pattern documents it would otherwise
+  be ordinary catalogue work: each `Pattern` has a stable `id`, and the label/hint describe the
+  pattern rather than living inside it.
+
+  The blocker is measured, not hypothetical. That copy is **9.2 KB gzipped** and today rides the
+  LAZY `patterns` chunk (41.9 KB, unbudgeted, loaded only when the Templates dialog opens). `en.ts`
+  is statically imported — it has to be, so first paint is never untranslated — so moving the copy
+  into it drags 9.2 KB onto the EAGER path. `index` is 101.5 KB against a 109.5 KB ceiling, so that
+  lands at ~110.7 KB and **fails the bundle gate**.
+
+  Doing it properly needs a *lazy catalogue segment*: a `PatternMessages` type with its own
+  per-locale registry, imported only from the lazy chunk, so pattern copy travels with the code that
+  renders it. That is a design addition (a second, parallel loader) rather than more extraction, and
+  it buys nothing until a second locale exists — so it is parked deliberately rather than half-built.
+
+  Consequence: `PatternLibraryDialog` stays out of the pseudo-locale test. Its own chrome is
+  converted, but its cards render `pattern.label` / `pattern.hint`, and a 222-entry allow-list would
+  be noise pretending to be a guardrail.
+  **`CreationWizardPanel.tsx` is the one place a React component still reads an English constant
+  directly** — `CLOUD_TYPE_LABEL[ct]` and `EC_CLOUD_TYPE_BREAK_HINT[mode]` (three call sites), whose
+  resolvers (`cloudTypeLabel(t, …)` / `ecBreakHint(t, …)`) already exist and are already used by the
+  Document Inspector twin. Left alone deliberately: the rest of that wizard and all of
+  `creationWizardSteps.ts` is un-converted, so swapping three reads would half-convert a surface rather
+  than finish one. Do it as part of converting the wizard; at that point `CLOUD_TYPE_LABEL` and
+  `EC_CLOUD_TYPE_BREAK_HINT` lose their last production readers and can be deleted, along with
+  `CLR_SCRUTINY`, `SHORTCUTS_BY_GROUP`, `ENTITY_TYPE_COACHING` and `EDGE_KIND_COACHING`, which already
+  have none. (knip won't flag these: `tests/**` is an entry point, so a test-only import counts as use.)
+
+  With `clrScrutiny.ts`, `analysisJourney.ts` and `methodPath.ts` done, the domain static blocks are
+  finished — what is left in `src/domain` is mostly generated prose (`verbalisation.ts`,
+  `edgeReading.ts`, the exporters' section headers) where word ORDER is language-specific, not just
+  the words. Those need per-locale sentence templates rather than a string swap; treat them as their
+  own design problem, not more extraction.
+
+  *Counting note.* An earlier figure of "~2,500" was a raw `grep` upper bound (any single-quoted
+  capitalised string in `src/`, 2,684 hits) and overstated the job badly. It double-counted duplicates
+  (875 raw vs **686 unique** in `src/components`), swept in non-copy like `'Escape'`, and — the big one —
+  included **1,182 pattern/example/template diagram-content strings**, which are a separate per-locale
+  *document* job, not catalogue work (see the pattern-library item below). The real chrome surface is:
+
+  | Area | Unique strings | Notes |
+  | --- | --- | --- |
+  | `src/components` | ~600 left | was ~686; the four Settings tabs are now converted |
+  | `src/domain` (excl. patterns) | ~155 left | was ~378; the static blocks are done — what remains is generated prose (verbalisation / edgeReading / exporters), a design problem rather than extraction |
+  | `src/services` + `store` + `hooks` | ~92 | mostly toast copy — needs the toast seam below |
+
+  **Toast copy (~25 `showToast` call sites in `store/` + `services/`) needs a key seam, like CLR
+  warnings did.** These fire from store actions and plain services — outside any React render — so
+  they cannot call `useT()`. Reading `en` directly would "convert" them while leaving them
+  permanently English. Threading the store in creates a cycle: `store/index.ts` cannot import a
+  module that imports `@/store`.
+
+  The shape that works is the one `Warning` already uses: `showToast` takes a `(messageKey, params)`
+  pair, the `Toast` record carries it, and `Toaster` — which IS in a render — resolves it against the
+  active locale. Same trade as `Warning.message`: keep an English-rendered `message` alongside so
+  existing assertions and any non-React consumer keep working.
+- **Retire `Warning.message`.** It exists as the English fallback + parameter-correctness canary. Removing
+  it means migrating ~276 message-string assertions across ~41 test files to assert on
+  `(ruleId, variant, params)` instead of rendered copy. Worth doing once a second locale exists.
+- **Pattern library + examples (~13,900 words, 104 files).** NOT a catalogue job: titles are positional
+  arguments to `buildEntity(...)`, and translating a TOC tree is re-authoring diagrams — a bad translation
+  makes our own CLR validators fire on the library's content. Needs per-locale document files with an
+  English fallback, selected at the registry level.
+- **A lint rule banning new hardcoded JSX text** in converted directories, so the migration doesn't
+  regress. Needs tuning against ~140 component files before it can be error-level.
+- **Parked pending an actual second locale:** `navigator.language` auto-detect · `?lang=` URL override ·
+  localised PWA manifest + `og:locale` · consuming `TPDocument.locale` (verbalisation, causality edge
+  labels, print legend) · `docs/guide/**` (its own translation project with a PDF/EPUB pipeline).
+
+**Genuinely open right now: the i18n follow-ups listed above** (opened in Session 209 when the
+multi-language architecture shipped English-only). Before that the page was empty of open items: the
+previous last one — the EC per-TYPE verbalisation reading order — was **declined in Session 206** once
+recon showed the doctrine doesn't support it (see *Declined*). Its real itch was re-scoped and shipped
+instead: Cohen's per-type break hint now rides the Document Inspector. Everything else on this page is
+deferred by decision, parked pending an explicit ask (L2 Projects), or declined.
 
 > **The §-letters** (§B, §C, §D, §G…) index the *TOC Handbook backlog* — a six-agent read of the
 > *Theory of Constraints Handbook* (Cox & Schleier, McGraw-Hill 2010), mined 2026-07-12 and organised
@@ -88,7 +209,35 @@ only, since CMM/OODA were declined.) **Build only on an explicit ask.**
 
 ## Known bugs — none open
 
-One finding was closed **without a fix**, recorded so it isn't re-hunted:
+Session 209 ran an app-wide review (persistence · store · graph · exporters) and **fixed all 26 confirmed
+findings** rather than filing them — see CHANGELOG *Session 209b*. What that review left as SUSPICIOUS,
+mechanism traced but no trigger established, is recorded here so it isn't re-derived:
+
+- **No cross-browser-tab coordination at all** — no `BroadcastChannel`, no `storage` listener anywhere in
+  `src/`. Two browser windows share one `tp-studio:tabs:v1` manifest and the same per-doc slots,
+  last-writer-wins, and window A's quota mitigation can evict a doc window B has open. Plausible for a
+  diagramming tool; no repro was built. This is a design gap, not a bug to hunt — decide whether
+  multi-window is supported before building anything.
+- **`useFingerprintMemo` hides its closure from `useExhaustiveDependencies`.** None of its 6 call sites
+  reads the message catalogue or any un-fingerprinted field today. If one ever does, nothing will warn.
+- **`findCycles` caches on `doc.edges` but reads `doc.entities`** — verified stale across two docs
+  sharing an edges object, but no live-app path reaches it (the store cascades edge deletion, imports
+  prune dangling edges).
+- **Writes that widen `tabOrder` persist before the state update** (`openTab`), so during those writes
+  the quota listener's open-set is briefly stale.
+- **`nextAnnotationNumber` is trusted verbatim on import** — rebuilt only when absent, so a file claiming
+  `1` with entities at `#7` mints duplicate badges.
+- **`validateAttributes` / `validateMethodChecklist` / `validateCustomEntityClasses` assign into a bare
+  `{}`** without the reserved-key guard `validateRecord` has. No UI can name an attribute `__proto__`.
+- **A single NaN-coordinate obstacle disables obstacle avoidance for the whole routing pass** — closed
+  today by `persistenceValidators`, so this is defence-in-depth only.
+- **`ttTasks` / `prtPlan` use exact `type ===` where `riskRegister` uses `entitiesOfBuiltin`** — a custom
+  class with `supersetOf: 'action'` is an action everywhere except the TT task CSV.
+- **`htmlExport`'s `btoa(unescape(encodeURIComponent(…)))` throws on a lone surrogate.** Not reproduced.
+- **`csvImport` / `whiteboardImport` call `addEntity` once per row**, each a full `applyDocChange` — a
+  5000-line paste means 5000 undo steps and 5000 doc clones, with no row cap.
+
+One older finding was closed **without a fix**, recorded so it isn't re-hunted:
 - **`routeEdge` returns a bezier it already measured as blocked** when A* reports direct visibility
   (`edgeRouting.ts:243` — `if (path.length === 2)`, reached only after `blockers.length === 0` returns).
   A Session-206 verification skeptic **refuted it on impact** and I agree; **correctness is arguable**.
@@ -171,7 +320,9 @@ Items explicitly dropped, in addition to the brief's own out-of-scope list:
   brainstorming, NBR detection, executive summary, facilitation prompts) — dropped Session 134. Stays
   deterministic + offline-first. Re-open only if a product direction needs it.
 - Project management / calendars / MS Project export · Bayesian / evidence-based propagation · COA analysis ·
-  mobile-first (480px is the floor) · full print stylesheets (minimal `print.css` shipped) · i18n (English only).
+  mobile-first (480px is the floor) · full print stylesheets (minimal `print.css` shipped).
+  **i18n moved out of this line in Session 209** — the architecture now exists (English-only shipping
+  locale); see *Open* below and `docs/I18N.md`.
 - **H5 confidence-weighted what-if** (needed `Entity.confidence`+`Edge.weight`, dropped Session 71/84).
 - **FL-EX8 multi-document tabs** (explored S91, cancelled — single-document by design) and its dependents
   (FL-CO2 cross-doc hyperlinks; portfolio-view). NOTE: per-doc **tabs** later shipped differently (Session 138);
@@ -239,8 +390,9 @@ Specific to the Windows + corporate-AppLocker box this was built on.
 
 1. **Pull the project state.** `cd C:\devtools\tp-studio && git status` (clean). `pnpm install` (preinstall verifies
    Node `>=22` + pnpm `^10`). `pnpm dev` to start. The local gate is **`node scripts/preflight.mjs`**
-   (tsc → biome → knip → vitest → build → bundle-size; ~4,200 tests) — `pnpm`-invoked tools are
-   AppLocker-blocked on this box, so run them via node bins (see Known environment quirks).
+   (tsc → biome → knip → vitest → build → bundle-size; ~5,200 tests across 436 files) — the tools
+   run via node bins — portable, and what lint-staged and the pre-commit gate use (see Known environment
+   quirks).
 2. **Open the durable docs** — README.md (architecture), USER_GUIDE.md (features), CHANGELOG.md (history),
    SECURITY.md (threat model), docs/RENDER_ENGINE_NOTES.md (canvas rendering).
 3. **Pick from Open / Deferred above**, or take a fresh product direction (the original spec gaps are all

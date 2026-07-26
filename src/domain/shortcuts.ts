@@ -1,3 +1,6 @@
+import { en } from '@/i18n/locales/en';
+import type { Messages } from '@/i18n/types';
+
 /**
  * Single source of truth for every keyboard shortcut surfaced in the UI.
  *
@@ -34,12 +37,11 @@ export type ShortcutGroup = 'global' | 'entity' | 'group' | 'canvas';
  * Human-readable section heading for each group. Used by `HelpDialog`.
  * `Record<ShortcutGroup, ...>` forces an entry per group at compile time.
  */
-export const SHORTCUT_GROUP_TITLE: Record<ShortcutGroup, string> = {
-  global: 'Global',
-  entity: 'On a selected entity',
-  group: 'On a selected group',
-  canvas: 'Canvas',
-};
+export const SHORTCUT_GROUP_TITLE: Record<ShortcutGroup, string> = en.shortcut.groups;
+
+/** Locale-aware group heading. */
+export const shortcutGroupTitle = (messages: Messages, group: ShortcutGroup): string =>
+  messages.shortcut.groups[group];
 
 /**
  * Where the binding actually lives:
@@ -74,77 +76,68 @@ export type Shortcut = {
  * display — the hook is updated separately, and the registry-link test
  * will fail until the new id appears in a `// reg: <id>` comment.
  */
-export const SHORTCUTS: Shortcut[] = [
+const SHORTCUT_DEFS: Omit<Shortcut, 'label'>[] = [
   // Global ------------------------------------------------------------------
-  { id: 'palette', keys: `${M}+K`, label: 'Command palette', group: 'global', bindsAt: 'hook' },
-  { id: 'undo', keys: `${M}+Z`, label: 'Undo', group: 'global', bindsAt: 'hook' },
-  { id: 'redo', keys: `${M}+Shift+Z`, label: 'Redo', group: 'global', bindsAt: 'hook' },
-  { id: 'save', keys: `${M}+S`, label: 'Save', group: 'global', bindsAt: 'hook' },
-  { id: 'export-menu', keys: `${M}+E`, label: 'Export menu', group: 'global', bindsAt: 'hook' },
+  { id: 'palette', keys: `${M}+K`, group: 'global', bindsAt: 'hook' },
+  { id: 'undo', keys: `${M}+Z`, group: 'global', bindsAt: 'hook' },
+  { id: 'redo', keys: `${M}+Shift+Z`, group: 'global', bindsAt: 'hook' },
+  { id: 'save', keys: `${M}+S`, group: 'global', bindsAt: 'hook' },
+  { id: 'export-menu', keys: `${M}+E`, group: 'global', bindsAt: 'hook' },
   {
     id: 'print',
     keys: `${M}+P`,
-    label: 'Print / Save as PDF',
     group: 'global',
     // Print is a palette command that just calls window.print(); the global
     // hook doesn't intercept Ctrl/Cmd+P (the browser handles it natively).
     bindsAt: 'native',
   },
-  { id: 'find', keys: `${M}+F`, label: 'Find in document', group: 'global', bindsAt: 'hook' },
-  { id: 'settings', keys: `${M}+,`, label: 'Settings', group: 'global', bindsAt: 'hook' },
+  { id: 'find', keys: `${M}+F`, group: 'global', bindsAt: 'hook' },
+  { id: 'settings', keys: `${M}+,`, group: 'global', bindsAt: 'hook' },
   {
     id: 'quick-capture',
     keys: 'E',
-    label: 'Quick Capture (paste an indented list)',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'copy-cut-paste',
     keys: `${M}+C / ${M}+X / ${M}+V`,
-    label: 'Copy / cut / paste selection',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'duplicate',
     keys: `${M}+D`,
-    label: 'Duplicate selection',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'select-all',
     keys: `${M}+A`,
-    label: 'Select all entities',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'swap-entities',
     keys: `${M}+Shift+S`,
-    label: 'Swap two selected entities',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'select-successors',
     keys: `${M}+Shift+→`,
-    label: 'Select all successors',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'select-predecessors',
     keys: `${M}+Shift+←`,
-    label: 'Select all predecessors',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'zoom',
     keys: '+ / - / 0',
-    label: 'Zoom in / out / fit view',
     group: 'global',
     bindsAt: 'hook',
   },
@@ -152,21 +145,18 @@ export const SHORTCUTS: Shortcut[] = [
   {
     id: 'toggle-inspector',
     keys: `${M}+\\`,
-    label: 'Close inspector',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'add-assumption-on-edge',
     keys: 'A',
-    label: 'Add assumption on selected edge',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'escape',
     keys: 'Esc',
-    label: 'Close panel / unhoist / deselect',
     group: 'global',
     bindsAt: 'hook',
   },
@@ -177,93 +167,81 @@ export const SHORTCUTS: Shortcut[] = [
   {
     id: 'new-tab',
     keys: `${M}+T`,
-    label: 'New tab (installed app)',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'close-tab',
     keys: `${M}+W`,
-    label: 'Close tab (installed app)',
     group: 'global',
     bindsAt: 'hook',
   },
   {
     id: 'switch-tab',
     keys: `${M}+1…9`,
-    label: 'Switch to tab 1–9 (installed app)',
     group: 'global',
     bindsAt: 'hook',
   },
 
   // On a selected entity ----------------------------------------------------
-  { id: 'rename', keys: 'Enter / F2', label: 'Rename', group: 'entity', bindsAt: 'hook' },
+  { id: 'rename', keys: 'Enter / F2', group: 'entity', bindsAt: 'hook' },
   {
     id: 'newline-in-title',
     keys: 'Alt+Enter',
-    label: 'Newline inside the title (multi-line titles)',
     group: 'entity',
     // The entity title's <textarea> wraps native — useGlobalKeyboard
     // explicitly skips when the event target is editable.
     bindsAt: 'native',
   },
-  { id: 'add-child', keys: 'Tab', label: 'Add child entity', group: 'entity', bindsAt: 'hook' },
+  { id: 'add-child', keys: 'Tab', group: 'entity', bindsAt: 'hook' },
   {
     id: 'add-parent',
     keys: 'Shift+Tab',
-    label: 'Add parent entity',
     group: 'entity',
     bindsAt: 'hook',
   },
   {
     id: 'move-to-effect',
     keys: '↑',
-    label: 'Walk to the connected neighbour above',
     group: 'entity',
     bindsAt: 'hook',
   },
   {
     id: 'move-to-cause',
     keys: '↓',
-    label: 'Walk to the connected neighbour below',
     group: 'entity',
     bindsAt: 'hook',
   },
   {
     id: 'move-to-sibling',
     keys: '← / →',
-    label: 'Walk to the connected neighbour left / right',
     group: 'entity',
     bindsAt: 'hook',
   },
   {
     id: 'delete-entity',
     keys: 'Del / Backspace',
-    label: 'Delete entity',
     group: 'entity',
     bindsAt: 'hook',
   },
 
   // On a selected group -----------------------------------------------------
-  { id: 'hoist-group', keys: 'Enter', label: 'Hoist into group', group: 'group', bindsAt: 'hook' },
+  { id: 'hoist-group', keys: 'Enter', group: 'group', bindsAt: 'hook' },
   {
     id: 'expand-group',
     keys: '→',
-    label: 'Expand collapsed group',
     group: 'group',
     bindsAt: 'hook',
   },
   {
     id: 'collapse-group',
     keys: '←',
-    label: 'Collapse expanded group',
     group: 'group',
     bindsAt: 'hook',
   },
   {
     id: 'delete-group',
     keys: 'Del / Backspace',
-    label: 'Delete group (members preserved)',
     group: 'group',
     bindsAt: 'hook',
   },
@@ -272,28 +250,24 @@ export const SHORTCUTS: Shortcut[] = [
   {
     id: 'canvas-double-click',
     keys: 'Double-click',
-    label: 'New entity at cursor',
     group: 'canvas',
     bindsAt: 'reactFlow',
   },
   {
     id: 'canvas-right-click',
     keys: 'Right-click',
-    label: 'Context menu',
     group: 'canvas',
     bindsAt: 'reactFlow',
   },
   {
     id: 'canvas-shift-click-edge',
     keys: 'Shift+click',
-    label: 'Multi-select edges (for AND grouping)',
     group: 'canvas',
     bindsAt: 'reactFlow',
   },
   {
     id: 'canvas-drag-handle',
     keys: 'Drag handle',
-    label: 'Connect entities',
     group: 'canvas',
     bindsAt: 'reactFlow',
   },
@@ -302,6 +276,23 @@ export const SHORTCUTS: Shortcut[] = [
 /**
  * `SHORTCUTS` indexed by id, for O(1) lookup.
  */
+/**
+ * English view of the registry. Callers inside a React render should use
+ * {@link shortcutsFor} so the labels follow the active locale; this stays for
+ * the registry tests and any non-React consumer.
+ */
+export const SHORTCUTS: Shortcut[] = SHORTCUT_DEFS.map((d) => ({
+  ...d,
+  label: en.shortcut.label[d.id as keyof typeof en.shortcut.label],
+}));
+
+/** Locale-aware registry. */
+export const shortcutsFor = (messages: Messages): Shortcut[] =>
+  SHORTCUT_DEFS.map((d) => ({
+    ...d,
+    label: messages.shortcut.label[d.id as keyof Messages['shortcut']['label']],
+  }));
+
 export const SHORTCUT_BY_ID: Record<string, Shortcut> = Object.fromEntries(
   SHORTCUTS.map((s) => [s.id, s])
 );
@@ -315,6 +306,17 @@ export const SHORTCUTS_BY_GROUP: Record<ShortcutGroup, Shortcut[]> = {
   entity: SHORTCUTS.filter((s) => s.group === 'entity'),
   group: SHORTCUTS.filter((s) => s.group === 'group'),
   canvas: SHORTCUTS.filter((s) => s.group === 'canvas'),
+};
+
+/** Locale-aware equivalent of {@link SHORTCUTS_BY_GROUP}. */
+export const shortcutsByGroupFor = (messages: Messages): Record<ShortcutGroup, Shortcut[]> => {
+  const all = shortcutsFor(messages);
+  return {
+    global: all.filter((s) => s.group === 'global'),
+    entity: all.filter((s) => s.group === 'entity'),
+    group: all.filter((s) => s.group === 'group'),
+    canvas: all.filter((s) => s.group === 'canvas'),
+  };
 };
 
 /**

@@ -12,10 +12,5 @@ import { makeWarning, type UntieredWarning } from './shared';
  */
 export const causalityExistenceRule = (doc: TPDocument): UntieredWarning[] =>
   edgesArray(doc).map((edge) =>
-    makeWarning(
-      doc,
-      'causality-existence',
-      { kind: 'edge', id: edge.id },
-      'Does the cause inevitably produce the effect?'
-    )
+    makeWarning(doc, 'causality-existence', { kind: 'edge', id: edge.id }, 'causality-existence')
   );

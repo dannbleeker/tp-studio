@@ -49,7 +49,10 @@ export type RevisionsSlice = {
    * the panel surfaces that as "No changes" so the user can intentionally
    * mark a moment.
    */
-  captureSnapshot: (label?: string) => string;
+  /** Capture a snapshot of the active doc. Returns its id, or `null` when the
+   *  write didn't land (storage full / disabled) — there is no snapshot to
+   *  restore in that case, and the storage listener has already told the user. */
+  captureSnapshot: (label?: string) => string | null;
 
   /**
    * Roll the document back to a revision. Captures a safety snapshot of
@@ -149,9 +152,34 @@ const loadRevisionsByDoc = (): RevisionsByDoc => {
   return raw;
 };
 
-/** Write the map back. Storage errors surface via the existing toast listener. */
-const saveRevisionsByDoc = (byDoc: RevisionsByDoc): void => {
+/**
+ * Write the map back. Returns whether the write actually landed.
+ *
+ * The boolean used to be discarded, and every caller then `set({ revisions })`
+ * regardless — so on a failed write the panel listed snapshots that were not in
+ * storage, including the one it had just reported saving. Worse, the quota
+ * listener runs SYNCHRONOUSLY inside the failing write: it trims the stored map
+ * and calls `reloadRevisionsForActiveDoc()`, and the caller's unconditional
+ * `set` immediately overwrote that trimmed list with the untrimmed one.
+ *
+ * Callers now publish only on success (`setIfSaved`), so in-memory state cannot
+ * claim more history than storage holds. Storage errors still surface their own
+ * toast via the listener, so no extra reporting is needed here.
+ */
+const saveRevisionsByDoc = (byDoc: RevisionsByDoc): boolean =>
   writeJSON(STORAGE_KEYS.revisions, byDoc);
+
+/** Persist then publish. The in-memory `revisions` array is the panel's source
+ *  of truth, so it must never get ahead of storage. Returns whether it landed. */
+const saveAndPublish = (
+  set: (partial: { revisions: Revision[] }) => void,
+  byDoc: RevisionsByDoc,
+  docId: string,
+  nextList: Revision[]
+): boolean => {
+  if (!saveRevisionsByDoc({ ...byDoc, [docId]: nextList })) return false;
+  set({ revisions: nextList });
+  return true;
 };
 
 const trim = (list: Revision[]): Revision[] =>
@@ -179,8 +207,9 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
       const byDoc = loadRevisionsByDoc();
       const existing = byDoc[docId] ?? [];
       const nextList = trim([revision, ...existing]);
-      saveRevisionsByDoc({ ...byDoc, [docId]: nextList });
-      set({ revisions: nextList });
+      // A failed write returns no id: the caller's contract is "here is the
+      // snapshot you can restore", and there is nothing to restore.
+      if (!saveAndPublish(set, byDoc, docId, nextList)) return null;
       return revision.id;
     },
 
@@ -236,6 +265,14 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
       try {
         restored = importFromJSON(JSON.stringify(target.doc));
       } catch {
+        // Used to be a bare `return`: the user clicked Restore, the canvas did
+        // not change, and nothing said why. A snapshot that won't validate is
+        // rare (a tampered or truncated `revisions:v1`) and exactly the case
+        // where silence reads as a broken button.
+        get().showToast(
+          'error',
+          "That snapshot can't be restored — its stored copy is damaged or from an unsupported version."
+        );
         return;
       }
       // Safety net: capture the current doc first so the user can undo via
@@ -262,13 +299,23 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
         ...(target.branchName ? { branchName: target.branchName } : {}),
       };
       const nextList = trim([safety, ...list]);
-      saveRevisionsByDoc({ ...byDoc, [docId]: nextList });
+      // The restore goes ahead even if the safety snapshot can't be stored —
+      // the user asked for it, and refusing would be a worse surprise. But say
+      // so, because the undo affordance the safety net provides won't be there,
+      // and don't publish a list storage doesn't hold.
+      const safetySaved = saveRevisionsByDoc({ ...byDoc, [docId]: nextList });
+      if (!safetySaved) {
+        get().showToast(
+          'info',
+          "Restored — but the 'before restoring' snapshot couldn't be saved, so this step isn't in the history."
+        );
+      }
       // Swap the doc. setDocument's auto-snapshot would normally fire here,
       // but we already captured the safety snapshot — set the suppression
       // flag so docMetaSlice skips its hook for this one swap.
       suppressNextAutoSnapshot = true;
       get().setDocument(restored);
-      set({ revisions: nextList });
+      if (safetySaved) set({ revisions: nextList });
     },
 
     deleteSnapshot: (revisionId) => {
@@ -277,8 +324,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
       const list = byDoc[docId] ?? [];
       const next = list.filter((r) => r.id !== revisionId);
       if (next.length === list.length) return;
-      saveRevisionsByDoc({ ...byDoc, [docId]: next });
-      set({ revisions: next });
+      saveAndPublish(set, byDoc, docId, next);
     },
 
     renameSnapshot: (revisionId, label) => {
@@ -300,8 +346,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
         return rest as Revision;
       });
       if (!changed) return;
-      saveRevisionsByDoc({ ...byDoc, [docId]: next });
-      set({ revisions: next });
+      saveAndPublish(set, byDoc, docId, next);
     },
 
     reloadRevisionsForActiveDoc: () => {
@@ -335,7 +380,7 @@ export const createRevisionsSlice: StateCreator<RootStore, [], [], RevisionsSlic
         branchName: tag,
       };
       const nextList = trim([branched, ...list]);
-      saveRevisionsByDoc({ ...byDoc, [docId]: nextList });
+      if (!saveRevisionsByDoc({ ...byDoc, [docId]: nextList })) return null;
       set({ revisions: nextList });
       return branched.id;
     },

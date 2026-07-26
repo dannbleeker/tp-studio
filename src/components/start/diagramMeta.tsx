@@ -11,85 +11,40 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react';
-import {
-  DIAGRAM_SHORT_LABEL,
-  DIAGRAM_TYPE_COLOR,
-  DIAGRAM_TYPE_LABEL,
-} from '@/domain/entityTypeMeta';
+import { diagramLabel, diagramShortLabel } from '@/domain/entityPalettes';
+import { DIAGRAM_TYPE_COLOR } from '@/domain/entityTypeMeta';
 import { ENTITY_STRIPE_COLOR } from '@/domain/tokens';
 import type { DiagramType } from '@/domain/types';
+import type { Messages } from '@/i18n/types';
 
 /**
  * Session 183 — per-diagram-type chrome for the Start surface (group headers,
  * tree-card tags). `label` / `tag` / `color` reuse the domain's
- * `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` / `DIAGRAM_TYPE_COLOR` (the colour
+ * the catalogue's diagram labels / `DIAGRAM_TYPE_COLOR` (the colour
  * is the diagram's canonical entity-stripe token — no new colour values); `icon`
  * is a lucide glyph. Cover every `DiagramType` so grouping never hits the
  * fallback for a known type.
  */
 export type DiagramMeta = { label: string; tag: string; color: string; icon: LucideIcon };
 
-export const DIAGRAM_META: Record<DiagramType, DiagramMeta> = {
-  goalTree: {
-    label: DIAGRAM_TYPE_LABEL.goalTree,
-    tag: DIAGRAM_SHORT_LABEL.goalTree,
-    color: DIAGRAM_TYPE_COLOR.goalTree,
-    icon: Target,
-  },
-  ec: {
-    label: DIAGRAM_TYPE_LABEL.ec,
-    tag: DIAGRAM_SHORT_LABEL.ec,
-    color: DIAGRAM_TYPE_COLOR.ec,
-    icon: Cloud,
-  },
-  crt: {
-    label: DIAGRAM_TYPE_LABEL.crt,
-    tag: DIAGRAM_SHORT_LABEL.crt,
-    color: DIAGRAM_TYPE_COLOR.crt,
-    icon: Network,
-  },
-  frt: {
-    label: DIAGRAM_TYPE_LABEL.frt,
-    tag: DIAGRAM_SHORT_LABEL.frt,
-    color: DIAGRAM_TYPE_COLOR.frt,
-    icon: TrendingUp,
-  },
-  prt: {
-    label: DIAGRAM_TYPE_LABEL.prt,
-    tag: DIAGRAM_SHORT_LABEL.prt,
-    color: DIAGRAM_TYPE_COLOR.prt,
-    icon: ListChecks,
-  },
-  tt: {
-    label: DIAGRAM_TYPE_LABEL.tt,
-    tag: DIAGRAM_SHORT_LABEL.tt,
-    color: DIAGRAM_TYPE_COLOR.tt,
-    icon: Footprints,
-  },
-  st: {
-    label: DIAGRAM_TYPE_LABEL.st,
-    tag: DIAGRAM_SHORT_LABEL.st,
-    color: DIAGRAM_TYPE_COLOR.st,
-    icon: MapIcon,
-  },
-  nbr: {
-    label: DIAGRAM_TYPE_LABEL.nbr,
-    tag: DIAGRAM_SHORT_LABEL.nbr,
-    color: DIAGRAM_TYPE_COLOR.nbr,
-    icon: AlertTriangle,
-  },
-  freeform: {
-    label: DIAGRAM_TYPE_LABEL.freeform,
-    tag: DIAGRAM_SHORT_LABEL.freeform,
-    color: DIAGRAM_TYPE_COLOR.freeform,
-    icon: Shapes,
-  },
-  id: {
-    label: DIAGRAM_TYPE_LABEL.id,
-    tag: DIAGRAM_SHORT_LABEL.id,
-    color: DIAGRAM_TYPE_COLOR.id,
-    icon: Crosshair,
-  },
+/**
+ * Per-type icon. The label / tag / colour used to be baked into a module-level
+ * record here; label and tag now come from the message catalogue (via
+ * `diagramLabel` / `diagramShortLabel`) so the Start surface follows the active
+ * locale, and the colour comes straight from `DIAGRAM_TYPE_COLOR`. Only the
+ * glyph choice is genuinely local to this surface.
+ */
+const DIAGRAM_ICON: Record<DiagramType, LucideIcon> = {
+  goalTree: Target,
+  ec: Cloud,
+  crt: Network,
+  frt: TrendingUp,
+  prt: ListChecks,
+  tt: Footprints,
+  st: MapIcon,
+  nbr: AlertTriangle,
+  freeform: Shapes,
+  id: Crosshair,
 };
 
 /**
@@ -119,8 +74,19 @@ export const fallbackDiagramMeta = (type: string): DiagramMeta => ({
   icon: Shapes,
 });
 
-export const diagramMetaFor = (type: DiagramType): DiagramMeta =>
-  DIAGRAM_META[type] ?? fallbackDiagramMeta(type);
+export const diagramMetaFor = (messages: Messages, type: DiagramType): DiagramMeta => {
+  const icon = DIAGRAM_ICON[type];
+  const color = DIAGRAM_TYPE_COLOR[type];
+  // A type outside the registry (an older doc, a hand-edited file) still has to
+  // render something — fall back rather than crash the Start page.
+  if (!icon || !color) return fallbackDiagramMeta(type);
+  return {
+    label: diagramLabel(messages, type),
+    tag: diagramShortLabel(messages, type),
+    color,
+    icon,
+  };
+};
 
 /**
  * Group any diagram-typed items (templates / patterns / the unified library) by

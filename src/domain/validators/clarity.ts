@@ -23,22 +23,12 @@ export const clarityRule = (doc: TPDocument): UntieredWarning[] => {
     if (isNote(e)) continue;
     if (countWords(e.title) > CLARITY_WORD_LIMIT) {
       out.push(
-        makeWarning(
-          doc,
-          'clarity',
-          { kind: 'entity', id: e.id },
-          'Title is over 25 words — tighten to one statement.'
-        )
+        makeWarning(doc, 'clarity', { kind: 'entity', id: e.id }, 'clarity.too-long', {
+          limit: CLARITY_WORD_LIMIT,
+        })
       );
     } else if (e.title.trim().endsWith('?')) {
-      out.push(
-        makeWarning(
-          doc,
-          'clarity',
-          { kind: 'entity', id: e.id },
-          'Statements should be declarative, not questions.'
-        )
-      );
+      out.push(makeWarning(doc, 'clarity', { kind: 'entity', id: e.id }, 'clarity.question'));
     }
   }
   return out;

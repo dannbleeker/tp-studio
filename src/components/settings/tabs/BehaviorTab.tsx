@@ -1,19 +1,9 @@
 import { useShallow } from 'zustand/shallow';
 import { Field } from '@/components/inspector/Field';
+import { useT } from '@/i18n/useT';
 import type { AnimationSpeed } from '@/store';
 import { useDocumentStore } from '@/store';
 import { RadioGroup, Section, Toggle } from '../formPrimitives';
-
-const SPEED_OPTIONS: { id: AnimationSpeed; label: string; hint?: string }[] = [
-  { id: 'instant', label: 'Instant', hint: 'No animation' },
-  { id: 'slow', label: 'Slow' },
-  // Session 87 (S6) — was "Default" with no explanation. Renamed to
-  // "Normal" with a hint that it's the 1× baseline; the actual ms
-  // varies per component (the Inspector slide is 120 ms at Normal,
-  // other transitions vary). "Slow" / "Fast" multiply this baseline.
-  { id: 'default', label: 'Normal', hint: '1× baseline speed' },
-  { id: 'fast', label: 'Fast' },
-];
 
 /**
  * Session 121 — Behavior tab extracted from `SettingsDialog`. Covers
@@ -23,6 +13,7 @@ const SPEED_OPTIONS: { id: AnimationSpeed; label: string; hint?: string }[] = [
  * single tab since Session 87 (S25).
  */
 export function BehaviorTab() {
+  const t = useT();
   const {
     animationSpeed,
     browseLocked,
@@ -61,29 +52,39 @@ export function BehaviorTab() {
     }))
   );
 
+  const b = t.settings.behavior;
+  // Session 87 (S6) — "Normal" rather than "Default", with a hint that it is
+  // the 1× baseline; the actual ms varies per component. "Slow" / "Fast"
+  // multiply that baseline.
+  const speedOptions: { id: AnimationSpeed; label: string; hint?: string }[] = [
+    { id: 'instant', label: b.speeds.instant, hint: b.speeds.instantHint },
+    { id: 'slow', label: b.speeds.slow },
+    { id: 'default', label: b.speeds.default, hint: b.speeds.defaultHint },
+    { id: 'fast', label: b.speeds.fast },
+  ];
+
   return (
-    <Section title="Behavior">
-      <Field label="Animation speed" as="group">
+    <Section title={b.section}>
+      <Field label={b.animationSpeed} as="group">
         <RadioGroup
           name="animationSpeed"
           value={animationSpeed}
           onChange={setAnimationSpeed}
-          options={SPEED_OPTIONS}
+          options={speedOptions}
         />
         <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
-          “Normal” follows your system’s “reduce motion” accessibility setting — enable it in your
-          OS and animations are minimised automatically.
+          {b.animationSpeedNote}
         </span>
       </Field>
       <Toggle
-        label="Browse Lock"
-        hint="Read-only mode — disables editing across the canvas, inspector, and shortcuts"
+        label={b.browseLock}
+        hint={b.browseLockHint}
         checked={browseLocked}
         onChange={setBrowseLocked}
       />
       <Toggle
-        label="Auto-snapshot while editing"
-        hint="Periodically snapshot the current tree as you edit (every few minutes, only when it changed) so you can compare / restore / branch mid-session. Snapshots also fire on document swap regardless."
+        label={b.autoSnapshot}
+        hint={b.autoSnapshotHint}
         checked={autoSnapshot}
         onChange={setAutoSnapshot}
       />
@@ -95,23 +96,23 @@ export function BehaviorTab() {
           per-diagram override. */}
       <div className="flex flex-col gap-1.5 rounded-md border border-neutral-200 bg-neutral-50/50 px-2.5 py-2 dark:border-neutral-800 dark:bg-neutral-900/50">
         <span className="font-semibold text-[10px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-          Creation wizards
+          {b.creationWizards}
         </span>
         <Toggle
-          label="Goal Tree"
-          hint="Open the guided 5-step panel when you create a new Goal Tree. Off = empty canvas, you build manually."
+          label={b.goalTreeWizard}
+          hint={b.goalTreeWizardHint}
           checked={showGoalTreeWizard}
           onChange={setShowGoalTreeWizard}
         />
         <Toggle
-          label="Evaporating Cloud"
-          hint="Open the guided 5-step panel when you create a new EC. Off = the 5 pre-seeded boxes appear ready to edit."
+          label={b.ecWizard}
+          hint={b.ecWizardHint}
           checked={showECWizard}
           onChange={setShowECWizard}
         />
         <Toggle
-          label="Current Reality Tree"
-          hint="Open the guided 3-step UDE-elicitation panel when you create a new CRT. Off = empty canvas, you list UDEs manually."
+          label={b.crtWizard}
+          hint={b.crtWizardHint}
           checked={showCRTWizard}
           onChange={setShowCRTWizard}
         />
@@ -122,8 +123,8 @@ export function BehaviorTab() {
           palette + context menu as the only access surfaces —
           useful for keyboard-purist users. */}
       <Toggle
-        label="Selection toolbar"
-        hint="Show a small floating toolbar above the selected entity / edge with the top 3-5 verbs scoped to its kind. Off = palette + context menu only."
+        label={b.selectionToolbar}
+        hint={b.selectionToolbarHint}
         checked={showSelectionToolbar}
         onChange={setShowSelectionToolbar}
       />
@@ -133,8 +134,8 @@ export function BehaviorTab() {
           Off restores the pre-tabs behavior — each load replaces the
           active document. */}
       <Toggle
-        label="Open documents in new tabs"
-        hint="On = importing, loading a pattern / template / example, or opening a shared link opens a new tab. Off = the load replaces the current document."
+        label={b.openDocsInNewTab}
+        hint={b.openDocsInNewTabHint}
         checked={openDocsInNewTab}
         onChange={setOpenDocsInNewTab}
       />

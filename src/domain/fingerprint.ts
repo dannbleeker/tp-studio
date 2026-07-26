@@ -113,10 +113,16 @@ const computeLayoutFingerprint = (doc: TPDocument): string => {
  * NOT encoded (mutating these is free):
  *   - position, attestation, owner, lastValidatedAt, evidence,
  *     description, attributes other than S&T facets, collapsed,
- *     titleSize, ordering, annotationNumber, edge labels /
+ *     titleSize, ordering, edge labels /
  *     descriptions / loopName / loopNarrative, OR/XOR group ids, group
  *     memberships, assumption text / status / kind, custom-class
  *     label / color / hint (only `supersetOf` feeds a rule).
+ *
+ * `annotationNumber` used to be on that "free" list, and it isn't: three rules
+ * read it to pick a warning's anchor or break a tie (`ecMissingConflict`,
+ * `goalTreeMultipleGoals`, `coreDriver`). No writer moves it without also
+ * changing the title or type, so there was no live trigger — but encoding it
+ * costs one token and removes the need to keep re-deriving that argument.
  *
  * Note: a future rule that reads any of the "free" fields needs to
  * either add the field here or invalidate the cache another way.
@@ -217,7 +223,15 @@ const computeValidationFingerprint = (doc: TPDocument): string => {
       // point asserted `true` in current reality is legitimate), so a state
       // toggle must invalidate the cache or the warning goes stale on a hit.
       const state = e.state ? `:@${e.state}` : '';
-      return `${e.id}:${e.type}:${e.title}:${u}${s}${slot}${st}${state}`;
+      // `title` goes through JSON.stringify, every other segment is a closed
+      // vocabulary. Interpolated raw, a title containing `:` and `|` forged
+      // extra records: `{n1: "A", n2: "B"}` and `{n1: "A:|n2:ude:B"}` produced
+      // the SAME fingerprint. The LRU is module-global and shared across tabs
+      // and saved docs (`useSavedTrees` validates every tree in the library), so
+      // that collision returned one document's warnings for another — pointing
+      // at entity ids the second document doesn't contain. JSON string encoding
+      // is injective and its delimiters are unambiguous, so the whole record is.
+      return `${e.id}:${e.type}:${JSON.stringify(e.title)}:${e.annotationNumber}:${u}${s}${slot}${st}${state}`;
     })
     .sort()
     .join('|');

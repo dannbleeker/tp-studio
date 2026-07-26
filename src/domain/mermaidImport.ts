@@ -34,6 +34,12 @@ const EDGE_RE = /^(\w+)\s*(-->|==>)\s*(?:\|([^|]*)\|\s*)?(\w+)$/;
 const CLASS_DECL_RE = /^class\s+([\w,\s]+)\s+type_(\w+);?$/;
 const FRONTMATTER_TITLE_RE = /^title:\s*(.+)$/;
 
+/** Unwrap a YAML double-quoted scalar, reversing `\\` and `\"` escapes. */
+const unquoteYamlScalar = (raw: string): string => {
+  if (!(raw.startsWith('"') && raw.endsWith('"') && raw.length >= 2)) return raw;
+  return raw.slice(1, -1).replace(/\\(["\\])/g, '$1');
+};
+
 /** Strip Mermaid quote/bracket wrappers + decode our exporter's escapes. */
 const decodeLabel = (raw: string): string => {
   let s = raw.trim();
@@ -49,8 +55,14 @@ const decodeLabel = (raw: string): string => {
   if (s.startsWith('"') && s.endsWith('"')) {
     s = s.slice(1, -1);
   }
-  // Decode escapes our exporter applies: `<br/>` → newline, `&quot;` → `"`.
-  s = s.replace(/<br\s*\/?\s*>/g, '\n').replace(/&quot;/g, '"');
+  // Decode escapes our exporter applies: `<br/>` → newline, `&quot;` → `"`,
+  // and the bracket entities it uses so a `]` in a title can't close the node
+  // declaration early.
+  s = s
+    .replace(/<br\s*\/?\s*>/g, '\n')
+    .replace(/&quot;/g, '"')
+    .replace(/&#91;/g, '[')
+    .replace(/&#93;/g, ']');
   return s;
 };
 
@@ -99,7 +111,11 @@ const parseMermaid = (
     i = 1;
     while (i < lines.length && lines[i]?.trim() !== '---') {
       const m = lines[i]?.trim().match(FRONTMATTER_TITLE_RE);
-      if (m?.[1]) title = m[1].trim();
+      // The exporter writes a YAML double-quoted scalar (a bare `Rev 2: the
+      // sequel` is a nested mapping and breaks every renderer), so unquote and
+      // unescape it here. An unquoted title from a hand-written file still
+      // works — the quotes are simply absent.
+      if (m?.[1]) title = unquoteYamlScalar(m[1].trim());
       i++;
     }
     if (lines[i]?.trim() === '---') i++; // skip the closing fence
@@ -220,10 +236,21 @@ export const importFromMermaid = (raw: string, diagramType: DiagramType = 'crt')
   // Build edges. Group `==>` edges by target so they share an andGroupId.
   const edges: Edge[] = [];
   const andGroupByTarget = new Map<string, string>();
+  // The store's `connect` refuses a self-loop and a duplicate source→target
+  // pair; an imported document has to satisfy the same invariants, or the file
+  // produces a graph the app can't produce and the model's own comments say
+  // isn't supported. `a-->a` and a repeated `a-->b` are silently dropped rather
+  // than rejecting the import — a hand-written Mermaid file expressing either is
+  // far more likely to be sloppy than deliberate.
+  const seenPairs = new Set<string>();
   for (const e of parsed.edges) {
     const sId = idMap.get(e.source);
     const tId = idMap.get(e.target);
     if (!sId || !tId) continue;
+    if (sId === tId) continue;
+    const pair = `${sId}>${tId}`;
+    if (seenPairs.has(pair)) continue;
+    seenPairs.add(pair);
     let andGroupId: string | undefined;
     if (e.isAnd) {
       const existing = andGroupByTarget.get(e.target);

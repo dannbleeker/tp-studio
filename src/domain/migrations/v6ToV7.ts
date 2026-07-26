@@ -81,8 +81,12 @@ export const v6ToV7: Migration = {
     // 3. Assumption records — find every assumption-Entity, locate its
     // edge via reverse-walk of edges[*].assumptionIds, mint an
     // Assumption record with status 'unexamined'.
+    // COPIED, not aliased. Writing into `raw.assumptions` mutated the caller's
+    // input, which the migration loop's contract explicitly says it does not do
+    // — the whole registry is documented as pure. Nothing depended on the
+    // mutation, so this is a straight correction rather than a behaviour change.
     const nextAssumptions: Record<string, Record<string, unknown>> = isPlainObject(raw.assumptions)
-      ? (raw.assumptions as Record<string, Record<string, unknown>>)
+      ? { ...(raw.assumptions as Record<string, Record<string, unknown>>) }
       : {};
     for (const [id, ent] of Object.entries(nextEntities)) {
       if (!isPlainObject(ent) || ent.type !== 'assumption') continue;

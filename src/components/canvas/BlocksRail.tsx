@@ -1,14 +1,14 @@
 import { ChevronLeft, ChevronRight, LayoutGrid, LayoutTemplate } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
+import { diagramLabel, diagramShortLabel } from '@/domain/entityPalettes';
 import {
-  DIAGRAM_SHORT_LABEL,
-  DIAGRAM_TYPE_LABEL,
   ENTITY_TYPE_META,
   PALETTE_BY_DIAGRAM,
   paletteForDoc,
   resolveEntityTypeMeta,
 } from '@/domain/entityTypeMeta';
 import type { DiagramType, EntityType } from '@/domain/types';
+import { useT } from '@/i18n/useT';
 import { guardWriteOrToast } from '@/services/browseLock';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
@@ -50,6 +50,8 @@ const homeDiagramFor = (type: EntityType, exclude: DiagramType): DiagramType | n
 const ALL_BUILTINS = Object.keys(ENTITY_TYPE_META) as EntityType[];
 
 export function BlocksRail() {
+  const t = useT();
+  const br = t.blocksRail;
   const {
     diagramType,
     customClasses,
@@ -100,8 +102,8 @@ export function BlocksRail() {
         <button
           type="button"
           onClick={() => setCollapsed(false)}
-          title="Show building blocks"
-          aria-label="Show building blocks"
+          title={br.show}
+          aria-label={br.show}
           className="rounded-md p-1.5 text-neutral-500 hover:bg-neutral-200/60 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
         >
           <ChevronRight className="h-4 w-4" />
@@ -113,7 +115,7 @@ export function BlocksRail() {
 
   return (
     <aside
-      aria-label="Building blocks"
+      aria-label={br.title}
       // Hidden below `sm`: at 236px the rail would eat most of a phone screen.
       // Entity creation stays available via canvas double-click + the command
       // palette; the rail returns at `sm+` where there's room beside the canvas.
@@ -123,17 +125,17 @@ export function BlocksRail() {
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 font-semibold text-[11px] text-neutral-500 uppercase tracking-[0.06em] dark:text-neutral-400">
             <LayoutGrid className="h-3.5 w-3.5" aria-hidden />
-            Building blocks
+            {br.title}
           </div>
           <p className="mt-0.5 text-[11px] text-neutral-400 leading-snug dark:text-neutral-500">
-            Click to add a correctly-typed entity.
+            {br.subtitle}
           </p>
         </div>
         <button
           type="button"
           onClick={() => setCollapsed(true)}
-          title="Collapse"
-          aria-label="Collapse building blocks"
+          title={br.collapse}
+          aria-label={br.collapseAria}
           className="-mr-1 shrink-0 rounded-md p-1 text-neutral-400 hover:bg-neutral-200/60 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -149,7 +151,7 @@ export function BlocksRail() {
               type="button"
               key={type}
               onClick={() => create(type)}
-              title={`Add ${meta.label}`}
+              title={br.add({ entity: meta.label })}
               className="group mb-1 flex w-full items-start gap-2 rounded-md border border-transparent p-2 text-left transition hover:border-neutral-200 hover:bg-white dark:hover:border-neutral-700 dark:hover:bg-neutral-950"
             >
               <span
@@ -184,14 +186,18 @@ export function BlocksRail() {
               return (
                 <div
                   key={type}
-                  title={`${meta.label}${home ? ` — used in ${DIAGRAM_TYPE_LABEL[home]}` : ''}`}
+                  title={
+                    home
+                      ? br.usedIn({ entity: meta.label, diagram: diagramLabel(t, home) })
+                      : meta.label
+                  }
                   className="flex items-center gap-2 rounded-md px-2 py-1 text-neutral-400 dark:text-neutral-600"
                 >
                   <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
                   <span className="min-w-0 flex-1 truncate text-[12px]">{meta.label}</span>
                   {home && (
                     <span className="shrink-0 text-[10px] text-neutral-400 dark:text-neutral-600">
-                      in {DIAGRAM_SHORT_LABEL[home]} →
+                      {br.inDiagram({ diagram: diagramShortLabel(t, home) })}
                     </span>
                   )}
                 </div>
@@ -208,7 +214,7 @@ export function BlocksRail() {
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[12px] text-neutral-600 transition hover:bg-white hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-950 dark:hover:text-neutral-100"
         >
           <LayoutTemplate className="h-4 w-4 shrink-0" aria-hidden />
-          Browse templates &amp; examples
+          {br.browseTemplates}
         </button>
       </div>
     </aside>

@@ -32,12 +32,9 @@ export const indirectEffectRule = (doc: TPDocument): UntieredWarning[] => {
     const ungrouped = incoming.filter((edge) => !junctorGroupId(edge));
     if (ungrouped.length >= INDIRECT_EFFECT_THRESHOLD) {
       out.push(
-        makeWarning(
-          doc,
-          'indirect-effect',
-          { kind: 'entity', id: e.id },
-          `${ungrouped.length} direct causes — could some chain through intermediate effects?`
-        )
+        makeWarning(doc, 'indirect-effect', { kind: 'entity', id: e.id }, 'indirect-effect', {
+          count: ungrouped.length,
+        })
       );
     }
   }

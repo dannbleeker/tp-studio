@@ -27,12 +27,9 @@ export const crtUdeWordingRule = (doc: TPDocument): UntieredWarning[] => {
   for (const ude of entitiesOfType(doc, 'ude')) {
     if (ABSENCE_PATTERN.test(ude.title) || LEADING_NO.test(ude.title)) {
       out.push(
-        makeWarning(
-          doc,
-          'crt-ude-wording',
-          { kind: 'entity', id: ude.id },
-          `UDE "${ude.title}" may describe the absence of a solution rather than an observable effect — try restating it as a concrete, present-tense fact.`
-        )
+        makeWarning(doc, 'crt-ude-wording', { kind: 'entity', id: ude.id }, 'crt-ude-wording', {
+          title: ude.title,
+        })
       );
     }
   }

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { findCycles, findPath } from '@/domain/graphReach';
+import type { TPDocument } from '@/domain/types';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedEntity } from '../helpers/seedDoc';
 import { makeDoc, makeEdge, makeEntity, resetIds } from './helpers';
@@ -164,5 +165,44 @@ describe('findPath', () => {
     const a = seedEntity('A');
     const b = seedEntity('B'); // no edge between them
     expect(findPath(s().doc, a.id, b.id)).toBeNull();
+  });
+});
+
+/**
+ * Session 209 — `findCycles` ran a full Tarjan pass per vertex (O(V·(V+E))) and
+ * used a recursive `strongConnect`, so a plain acyclic chain cost 11.7 s at
+ * n=7000 and threw `RangeError: Maximum call stack size exceeded` at n=9000.
+ * It re-runs on every `doc.edges` change and feeds the canvas via
+ * `effectiveBackEdgeIds`, so the throw killed the render.
+ *
+ * The sizes here are far past anything a hand-built tree reaches; that is the
+ * point — they fail loudly and fast if either property regresses, and they run
+ * in milliseconds now that an acyclic graph short-circuits after one SCC pass.
+ */
+describe('findCycles scales and does not overflow the stack', () => {
+  const chain = (n: number): TPDocument => {
+    const entities = Array.from({ length: n }, (_, i) =>
+      makeEntity({ id: `n${i}` as never, annotationNumber: i + 1 })
+    );
+    const edges = Array.from({ length: n - 1 }, (_, i) =>
+      makeEdge(`n${i}` as never, `n${i + 1}` as never)
+    );
+    return makeDoc(entities, edges);
+  };
+
+  it('returns no cycles for a 9000-node acyclic chain without throwing', () => {
+    expect(findCycles(chain(9000))).toEqual([]);
+  });
+
+  it('still finds a cycle closed at the end of a long chain', () => {
+    const doc = chain(4000);
+    const withBackEdge = {
+      ...doc,
+      edges: { ...doc.edges, back: makeEdge('n3999' as never, 'n0' as never) },
+    };
+    const cycles = findCycles(withBackEdge);
+    expect(cycles).toHaveLength(1);
+    expect(cycles[0]?.[0]).toBe('n0');
+    expect(cycles[0]).toHaveLength(4000);
   });
 });

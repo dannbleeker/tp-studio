@@ -42,12 +42,7 @@ export const nbrNoNegativeBranchRule = (doc: TPDocument): UntieredWarning[] => {
   );
   if (!tracing) return [];
   return [
-    makeWarning(
-      doc,
-      'nbr-no-negative-branch',
-      { kind: 'document' },
-      'No undesirable effect captured yet — trace the injection forward to where the chain turns negative ("yes, but…"). Without a UDE this still reads as an FRT.'
-    ),
+    makeWarning(doc, 'nbr-no-negative-branch', { kind: 'document' }, 'nbr-no-negative-branch'),
   ];
 };
 
@@ -82,7 +77,8 @@ export const nbrUdeDisconnectedRule = (doc: TPDocument): UntieredWarning[] => {
         doc,
         'nbr-ude-disconnected',
         { kind: 'entity', id: ude.id },
-        `UDE "${displayTitle(ude)}" doesn't trace back to the candidate injection — connect the chain (injection → … → UDE) or it can't inform the adopt / modify / reject call.`
+        'nbr-ude-disconnected',
+        { title: displayTitle(ude) }
       )
     );
   }

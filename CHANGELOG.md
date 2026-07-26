@@ -2,6 +2,244 @@
 
 Reverse chronological. Entries are grouped by build session, not by release — the project has no version tags yet.
 
+## Session 209 — multi-language architecture (English-only, no language picker)
+
+The seams for a second locale, with exactly one locale shipped and **no language control offered**.
+Nothing about the app changes for a user today. This reverses the long-standing `i18n (English only)`
+line that sat in the won't-build tail of NEXT_STEPS. Full contract: **`docs/I18N.md`**.
+
+### The architecture
+
+- **Hand-rolled typed catalogue, no dependency.** `src/i18n/locales/en.ts` is the source of truth;
+  `type Messages = typeof en` makes a missing key, an extra key, or a changed interpolation signature a
+  `tsc` error in any future locale. Deliberately **not** `as const` — that would narrow every value to its
+  own string literal and demand a Danish catalogue contain the literal `'Undesirable Effect'`. Static copy
+  is a `string`, interpolated copy is a `(params) => string` arrow, so a locale can't quietly drop a
+  parameter and ICU placeholder parsing stays out of the app.
+- **`useT()` returns the catalogue object**, not a `t('a.b.c')` lookup. Every access is checked against
+  `Messages`; a typo is a compile error, not a runtime placeholder.
+- **Locale lives in the Zustand preferences slice, not a React context.** `createContext` appears zero
+  times in `src/`, there is no shared test render helper, and 119 test files call RTL `render()` directly —
+  a provider would have meant ~119 test diffs. As a preference it costs zero test churn and
+  `resetStoreForTest` resets it for free. An unrecognized stored value degrades to English via the same
+  `isLocale` guard the persistence layer uses.
+- **No language picker is shown.** `SELECTABLE_LOCALES` holds only `en`, and the Settings row is gated on
+  there being more than one entry — a one-option dropdown is a choice that isn't one, and it would imply a
+  translated app that doesn't exist. The preference, its persistence, the tampered-value fallback and
+  `<html lang>` all work regardless; only the control is withheld, and it appears by itself when a second
+  locale is registered.
+
+### Crossing the domain / React boundary
+
+Domain modules keep the STRUCTURE — which rules, steps, shortcuts exist and in what order — and the
+catalogue holds the COPY, keyed by an id that was already stable. A resolver renders it for React callers;
+an English-rendered view stays for callers outside a render (the exporters, `factory.ts`'s persisted
+default document title), which is also what keeps existing assertions passing.
+
+- **CLR warnings carry a key, not copy.** `validate(doc)` is memoized twice (a `WeakMap` plus a 32-entry
+  fingerprint LRU), so threading a catalogue in would have meant keying both caches on the locale. Instead
+  `makeWarning` takes `messageKey` + `params`. All 35 validator files converted; `ruleId` plus the existing
+  `variant` discriminator already formed the key space. `Warning.message` is retained, rendered in English
+  from the same catalogue entry the UI uses — so a mis-named interpolation parameter surfaces immediately
+  in the validator suite instead of reaching a user.
+- Same split applied to the 63-step method checklist (step ids were already the JSON wire-format key), the
+  38 keyboard shortcuts, the 7-CLR scrutiny stepper, Barnard's five journey questions and the method-path
+  prompts (`NextStep` carries `labelKey`).
+
+### Copy quality
+
+- **Real plural + list rules, with zero copy change.** `Intl.PluralRules` replaces the
+  `n === 1 ? '' : 's'` ternaries; `Intl.ListFormat` replaces `join(', ')` in `st-tactic-assumptions` using
+  `type: 'unit'`, **not** `'conjunction'` — conjunction would add "and" plus the Oxford comma and silently
+  reword shipped English. Unit keeps en byte-identical while still deferring punctuation to the locale.
+- **Interpolate, never concatenate.** Sentences that were glued together (`${label} — used in ${diagram}`,
+  `New ${diagram} created.`, the `{n}. {step}` ordinal) are single catalogue functions taking the parts, so
+  word order around them belongs to the translator. Build-time values (the security-audit date, version,
+  copyright year) are parameters rather than baked into the string.
+- **No user-visible English changed anywhere in this work.**
+
+### Verification
+
+- **Pseudo-locale.** `pseudo` derives every string from `en` and wraps it in `⟦…⟧`, so text a converted
+  surface renders *without* brackets is a literal that never went through `useT`. Reached only through the
+  registry's dynamic import — a ~200 B chunk production never loads.
+  `tests/i18n/pseudoLocale.test.tsx` renders **twelve surfaces** and asserts every visible string is
+  tagged, with a per-surface allow-list so a new hardcoded string has to be argued for rather than blending
+  into a permissive filter. Eleven are at `[]`; the twelfth, the Building-Blocks rail, allows exactly the
+  `ENTITY_TYPE_META` labels and meanings — **derived from that module rather than transcribed**, so the
+  exception names its cause, cannot drift as the palette is edited, and still fails on a string hardcoded
+  in the component. Two narrow, semantic exemptions: `<kbd>` content (key combos are keyboard input, built
+  per-platform from `${M}`) and bare digits.
+  **It does not test layout** — it brackets but does not expand length, so it catches a missing translation
+  and not a longer one overflowing a control. Recorded in `docs/I18N.md`.
+- It earned its keep: it caught a hardcoded ordinal separator, strings living in a shared sub-component
+  (`MarkdownField`'s Edit/Preview), and the "Method path" strip label — none of which a read-through found.
+
+### Converted
+
+Eleven surfaces render with an empty allow-list: the four Settings tabs, the Document Inspector, Help,
+About, the diagram-type picker, the Analysis-journey dialog, the toolbar title badge and the method-path
+stepper — plus the Building-Blocks rail with its derived allowance. The Templates dialog is converted but
+deliberately **not** asserted: its cards render the 222 parked pattern strings, and an allow-list that
+large would rot faster than it guards. Alongside them: the full CLR pipeline, the
+method checklist, the keyboard shortcuts, the scrutiny stepper, the journey questions, the shared
+doc-links, the Start surface's per-diagram chrome and reader-mode coaching — roughly **635 strings**.
+No component reads an English label view any more; `DIAGRAM_SHORT_LABEL` was deleted outright once its
+last caller was converted.
+
+### Other
+
+- **`TPDocument.locale?`** — a reserved seam. Persisted and soft-validated like `cloudType` (an
+  unrecognized value drops, so a doc from a newer build still opens), but nothing reads it yet. Purely
+  additive: stays `schemaVersion 10`, no migration.
+- **`<html lang>`** follows the locale (a fourth effect in `useThemeClass`) — React 19's metadata hoisting
+  covers `<title>` but not attributes on `<html>`, and the CSP forbids a pre-hydration script.
+- **Bundle went DOWN.** Eager `index` measured 106.4 KB gz before, ~101.5 KB after: deduplicating the
+  coaching copy, dropping `logicTypeMismatch`'s `READING` map and removing the per-card `short` duplicate
+  more than paid for the catalogue. No budget re-pin. `src/i18n/` is deliberately **not** in `manualChunks`
+  (see the Session 135 note at `vite.config.ts:313-332`).
+- **One real bug found and fixed mid-refactor:** `AllTreesGallery`'s search `useMemo` filters on the
+  diagram tag, which became locale-dependent, but its dependency array still listed `[trees, q]`. A locale
+  switch would have left results filtered against the previous locale's tags — invisible to tests, because
+  only one locale ships.
+
+### Closing bug hunt — the i18n diff
+
+A multi-agent sweep over the branch before merge. It also ran a broader pass over persistence, store,
+graph and exporters, which found enough that it became its own piece of work — see the next section.
+Findings in the i18n diff itself:
+
+- **Two hardcoded English strings survived in surfaces the docs claimed were guarded** — the
+  Building-Blocks rail's "Browse templates & examples", and the Analysis-journey dialog's start blurb,
+  which was rendered inline in JSX while an identical, orphaned `journeyDialog.startBlurb` sat in the
+  catalogue. Both fixed. **The interesting part is why they survived**: `docs/I18N.md` listed thirteen
+  surfaces as pseudo-locale-guarded, the test rendered ten, and neither of these was among them. The
+  claim was the bug; the two literals were its symptom. Both surfaces are now in the test, and the doc
+  says what the test actually does.
+- **Two doc comments in `src/i18n/` asserted behaviour the code didn't have.** `useClrText`'s "a warning
+  whose key is missing from a partially-translated locale still shows real copy" was false — the resolver
+  returned `undefined`. Rather than delete the claim, both resolvers now take the English fallback the
+  types already promise (`Warning.message` / `WarningAction.label`), so the documented contract is
+  behaviour. `pseudo.ts`'s "preserves every key and every function arity" was half-true: the wrapper is
+  variadic, so `.length` is 0. Comment corrected; the cast it justified still holds on value KIND.
+- **Two latent traps with one-line fixes.** `pseudoValue` had no `Array.isArray` branch, so an
+  array-valued catalogue entry would have come back as `{0: …, 1: …}`; and the `Intl` caches in
+  `format.ts` keyed on the locale alone while hard-coding their options at the construction site — the
+  first ordinal plural or conjunction list would have silently shared a cached formatter. Neither is
+  reachable today, which is exactly when they are cheap to close.
+- **`Applied: {action}` was an English sentence wrapping a translated label**, in two converted files, with
+  the same event worded two different ways ("No handler for" / "No handler registered for"). One
+  catalogue entry now covers both.
+
+Findings recorded rather than fixed, because fixing them would half-convert a surface or needs a design
+call, are in NEXT_STEPS: `CreationWizardPanel`'s three English-constant reads (its resolvers exist and its
+Document-Inspector twin already uses them, but the rest of that wizard is unconverted), the concatenation
+debt inventory, and `ENTITY_TYPE_META` as the next block to move.
+
+### Parked deliberately (see NEXT_STEPS)
+
+Three items stopped for structural reasons, not effort: the **pattern picker metadata** (222 strings,
+9.2 KB gz, currently on the lazy `patterns` chunk — moving it into the eagerly-imported `en.ts` would
+breach the index budget, so it needs a lazy catalogue *segment*); **toast copy** (~25 sites firing outside
+any render, needing the same `(messageKey, params)` seam `Warning` uses); and **generated prose**
+(`verbalisation.ts`, `edgeReading.ts`), where word ORDER is the translatable thing and per-locale sentence
+templates are required rather than a string swap.
+
+## Session 209b — the app-wide bug program (26 fixes, mostly silent data loss)
+
+The broader review that ran alongside the i18n merge check came back with far more than a merge check
+warranted, including several ways to lose a document without being told. Fixed here rather than filed,
+each with a regression test. Nothing below is i18n-related; these are all pre-existing.
+
+### Losing documents
+
+- **A custom entity class made a document permanently unloadable.** `paletteForDoc` feeds every
+  `customEntityClasses` key into the Inspector's Type picker, which writes it onto the entity — but
+  `validateEntity` admitted only the 14 built-ins and hard-threw on anything else, rejecting the WHOLE
+  document. With backup rotation, the second save left committed, live and backup all unparseable and
+  the tree disappeared from the tab strip AND from Start → All trees, silently. `resolveEntityTypeMeta`
+  has always had a graceful branch for an unknown type, so the render path was already total; the strict
+  guard bought a typo check at the price of total document loss.
+- **The quota cascade fired once per failed WRITE, not once per save.** One keystroke issues 2 writes and
+  a debounced commit issues 4, and the in-flight latch cleared in a `finally` — so with the cheap tiers
+  exhausted, typing a single character evicted 10 closed trees and a commit evicted 20. Invisibly:
+  `showToast` deduped on `(kind, message)` and the message never varied. The latch now clears on a task
+  boundary, tier 3 has a wall-clock floor, and its toast carries a running total.
+- **Eviction deleted the documents it could NOT parse first** — `updatedAt ?? 0` sorted them to the front
+  of the queue, and the likeliest reason a doc is unparseable is that a newer build wrote it. A stale PWA
+  shell destroyed the user's newest work first.
+- **Deleting or evicting a tree left its revision history behind** — up to 50 full document snapshots,
+  the largest per-doc payload — so tier 3 freed almost nothing and re-fired.
+- **Undo/redo across a document swap never rewrote the tabs manifest**, so the undo was silently reverted
+  on reload. Same hole `performDocumentSwap` closed in Session 206, via the other path that rekeys the
+  active tab.
+- **`setDocument` lacked `openTab`'s id-collision guard**, so a replace-mode load whose id names a
+  background tab overwrote that tab's in-memory doc and deduped its slot out of `tabOrder`.
+- **A tab whose body failed to parse vanished with no signal**, and a boot that fell back to a fresh CRT
+  never rewrote the manifest — so every reload minted another blank doc while the user's real doc sat
+  unreferenced.
+- **`writeTextToHandle` committed a failed write.** `createWritable()` opens an empty swap file and
+  `close()` commits it, so `finally { close() }` truncated the user's linked file on disk. The existing
+  test asserted the broken behaviour by name.
+
+### Telling the truth
+
+- **"JSON (redacted)" is now an ALLOWLIST.** It blanked five named fields and passed everything else
+  through a `...rest` spread, so every optional field added since leaked by default — assumption text,
+  entity owner, attribute values, evidence descriptions and URLs, working assumptions, system scope,
+  comments — from a feature whose entire job is not leaking.
+- **Revisions no longer claim more history than storage holds.** Writes discarded their success boolean
+  and published regardless; the quota listener, which runs synchronously inside the failing write, would
+  trim the stored map and reload — and the caller's unconditional `set` then overwrote the trimmed list.
+- **`restoreSnapshot` stopped failing silently**, and a toast carrying an ACTION is never deduped —
+  deleting two trees both titled "Untitled" collapsed the second toast and with it the only remaining
+  copy of that document body.
+- **CSV import reported success while dropping edges.** A row's own identity was keyed by title, so a
+  repeated title made the second row's edge attach to the first row's entity.
+
+### Correctness under scale and punctuation
+
+- **`validationFingerprint` was not injective.** Entity records were an unescaped concatenation joined by
+  `|` with free text interpolated raw, so `{n1:"A", n2:"B"}` and `{n1:"A:|n2:effect:B"}` hashed
+  identically — and the LRU is module-global and shared across tabs and saved docs, so one document
+  rendered warnings targeting entity ids it does not contain.
+- **`findCycles` was O(V²) and blew the stack.** A full Tarjan pass per vertex: 11.7 s on a plain ACYCLIC
+  chain of 7000 entities, `RangeError` past ~8000 — on the canvas render path. SCCs are computed once and
+  both searches are iterative.
+- **A quoted `schemaVersion` was treated as version 1**, re-running the whole v1→v10 chain and renumbering
+  every annotation. Hand- and LLM-authored JSON is a first-class input and quoting a number is the
+  commonest way to get it wrong.
+- **CSV formula injection** — a title beginning `= + - @` became a live formula in the tracker or the
+  board deck the file was handed to.
+- **XML control characters** made OPML and Flying Logic files that simply don't open.
+- **OPML dropped entities and whole subtrees** — an entity whose edge pointed at a note was neither child
+  nor root and vanished (one effect plus one note produced an empty `<body>`), and cycle members were
+  unreachable from any root.
+- **DOT / Mermaid / VGL emitted edges to nodes they never declared**, which the receiving tool
+  auto-creates under the mangled internal id — something all three file headers already claimed not to do.
+- **Mermaid broke on ordinary punctuation**: a `]` in a title made re-import report "no nodes found", and
+  an unquoted YAML frontmatter title meant `Rev 2: the sequel` failed to render anywhere.
+- **Mermaid import produced documents the app itself cannot produce** — no self-loop or duplicate-pair
+  guard, unlike `connect`.
+- **Cross-doc link writes bypassed the debounce scheduler**, so an in-flight write could land afterwards
+  and overwrite the link while the target kept its mirror — the asymmetric corruption `preserveLinks`
+  exists to prevent, with no history entry to undo.
+- **`mergeDocIntoActive` flattened nested groups**, dropped any group whose members were all groups, and
+  left merged entities without their custom-class definitions.
+
+### The tail
+
+`clearLocalStorage` missed the legacy live-draft slot · an unsafe evidence URL was accepted at entry and
+deleted at load with nothing said · `v6ToV7` mutated its input against the registry's documented purity ·
+`v9ToV10` left group members pointing at entities it had removed · non-Latin titles all downloaded as
+`untitled.<ext>` · the PDF appendix broke pages once per entity rather than per line, so a long block
+marched off the bottom invisibly.
+
+### Also fixed by the reasoning outline
+
+A document made only of a cycle reported "*No structural entities yet.*" with entities and edges plainly
+present — the one message guaranteed to read as a bug.
+
 ## Session 208 — touch interactions (bottom-sheet inspector · long-press menu · touch canvas)
 
 The deeper half of the mobile work — making the *canvas itself* usable with a finger, not just fitting the

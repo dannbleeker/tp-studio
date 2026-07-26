@@ -60,12 +60,7 @@ export const stTacticRollupRule = (doc: TPDocument): UntieredWarning[] => {
     if (incoming.length > 0) continue;
 
     out.push(
-      makeWarning(
-        doc,
-        'st-tactic-rollup',
-        { kind: 'entity', id: e.id },
-        'Tactic has a parent but no child tactics — every non-leaf tactic should decompose into sufficient sub-tactics, or be intentionally a leaf.'
-      )
+      makeWarning(doc, 'st-tactic-rollup', { kind: 'entity', id: e.id }, 'st-tactic-rollup')
     );
   }
   return out;

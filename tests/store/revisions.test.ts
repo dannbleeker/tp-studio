@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { seedEntity } from '../helpers/seedDoc';
+import { seedEntity, takeSnapshot } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);
 afterEach(() => {
@@ -19,9 +19,9 @@ afterEach(() => {
 describe('revisionsSlice', () => {
   it('captureSnapshot appends to the active doc history newest-first', () => {
     seedEntity('A');
-    useDocumentStore.getState().captureSnapshot('Baseline');
+    takeSnapshot('Baseline');
     seedEntity('B');
-    useDocumentStore.getState().captureSnapshot('Added B');
+    takeSnapshot('Added B');
     const revs = useDocumentStore.getState().revisions;
     expect(revs).toHaveLength(2);
     expect(revs[0]?.label).toBe('Added B');
@@ -32,15 +32,15 @@ describe('revisionsSlice', () => {
   });
 
   it('captureSnapshot trims a labelled snapshot of whitespace before storing', () => {
-    useDocumentStore.getState().captureSnapshot('   ');
+    takeSnapshot('   ');
     expect(useDocumentStore.getState().revisions[0]?.label).toBeUndefined();
-    useDocumentStore.getState().captureSnapshot('  Real label  ');
+    takeSnapshot('  Real label  ');
     expect(useDocumentStore.getState().revisions[0]?.label).toBe('Real label');
   });
 
   it('restoreSnapshot rolls the doc back AND captures a safety snapshot first', () => {
     seedEntity('A');
-    const baselineId = useDocumentStore.getState().captureSnapshot('Baseline');
+    const baselineId = takeSnapshot('Baseline');
     seedEntity('B');
     expect(Object.keys(useDocumentStore.getState().doc.entities)).toHaveLength(2);
     useDocumentStore.getState().restoreSnapshot(baselineId);
@@ -54,7 +54,7 @@ describe('revisionsSlice', () => {
 
   it('deleteSnapshot removes the target without touching the doc', () => {
     seedEntity('A');
-    const id = useDocumentStore.getState().captureSnapshot('drop me');
+    const id = takeSnapshot('drop me');
     useDocumentStore.getState().deleteSnapshot(id);
     expect(useDocumentStore.getState().revisions.find((r) => r.id === id)).toBeUndefined();
     // Doc is untouched:
@@ -62,7 +62,7 @@ describe('revisionsSlice', () => {
   });
 
   it('renameSnapshot updates an existing label and clears on empty input', () => {
-    const id = useDocumentStore.getState().captureSnapshot('first');
+    const id = takeSnapshot('first');
     useDocumentStore.getState().renameSnapshot(id, 'renamed');
     expect(useDocumentStore.getState().revisions.find((r) => r.id === id)?.label).toBe('renamed');
     useDocumentStore.getState().renameSnapshot(id, '   ');
@@ -70,7 +70,7 @@ describe('revisionsSlice', () => {
   });
 
   it('renameSnapshot is a no-op for an unknown id', () => {
-    useDocumentStore.getState().captureSnapshot('label');
+    takeSnapshot('label');
     const before = useDocumentStore.getState().revisions[0]?.label;
     useDocumentStore.getState().renameSnapshot('not-a-real-id', 'X');
     expect(useDocumentStore.getState().revisions[0]?.label).toBe(before);
@@ -91,10 +91,10 @@ describe('revisionsSlice', () => {
 
   it('reloadRevisionsForActiveDoc filters to the current doc', () => {
     seedEntity('A');
-    useDocumentStore.getState().captureSnapshot('doc 1 snap');
+    takeSnapshot('doc 1 snap');
     const docId1 = useDocumentStore.getState().doc.id;
     useDocumentStore.getState().newDocument('frt');
-    useDocumentStore.getState().captureSnapshot('doc 2 snap');
+    takeSnapshot('doc 2 snap');
     // Active panel shows doc 2's history only:
     expect(useDocumentStore.getState().revisions).toHaveLength(1);
     expect(useDocumentStore.getState().revisions[0]?.label).toBe('doc 2 snap');
@@ -107,5 +107,52 @@ describe('revisionsSlice', () => {
     expect(doc1History.length).toBeGreaterThanOrEqual(1);
     expect(doc1History.find((r: { label?: string }) => r.label === 'doc 1 snap')).toBeDefined();
     expect(docId2).not.toBe(docId1);
+  });
+});
+
+/**
+ * Session 209 — the revisions slice used to discard `writeJSON`'s boolean and
+ * `set({ revisions })` regardless, so on a failed write the panel listed
+ * snapshots that were not in storage, including the one it had just reported
+ * saving. Worse: the quota listener runs SYNCHRONOUSLY inside the failing
+ * write, trims the stored map and reloads the in-memory list — and the caller's
+ * unconditional `set` then overwrote that trimmed list with the untrimmed one.
+ */
+describe('revisions never claim more history than storage holds', () => {
+  const failWrites = () =>
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      const err = new Error('quota exceeded');
+      (err as Error & { name: string }).name = 'QuotaExceededError';
+      throw err;
+    });
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('captureSnapshot returns null and publishes nothing when the write fails', () => {
+    seedEntity('A');
+    const before = useDocumentStore.getState().revisions;
+    failWrites();
+    const id = useDocumentStore.getState().captureSnapshot('doomed');
+    vi.restoreAllMocks();
+
+    expect(id).toBeNull();
+    expect(useDocumentStore.getState().revisions).toEqual(before);
+  });
+
+  it('restoreSnapshot says so instead of silently doing nothing on a damaged snapshot', () => {
+    seedEntity('A');
+    const id = takeSnapshot('Baseline');
+    // Corrupt the stored copy so `importFromJSON` rejects it.
+    const raw = JSON.parse(globalThis.localStorage.getItem('tp-studio:revisions:v1') ?? '{}');
+    const docId = useDocumentStore.getState().doc.id;
+    raw[docId][0].doc.entities = 'not an object';
+    globalThis.localStorage.setItem('tp-studio:revisions:v1', JSON.stringify(raw));
+    useDocumentStore.getState().reloadRevisionsForActiveDoc();
+
+    useDocumentStore.getState().restoreSnapshot(id);
+
+    const toasts = useDocumentStore.getState().toasts;
+    expect(toasts.at(-1)?.kind).toBe('error');
+    expect(toasts.at(-1)?.message).toMatch(/can't be restored/i);
   });
 });

@@ -2,10 +2,11 @@ import clsx from 'clsx';
 import { ChevronRight, ChevronUp, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { DIAGRAM_SHORT_LABEL, DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
+import { diagramLabel, diagramShortLabel } from '@/domain/entityPalettes';
 import { createDocument } from '@/domain/factory';
 import { nextStepFor, TP_GOAL_BRANCH, TP_METHOD_SEQUENCE } from '@/domain/methodPath';
 import type { DiagramType, DocumentId } from '@/domain/types';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 
@@ -18,6 +19,7 @@ import { currentDoc } from '@/store/selectors';
  * milestone — e.g. a CRT with a root cause → "break it with an Evaporating Cloud".
  */
 export function MethodStepper() {
+  const t = useT();
   const { doc, tabOrder, docs, openDocInTab, switchTab, setMethodPathCollapsed } = useDocumentStore(
     useShallow((s) => ({
       doc: currentDoc(s),
@@ -62,7 +64,9 @@ export function MethodStepper() {
           type="button"
           onClick={() => goTo(dt)}
           title={
-            isCurrent ? `${DIAGRAM_TYPE_LABEL[dt]} (current)` : `Open ${DIAGRAM_TYPE_LABEL[dt]}`
+            isCurrent
+              ? t.toolbar.stepCurrent({ diagram: diagramLabel(t, dt) })
+              : t.toolbar.stepOpen({ diagram: diagramLabel(t, dt) })
           }
           aria-current={isCurrent ? 'step' : undefined}
           className={clsx(
@@ -75,7 +79,7 @@ export function MethodStepper() {
           )}
         >
           {isCurrent && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />}
-          {DIAGRAM_SHORT_LABEL[dt]}
+          {diagramShortLabel(t, dt)}
         </button>
         {chevron && (
           <ChevronRight
@@ -91,9 +95,12 @@ export function MethodStepper() {
     <div className="flex items-center gap-2 border-neutral-200 border-b bg-neutral-50/60 px-4 py-1 dark:border-neutral-800 dark:bg-neutral-900/40 print:hidden">
       <span className="flex shrink-0 items-center gap-1 font-medium text-[10px] text-neutral-400 uppercase tracking-wider dark:text-neutral-500">
         <Sparkles className="h-3 w-3" aria-hidden />
-        <span className="hidden sm:inline">Method path</span>
+        <span className="hidden sm:inline">{t.toolbar.methodPath}</span>
       </span>
-      <nav aria-label="TP method path" className="flex min-w-0 items-center gap-0 overflow-x-auto">
+      <nav
+        aria-label={t.toolbar.methodPathNav}
+        className="flex min-w-0 items-center gap-0 overflow-x-auto"
+      >
         {TP_METHOD_SEQUENCE.map((dt, i) => (
           <Step key={dt} dt={dt} chevron={i < TP_METHOD_SEQUENCE.length - 1} />
         ))}
@@ -101,7 +108,7 @@ export function MethodStepper() {
           className="mx-2 shrink-0 text-[11px] text-neutral-300 dark:text-neutral-700"
           aria-hidden
         >
-          +
+          {t.toolbar.methodPathBranchSeparator}
         </span>
         {TP_GOAL_BRANCH.map((dt, i) => (
           <Step key={dt} dt={dt} chevron={i < TP_GOAL_BRANCH.length - 1} />
@@ -115,15 +122,15 @@ export function MethodStepper() {
             className="hidden shrink-0 items-center gap-1.5 rounded-md border border-accent-200 bg-accent-50 px-2.5 py-1 font-medium text-[11px] text-accent-700 transition hover:bg-accent-100 lg:inline-flex dark:border-accent-800/50 dark:bg-accent-950/40 dark:text-accent-300"
           >
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
-            {next.label}
+            {t.nextStep[next.labelKey]}
             <ChevronRight className="h-3.5 w-3.5" aria-hidden />
           </button>
         )}
         <button
           type="button"
           onClick={() => setMethodPathCollapsed(true)}
-          title="Hide the method path — reopen it from the ⋮ menu"
-          aria-label="Hide method path"
+          title={t.toolbar.hideMethodPathTitle}
+          aria-label={t.toolbar.hideMethodPath}
           className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-neutral-400 transition hover:bg-neutral-200/70 hover:text-neutral-700 dark:hover:bg-neutral-800/70 dark:hover:text-neutral-200"
         >
           <ChevronUp className="h-3.5 w-3.5" aria-hidden />

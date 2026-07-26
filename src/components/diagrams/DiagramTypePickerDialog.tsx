@@ -1,7 +1,8 @@
 import clsx from 'clsx';
-import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
+import { diagramLabel, diagramShortLabel } from '@/domain/entityPalettes';
 import { EXAMPLE_BY_DIAGRAM } from '@/domain/examples';
 import type { DiagramType } from '@/domain/types';
+import { useT } from '@/i18n/useT';
 import { getCanvasInstance } from '@/services/canvasRef';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
@@ -30,66 +31,26 @@ import { undoRestoreAction } from '../ui/loadToast';
  * the open-ended Freeform last.
  */
 
-type DiagramCard = {
-  type: DiagramType;
-  short: string;
-  use: string;
-};
-
-const DIAGRAM_CARDS: DiagramCard[] = [
-  {
-    type: 'crt',
-    short: 'CRT',
-    use: 'Map the chains of cause and effect behind a problem — find the few root causes that produce many UDEs.',
-  },
-  {
-    type: 'frt',
-    short: 'FRT',
-    use: 'Lay out the future state you want, plus the injections that get you there from the current reality.',
-  },
-  {
-    type: 'prt',
-    short: 'PRT',
-    use: 'Plan past obstacles — what intermediate objectives must hold before the goal becomes reachable?',
-  },
-  {
-    type: 'tt',
-    short: 'TT',
-    use: 'Sequence the concrete actions that turn each intermediate objective into the next, step by step.',
-  },
-  {
-    type: 'nbr',
-    short: 'NBR',
-    use: 'Trace forward from a candidate injection to its unintended consequences — and the mitigation that breaks the chain.',
-  },
-  {
-    type: 'ec',
-    short: 'EC',
-    use: 'Diagnose a conflict — surface the two opposing wants, the needs behind them, and the shared objective.',
-  },
-  {
-    type: 'goalTree',
-    short: 'Goal Tree',
-    use: 'Decompose a goal into critical success factors and the necessary conditions that hold them up.',
-  },
-  {
-    type: 'st',
-    short: 'S&T',
-    use: 'Pair every layer of a strategy with the tactic that achieves it, recursively down to action.',
-  },
-  {
-    type: 'id',
-    short: 'ID',
-    use: 'Map what interferes with a goal around a central objective, rank the interferences by lost time, and pair each with a fix.',
-  },
-  {
-    type: 'freeform',
-    short: 'Freeform',
-    use: 'Argument mapping, brainstorm, or anything that needs the canvas without TOC type constraints.',
-  },
+/**
+ * Card order. The short tag and the description used to live here; both now
+ * come from the message catalogue — `short` was a verbatim duplicate of
+ * the catalogue's short label, so dropping it removes a second place to keep in sync.
+ */
+const DIAGRAM_CARD_ORDER: DiagramType[] = [
+  'crt',
+  'frt',
+  'prt',
+  'tt',
+  'nbr',
+  'ec',
+  'goalTree',
+  'st',
+  'id',
+  'freeform',
 ];
 
 export function DiagramTypePickerDialog() {
+  const t = useT();
   const mode = useDocumentStore((s) => s.diagramPickerOpen);
   const close = useDocumentStore((s) => s.closeDiagramPicker);
   const newDocument = useDocumentStore((s) => s.newDocument);
@@ -131,20 +92,17 @@ export function DiagramTypePickerDialog() {
     showToast(
       'success',
       mode === 'new'
-        ? `New ${DIAGRAM_TYPE_LABEL[type]} created.`
+        ? t.diagramPicker.createdToast({ diagram: diagramLabel(t, type) })
         : openedNewTab
-          ? `Loaded example ${DIAGRAM_TYPE_LABEL[type]} in a new tab.`
-          : `Loaded example ${DIAGRAM_TYPE_LABEL[type]}.`,
+          ? t.diagramPicker.loadedNewTabToast({ diagram: diagramLabel(t, type) })
+          : t.diagramPicker.loadedToast({ diagram: diagramLabel(t, type) }),
       undoRestoreAction(openedNewTab, previousDoc, setDocument)
     );
     close();
   };
 
-  const title = mode === 'new' ? 'New diagram' : 'Load example diagram';
-  const subtitle =
-    mode === 'new'
-      ? 'Pick a diagram type to start fresh. Existing doc is preserved on Undo from the success toast.'
-      : 'Pick a diagram type and we load a worked example so you can see the shape before building your own.';
+  const title = mode === 'new' ? t.diagramPicker.newTitle : t.diagramPicker.exampleTitle;
+  const subtitle = mode === 'new' ? t.diagramPicker.newSubtitle : t.diagramPicker.exampleSubtitle;
 
   return (
     <LargeDialog
@@ -152,20 +110,24 @@ export function DiagramTypePickerDialog() {
       onClose={close}
       title={title}
       subtitle={subtitle}
-      closeAriaLabel="Close diagram picker"
+      closeAriaLabel={t.diagramPicker.close}
     >
       <ul
         className="grid grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3"
-        aria-label="Diagram types"
+        aria-label={t.diagramPicker.listLabel}
       >
-        {DIAGRAM_CARDS.map((card) => {
-          const label = DIAGRAM_TYPE_LABEL[card.type];
+        {DIAGRAM_CARD_ORDER.map((cardType) => {
+          const label = diagramLabel(t, cardType);
           return (
-            <li key={card.type}>
+            <li key={cardType}>
               <button
                 type="button"
-                onClick={() => handlePick(card.type)}
-                aria-label={`${mode === 'new' ? 'New' : 'Load example'}: ${label}`}
+                onClick={() => handlePick(cardType)}
+                aria-label={
+                  mode === 'new'
+                    ? t.diagramPicker.pickNew({ diagram: label })
+                    : t.diagramPicker.pickExample({ diagram: label })
+                }
                 className={clsx(
                   'group flex w-full flex-col gap-1.5 rounded-md border border-neutral-200 bg-white p-3 text-left transition',
                   'hover:border-accent-400 hover:bg-accent-50/40',
@@ -174,13 +136,13 @@ export function DiagramTypePickerDialog() {
                 )}
               >
                 <span className="rounded-sm bg-accent-100 px-1.5 py-0 font-semibold text-[9px] text-accent-700 uppercase tracking-wide dark:bg-accent-950 dark:text-accent-200">
-                  {card.short}
+                  {diagramShortLabel(t, cardType)}
                 </span>
                 <h3 className="font-medium text-neutral-900 text-sm leading-tight dark:text-neutral-100">
                   {label}
                 </h3>
                 <p className="text-neutral-600 text-xs leading-snug dark:text-neutral-400">
-                  {card.use}
+                  {t.diagram[cardType].use}
                 </p>
               </button>
             </li>

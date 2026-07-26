@@ -30,7 +30,7 @@ export const prtObstacleNoIoRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'prt-obstacle-no-io',
           { kind: 'entity', id: obstacle.id },
-          'This obstacle has no Intermediate Objective overcoming it — add the IO that removes it on the way to the goal.'
+          'prt-obstacle-no-io'
         )
       );
     }
@@ -51,12 +51,7 @@ export const prtIoNoObstacleRule = (doc: TPDocument): UntieredWarning[] => {
     );
     if (!overcomesObstacle) {
       out.push(
-        makeWarning(
-          doc,
-          'prt-io-no-obstacle',
-          { kind: 'entity', id: io.id },
-          'This Intermediate Objective doesn’t overcome any obstacle — connect it to the obstacle it removes.'
-        )
+        makeWarning(doc, 'prt-io-no-obstacle', { kind: 'entity', id: io.id }, 'prt-io-no-obstacle')
       );
     }
   }

@@ -110,9 +110,16 @@ const IMPORT_ACTIONS: ImportAction[] = [
         return;
       }
       const summary = applyCsvRows(result.rows);
+      // Say when a `parent_title` was ambiguous rather than reporting an edge
+      // count that quietly omits it. Previously a duplicate title silently
+      // attached the edge to the wrong row and the toast claimed success.
+      const ambiguous =
+        summary.ambiguousParents > 0
+          ? ` ${summary.ambiguousParents} parent_title reference${summary.ambiguousParents === 1 ? '' : 's'} matched more than one row and ${summary.ambiguousParents === 1 ? 'was' : 'were'} left unconnected.`
+          : '';
       s.showToast(
-        'success',
-        `Imported ${summary.entities} entit${summary.entities === 1 ? 'y' : 'ies'}, ${summary.edges} edge${summary.edges === 1 ? '' : 's'}.`
+        summary.ambiguousParents > 0 ? 'info' : 'success',
+        `Imported ${summary.entities} entit${summary.entities === 1 ? 'y' : 'ies'}, ${summary.edges} edge${summary.edges === 1 ? '' : 's'}.${ambiguous}`
       );
     },
   },

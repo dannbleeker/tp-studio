@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createDocument } from '@/domain/factory';
 import { resetStoreForTest, useDocumentStore } from '@/store';
-import { seedEntity } from '../helpers/seedDoc';
+import { seedEntity, takeSnapshot } from '../helpers/seedDoc';
 
 beforeEach(resetStoreForTest);
 afterEach(resetStoreForTest);
@@ -32,7 +32,7 @@ describe('H2/H4 — compare and side-by-side store actions', () => {
   it('both modes can be active at once (compare overlay + side-by-side dialog)', () => {
     seedEntity('A');
     const s = useDocumentStore.getState();
-    const id = s.captureSnapshot('Baseline');
+    const id = takeSnapshot('Baseline');
     s.openCompare(id);
     s.openSideBySide(id);
     expect(useDocumentStore.getState().compareRevisionId).toBe(id);

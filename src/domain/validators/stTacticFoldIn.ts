@@ -36,12 +36,7 @@ export const stTacticFoldInRule = (doc: TPDocument): UntieredWarning[] => {
     );
     if (tacticChildren.length !== 1) continue;
     out.push(
-      makeWarning(
-        doc,
-        'st-tactic-fold-in',
-        { kind: 'entity', id: e.id },
-        'Step has only one sub-step — a Strategy & Tactics decomposition should split into two or more jointly-sufficient sub-steps, or fold the single sub-step back into this one.'
-      )
+      makeWarning(doc, 'st-tactic-fold-in', { kind: 'entity', id: e.id }, 'st-tactic-fold-in')
     );
   }
   return out;

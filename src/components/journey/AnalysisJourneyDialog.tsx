@@ -2,17 +2,18 @@ import { CheckCircle2, Circle, CircleDot, ExternalLink, Plus, Route, Sparkles } 
 import { useEffect, useMemo, useState } from 'react';
 import { LargeDialog } from '@/components/ui/LargeDialog';
 import {
-  BARNARD_FIVE_QUESTIONS,
   computeJourneyStatuses,
   type JourneyStage,
   type JourneyStageId,
   journeyProgress,
+  journeyStagesFor,
   stageMemberDocIds,
   stageTypeCoverage,
 } from '@/domain/analysisJourney';
-import { DIAGRAM_SHORT_LABEL } from '@/domain/entityTypeMeta';
+import { diagramShortLabel } from '@/domain/entityPalettes';
 import { listSavedDocIds } from '@/domain/persistence';
 import type { DiagramType } from '@/domain/types';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 
 /**
@@ -37,6 +38,8 @@ const STATUS_ICON = {
 } as const;
 
 export function AnalysisJourneyDialog() {
+  const t = useT();
+  const jd = t.journeyDialog;
   const open = useDocumentStore((s) => s.analysisJourneyOpen);
   const close = useDocumentStore((s) => s.closeAnalysisJourney);
   const journey = useDocumentStore((s) => s.journey);
@@ -73,28 +76,24 @@ export function AnalysisJourneyDialog() {
     <LargeDialog
       open={open}
       onClose={close}
-      title="Analysis journey"
-      subtitle="Walk one analysis through Barnard's five questions — a guided flow over the trees it needs. Opt-in; nothing changes on your trees until you build them."
+      title={jd.title}
+      subtitle={jd.subtitle}
       widthClass="w-[min(560px,96vw)]"
     >
       {!journey ? (
         <div className="flex flex-col items-start gap-3 p-5">
           <div className="flex items-center gap-2 text-accent-700 dark:text-accent-300">
             <Route className="h-5 w-5" aria-hidden />
-            <span className="font-medium text-sm">Start a guided journey</span>
+            <span className="font-medium text-sm">{jd.startHeading}</span>
           </div>
-          <p className="text-neutral-600 text-sm dark:text-neutral-300">
-            A journey groups the trees of one analysis and tracks the five questions — why change,
-            what to change, what to change to, how to cause it, and how to sustain it. Each stage
-            tells you which tree to build and lets you create, spawn, or open it in place.
-          </p>
+          <p className="text-neutral-600 text-sm dark:text-neutral-300">{jd.startBlurb}</p>
           <button
             type="button"
             onClick={() => startJourney()}
             className="mt-1 inline-flex items-center gap-1.5 rounded-md border border-accent-400 bg-accent-50 px-3 py-1.5 font-medium text-accent-900 text-sm transition hover:bg-accent-100 dark:border-accent-500 dark:bg-accent-950/40 dark:text-accent-100"
           >
             <Sparkles className="h-4 w-4" aria-hidden />
-            Start journey
+            {jd.startButton}
           </button>
         </div>
       ) : (
@@ -108,7 +107,7 @@ export function AnalysisJourneyDialog() {
           />
 
           <div className="flex flex-col gap-2">
-            {BARNARD_FIVE_QUESTIONS.map((stage) => {
+            {journeyStagesFor(t).map((stage) => {
               const statuses = computeJourneyStatuses(journey, existingDocIds);
               const memberIds = stageMemberDocIds(journey, stage.id, existingDocIds);
               const coverage = stageTypeCoverage(stage, journey, existingDocIds);
@@ -162,6 +161,8 @@ function JourneyHeader({
   progress: { done: number; total: number };
   onEnd: () => void;
 }) {
+  const t = useT();
+  const jd = t.journeyDialog;
   return (
     <div className="flex flex-col gap-2 border-neutral-200 border-b pb-3 dark:border-neutral-800">
       <div className="flex items-center gap-2">
@@ -172,7 +173,7 @@ function JourneyHeader({
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.currentTarget.blur();
           }}
-          aria-label="Journey name"
+          aria-label={jd.nameLabel}
           className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1 py-0.5 font-medium text-neutral-900 text-sm transition hover:border-neutral-200 focus:border-accent-400 focus:outline-none dark:text-neutral-100 dark:hover:border-neutral-700"
         />
         <button
@@ -180,12 +181,12 @@ function JourneyHeader({
           onClick={onEnd}
           className="whitespace-nowrap rounded-md px-2 py-1 text-neutral-500 text-xs transition hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
         >
-          End journey
+          {jd.end}
         </button>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-[11px] text-neutral-500 uppercase tracking-wider dark:text-neutral-400">
-          Barnard's five questions
+          {jd.fiveQuestions}
         </span>
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
           <div
@@ -194,7 +195,7 @@ function JourneyHeader({
           />
         </div>
         <span className="text-neutral-500 text-xs dark:text-neutral-400">
-          {progress.done} / {progress.total}
+          {jd.progress({ done: progress.done, total: progress.total })}
         </span>
       </div>
     </div>
@@ -224,6 +225,8 @@ function StageRow({
   onSpawn: () => void;
   onToggleDone: (done: boolean) => void;
 }) {
+  const t = useT();
+  const jd = t.journeyDialog;
   const Icon = STATUS_ICON[status];
   const hasMember = memberIds.length > 0;
   const primaryType = stage.diagramTypes[0];
@@ -259,7 +262,7 @@ function StageRow({
               }`}
             >
               {c.present ? '✓ ' : ''}
-              {DIAGRAM_SHORT_LABEL[c.diagramType]}
+              {diagramShortLabel(t, c.diagramType)}
             </span>
           ))}
           {spawnTarget && hasMember ? (
@@ -269,7 +272,7 @@ function StageRow({
               className="inline-flex items-center gap-0.5 rounded-full border border-accent-300 px-2 py-0.5 text-[10px] text-accent-700 transition hover:bg-accent-50 dark:border-accent-700 dark:text-accent-300 dark:hover:bg-accent-950/40"
             >
               <Plus className="h-2.5 w-2.5" aria-hidden />
-              {DIAGRAM_SHORT_LABEL[spawnTarget]}
+              {diagramShortLabel(t, spawnTarget)}
             </button>
           ) : null}
         </div>
@@ -282,7 +285,7 @@ function StageRow({
             className="inline-flex items-center gap-1 rounded-md border border-neutral-200 px-2.5 py-1 text-neutral-700 text-xs transition hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
           >
             <ExternalLink className="h-3 w-3" aria-hidden />
-            Open
+            {jd.open}
           </button>
         ) : spawnTarget ? (
           <button
@@ -290,7 +293,7 @@ function StageRow({
             onClick={onSpawn}
             className="inline-flex items-center gap-1 rounded-md border border-accent-400 bg-accent-50 px-2.5 py-1 font-medium text-accent-900 text-xs transition hover:bg-accent-100 dark:border-accent-500 dark:bg-accent-950/40 dark:text-accent-100"
           >
-            Spawn {DIAGRAM_SHORT_LABEL[spawnTarget]}
+            {jd.spawn({ diagram: diagramShortLabel(t, spawnTarget) })}
           </button>
         ) : (
           <button
@@ -298,7 +301,9 @@ function StageRow({
             onClick={onCreate}
             className="inline-flex items-center gap-1 rounded-md border border-accent-400 bg-accent-50 px-2.5 py-1 font-medium text-accent-900 text-xs transition hover:bg-accent-100 dark:border-accent-500 dark:bg-accent-950/40 dark:text-accent-100"
           >
-            Create {primaryType ? DIAGRAM_SHORT_LABEL[primaryType] : 'tree'}
+            {jd.create({
+              diagram: primaryType ? diagramShortLabel(t, primaryType) : jd.createFallbackNoun,
+            })}
           </button>
         )}
         {!hasMember ? (
@@ -307,7 +312,7 @@ function StageRow({
             onClick={() => onToggleDone(!manuallyDone)}
             className="text-[10px] text-neutral-400 underline-offset-2 transition hover:text-neutral-600 hover:underline dark:text-neutral-500 dark:hover:text-neutral-300"
           >
-            {manuallyDone ? 'Not done' : 'Mark done'}
+            {manuallyDone ? jd.notDone : jd.markDone}
           </button>
         ) : null}
       </div>

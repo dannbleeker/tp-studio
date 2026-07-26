@@ -1,7 +1,7 @@
 import { effectiveBackEdgeIds } from '../backEdges';
 import { structuralEntities } from '../graph';
 import type { TPDocument } from '../types';
-import { makeWarning, type UntieredWarning } from './shared';
+import { makeWarning, makeWarningAction, type UntieredWarning } from './shared';
 
 /**
  * Session 180 (E5) — long-arrow / missing-step reservation.
@@ -88,13 +88,12 @@ export const longArrowRule = (doc: TPDocument): UntieredWarning[] => {
     const dst = doc.entities[e.targetId];
     if (!src || !dst) continue;
     out.push({
-      ...makeWarning(
-        doc,
-        'long-arrow',
-        { kind: 'edge', id: e.id },
-        `This arrow spans ${span} causal levels — is a step missing between “${truncate(src.title)}” and “${truncate(dst.title)}”?`
-      ),
-      action: { actionId: 'insert-step', label: 'Insert a step' },
+      ...makeWarning(doc, 'long-arrow', { kind: 'edge', id: e.id }, 'long-arrow', {
+        span,
+        source: truncate(src.title),
+        target: truncate(dst.title),
+      }),
+      action: makeWarningAction('insert-step'),
     });
   }
   return out;

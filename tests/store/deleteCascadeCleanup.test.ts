@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createDocument } from '@/domain/factory';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 import { seedAndGroupable, seedConnectedPair, seedEntity } from '../helpers/seedDoc';
 
@@ -111,5 +112,38 @@ describe('deleteEntitiesAndEdges prunes singleton junctors (bulk-delete)', () =>
     expect(s().doc.edges[e1.id]).toBeUndefined();
     // The surviving edge must have its andGroupId pruned — a junctor of one is meaningless.
     expect(s().doc.edges[e2.id]?.andGroupId).toBeUndefined();
+  });
+});
+
+/**
+ * Session 209 — the same stuck-blank-canvas shape, reached by a different route.
+ * `activeDocEphemeralReset` covered selection, editing, walkthrough, search,
+ * compare, side-by-side, startSection and speculation, but not `hoistedGroupId`
+ * or `creationWizard`. A doc swap is a group deletion as far as the hoist is
+ * concerned: the group isn't in the incoming document either way.
+ */
+describe('a document swap clears per-document view state', () => {
+  it('exits hoist — the incoming doc has no such group, so the canvas would be blank', () => {
+    const a = seedEntity('A');
+    const b = seedEntity('B');
+    const g = s().createGroupFromSelection([a.id, b.id]);
+    if (!g) throw new Error('group setup failed');
+    s().hoistGroup(g.id);
+    expect(s().hoistedGroupId).toBe(g.id);
+
+    s().newDocument('frt');
+    expect(s().hoistedGroupId).toBeNull();
+  });
+
+  // `newDocument` already reopens or closes the wizard explicitly for the type
+  // it just minted, so the hole was in the TAB paths, which had no such logic.
+  it('closes the creation wizard on a tab switch — left open it answers into the other doc', () => {
+    const first = s().activeDocId;
+    s().openTab(createDocument('crt'));
+    s().openCreationWizard('goalTree');
+    expect(s().creationWizard).not.toBeNull();
+
+    s().switchTab(first);
+    expect(s().creationWizard).toBeNull();
   });
 });

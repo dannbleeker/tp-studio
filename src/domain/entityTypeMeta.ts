@@ -32,7 +32,6 @@ import type { CustomEntityClass, EntityType, TPDocument } from './types';
  */
 
 export {
-  DIAGRAM_SHORT_LABEL,
   DIAGRAM_TYPE_COLOR,
   DIAGRAM_TYPE_LABEL,
   defaultEntityType,

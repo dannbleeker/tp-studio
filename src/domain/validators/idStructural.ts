@@ -31,7 +31,7 @@ export const idInterferenceNoIoRule = (doc: TPDocument): UntieredWarning[] => {
           doc,
           'id-interference-no-io',
           { kind: 'entity', id: interference.id },
-          'This interference has no paired intermediate objective — add the injection that removes or reduces it.'
+          'id-interference-no-io'
         )
       );
     }
@@ -56,7 +56,8 @@ export const idMultipleCentralObjectivesRule = (doc: TPDocument): UntieredWarnin
       doc,
       'id-multiple-central-objectives',
       { kind: 'document' },
-      `This Interference Diagram has ${goals.length} central objectives — an ID maps interferences around a single objective. Split the second one into its own diagram.`
+      'id-multiple-central-objectives',
+      { count: goals.length }
     ),
   ];
 };

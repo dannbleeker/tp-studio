@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { LAYOUT_NODE_SEPARATION, LAYOUT_RANK_SEPARATION } from '@/domain/constants';
 import { LAYOUT_STRATEGY } from '@/domain/layoutStrategy';
 import type { LayoutConfig } from '@/domain/types';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { RadioGroup, Section, Slider } from '../formPrimitives';
@@ -15,13 +16,6 @@ import { RadioGroup, Section, Slider } from '../formPrimitives';
  * causes at the bottom, effects above — the conventional CRT shape).
  */
 type LayoutDirectionId = NonNullable<LayoutConfig['direction']>;
-const DIRECTION_OPTIONS: { id: LayoutDirectionId; label: string; hint?: string }[] = [
-  { id: 'BT', label: 'Bottom → Top', hint: 'Default for CRT / FRT' },
-  { id: 'TB', label: 'Top → Bottom', hint: 'Goal at top' },
-  { id: 'LR', label: 'Left → Right' },
-  { id: 'RL', label: 'Right → Left' },
-];
-
 /**
  * Bias options. `'auto'` is the sentinel for "don't pass `align` to dagre"
  * — dagre's own balancing kicks in. UL / UR / DL / DR shift the diagonal
@@ -29,14 +23,6 @@ const DIRECTION_OPTIONS: { id: LayoutDirectionId; label: string; hint?: string }
  * primary axis the user wants emphasized.
  */
 type BiasId = 'auto' | NonNullable<LayoutConfig['align']>;
-const BIAS_OPTIONS: { id: BiasId; label: string; hint?: string }[] = [
-  { id: 'auto', label: 'Auto', hint: 'Dagre balances' },
-  { id: 'UL', label: 'Upper-left' },
-  { id: 'UR', label: 'Upper-right' },
-  { id: 'DL', label: 'Lower-left' },
-  { id: 'DR', label: 'Lower-right' },
-];
-
 /**
  * Compactness slider conversion. The slider runs 0 → 100; 50 maps to the
  * exact app defaults (`LAYOUT_RANK_SEPARATION`, `LAYOUT_NODE_SEPARATION`);
@@ -76,6 +62,7 @@ const hasLayoutOverride = (cfg: LayoutConfig | undefined): boolean =>
  * mislead the user, so the tab renders an explanatory note instead.
  */
 export function LayoutTab() {
+  const t = useT();
   const { diagramType, layoutConfig, setLayoutConfig } = useDocumentStore(
     useShallow((s) => ({
       diagramType: currentDoc(s).diagramType,
@@ -89,30 +76,45 @@ export function LayoutTab() {
   const biasValue: BiasId = layoutConfig?.align ?? 'auto';
   const compactnessSlider = compactnessToSlider(layoutConfig);
 
+  const l = t.settings.layout;
+  const directionOptions: { id: LayoutDirectionId; label: string; hint?: string }[] = [
+    { id: 'BT', label: l.directions.bt, hint: l.directions.btHint },
+    { id: 'TB', label: l.directions.tb, hint: l.directions.tbHint },
+    { id: 'LR', label: l.directions.lr },
+    { id: 'RL', label: l.directions.rl },
+  ];
+  const biasOptions: { id: BiasId; label: string; hint?: string }[] = [
+    { id: 'auto', label: l.biases.auto, hint: l.biases.autoHint },
+    { id: 'UL', label: l.biases.ul },
+    { id: 'UR', label: l.biases.ur },
+    { id: 'DL', label: l.biases.dl },
+    { id: 'DR', label: l.biases.dr },
+  ];
+
   return (
-    <Section title="Layout">
+    <Section title={l.section}>
       {layoutKnobsEnabled ? (
         <>
-          <Field label="Direction">
+          <Field label={l.direction}>
             <RadioGroup
               name="layoutDirection"
               value={directionValue}
               onChange={(id) => setLayoutConfig({ direction: id })}
-              options={DIRECTION_OPTIONS}
+              options={directionOptions}
             />
           </Field>
           <Slider
-            label="Compactness"
-            hint="Tighten or loosen the spacing dagre uses between entities. 50 is the app default."
+            label={l.compactness}
+            hint={l.compactnessHint}
             value={compactnessSlider}
             onChange={(v) => setLayoutConfig(sliderToCompactness(v))}
           />
-          <Field label="Bias">
+          <Field label={l.bias}>
             <RadioGroup
               name="layoutBias"
               value={biasValue}
               onChange={(id) => setLayoutConfig(id === 'auto' ? {} : { align: id })}
-              options={BIAS_OPTIONS}
+              options={biasOptions}
             />
           </Field>
           {hasLayoutOverride(layoutConfig) && (
@@ -121,10 +123,10 @@ export function LayoutTab() {
               size="sm"
               onClick={() => setLayoutConfig(undefined)}
               className="self-start"
-              aria-label="Reset layout to defaults"
+              aria-label={l.resetLayout}
             >
               <RotateCcw className="h-3 w-3" />
-              <span>Reset to defaults</span>
+              <span>{l.resetToDefaults}</span>
             </Button>
           )}
         </>

@@ -32,12 +32,9 @@ export const entityFragmentRule = (doc: TPDocument): UntieredWarning[] => {
     // (no internal whitespace) reads as a fragment here.
     if (title === '' || /\s/.test(title)) continue;
     out.push(
-      makeWarning(
-        doc,
-        'entity-fragment',
-        { kind: 'entity', id: e.id },
-        `"${title}" is a single word — a cause or effect should state what is happening (e.g. what it does, or how it is changing), not just name a thing.`
-      )
+      makeWarning(doc, 'entity-fragment', { kind: 'entity', id: e.id }, 'entity-fragment', {
+        title,
+      })
     );
   }
   return out;

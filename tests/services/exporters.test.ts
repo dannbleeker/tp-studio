@@ -31,7 +31,17 @@ describe('slug', () => {
     expect(slug(long)).toHaveLength(60);
   });
 
-  it('drops unicode characters outside ASCII alphanumerics', () => {
-    expect(slug('Café résumé 你好')).toBe('caf-r-sum');
+  // Was `drops unicode characters outside ASCII alphanumerics`, asserting
+  // 'caf-r-sum'. That behaviour meant EVERY CJK / Cyrillic / Arabic / Greek
+  // title slugged to the empty string and downloaded as `untitled.<ext>`, so
+  // they all collided in the downloads folder. Letters and digits in any script
+  // are kept; only characters a filesystem would object to are replaced.
+  it('keeps letters and digits from any script', () => {
+    expect(slug('Café résumé 你好')).toBe('café-résumé-你好');
+    expect(slug('Отчёт 2026')).toBe('отчёт-2026');
+  });
+
+  it('still replaces punctuation and path separators', () => {
+    expect(slug('a/b\\c:d*e?f')).toBe('a-b-c-d-e-f');
   });
 });
