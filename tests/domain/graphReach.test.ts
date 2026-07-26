@@ -190,11 +190,24 @@ describe('findCycles scales and does not overflow the stack', () => {
     return makeDoc(entities, edges);
   };
 
-  it('returns no cycles for a 9000-node acyclic chain without throwing', () => {
+  // Cheap by comparison — an acyclic graph short-circuits after one SCC pass —
+  // but building 9000 entities is not free, so it gets headroom too.
+  it('returns no cycles for a 9000-node acyclic chain without throwing', {
+    timeout: 30_000,
+  }, () => {
     expect(findCycles(chain(9000))).toEqual([]);
   });
 
-  it('still finds a cycle closed at the end of a long chain', () => {
+  // Explicit timeout, not the 5s default. Johnson's is O((V+E)(C+1)) *within one
+  // SCC*, and a 4000-node ring is a single SCC of 4000 vertices — every one of
+  // which is tried as a root. ~2s on a dev machine, more under CI's parallel
+  // workers, which is exactly how this failed on main after the merge.
+  //
+  // The size is not arbitrary: 4000 frames is what it takes to overflow the
+  // recursive form this replaced, so a smaller ring would stop proving the
+  // thing the test exists for. 30s leaves room for a loaded runner while still
+  // catching a real regression, which would be orders of magnitude, not 2x.
+  it('still finds a cycle closed at the end of a long chain', { timeout: 30_000 }, () => {
     const doc = chain(4000);
     const withBackEdge = {
       ...doc,
