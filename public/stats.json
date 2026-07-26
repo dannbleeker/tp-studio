@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-07-20T09:38:17.765Z",
-  "commit": "8ebc916",
+  "generatedAt": "2026-07-26T16:53:40.889Z",
+  "commit": "073903b",
   "headline": {
-    "linesTsJs": 153059,
-    "tests": 5059,
-    "lineCoveragePct": 95.43,
-    "commits": 1149,
-    "ageDays": 69,
-    "trackedFiles": 1223,
+    "linesTsJs": 156349,
+    "tests": 5118,
+    "lineCoveragePct": null,
+    "commits": 1178,
+    "ageDays": 76,
+    "trackedFiles": 1237,
     "featureManualPct": 99.6,
-    "featureBookPct": 69.5,
-    "featureExamplePct": 23.9
+    "featureBookPct": 67.7,
+    "featureExamplePct": 23.3
   },
   "code": [
     {
       "category": "App code (src, excl. tests)",
-      "files": 594,
-      "lines": 78074
+      "files": 603,
+      "lines": 80276
     },
     {
       "category": "Unit tests",
-      "files": 439,
-      "lines": 68509
+      "files": 442,
+      "lines": 69597
     },
     {
       "category": "E2E tests (Playwright)",
@@ -40,56 +40,35 @@
     },
     {
       "category": "Docs (Markdown)",
-      "files": 46,
-      "lines": 7052
+      "files": 48,
+      "lines": 7293
     }
   ],
-  "coverage": {
-    "lines": {
-      "pct": 95.43,
-      "covered": 14584,
-      "total": 15281
-    },
-    "statements": {
-      "pct": 92.98,
-      "covered": 16614,
-      "total": 17868
-    },
-    "functions": {
-      "pct": 92.55,
-      "covered": 3309,
-      "total": 3575
-    },
-    "branches": {
-      "pct": 83.78,
-      "covered": 9484,
-      "total": 11319
-    }
-  },
+  "coverage": null,
   "tests": {
-    "unit": 4963,
+    "unit": 5022,
     "e2e": 96,
-    "durationMs": 283978,
+    "durationMs": 296394,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11439
-      },
-      {
-        "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5481
+        "ms": 9906
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5275
+        "ms": 6130
+      },
+      {
+        "file": "tests/domain/graphReach.test.ts",
+        "ms": 5622
+      },
+      {
+        "file": "tests/components/EntityInspector.test.tsx",
+        "ms": 5540
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 3071
-      },
-      {
-        "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 2610
+        "ms": 2871
       }
     ]
   },
@@ -109,6 +88,10 @@
     "depsDev": 32,
     "biggestFiles": [
       {
+        "name": "i18n/locales/en.ts",
+        "lines": 1246
+      },
+      {
         "name": "domain/patterns/index.ts",
         "lines": 1027
       },
@@ -118,42 +101,17 @@
       },
       {
         "name": "services/exporters/pdfExport.ts",
-        "lines": 688
+        "lines": 696
       },
       {
         "name": "components/canvas/hooks/useEdgeRoutes.ts",
-        "lines": 637
-      },
-      {
-        "name": "components/canvas/wizards/CreationWizardPanel.tsx",
         "lines": 637
       }
     ]
   },
   "quality": {
     "mutationScore": 72.95,
-    "leastCovered": [
-      {
-        "file": "components/canvas/edges/ChallengeButton.tsx",
-        "pct": 0
-      },
-      {
-        "file": "components/canvas/nodes/EntityCoachingTooltip.tsx",
-        "pct": 0
-      },
-      {
-        "file": "components/start/LearnSection.tsx",
-        "pct": 0
-      },
-      {
-        "file": "components/start/TreeList.tsx",
-        "pct": 0
-      },
-      {
-        "file": "services/shareCurrentDoc.ts",
-        "pct": 9.09
-      }
-    ],
+    "leastCovered": [],
     "churnHotspots": [
       {
         "file": "components/canvas/Canvas.tsx",
@@ -161,7 +119,7 @@
       },
       {
         "file": "App.tsx",
-        "commits": 55
+        "commits": 56
       },
       {
         "file": "components/inspector/EntityInspector.tsx",
@@ -176,13 +134,7 @@
         "commits": 35
       }
     ],
-    "risky": [
-      {
-        "file": "components/print/PrintPreviewDialog.tsx",
-        "pct": 67.44,
-        "commits": 25
-      }
-    ]
+    "risky": []
   },
   "hygiene": {
     "todo": 29,
@@ -191,30 +143,30 @@
     "anyCount": 13,
     "tsIgnore": 0,
     "tsExpectError": 0,
-    "biomeIgnore": 45,
+    "biomeIgnore": 47,
     "nonNull": 106
   },
   "bundle": {
-    "jsGzipKb": 855.4,
+    "jsGzipKb": 862.4,
     "cssGzipKb": 19.9,
-    "totalGzipKb": 875.3,
+    "totalGzipKb": 882.3,
     "budgetKb": 207,
     "withinBudget": true
   },
   "docs": {
     "bookWords": 60753,
     "chapters": 26,
-    "appLoc": 78074,
-    "docToCodeRatio": 0.78
+    "appLoc": 80276,
+    "docToCodeRatio": 0.76
   },
   "featureCoverage": {
-    "total": 272,
-    "manual": 271,
+    "total": 279,
+    "manual": 278,
     "manualPct": 99.6,
     "book": 189,
-    "bookPct": 69.5,
+    "bookPct": 67.7,
     "bookExample": 65,
-    "bookExamplePct": 23.9,
+    "bookExamplePct": 23.3,
     "byArea": {
       "CRT": {
         "total": 9,
@@ -267,8 +219,8 @@
         "book": 8
       },
       "Canvas": {
-        "total": 24,
-        "manual": 23,
+        "total": 27,
+        "manual": 26,
         "book": 8
       },
       "Editing": {
@@ -312,8 +264,8 @@
         "book": 5
       },
       "General": {
-        "total": 25,
-        "manual": 25,
+        "total": 28,
+        "manual": 28,
         "book": 16
       },
       "Print": {
@@ -342,8 +294,8 @@
         "book": 1
       },
       "Palette": {
-        "total": 5,
-        "manual": 5,
+        "total": 6,
+        "manual": 6,
         "book": 1
       },
       "Workshop": {
@@ -366,6 +318,41 @@
         }
       ],
       "noBook": [
+        {
+          "id": "touch-long-press-menu",
+          "name": "Long-press context menu on touch",
+          "since": 208
+        },
+        {
+          "id": "touch-one-finger-pan",
+          "name": "One-finger pan on touch canvases",
+          "since": 208
+        },
+        {
+          "id": "mobile-inspector-sheet",
+          "name": "Bottom-sheet inspector on phones (half / full snap, swipe to dismiss)",
+          "since": 208
+        },
+        {
+          "id": "palette-phone-button",
+          "name": "Command-palette button on phones",
+          "since": 207
+        },
+        {
+          "id": "canvas-nav-phone",
+          "name": "Zoom / fit chip visible on phones",
+          "since": 207
+        },
+        {
+          "id": "mobile-responsive-chrome",
+          "name": "Responsive editor chrome (phone / tablet layout)",
+          "since": 207
+        },
+        {
+          "id": "mobile-touch-targets",
+          "name": "Coarse-pointer touch targets (nav chip, top-bar actions, connection handles)",
+          "since": 207
+        },
         {
           "id": "import-flying-logic-file-handler",
           "name": "Open Flying Logic files by double-click (PWA file handler)",
@@ -786,9 +773,9 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 69,
-    "commits": 1149,
-    "commits7d": 66,
+    "ageDays": 76,
+    "commits": 1178,
+    "commits7d": 29,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -796,11 +783,11 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 320
+        "count": 322
       },
       {
         "name": "Claude",
-        "count": 5
+        "count": 31
       },
       {
         "name": "dannbleeker",
@@ -808,9 +795,9 @@
       }
     ],
     "churn30d": {
-      "added": 37715,
-      "removed": 10261
+      "added": 37106,
+      "removed": 10061
     },
-    "changelogEntries": 409
+    "changelogEntries": 411
   }
 }
