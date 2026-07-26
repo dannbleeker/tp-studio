@@ -8,8 +8,9 @@ Pruned in Sessions 176, 193, and 206. The Session-206 pass removed the last of t
 verifying, section by section, that CHANGELOG genuinely carried it — the citations, decisions and
 rationale that lived only here were migrated into their CHANGELOG session entries rather than deleted.
 
-**Open — i18n follow-ups (Session 209).** The architecture shipped with English only; these are the
-deliberate leftovers, in rough priority order:
+**Open — i18n follow-ups (Session 209).** The architecture shipped with English only and **no language
+picker** — the Settings row is gated on `SELECTABLE_LOCALES.length > 1`, so nothing is offered until a
+real second locale exists. These are the deliberate leftovers, in rough priority order:
 
 - **Remaining UI-string extraction (~780–980 unique literals).** Nine surfaces now render with an EMPTY
   pseudo-locale allow-list: the four Settings tabs, the Document Inspector, the Help dialog, the About

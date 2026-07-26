@@ -131,27 +131,31 @@ export function AppearanceTab() {
           options={paletteOptions}
         />
       </Field>
-      <Field label={t.settings.appearance.language}>
-        {/* A `Select` rather than the `RadioGroup` every other settings row
-            uses: with one shipping locale a single-button radio grid reads as
-            broken, while a select reads as "one option today, more later" and
-            scales past the grid without a layout blowout. */}
-        <Select
-          value={locale}
-          // `Select` hands back a bare `string`. Narrowing with the same guard
-          // the persistence layer uses — rather than asserting `as Locale` —
-          // keeps this correct if the option list and the union ever drift
-          // apart, and matches how a tampered stored value is handled.
-          onChange={(next) => {
-            if (isLocale(next)) setLocale(next);
-          }}
-          ariaLabel={t.settings.appearance.language}
-          options={SELECTABLE_LOCALES.map((id) => ({ value: id, label: LOCALE_LABEL[id] }))}
-        />
-        <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
-          {t.settings.appearance.languageHint}
-        </span>
-      </Field>
+      {/* Hidden while English is the only shipping locale: a one-option picker
+          is a choice that isn't one, and it invites the user to expect a
+          translated app that doesn't exist yet. The preference, its
+          persistence and `<html lang>` all work regardless — this is purely
+          whether the control is offered. It reappears the moment
+          `SELECTABLE_LOCALES` has a second entry. */}
+      {SELECTABLE_LOCALES.length > 1 && (
+        <Field label={t.settings.appearance.language}>
+          <Select
+            value={locale}
+            // `Select` hands back a bare `string`. Narrowing with the same guard
+            // the persistence layer uses — rather than asserting `as Locale` —
+            // keeps this correct if the option list and the union ever drift
+            // apart, and matches how a tampered stored value is handled.
+            onChange={(next) => {
+              if (isLocale(next)) setLocale(next);
+            }}
+            ariaLabel={t.settings.appearance.language}
+            options={SELECTABLE_LOCALES.map((id) => ({ value: id, label: LOCALE_LABEL[id] }))}
+          />
+          <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {t.settings.appearance.languageHint}
+          </span>
+        </Field>
+      )}
     </Section>
   );
 }

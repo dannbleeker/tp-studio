@@ -81,10 +81,10 @@ describe('pseudo-locale', () => {
     {
       name: 'Appearance',
       render: () => render(<AppearanceTab />),
-      // `LOCALE_LABEL` values are autonyms — a language names itself in its
-      // own language — so these are deliberately not routed through the
-      // catalogue.
-      allowed: ['English'],
+      // Was `['English']` — the `LOCALE_LABEL` autonym in the Language picker.
+      // That row is hidden while `SELECTABLE_LOCALES` has a single entry, so
+      // nothing un-catalogued renders here at all now.
+      allowed: [],
     },
     { name: 'Behavior', render: () => render(<BehaviorTab />), allowed: [] },
     { name: 'Display', render: () => render(<DisplayTab />), allowed: [] },

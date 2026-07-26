@@ -8,6 +8,11 @@ The seams for a second locale, with exactly one locale shipped. Nothing user-vis
 Language row in Settings that has one option. Reverses the long-standing `i18n (English only)` line in
 NEXT_STEPS — see `docs/I18N.md` for the full contract.
 
+- **No language picker is shown.** `SELECTABLE_LOCALES` holds only `en`, and the Settings Language row
+  is gated on there being more than one entry — a one-option dropdown is a choice that isn't one, and it
+  would invite users to expect a translated app that doesn't exist yet. The preference, its persistence,
+  the tampered-value fallback and `<html lang>` all work regardless; only the control is withheld. It
+  appears by itself the moment a second locale is registered.
 - **Hand-rolled typed catalogue, no dependency.** `src/i18n/locales/en.ts` is the source of truth;
   `type Messages = typeof en` makes a missing key, an extra key, or a changed interpolation signature a
   `tsc` error in any future locale. Deliberately **not** `as const` — that would narrow every value to its
