@@ -48,7 +48,24 @@ test.describe('Live dashboard (dashboard.html)', () => {
 
     // The CI-metrics tables/bars actually rendered rows from the JSON.
     await expect(page.locator('#code-rows tr').first()).toBeVisible();
-    await expect(page.locator('#cov-bars .cov-row').first()).toBeVisible();
+
+    // Coverage bars only exist when stats.json carries a coverage block —
+    // `dashboard.html` HIDES the whole card when it's null. This assertion used
+    // to demand a `.cov-row` unconditionally, contradicting the comment eight
+    // lines above that calls `coverage: null` a legitimate state.
+    //
+    // That inconsistency turned one red CI run into two: main's CI failed, so
+    // the coverage artifact was never uploaded, so the Stats workflow published
+    // `coverage: null`, so this test failed on every branch afterwards —
+    // including the PR fixing the original failure. A test guarding the
+    // dashboard must tolerate every input the dashboard itself handles, or a
+    // transient upstream failure becomes a persistent one.
+    const covCardHidden = await page.locator('#cov-card').isHidden();
+    if (covCardHidden) {
+      await expect(page.locator('#cov-bars .cov-row')).toHaveCount(0);
+    } else {
+      await expect(page.locator('#cov-bars .cov-row').first()).toBeVisible();
+    }
 
     // The page wired itself up without throwing.
     expect(errors).toEqual([]);
