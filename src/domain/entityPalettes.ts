@@ -237,7 +237,5 @@ export const displayTitle = (e: { title: string }): string => e.title.trim() || 
 export const diagramLabel = (messages: Messages, diagramType: DiagramType): string =>
   messages.diagram[diagramType].label;
 
-// A `diagramShortLabel` resolver is deliberately NOT exported yet: knip runs
-// `exports` at error level, so an unconsumed export fails the gate. Add it when
-// the first short-label call site is converted (MethodStepper / BlocksRail /
-// AnalysisJourneyDialog still read `DIAGRAM_SHORT_LABEL`, the English view).
+export const diagramShortLabel = (messages: Messages, diagramType: DiagramType): string =>
+  messages.diagram[diagramType].short;

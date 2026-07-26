@@ -303,6 +303,29 @@ export const en = {
     },
   },
 
+  /** Toolbar: the document title badge and the method-path stepper. */
+  toolbar: {
+    documentTitle: 'Document title',
+    cloudTypeBadge:
+      'Cloud type — its role in the UDE → Consolidated → Core progression (TP Basics).',
+    unsavedSince: (p: { file: string }) =>
+      `Unsaved changes since the last save to ${p.file}. Press Ctrl/⌘+S to write them to the file.`,
+    linkedTo: (p: { file: string }) =>
+      `Linked to ${p.file} — “Save to file” writes here; “Save to file as…” picks a new file.`,
+    unsavedSuffix: '· unsaved',
+    documentDetails: 'Document details',
+    stepCurrent: (p: { diagram: string }) => `${p.diagram} (current)`,
+    stepOpen: (p: { diagram: string }) => `Open ${p.diagram}`,
+    methodPath: 'Method path',
+    methodPathNav: 'TP method path',
+    // The glyph separating the main TP sequence from the Goal-Tree branch. It
+    // is decorative and `aria-hidden`, but it is still a rendered character a
+    // locale might want to change, so it lives here rather than inline.
+    methodPathBranchSeparator: '+',
+    hideMethodPathTitle: 'Hide the method path — reopen it from the ⋮ menu',
+    hideMethodPath: 'Hide method path',
+  },
+
   /**
    * Diagram-type display names, and the EC cloud-type tag.
    *

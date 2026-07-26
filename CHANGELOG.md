@@ -41,7 +41,7 @@ NEXT_STEPS — see `docs/I18N.md` for the full contract.
   appearance tab in it and asserts every visible string is tagged.
 - **Converted this session:** the whole Settings dialog (all four tabs + the reset confirm/toast), the
   Document Inspector (including its `MarkdownField` Edit/Preview tabs and the diagram / cloud-type
-  display constants it renders), the full
+  display constants it renders), the toolbar title badge + method-path stepper, the full
   CLR warning pipeline, the 63-step method checklist, and reader-mode coaching (whose copy no longer
   lives duplicated in `readerModeCoaching.ts`). The pseudo-locale test renders each Settings tab and
   asserts every visible string is bracket-tagged, with a per-tab allow-list — so a newly hardcoded

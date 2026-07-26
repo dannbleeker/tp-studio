@@ -15,12 +15,13 @@ deliberate leftovers, in rough priority order:
   dialog (4 tabs), the Document Inspector, the full CLR warning pipeline, the 63-step method checklist,
   and reader-mode coaching — roughly 380 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
   pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
-  is what proves the conversion is complete. Next up: the six components still reading the English
-  `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` views (`MethodStepper`, `TitleBadge`, `BlocksRail`,
-  `PatternLibraryDialog`, `AnalysisJourneyDialog`, `DiagramTypePickerDialog`) — each also has
-  surrounding hardcoded copy, so convert them whole rather than swapping only the label; plus
-  `start/diagramMeta.tsx`, whose table is built at MODULE scope and needs restructuring into a
-  function before it can read a catalogue. Then `shortcuts.ts` (38), `clrScrutiny.ts` (16),
+  is what proves the conversion is complete. Next up: the four components still reading the English
+  `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` views (`BlocksRail`, `PatternLibraryDialog`,
+  `AnalysisJourneyDialog`, `DiagramTypePickerDialog`) — each also carries surrounding hardcoded
+  copy, so convert them whole rather than swapping only the label; plus `start/diagramMeta.tsx`,
+  whose table is built at MODULE scope and needs restructuring into a function before it can read a
+  catalogue. Then the domain blocks: `methodPath.ts` (the stepper's next-step labels — the one
+  string `MethodStepper` still renders raw), `shortcuts.ts` (38), `clrScrutiny.ts` (16),
   `analysisJourney.ts` (15).
 
   *Counting note.* An earlier figure of "~2,500" was a raw `grep` upper bound (any single-quoted

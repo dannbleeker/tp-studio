@@ -6,6 +6,8 @@ import { AppearanceTab } from '@/components/settings/tabs/AppearanceTab';
 import { BehaviorTab } from '@/components/settings/tabs/BehaviorTab';
 import { DisplayTab } from '@/components/settings/tabs/DisplayTab';
 import { LayoutTab } from '@/components/settings/tabs/LayoutTab';
+import { MethodStepper } from '@/components/toolbar/MethodStepper';
+import { TitleBadge } from '@/components/toolbar/TitleBadge';
 import { PSEUDO_PREFIX, PSEUDO_SUFFIX } from '@/i18n/pseudo';
 import { isLocaleLoaded, peekMessages, preloadLocale } from '@/i18n/registry';
 import { resetStoreForTest, useDocumentStore } from '@/store';
@@ -83,6 +85,8 @@ describe('pseudo-locale', () => {
       },
       allowed: [],
     },
+    { name: 'Title badge', render: () => render(<TitleBadge />), allowed: [] },
+    { name: 'Method stepper', render: () => render(<MethodStepper />), allowed: [] },
   ];
 
   for (const tab of TABS) {

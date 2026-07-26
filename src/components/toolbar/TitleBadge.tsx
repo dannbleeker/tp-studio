@@ -1,9 +1,10 @@
 import { Info, Link2 } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { DataComponent } from '@/components/dataComponentNames';
-import { CLOUD_TYPE_LABEL } from '@/domain/cloudType';
-import { DIAGRAM_TYPE_LABEL } from '@/domain/entityTypeMeta';
+import { cloudTypeLabel } from '@/domain/cloudType';
+import { diagramLabel } from '@/domain/entityPalettes';
 import { isDirtySinceSave } from '@/domain/linkedFileStaleness';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 import { currentDoc } from '@/store/selectors';
 import { useLinkedFileStatus } from './useLinkedFileName';
@@ -18,6 +19,8 @@ import { useLinkedFileStatus } from './useLinkedFileName';
  * z-10 above the canvas.
  */
 export function TitleBadge() {
+  const t = useT();
+  const tb = t.toolbar;
   // Session 135 / Perf #9 — collapsed five separate `useDocumentStore`
   // calls into one `useShallow` bundle. Each subscription was its own
   // snapshot read; the bundle takes one snapshot read + shallow
@@ -76,7 +79,7 @@ export function TitleBadge() {
         // reader can announce "Document title, edit text" before
         // reading the value. The axe-core a11y spec caught this on
         // first run; fix here rather than disabling the rule.
-        aria-label="Document title"
+        aria-label={tb.documentTitle}
         className="pointer-events-auto min-w-0 max-w-[60ch] flex-shrink overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-transparent px-1.5 py-1 font-medium text-neutral-900 text-sm outline-hidden transition focus:bg-white focus:shadow-xs disabled:opacity-60 sm:px-2 dark:text-neutral-100 dark:focus:bg-neutral-900"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -88,7 +91,7 @@ export function TitleBadge() {
           was redundant and (worse) drew on top of the EC reading-
           instructions strip when the user hovered. */}
       <span className="hidden truncate rounded-full bg-neutral-200/70 px-2 py-0.5 font-medium text-[10px] text-neutral-600 sm:inline-block dark:bg-neutral-800 dark:text-neutral-300">
-        {DIAGRAM_TYPE_LABEL[diagramType]}
+        {diagramLabel(t, diagramType)}
       </span>
       {/* Additive (TP Basics #1): the cloud's progression role, when tagged on
           an EC doc via the Document panel. Hidden until set; below `sm:` like
@@ -96,9 +99,9 @@ export function TitleBadge() {
       {cloudType && (
         <span
           className="hidden truncate rounded-full bg-sky-100/80 px-2 py-0.5 font-medium text-[10px] text-sky-700 sm:inline-block dark:bg-sky-900/40 dark:text-sky-300"
-          title="Cloud type — its role in the UDE → Consolidated → Core progression (TP Basics)."
+          title={tb.cloudTypeBadge}
         >
-          {CLOUD_TYPE_LABEL[cloudType]}
+          {cloudTypeLabel(t, cloudType)}
         </span>
       )}
       {/* Additive: shows when this doc is linked to an on-disk file (File
@@ -112,15 +115,11 @@ export function TitleBadge() {
               ? 'hidden max-w-[20ch] items-center gap-1 truncate rounded-full bg-amber-100/80 px-2 py-0.5 font-medium text-[10px] text-amber-700 sm:inline-flex dark:bg-amber-900/40 dark:text-amber-300'
               : 'hidden max-w-[18ch] items-center gap-1 truncate rounded-full bg-emerald-100/80 px-2 py-0.5 font-medium text-[10px] text-emerald-700 sm:inline-flex dark:bg-emerald-900/40 dark:text-emerald-300'
           }
-          title={
-            dirty
-              ? `Unsaved changes since the last save to ${linkedName}. Press Ctrl/⌘+S to write them to the file.`
-              : `Linked to ${linkedName} — “Save to file” writes here; “Save to file as…” picks a new file.`
-          }
+          title={dirty ? tb.unsavedSince({ file: linkedName }) : tb.linkedTo({ file: linkedName })}
         >
           <Link2 aria-hidden className="h-3 w-3 shrink-0" />
           <span className="truncate">{linkedName}</span>
-          {dirty && <span aria-hidden>· unsaved</span>}
+          {dirty && <span aria-hidden>{tb.unsavedSuffix}</span>}
         </span>
       )}
       <button
@@ -131,8 +130,8 @@ export function TitleBadge() {
         // palette ("Document details" command). At xs+ the icon-only
         // button surfaces alongside the title.
         className="pointer-events-auto xs:inline-flex hidden rounded-sm p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-        title="Document details"
-        aria-label="Document details"
+        title={tb.documentDetails}
+        aria-label={tb.documentDetails}
       >
         <Info className="h-3.5 w-3.5" />
       </button>
