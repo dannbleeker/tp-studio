@@ -2,17 +2,18 @@ import { CheckCircle2, Circle, CircleDot, ExternalLink, Plus, Route, Sparkles } 
 import { useEffect, useMemo, useState } from 'react';
 import { LargeDialog } from '@/components/ui/LargeDialog';
 import {
-  BARNARD_FIVE_QUESTIONS,
   computeJourneyStatuses,
   type JourneyStage,
   type JourneyStageId,
   journeyProgress,
+  journeyStagesFor,
   stageMemberDocIds,
   stageTypeCoverage,
 } from '@/domain/analysisJourney';
 import { DIAGRAM_SHORT_LABEL } from '@/domain/entityTypeMeta';
 import { listSavedDocIds } from '@/domain/persistence';
 import type { DiagramType } from '@/domain/types';
+import { useT } from '@/i18n/useT';
 import { useDocumentStore } from '@/store';
 
 /**
@@ -37,6 +38,7 @@ const STATUS_ICON = {
 } as const;
 
 export function AnalysisJourneyDialog() {
+  const t = useT();
   const open = useDocumentStore((s) => s.analysisJourneyOpen);
   const close = useDocumentStore((s) => s.closeAnalysisJourney);
   const journey = useDocumentStore((s) => s.journey);
@@ -108,7 +110,7 @@ export function AnalysisJourneyDialog() {
           />
 
           <div className="flex flex-col gap-2">
-            {BARNARD_FIVE_QUESTIONS.map((stage) => {
+            {journeyStagesFor(t).map((stage) => {
               const statuses = computeJourneyStatuses(journey, existingDocIds);
               const memberIds = stageMemberDocIds(journey, stage.id, existingDocIds);
               const coverage = stageTypeCoverage(stage, journey, existingDocIds);

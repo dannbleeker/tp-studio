@@ -361,6 +361,97 @@ export const en = {
     },
   },
 
+  /**
+   * The 7-CLR scrutiny stepper (`EdgeScrutinyDialog`), keyed by rule id — the
+   * same `ClrRuleId` the validators use, so there is no separate key space.
+   */
+  scrutiny: {
+    clarity: {
+      label: 'Clarity',
+      question:
+        'Do you and your audience read the cause and the effect the same way? Is any word ambiguous, jargon, or open to a second interpretation?',
+      hint: 'If a reasonable person could read it two ways, reword the entity until only one reading survives.',
+    },
+    'entity-existence': {
+      label: 'Entity existence',
+      question:
+        'Do the cause and the effect each actually exist as stated — a real, present condition in the environment you are examining, rather than a guess, a goal, or a label true only in general?',
+      hint: 'Name the evidence you would point to here — in your system, not in theory. A condition that holds elsewhere may not hold in this environment; if the entity is a vague abstraction, restate it as something observable.',
+    },
+    'causality-existence': {
+      label: 'Causality existence',
+      question:
+        'Does the cause genuinely lead to the effect — is the arrow real? Or are these just two things that happen together?',
+      hint: 'Read it aloud: “If [cause], then [effect].” If that sounds forced, you may have correlation, not cause.',
+    },
+    'cause-sufficiency': {
+      label: 'Cause sufficiency',
+      question:
+        'Is the cause enough on its own to produce the effect, or is an unstated extra condition quietly required (a hidden AND)?',
+      hint: 'If something else must also be true, add it as another cause feeding the same effect (an AND junctor).',
+    },
+    'additional-cause': {
+      label: 'Additional cause',
+      question:
+        'Could a separate, independent cause produce this same effect on its own (an OR)? Would removing this cause actually make the effect go away?',
+      hint: 'If another cause alone would still produce the effect, draw it — fixing only this one will not be enough.',
+    },
+    'cause-effect-reversal': {
+      label: 'Cause–effect reversal',
+      question:
+        'Is the cause the reason the effect exists, or only how you know the effect is there? If it is just your evidence, the arrow points the wrong way.',
+      hint: 'Read it backwards. On symptoms it is easy to draw "we know X because Y" instead of "Y causes X" — if the reverse reads truer, flip the edge.',
+    },
+    'predicted-effect-existence': {
+      label: 'Predicted-effect existence',
+      question:
+        'Two checks: (a) if the cause is real, what OTHER effect must also exist — can you find it? And (b) does the effect ever appear BEFORE the cause? If it does, this cannot be the cause.',
+      hint: 'Name a collateral effect the cause must produce, then look for it — its absence challenges the cause. And if the effect predates the cause, the timing rules the arrow out.',
+    },
+    tautology: {
+      label: 'Tautology (circular reasoning)',
+      question:
+        'Is the effect being used as the only proof of the cause — “it is true because it is true”? Is there independent evidence for the cause?',
+      hint: 'Point to evidence for the cause that does not depend on the effect itself.',
+    },
+  },
+
+  /** Barnard's five questions — the analysis-journey stages, keyed by stage id. */
+  journey: {
+    why: {
+      question: 'Why change?',
+      purpose: 'Frame the goal and the gap',
+      hint: 'Start from the goal and its necessary conditions, then show where reality falls short.',
+    },
+    what: {
+      question: 'What to change?',
+      purpose: 'Find the core problem',
+      hint: 'Trace the undesirable effects down to the one core problem — a full CRT, or an Interference Diagram for a faster read.',
+    },
+    'to-what': {
+      question: 'What to change to?',
+      purpose: 'Break the conflict, design the future',
+      hint: 'Surface the conflict that holds the problem in place, break it, and build the future it unlocks.',
+    },
+    how: {
+      question: 'How to cause the change?',
+      purpose: 'Plan the execution',
+      hint: 'Turn the change into a sequenced plan — the obstacles to clear and the steps to get there.',
+    },
+    sustain: {
+      question: 'How to sustain it?',
+      purpose: 'Measure and keep improving',
+      hint: 'Decide how you will measure the change and keep improving once it holds.',
+    },
+  },
+
+  /** Method-path next-step prompts, keyed by the diagram you are coming FROM. */
+  nextStep: {
+    crt: 'Root cause found — break it with an Evaporating Cloud',
+    ec: 'Conflict mapped — design the breakthrough in a Future Reality Tree',
+    frt: 'Injection in place — plan the rollout with a Prerequisite Tree',
+    prt: 'Objectives set — sequence the steps in a Transition Tree',
+  },
   /** Help dialog: headings, the About link, and the pointer-gesture list. */
   help: {
     title: 'Help',

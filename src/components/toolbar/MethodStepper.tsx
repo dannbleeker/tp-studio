@@ -122,7 +122,7 @@ export function MethodStepper() {
             className="hidden shrink-0 items-center gap-1.5 rounded-md border border-accent-200 bg-accent-50 px-2.5 py-1 font-medium text-[11px] text-accent-700 transition hover:bg-accent-100 lg:inline-flex dark:border-accent-800/50 dark:bg-accent-950/40 dark:text-accent-300"
           >
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
-            {next.label}
+            {t.nextStep[next.labelKey]}
             <ChevronRight className="h-3.5 w-3.5" aria-hidden />
           </button>
         )}

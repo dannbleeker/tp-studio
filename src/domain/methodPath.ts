@@ -1,3 +1,4 @@
+import type { Messages } from '@/i18n/types';
 import { entitiesOfType } from './graph';
 import type { DiagramType, TPDocument } from './types';
 
@@ -16,8 +17,12 @@ export const TP_GOAL_BRANCH: DiagramType[] = ['goalTree', 'st'];
 export type NextStep = {
   /** The diagram to create / open next. */
   diagram: DiagramType;
-  /** Short call-to-action shown in the stepper. */
-  label: string;
+  /**
+   * Catalogue key for the call-to-action, keyed by the diagram you are coming
+   * FROM. The prompt itself lives in `en.nextStep`; this module stays
+   * locale-free so it can be called from anywhere.
+   */
+  labelKey: keyof Messages['nextStep'];
 };
 
 /**
@@ -31,25 +36,17 @@ export const nextStepFor = (doc: TPDocument): NextStep | null => {
   switch (doc.diagramType) {
     case 'crt':
       return entitiesOfType(doc, 'rootCause').length > 0
-        ? { diagram: 'ec', label: 'Root cause found — break it with an Evaporating Cloud' }
+        ? { diagram: 'ec', labelKey: 'crt' }
         : null;
     case 'ec':
-      return entitiesOfType(doc, 'want').length > 0
-        ? {
-            diagram: 'frt',
-            label: 'Conflict mapped — design the breakthrough in a Future Reality Tree',
-          }
-        : null;
+      return entitiesOfType(doc, 'want').length > 0 ? { diagram: 'frt', labelKey: 'ec' } : null;
     case 'frt':
       return entitiesOfType(doc, 'injection').length > 0
-        ? {
-            diagram: 'prt',
-            label: 'Injection in place — plan the rollout with a Prerequisite Tree',
-          }
+        ? { diagram: 'prt', labelKey: 'frt' }
         : null;
     case 'prt':
       return entitiesOfType(doc, 'intermediateObjective').length > 0
-        ? { diagram: 'tt', label: 'Objectives set — sequence the steps in a Transition Tree' }
+        ? { diagram: 'tt', labelKey: 'prt' }
         : null;
     default:
       return null;

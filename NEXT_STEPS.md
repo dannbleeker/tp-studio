@@ -11,10 +11,11 @@ rationale that lived only here were migrated into their CHANGELOG session entrie
 **Open — i18n follow-ups (Session 209).** The architecture shipped with English only; these are the
 deliberate leftovers, in rough priority order:
 
-- **Remaining UI-string extraction (~850–1,050 unique literals).** Converted so far: the whole Settings
+- **Remaining UI-string extraction (~800–1,000 unique literals).** Converted so far: the whole Settings
   dialog (4 tabs), the Document Inspector, the Help dialog, the toolbar title badge + method-path
   stepper, the full CLR warning pipeline, the 63-step method checklist, the 38 keyboard shortcuts,
-  and reader-mode coaching — roughly 480 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
+  the 7-CLR scrutiny stepper, Barnard's five journey questions, and reader-mode coaching — roughly
+  525 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
   pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
   is what proves the conversion is complete. Next up: the four components still reading the English
   `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` views (`BlocksRail`, `PatternLibraryDialog`,
@@ -23,8 +24,11 @@ deliberate leftovers, in rough priority order:
   whose table is built at MODULE scope and needs restructuring into a function before it can read a
   catalogue; and `docLinks.ts` (`LEARN_LINKS`, shared by the Help and About dialogs — convert it
   together with About so the two can't drift; it is the Help dialog's only allow-list entry).
-  Then the remaining domain blocks: `methodPath.ts` (the stepper's next-step labels — the one
-  string `MethodStepper` still renders raw), `clrScrutiny.ts` (16), `analysisJourney.ts` (15).
+  With `clrScrutiny.ts`, `analysisJourney.ts` and `methodPath.ts` done, the domain static blocks are
+  finished — what is left in `src/domain` is mostly generated prose (`verbalisation.ts`,
+  `edgeReading.ts`, the exporters' section headers) where word ORDER is language-specific, not just
+  the words. Those need per-locale sentence templates rather than a string swap; treat them as their
+  own design problem, not more extraction.
 
   *Counting note.* An earlier figure of "~2,500" was a raw `grep` upper bound (any single-quoted
   capitalised string in `src/`, 2,684 hits) and overstated the job badly. It double-counted duplicates
@@ -35,7 +39,7 @@ deliberate leftovers, in rough priority order:
   | Area | Unique strings | Notes |
   | --- | --- | --- |
   | `src/components` | ~600 left | was ~686; the four Settings tabs are now converted |
-  | `src/domain` (excl. patterns) | ~200 left | was ~378; `methodChecklist.ts` (110) and `shortcuts.ts` (42) are now converted |
+  | `src/domain` (excl. patterns) | ~155 left | was ~378; the static blocks are done — what remains is generated prose (verbalisation / edgeReading / exporters), a design problem rather than extraction |
   | `src/services` + `store` + `hooks` | ~92 | mostly toast copy |
 - **Retire `Warning.message`.** It exists as the English fallback + parameter-correctness canary. Removing
   it means migrating ~276 message-string assertions across ~41 test files to assert on

@@ -8,6 +8,8 @@
 // derivations, and a defensive sanitiser for the stored blob. All localStorage
 // IO and the store actions live in `src/store/journeySlice.ts`.
 
+import { en } from '@/i18n/locales/en';
+import type { Messages } from '@/i18n/types';
 import { DIAGRAM_TYPE_LABEL } from './entityTypeMeta';
 import type { DiagramType, DocumentId } from './types';
 
@@ -54,48 +56,43 @@ export type AnalysisJourney = {
  * The shipped framework. `why`→Goal Tree · `what`→CRT/ID · `to-what`→EC/FRT/NBR ·
  * `how`→PRT/TT · `sustain`→S&T. Each diagram type belongs to exactly one stage.
  */
-export const BARNARD_FIVE_QUESTIONS: readonly JourneyStage[] = [
+const JOURNEY_DEFS = [
   {
     id: 'why',
-    question: 'Why change?',
-    purpose: 'Frame the goal and the gap',
     diagramTypes: ['goalTree'],
-    hint: 'Start from the goal and its necessary conditions, then show where reality falls short.',
   },
   {
     id: 'what',
-    question: 'What to change?',
-    purpose: 'Find the core problem',
     // CRT is the full analysis; the Interference Diagram is the book's faster
     // route to "what to change" — the interferences to a goal, without building
     // a whole tree (Sproull & Nelson, *Epiphanized*, App. 4). Create still mints
     // a CRT (the primary, first entry); an ID enrolled during a journey counts
     // toward this stage too.
     diagramTypes: ['crt', 'id'],
-    hint: 'Trace the undesirable effects down to the one core problem — a full CRT, or an Interference Diagram for a faster read.',
   },
   {
     id: 'to-what',
-    question: 'What to change to?',
-    purpose: 'Break the conflict, design the future',
     diagramTypes: ['ec', 'frt', 'nbr'],
-    hint: 'Surface the conflict that holds the problem in place, break it, and build the future it unlocks.',
   },
   {
     id: 'how',
-    question: 'How to cause the change?',
-    purpose: 'Plan the execution',
     diagramTypes: ['prt', 'tt'],
-    hint: 'Turn the change into a sequenced plan — the obstacles to clear and the steps to get there.',
   },
   {
     id: 'sustain',
-    question: 'How to sustain it?',
-    purpose: 'Measure and keep improving',
     diagramTypes: ['st'],
-    hint: 'Decide how you will measure the change and keep improving once it holds.',
   },
-] as const;
+] as const satisfies readonly Omit<JourneyStage, 'question' | 'purpose' | 'hint'>[];
+
+/** English view; React callers should use {@link journeyStagesFor}. */
+export const BARNARD_FIVE_QUESTIONS: readonly JourneyStage[] = JOURNEY_DEFS.map((d) => ({
+  ...d,
+  ...en.journey[d.id],
+}));
+
+/** Locale-aware journey stages. */
+export const journeyStagesFor = (messages: Messages): readonly JourneyStage[] =>
+  JOURNEY_DEFS.map((d) => ({ ...d, ...messages.journey[d.id] }));
 
 const STAGE_BY_ID: ReadonlyMap<JourneyStageId, JourneyStage> = new Map(
   BARNARD_FIVE_QUESTIONS.map((s) => [s.id, s])
