@@ -16,10 +16,12 @@ deliberate leftovers, in rough priority order:
   dialog, the diagram-type picker, the toolbar title badge, and the method-path stepper. Converted alongside them: the full CLR
   warning pipeline, the 63-step method checklist, the 38 keyboard shortcuts, the 7-CLR scrutiny
   stepper, Barnard's five journey questions, the shared doc-links, and reader-mode coaching — roughly
-  615 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
+  635 strings. Everything else still renders hardcoded English. Migrate opportunistically; the
   pseudo-locale test is the tool for spotting what's left, and extending it to a newly converted surface
-  is what proves the conversion is complete. Next up: `AnalysisJourneyDialog`, the last component
-  reading an English label view.
+  is what proves the conversion is complete. **No component reads an English label view any more** —
+  `DIAGRAM_SHORT_LABEL` was deleted outright once its last caller was converted, since an unread
+  English mirror is exactly how two copies drift apart. `DIAGRAM_TYPE_LABEL` survives only for
+  non-React callers (the exporters, and `factory.ts`'s persisted default document title).
 
   **Then `patterns/index.ts` — 113 `label` + `hint` pairs (~226 strings).** This is the pattern
   library's PICKER METADATA and unlike the pattern documents themselves it IS catalogue work: each

@@ -20,7 +20,7 @@ import type { Messages } from '@/i18n/types';
 /**
  * Session 183 — per-diagram-type chrome for the Start surface (group headers,
  * tree-card tags). `label` / `tag` / `color` reuse the domain's
- * `DIAGRAM_TYPE_LABEL` / `DIAGRAM_SHORT_LABEL` / `DIAGRAM_TYPE_COLOR` (the colour
+ * the catalogue's diagram labels / `DIAGRAM_TYPE_COLOR` (the colour
  * is the diagram's canonical entity-stripe token — no new colour values); `icon`
  * is a lucide glyph. Cover every `DiagramType` so grouping never hits the
  * fallback for a known type.

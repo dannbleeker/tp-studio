@@ -34,7 +34,7 @@ import { undoRestoreAction } from '../ui/loadToast';
 /**
  * Card order. The short tag and the description used to live here; both now
  * come from the message catalogue — `short` was a verbatim duplicate of
- * `DIAGRAM_SHORT_LABEL`, so dropping it removes a second place to keep in sync.
+ * the catalogue's short label, so dropping it removes a second place to keep in sync.
  */
 const DIAGRAM_CARD_ORDER: DiagramType[] = [
   'crt',

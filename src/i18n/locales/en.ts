@@ -546,6 +546,28 @@ export const en = {
     inDiagram: (p: { diagram: string }) => `in ${p.diagram} →`,
   },
 
+  /** The Analysis-journey dialog (Barnard's five questions as a guided flow). */
+  journeyDialog: {
+    title: 'Analysis journey',
+    subtitle:
+      "Walk one analysis through Barnard's five questions — a guided flow over the trees it needs. Opt-in; nothing changes on your trees until you build them.",
+    startHeading: 'Start a guided journey',
+    startBlurb:
+      'A journey groups the trees of one analysis and tracks the five questions — why change, what to change, what to change to, how to cause it, and how to sustain it. Each stage tells you which tree to build and lets you create, spawn, or open it in place.',
+    startButton: 'Start journey',
+    nameLabel: 'Journey name',
+    end: 'End journey',
+    fiveQuestions: "Barnard's five questions",
+    progress: (p: { done: number; total: number }) => `${p.done} / ${p.total}`,
+    open: 'Open',
+    spawn: (p: { diagram: string }) => `Spawn ${p.diagram}`,
+    create: (p: { diagram: string }) => `Create ${p.diagram}`,
+    /** Used when no primary diagram type is known for the stage. */
+    createFallbackNoun: 'tree',
+    markDone: 'Mark done',
+    notDone: 'Not done',
+  },
+
   /** Help dialog: headings, the About link, and the pointer-gesture list. */
   help: {
     title: 'Help',

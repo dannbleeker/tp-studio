@@ -106,12 +106,11 @@ export const DIAGRAM_TYPE_LABEL: Record<DiagramType, string> = Object.fromEntrie
 
 /**
  * Short labels for compact chrome (the Building Blocks rail's cross-diagram
- * hints, the method-path stepper) — acronyms where they exist, short names else.
- * Mirror of `DIAGRAM_TYPE_LABEL`; add a new diagram type to both together.
+ * hints, the method-path stepper) live ONLY in the message catalogue now —
+ * every consumer goes through `diagramShortLabel`. The English mirror that used
+ * to sit here was deleted once the last caller was converted; an unread English
+ * view is exactly how the two copies drift apart.
  */
-export const DIAGRAM_SHORT_LABEL: Record<DiagramType, string> = Object.fromEntries(
-  DIAGRAM_TYPES.map((d) => [d, en.diagram[d].short])
-) as Record<DiagramType, string>;
 
 /**
  * A representative "brand" colour per diagram type — the dot used by compact
