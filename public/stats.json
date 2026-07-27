@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-26T17:57:30.662Z",
-  "commit": "a588462",
+  "generatedAt": "2026-07-27T10:12:08.719Z",
+  "commit": "7645386",
   "headline": {
     "linesTsJs": 156795,
     "tests": 5128,
     "lineCoveragePct": 95.33,
-    "commits": 1185,
+    "commits": 1186,
     "ageDays": 76,
     "trackedFiles": 1237,
     "featureManualPct": 99.6,
@@ -52,7 +52,7 @@
     },
     "statements": {
       "pct": 92.92,
-      "covered": 17112,
+      "covered": 17113,
       "total": 18415
     },
     "functions": {
@@ -61,35 +61,35 @@
       "total": 3736
     },
     "branches": {
-      "pct": 83.73,
-      "covered": 9701,
+      "pct": 83.75,
+      "covered": 9703,
       "total": 11585
     }
   },
   "tests": {
     "unit": 5032,
     "e2e": 96,
-    "durationMs": 293487,
+    "durationMs": 219849,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11143
-      },
-      {
-        "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5904
-      },
-      {
-        "file": "tests/domain/graphReach.test.ts",
-        "ms": 5702
+        "ms": 8205
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5521
+        "ms": 4006
       },
       {
-        "file": "tests/components/CommandPalette.test.tsx",
-        "ms": 2650
+        "file": "tests/perf/validators.bench.test.ts",
+        "ms": 3693
+      },
+      {
+        "file": "tests/domain/graphReach.test.ts",
+        "ms": 3603
+      },
+      {
+        "file": "tests/components/export/ExportPickerDialog.test.tsx",
+        "ms": 1888
       }
     ]
   },
@@ -189,7 +189,7 @@
     "nonNull": 106
   },
   "bundle": {
-    "jsGzipKb": 862.4,
+    "jsGzipKb": 862.5,
     "cssGzipKb": 19.9,
     "totalGzipKb": 882.3,
     "budgetKb": 207,
@@ -816,7 +816,7 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 76,
-    "commits": 1185,
+    "commits": 1186,
     "commits7d": 36,
     "authors": [
       {
@@ -825,7 +825,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 324
+        "count": 325
       },
       {
         "name": "Claude",
@@ -837,8 +837,8 @@
       }
     ],
     "churn30d": {
-      "added": 37737,
-      "removed": 10199
+      "added": 37644,
+      "removed": 10193
     },
     "changelogEntries": 411
   }
