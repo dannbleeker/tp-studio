@@ -223,10 +223,19 @@ safe(() => {
   }
 });
 
+// Session 211 — the history lives in TWO files since the split: CHANGELOG.md
+// carries Sessions 150+, docs/CHANGELOG-archive.md carries 149 → 1. Count both.
+// This figure is appended to stats-history.json on every run, so counting only
+// the current file would have dropped it from 412 to 178 the day the split
+// landed and left a permanent cliff in the dashboard's trend line — a reporting
+// artefact indistinguishable, later, from someone having deleted history.
+const CHANGELOG_FILES = ['CHANGELOG.md', 'docs/CHANGELOG-archive.md'];
 let changelogEntries = null;
-if (existsSync(join(ROOT, 'CHANGELOG.md'))) {
-  const m = readFileSync(join(ROOT, 'CHANGELOG.md'), 'utf8').match(/^##\s/gm);
-  changelogEntries = m ? m.length : null;
+for (const rel of CHANGELOG_FILES) {
+  const abs = join(ROOT, rel);
+  if (!existsSync(abs)) continue;
+  const m = readFileSync(abs, 'utf8').match(/^##\s/gm);
+  changelogEntries = (changelogEntries ?? 0) + (m ? m.length : 0);
 }
 
 const headSha = safe(() => sh('git rev-parse --short HEAD'), null);

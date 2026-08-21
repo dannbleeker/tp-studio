@@ -17,10 +17,21 @@
     "environment": ["$defaults"],
     "allow": [
       "$defaults",
-      "TP Studio is a single-developer project with no PR review process. Direct pushes to origin/main are the standard workflow — Dann reviews changes in-session before authorizing each push and the CI on main is the gate. Treat `git push` / `git push origin main` as authorized when Dann has confirmed in chat (e.g. 'push', 'yes push', 'push to origin/main'). Do not soft-block on the default-branch concern."
+      "TP Studio is a single-developer project with no PR review process. Direct pushes to origin/main are the standard workflow \u2014 Dann reviews changes in-session before authorizing each push and the CI on main is the gate. Treat `git push` / `git push origin main` as authorized when Dann has confirmed in chat (e.g. 'push', 'yes push', 'push to origin/main'). Do not soft-block on the default-branch concern."
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh",
+            "timeout": 300000
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
