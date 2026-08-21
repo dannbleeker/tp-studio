@@ -70,7 +70,10 @@ export function WarningsList({ warnings }: { warnings: Warning[] }) {
   const totalResolved = warnings.filter((w) => w.resolved).length;
 
   return (
-    <div className="flex flex-col gap-3">
+    // `data-component` so the book-screenshot spec can scroll this section
+    // into the Inspector's viewport — Chapter 13's picture is ABOUT the
+    // warnings, and they sit below the fold under Title / Type / Description.
+    <div data-component="warnings-list" className="flex flex-col gap-3">
       {/* Spelled out per Dann's Session-87 UX feedback — "CLR" alone is
           opaque to anyone who hasn't read Goldratt. The `title` tooltip
           carries the framework one-liner so the long-form heading

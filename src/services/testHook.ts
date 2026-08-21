@@ -211,6 +211,26 @@ export interface TpTestHook {
    * demand (see the impl) — await it if a caller needs the diagram in place.
    */
   loadPattern: (id: string) => Promise<void>;
+  /**
+   * Session 210 — put the app into a presentable state for a book
+   * screenshot (`e2e/guide-screenshots.spec.ts`).
+   *
+   * Every overlay this clears is CORRECT product behaviour and WRONG book
+   * behaviour. `addEntity` selects what it created, so a seeded capture
+   * always ended with the SelectionToolbar floating over the canvas and the
+   * Inspector claiming the right edge; `FirstEntityTip` fires at 1–2
+   * entities and the spec's `localStorage.clear()` guarantees its
+   * dismissed-flag is false, so it sat dead-centre of the canvas on top of
+   * the very node the caption promised; template / example loads raise a
+   * toast. A reader following the manuscript's gestures never arrives at
+   * that state — but every generated PNG did.
+   *
+   * Centralised here rather than per-test so a newly-added scene can't
+   * forget it. `keepSelection` is for the scenes whose SUBJECT is the
+   * Inspector (Chapter 13's CLR warnings); the toolbar's discoverability
+   * tip is dismissed either way.
+   */
+  stageForCapture: (opts?: { keepSelection?: boolean; minimap?: boolean }) => void;
 }
 
 /**
@@ -319,6 +339,25 @@ export const maybeInstallTestHook = (): void => {
       const { patternById } = await import('@/domain/patterns');
       const pattern = patternById(id);
       if (pattern) useDocumentStore.getState().openDocInTab(pattern.build());
+    },
+    stageForCapture: ({ keepSelection = false, minimap = false } = {}) => {
+      const s = useDocumentStore.getState();
+      // Clearing the selection closes BOTH the SelectionToolbar and the
+      // Inspector — they share `selection` as their visibility source.
+      if (!keepSelection) s.clearSelection();
+      s.dismissEmptyStateTip();
+      s.dismissSelectionToolbarTip();
+      // Dismiss toasts for real. The spec used to paint over the toaster with
+      // Playwright's `mask`, which does not hide an element — it overpaints it
+      // with #FF00FF, and three chapters shipped a fluorescent magenta bar
+      // across the diagram.
+      for (const t of s.toasts) s.dismissToast(t.id);
+      s.setShowMinimap(minimap);
+      // Frame the diagram. `seed` / `connect` leave placement to auto-layout,
+      // and React Flow's `fitView` PROP only fires on mount — before the seed
+      // — so without this a seeded node can sit under a panel or off-screen
+      // entirely (Chapter 4 captioned "three UDEs" and showed two).
+      getCanvasInstance()?.fitView({ padding: 0.25, duration: 0 });
     },
   };
   // `window.__TP_TEST__` is typed in `src/vite-env.d.ts` as an

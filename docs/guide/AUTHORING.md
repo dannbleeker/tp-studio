@@ -26,9 +26,27 @@ Screenshots are not hand-captured. They're produced by `e2e/guide-screenshots.sp
 ### How a screenshot is born
 
 1. **Manuscript** — chapter text says "Now your canvas looks like this:" and embeds `![…](screenshots/crt-step-3-first-effect.png)`. The PNG doesn't exist yet.
-2. **Spec** — a corresponding `test('crt-step-3-first-effect', …)` block in `e2e/guide-screenshots.spec.ts` performs whatever gestures the book describes up to that point and calls `expect(page).toHaveScreenshot('crt-step-3-first-effect.png', { … })`.
+2. **Spec** — a corresponding `test('crt-step-3-first-effect', …)` block in `e2e/guide-screenshots.spec.ts` performs whatever gestures the book describes up to that point and calls the spec's `_screenshot(page, 'crt-step-3-first-effect')` helper, which writes the PNG unconditionally with `page.screenshot({ path })`. (Not `toHaveScreenshot` — these are illustrations, not pinned baselines.)
 3. **Workflow** — triggering the `Update visual snapshots` GitHub Action runs all `e2e/visual-*.spec.ts` AND `e2e/guide-screenshots.spec.ts` with `--update-snapshots`, captures every PNG, commits them via PR.
 4. **Merge** — the baseline PR's PNGs land under `docs/guide/screenshots/`, the manuscript embeds resolve, the book is reproducible.
+
+### Staging — the contract every capture obeys
+
+`_screenshot` routes every capture through `window.__TP_TEST__.stageForCapture()` before it fires the shutter. This is not cosmetic: for a long time eleven of the fifteen committed PNGs had a transient overlay sitting on the diagram, and four of them hid content the caption promised.
+
+Staging clears the state that is *correct in the product and wrong in the book*:
+
+- **The selection.** `addEntity` selects what it created, so any seeded capture ends with the SelectionToolbar floating over the canvas and the Inspector claiming ~300 px of the right edge — a state no reader following the manuscript arrives at.
+- **The coaching tips.** `FirstEntityTip` renders at 1–2 entities and the spec clears `localStorage` before each test, so it was always on — dead-centre of the canvas, on top of the node the caption named.
+- **Toasts.** Template / example loads raise one.
+- **The minimap**, which overlaps the diagram bottom-left.
+
+It also calls `fitView`, because `seed` / `connect` leave placement to auto-layout and React Flow's `fitView` *prop* only fires on mount — before the seed.
+
+Two rules when you add a scene:
+
+- **Never pass Playwright's `mask:`.** It does not hide the masked element; it overpaints it in `#FF00FF`. Three chapters shipped a fluorescent magenta bar across the diagram that way. Dismiss the thing instead.
+- **Let `_screenshot` stage for you.** Pass `{ keepSelection: true }` when the Inspector *is* the subject (Chapter 13), and `{ stage: false }` plus an earlier `_stage(page)` call only when the final gesture owns a selection that staging would clear (Chapter 15's read-through).
 
 The same Playwright spec also acts as **a regression test for the book's gestures**: if a future UI change breaks the path described in Chapter 4 (e.g., a palette command renamed, a button moved), the spec fails in regular CI long before any reader hits it. This is the value of generating screenshots from a real driver, not Photoshopping them.
 
