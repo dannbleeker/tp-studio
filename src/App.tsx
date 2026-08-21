@@ -443,6 +443,23 @@ export function App() {
                     <Inspector />
                   </ErrorBoundary>
                 ))}
+              {/* Session 210 — the History and Comments panels use the same
+                  `absolute top-0 right-0 h-full` geometry as the Inspector and
+                  their own comments say they mirror it, but they were mounted
+                  in the dialog Suspense block at the bottom of <main>. Their
+                  containing block was therefore the whole viewport, not this
+                  content row, so `top-0` put their headers — the "History"
+                  title, the close button, most of "Snapshot now" — behind the
+                  tab strip and TopBar. Mounted here they resolve against the
+                  same box the Inspector does. */}
+              <Suspense fallback={null}>
+                <ErrorBoundary label="Revision history">
+                  <RevisionPanel />
+                </ErrorBoundary>
+                <ErrorBoundary label="Comments panel">
+                  <CommentsPanel />
+                </ErrorBoundary>
+              </Suspense>
             </div>
           </div>
         </>
@@ -485,12 +502,6 @@ export function App() {
         </ErrorBoundary>
         <ErrorBoundary label="3-cloud wizard">
           <ThreeCloudWizard />
-        </ErrorBoundary>
-        <ErrorBoundary label="Revision history">
-          <RevisionPanel />
-        </ErrorBoundary>
-        <ErrorBoundary label="Comments panel">
-          <CommentsPanel />
         </ErrorBoundary>
         <ErrorBoundary label="Walkthrough overlay">
           <WalkthroughOverlay />

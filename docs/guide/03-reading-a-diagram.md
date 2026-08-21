@@ -8,6 +8,8 @@ In Current Reality Trees and Future Reality Trees, **causality flows from bottom
 
 In Prerequisite Trees, Transition Trees, and Evaporating Clouds, the orientation is different — covered chapter-by-chapter. The point worth knowing now: **TP Studio respects per-diagram orientation conventions automatically.** When you load a CRT, dagre lays it out bottom-up. When you load a PRT, dagre lays it top-down. When you load an EC, you get a hand-positioned 5-box layout. Don't fight the convention; the convention is what makes the diagram *readable* to other practitioners.
 
+![Two entities on a CRT canvas — "Triage rubric missing" below, an arrow rising to "Resolution time > 8h" above](screenshots/chapter03-causality-because.png)
+
 ## Causality reading mode
 
 The most common confusion when first encountering a CRT is "do I read up or down?" Goldratt's tradition says read up: *"because A, B; because B, C."*  Some practitioners prefer the dual: *"A, therefore B; B, therefore C."* Both are valid.
@@ -19,9 +21,10 @@ TP Studio lets you pick a global default in **Settings → Display → Causality
 | `none` | No fallback label on edges. Best for clean exports. |
 | `because` | Renders a muted italic "because" on each unlabeled edge. Reads bottom-up. |
 | `therefore` | Renders a muted italic "therefore" on each unlabeled edge. Reads top-down. |
+| `in order to` | Renders a muted italic "in order to" on each unlabeled edge. The necessity read (PRT / EC). |
 | `auto` *(default)* | Picks per-diagram: `because` for CRT / FRT / TT; `in order to` for PRT / EC; nothing for freeform / S&T. |
 
-![Settings dialog with causality-reading dropdown visible](screenshots/chapter03-causality-because.png)
+![Settings → Display, with the five causality-reading modes listed under CAUSALITY READING](screenshots/chapter03-causality-setting.png)
 
 Per-edge labels always override the global fallback. If you've explicitly labeled an edge — say, "because the SLA target is 8h" — the fallback word disappears and your label renders instead. Aggregated edges (those representing several edges collapsed across a group boundary) skip the fallback too; their `×N` count badge is the more informative thing.
 
