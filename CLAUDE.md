@@ -15,7 +15,7 @@ Owner: Dann Bleeker Pedersen. Repo: <https://github.com/dannbleeker/tp-studio>. 
 - **Zustand 5** for state — split into sliced stores (see `src/store/` below).
 - **Tailwind 4** + small custom design tokens in `src/domain/tokens.ts`.
 - **Vitest** + **jsdom** for unit/component tests. **Playwright** for e2e (real Chromium). **Biome** lint + format (`biome.json`). **knip** for dead-code.
-- **pnpm 10** / **Node 22+** — but in this environment **do not call `pnpm`/`npx`** (see Environment). `pnpm install` (to add deps) is the one exception.
+- **pnpm 10** / **Node 22+**. Invoke tooling through the node entry points rather than `pnpm`/`npx` (see **Environment** — whether `pnpm install` is forbidden or mandatory depends on which of the two you're in).
 
 ## Directory shape
 
@@ -77,7 +77,7 @@ Run via the **`/session-end`** command, which encodes this without freelancing:
    gh run list --branch main --limit 12 --json headSha,conclusion,name \
      --jq ".[] | select(.headSha==\"$SHA\") | \"\(.name): \(.conclusion)\""
    ```
-   Every line must say `success`. Pull failure traces with `gh run view <id> --log-failed`. **main must never stay red.**
+   Every line must say `success`. Pull failure traces with `gh run view <id> --log-failed`. **main must never stay red.** (No `gh` on the web/remote environment — use `mcp__github__pull_request_read` with `method: "get_check_runs"` for the same all-runs cross-check.)
 7. **Goal-seek** failures from real evidence (`gh run view <id> --log-failed`, `gh run download <id> -n playwright-report`), not guesses. Fire `PushNotification` on a real blocker or on green.
 
 Also at session end: **prune `NEXT_STEPS.md`** — delete any item that shipped this session (it now lives in CHANGELOG). Keep only genuinely-open items + the reference tail. Don't ask; just do it.
@@ -114,32 +114,50 @@ For **L (large)** features — multi-file, new module, design ambiguity, schema/
 
 The plan covers files to create/touch, signatures, test strategy, alternatives rejected, and cross-cutting concerns. For **S/M** items (single file, clear scope) skip it — the round-trip isn't worth it.
 
-## Environment quirks (Windows + corporate AppLocker)
+## Environment — there are two, and they need different instructions
 
-These bite often — work around them, don't fight them:
+TP Studio is worked on from two places, and several instructions that are correct in one are actively
+wrong in the other. **Check which you're in before following anything below:** `/c/devtools/tp-studio`
+exists → **workstation**; a Linux path like `/home/user/tp-studio` → **web / remote**.
 
-- **Working-directory drift (the #1 recurring tax).** This repo lives at `C:\devtools\tp-studio` (off OneDrive). Bash commands — especially background ones — often start in the OneDrive session dir instead, so `git`, `node …/bin/…`, and Playwright fail with `Cannot find module C:\…\Desktop\node_modules\…` / "not a git repository". **Prefix every shell command with `cd /c/devtools/tp-studio &&`** (or launch Claude from the repo) — treat it as UNCONDITIONAL. The trap is "the cwd looks fine, I'll skip it": it works until a file read or background task silently resets cwd, then the next bare command blows up. **For git/gh, prefer `git -C /c/devtools/tp-studio …`** — it runs as if started in the repo regardless of cwd, so there's nothing to forget; keep the `cd &&` prefix for `node` (no equivalent flag).
-- **AppLocker — allow-listed at `C:\devtools` (Session 181).** This repo's home is on the corporate AppLocker allow-list (`Get-AppLockerPolicy -Effective`: **Script** collection *Enabled* + Allow rule `%OSDRIVE%\DEVTOOLS\*`; **Exe** collection *AuditOnly*). The script-shim block that used to break `pnpm lint` / `biome.CMD` / the pre-commit hook is **gone here** — verified this session: the native `biome.exe`, the `.CMD`/`.ps1` shims, and `pnpm exec biome` all run directly. It only bit at the old, un-allow-listed `C:\dev`. The node-form invocations below still work, are portable to any path, and stay the default (the gate + lint-staged use them).
-- **Run tools via their node entry points** (portable + what `preflight.mjs`/lint-staged use). PowerShell is in **Constrained Language Mode**, so `npm.ps1`/`pnpm.ps1` break regardless of path — use Bash or the node bins:
+### Shared — true in both
+
+- **Run tools via their node entry points** (portable + what `preflight.mjs`/lint-staged use):
   - `node ./node_modules/typescript/bin/tsc --noEmit`
-  - **Biome runs via the node bin** — `node ./node_modules/@biomejs/biome/bin/biome check src tests` works (the `biome.exe` shim was AppLocker-blocked at the old `C:\dev`; at `C:\devtools` even the shim runs — but the node bin is portable and stays the default. Confirmed S180/S181). Autofix with `--write` (formatter + organizeImports) and `--write --unsafe` (Tailwind `useSortedClasses` class sorting). **Run it locally before every push** — no more hand-matching from the CI diff. If CI lint still goes red, `gh run view <id> --log-failed` shows the exact diff.
-  - `node ./node_modules/knip/bin/knip.js --no-progress` (Session 180: knip.json code-rules are now `error`, so it EXITS NON-ZERO on unused files/exports/types/duplicates/enumMembers — gates locally, matching CI; deps/resolution rules stay `warn`. Folded into `preflight.mjs`.)
+  - `node ./node_modules/@biomejs/biome/bin/biome check src tests` — autofix with `--write` (formatter + organizeImports) and `--write --unsafe` (Tailwind `useSortedClasses` class sorting). **Run it locally before every push** — no more hand-matching from the CI diff.
+  - `node ./node_modules/knip/bin/knip.js --no-progress` (Session 180: knip.json code-rules are `error`, so it EXITS NON-ZERO on unused files/exports/types/duplicates/enumMembers — gates locally, matching CI; deps/resolution rules stay `warn`. Folded into `preflight.mjs`.)
   - `node ./node_modules/vitest/vitest.mjs run [substring]` (`--coverage` for coverage)
   - `node ./node_modules/vite/bin/vite.js build`
   - `node ./scripts/check-bundle-size.mjs` (after a build) — fails CI if a chunk exceeds `bundle-budget.json` + 10% slop; re-pin the budget deliberately when a feature legitimately grows a chunk.
-  - **Before every push, run the whole gate in one shot: `node scripts/preflight.mjs`** (tsc → biome → knip → vitest → build → bundle-size, fail-fast; `--fast` = static checks only, ~15s). It mirrors CI's lint-types + tests-build jobs; add **`--coverage`** for CI's gated coverage thresholds and **`--e2e`** for the Playwright job (not in the default run). Don't run the checks piecemeal — that's how two red-CI rounds shipped E6.
-
-  `gh` on PATH works (full path `"/c/Program Files/GitHub CLI/gh.exe"`).
-- **Playwright runs locally** (Session 169): `node ./node_modules/vite/bin/vite.js preview --port 4173 --strictPort` (background) → `node ./node_modules/@playwright/test/cli.js test e2e/<spec> --reporter=list` (`reuseExistingServer` reuses the preview). `window.__TP_TEST__` (on `?test=1`) exposes `seed` / `selectNodeViaRF` / `loadPattern`. `visual-*` snapshots are Linux-only (fail on Windows); **CI's `e2e` job is authoritative**.
+- **Before every push, run the whole gate in one shot: `node scripts/preflight.mjs`** (tsc → biome → knip → vitest → build → bundle-size, fail-fast; `--fast` = static checks only, ~15s). It mirrors CI's lint-types + tests-build jobs; add **`--coverage`** for CI's gated coverage thresholds and **`--e2e`** for the Playwright job (not in the default run). Don't run the checks piecemeal — that's how two red-CI rounds shipped E6.
 - **Coverage concurrency:** never run two `vitest … --coverage` processes at once — they share `coverage/.tmp` and both crash.
+- **Never commit a locally-rendered `visual-*` snapshot baseline** from either environment — neither matches the CI runner. Refresh them via the `Update visual snapshots` workflow and cherry-pick only the affected PNGs. **`docs/guide/screenshots/` is the exception**: those are illustrations, not pinned baselines, so regenerating and committing them locally is fine (Session 210 did exactly that, and CI's `e2e` job confirmed it).
 - **PWA stale cache:** `registerType:'prompt'` (vite.config.ts) → a plain reload (even Ctrl+Shift+R) can't beat the cached `sw.js`. Force a fresh build via Ctrl+K → "Check for updates" → "Refresh now", or DevTools → Application → Service Workers → Unregister → reload. The Pages CDN can briefly serve a stale `sw.js`, so the in-app update check can false-negative right after a deploy.
+
+### Windows workstation (corporate AppLocker)
+
+- **Working-directory drift (the #1 recurring tax).** The repo lives at `C:\devtools\tp-studio` (off OneDrive). Bash commands — especially background ones — often start in the OneDrive session dir instead, so `git`, `node …/bin/…`, and Playwright fail with `Cannot find module C:\…\Desktop\node_modules\…` / "not a git repository". **Prefix every shell command with `cd /c/devtools/tp-studio &&`** (or launch Claude from the repo) — treat it as UNCONDITIONAL. The trap is "the cwd looks fine, I'll skip it": it works until a file read or background task silently resets cwd, then the next bare command blows up. **For git/gh, prefer `git -C /c/devtools/tp-studio …`** — it runs as if started in the repo regardless of cwd, so there's nothing to forget; keep the `cd &&` prefix for `node` (no equivalent flag).
+- **AppLocker — allow-listed at `C:\devtools` (Session 181).** `Get-AppLockerPolicy -Effective`: **Script** collection *Enabled* + Allow rule `%OSDRIVE%\DEVTOOLS\*`; **Exe** collection *AuditOnly*. The script-shim block that used to break `pnpm lint` / `biome.CMD` / the pre-commit hook is **gone here** — the native `biome.exe`, the `.CMD`/`.ps1` shims, and `pnpm exec biome` all run directly. It only bit at the old, un-allow-listed `C:\dev`. PowerShell is in **Constrained Language Mode**, so `npm.ps1`/`pnpm.ps1` break regardless of path — use Bash or the node bins above.
+- **`gh` on PATH works** (full path `"/c/Program Files/GitHub CLI/gh.exe"`), so the session-end CI watch (`gh run watch` / `gh run list --json`) works as written.
+- **Playwright runs locally** (Session 169): `node ./node_modules/vite/bin/vite.js preview --port 4173 --strictPort` (background) → `node ./node_modules/@playwright/test/cli.js test e2e/<spec> --reporter=list` (`reuseExistingServer` reuses the preview). `visual-*` snapshots are Linux-only and **fail on Windows**; CI's `e2e` job is authoritative.
+- **Pushes go direct to `origin/main`** — single-developer flow, no PR review, CI on main is the gate (see `.claude/settings.json` `autoMode`).
+
+### Claude Code on the web / remote (Linux container)
+
+Verified in Session 210–211. Four workstation rules above invert here:
+
+- **`pnpm install` is REQUIRED, not the exception.** The container clones fresh with no `node_modules`, so nothing — not `tsc`, not `vitest`, not the `pre-bash-gate` commit hook — runs until you install. A `SessionStart` hook does this automatically; if it hasn't run, do it by hand first.
+- **No `cd /c/devtools/tp-studio` prefix** — that path doesn't exist. The repo is the cwd already.
+- **No `gh` CLI.** All GitHub work goes through the `mcp__github__*` MCP tools. The session-end ritual's `gh run watch` / `gh run list --json` cross-check has no direct equivalent: use `mcp__github__pull_request_read` with `method: "get_check_runs"`, which lists every check run on the head sha — the same "cross-check ALL runs" the ritual asks for.
+- **Playwright's browser may not match the pinned version.** Chromium is pre-installed at `/opt/pw-browsers` with `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`, and its build can lag `@playwright/test` (1194 vs 1223 in Session 210), which fails at launch. **Don't run `playwright install`** — point at the installed binary instead (`launchOptions.executablePath`, or symlink the expected version directory). CI's `e2e` job runs the correct pinned browser and stays authoritative.
+- **Work lands on a branch + PR**, not direct to `main` — the remote session is given a designated branch. The `autoMode` note about direct-to-`main` pushes describes the workstation flow only.
 
 ## Current state highlights
 
 - **schemaVersion 10** — migrations registry handles v1 → v10 (`src/domain/migrations/`). New fields are optional, so most changes need no migration.
-- **~5,190 Vitest** unit/component tests across 436 files + a Playwright e2e suite. The full TP-completeness arc vs Cohen's *TP Basics* (Cloud progression + U-Shape + the smaller gaps) has shipped; recent work is rendering/UX polish + maintainability.
+- **5,000+ Vitest** unit/component tests across 436 files + a Playwright e2e suite. Exact counts live in `public/stats.json` (regenerated by the `Stats` workflow) — read them there rather than hand-maintaining a copy here; this line is a floor, kept round on purpose. The full TP-completeness arc vs Cohen's *TP Basics* (Cloud progression + U-Shape + the smaller gaps) has shipped; recent work is rendering/UX polish + maintainability.
 - **Bundle ceilings** are enforced by `node scripts/check-bundle-size.mjs` (part of the gate); CI fails on regressions.
 
 ## Where to look for "why was this built like this?"
 
-`CHANGELOG.md` per-session entries explain decisions. `NEXT_STEPS.md` carries the live backlog + intentional-parking rationale. `docs/` holds design notes (e.g. `RENDER_ENGINE_NOTES.md`, `EDGE_ROUTING_PROPOSAL.md`).
+`CHANGELOG.md` per-session entries explain decisions — Sessions 150+ live there, and **Sessions 1–149 are in `docs/CHANGELOG-archive.md`** (same format; split in Session 211 so the current file opens on current history). Grep both when tracing an old decision. `NEXT_STEPS.md` carries the live backlog + intentional-parking rationale. `docs/` holds design notes (e.g. `RENDER_ENGINE_NOTES.md`, `EDGE_ROUTING_PROPOSAL.md`).

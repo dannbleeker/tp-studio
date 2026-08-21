@@ -25,10 +25,12 @@ underneath rather than new capability:
 
 1. `git status` (clean), `pnpm install`, `pnpm dev`.
 2. The gate is one command: **`node scripts/preflight.mjs`** — tsc, biome, knip,
-   ~5,200 tests, build, bundle size. Add `--coverage` for CI's gated thresholds
-   and `--e2e` for Playwright (not in the default run).
+   the full test suite, build, bundle size. Add `--coverage` for CI's gated
+   thresholds and `--e2e` for Playwright (not in the default run).
 3. Read `CHANGELOG.md` from the top. It is the home of record for *why*
    something is the way it is; `NEXT_STEPS.md` carries only what is NOT shipped.
+   Sessions 1–149 moved to `docs/CHANGELOG-archive.md` in Session 211 — same
+   format, nothing edited — so grep both when chasing an older decision.
 
 ## Three things worth knowing before you decide anything
 

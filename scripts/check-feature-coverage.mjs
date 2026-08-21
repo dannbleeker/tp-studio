@@ -72,6 +72,10 @@ console.log(
 );
 
 // Freshness: has the CHANGELOG advanced past the last reviewed session?
+// Session 211 note: history is split (CHANGELOG.md = Sessions 150+,
+// docs/CHANGELOG-archive.md = 149 → 1). This reads only the current file on
+// purpose — it wants the LATEST session, which is always there, and scanning the
+// archive would just add 7k lines to find a smaller number.
 const reviewed = typeof reg.reviewedThroughSession === 'number' ? reg.reviewedThroughSession : 0;
 const sessions = [...read('CHANGELOG.md').matchAll(/^## Session (\d+)/gm)].map((m) => Number(m[1]));
 const latest = sessions.length ? Math.max(...sessions) : 0;
