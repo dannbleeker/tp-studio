@@ -31,12 +31,21 @@ label mirrors: an unread mirror is how two copies drift apart.
 read it from the top for rationale — an instruction only usable if the file opens on load-bearing
 history. Sessions 1–149 moved to `docs/CHANGELOG-archive.md`, byte-for-byte; `CHANGELOG.md` keeps 150+.
 
-The trap was in `scripts/build-stats.mjs`, which counts `^##` in `CHANGELOG.md` into `git.changelogEntries`
-— **a figure appended to `public/stats-history.json` on every run**. Splitting naively would have dropped
-it 412 → 178 and left a permanent cliff in the dashboard's trend, indistinguishable later from someone
-having deleted history. It now sums both files; verified 412 across the split.
+The trap was in `scripts/build-stats.mjs`, which counts `^##` in `CHANGELOG.md` into
+`git.changelogEntries` — a figure published in `public/stats.json` and shown on the live dashboard.
+Splitting naively would have dropped it 412 → 178: the dashboard would have reported barely more than a
+third of the project's history, with nothing on the page to contradict it. It now sums both files;
+verified 412 across the split, and 413 by CI once this session's own entry landed.
+
 `check-feature-coverage.mjs` reads only the current file on purpose (it wants the *latest* session, which
 is always there) — now commented so the next reader doesn't "fix" it.
+
+*Correction, same session:* the first write-up of this claimed the figure also rides
+`public/stats-history.json` and that a naive split would leave a permanent cliff in the trend line. It
+does not, and it would not. The history writer stores exactly nine fields — `date`, `linesTsJs`,
+`coveragePct`, `tests`, `bundleKb`, `mutationScore` and the three feature percentages — and
+`changelogEntries` is not among them. The fix was still needed; the severity was overstated, and leaving
+that overstatement in the file this session existed to de-drift would have been its own small joke.
 
 ### CLAUDE.md documented one environment; there are two
 
