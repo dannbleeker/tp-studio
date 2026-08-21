@@ -342,7 +342,7 @@
   },
   {
     "date": "2026-08-21",
-    "linesTsJs": 156938,
+    "linesTsJs": 156951,
     "coveragePct": 95.31,
     "tests": 5130,
     "bundleKb": 882.4,

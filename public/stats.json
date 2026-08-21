@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-21T19:08:09.360Z",
-  "commit": "762fc75",
+  "generatedAt": "2026-08-21T19:33:49.890Z",
+  "commit": "91400ae",
   "headline": {
-    "linesTsJs": 156938,
+    "linesTsJs": 156951,
     "tests": 5130,
     "lineCoveragePct": 95.31,
-    "commits": 1194,
+    "commits": 1197,
     "ageDays": 102,
-    "trackedFiles": 1238,
+    "trackedFiles": 1240,
     "featureManualPct": 99.6,
     "featureBookPct": 67.7,
     "featureExamplePct": 23.3
@@ -31,7 +31,7 @@
     {
       "category": "Build scripts",
       "files": 20,
-      "lines": 4317
+      "lines": 4330
     },
     {
       "category": "Styles (CSS)",
@@ -40,8 +40,8 @@
     },
     {
       "category": "Docs (Markdown)",
-      "files": 48,
-      "lines": 7314
+      "files": 49,
+      "lines": 14614
     }
   ],
   "coverage": {
@@ -61,35 +61,35 @@
       "total": 3736
     },
     "branches": {
-      "pct": 83.75,
-      "covered": 9703,
+      "pct": 83.74,
+      "covered": 9702,
       "total": 11585
     }
   },
   "tests": {
     "unit": 5032,
     "e2e": 98,
-    "durationMs": 230831,
+    "durationMs": 219280,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 8242
-      },
-      {
-        "file": "tests/domain/graphReach.test.ts",
-        "ms": 4367
-      },
-      {
-        "file": "tests/perf/validators.bench.test.ts",
-        "ms": 4350
+        "ms": 8222
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 4174
+        "ms": 4009
+      },
+      {
+        "file": "tests/perf/validators.bench.test.ts",
+        "ms": 3928
+      },
+      {
+        "file": "tests/domain/graphReach.test.ts",
+        "ms": 3887
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2145
+        "ms": 2686
       }
     ]
   },
@@ -816,16 +816,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 102,
-    "commits": 1194,
-    "commits7d": 3,
+    "commits": 1197,
+    "commits7d": 6,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 814
+        "count": 815
       },
       {
         "name": "github-actions[bot]",
-        "count": 332
+        "count": 334
       },
       {
         "name": "Claude",
@@ -837,9 +837,9 @@
       }
     ],
     "churn30d": {
-      "added": 7061,
-      "removed": 2350
+      "added": 14644,
+      "removed": 9743
     },
-    "changelogEntries": 412
+    "changelogEntries": 413
   }
 }
