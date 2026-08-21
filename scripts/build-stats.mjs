@@ -225,10 +225,12 @@ safe(() => {
 
 // Session 211 — the history lives in TWO files since the split: CHANGELOG.md
 // carries Sessions 150+, docs/CHANGELOG-archive.md carries 149 → 1. Count both.
-// This figure is appended to stats-history.json on every run, so counting only
-// the current file would have dropped it from 412 to 178 the day the split
-// landed and left a permanent cliff in the dashboard's trend line — a reporting
-// artefact indistinguishable, later, from someone having deleted history.
+// This figure is published in stats.json and shown on the live dashboard, so
+// counting only the current file would have dropped it from 412 to 178 the day
+// the split landed — the dashboard reporting barely a third of the project's
+// history, with nothing on the page to contradict it. (It does NOT ride
+// stats-history.json; that series carries nine fields and this is not one, so
+// there is no trend line to break here.)
 const CHANGELOG_FILES = ['CHANGELOG.md', 'docs/CHANGELOG-archive.md'];
 let changelogEntries = null;
 for (const rel of CHANGELOG_FILES) {
