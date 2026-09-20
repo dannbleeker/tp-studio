@@ -11,6 +11,9 @@ import { installFlushOnLifecycleEvents } from './services/storage/persistDebounc
 // something to consume.
 import './services/pwa/pwaInstall';
 import { registerLaunchFileHandler } from './services/pwa/fileHandlers';
+import { scheduleOfflineReadinessCheck } from './services/pwa/offlineReadiness';
+import { scheduleOfflineWarmup } from './services/pwa/offlineWarmup';
+import { requestPersistentStorage } from './services/pwa/persistentStorage';
 import { initPwaUpdateToast } from './services/pwa/pwaUpdate';
 import { installSystemScopeNudgeWatcher } from './services/systemScopeNudge';
 import { maybeInstallTestHook } from './services/testHook';
@@ -36,6 +39,28 @@ initPwaUpdateToast();
 // file (installed Chromium only), import it and open it in a new tab. No-op
 // where the File Handling API is absent.
 registerLaunchFileHandler();
+// Ask the browser not to evict this origin. TP Studio keeps everything the
+// user owns in best-effort storage — the diagrams in `localStorage`, the app
+// shell in the SW cache — and the browser may reclaim both without warning
+// (Chrome under storage pressure, iOS Safari after ~7 idle days). That single
+// eviction reads to the user as "my work vanished AND the app stopped working
+// offline", so it's worth asking once per boot. Fire-and-forget: a refusal is
+// a normal outcome with nothing for the app (or the user) to do about it.
+void requestPersistentStorage();
+// Pull the lazily-loaded export/preview vendor chunks into the SW runtime
+// cache once the tab is idle. They're excluded from the install-time precache
+// on purpose (cold first paint), which used to leave PDF/PNG/PowerPoint export
+// and the markdown preview dead offline until the user had run each one online
+// at least once. Warming them after first paint keeps both properties.
+scheduleOfflineWarmup();
+// Verify that offline access actually works, and self-heal if it doesn't.
+// A managed-Chrome report had both TP Studio and MECE Studio open to "No
+// internet access" offline on the same machine — the signature of the
+// origin's service worker cache being evicted or cleared on browser exit,
+// not of a bad build. If we find a registered worker sitting on an empty
+// precache while online, asking it to update re-runs install and puts the
+// shell back. Once per load, never in a loop.
+scheduleOfflineReadinessCheck();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element #root not found in index.html');

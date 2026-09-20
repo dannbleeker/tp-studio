@@ -498,6 +498,103 @@ export const en = {
       `© ${p.years} Dann Bleeker Pedersen. "Flying Logic" is a trademark of its owner. See`,
     noticesLinkText: 'third-party notices',
     copyrightTail: 'for full attribution.',
+
+    /**
+     * Offline-readiness diagnostics. Deliberately matter-of-fact: this row is
+     * evidence a user can screenshot when "no internet access" turns out to be
+     * the browser's error page rather than the app's, so it names the raw
+     * state instead of interpreting it.
+     *
+     * The extras row is the only one with a control: the other four report
+     * facts the user cannot change from here, while the on-demand tier is the
+     * one thing a short window of wifi can actually fix.
+     */
+    offline: {
+      heading: 'Offline readiness',
+      checking: 'Checking…',
+      serviceWorker: 'Service worker',
+      swActive: 'Active',
+      swWaiting: 'Waiting for refresh',
+      swUnregistered: 'Not registered',
+      swUnsupported: 'Not supported in this browser',
+      ready: 'Offline ready',
+      readyYes: (p: { count: number }) =>
+        `Yes — ${p.count} ${plural(BCP47, p.count, { one: 'file', other: 'files' })} precached`,
+      readyNo: 'No — the precache is empty',
+      readyUnknown: 'Unknown — cache storage is unreadable',
+      persisted: 'Storage persisted',
+      persistedYes: 'Yes',
+      persistedNo: 'No — the browser may evict this data',
+      persistedUnknown: 'Not reported by this browser',
+      cachedSize: 'Cached size',
+      cachedSizeUnknown: 'Not reported by this browser',
+      bytes: (p: { mb: string }) => `${p.mb} MB`,
+
+      // The on-demand tier the install-time precache deliberately skips: the
+      // five export/preview chunks and the handbook. Counted as ONE row over
+      // both tiers, because one button fixes both — two rows would make the
+      // reader combine two verdicts to answer one question.
+      extras: 'Offline extras',
+      // All four count states are written as a STATE — "Yes — …", "Partly — …",
+      // "No — …", "Unknown — …" — so the four read as one scale rather than
+      // three states and one past-tense verb phrase.
+      extrasYes: (p: { total: number }) =>
+        `Yes — all ${p.total} ${plural(BCP47, p.total, { one: 'file', other: 'files' })} cached`,
+      // No plural helper: a partial count implies total >= 2.
+      extrasSome: (p: { cached: number; total: number }) =>
+        `Partly — ${p.cached} of ${p.total} files cached`,
+      extrasNo: (p: { total: number }) =>
+        `No — 0 of ${p.total} ${plural(BCP47, p.total, { one: 'file', other: 'files' })} cached`,
+      // Mirrors `readyUnknown` verbatim on purpose — same cause, same phrasing
+      // beats a second way of saying the same thing.
+      extrasUnknown: 'Unknown — cache storage is unreadable',
+      // Two sentences where there was one: "this build lists no extras" was
+      // shown both when the list could not be FETCHED (the likelier case, and
+      // a false statement about the build) and when it was fetched and empty.
+      extrasListUnavailable: 'Unknown — the download list is unavailable',
+      extrasNone: 'None — this build has no extras',
+      extrasNoWorker: 'Unknown — no service worker is serving yet',
+      // A browser with no Service Worker API at all. Says the same thing as
+      // the service-worker row two lines above instead of contradicting it
+      // with advice ("refresh, then top up") that could never work there.
+      extrasNoSwSupport: 'Not available — this browser has no service worker',
+
+      // The button names the action — a download, not airtime — and has
+      // exactly two forms: one for "there is something to fetch" and one for
+      // "everything is already here", where the press is a re-check that the
+      // CacheFirst route answers without touching the network.
+      topUpDownload: 'Download now',
+      topUpRecheck: 'Check again',
+      topUpPreparing: 'Preparing…',
+      // Progress names the tier rather than running one count: the handbook is
+      // 2 of the 7 files and roughly seven-eighths of the bytes, so a bare
+      // "5 of 7" would look stalled for most of the download. The visible line
+      // carries the moving numbers; the announced one names the tier only,
+      // because a screen reader repeating nine per-file counts is chatter.
+      topUpAssets: (p: { done: number; total: number }) => `Export tools — ${p.done} of ${p.total}`,
+      topUpBook: (p: { done: number; total: number }) => `Handbook — ${p.done} of ${p.total}`,
+      topUpAssetsTier: 'Downloading export tools',
+      topUpBookTier: 'Downloading the handbook',
+      // Results. Short on purpose: this line sits in a ~200px column beside
+      // the button, and a three-line result reflows the whole panel. The row
+      // above owns the counts, so no result repeats them.
+      topUpDone: 'Done — nothing left to download.',
+      topUpIncomplete: 'Some files are still missing.',
+      topUpNothing: 'Nothing was cached — try again.',
+      topUpUnverified: 'Cache unreadable — cannot confirm.',
+      topUpUnavailable: 'Download list unavailable — retry.',
+      topUpFailed: 'The download did not finish.',
+      topUpBlocked: 'No connection when it started.',
+      topUpUncontrolled: 'Reload the page first, then download.',
+      // Reasons a press is unavailable. "Connect to a network" rather than
+      // "when you have signal": most of this app's users are on a desktop.
+      topUpNeedsNetwork: 'Connect to a network to download.',
+      topUpNeedsWorker: 'Refresh the page to finish installing.',
+      topUpNoWorkerSupport: 'This browser cannot cache extras.',
+      topUpNothingToGet: 'This build has no extras.',
+      // The number that decides whether to spend a two-minute window on this.
+      topUpSize: (p: { mb: string }) => `About ${p.mb} MB to download.`,
+    },
   },
 
   /** The "New diagram" / "Load example" picker. */
@@ -630,6 +727,15 @@ export const en = {
     methodPathBranchSeparator: '+',
     hideMethodPathTitle: 'Hide the method path — reopen it from the ⋮ menu',
     hideMethodPath: 'Hide method path',
+    // Network-status chip. Local-first means losing the network is a non-event,
+    // so the copy reassures rather than warns — its job is to stop a failed
+    // export or a stalled load from reading as a bug in the app.
+    offlineLabel: 'Offline',
+    // The leading dash is part of the copy, not glue added at the call site —
+    // punctuation is the translator's to change.
+    offlineNote: '— your work is saved locally',
+    offlineTitle:
+      'No network connection. TP Studio runs entirely in this browser, and your work keeps saving locally.',
   },
 
   /**

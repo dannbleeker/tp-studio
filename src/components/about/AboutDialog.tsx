@@ -14,6 +14,7 @@ import {
   NOTICES_PATH,
   USER_GUIDE_LINK,
 } from './docLinks';
+import { OfflineReadinessSection } from './OfflineReadinessSection';
 
 /**
  * Session 111 — About TP Studio dialog.
@@ -23,6 +24,8 @@ import {
  *   - which build is running (version + date)
  *   - where to read more (the practitioner book, User Guide, security,
  *     third-party notices)
+ *   - whether offline actually works on THIS install (see
+ *     `OfflineReadinessSection`) — support evidence, not a feature
  *   - where the source code lives (one explicit GitHub link, intentional)
  *   - copyright + nominative-use trademark notice
  *
@@ -124,6 +127,11 @@ export function AboutDialog() {
             ))}
           </div>
         </section>
+
+        {/* Offline readiness — diagnostics the user can screenshot when the
+            app fails to load on a plane. Mounts only while the dialog is open
+            (Modal returns null when closed), so the probes are not a poll. */}
+        <OfflineReadinessSection />
 
         {/* Project */}
         <section>

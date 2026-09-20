@@ -1,11 +1,12 @@
 /// <reference types="vitest" />
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import checker from 'vite-plugin-checker';
 import { VitePWA } from 'vite-plugin-pwa';
 import {
@@ -14,6 +15,95 @@ import {
 } from './src/services/pwa/fileHandlerTypes';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
+
+// ── Offline strategy: one source of truth ──────────────────────────────
+//
+// Three places have to agree on which emitted chunks are "on-demand
+// vendor": the precache `globIgnores` (keep them OUT of install), the
+// `runtimeCaching` regex (cache them when they're finally fetched), and
+// the warm-up manifest (tell the app which URLs to pull on idle). They
+// drifted silently before — a chunk added to one list and not the others
+// is invisible until a user is offline. Derive all three from this array
+// so that can't happen.
+const ON_DEMAND_VENDOR_CHUNKS = [
+  'jspdf',
+  'html2canvas',
+  'svg2pdf',
+  'pptxgen',
+  'MarkdownPreview',
+] as const;
+
+const ON_DEMAND_VENDOR_GLOBS = ON_DEMAND_VENDOR_CHUNKS.map((name) => `assets/${name}*.js`);
+
+const ON_DEMAND_VENDOR_PATTERN = new RegExp(`/assets/(${ON_DEMAND_VENDOR_CHUNKS.join('|')})`);
+
+// The practitioner book, copied into `public/` by
+// `scripts/build-docs-bundle.mjs`. Name-stable (not content-hashed), so
+// unlike the chunks above these can be listed literally. Filtered against
+// the filesystem at build time because a `vite build` run without the
+// `prebuild` step won't have them, and a manifest entry that 404s would
+// make the warm-up look broken.
+const DEFERRED_BOOK_FILES = [
+  'Causal-Thinking-with-TP-Studio.pdf',
+  'Causal-Thinking-with-TP-Studio.epub',
+];
+
+/** Read at runtime by `src/services/pwa/offlineWarmup.ts`. */
+const OFFLINE_WARMUP_MANIFEST = 'offline-warmup.json';
+
+/**
+ * Emit `offline-warmup.json` listing the content-hashed URLs the app
+ * should fetch on idle. The hashes only exist after the bundle is
+ * generated, so the list cannot be authored by hand or by the runtime —
+ * it has to be handed down from the build.
+ *
+ * Two tiers, and the ordering is the point: `assets` are the chunks that
+ * make a *feature* work offline (export, markdown preview) and are a few
+ * hundred KB; `deferred` is ~5 MiB of book. A single flat list would let
+ * the book's download delay the chunks behind it.
+ *
+ * `sizes` maps each of those paths to its approximate transfer size, so the
+ * About panel can say what pressing "Download now" will cost BEFORE it is
+ * pressed — the one number that decides whether to spend a two-minute wifi
+ * window or a tethered connection on it. It has to come from the build:
+ * asking the network (a `HEAD` per file) is exactly the metered round trip
+ * the figure exists to let the user avoid. Readers treat `sizes` as
+ * optional, so a deploy made before it existed still warms and still counts.
+ */
+function offlineWarmupManifest(): Plugin {
+  return {
+    name: 'tp-studio:offline-warmup-manifest',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const assets = Object.keys(bundle)
+        .filter((fileName) => ON_DEMAND_VENDOR_PATTERN.test(`/${fileName}`))
+        .sort();
+      const deferred = DEFERRED_BOOK_FILES.filter((name) =>
+        existsSync(path.join(here, 'public', name))
+      );
+      const sizes: Record<string, number> = {};
+      for (const name of assets) {
+        const entry = bundle[name];
+        const source = entry?.type === 'chunk' ? entry.code : (entry?.source ?? '');
+        // Gzipped, not raw: GitHub Pages serves these compressed, and the raw
+        // length would overstate the download by ~3x for JS — an over-estimate
+        // is still a lie to someone budgeting a short window.
+        sizes[name] = gzipSync(Buffer.from(source)).length;
+      }
+      for (const name of deferred) {
+        // On-disk size for the book: PDF and EPUB are already-compressed
+        // containers, so the wire size is the file size, and gzipping ~5 MiB
+        // at every build to learn that would be waste.
+        sizes[name] = statSync(path.join(here, 'public', name)).size;
+      }
+      this.emitFile({
+        type: 'asset',
+        fileName: OFFLINE_WARMUP_MANIFEST,
+        source: `${JSON.stringify({ assets, deferred, sizes }, null, 2)}\n`,
+      });
+    },
+  };
+}
 
 // Session 111 — About TP Studio dialog needs build-time metadata
 // (version, build date, copyright string). Read `package.json` once
@@ -121,6 +211,9 @@ export default defineConfig(({ command, mode }) => ({
           }),
         ]
       : []),
+    // Emits `offline-warmup.json` next to the bundle. Must run in the same
+    // build as VitePWA below, which globs it off disk at `closeBundle`.
+    offlineWarmupManifest(),
     // Session 89 — PWA wiring. `registerType: 'prompt'` means we
     // surface an explicit "New version available" toast (via
     // `src/services/pwaUpdate.ts`) instead of force-reloading the
@@ -134,23 +227,49 @@ export default defineConfig(({ command, mode }) => ({
     VitePWA({
       registerType: 'prompt',
       workbox: {
-        // Session 136 — `.pdf` + `.epub` added so the book artifacts
-        // (`docs/guide/Causal-Thinking-with-TP-Studio.{pdf,epub}`,
-        // copied into `public/` by `scripts/build-docs-bundle.mjs`)
-        // pre-cache on install rather than waiting for the user to
-        // open the book online first. Dann's offline-on-a-plane
-        // repro: the runtimeCaching rule below was hit on first open
-        // — but only AFTER an online visit. Pre-caching trades ~1 MB
-        // of cold-install bandwidth for a guaranteed offline-from-
-        // first-launch story. The matching `.epub` was completely
-        // uncached before; now it's bundled with the rest of the
-        // shell.
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2,pdf,epub}'],
-        // Bump the per-file cache ceiling so the larger PDF (~1 MB)
-        // fits the precache. Default is 2 MB; we set 4 MB explicitly
-        // both for headroom and as documentation that the book is
-        // the largest precached artifact.
-        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // Session 136 added `.pdf` + `.epub` here so the book artifacts
+        // (`docs/guide/Causal-Thinking-with-TP-Studio.{pdf,epub}`, copied
+        // into `public/` by `scripts/build-docs-bundle.mjs`) pre-cached on
+        // install instead of waiting for a first online open. The goal was
+        // right — offline-from-first-launch — but the mechanism was wrong,
+        // and it has now been reverted. Why:
+        //
+        // Workbox precaching is ALL-OR-NOTHING. Every entry in the manifest
+        // is fetched during the SW `install` event; if any single request
+        // fails — flaky network, tab closed early, corporate proxy hiccup —
+        // `install` rejects, the worker never activates, and the origin ends
+        // up with NO cache at all. The next offline open is then the
+        // browser's "No internet access" page, which is strictly worse than
+        // the problem Session 136 set out to fix.
+        //
+        // The book was sized at "~1 MB" when that decision was made. It has
+        // since grown to 3.27 MiB (PDF) + 2.02 MiB (EPUB) — measured against
+        // the live sw.js — which is 5.29 of the precache's 5.94 MiB, i.e.
+        // 89% of a ~6 MiB all-or-nothing install for two documents most
+        // visitors never open. Dropping them takes the install to ~0.65 MiB
+        // across ~92 entries: a far narrower failure window.
+        //
+        // The offline story is preserved, just moved off the install-
+        // critical path: the `CacheFirst` rule below still caches the book
+        // on first open, and `src/services/pwa/offlineWarmup.ts` pulls it in
+        // on idle after first paint (second tier, behind the export chunks).
+        //
+        // `json` is here for `offline-warmup.json` — the warm-up manifest
+        // emitted by `offlineWarmupManifest()` above, which the app must be
+        // able to read while offline for the warm-up to ever re-run. It also
+        // picks up `stats.json` / `stats-history.json` (~28 KB together).
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2,json}'],
+        // A tripwire, not headroom. Session 136 raised this to 4 MiB to let
+        // the book in, which meant the PDF tripling in size was silently
+        // absorbed rather than flagged. Nothing precached today comes close
+        // to 1 MiB (the largest is the ~375 KB index chunk), so this ceiling
+        // sits ~2.7x above the real high-water mark: comfortable for normal
+        // growth, loud the moment a multi-MiB artifact tries to rejoin the
+        // install manifest. Workbox warns and skips an oversize file rather
+        // than failing the build, so the failure mode is "that file isn't
+        // precached" — visible in the build log — not a silently bloated
+        // install.
+        maximumFileSizeToCacheInBytes: 1024 * 1024,
         // Session 114 — exclude the bundle-stats.html treemap emitted
         // by rollup-plugin-visualizer (~1.6 MB, dev-only artifact).
         // Session 132 / Tier 3 #31 — also exclude the PDF-export
@@ -166,24 +285,15 @@ export default defineConfig(({ command, mode }) => ({
         // PowerPoint export shipped (~368 KB raw / ~123 KB gz). Same
         // logic: lazy-loaded behind the Export… picker; runtime-cached
         // below for offline use after first invocation.
-        globIgnores: [
-          'bundle-stats.html',
-          'assets/jspdf*.js',
-          'assets/html2canvas*.js',
-          'assets/svg2pdf*.js',
-          'assets/pptxgen*.js',
-          // Session 135 / Perf #34 — the MarkdownPreview chunk bundles
-          // micromark + the GFM extensions + DOMPurify (~75 KB raw /
-          // ~25 KB gz). It's lazy-loaded behind the description
-          // markdown-preview toggle, which most first-time visitors
-          // never open. Keep it out of the cold precache; the
-          // runtimeCaching rule below serves it offline after first use.
-          // (The small dialog chunks — CommandPalette, PatternLibrary,
-          // Walkthrough — stay precached: they're core UX and only a few
-          // KB each, so deferring them would risk offline-first breakage
-          // for no meaningful bandwidth gain.)
-          'assets/MarkdownPreview*.js',
-        ],
+        //
+        // Session 135 / Perf #34 added the MarkdownPreview chunk to the
+        // same set: micromark + the GFM extensions + DOMPurify (~75 KB raw
+        // / ~25 KB gz), lazy-loaded behind the description markdown-preview
+        // toggle that most first-time visitors never open. (The small
+        // dialog chunks — CommandPalette, PatternLibrary, Walkthrough —
+        // stay precached: core UX, a few KB each, so deferring them would
+        // risk offline-first breakage for no meaningful bandwidth gain.)
+        globIgnores: ['bundle-stats.html', ...ON_DEMAND_VENDOR_GLOBS],
         navigateFallback: '/index.html',
         // The SPA fallback must NOT swallow the standalone .html pages hosted
         // alongside the app shell (dashboard.html, user-guide.html, notices.html,
@@ -194,11 +304,11 @@ export default defineConfig(({ command, mode }) => ({
         // own deep links are extensionless (root + query/hash), so denying every
         // `.html` path from the fallback is safe and future-proofs any new page.
         navigateFallbackDenylist: [/^\/api\//, /\.html$/],
-        // Session 114 — runtime-cache the practitioner book PDF
-        // (`Causal-Thinking-with-TP-Studio.pdf`). The PDF is ~1 MB; we
-        // deliberately keep it out of the precache `globPatterns` so
-        // the first-visit download isn't bloated by a doc that most
-        // users won't immediately open. But when a user does open it
+        // Session 114 — runtime-cache the practitioner book. It is now
+        // 3.27 MiB (PDF) + 2.02 MiB (EPUB), and deliberately out of the
+        // precache `globPatterns` so the first-visit install isn't bloated
+        // by documents most users won't immediately open. But when a user
+        // does open one
         // (from the AboutDialog), workbox now caches the response so
         // subsequent visits — including offline ones — serve from the
         // SW. `CacheFirst` because the PDF only changes when we
@@ -213,11 +323,22 @@ export default defineConfig(({ command, mode }) => ({
         // the new chunk on demand; the cached old one ages out.
         runtimeCaching: [
           {
-            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.endsWith('.pdf'),
+            // The book, in both formats. `.epub` joined `.pdf` here when the
+            // pair came back out of the precache — without it the EPUB would
+            // have been the one artifact with no offline path at all.
+            // Name-stable paths (no content hash), so the age cap below is
+            // what eventually propagates a rebuilt book; the hashed-asset
+            // pipeline can't do it for us here.
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && /\.(pdf|epub)$/.test(url.pathname),
             handler: 'CacheFirst',
             options: {
+              // Kept at `-pdf-v1` deliberately even though it now holds the
+              // EPUB too: renaming would orphan the cache every existing
+              // install already filled, leaving dead bytes behind in exactly
+              // the storage budget this session is trying to protect.
               cacheName: 'tp-studio-pdf-v1',
               expiration: {
+                // 4 = PDF + EPUB + one rebuilt pair ageing out.
                 maxEntries: 4,
                 // 30 days; long enough to be useful offline, short
                 // enough that a rare rebuild eventually propagates.
@@ -227,20 +348,36 @@ export default defineConfig(({ command, mode }) => ({
           },
           {
             // Hashed asset filenames keep this regex stable across rebuilds.
-            // Perf #34 adds MarkdownPreview (micromark + DOMPurify) to the
-            // on-demand vendor set — precache-excluded above, fetched +
-            // cached the first time the markdown preview is opened.
-            urlPattern: ({ url, sameOrigin }) =>
-              sameOrigin &&
-              /\/assets\/(jspdf|html2canvas|svg2pdf|pptxgen|MarkdownPreview)/.test(url.pathname),
+            // Built from the same constant as `globIgnores` and the warm-up
+            // manifest so a sixth on-demand chunk can't be excluded from the
+            // precache without also being runtime-cached and warmed.
+            //
+            // Passed as a RegExp *value*, NOT wrapped in a callback. workbox
+            // serialises a function `urlPattern` by stringifying its source
+            // into `sw.js`, which silently drops the closure — a callback
+            // reading `ON_DEMAND_VENDOR_PATTERN` compiles to a dangling
+            // identifier, throws `ReferenceError` inside the worker, and the
+            // route never matches. The failure is invisible from the build
+            // (and even from the warm-up, which sees `response.ok` because
+            // the throw falls through to the network): the only symptom is
+            // that nothing is ever cached. A RegExp is serialised as a
+            // literal, so it survives. `check-service-worker.mjs` asserts the
+            // generated worker carries the real pattern.
+            //
+            // A RegExp urlPattern is tested against the full URL, and workbox
+            // only honours a cross-origin match that starts at index 0. This
+            // pattern begins with `/assets/`, so a third-party URL can never
+            // satisfy it — the same same-origin guarantee the callback gave.
+            urlPattern: ON_DEMAND_VENDOR_PATTERN,
             handler: 'CacheFirst',
             options: {
               cacheName: 'tp-studio-export-vendor-v1',
               expiration: {
-                // 10 = jspdf + html2canvas + svg2pdf + pptxgen +
-                // MarkdownPreview + a few older hashed names while a
-                // deploy ages out.
-                maxEntries: 10,
+                // The idle warm-up now fetches all five chunks in one pass,
+                // so the old ceiling of 10 held barely two deploys' worth of
+                // hashed names before evicting a chunk a user had already
+                // paid for. 20 = four deploys of headroom.
+                maxEntries: 20,
                 maxAgeSeconds: 30 * 24 * 60 * 60,
               },
             },

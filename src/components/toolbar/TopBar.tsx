@@ -30,7 +30,8 @@ function Divider({ className }: { className?: string }) {
 /**
  * Session 182 — the top bar's RIGHT zone, regrouped into labelled clusters with
  * dividers (App.tsx owns the 3-zone band: home/logo + title · search · this).
- * Order: Logic chip · undo/redo · history/comments · Share · Export · overflow.
+ * Order: offline chip (only while offline) · Logic chip · undo/redo ·
+ * history/comments · Share · Export · overflow.
  *
  * Content-priority responsive collapse (no wrap, no h-scroll, ~1024–1920px): the
  * undo/redo + history/comments clusters drop below `lg`, Share's label below `xl`

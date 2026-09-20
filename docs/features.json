@@ -1,287 +1,2602 @@
 {
   "$schema": "./features.schema.json",
   "note": "Canonical catalogue of TP Studio's user-facing features — the denominator for the feature-coverage metric (scripts/build-stats.mjs). One entry per capability a user can see, do, or configure (dev infrastructure is intentionally excluded). `manual` = covered in USER_GUIDE.md; `book` = covered in a docs/guide chapter; `bookExample` = that chapter carries a worked example. Deduped from the full CHANGELOG (Sessions 1-180) in Session 180. Add a row when a user-facing feature ships and fill its coverage as the manual/book catch up.",
-  "areas": ["CRT","EC","FRT","PRT","TT","GoalTree","ST","NBR","ID","Canvas","Editing","Entities","Edges","CLR","Layout","Export","Import","Print","Comments","Revisions","Search","Palette","Settings","Workshop","Reader","Patterns","Start","General"],
-  "reviewedThroughSession": 211,
+  "areas": [
+    "CRT",
+    "EC",
+    "FRT",
+    "PRT",
+    "TT",
+    "GoalTree",
+    "ST",
+    "NBR",
+    "ID",
+    "Canvas",
+    "Editing",
+    "Entities",
+    "Edges",
+    "CLR",
+    "Layout",
+    "Export",
+    "Import",
+    "Print",
+    "Comments",
+    "Revisions",
+    "Search",
+    "Palette",
+    "Settings",
+    "Workshop",
+    "Reader",
+    "Patterns",
+    "Start",
+    "General"
+  ],
+  "reviewedThroughSession": 214,
   "features": [
-    {"id":"crt-diagram","name":"Current Reality Tree","area":"CRT","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"crt-core-driver","name":"Core Driver finder","area":"CRT","since":52,"manual":true,"book":true,"bookExample":true},
-    {"id":"crt-ude-reach-badge","name":"UDE-reach badge","area":"CRT","since":52,"manual":true,"book":true,"bookExample":false},
-    {"id":"crt-rootcause-reach-badge","name":"Root-cause-reach badge","area":"CRT","since":71,"manual":true,"book":true,"bookExample":false},
-    {"id":"crt-spawn-ec","name":"Spawn EC from a CRT entity","area":"CRT","since":52,"manual":true,"book":true,"bookExample":false},
-    {"id":"crt-scope-nudge","name":"System-scope nudge on CRT load","area":"CRT","since":83,"manual":true,"book":false,"bookExample":false},
-    {"id":"crt-build-quality-clr","name":"CRT build-quality soft warnings","area":"CRT","since":179,"manual":true,"book":true,"bookExample":false},
-    {"id":"crt-spawn-ec-tied","name":"Spawn EC from tied core drivers","area":"CRT","since":179,"manual":true,"book":false,"bookExample":false},
-    {"id":"crt-spawn-frt-invert","name":"Spawn FRT from a CRT (invert the UDEs)","area":"CRT","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"goaltree-spawn-crt-benchmark","name":"Spawn CRT from a Goal Tree (benchmark shortfalls)","area":"GoalTree","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"frt-diagram","name":"Future Reality Tree","area":"FRT","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"frt-start-nbr","name":"Start a Negative Branch from an FRT","area":"FRT","since":59,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-diagram","name":"Evaporating Cloud","area":"EC","since":26,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-mutex-conflict","name":"EC mutual-exclusion conflict edge","area":"EC","since":57,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-brainstorm-prompts","name":"EC per-edge brainstorm prompts","area":"EC","since":57,"manual":true,"book":true,"bookExample":false},
-    {"id":"ec-assumption-record","name":"First-class edge assumptions","area":"EC","since":77,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-verbalisation","name":"EC verbalisation strip","area":"EC","since":77,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-assumption-well","name":"EC Assumption Well","area":"EC","since":77,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-injection-workbench","name":"EC injection workbench","area":"EC","since":77,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-completeness-clr","name":"EC completeness CLR rules","area":"EC","since":77,"manual":true,"book":true,"bookExample":false},
-    {"id":"ec-box-syntax-clr","name":"EC box-syntax lint (causal words) + jeopardy/syntax method steps","area":"EC","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"ec-creation-wizard","name":"EC creation wizard","area":"EC","since":78,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-wizard-d-first","name":"EC D-first wizard walk","area":"EC","since":87,"manual":true,"book":true,"bookExample":false},
-    {"id":"ec-cloud-type-wizard","name":"Cloud-type wizard modes (per-type build order + prompts + break hint)","area":"EC","since":197,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-storyline","name":"EC wizard storyline pre-step","area":"EC","since":198,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-alternative-means","name":"Alternative-means brainstorm list on Want/injection nodes","area":"EC","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"ec-reframe-need","name":"Reframe-your-Need hint on EC Need boxes","area":"EC","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"ec-two-sided-verbal","name":"EC two-sided verbal framing","area":"EC","since":87,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-verbalisation-lead","name":"Verbalisation read-for-side toggle (D′-first)","area":"EC","since":198,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-reading-strip","name":"EC reading-instruction strip","area":"EC","since":87,"manual":true,"book":true,"bookExample":false},
-    {"id":"ec-slot-questions","name":"EC per-slot guiding questions","area":"EC","since":87,"manual":true,"book":true,"bookExample":false},
-    {"id":"ec-injection-chip","name":"EC injections chip","area":"EC","since":87,"manual":true,"book":false,"bookExample":false},
-    {"id":"ec-verbal-style","name":"EC verbalisation style setting","area":"EC","since":133,"manual":true,"book":true,"bookExample":false},
-    {"id":"ec-cloud-type","name":"EC cloud-type tag","area":"EC","since":154,"manual":true,"book":true,"bookExample":true},
-    {"id":"ec-break-hint-inspector","name":"Per-type break hint in the Document Inspector","area":"EC","since":206,"manual":true,"book":true,"bookExample":false},
-    {"id":"prt-diagram","name":"Prerequisite Tree","area":"PRT","since":20,"manual":true,"book":true,"bookExample":true},
-    {"id":"prt-plan-csv","name":"PRT ordered-plan CSV export","area":"PRT","since":162,"manual":true,"book":true,"bookExample":true},
-    {"id":"ongoing-objective","name":"Ongoing-vs-done toggle on PRT/Goal-Tree objectives","area":"PRT","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"prt-obstacle-io-intake","name":"PRT Obstacle/Objective intake table (batched create)","area":"PRT","since":199,"manual":true,"book":true,"bookExample":false},
-    {"id":"tt-diagram","name":"Transition Tree","area":"TT","since":21,"manual":true,"book":true,"bookExample":true},
-    {"id":"tt-complete-step-clr","name":"TT complete-step CLR rule","area":"TT","since":53,"manual":true,"book":true,"bookExample":false},
-    {"id":"tt-need-assumption","name":"TT per-step Need + Working Assumption","area":"TT","since":158,"manual":true,"book":true,"bookExample":true},
-    {"id":"tt-appropriate-condition","name":"TT appropriate-condition method step","area":"TT","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"tt-eligibility","name":"TT action-eligibility readout + badge","area":"TT","since":135,"manual":true,"book":true,"bookExample":false},
-    {"id":"tt-task-csv","name":"TT task-tracker CSV export","area":"TT","since":135,"manual":true,"book":true,"bookExample":true},
-    {"id":"goaltree-diagram","name":"Goal Tree","area":"GoalTree","since":19,"manual":true,"book":true,"bookExample":true},
-    {"id":"goaltree-wizard","name":"Goal Tree creation wizard","area":"GoalTree","since":78,"manual":true,"book":true,"bookExample":true},
-    {"id":"goaltree-multigoal-clr","name":"Goal Tree multi-goal warning","area":"GoalTree","since":79,"manual":true,"book":true,"bookExample":false},
-    {"id":"goaltree-compliance-csf-clr","name":"Goal Tree compliance-as-CSF warning","area":"GoalTree","since":199,"manual":true,"book":true,"bookExample":false},
-    {"id":"goaltree-type-definitions","name":"Goal-vs-NC inline definitions (inspector note)","area":"GoalTree","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"goaltree-tier","name":"Goal-Tree tier labels (Conceptual/Functional/Operational)","area":"GoalTree","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"injection-six-criteria","name":"Six Success Criteria checklist on injections","area":"FRT","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"loop-terminology","name":"R/B loop badge terminology reconciliation","area":"CLR","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"st-diagram","name":"Strategy & Tactics tree","area":"ST","since":75,"manual":true,"book":true,"bookExample":true},
-    {"id":"st-facet-card","name":"S&T 5-facet tactic card","area":"ST","since":76,"manual":true,"book":true,"bookExample":true},
-    {"id":"st-assumption-subtyping","name":"S&T assumption sub-typing","area":"ST","since":135,"manual":true,"book":true,"bookExample":false},
-    {"id":"st-directional-assumptions","name":"S&T directional assumptions (position-aware validators + plain labels + fold-in + analysis-first gate)","area":"ST","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"st-facet-templates","name":"S&T facet template pack (10 trees — Decisive Competitive Edge / Mafia offers + Retailer/Healthcare Viable Vision incl. a 6-level spine, on the corrected model)","area":"ST","since":198,"manual":true,"book":true,"bookExample":true},
-    {"id":"nbr-diagram","name":"Negative Branch Reservation","area":"NBR","since":134,"manual":true,"book":false,"bookExample":false},
-    {"id":"nbr-trim-branch","name":"NBR trim-branch injection","area":"NBR","since":157,"manual":true,"book":false,"bookExample":false},
-    {"id":"nbr-shape-clr","name":"NBR negative-branch shape rules","area":"NBR","since":181,"manual":true,"book":true,"bookExample":false},
-    {"id":"nbr-turning-point","name":"NBR backbone spine + turning-point guidance","area":"NBR","since":199,"manual":true,"book":true,"bookExample":false},
-    {"id":"id-diagram","name":"Interference Diagram","area":"ID","since":206,"manual":true,"book":true,"bookExample":true},
-    {"id":"id-impact","name":"Per-interference time/impact field","area":"ID","since":206,"manual":true,"book":true,"bookExample":true},
-    {"id":"id-modes","name":"Two ID modes (constraint-exploitation + strategy)","area":"ID","since":206,"manual":true,"book":true,"bookExample":true},
-    {"id":"id-structural-clr","name":"ID structural CLR (one objective; interference needs a fix)","area":"ID","since":206,"manual":true,"book":true,"bookExample":false},
-    {"id":"id-ranking","name":"Interference Pareto ranking readout","area":"ID","since":206,"manual":true,"book":true,"bookExample":true},
-    {"id":"id-csv","name":"Interference ranking CSV export","area":"ID","since":206,"manual":true,"book":true,"bookExample":false},
-    {"id":"id-spawn-prt","name":"Spawn PRT from an Interference Diagram","area":"ID","since":206,"manual":true,"book":true,"bookExample":false},
-    {"id":"id-spawn-goaltree","name":"Spawn Goal Tree from an Interference Diagram (ID/IO Simplified Strategy)","area":"ID","since":206,"manual":true,"book":true,"bookExample":false},
-    {"id":"canvas-nodes","name":"Canvas entity cards","area":"Canvas","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"canvas-grow-cards","name":"Grow cards to fit text","area":"Canvas","since":181,"manual":true,"book":false,"bookExample":false},
-    {"id":"blocks-rail","name":"Building Blocks rail","area":"Canvas","since":182,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-minimap","name":"Minimap","area":"Canvas","since":11,"manual":true,"book":true,"bookExample":false},
-    {"id":"canvas-zoom","name":"Zoom controls + percentage","area":"Canvas","since":11,"manual":true,"book":true,"bookExample":false},
-    {"id":"canvas-zoom-edit","name":"Click-to-edit zoom percent","area":"Canvas","since":176,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-entity-collapse","name":"Per-entity collapse/expand","area":"Canvas","since":19,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-zoomup-overlay","name":"Zoom-up detail overlay","area":"Canvas","since":50,"manual":true,"book":true,"bookExample":false},
-    {"id":"canvas-pin","name":"Drag-to-pin on auto-layout","area":"Canvas","since":63,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-context-menu","name":"Right-click context menu","area":"Canvas","since":1,"manual":true,"book":true,"bookExample":false},
-    {"id":"canvas-arrow-nav","name":"Arrow-key node navigation","area":"Canvas","since":1,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-keyboard-edge","name":"Keyboard edge-creation gesture","area":"Canvas","since":135,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-a11y-names","name":"Screen-reader accessible names","area":"Canvas","since":135,"manual":true,"book":false,"bookExample":false},
-    {"id":"a11y-reduced-motion","name":"Honours OS reduce-motion setting","area":"Canvas","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-tab-reading-order","name":"Reading-order canvas Tab traversal","area":"Canvas","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-selection-toolbar","name":"Selection toolbar","area":"Canvas","since":95,"manual":true,"book":true,"bookExample":false},
-    {"id":"canvas-state-badge","name":"Entity state badge on nodes","area":"Canvas","since":135,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-back-edge-routing","name":"Back-edge loop routing","area":"Canvas","since":177,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-loop-rb-badge","name":"Loop polarity R/B badge","area":"Canvas","since":179,"manual":true,"book":true,"bookExample":true},
-    {"id":"canvas-assumption-overlay","name":"Assumption anchor dashed overlay","area":"Canvas","since":133,"manual":true,"book":true,"bookExample":true},
-    {"id":"canvas-hover-fan","name":"Hover-fan converging edges","area":"Canvas","since":185,"manual":true,"book":false,"bookExample":false},
-    {"id":"edit-inline-title","name":"Inline title editing","area":"Editing","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"edit-create-entity","name":"Double-click / Alt-click to create","area":"Editing","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"edit-rename-f2","name":"F2 / Enter to rename","area":"Editing","since":176,"manual":true,"book":false,"bookExample":false},
-    {"id":"edit-undo-redo","name":"Undo / redo","area":"Editing","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"edit-multiselect","name":"Multi-select + bulk ops","area":"Editing","since":8,"manual":true,"book":true,"bookExample":false},
-    {"id":"edit-copy-paste","name":"Cut / copy / paste entities","area":"Editing","since":8,"manual":true,"book":true,"bookExample":false},
-    {"id":"edit-paste-offset","name":"Paste offsets copies (cascade)","area":"Editing","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"edit-duplicate","name":"Duplicate selection (Cmd/Ctrl+D)","area":"Editing","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"edit-select-all","name":"Select all entities (Cmd/Ctrl+A)","area":"Editing","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-drag-empty-create","name":"Drag into empty space creates a connected node","area":"Canvas","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"edit-swap","name":"Swap two entities","area":"Editing","since":8,"manual":true,"book":false,"bookExample":false},
-    {"id":"edit-splice","name":"Splice entity into an edge","area":"Editing","since":55,"manual":true,"book":true,"bookExample":false},
-    {"id":"edit-type-convert","name":"Convert entity type","area":"Editing","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"edit-quick-capture","name":"Quick Capture (indented text)","area":"Editing","since":12,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-inspector","name":"Entity Inspector","area":"Entities","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"entity-annotation-numbers","name":"Annotation numbers","area":"Entities","since":7,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-markdown-desc","name":"Markdown descriptions","area":"Entities","since":13,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-multiline-title","name":"Multi-line titles","area":"Entities","since":13,"manual":true,"book":false,"bookExample":false},
-    {"id":"entity-internal-links","name":"Internal entity cross-links","area":"Entities","since":13,"manual":true,"book":false,"bookExample":false},
-    {"id":"entity-title-size","name":"Per-entity title font size","area":"Entities","since":19,"manual":true,"book":false,"bookExample":false},
-    {"id":"entity-note","name":"Sticky-note entity","area":"Entities","since":72,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-unspecified","name":"Unspecified-placeholder entity","area":"Entities","since":53,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-locus","name":"Locus (span of control) field","area":"Entities","since":59,"manual":true,"book":true,"bookExample":true},
-    {"id":"entity-custom-classes","name":"Custom entity classes","area":"Entities","since":70,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-attributes","name":"User-defined entity attributes","area":"Entities","since":70,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-evidence","name":"Structured evidence items","area":"Entities","since":134,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-owner-validated","name":"Owner + validated stamp","area":"Entities","since":134,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-state","name":"Entity state (true/false/unknown)","area":"Entities","since":135,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-cross-doc-link","name":"Cross-document entity links","area":"Entities","since":155,"manual":true,"book":false,"bookExample":false},
-    {"id":"entity-core-problem","name":"Mark as core problem","area":"Entities","since":156,"manual":true,"book":true,"bookExample":false},
-    {"id":"entity-custom-icon","name":"Per-entity custom icon","area":"Entities","since":179,"manual":true,"book":false,"bookExample":false},
-    {"id":"entity-import-traceability","name":"Imported-from traceability","area":"Entities","since":135,"manual":true,"book":false,"bookExample":false},
-    {"id":"edge-connect","name":"Drag to connect","area":"Edges","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"edge-labels","name":"Edge labels","area":"Edges","since":13,"manual":true,"book":false,"bookExample":false},
-    {"id":"edge-description","name":"Edge description field","area":"Edges","since":60,"manual":true,"book":false,"bookExample":false},
-    {"id":"edge-assumptions","name":"Edge assumptions UI","area":"Edges","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"edge-arrowheads","name":"Causal arrowheads","area":"Edges","since":30,"manual":true,"book":true,"bookExample":false},
-    {"id":"edge-reverse","name":"Reverse edge direction","area":"Edges","since":19,"manual":true,"book":false,"bookExample":false},
-    {"id":"edge-back-edge","name":"Back-edge tagging + styling","area":"Edges","since":55,"manual":true,"book":true,"bookExample":true},
-    {"id":"edge-and-group","name":"AND junctor groups","area":"Edges","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"edge-or-xor","name":"OR / XOR junctor groups","area":"Edges","since":73,"manual":true,"book":true,"bookExample":false},
-    {"id":"edge-polarity","name":"Edge polarity (positive/negative/zero)","area":"Edges","since":73,"manual":true,"book":true,"bookExample":false},
-    {"id":"edge-necessity","name":"Necessity edge type","area":"Edges","since":77,"manual":true,"book":true,"bookExample":true},
-    {"id":"edge-attributes","name":"Edge custom attributes","area":"Edges","since":71,"manual":true,"book":false,"bookExample":false},
-    {"id":"edge-reconnect","name":"Re-target a connector","area":"Edges","since":148,"manual":true,"book":false,"bookExample":false},
-    {"id":"edge-picker","name":"Edge picker for overlapping edges","area":"Edges","since":177,"manual":true,"book":false,"bookExample":false},
-    {"id":"edge-inspector-rewire","name":"Edge Inspector cause/effect rewire","area":"Edges","since":177,"manual":true,"book":false,"bookExample":false},
-    {"id":"edge-4side-anchor","name":"4-side edge anchoring","area":"Edges","since":138,"manual":true,"book":false,"bookExample":false},
-    {"id":"edge-causality-labels","name":"Because / therefore edge labels","area":"Edges","since":44,"manual":true,"book":true,"bookExample":false},
-    {"id":"edge-loop-delay","name":"Feedback-loop delay marker","area":"Edges","since":180,"manual":true,"book":true,"bookExample":true},
-    {"id":"edge-loop-naming","name":"Feedback-loop naming + narrative","area":"Edges","since":180,"manual":true,"book":true,"bookExample":true},
-    {"id":"clr-core-rules","name":"Core CLR validation rules","area":"CLR","since":1,"manual":true,"book":true,"bookExample":false},
-    {"id":"clr-entity-fragment","name":"Single-word entity fragment warning","area":"CLR","since":199,"manual":true,"book":true,"bookExample":false},
-    {"id":"clr-resolve","name":"Resolve / reopen warnings","area":"CLR","since":1,"manual":true,"book":true,"bookExample":false},
-    {"id":"clr-tiered","name":"Tiered warning grouping","area":"CLR","since":48,"manual":true,"book":true,"bookExample":false},
-    {"id":"clr-cycle","name":"Cycle / indirect-effect rules","area":"CLR","since":48,"manual":true,"book":true,"bookExample":false},
-    {"id":"clr-walkthrough","name":"Guided CLR walkthrough","area":"CLR","since":57,"manual":true,"book":true,"bookExample":true},
-    {"id":"clr-edge-scrutiny","name":"Per-edge CLR scrutiny dialog","area":"CLR","since":160,"manual":true,"book":true,"bookExample":false},
-    {"id":"clr-jonah-quick-check","name":"Jonah quick-check (fast 4-question pass)","area":"CLR","since":199,"manual":true,"book":true,"bookExample":false},
-    {"id":"clr-logic-mismatch","name":"Logic-type mismatch lint","area":"CLR","since":179,"manual":true,"book":false,"bookExample":false},
-    {"id":"clr-entry-point","name":"FRT/NBR entry-point rule (injection or true-in-reality)","area":"CLR","since":199,"manual":true,"book":true,"bookExample":false},
-    {"id":"goaltree-nc-depth-mode","name":"Goal Tree conflict-resolution NC-depth mode","area":"GoalTree","since":199,"manual":true,"book":true,"bookExample":false},
-    {"id":"and-connector-flavour","name":"Two AND connectors (conceptual vs magnitudinal/additional)","area":"Edges","since":199,"manual":true,"book":true,"bookExample":false},
-    {"id":"clr-long-arrow","name":"Long-arrow / missing-step warning","area":"CLR","since":180,"manual":true,"book":true,"bookExample":true},
-    {"id":"clr-reinforcing-no-delay","name":"Reinforcing-loop no-delay warning","area":"CLR","since":180,"manual":true,"book":true,"bookExample":true},
-    {"id":"clr-panel","name":"Logic-check status chip + CLR panel","area":"CLR","since":182,"manual":true,"book":false,"bookExample":false},
-    {"id":"clr-progressive-gating","name":"Progressive CLR gating (Focus mode)","area":"CLR","since":199,"manual":true,"book":false,"bookExample":false},
-    {"id":"layout-dagre","name":"Auto-layout (dagre)","area":"Layout","since":1,"manual":true,"book":true,"bookExample":false},
-    {"id":"layout-radial","name":"Radial / sunburst layout","area":"Layout","since":27,"manual":true,"book":false,"bookExample":false},
-    {"id":"layout-direction","name":"Layout direction setting","area":"Layout","since":47,"manual":true,"book":true,"bookExample":false},
-    {"id":"layout-compactness","name":"Compactness + bias controls","area":"Layout","since":47,"manual":true,"book":true,"bookExample":false},
-    {"id":"layout-obstacle-routing","name":"Obstacle-aware edge routing","area":"Layout","since":137,"manual":true,"book":false,"bookExample":false},
-    {"id":"layout-crossing-reroute","name":"Edge-crossing reroute","area":"Layout","since":173,"manual":true,"book":false,"bookExample":false},
-    {"id":"export-json","name":"JSON export / import","area":"Export","since":1,"manual":true,"book":true,"bookExample":false},
-    {"id":"export-images","name":"PNG / JPEG / SVG export","area":"Export","since":1,"manual":true,"book":true,"bookExample":false},
-    {"id":"export-copy-clipboard","name":"Copy diagram image to clipboard","area":"Export","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"export-csv","name":"CSV export","area":"Export","since":14,"manual":true,"book":true,"bookExample":true},
-    {"id":"export-reasoning-md","name":"Reasoning Markdown export","area":"Export","since":58,"manual":true,"book":true,"bookExample":true},
-    {"id":"export-flying-logic","name":"Flying Logic export","area":"Export","since":17,"manual":true,"book":true,"bookExample":false},
-    {"id":"export-mermaid-dot-opml","name":"Mermaid / DOT / OPML export","area":"Export","since":51,"manual":true,"book":true,"bookExample":false},
-    {"id":"export-html","name":"Self-contained HTML export","area":"Export","since":77,"manual":true,"book":true,"bookExample":false},
-    {"id":"export-vector-pdf","name":"Vector PDF export","area":"Export","since":80,"manual":true,"book":true,"bookExample":false},
-    {"id":"export-pptx","name":"PowerPoint deck export","area":"Export","since":134,"manual":true,"book":true,"bookExample":false},
-    {"id":"export-pptx-tiling","name":"PPTX tall-diagram tiling","area":"Export","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"export-last-format","name":"Export picker remembers last format","area":"Export","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"export-risk-csv","name":"Risk-register CSV export","area":"Export","since":134,"manual":true,"book":true,"bookExample":false},
-    {"id":"export-picker","name":"Export picker dialog","area":"Export","since":134,"manual":true,"book":true,"bookExample":false},
-    {"id":"export-share-link","name":"Share link","area":"Export","since":134,"manual":true,"book":true,"bookExample":true},
-    {"id":"import-csv","name":"CSV import","area":"Import","since":12,"manual":true,"book":false,"bookExample":false},
-    {"id":"import-flying-logic","name":"Flying Logic import","area":"Import","since":17,"manual":true,"book":true,"bookExample":false},
-    {"id":"import-flying-logic-file-handler","name":"Open Flying Logic files by double-click (PWA file handler)","area":"Import","since":201,"manual":true,"book":false,"bookExample":false},
-    {"id":"import-mermaid","name":"Mermaid import","area":"Import","since":64,"manual":true,"book":true,"bookExample":false},
-    {"id":"import-whiteboard","name":"Paste-from-whiteboard import","area":"Import","since":134,"manual":true,"book":true,"bookExample":false},
-    {"id":"pattern-insert-into-current","name":"Insert template into current diagram","area":"Patterns","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"start-all-trees-filter","name":"Start \"All trees\" inline filter","area":"Start","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"quick-capture-into-group","name":"Quick Capture into a selected group","area":"Editing","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"manual-sibling-order","name":"Manual sibling ordering in auto-layout","area":"Layout","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"linked-file-dirty-chip","name":"Linked-file unsaved-changes chip","area":"General","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"save-write-through","name":"Ctrl/Cmd+S writes through to the linked file","area":"General","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"import-picker","name":"Import picker dialog","area":"Import","since":133,"manual":true,"book":true,"bookExample":false},
-    {"id":"import-cross-doc","name":"Import entity from another doc","area":"Import","since":135,"manual":true,"book":false,"bookExample":false},
-    {"id":"import-ai-skill","name":"AI import-generator skill","area":"Import","since":153,"manual":true,"book":true,"bookExample":false},
-    {"id":"print-pdf","name":"Print / Save as PDF","area":"Print","since":14,"manual":true,"book":true,"bookExample":false},
-    {"id":"print-nonlatin-caution","name":"Non-Latin-1 PDF font caution","area":"Print","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"color-palette-nodes","name":"Colour palette recolours nodes + minimap","area":"Settings","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"badge-decollision","name":"Node corner-badge de-collision","area":"Canvas","since":192,"manual":false,"book":false,"bookExample":false},
-    {"id":"inspector-collapsible","name":"Collapsible entity-inspector sections","area":"Editing","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"inspector-direct-pickers","name":"Direct-pick state chips (status/kind/source/strength)","area":"Editing","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"print-preview-dialog","name":"Print preview (modes + appendix)","area":"Print","since":77,"manual":true,"book":true,"bookExample":false},
-    {"id":"print-reasoning","name":"Print reasoning companion","area":"Print","since":177,"manual":true,"book":false,"bookExample":false},
-    {"id":"print-page-setup","name":"Print page setup","area":"Print","since":178,"manual":true,"book":false,"bookExample":false},
-    {"id":"print-legend","name":"Print how-to-read legend","area":"Print","since":178,"manual":true,"book":false,"bookExample":false},
-    {"id":"comments-layer","name":"Review comments","area":"Comments","since":139,"manual":true,"book":true,"bookExample":false},
-    {"id":"comments-badges","name":"Comment-count badges","area":"Comments","since":140,"manual":true,"book":true,"bookExample":false},
-    {"id":"comments-pins","name":"Free-floating comment pins","area":"Comments","since":141,"manual":true,"book":true,"bookExample":false},
-    {"id":"comments-clr-category","name":"CLR category on comments","area":"Comments","since":179,"manual":true,"book":false,"bookExample":false},
-    {"id":"revisions-history","name":"Revision history","area":"Revisions","since":41,"manual":true,"book":true,"bookExample":true},
-    {"id":"revisions-auto-snapshot","name":"Auto-snapshot while editing","area":"Revisions","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"revisions-compare","name":"Compare / diff revisions","area":"Revisions","since":62,"manual":true,"book":true,"bookExample":false},
-    {"id":"revisions-branches","name":"Named revision branches","area":"Revisions","since":62,"manual":true,"book":true,"bookExample":false},
-    {"id":"search-find-panel","name":"Find / search panel","area":"Search","since":11,"manual":true,"book":true,"bookExample":false},
-    {"id":"search-regex","name":"Regex / case / whole-word search","area":"Search","since":11,"manual":true,"book":false,"bookExample":false},
-    {"id":"search-assumptions-comments","name":"Find indexes assumptions + review comments","area":"Search","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"palette","name":"Command palette","area":"Palette","since":1,"manual":true,"book":true,"bookExample":true},
-    {"id":"palette-sections","name":"Palette grouped sections","area":"Palette","since":45,"manual":true,"book":false,"bookExample":false},
-    {"id":"palette-recent","name":"Recent palette commands","area":"Palette","since":88,"manual":true,"book":false,"bookExample":false},
-    {"id":"palette-goto-entity","name":"Palette jump-to-entity (Go to…)","area":"Palette","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"palette-select-all-of-type","name":"Select all entities of a type","area":"Palette","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"palette-phone-button","name":"Command-palette button on phones","area":"Palette","since":207,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-minimap-semantic","name":"Type-coloured minimap","area":"Canvas","since":192,"manual":true,"book":false,"bookExample":false},
-    {"id":"touch-long-press-menu","name":"Long-press context menu on touch","area":"Canvas","since":208,"manual":true,"book":false,"bookExample":false},
-    {"id":"touch-one-finger-pan","name":"One-finger pan on touch canvases","area":"Canvas","since":208,"manual":true,"book":false,"bookExample":false},
-    {"id":"canvas-nav-phone","name":"Zoom / fit chip visible on phones","area":"Canvas","since":207,"manual":true,"book":false,"bookExample":false},
-    {"id":"settings-dialog","name":"Settings dialog","area":"Settings","since":7,"manual":true,"book":true,"bookExample":false},
-    {"id":"settings-themes","name":"Theme variants","area":"Settings","since":1,"manual":true,"book":true,"bookExample":false},
-    {"id":"settings-contrast-cb","name":"High-contrast + colorblind palettes","area":"Settings","since":7,"manual":true,"book":true,"bookExample":false},
-    {"id":"settings-browse-lock","name":"Browse Lock","area":"Settings","since":7,"manual":true,"book":true,"bookExample":false},
-    {"id":"settings-causality-reading","name":"Causality reading setting","area":"Settings","since":57,"manual":true,"book":true,"bookExample":false},
-    {"id":"settings-app-mode","name":"App-mode switching","area":"Settings","since":135,"manual":true,"book":true,"bookExample":false},
-    {"id":"settings-display-toggles","name":"Display overlay toggles","area":"Settings","since":7,"manual":true,"book":true,"bookExample":false},
-    {"id":"workshop-presentation","name":"Presentation mode","area":"Workshop","since":135,"manual":true,"book":true,"bookExample":true},
-    {"id":"workshop-step-through","name":"Presentation step-through","area":"Workshop","since":135,"manual":true,"book":true,"bookExample":true},
-    {"id":"workshop-large-text","name":"Workshop large-text mode","area":"Workshop","since":135,"manual":true,"book":true,"bookExample":false},
-    {"id":"workshop-guided","name":"Guided mode","area":"Workshop","since":135,"manual":true,"book":true,"bookExample":false},
-    {"id":"workshop-readthrough","name":"Read-through walkthrough","area":"Workshop","since":57,"manual":true,"book":true,"bookExample":true},
-    {"id":"reader-mode","name":"Reader / trainee mode","area":"Reader","since":180,"manual":true,"book":true,"bookExample":true},
-    {"id":"reader-coaching","name":"Entity coaching tooltips","area":"Reader","since":180,"manual":true,"book":true,"bookExample":true},
-    {"id":"reader-challenge","name":"Challenge-this-arrow flow","area":"Reader","since":180,"manual":true,"book":true,"bookExample":true},
-    {"id":"reader-read-all","name":"Read entire diagram at once","area":"Reader","since":133,"manual":true,"book":true,"bookExample":false},
-    {"id":"patterns-library","name":"Templates library (editor dialog)","area":"Patterns","since":134,"manual":true,"book":true,"bookExample":false},
-    {"id":"patterns-templates","name":"Templates gallery (Start page) — unified registry","area":"Patterns","since":79,"manual":true,"book":true,"bookExample":false},
-    {"id":"patterns-archetypes","name":"System-archetype patterns","area":"Patterns","since":179,"manual":true,"book":true,"bookExample":true},
-    {"id":"patterns-goldratt-set","name":"Goldratt canon + published-case patterns","area":"Patterns","since":193,"manual":true,"book":false,"bookExample":false},
-    {"id":"patterns-toc-handbook-set","name":"TOC Handbook (Cox & Schleier) pattern set","area":"Patterns","since":196,"manual":true,"book":false,"bookExample":false},
-    {"id":"patterns-three-cloud","name":"Rapid 3-cloud diagnosis wizard","area":"EC","since":180,"manual":true,"book":true,"bookExample":true},
-    {"id":"three-cloud-flip","name":"3-cloud consolidation grid + per-cloud D/D′ flip","area":"EC","since":198,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-tabs","name":"Multi-document tabs","area":"General","since":138,"manual":true,"book":true,"bookExample":true},
-    {"id":"general-pwa","name":"PWA install + offline","area":"General","since":89,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-about","name":"About dialog","area":"General","since":111,"manual":true,"book":false,"bookExample":false},
-    {"id":"general-help","name":"Help dialog","area":"General","since":1,"manual":true,"book":false,"bookExample":false},
-    {"id":"general-system-scope","name":"System Scope capture","area":"General","since":56,"manual":true,"book":true,"bookExample":true},
-    {"id":"general-method-checklist","name":"Per-diagram method checklist","area":"General","since":56,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-doc-inspector","name":"Document Inspector","area":"General","since":7,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-performance-anchors","name":"Performance anchor fields","area":"General","since":163,"manual":true,"book":true,"bookExample":true},
-    {"id":"general-save-file","name":"Save / open local file","area":"General","since":153,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-injection-flower","name":"Injection Flower view","area":"General","since":161,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-u-shape","name":"U-Shape spawn EC / carry to FRT","area":"General","since":156,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-speculation","name":"What-if speculation overlay","area":"General","since":135,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-state-propagation","name":"Entity state propagation","area":"General","since":135,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-groups","name":"Groups / subgraphs","area":"General","since":9,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-nested-groups","name":"Nested + collapsible groups","area":"General","since":10,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-recovery","name":"Auto-recovery (live draft + backup)","area":"General","since":19,"manual":true,"book":true,"bookExample":false},
-    {"id":"general-epub","name":"EPUB book download","area":"General","since":135,"manual":true,"book":false,"bookExample":false},
-    {"id":"general-freeform","name":"Freeform diagram type","area":"General","since":75,"manual":true,"book":true,"bookExample":false},
-    {"id":"analysis-journey","name":"Analysis journey — guided multi-tree flow (Barnard's five questions)","area":"General","since":200,"manual":true,"book":true,"bookExample":false},
-    {"id":"method-stepper","name":"Method-path stepper","area":"General","since":182,"manual":true,"book":false,"bookExample":false},
-    {"id":"method-path-collapse","name":"Collapsible method-path strip","area":"General","since":188,"manual":true,"book":false,"bookExample":false},
-    {"id":"topbar-actions","name":"Top-bar Export / Share / command search","area":"General","since":182,"manual":true,"book":false,"bookExample":false},
-    {"id":"tab-diagram-color-dot","name":"Per-tab diagram-type colour dot","area":"General","since":187,"manual":true,"book":false,"bookExample":false},
-    {"id":"mobile-responsive-chrome","name":"Responsive editor chrome (phone / tablet layout)","area":"General","since":207,"manual":true,"book":false,"bookExample":false},
-    {"id":"mobile-touch-targets","name":"Coarse-pointer touch targets (nav chip, top-bar actions, connection handles)","area":"General","since":207,"manual":true,"book":false,"bookExample":false},
-    {"id":"mobile-inspector-sheet","name":"Bottom-sheet inspector on phones (half / full snap, swipe to dismiss)","area":"General","since":208,"manual":true,"book":false,"bookExample":false},
-    {"id":"start-page","name":"Start workspace shell","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
-    {"id":"start-hero","name":"Problem-led CRT hero","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
-    {"id":"start-tree-cards","name":"Tree cards with live Logic status","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
-    {"id":"start-needs-review","name":"Needs-review triage","area":"Start","since":183,"manual":true,"book":true,"bookExample":false},
-    {"id":"start-library","name":"Persistent tree library (open / delete closed trees)","area":"Start","since":184,"manual":true,"book":true,"bookExample":false},
-    {"id":"start-delete-undo","name":"Undo a deleted tree","area":"Start","since":192,"manual":true,"book":false,"bookExample":false}
+    {
+      "id": "crt-diagram",
+      "name": "Current Reality Tree",
+      "area": "CRT",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "crt-core-driver",
+      "name": "Core Driver finder",
+      "area": "CRT",
+      "since": 52,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "crt-ude-reach-badge",
+      "name": "UDE-reach badge",
+      "area": "CRT",
+      "since": 52,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "crt-rootcause-reach-badge",
+      "name": "Root-cause-reach badge",
+      "area": "CRT",
+      "since": 71,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "crt-spawn-ec",
+      "name": "Spawn EC from a CRT entity",
+      "area": "CRT",
+      "since": 52,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "crt-scope-nudge",
+      "name": "System-scope nudge on CRT load",
+      "area": "CRT",
+      "since": 83,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "crt-build-quality-clr",
+      "name": "CRT build-quality soft warnings",
+      "area": "CRT",
+      "since": 179,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "crt-spawn-ec-tied",
+      "name": "Spawn EC from tied core drivers",
+      "area": "CRT",
+      "since": 179,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "crt-spawn-frt-invert",
+      "name": "Spawn FRT from a CRT (invert the UDEs)",
+      "area": "CRT",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "goaltree-spawn-crt-benchmark",
+      "name": "Spawn CRT from a Goal Tree (benchmark shortfalls)",
+      "area": "GoalTree",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "frt-diagram",
+      "name": "Future Reality Tree",
+      "area": "FRT",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "frt-start-nbr",
+      "name": "Start a Negative Branch from an FRT",
+      "area": "FRT",
+      "since": 59,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-diagram",
+      "name": "Evaporating Cloud",
+      "area": "EC",
+      "since": 26,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-mutex-conflict",
+      "name": "EC mutual-exclusion conflict edge",
+      "area": "EC",
+      "since": 57,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-brainstorm-prompts",
+      "name": "EC per-edge brainstorm prompts",
+      "area": "EC",
+      "since": 57,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "ec-assumption-record",
+      "name": "First-class edge assumptions",
+      "area": "EC",
+      "since": 77,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-verbalisation",
+      "name": "EC verbalisation strip",
+      "area": "EC",
+      "since": 77,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-assumption-well",
+      "name": "EC Assumption Well",
+      "area": "EC",
+      "since": 77,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-injection-workbench",
+      "name": "EC injection workbench",
+      "area": "EC",
+      "since": 77,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-completeness-clr",
+      "name": "EC completeness CLR rules",
+      "area": "EC",
+      "since": 77,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "ec-box-syntax-clr",
+      "name": "EC box-syntax lint (causal words) + jeopardy/syntax method steps",
+      "area": "EC",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "ec-creation-wizard",
+      "name": "EC creation wizard",
+      "area": "EC",
+      "since": 78,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-wizard-d-first",
+      "name": "EC D-first wizard walk",
+      "area": "EC",
+      "since": 87,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "ec-cloud-type-wizard",
+      "name": "Cloud-type wizard modes (per-type build order + prompts + break hint)",
+      "area": "EC",
+      "since": 197,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-storyline",
+      "name": "EC wizard storyline pre-step",
+      "area": "EC",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-alternative-means",
+      "name": "Alternative-means brainstorm list on Want/injection nodes",
+      "area": "EC",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "ec-reframe-need",
+      "name": "Reframe-your-Need hint on EC Need boxes",
+      "area": "EC",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "ec-two-sided-verbal",
+      "name": "EC two-sided verbal framing",
+      "area": "EC",
+      "since": 87,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-verbalisation-lead",
+      "name": "Verbalisation read-for-side toggle (D′-first)",
+      "area": "EC",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-reading-strip",
+      "name": "EC reading-instruction strip",
+      "area": "EC",
+      "since": 87,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "ec-slot-questions",
+      "name": "EC per-slot guiding questions",
+      "area": "EC",
+      "since": 87,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "ec-injection-chip",
+      "name": "EC injections chip",
+      "area": "EC",
+      "since": 87,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "ec-verbal-style",
+      "name": "EC verbalisation style setting",
+      "area": "EC",
+      "since": 133,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "ec-cloud-type",
+      "name": "EC cloud-type tag",
+      "area": "EC",
+      "since": 154,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ec-break-hint-inspector",
+      "name": "Per-type break hint in the Document Inspector",
+      "area": "EC",
+      "since": 206,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "prt-diagram",
+      "name": "Prerequisite Tree",
+      "area": "PRT",
+      "since": 20,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "prt-plan-csv",
+      "name": "PRT ordered-plan CSV export",
+      "area": "PRT",
+      "since": 162,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "ongoing-objective",
+      "name": "Ongoing-vs-done toggle on PRT/Goal-Tree objectives",
+      "area": "PRT",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "prt-obstacle-io-intake",
+      "name": "PRT Obstacle/Objective intake table (batched create)",
+      "area": "PRT",
+      "since": 199,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "tt-diagram",
+      "name": "Transition Tree",
+      "area": "TT",
+      "since": 21,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "tt-complete-step-clr",
+      "name": "TT complete-step CLR rule",
+      "area": "TT",
+      "since": 53,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "tt-need-assumption",
+      "name": "TT per-step Need + Working Assumption",
+      "area": "TT",
+      "since": 158,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "tt-appropriate-condition",
+      "name": "TT appropriate-condition method step",
+      "area": "TT",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "tt-eligibility",
+      "name": "TT action-eligibility readout + badge",
+      "area": "TT",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "tt-task-csv",
+      "name": "TT task-tracker CSV export",
+      "area": "TT",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "goaltree-diagram",
+      "name": "Goal Tree",
+      "area": "GoalTree",
+      "since": 19,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "goaltree-wizard",
+      "name": "Goal Tree creation wizard",
+      "area": "GoalTree",
+      "since": 78,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "goaltree-multigoal-clr",
+      "name": "Goal Tree multi-goal warning",
+      "area": "GoalTree",
+      "since": 79,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "goaltree-compliance-csf-clr",
+      "name": "Goal Tree compliance-as-CSF warning",
+      "area": "GoalTree",
+      "since": 199,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "goaltree-type-definitions",
+      "name": "Goal-vs-NC inline definitions (inspector note)",
+      "area": "GoalTree",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "goaltree-tier",
+      "name": "Goal-Tree tier labels (Conceptual/Functional/Operational)",
+      "area": "GoalTree",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "injection-six-criteria",
+      "name": "Six Success Criteria checklist on injections",
+      "area": "FRT",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "loop-terminology",
+      "name": "R/B loop badge terminology reconciliation",
+      "area": "CLR",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "st-diagram",
+      "name": "Strategy & Tactics tree",
+      "area": "ST",
+      "since": 75,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "st-facet-card",
+      "name": "S&T 5-facet tactic card",
+      "area": "ST",
+      "since": 76,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "st-assumption-subtyping",
+      "name": "S&T assumption sub-typing",
+      "area": "ST",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "st-directional-assumptions",
+      "name": "S&T directional assumptions (position-aware validators + plain labels + fold-in + analysis-first gate)",
+      "area": "ST",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "st-facet-templates",
+      "name": "S&T facet template pack (10 trees — Decisive Competitive Edge / Mafia offers + Retailer/Healthcare Viable Vision incl. a 6-level spine, on the corrected model)",
+      "area": "ST",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "nbr-diagram",
+      "name": "Negative Branch Reservation",
+      "area": "NBR",
+      "since": 134,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "nbr-trim-branch",
+      "name": "NBR trim-branch injection",
+      "area": "NBR",
+      "since": 157,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "nbr-shape-clr",
+      "name": "NBR negative-branch shape rules",
+      "area": "NBR",
+      "since": 181,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "nbr-turning-point",
+      "name": "NBR backbone spine + turning-point guidance",
+      "area": "NBR",
+      "since": 199,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "id-diagram",
+      "name": "Interference Diagram",
+      "area": "ID",
+      "since": 206,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "id-impact",
+      "name": "Per-interference time/impact field",
+      "area": "ID",
+      "since": 206,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "id-modes",
+      "name": "Two ID modes (constraint-exploitation + strategy)",
+      "area": "ID",
+      "since": 206,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "id-structural-clr",
+      "name": "ID structural CLR (one objective; interference needs a fix)",
+      "area": "ID",
+      "since": 206,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "id-ranking",
+      "name": "Interference Pareto ranking readout",
+      "area": "ID",
+      "since": 206,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "id-csv",
+      "name": "Interference ranking CSV export",
+      "area": "ID",
+      "since": 206,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "id-spawn-prt",
+      "name": "Spawn PRT from an Interference Diagram",
+      "area": "ID",
+      "since": 206,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "id-spawn-goaltree",
+      "name": "Spawn Goal Tree from an Interference Diagram (ID/IO Simplified Strategy)",
+      "area": "ID",
+      "since": 206,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-nodes",
+      "name": "Canvas entity cards",
+      "area": "Canvas",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "canvas-grow-cards",
+      "name": "Grow cards to fit text",
+      "area": "Canvas",
+      "since": 181,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "blocks-rail",
+      "name": "Building Blocks rail",
+      "area": "Canvas",
+      "since": 182,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-minimap",
+      "name": "Minimap",
+      "area": "Canvas",
+      "since": 11,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-zoom",
+      "name": "Zoom controls + percentage",
+      "area": "Canvas",
+      "since": 11,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-zoom-edit",
+      "name": "Click-to-edit zoom percent",
+      "area": "Canvas",
+      "since": 176,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-entity-collapse",
+      "name": "Per-entity collapse/expand",
+      "area": "Canvas",
+      "since": 19,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-zoomup-overlay",
+      "name": "Zoom-up detail overlay",
+      "area": "Canvas",
+      "since": 50,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-pin",
+      "name": "Drag-to-pin on auto-layout",
+      "area": "Canvas",
+      "since": 63,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-context-menu",
+      "name": "Right-click context menu",
+      "area": "Canvas",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-arrow-nav",
+      "name": "Arrow-key node navigation",
+      "area": "Canvas",
+      "since": 1,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-keyboard-edge",
+      "name": "Keyboard edge-creation gesture",
+      "area": "Canvas",
+      "since": 135,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-a11y-names",
+      "name": "Screen-reader accessible names",
+      "area": "Canvas",
+      "since": 135,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "a11y-reduced-motion",
+      "name": "Honours OS reduce-motion setting",
+      "area": "Canvas",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-tab-reading-order",
+      "name": "Reading-order canvas Tab traversal",
+      "area": "Canvas",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-selection-toolbar",
+      "name": "Selection toolbar",
+      "area": "Canvas",
+      "since": 95,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-state-badge",
+      "name": "Entity state badge on nodes",
+      "area": "Canvas",
+      "since": 135,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-back-edge-routing",
+      "name": "Back-edge loop routing",
+      "area": "Canvas",
+      "since": 177,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-loop-rb-badge",
+      "name": "Loop polarity R/B badge",
+      "area": "Canvas",
+      "since": 179,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "canvas-assumption-overlay",
+      "name": "Assumption anchor dashed overlay",
+      "area": "Canvas",
+      "since": 133,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "canvas-hover-fan",
+      "name": "Hover-fan converging edges",
+      "area": "Canvas",
+      "since": 185,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edit-inline-title",
+      "name": "Inline title editing",
+      "area": "Editing",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edit-create-entity",
+      "name": "Double-click / Alt-click to create",
+      "area": "Editing",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edit-rename-f2",
+      "name": "F2 / Enter to rename",
+      "area": "Editing",
+      "since": 176,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edit-undo-redo",
+      "name": "Undo / redo",
+      "area": "Editing",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edit-multiselect",
+      "name": "Multi-select + bulk ops",
+      "area": "Editing",
+      "since": 8,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "edit-copy-paste",
+      "name": "Cut / copy / paste entities",
+      "area": "Editing",
+      "since": 8,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "edit-paste-offset",
+      "name": "Paste offsets copies (cascade)",
+      "area": "Editing",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edit-duplicate",
+      "name": "Duplicate selection (Cmd/Ctrl+D)",
+      "area": "Editing",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edit-select-all",
+      "name": "Select all entities (Cmd/Ctrl+A)",
+      "area": "Editing",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-drag-empty-create",
+      "name": "Drag into empty space creates a connected node",
+      "area": "Canvas",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edit-swap",
+      "name": "Swap two entities",
+      "area": "Editing",
+      "since": 8,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edit-splice",
+      "name": "Splice entity into an edge",
+      "area": "Editing",
+      "since": 55,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "edit-type-convert",
+      "name": "Convert entity type",
+      "area": "Editing",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edit-quick-capture",
+      "name": "Quick Capture (indented text)",
+      "area": "Editing",
+      "since": 12,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-inspector",
+      "name": "Entity Inspector",
+      "area": "Entities",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "entity-annotation-numbers",
+      "name": "Annotation numbers",
+      "area": "Entities",
+      "since": 7,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-markdown-desc",
+      "name": "Markdown descriptions",
+      "area": "Entities",
+      "since": 13,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-multiline-title",
+      "name": "Multi-line titles",
+      "area": "Entities",
+      "since": 13,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "entity-internal-links",
+      "name": "Internal entity cross-links",
+      "area": "Entities",
+      "since": 13,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "entity-title-size",
+      "name": "Per-entity title font size",
+      "area": "Entities",
+      "since": 19,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "entity-note",
+      "name": "Sticky-note entity",
+      "area": "Entities",
+      "since": 72,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-unspecified",
+      "name": "Unspecified-placeholder entity",
+      "area": "Entities",
+      "since": 53,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-locus",
+      "name": "Locus (span of control) field",
+      "area": "Entities",
+      "since": 59,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "entity-custom-classes",
+      "name": "Custom entity classes",
+      "area": "Entities",
+      "since": 70,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-attributes",
+      "name": "User-defined entity attributes",
+      "area": "Entities",
+      "since": 70,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-evidence",
+      "name": "Structured evidence items",
+      "area": "Entities",
+      "since": 134,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-owner-validated",
+      "name": "Owner + validated stamp",
+      "area": "Entities",
+      "since": 134,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-state",
+      "name": "Entity state (true/false/unknown)",
+      "area": "Entities",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-cross-doc-link",
+      "name": "Cross-document entity links",
+      "area": "Entities",
+      "since": 155,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "entity-core-problem",
+      "name": "Mark as core problem",
+      "area": "Entities",
+      "since": 156,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "entity-custom-icon",
+      "name": "Per-entity custom icon",
+      "area": "Entities",
+      "since": 179,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "entity-import-traceability",
+      "name": "Imported-from traceability",
+      "area": "Entities",
+      "since": 135,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edge-connect",
+      "name": "Drag to connect",
+      "area": "Edges",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edge-labels",
+      "name": "Edge labels",
+      "area": "Edges",
+      "since": 13,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edge-description",
+      "name": "Edge description field",
+      "area": "Edges",
+      "since": 60,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edge-assumptions",
+      "name": "Edge assumptions UI",
+      "area": "Edges",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edge-arrowheads",
+      "name": "Causal arrowheads",
+      "area": "Edges",
+      "since": 30,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "edge-reverse",
+      "name": "Reverse edge direction",
+      "area": "Edges",
+      "since": 19,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edge-back-edge",
+      "name": "Back-edge tagging + styling",
+      "area": "Edges",
+      "since": 55,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edge-and-group",
+      "name": "AND junctor groups",
+      "area": "Edges",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edge-or-xor",
+      "name": "OR / XOR junctor groups",
+      "area": "Edges",
+      "since": 73,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "edge-polarity",
+      "name": "Edge polarity (positive/negative/zero)",
+      "area": "Edges",
+      "since": 73,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "edge-necessity",
+      "name": "Necessity edge type",
+      "area": "Edges",
+      "since": 77,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edge-attributes",
+      "name": "Edge custom attributes",
+      "area": "Edges",
+      "since": 71,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edge-reconnect",
+      "name": "Re-target a connector",
+      "area": "Edges",
+      "since": 148,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edge-picker",
+      "name": "Edge picker for overlapping edges",
+      "area": "Edges",
+      "since": 177,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edge-inspector-rewire",
+      "name": "Edge Inspector cause/effect rewire",
+      "area": "Edges",
+      "since": 177,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edge-4side-anchor",
+      "name": "4-side edge anchoring",
+      "area": "Edges",
+      "since": 138,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "edge-causality-labels",
+      "name": "Because / therefore edge labels",
+      "area": "Edges",
+      "since": 44,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "edge-loop-delay",
+      "name": "Feedback-loop delay marker",
+      "area": "Edges",
+      "since": 180,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "edge-loop-naming",
+      "name": "Feedback-loop naming + narrative",
+      "area": "Edges",
+      "since": 180,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "clr-core-rules",
+      "name": "Core CLR validation rules",
+      "area": "CLR",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "clr-entity-fragment",
+      "name": "Single-word entity fragment warning",
+      "area": "CLR",
+      "since": 199,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "clr-resolve",
+      "name": "Resolve / reopen warnings",
+      "area": "CLR",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "clr-tiered",
+      "name": "Tiered warning grouping",
+      "area": "CLR",
+      "since": 48,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "clr-cycle",
+      "name": "Cycle / indirect-effect rules",
+      "area": "CLR",
+      "since": 48,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "clr-walkthrough",
+      "name": "Guided CLR walkthrough",
+      "area": "CLR",
+      "since": 57,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "clr-edge-scrutiny",
+      "name": "Per-edge CLR scrutiny dialog",
+      "area": "CLR",
+      "since": 160,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "clr-jonah-quick-check",
+      "name": "Jonah quick-check (fast 4-question pass)",
+      "area": "CLR",
+      "since": 199,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "clr-logic-mismatch",
+      "name": "Logic-type mismatch lint",
+      "area": "CLR",
+      "since": 179,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "clr-entry-point",
+      "name": "FRT/NBR entry-point rule (injection or true-in-reality)",
+      "area": "CLR",
+      "since": 199,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "goaltree-nc-depth-mode",
+      "name": "Goal Tree conflict-resolution NC-depth mode",
+      "area": "GoalTree",
+      "since": 199,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "and-connector-flavour",
+      "name": "Two AND connectors (conceptual vs magnitudinal/additional)",
+      "area": "Edges",
+      "since": 199,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "clr-long-arrow",
+      "name": "Long-arrow / missing-step warning",
+      "area": "CLR",
+      "since": 180,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "clr-reinforcing-no-delay",
+      "name": "Reinforcing-loop no-delay warning",
+      "area": "CLR",
+      "since": 180,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "clr-panel",
+      "name": "Logic-check status chip + CLR panel",
+      "area": "CLR",
+      "since": 182,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "clr-progressive-gating",
+      "name": "Progressive CLR gating (Focus mode)",
+      "area": "CLR",
+      "since": 199,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "layout-dagre",
+      "name": "Auto-layout (dagre)",
+      "area": "Layout",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "layout-radial",
+      "name": "Radial / sunburst layout",
+      "area": "Layout",
+      "since": 27,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "layout-direction",
+      "name": "Layout direction setting",
+      "area": "Layout",
+      "since": 47,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "layout-compactness",
+      "name": "Compactness + bias controls",
+      "area": "Layout",
+      "since": 47,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "layout-obstacle-routing",
+      "name": "Obstacle-aware edge routing",
+      "area": "Layout",
+      "since": 137,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "layout-crossing-reroute",
+      "name": "Edge-crossing reroute",
+      "area": "Layout",
+      "since": 173,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "export-json",
+      "name": "JSON export / import",
+      "area": "Export",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "export-images",
+      "name": "PNG / JPEG / SVG export",
+      "area": "Export",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "export-copy-clipboard",
+      "name": "Copy diagram image to clipboard",
+      "area": "Export",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "export-csv",
+      "name": "CSV export",
+      "area": "Export",
+      "since": 14,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "export-reasoning-md",
+      "name": "Reasoning Markdown export",
+      "area": "Export",
+      "since": 58,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "export-flying-logic",
+      "name": "Flying Logic export",
+      "area": "Export",
+      "since": 17,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "export-mermaid-dot-opml",
+      "name": "Mermaid / DOT / OPML export",
+      "area": "Export",
+      "since": 51,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "export-html",
+      "name": "Self-contained HTML export",
+      "area": "Export",
+      "since": 77,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "export-vector-pdf",
+      "name": "Vector PDF export",
+      "area": "Export",
+      "since": 80,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "export-pptx",
+      "name": "PowerPoint deck export",
+      "area": "Export",
+      "since": 134,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "export-pptx-tiling",
+      "name": "PPTX tall-diagram tiling",
+      "area": "Export",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "export-last-format",
+      "name": "Export picker remembers last format",
+      "area": "Export",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "export-risk-csv",
+      "name": "Risk-register CSV export",
+      "area": "Export",
+      "since": 134,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "export-picker",
+      "name": "Export picker dialog",
+      "area": "Export",
+      "since": 134,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "export-share-link",
+      "name": "Share link",
+      "area": "Export",
+      "since": 134,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "import-csv",
+      "name": "CSV import",
+      "area": "Import",
+      "since": 12,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "import-flying-logic",
+      "name": "Flying Logic import",
+      "area": "Import",
+      "since": 17,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "import-flying-logic-file-handler",
+      "name": "Open Flying Logic files by double-click (PWA file handler)",
+      "area": "Import",
+      "since": 201,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "import-mermaid",
+      "name": "Mermaid import",
+      "area": "Import",
+      "since": 64,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "import-whiteboard",
+      "name": "Paste-from-whiteboard import",
+      "area": "Import",
+      "since": 134,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "pattern-insert-into-current",
+      "name": "Insert template into current diagram",
+      "area": "Patterns",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "start-all-trees-filter",
+      "name": "Start \"All trees\" inline filter",
+      "area": "Start",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "quick-capture-into-group",
+      "name": "Quick Capture into a selected group",
+      "area": "Editing",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "manual-sibling-order",
+      "name": "Manual sibling ordering in auto-layout",
+      "area": "Layout",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "linked-file-dirty-chip",
+      "name": "Linked-file unsaved-changes chip",
+      "area": "General",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "save-write-through",
+      "name": "Ctrl/Cmd+S writes through to the linked file",
+      "area": "General",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "import-picker",
+      "name": "Import picker dialog",
+      "area": "Import",
+      "since": 133,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "import-cross-doc",
+      "name": "Import entity from another doc",
+      "area": "Import",
+      "since": 135,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "import-ai-skill",
+      "name": "AI import-generator skill",
+      "area": "Import",
+      "since": 153,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "print-pdf",
+      "name": "Print / Save as PDF",
+      "area": "Print",
+      "since": 14,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "print-nonlatin-caution",
+      "name": "Non-Latin-1 PDF font caution",
+      "area": "Print",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "color-palette-nodes",
+      "name": "Colour palette recolours nodes + minimap",
+      "area": "Settings",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "badge-decollision",
+      "name": "Node corner-badge de-collision",
+      "area": "Canvas",
+      "since": 192,
+      "manual": false,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "inspector-collapsible",
+      "name": "Collapsible entity-inspector sections",
+      "area": "Editing",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "inspector-direct-pickers",
+      "name": "Direct-pick state chips (status/kind/source/strength)",
+      "area": "Editing",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "print-preview-dialog",
+      "name": "Print preview (modes + appendix)",
+      "area": "Print",
+      "since": 77,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "print-reasoning",
+      "name": "Print reasoning companion",
+      "area": "Print",
+      "since": 177,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "print-page-setup",
+      "name": "Print page setup",
+      "area": "Print",
+      "since": 178,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "print-legend",
+      "name": "Print how-to-read legend",
+      "area": "Print",
+      "since": 178,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "comments-layer",
+      "name": "Review comments",
+      "area": "Comments",
+      "since": 139,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "comments-badges",
+      "name": "Comment-count badges",
+      "area": "Comments",
+      "since": 140,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "comments-pins",
+      "name": "Free-floating comment pins",
+      "area": "Comments",
+      "since": 141,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "comments-clr-category",
+      "name": "CLR category on comments",
+      "area": "Comments",
+      "since": 179,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "revisions-history",
+      "name": "Revision history",
+      "area": "Revisions",
+      "since": 41,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "revisions-auto-snapshot",
+      "name": "Auto-snapshot while editing",
+      "area": "Revisions",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "revisions-compare",
+      "name": "Compare / diff revisions",
+      "area": "Revisions",
+      "since": 62,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "revisions-branches",
+      "name": "Named revision branches",
+      "area": "Revisions",
+      "since": 62,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "search-find-panel",
+      "name": "Find / search panel",
+      "area": "Search",
+      "since": 11,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "search-regex",
+      "name": "Regex / case / whole-word search",
+      "area": "Search",
+      "since": 11,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "search-assumptions-comments",
+      "name": "Find indexes assumptions + review comments",
+      "area": "Search",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "palette",
+      "name": "Command palette",
+      "area": "Palette",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "palette-sections",
+      "name": "Palette grouped sections",
+      "area": "Palette",
+      "since": 45,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "palette-recent",
+      "name": "Recent palette commands",
+      "area": "Palette",
+      "since": 88,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "palette-goto-entity",
+      "name": "Palette jump-to-entity (Go to…)",
+      "area": "Palette",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "palette-select-all-of-type",
+      "name": "Select all entities of a type",
+      "area": "Palette",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "palette-phone-button",
+      "name": "Command-palette button on phones",
+      "area": "Palette",
+      "since": 207,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-minimap-semantic",
+      "name": "Type-coloured minimap",
+      "area": "Canvas",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "touch-long-press-menu",
+      "name": "Long-press context menu on touch",
+      "area": "Canvas",
+      "since": 208,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "touch-one-finger-pan",
+      "name": "One-finger pan on touch canvases",
+      "area": "Canvas",
+      "since": 208,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "canvas-nav-phone",
+      "name": "Zoom / fit chip visible on phones",
+      "area": "Canvas",
+      "since": 207,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "settings-dialog",
+      "name": "Settings dialog",
+      "area": "Settings",
+      "since": 7,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "settings-themes",
+      "name": "Theme variants",
+      "area": "Settings",
+      "since": 1,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "settings-contrast-cb",
+      "name": "High-contrast + colorblind palettes",
+      "area": "Settings",
+      "since": 7,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "settings-browse-lock",
+      "name": "Browse Lock",
+      "area": "Settings",
+      "since": 7,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "settings-causality-reading",
+      "name": "Causality reading setting",
+      "area": "Settings",
+      "since": 57,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "settings-app-mode",
+      "name": "App-mode switching",
+      "area": "Settings",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "settings-display-toggles",
+      "name": "Display overlay toggles",
+      "area": "Settings",
+      "since": 7,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "workshop-presentation",
+      "name": "Presentation mode",
+      "area": "Workshop",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "workshop-step-through",
+      "name": "Presentation step-through",
+      "area": "Workshop",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "workshop-large-text",
+      "name": "Workshop large-text mode",
+      "area": "Workshop",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "workshop-guided",
+      "name": "Guided mode",
+      "area": "Workshop",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "workshop-readthrough",
+      "name": "Read-through walkthrough",
+      "area": "Workshop",
+      "since": 57,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "reader-mode",
+      "name": "Reader / trainee mode",
+      "area": "Reader",
+      "since": 180,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "reader-coaching",
+      "name": "Entity coaching tooltips",
+      "area": "Reader",
+      "since": 180,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "reader-challenge",
+      "name": "Challenge-this-arrow flow",
+      "area": "Reader",
+      "since": 180,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "reader-read-all",
+      "name": "Read entire diagram at once",
+      "area": "Reader",
+      "since": 133,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "patterns-library",
+      "name": "Templates library (editor dialog)",
+      "area": "Patterns",
+      "since": 134,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "patterns-templates",
+      "name": "Templates gallery (Start page) — unified registry",
+      "area": "Patterns",
+      "since": 79,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "patterns-archetypes",
+      "name": "System-archetype patterns",
+      "area": "Patterns",
+      "since": 179,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "patterns-goldratt-set",
+      "name": "Goldratt canon + published-case patterns",
+      "area": "Patterns",
+      "since": 193,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "patterns-toc-handbook-set",
+      "name": "TOC Handbook (Cox & Schleier) pattern set",
+      "area": "Patterns",
+      "since": 196,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "patterns-three-cloud",
+      "name": "Rapid 3-cloud diagnosis wizard",
+      "area": "EC",
+      "since": 180,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "three-cloud-flip",
+      "name": "3-cloud consolidation grid + per-cloud D/D′ flip",
+      "area": "EC",
+      "since": 198,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-tabs",
+      "name": "Multi-document tabs",
+      "area": "General",
+      "since": 138,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "general-pwa",
+      "name": "PWA install + offline",
+      "area": "General",
+      "since": 89,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-about",
+      "name": "About dialog",
+      "area": "General",
+      "since": 111,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "general-help",
+      "name": "Help dialog",
+      "area": "General",
+      "since": 1,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "general-system-scope",
+      "name": "System Scope capture",
+      "area": "General",
+      "since": 56,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "general-method-checklist",
+      "name": "Per-diagram method checklist",
+      "area": "General",
+      "since": 56,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-doc-inspector",
+      "name": "Document Inspector",
+      "area": "General",
+      "since": 7,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-performance-anchors",
+      "name": "Performance anchor fields",
+      "area": "General",
+      "since": 163,
+      "manual": true,
+      "book": true,
+      "bookExample": true
+    },
+    {
+      "id": "general-save-file",
+      "name": "Save / open local file",
+      "area": "General",
+      "since": 153,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-injection-flower",
+      "name": "Injection Flower view",
+      "area": "General",
+      "since": 161,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-u-shape",
+      "name": "U-Shape spawn EC / carry to FRT",
+      "area": "General",
+      "since": 156,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-speculation",
+      "name": "What-if speculation overlay",
+      "area": "General",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-state-propagation",
+      "name": "Entity state propagation",
+      "area": "General",
+      "since": 135,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-groups",
+      "name": "Groups / subgraphs",
+      "area": "General",
+      "since": 9,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-nested-groups",
+      "name": "Nested + collapsible groups",
+      "area": "General",
+      "since": 10,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-recovery",
+      "name": "Auto-recovery (live draft + backup)",
+      "area": "General",
+      "since": 19,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "general-epub",
+      "name": "EPUB book download",
+      "area": "General",
+      "since": 135,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "general-freeform",
+      "name": "Freeform diagram type",
+      "area": "General",
+      "since": 75,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "analysis-journey",
+      "name": "Analysis journey — guided multi-tree flow (Barnard's five questions)",
+      "area": "General",
+      "since": 200,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "method-stepper",
+      "name": "Method-path stepper",
+      "area": "General",
+      "since": 182,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "method-path-collapse",
+      "name": "Collapsible method-path strip",
+      "area": "General",
+      "since": 188,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "topbar-actions",
+      "name": "Top-bar Export / Share / command search",
+      "area": "General",
+      "since": 182,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "tab-diagram-color-dot",
+      "name": "Per-tab diagram-type colour dot",
+      "area": "General",
+      "since": 187,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "mobile-responsive-chrome",
+      "name": "Responsive editor chrome (phone / tablet layout)",
+      "area": "General",
+      "since": 207,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "mobile-touch-targets",
+      "name": "Coarse-pointer touch targets (nav chip, top-bar actions, connection handles)",
+      "area": "General",
+      "since": 207,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "mobile-inspector-sheet",
+      "name": "Bottom-sheet inspector on phones (half / full snap, swipe to dismiss)",
+      "area": "General",
+      "since": 208,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "start-page",
+      "name": "Start workspace shell",
+      "area": "Start",
+      "since": 183,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "start-hero",
+      "name": "Problem-led CRT hero",
+      "area": "Start",
+      "since": 183,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "start-tree-cards",
+      "name": "Tree cards with live Logic status",
+      "area": "Start",
+      "since": 183,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "start-needs-review",
+      "name": "Needs-review triage",
+      "area": "Start",
+      "since": 183,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "start-library",
+      "name": "Persistent tree library (open / delete closed trees)",
+      "area": "Start",
+      "since": 184,
+      "manual": true,
+      "book": true,
+      "bookExample": false
+    },
+    {
+      "id": "start-delete-undo",
+      "name": "Undo a deleted tree",
+      "area": "Start",
+      "since": 192,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "offline-indicator",
+      "name": "Offline indicator",
+      "area": "General",
+      "since": 212,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "offline-readiness-panel",
+      "name": "About → offline readiness (worker, precache entries, persisted storage, cached size, on-demand extras)",
+      "area": "General",
+      "since": 212,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "offline-persistent-storage",
+      "name": "Persistent storage request — protects the offline cache and saved diagrams from browser eviction",
+      "area": "General",
+      "since": 212,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "offline-warmup",
+      "name": "Idle offline warm-up of export/preview chunks and the practitioner book",
+      "area": "General",
+      "since": 212,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "offline-self-heal",
+      "name": "Self-healing offline cache — reinstalls once when an active worker has an empty precache",
+      "area": "General",
+      "since": 212,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "offline-top-up",
+      "name": "Fetch the missing offline extras on demand, from About → offline readiness",
+      "area": "General",
+      "since": 213,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    }
   ]
 }

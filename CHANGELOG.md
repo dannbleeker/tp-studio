@@ -5,6 +5,227 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 214 — the same bug class, a third time: 6.4 MiB downloaded into the void
+
+An adversarial bug hunt over the offline surface found what two rounds of review and 5,350 tests had
+not. Measured against the real build, on a first load with no reload:
+
+```
+controller on first load  = false
+cache names               = ["workbox-precache-v2-…"]     ← no runtime caches at all
+on-demand assets CACHED   = 0 of 7
+bytes actually downloaded = 6.36 MiB over 7 requests
+```
+
+`run()` asked whether the Service Worker *API* existed. It never asked whether a worker was serving
+*this page*. With `registerType: 'prompt'` there is no `clientsClaim` (`grep -c clientsClaim dist/sw.js`
+→ 0), so a first load installs the worker without it ever controlling that document. Every warm-up
+fetch then bypassed the worker, the runtime-cache routes never ran, and nothing was stored — while
+every response read `ok`, so the run logged a clean sweep and latched `completed`. Nothing listened for
+`controllerchange`, so the session never retried.
+
+For a managed profile that clears site data on exit — the exact situation this whole arc was written
+for — **every launch** is a first load. That is 6.36 MiB downloaded and discarded, daily, on a tether,
+caching nothing.
+
+### Why the harness missed it
+
+Every offline test in this repo, including `e2e/offline.spec.ts` and the reconnect probe written last
+session, calls a helper that reloads until the page is controlled *before* asserting anything. That
+helper exists for a good reason — offline only works on a controlled page — but it meant the
+uncontrolled first load, the most common state of all, was never exercised. The tests were not wrong;
+their setup quietly excluded the failure.
+
+### The structural fix
+
+Three changes, the third being the one that matters:
+
+1. `run()` now gates on `navigator.serviceWorker.controller !== null` and treats "no controller" like
+   the offline case — a "not yet", never latched.
+2. `listenForReconnect()` also listens for `controllerchange`. On a first load that is the *only*
+   trigger that will ever fire: the network never dropped and the tab never hid.
+3. **`warmTier` no longer counts `response.ok` as success.** It reads the URL back out of Cache Storage
+   and counts a file as warmed only if it is actually there.
+
+Point 3 closes the class rather than the instance. This is the *third* defect in two sessions built on
+the same false premise — a stringified `urlPattern` closure that threw so nothing matched, a warm-up on
+an uncontrolled page, and both reported success. A fetch resolving `ok` says the server answered. It
+says nothing about whether anything was stored, and the only honest signal is reading the cache back.
+
+After: `0.00 MiB` fetched on an uncontrolled first load, still `0 of 7` cached — which is now the
+correct outcome rather than a lie — and the controlled path still reaches `0 of 7 missing`.
+
+## Session 213 — answering "am I ready for the flight?" from the UI
+
+Session 212 made offline access durable but left one question unanswerable from inside the app: are
+the on-demand extras — the five export/preview chunks and the practitioner book — actually cached
+*right now*? The readiness panel reported the shell precache only, which is the part that was never
+in doubt. Dann's working pattern makes this concrete: long offline stretches, a short window of wifi,
+then offline again. He needs to see the state and be able to act on it inside that window.
+
+About → offline readiness gains a row for the on-demand tier and a control that fetches whatever is
+missing, immediately, instead of waiting for an idle callback.
+
+### The row refuses to guess
+
+Two rules govern it, both learned from bugs this project already shipped.
+
+**The count comes from `caches.match`, never from what a fetch returned.** Session 212's
+dangling-closure bug cached nothing while every `response.ok` read `true`, and the warm-up cheerfully
+logged `cached 5/5`. A number derived from fetch results would have repeated that lie with a nicer
+presentation.
+
+**No active service worker means no number at all.** Without one, the manifest request bypasses the
+worker and comes from the network — so it names a *different* build's content hashes, and any count
+would describe a build this page will never load. The honest answer there is "Unknown", not "0 of 7",
+and that is precisely the state a user is in on a first visit, which is when they are most likely to
+open the panel.
+
+Every unknowable state is worded as `Unknown — …`; only a genuine, verified zero says `No — …`.
+
+### What the reviewers found before it shipped
+
+The build passed `tsc`, biome, knip and the full suite, then three adversarial reviewers went at it.
+The two worth recording:
+
+- **A duplicate download of the ~5 MiB book.** The boot path's deferred tier ran outside the in-flight
+  guard, so pressing the button could start a second concurrent download of the same handbook — both
+  feeding one progress listener, and on a tethered phone, real money.
+- **Session 212's reconnect fix was already half-dead.** The boot run latched `completed` on the
+  *assets* tier alone, so when the book tier later failed and armed `listenForReconnect()`, the retry
+  could never fire — `warmOfflineAssets()` returns immediately on `completed`. The fix worked for the
+  export chunks and silently never worked for the book. No test covered it; only reading the diff
+  adversarially found it.
+
+Also fixed before landing: a rejection path that left the control stuck disabled forever, a status
+line that could contradict the row directly above it (verdict from the fetch tally, numbers from the
+re-count), an enabled control sitting beside "connect to a network first", `aria-describedby` on a
+natively `disabled` button — unreachable by keyboard and screen reader in exactly the states it
+existed to explain — and copy that asserted a cause the code had just disproved.
+
+## Session 212 — offline durability, and two bugs only a browser could find
+
+Dann: *"TP Studio and MECE Studio do not work offline."* The report was a laptop, managed Chrome, the
+installed PWA, no network — and the browser's own **"No internet access"** page. Both apps. A third
+sibling, MindMap Studio, worked on the same machine.
+
+### The code was not broken, which is why this took evidence
+
+Mirrored the exact production bytes of all three apps, then simulated the real sequence with a
+persistent Chrome profile: first visit online, quit the browser, relaunch offline. All three served the
+shell, status 200. MindMap uses the same `registerType: 'prompt'`, the same workbox `generateSW`, the
+same GitHub Pages host — so nothing structural separated the two that failed from the one that didn't.
+Enterprise policy was ruled out by MindMap surviving (policy would wipe all three); precache size was
+ruled out by MECE being as small as MindMap.
+
+What none of the three did was tell the browser its data was worth keeping. Browser storage is
+best-effort and evicted per origin, least-recently-used first, and eviction takes Cache Storage,
+IndexedDB **and `localStorage`** together — so on this theory the two stale origins lost their saved
+diagrams at the same moment they lost the ability to open. `requestPersistentStorage()` now asks for
+persistent storage at boot; an installed PWA is normally granted it without a prompt.
+
+### The precache was 89% book
+
+Auditing the live `sw.js` and HEAD-checking every entry: **94 entries, 5.94 MiB**, of which the
+practitioner PDF (3.27 MiB) and EPUB (2.02 MiB) were **5.29 MiB**. Session 136 put them there to get
+offline-from-first-launch, sizing the PDF at "~1 MB"; it had since tripled, and the 4 MiB
+`maximumFileSizeToCacheInBytes` ceiling was high enough to let it through silently.
+
+Workbox precaching is all-or-nothing: one failed request rejects the whole `install`, the worker never
+activates, and the origin ends up with **no cache at all** — which presents as exactly the page Dann
+saw. A ~6 MiB all-or-nothing install on a flaky network is a wide failure window. The book left
+`globPatterns` for the `CacheFirst` runtime route (extended from `.pdf` to `.epub`, keeping
+`tp-studio-pdf-v1` so no existing install is orphaned) and a second, deferred warm-up tier. The ceiling
+dropped 4 MiB → 1 MiB, about 2.7× the largest remaining entry, so the next multi-MiB artifact is loud
+instead of silent. Session 136's comment is corrected in place rather than deleted — the goal was right,
+the mechanism wasn't.
+
+### Offline warm-up, and one source of truth
+
+The five on-demand vendor chunks (`jspdf`, `html2canvas`, `svg2pdf`, `pptxgen`, `MarkdownPreview`) were
+precache-excluded in Sessions 132/134/135 for a real reason — ~750 KB most visitors never touch — but
+the `CacheFirst` route only filled them *after* an online export. Offline-first users got dead features.
+`offlineWarmup.ts` now fetches them on idle after first paint (plain `fetch`, never `import()`: cache the
+bytes, don't execute 750 KB of vendor code every boot), then yields again before the book. The URL list
+comes from `offline-warmup.json`, emitted at `generateBundle` from the same constant that feeds
+`globIgnores` and the runtime-cache pattern, so the three cannot drift.
+
+### Two bugs the browser found and the gate could not
+
+Both were invisible to `tsc`, biome, knip and 5,301 unit tests, and both were caught by driving the real
+build in a real browser with the network off.
+
+**The runtime-cache route never matched anything.** workbox serialises a function `urlPattern` by
+stringifying its source into `sw.js` — the closure does not come with it. Deriving the pattern from a
+shared constant produced `ON_DEMAND_VENDOR_PATTERN.test(url.pathname)` inside the worker, a dangling
+identifier that threw `ReferenceError` on every request and matched nothing. The warm-up cheerfully
+logged `cached 5/5`, because the throw falls through to the network and `response.ok` is true. The only
+symptom was an empty cache. Fixed by passing the RegExp as a *value* (a RegExp serialises as a literal);
+`scripts/check-service-worker.mjs` is now a gate step asserting the generated worker names all five
+chunks and carries no build-time identifier.
+
+**The offline chip was mounted where it could never be seen.** It sat in the `TopBar` — but
+`startSection !== null` replaces the entire editor chrome, TopBar included, with the Start surface, and
+opening the app cold with no network lands on Start. The one moment it existed for was the one moment it
+was absent. Now mounted once at the App root, bottom-right: the toast layer is bottom-centre, `CanvasNav`
+is bottom-centre on canvas, and bottom-left carries the Start sidebar's "Local & private" card — verified
+by rendering both surfaces offline rather than by reading the CSS.
+
+### A third bug, found by asking "what if the wifi is only there for a minute?"
+
+Dann's actual working pattern is offline, a short window of connectivity, offline
+again — often without ever reloading the tab. Simulated exactly that against the
+real build: normal online visit, wipe the on-demand caches (an eviction, or the
+fresh hashes a redeploy brings), open with no network, then bring the network
+back with the page still open.
+
+```
+1. after a normal online visit, missing = 0
+2. after wiping the on-demand caches, missing = 7 of 7
+3. booted offline — app renders
+4. wifi back. navigator.onLine = true
+5. after 30s ONLINE with the page open, still missing = 7 of 7
+```
+
+The warm-up set its run-once flag *before* the `navigator.onLine` check, so a
+session that booted with no wifi marked itself warmed and bailed — and nothing
+listened for the connection coming back. The window was silently wasted and the
+next offline stint had no export chunks and no book. Only a manual reload
+recovered it, which is the one thing a user should not have to know.
+
+Now: the offline bail does not latch, a partial run (the connection dropped
+mid-warm-up — the norm on a brief window) does not latch either, and the retry is
+armed on two triggers. `online` covers the clean transition. `visibilitychange`
+covers the one it cannot see: `navigator.onLine` only means "there is a link", so
+a laptop joined to a wifi with no working internet already reads as online and no
+`online` event ever fires when real connectivity arrives. Re-opening the lid is
+when the user expects it to catch up, so that is the second prompt. Same
+scenario after the fix: `still missing = 0 of 7`.
+
+The readiness check had a matching flaw: its whole result was memoised, so a boot
+with no network resolved `repair-deferred` and handed that verdict back for the
+rest of the page's life — the repair could never happen on a later reconnect, and
+the About panel could never show it. The reading now re-evaluates on every call
+(counting caches is cheap); only `registration.update()` stays once-per-session,
+which is what stops a broken origin from spinning.
+
+### The rest
+
+- **Self-heal.** `offlineReadiness.ts` counts the real precache at boot and, on the exact damage
+  signature (an *active* worker over a precache below the healthy floor, while online), drives one
+  `registration.update()` — once per session, never in a loop.
+- **About → offline readiness.** Four rows: worker state, precache entries, storage persisted, cached
+  size. So the next report is "the precache is at 0 and storage is not persisted" instead of "it says no
+  internet".
+- **`e2e/offline.spec.ts`.** Goes offline, reloads, asserts the app renders, the chip appears, and that
+  **every** emitted chunk resolves from cache — derived from `dist/assets` so a newly-excluded chunk
+  fails by name.
+- `log.info` added to `src/services/logger.ts`, which previously had only `warn`/`error`.
+
+Measured after: precache **95 entries, 2.05 MiB raw** (the book gone, `offline-warmup.json` and the stats
+JSON added), offline reload 200, **0 of 80 chunks missing**, book still readable offline from the runtime
+cache.
+
 ## Session 211 — consolidating the project's memory
 
 Dann: *"consolidate memory and prune and clean-up."* The project's memory is four hand-maintained files
