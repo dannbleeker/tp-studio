@@ -191,3 +191,64 @@ describe('scheduleOfflineWarmup', () => {
     expect(fetchMock).toHaveBeenCalled();
   });
 });
+
+describe('warmOfflineAssets — a short window of wifi', () => {
+  // The scenario these pin: a laptop opened with no wifi, given a brief
+  // connection, and closed again without the tab ever being reloaded. An
+  // earlier version latched its run-once flag *before* the offline check, so
+  // that window was silently wasted and the next offline stint had no export
+  // chunks and no book.
+  it('tops up when the connection returns, without a reload', async () => {
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+    setNavigator('onLine', false);
+
+    await warmOfflineAssets();
+    expect(fetchMock, 'nothing is fetched while offline').not.toHaveBeenCalled();
+
+    setNavigator('onLine', true);
+    window.dispatchEvent(new Event('online'));
+    // The listener kicks off an async run; the suite uses fake timers, so flush
+    // the microtask queue rather than waiting on wall-clock.
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('offline-warmup.json'));
+    for (const asset of MANIFEST.assets) {
+      expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining(asset));
+    }
+  });
+
+  it('does not re-warm once a clean run has happened', async () => {
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await warmOfflineAssets();
+    const afterFirst = fetchMock.mock.calls.length;
+
+    window.dispatchEvent(new Event('online'));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(fetchMock.mock.calls.length).toBe(afterFirst);
+  });
+
+  it('finishes the job when the connection drops mid-warm-up', async () => {
+    // One asset fails, so the run is partial — it must not latch, and the
+    // reconnect must pick up the remainder.
+    let failNext = true;
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      if (String(input).endsWith('offline-warmup.json')) return Promise.resolve(okJson(MANIFEST));
+      if (failNext) {
+        failNext = false;
+        return Promise.reject(new Error('network lost'));
+      }
+      return Promise.resolve(ok());
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await warmOfflineAssets();
+    const afterPartial = fetchMock.mock.calls.length;
+
+    window.dispatchEvent(new Event('online'));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(afterPartial);
+  });
+});

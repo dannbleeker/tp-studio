@@ -45,7 +45,13 @@ import { runWhenIdle } from './idle';
 /** Emitted into `dist/` by the `offline-warmup-manifest` plugin in `vite.config.ts`. */
 const MANIFEST_FILE = 'offline-warmup.json';
 
-let started = false;
+// `completed` latches only a run that actually warmed something. A run that
+// bailed for want of a network must NOT latch, or a laptop opened with no wifi
+// stays un-warmed for the rest of the session — which is exactly the case this
+// whole module exists to serve.
+let completed = false;
+let running = false;
+let listeningForReconnect = false;
 
 function resolveUrl(pathname: string): string {
   // Manifest entries are build-relative (`assets/jspdf-<hash>.js`), so
@@ -62,9 +68,40 @@ function stringsAt(value: unknown, key: string): string[] {
   return list.filter((entry): entry is string => typeof entry === 'string');
 }
 
-/** Fetch each URL in order, counting successes. Never throws. */
-async function warmTier(label: string, urls: readonly string[]): Promise<void> {
-  if (urls.length === 0) return;
+/**
+ * Try again when the connection plausibly came back.
+ *
+ * The scenario is a laptop that opens with no wifi, gets a short window of it,
+ * and is closed again — with the tab never reloaded in between. Without this
+ * the warm-up only ever runs at boot, so that window is wasted and the next
+ * offline stint has no export chunks and no book.
+ *
+ * Two triggers, because one is not enough:
+ *
+ *   - `online` fires on the transition, which is the clean case.
+ *   - `visibilitychange` covers the case `online` cannot see. `navigator.onLine`
+ *     only means "there is a link", so a laptop joined to a wifi with no working
+ *     internet already reads as online; when real connectivity arrives, no
+ *     `online` event fires at all. Re-opening the lid or coming back to the tab
+ *     is the moment the user would expect it to catch up, so that is used as the
+ *     second prompt. It costs a `fetch` of a small JSON when there is nothing to
+ *     do, and only until a clean run latches.
+ */
+function listenForReconnect(): void {
+  if (listeningForReconnect || typeof window === 'undefined') return;
+  listeningForReconnect = true;
+  const retry = (): void => {
+    void warmOfflineAssets();
+  };
+  window.addEventListener('online', retry);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') retry();
+  });
+}
+
+/** Fetch each URL in order. Returns how many failed. Never throws. */
+async function warmTier(label: string, urls: readonly string[]): Promise<number> {
+  if (urls.length === 0) return 0;
   // Sequential on purpose: this is background work competing with the
   // user's own requests, and parallel multi-MB downloads on a slow
   // connection would be felt.
@@ -81,6 +118,7 @@ async function warmTier(label: string, urls: readonly string[]): Promise<void> {
     }
   }
   log.info(`Offline warm-up: cached ${warmed}/${urls.length} ${label}`);
+  return urls.length - warmed;
 }
 
 /**
@@ -89,44 +127,67 @@ async function warmTier(label: string, urls: readonly string[]): Promise<void> {
  * redeploy that swapped the hashes mid-session) is a no-op.
  */
 export async function warmOfflineAssets(): Promise<void> {
-  if (started) return;
-  started = true;
+  if (completed || running) return;
 
-  // Nothing to warm *from* with no network, and nowhere to warm *into*
-  // without a service worker. In both cases the fetches would be pure
-  // waste, so bail before spending them.
+  // No network to warm *from*. Deliberately does not latch `completed`: this is
+  // a "not yet", not a "never", and the reconnect listener is what turns a short
+  // wifi window into a topped-up cache.
   if (navigator.onLine === false) {
-    log.info('Offline warm-up: skipped, browser reports offline');
+    listenForReconnect();
+    log.info('Offline warm-up: no network yet — will retry when the connection returns');
     return;
   }
+  // Nowhere to warm *into*. This one really is permanent, so it latches.
   if (!('serviceWorker' in navigator)) {
+    completed = true;
     log.info('Offline warm-up: skipped, no service worker support');
     return;
   }
 
-  let manifest: unknown;
+  running = true;
   try {
-    const response = await fetch(resolveUrl(MANIFEST_FILE));
-    if (!response.ok) {
-      log.info(`Offline warm-up: manifest unavailable (${response.status})`);
+    let manifest: unknown;
+    try {
+      const response = await fetch(resolveUrl(MANIFEST_FILE));
+      if (!response.ok) {
+        // A redeploy can swap the manifest mid-flight; the network can also drop
+        // between the `onLine` check and here. Both are worth another attempt.
+        listenForReconnect();
+        log.info(`Offline warm-up: manifest unavailable (${response.status})`);
+        return;
+      }
+      manifest = await response.json();
+    } catch (err) {
+      listenForReconnect();
+      log.info('Offline warm-up: manifest fetch failed', err);
       return;
     }
-    manifest = await response.json();
-  } catch (err) {
-    log.info('Offline warm-up: manifest fetch failed', err);
-    return;
+
+    const failed = await warmTier('on-demand chunks', stringsAt(manifest, 'assets'));
+
+    const deferred = stringsAt(manifest, 'deferred');
+    if (deferred.length > 0) {
+      // Yield back to the browser before the heavy tier. The chunks above
+      // unlock features; the book is ~5 MiB of reading material, and it has
+      // no business sharing a slice with them.
+      runWhenIdle(() => {
+        void warmTier('deferred documents', deferred).then((missed) => {
+          // The network can vanish mid-book. Arm the retry rather than leaving
+          // the reader half-cached with no second chance.
+          if (missed > 0) listenForReconnect();
+        });
+      });
+    }
+
+    // Only a clean sweep latches. A partial one — the connection dropped
+    // mid-warm-up, which is the norm on a brief wifi window — must be allowed
+    // to finish itself when the network returns. Re-running is cheap: the
+    // `CacheFirst` route serves whatever already landed.
+    completed = failed === 0;
+    if (failed > 0) listenForReconnect();
+  } finally {
+    running = false;
   }
-
-  await warmTier('on-demand chunks', stringsAt(manifest, 'assets'));
-
-  const deferred = stringsAt(manifest, 'deferred');
-  if (deferred.length === 0) return;
-  // Yield back to the browser before the heavy tier. The chunks above
-  // unlock features; the book is ~5 MiB of reading material, and it has
-  // no business sharing a slice with them.
-  runWhenIdle(() => {
-    void warmTier('deferred documents', deferred);
-  });
 }
 
 /** Run the warm-up once the browser reports an idle moment. */
@@ -136,7 +197,9 @@ export function scheduleOfflineWarmup(): void {
   });
 }
 
-/** Test-only: clear the run-once guard so each case starts cold. */
+/** Test-only: clear the run-once guards so each case starts cold. */
 export function __resetOfflineWarmupForTest(): void {
-  started = false;
+  completed = false;
+  running = false;
+  listeningForReconnect = false;
 }

@@ -79,11 +79,17 @@ export type OfflineReadiness = {
 };
 
 /**
- * Memoised so the check — and any repair it triggers — happens at most
- * once per page load. A genuinely broken origin must report once and stop,
- * not spin.
+ * Guards the *repair*, not the *reading*.
+ *
+ * An earlier version memoised the whole result, which quietly broke the case
+ * this module cares most about: a session that boots with no network resolves
+ * `repair-deferred`, and a memo would hand that same verdict back for the rest
+ * of the page's life — so a later reconnect, or the About panel re-reading the
+ * state, could never see the repair happen. Counting caches is cheap, so the
+ * read re-evaluates every time; only `registration.update()` is once-per-session,
+ * which is what stops a genuinely broken origin from spinning.
  */
-let readiness: Promise<OfflineReadiness> | null = null;
+let repairAttempted = false;
 
 /** Never throws: an unavailable or rejecting registration reads as "none". */
 async function getRegistration(): Promise<ServiceWorkerRegistration | undefined> {
@@ -172,6 +178,13 @@ async function evaluate(): Promise<OfflineReadiness> {
     return { ...base, precachedEntries, action: 'repair-deferred' };
   }
 
+  // Asked once already this session — report it without re-asking, so a caller
+  // that polls (the About panel) cannot turn a broken origin into a retry loop.
+  if (repairAttempted) {
+    return { ...base, precachedEntries, action: 'repair-requested' };
+  }
+
+  repairAttempted = true;
   try {
     await registration.update();
     log.info(
@@ -185,12 +198,12 @@ async function evaluate(): Promise<OfflineReadiness> {
 }
 
 /**
- * Inspect offline readiness, repairing an empty precache if that is what
- * we find. Runs at most once per page load; never throws.
+ * Inspect offline readiness, repairing an empty precache if that is what we
+ * find. Safe to call repeatedly — the reading is fresh each time, the repair
+ * happens at most once per page load. Never throws.
  */
 export function checkOfflineReadiness(): Promise<OfflineReadiness> {
-  readiness ??= evaluate();
-  return readiness;
+  return evaluate();
 }
 
 /** Run the readiness check once the browser reports an idle moment. */
@@ -202,7 +215,7 @@ export function scheduleOfflineReadinessCheck(): void {
   });
 }
 
-/** Test-only: clear the memoised result so each case starts cold. */
+/** Test-only: clear the repair guard so each case starts cold. */
 export function __resetOfflineReadinessForTest(): void {
-  readiness = null;
+  repairAttempted = false;
 }

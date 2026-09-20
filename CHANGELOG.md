@@ -73,6 +73,44 @@ was absent. Now mounted once at the App root, bottom-right: the toast layer is b
 is bottom-centre on canvas, and bottom-left carries the Start sidebar's "Local & private" card — verified
 by rendering both surfaces offline rather than by reading the CSS.
 
+### A third bug, found by asking "what if the wifi is only there for a minute?"
+
+Dann's actual working pattern is offline, a short window of connectivity, offline
+again — often without ever reloading the tab. Simulated exactly that against the
+real build: normal online visit, wipe the on-demand caches (an eviction, or the
+fresh hashes a redeploy brings), open with no network, then bring the network
+back with the page still open.
+
+```
+1. after a normal online visit, missing = 0
+2. after wiping the on-demand caches, missing = 7 of 7
+3. booted offline — app renders
+4. wifi back. navigator.onLine = true
+5. after 30s ONLINE with the page open, still missing = 7 of 7
+```
+
+The warm-up set its run-once flag *before* the `navigator.onLine` check, so a
+session that booted with no wifi marked itself warmed and bailed — and nothing
+listened for the connection coming back. The window was silently wasted and the
+next offline stint had no export chunks and no book. Only a manual reload
+recovered it, which is the one thing a user should not have to know.
+
+Now: the offline bail does not latch, a partial run (the connection dropped
+mid-warm-up — the norm on a brief window) does not latch either, and the retry is
+armed on two triggers. `online` covers the clean transition. `visibilitychange`
+covers the one it cannot see: `navigator.onLine` only means "there is a link", so
+a laptop joined to a wifi with no working internet already reads as online and no
+`online` event ever fires when real connectivity arrives. Re-opening the lid is
+when the user expects it to catch up, so that is the second prompt. Same
+scenario after the fix: `still missing = 0 of 7`.
+
+The readiness check had a matching flaw: its whole result was memoised, so a boot
+with no network resolved `repair-deferred` and handed that verdict back for the
+rest of the page's life — the repair could never happen on a later reconnect, and
+the About panel could never show it. The reading now re-evaluates on every call
+(counting caches is cheap); only `registration.update()` stays once-per-session,
+which is what stops a broken origin from spinning.
+
 ### The rest
 
 - **Self-heal.** `offlineReadiness.ts` counts the real precache at boot and, on the exact damage
