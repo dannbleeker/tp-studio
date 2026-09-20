@@ -43,6 +43,7 @@ export type TopUpPhase =
   | { kind: 'unavailable' }
   /** Offline or no worker by the time the run actually started. */
   | { kind: 'blocked' }
+  | { kind: 'uncontrolled' }
   /** Something rejected. Terminal, because a stuck `preparing` disables the button forever. */
   | { kind: 'failed' };
 
@@ -80,6 +81,12 @@ function mapCount(count: OfflineExtrasCount): OfflineExtrasState {
 function settle(outcome: OfflineTopUpOutcome, count: OfflineExtrasCount): TopUpPhase {
   // The one thing the count genuinely cannot say: there was no run at all.
   if (outcome.status === 'offline' || outcome.status === 'unsupported') return { kind: 'blocked' };
+  // A worker can be *registered and active* while not serving THIS tab — with no
+  // `clientsClaim`, a first load never gets claimed. Nothing can be cached from
+  // such a page, so the press really did nothing; saying "nothing was cached,
+  // try again" would send the user round the same loop forever. A reload is what
+  // hands the page over, so that is what the copy asks for.
+  if (outcome.status === 'uncontrolled') return { kind: 'uncontrolled' };
   switch (count.status) {
     case 'counted':
       if (count.cached === count.total) return { kind: 'done' };

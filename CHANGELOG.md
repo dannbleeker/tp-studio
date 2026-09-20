@@ -5,6 +5,56 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 214 — the same bug class, a third time: 6.4 MiB downloaded into the void
+
+An adversarial bug hunt over the offline surface found what two rounds of review and 5,350 tests had
+not. Measured against the real build, on a first load with no reload:
+
+```
+controller on first load  = false
+cache names               = ["workbox-precache-v2-…"]     ← no runtime caches at all
+on-demand assets CACHED   = 0 of 7
+bytes actually downloaded = 6.36 MiB over 7 requests
+```
+
+`run()` asked whether the Service Worker *API* existed. It never asked whether a worker was serving
+*this page*. With `registerType: 'prompt'` there is no `clientsClaim` (`grep -c clientsClaim dist/sw.js`
+→ 0), so a first load installs the worker without it ever controlling that document. Every warm-up
+fetch then bypassed the worker, the runtime-cache routes never ran, and nothing was stored — while
+every response read `ok`, so the run logged a clean sweep and latched `completed`. Nothing listened for
+`controllerchange`, so the session never retried.
+
+For a managed profile that clears site data on exit — the exact situation this whole arc was written
+for — **every launch** is a first load. That is 6.36 MiB downloaded and discarded, daily, on a tether,
+caching nothing.
+
+### Why the harness missed it
+
+Every offline test in this repo, including `e2e/offline.spec.ts` and the reconnect probe written last
+session, calls a helper that reloads until the page is controlled *before* asserting anything. That
+helper exists for a good reason — offline only works on a controlled page — but it meant the
+uncontrolled first load, the most common state of all, was never exercised. The tests were not wrong;
+their setup quietly excluded the failure.
+
+### The structural fix
+
+Three changes, the third being the one that matters:
+
+1. `run()` now gates on `navigator.serviceWorker.controller !== null` and treats "no controller" like
+   the offline case — a "not yet", never latched.
+2. `listenForReconnect()` also listens for `controllerchange`. On a first load that is the *only*
+   trigger that will ever fire: the network never dropped and the tab never hid.
+3. **`warmTier` no longer counts `response.ok` as success.** It reads the URL back out of Cache Storage
+   and counts a file as warmed only if it is actually there.
+
+Point 3 closes the class rather than the instance. This is the *third* defect in two sessions built on
+the same false premise — a stringified `urlPattern` closure that threw so nothing matched, a warm-up on
+an uncontrolled page, and both reported success. A fetch resolving `ok` says the server answered. It
+says nothing about whether anything was stored, and the only honest signal is reading the cache back.
+
+After: `0.00 MiB` fetched on an uncontrolled first load, still `0 of 7` cached — which is now the
+correct outcome rather than a lie — and the controlled path still reaches `0 of 7 missing`.
+
 ## Session 213 — answering "am I ready for the flight?" from the UI
 
 Session 212 made offline access durable but left one question unanswerable from inside the app: are

@@ -585,6 +585,7 @@ export const en = {
       topUpUnavailable: 'Download list unavailable — retry.',
       topUpFailed: 'The download did not finish.',
       topUpBlocked: 'No connection when it started.',
+      topUpUncontrolled: 'Reload the page first, then download.',
       // Reasons a press is unavailable. "Connect to a network" rather than
       // "when you have signal": most of this app's users are on a desktop.
       topUpNeedsNetwork: 'Connect to a network to download.',

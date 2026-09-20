@@ -64,7 +64,14 @@ const announced = (container: HTMLElement) =>
 const visibleStatus = (container: HTMLElement) => container.querySelector('p')?.textContent ?? '';
 
 const activeWorker = () =>
-  defineNavigator('serviceWorker', { getRegistration: () => Promise.resolve({ active: {} }) });
+  defineNavigator('serviceWorker', {
+    getRegistration: () => Promise.resolve({ active: {} }),
+    // Registered AND serving this page — without a controller the warm-up
+    // correctly refuses to download, which is a different case with its own test.
+    controller: {},
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  });
 
 /** Serves the build manifest, then a 200 for everything it names. */
 const manifestFetch = (manifest: unknown = MANIFEST) =>

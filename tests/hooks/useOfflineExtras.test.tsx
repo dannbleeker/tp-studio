@@ -53,8 +53,15 @@ function gate() {
 beforeEach(() => {
   __resetOfflineWarmupForTest();
   Object.defineProperty(navigator, 'onLine', { value: true, configurable: true, writable: true });
+  // A CONTROLLING worker: the warm-up refuses to spend bytes on a page no worker
+  // serves, which is its own describe block in the service tests. These cases
+  // exercise the path where downloading can actually cache something.
   Object.defineProperty(navigator, 'serviceWorker', {
-    value: {},
+    value: {
+      controller: {},
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    },
     configurable: true,
     writable: true,
   });

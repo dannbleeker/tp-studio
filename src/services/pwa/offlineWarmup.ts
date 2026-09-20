@@ -89,6 +89,7 @@ export interface OfflineTopUpProgress {
 export type OfflineTopUpOutcome =
   | { status: 'offline' }
   | { status: 'unsupported' }
+  | { status: 'uncontrolled' }
   | { status: 'unavailable' }
   | { status: 'ran'; attempted: number; missed: number };
 
@@ -124,6 +125,7 @@ let bookTier: { urls: readonly string[]; run: Promise<number> | null } | null = 
 // previous case's listener.
 let onlineHandler: (() => void) | null = null;
 let visibilityHandler: (() => void) | null = null;
+let controllerHandler: (() => void) | null = null;
 
 const progressListeners = new Set<(progress: OfflineTopUpProgress) => void>();
 
@@ -222,6 +224,35 @@ function listenForReconnect(): void {
   };
   window.addEventListener('online', onlineHandler);
   document.addEventListener('visibilitychange', visibilityHandler);
+  // The moment a worker takes over this page is the moment warming can succeed
+  // at all — and on a first load it is the ONLY trigger that will ever fire,
+  // because the network never dropped and the tab never hid.
+  // Probed rather than assumed: `serviceWorker` can be present without the full
+  // EventTarget surface in restricted embeddings, and an exception here would
+  // take down the retry path that the caller is relying on.
+  if (
+    'serviceWorker' in navigator &&
+    typeof navigator.serviceWorker?.addEventListener === 'function'
+  ) {
+    controllerHandler = (): void => {
+      void warmOfflineAssets();
+    };
+    navigator.serviceWorker.addEventListener('controllerchange', controllerHandler);
+  }
+}
+
+/**
+ * Did the bytes actually land in Cache Storage? Never throws — a browser that
+ * withholds `caches` reports "no", which costs a retry rather than a false
+ * success.
+ */
+async function isCached(url: string): Promise<boolean> {
+  if (typeof caches === 'undefined') return false;
+  try {
+    return (await caches.match(url, { ignoreSearch: true })) !== undefined;
+  } catch {
+    return false;
+  }
 }
 
 /** Fetch each URL in order. Returns how many failed. Never throws. */
@@ -237,9 +268,21 @@ async function warmTier(
   let warmed = 0;
   for (const [index, url] of urls.entries()) {
     try {
-      const response = await fetch(resolveUrl(url));
-      if (response.ok) warmed += 1;
-      else log.warn(`Offline warm-up: ${url} returned ${response.status}`);
+      const resolved = resolveUrl(url);
+      const response = await fetch(resolved);
+      if (!response.ok) {
+        log.warn(`Offline warm-up: ${url} returned ${response.status}`);
+      } else if (await isCached(resolved)) {
+        warmed += 1;
+      } else {
+        // `response.ok` is NOT proof of caching, and treating it as such has
+        // caused three separate defects here: a runtime-cache route whose
+        // stringified closure threw so nothing ever matched, and a warm-up
+        // running on a page no worker controlled. Both reported a clean sweep
+        // while Cache Storage stayed empty. The only honest success signal is
+        // reading the cache back, so that is what counts.
+        log.warn(`Offline warm-up: ${url} fetched but did not reach Cache Storage`);
+      }
     } catch (err) {
       // A redeploy between manifest and asset fetch, or the network
       // dropping mid-warm-up. Neither is worth failing the boot over.
@@ -291,6 +334,19 @@ async function run(forced: boolean): Promise<OfflineTopUpOutcome> {
     completed = true;
     log.info('Offline warm-up: skipped, no service worker support');
     return { status: 'unsupported' };
+  }
+
+  // A worker that EXISTS is not a worker that is SERVING THIS PAGE. With
+  // `registerType: 'prompt'` there is no `clientsClaim`, so a first load — and
+  // every load on a profile that clears site data on exit — installs the worker
+  // without it ever controlling that document. Fetches then bypass the worker,
+  // the runtime-cache routes never run, and nothing is stored: measured at
+  // 6.36 MiB downloaded and discarded, with every response reading `ok`.
+  // Treated like the offline case — a "not yet", never latched.
+  if (!navigator.serviceWorker.controller) {
+    listenForReconnect();
+    log.info('Offline warm-up: no worker is serving this page yet — deferred');
+    return { status: 'uncontrolled' };
   }
 
   const manifest = await loadManifest();
@@ -493,9 +549,13 @@ export function __resetOfflineWarmupForTest(): void {
   if (typeof window !== 'undefined') {
     if (onlineHandler) window.removeEventListener('online', onlineHandler);
     if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
+    if (controllerHandler && typeof navigator.serviceWorker?.removeEventListener === 'function') {
+      navigator.serviceWorker.removeEventListener('controllerchange', controllerHandler);
+    }
   }
   onlineHandler = null;
   visibilityHandler = null;
+  controllerHandler = null;
   completed = false;
   inFlight = null;
   bookTier = null;

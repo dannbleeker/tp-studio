@@ -211,6 +211,8 @@ function resultLine(topUp: TopUpPhase, extras: OfflineExtrasState, o: OfflineMes
       return sameLine(o.topUpUnavailable);
     case 'failed':
       return sameLine(o.topUpFailed);
+    case 'uncontrolled':
+      return sameLine(o.topUpUncontrolled);
     case 'blocked':
       return sameLine(o.topUpBlocked);
     default:

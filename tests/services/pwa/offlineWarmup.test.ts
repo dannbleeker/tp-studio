@@ -57,7 +57,20 @@ function gate() {
 beforeEach(() => {
   __resetOfflineWarmupForTest();
   setNavigator('onLine', true);
-  setNavigator('serviceWorker', {});
+  // A controller, because that is the state in which warming can actually work.
+  // The uncontrolled case is its own describe block below — it was a real,
+  // measured bug and needs to be asked for explicitly, never be the default.
+  setNavigator('serviceWorker', {
+    controller: {},
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  });
+  // jsdom has no Cache Storage, and the warm-up now counts a file as warmed only
+  // when it can read it back — so without this the default harness would model a
+  // browser that stores nothing, and every "runs once" assertion would see the
+  // (correct) retry behaviour instead. A cache that reports a hit is the normal
+  // case; the miss is asserted explicitly below.
+  vi.stubGlobal('caches', { match: async () => ({}) as unknown as Response });
   vi.useFakeTimers();
 });
 
@@ -491,8 +504,10 @@ describe('countCachedOfflineExtras', () => {
   };
 
   it('reports "unreadable" rather than zero when Cache Storage is absent', async () => {
-    // jsdom ships no `caches` at all, which is also the locked-down-profile
-    // case. "We could not look" must never be reported as "nothing is cached".
+    // The locked-down-profile case: "we could not look" must never be reported
+    // as "nothing is cached". The shared harness stubs a working `caches`, so
+    // this case has to take it away again deliberately.
+    vi.stubGlobal('caches', undefined);
     vi.stubGlobal('fetch', fetchStub());
     expect(await countCachedOfflineExtras()).toEqual({ status: 'unreadable' });
   });
@@ -572,5 +587,75 @@ describe('countCachedOfflineExtras', () => {
     vi.stubGlobal('caches', { match: () => Promise.reject(new Error('site data blocked')) });
 
     expect(await countCachedOfflineExtras()).toEqual({ status: 'unreadable' });
+  });
+});
+
+describe('warmOfflineAssets — a worker that exists but is not serving this page', () => {
+  // The defect these pin, measured against the real build: on a first load
+  // `registerType: 'prompt'` installs a worker that never claims the document,
+  // so every fetch bypassed it and 6.36 MiB was downloaded into nothing — while
+  // each response read `ok`, so the run logged a clean sweep and latched.
+  // Every other offline test in this repo reloads until the page is controlled
+  // before asserting, which is exactly why none of them could see this.
+  it('fetches nothing at all when no worker controls the page', async () => {
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+    setNavigator('serviceWorker', { controller: null, addEventListener: () => undefined });
+
+    await warmOfflineAssets();
+
+    expect(fetchMock, 'not one byte may be spent with nowhere to put it').not.toHaveBeenCalled();
+  });
+
+  it('warms as soon as a worker takes over the page', async () => {
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+    // Collected into an array rather than a `let`: a variable only ever assigned
+    // inside a callback narrows to `never` at the call site.
+    const controllerListeners: Array<() => void> = [];
+    setNavigator('serviceWorker', {
+      controller: null,
+      addEventListener: (type: string, handler: () => void) => {
+        if (type === 'controllerchange') controllerListeners.push(handler);
+      },
+      removeEventListener: () => undefined,
+    });
+
+    await warmOfflineAssets();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(controllerListeners, 'a controllerchange retry must be armed').toHaveLength(1);
+
+    // The worker claims the page — on a first load this is the ONLY trigger that
+    // ever fires, since the network never dropped and the tab never hid.
+    setNavigator('serviceWorker', {
+      controller: {},
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    });
+    controllerListeners[0]?.();
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('offline-warmup.json'));
+  });
+
+  it('does not count a fetch that never reached Cache Storage', async () => {
+    // The premise behind three separate defects now: `response.ok` means the
+    // server answered, not that anything was stored. A cache that reports a miss
+    // for everything must leave the run un-latched so a retry can still happen.
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('caches', { match: async () => undefined });
+
+    await warmOfflineAssets();
+    const afterFirst = fetchMock.mock.calls.length;
+    expect(afterFirst).toBeGreaterThan(0);
+
+    window.dispatchEvent(new Event('online'));
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(
+      fetchMock.mock.calls.length,
+      'a run that cached nothing must not latch as complete'
+    ).toBeGreaterThan(afterFirst);
   });
 });
