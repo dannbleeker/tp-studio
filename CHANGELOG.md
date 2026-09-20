@@ -5,6 +5,91 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 212 — offline durability, and two bugs only a browser could find
+
+Dann: *"TP Studio and MECE Studio do not work offline."* The report was a laptop, managed Chrome, the
+installed PWA, no network — and the browser's own **"No internet access"** page. Both apps. A third
+sibling, MindMap Studio, worked on the same machine.
+
+### The code was not broken, which is why this took evidence
+
+Mirrored the exact production bytes of all three apps, then simulated the real sequence with a
+persistent Chrome profile: first visit online, quit the browser, relaunch offline. All three served the
+shell, status 200. MindMap uses the same `registerType: 'prompt'`, the same workbox `generateSW`, the
+same GitHub Pages host — so nothing structural separated the two that failed from the one that didn't.
+Enterprise policy was ruled out by MindMap surviving (policy would wipe all three); precache size was
+ruled out by MECE being as small as MindMap.
+
+What none of the three did was tell the browser its data was worth keeping. Browser storage is
+best-effort and evicted per origin, least-recently-used first, and eviction takes Cache Storage,
+IndexedDB **and `localStorage`** together — so on this theory the two stale origins lost their saved
+diagrams at the same moment they lost the ability to open. `requestPersistentStorage()` now asks for
+persistent storage at boot; an installed PWA is normally granted it without a prompt.
+
+### The precache was 89% book
+
+Auditing the live `sw.js` and HEAD-checking every entry: **94 entries, 5.94 MiB**, of which the
+practitioner PDF (3.27 MiB) and EPUB (2.02 MiB) were **5.29 MiB**. Session 136 put them there to get
+offline-from-first-launch, sizing the PDF at "~1 MB"; it had since tripled, and the 4 MiB
+`maximumFileSizeToCacheInBytes` ceiling was high enough to let it through silently.
+
+Workbox precaching is all-or-nothing: one failed request rejects the whole `install`, the worker never
+activates, and the origin ends up with **no cache at all** — which presents as exactly the page Dann
+saw. A ~6 MiB all-or-nothing install on a flaky network is a wide failure window. The book left
+`globPatterns` for the `CacheFirst` runtime route (extended from `.pdf` to `.epub`, keeping
+`tp-studio-pdf-v1` so no existing install is orphaned) and a second, deferred warm-up tier. The ceiling
+dropped 4 MiB → 1 MiB, about 2.7× the largest remaining entry, so the next multi-MiB artifact is loud
+instead of silent. Session 136's comment is corrected in place rather than deleted — the goal was right,
+the mechanism wasn't.
+
+### Offline warm-up, and one source of truth
+
+The five on-demand vendor chunks (`jspdf`, `html2canvas`, `svg2pdf`, `pptxgen`, `MarkdownPreview`) were
+precache-excluded in Sessions 132/134/135 for a real reason — ~750 KB most visitors never touch — but
+the `CacheFirst` route only filled them *after* an online export. Offline-first users got dead features.
+`offlineWarmup.ts` now fetches them on idle after first paint (plain `fetch`, never `import()`: cache the
+bytes, don't execute 750 KB of vendor code every boot), then yields again before the book. The URL list
+comes from `offline-warmup.json`, emitted at `generateBundle` from the same constant that feeds
+`globIgnores` and the runtime-cache pattern, so the three cannot drift.
+
+### Two bugs the browser found and the gate could not
+
+Both were invisible to `tsc`, biome, knip and 5,301 unit tests, and both were caught by driving the real
+build in a real browser with the network off.
+
+**The runtime-cache route never matched anything.** workbox serialises a function `urlPattern` by
+stringifying its source into `sw.js` — the closure does not come with it. Deriving the pattern from a
+shared constant produced `ON_DEMAND_VENDOR_PATTERN.test(url.pathname)` inside the worker, a dangling
+identifier that threw `ReferenceError` on every request and matched nothing. The warm-up cheerfully
+logged `cached 5/5`, because the throw falls through to the network and `response.ok` is true. The only
+symptom was an empty cache. Fixed by passing the RegExp as a *value* (a RegExp serialises as a literal);
+`scripts/check-service-worker.mjs` is now a gate step asserting the generated worker names all five
+chunks and carries no build-time identifier.
+
+**The offline chip was mounted where it could never be seen.** It sat in the `TopBar` — but
+`startSection !== null` replaces the entire editor chrome, TopBar included, with the Start surface, and
+opening the app cold with no network lands on Start. The one moment it existed for was the one moment it
+was absent. Now mounted once at the App root, bottom-right: the toast layer is bottom-centre, `CanvasNav`
+is bottom-centre on canvas, and bottom-left carries the Start sidebar's "Local & private" card — verified
+by rendering both surfaces offline rather than by reading the CSS.
+
+### The rest
+
+- **Self-heal.** `offlineReadiness.ts` counts the real precache at boot and, on the exact damage
+  signature (an *active* worker over a precache below the healthy floor, while online), drives one
+  `registration.update()` — once per session, never in a loop.
+- **About → offline readiness.** Four rows: worker state, precache entries, storage persisted, cached
+  size. So the next report is "the precache is at 0 and storage is not persisted" instead of "it says no
+  internet".
+- **`e2e/offline.spec.ts`.** Goes offline, reloads, asserts the app renders, the chip appears, and that
+  **every** emitted chunk resolves from cache — derived from `dist/assets` so a newly-excluded chunk
+  fails by name.
+- `log.info` added to `src/services/logger.ts`, which previously had only `warn`/`error`.
+
+Measured after: precache **95 entries, 2.05 MiB raw** (the book gone, `offline-warmup.json` and the stats
+JSON added), offline reload 200, **0 of 80 chunks missing**, book still readable offline from the runtime
+cache.
+
 ## Session 211 — consolidating the project's memory
 
 Dann: *"consolidate memory and prune and clean-up."* The project's memory is four hand-maintained files

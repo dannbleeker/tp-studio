@@ -56,6 +56,13 @@ const steps = [
   },
   { label: 'build', argv: ['./node_modules/vite/bin/vite.js', 'build'], fast: false },
   {
+    label: 'service-worker',
+    argv: ['./scripts/check-service-worker.mjs'],
+    fast: false,
+    fixHint:
+      'the generated sw.js lost a runtime-cache route — a function urlPattern was stringified without its closure',
+  },
+  {
     label: 'bundle-size',
     argv: ['./scripts/check-bundle-size.mjs'],
     fast: false,

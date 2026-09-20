@@ -498,6 +498,34 @@ export const en = {
       `© ${p.years} Dann Bleeker Pedersen. "Flying Logic" is a trademark of its owner. See`,
     noticesLinkText: 'third-party notices',
     copyrightTail: 'for full attribution.',
+
+    /**
+     * Offline-readiness diagnostics. Deliberately matter-of-fact: this row is
+     * evidence a user can screenshot when "no internet access" turns out to be
+     * the browser's error page rather than the app's, so it names the raw
+     * state instead of interpreting it.
+     */
+    offline: {
+      heading: 'Offline readiness',
+      checking: 'Checking…',
+      serviceWorker: 'Service worker',
+      swActive: 'Active',
+      swWaiting: 'Waiting for refresh',
+      swUnregistered: 'Not registered',
+      swUnsupported: 'Not supported in this browser',
+      ready: 'Offline ready',
+      readyYes: (p: { count: number }) =>
+        `Yes — ${p.count} ${plural(BCP47, p.count, { one: 'file', other: 'files' })} precached`,
+      readyNo: 'No — the precache is empty',
+      readyUnknown: 'Unknown — cache storage is unreadable',
+      persisted: 'Storage persisted',
+      persistedYes: 'Yes',
+      persistedNo: 'No — the browser may evict this data',
+      persistedUnknown: 'Not reported by this browser',
+      cachedSize: 'Cached size',
+      cachedSizeUnknown: 'Not reported by this browser',
+      bytes: (p: { mb: string }) => `${p.mb} MB`,
+    },
   },
 
   /** The "New diagram" / "Load example" picker. */
@@ -630,6 +658,15 @@ export const en = {
     methodPathBranchSeparator: '+',
     hideMethodPathTitle: 'Hide the method path — reopen it from the ⋮ menu',
     hideMethodPath: 'Hide method path',
+    // Network-status chip. Local-first means losing the network is a non-event,
+    // so the copy reassures rather than warns — its job is to stop a failed
+    // export or a stalled load from reading as a bug in the app.
+    offlineLabel: 'Offline',
+    // The leading dash is part of the copy, not glue added at the call site —
+    // punctuation is the translator's to change.
+    offlineNote: '— your work is saved locally',
+    offlineTitle:
+      'No network connection. TP Studio runs entirely in this browser, and your work keeps saving locally.',
   },
 
   /**

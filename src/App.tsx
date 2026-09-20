@@ -18,6 +18,7 @@ import { Toaster } from './components/toast/Toaster';
 import { CommandSearch } from './components/toolbar/CommandSearch';
 import { HomeLogo } from './components/toolbar/HomeLogo';
 import { MethodStepper } from './components/toolbar/MethodStepper';
+import { OfflineIndicator } from './components/toolbar/OfflineIndicator';
 import { TabStrip } from './components/toolbar/TabStrip';
 import { TitleBadge } from './components/toolbar/TitleBadge';
 import { TopBar } from './components/toolbar/TopBar';
@@ -464,6 +465,11 @@ export function App() {
           </div>
         </>
       )}
+      {/* Mounted here, not in the TopBar, because the TopBar is part of the
+          editor chrome that the Start surface *replaces* — and opening the app
+          cold with no network lands on Start, which is exactly the moment the
+          user needs to be told the network is the problem and not the app. */}
+      <OfflineIndicator />
       <ContextMenu />
       <Suspense fallback={null}>
         {/* Session 113 — wrap the remaining lazy dialogs / overlays in

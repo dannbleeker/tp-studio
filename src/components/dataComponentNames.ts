@@ -41,4 +41,8 @@ export const DataComponent = {
    *  palette / a modal is open, when the user is dragging or
    *  editing, or when the toolbar is disabled in Settings. */
   SelectionToolbar: 'selection-toolbar',
+  /** Top-bar network-status chip. Always mounted (it is an `aria-live`
+   *  region), but only paints a chip while the browser reports offline —
+   *  which is also what the offline e2e regression spec targets. */
+  OfflineIndicator: 'offline-indicator',
 } as const;

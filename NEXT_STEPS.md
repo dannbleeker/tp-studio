@@ -11,6 +11,25 @@ The Session-211 pass walked every section again and cut nothing as shipped — t
 open. What it did remove was a duplicated environment block that had drifted into *contradicting*
 `CLAUDE.md`, and two hand-copied statistics that had drifted from the generated source.
 
+**Open — offline / PWA (Session 212).** The durability work shipped; these are the leftovers:
+
+- **The root cause is still unconfirmed.** Storage eviction is the best-fitting explanation (it matches
+  every observation, including a sibling app surviving on the same machine), but it was never reproduced
+  — a fresh profile evicts nothing. The About → offline readiness panel exists to settle it: an *active*
+  worker over **0** precache entries with storage not persisted is the eviction signature. If instead the
+  panel shows no registration at all on a managed profile, the cause is enterprise policy clearing site
+  data on exit, and **no code change makes the app work offline** — that needs an IT exception for the
+  origin, not a commit.
+- **`e2e/offline.spec.ts` has never executed here.** The container's Chromium doesn't match the pinned
+  `@playwright/test`, so CI's `e2e` job is its first real run — expect to goal-seek it once. The
+  behaviour it asserts *was* verified independently against the real build in a real browser.
+- **`readiness.repairRequested` is computed but not shown.** A fifth About row would be cheap if the
+  self-heal ever needs observing in the field.
+- **Warm-up success is counted by `response.ok`, not by a cache hit.** That is precisely what let the
+  dangling-closure bug log `cached 5/5` while caching nothing. `check-service-worker.mjs` and the e2e
+  spec both cover the failure now, but verifying the write (`caches.match` after the fetch) would make
+  the log honest on its own.
+
 **Open — i18n follow-ups (Session 209).** The architecture shipped with English only and **no language
 picker** — the Settings row is gated on `SELECTABLE_LOCALES.length > 1`, so nothing is offered until a
 real second locale exists. These are the deliberate leftovers, in rough priority order:
