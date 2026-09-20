@@ -1,7 +1,8 @@
 /// <reference types="vitest" />
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -60,6 +61,14 @@ const OFFLINE_WARMUP_MANIFEST = 'offline-warmup.json';
  * make a *feature* work offline (export, markdown preview) and are a few
  * hundred KB; `deferred` is ~5 MiB of book. A single flat list would let
  * the book's download delay the chunks behind it.
+ *
+ * `sizes` maps each of those paths to its approximate transfer size, so the
+ * About panel can say what pressing "Download now" will cost BEFORE it is
+ * pressed — the one number that decides whether to spend a two-minute wifi
+ * window or a tethered connection on it. It has to come from the build:
+ * asking the network (a `HEAD` per file) is exactly the metered round trip
+ * the figure exists to let the user avoid. Readers treat `sizes` as
+ * optional, so a deploy made before it existed still warms and still counts.
  */
 function offlineWarmupManifest(): Plugin {
   return {
@@ -72,10 +81,25 @@ function offlineWarmupManifest(): Plugin {
       const deferred = DEFERRED_BOOK_FILES.filter((name) =>
         existsSync(path.join(here, 'public', name))
       );
+      const sizes: Record<string, number> = {};
+      for (const name of assets) {
+        const entry = bundle[name];
+        const source = entry?.type === 'chunk' ? entry.code : (entry?.source ?? '');
+        // Gzipped, not raw: GitHub Pages serves these compressed, and the raw
+        // length would overstate the download by ~3x for JS — an over-estimate
+        // is still a lie to someone budgeting a short window.
+        sizes[name] = gzipSync(Buffer.from(source)).length;
+      }
+      for (const name of deferred) {
+        // On-disk size for the book: PDF and EPUB are already-compressed
+        // containers, so the wire size is the file size, and gzipping ~5 MiB
+        // at every build to learn that would be waste.
+        sizes[name] = statSync(path.join(here, 'public', name)).size;
+      }
       this.emitFile({
         type: 'asset',
         fileName: OFFLINE_WARMUP_MANIFEST,
-        source: `${JSON.stringify({ assets, deferred }, null, 2)}\n`,
+        source: `${JSON.stringify({ assets, deferred, sizes }, null, 2)}\n`,
       });
     },
   };

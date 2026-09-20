@@ -124,7 +124,8 @@ exists → **workstation**; a Linux path like `/home/user/tp-studio` → **web /
 
 - **Run tools via their node entry points** (portable + what `preflight.mjs`/lint-staged use):
   - `node ./node_modules/typescript/bin/tsc --noEmit`
-  - `node ./node_modules/@biomejs/biome/bin/biome check src tests` — autofix with `--write` (formatter + organizeImports) and `--write --unsafe` (Tailwind `useSortedClasses` class sorting). **Run it locally before every push** — no more hand-matching from the CI diff.
+  - `node ./node_modules/@biomejs/biome/bin/biome check src tests` — autofix with `--write` (formatter + organizeImports). **Run it locally before every push** — no more hand-matching from the CI diff.
+  - **Never run `--write --unsafe` across `src tests`.** Session 213 did, and it silently rewrote four files outside the change: it turned the deliberate `doc.entities['toString']` bracket access in `tests/domain/migrationsRoundTrip.test.ts` into dot access (a type error the adjacent comment explains), stripped two load-bearing `!important`s from `src/styles/print.css`, and churned two more. The remaining unsafe findings in this repo are intentionally unfixed, so the flag has nothing to win and a broken build to lose. If Tailwind class sorting genuinely needs it, scope it to the files you changed: `biome check --write --unsafe <paths>`.
   - `node ./node_modules/knip/bin/knip.js --no-progress` (Session 180: knip.json code-rules are `error`, so it EXITS NON-ZERO on unused files/exports/types/duplicates/enumMembers — gates locally, matching CI; deps/resolution rules stay `warn`. Folded into `preflight.mjs`.)
   - `node ./node_modules/vitest/vitest.mjs run [substring]` (`--coverage` for coverage)
   - `node ./node_modules/vite/bin/vite.js build`

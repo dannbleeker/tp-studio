@@ -25,13 +25,6 @@ open. What it did remove was a duplicated environment block that had drifted int
   behaviour it asserts *was* verified independently against the real build in a real browser.
 - **`readiness.repairRequested` is computed but not shown.** A fifth About row would be cheap if the
   self-heal ever needs observing in the field.
-- **No user-visible confirmation that the offline extras are cached.** About →
-  offline readiness reports the *precache* (shell) but not the on-demand tier —
-  export chunks and the book — so "am I ready for a flight?" still can't be
-  answered from the UI. A row showing cached/total for those, and a deliberate
-  "top up now" action, would close it. The warm-up itself is now self-healing
-  (retries on `online` and on tab-visible), so this is about confidence rather
-  than correctness.
 - **Warm-up success is counted by `response.ok`, not by a cache hit.** That is precisely what let the
   dangling-closure bug log `cached 5/5` while caching nothing. `check-service-worker.mjs` and the e2e
   spec both cover the failure now, but verifying the write (`caches.match` after the fetch) would make

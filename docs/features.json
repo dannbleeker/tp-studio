@@ -31,7 +31,7 @@
     "Start",
     "General"
   ],
-  "reviewedThroughSession": 212,
+  "reviewedThroughSession": 213,
   "features": [
     {
       "id": "crt-diagram",
@@ -2555,7 +2555,7 @@
     },
     {
       "id": "offline-readiness-panel",
-      "name": "About → offline readiness (worker, precache entries, persisted storage, cached size)",
+      "name": "About → offline readiness (worker, precache entries, persisted storage, cached size, on-demand extras)",
       "area": "General",
       "since": 212,
       "manual": true,
@@ -2585,6 +2585,15 @@
       "name": "Self-healing offline cache — reinstalls once when an active worker has an empty precache",
       "area": "General",
       "since": 212,
+      "manual": true,
+      "book": false,
+      "bookExample": false
+    },
+    {
+      "id": "offline-top-up",
+      "name": "Fetch the missing offline extras on demand, from About → offline readiness",
+      "area": "General",
+      "since": 213,
       "manual": true,
       "book": false,
       "bookExample": false

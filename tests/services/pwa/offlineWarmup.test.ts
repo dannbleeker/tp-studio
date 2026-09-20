@@ -8,7 +8,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   __resetOfflineWarmupForTest,
+  countCachedOfflineExtras,
+  type OfflineTopUpProgress,
   scheduleOfflineWarmup,
+  topUpOfflineAssets,
   warmOfflineAssets,
 } from '@/services/pwa/offlineWarmup';
 
@@ -35,6 +38,20 @@ function fetchStub(manifest: unknown = MANIFEST) {
   return vi.fn((input: RequestInfo | URL) =>
     Promise.resolve(String(input).endsWith('offline-warmup.json') ? okJson(manifest) : ok())
   );
+}
+
+/** How many times the ~5 MiB handbook was requested. */
+function bookCalls(fetchMock: { mock: { calls: unknown[][] } }): number {
+  return fetchMock.mock.calls.filter((call) => String(call[0]).endsWith('.pdf')).length;
+}
+
+/** A promise plus the handle that settles it, for pinning a download in flight. */
+function gate() {
+  let open = (): void => {};
+  const opened = new Promise<void>((resolve) => {
+    open = resolve;
+  });
+  return { opened, open: () => open() };
 }
 
 beforeEach(() => {
@@ -230,6 +247,36 @@ describe('warmOfflineAssets — a short window of wifi', () => {
     expect(fetchMock.mock.calls.length).toBe(afterFirst);
   });
 
+  it('retries the BOOK on reconnect after its own tier failed', async () => {
+    // The boot run latches `completed` on the assets tier alone, so the retry
+    // the failing book tier armed used to be unreachable: `warmOfflineAssets()`
+    // returned before doing anything and the handbook stayed missing for the
+    // rest of the session. The reconnect fix has to reach the book too.
+    let bookAttempts = 0;
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith('offline-warmup.json')) return Promise.resolve(okJson(MANIFEST));
+      if (url.endsWith('.pdf')) {
+        bookAttempts += 1;
+        return bookAttempts === 1
+          ? Promise.reject(new Error('network lost'))
+          : Promise.resolve(ok());
+      }
+      return Promise.resolve(ok());
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await warmOfflineAssets();
+    await vi.runAllTimersAsync();
+    expect(bookAttempts, 'the book tier ran once and failed').toBe(1);
+
+    window.dispatchEvent(new Event('online'));
+    await vi.advanceTimersByTimeAsync(10);
+    await vi.runAllTimersAsync();
+
+    expect(bookAttempts).toBe(2);
+  });
+
   it('finishes the job when the connection drops mid-warm-up', async () => {
     // One asset fails, so the run is partial — it must not latch, and the
     // reconnect must pick up the remainder.
@@ -250,5 +297,280 @@ describe('warmOfflineAssets — a short window of wifi', () => {
     window.dispatchEvent(new Event('online'));
     await vi.advanceTimersByTimeAsync(10);
     expect(fetchMock.mock.calls.length).toBeGreaterThan(afterPartial);
+  });
+});
+
+describe('topUpOfflineAssets — the user pressed a button', () => {
+  // The whole reason this entry point exists: `warmOfflineAssets` latches
+  // `completed` on a clean run, so a button wired straight to it does nothing
+  // in every session where the boot warm-up succeeded — invisible unless you
+  // happen to be watching the Network panel.
+  it('runs even after a clean warm-up latched the run-once flag', async () => {
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await warmOfflineAssets();
+    await vi.runAllTimersAsync();
+    fetchMock.mockClear();
+
+    await topUpOfflineAssets();
+
+    expect(fetchMock.mock.calls.map((call) => String(call[0]))).toEqual([
+      '/offline-warmup.json',
+      '/assets/jspdf.es.min-abc123.js',
+      '/assets/pptxgen.es-def456.js',
+      '/Causal-Thinking-with-TP-Studio.pdf',
+    ]);
+  });
+
+  it('fetches the book before it resolves, with no idle hop', async () => {
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+
+    // Deliberately no `runAllTimersAsync()`: a press during a two-minute wifi
+    // window must not be told "done" while ~5 MiB is still queued.
+    await topUpOfflineAssets();
+
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).endsWith('.pdf'))).toBe(true);
+  });
+
+  it('adopts a run already in flight instead of fetching twice', async () => {
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const [first, second] = await Promise.all([topUpOfflineAssets(), topUpOfflineAssets()]);
+
+    const manifestCalls = fetchMock.mock.calls.filter((call) =>
+      String(call[0]).endsWith('offline-warmup.json')
+    );
+    expect(manifestCalls).toHaveLength(1);
+    expect(first).toEqual(second);
+  });
+
+  it('adopts the boot run book download instead of starting a second copy', async () => {
+    // The expensive one: ~5 MiB of handbook fetched twice at once, both
+    // reporting into the same progress listener. On a tether that is money.
+    const book = gate();
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith('offline-warmup.json')) return okJson(MANIFEST);
+      if (url.endsWith('.pdf')) await book.opened;
+      return ok();
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await warmOfflineAssets();
+    // The idle hand-off fires: the book is now downloading, and stuck on the gate.
+    await vi.advanceTimersByTimeAsync(3_000);
+    expect(bookCalls(fetchMock)).toBe(1);
+
+    const press = topUpOfflineAssets();
+    await vi.advanceTimersByTimeAsync(10);
+    book.open();
+    await press;
+
+    expect(bookCalls(fetchMock)).toBe(1);
+  });
+
+  it('starts the queued book tier early rather than letting idle run it again', async () => {
+    // The other order: the press lands BEFORE the idle slot fires. The tier has
+    // to be taken over, not left to run a second time once idle arrives.
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await warmOfflineAssets();
+    expect(bookCalls(fetchMock), 'the idle hand-off has not fired yet').toBe(0);
+
+    await topUpOfflineAssets();
+    expect(bookCalls(fetchMock)).toBe(1);
+
+    await vi.runAllTimersAsync();
+    expect(bookCalls(fetchMock)).toBe(1);
+  });
+
+  it('keeps two presses landing on a boot run down to one forced run', async () => {
+    // Both used to await the boot run and then both call `start(true)`: two
+    // forced runs, two of everything. Adopting has to be decided with no await
+    // between the check and the start.
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const boot = warmOfflineAssets();
+    const [first, second] = await Promise.all([topUpOfflineAssets(), topUpOfflineAssets()]);
+    await boot;
+    await vi.runAllTimersAsync();
+
+    const manifestCalls = fetchMock.mock.calls.filter((call) =>
+      String(call[0]).endsWith('offline-warmup.json')
+    );
+    expect(manifestCalls, 'one for the boot run, one for the single forced run').toHaveLength(2);
+    expect(bookCalls(fetchMock)).toBe(1);
+    expect(first).toBe(second);
+  });
+
+  it('reports "offline" without fetching when the browser has no network', async () => {
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+    setNavigator('onLine', false);
+
+    expect(await topUpOfflineAssets()).toEqual({ status: 'offline' });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('reports "unsupported" where there is no service worker to warm into', async () => {
+    vi.stubGlobal('fetch', fetchStub());
+    Reflect.deleteProperty(navigator, 'serviceWorker');
+
+    expect(await topUpOfflineAssets()).toEqual({ status: 'unsupported' });
+  });
+
+  it('reports "unavailable" when the manifest 404s mid-redeploy', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve({ ok: false, status: 404 } as unknown as Response))
+    );
+
+    expect(await topUpOfflineAssets()).toEqual({ status: 'unavailable' });
+  });
+
+  it('counts what it missed rather than pretending a partial run succeeded', async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith('offline-warmup.json')) return Promise.resolve(okJson(MANIFEST));
+      if (url.endsWith('jspdf.es.min-abc123.js')) {
+        return Promise.resolve({ ok: false, status: 404 } as unknown as Response);
+      }
+      return Promise.resolve(ok());
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    expect(await topUpOfflineAssets()).toEqual({ status: 'ran', attempted: 3, missed: 1 });
+  });
+
+  it('reports progress per file, tagged by tier', async () => {
+    vi.stubGlobal('fetch', fetchStub());
+    const seen: OfflineTopUpProgress[] = [];
+
+    await topUpOfflineAssets((progress) => seen.push(progress));
+
+    expect(seen).toEqual([
+      { tier: 'assets', done: 1, total: 2 },
+      { tier: 'assets', done: 2, total: 2 },
+      { tier: 'deferred', done: 1, total: 1 },
+    ]);
+  });
+});
+
+describe('__resetOfflineWarmupForTest', () => {
+  it('detaches the reconnect listeners it armed', async () => {
+    vi.stubGlobal('fetch', fetchStub());
+    setNavigator('onLine', false);
+    await warmOfflineAssets();
+
+    // Without removal the anonymous handlers survived the reset, so a later
+    // case's `online` event re-entered the module from this one's listener.
+    __resetOfflineWarmupForTest();
+    const fetchMock = fetchStub();
+    vi.stubGlobal('fetch', fetchMock);
+    setNavigator('onLine', true);
+    window.dispatchEvent(new Event('online'));
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('countCachedOfflineExtras', () => {
+  /** Cache Storage that resolves `match` for exactly the URLs given. */
+  const cachesMatching = (urls: readonly string[]) => {
+    const present = new Set(urls);
+    return {
+      match: (request: RequestInfo | URL) =>
+        Promise.resolve(present.has(String(request)) ? ({} as Response) : undefined),
+    };
+  };
+
+  it('reports "unreadable" rather than zero when Cache Storage is absent', async () => {
+    // jsdom ships no `caches` at all, which is also the locked-down-profile
+    // case. "We could not look" must never be reported as "nothing is cached".
+    vi.stubGlobal('fetch', fetchStub());
+    expect(await countCachedOfflineExtras()).toEqual({ status: 'unreadable' });
+  });
+
+  it('counts the manifest URLs that would resolve with no network', async () => {
+    vi.stubGlobal('fetch', fetchStub());
+    vi.stubGlobal(
+      'caches',
+      cachesMatching(['/assets/jspdf.es.min-abc123.js', '/Causal-Thinking-with-TP-Studio.pdf'])
+    );
+
+    expect(await countCachedOfflineExtras()).toEqual({
+      status: 'counted',
+      cached: 2,
+      total: 3,
+      // This manifest carries no `sizes`: an older deploy must still count.
+      missingBytes: null,
+    });
+  });
+
+  it('adds up what the missing files would cost, from the build-time sizes', async () => {
+    vi.stubGlobal(
+      'fetch',
+      fetchStub({
+        ...MANIFEST,
+        sizes: {
+          'assets/jspdf.es.min-abc123.js': 100,
+          'assets/pptxgen.es-def456.js': 200,
+          'Causal-Thinking-with-TP-Studio.pdf': 5_000,
+        },
+      })
+    );
+    vi.stubGlobal('caches', cachesMatching(['/assets/jspdf.es.min-abc123.js']));
+
+    expect(await countCachedOfflineExtras()).toEqual({
+      status: 'counted',
+      cached: 1,
+      total: 3,
+      missingBytes: 5_200,
+    });
+  });
+
+  it('refuses a partial total when a missing file has no recorded size', async () => {
+    // Half a sum printed as "about 0.2 MB to download" is worse than no figure:
+    // the number is what a two-minute window gets budgeted against.
+    vi.stubGlobal(
+      'fetch',
+      fetchStub({ ...MANIFEST, sizes: { 'assets/jspdf.es.min-abc123.js': 100 } })
+    );
+    vi.stubGlobal('caches', cachesMatching([]));
+
+    expect(await countCachedOfflineExtras()).toMatchObject({ cached: 0, missingBytes: null });
+  });
+
+  it('reports "listUnavailable" when the list itself cannot be read', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve({ ok: false, status: 404 } as unknown as Response))
+    );
+    vi.stubGlobal('caches', cachesMatching([]));
+
+    expect(await countCachedOfflineExtras()).toEqual({ status: 'listUnavailable' });
+  });
+
+  it('separates a list that is empty from one that could not be read', async () => {
+    // One state for both said "this build lists no extras" about a manifest the
+    // app had merely failed to fetch — a statement about the build that was not
+    // true, in the likelier of the two cases.
+    vi.stubGlobal('fetch', fetchStub({ assets: [], deferred: [] }));
+    vi.stubGlobal('caches', cachesMatching([]));
+
+    expect(await countCachedOfflineExtras()).toEqual({ status: 'empty' });
+  });
+
+  it('reports "unreadable" when the cache read rejects', async () => {
+    vi.stubGlobal('fetch', fetchStub());
+    vi.stubGlobal('caches', { match: () => Promise.reject(new Error('site data blocked')) });
+
+    expect(await countCachedOfflineExtras()).toEqual({ status: 'unreadable' });
   });
 });

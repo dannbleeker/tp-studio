@@ -119,8 +119,15 @@ export async function probeOfflineReadiness(): Promise<OfflineReadiness> {
 }
 
 /**
- * Read-only snapshot of offline readiness, taken once when the component
- * mounts (the About dialog, which only mounts while it is open — so this is
+ * How long to wait before looking again while a worker could still show up.
+ * Long enough not to be a spin, short enough that a dialog left open catches
+ * an activation the user is waiting on.
+ */
+const REPROBE_DELAY_MS = 3_000;
+
+/**
+ * Read-only snapshot of offline readiness, re-taken while the component is
+ * mounted (the About dialog, which only mounts while it is open — so this is
  * not a background poll).
  *
  * Read-only on purpose, and that is what keeps it separate from
@@ -140,11 +147,31 @@ export function useOfflineReadiness(): OfflineReadiness {
 
   useEffect(() => {
     let cancelled = false;
-    void probeOfflineReadiness().then((next) => {
-      if (!cancelled) setReadiness(next);
-    });
+    let timer: number | undefined;
+
+    const probe = (): void => {
+      void probeOfflineReadiness().then((next) => {
+        if (cancelled) return;
+        setReadiness(next);
+        // A first visit opens this panel BEFORE the worker finishes activating,
+        // and the extras control is disabled until it has. Probing once at
+        // mount meant the panel described a state that stopped being true a
+        // second later and stayed wrong for the whole dialog session.
+        //
+        // Re-probe only while a worker could still arrive — `waiting` and
+        // `unregistered`. `active` is the answer we were waiting for, and
+        // `unsupported` means the API is absent, which no amount of waiting
+        // fixes. So this stops on its own rather than polling forever.
+        const mayStillArrive =
+          next.serviceWorker === 'waiting' || next.serviceWorker === 'unregistered';
+        if (mayStillArrive) timer = window.setTimeout(probe, REPROBE_DELAY_MS);
+      });
+    };
+    probe();
+
     return () => {
       cancelled = true;
+      if (timer !== undefined) window.clearTimeout(timer);
     };
   }, []);
 

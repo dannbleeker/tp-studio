@@ -1,4 +1,4 @@
-import { cleanup, renderHook, waitFor } from '@testing-library/react';
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { probeOfflineReadiness, useOfflineReadiness } from '@/hooks/useOfflineReadiness';
 
@@ -155,6 +155,63 @@ describe('useOfflineReadiness', () => {
     await waitFor(() => expect(result.current.probed).toBe(true));
     expect(result.current.serviceWorker).toBe('active');
     expect(result.current.precachedEntries).toBe(7);
+  });
+
+  it('looks again until the worker activates, then stops looking', async () => {
+    // A first visit opens this panel before the worker has activated. Probing
+    // once at mount meant the panel — and the control it gates — described a
+    // state that stopped being true a second later, for the whole time the
+    // dialog stayed open.
+    let registration: unknown = { waiting: {} };
+    let probes = 0;
+    defineNavigator('serviceWorker', {
+      getRegistration: () => {
+        probes += 1;
+        return Promise.resolve(registration);
+      },
+    });
+    vi.stubGlobal('caches', cacheStorageWith({ 'workbox-precache-v2-x': 7 }));
+    vi.useFakeTimers();
+
+    try {
+      const { result } = renderHook(() => useOfflineReadiness());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(result.current.serviceWorker).toBe('waiting');
+
+      registration = { active: {} };
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3_000);
+      });
+      expect(result.current.serviceWorker).toBe('active');
+
+      // Nothing left to wait for: the re-probe stops rather than spinning for
+      // as long as the dialog is open.
+      const settled = probes;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(30_000);
+      });
+      expect(probes).toBe(settled);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not re-probe a browser that has no service worker API', async () => {
+    // jsdom ships none, which is also older Safari and an insecure origin.
+    // No amount of waiting makes the API appear, so waiting would be a spin.
+    vi.useFakeTimers();
+    try {
+      const { result } = renderHook(() => useOfflineReadiness());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(result.current.serviceWorker).toBe('unsupported');
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('does not set state after unmount', async () => {

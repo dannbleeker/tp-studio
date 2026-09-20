@@ -5,6 +5,54 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 213 — answering "am I ready for the flight?" from the UI
+
+Session 212 made offline access durable but left one question unanswerable from inside the app: are
+the on-demand extras — the five export/preview chunks and the practitioner book — actually cached
+*right now*? The readiness panel reported the shell precache only, which is the part that was never
+in doubt. Dann's working pattern makes this concrete: long offline stretches, a short window of wifi,
+then offline again. He needs to see the state and be able to act on it inside that window.
+
+About → offline readiness gains a row for the on-demand tier and a control that fetches whatever is
+missing, immediately, instead of waiting for an idle callback.
+
+### The row refuses to guess
+
+Two rules govern it, both learned from bugs this project already shipped.
+
+**The count comes from `caches.match`, never from what a fetch returned.** Session 212's
+dangling-closure bug cached nothing while every `response.ok` read `true`, and the warm-up cheerfully
+logged `cached 5/5`. A number derived from fetch results would have repeated that lie with a nicer
+presentation.
+
+**No active service worker means no number at all.** Without one, the manifest request bypasses the
+worker and comes from the network — so it names a *different* build's content hashes, and any count
+would describe a build this page will never load. The honest answer there is "Unknown", not "0 of 7",
+and that is precisely the state a user is in on a first visit, which is when they are most likely to
+open the panel.
+
+Every unknowable state is worded as `Unknown — …`; only a genuine, verified zero says `No — …`.
+
+### What the reviewers found before it shipped
+
+The build passed `tsc`, biome, knip and the full suite, then three adversarial reviewers went at it.
+The two worth recording:
+
+- **A duplicate download of the ~5 MiB book.** The boot path's deferred tier ran outside the in-flight
+  guard, so pressing the button could start a second concurrent download of the same handbook — both
+  feeding one progress listener, and on a tethered phone, real money.
+- **Session 212's reconnect fix was already half-dead.** The boot run latched `completed` on the
+  *assets* tier alone, so when the book tier later failed and armed `listenForReconnect()`, the retry
+  could never fire — `warmOfflineAssets()` returns immediately on `completed`. The fix worked for the
+  export chunks and silently never worked for the book. No test covered it; only reading the diff
+  adversarially found it.
+
+Also fixed before landing: a rejection path that left the control stuck disabled forever, a status
+line that could contradict the row directly above it (verdict from the fetch tally, numbers from the
+re-count), an enabled control sitting beside "connect to a network first", `aria-describedby` on a
+natively `disabled` button — unreachable by keyboard and screen reader in exactly the states it
+existed to explain — and copy that asserted a cause the code had just disproved.
+
 ## Session 212 — offline durability, and two bugs only a browser could find
 
 Dann: *"TP Studio and MECE Studio do not work offline."* The report was a laptop, managed Chrome, the
