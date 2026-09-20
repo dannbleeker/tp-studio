@@ -44,19 +44,27 @@ async function emittedChunkUrls(): Promise<string[]> {
  * returning user experiences, and the only state in which offline works.
  */
 async function waitForControllingServiceWorker(page: Page): Promise<void> {
-  await page.waitForFunction(
-    async () => {
-      if (!('serviceWorker' in navigator)) return false;
-      const registration = await navigator.serviceWorker.getRegistration();
-      return registration?.active != null;
-    },
-    undefined,
-    { timeout: 60_000 }
-  );
-  await page.reload();
-  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, undefined, {
-    timeout: 60_000,
-  });
+  // `ready` resolves once the registration has an *active* worker, which is also
+  // when workbox has finished precaching (that happens during install).
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+
+  // A worker is handed a document at navigation-commit time, so a reload is what
+  // hands over the page. The subtlety that makes a single attempt flaky: if the
+  // reload commits before the worker is ready to take it, THIS document simply
+  // has no controller and never will — waiting on it is futile no matter how
+  // generous the timeout. So reload until one sticks, with a short wait each
+  // time, rather than betting the test on the first attempt winning the race.
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    await page.reload();
+    const controlled = await page
+      .waitForFunction(() => navigator.serviceWorker.controller !== null, undefined, {
+        timeout: 5_000,
+      })
+      .then(() => true)
+      .catch(() => false);
+    if (controlled) return;
+  }
+  throw new Error('the service worker never took control of the page after 5 reloads');
 }
 
 /** Names of the emitted chunks that are not yet in any Cache Storage bucket. */
@@ -79,6 +87,13 @@ test.describe('offline', () => {
     page,
     context,
   }) => {
+    // Three navigations, a ~2 MiB service-worker precache install, the idle
+    // warm-up, and one fetch per emitted chunk. The suite default is 30s, sized
+    // for single-screen interactions, and the waits inside
+    // `waitForControllingServiceWorker` are already 60s each — so without this
+    // the test aborts mid-install and blames the service worker for being slow.
+    test.setTimeout(120_000);
+
     const chunks = await emittedChunkUrls();
     // A build that emitted no chunks would make every assertion below vacuous.
     expect(chunks.length).toBeGreaterThan(0);
@@ -99,15 +114,27 @@ test.describe('offline', () => {
 
     await context.setOffline(true);
 
-    // 1. The shell still renders after a reload with no network. Assert on a
+    // 1. The user is told it is the network, not the app — asserted HERE, on the
+    //    transition, and deliberately before the reload below.
+    //
+    //    Chromium does not propagate emulated-offline into a document created
+    //    after `setOffline`: measured under this exact setup, `navigator.onLine`
+    //    still reads `true` in the new document and no `offline` event ever
+    //    fires, so the chip correctly does not render and asserting it after the
+    //    reload fails against a perfectly healthy app. A real machine with no
+    //    network reports `false` at document creation, so that path is sound in
+    //    production and is covered by useOnlineStatus's unit tests, which seed
+    //    the hook from `navigator.onLine`. Going offline with the page open is
+    //    the path the emulator drives faithfully, so that is what is asserted.
+    //    Do not move this below the reload without re-checking that measurement.
+    const indicator = page.locator('[data-component="offline-indicator"]');
+    await expect(indicator).toContainText(/offline/i);
+
+    // 2. The shell still renders after a reload with no network. Assert on a
     //    real control, not a status code — the failure mode was the browser's
     //    error page replacing the app entirely.
     await page.reload();
     await expect(page.getByRole('button', { name: /search or run a command/i })).toBeVisible();
-
-    // 2. And the user is told it is the network, not the app.
-    const indicator = page.locator('[data-component="offline-indicator"]');
-    await expect(indicator).toContainText(/offline/i);
 
     // 3. Every emitted chunk actually resolves offline. This is the assertion
     //    that locks the regression: a newly precache-excluded chunk that
