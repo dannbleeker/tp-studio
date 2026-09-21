@@ -408,10 +408,10 @@
   },
   {
     "date": "2026-09-21",
-    "linesTsJs": 161120,
+    "linesTsJs": 161585,
     "coveragePct": 95.33,
-    "tests": 5246,
-    "bundleKb": 887.5,
+    "tests": 5253,
+    "bundleKb": 887.8,
     "mutationScore": 72.8,
     "featureManualPct": 99.6,
     "featureBookPct": 66.3,
