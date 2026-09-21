@@ -5,6 +5,74 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 215 — the book that was never a book, and a 5 MiB download that ran twice
+
+A second adversarial hunt over the offline surface, this time reaching the build config and the
+persistence path. 307 agents, 48 raw findings, ten distinct defects that survived checking them
+against the real code. Two were live on the deployed site.
+
+### Fixed
+
+- **Clicking "PDF" or "EPUB" opened a second copy of the app, not the book.** When the handbook came
+  out of `globPatterns` and became a runtime-cached download, nothing added it to
+  `navigateFallbackDenylist` — and route order decides this, not intent: workbox emits the
+  `NavigationRoute` **first**, and the Router matches in registration order, so the SPA fallback
+  claimed the navigation before the `CacheFirst` rule for pdf/epub was ever consulted. Verified in a
+  real browser against the production build: a *navigation* to the book returned `text/html`, byte
+  for byte `index.html`, while a `fetch()` of the same URL returned the real 3,427,524-byte
+  `application/pdf`. Only navigations were affected, which is exactly why the runtime cache looked
+  healthy, the warm-up reported success, and nothing in the build complained. `check-service-worker.mjs`
+  now asserts the emitted denylist, because the emitted worker is the only place the ordering is real.
+- **A reconnect could start a second concurrent ~5 MiB handbook download.** The boot path claimed the
+  book tier with a plain assignment, so a retry run *replaced* a tier whose download was still in
+  flight: the live one was orphaned (its cleanup no longer matched the current tier, so it never
+  cleared) and the next idle slot started a fresh copy of the same files. The trigger is ordinary —
+  the reconnect and visibility listeners are armed whenever the assets tier missed anything, and
+  `visibilitychange` fires every time the user returns to the tab — and it lands hardest on the short
+  wifi window this whole path exists to serve: half the window spent re-fetching bytes already on the
+  wire. The claim is now `??=`, so an in-flight tier is adopted rather than replaced.
+- **A quota-failed save deleted the only surviving copy of the newest edits.** `writeNow()` removed
+  both live drafts unconditionally after the committed write, and `writeString` swallows a
+  `QuotaExceededError` and returns `false`. On a full `localStorage` that produced the worst possible
+  ordering: the committed write silently did nothing, the live drafts — the only remaining copy — were
+  deleted, and `pending` was already null so nothing would ever retry. Those edits then existed solely
+  in memory, with both recovery paths (`docBackup`, live draft) holding older state. `persistActiveDoc`
+  and `saveDocToLocalStorage` now return whether the body landed, and the drafts survive a failed write.
+- **"Refresh now" never reloaded a page the worker wasn't serving.** The reload was never ours: it
+  lives in a `controlling` listener vite-plugin-pwa attaches inside its private prompt path, gated on
+  workbox's `isUpdate` — `Boolean(navigator.serviceWorker.controller)` sampled at register time. An
+  uncontrolled page fails that gate *and* never receives `controllerchange` at all, since
+  `registerType: 'prompt'` means no `clientsClaim` (verified: `dist/sw.js` contains none). The manual
+  check re-surfaces the toast itself, so when another tab left a worker waiting, that listener was
+  never attached here either. TP now owns the reload: a one-shot `controllerchange` handler armed
+  *before* skip-waiting, with a 3s fallback for the page that will never get one. The `updateSW(true)`
+  argument we were passing is named `_reloadPage` in the plugin and never read.
+- **"Check for updates" told an offline user the service worker isn't running** — the one claim that
+  is definitely false, since a registration resolved two lines earlier and that worker is what is
+  serving the page. A failed check is now its own outcome with its own sentence. The lookup itself is
+  also guarded: a managed profile rejects it outright, and the palette command drops the promise, so
+  it was a silent command plus an unhandled rejection.
+- **The readiness panel called a worker "Active" when it merely existed.** `registration.active` is
+  truthy on every uncontrolled load, while fetches bypass the worker entirely — so the panel enabled
+  "Download now" and quoted a size for a press that provably could not cache a byte, while
+  `offlineWarmup` was independently refusing to run for exactly that reason. The probe now requires a
+  controller, reports `waiting` otherwise (which is what it is: one refresh away), and the two agree.
+- **The panel's byte counts froze after a download.** The readiness probe stops once a worker is
+  active — right for "is one serving me", wrong for "Cached size" and the precache count beside it, so
+  a finished top-up left the panel quoting pre-download figures next to an extras row it had just
+  refreshed. It re-probes on a top-up now.
+
+### Tests
+
+- **Three tests that could not fail were rewritten.** Two `does not set state after unmount` cases
+  asserted `result.current`, which React freezes at unmount whether or not the guard exists; they now
+  pin the decision the guard protects — the download is deliberately *not* aborted when the panel
+  closes. `ignores a press while blocked` used an offline state where the warm-up returns on its own
+  first branch before doing anything, so it stayed green with the click gate deleted outright; the
+  replacement blocks for a reason that would let a started run re-read the manifest, and fails (3
+  reads vs 1) when the gate is removed.
+- Every new test was run against the pre-fix code first and shown to fail there.
+
 ## Session 214 — the same bug class, a third time: 6.4 MiB downloaded into the void
 
 An adversarial bug hunt over the offline surface found what two rounds of review and 5,350 tests had

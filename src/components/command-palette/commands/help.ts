@@ -54,6 +54,14 @@ export const helpCommands: Command[] = [
           'info',
           "Update checks aren't available here (the service worker isn't running)."
         );
+      } else if (result === 'check-failed') {
+        // Says what is true — the check could not run — without naming a cause
+        // it cannot know (offline, or a profile that refuses the lookup), and
+        // without the old message's false claim that no worker is running.
+        s.showToast(
+          'info',
+          "Couldn't check for updates — you're still running the installed version."
+        );
       }
       // 'already-pending' — `checkForUpdate` already surfaced the
       // "Refresh now" toast, so nothing to add.

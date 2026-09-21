@@ -237,8 +237,14 @@ function Row({ label, value }: { label: string; value: string }) {
 export function OfflineReadinessSection() {
   const a = useT().about;
   const o = a.offline;
-  const readiness = useOfflineReadiness();
   const { extras, topUp, runTopUp } = useOfflineExtras();
+  // Re-probe whenever the top-up phase changes. The readiness probe stops once
+  // a worker is `active`, which is the right answer to "is one serving me" and
+  // the wrong one for the byte counts beside it: a finished download moves both
+  // "Cached size" and the precache count, and the panel used to keep quoting
+  // the pre-download figures next to an extras row it had just refreshed —
+  // two numbers in one panel disagreeing about the download it had performed.
+  const readiness = useOfflineReadiness(topUp.kind);
   // `useSyncExternalStore` over the `online`/`offline` events, so the button
   // re-enables itself the moment the wifi window opens — no reopen needed,
   // which is literally the scenario this control exists for.

@@ -385,6 +385,78 @@ describe('topUpOfflineAssets — the user pressed a button', () => {
     expect(bookCalls(fetchMock)).toBe(1);
   });
 
+  it('counts a file that reaches Cache Storage only after the fetch resolves', async () => {
+    // Measured against the production build: the run reported `cached 2/5
+    // on-demand chunks` and `cached 0/2 deferred documents` while Cache Storage
+    // ended up holding all five chunks and both books. `fetch()` resolves when
+    // the response HEADERS arrive; workbox finishes its `cache.put` only once
+    // the whole body has streamed, inside the worker's `waitUntil`, which the
+    // page never awaits. So an immediate readback is a race the big files lose.
+    //
+    // It is not a cosmetic miscount: a miss re-opens the `completed` latch and
+    // arms the reconnect retry, so every return to the tab re-downloaded ~5.5
+    // MiB already on disk — caused by the very check meant to prove that had
+    // been avoided.
+    __resetOfflineWarmupForTest(2_000); // a real settle budget, as in production
+    vi.useRealTimers(); // the settle polls wall-clock, like the browser does
+    vi.stubGlobal('fetch', fetchStub());
+
+    const landed = new Set<string>();
+    vi.stubGlobal('caches', {
+      match: async (url: string) =>
+        landed.has(String(url)) ? ({} as unknown as Response) : undefined,
+    });
+    // Every file lands a beat AFTER its fetch resolved — the real ordering.
+    setTimeout(() => {
+      landed.add('/assets/jspdf.es.min-abc123.js');
+      landed.add('/assets/pptxgen.es-def456.js');
+      landed.add('/Causal-Thinking-with-TP-Studio.pdf');
+    }, 150);
+
+    const outcome = await topUpOfflineAssets();
+
+    expect(outcome).toEqual({ status: 'ran', attempted: 3, missed: 0 });
+  });
+
+  it('does not start a second book download when a retry run arrives mid-flight', async () => {
+    // The duplicate came back through the BOOT path, not the press. When the
+    // assets tier misses anything the latch re-opens and the reconnect /
+    // visibility listeners are armed — and `visibilitychange` fires every time
+    // the user returns to the tab. That second `warmOfflineAssets()` reached the
+    // line that claims the book tier and REPLACED a tier whose ~5 MiB download
+    // was still in flight: the live one was orphaned (its cleanup no longer
+    // matched the current tier, so it never cleared) and the next idle slot
+    // started a second concurrent copy. On the short wifi window this whole
+    // path exists for, that is half the window spent re-fetching bytes already
+    // on the wire.
+    const book = gate();
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith('offline-warmup.json')) return okJson(MANIFEST);
+      if (url.endsWith('.pdf')) await book.opened;
+      return ok();
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    // One asset never reads back, so the run reports a miss: that is what
+    // re-opens the latch and arms the retry in the first place.
+    vi.stubGlobal('caches', {
+      match: async (url: string) =>
+        String(url).includes('pptxgen') ? undefined : ({} as unknown as Response),
+    });
+
+    await warmOfflineAssets();
+    await vi.advanceTimersByTimeAsync(3_000); // idle fires; the book is on the wire
+    expect(bookCalls(fetchMock)).toBe(1);
+
+    // The retry the reconnect/visibility listener performs.
+    await warmOfflineAssets();
+    await vi.runAllTimersAsync();
+    book.open();
+    await vi.runAllTimersAsync();
+
+    expect(bookCalls(fetchMock), 'the in-flight book tier must be adopted, not replaced').toBe(1);
+  });
+
   it('starts the queued book tier early rather than letting idle run it again', async () => {
     // The other order: the press lands BEFORE the idle slot fires. The tier has
     // to be taken over, not left to run a second time once idle arrives.

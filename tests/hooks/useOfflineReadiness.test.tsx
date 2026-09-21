@@ -53,12 +53,30 @@ describe('probeOfflineReadiness — nothing supported', () => {
 });
 
 describe('probeOfflineReadiness — service worker states', () => {
-  const withRegistration = (registration: unknown) =>
-    defineNavigator('serviceWorker', { getRegistration: () => Promise.resolve(registration) });
+  // `controller` is what decides whether the worker serves THIS document, so
+  // the stub carries it separately from the registration — the two really can
+  // disagree, and that disagreement is the defect the next test pins.
+  const withRegistration = (registration: unknown, controller: unknown = {}) =>
+    defineNavigator('serviceWorker', {
+      getRegistration: () => Promise.resolve(registration),
+      controller,
+    });
 
   it('reports "active" when a worker is serving', async () => {
     withRegistration({ active: {} });
     expect((await probeOfflineReadiness()).serviceWorker).toBe('active');
+  });
+
+  // An ACTIVE registration is not a worker serving this page. `registerType:
+  // 'prompt'` means no `clientsClaim`, so a first load — and every load on a
+  // profile that clears site data on exit — activates a worker that never
+  // controls the document it installed from. Reporting "Active" there enabled
+  // "Download now" and quoted a size for a press that could not cache a byte,
+  // while `offlineWarmup` was independently refusing to run for exactly this
+  // reason. The panel and the warm-up must agree.
+  it('reports "waiting" when the worker is active but controls nothing', async () => {
+    withRegistration({ active: {} }, null);
+    expect((await probeOfflineReadiness()).serviceWorker).toBe('waiting');
   });
 
   it('reports "waiting" when a worker exists but is not serving yet', async () => {
@@ -146,7 +164,10 @@ describe('probeOfflineReadiness — storage', () => {
 
 describe('useOfflineReadiness', () => {
   it('starts unprobed and settles on the probe result', async () => {
-    defineNavigator('serviceWorker', { getRegistration: () => Promise.resolve({ active: {} }) });
+    defineNavigator('serviceWorker', {
+      getRegistration: () => Promise.resolve({ active: {} }),
+      controller: {},
+    });
     vi.stubGlobal('caches', cacheStorageWith({ 'workbox-precache-v2-x': 7 }));
 
     const { result } = renderHook(() => useOfflineReadiness());
@@ -163,11 +184,17 @@ describe('useOfflineReadiness', () => {
     // state that stopped being true a second later, for the whole time the
     // dialog stayed open.
     let registration: unknown = { waiting: {} };
+    let controller: unknown = null;
     let probes = 0;
     defineNavigator('serviceWorker', {
       getRegistration: () => {
         probes += 1;
         return Promise.resolve(registration);
+      },
+      // A getter, so flipping `controller` below is visible to the next probe
+      // the same way a real handover would be.
+      get controller() {
+        return controller;
       },
     });
     vi.stubGlobal('caches', cacheStorageWith({ 'workbox-precache-v2-x': 7 }));
@@ -181,6 +208,7 @@ describe('useOfflineReadiness', () => {
       expect(result.current.serviceWorker).toBe('waiting');
 
       registration = { active: {} };
+      controller = {};
       await act(async () => {
         await vi.advanceTimersByTimeAsync(3_000);
       });

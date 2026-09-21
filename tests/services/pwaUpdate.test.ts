@@ -6,7 +6,7 @@
 // `tests/stubs/virtual-pwa-register.ts` so jsdom can exercise the
 // callback shapes without a real SW.
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { __resetPwaUpdateForTest, initPwaUpdateToast } from '@/services/pwa/pwaUpdate';
 import { resetStoreForTest, useDocumentStore } from '@/store';
 // The vitest alias in `vite.config.ts` makes `virtual:pwa-register`
@@ -51,14 +51,58 @@ describe('initPwaUpdateToast', () => {
     expect(typeof toasts[0]?.action?.run).toBe('function');
   });
 
-  it('"Refresh now" action calls updateSW(true) so the waiting SW skips waiting + reloads', () => {
+  // This used to assert `__getUpdateCalls()` equalled `[true]`, i.e. that we
+  // passed `reloadPage: true`. That argument is named `_reloadPage` in
+  // vite-plugin-pwa's prompt-mode `updateServiceWorker` and never read, so the
+  // assertion pinned a value with no runtime effect and could not fail on the
+  // defect that mattered: the page never reloaded. The reload is what these
+  // three assert instead.
+  it('"Refresh now" asks the waiting SW to skip waiting', () => {
     initPwaUpdateToast();
     __triggerNeedRefresh();
     const action = useDocumentStore.getState().toasts[0]?.action;
     expect(action).toBeDefined();
     action?.run();
-    const updateCalls = __getUpdateCalls();
-    expect(updateCalls).toEqual([true]);
+    expect(__getUpdateCalls()).toHaveLength(1);
+  });
+
+  it('reloads once the new worker takes over', () => {
+    const reload = vi.fn();
+    const listeners: Array<() => void> = [];
+    vi.stubGlobal('window', {
+      location: { reload },
+      setTimeout: globalThis.setTimeout.bind(globalThis),
+    });
+    vi.stubGlobal('navigator', {
+      serviceWorker: { addEventListener: (_e: string, fn: () => void) => listeners.push(fn) },
+    });
+    initPwaUpdateToast();
+    __triggerNeedRefresh();
+    useDocumentStore.getState().toasts[0]?.action?.run();
+    expect(reload).not.toHaveBeenCalled(); // not before the handover
+    for (const fn of listeners) fn(); // controllerchange
+    expect(reload).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
+  });
+
+  // The case the plugin's own reload cannot reach: a page no worker is serving
+  // never receives `controllerchange`, so without the timer the click is inert.
+  it('reloads anyway when no controllerchange ever arrives', async () => {
+    vi.useFakeTimers();
+    const reload = vi.fn();
+    vi.stubGlobal('window', {
+      location: { reload },
+      setTimeout: globalThis.setTimeout.bind(globalThis),
+    });
+    vi.stubGlobal('navigator', { serviceWorker: {} }); // no addEventListener
+    initPwaUpdateToast();
+    __triggerNeedRefresh();
+    useDocumentStore.getState().toasts[0]?.action?.run();
+    expect(reload).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(reload).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('shows a success toast when the SW reports offline-ready (first-visit precache complete)', () => {

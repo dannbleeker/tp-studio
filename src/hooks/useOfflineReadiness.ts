@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
  * Whether the service worker is actually in a position to serve the app shell
  * when the network disappears.
  *
- * - `active`       — a worker is installed and serving. Offline should work.
- * - `waiting`      — a worker exists but nothing is serving yet (still
- *                    installing, or waiting behind `registerType: 'prompt'`).
- *                    One refresh away from `active`.
+ * - `active`       — a worker is installed AND controlling this page. Offline
+ *                    should work.
+ * - `waiting`      — a worker exists but nothing is serving *this document*
+ *                    yet: still installing, waiting behind
+ *                    `registerType: 'prompt'`, or activated without ever
+ *                    claiming this page. One refresh away from `active`.
  * - `unregistered` — registration never happened (or was cleared).
  * - `unsupported`  — no Service Worker API at all.
  */
@@ -52,11 +54,22 @@ async function probeServiceWorker(): Promise<ServiceWorkerStatus> {
     if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return 'unsupported';
     const registration = await navigator.serviceWorker.getRegistration();
     if (!registration) return 'unregistered';
-    // `active` is the only state that serves fetches. A worker that is merely
-    // installing or waiting (the `registerType: 'prompt'` case) is reported as
-    // `waiting` precisely because the user has to refresh before it helps.
-    if (registration.active) return 'active';
-    if (registration.waiting || registration.installing) return 'waiting';
+    // A worker that EXISTS is not a worker that is SERVING THIS PAGE, and this
+    // panel is asked the second question. With `registerType: 'prompt'` there
+    // is no `clientsClaim`, so a first load — and every load on a profile that
+    // clears site data on exit — activates a worker that never controls the
+    // document it installed from. `registration.active` is truthy there while
+    // fetches bypass the worker entirely: the panel said "Active", enabled
+    // "Download now", and quoted a size for a press that provably could not
+    // cache a byte. `offlineWarmup.ts` already draws exactly this distinction
+    // and defers on `!navigator.serviceWorker.controller`; the two now agree.
+    //
+    // `waiting` is the honest answer, and already means what this is: a worker
+    // exists, it is not serving you, one refresh fixes it. Reporting it also
+    // keeps the re-probe below running, so the row flips to `active` by itself
+    // the moment the handover happens.
+    if (registration.active && navigator.serviceWorker.controller) return 'active';
+    if (registration.active || registration.waiting || registration.installing) return 'waiting';
     return 'unregistered';
   } catch {
     return 'unsupported';
@@ -142,9 +155,15 @@ const REPROBE_DELAY_MS = 3_000;
  * worker installed, whether the precache populated, and whether storage was
  * evicted.
  */
-export function useOfflineReadiness(): OfflineReadiness {
+export function useOfflineReadiness(reprobeKey: unknown = null): OfflineReadiness {
   const [readiness, setReadiness] = useState<OfflineReadiness>(UNPROBED);
 
+  // `reprobeKey` is not read by the effect — it IS the trigger. Re-running when
+  // it changes is the entire contract, so the rule's "more dependencies than
+  // necessary" reading is inverted here: removing it restores the stale-panel bug
+  // the dependency exists to fix. Suppressed rather than worked around, because
+  // every alternative (a ref, a counter read inside the body) hides the trigger.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reprobeKey is the trigger, not an input — see above.
   useEffect(() => {
     let cancelled = false;
     let timer: number | undefined;
@@ -173,7 +192,13 @@ export function useOfflineReadiness(): OfflineReadiness {
       cancelled = true;
       if (timer !== undefined) window.clearTimeout(timer);
     };
-  }, []);
+    // `reprobeKey` lets the caller force a fresh reading when it knows the
+    // answer just changed. The probe stops once a worker is `active`, which is
+    // right for "is a worker serving me" but wrong for the byte counts beside
+    // it: a completed top-up moved "Cached size" and the precache count, and
+    // without this the panel went on quoting pre-download figures that
+    // contradicted the extras row it had just refreshed.
+  }, [reprobeKey]);
 
   return readiness;
 }

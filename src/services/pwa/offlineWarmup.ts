@@ -255,6 +255,62 @@ async function isCached(url: string): Promise<boolean> {
   }
 }
 
+/**
+ * How long to keep re-checking Cache Storage before calling a fetched file a
+ * miss, and how often. Generous on purpose: the cost of waiting is a moment of
+ * background idling, the cost of giving up early is re-downloading megabytes.
+ */
+const CACHE_SETTLE_TIMEOUT_MS = 500;
+const CACHE_SETTLE_STEP_MS = 100;
+
+/**
+ * The live settle budget. A variable rather than the constant directly so the
+ * test reset can zero it: most cases assert a deliberate MISS, and waiting out
+ * a real-time budget for each would turn the suite into a stopwatch. The one
+ * test that covers the race sets it back explicitly.
+ */
+let cacheSettleTimeoutMs = CACHE_SETTLE_TIMEOUT_MS;
+
+/**
+ * Wait for the bytes to actually appear in Cache Storage, rather than asking
+ * once and believing the answer.
+ *
+ * `fetch()` resolves when the response HEADERS arrive. Workbox's `CacheFirst`
+ * finishes its `cache.put` only once the whole body has streamed, inside the
+ * worker's `event.waitUntil` — which the page does not await. An immediate
+ * readback is therefore a race, and the big files lose it: measured against the
+ * production build, the run reported `cached 2/5 on-demand chunks` and
+ * `cached 0/2 deferred documents` while Cache Storage ended up holding all five
+ * vendor chunks and both books. Every file it called a miss was in fact there.
+ *
+ * That under-reporting is not cosmetic. A miss re-opens the `completed` latch
+ * and arms the reconnect/visibility retry, so every return to the tab re-ran the
+ * whole warm-up and re-downloaded ~5.5 MiB already on disk — the exact waste
+ * this module exists to prevent, caused by the check meant to prove it had been
+ * avoided. The readiness panel inherited the same wrong count.
+ *
+ * Reading the body first is what makes the wait short: the page's fetch does not
+ * pull the stream on its own, so consuming it here drives the transfer the
+ * worker's clone is reading from. Polling after that costs one check for a file
+ * already stored and a few short waits for one still landing.
+ */
+async function settledInCache(url: string, response: Response): Promise<boolean> {
+  try {
+    // Drain the body. Without this the page holds an unread stream and the
+    // worker's `cache.put` has nothing pulling it along.
+    await response.arrayBuffer();
+  } catch {
+    // A body that cannot be read is not a reason to declare a miss — the
+    // readback below is still the authority.
+  }
+  const deadline = Date.now() + cacheSettleTimeoutMs;
+  for (;;) {
+    if (await isCached(url)) return true;
+    if (Date.now() >= deadline) return false;
+    await new Promise((resolve) => setTimeout(resolve, CACHE_SETTLE_STEP_MS));
+  }
+}
+
 /** Fetch each URL in order. Returns how many failed. Never throws. */
 async function warmTier(
   label: string,
@@ -272,7 +328,7 @@ async function warmTier(
       const response = await fetch(resolved);
       if (!response.ok) {
         log.warn(`Offline warm-up: ${url} returned ${response.status}`);
-      } else if (await isCached(resolved)) {
+      } else if (await settledInCache(resolved, response)) {
         warmed += 1;
       } else {
         // `response.ok` is NOT proof of caching, and treating it as such has
@@ -374,7 +430,19 @@ async function run(forced: boolean): Promise<OfflineTopUpOutcome> {
       // Yield back to the browser before the heavy tier. The chunks above
       // unlock features; the book is ~5 MiB of reading material, and it has
       // no business sharing a slice with them.
-      bookTier = { urls: deferred, run: null };
+      // `??=`, never `=`. A retry run reaches this line while an earlier book
+      // tier may still be downloading: the reconnect/visibility listeners are
+      // armed whenever the assets tier missed anything, and `visibilitychange`
+      // fires every time the user comes back to the tab. Replacing a live tier
+      // orphans it — its `.finally` no longer matches `bookTier`, so it never
+      // clears — and hands the next idle slot a fresh `run: null` claim, which
+      // starts a SECOND concurrent ~5 MiB handbook download of the same files.
+      // That is the exact duplication `claimBookTier` exists to prevent, and it
+      // lands hardest on the short-wifi-window case this whole path is for:
+      // half the window spent fetching bytes already in flight. Adopting the
+      // existing tier is always right — it either has not started (the next
+      // claim starts it) or is already running (the next claim awaits it).
+      bookTier ??= { urls: deferred, run: null };
       runWhenIdle(() => {
         const book = claimBookTier();
         // `null` means a forced top-up got here first and already ran it.
@@ -545,7 +613,8 @@ export function scheduleOfflineWarmup(): void {
 }
 
 /** Test-only: clear the run-once guards so each case starts cold. */
-export function __resetOfflineWarmupForTest(): void {
+export function __resetOfflineWarmupForTest(settleMs = 0): void {
+  cacheSettleTimeoutMs = settleMs;
   if (typeof window !== 'undefined') {
     if (onlineHandler) window.removeEventListener('online', onlineHandler);
     if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
