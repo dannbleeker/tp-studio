@@ -297,7 +297,15 @@ describe('useOfflineExtras — runTopUp', () => {
     await waitFor(() => expect(result.current.topUp).toEqual({ kind: 'idle' }));
   });
 
-  it('does not set state after unmount', async () => {
+  // Renamed from "does not set state after unmount", which could not fail. After
+  // `unmount()` React never re-renders the hook, so `result.current` is frozen at
+  // its last value whether or not the `cancelled` guard exists — the assertion
+  // held identically with the guard deleted. The guard itself is unobservable
+  // from outside in React 19 (the old "state update on an unmounted component"
+  // warning is gone), so this pins the DECISION the guard protects instead: the
+  // download is deliberately not aborted, because throwing away a short wifi
+  // window is worse than an orphaned promise.
+  it('keeps the download running after the panel closes', async () => {
     const book = gate();
     vi.stubGlobal(
       'fetch',
@@ -324,6 +332,11 @@ describe('useOfflineExtras — runTopUp', () => {
       await Promise.resolve();
     });
 
-    expect(result.current.topUp).toEqual({ kind: 'preparing' });
+    // The state assertion this replaces was vacuous; what is real — and what
+    // the no-abort decision is for — is that the book was still fetched.
+    const pdfCalls = (globalThis.fetch as unknown as { mock: { calls: unknown[][] } }).mock.calls
+      .map((call) => String(call[0]))
+      .filter((url) => url.endsWith('.pdf'));
+    expect(pdfCalls, 'the unmount must not cancel a download already on the wire').toHaveLength(1);
   });
 });

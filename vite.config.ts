@@ -303,7 +303,18 @@ export default defineConfig(({ command, mode }) => ({
         // `/dashboard.html` open the editor instead of the dashboard. The app's
         // own deep links are extensionless (root + query/hash), so denying every
         // `.html` path from the fallback is safe and future-proofs any new page.
-        navigateFallbackDenylist: [/^\/api\//, /\.html$/],
+        // `.pdf` / `.epub` joined the denylist once the book left `globPatterns`
+        // and became a runtime-cached download. Route order in the generated
+        // worker is what makes this necessary: workbox emits the NavigationRoute
+        // FIRST, and the Router matches in registration order, so the SPA
+        // fallback claimed the book before the CacheFirst rule below ever saw
+        // it. Clicking "PDF" or "EPUB" therefore opened a second copy of the app
+        // — verified in a real browser against the production build, where a
+        // *navigation* to the book returned `text/html` (index.html byte for
+        // byte) while a `fetch()` of the same URL returned the real 3,427,524
+        // byte `application/pdf`. Only navigations were affected, which is why
+        // the runtime cache looked healthy and nothing in the build complained.
+        navigateFallbackDenylist: [/^\/api\//, /\.html$/, /\.(?:pdf|epub)$/],
         // Session 114 — runtime-cache the practitioner book. It is now
         // 3.27 MiB (PDF) + 2.02 MiB (EPUB), and deliberately out of the
         // precache `globPatterns` so the first-visit install isn't bloated

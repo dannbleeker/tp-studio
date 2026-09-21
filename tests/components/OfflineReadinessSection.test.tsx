@@ -127,7 +127,7 @@ describe('OfflineReadinessSection', () => {
   });
 
   it('reports a healthy install', async () => {
-    defineNavigator('serviceWorker', { getRegistration: () => Promise.resolve({ active: {} }) });
+    activeWorker(); // registered AND controlling — anything less is not "healthy"
     defineNavigator('storage', {
       persisted: () => Promise.resolve(true),
       estimate: () => Promise.resolve({ usage: 2 * 1024 * 1024 }),
@@ -282,7 +282,36 @@ describe('OfflineReadinessSection — offline extras', () => {
       await Promise.resolve();
     });
 
-    expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining('.pdf'));
+    expect(pressIsBlocked()).toBe(true);
+  });
+
+  // The offline case above cannot tell "the press was ignored" from "the press
+  // ran and the warm-up bailed out": with `onLine: false` the run returns on its
+  // own first branch before fetching anything, so the previous assertion here
+  // (no `.pdf` fetched) stayed green with the click handler's gate deleted
+  // outright. This blocks for a different reason — online, worker serving,
+  // nothing left to fetch — where a run that started WOULD re-read the manifest.
+  // That second read is the difference the assertion needs.
+  it('ignores a press when there is nothing to fetch', async () => {
+    activeWorker();
+    defineNavigator('onLine', true);
+    const empty = { assets: [], deferred: [] };
+    const fetchMock = manifestFetch(empty);
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('caches', cachesMatching({ urls: [] }));
+
+    render(<OfflineReadinessSection />);
+    await waitFor(() => expect(pressIsBlocked()).toBe(true));
+    const manifestReads = () =>
+      fetchMock.mock.calls.filter((call) => String(call[0]).endsWith('offline-warmup.json')).length;
+    const before = manifestReads();
+
+    fireEvent.click(topUpButton());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(manifestReads(), 'a blocked press must not start a run at all').toBe(before);
   });
 
   it('names the size of the pending download before it is pressed', async () => {

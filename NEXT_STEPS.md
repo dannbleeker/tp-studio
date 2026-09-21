@@ -235,6 +235,23 @@ Session 209 ran an app-wide review (persistence · store · graph · exporters) 
 findings** rather than filing them — see CHANGELOG *Session 209b*. What that review left as SUSPICIOUS,
 mechanism traced but no trigger established, is recorded here so it isn't re-derived:
 
+- **The extras row is counted once per dialog open.** `useOfflineExtras` counts on
+  mount and re-counts only on a press, so a boot warm-up landing while the panel is
+  open leaves the row, the "about N MB to download" figure and the button label
+  frozen on a half-warm number. Session 215 tried the obvious fix (re-count on a
+  timer while the count is incomplete, mirroring `useOfflineReadiness`'s re-probe)
+  and **reverted it**: a background re-count races the top-up's own re-count and
+  clobbers it, breaking five existing tests. Doing it properly means giving the
+  count and the top-up one owner, which is a refactor rather than a patch. Bounded
+  in the meantime — the number is now correct *as of when it was taken* (the
+  readback race is fixed), and it self-corrects on a press or a reopen.
+- **Dependency chunks of the on-demand vendors are still precached.** The deferral is
+  name-based (`jspdf|html2canvas|svg2pdf|pptxgen|MarkdownPreview`), so chunks those
+  vendors pull in — canvg, DOMPurify, ~58 KB gz between them — stay inside the
+  all-or-nothing install. Reported twice by the Session 215 hunt and not acted on:
+  shrinking an install that currently succeeds is an optimisation, and the failure
+  mode of getting the pattern wrong (a chunk excluded from the precache *and* from
+  the runtime route, i.e. unreachable offline) is worse than the 58 KB.
 - **No cross-browser-tab coordination at all** — no `BroadcastChannel`, no `storage` listener anywhere in
   `src/`. Two browser windows share one `tp-studio:tabs:v1` manifest and the same per-doc slots,
   last-writer-wins, and window A's quota mitigation can evict a doc window B has open. Plausible for a

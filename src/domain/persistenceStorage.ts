@@ -209,14 +209,17 @@ export type TabsManifest = {
  * class that a per-doc `lastCommitted` map would introduce across doc
  * swaps / tab closes.
  */
-export const saveDocToLocalStorage = (doc: TPDocument, serialized?: string): void => {
+export const saveDocToLocalStorage = (doc: TPDocument, serialized?: string): boolean => {
   const committedKey = docCommittedKey(doc.id);
   const prior = readString(committedKey);
   if (prior !== null) writeString(docBackupKey(doc.id), prior);
   // Session 144 — accept a pre-built body so `persistActiveDoc` serializes once
   // for both slots; standalone callers (docMetaSlice rename / create / swap)
   // omit it and serialize here.
-  writeString(committedKey, serialized ?? JSON.stringify(doc));
+  // Returns whether the committed body landed. `writeString` has always reported
+  // that, and every caller here dropped it — which is how the debounced
+  // scheduler came to delete the live drafts after a write that never happened.
+  return writeString(committedKey, serialized ?? JSON.stringify(doc));
 };
 
 /**
@@ -405,15 +408,20 @@ export const persistTabsManifest = (manifest: TabsManifest): void => {
  * multi-tab manifest on the very next committed edit — which silently
  * dropped every tab but the active one on reload (Batch 5.4 fix).
  */
-export const persistActiveDoc = (doc: TPDocument): void => {
+export const persistActiveDoc = (doc: TPDocument): boolean => {
   // Serialize ONCE and feed both writers. The per-doc committed slot and the
   // legacy single-doc slot store the byte-identical compact body, so a single
   // `JSON.stringify` (the costly part on a large doc — ~30–50 ms at 200
   // entities) replaces the two this used to do. Mirrors the live-draft path,
   // which already serializes once and writes both its slots.
   const serialized = JSON.stringify(doc);
-  saveDocToLocalStorage(doc, serialized);
+  // The per-doc slot is the one that decides. The legacy single-doc slot is a
+  // downgrade-safety duplicate, so its failure is survivable; losing the per-doc
+  // committed body while the live draft is being deleted is not. Both writes
+  // still run — `&&` would skip the second and silently drop the dual-write.
+  const committed = saveDocToLocalStorage(doc, serialized);
   saveToLocalStorage(doc, serialized);
+  return committed;
 };
 
 /**

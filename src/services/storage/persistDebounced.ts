@@ -121,8 +121,17 @@ export class PersistScheduler {
     // Batch 2.2 — persist the active doc to its per-doc slots + the tab
     // manifest, dual-writing the legacy single-doc slots for downgrade
     // safety. See `persistActiveDoc`.
-    persistActiveDoc(doc);
-    // Once the canonical keys are written, both live drafts are redundant.
+    const committed = persistActiveDoc(doc);
+    // Only once the canonical keys ACTUALLY hold this body are the live drafts
+    // redundant. They used to be deleted unconditionally, and `writeString`
+    // swallows a quota failure, so a full localStorage produced the worst
+    // possible ordering: the committed write silently did nothing, the live
+    // drafts — the only remaining copy of the newest edits — were removed, and
+    // `pending` was already null so nothing would ever retry. The edits then
+    // existed solely in memory, with both recovery paths (`docBackup`, live
+    // draft) holding older state. Keeping the drafts costs a stale duplicate
+    // that the next successful write clears; deleting them costs the work.
+    if (!committed) return;
     removeKey(STORAGE_KEYS.docLive);
     removeKey(docLiveKey(doc.id));
   }

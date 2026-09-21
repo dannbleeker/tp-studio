@@ -47,6 +47,50 @@ describe('PersistScheduler', () => {
     scheduler.cancel();
   });
 
+  // The ordering that used to destroy work: the committed write is allowed to
+  // fail silently (`writeString` swallows a QuotaExceededError and returns
+  // false), and the live drafts — the ONLY remaining copy of the newest edits —
+  // were then deleted unconditionally, with `pending` already nulled so nothing
+  // would ever retry. Both recovery paths (`docBackup`, the live draft) hold
+  // older state, so those edits existed solely in memory from that point on.
+  it('keeps the live draft when the committed write fails', () => {
+    const scheduler = new PersistScheduler();
+    const doc = someDoc();
+    scheduler.schedule(doc);
+    expect(globalThis.localStorage.getItem(STORAGE_KEYS.docLive)).not.toBeNull();
+
+    // Swap the whole Storage object rather than spying on the method: `storage.ts`
+    // reads `globalThis.localStorage` fresh on every call, and a full stand-in
+    // cannot be bypassed by an internal reference the way a method spy can.
+    const real = globalThis.localStorage;
+    const failing: Storage = {
+      get length() {
+        return real.length;
+      },
+      clear: () => real.clear(),
+      getItem: (k) => real.getItem(k),
+      key: (i) => real.key(i),
+      removeItem: (k) => real.removeItem(k),
+      setItem: (k, v) => {
+        // Only the committed bodies fail — the shape of a quota error that hits
+        // when the new body would push the origin over its budget.
+        if (k === STORAGE_KEYS.doc || k.includes(':committed')) {
+          throw new DOMException('quota', 'QuotaExceededError');
+        }
+        real.setItem(k, v);
+      },
+    };
+    vi.stubGlobal('localStorage', failing);
+    scheduler.flushNow();
+    vi.unstubAllGlobals();
+
+    expect(globalThis.localStorage.getItem(STORAGE_KEYS.doc)).toBeNull(); // write really failed
+    // The edits survive somewhere on disk, which is the whole point.
+    const live = globalThis.localStorage.getItem(STORAGE_KEYS.docLive);
+    const perDocLive = globalThis.localStorage.getItem(docLiveKey(doc.id));
+    expect(live ?? perDocLive).not.toBeNull();
+  });
+
   it('writes the committed key on flushNow and clears the live draft', () => {
     const scheduler = new PersistScheduler();
     const doc = someDoc();
