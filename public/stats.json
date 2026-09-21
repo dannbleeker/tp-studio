@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-09-20T21:50:43.613Z",
-  "commit": "be05652",
+  "generatedAt": "2026-09-21T12:49:15.387Z",
+  "commit": "d4b94b5",
   "headline": {
     "linesTsJs": 161120,
     "tests": 5246,
-    "lineCoveragePct": 95.31,
-    "commits": 1215,
-    "ageDays": 132,
+    "lineCoveragePct": 95.33,
+    "commits": 1216,
+    "ageDays": 133,
     "trackedFiles": 1259,
     "featureManualPct": 99.6,
     "featureBookPct": 66.3,
@@ -46,18 +46,18 @@
   ],
   "coverage": {
     "lines": {
-      "pct": 95.31,
-      "covered": 15383,
+      "pct": 95.33,
+      "covered": 15386,
       "total": 16139
     },
     "statements": {
-      "pct": 92.93,
-      "covered": 17541,
+      "pct": 92.94,
+      "covered": 17543,
       "total": 18875
     },
     "functions": {
-      "pct": 92.31,
-      "covered": 3531,
+      "pct": 92.39,
+      "covered": 3534,
       "total": 3825
     },
     "branches": {
@@ -69,27 +69,27 @@
   "tests": {
     "unit": 5144,
     "e2e": 102,
-    "durationMs": 188597,
+    "durationMs": 192295,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 6185
-      },
-      {
-        "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 3612
+        "ms": 6906
       },
       {
         "file": "tests/domain/graphReach.test.ts",
-        "ms": 3583
+        "ms": 3488
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 3119
+        "ms": 3372
+      },
+      {
+        "file": "tests/components/EntityInspector.test.tsx",
+        "ms": 3343
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2114
+        "ms": 1688
       }
     ]
   },
@@ -189,9 +189,9 @@
     "nonNull": 106
   },
   "bundle": {
-    "jsGzipKb": 867.7,
+    "jsGzipKb": 867.6,
     "cssGzipKb": 19.9,
-    "totalGzipKb": 887.6,
+    "totalGzipKb": 887.5,
     "budgetKb": 207,
     "withinBudget": true
   },
@@ -845,8 +845,8 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 132,
-    "commits": 1215,
+    "ageDays": 133,
+    "commits": 1216,
     "commits7d": 8,
     "authors": [
       {
@@ -855,7 +855,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 345
+        "count": 346
       },
       {
         "name": "Claude",
@@ -867,8 +867,8 @@
       }
     ],
     "churn30d": {
-      "added": 7529,
-      "removed": 617
+      "added": 7633,
+      "removed": 680
     },
     "changelogEntries": 416
   }
