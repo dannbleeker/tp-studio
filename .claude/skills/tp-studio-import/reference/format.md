@@ -6,7 +6,8 @@ The authoritative shape is the validator in
 the first invalid field throws a precise error and nothing loads.
 
 General rules:
-- Document is one JSON object. `schemaVersion` **must be `9`**.
+- Document is one JSON object. Set `schemaVersion` to **`10`** (current). An older
+  version is migrated forward on import; a higher one is rejected.
 - All ids are arbitrary non-empty strings, **unique within their own map**. Not
   re-keyed on import. A map key must equal its value's `id`.
 - "Required" = throws if missing or wrong type. "Optional" = omit when unset;
@@ -20,7 +21,7 @@ General rules:
 
 | Field | Type | Req? | Notes |
 |---|---|---|---|
-| `schemaVersion` | `9` | **yes** | Exactly `9`. |
+| `schemaVersion` | `10` | **yes** | Write `10`. |
 | `id` | string | **yes** | Document id. |
 | `diagramType` | DiagramType | **yes** | See enum below. |
 | `entities` | map\<id, Entity\> | **yes** | May be `{}`. |
@@ -41,7 +42,9 @@ You almost never need anything past the first six rows + `title`.
 
 ## DiagramType (enum — exact strings)
 
-`crt`, `frt`, `prt`, `tt`, `ec`, `goalTree`, `st`, `freeform`, `nbr`
+`crt`, `frt`, `prt`, `tt`, `ec`, `goalTree`, `st`, `freeform`, `nbr`, `id`
+
+Any other value is rejected on import.
 
 ## Entity
 
@@ -67,13 +70,19 @@ You almost never need anything past the first six rows + `title`.
 
 ### EntityType (enum — exact strings)
 
-`ude`, `effect`, `rootCause`, `injection`, `desiredEffect`, `assumption`,
+`ude`, `effect`, `rootCause`, `injection`, `desiredEffect`,
 `goal`, `criticalSuccessFactor`, `necessaryCondition`, `obstacle`,
 `intermediateObjective`, `action`, `need`, `want`, `note`
 
 Use the subset appropriate to the diagram (see the cheat-sheet in `SKILL.md`).
-`note` works everywhere. `assumption` entities are legacy — prefer attaching
-assumptions to edges (see Assumption below) rather than as nodes.
+`note` works everywhere. The importer accepts any non-empty `type` string so a
+custom entity class can't cost the whole document, but a value outside this list
+(and outside `customEntityClasses`) opens as an "unknown type" node. Treat the
+list as closed.
+
+An assumption is **not** an entity. Since schema 10 it lives only as an
+Assumption record attached to an edge (see Assumption below). A
+`"type": "assumption"` entity in a version-10 file opens as an unknown-type node.
 
 ## Edge
 
@@ -91,7 +100,9 @@ assumptions to edges (see Assumption below) rather than as nodes.
 | `description` | string | no | Markdown annotation. |
 | `isBackEdge` | boolean | no | Marks a deliberate loop-closer. |
 | `isMutualExclusion` | boolean | no | The EC `d ↔ dPrime` conflict arrow. |
-| `assumptionIds` | string[] | no | Ids of Assumption records backing this edge. |
+
+Edges carry no list of their assumptions. A legacy `assumptionIds` field is
+ignored on import; the link is each Assumption record's `edgeId`.
 
 A single edge may belong to **at most one** of `andGroupId` / `orGroupId` /
 `xorGroupId`. If more than one is set, import keeps AND > OR > XOR and drops the
@@ -109,23 +120,22 @@ you include a group.
 
 `{ id, edgeId, text, status, createdAt, updatedAt }` (all required), plus
 optional `kind` (`necessary | parallel | sufficient`, S&T), `injectionIds`,
-`resolved`, `source` (`user | ai`). `status` ∈
-`unexamined | valid | invalid | challengeable`. `edgeId` must match an edge id;
-to surface it on that edge, also add the assumption's id to that edge's
-`assumptionIds`.
+`resolved`, `source` (`user | ai`), `annotationNumber`. `status` ∈
+`unexamined | valid | invalid | challengeable`. `edgeId` is the id of the edge
+the assumption sits under; that alone attaches it. Nothing goes on the edge.
 
 ## Comment (optional — review threads)
 
 `{ id, anchor, body, author, createdAt, updatedAt }` (all required) + optional
 `parentId` (reply), `resolved`. `anchor` is one of:
-`{kind:'entity', entityId}` · `{kind:'edge', edgeId}` · `{kind:'document'}` ·
-`{kind:'point', x, y}`.
+`{kind:'entity', entityId}` · `{kind:'edge', edgeId}` ·
+`{kind:'assumption', assumptionId}` · `{kind:'document'}` · `{kind:'point', x, y}`.
 
 ## Minimal valid document (smallest that imports)
 
 ```json
 {
-  "schemaVersion": 9,
+  "schemaVersion": 10,
   "id": "d",
   "diagramType": "crt",
   "title": "Tiny",

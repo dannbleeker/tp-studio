@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 9,
+  "schemaVersion": 10,
   "id": "goal-tree-example",
   "diagramType": "goalTree",
   "title": "Regional supplier — Goal Tree",

@@ -5,6 +5,57 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 216: CLAUDE.md caught up with Dann's standing rules
+
+A memory consolidation on 2026-10-04 found the repo's own instructions contradicting the rules Dann
+works by. Each claim was checked against the current files before anything changed. Docs and `.claude/`
+config only, no app code; `docs/features.json` moves `reviewedThroughSession` to 216 because nothing
+user-facing shipped.
+
+### Changed
+
+- **The commit step no longer asks first.** CLAUDE.md step 4 and `/session-end` step 4 said "ask Dann
+  first, don't commit silently", the opposite of the standing rule: a green work block gets committed,
+  pushed and watched to green CI without a permission round-trip. Both now list the only reasons to
+  stop (a risky or hard-to-reverse change, WIP, stray changes, and CI that stays red, which
+  `/session-end` covers in its step 7) and say one commit per logical change instead of one per
+  session, as the rule does.
+- **The Co-Authored-By trailer comes from the harness.** The hard-coded `Claude Opus 4.8 (1M context)`
+  footer was already stale. CLAUDE.md and `/session-end` now say to copy the trailer from the harness's
+  attribution instruction each session.
+- **Move into the repo once instead of prefixing.** CLAUDE.md (workstation section), NEXT_STEPS and
+  `/gate` told every Bash call to start with `cd /c/devtools/tp-studio &&`. Dann's global rule
+  (2026-10-03) is to move in once, with `change_directory` or by launching from the repo. The cwd-drift
+  warning stays, rewritten as a symptom to recognise ("Cannot find module …\Desktop\node_modules",
+  "not a git repository") rather than a reason to prefix every call.
+- **`session-reviewer` runs on sonnet.** Its frontmatter said `model: haiku`. Dann's rule from
+  2026-10-04 is that every sub-agent runs on sonnet and opus needs his yes. The agent file, its
+  CLAUDE.md entry and the parallel-research section now say so.
+
+### Fixed: the import skill and two commands had fallen behind schema 10
+
+- **`tp-studio-import` taught a v9 document.** SKILL.md and `reference/format.md` required
+  `schemaVersion` 9, and nine of the ten examples carried it (only `id.json` was at 10). The importer
+  migrated them, so nothing failed, but the reference also described the pre-v10 assumption model: it
+  listed `assumption` as an entity type and told you to put the id in `edge.assumptionIds`. Since v10
+  an assumption is only a record with an `edgeId`, the importer ignores `assumptionIds`, and an
+  `assumption` entity in a v10 file opens as an unknown-type node. All examples now say 10, the
+  reference documents the record model and the `{kind:'assumption'}` comment anchor, the DiagramType
+  list gains the missing `id`, and SKILL.md no longer claims an unknown entity type is rejected (it
+  imports as an unknown-type node; only a bad `diagramType` rejects the file).
+- **`/gate` said knip passes on exit 0 while listing unused exports.** `knip.json` has set those rules
+  to `error` since Session 180. It also now points at `node scripts/preflight.mjs` as the one-command
+  form.
+- **`/session-end` ran the gate through `node_modules/.bin` shims and watched one CI run.** It now runs
+  `node scripts/preflight.mjs` un-piped and cross-checks every run for the HEAD sha, the same check as
+  CLAUDE.md step 6.
+
+### Checked, no change
+
+- **Schema version.** The consolidation had CLAUDE.md at 9 against README's 10. On current `main` both
+  say 10, matching `CURRENT_SCHEMA_VERSION` in `src/domain/migrations/index.ts`; `22e224e` had already
+  corrected CLAUDE.md.
+
 ## Session 215 — the book that was never a book, and a 5 MiB download that ran twice
 
 A second adversarial hunt over the offline surface, this time reaching the build config and the

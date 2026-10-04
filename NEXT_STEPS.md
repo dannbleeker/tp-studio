@@ -423,9 +423,10 @@ Pay their cost on demand: `html-to-image`, `dagre`+`@/domain/layout` (guarded by
 ## When picking this up next
 
 1. **Pull the project state.** `git status` (clean), `pnpm install` (preinstall verifies Node `>=22` +
-   pnpm `^10`), `pnpm dev` to start. On the Windows box prefix with `cd /c/devtools/tp-studio &&`; in a
-   Claude Code web session the repo is already the cwd and the `SessionStart` hook has installed for you
-   — see **Environment** in `CLAUDE.md`, which splits the two. The local gate is
+   pnpm `^10`), `pnpm dev` to start. On the Windows box, move into `C:\devtools\tp-studio` once at the
+   start rather than prefixing each command with `cd`; in a Claude Code web session the repo is already
+   the cwd and the `SessionStart` hook has installed for you. **Environment** in `CLAUDE.md` splits the
+   two. The local gate is
    **`node scripts/preflight.mjs`** (tsc → biome → knip → vitest → build → bundle-size), run via node
    bins — portable, and what lint-staged and the pre-commit gate use.
 2. **Open the durable docs** — README.md (architecture), USER_GUIDE.md (features), CHANGELOG.md (history),

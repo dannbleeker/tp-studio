@@ -1,23 +1,19 @@
 ---
 name: session-end
-description: Run the full TP Studio end-of-session workflow — first test round, maintainability refactor pass via the session-reviewer subagent, second test round, ask to commit, push to origin/main, watch CI via gh, fire a PushNotification on green. Encodes the rules in feedback_ci_refactor_workflow + feedback_notifications memory.
+description: Run the full TP Studio end-of-session workflow — first test round, maintainability refactor pass via the session-reviewer subagent, second test round, commit without asking, push to origin/main, watch CI via gh, fire a PushNotification on green. Encodes the rules in feedback_commit_workflow + feedback_notifications memory.
 ---
 
 You're closing out a TP Studio coding session. Run the standing workflow without freelancing — it's deliberately ordered. Skip a step only when Dann explicitly says so.
 
 ## Step 1 — First test round
 
-Run all five gates. Each must exit 0 before moving on.
+Run the whole gate in one shot. It must exit 0 before moving on.
 
 ```
-node_modules/.bin/tsc --noEmit
-node_modules/.bin/biome check
-node_modules/.bin/vitest run
-node_modules/.bin/vite build
-node scripts/check-bundle-size.mjs
+node scripts/preflight.mjs
 ```
 
-Report each result inline (one line per gate). If any fail, **stop here** and fix — don't proceed to the refactor pass with red tests. The diff you're about to refactor wouldn't be trustworthy.
+That is tsc, biome, knip, vitest, vite build and bundle-size, in order and fail-fast (the same steps as `/gate`). Run it un-piped: a `| tail` reports the pipe's exit code, not the gate's. Report each step's result inline (one line per step). If any fail, **stop here** and fix — don't proceed to the refactor pass with red tests. The diff you're about to refactor wouldn't be trustworthy.
 
 ## Step 2 — Maintainability refactor pass
 
@@ -33,15 +29,15 @@ Skip the whole step if Dann said "no refactor this session."
 
 ## Step 3 — Second test round
 
-Same five gates as step 1. Catches regressions the refactor introduced. Any failure → fix → re-run, do **not** proceed to commit with red tests.
+Same gate as step 1. Catches regressions the refactor introduced. Any failure → fix → re-run, do **not** proceed to commit with red tests.
 
-## Step 4 — Ask Dann to commit
+## Step 4: Commit without asking
 
-Per `feedback_commit_workflow` memory: ask first, don't commit silently. Quote the proposed Conventional Commits subject line. On "yes", build the commit with:
+Per the `feedback_commit_workflow` memory ("Land every green work block"): once step 3 is green, commit and say what landed. It is not a permission gate. Stop and ask instead only when the change is risky or hard to reverse (schema migration, data deletion, dependency bump, security or licence), the work is WIP, or you find stray unrelated changes. If Dann said "hold" or "don't push" this session, honour it. Build the commit with:
 
-- One commit per session (multi-line body, references the CHANGELOG entry).
+- One commit per logical change (multi-line body, references the CHANGELOG entry).
 - `feat:` / `fix:` / `docs:` / `refactor:` / `chore:` / `test:` prefix per the change shape.
-- Co-Authored-By footer for Claude.
+- The Co-Authored-By trailer exactly as the harness's attribution instruction gives it this session, never copied from memory or an old commit.
 - HEREDOC for the message so formatting survives.
 
 ## Step 5 — Push to origin/main
@@ -50,11 +46,15 @@ Per `feedback_commit_workflow` memory: ask first, don't commit silently. Quote t
 
 ## Step 6 — Watch CI via gh
 
-```
-gh run list --branch main --workflow=CI --limit 1
+Several runs fire per push (`CI`, with its own jobs, and `Deploy to GitHub Pages`), so watching one is not enough. `gh run watch <id>` is fine for keeping busy, but don't trust `--exit-status`: it follows one job and can report green while another is red. Once the runs finish, cross-check every run for the HEAD sha (the full 40-character sha; a short one matches nothing):
+
+```bash
+SHA=$(git rev-parse HEAD)
+gh run list --branch main --limit 12 --json headSha,conclusion,name \
+  --jq ".[] | select(.headSha==\"$SHA\") | \"\(.name): \(.conclusion)\""
 ```
 
-Capture the run id, then watch via the `Monitor` tool with a polling script. Both `Lint + types + tests + build` and `Playwright e2e smoke tests` must return `success`.
+Every line must say `success`. This is the same check as CLAUDE.md step 6.
 
 ## Step 7 — Goal-seek on CI failure
 
@@ -71,7 +71,7 @@ If genuinely stuck (e.g. design ambiguity that needs Dann's input), fire a `Push
 
 ## Step 8 — PushNotification on green
 
-Once both CI jobs return `success`, send a one-line notification:
+Once every run for the HEAD sha returns `success`, send a one-line notification:
 
 ```
 Session N closed — M tests passing, CI green
