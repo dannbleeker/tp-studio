@@ -50,6 +50,16 @@ user-facing shipped.
   `node scripts/preflight.mjs` un-piped and cross-checks every run for the HEAD sha, the same check as
   CLAUDE.md step 6.
 
+### Fixed: the commit gate never ran on the workstation
+
+- **`pre-bash-gate.cjs` blocked every Bash `git commit` on Windows with "'node_modules' is not
+  recognized".** It ran `execSync('node_modules/.bin/tsc …')`, and `execSync` hands that string to
+  cmd.exe, which reads `/.bin/tsc` as a switch. The gate only ever worked in the Linux web container;
+  on the workstation the way through was a PowerShell `git commit --no-verify`, which skipped it
+  entirely. All three calls (tsc, biome, the push-gate `vite build`) now use the node entry points
+  that `preflight.mjs` uses. Probed both ways: exit 0 on a clean tree, exit 2 with the real TS2322 and
+  biome output on a planted type error.
+
 ### Checked, no change
 
 - **Schema version.** The consolidation had CLAUDE.md at 9 against README's 10. On current `main` both

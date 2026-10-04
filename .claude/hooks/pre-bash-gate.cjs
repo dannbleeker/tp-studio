@@ -31,6 +31,15 @@ const path = require('node:path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 
+// Tools run through their node entry points, the same ones preflight.mjs and
+// lint-staged use. `execSync` hands its string to cmd.exe on Windows, which
+// parses `node_modules/.bin/tsc` as the command `node_modules` plus a `/.bin`
+// switch, so the old .bin form failed on the workstation every time and only
+// worked in the Linux web container.
+const TSC = 'node ./node_modules/typescript/bin/tsc';
+const BIOME = 'node ./node_modules/@biomejs/biome/bin/biome';
+const VITE = 'node ./node_modules/vite/bin/vite.js';
+
 const readStdin = () => {
   try {
     return fs.readFileSync(0, 'utf8');
@@ -56,7 +65,7 @@ const main = () => {
     if (process.env.CLAUDE_SKIP_COMMIT_GATE === '1') process.exit(0);
     const failures = [];
     try {
-      execSync('node_modules/.bin/tsc --noEmit', {
+      execSync(`${TSC} --noEmit`, {
         cwd: PROJECT_ROOT,
         stdio: 'pipe',
       });
@@ -72,7 +81,7 @@ const main = () => {
       // lint findings in a file CI never checks. A gate that fails on something
       // CI passes isn't a gate, it's a detour: the only way through is
       // CLAUDE_SKIP_COMMIT_GATE=1, which switches off the tsc check too.
-      execSync('node_modules/.bin/biome check src tests', {
+      execSync(`${BIOME} check src tests`, {
         cwd: PROJECT_ROOT,
         stdio: 'pipe',
       });
@@ -131,7 +140,7 @@ const main = () => {
     // Set `CLAUDE_SKIP_PUSH_GATE=1` to bypass (useful for emergency
     // hotfixes where CI is the canonical signal anyway).
     try {
-      execSync('node_modules/.bin/vite build', {
+      execSync(`${VITE} build`, {
         cwd: PROJECT_ROOT,
         stdio: 'pipe',
       });
