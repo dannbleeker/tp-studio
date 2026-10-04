@@ -1,5 +1,5 @@
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { useGraphPositions } from '@/components/canvas/hooks/useGraphPositions';
 import type { GraphProjection } from '@/components/canvas/hooks/useGraphProjection';
 import { createDocument } from '@/domain/factory';
@@ -44,6 +44,17 @@ const projectionFor = (entityIds: string[]): GraphProjection => ({
   hiddenCountByCollapser: new Map<string, number>(),
 });
 
+// Session 216: the cold `import('@/domain/layout')` (vite transforms dagre on
+// first touch) is what kept blowing the dagre tests' budgets under a loaded
+// full-suite run. It took >10 s once, past the waitFor and close to the 15 s
+// test timeout, after two rounds of timeout bumps (Sessions 89 and 134). Paying
+// it here, on its own generous budget, takes it off every test's clock. The
+// async branch is still exercised: `loadLayoutModule` resolves through a
+// promise even when the module is cached, so the first render is still empty
+// and the hook still has to commit positions via `setDagreState`.
+beforeAll(async () => {
+  await import('@/domain/layout');
+}, 60_000);
 beforeEach(resetStoreForTest);
 afterEach(cleanup);
 

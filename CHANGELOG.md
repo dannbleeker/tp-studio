@@ -60,6 +60,15 @@ user-facing shipped.
   that `preflight.mjs` uses. Probed both ways: exit 0 on a clean tree, exit 2 with the real TS2322 and
   biome output on a planted type error.
 
+### Fixed: a lazy-layout test that kept outgrowing its timeout
+
+- **`hydrates positions asynchronously for a CRT doc` failed in a loaded full-suite run.** The cold
+  `import('@/domain/layout')` took over 10 s, past the `waitFor` and close to the 15 s test timeout,
+  after two earlier rounds of timeout bumps (Sessions 89 and 134). A `beforeAll` now pays that import
+  on its own 60 s budget. The async branch stays covered: `loadLayoutModule` resolves through a
+  promise even when the module is cached, and removing the hook's `setDagreState` commit still fails
+  the test (checked by mutation).
+
 ### Checked, no change
 
 - **Schema version.** The consolidation had CLAUDE.md at 9 against README's 10. On current `main` both
