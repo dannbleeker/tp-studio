@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 9,
+  "schemaVersion": 10,
   "id": "tt-example",
   "diagramType": "tt",
   "title": "Support response time — Transition Tree",

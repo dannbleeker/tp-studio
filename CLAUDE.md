@@ -68,8 +68,8 @@ Run via the **`/session-end`** command, which encodes this without freelancing:
 1. **First test round** — all must exit 0: `tsc --noEmit`, `biome check`, `vitest run`, `vite build`, `node scripts/check-bundle-size.mjs`. (knip too for dead-code passes.) Stop and fix on any red — don't refactor on a red diff.
 2. **Maintainability refactor pass** via the `session-reviewer` subagent on the uncommitted diff. Skip only if Dann says so.
 3. **Second test round** — same gates, catches refactor regressions.
-4. **Commit** — Conventional Commits (`feat:`/`fix:`/`docs:`/`refactor:`/`chore:`/`test:`), **ask Dann first, don't commit silently**, one commit per session via heredoc. Footer:
-   `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
+4. **Commit without asking.** Once the second round is green, commit and carry the block through push, CI and the notification, then say what landed. This is Dann's standing rule ("Land every green work block"), and it is not a permission gate. Stop and ask only when the change is risky or hard to reverse (schema migration, data deletion, dependency bump, security or licence), the work is still WIP, you find stray unrelated changes, or CI stays red after goal-seeking. If Dann says "hold" or "don't push", honour it for the session. Conventional Commits (`feat:`/`fix:`/`docs:`/`refactor:`/`chore:`/`test:`), one commit per logical change, multi-line message via heredoc.
+   **Co-Authored-By trailer:** copy it from the harness's attribution instruction for the current session. Don't take it from this file, from memory or from an old commit. It tracks the model, so any copy goes stale.
 5. **Push** to `origin/main`.
 6. **Watch CI** — both `CI` (lint+types+tests+build) and `Deploy to GitHub Pages` must return `success`. Use `gh run watch <id>` to keep busy while waiting, but **do NOT rely on `--exit-status`** — it follows one job and can report green while another job is red. After the watch returns, cross-check ALL runs for the HEAD sha:
    ```bash
@@ -87,13 +87,13 @@ A `PreToolUse` hook (`.claude/hooks/pre-bash-gate.cjs`) already blocks `git comm
 ## Project tooling (in `.claude/`)
 
 - **Commands:** `/session-end` (close-out ritual) · `/show-backlog` (NEXT_STEPS view) · `/gate` (on-demand full gate).
-- **Subagent:** `session-reviewer` (haiku diff-reviewer for the refactor pass).
+- **Subagent:** `session-reviewer` (diff-reviewer for the refactor pass, runs on sonnet). **Every sub-agent runs on sonnet** (Dann's standing rule, 2026-10-04): pass `model: "sonnet"` on each Agent call and on every workflow `agent()`. Opus only after Dann says yes in chat, and say why it needs it.
 - **Skill:** `tp-studio-import` (seed a diagram into the running app).
 - **Hooks:** `pre-bash-gate` (commit/push gate) + `post-bash-watch-ci` (CI nudge).
 
 ## Multi-area research — use parallel sub-agents
 
-When the next step is "look at how X works here" and X spans 2+ modules/directories, send parallel sub-agents in a **single message** rather than searching serially — the per-prompt cost is far less than the conversation-context cost of inline grep round-trips. A single agent is fine when the question is scoped to one place. Rule of thumb: **about to do 2+ grep/glob round-trips in different areas → send parallel sub-agents instead.** (This pattern has paid off repeatedly — e.g. the 4-agent canvas sweeps in Sessions 168/172.)
+When the next step is "look at how X works here" and X spans 2+ modules/directories, send parallel sub-agents in a **single message** rather than searching serially — the per-prompt cost is far less than the conversation-context cost of inline grep round-trips. A single agent is fine when the question is scoped to one place. Rule of thumb: **about to do 2+ grep/glob round-trips in different areas → send parallel sub-agents instead.** (This pattern has paid off repeatedly — e.g. the 4-agent canvas sweeps in Sessions 168/172.) Run them on sonnet, like every sub-agent (see **Project tooling**).
 
 ## Visual / canvas changes — self-verify before asking Dann
 
@@ -137,7 +137,8 @@ exists → **workstation**; a Linux path like `/home/user/tp-studio` → **web /
 
 ### Windows workstation (corporate AppLocker)
 
-- **Working-directory drift (the #1 recurring tax).** The repo lives at `C:\devtools\tp-studio` (off OneDrive). Bash commands — especially background ones — often start in the OneDrive session dir instead, so `git`, `node …/bin/…`, and Playwright fail with `Cannot find module C:\…\Desktop\node_modules\…` / "not a git repository". **Prefix every shell command with `cd /c/devtools/tp-studio &&`** (or launch Claude from the repo) — treat it as UNCONDITIONAL. The trap is "the cwd looks fine, I'll skip it": it works until a file read or background task silently resets cwd, then the next bare command blows up. **For git/gh, prefer `git -C /c/devtools/tp-studio …`** — it runs as if started in the repo regardless of cwd, so there's nothing to forget; keep the `cd &&` prefix for `node` (no equivalent flag).
+- **Working directory: move in once, don't prefix.** The repo lives at `C:\devtools\tp-studio` (off OneDrive). If the session didn't start there, move into it once at the start (the desktop app's `change_directory` tool, or launch Claude from the repo) so this file and `.claude/settings.json` apply, then run commands bare. **Don't prefix every Bash call with `cd /c/devtools/tp-studio &&`.** That is Dann's global rule (2026-10-03): the prefix was 9,000 of 21,000 Bash calls in his log review.
+- **Cwd drift still happens, so know the symptom.** Bash commands, especially background ones, can start in the OneDrive session dir instead. Then `git`, `node …/bin/…` and Playwright fail with `Cannot find module C:\…\Desktop\node_modules\…` or "not a git repository". That error means the cwd moved: move back into the repo and re-run, rather than prefixing every later call. A single background command that has to survive drift can carry its own `cd` (or use `git -C /c/devtools/tp-studio …` for git/gh); that is the exception, not the default.
 - **AppLocker — allow-listed at `C:\devtools` (Session 181).** `Get-AppLockerPolicy -Effective`: **Script** collection *Enabled* + Allow rule `%OSDRIVE%\DEVTOOLS\*`; **Exe** collection *AuditOnly*. The script-shim block that used to break `pnpm lint` / `biome.CMD` / the pre-commit hook is **gone here** — the native `biome.exe`, the `.CMD`/`.ps1` shims, and `pnpm exec biome` all run directly. It only bit at the old, un-allow-listed `C:\dev`. PowerShell is in **Constrained Language Mode**, so `npm.ps1`/`pnpm.ps1` break regardless of path — use Bash or the node bins above.
 - **`gh` on PATH works** (full path `"/c/Program Files/GitHub CLI/gh.exe"`), so the session-end CI watch (`gh run watch` / `gh run list --json`) works as written.
 - **Playwright runs locally** (Session 169): `node ./node_modules/vite/bin/vite.js preview --port 4173 --strictPort` (background) → `node ./node_modules/@playwright/test/cli.js test e2e/<spec> --reporter=list` (`reuseExistingServer` reuses the preview). `visual-*` snapshots are Linux-only and **fail on Windows**; CI's `e2e` job is authoritative.
@@ -148,7 +149,7 @@ exists → **workstation**; a Linux path like `/home/user/tp-studio` → **web /
 Verified in Session 210–211. Four workstation rules above invert here:
 
 - **`pnpm install` is REQUIRED, not the exception.** The container clones fresh with no `node_modules`, so nothing — not `tsc`, not `vitest`, not the `pre-bash-gate` commit hook — runs until you install. A `SessionStart` hook does this automatically; if it hasn't run, do it by hand first.
-- **No `cd /c/devtools/tp-studio` prefix** — that path doesn't exist. The repo is the cwd already.
+- **No working-directory move.** `/c/devtools/tp-studio` doesn't exist here, and the repo is already the cwd.
 - **No `gh` CLI.** All GitHub work goes through the `mcp__github__*` MCP tools. The session-end ritual's `gh run watch` / `gh run list --json` cross-check has no direct equivalent: use `mcp__github__pull_request_read` with `method: "get_check_runs"`, which lists every check run on the head sha — the same "cross-check ALL runs" the ritual asks for.
 - **Playwright's browser may not match the pinned version.** Chromium is pre-installed at `/opt/pw-browsers` with `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`, and its build can lag `@playwright/test` (1194 vs 1223 in Session 210), which fails at launch. **Don't run `playwright install`** — point at the installed binary instead (`launchOptions.executablePath`, or symlink the expected version directory). CI's `e2e` job runs the correct pinned browser and stays authoritative.
 - **Work lands on a branch + PR**, not direct to `main` — the remote session is given a designated branch. The `autoMode` note about direct-to-`main` pushes describes the workstation flow only.

@@ -20,7 +20,7 @@ app fills in everything else and lays the diagram out automatically.
 
 ```json
 {
-  "schemaVersion": 9,
+  "schemaVersion": 10,
   "id": "my-doc",
   "diagramType": "crt",
   "title": "A short human title",
@@ -30,7 +30,8 @@ app fills in everything else and lays the diagram out automatically.
 }
 ```
 
-- `schemaVersion` **must be `9`**.
+- `schemaVersion` is **`10`** (current). Older versions are migrated on import;
+  a higher one is rejected.
 - `id` and all entity/edge ids are **any unique strings** — use readable ones
   (`"rc1"`, `"goal"`, `"e1"`). The app does not re-key on import.
 - `entities` / `edges` are **maps keyed by id** (not arrays). The key must equal
@@ -160,8 +161,12 @@ valid enum value, and every gotcha is listed there.)
 - Omitting `createdAt`/`updatedAt` on an entity (required) — only the *document*
   level may omit them.
 - `annotationNumber` not finite, or `nextAnnotationNumber` ≤ the max used.
-- Inventing an entity `type` or `diagramType` — only the values in the cheat-sheet
-  / `reference/format.md` are accepted; anything else is rejected on import.
+- Inventing a `diagramType`: only the values in the cheat-sheet are accepted, and
+  anything else rejects the whole file.
+- Inventing an entity `type`: the file still imports, but the node opens as an
+  "unknown type" box. Use only the types in `reference/format.md`.
+- Making an assumption a node (`"type": "assumption"`). Assumptions are records
+  in `doc.assumptions` with an `edgeId`; see `reference/format.md`.
 - Edge `sourceId`/`targetId` pointing at an id that isn't in `entities`.
 
 ## Files
