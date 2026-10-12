@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-05T14:39:59.801Z",
-  "commit": "bcae40d",
+  "generatedAt": "2026-10-12T15:26:41.268Z",
+  "commit": "400cbf5",
   "headline": {
     "linesTsJs": 161596,
     "tests": 5253,
     "lineCoveragePct": 95.31,
-    "commits": 1228,
-    "ageDays": 147,
+    "commits": 1230,
+    "ageDays": 154,
     "trackedFiles": 1259,
     "featureManualPct": 99.6,
     "featureBookPct": 66.3,
@@ -52,7 +52,7 @@
     },
     "statements": {
       "pct": 92.92,
-      "covered": 17572,
+      "covered": 17571,
       "total": 18909
     },
     "functions": {
@@ -69,27 +69,27 @@
   "tests": {
     "unit": 5151,
     "e2e": 102,
-    "durationMs": 298191,
+    "durationMs": 307607,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11326
+        "ms": 11320
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 5951
-      },
-      {
-        "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5865
+        "ms": 6426
       },
       {
         "file": "tests/domain/graphReach.test.ts",
-        "ms": 5652
+        "ms": 5938
+      },
+      {
+        "file": "tests/components/EntityInspector.test.tsx",
+        "ms": 5831
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2620
+        "ms": 3664
       }
     ]
   },
@@ -160,23 +160,29 @@
         "commits": 16
       },
       {
-        "file": "domain/patterns/index.ts",
-        "commits": 11
+        "file": "services/pwa/offlineWarmup.ts",
+        "commits": 5
       },
       {
-        "file": "domain/validators/index.ts",
-        "commits": 9
+        "file": "components/about/OfflineReadinessSection.tsx",
+        "commits": 4
       },
       {
-        "file": "domain/types/clr.ts",
-        "commits": 8
+        "file": "domain/entityPalettes.ts",
+        "commits": 4
       },
       {
-        "file": "App.tsx",
-        "commits": 6
+        "file": "components/settings/DocumentInspector.tsx",
+        "commits": 4
       }
     ],
-    "risky": []
+    "risky": [
+      {
+        "file": "components/canvas/BlocksRail.tsx",
+        "pct": 67.64,
+        "commits": 3
+      }
+    ]
   },
   "hygiene": {
     "todo": 29,
@@ -189,9 +195,9 @@
     "nonNull": 106
   },
   "bundle": {
-    "jsGzipKb": 868,
+    "jsGzipKb": 867.9,
     "cssGzipKb": 19.9,
-    "totalGzipKb": 887.9,
+    "totalGzipKb": 887.8,
     "budgetKb": 207,
     "withinBudget": true
   },
@@ -845,9 +851,9 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 147,
-    "commits": 1228,
-    "commits7d": 6,
+    "ageDays": 154,
+    "commits": 1230,
+    "commits7d": 1,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -855,7 +861,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 352
+        "count": 354
       },
       {
         "name": "Claude",
@@ -867,8 +873,8 @@
       }
     ],
     "churn30d": {
-      "added": 8484,
-      "removed": 851
+      "added": 8460,
+      "removed": 833
     },
     "changelogEntries": 418
   }
