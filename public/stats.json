@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-12T15:26:41.268Z",
-  "commit": "400cbf5",
+  "generatedAt": "2026-10-19T13:16:30.626Z",
+  "commit": "02913ed",
   "headline": {
     "linesTsJs": 161596,
     "tests": 5253,
     "lineCoveragePct": 95.31,
-    "commits": 1230,
-    "ageDays": 154,
+    "commits": 1232,
+    "ageDays": 161,
     "trackedFiles": 1259,
     "featureManualPct": 99.6,
     "featureBookPct": 66.3,
@@ -61,35 +61,35 @@
       "total": 3830
     },
     "branches": {
-      "pct": 83.88,
-      "covered": 9971,
+      "pct": 83.87,
+      "covered": 9970,
       "total": 11887
     }
   },
   "tests": {
     "unit": 5151,
     "e2e": 102,
-    "durationMs": 307607,
+    "durationMs": 301022,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11320
+        "ms": 11195
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 6426
-      },
-      {
-        "file": "tests/domain/graphReach.test.ts",
-        "ms": 5938
+        "ms": 6256
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5831
+        "ms": 5923
+      },
+      {
+        "file": "tests/domain/graphReach.test.ts",
+        "ms": 5569
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 3664
+        "ms": 2723
       }
     ]
   },
@@ -168,21 +168,15 @@
         "commits": 4
       },
       {
-        "file": "domain/entityPalettes.ts",
-        "commits": 4
+        "file": "domain/persistenceStorage.ts",
+        "commits": 3
       },
       {
-        "file": "components/settings/DocumentInspector.tsx",
-        "commits": 4
-      }
-    ],
-    "risky": [
-      {
-        "file": "components/canvas/BlocksRail.tsx",
-        "pct": 67.64,
+        "file": "hooks/useOfflineReadiness.ts",
         "commits": 3
       }
-    ]
+    ],
+    "risky": []
   },
   "hygiene": {
     "todo": 29,
@@ -851,9 +845,9 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 154,
-    "commits": 1230,
-    "commits7d": 1,
+    "ageDays": 161,
+    "commits": 1232,
+    "commits7d": 2,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -861,7 +855,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 354
+        "count": 356
       },
       {
         "name": "Claude",
@@ -873,8 +867,8 @@
       }
     ],
     "churn30d": {
-      "added": 8460,
-      "removed": 833
+      "added": 8463,
+      "removed": 824
     },
     "changelogEntries": 418
   }
