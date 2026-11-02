@@ -5,6 +5,26 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 217: Chromium jobs pinned to ubuntu-24.04
+
+The weekly `Perf trace` run on `main` (c417dd4, 2026-11-02) failed in 26 seconds at "Install
+Playwright browsers": GitHub rolled the `ubuntu-latest` label to Ubuntu 26.04, and Playwright 1.60.0's
+`install --with-deps chromium` exits with `Playwright does not support chromium on ubuntu26.04-x64`.
+Workflow-only change, no app code.
+
+### Fixed
+
+- **Every job that installs Chromium now runs on `ubuntu-24.04`** instead of `ubuntu-latest`: the
+  `e2e` job in `ci.yml`, `perf-trace.yml`, `rebuild-book-pdf.yml` and `update-visual-snapshots.yml`.
+  The last `CI` run on `main` predates the image roll, so the next push would have gone red in `e2e`
+  the same way. Jobs that never start a browser (lint, tests, deploy, stats, mutation) stay on
+  `ubuntu-latest`.
+- **Why pin rather than bump Playwright:** a dependency bump is a stop-and-ask item, and moving the
+  runner image changes font rendering, which would invalidate every `visual-*` snapshot baseline
+  (they are rendered on the CI image). The pin keeps the baselines valid; a later Playwright bump
+  that supports 26.04 can drop the pin and refresh them through the `Update visual snapshots`
+  workflow in one deliberate step.
+
 ## Session 216: CLAUDE.md caught up with Dann's standing rules
 
 A memory consolidation on 2026-10-04 found the repo's own instructions contradicting the rules Dann
