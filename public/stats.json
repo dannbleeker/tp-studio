@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-26T13:04:24.112Z",
-  "commit": "a016479",
+  "generatedAt": "2026-11-02T15:50:57.384Z",
+  "commit": "6acc053",
   "headline": {
     "linesTsJs": 161596,
     "tests": 5253,
     "lineCoveragePct": 95.33,
-    "commits": 1234,
-    "ageDays": 168,
+    "commits": 1237,
+    "ageDays": 175,
     "trackedFiles": 1259,
     "featureManualPct": 99.6,
     "featureBookPct": 66.3,
@@ -61,35 +61,35 @@
       "total": 3830
     },
     "branches": {
-      "pct": 83.88,
-      "covered": 9972,
+      "pct": 83.86,
+      "covered": 9969,
       "total": 11887
     }
   },
   "tests": {
     "unit": 5151,
     "e2e": 102,
-    "durationMs": 300470,
+    "durationMs": 187699,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11274
-      },
-      {
-        "file": "tests/perf/validators.bench.test.ts",
-        "ms": 6303
+        "ms": 6352
       },
       {
         "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 5860
+        "ms": 3290
+      },
+      {
+        "file": "tests/perf/validators.bench.test.ts",
+        "ms": 3270
       },
       {
         "file": "tests/domain/graphReach.test.ts",
-        "ms": 5753
+        "ms": 3181
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 3247
+        "ms": 2342
       }
     ]
   },
@@ -845,17 +845,17 @@
   },
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
-    "ageDays": 168,
-    "commits": 1234,
+    "ageDays": 175,
+    "commits": 1237,
     "commits7d": 2,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 819
+        "count": 820
       },
       {
         "name": "github-actions[bot]",
-        "count": 358
+        "count": 360
       },
       {
         "name": "Claude",
@@ -867,9 +867,9 @@
       }
     ],
     "churn30d": {
-      "added": 368,
-      "removed": 205
+      "added": 425,
+      "removed": 218
     },
-    "changelogEntries": 418
+    "changelogEntries": 419
   }
 }
