@@ -497,9 +497,9 @@
   {
     "date": "2026-11-03",
     "linesTsJs": 161596,
-    "coveragePct": 95.33,
+    "coveragePct": 95.34,
     "tests": 5253,
-    "bundleKb": 889.5,
+    "bundleKb": 889.4,
     "mutationScore": 72.8,
     "featureManualPct": 99.6,
     "featureBookPct": 66.3,
