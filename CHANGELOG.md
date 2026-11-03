@@ -5,6 +5,26 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 218: Dependabot #83 applied without its broken `@vitest/mocker` bump
+
+Dependabot's `npm_and_yarn` group PR #83 failed `Tests + build + bundle`. Coverage aborted with
+`TypeError: Expected string coverage payload, received object`, because the group bumped the
+transitive `@vitest/mocker` to 5.1.0 while `vitest` stays on 4.1.7. Those packages must be on
+matching versions. This session applies the rest of the group with pnpm 10.33.4 and leaves the mocker in
+step with vitest.
+
+### Changed
+
+- `dompurify` ^3.4.17, `nanoid` ^5.1.16, `vite` ^8.3.5 (one minor past Dependabot's 8.1.6),
+  `serialize-javascript` 7.1.4 (lockfile only).
+- `storybook` ^10.6.5, with `@storybook/react` and `@storybook/react-vite` moved to the same version.
+  Dependabot bumped `storybook` alone, which would have left its framework packages on 10.4.1.
+  `build-storybook` succeeds.
+- `@vitest/mocker` stays at 4.1.7, matching `vitest`.
+
+Verified with `node scripts/preflight.mjs --coverage`: typecheck, biome, knip, feature catalogue,
+vitest with coverage (5360 passed), build, service worker and bundle size all pass.
+
 ## Session 217: Chromium jobs pinned to ubuntu-24.04
 
 The weekly `Perf trace` run on `main` (c417dd4, 2026-11-02) failed in 26 seconds at "Install
