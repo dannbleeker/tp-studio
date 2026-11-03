@@ -22,6 +22,10 @@ step with vitest.
   `build-storybook` succeeds.
 - `@vitest/mocker` stays at 4.1.7, matching `vitest`.
 
+- **CLAUDE.md:** dependency bumps are no longer stop-and-ask for Dependabot work. The weekly Dependabot
+  review, or any session Dann points at Dependabot PRs, may fix and merge them once the full gate and CI are
+  green. It still asks before loosening a gate or changing what users see. Dann set this on 2026-11-03.
+
 Verified with `node scripts/preflight.mjs --coverage`: typecheck, biome, knip, feature catalogue,
 vitest with coverage (5360 passed), build, service worker and bundle size all pass.
 
