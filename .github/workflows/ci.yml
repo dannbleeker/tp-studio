@@ -117,7 +117,13 @@ jobs:
 
   e2e:
     name: Playwright e2e smoke tests
-    runs-on: ubuntu-latest
+    # Session 217 — pinned to 24.04, not `ubuntu-latest`. The `latest`
+    # label rolled to Ubuntu 26.04 on 2026-11-02 and Playwright 1.60.0's
+    # `install --with-deps` refuses it ("does not support chromium on
+    # ubuntu26.04-x64"). Every job that installs Chromium carries this pin;
+    # the `visual-*` snapshot baselines are rendered on this image too, so
+    # moving it means regenerating them via `Update visual snapshots`.
+    runs-on: ubuntu-24.04
     # Runs in parallel with lint-types and tests-build. The slow
     # browser-binary install + headless test run is the longest CI step;
     # keeping it on its own runner so failures here don't block the

@@ -42,7 +42,13 @@ on:
 jobs:
   perf-trace:
     name: Capture Chrome perf trace
-    runs-on: ubuntu-latest
+    # Session 217 — pinned to 24.04, not `ubuntu-latest`. The `latest`
+    # label rolled to Ubuntu 26.04 on 2026-11-02 and Playwright 1.60.0's
+    # `install --with-deps` refuses it ("does not support chromium on
+    # ubuntu26.04-x64"). Every job that installs Chromium carries this pin;
+    # the `visual-*` snapshot baselines are rendered on this image too, so
+    # moving it means regenerating them via `Update visual snapshots`.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
 
