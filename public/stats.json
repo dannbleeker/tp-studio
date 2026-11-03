@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-11-02T15:50:57.384Z",
-  "commit": "6acc053",
+  "generatedAt": "2026-11-03T07:03:09.793Z",
+  "commit": "186bf12",
   "headline": {
     "linesTsJs": 161596,
     "tests": 5253,
     "lineCoveragePct": 95.33,
-    "commits": 1237,
+    "commits": 1239,
     "ageDays": 175,
     "trackedFiles": 1259,
     "featureManualPct": 99.6,
@@ -61,35 +61,35 @@
       "total": 3830
     },
     "branches": {
-      "pct": 83.86,
-      "covered": 9969,
+      "pct": 83.88,
+      "covered": 9971,
       "total": 11887
     }
   },
   "tests": {
     "unit": 5151,
     "e2e": 102,
-    "durationMs": 187699,
+    "durationMs": 227983,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 6352
-      },
-      {
-        "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 3290
+        "ms": 8458
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 3270
+        "ms": 4440
+      },
+      {
+        "file": "tests/components/EntityInspector.test.tsx",
+        "ms": 4387
       },
       {
         "file": "tests/domain/graphReach.test.ts",
-        "ms": 3181
+        "ms": 4114
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2342
+        "ms": 2488
       }
     ]
   },
@@ -189,9 +189,9 @@
     "nonNull": 106
   },
   "bundle": {
-    "jsGzipKb": 867.9,
+    "jsGzipKb": 869.6,
     "cssGzipKb": 19.9,
-    "totalGzipKb": 887.8,
+    "totalGzipKb": 889.5,
     "budgetKb": 207,
     "withinBudget": true
   },
@@ -846,8 +846,8 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 175,
-    "commits": 1237,
-    "commits7d": 2,
+    "commits": 1239,
+    "commits7d": 4,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
@@ -855,7 +855,7 @@
       },
       {
         "name": "github-actions[bot]",
-        "count": 360
+        "count": 361
       },
       {
         "name": "Claude",
@@ -864,11 +864,15 @@
       {
         "name": "dannbleeker",
         "count": 3
+      },
+      {
+        "name": "dependabot[bot]",
+        "count": 1
       }
     ],
     "churn30d": {
-      "added": 425,
-      "removed": 218
+      "added": 1239,
+      "removed": 662
     },
     "changelogEntries": 419
   }
