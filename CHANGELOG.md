@@ -5,6 +5,29 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 219: weekly Dependabot review clears the pnpm audit backlog
+
+GitHub's alert list answers the session token with 403, so the reading is `pnpm audit` (pnpm 10.33.4):
+67 findings on `main` (29 high, 30 moderate, 8 low) down to 1 moderate. Everything moved is dev or
+build tooling; the shipped bundle's behaviour does not change.
+
+### Changed
+
+- `vitest` and `@vitest/coverage-v8` ^4.1.12 (GHSA-82fw-gwwq-j7x9, GHSA-qxg6-89mg-rqv8), with
+  `@vitest/mocker` moving in step.
+- Lockfile refresh inside existing ranges: `undici` (under jsdom, 26 advisories), `fast-uri`,
+  `brace-expansion`, `zod` (all under Stryker), `browserslist` and `baseline-browser-mapping`,
+  `esbuild` (under Storybook), `smol-toml` (knip), `source-map-js`.
+- New `overrides` in `pnpm-workspace.yaml`, each with its advisory and the condition to drop it:
+  `image-size ^2.0.3` (pptxgenjs declares it and never imports it), `glob ^14.0.2` (workbox-build and
+  Storybook's docgen plugin only call `globSync`; the `dist/sw.js` precache list is identical, 92
+  entries, and `build-storybook` succeeds), `qs ^6.16.1` (under Stryker's typed-rest-client).
+
+### Still open
+
+- `minimatch` GHSA-g3hv-75wg-m249 under `@stryker-mutator/core`, which declares `~10.2.4` even in its
+  newest major. Dev-only; the patterns are this repo's own `mutate` globs.
+
 ## Session 218: Dependabot #83 applied without its broken `@vitest/mocker` bump
 
 Dependabot's `npm_and_yarn` group PR #83 failed `Tests + build + bundle`. Coverage aborted with
