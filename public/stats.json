@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-11-23T18:08:56.172Z",
-  "commit": "0b2feb9",
+  "generatedAt": "2026-11-23T20:02:28.062Z",
+  "commit": "1bac454",
   "headline": {
     "linesTsJs": 161596,
     "tests": 5253,
     "lineCoveragePct": 95.34,
-    "commits": 1249,
+    "commits": 1251,
     "ageDays": 196,
     "trackedFiles": 1259,
     "featureManualPct": 99.6,
@@ -51,8 +51,8 @@
       "total": 16240
     },
     "statements": {
-      "pct": 92.96,
-      "covered": 17629,
+      "pct": 92.95,
+      "covered": 17628,
       "total": 18963
     },
     "functions": {
@@ -61,35 +61,35 @@
       "total": 3830
     },
     "branches": {
-      "pct": 83.89,
-      "covered": 9973,
+      "pct": 83.88,
+      "covered": 9971,
       "total": 11887
     }
   },
   "tests": {
     "unit": 5151,
     "e2e": 102,
-    "durationMs": 303233,
+    "durationMs": 294635,
     "slowest": [
       {
         "file": "tests/perf/tier1.bench.test.ts",
-        "ms": 11129
+        "ms": 11155
       },
       {
         "file": "tests/perf/validators.bench.test.ts",
-        "ms": 6211
-      },
-      {
-        "file": "tests/components/EntityInspector.test.tsx",
-        "ms": 6042
+        "ms": 6160
       },
       {
         "file": "tests/domain/graphReach.test.ts",
-        "ms": 5903
+        "ms": 5446
+      },
+      {
+        "file": "tests/components/EntityInspector.test.tsx",
+        "ms": 5114
       },
       {
         "file": "tests/components/export/ExportPickerDialog.test.tsx",
-        "ms": 2987
+        "ms": 2438
       }
     ]
   },
@@ -846,16 +846,16 @@
   "git": {
     "born": "2026-05-11T13:45:43+02:00",
     "ageDays": 196,
-    "commits": 1249,
-    "commits7d": 3,
+    "commits": 1251,
+    "commits7d": 5,
     "authors": [
       {
         "name": "Dann Bleeker Pedersen",
-        "count": 822
+        "count": 823
       },
       {
         "name": "github-actions[bot]",
-        "count": 369
+        "count": 370
       },
       {
         "name": "Claude",
@@ -871,9 +871,9 @@
       }
     ],
     "churn30d": {
-      "added": 2575,
-      "removed": 1814
+      "added": 2634,
+      "removed": 1849
     },
-    "changelogEntries": 421
+    "changelogEntries": 422
   }
 }
