@@ -8,3 +8,22 @@
 # emitting `ERR_PNPM_IGNORED_BUILDS`.
 allowBuilds:
   core-js: false
+
+# Security overrides. Each names its advisory and when it can go.
+overrides:
+  # GHSA-w3rx-r6r6-pgpr, GHSA-5p2g-fcmc-qvqq (high, image-size <=2.0.2).
+  # pptxgenjs declares image-size ^1.2.1 but never imports it: its only size
+  # probe is `require('sizeof')`, Node-only, and the browser build carries no
+  # reference. Taking the patched major changes no code path. Drop once
+  # pptxgenjs declares ^2.0.3 itself.
+  image-size: ^2.0.3
+  # GHSA-3g3m-2fjr-6pw4 (glob >=9 <=14.0.1), and GHSA-g3hv-75wg-m249 through
+  # its minimatch. Tooling only: workbox-build (glob ^11) and Storybook's
+  # react-docgen-typescript plugin (glob ^13) both call only `globSync`, whose
+  # signature glob 14 keeps. Drop once both parents declare glob >=14.0.2.
+  glob: ^14.0.2
+  # GHSA-q8mj-m7cp-5q26, GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g,
+  # GHSA-6pq8-jhm2-2vcw (moderate). Only under @stryker-mutator/core ->
+  # typed-rest-client, which pins qs below the fix; same major. Drop once
+  # typed-rest-client resolves qs >=6.16.1 on its own.
+  qs: ^6.16.1
