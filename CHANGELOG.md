@@ -5,6 +5,30 @@ Reverse chronological. Entries are grouped by build session, not by release — 
 > **Sessions 1–149 live in [docs/CHANGELOG-archive.md](docs/CHANGELOG-archive.md)** — same format,
 > split out in Session 211 so this file opens on current history. Nothing was edited in the move.
 
+## Session 220: the last `pnpm audit` finding, `minimatch` under Stryker
+
+Session 219 left one moderate finding open: `minimatch` GHSA-g3hv-75wg-m249 under
+`@stryker-mutator/core`, which pins `~10.2.4` even in its newest major (10.1.1). It was left because
+the fix crosses a major on a tool the gate never runs. This session ran the tool: a Stryker dry run
+before and after the override reports the same match, `Found 239 of 1259 file(s) to be mutated` and
+`Instrumented 239 source file(s) with 16086 mutant(s)`, which is the only thing Stryker uses minimatch
+for (the `mutate` and ignore globs). `pnpm audit` now reports no known vulnerabilities.
+
+### Changed
+
+- New override in `pnpm-workspace.yaml`: `minimatch@>=7 <11.0.1` to `^11.0.1`, scoped by range so
+  `filelist`'s `minimatch` 5 is untouched. The lockfile drops 10.2.5 and Stryker resolves 11.0.9, which
+  `glob` 14 already used. Dev tooling only; nothing shipped changes. Drop it once Stryker declares
+  `minimatch ^11`.
+
+### Noticed, not changed
+
+- The full-scope Stryker dry run (`pnpm mutation` with no `--mutate`) fails its initial test run on
+  `main` too: `findCycles scales and does not overflow the stack` times out at 30 s under
+  instrumentation. Same result before and after the override. The per-file recipe in
+  `stryker.config.mjs` is the documented way to run it; the weekly workflow uses
+  `stryker.mutation.config.mjs`, whose dry run passes with the override.
+
 ## Session 219: weekly Dependabot review clears the pnpm audit backlog
 
 GitHub's alert list answers the session token with 403, so the reading is `pnpm audit` (pnpm 10.33.4):
