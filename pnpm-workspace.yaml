@@ -27,3 +27,10 @@ overrides:
   # typed-rest-client, which pins qs below the fix; same major. Drop once
   # typed-rest-client resolves qs >=6.16.1 on its own.
   qs: ^6.16.1
+  # GHSA-g3hv-75wg-m249 (moderate, minimatch >=7 <11.0.1). Only under
+  # @stryker-mutator/core, which pins ~10.2.4 even in its newest major
+  # (10.1.1). Tooling only; Stryker calls `minimatch()` and `new Minimatch()`
+  # on this repo's own `mutate` globs, and a dry run finds the
+  # same 239 files and 16086 mutants on 11.x. Drop once Stryker declares
+  # minimatch ^11.
+  'minimatch@>=7 <11.0.1': ^11.0.1
